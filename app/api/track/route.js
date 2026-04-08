@@ -21,25 +21,44 @@ export async function POST(request) {
     const body = await request.json();
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const normalizedSupabaseUrl = supabaseUrl?.startsWith("http")
+      ? supabaseUrl
+      : supabaseUrl
+        ? `https://${supabaseUrl}`
+        : null;
+
+    console.log("[api/track] env check", {
+      hasSupabaseUrl: Boolean(supabaseUrl),
+      hasSupabaseServiceRoleKey: Boolean(supabaseServiceRoleKey),
+      supabaseHost: normalizedSupabaseUrl
+        ? new URL(normalizedSupabaseUrl).host
+        : null,
+      vercelEnv: process.env.VERCEL_ENV || null
+    });
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
       return NextResponse.json({
         success: false,
         skipped: true,
         message: "Supabase environment variables are missing."
-      });
+      }, { status: 500 });
     }
-
-    const normalizedSupabaseUrl = supabaseUrl?.startsWith("http")
-      ? supabaseUrl
-      : `https://${supabaseUrl}`;
 
     const supabase = createClient(normalizedSupabaseUrl, supabaseServiceRoleKey);
     const payload = buildTrackPayload(body);
 
     console.log("[api/track]", payload);
 
-    const { error } = await supabase.from("recommendation_logs").insert(payload);
+    const { data, error, status, statusText } = await supabase
+      .from("recommendation_logs")
+      .insert([payload]);
+
+    console.log("[api/track] insert result", {
+      data,
+      error,
+      status,
+      statusText
+    });
 
     if (error) {
       console.error("[api/track] insert failed", error.message, payload);
