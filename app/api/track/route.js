@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+function buildTrackPayload(body = {}) {
+  return {
+    event_name: body?.event_name || null,
+    timestamp: body?.timestamp || new Date().toISOString(),
+    session_id: body?.session_id || null,
+    product_id: body?.product_id || null,
+    feature_name: body?.feature_name || null,
+    result_type: body?.result_type || null,
+    question_id: body?.question_id || null,
+    answer: body?.answer || null,
+    is_top_pick: Boolean(body?.is_top_pick),
+    meta_json: body?.meta_json ?? null
+  };
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -20,29 +35,27 @@ export async function POST(request) {
       : `https://${supabaseUrl}`;
 
     const supabase = createClient(normalizedSupabaseUrl, supabaseServiceRoleKey);
+    const payload = buildTrackPayload(body);
 
-    const payload = {
-      event_name: body?.event_name || null,
-      timestamp: body?.timestamp || new Date().toISOString(),
-      product_id: body?.product_id || null,
-      is_top_pick: Boolean(body?.is_top_pick),
-      question_id: body?.question_id || null,
-      answer: body?.answer || null
-    };
+    console.log("[api/track]", payload);
 
     const { error } = await supabase.from("recommendation_logs").insert(payload);
 
     if (error) {
+      console.error("[api/track] insert failed", error.message, payload);
+
       return NextResponse.json({
         success: false,
         error: error.message
-      });
+      }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true
     });
   } catch (error) {
+    console.error("[api/track] request failed", error);
+
     return NextResponse.json(
       {
         success: false,

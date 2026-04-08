@@ -41,14 +41,36 @@ const feedbackQuestions = [
   { id: "worth_buying", text: "사볼 만한 제품이 있었나요?" }
 ];
 
+const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
+
+function getOrCreateTrackingSessionId() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const existing = sessionStorage.getItem(TRACKING_SESSION_KEY);
+
+  if (existing) {
+    return existing;
+  }
+
+  const nextSessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  sessionStorage.setItem(TRACKING_SESSION_KEY, nextSessionId);
+  return nextSessionId;
+}
+
 function trackEvent(eventName, data = {}) {
   const payload = {
     event_name: eventName,
     timestamp: new Date().toISOString(),
+    session_id: data.session_id || getOrCreateTrackingSessionId(),
     product_id: data.product_id || null,
+    feature_name: data.feature_name || "skin_analysis",
+    result_type: data.result_type || null,
     is_top_pick: Boolean(data.is_top_pick),
     question_id: data.question_id || null,
-    answer: data.answer || null
+    answer: data.answer || null,
+    meta_json: data.meta_json ?? null
   };
 
   console.log("[trackEvent]", payload);
@@ -60,7 +82,25 @@ function trackEvent(eventName, data = {}) {
     },
     body: JSON.stringify(payload),
     keepalive: true
-  }).catch(() => {});
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        let details = null;
+
+        try {
+          details = await response.json();
+        } catch {}
+
+        console.error("[trackEvent] request failed", {
+          status: response.status,
+          details,
+          payload
+        });
+      }
+    })
+    .catch((requestError) => {
+      console.error("[trackEvent] request error", requestError, payload);
+    });
 }
 
 function getTextureLabel(texture) {
@@ -245,7 +285,13 @@ function ResultContent() {
     if (isReady && result) {
       trackEvent("view_result", {
         product_id: result.topPick?.id || null,
-        is_top_pick: false
+        feature_name: "skin_analysis",
+        result_type: "result_page",
+        is_top_pick: false,
+        meta_json: {
+          has_top_pick: Boolean(result.topPick),
+          category_pick_count: Array.isArray(result.categoryPicks) ? result.categoryPicks.length : 0
+        }
       });
     }
   }, [isReady, result]);
@@ -266,9 +312,14 @@ function ResultContent() {
 
     trackEvent("feedback_response", {
       product_id: result?.topPick?.id || null,
+      feature_name: "feedback",
+      result_type: "result_feedback",
       is_top_pick: false,
       question_id: questionId,
-      answer
+      answer,
+      meta_json: {
+        question_text: feedbackQuestions.find((item) => item.id === questionId)?.text || null
+      }
     });
   }
 
@@ -517,7 +568,14 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
         onClick={() =>
           trackEvent("click_top_pick", {
             product_id: product.id,
-            is_top_pick: true
+            feature_name: "skin_analysis",
+            result_type: "top_pick",
+            is_top_pick: true,
+            meta_json: {
+              step: product.step,
+              brand: product.brand,
+              score: product.score
+            }
           })
         }
       >
@@ -611,7 +669,15 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
                   event.stopPropagation();
                   trackEvent("click_buy_link", {
                     product_id: product.id,
-                    is_top_pick: true
+                    feature_name: "skin_analysis",
+                    result_type: "top_pick",
+                    is_top_pick: true,
+                    meta_json: {
+                      step: product.step,
+                      brand: product.brand,
+                      button_label: purchaseLink.label,
+                      fallback_link: purchaseLink.isFallback
+                    }
                   });
                 }}
                 className="inline-flex items-center justify-center rounded-full bg-[#1f1811] px-4 py-2 text-sm font-semibold text-white transition hover:bg-black"
@@ -636,7 +702,14 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
       onClick={() =>
         trackEvent("click_product_card", {
           product_id: product.id,
-          is_top_pick: false
+          feature_name: "skin_analysis",
+          result_type: "category_pick",
+          is_top_pick: false,
+          meta_json: {
+            step: product.step,
+            brand: product.brand,
+            score: product.score
+          }
         })
       }
     >
@@ -690,7 +763,15 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
             event.stopPropagation();
             trackEvent("click_buy_link", {
               product_id: product.id,
-              is_top_pick: false
+              feature_name: "skin_analysis",
+              result_type: "category_pick",
+              is_top_pick: false,
+              meta_json: {
+                step: product.step,
+                brand: product.brand,
+                button_label: purchaseLink.label,
+                fallback_link: purchaseLink.isFallback
+              }
             });
           }}
           className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
@@ -711,7 +792,14 @@ function AlternativeCard({ product, form }) {
       onClick={() =>
         trackEvent("click_product_card", {
           product_id: product.id,
-          is_top_pick: false
+          feature_name: "skin_analysis",
+          result_type: "alternative",
+          is_top_pick: false,
+          meta_json: {
+            step: product.step,
+            brand: product.brand,
+            score: product.score
+          }
         })
       }
     >
@@ -757,7 +845,15 @@ function AlternativeCard({ product, form }) {
             event.stopPropagation();
             trackEvent("click_buy_link", {
               product_id: product.id,
-              is_top_pick: false
+              feature_name: "skin_analysis",
+              result_type: "alternative",
+              is_top_pick: false,
+              meta_json: {
+                step: product.step,
+                brand: product.brand,
+                button_label: purchaseLink.label,
+                fallback_link: purchaseLink.isFallback
+              }
             });
           }}
           className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
