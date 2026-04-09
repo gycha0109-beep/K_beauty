@@ -441,7 +441,7 @@ function ResultContent() {
             <div className="md:col-span-2">
               <ResultSection
                 title="Why These Won"
-                subtitle="비슷한 제품보다 무엇이 더 나았는지만 짧게 비교해 두었습니다."
+                subtitle="각 제품에서 눈에 띄는 차이만 짧게 정리해 두었습니다."
               >
                 <div className="grid gap-3 lg:grid-cols-2">
                   {[result.topPick, ...(result.categoryPicks || [])]

@@ -35,9 +35,9 @@ const textures = [
 ];
 
 const postWashFeelings = [
-  { value: "tight", label: "당김이 남음" },
+  { value: "tight", label: "당김" },
   { value: "comfortable", label: "편안함" },
-  { value: "still_oily", label: "여전히 번들거림" }
+  { value: "still_oily", label: "세안 직후에도 번들거림" }
 ];
 
 const afternoonSkinChanges = [
@@ -56,11 +56,11 @@ const dislikedFeels = [
 ];
 
 const environmentOptions = [
-  { value: "heat", label: "열기" },
-  { value: "humidity", label: "습도" },
+  { value: "heat", label: "더운 환경" },
+  { value: "humidity", label: "습한 환경" },
   { value: "mask", label: "마스크" },
   { value: "kitchen", label: "주방 환경" },
-  { value: "outdoor", label: "실외 활동" },
+  { value: "outdoor", label: "야외 활동" },
   { value: "aircon", label: "에어컨" }
 ];
 
@@ -75,7 +75,7 @@ export default function SurveyForm({ form, onChange, onCheckboxChange }) {
         <SelectField label="선호 제형" name="preferredTexture" value={form.preferredTexture} onChange={onChange} options={textures} />
         <SelectField label="세안 후 느낌" name="postWashFeeling" value={form.postWashFeeling} onChange={onChange} options={postWashFeelings} />
         <SelectField label="오후 피부 변화" name="afternoonSkinChange" value={form.afternoonSkinChange} onChange={onChange} options={afternoonSkinChanges} />
-        <SelectField label="피하고 싶은 사용감" name="mostDislikedFeel" value={form.mostDislikedFeel} onChange={onChange} options={dislikedFeels} />
+        <SelectField label="가장 싫어하는 사용감" name="mostDislikedFeel" value={form.mostDislikedFeel} onChange={onChange} options={dislikedFeels} />
       </div>
 
       <div className="space-y-2">
@@ -83,6 +83,7 @@ export default function SurveyForm({ form, onChange, onCheckboxChange }) {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {environmentOptions.map((option) => {
             const checked = form.environmentExposure.includes(option.value);
+
             return (
               <label
                 key={option.value}
