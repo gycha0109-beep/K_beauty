@@ -63,19 +63,17 @@ function trackEvent(eventName, data = {}) {
   const payload = {
     event_name: eventName,
     timestamp: new Date().toISOString(),
-    session_id: data.session_id || getOrCreateTrackingSessionId(),
-    product_id: data.product_id || null,
-    feature_name: data.feature_name || "skin_analysis",
-    result_type: data.result_type || null,
+    session_id: data.session_id ?? getOrCreateTrackingSessionId(),
+    product_id: data.product_id ?? null,
+    feature_name: data.feature_name ?? "skin_analysis",
+    result_type: data.result_type ?? null,
     is_top_pick: Boolean(data.is_top_pick),
-    question_id: data.question_id || null,
-    answer: data.answer || null,
+    question_id: data.question_id ?? null,
+    answer: data.answer ?? null,
     meta_json: data.meta_json ?? null
   };
 
-  console.log("[trackEvent]", payload);
-
-  fetch("/api/track", {
+  void fetch("/api/track", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
