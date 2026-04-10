@@ -5,6 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { normalizeBrandName, normalizeProductName } from "./lib/normalize.js";
+import { runReviewPrep } from "./review-prep.js";
 import {
   createCrawlJob,
   createServiceRoleClient,
@@ -71,6 +72,7 @@ interface RuntimeOptions {
   retries: number;
   headless: boolean;
   dryRun: boolean;
+  withReviewPrep: boolean;
   maxPages: number | null;
   themeIds: number[] | null;
 }
@@ -155,6 +157,7 @@ function parseArgs(argv: string[]): RuntimeOptions {
     retries: Math.max(1, parseNumberValue(optionMap.get("retries") ?? process.env.HWAHAE_RETRIES, DEFAULT_RETRIES)),
     headless: hasHeadedFlag ? false : parseBooleanFlag(process.env.HWAHAE_HEADLESS, DEFAULT_HEADLESS),
     dryRun: hasDryRunFlag || parseBooleanFlag(process.env.HWAHAE_DRY_RUN, false),
+    withReviewPrep: optionMap.has("with-review-prep"),
     maxPages: Number.isFinite(parsedMaxPages) ? parsedMaxPages : null,
     themeIds,
   };
@@ -340,6 +343,7 @@ function buildProductCandidateRows(
     normalized_name: normalizeProductName(item.productName),
     normalized_brand: normalizeBrandName(item.brandName),
     status: "new",
+    review_status: "new",
   }));
 }
 
@@ -433,6 +437,20 @@ async function run(): Promise<void> {
 
     if (summary.errorsCount > 0) {
       throw new Error(`Crawler finished with ${summary.errorsCount} category error(s).`);
+    }
+
+    if (options.withReviewPrep) {
+      if (options.dryRun) {
+        console.log("");
+        console.log("[with-review-prep] Skipped automatic review prep because crawl ran in dry-run mode.");
+      } else {
+        console.log("");
+        console.log("[with-review-prep] Starting automatic review prep for pending candidates...");
+        await runReviewPrep({
+          limit: Math.max(100, summary.candidatesInserted),
+          dryRun: false,
+        });
+      }
     }
   } catch (error) {
     if (client && crawlJobId !== null) {

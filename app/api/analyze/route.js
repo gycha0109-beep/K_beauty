@@ -233,6 +233,8 @@ function buildSelectedProductsContext(recommendation) {
     notes: product.notes,
     current_reason: product.reason,
     current_comparison_reason: product.comparison_reason,
+    why_picked: product.why_picked,
+    matched_signals: product.matched_signals,
     explanation_context: product.explanation_context,
     score_breakdown: product.score_breakdown
   }));

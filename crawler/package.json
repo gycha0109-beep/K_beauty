@@ -6,6 +6,14 @@
   "scripts": {
     "crawl": "tsx hwahae.ts",
     "crawl:hwahae": "tsx hwahae.ts",
+    "approve:candidate": "tsx approve-candidate.ts",
+    "enrich:products": "tsx enrich-products.ts",
+    "enrich:queue": "tsx enrich-queue.ts",
+    "list:candidates": "tsx list-candidates.ts",
+    "promote:report": "tsx promote-report.ts",
+    "review:prep": "tsx review-prep.ts",
+    "reject:candidate": "tsx reject-candidate.ts",
+    "promote:approved": "tsx promote-approved.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

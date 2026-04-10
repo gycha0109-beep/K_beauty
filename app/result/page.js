@@ -119,6 +119,7 @@ function getFinishLabel(finish) {
     natural: "표면을 과하게 남기지 않고",
     matte: "번들거림을 덜 남기고",
     "soft-matte": "번들 흐름을 눌러주고",
+    soft_matte: "번들 흐름을 눌러주고",
     dewy: "건조한 결을 덜 들뜨게 하고",
     rich: "보습막을 더 안정적으로 남기고",
     fresh: "답답함을 덜 남기고"
