@@ -26,6 +26,30 @@ interface ReviewPrepSummary {
   rejectedCount: number;
 }
 
+function formatValue(value: string | null | undefined): string {
+  return value ? value : "-";
+}
+
+function formatList(values: string[] | null | undefined): string {
+  return Array.isArray(values) && values.length > 0 ? values.join("|") : "-";
+}
+
+function formatConfidence(value: number | null): string {
+  return typeof value === "number" ? value.toFixed(2) : "-";
+}
+
+function logPreparedCandidate(
+  candidateId: string,
+  prepared: ReturnType<typeof prepareCandidateReview>,
+  dryRun: boolean,
+): void {
+  const prefix = dryRun ? "[dry-run]" : "[review-prep]";
+
+  console.log(
+    `${prefix} id=${candidateId} status=${prepared.reviewStatus} category=${formatValue(prepared.serviceCategory)} brand=${formatValue(prepared.canonicalBrand)} name=${formatValue(prepared.canonicalName)} flags=${formatList(prepared.reviewFlags)} match=${formatValue(prepared.matchMethod)} confidence=${formatConfidence(prepared.matchConfidence)} concerns=${formatList(prepared.inferredConcerns)} texture=${formatValue(prepared.inferredTexture)} finish=${formatValue(prepared.inferredFinish)}`,
+  );
+}
+
 function loadEnvironment(): void {
   const currentFile = fileURLToPath(import.meta.url);
   const crawlerDirectory = path.dirname(currentFile);
@@ -113,10 +137,9 @@ export async function runReviewPrep(inputOptions: Partial<ReviewPrepOptions> = {
       needsReviewCount += 1;
     }
 
+    logPreparedCandidate(candidate.id, prepared, options.dryRun);
+
     if (options.dryRun) {
-      console.log(
-        `[dry-run] ${candidate.id} -> ${prepared.reviewStatus} (${prepared.canonicalBrand} / ${prepared.canonicalName})`,
-      );
       continue;
     }
 

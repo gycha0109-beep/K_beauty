@@ -1,7 +1,9 @@
+import { findBestProductMatch } from "./match.js";
 import {
   normalizeBrandName,
   normalizeCanonicalBrandName,
   normalizeCanonicalProductName,
+  tokenizeNormalizedText,
 } from "./normalize.js";
 
 export type ServiceCategory =
@@ -29,7 +31,10 @@ export type ReviewFlag =
   | "powder_wash_like_name"
   | "cleansing_serum_like_name"
   | "generic_name"
-  | "body_item";
+  | "short_name"
+  | "misc_item"
+  | "body_item"
+  | "near_duplicate_match";
 
 export interface MatchableProductRecord {
   id: string;
@@ -73,7 +78,23 @@ export interface PreparedCandidateReview {
   matchConfidence: number | null;
   reviewFlags: ReviewFlag[];
   promotionVersion: string;
+  inferredConcerns: string[];
+  inferredTexture: string | null;
+  inferredFinish: string | null;
 }
+
+type InferredPromotionProduct = {
+  skin_types: string[];
+  concerns: string[];
+  texture: string;
+  finish: string;
+  irritation_risk: string;
+  sensitivity_safe: boolean;
+  price_min: number | null;
+  price_max: number | null;
+  buy_link: string | null;
+  image_url: string | null;
+};
 
 const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "skincare/toner": "toner_essence",
@@ -83,17 +104,46 @@ const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "cleansing/cleansing": "cleanser",
 };
 
+const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; regex: RegExp }> = [
+  {
+    category: "sunscreen",
+    regex: /\b(?:sunscreen|sun\s*cream|sun\s*screen|sunblock|uv|sun\s*essence|sun\s*stick|sun\s*pact|sun\s*cushion|tone[\s-]*up\s+sun)\b/i,
+  },
+  { category: "serum", regex: /\b(?:serum|ampoule)\b/i },
+  { category: "moisturizer", regex: /\b(?:cream|lotion|gel\s+cream)\b/i },
+  { category: "toner_essence", regex: /\b(?:toner|essence|skin)\b/i },
+  { category: "cleanser", regex: /\b(?:cleanser|cleansing|foam|wash)\b/i },
+];
+
+const AUTO_REJECT_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
+  { flag: "body_item", regex: /\bbody\s+wash\b/i },
+  { flag: "body_item", regex: /\btop\s+to\s+toe\s+wash\b/i },
+  { flag: "body_item", regex: /\bbody\s+cleanser\b/i },
+  { flag: "remover_like_name", regex: /\blip(?:\s+and)?\s+eye\s+remover\b/i },
+  { flag: "remover_like_name", regex: /\beye\s+remover\b/i },
+  { flag: "remover_like_name", regex: /\bmakeup\s+remover\b/i },
+];
+
 const NEEDS_REVIEW_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
   { flag: "pad_like_name", regex: /\b(?:toner\s+)?pads?\b/i },
-  { flag: "remover_like_name", regex: /\b(?:lip\s*&?\s*eye|eye|makeup)\s+remover\b/i },
   { flag: "peeling_like_name", regex: /\bpeeling\s+gel\b/i },
   { flag: "powder_wash_like_name", regex: /\bpowder\s+wash\b/i },
   { flag: "cleansing_serum_like_name", regex: /\bcleansing\s+serum\b/i },
+  { flag: "misc_item", regex: /\b(?:mist|balm|mask|pack|patch|soap|bar|all\s+in\s+one)\b/i },
 ];
 
-const REJECT_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
-  { flag: "body_item", regex: /\bbody\s+wash\b/i },
-  { flag: "body_item", regex: /\btop\s+to\s+toe\s+wash\b/i },
+const TOKEN_CONCERN_RULES: Array<{ regex: RegExp; concerns: string[] }> = [
+  { regex: /\b(?:cica|calming|soothing)\b/i, concerns: ["redness", "barrier"] },
+  { regex: /\b(?:ceramide|bifida|barrier)\b/i, concerns: ["barrier", "dehydration"] },
+  { regex: /\b(?:pore|sebum)\b/i, concerns: ["pores", "oiliness"] },
+  { regex: /\b(?:acne|trouble)\b/i, concerns: ["acne"] },
+  { regex: /\b(?:moisture|hydrating|hyaluronic)\b/i, concerns: ["dehydration"] },
+  { regex: /\b(?:brightening|tone)\b/i, concerns: ["uneven_tone"] },
+  { regex: /\b(?:atobarrier|ato)\b/i, concerns: ["barrier", "dehydration"] },
+  { regex: /\brelief\b/i, concerns: ["redness", "barrier"] },
+  { regex: /\bblemish\b/i, concerns: ["acne", "redness"] },
+  { regex: /\bmild\b/i, concerns: ["redness"] },
+  { regex: /\b(?:azulene|artemisia)\b/i, concerns: ["redness", "barrier"] },
 ];
 
 const ALLOWED_SKIN_TYPES = new Set(["oily", "dry", "combination", "sensitive"]);
@@ -107,15 +157,43 @@ const ALLOWED_CONCERNS = new Set([
   "barrier",
 ]);
 const DEFAULT_SKIN_TYPES = ["oily", "combination", "sensitive"];
+const GENERIC_NAME_SET = new Set([
+  "cleanser",
+  "cleansing foam",
+  "cleansing gel",
+  "foam cleanser",
+  "toner",
+  "essence",
+  "serum",
+  "ampoule",
+  "cream",
+  "lotion",
+  "sunscreen",
+  "sun cream",
+]);
+const GENERIC_NAME_TOKENS = new Set([
+  "cleanser",
+  "cleansing",
+  "foam",
+  "gel",
+  "toner",
+  "essence",
+  "serum",
+  "ampoule",
+  "cream",
+  "lotion",
+  "sunscreen",
+  "sun",
+  "wash",
+]);
+
 const FALLBACK_PRODUCT_DEFAULTS = {
   texture: "gel",
   finish: "natural",
   concerns: ["dehydration", "redness"],
 };
-const SERVICE_CATEGORY_DEFAULTS: Record<
-  ServiceCategory,
-  { texture: string; finish: string; concerns: string[] }
-> = {
+
+const SERVICE_CATEGORY_DEFAULTS: Record<ServiceCategory, { texture: string; finish: string; concerns: string[] }> = {
   cleanser: {
     texture: "gel",
     finish: "fresh",
@@ -158,25 +236,70 @@ function toStringArray(value: string[] | string | null | undefined): string[] {
   return [];
 }
 
+function uniqueStrings(values: string[]): string[] {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
 function normalizeAllowedArray(
   value: string[] | string | null | undefined,
   allowedValues: Set<string>,
 ): string[] {
-  return Array.from(
-    new Set(
-      toStringArray(value)
-        .map((item) => item.trim().toLowerCase())
-        .filter((item) => allowedValues.has(item)),
-    ),
+  return uniqueStrings(
+    toStringArray(value)
+      .map((item) => item.trim().toLowerCase())
+      .filter((item) => allowedValues.has(item)),
   );
 }
 
-function mapCategory(value: string | null | undefined): ServiceCategory | null {
+function mapCategoryFromPath(value: string | null | undefined): ServiceCategory | null {
   if (!value) {
     return null;
   }
 
   return CATEGORY_PATH_MAP[value] ?? null;
+}
+
+function mapProductCategory(value: string | null | undefined): ServiceCategory | null {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized === "toner") {
+    return "toner_essence";
+  }
+
+  if (normalized === "cream") {
+    return "moisturizer";
+  }
+
+  if (normalized === "sun") {
+    return "sunscreen";
+  }
+
+  if (["cleanser", "toner_essence", "serum", "moisturizer", "sunscreen"].includes(normalized)) {
+    return normalized as ServiceCategory;
+  }
+
+  return null;
+}
+
+function inferCategoryFromName(canonicalName: string): ServiceCategory | null {
+  if (
+    /\b(?:sunscreen|sun\s*cream|sun\s*screen|sunblock|uv|sun\s*essence|sun\s*stick|sun\s*pact|sun\s*cushion|tone[\s-]*up\s+sun)\b/i.test(
+      canonicalName,
+    )
+  ) {
+    return "sunscreen";
+  }
+
+  const matchedCategories = CATEGORY_NAME_HINTS
+    .filter((rule) => rule.regex.test(canonicalName))
+    .map((rule) => rule.category);
+
+  const uniqueMatches = Array.from(new Set(matchedCategories));
+  return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
 }
 
 function mapTexture(value: string | null | undefined): string | null {
@@ -267,31 +390,21 @@ function getProductDefaults(serviceCategory: ServiceCategory | null): {
   return SERVICE_CATEGORY_DEFAULTS[serviceCategory];
 }
 
-function buildPromotionProduct(
-  serviceCategory: ServiceCategory | null,
-  match: MatchableProductRecord | null,
-): Record<string, unknown> {
-  const defaults = getProductDefaults(serviceCategory);
-  const skinTypes = normalizeAllowedArray(match?.skin_types, ALLOWED_SKIN_TYPES);
-  const existingConcerns = normalizeAllowedArray(match?.concerns, ALLOWED_CONCERNS);
-  const concerns = Array.from(new Set([...existingConcerns, ...defaults.concerns])).slice(
-    0,
-    Math.max(existingConcerns.length, 2),
-  );
+function inferConcernsFromTokens(canonicalName: string, serviceCategory: ServiceCategory | null): string[] {
+  const defaults = getProductDefaults(serviceCategory).concerns;
+  const inferredConcerns = TOKEN_CONCERN_RULES
+    .filter((rule) => rule.regex.test(canonicalName))
+    .flatMap((rule) => rule.concerns)
+    .filter((concern) => ALLOWED_CONCERNS.has(concern));
 
-  return {
-    skin_types: skinTypes.length > 0 ? skinTypes : DEFAULT_SKIN_TYPES,
-    concerns,
-    texture: mapTexture(match?.texture) ?? defaults.texture,
-    finish: mapFinish(match?.finish) ?? defaults.finish,
-    irritation_risk: mapIrritationRisk(match?.irritation_risk) ?? "low",
-    sensitivity_safe:
-      typeof match?.sensitivity_safe === "boolean" ? match.sensitivity_safe : true,
-    price_min: match?.price_min ?? null,
-    price_max: match?.price_max ?? null,
-    buy_link: match?.buy_link ?? null,
-    image_url: match?.image_url ?? null,
-  };
+  return uniqueStrings([...defaults, ...inferredConcerns]);
+}
+
+function hasShortName(normalizedName: string): boolean {
+  const tokens = tokenizeNormalizedText(normalizedName);
+  const compactName = normalizedName.replace(/\s+/g, "");
+
+  return tokens.length < 2 || compactName.length < 6;
 }
 
 function hasGenericName(normalizedName: string): boolean {
@@ -299,65 +412,76 @@ function hasGenericName(normalizedName: string): boolean {
     return true;
   }
 
-  const genericNames = new Set([
-    "cleanser",
-    "foam cleanser",
-    "cleansing foam",
-    "toner",
-    "serum",
-    "cream",
-    "sunscreen",
-  ]);
+  if (GENERIC_NAME_SET.has(normalizedName)) {
+    return true;
+  }
 
-  return genericNames.has(normalizedName);
+  const tokens = tokenizeNormalizedText(normalizedName);
+  return tokens.length > 0 && tokens.length <= 2 && tokens.every((token) => GENERIC_NAME_TOKENS.has(token));
 }
 
-function collectReviewFlags(serviceCategory: ServiceCategory | null, canonicalName: string, canonicalBrand: string): ReviewFlag[] {
-  const flags = new Set<ReviewFlag>();
+function collectScopeFlags(canonicalName: string): {
+  rejectFlags: ReviewFlag[];
+  needsReviewFlags: ReviewFlag[];
+} {
+  const rejectFlags = uniqueStrings(
+    AUTO_REJECT_RULES.filter((rule) => rule.regex.test(canonicalName)).map((rule) => rule.flag),
+  ) as ReviewFlag[];
+  const needsReviewFlags = uniqueStrings(
+    NEEDS_REVIEW_RULES.filter((rule) => rule.regex.test(canonicalName)).map((rule) => rule.flag),
+  ) as ReviewFlag[];
 
-  if (!serviceCategory) {
-    flags.add("ambiguous_category");
-  }
-
-  if (!canonicalName) {
-    flags.add("missing_canonical_name");
-  }
-
-  if (!canonicalBrand) {
-    flags.add("missing_canonical_brand");
-  }
-
-  for (const rule of REJECT_RULES) {
-    if (rule.regex.test(canonicalName)) {
-      flags.add(rule.flag);
-    }
-  }
-
-  for (const rule of NEEDS_REVIEW_RULES) {
-    if (rule.regex.test(canonicalName)) {
-      flags.add(rule.flag);
-    }
-  }
-
-  if (hasGenericName(canonicalName)) {
-    flags.add("generic_name");
-  }
-
-  return Array.from(flags);
+  return {
+    rejectFlags,
+    needsReviewFlags,
+  };
 }
 
-function findExactMatch(
-  products: MatchableProductRecord[],
-  canonicalBrand: string,
+function buildPromotionProduct(
+  candidate: CandidateForReview,
+  serviceCategory: ServiceCategory | null,
   canonicalName: string,
-): MatchableProductRecord | null {
-  const key = `${canonicalBrand}::${canonicalName}`;
+  match: MatchableProductRecord | null,
+): InferredPromotionProduct {
+  const defaults = getProductDefaults(serviceCategory);
+  const inferredConcerns = inferConcernsFromTokens(canonicalName, serviceCategory);
+  const existingSkinTypes = normalizeAllowedArray(match?.skin_types, ALLOWED_SKIN_TYPES);
+  const existingConcerns = normalizeAllowedArray(match?.concerns, ALLOWED_CONCERNS);
+  const concerns = existingConcerns.length > 0 ? existingConcerns : inferredConcerns;
+  let texture = mapTexture(match?.texture) ?? defaults.texture;
+  let finish = mapFinish(match?.finish) ?? defaults.finish;
+  const irritationRisk = mapIrritationRisk(match?.irritation_risk) ?? "low";
+  const sensitivitySafe =
+    typeof match?.sensitivity_safe === "boolean" ? match.sensitivity_safe : irritationRisk === "low";
 
-  return (
-    products.find(
-      (product) => `${product.normalized_brand}::${product.normalized_name}` === key,
-    ) ?? null
-  );
+  if (!match) {
+    if (serviceCategory === "cleanser" && /\bcleansing\s+milk\b/i.test(canonicalName)) {
+      texture = "lotion";
+      finish = "natural";
+    } else if (serviceCategory === "cleanser" && /\bcleansing\s+oil\b/i.test(canonicalName)) {
+      texture = "lotion";
+      finish = "natural";
+    } else if (
+      serviceCategory === "sunscreen" &&
+      /\b(?:sun\s+essence|aqua|water)\b/i.test(canonicalName)
+    ) {
+      texture = "watery";
+      finish = "natural";
+    }
+  }
+
+  return {
+    skin_types: existingSkinTypes.length > 0 ? existingSkinTypes : DEFAULT_SKIN_TYPES,
+    concerns,
+    texture,
+    finish,
+    irritation_risk: irritationRisk,
+    sensitivity_safe: sensitivitySafe,
+    price_min: match?.price_min ?? null,
+    price_max: match?.price_max ?? null,
+    buy_link: match?.buy_link ?? null,
+    image_url: match?.image_url ?? null,
+  };
 }
 
 function buildPromotionPayload(
@@ -367,16 +491,21 @@ function buildPromotionPayload(
   reviewFlags: ReviewFlag[],
   matchMethod: string | null,
   matchConfidence: number | null,
+  promotionProduct: InferredPromotionProduct,
 ): Record<string, unknown> {
   return {
     metadata: {
       version: "v1",
       prepared_at: new Date().toISOString(),
+      service_category: serviceCategory,
       match_method: matchMethod,
       match_confidence: matchConfidence,
       review_flags: reviewFlags,
+      inferred_concerns: promotionProduct.concerns,
+      inferred_texture: promotionProduct.texture,
+      inferred_finish: promotionProduct.finish,
     },
-    product: buildPromotionProduct(serviceCategory, match),
+    product: promotionProduct,
     evidence: {
       source_name: candidate.source_name,
       category_path: candidate.category_path,
@@ -390,13 +519,22 @@ function buildReviewNotes(
   reviewStatus: PreparedCandidateReview["reviewStatus"],
   reviewFlags: ReviewFlag[],
   match: MatchableProductRecord | null,
+  matchMethod: string | null,
+  matchConfidence: number | null,
 ): string | null {
+  const formattedConfidence =
+    typeof matchConfidence === "number" ? matchConfidence.toFixed(2) : null;
+
   if (reviewStatus === "rejected") {
     return `Auto-rejected by review prep: ${reviewFlags.join(", ")}`;
   }
 
   if (reviewStatus === "auto_matched" && match) {
-    return `Tentative exact match to product ${match.id}. Human approval is still required before promotion.`;
+    return `Exact duplicate candidate matched product ${match.id} via ${matchMethod} (${formattedConfidence}). Manual approval is still required before promotion.`;
+  }
+
+  if (match && matchMethod && formattedConfidence) {
+    return `Needs review: ${reviewFlags.join(", ") || "manual verification"}; tentative match ${match.id} via ${matchMethod} (${formattedConfidence}).`;
   }
 
   if (reviewFlags.length > 0) {
@@ -406,50 +544,146 @@ function buildReviewNotes(
   return "Needs metadata review before approval.";
 }
 
+function determineMatchMethod(
+  rawNormalizedBrand: string,
+  canonicalBrand: string,
+  matchKind: "exact" | "same_brand_near_name" | "none",
+): string | null {
+  if (matchKind === "exact") {
+    return rawNormalizedBrand !== canonicalBrand ? "brand_alias_exact" : "exact_normalized";
+  }
+
+  if (matchKind === "same_brand_near_name") {
+    return rawNormalizedBrand !== canonicalBrand ? "brand_alias_near_name" : "same_brand_near_name";
+  }
+
+  return null;
+}
+
+function determineMatchConfidence(
+  matchMethod: string | null,
+  baseConfidence: number | null,
+): number | null {
+  if (typeof baseConfidence !== "number") {
+    return null;
+  }
+
+  if (matchMethod === "brand_alias_exact") {
+    return 0.99;
+  }
+
+  if (matchMethod === "brand_alias_near_name") {
+    return Math.min(baseConfidence, 0.88);
+  }
+
+  return baseConfidence;
+}
+
 export function prepareCandidateReview(
   candidate: CandidateForReview,
   products: MatchableProductRecord[],
 ): PreparedCandidateReview {
-  const serviceCategory = mapCategory(candidate.category_path);
   const canonicalName = normalizeCanonicalProductName(candidate.product_name_raw);
   const canonicalBrand = normalizeCanonicalBrandName(candidate.brand_name_raw);
-  const reviewFlags = collectReviewFlags(serviceCategory, canonicalName, canonicalBrand);
-  const rejectFlags = new Set<ReviewFlag>(["body_item"]);
   const rawNormalizedBrand = normalizeBrandName(candidate.brand_name_raw);
-  const match =
-    canonicalName && canonicalBrand ? findExactMatch(products, canonicalBrand, canonicalName) : null;
+  const pathCategory = mapCategoryFromPath(candidate.category_path);
+  const inferredNameCategory = inferCategoryFromName(canonicalName);
+  const initialServiceCategory = pathCategory ?? inferredNameCategory;
+  const matchResult =
+    canonicalName && canonicalBrand
+      ? findBestProductMatch(products, {
+          canonicalBrand,
+          canonicalName,
+        })
+      : {
+          kind: "none" as const,
+          product: null,
+          confidence: null,
+        };
+  const exactMatchedCategory = matchResult.kind === "exact" ? mapProductCategory(matchResult.product?.category) : null;
+  const serviceCategory = exactMatchedCategory ?? initialServiceCategory;
+  const { rejectFlags, needsReviewFlags } = collectScopeFlags(canonicalName);
+  const reviewFlagSet = new Set<ReviewFlag>([...rejectFlags, ...needsReviewFlags]);
+
+  if (!serviceCategory) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (pathCategory && inferredNameCategory && pathCategory !== inferredNameCategory && matchResult.kind !== "exact") {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (!canonicalName) {
+    reviewFlagSet.add("missing_canonical_name");
+  }
+
+  if (!canonicalBrand) {
+    reviewFlagSet.add("missing_canonical_brand");
+  }
+
+  if (canonicalName && hasShortName(canonicalName)) {
+    reviewFlagSet.add("short_name");
+  }
+
+  if (canonicalName && hasGenericName(canonicalName)) {
+    reviewFlagSet.add("generic_name");
+  }
+
+  if (matchResult.kind === "same_brand_near_name") {
+    reviewFlagSet.add("near_duplicate_match");
+  }
+
+  const reviewFlags = Array.from(reviewFlagSet);
+  const matchMethod = determineMatchMethod(rawNormalizedBrand, canonicalBrand, matchResult.kind);
+  const matchConfidence = determineMatchConfidence(matchMethod, matchResult.confidence);
+  const matchedProductId =
+    matchResult.kind === "exact" || matchResult.kind === "same_brand_near_name"
+      ? matchResult.product?.id ?? null
+      : null;
+  const promotionProduct = buildPromotionProduct(
+    candidate,
+    serviceCategory,
+    canonicalName,
+    matchResult.product,
+  );
 
   let reviewStatus: PreparedCandidateReview["reviewStatus"] = "needs_review";
-  let matchMethod: string | null = null;
-  let matchConfidence: number | null = null;
 
-  if (reviewFlags.some((flag) => rejectFlags.has(flag))) {
+  if (rejectFlags.length > 0) {
     reviewStatus = "rejected";
-  } else if (reviewFlags.length === 0 && match) {
+  } else if (matchResult.kind === "exact" && reviewFlags.length === 0) {
     reviewStatus = "auto_matched";
-    matchMethod = rawNormalizedBrand !== canonicalBrand ? "brand_alias_exact" : "exact_normalized";
-    matchConfidence = matchMethod === "brand_alias_exact" ? 0.98 : 1;
   }
 
   return {
     serviceCategory,
     canonicalName: canonicalName || null,
     canonicalBrand: canonicalBrand || null,
-    matchedProductId: match?.id ?? null,
+    matchedProductId,
     duplicateOfProductId: null,
     reviewStatus,
-    reviewNotes: buildReviewNotes(reviewStatus, reviewFlags, match),
+    reviewNotes: buildReviewNotes(
+      reviewStatus,
+      reviewFlags,
+      matchResult.product,
+      matchMethod,
+      matchConfidence,
+    ),
     promotionPayload: buildPromotionPayload(
       candidate,
       serviceCategory,
-      match,
+      matchResult.product,
       reviewFlags,
       matchMethod,
       matchConfidence,
+      promotionProduct,
     ),
     matchMethod,
     matchConfidence,
     reviewFlags,
     promotionVersion: "v1",
+    inferredConcerns: promotionProduct.concerns,
+    inferredTexture: promotionProduct.texture,
+    inferredFinish: promotionProduct.finish,
   };
 }

@@ -235,6 +235,55 @@ function getEspeciallyGoodFor(product, form) {
   return "매일 부담 없이 루틴을 이어가고 싶은 피부";
 }
 
+function getTopPickWhyLine(product) {
+  if (!Array.isArray(product?.why_picked)) {
+    return null;
+  }
+
+  const firstLine = product.why_picked.find(
+    (item) => typeof item === "string" && item.trim().length > 0
+  );
+
+  return firstLine ? firstLine.trim() : null;
+}
+
+function getTopPickSignalLabels(product) {
+  const signals = product?.matched_signals;
+
+  if (!signals || typeof signals !== "object") {
+    return [];
+  }
+
+  const labels = [];
+
+  if (Array.isArray(signals.matched_concerns) && signals.matched_concerns.length > 0) {
+    const concernKey = signals.matched_concerns[0];
+    labels.push(`${displayMap.mainConcern[concernKey] || concernKey} match`);
+  }
+
+  if (signals.matched_skin_type) {
+    labels.push(`${displayMap.skinType[signals.matched_skin_type] || signals.matched_skin_type} skin`);
+  }
+
+  if (signals.texture_match === "exact") {
+    labels.push("Texture match");
+  } else if (signals.texture_match === "near") {
+    labels.push("Texture near");
+  }
+
+  if (signals.finish_match) {
+    labels.push("Finish fit");
+  }
+
+  if (signals.sensitivity_safe) {
+    labels.push("Sensitive safe");
+  } else if (signals.irritation_risk === "low") {
+    labels.push("Low irritation");
+  }
+
+  return labels.slice(0, 2);
+}
+
 export default function ResultPage() {
   return (
     <Suspense
@@ -560,6 +609,8 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
     const usageTiming = getUsageTimingLabel(product.use_time);
     const priceLabel = getPriceLabel(product.price_range);
     const purchaseLink = getPurchaseLinkInfo(product);
+    const whyPickedLine = getTopPickWhyLine(product);
+    const topPickSignals = getTopPickSignalLabels(product);
 
     return (
       <div
@@ -628,6 +679,27 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
                 {priceLabel}
               </span>
             </div>
+
+            {whyPickedLine || topPickSignals.length ? (
+              <div className="mt-4">
+                {whyPickedLine ? (
+                  <p className="text-sm leading-6 text-black/72">{whyPickedLine}</p>
+                ) : null}
+
+                {topPickSignals.length ? (
+                  <div className={`flex flex-wrap gap-2 ${whyPickedLine ? "mt-2" : ""}`}>
+                    {topPickSignals.map((label) => (
+                      <span
+                        key={`${product.id}-${label}`}
+                        className="rounded-full border border-black/10 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-black/55"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
             <p className="mt-5 max-w-2xl text-[15px] leading-7 text-black/80">{topPickSummary}</p>
 

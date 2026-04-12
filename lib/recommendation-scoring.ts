@@ -24,6 +24,7 @@ export const TOP_PICK_SCORING_WEIGHTS = {
   exactTextureMatch: 3,
   nearTextureMatch: 1,
   finishMatch: 1,
+  outdoorSunscreenBonus: 3,
 } as const;
 
 const CATEGORY_PRIORITY_BY_CONCERN: Record<string, Record<string, number>> = {
@@ -53,12 +54,15 @@ export type RecommendationAnswers = {
   skinType?: string | null;
   sensitivity?: string | null;
   mainConcern?: string | null;
+  concerns?: string[] | null;
   preferredTexture?: string | null;
   postWashFeeling?: string | null;
   afternoonSkinChange?: string | null;
   mostDislikedFeel?: string | null;
   environmentExposure?: string[] | null;
   cleansingFrequency?: string | null;
+  sunscreenIntent?: boolean | null;
+  explicitCategoryIntent?: string | null;
 };
 
 export type CanonicalRecommendationProduct = {
@@ -86,6 +90,7 @@ export type MatchedSignals = {
   texture_match: "exact" | "near" | "none";
   finish_match: boolean;
   preferred_finishes: string[];
+  outdoor_sunscreen_bonus: number;
 };
 
 export type ScoreBreakdown = {
@@ -96,6 +101,7 @@ export type ScoreBreakdown = {
   sensitivity_safe_bonus: number;
   texture_match: number;
   finish_match: number;
+  outdoor_sunscreen_bonus: number;
   total: number;
 };
 
@@ -244,6 +250,34 @@ function getSensitivitySafeBonus(answers: RecommendationAnswers, sensitivitySafe
     : TOP_PICK_SCORING_WEIGHTS.sensitivitySafeBonus;
 }
 
+function hasExplicitSunscreenIntent(answers: RecommendationAnswers): boolean {
+  return answers.sunscreenIntent === true || answers.explicitCategoryIntent === "sunscreen";
+}
+
+function getOutdoorSunscreenBonus(
+  answers: RecommendationAnswers,
+  product: CanonicalRecommendationProduct,
+): number {
+  if (product.category !== "sunscreen") {
+    return 0;
+  }
+
+  if (!Array.isArray(answers.environmentExposure) || !answers.environmentExposure.includes("outdoor")) {
+    return 0;
+  }
+
+  const sunscreenIntentByConcern = answers.mainConcern === "oiliness" || answers.mainConcern === "redness";
+  const sunscreenIntentByConcernSet =
+    Array.isArray(answers.concerns) &&
+    answers.concerns.some((concern) => concern === "oiliness" || concern === "redness");
+
+  if (!sunscreenIntentByConcern && !sunscreenIntentByConcernSet && !hasExplicitSunscreenIntent(answers)) {
+    return 0;
+  }
+
+  return TOP_PICK_SCORING_WEIGHTS.outdoorSunscreenBonus;
+}
+
 function buildWhyPicked(
   product: CanonicalRecommendationProduct,
   answers: RecommendationAnswers,
@@ -267,6 +301,10 @@ function buildWhyPicked(
 
   if (signals.finish_match) {
     reasons.push(`${normalizeCanonicalFinish(product.finish as string)} finish is less likely to fight the current skin rhythm.`);
+  }
+
+  if (signals.outdoor_sunscreen_bonus > 0) {
+    reasons.push("Outdoor exposure lifts sunscreen higher because daytime protection is directly in play.");
   }
 
   if (signals.sensitivity_safe) {
@@ -299,6 +337,7 @@ export function scoreCanonicalProduct(
   const preferredFinishes = getPreferredFinishes(answers);
   const textureMatch = getTextureMatch(product.texture as string, answers.preferredTexture);
   const finishMatch = preferredFinishes.includes(normalizeCanonicalFinish(product.finish as string));
+  const outdoorSunscreenBonus = getOutdoorSunscreenBonus(answers, product);
 
   const breakdown: ScoreBreakdown = {
     skin_type_match: matchedSkinType ? TOP_PICK_SCORING_WEIGHTS.skinTypeMatch : 0,
@@ -313,6 +352,7 @@ export function scoreCanonicalProduct(
           ? TOP_PICK_SCORING_WEIGHTS.nearTextureMatch
           : 0,
     finish_match: finishMatch ? TOP_PICK_SCORING_WEIGHTS.finishMatch : 0,
+    outdoor_sunscreen_bonus: outdoorSunscreenBonus,
     total: 0,
   };
 
@@ -323,7 +363,8 @@ export function scoreCanonicalProduct(
     breakdown.irritation_penalty +
     breakdown.sensitivity_safe_bonus +
     breakdown.texture_match +
-    breakdown.finish_match;
+    breakdown.finish_match +
+    breakdown.outdoor_sunscreen_bonus;
 
   const matchedSignals: MatchedSignals = {
     matched_skin_type: matchedSkinType,
@@ -335,6 +376,7 @@ export function scoreCanonicalProduct(
     texture_match: textureMatch,
     finish_match: finishMatch,
     preferred_finishes: preferredFinishes,
+    outdoor_sunscreen_bonus: outdoorSunscreenBonus,
   };
 
   return {
