@@ -1,12 +1,14 @@
-"use client";
+﻿"use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import UploadPreview from "@/components/UploadPreview";
 import SurveyForm from "@/components/SurveyForm";
 import SubmitButton from "@/components/SubmitButton";
 import ErrorMessage from "@/components/ErrorMessage";
+import { buildSkinProfileSummary } from "@/lib/skin-profile-summary";
 import {
   TEST_RESULT_PRESETS,
   FACE_LAB_TEST_PRESETS,
@@ -35,28 +37,21 @@ const previewCards = [
   {
     id: "skin-preview",
     eyebrow: "Skin Match Preview",
-    title: "Top Pick 중심 리포트",
+    title: "Top Pick 리포트",
     accent: "SKIN1004 Madagascar Centella Ampoule",
-    body: "유분과 자극 반응을 함께 눌러 주는 쪽으로 정리된 메인 추천 결과입니다.",
+    body: "유분과 자극 반응을 함께 본 메인 추천 결과입니다.",
     chips: ["Top Pick", "Low irritation", "Price $$"],
-    footer: "오후 유분과 붉은기 흐름을 먼저 다루는 리포트"
+    footer: "가장 먼저 볼 제품을 바로 정리한 결과"
   },
   {
     id: "face-preview",
     eyebrow: "Face Lab Preview",
     title: "스타일 확장 분석",
-    accent: "차분한 설득형 · Oval Shape",
-    body: "얼굴형, 분위기, 닮은꼴, 컬러 톤을 짧고 가볍게 이어서 보는 보조 분석입니다.",
+    accent: "차분한 인상 + Oval Shape",
+    body: "얼굴형과 분위기를 가볍게 넓혀 보는 보조 분석입니다.",
     chips: ["Face Shape", "Look-alike", "Color Tone"],
-    footer: "Skin Match 뒤에 가볍게 넓혀 보는 확장 결과"
+    footer: "Skin Match 다음에 이어서 보는 확장 결과"
   }
-];
-
-const featureCards = [
-  { title: "Skin Match", description: "피부 타입과 고민에 맞는 K-뷰티 제품 추천" },
-  { title: "Top Pick", description: "지금 가장 먼저 볼 1순위 제품 제안" },
-  { title: "Face Lab", description: "얼굴형, 분위기, 닮은꼴, 컬러 톤 확장 분석" },
-  { title: "Save & Compare", description: "결과 저장, 공유, 비교를 위한 흐름" }
 ];
 
 const faceLabFeatures = [
@@ -64,44 +59,33 @@ const faceLabFeatures = [
     id: "physiognomy",
     label: "Physiognomy",
     title: "Physiognomy",
-    description: "보이는 특징을 바탕으로 인상 해석을 정리합니다."
+    description: "보이는 구조를 기준으로 인상 해석을 정리합니다."
   },
   {
     id: "face_shape_hairstyle",
     label: "Face Shape & Hairstyle",
     title: "Face Shape & Hairstyle",
-    description: "얼굴형을 기준으로 어울리는 헤어 방향을 제안합니다."
+    description: "얼굴형을 기준으로 어울리는 스타일 방향을 봅니다."
   },
   {
     id: "lookalike_celebrities",
     label: "Look-alike Celebrities",
     title: "Look-alike Celebrities",
-    description: "비슷한 인상 흐름의 셀럽 레퍼런스를 보여줍니다."
+    description: "닮은 인상과 구조 포인트를 빠르게 봅니다."
   },
   {
     id: "color_tone_recommendation",
     label: "Color Tone Recommendation",
     title: "Color Tone Recommendation",
-    description: "톤 방향과 어울리는 색 흐름을 가볍게 정리합니다."
+    description: "컬러 톤 방향과 어울리는 범위를 정리합니다."
   }
 ];
 
 const faceFeatureSlots = [
-  { key: "eye", label: "Eye", icon: "👁", keywords: ["눈", "눈매", "시선"] },
+  { key: "eye", label: "Eye", icon: "👀", keywords: ["눈", "눈매", "시선"] },
   { key: "mouth", label: "Mouth", icon: "👄", keywords: ["입", "입꼬리", "입선"] },
-  { key: "jaw", label: "Jaw", icon: "🧭", keywords: ["턱", "턱선", "하관"] },
+  { key: "jaw", label: "Jaw", icon: "🗿", keywords: ["턱", "턱선", "하관"] },
   { key: "shape", label: "Face Shape", icon: "🪞", keywords: ["얼굴형", "윤곽", "비율", "형태"] }
-];
-
-const trustLines = [
-  "얼굴 이미지와 입력 정보를 바탕으로 결과를 생성합니다.",
-  "제품 추천은 현재 DB와 추천 로직을 함께 사용하며 결과는 참고용입니다."
-];
-
-const utilityItems = [
-  { title: "Skin Match", body: "메인 추천 결과를 빠르게 확인합니다." },
-  { title: "Top Pick", body: "가장 먼저 볼 제품 1개를 바로 보여줍니다." },
-  { title: "Face Lab", body: "스타일과 분위기를 넓게 보는 확장 분석입니다." }
 ];
 
 function buildFeatureBlocks(items = []) {
@@ -150,18 +134,43 @@ function scrollToId(id) {
 
 function CompactSectionHeader({ eyebrow, title, description }) {
   return (
-    <div className="space-y-2">
-      {eyebrow ? (
-        <p className="text-[11px] uppercase tracking-[0.2em] text-black/40">{eyebrow}</p>
-      ) : null}
-      <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">{title}</h2>
-      {description ? <p className="max-w-3xl text-sm leading-6 text-black/64">{description}</p> : null}
+      <div className="space-y-2">
+        {eyebrow ? (
+          <p className="text-[11px] uppercase tracking-[0.2em] text-black/40">{eyebrow}</p>
+        ) : null}
+        <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">{title}</h2>
+        {description ? <p className="max-w-3xl text-sm leading-6 text-black/64">{description}</p> : null}
+      </div>
+  );
+}
+
+function ProfileSummaryCard({ items }) {
+  if (!items?.length) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-[1.5rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f4e4cf_0%,#fff9f2_100%)] p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d5724]">당신의 피부 프로필</p>
+      <div className="mt-4 space-y-2.5">
+        {items.map((item) => (
+          <p key={item} className="text-sm leading-6 text-black/78">
+            ✔ {item}
+          </p>
+        ))}
+      </div>
+      <p className="mt-4 text-sm leading-6 text-black/64">
+        이 조건을 기준으로 가장 안정적인 루틴을 정리했습니다.
+      </p>
     </div>
   );
 }
 
 export default function HomePage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname?.startsWith("/en") ? "en" : "ko";
+  const isEnglish = locale === "en";
   const [activeTab, setActiveTab] = useState("skin");
   const [activeFaceFeature, setActiveFaceFeature] = useState("physiognomy");
   const [form, setForm] = useState(initialForm);
@@ -169,6 +178,7 @@ export default function HomePage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [profilePreview, setProfilePreview] = useState(null);
   const [faceLabLoading, setFaceLabLoading] = useState(false);
   const [faceLabError, setFaceLabError] = useState("");
   const [faceLabResult, setFaceLabResult] = useState(null);
@@ -186,12 +196,7 @@ export default function HomePage() {
       imageFile &&
       form.skinType &&
       form.sensitivity &&
-      form.mainConcern &&
-      form.cleansingFrequency &&
-      form.preferredTexture &&
-      form.postWashFeeling &&
-      form.afternoonSkinChange &&
-      form.mostDislikedFeel
+      form.mainConcern
     );
   }, [form, imageFile]);
 
@@ -227,6 +232,7 @@ export default function HomePage() {
       setImageFile(null);
       setPreviewUrl("");
       setFaceLabResult(null);
+      setProfilePreview(null);
       return;
     }
 
@@ -235,6 +241,7 @@ export default function HomePage() {
     setError("");
     setFaceLabError("");
     setFaceLabResult(null);
+    setProfilePreview(null);
   };
 
   const handleCheckboxChange = (value) => {
@@ -259,13 +266,14 @@ export default function HomePage() {
     setPreviewUrl("");
     setFaceLabResult(null);
     setFaceLabError("");
+    setProfilePreview(null);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!isValid) {
-      setError("사진 1장과 필수 설문 항목을 모두 입력해 주세요.");
+      setError("사진과 기본 입력 항목을 먼저 채워 주세요.");
       return;
     }
 
@@ -299,11 +307,14 @@ export default function HomePage() {
         })
       );
       sessionStorage.setItem("skinTestResult", JSON.stringify(data));
-      router.push("/result");
+      setProfilePreview(buildSkinProfileSummary(form));
+      setTimeout(() => {
+        router.push(locale === "en" ? "/en/result" : "/result");
+      }, 1400);
     } catch (submitError) {
       const message = submitError.message || "예상하지 못한 오류가 발생했습니다.";
       sessionStorage.removeItem("skinTestResult");
-      router.push(`/result?error=${encodeURIComponent(message)}`);
+      router.push(`${locale === "en" ? "/en/result" : "/result"}?error=${encodeURIComponent(message)}`);
     } finally {
       setIsLoading(false);
     }
@@ -574,88 +585,64 @@ export default function HomePage() {
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
       <div className="space-y-6 sm:space-y-8">
         <section className="overflow-hidden rounded-[2rem] border border-black/5 bg-[linear-gradient(145deg,#fffdf9_0%,#f7efe5_100%)] shadow-soft">
-          <div className="grid gap-6 px-5 py-7 sm:px-8 sm:py-9 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div>
-              <div className="inline-flex rounded-full border border-black/10 bg-white/85 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-black/55">
-                Skin Match First
-              </div>
-              <h1 className="mt-4 max-w-3xl text-[2.15rem] font-semibold tracking-tight text-ink sm:text-[3.4rem] sm:leading-[1.08]">
-                사진 한 장으로 받는 K-뷰티 · 스타일 추천 리포트
-              </h1>
-              <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/68 sm:text-lg">
-                피부 상태에 맞는 제품 추천부터 얼굴형, 분위기, 닮은꼴, 컬러 톤까지 한 번에 분석합니다.
-              </p>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => scrollToId("start-report")}
-                  className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-                >
-                  사진으로 시작하기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollToId("result-preview")}
-                  className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white/90 px-6 py-3 text-sm font-semibold text-black/72 transition hover:border-black/20 hover:bg-white"
-                >
-                  결과 예시 보기
-                </button>
-              </div>
-
-              <p className="mt-4 text-sm text-black/52">회원가입 없이 바로 테스트할 수 있습니다</p>
-            </div>
-
-            <div className="rounded-[1.6rem] border border-black/5 bg-white/88 p-4 sm:p-5">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-black/38">What You Get</p>
-              <div className="mt-4 space-y-3">
-                <div className="rounded-2xl bg-[#faf4ec] px-4 py-3">
-                  <p className="text-sm font-semibold text-ink">Skin Match가 메인 결과입니다</p>
-                  <p className="mt-1 text-sm leading-6 text-black/64">
-                    제품 추천과 Top Pick이 먼저 나오고, 바로 구매 판단까지 이어집니다.
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-[#faf8f2] px-4 py-3">
-                  <p className="text-sm font-semibold text-ink">Face Lab은 가볍게 넓혀 보는 확장 분석입니다</p>
-                  <p className="mt-1 text-sm leading-6 text-black/64">
-                    메인 결과 뒤에 스타일 방향과 인상 흐름을 덧붙여 보는 보조 모듈입니다.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="result-preview" className="space-y-4">
-          <CompactSectionHeader
-            eyebrow="Preview"
-            title="결과 예시"
-            description="실제 결과 화면이 어떤 느낌인지 빠르게 확인할 수 있습니다."
-          />
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            {previewCards.map((card) => (
-              <div
-                key={card.id}
-                className="rounded-[1.4rem] border border-black/5 bg-white/90 p-4 shadow-soft"
-              >
-                <p className="text-[11px] uppercase tracking-[0.18em] text-black/38">{card.eyebrow}</p>
-                <h3 className="mt-2 text-base font-semibold text-ink">{card.title}</h3>
-                <p className="mt-3 text-sm font-semibold leading-6 text-[#7d5724]">{card.accent}</p>
-                <p className="mt-2 text-sm leading-6 text-black/66">{card.body}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {card.chips.map((chip) => (
-                    <span
-                      key={chip}
-                      className="rounded-full border border-black/10 bg-[#faf6f0] px-3 py-1 text-[11px] font-medium text-black/58"
+          <div className="px-5 py-6 sm:px-8 sm:py-8">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
+              <div className="max-w-3xl">
+                <div className="mb-4 flex gap-2">
+                  {[
+                    { code: "ko", label: "한국어", href: "/" },
+                    { code: "en", label: "English", href: "/en" }
+                  ].map((item) => (
+                    <Link
+                      key={item.code}
+                      href={item.href}
+                      className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                        locale === item.code
+                          ? "bg-[#1f1811] text-white"
+                          : "border border-black/10 bg-white/80 text-black/60 hover:border-black/20"
+                      }`}
                     >
-                      {chip}
-                    </span>
+                      {item.label}
+                    </Link>
                   ))}
                 </div>
-                <p className="mt-3 text-xs font-medium text-black/62">{card.footer}</p>
+                <div className="inline-flex rounded-full border border-black/10 bg-white/85 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-black/55">
+                  Skin Match First
+                </div>
+                <h1 className="mt-4 max-w-3xl text-[2.15rem] font-semibold tracking-tight text-ink sm:text-[3.4rem] sm:leading-[1.08]">
+                  내 피부에 맞는 K-뷰티 루틴, 지금 바로 진단
+                </h1>
+                <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/68 sm:text-lg">
+                  사진 1장과 몇 가지 질문으로 피부 흐름에 맞는 제품부터 루틴까지 정리해드립니다.
+                </p>
+
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    onClick={() => scrollToId("start-report")}
+                    className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                  >
+                    진단 시작하기
+                  </button>
+                </div>
+
+                <p className="mt-3 text-sm text-black/52">회원가입 없이 바로 테스트할 수 있습니다</p>
               </div>
-            ))}
+
+              <div className="rounded-[1.6rem] border border-black/6 bg-white/78 p-4 backdrop-blur">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-black/40">What You Get</p>
+                <div className="mt-3 space-y-3">
+                  <div className="rounded-2xl bg-[#faf6f0] px-4 py-3">
+                    <p className="text-xs text-black/42">Skin Match</p>
+                    <p className="mt-1 text-sm font-semibold text-ink">Top Pick + 루틴 추천</p>
+                  </div>
+                  <div className="rounded-2xl bg-[#faf6f0] px-4 py-3">
+                    <p className="text-xs text-black/42">Face Lab</p>
+                    <p className="mt-1 text-sm font-semibold text-ink">얼굴형, 분위기, 컬러 톤</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -663,14 +650,12 @@ export default function HomePage() {
           id="start-report"
           className="rounded-[2rem] border border-black/5 bg-white/88 p-5 shadow-soft sm:p-7"
         >
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-black/40">Start Report</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">
-                사진으로 바로 리포트를 시작하세요
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-black/64">
-                Skin Match가 메인 결과이고, Face Lab은 같은 사진으로 이어서 볼 수 있는 확장 분석입니다.
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">기본 피부 상태를 먼저 알려주세요</h2>
+              <p className="mt-2 text-sm leading-6 text-black/58">
+                Skin Match를 먼저 보고, 필요하면 Face Lab까지 이어서 확인하면 됩니다.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {TEST_RESULT_PRESETS.map((preset) => (
@@ -685,12 +670,9 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            <div className="inline-flex rounded-full border border-black/10 bg-[#faf4ec] px-4 py-2 text-xs font-medium text-black/60">
-              Skin Match 우선 · Face Lab 확장
-            </div>
           </div>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="mt-5">
             <section className="rounded-[1.5rem] border border-black/5 bg-[#fffdf9] p-4 sm:p-5">
               <div className="flex flex-wrap gap-2">
                 {tabs.map((tab) => {
@@ -720,23 +702,22 @@ export default function HomePage() {
                     previewUrl={previewUrl}
                     onChange={handleImageChange}
                     onClear={clearImage}
+                    locale={locale}
                   />
                   <SurveyForm
                     form={form}
                     onChange={handleChange}
                     onCheckboxChange={handleCheckboxChange}
+                    locale={locale}
                   />
                   <ErrorMessage message={error} />
                   <SubmitButton disabled={isLoading}>
-                    {isLoading ? "결과 생성 중..." : "결과 생성하기"}
+                    {isLoading ? "진단 준비 중..." : "진단 시작하기"}
                   </SubmitButton>
+                  {profilePreview ? <ProfileSummaryCard items={profilePreview} /> : null}
                 </form>
               ) : (
                 <div className="mt-5 space-y-5">
-                  <div className="rounded-2xl border border-[#d6b487]/70 bg-[linear-gradient(135deg,#f8ebd9_0%,#fffaf3_100%)] px-4 py-4 text-sm leading-6 text-black/68">
-                    Face Lab은 메인 추천 뒤에 이어서 보는 확장 리포트입니다. 사진은 그대로 쓰고 원하는 항목만 가볍게 확인할 수 있습니다.
-                  </div>
-
                   <div className="flex flex-wrap gap-2">
                     {FACE_LAB_TEST_PRESETS.map((preset) => (
                       <button
@@ -755,6 +736,7 @@ export default function HomePage() {
                     previewUrl={previewUrl}
                     onChange={handleImageChange}
                     onClear={clearImage}
+                    locale={locale}
                   />
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -773,7 +755,6 @@ export default function HomePage() {
                           }`}
                         >
                           <p className="text-sm font-semibold text-ink">{feature.label}</p>
-                          <p className="mt-1 text-sm leading-6 text-black/64">{feature.description}</p>
                         </button>
                       );
                     })}
@@ -786,7 +767,7 @@ export default function HomePage() {
                     disabled={faceLabLoading}
                     className="inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {faceLabLoading ? "Face Lab 분석 중..." : "Face Lab 분석하기"}
+                    {faceLabLoading ? "Face Lab 분석 중..." : "Face Lab 보기"}
                   </button>
 
                   {faceLabLoading ? (
@@ -828,58 +809,7 @@ export default function HomePage() {
                 </div>
               )}
             </section>
-
-            <aside>
-              <div className="rounded-[1.5rem] border border-black/5 bg-[#faf5ee] p-4 sm:p-5">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-black/38">Quick Guide</p>
-                <div className="mt-4 space-y-3">
-                  {utilityItems.map((item) => (
-                    <div key={item.title} className="rounded-2xl bg-white/85 px-4 py-3">
-                      <p className="text-sm font-semibold text-ink">{item.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-black/64">{item.body}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
           </div>
-        </section>
-
-        <section className="space-y-4">
-          <CompactSectionHeader
-            eyebrow="Value"
-            title="한 번의 업로드로 피부와 스타일을 함께 분석합니다"
-            description="Skin Analysis는 실제 추천과 제품 선택에 집중하고, Face Lab은 얼굴형과 분위기를 더 넓게 볼 수 있도록 설계했습니다."
-          />
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {featureCards.map((card) => (
-              <div
-                key={card.title}
-                className="rounded-[1.35rem] border border-black/5 bg-white/90 px-4 py-4 shadow-soft"
-              >
-                <p className="text-base font-semibold text-ink">{card.title}</p>
-                <p className="mt-2 text-sm leading-6 text-black/64">{card.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-[1.5rem] border border-black/5 bg-white/88 px-5 py-4 shadow-soft">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-black/40">사용 방법</p>
-          <p className="mt-3 text-sm leading-7 text-black/68 sm:text-[15px]">
-            사진 업로드 <span className="mx-2 text-black/30">→</span> 결과 확인{" "}
-            <span className="mx-2 text-black/30">→</span> 추천 제품과 스타일 확인{" "}
-            <span className="mx-2 text-black/30">→</span> 저장하거나 공유하기
-          </p>
-        </section>
-
-        <section className="space-y-2 px-1">
-          {trustLines.map((line) => (
-            <p key={line} className="text-sm leading-6 text-black/48">
-              {line}
-            </p>
-          ))}
         </section>
 
         <section className="overflow-hidden rounded-[1.8rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f2e3cf_0%,#fff8f1_100%)] px-5 py-7 shadow-soft sm:px-8 sm:py-8">
@@ -887,11 +817,8 @@ export default function HomePage() {
             <div className="max-w-2xl">
               <p className="text-[11px] uppercase tracking-[0.2em] text-[#7d5724]">Final CTA</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">
-                지금 내 얼굴로 바로 확인해보세요
+                지금 바로 시작해보세요
               </h2>
-              <p className="mt-2 text-sm leading-6 text-black/68">
-                피부 추천부터 Face Lab 결과까지 사진 한 장으로 바로 확인할 수 있습니다.
-              </p>
             </div>
 
             <button
@@ -899,7 +826,7 @@ export default function HomePage() {
               onClick={() => scrollToId("start-report")}
               className="inline-flex items-center justify-center rounded-full bg-[#1f1811] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
             >
-              무료로 시작하기
+              진단 시작하기
             </button>
           </div>
         </section>
@@ -907,3 +834,10 @@ export default function HomePage() {
     </main>
   );
 }
+
+
+
+
+
+
+

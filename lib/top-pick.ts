@@ -4,6 +4,7 @@ import {
   TOP_PICK_SCORING_WEIGHTS,
   buildSampleScoringInput,
   compareRankedProducts,
+  normalizeRecommendationAnswers,
   normalizeCanonicalFinish,
   normalizeCanonicalTexture,
   scoreCanonicalProduct,
@@ -32,27 +33,27 @@ function buildLabels(product: RankedRecommendationProduct, featured: boolean): s
   const labels: string[] = [];
 
   if (product.matched_signals.matched_concerns.length > 0) {
-    labels.push("Concern Match");
+    labels.push("고민 일치");
   }
 
   if (product.matched_signals.matched_skin_type) {
-    labels.push("Skin Match");
+    labels.push("피부 타입 일치");
   }
 
   if (product.matched_signals.texture_match === "exact") {
-    labels.push("Texture Match");
+    labels.push("사용감 일치");
   } else if (product.matched_signals.texture_match === "near") {
-    labels.push("Texture Near Match");
+    labels.push("사용감 근접");
   }
 
   if (product.matched_signals.sensitivity_safe) {
-    labels.push("Sensitive Safe");
+    labels.push("민감 피부 우호");
   } else if (product.matched_signals.irritation_risk === "low") {
-    labels.push("Low Irritation");
+    labels.push("저자극 축");
   }
 
   if (product.matched_signals.finish_match) {
-    labels.push("Finish Match");
+    labels.push("마무리감 일치");
   }
 
   return labels.slice(0, featured ? 3 : 2);
@@ -63,7 +64,7 @@ function buildReason(product: RankedRecommendationProduct): string {
     return product.why_picked.slice(0, 2).join(" ");
   }
 
-  return `${product.brand} ${product.name} has the steadiest overall score profile for the current inputs.`;
+  return `${product.brand} ${product.name}이 현재 입력 기준에서 전체 점수 균형이 가장 안정적입니다.`;
 }
 
 function buildComparisonReason(
@@ -71,30 +72,30 @@ function buildComparisonReason(
   runnerUp: RankedRecommendationProduct | null,
 ): string {
   if (!runnerUp) {
-    return "It has the steadiest overall score balance for the current inputs.";
+    return "현재 입력 기준에서 전체 점수 균형이 가장 안정적입니다.";
   }
 
   if (product.matched_signals.matched_concerns.length > runnerUp.matched_signals.matched_concerns.length) {
-    return "It targets the main concern more directly, so the first visible difference should arrive sooner.";
+    return "주요 고민에 더 직접적으로 맞닿아 있어서 체감 차이가 먼저 오기 좋습니다.";
   }
 
   if (product.score_breakdown.texture_match > runnerUp.score_breakdown.texture_match) {
-    return "Its texture sits closer to the preferred feel, so layering should stay easier.";
+    return "선호 사용감에 더 가까워서 레이어링 부담이 덜합니다.";
   }
 
   if (product.score_breakdown.irritation_penalty > runnerUp.score_breakdown.irritation_penalty) {
-    return "Its lower irritation risk makes the routine easier to keep using on reactive days.";
+    return "자극 리스크가 더 낮아 예민한 날에도 루틴을 이어가기 쉽습니다.";
   }
 
   if (Number(product.matched_signals.sensitivity_safe) > Number(runnerUp.matched_signals.sensitivity_safe)) {
-    return "Its sensitivity-safe profile lowers the risk of routine drop-off with repeat use.";
+    return "민감 피부 우호성이 더 높아서 꾸준히 쓰기 편한 쪽입니다.";
   }
 
   if (Number(product.matched_signals.finish_match) > Number(runnerUp.matched_signals.finish_match)) {
-    return "Its finish sits closer to the preferred daily feel, so residue conflict should stay lower.";
+    return "일상 선호 마무리감에 더 가까워 잔여감 충돌이 적습니다.";
   }
 
-  return "Within the same category, its total score profile is still more stable for the current inputs.";
+  return "같은 카테고리 안에서도 현재 입력 기준 점수 균형이 더 안정적입니다.";
 }
 
 function decorateProduct(
@@ -103,6 +104,8 @@ function decorateProduct(
   runnerUp: RankedRecommendationProduct | null,
   featured = false,
 ): DecoratedRecommendationProduct {
+  const normalizedAnswers = normalizeRecommendationAnswers(answers);
+
   return {
     ...product,
     step: CATEGORY_LABELS[product.category] || product.category,
@@ -110,9 +113,9 @@ function decorateProduct(
     reason: buildReason(product),
     comparison_reason: buildComparisonReason(product, runnerUp),
     explanation_context: {
-      concern: answers.mainConcern || null,
-      preferredTexture: answers.preferredTexture || null,
-      skinType: answers.skinType || null,
+      concern: normalizedAnswers.mainConcern || null,
+      preferredTexture: normalizedAnswers.preferredTexture || null,
+      skinType: normalizedAnswers.skinType || null,
     },
   };
 }

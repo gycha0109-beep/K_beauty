@@ -5,6 +5,21 @@ import { buildOptionalSkinNote, buildRecommendationBundle } from "@/lib/recommen
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
 const X_TITLE = process.env.OPENROUTER_X_TITLE || "K-Beauty AI Skin Test";
+const OPENROUTER_MODEL = "openai/gpt-4o-mini";
+const OPENROUTER_MAX_TOKENS = 1200;
+
+function previewText(value, maxLength = 280) {
+  if (!value) {
+    return "";
+  }
+
+  const text = String(value).replace(/\s+/g, " ").trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+function logAnalyze(stage, payload = {}) {
+  console.log(`[analyze] ${stage}`, payload);
+}
 
 function createJsonSchemaPrompt(productCount) {
   return `
@@ -234,6 +249,7 @@ function buildSelectedProductsContext(recommendation) {
     current_reason: product.reason,
     current_comparison_reason: product.comparison_reason,
     why_picked: product.why_picked,
+    caution_note: product.caution_note,
     matched_signals: product.matched_signals,
     explanation_context: product.explanation_context,
     score_breakdown: product.score_breakdown
@@ -282,17 +298,56 @@ function applyExplanationBundle(recommendation, explanationItems) {
 }
 
 function buildUserContext(formInput) {
+  const mainConcerns = Array.isArray(formInput.mainConcerns) && formInput.mainConcerns.length
+    ? formInput.mainConcerns.join(", ")
+    : formInput.mainConcern;
+
   return [
     `- 피부 타입: ${formInput.skinType}`,
     `- 민감도: ${formInput.sensitivity}`,
-    `- 주요 고민: ${formInput.mainConcern}`,
+    `- 주요 고민: ${mainConcerns}`,
     `- 세안 빈도: ${formInput.cleansingFrequency}`,
     `- 선호 제형: ${formInput.preferredTexture}`,
     `- 세안 후 느낌: ${formInput.postWashFeeling}`,
     `- 오후 피부 변화: ${formInput.afternoonSkinChange}`,
     `- 환경 노출: ${(formInput.environmentExposure || []).join(", ") || "없음"}`,
-    `- 피하고 싶은 사용감: ${formInput.mostDislikedFeel}`
+    `- 피하고 싶은 사용감: ${formInput.mostDislikedFeel}`,
+    `- 야외 노출 컨텍스트: ${formInput.outdoorExposure ? "있음" : "없음"}`,
+    `- 매우 예민한 시기: ${formInput.verySensitivePeriod ? "예" : "아니오"}`
   ].join("\n");
+}
+
+function parseBooleanField(value) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
+  return null;
+}
+
+function parseJsonArrayField(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function POST(request) {
@@ -300,20 +355,30 @@ export async function POST(request) {
     const formData = await request.formData();
     const image = formData.get("image");
     const skinType = formData.get("skinType");
-    const sensitivity = formData.get("sensitivity");
+    const sensitivity =
+      formData.get("sensitivityLevel") || formData.get("sensitivity");
     const mainConcern = formData.get("mainConcern");
+    const mainConcerns = parseJsonArrayField(formData.get("mainConcerns"));
     const cleansingFrequency = formData.get("cleansingFrequency");
-    const preferredTexture = formData.get("preferredTexture");
-    const postWashFeeling = formData.get("postWashFeeling");
-    const afternoonSkinChange = formData.get("afternoonSkinChange");
-    const environmentExposure = JSON.parse(formData.get("environmentExposure") || "[]");
-    const mostDislikedFeel = formData.get("mostDislikedFeel");
+    const preferredTexture =
+      formData.get("texturePreference") || formData.get("preferredTexture");
+    const postWashFeeling =
+      formData.get("postCleanseFeel") || formData.get("postWashFeeling");
+    const afternoonSkinChange =
+      formData.get("afternoonState") || formData.get("afternoonSkinChange");
+    const environmentExposure = parseJsonArrayField(formData.get("environmentExposure"));
+    const mostDislikedFeel =
+      formData.get("dislikedFeel") || formData.get("mostDislikedFeel");
+    const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
+    const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
+    const resolvedMainConcern =
+      (typeof mainConcern === "string" && mainConcern) || mainConcerns[0] || "";
 
     if (
       !image ||
       !skinType ||
       !sensitivity ||
-      !mainConcern ||
+      !resolvedMainConcern ||
       !cleansingFrequency ||
       !preferredTexture ||
       !postWashFeeling ||
@@ -329,13 +394,19 @@ export async function POST(request) {
     const formInput = {
       skinType,
       sensitivity,
-      mainConcern,
+      mainConcern: resolvedMainConcern,
+      mainConcerns: mainConcerns.length ? mainConcerns : undefined,
       cleansingFrequency,
       preferredTexture,
       postWashFeeling,
       afternoonSkinChange,
       environmentExposure,
-      mostDislikedFeel
+      mostDislikedFeel,
+      outdoorExposure:
+        typeof outdoorExposure === "boolean"
+          ? outdoorExposure
+          : environmentExposure.includes("outdoor"),
+      verySensitivePeriod: Boolean(verySensitivePeriod)
     };
 
     const recommendation = await buildRecommendationBundle(formInput);
@@ -348,7 +419,22 @@ export async function POST(request) {
     );
     const apiKey = process.env.OPENROUTER_API_KEY;
 
+    logAnalyze("request:prepared", {
+      hasApiKey: Boolean(apiKey),
+      model: OPENROUTER_MODEL,
+      maxTokens: OPENROUTER_MAX_TOKENS,
+      referer: HTTP_REFERER,
+      title: X_TITLE,
+      mainConcern: formInput.mainConcern,
+      skinType: formInput.skinType,
+      selectedProductCount: recommendation.products?.length || 0
+    });
+
     if (!apiKey) {
+      logAnalyze("fallback:missing_api_key", {
+        env: process.env.VERCEL ? "vercel" : "local"
+      });
+
       return NextResponse.json({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
@@ -401,6 +487,13 @@ export async function POST(request) {
       });
     }
 
+    logAnalyze("openrouter:fetch:start", {
+      model: OPENROUTER_MODEL,
+      maxTokens: OPENROUTER_MAX_TOKENS,
+      hasImage: Boolean(imageDataUrl),
+      env: process.env.VERCEL ? "vercel" : "local"
+    });
+
     const response = await fetch(OPENROUTER_URL, {
       method: "POST",
       headers: {
@@ -410,7 +503,9 @@ export async function POST(request) {
         "X-Title": X_TITLE
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: OPENROUTER_MODEL,
+        max_tokens: OPENROUTER_MAX_TOKENS,
+        temperature: 0.4,
         response_format: { type: "json_object" },
         messages: [
           {
@@ -427,7 +522,19 @@ export async function POST(request) {
 
     const { data, rawText, status, ok } = await readOpenRouterResponse(response);
 
+    logAnalyze("openrouter:fetch:end", {
+      status,
+      ok,
+      errorPreview: previewText(data?.error?.message || data?.error || rawText)
+    });
+
     if (!ok) {
+      logAnalyze("fallback:openrouter_non_ok", {
+        status,
+        bodyPreview: previewText(rawText),
+        errorPreview: previewText(data?.error?.message || data?.error)
+      });
+
       return NextResponse.json({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
@@ -450,7 +557,17 @@ export async function POST(request) {
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
 
+    logAnalyze("openrouter:content:received", {
+      hasContent: Boolean(rawContent),
+      contentPreview: previewText(rawContent)
+    });
+
     if (!rawContent) {
+      logAnalyze("fallback:empty_content", {
+        status,
+        bodyPreview: previewText(rawText)
+      });
+
       return NextResponse.json({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
@@ -468,6 +585,12 @@ export async function POST(request) {
 
     try {
       const parsed = safeParse(rawContent);
+      logAnalyze("openrouter:parse:success", {
+        summaryPreview: previewText(parsed?.summary),
+        explanationCount: Array.isArray(parsed?.productExplanations)
+          ? parsed.productExplanations.length
+          : 0
+      });
       const normalized = normalizeResult(parsed);
       const explainedRecommendation = applyExplanationBundle(
         recommendation,
@@ -492,6 +615,11 @@ export async function POST(request) {
         }
       });
     } catch (parseError) {
+      logAnalyze("fallback:parse_error", {
+        message: parseError.message,
+        contentPreview: previewText(rawContent)
+      });
+
       return NextResponse.json({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
@@ -510,6 +638,11 @@ export async function POST(request) {
       });
     }
   } catch (error) {
+    logAnalyze("fallback:catch", {
+      message: error.message,
+      stack: previewText(error.stack, 600)
+    });
+
     return NextResponse.json(
       { error: error.message || "서버 오류가 발생했습니다." },
       { status: 500 }

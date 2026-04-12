@@ -7,24 +7,42 @@ export const CATEGORY_ORDER = [
 ] as const;
 
 export const CATEGORY_LABELS: Record<string, string> = {
-  cleanser: "Cleanser",
-  toner_essence: "Toner / Essence",
-  serum: "Serum",
-  moisturizer: "Moisturizer",
-  sunscreen: "Sunscreen",
+  cleanser: "클렌저",
+  toner_essence: "토너 / 에센스",
+  serum: "세럼",
+  moisturizer: "보습제",
+  sunscreen: "선크림",
 };
 
 export const TOP_PICK_SCORING_WEIGHTS = {
   skinTypeMatch: 4,
-  concernOverlap: 6,
+  primaryConcernMatch: 12,
+  secondaryConcernMatch: 8,
   categoryPriorityUnit: 2,
-  lowIrritationBonus: 1,
+  highSensitivityLowRiskBonus: 14,
+  highSensitivityMediumRiskPenalty: -2,
+  highSensitivityHighRiskPenalty: -14,
+  mediumSensitivityLowRiskBonus: 4,
+  mediumSensitivityMediumRiskPenalty: 0,
+  mediumSensitivityHighRiskPenalty: -6,
+  lowSensitivityLowRiskBonus: 2,
+  lowSensitivityMediumRiskPenalty: 0,
+  lowSensitivityHighRiskPenalty: -3,
   sensitivitySafeBonus: 2,
   sensitivitySafeHighBonus: 3,
-  exactTextureMatch: 3,
-  nearTextureMatch: 1,
+  exactTextureMatch: 10,
+  nearTextureMatch: 5,
+  oppositeTexturePenalty: -6,
   finishMatch: 1,
+  dislikedFeelStrongPenalty: -8,
+  dislikedFeelMediumPenalty: -6,
+  postCleanseAdjustment: 5,
+  afternoonStateAdjustment: 4,
   outdoorSunscreenBonus: 3,
+  verySensitiveLowIrritationBonus: 4,
+  verySensitiveHighRiskPenalty: -4,
+  verySensitiveConcernBonus: 2,
+  verySensitiveSafeBonus: 2,
 } as const;
 
 const CATEGORY_PRIORITY_BY_CONCERN: Record<string, Record<string, number>> = {
@@ -44,25 +62,92 @@ const TEXTURE_NEIGHBORS: Record<string, string[]> = {
   cream: ["lotion"],
 };
 
+const TEXTURE_OPPOSITES: Record<string, string[]> = {
+  watery: ["cream"],
+  gel: ["cream"],
+  lotion: [],
+  cream: ["watery", "gel"],
+};
+
 const IRRITATION_RANK: Record<string, number> = {
   low: 0,
   medium: 1,
   high: 2,
 };
 
+const VERY_SENSITIVE_CONCERNS = new Set(["redness", "barrier", "dehydration"]);
+const SUNSCREEN_INTENT_CONCERNS = new Set(["oiliness", "redness"]);
+
+const CONCERN_LABELS: Record<string, string> = {
+  oiliness: "유분",
+  pores: "모공",
+  dehydration: "수분 부족",
+  acne: "트러블",
+  uneven_tone: "톤 균일도",
+  redness: "붉은기",
+  barrier: "장벽",
+};
+
+const TEXTURE_LABELS: Record<string, string> = {
+  watery: "워터리한 사용감",
+  gel: "젤 타입 사용감",
+  lotion: "로션 타입 사용감",
+  cream: "크림 타입 사용감",
+};
+
+const FINISH_LABELS: Record<string, string> = {
+  fresh: "산뜻한 마무리",
+  natural: "내추럴한 마무리",
+  dewy: "촉촉한 마무리",
+  soft_matte: "보송한 마무리",
+};
+
+const SKIN_TYPE_LABELS: Record<string, string> = {
+  oily: "지성 피부",
+  dry: "건성 피부",
+  combination: "복합성 피부",
+  sensitive: "민감 피부",
+  not_sure: "현재 피부",
+};
+
 export type RecommendationAnswers = {
   skinType?: string | null;
   sensitivity?: string | null;
+  sensitivityLevel?: string | null;
   mainConcern?: string | null;
+  mainConcerns?: string[] | null;
   concerns?: string[] | null;
   preferredTexture?: string | null;
+  texturePreference?: string | null;
   postWashFeeling?: string | null;
+  postCleanseFeel?: string | null;
   afternoonSkinChange?: string | null;
+  afternoonState?: string | null;
   mostDislikedFeel?: string | null;
+  dislikedFeel?: string | null;
   environmentExposure?: string[] | null;
+  outdoorExposure?: boolean | null;
   cleansingFrequency?: string | null;
   sunscreenIntent?: boolean | null;
   explicitCategoryIntent?: string | null;
+  verySensitivePeriod?: boolean | null;
+};
+
+export type NormalizedRecommendationAnswers = {
+  skinType: string | null;
+  sensitivity: string | null;
+  mainConcern: string | null;
+  mainConcerns: string[];
+  preferredTexture: string | null;
+  postWashFeeling: string | null;
+  afternoonSkinChange: string | null;
+  mostDislikedFeel: string | null;
+  environmentExposure: string[];
+  outdoorExposure: boolean;
+  cleansingFrequency: string | null;
+  sunscreenIntent: boolean;
+  explicitCategoryIntent: string | null;
+  verySensitivePeriod: boolean;
 };
 
 export type CanonicalRecommendationProduct = {
@@ -83,25 +168,37 @@ export type CanonicalRecommendationProduct = {
 export type MatchedSignals = {
   matched_skin_type: string | null;
   matched_concerns: string[];
+  primary_concern: string | null;
+  secondary_concern: string | null;
+  matched_primary_concern: boolean;
+  matched_secondary_concern: boolean;
   category_priority: number;
   irritation_risk: string;
   irritation_penalty: number;
   sensitivity_safe: boolean;
-  texture_match: "exact" | "near" | "none";
+  texture_match: "exact" | "near" | "opposite" | "none";
   finish_match: boolean;
   preferred_finishes: string[];
+  disliked_feel_conflict: boolean;
   outdoor_sunscreen_bonus: number;
+  very_sensitive_period_bonus: number;
 };
 
 export type ScoreBreakdown = {
   skin_type_match: number;
+  primary_concern_match: number;
+  secondary_concern_match: number;
   concerns_overlap: number;
   category_priority: number;
   irritation_penalty: number;
   sensitivity_safe_bonus: number;
   texture_match: number;
   finish_match: number;
+  disliked_feel_penalty: number;
+  post_cleanse_adjustment: number;
+  afternoon_state_adjustment: number;
   outdoor_sunscreen_bonus: number;
+  very_sensitive_period_bonus: number;
   total: number;
 };
 
@@ -110,10 +207,107 @@ export type RankedRecommendationProduct = CanonicalRecommendationProduct & {
   why_picked: string[];
   matched_signals: MatchedSignals;
   score_breakdown: ScoreBreakdown;
+  caution_note: string | null;
 };
+
+function normalizeString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function normalizeStringArray(values: unknown): string[] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  const unique = new Set<string>();
+
+  for (const value of values) {
+    const normalized = normalizeString(value);
+
+    if (normalized) {
+      unique.add(normalized);
+    }
+  }
+
+  return Array.from(unique);
+}
 
 function includesValue(list: unknown, value: string | null | undefined): boolean {
   return Array.isArray(list) && Boolean(value) && list.includes(value);
+}
+
+function getConcernList(answers: RecommendationAnswers): string[] {
+  const mainConcerns = normalizeStringArray(answers.mainConcerns);
+
+  if (mainConcerns.length > 0) {
+    return mainConcerns.slice(0, 2);
+  }
+
+  const fallbackConcerns = normalizeStringArray(answers.concerns);
+
+  if (fallbackConcerns.length > 0) {
+    return fallbackConcerns.slice(0, 2);
+  }
+
+  const mainConcern = normalizeString(answers.mainConcern);
+  return mainConcern ? [mainConcern] : [];
+}
+
+function getCategoryLabel(category: string | null | undefined): string {
+  return CATEGORY_LABELS[category || ""] || category || "이 제품";
+}
+
+function getConcernLabel(concern: string | null | undefined): string {
+  return CONCERN_LABELS[concern || ""] || concern || "피부 고민";
+}
+
+function getTextureLabel(texture: string | null | undefined): string {
+  return TEXTURE_LABELS[normalizeCanonicalTexture(texture)] || "사용감";
+}
+
+function getFinishLabel(finish: string | null | undefined): string {
+  return FINISH_LABELS[normalizeCanonicalFinish(finish)] || "마무리감";
+}
+
+function getSkinTypeLabel(skinType: string | null | undefined): string {
+  return SKIN_TYPE_LABELS[skinType || ""] || skinType || "현재 피부";
+}
+
+export function normalizeRecommendationAnswers(
+  answers: RecommendationAnswers,
+): NormalizedRecommendationAnswers {
+  const mainConcerns = getConcernList(answers);
+  const environmentExposure = normalizeStringArray(answers.environmentExposure);
+  const outdoorExposure =
+    typeof answers.outdoorExposure === "boolean"
+      ? answers.outdoorExposure
+      : environmentExposure.includes("outdoor");
+
+  return {
+    skinType: normalizeString(answers.skinType),
+    sensitivity: normalizeString(answers.sensitivityLevel || answers.sensitivity) || "medium",
+    mainConcern: mainConcerns[0] || null,
+    mainConcerns,
+    preferredTexture:
+      normalizeString(answers.texturePreference || answers.preferredTexture),
+    postWashFeeling:
+      normalizeString(answers.postCleanseFeel || answers.postWashFeeling),
+    afternoonSkinChange:
+      normalizeString(answers.afternoonState || answers.afternoonSkinChange),
+    mostDislikedFeel:
+      normalizeString(answers.dislikedFeel || answers.mostDislikedFeel),
+    environmentExposure,
+    outdoorExposure,
+    cleansingFrequency: normalizeString(answers.cleansingFrequency),
+    sunscreenIntent: Boolean(answers.sunscreenIntent),
+    explicitCategoryIntent: normalizeString(answers.explicitCategoryIntent),
+    verySensitivePeriod: Boolean(answers.verySensitivePeriod),
+  };
 }
 
 export function normalizeCanonicalTexture(value: string | null | undefined): string {
@@ -136,7 +330,10 @@ export function normalizeCanonicalFinish(value: string | null | undefined): stri
   return value || "natural";
 }
 
-export function getCategoryPriority(category: string, mainConcern: string | null | undefined): number {
+export function getCategoryPriority(
+  category: string,
+  mainConcern: string | null | undefined,
+): number {
   if (!mainConcern) {
     return 0;
   }
@@ -144,9 +341,11 @@ export function getCategoryPriority(category: string, mainConcern: string | null
   return CATEGORY_PRIORITY_BY_CONCERN[mainConcern]?.[category] ?? 0;
 }
 
-function getPreferredFinishes(answers: RecommendationAnswers): string[] {
+function getPreferredFinishes(answers: NormalizedRecommendationAnswers): string[] {
   const finishes = new Set<string>();
-  const preferredTexture = normalizeCanonicalTexture(answers.preferredTexture || undefined);
+  const preferredTexture = answers.preferredTexture
+    ? normalizeCanonicalTexture(answers.preferredTexture)
+    : null;
 
   if (preferredTexture === "watery" || preferredTexture === "gel") {
     finishes.add("fresh");
@@ -177,6 +376,11 @@ function getPreferredFinishes(answers: RecommendationAnswers): string[] {
     finishes.add("soft_matte");
   }
 
+  if (answers.mostDislikedFeel === "drying") {
+    finishes.add("natural");
+    finishes.add("dewy");
+  }
+
   if (finishes.size === 0) {
     finishes.add("natural");
   }
@@ -187,7 +391,11 @@ function getPreferredFinishes(answers: RecommendationAnswers): string[] {
 function getTextureMatch(
   productTexture: string | null | undefined,
   preferredTexture: string | null | undefined,
-): "exact" | "near" | "none" {
+): "exact" | "near" | "opposite" | "none" {
+  if (!preferredTexture) {
+    return "none";
+  }
+
   const normalizedProductTexture = normalizeCanonicalTexture(productTexture);
   const normalizedPreferredTexture = normalizeCanonicalTexture(preferredTexture);
 
@@ -199,48 +407,74 @@ function getTextureMatch(
     return "near";
   }
 
+  if ((TEXTURE_OPPOSITES[normalizedPreferredTexture] || []).includes(normalizedProductTexture)) {
+    return "opposite";
+  }
+
   return "none";
 }
 
-function getIrritationPenalty(answers: RecommendationAnswers, irritationRisk: string): number {
-  const sensitivity = answers.sensitivity || "medium";
-
-  if (sensitivity === "high") {
-    if (irritationRisk === "high") {
-      return -8;
-    }
-
-    if (irritationRisk === "medium") {
-      return -4;
-    }
-
-    return TOP_PICK_SCORING_WEIGHTS.lowIrritationBonus;
+function getTextureScore(textureMatch: MatchedSignals["texture_match"]): number {
+  if (textureMatch === "exact") {
+    return TOP_PICK_SCORING_WEIGHTS.exactTextureMatch;
   }
 
-  if (sensitivity === "medium") {
-    if (irritationRisk === "high") {
-      return -5;
-    }
-
-    if (irritationRisk === "medium") {
-      return -2;
-    }
-
-    return TOP_PICK_SCORING_WEIGHTS.lowIrritationBonus;
+  if (textureMatch === "near") {
+    return TOP_PICK_SCORING_WEIGHTS.nearTextureMatch;
   }
 
-  if (irritationRisk === "high") {
-    return -3;
-  }
-
-  if (irritationRisk === "medium") {
-    return -1;
+  if (textureMatch === "opposite") {
+    return TOP_PICK_SCORING_WEIGHTS.oppositeTexturePenalty;
   }
 
   return 0;
 }
 
-function getSensitivitySafeBonus(answers: RecommendationAnswers, sensitivitySafe: boolean): number {
+function getIrritationPenalty(
+  answers: NormalizedRecommendationAnswers,
+  irritationRisk: string,
+): number {
+  const sensitivity = answers.sensitivity || "medium";
+
+  if (sensitivity === "high") {
+    if (irritationRisk === "low") {
+      return TOP_PICK_SCORING_WEIGHTS.highSensitivityLowRiskBonus;
+    }
+
+    if (irritationRisk === "medium") {
+      return TOP_PICK_SCORING_WEIGHTS.highSensitivityMediumRiskPenalty;
+    }
+
+    return TOP_PICK_SCORING_WEIGHTS.highSensitivityHighRiskPenalty;
+  }
+
+  if (sensitivity === "medium") {
+    if (irritationRisk === "low") {
+      return TOP_PICK_SCORING_WEIGHTS.mediumSensitivityLowRiskBonus;
+    }
+
+    if (irritationRisk === "medium") {
+      return TOP_PICK_SCORING_WEIGHTS.mediumSensitivityMediumRiskPenalty;
+    }
+
+    return TOP_PICK_SCORING_WEIGHTS.mediumSensitivityHighRiskPenalty;
+  }
+
+  if (irritationRisk === "low") {
+    return TOP_PICK_SCORING_WEIGHTS.lowSensitivityLowRiskBonus;
+  }
+
+  if (irritationRisk === "medium") {
+    return TOP_PICK_SCORING_WEIGHTS.lowSensitivityMediumRiskPenalty;
+  }
+
+  return TOP_PICK_SCORING_WEIGHTS.lowSensitivityHighRiskPenalty;
+}
+
+function getSensitivitySafeBonus(
+  answers: NormalizedRecommendationAnswers,
+  sensitivitySafe: boolean,
+): number {
   if (!sensitivitySafe) {
     return 0;
   }
@@ -250,83 +484,313 @@ function getSensitivitySafeBonus(answers: RecommendationAnswers, sensitivitySafe
     : TOP_PICK_SCORING_WEIGHTS.sensitivitySafeBonus;
 }
 
-function hasExplicitSunscreenIntent(answers: RecommendationAnswers): boolean {
-  return answers.sunscreenIntent === true || answers.explicitCategoryIntent === "sunscreen";
+function hasExplicitSunscreenIntent(answers: NormalizedRecommendationAnswers): boolean {
+  return answers.sunscreenIntent || answers.explicitCategoryIntent === "sunscreen";
 }
 
 function getOutdoorSunscreenBonus(
-  answers: RecommendationAnswers,
+  answers: NormalizedRecommendationAnswers,
   product: CanonicalRecommendationProduct,
 ): number {
-  if (product.category !== "sunscreen") {
+  if (product.category !== "sunscreen" || !answers.outdoorExposure) {
     return 0;
   }
 
-  if (!Array.isArray(answers.environmentExposure) || !answers.environmentExposure.includes("outdoor")) {
-    return 0;
-  }
+  const sunscreenIntentByConcern = answers.mainConcerns.some((concern) =>
+    SUNSCREEN_INTENT_CONCERNS.has(concern),
+  );
 
-  const sunscreenIntentByConcern = answers.mainConcern === "oiliness" || answers.mainConcern === "redness";
-  const sunscreenIntentByConcernSet =
-    Array.isArray(answers.concerns) &&
-    answers.concerns.some((concern) => concern === "oiliness" || concern === "redness");
-
-  if (!sunscreenIntentByConcern && !sunscreenIntentByConcernSet && !hasExplicitSunscreenIntent(answers)) {
+  if (!sunscreenIntentByConcern && !hasExplicitSunscreenIntent(answers)) {
     return 0;
   }
 
   return TOP_PICK_SCORING_WEIGHTS.outdoorSunscreenBonus;
 }
 
+function getDislikedFeelPenalty(
+  product: CanonicalRecommendationProduct,
+  dislikedFeel: string | null,
+): number {
+  if (!dislikedFeel) {
+    return 0;
+  }
+
+  const texture = normalizeCanonicalTexture(product.texture as string);
+  const finish = normalizeCanonicalFinish(product.finish as string);
+
+  if (dislikedFeel === "sticky") {
+    return finish === "dewy" || texture === "cream"
+      ? TOP_PICK_SCORING_WEIGHTS.dislikedFeelStrongPenalty
+      : 0;
+  }
+
+  if (dislikedFeel === "greasy") {
+    return finish === "dewy" || texture === "cream"
+      ? TOP_PICK_SCORING_WEIGHTS.dislikedFeelStrongPenalty
+      : 0;
+  }
+
+  if (dislikedFeel === "heavy") {
+    return texture === "cream"
+      ? TOP_PICK_SCORING_WEIGHTS.dislikedFeelMediumPenalty
+      : 0;
+  }
+
+  if (dislikedFeel === "drying") {
+    return finish === "fresh" || finish === "soft_matte"
+      ? TOP_PICK_SCORING_WEIGHTS.dislikedFeelMediumPenalty
+      : 0;
+  }
+
+  return 0;
+}
+
+function getConcernMatchScore(
+  productConcerns: string[],
+  answers: NormalizedRecommendationAnswers,
+): {
+  matchedConcerns: string[];
+  primaryConcernMatch: number;
+  secondaryConcernMatch: number;
+  matchedPrimaryConcern: boolean;
+  matchedSecondaryConcern: boolean;
+} {
+  const primaryConcern = answers.mainConcerns[0] || null;
+  const secondaryConcern = answers.mainConcerns[1] || null;
+  const matchedConcerns: string[] = [];
+
+  let primaryConcernMatch = 0;
+  let secondaryConcernMatch = 0;
+
+  if (primaryConcern && productConcerns.includes(primaryConcern)) {
+    matchedConcerns.push(primaryConcern);
+    primaryConcernMatch = TOP_PICK_SCORING_WEIGHTS.primaryConcernMatch;
+  }
+
+  if (
+    secondaryConcern &&
+    secondaryConcern !== primaryConcern &&
+    productConcerns.includes(secondaryConcern)
+  ) {
+    matchedConcerns.push(secondaryConcern);
+    secondaryConcernMatch = TOP_PICK_SCORING_WEIGHTS.secondaryConcernMatch;
+  }
+
+  return {
+    matchedConcerns,
+    primaryConcernMatch,
+    secondaryConcernMatch,
+    matchedPrimaryConcern: primaryConcernMatch > 0,
+    matchedSecondaryConcern: secondaryConcernMatch > 0,
+  };
+}
+
+function getPostCleanseAdjustment(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+): number {
+  const concerns = Array.isArray(product.concerns) ? product.concerns : [];
+
+  if (
+    answers.postWashFeeling === "tight" &&
+    (concerns.includes("dehydration") || concerns.includes("barrier"))
+  ) {
+    return TOP_PICK_SCORING_WEIGHTS.postCleanseAdjustment;
+  }
+
+  if (
+    answers.postWashFeeling === "still_oily" &&
+    (concerns.includes("oiliness") || concerns.includes("pores"))
+  ) {
+    return TOP_PICK_SCORING_WEIGHTS.postCleanseAdjustment;
+  }
+
+  return 0;
+}
+
+function getAfternoonStateAdjustment(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  irritationRisk: string,
+  sensitivitySafe: boolean,
+): number {
+  const concerns = Array.isArray(product.concerns) ? product.concerns : [];
+
+  if (
+    answers.afternoonSkinChange === "more_oily" &&
+    (concerns.includes("oiliness") || concerns.includes("pores"))
+  ) {
+    return TOP_PICK_SCORING_WEIGHTS.afternoonStateAdjustment;
+  }
+
+  if (
+    answers.afternoonSkinChange === "more_dry" &&
+    (concerns.includes("dehydration") || concerns.includes("barrier"))
+  ) {
+    return TOP_PICK_SCORING_WEIGHTS.afternoonStateAdjustment;
+  }
+
+  if (answers.afternoonSkinChange === "red_or_irritated") {
+    if (concerns.includes("redness") || concerns.includes("barrier")) {
+      return TOP_PICK_SCORING_WEIGHTS.afternoonStateAdjustment;
+    }
+
+    if (sensitivitySafe || irritationRisk === "low") {
+      return Math.max(2, TOP_PICK_SCORING_WEIGHTS.afternoonStateAdjustment - 1);
+    }
+  }
+
+  return 0;
+}
+
+function getVerySensitivePeriodBonus(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  irritationRisk: string,
+  sensitivitySafe: boolean,
+): number {
+  if (!answers.verySensitivePeriod) {
+    return 0;
+  }
+
+  const concerns = Array.isArray(product.concerns) ? product.concerns : [];
+  let score = 0;
+
+  if (irritationRisk === "low") {
+    score += TOP_PICK_SCORING_WEIGHTS.verySensitiveLowIrritationBonus;
+  } else if (irritationRisk === "high") {
+    score += TOP_PICK_SCORING_WEIGHTS.verySensitiveHighRiskPenalty;
+  }
+
+  if (sensitivitySafe) {
+    score += TOP_PICK_SCORING_WEIGHTS.verySensitiveSafeBonus;
+  }
+
+  if (concerns.some((concern) => VERY_SENSITIVE_CONCERNS.has(concern))) {
+    score += TOP_PICK_SCORING_WEIGHTS.verySensitiveConcernBonus;
+  }
+
+  return score;
+}
+
 function buildWhyPicked(
   product: CanonicalRecommendationProduct,
-  answers: RecommendationAnswers,
+  answers: NormalizedRecommendationAnswers,
   signals: MatchedSignals,
+  breakdown: ScoreBreakdown,
 ): string[] {
   const reasons: string[] = [];
+  const primaryConcern = answers.mainConcerns[0] || answers.mainConcern;
+  const secondaryConcern = answers.mainConcerns[1] || null;
+  const categoryLabel = getCategoryLabel(product.category);
 
-  if (signals.matched_concerns.length > 0) {
-    reasons.push(`${product.category} is directly aligned with the current ${answers.mainConcern} priority.`);
+  if (signals.matched_primary_concern && signals.matched_secondary_concern && primaryConcern && secondaryConcern) {
+    reasons.push(
+      `이 ${categoryLabel}은 ${getConcernLabel(primaryConcern)}을 우선으로 보면서 ${getConcernLabel(secondaryConcern)}까지 함께 챙기기 좋습니다.`,
+    );
+  } else if (signals.matched_primary_concern && primaryConcern) {
+    reasons.push(`이 ${categoryLabel}은 ${getConcernLabel(primaryConcern)} 고민에 가장 먼저 손이 가기 좋은 축입니다.`);
+  } else if (signals.matched_secondary_concern && secondaryConcern) {
+    reasons.push(`${getConcernLabel(secondaryConcern)} 고민도 루틴 흐름을 해치지 않고 함께 보완해 줍니다.`);
   }
 
   if (signals.matched_skin_type) {
-    reasons.push(`It stays compatible with ${signals.matched_skin_type} skin needs.`);
+    reasons.push(`${getSkinTypeLabel(signals.matched_skin_type)} 쪽에 무리 없이 맞춰가기 좋습니다.`);
   }
 
   if (signals.texture_match === "exact") {
-    reasons.push(`${normalizeCanonicalTexture(product.texture as string)} texture matches the preferred feel exactly.`);
+    reasons.push(`${getTextureLabel(product.texture as string)}이 선호 사용감과 정확히 맞습니다.`);
   } else if (signals.texture_match === "near") {
-    reasons.push(`${normalizeCanonicalTexture(product.texture as string)} texture stays close to the preferred feel.`);
+    reasons.push(`${getTextureLabel(product.texture as string)}이 선호 사용감과 꽤 가깝습니다.`);
   }
 
-  if (signals.finish_match) {
-    reasons.push(`${normalizeCanonicalFinish(product.finish as string)} finish is less likely to fight the current skin rhythm.`);
+  if (breakdown.post_cleanse_adjustment > 0 && answers.postWashFeeling === "tight") {
+    reasons.push("세안 직후 당김이 올라오는 패턴에 맞춰, 루틴이 너무 무겁게 가지 않게 잡아줍니다.");
+  } else if (breakdown.post_cleanse_adjustment > 0 && answers.postWashFeeling === "still_oily") {
+    reasons.push("세안 후에도 유분감이 남는 패턴에서 답답함을 더하지 않는 쪽입니다.");
+  }
+
+  if (breakdown.afternoon_state_adjustment > 0 && answers.afternoonSkinChange === "more_oily") {
+    reasons.push("오후에 유분이 다시 올라오는 흐름을 더 깔끔하게 받쳐줍니다.");
+  } else if (breakdown.afternoon_state_adjustment > 0 && answers.afternoonSkinChange === "more_dry") {
+    reasons.push("시간이 갈수록 건조해지는 흐름을 루틴이 비기 전에 미리 받쳐줍니다.");
+  } else if (breakdown.afternoon_state_adjustment > 0 && answers.afternoonSkinChange === "red_or_irritated") {
+    reasons.push("오후에 예민해지는 날에도 비교적 무리 없이 이어가기 쉽습니다.");
   }
 
   if (signals.outdoor_sunscreen_bonus > 0) {
-    reasons.push("Outdoor exposure lifts sunscreen higher because daytime protection is directly in play.");
+    reasons.push("야외 노출이 있는 패턴이라 낮 시간 보호가 더 중요하게 반영됐습니다.");
   }
 
-  if (signals.sensitivity_safe) {
-    reasons.push("Its sensitivity-safe profile lowers the barrier to repeat use.");
+  if (answers.verySensitivePeriod && signals.very_sensitive_period_bonus > 0) {
+    reasons.push("유독 예민한 시기에도 상대적으로 꾸준히 쓰기 쉬운 안전축을 가졌습니다.");
+  } else if (signals.sensitivity_safe) {
+    reasons.push("민감 피부 쪽에서도 반복 사용 허들이 비교적 낮습니다.");
+  } else if (signals.irritation_risk === "low" && answers.sensitivity === "high") {
+    reasons.push("지금은 민감도가 높아서 저자극 축이 평소보다 더 중요하게 작동합니다.");
   } else if (signals.irritation_risk === "low") {
-    reasons.push("Low irritation risk makes it easier to slot into the routine.");
+    reasons.push("자극 리스크가 낮아 현재 루틴에 넣기 수월합니다.");
   }
 
-  if (signals.category_priority >= 3) {
-    reasons.push(`This category is one of the fastest places to create visible change for ${answers.mainConcern}.`);
+  if (signals.finish_match) {
+    reasons.push(`${getFinishLabel(product.finish as string)}이 지금 피부 리듬과 크게 부딪히지 않습니다.`);
   }
 
   return reasons.slice(0, 4);
 }
 
+function buildCautionNote(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  signals: MatchedSignals,
+): string | null {
+  const texture = normalizeCanonicalTexture(product.texture as string);
+  const finish = normalizeCanonicalFinish(product.finish as string);
+
+  if (signals.disliked_feel_conflict && answers.mostDislikedFeel === "sticky") {
+    return "끈적이는 잔여감이 특히 싫다면 약간 부담스럽게 느껴질 수 있습니다.";
+  }
+
+  if (signals.disliked_feel_conflict && answers.mostDislikedFeel === "greasy") {
+    return "번들거리는 마무리가 가장 거슬리는 편이면 조금 무겁게 느껴질 수 있습니다.";
+  }
+
+  if (signals.disliked_feel_conflict && answers.mostDislikedFeel === "heavy") {
+    return "반복 사용 시 선호보다 조금 무겁게 느껴질 수 있습니다.";
+  }
+
+  if (signals.disliked_feel_conflict && answers.mostDislikedFeel === "drying") {
+    return "이미 쉽게 건조해지는 편이라면 마무리가 다소 산뜻하게 느껴질 수 있습니다.";
+  }
+
+  if (signals.texture_match === "opposite") {
+    return `${getTextureLabel(texture)}이 점수상 인상보다 체감 선호와는 더 멀 수 있습니다.`;
+  }
+
+  if (
+    (answers.sensitivity === "high" || answers.verySensitivePeriod) &&
+    signals.irritation_risk === "medium"
+  ) {
+    return "지금도 사용은 가능하지만, 현재 컨디션에서는 더 저자극인 선택지가 반복 사용에는 더 편할 수 있습니다.";
+  }
+
+  if (
+    (answers.sensitivity === "high" || answers.verySensitivePeriod) &&
+    signals.irritation_risk === "high"
+  ) {
+    return `예민한 날에는 ${getFinishLabel(finish)}보다 자극 리스크를 더 우선해서 보는 편이 안전합니다.`;
+  }
+
+  return null;
+}
+
 export function scoreCanonicalProduct(
   product: CanonicalRecommendationProduct,
-  answers: RecommendationAnswers,
+  rawAnswers: RecommendationAnswers,
 ): RankedRecommendationProduct {
-  const matchedConcerns = Array.isArray(product.concerns)
-    ? product.concerns.filter((concern) => concern === answers.mainConcern)
-    : [];
+  const answers = normalizeRecommendationAnswers(rawAnswers);
+  const productConcerns = Array.isArray(product.concerns) ? product.concerns : [];
+  const concernMatch = getConcernMatchScore(productConcerns, answers);
   const matchedSkinType =
     answers.skinType === "not_sure" || includesValue(product.skin_types, answers.skinType)
       ? String(answers.skinType || "combination")
@@ -337,22 +801,38 @@ export function scoreCanonicalProduct(
   const preferredFinishes = getPreferredFinishes(answers);
   const textureMatch = getTextureMatch(product.texture as string, answers.preferredTexture);
   const finishMatch = preferredFinishes.includes(normalizeCanonicalFinish(product.finish as string));
+  const dislikedFeelPenalty = getDislikedFeelPenalty(product, answers.mostDislikedFeel);
+  const postCleanseAdjustment = getPostCleanseAdjustment(product, answers);
+  const afternoonStateAdjustment = getAfternoonStateAdjustment(
+    product,
+    answers,
+    irritationRisk,
+    sensitivitySafe,
+  );
   const outdoorSunscreenBonus = getOutdoorSunscreenBonus(answers, product);
+  const verySensitivePeriodBonus = getVerySensitivePeriodBonus(
+    product,
+    answers,
+    irritationRisk,
+    sensitivitySafe,
+  );
 
   const breakdown: ScoreBreakdown = {
     skin_type_match: matchedSkinType ? TOP_PICK_SCORING_WEIGHTS.skinTypeMatch : 0,
-    concerns_overlap: matchedConcerns.length * TOP_PICK_SCORING_WEIGHTS.concernOverlap,
+    primary_concern_match: concernMatch.primaryConcernMatch,
+    secondary_concern_match: concernMatch.secondaryConcernMatch,
+    concerns_overlap:
+      concernMatch.primaryConcernMatch + concernMatch.secondaryConcernMatch,
     category_priority: categoryPriority * TOP_PICK_SCORING_WEIGHTS.categoryPriorityUnit,
     irritation_penalty: getIrritationPenalty(answers, irritationRisk),
     sensitivity_safe_bonus: getSensitivitySafeBonus(answers, sensitivitySafe),
-    texture_match:
-      textureMatch === "exact"
-        ? TOP_PICK_SCORING_WEIGHTS.exactTextureMatch
-        : textureMatch === "near"
-          ? TOP_PICK_SCORING_WEIGHTS.nearTextureMatch
-          : 0,
+    texture_match: getTextureScore(textureMatch),
     finish_match: finishMatch ? TOP_PICK_SCORING_WEIGHTS.finishMatch : 0,
+    disliked_feel_penalty: dislikedFeelPenalty,
+    post_cleanse_adjustment: postCleanseAdjustment,
+    afternoon_state_adjustment: afternoonStateAdjustment,
     outdoor_sunscreen_bonus: outdoorSunscreenBonus,
+    very_sensitive_period_bonus: verySensitivePeriodBonus,
     total: 0,
   };
 
@@ -364,11 +844,19 @@ export function scoreCanonicalProduct(
     breakdown.sensitivity_safe_bonus +
     breakdown.texture_match +
     breakdown.finish_match +
-    breakdown.outdoor_sunscreen_bonus;
+    breakdown.disliked_feel_penalty +
+    breakdown.post_cleanse_adjustment +
+    breakdown.afternoon_state_adjustment +
+    breakdown.outdoor_sunscreen_bonus +
+    breakdown.very_sensitive_period_bonus;
 
   const matchedSignals: MatchedSignals = {
     matched_skin_type: matchedSkinType,
-    matched_concerns: matchedConcerns,
+    matched_concerns: concernMatch.matchedConcerns,
+    primary_concern: answers.mainConcerns[0] || null,
+    secondary_concern: answers.mainConcerns[1] || null,
+    matched_primary_concern: concernMatch.matchedPrimaryConcern,
+    matched_secondary_concern: concernMatch.matchedSecondaryConcern,
     category_priority: categoryPriority,
     irritation_risk: irritationRisk,
     irritation_penalty: breakdown.irritation_penalty,
@@ -376,15 +864,18 @@ export function scoreCanonicalProduct(
     texture_match: textureMatch,
     finish_match: finishMatch,
     preferred_finishes: preferredFinishes,
+    disliked_feel_conflict: dislikedFeelPenalty < 0,
     outdoor_sunscreen_bonus: outdoorSunscreenBonus,
+    very_sensitive_period_bonus: verySensitivePeriodBonus,
   };
 
   return {
     ...product,
     score: breakdown.total,
-    why_picked: buildWhyPicked(product, answers, matchedSignals),
+    why_picked: buildWhyPicked(product, answers, matchedSignals, breakdown),
     matched_signals: matchedSignals,
     score_breakdown: breakdown,
+    caution_note: buildCautionNote(product, answers, matchedSignals),
   };
 }
 
@@ -400,6 +891,14 @@ export function compareRankedProducts(
     return right.matched_signals.matched_concerns.length - left.matched_signals.matched_concerns.length;
   }
 
+  if (right.score_breakdown.texture_match !== left.score_breakdown.texture_match) {
+    return right.score_breakdown.texture_match - left.score_breakdown.texture_match;
+  }
+
+  if (right.score_breakdown.disliked_feel_penalty !== left.score_breakdown.disliked_feel_penalty) {
+    return right.score_breakdown.disliked_feel_penalty - left.score_breakdown.disliked_feel_penalty;
+  }
+
   if (right.matched_signals.category_priority !== left.matched_signals.category_priority) {
     return right.matched_signals.category_priority - left.matched_signals.category_priority;
   }
@@ -408,16 +907,16 @@ export function compareRankedProducts(
     return Number(Boolean(right.matched_signals.matched_skin_type)) - Number(Boolean(left.matched_signals.matched_skin_type));
   }
 
-  if (right.score_breakdown.texture_match !== left.score_breakdown.texture_match) {
-    return right.score_breakdown.texture_match - left.score_breakdown.texture_match;
-  }
-
   if (Boolean(right.matched_signals.finish_match) !== Boolean(left.matched_signals.finish_match)) {
     return Number(Boolean(right.matched_signals.finish_match)) - Number(Boolean(left.matched_signals.finish_match));
   }
 
   if (Boolean(right.matched_signals.sensitivity_safe) !== Boolean(left.matched_signals.sensitivity_safe)) {
     return Number(Boolean(right.matched_signals.sensitivity_safe)) - Number(Boolean(left.matched_signals.sensitivity_safe));
+  }
+
+  if (right.matched_signals.very_sensitive_period_bonus !== left.matched_signals.very_sensitive_period_bonus) {
+    return right.matched_signals.very_sensitive_period_bonus - left.matched_signals.very_sensitive_period_bonus;
   }
 
   if (IRRITATION_RANK[right.matched_signals.irritation_risk] !== IRRITATION_RANK[left.matched_signals.irritation_risk]) {
@@ -434,13 +933,14 @@ export function buildSampleScoringInput(): {
   return {
     answers: {
       skinType: "combination",
-      sensitivity: "high",
-      mainConcern: "redness",
-      preferredTexture: "gel",
-      postWashFeeling: "tight",
-      afternoonSkinChange: "red_or_irritated",
-      mostDislikedFeel: "sticky",
+      sensitivityLevel: "high",
+      mainConcerns: ["redness", "barrier"],
+      texturePreference: "gel",
+      postCleanseFeel: "tight",
+      afternoonState: "red_or_irritated",
+      dislikedFeel: "sticky",
       environmentExposure: ["mask"],
+      verySensitivePeriod: true,
       cleansingFrequency: "2",
     },
     products: [

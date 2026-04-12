@@ -1,0 +1,67 @@
+[
+  {
+    "id": "78eaf2cf-c9a3-4b0b-ac11-546cd01b4966",
+    "buy_link": "https://search.shopping.naver.com/search/all?query=layerlab%205%25%20panthenol%204%25%20niacinamide%20barrier%20boost%20serum",
+    "image_url": "https://shop.ideaseller.kr/cdn/shop/files/57_73bcb9b8-b228-4986-ab15-ff6f6ebc571d_1200x1200.png?v=1741743604",
+    "price_min": 42800,
+    "price_max": 42800,
+    "known_source_url": "https://www.hwahae.com/en/products/LAYERLAB-5PERCENT-PANTHENOL-4PERCENT-NIACINAMIDE-BARRIER-BOOST-SERUM/2116913",
+    "source_evidence": {
+      "buy_link_strategy": "search_results_fallback",
+      "image_source": "https://shop.ideaseller.kr/products/layerlab-5-panthenol-4-niacinamide-barrier-boost-serum-50ml-big-size",
+      "price_note": "KRW estimate based on Hwahae Korean MSRP shown in USD for the 30ml SKU; verify in a later KR source pass."
+    }
+  },
+  {
+    "id": "01ad7aec-e921-4ca8-a172-f4571cca3f9a",
+    "buy_link": "https://search.shopping.naver.com/search/all?query=%EB%A7%88%EB%85%80%EA%B3%B5%EC%9E%A5%20%EB%B9%84%ED%94%BC%EB%8B%A4%20%EB%B0%94%EC%9D%B4%EC%98%B4%20%EC%95%B0%ED%94%8C%20%ED%86%A0%EB%84%88",
+    "image_url": "https://manyo.us/cdn/shop/files/Untitleddesign_53.png?v=1707350486",
+    "price_min": 27500,
+    "price_max": 27500,
+    "known_source_url": "https://nocappin.kr/shop_view/?idx=97",
+    "source_evidence": {
+      "buy_link_strategy": "search_results_fallback",
+      "image_source": "https://manyo.us/products/bifida-biome-ampoule-toner",
+      "price_note": "KRW sale price taken from Korean retail result."
+    }
+  },
+  {
+    "id": "b8497d92-bbf0-48e3-8db8-7843ac9efeb6",
+    "buy_link": "https://search.shopping.naver.com/search/all?query=%EC%97%90%EC%8A%A4%ED%8A%B8%EB%9D%BC%20%EC%97%90%EC%9D%B4%EC%8B%9C%EC%B9%B4365%20%EC%88%98%EB%B6%84%20%ED%86%A0%EB%84%88%20pH4.5",
+    "image_url": "https://cutipop.com/cdn/shop/files/AESTURAA-cica365HydratingReliefTonerph4.5200ml-1.jpg?v=1756885927",
+    "price_min": 28000,
+    "price_max": 28000,
+    "known_source_url": "https://kream.co.kr/products/346454",
+    "source_evidence": {
+      "buy_link_strategy": "search_results_fallback",
+      "image_source": "https://cutipop.com/products/aestura-a-cica-365-hydrating-relief-toner-ph4-5-200ml",
+      "price_note": "KRW release price from Korean marketplace listing."
+    }
+  },
+  {
+    "id": "53015456-390e-405e-8e30-86921707e3e8",
+    "buy_link": "https://search.shopping.naver.com/search/all?query=%ED%94%84%EB%A6%AC%EB%A9%94%EB%9D%BC%20%EC%9B%8C%ED%84%B0%EB%A6%AC%20%EC%97%90%EC%84%BC%EC%8A%A4%20250ml",
+    "image_url": "https://d1flfk77wl2xk4.cloudfront.net/Assets/28/922/p0205992228.jpg",
+    "price_min": 27200,
+    "price_max": 27200,
+    "known_source_url": "https://www.ssfshop.com/Primera/GM0024101083259/good",
+    "source_evidence": {
+      "buy_link_strategy": "search_results_fallback",
+      "image_source": "https://www.yesstyle.com/en/primera-watery-essence-230ml/info.html/pid.1133411178",
+      "price_note": "KRW discounted price from Korean retail search result."
+    }
+  },
+  {
+    "id": "56c50ceb-4ee2-4c74-9932-d3ebd53451a0",
+    "buy_link": "https://search.shopping.naver.com/search/all?query=%EC%9D%B4%EC%A6%88%EC%95%A4%ED%8A%B8%EB%A6%AC%20%EC%B2%B4%EC%8A%A4%ED%8A%B8%EB%84%9B%20%EB%B0%94%ED%95%98%200.9%25%20%ED%81%B4%EB%A6%AC%EC%96%B4%20%ED%86%A0%EB%84%88%20200ml",
+    "image_url": "https://d2c3d01lcpw2ui.cloudfront.net/gl/data/item/1663228353/chestnut_toner.jpg",
+    "price_min": 13440,
+    "price_max": 13440,
+    "known_source_url": "https://www.isntree.com/shop/shopdetail.html?branduid=529990",
+    "source_evidence": {
+      "buy_link_strategy": "search_results_fallback",
+      "image_source": "https://www.stylekorean.com/shop/isntree-chestnut-bha-0.9-clear-toner-200ml/1663228353/",
+      "price_note": "KRW sale price from Korean official mall search result."
+    }
+  }
+]
