@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from "next/server";
 import { buildFallbackAnalysis, buildRuleBasedPlan } from "@/lib/fallback-analysis";
-import { buildOptionalSkinNote, buildRecommendationBundle } from "@/lib/recommendation";
+import { buildRecommendationBundle } from "@/lib/recommendation";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
@@ -21,31 +21,89 @@ function logAnalyze(stage, payload = {}) {
   console.log(`[analyze] ${stage}`, payload);
 }
 
-function createJsonSchemaPrompt(productCount) {
+const ANALYZE_COPY = {
+  ko: {
+    languageInstruction: "Use Korean language.",
+    schemaSummary: "3줄 이내 피부 요약",
+    schemaStrategy: "핵심 전략 한 줄",
+    schemaMorning: ["아침 루틴 1", "아침 루틴 2", "아침 루틴 3"],
+    schemaNight: ["저녁 루틴 1", "저녁 루틴 2", "저녁 루틴 3"],
+    schemaAvoid: ["피해야 할 것 1", "피해야 할 것 2", "피해야 할 것 3"],
+    schemaReason: "이 제품 설명 1~2문장",
+    schemaCompare: "이 제품의 차이를 보여주는 1문장",
+    schemaInsightTitle: "Optional Skin Note",
+    schemaInsightDescription: "보조 메모 한 줄",
+    surveyInfo: "설문 정보",
+    selectedProducts: "아래는 코드가 이미 선택한 최종 제품 목록",
+    imageFallbackText: "얼굴 사진은 업로드되었지만 현재는 MVP 구조 기준으로만 반영합니다.",
+    missingRequired: "필수 입력값이 비어 있습니다.",
+    missingApiKeyNotice: "OpenRouter API 키가 없어 mock 결과를 표시합니다.",
+    fetchFailNotice: "OpenRouter 호출이 실패해 mock 결과를 대신 표시합니다.",
+    fetchFailError: "OpenRouter 호출이 실패했습니다.",
+    emptyBodyNotice: "응답 본문이 비어 있어 mock 결과를 표시합니다.",
+    parseFailNotice: "응답 파싱이 실패해 mock 결과를 대신 표시합니다.",
+    parseFailError: "모델 응답을 JSON으로 해석하지 못했습니다. 다시 시도해 주세요.",
+    serverError: "서버 오류가 발생했습니다.",
+    parseJsonError: "JSON 형식 응답을 해석하지 못했습니다.",
+    nonJsonError: "JSON 형식 응답을 받지 못했습니다."
+  },
+  en: {
+    languageInstruction: "Use English language.",
+    schemaSummary: "Skin summary in up to 3 short lines",
+    schemaStrategy: "One-line core strategy",
+    schemaMorning: ["Morning step 1", "Morning step 2", "Morning step 3"],
+    schemaNight: ["Night step 1", "Night step 2", "Night step 3"],
+    schemaAvoid: ["Avoid 1", "Avoid 2", "Avoid 3"],
+    schemaReason: "1 to 2 sentences explaining this product",
+    schemaCompare: "1 sentence showing how it differs",
+    schemaInsightTitle: "Optional Skin Note",
+    schemaInsightDescription: "One short supporting note",
+    surveyInfo: "Survey info",
+    selectedProducts: "Below is the final product list already selected by code",
+    imageFallbackText: "A face photo was uploaded, but in this MVP it is only used as lightweight visual context.",
+    missingRequired: "Required input values are missing.",
+    missingApiKeyNotice: "OpenRouter API key is missing, so a mock result is shown instead.",
+    fetchFailNotice: "OpenRouter request failed, so a mock result is shown instead.",
+    fetchFailError: "OpenRouter request failed.",
+    emptyBodyNotice: "The response body was empty, so a mock result is shown instead.",
+    parseFailNotice: "Response parsing failed, so a mock result is shown instead.",
+    parseFailError: "Could not parse the model response as JSON. Please try again.",
+    serverError: "A server error occurred.",
+    parseJsonError: "Could not parse the JSON response.",
+    nonJsonError: "Did not receive a JSON response."
+  }
+};
+
+function getAnalyzeCopy(locale = "ko") {
+  return ANALYZE_COPY[locale] || ANALYZE_COPY.ko;
+}
+
+function createJsonSchemaPrompt(productCount, locale = "ko") {
+  const copy = getAnalyzeCopy(locale);
   return `
 You are a K-beauty skincare assistant.
 Return only valid JSON.
 Do not wrap in markdown.
 Do not include extra keys.
-Use Korean language.
+${copy.languageInstruction}
 
 Required JSON shape:
 {
-  "summary": "3줄 이내 피부 요약",
-  "strategy": "핵심 전략 한 줄",
-  "morning": ["아침 루틴 1", "아침 루틴 2", "아침 루틴 3"],
-  "night": ["저녁 루틴 1", "저녁 루틴 2", "저녁 루틴 3"],
-  "avoid": ["피해야 할 것 1", "피해야 할 것 2", "피해야 할 것 3"],
+  "summary": "${copy.schemaSummary}",
+  "strategy": "${copy.schemaStrategy}",
+  "morning": ["${copy.schemaMorning[0]}", "${copy.schemaMorning[1]}", "${copy.schemaMorning[2]}"],
+  "night": ["${copy.schemaNight[0]}", "${copy.schemaNight[1]}", "${copy.schemaNight[2]}"],
+  "avoid": ["${copy.schemaAvoid[0]}", "${copy.schemaAvoid[1]}", "${copy.schemaAvoid[2]}"],
   "productExplanations": [
     {
       "id": "product-id",
-      "reason": "이 제품 설명 1~2문장",
-      "comparison_reason": "이 제품의 차이를 보여주는 1문장"
+      "reason": "${copy.schemaReason}",
+      "comparison_reason": "${copy.schemaCompare}"
     }
   ],
   "funInsight": {
-    "title": "Optional Skin Note",
-    "description": "보조 메모 한 줄"
+    "title": "${copy.schemaInsightTitle}",
+    "description": "${copy.schemaInsightDescription}"
   }
 }
 
@@ -122,7 +180,8 @@ Rules:
 `.trim();
 }
 
-function normalizeResult(parsed) {
+function normalizeResult(parsed, locale = "ko") {
+  const copy = getAnalyzeCopy(locale);
   const ensureList = (value, fallback) => {
     if (Array.isArray(value)) {
       return value.slice(0, 3).map((item) => String(item));
@@ -131,22 +190,22 @@ function normalizeResult(parsed) {
   };
 
   return {
-    summary: String(parsed?.summary || "피부 요약을 생성하지 못했습니다."),
-    strategy: String(parsed?.strategy || "자극을 줄이고 사용감이 맞는 루틴부터 가볍게 정리하세요."),
+    summary: String(parsed?.summary || (locale === "en" ? "Could not generate a skin summary." : "피부 요약을 생성하지 못했습니다.")),
+    strategy: String(parsed?.strategy || (locale === "en" ? "Lower irritation first and organize the routine around products that feel right." : "자극을 줄이고 사용감이 맞는 루틴부터 가볍게 정리하세요.")),
     morning: ensureList(parsed?.morning, [
-      "순한 클렌저로 가볍게 세안하기",
-      "가벼운 수분층으로 유수분 균형 맞추기",
-      "자외선 차단제로 마무리하기"
+      locale === "en" ? "Cleanse lightly with a gentle cleanser" : "순한 클렌저로 가볍게 세안하기",
+      locale === "en" ? "Balance hydration with a light layer" : "가벼운 수분층으로 유수분 균형 맞추기",
+      locale === "en" ? "Finish with sunscreen" : "자외선 차단제로 마무리하기"
     ]),
     night: ensureList(parsed?.night, [
-      "과하지 않게 노폐물 정리하기",
-      "고민에 맞는 진정 또는 보습 단계 더하기",
-      "부담 없는 보습제로 마무리하기"
+      locale === "en" ? "Remove buildup without over-cleansing" : "과하지 않게 노폐물 정리하기",
+      locale === "en" ? "Add one calming or moisturizing step for the main concern" : "고민에 맞는 진정 또는 보습 단계 더하기",
+      locale === "en" ? "Finish with a comfortable moisturizer" : "부담 없는 보습제로 마무리하기"
     ]),
     avoid: ensureList(parsed?.avoid, [
-      "한 번에 너무 많은 제품을 겹쳐 바르기",
-      "피부 상태와 맞지 않는 무거운 제형 계속 쓰기",
-      "강한 세정이나 필링을 자주 반복하기"
+      locale === "en" ? "Do not stack too many products at once" : "한 번에 너무 많은 제품을 겹쳐 바르기",
+      locale === "en" ? "Do not keep using heavy textures that feel wrong" : "피부 상태와 맞지 않는 무거운 제형 계속 쓰기",
+      locale === "en" ? "Do not repeat harsh cleansing or peeling too often" : "강한 세정이나 필링을 자주 반복하기"
     ]),
     productExplanations: Array.isArray(parsed?.productExplanations)
       ? parsed.productExplanations.map((item) => ({
@@ -157,7 +216,7 @@ function normalizeResult(parsed) {
       : [],
     funInsight: parsed?.funInsight
       ? {
-          title: String(parsed.funInsight?.title || "Optional Skin Note"),
+          title: String(parsed.funInsight?.title || copy.schemaInsightTitle),
           description: String(parsed.funInsight?.description || "")
         }
       : null
@@ -199,11 +258,11 @@ function safeParse(content) {
       try {
         return JSON.parse(matched[0]);
       } catch {
-        throw new Error("JSON 형식 응답을 해석하지 못했습니다.");
+        throw new Error(getAnalyzeCopy("ko").parseJsonError);
       }
     }
 
-    throw new Error("JSON 형식 응답을 받지 못했습니다.");
+    throw new Error(getAnalyzeCopy("ko").nonJsonError);
   }
 }
 
@@ -297,23 +356,56 @@ function applyExplanationBundle(recommendation, explanationItems) {
   };
 }
 
-function buildUserContext(formInput) {
+function buildUserContext(formInput, locale = "ko") {
+  const labels = locale === "en"
+    ? {
+        skinType: "Skin type",
+        sensitivity: "Sensitivity",
+        concern: "Main concern",
+        cleansing: "Cleansing frequency",
+        texture: "Preferred texture",
+        postWash: "Post-wash feel",
+        afternoon: "Afternoon skin change",
+        exposure: "Environment exposure",
+        dislike: "Most disliked feel",
+        outdoor: "Outdoor exposure context",
+        sensitivePeriod: "Very sensitive period",
+        none: "None",
+        yes: "Yes",
+        no: "No"
+      }
+    : {
+        skinType: "피부 타입",
+        sensitivity: "민감도",
+        concern: "주요 고민",
+        cleansing: "세안 빈도",
+        texture: "선호 제형",
+        postWash: "세안 후 느낌",
+        afternoon: "오후 피부 변화",
+        exposure: "환경 노출",
+        dislike: "피하고 싶은 사용감",
+        outdoor: "야외 노출 컨텍스트",
+        sensitivePeriod: "매우 예민한 시기",
+        none: "없음",
+        yes: "예",
+        no: "아니오"
+      };
   const mainConcerns = Array.isArray(formInput.mainConcerns) && formInput.mainConcerns.length
     ? formInput.mainConcerns.join(", ")
     : formInput.mainConcern;
 
   return [
-    `- 피부 타입: ${formInput.skinType}`,
-    `- 민감도: ${formInput.sensitivity}`,
-    `- 주요 고민: ${mainConcerns}`,
-    `- 세안 빈도: ${formInput.cleansingFrequency}`,
-    `- 선호 제형: ${formInput.preferredTexture}`,
-    `- 세안 후 느낌: ${formInput.postWashFeeling}`,
-    `- 오후 피부 변화: ${formInput.afternoonSkinChange}`,
-    `- 환경 노출: ${(formInput.environmentExposure || []).join(", ") || "없음"}`,
-    `- 피하고 싶은 사용감: ${formInput.mostDislikedFeel}`,
-    `- 야외 노출 컨텍스트: ${formInput.outdoorExposure ? "있음" : "없음"}`,
-    `- 매우 예민한 시기: ${formInput.verySensitivePeriod ? "예" : "아니오"}`
+    `- ${labels.skinType}: ${formInput.skinType}`,
+    `- ${labels.sensitivity}: ${formInput.sensitivity}`,
+    `- ${labels.concern}: ${mainConcerns}`,
+    `- ${labels.cleansing}: ${formInput.cleansingFrequency}`,
+    `- ${labels.texture}: ${formInput.preferredTexture}`,
+    `- ${labels.postWash}: ${formInput.postWashFeeling}`,
+    `- ${labels.afternoon}: ${formInput.afternoonSkinChange}`,
+    `- ${labels.exposure}: ${(formInput.environmentExposure || []).join(", ") || labels.none}`,
+    `- ${labels.dislike}: ${formInput.mostDislikedFeel}`,
+    `- ${labels.outdoor}: ${formInput.outdoorExposure ? labels.yes : labels.no}`,
+    `- ${labels.sensitivePeriod}: ${formInput.verySensitivePeriod ? labels.yes : labels.no}`
   ].join("\n");
 }
 
@@ -371,6 +463,8 @@ export async function POST(request) {
       formData.get("dislikedFeel") || formData.get("mostDislikedFeel");
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
+    const locale = formData.get("locale") === "en" ? "en" : "ko";
+    const copy = getAnalyzeCopy(locale);
     const resolvedMainConcern =
       (typeof mainConcern === "string" && mainConcern) || mainConcerns[0] || "";
 
@@ -386,7 +480,7 @@ export async function POST(request) {
       !mostDislikedFeel
     ) {
       return NextResponse.json(
-        { error: "필수 입력값이 비어 있습니다." },
+        { error: copy.missingRequired },
         { status: 400 }
       );
     }
@@ -410,12 +504,13 @@ export async function POST(request) {
     };
 
     const recommendation = await buildRecommendationBundle(formInput);
-    const ruleBasedPlan = buildRuleBasedPlan(formInput);
-    const optionalSkinNote = buildOptionalSkinNote(formInput);
+    const ruleBasedPlan = buildRuleBasedPlan(formInput, locale);
+    const optionalSkinNote = ruleBasedPlan.funInsight;
     const fallbackAnalysis = buildFallbackAnalysis(
       formInput,
       recommendation,
-      ruleBasedPlan
+      ruleBasedPlan,
+      locale
     );
     const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -425,6 +520,7 @@ export async function POST(request) {
       maxTokens: OPENROUTER_MAX_TOKENS,
       referer: HTTP_REFERER,
       title: X_TITLE,
+      locale,
       mainConcern: formInput.mainConcern,
       skinType: formInput.skinType,
       selectedProductCount: recommendation.products?.length || 0
@@ -445,7 +541,7 @@ export async function POST(request) {
         scoring: recommendation.scoring,
         meta: {
           source: "mock",
-          notice: "OpenRouter API 키가 없어 mock 결과를 표시합니다."
+          notice: copy.missingApiKeyNotice
         }
       });
     }
@@ -462,12 +558,12 @@ export async function POST(request) {
       {
         type: "text",
         text: [
-          createJsonSchemaPrompt(selectedProductsContext.length),
+          createJsonSchemaPrompt(selectedProductsContext.length, locale),
           "",
-          "설문 정보",
-          buildUserContext(formInput),
+          copy.surveyInfo,
+          buildUserContext(formInput, locale),
           "",
-          "아래는 코드가 이미 선택한 최종 제품 목록",
+          copy.selectedProducts,
           JSON.stringify(selectedProductsContext, null, 2)
         ].join("\n")
       }
@@ -483,7 +579,7 @@ export async function POST(request) {
     } else {
       content.push({
         type: "text",
-        text: "얼굴 사진은 업로드되었지만 현재는 MVP 구조 기준으로만 반영합니다."
+        text: copy.imageFallbackText
       });
     }
 
@@ -510,7 +606,7 @@ export async function POST(request) {
         messages: [
           {
             role: "system",
-            content: createJsonSchemaPrompt(selectedProductsContext.length)
+            content: createJsonSchemaPrompt(selectedProductsContext.length, locale)
           },
           {
             role: "user",
@@ -545,13 +641,13 @@ export async function POST(request) {
         scoring: recommendation.scoring,
         meta: {
           source: "mock",
-          notice: "OpenRouter 호출이 실패해 mock 결과를 대신 표시합니다."
+          notice: copy.fetchFailNotice
         },
         error:
           data?.error?.message ||
           data?.error ||
           rawText ||
-          `OpenRouter 호출이 실패했습니다. (${status})`
+          `${copy.fetchFailError} (${status})`
       });
     }
 
@@ -578,7 +674,7 @@ export async function POST(request) {
         scoring: recommendation.scoring,
         meta: {
           source: "mock",
-          notice: "응답 본문이 비어 있어 mock 결과를 표시합니다."
+          notice: copy.emptyBodyNotice
         }
       });
     }
@@ -591,7 +687,7 @@ export async function POST(request) {
           ? parsed.productExplanations.length
           : 0
       });
-      const normalized = normalizeResult(parsed);
+      const normalized = normalizeResult(parsed, locale);
       const explainedRecommendation = applyExplanationBundle(
         recommendation,
         normalized.productExplanations
@@ -630,11 +726,11 @@ export async function POST(request) {
         scoring: recommendation.scoring,
         meta: {
           source: "mock",
-          notice: "응답 파싱이 실패해 mock 결과를 대신 표시합니다."
+          notice: copy.parseFailNotice
         },
         error:
           parseError.message ||
-          "모델 응답을 JSON으로 해석하지 못했습니다. 다시 시도해 주세요."
+          copy.parseFailError
       });
     }
   } catch (error) {

@@ -3,91 +3,379 @@ import { NextResponse } from "next/server";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
 const X_TITLE = process.env.OPENROUTER_X_TITLE || "K-Beauty AI Skin Test";
+const MODEL = "openai/gpt-4o-mini";
 
-function buildMockFaceLab() {
+const COPY = {
+  ko: {
+    errorNeedImage: "얼굴 사진이 필요합니다.",
+    parseError: "Face Lab 응답을 해석하지 못했습니다.",
+    serverError: "Face Lab 처리 중 오류가 발생했습니다.",
+    systemLanguage: "Output must be entirely in Korean.",
+    instruction:
+      "업로드된 얼굴 사진을 기준으로 Face Lab 결과를 작성해 주세요. 부분 가림, 과한 보정, 강한 스타일링이 있으면 그 한계를 짧게 반영하세요.",
+    toneRule: "감성적인 칭찬보다 구조와 인상 흐름 중심으로 써 주세요.",
+    fallback: {
+      headlineLabel: "선명한 판단형",
+      headlineResult: "중심선이 또렷하고 표현 제어가 강한 판단형 인상",
+      overall:
+        "이목구비의 중심축이 분명하고 하관 정리가 선명해, 반응보다 판단이 먼저 보이는 인상으로 읽힙니다.",
+      axes: ["리더형", "집중형"],
+      features: [
+        "눈의 집중도가 높기 때문에 시선이 중앙으로 빨리 모이고, 판단이 먼저 보이는 인상으로 이어집니다.",
+        "입선 제어가 보이기 때문에 감정보다 표현 조절이 먼저 보이고, 말수를 아끼는 인상으로 이어집니다.",
+        "턱선 마감이 선명하기 때문에 방향성이 쉽게 흐트러지지 않고, 쉽게 흔들리지 않는 인상으로 이어집니다.",
+        "얼굴 비율이 한쪽으로 치우치지 않기 때문에 기준이 안쪽에 모이고, 차분히 중심을 잡는 인상으로 이어집니다."
+      ],
+      tendency: [
+        "실제로는 말을 많이 하기보다 필요할 때만 강도를 올리는 편으로 읽힐 가능성이 있습니다.",
+        "관계에서는 먼저 밀어붙이기보다 흐름을 읽다가 기준이 생기면 주도권을 잡는 쪽으로 보일 수 있습니다."
+      ],
+      strengths: [
+        "판단 속도와 표현 제어가 함께 보입니다.",
+        "강한 압박보다 방향 제시가 먼저 보입니다.",
+        "초반 반응보다 누적 인상에서 존재감이 커질 수 있습니다."
+      ],
+      cautions: [
+        "표정 변화가 적으면 정서적 거리감으로 읽힐 수 있습니다.",
+        "한 방향 집중이 강하면 주변 속도를 답답하게 느낄 수 있습니다."
+      ],
+      shapeSummary:
+        "얼굴 중심선이 또렷하게 살아 있어 시선이 중앙에 모이고, 너무 무거운 스타일보다 정리된 실루엣이 더 잘 맞습니다.",
+      shapeRecommendations: [
+        "이마를 살짝 드러내는 구조이기 때문에 중심선이 살아나고, 정리된 사이드 파트가 잘 맞습니다.",
+        "옆으로 크게 퍼지지 않는 구조이기 때문에 얼굴선이 덜 넓어 보이고, 정돈된 실루엣이 잘 맞습니다.",
+        "턱선 아래로 너무 무겁지 않은 길이이기 때문에 하관이 흐려지지 않고, 미디엄 레이어가 잘 맞습니다."
+      ],
+      shapeAvoid: [
+        "양옆을 크게 부푸는 구조이기 때문에 가로 폭이 먼저 커지고, 중심선이 흐려지는 스타일은 피하는 편이 좋습니다.",
+        "무거운 일자 뱅 구조이기 때문에 눈매 노출이 줄어들고, 또렷한 인상이 약해지는 스타일은 피하는 편이 좋습니다."
+      ],
+      lookalikeSummary:
+        "선이 정돈된 얼굴 구조와 하관의 정리감이 먼저 보여, 같은 남성 인상군 안에서 비교하는 편이 자연스럽습니다.",
+      lookalikes: [
+        {
+          name: "차은우",
+          reason:
+            "차은우 : 중심선이 또렷하고 눈매와 하관 정리가 비슷하기 때문에 정돈된 남성 인상이 겹쳐 보입니다."
+        },
+        {
+          name: "박서준",
+          reason:
+            "박서준 : 입선 제어와 하관 구조가 비슷하기 때문에 단정한 카리스마 인상이 닮아 보입니다."
+        },
+        {
+          name: "이준호",
+          reason:
+            "이준호 : 눈의 집중도와 턱선 마감이 비슷하기 때문에 절제된 남성 인상으로 이어집니다."
+        }
+      ],
+      colorSummary:
+        "명도 대비가 과하지 않아 뉴트럴 계열이 먼저 받쳐주고, 과한 채도보다 정돈된 톤이 얼굴 구조를 더 살립니다.",
+      palette: ["소프트 베이지", "토프", "뮤트 코랄", "스톤 그레이"],
+      colorRecommendations: [
+        "채도가 낮은 베이지 계열이기 때문에 중심선이 흐려지지 않고, 얼굴 구조가 더 정돈돼 보입니다.",
+        "토프와 소프트 그레이가 들어가면 턱선과 시선 중심이 덜 흐트러지고, 구조가 더 또렷해 보입니다.",
+        "과한 네온 톤보다 채도 낮은 포인트가 더 맞는 이유는 얼굴 구조가 먼저 살아나기 때문입니다."
+      ],
+      colorAvoid: [
+        "채도가 높은 핑크 계열이기 때문에 색이 먼저 튀고, 얼굴 구조 해석이 약해질 수 있습니다.",
+        "차갑고 극단적인 대비가 강하면 인상이 먼저 세져 보여, 사람보다 스타일이 먼저 보일 수 있습니다."
+      ]
+    }
+  },
+  en: {
+    errorNeedImage: "A face photo is required.",
+    parseError: "Could not parse the Face Lab response.",
+    serverError: "Something went wrong while generating Face Lab.",
+    systemLanguage: "Output must be entirely in English.",
+    instruction:
+      "Create a Face Lab result from the uploaded face photo. If the face is partly occluded, heavily edited, or strongly styled, briefly acknowledge that limit.",
+    toneRule: "Write with structure and impression logic, not flattering copy.",
+    fallback: {
+      headlineLabel: "Sharp decision type",
+      headlineResult: "A clear center line with controlled expression creates a decision-first impression",
+      overall:
+        "The facial center line reads clearly and the lower-face finish looks defined, so the face gives a judgment-first impression.",
+      axes: ["Leader", "Focused"],
+      features: [
+        "The eyes look more concentrated than wide-open, so the visual center gathers faster, and the face reads as more decision-led.",
+        "The mouth line looks controlled, so expression appears filtered first, and the face reads as more measured in social settings.",
+        "The jaw finish looks defined, so directional structure appears steadier, and the face reads as less easily swayed.",
+        "The overall ratio stays balanced, so the eye does not drift to one side, and the face reads as internally centered."
+      ],
+      tendency: [
+        "In practice, this kind of face can read as someone who raises intensity only when it matters.",
+        "It can also read as someone who watches the flow first, then steps in with clearer direction."
+      ],
+      strengths: [
+        "Decision speed and expression control can appear together.",
+        "Direction often reads clearly before overt intensity does.",
+        "Presence can grow more through accumulated impression than instant reaction."
+      ],
+      cautions: [
+        "Low facial variation can read as emotional distance.",
+        "Strong concentration can make slower people feel left behind."
+      ],
+      shapeSummary:
+        "The center line stays visually clear, so cleaner silhouettes work better than heavier styles that hide the jaw and neckline.",
+      shapeRecommendations: [
+        "A clearer forehead opening creates a stronger center line, so cleaner side-part styles work well.",
+        "A line that follows the face instead of widening sideways keeps the jaw cleaner, so tighter silhouettes work well.",
+        "A mid-length layer that does not sit too heavy under the jaw helps the lower face stay defined."
+      ],
+      shapeAvoid: [
+        "A style that widens hard at both sides makes the face spread outward, so it can weaken the central line.",
+        "Heavy straight fringe lowers eye exposure, so it can hide the face's clearer focus."
+      ],
+      lookalikeSummary:
+        "The face reads as a structured masculine presentation, so the look-alike set should stay within similar male public figures.",
+      lookalikes: [
+        {
+          name: "Cha Eun-woo",
+          reason:
+            "Cha Eun-woo : the central facial line and cleaner eye-to-jaw structure overlap, creating a similarly polished masculine impression."
+        },
+        {
+          name: "Park Seo-joon",
+          reason:
+            "Park Seo-joon : the mouth control and lower-face structure feel similar, so the face gives a similarly restrained charismatic impression."
+        },
+        {
+          name: "Lee Junho",
+          reason:
+            "Lee Junho : the eye focus and jaw finish feel structurally close, so the controlled masculine impression overlaps."
+        }
+      ],
+      colorSummary:
+        "The contrast looks moderate rather than extreme, so cleaner muted tones support the structure better than high-chroma color.",
+      palette: ["Soft beige", "Taupe", "Muted coral", "Stone gray"],
+      colorRecommendations: [
+        "A muted beige base softens contrast, so the center line stays visible without washing out.",
+        "Taupe and soft gray keep the face structured, so the jaw and eye focus stay cleaner.",
+        "Low-chroma warm accents work better than sharp neon color because the structure stays clearer."
+      ],
+      colorAvoid: [
+        "Very high-chroma pink can make color arrive before structure, so the facial line looks less controlled.",
+        "Cold extreme contrast can harden the face first, so styling can look louder than the person."
+      ]
+    }
+  }
+};
+
+function getCopy(locale = "ko") {
+  return COPY[locale] || COPY.ko;
+}
+
+const KNOWN_PRESENTATION_BY_NAME = {
+  "cha eun-woo": "masculine",
+  "park seo-joon": "masculine",
+  "lee junho": "masculine",
+  "차은우": "masculine",
+  "박서준": "masculine",
+  "이준호": "masculine",
+  "go youn-jung": "feminine",
+  "han so-hee": "feminine",
+  "suzy": "feminine",
+  "bibi": "feminine",
+  "고윤정": "feminine",
+  "한소희": "feminine",
+  "수지": "feminine",
+  "비비": "feminine"
+};
+
+const LOOKALIKE_FALLBACKS = {
+  ko: {
+    masculine: {
+      summary: "선이 정돈된 얼굴 구조와 하관의 정리감이 먼저 보여, 같은 남성 인상군 안에서 비교하는 편이 자연스럽습니다.",
+      matches: [
+        {
+          name: "차은우",
+          reason:
+            "차은우 : 중심선이 또렷하고 눈매와 하관 정리가 비슷하기 때문에 정돈된 남성 인상이 겹쳐 보입니다."
+        },
+        {
+          name: "박서준",
+          reason:
+            "박서준 : 입선 제어와 하관 구조가 비슷하기 때문에 단정한 카리스마 인상이 닮아 보입니다."
+        },
+        {
+          name: "이준호",
+          reason:
+            "이준호 : 눈의 집중도와 턱선 마감이 비슷하기 때문에 절제된 남성 인상으로 이어집니다."
+        }
+      ]
+    },
+    feminine: {
+      summary: "결 정리가 부드럽게 이어지고 시선 흐름이 안정적으로 보여, 같은 여성 인상군 안에서 비교하는 편이 자연스럽습니다.",
+      matches: [
+        {
+          name: "고윤정",
+          reason:
+            "고윤정 : 눈매 흐름과 중안부 정리가 비슷하기 때문에 또렷하지만 차분한 여성 인상이 겹쳐 보입니다."
+        },
+        {
+          name: "한소희",
+          reason:
+            "한소희 : 얼굴선의 정리감과 시선 집중이 비슷하기 때문에 선명한 여성 인상이 닮아 보입니다."
+        },
+        {
+          name: "수지",
+          reason:
+            "수지 : 하관 마감과 전체 균형감이 비슷하기 때문에 부드럽게 정돈된 여성 인상으로 이어집니다."
+        }
+      ]
+    },
+    neutral: {
+      summary: "구조 대비가 과하지 않고 중심선이 안정적으로 보여, 강한 성별 대비보다 비슷한 분위기의 대중 인물로 보는 편이 자연스럽습니다.",
+      matches: [
+        {
+          name: "비비",
+          reason:
+            "비비 : 중심선이 살아 있으면서도 결이 과하게 날카롭지 않아, 또렷함과 자연스러움이 함께 보이는 인상이 닮아 보입니다."
+        },
+        {
+          name: "이준호",
+          reason:
+            "이준호 : 눈의 집중도와 얼굴선 정리가 비슷하기 때문에 차분하게 중심이 잡힌 인상이 이어집니다."
+        },
+        {
+          name: "고윤정",
+          reason:
+            "고윤정 : 전체 비율 정리가 안정적으로 보여, 결이 깨끗하게 모이는 인상이 겹쳐 보입니다."
+        }
+      ]
+    }
+  },
+  en: {
+    masculine: {
+      summary: "The face reads as a structured masculine presentation, so the look-alike set should stay within similar male public figures.",
+      matches: [
+        {
+          name: "Cha Eun-woo",
+          reason:
+            "Cha Eun-woo : the central facial line and cleaner eye-to-jaw structure overlap, creating a similarly polished masculine impression."
+        },
+        {
+          name: "Park Seo-joon",
+          reason:
+            "Park Seo-joon : the mouth control and lower-face structure feel similar, so the face gives a similarly restrained charismatic impression."
+        },
+        {
+          name: "Lee Junho",
+          reason:
+            "Lee Junho : the eye focus and jaw finish feel structurally close, so the controlled masculine impression overlaps."
+        }
+      ]
+    },
+    feminine: {
+      summary: "The face reads as a softer feminine presentation, so the look-alike set should stay within similar female public figures.",
+      matches: [
+        {
+          name: "Go Youn-jung",
+          reason:
+            "Go Youn-jung : the cleaner eye line and centered facial balance overlap, creating a similarly clear feminine impression."
+        },
+        {
+          name: "Han So-hee",
+          reason:
+            "Han So-hee : the facial line definition and eye focus feel structurally similar, so the face gives a similarly sharp feminine impression."
+        },
+        {
+          name: "Suzy",
+          reason:
+            "Suzy : the lower-face finish and overall balance feel close, so the face keeps a similarly calm feminine impression."
+        }
+      ]
+    },
+    neutral: {
+      summary: "The structure reads balanced rather than strongly polarized, so a softer cross-style comparison is more natural than an extreme presentation call.",
+      matches: [
+        {
+          name: "BIBI",
+          reason:
+            "BIBI : the center line stays visible without turning overly sharp, so the face gives a similarly clear but relaxed impression."
+        },
+        {
+          name: "Lee Junho",
+          reason:
+            "Lee Junho : the eye focus and facial line control feel structurally close, so the impression stays centered and measured."
+        },
+        {
+          name: "Go Youn-jung",
+          reason:
+            "Go Youn-jung : the balanced ratio and cleaner line flow overlap, so the face keeps a similarly composed impression."
+        }
+      ]
+    }
+  }
+};
+
+function normalizePresentationHint(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (normalized === "masculine" || normalized === "feminine" || normalized === "neutral") {
+    return normalized;
+  }
+
+  return "neutral";
+}
+
+function getKnownPresentation(name) {
+  const normalized = String(name || "").trim().toLowerCase();
+  return KNOWN_PRESENTATION_BY_NAME[normalized] || null;
+}
+
+function getLookalikeFallback(locale = "ko", presentationHint = "neutral") {
+  const fallbackSet = LOOKALIKE_FALLBACKS[locale] || LOOKALIKE_FALLBACKS.ko;
+  return fallbackSet[presentationHint] || fallbackSet.neutral;
+}
+
+function buildMockFaceLab(locale = "ko", presentationHint = "neutral") {
+  const fallback = getCopy(locale).fallback;
+  const resolvedPresentation = normalizePresentationHint(presentationHint);
+  const lookalikeFallback = getLookalikeFallback(locale, resolvedPresentation);
+
   return {
     base_data: {
-      landmarks: ["눈폭이 또렷한 편", "입선이 단단한 편", "턱선 마감이 선명함", "얼굴 비율이 균형형"],
+      landmarks:
+        locale === "en"
+          ? ["clear eye focus", "controlled mouth line", "defined jaw finish", "balanced face ratio"]
+          : ["눈의 집중도가 또렷함", "입선 제어가 보임", "턱선 마감이 선명함", "얼굴 비율이 균형형"],
       face_shape: "balanced oval",
-      embedding: ["focused", "controlled", "steady"],
+      presentation_hint: resolvedPresentation,
+      embedding: locale === "en" ? ["focused", "controlled", "structured"] : ["집중형", "제어형", "구조형"],
       color_values: {
-        undertone: "neutral-warm",
+        undertone: "neutral",
         brightness: "medium",
-        contrast: "soft-medium",
+        contrast: "medium",
         saturation: "muted"
       }
     },
     features: {
       physiognomy: {
-        headline_label: "차분한 설득형",
-        headline_result: "중심선이 또렷한 + 표현 제어가 강한 + 설득형",
-        overall_impression:
-          "선의 긴장도는 과하지 않지만 중심축이 분명해, 반응보다 판단이 먼저 보이는 얼굴 구조로 읽힙니다.",
-        interpretation_axes: ["신중형", "부드러운 카리스마형"],
-        feature_based_interpretation: [
-          "눈의 폭이 또렷하고 시선이 중앙으로 모이기 때문에 핵심이 먼저 읽히는 시각 효과가 생기고, 판단이 빠른 인상으로 이어집니다.",
-          "입선이 단단하게 닫혀 있기 때문에 감정보다 제어가 먼저 보이는 시각 효과가 생기고, 거리 조절이 분명한 인상으로 이어집니다.",
-          "턱선의 끊김이 적고 끝선이 선명하기 때문에 방향성이 고정돼 보이는 시각 효과가 생기고, 쉽게 흔들리지 않는 인상으로 이어집니다.",
-          "얼굴 비율이 한쪽으로 치우치지 않기 때문에 판단 기준이 내부에 있는 시각 효과가 생기고, 차분하게 주도권을 잡는 인상으로 이어집니다."
-        ],
-        real_tendency: [
-          "실제로는 말수가 많기보다 필요한 순간에만 강도를 올려 말하는 편일 가능성이 있습니다.",
-          "관계에서는 먼저 밀어붙이기보다 흐름을 읽다가도 기준이 생기면 주도권을 잡는 쪽으로 보일 수 있습니다."
-        ],
-        strengths: [
-          "판단 속도와 표현 제어가 함께 보여 설득 상황에서 말의 축이 쉽게 흐트러지지 않습니다.",
-          "강한 압박보다 정리된 방향 제시가 먼저 보여 협의형 리더 역할에 강점을 가질 수 있습니다.",
-          "초반 반응보다 누적 인상에서 존재감이 커지는 구조로 읽힐 가능성이 있습니다."
-        ],
-        cautions: [
-          "표정 변화가 적으면 판단이 빠른 대신 정서적 거리가 있는 인상으로 읽힐 수 있습니다.",
-          "한 방향으로 집중할 때 주변의 느린 속도를 비효율로 느낄 가능성이 있습니다."
-        ]
+        headline_label: fallback.headlineLabel,
+        headline_result: fallback.headlineResult,
+        overall_impression: fallback.overall,
+        interpretation_axes: fallback.axes,
+        feature_based_interpretation: fallback.features,
+        real_tendency: fallback.tendency,
+        strengths: fallback.strengths,
+        cautions: fallback.cautions
       },
       face_shape_hairstyle: {
-        summary:
-          "중심선이 또렷한 얼굴형이기 때문에 시선이 중앙으로 모이는 효과가 생기고, 윤곽 정리형 스타일이 더 잘 맞습니다.",
-        recommendations: [
-          "이마가 일부 드러나는 앞머리 구조이기 때문에 세로 중심선이 살아나는 효과가 생기고, 가벼운 시스루 뱅이 잘 맞습니다.",
-          "옆선이 얼굴을 따라 떨어지는 구조이기 때문에 윤곽 끊김이 줄어드는 효과가 생기고, 얼굴선 따라 흐르는 레이어가 잘 맞습니다.",
-          "턱선과 광대를 함께 정리하는 구조이기 때문에 하관 무게가 분산되는 효과가 생기고, 미디엄 길이 레이어가 잘 맞습니다."
-        ],
-        avoid: [
-          "양옆만 크게 부푸는 구조이기 때문에 가로 폭이 먼저 커지는 효과가 생기고, 중심선이 흐려지는 스타일은 피하는 편이 좋습니다.",
-          "무거운 일자 풀뱅 구조이기 때문에 눈매 노출이 줄어드는 효과가 생기고, 또렷한 인상이 약해지는 스타일은 피하는 편이 좋습니다."
-        ]
+        summary: fallback.shapeSummary,
+        recommendations: fallback.shapeRecommendations,
+        avoid: fallback.shapeAvoid
       },
       lookalike_celebrities: {
-        summary:
-          "눈 중심선과 입선 제어가 함께 보여, 선명한 판단 인상과 절제된 표현이 겹치는 셀럽군과 닮은 흐름으로 읽힙니다.",
-        matches: [
-          {
-            name: "고윤정",
-            reason: "고윤정 : 눈 중심선과 하관 정리감이 비슷하기 때문에 표정이 과하지 않아도 중심이 남는 인상이 닮은 쪽으로 보입니다."
-          },
-          {
-            name: "한소희",
-            reason: "한소희 : 눈매 선명도와 턱선 마감이 비슷하기 때문에 시선이 얼굴 중앙에 모이는 인상이 닮은 쪽으로 보입니다."
-          },
-          {
-            name: "수지",
-            reason: "수지 : 전체 선 강도는 높지 않지만 입선 제어가 비슷하기 때문에 절제된 설득형 인상이 닮은 흐름으로 보입니다."
-          }
-        ]
+        summary: lookalikeFallback.summary,
+        matches: lookalikeFallback.matches
       },
       color_tone_recommendation: {
-        summary:
-          "대비가 과하지 않은 뉴트럴 웜 계열이기 때문에 중심선이 흐려지지 않는 효과가 생기고, 표정 구조가 더 정리돼 보입니다.",
-        palette: ["Soft beige", "Muted coral", "Warm taupe", "Dusty peach"],
-        recommendations: [
-          "노란 기가 강하지 않은 베이스 구조이기 때문에 피부 면이 평평해 보이는 효과가 생기고, 뉴트럴 베이지가 잘 맞습니다.",
-          "채도가 낮은 코랄 구조이기 때문에 입 주변 대비가 과하게 오르지 않는 효과가 생기고, 뮤트 코랄 립이 잘 맞습니다.",
-          "크림과 웜 그레이 구조이기 때문에 얼굴 외곽 대비가 낮아지는 효과가 생기고, 저대비 의상 조합이 잘 맞습니다."
-        ],
-        avoid: [
-          "푸른 기가 강한 핑크 구조이기 때문에 피부 대비가 먼저 오르는 효과가 생기고, 얼굴 구조 해석이 흐려질 수 있습니다.",
-          "흑백 대비가 강한 조합이기 때문에 외곽 경계가 먼저 서는 효과가 생기고, 표정선보다 색이 먼저 보일 수 있습니다."
-        ]
+        summary: fallback.colorSummary,
+        palette: fallback.palette,
+        recommendations: fallback.colorRecommendations,
+        avoid: fallback.colorAvoid
       }
     }
   };
@@ -98,129 +386,127 @@ function normalizeArray(value, fallback, maxLength) {
     return fallback;
   }
 
-  return value.slice(0, maxLength).map((item) => String(item));
+  return value.slice(0, maxLength).map((item) => String(item || "").trim()).filter(Boolean);
 }
 
-function normalizeMatches(value, fallback) {
+function isPlaceholderCelebrityName(name) {
+  const normalized = String(name || "").trim().toLowerCase();
+
+  return (
+    !normalized ||
+    /^celebrity[\s_-]*[a-z0-9]+$/.test(normalized) ||
+    /^celeb[\s_-]*[a-z0-9]+$/.test(normalized) ||
+    /^person[\s_-]*[a-z0-9]+$/.test(normalized) ||
+    /^sample[\s_-]*[a-z0-9]+$/.test(normalized)
+  );
+}
+
+function hasPlaceholderReason(reason) {
+  const normalized = String(reason || "").trim().toLowerCase();
+
+  return (
+    !normalized ||
+    normalized.includes("celebrity a") ||
+    normalized.includes("celebrity b") ||
+    normalized.includes("celebrity c") ||
+    normalized.includes("person 1") ||
+    normalized.includes("sample 1")
+  );
+}
+
+function hasMixedKnownPresentation(matches, presentationHint) {
+  if (presentationHint === "neutral") {
+    return false;
+  }
+
+  return matches.some((item) => {
+    const knownPresentation = getKnownPresentation(item.name);
+    return knownPresentation && knownPresentation !== presentationHint;
+  });
+}
+
+function normalizeMatches(value, fallback, presentationHint = "neutral") {
   if (!Array.isArray(value) || !value.length) {
     return fallback;
   }
 
-  return value.slice(0, 3).map((item) => ({
-    name: String(item?.name || ""),
-    reason: String(item?.reason || "")
-  }));
+  const seenNames = new Set();
+  const matches = value
+    .slice(0, 3)
+    .map((item) => ({
+      name: String(item?.name || "").trim(),
+      reason: String(item?.reason || "").trim()
+    }))
+    .filter((item) => {
+      const normalizedName = item.name.toLowerCase();
+
+      if (
+        !item.name ||
+        !item.reason ||
+        isPlaceholderCelebrityName(item.name) ||
+        hasPlaceholderReason(item.reason) ||
+        seenNames.has(normalizedName)
+      ) {
+        return false;
+      }
+
+      seenNames.add(normalizedName);
+      return true;
+    });
+
+  if (matches.length !== 3 || hasMixedKnownPresentation(matches, presentationHint)) {
+    return fallback;
+  }
+
+  return matches;
 }
 
-function normalizeFaceLab(parsed) {
-  const fallback = buildMockFaceLab();
+function normalizeFaceLab(parsed, locale = "ko") {
+  const presentationHint = normalizePresentationHint(parsed?.base_data?.presentation_hint);
+  const fallback = buildMockFaceLab(locale, presentationHint);
 
   return {
     base_data: {
       landmarks: normalizeArray(parsed?.base_data?.landmarks, fallback.base_data.landmarks, 4),
       face_shape: String(parsed?.base_data?.face_shape || fallback.base_data.face_shape),
+      presentation_hint: presentationHint,
       embedding: normalizeArray(parsed?.base_data?.embedding, fallback.base_data.embedding, 4),
       color_values: {
-        undertone: String(
-          parsed?.base_data?.color_values?.undertone || fallback.base_data.color_values.undertone
-        ),
-        brightness: String(
-          parsed?.base_data?.color_values?.brightness || fallback.base_data.color_values.brightness
-        ),
-        contrast: String(
-          parsed?.base_data?.color_values?.contrast || fallback.base_data.color_values.contrast
-        ),
-        saturation: String(
-          parsed?.base_data?.color_values?.saturation || fallback.base_data.color_values.saturation
-        )
+        undertone: String(parsed?.base_data?.color_values?.undertone || fallback.base_data.color_values.undertone),
+        brightness: String(parsed?.base_data?.color_values?.brightness || fallback.base_data.color_values.brightness),
+        contrast: String(parsed?.base_data?.color_values?.contrast || fallback.base_data.color_values.contrast),
+        saturation: String(parsed?.base_data?.color_values?.saturation || fallback.base_data.color_values.saturation)
       }
     },
     features: {
       physiognomy: {
-        headline_label: String(
-          parsed?.features?.physiognomy?.headline_label ||
-            fallback.features.physiognomy.headline_label
-        ),
-        headline_result: String(
-          parsed?.features?.physiognomy?.headline_result ||
-            fallback.features.physiognomy.headline_result
-        ),
-        overall_impression: String(
-          parsed?.features?.physiognomy?.overall_impression ||
-            fallback.features.physiognomy.overall_impression
-        ),
-        interpretation_axes: normalizeArray(
-          parsed?.features?.physiognomy?.interpretation_axes,
-          fallback.features.physiognomy.interpretation_axes,
-          2
-        ),
-        feature_based_interpretation: normalizeArray(
-          parsed?.features?.physiognomy?.feature_based_interpretation,
-          fallback.features.physiognomy.feature_based_interpretation,
-          4
-        ),
-        real_tendency: normalizeArray(
-          parsed?.features?.physiognomy?.real_tendency,
-          fallback.features.physiognomy.real_tendency,
-          2
-        ),
-        strengths: normalizeArray(
-          parsed?.features?.physiognomy?.strengths,
-          fallback.features.physiognomy.strengths,
-          3
-        ),
-        cautions: normalizeArray(
-          parsed?.features?.physiognomy?.cautions,
-          fallback.features.physiognomy.cautions,
-          2
-        )
+        headline_label: String(parsed?.features?.physiognomy?.headline_label || fallback.features.physiognomy.headline_label),
+        headline_result: String(parsed?.features?.physiognomy?.headline_result || fallback.features.physiognomy.headline_result),
+        overall_impression: String(parsed?.features?.physiognomy?.overall_impression || fallback.features.physiognomy.overall_impression),
+        interpretation_axes: normalizeArray(parsed?.features?.physiognomy?.interpretation_axes, fallback.features.physiognomy.interpretation_axes, 2),
+        feature_based_interpretation: normalizeArray(parsed?.features?.physiognomy?.feature_based_interpretation, fallback.features.physiognomy.feature_based_interpretation, 4),
+        real_tendency: normalizeArray(parsed?.features?.physiognomy?.real_tendency, fallback.features.physiognomy.real_tendency, 2),
+        strengths: normalizeArray(parsed?.features?.physiognomy?.strengths, fallback.features.physiognomy.strengths, 3),
+        cautions: normalizeArray(parsed?.features?.physiognomy?.cautions, fallback.features.physiognomy.cautions, 2)
       },
       face_shape_hairstyle: {
-        summary: String(
-          parsed?.features?.face_shape_hairstyle?.summary ||
-            fallback.features.face_shape_hairstyle.summary
-        ),
-        recommendations: normalizeArray(
-          parsed?.features?.face_shape_hairstyle?.recommendations,
-          fallback.features.face_shape_hairstyle.recommendations,
-          3
-        ),
-        avoid: normalizeArray(
-          parsed?.features?.face_shape_hairstyle?.avoid,
-          fallback.features.face_shape_hairstyle.avoid,
-          2
-        )
+        summary: String(parsed?.features?.face_shape_hairstyle?.summary || fallback.features.face_shape_hairstyle.summary),
+        recommendations: normalizeArray(parsed?.features?.face_shape_hairstyle?.recommendations, fallback.features.face_shape_hairstyle.recommendations, 3),
+        avoid: normalizeArray(parsed?.features?.face_shape_hairstyle?.avoid, fallback.features.face_shape_hairstyle.avoid, 2)
       },
       lookalike_celebrities: {
-        summary: String(
-          parsed?.features?.lookalike_celebrities?.summary ||
-            fallback.features.lookalike_celebrities.summary
-        ),
+        summary: String(parsed?.features?.lookalike_celebrities?.summary || fallback.features.lookalike_celebrities.summary),
         matches: normalizeMatches(
           parsed?.features?.lookalike_celebrities?.matches,
-          fallback.features.lookalike_celebrities.matches
+          fallback.features.lookalike_celebrities.matches,
+          presentationHint
         )
       },
       color_tone_recommendation: {
-        summary: String(
-          parsed?.features?.color_tone_recommendation?.summary ||
-            fallback.features.color_tone_recommendation.summary
-        ),
-        palette: normalizeArray(
-          parsed?.features?.color_tone_recommendation?.palette,
-          fallback.features.color_tone_recommendation.palette,
-          4
-        ),
-        recommendations: normalizeArray(
-          parsed?.features?.color_tone_recommendation?.recommendations,
-          fallback.features.color_tone_recommendation.recommendations,
-          3
-        ),
-        avoid: normalizeArray(
-          parsed?.features?.color_tone_recommendation?.avoid,
-          fallback.features.color_tone_recommendation.avoid,
-          2
-        )
+        summary: String(parsed?.features?.color_tone_recommendation?.summary || fallback.features.color_tone_recommendation.summary),
+        palette: normalizeArray(parsed?.features?.color_tone_recommendation?.palette, fallback.features.color_tone_recommendation.palette, 4),
+        recommendations: normalizeArray(parsed?.features?.color_tone_recommendation?.recommendations, fallback.features.color_tone_recommendation.recommendations, 3),
+        avoid: normalizeArray(parsed?.features?.color_tone_recommendation?.avoid, fallback.features.color_tone_recommendation.avoid, 2)
       }
     }
   };
@@ -237,11 +523,9 @@ function extractTextContent(content) {
         if (typeof item === "string") {
           return item;
         }
-
         if (item?.type === "text") {
           return item.text || "";
         }
-
         return "";
       })
       .join("\n")
@@ -251,33 +535,35 @@ function extractTextContent(content) {
   return "";
 }
 
-function safeParse(content) {
+function safeParse(content, locale = "ko") {
   try {
     return JSON.parse(content);
   } catch {
     const matched = content.match(/\{[\s\S]*\}/);
-
     if (matched) {
       return JSON.parse(matched[0]);
     }
-
-    throw new Error("Face Lab 응답을 해석하지 못했습니다.");
+    throw new Error(getCopy(locale).parseError);
   }
 }
 
-function createPrompt() {
+function createPrompt(locale = "ko") {
+  const copy = getCopy(locale);
+
   return `
-You are generating a Korean "Face Lab" result.
+You are generating a Face Lab result.
 This is not medical or scientific analysis.
 Return only valid JSON.
 Do not include markdown.
 Do not add extra keys.
+${copy.systemLanguage}
 
 Use this exact JSON shape:
 {
   "base_data": {
     "landmarks": ["visible feature 1", "visible feature 2", "visible feature 3", "visible feature 4"],
     "face_shape": "short face-shape label",
+    "presentation_hint": "masculine | feminine | neutral",
     "embedding": ["descriptor 1", "descriptor 2", "descriptor 3"],
     "color_values": {
       "undertone": "value",
@@ -290,14 +576,9 @@ Use this exact JSON shape:
     "physiognomy": {
       "headline_label": "dominant label",
       "headline_result": "summary line",
-      "overall_impression": "1 to 2 sentences",
+      "overall_impression": "1 sentence",
       "interpretation_axes": ["axis 1", "axis 2"],
-      "feature_based_interpretation": [
-        "sentence 1",
-        "sentence 2",
-        "sentence 3",
-        "sentence 4"
-      ],
+      "feature_based_interpretation": ["sentence 1", "sentence 2", "sentence 3", "sentence 4"],
       "real_tendency": ["sentence 1", "sentence 2"],
       "strengths": ["line 1", "line 2", "line 3"],
       "cautions": ["line 1", "line 2"]
@@ -310,9 +591,9 @@ Use this exact JSON shape:
     "lookalike_celebrities": {
       "summary": "1 sentence",
       "matches": [
-        { "name": "celebrity 1", "reason": "structured reason" },
-        { "name": "celebrity 2", "reason": "structured reason" },
-        { "name": "celebrity 3", "reason": "structured reason" }
+        { "name": "real public figure 1", "reason": "structured reason" },
+        { "name": "real public figure 2", "reason": "structured reason" },
+        { "name": "real public figure 3", "reason": "structured reason" }
       ]
     },
     "color_tone_recommendation": {
@@ -324,84 +605,60 @@ Use this exact JSON shape:
   }
 }
 
-Interpretation axis rules:
-- Pick 1 or 2 dominant axes only for physiognomy.
-- Allowed axes:
-  - 안정형
-  - 친화형
-  - 리더형
-  - 신중형
-  - 집중형
-  - 부드러운 카리스마형
-  - 거리감 있는 이성형
-  - 표현력 있는 외향형
-
-Summary rules:
-- headline_result is the SUMMARY line.
-- Format:
-  [structure trait] + " + " + [behavior trait] + " " + [archetype]
-- Example:
-  판단 속도가 빠른 + 표현 제어가 강한 + 설득형
-- Avoid these vague words in headline_result by default:
-  부드러운, 친근한, 안정적인, 신뢰감
-
-Feature rules:
-- Every feature_based_interpretation sentence must use exactly ONE sentence.
-- Format:
-  [observation] + " 때문에 " + [visual effect] + ", " + [impression outcome] + "으로 이어집니다."
-- No arrows.
-- No line breaks.
-- Prefer structural causal wording.
-
-Word replacement rules:
-- Replace vague words with structural ones:
-  - 부드러운 -> 낮은 긴장도 / 완만한 곡선
-  - 친근한 -> 접근 장벽이 낮은
-  - 신뢰감 -> 예측 가능성
-
-Look-alike rules:
-- For each match reason use this format:
-  [Name] : [structural similarity] + " 때문에 " + [impression similarity]
-
-Hair / shape rules:
-- Use this format for each recommendation and avoid line:
-  [face structure] + " 때문에 " + [visual effect] + ", " + [recommendation]
-
-Language rules:
-- Output must be entirely in Korean.
-- Tone must feel analytical, semi-professional, observation-based, and plausible.
-- Not mystical, not medical, not absolute.
-- Do not let every result converge to the same soft or trustworthy tone.
-- If the face has sharper lines, stronger contrast, narrower eyes, or tighter mouth shape, allow outputs like:
-  - 판단이 빠른 인상
-  - 거리 조절이 분명한 인상
-  - 쉽게 흔들리지 않는 구조
-  - 주도성이 보이는 타입
-- If the face has softer curves, wider eyes, relaxed mouth corners, or lower tension overall, allow outputs like:
-  - 접근 장벽이 낮은 인상
-  - 감정 완충력이 있는 타입
-  - 분위기를 부드럽게 만드는 성향
-  - 관계 조율형
-- If mixed features appear, combine them naturally:
-  - 부드러운 리더형
-  - 차분한 설득형
-  - 친화적인 중심형
+Rules:
+- Keep the tone analytical, structural, and observation-based.
+- Do not use mystical, medical, or absolute wording.
+- Do not return placeholder celebrity names such as "Celebrity A", "Celebrity B", "Celebrity C", "Person 1", or "Sample 1".
+- presentation_hint must be exactly one of: masculine, feminine, neutral.
+- Look-alike matches must be real public figures.
+- Prefer public figures with the same apparent gender presentation and a similar age/styling zone seen in the photo.
+- For masculine-presenting faces, stay in masculine public-figure candidates first.
+- For feminine-presenting faces, stay in feminine public-figure candidates first.
+- Do not mix masculine and feminine celebrity sets unless the face is genuinely neutral in presentation.
+- If the face is too obscured to make a solid look-alike call, still pick plausible real figures but briefly note the visual limitation in the reason.
+- Explain matches with facial structure, not fandom language.
+- Use this format for each look-alike:
+  [Name] : [structural similarity] because [impression similarity]
+- Hairstyle recommendations should use structure -> visual effect -> recommendation.
+- Feature-based lines should follow observation -> visual effect -> impression outcome.
+- ${copy.toneRule}
 `.trim();
+}
+
+async function readOpenRouterResponse(response) {
+  const rawText = await response.text();
+
+  try {
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: rawText ? JSON.parse(rawText) : null,
+      rawText
+    };
+  } catch {
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: null,
+      rawText
+    };
+  }
 }
 
 export async function POST(request) {
   try {
     const formData = await request.formData();
     const image = formData.get("image");
+    const locale = formData.get("locale") === "en" ? "en" : "ko";
+    const copy = getCopy(locale);
 
     if (!image || typeof image.arrayBuffer !== "function") {
-      return NextResponse.json({ error: "얼굴 사진이 필요합니다." }, { status: 400 });
+      return NextResponse.json({ error: copy.errorNeedImage }, { status: 400 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
-
     if (!apiKey) {
-      return NextResponse.json(buildMockFaceLab());
+      return NextResponse.json(buildMockFaceLab(locale));
     }
 
     const buffer = Buffer.from(await image.arrayBuffer());
@@ -416,26 +673,22 @@ export async function POST(request) {
         "X-Title": X_TITLE
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: MODEL,
+        max_tokens: 1400,
+        temperature: 0.4,
         response_format: { type: "json_object" },
         messages: [
-          {
-            role: "system",
-            content: createPrompt()
-          },
+          { role: "system", content: createPrompt(locale) },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text:
-                  "업로드된 얼굴 사진을 바탕으로 Face Lab 결과를 작성해 주세요. 모든 설명은 감정형 표현보다 구조형 문장으로 쓰고, 요약은 템플릿 규칙에 맞춰 짧게 정리해 주세요."
+                text: `${copy.instruction}\n${copy.toneRule}`
               },
               {
                 type: "image_url",
-                image_url: {
-                  url: imageDataUrl
-                }
+                image_url: { url: imageDataUrl }
               }
             ]
           }
@@ -443,21 +696,18 @@ export async function POST(request) {
       })
     });
 
-    const raw = await response.text();
+    const { ok, status, data, rawText } = await readOpenRouterResponse(response);
 
-    if (!response.ok) {
-      return NextResponse.json(buildMockFaceLab());
+    if (!ok) {
+      console.error("[face-reading] OpenRouter failed", { status, rawText });
+      return NextResponse.json(buildMockFaceLab(locale));
     }
 
-    const parsedResponse = JSON.parse(raw);
-    const content = extractTextContent(parsedResponse?.choices?.[0]?.message?.content);
-
-    if (!content) {
-      return NextResponse.json(buildMockFaceLab());
-    }
-
-    return NextResponse.json(normalizeFaceLab(safeParse(content)));
-  } catch {
-    return NextResponse.json(buildMockFaceLab());
+    const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
+    const parsed = safeParse(rawContent, locale);
+    return NextResponse.json(normalizeFaceLab(parsed, locale));
+  } catch (error) {
+    console.error("[face-reading] failed", error);
+    return NextResponse.json({ error: error.message || getCopy("ko").serverError }, { status: 500 });
   }
 }

@@ -5,8 +5,8 @@ const MESSAGES = {
     alt: "업로드한 얼굴 사진 미리보기",
     hint: "밝은 정면 사진 권장",
     changePhoto: "사진 변경",
-    uploadTitle: "얼굴 사진 1장을 올려주세요",
-    uploadBody: "JPG, PNG 가능",
+    uploadTitle: "얼굴 사진 1장을 올려 주세요",
+    uploadBody: "JPG, PNG, WEBP 가능",
     remove: "제거",
     noImage: "사진 없음",
     metaSeparator: "·"
@@ -15,10 +15,10 @@ const MESSAGES = {
     label: "Upload a face photo",
     uploaded: "Uploaded",
     alt: "Preview of the uploaded face photo",
-    hint: "A bright front-facing photo works best.",
+    hint: "A bright front-facing photo works best",
     changePhoto: "Change photo",
     uploadTitle: "Upload one face photo",
-    uploadBody: "JPG and PNG supported",
+    uploadBody: "JPG, PNG, WEBP supported",
     remove: "Remove",
     noImage: "No image",
     metaSeparator: "·"
@@ -43,9 +43,9 @@ export default function UploadPreview({ imageFile, previewUrl, onChange, onClear
         <label className="block cursor-pointer">
           <input type="file" accept="image/*" className="hidden" onChange={onChange} />
           {previewUrl ? (
-            <div className="relative">
-              <img src={previewUrl} alt={t.alt} className="h-64 w-full object-cover sm:h-72" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent px-4 pb-4 pt-12 text-white">
+            <div className="relative bg-[#efe6da]">
+              <img src={previewUrl} alt={t.alt} className="h-64 w-full object-contain sm:h-72" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent px-4 pb-4 pt-12 text-white">
                 <div className="flex items-end justify-between gap-4">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{imageFile?.name || t.noImage}</p>
@@ -63,7 +63,7 @@ export default function UploadPreview({ imageFile, previewUrl, onChange, onClear
                 <span className="text-xl">+</span>
               </div>
               <p className="mt-4 text-base font-medium text-ink">{t.uploadTitle}</p>
-              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-black/55">{t.uploadBody}</p>
+              <p className="mt-2 text-sm leading-6 text-black/55">{t.uploadBody}</p>
             </div>
           )}
         </label>

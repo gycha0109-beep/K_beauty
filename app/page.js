@@ -88,6 +88,107 @@ const faceFeatureSlots = [
   { key: "shape", label: "Face Shape", icon: "🪞", keywords: ["얼굴형", "윤곽", "비율", "형태"] }
 ];
 
+const pageCopy = {
+  ko: {
+    heroTitle: "내 피부에 맞는 K-뷰티 루틴, 지금 바로 진단",
+    heroBody: "사진 1장과 몇 가지 질문으로 피부 흐름에 맞는 제품부터 루틴까지 정리해드립니다.",
+    startCta: "진단 시작하기",
+    reassurance: "회원가입 없이 바로 테스트할 수 있습니다",
+    heroBadge: "Skin Match First",
+    startReportTitle: "기본 피부 상태를 먼저 알려주세요",
+    startReportBody: "Skin Match를 먼저 보고, 필요하면 Face Lab까지 이어서 확인하면 됩니다.",
+    presetPrefix: "테스트 결과:",
+    submitLoading: "진단 준비 중...",
+    faceLabLoading: "Face Lab 분석 중...",
+    faceLabButton: "Face Lab 보기",
+    faceLabSpinner: "Face Lab 결과를 생성하고 있습니다...",
+    profileTitle: "당신의 피부 프로필",
+    profileBody: "이 조건을 기준으로 가장 안정적인 루틴을 정리했습니다.",
+    errorMissingBasics: "사진과 기본 입력 항목을 먼저 채워 주세요.",
+    errorAnalyzeFailed: "결과 생성에 실패했습니다.",
+    errorUnexpected: "예상하지 못한 오류가 발생했습니다.",
+    errorNeedPhoto: "얼굴 사진을 먼저 업로드해 주세요.",
+    errorFaceLabFailed: "Face Lab 분석에 실패했습니다.",
+    errorFaceLabLoadFailed: "Face Lab 결과를 불러오지 못했습니다.",
+    skinPresetLabels: {
+      "oily-quick": "지성 / 유분 / 끈적임 싫음",
+      "dry-barrier": "건성 / 건조 / 크림 선호"
+    },
+    facePresetLabels: {
+      "sharp-leader": "가상 결과: 선명한 리더형",
+      "warm-coordinator": "가상 결과: 친화적 조율형"
+    },
+    faceLabUi: {
+      headline: "핵심 인상",
+      overall: "전체 인상",
+      featureAnalysis: "부위별 해석",
+      tendency: "성향 흐름",
+      strengths: "강점",
+      cautions: "주의 포인트",
+      summary: "요약",
+      recommendation: "추천",
+      avoid: "피하면 좋은 방향",
+      palette: "추천 팔레트",
+      recommendations: "추천 포인트",
+      faceLab: "Face Lab",
+      shape: "얼굴형",
+      undertone: "언더톤",
+      brightness: "명도",
+      contrast: "대비",
+      saturation: "채도"
+    }
+  },
+  en: {
+    heroTitle: "A K-beauty routine matched to your skin, in minutes",
+    heroBody: "Upload one photo and answer a few questions to get product picks and a practical routine.",
+    startCta: "Start Diagnosis",
+    reassurance: "Try it instantly without creating an account",
+    heroBadge: "Skin Match First",
+    startReportTitle: "Tell us the basics of your skin first.",
+    startReportBody: "Start with Skin Match, then explore Face Lab if you want a broader style read.",
+    presetPrefix: "Test result:",
+    submitLoading: "Preparing your diagnosis...",
+    faceLabLoading: "Analyzing Face Lab...",
+    faceLabButton: "Open Face Lab",
+    faceLabSpinner: "Generating your Face Lab result...",
+    profileTitle: "Your Skin Profile",
+    profileBody: "We organized the most stable routine around these conditions.",
+    errorMissingBasics: "Please add a photo and complete the basic fields first.",
+    errorAnalyzeFailed: "Failed to generate the result.",
+    errorUnexpected: "Something unexpected went wrong.",
+    errorNeedPhoto: "Please upload a face photo first.",
+    errorFaceLabFailed: "Face Lab analysis failed.",
+    errorFaceLabLoadFailed: "Could not load the Face Lab result.",
+    skinPresetLabels: {
+      "oily-quick": "Oily / oil control / hates stickiness",
+      "dry-barrier": "Dry / dehydration / prefers cream"
+    },
+    facePresetLabels: {
+      "sharp-leader": "Sample result: sharp leader",
+      "warm-coordinator": "Sample result: warm coordinator"
+    },
+    faceLabUi: {
+      headline: "Headline",
+      overall: "Overall Impression",
+      featureAnalysis: "Feature-Based Analysis",
+      tendency: "Tendency",
+      strengths: "Strengths",
+      cautions: "Cautions",
+      summary: "Summary",
+      recommendation: "Recommendation",
+      avoid: "Avoid",
+      palette: "Palette",
+      recommendations: "Recommendations",
+      faceLab: "Face Lab",
+      shape: "Shape",
+      undertone: "Undertone",
+      brightness: "Brightness",
+      contrast: "Contrast",
+      saturation: "Saturation"
+    }
+  }
+};
+
 function buildFeatureBlocks(items = []) {
   const blocks = faceFeatureSlots.map((slot) => ({ ...slot, text: "" }));
   const remaining = items.map((item) => String(item));
@@ -112,12 +213,14 @@ function buildFeatureBlocks(items = []) {
   return blocks.filter((slot) => slot.text).slice(0, 4);
 }
 
-function renderColorValues(colorValues = {}) {
+function renderColorValues(colorValues = {}, locale = "ko") {
+  const labels = (pageCopy[locale] || pageCopy.ko).faceLabUi;
+
   return [
-    { label: "Undertone", value: colorValues.undertone },
-    { label: "Brightness", value: colorValues.brightness },
-    { label: "Contrast", value: colorValues.contrast },
-    { label: "Saturation", value: colorValues.saturation }
+    { label: labels.undertone, value: colorValues.undertone },
+    { label: labels.brightness, value: colorValues.brightness },
+    { label: labels.contrast, value: colorValues.contrast },
+    { label: labels.saturation, value: colorValues.saturation }
   ].filter((item) => item.value);
 }
 
@@ -144,14 +247,17 @@ function CompactSectionHeader({ eyebrow, title, description }) {
   );
 }
 
-function ProfileSummaryCard({ items }) {
+function ProfileSummaryCard({ items, locale = "ko" }) {
   if (!items?.length) {
     return null;
   }
 
+  const copy = pageCopy[locale] || pageCopy.ko;
+  const faceLabUi = copy.faceLabUi;
+
   return (
     <div className="rounded-[1.5rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f4e4cf_0%,#fff9f2_100%)] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d5724]">당신의 피부 프로필</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7d5724]">{copy.profileTitle}</p>
       <div className="mt-4 space-y-2.5">
         {items.map((item) => (
           <p key={item} className="text-sm leading-6 text-black/78">
@@ -160,7 +266,7 @@ function ProfileSummaryCard({ items }) {
         ))}
       </div>
       <p className="mt-4 text-sm leading-6 text-black/64">
-        이 조건을 기준으로 가장 안정적인 루틴을 정리했습니다.
+        {copy.profileBody}
       </p>
     </div>
   );
@@ -171,6 +277,7 @@ export default function HomePage() {
   const pathname = usePathname();
   const locale = pathname?.startsWith("/en") ? "en" : "ko";
   const isEnglish = locale === "en";
+  const copy = pageCopy[locale] || pageCopy.ko;
   const [activeTab, setActiveTab] = useState("skin");
   const [activeFaceFeature, setActiveFaceFeature] = useState("physiognomy");
   const [form, setForm] = useState(initialForm);
@@ -212,8 +319,8 @@ export default function HomePage() {
     [physiognomy]
   );
   const colorValueItems = useMemo(
-    () => renderColorValues(faceLabResult?.base_data?.color_values),
-    [faceLabResult]
+    () => renderColorValues(faceLabResult?.base_data?.color_values, locale),
+    [faceLabResult, locale]
   );
 
   const handleChange = (event) => {
@@ -273,7 +380,7 @@ export default function HomePage() {
     event.preventDefault();
 
     if (!isValid) {
-      setError("사진과 기본 입력 항목을 먼저 채워 주세요.");
+      setError(copy.errorMissingBasics);
       return;
     }
 
@@ -287,6 +394,7 @@ export default function HomePage() {
       Object.entries(form).forEach(([key, value]) => {
         payload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
       });
+      payload.append("locale", locale);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -296,23 +404,24 @@ export default function HomePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "결과 생성에 실패했습니다.");
+        throw new Error(data?.error || copy.errorAnalyzeFailed);
       }
 
       sessionStorage.setItem(
         "skinTestSubmission",
         JSON.stringify({
           form,
-          imageName: imageFile?.name || ""
+          imageName: imageFile?.name || "",
+          locale
         })
       );
       sessionStorage.setItem("skinTestResult", JSON.stringify(data));
-      setProfilePreview(buildSkinProfileSummary(form));
+      setProfilePreview(buildSkinProfileSummary(form, locale));
       setTimeout(() => {
         router.push(locale === "en" ? "/en/result" : "/result");
       }, 1400);
     } catch (submitError) {
-      const message = submitError.message || "예상하지 못한 오류가 발생했습니다.";
+      const message = submitError.message || copy.errorUnexpected;
       sessionStorage.removeItem("skinTestResult");
       router.push(`${locale === "en" ? "/en/result" : "/result"}?error=${encodeURIComponent(message)}`);
     } finally {
@@ -322,7 +431,7 @@ export default function HomePage() {
 
   const handleFaceLabAnalyze = async () => {
     if (!imageFile) {
-      setFaceLabError("얼굴 사진을 먼저 업로드해 주세요.");
+      setFaceLabError(copy.errorNeedPhoto);
       return;
     }
 
@@ -332,6 +441,7 @@ export default function HomePage() {
     try {
       const payload = new FormData();
       payload.append("image", imageFile);
+      payload.append("locale", locale);
 
       const response = await fetch("/api/face-reading", {
         method: "POST",
@@ -341,13 +451,13 @@ export default function HomePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "Face Lab 분석에 실패했습니다.");
+        throw new Error(data?.error || copy.errorFaceLabFailed);
       }
 
       setFaceLabResult(data);
     } catch (requestError) {
       setFaceLabResult(null);
-      setFaceLabError(requestError.message || "Face Lab 결과를 불러오지 못했습니다.");
+      setFaceLabError(requestError.message || copy.errorFaceLabLoadFailed);
     } finally {
       setFaceLabLoading(false);
     }
@@ -362,7 +472,7 @@ export default function HomePage() {
 
     sessionStorage.setItem("skinTestSubmission", JSON.stringify(preset.submission));
     sessionStorage.setItem("skinTestResult", JSON.stringify(preset.result));
-    router.push("/result");
+    router.push(locale === "en" ? "/en/result" : "/result");
   };
 
   const handleFaceLabPresetPreview = (presetId) => {
@@ -393,7 +503,7 @@ export default function HomePage() {
       return (
         <div className="space-y-4 rounded-[1.5rem] border border-black/5 bg-[#faf6f0] p-4 sm:p-5">
           <div className="rounded-[1.3rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f4e4cf_0%,#fff8f0_100%)] px-4 py-4">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[#7d5724]">Headline</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-[#7d5724]">{faceLabUi.headline}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#7d5724] px-3 py-1 text-xs font-semibold text-white">
                 {featureResult.headline_label}
@@ -413,12 +523,12 @@ export default function HomePage() {
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Overall Impression</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.overall}</p>
             <p className="mt-2 text-sm leading-6 text-black/75">{featureResult.overall_impression}</p>
           </div>
 
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Feature-Based Analysis</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.featureAnalysis}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               {featureBlocks.map((block) => (
                 <div key={block.key} className="rounded-2xl bg-white px-4 py-4">
@@ -433,7 +543,7 @@ export default function HomePage() {
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Personality</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.tendency}</p>
             <div className="mt-2 space-y-1">
               {(featureResult.real_tendency || []).slice(0, 2).map((item, index) => (
                 <p key={`tendency-${index}`} className="text-sm leading-6 text-black/75">
@@ -445,7 +555,7 @@ export default function HomePage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-3 rounded-2xl bg-white px-4 py-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Strengths</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.strengths}</p>
               {(featureResult.strengths || []).slice(0, 3).map((item, index) => (
                 <div
                   key={`strength-${index}`}
@@ -457,7 +567,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-3 rounded-2xl bg-white px-4 py-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Weaknesses</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.cautions}</p>
               {(featureResult.cautions || []).slice(0, 2).map((item, index) => (
                 <div
                   key={`caution-${index}`}
@@ -476,21 +586,21 @@ export default function HomePage() {
       return (
         <div className="space-y-4 rounded-[1.5rem] border border-black/5 bg-[#faf6f0] p-4 sm:p-5">
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Summary</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.summary}</p>
             <p className="mt-2 text-sm leading-6 text-black/75">{featureResult.summary}</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {(featureResult.recommendations || []).slice(0, 3).map((item, index) => (
               <div key={`hair-${index}`} className="rounded-2xl bg-white px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-black/40">
-                  Recommendation {index + 1}
+                  {faceLabUi.recommendation} {index + 1}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-black/75">{item}</p>
               </div>
             ))}
             {(featureResult.avoid || []).slice(0, 2).map((item, index) => (
               <div key={`avoid-${index}`} className="rounded-2xl bg-white px-4 py-4">
-                <p className="text-xs uppercase tracking-[0.14em] text-black/40">Avoid</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.avoid}</p>
                 <p className="mt-2 text-sm leading-6 text-black/75">{item}</p>
               </div>
             ))}
@@ -503,7 +613,7 @@ export default function HomePage() {
       return (
         <div className="space-y-4 rounded-[1.5rem] border border-black/5 bg-[#faf6f0] p-4 sm:p-5">
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Summary</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.summary}</p>
             <p className="mt-2 text-sm leading-6 text-black/75">{featureResult.summary}</p>
           </div>
           <div className="grid gap-3">
@@ -522,7 +632,7 @@ export default function HomePage() {
       return (
         <div className="space-y-4 rounded-[1.5rem] border border-black/5 bg-[#faf6f0] p-4 sm:p-5">
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Summary</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.summary}</p>
             <p className="mt-2 text-sm leading-6 text-black/75">{featureResult.summary}</p>
           </div>
 
@@ -539,7 +649,7 @@ export default function HomePage() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-white px-4 py-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Palette</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.palette}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {(featureResult.palette || []).slice(0, 4).map((item) => (
                   <span
@@ -553,7 +663,7 @@ export default function HomePage() {
             </div>
 
             <div className="rounded-2xl bg-white px-4 py-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Avoid</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.avoid}</p>
               <div className="mt-2 space-y-2">
                 {(featureResult.avoid || []).slice(0, 2).map((item, index) => (
                   <p key={`tone-avoid-${index}`} className="text-sm leading-6 text-black/75">
@@ -565,7 +675,7 @@ export default function HomePage() {
           </div>
 
           <div className="rounded-2xl bg-white px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-black/40">Recommendations</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-black/40">{faceLabUi.recommendations}</p>
             <div className="mt-2 space-y-2">
               {(featureResult.recommendations || []).slice(0, 3).map((item, index) => (
                 <p key={`tone-rec-${index}`} className="text-sm leading-6 text-black/75">
@@ -586,12 +696,11 @@ export default function HomePage() {
       <div className="space-y-6 sm:space-y-8">
         <section className="overflow-hidden rounded-[2rem] border border-black/5 bg-[linear-gradient(145deg,#fffdf9_0%,#f7efe5_100%)] shadow-soft">
           <div className="px-5 py-6 sm:px-8 sm:py-8">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-4 flex gap-2">
-                  {[
-                    { code: "ko", label: "한국어", href: "/" },
-                    { code: "en", label: "English", href: "/en" }
+            <div className="max-w-3xl">
+              <div className="mb-4 flex gap-2">
+                {[
+                  { code: "ko", label: "한국어", href: "/" },
+                  { code: "en", label: "English", href: "/en" }
                   ].map((item) => (
                     <Link
                       key={item.code}
@@ -607,13 +716,13 @@ export default function HomePage() {
                   ))}
                 </div>
                 <div className="inline-flex rounded-full border border-black/10 bg-white/85 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-black/55">
-                  Skin Match First
+                  {copy.heroBadge}
                 </div>
                 <h1 className="mt-4 max-w-3xl text-[2.15rem] font-semibold tracking-tight text-ink sm:text-[3.4rem] sm:leading-[1.08]">
-                  내 피부에 맞는 K-뷰티 루틴, 지금 바로 진단
+                  {copy.heroTitle}
                 </h1>
                 <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/68 sm:text-lg">
-                  사진 1장과 몇 가지 질문으로 피부 흐름에 맞는 제품부터 루틴까지 정리해드립니다.
+                  {copy.heroBody}
                 </p>
 
                 <div className="mt-5">
@@ -622,26 +731,11 @@ export default function HomePage() {
                     onClick={() => scrollToId("start-report")}
                     className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                   >
-                    진단 시작하기
+                    {copy.startCta}
                   </button>
                 </div>
 
-                <p className="mt-3 text-sm text-black/52">회원가입 없이 바로 테스트할 수 있습니다</p>
-              </div>
-
-              <div className="rounded-[1.6rem] border border-black/6 bg-white/78 p-4 backdrop-blur">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-black/40">What You Get</p>
-                <div className="mt-3 space-y-3">
-                  <div className="rounded-2xl bg-[#faf6f0] px-4 py-3">
-                    <p className="text-xs text-black/42">Skin Match</p>
-                    <p className="mt-1 text-sm font-semibold text-ink">Top Pick + 루틴 추천</p>
-                  </div>
-                  <div className="rounded-2xl bg-[#faf6f0] px-4 py-3">
-                    <p className="text-xs text-black/42">Face Lab</p>
-                    <p className="mt-1 text-sm font-semibold text-ink">얼굴형, 분위기, 컬러 톤</p>
-                  </div>
-                </div>
-              </div>
+              <p className="mt-3 text-sm text-black/52">{copy.reassurance}</p>
             </div>
           </div>
         </section>
@@ -653,9 +747,9 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-black/40">Start Report</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">기본 피부 상태를 먼저 알려주세요</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">{copy.startReportTitle}</h2>
               <p className="mt-2 text-sm leading-6 text-black/58">
-                Skin Match를 먼저 보고, 필요하면 Face Lab까지 이어서 확인하면 됩니다.
+                {copy.startReportBody}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {TEST_RESULT_PRESETS.map((preset) => (
@@ -665,7 +759,7 @@ export default function HomePage() {
                     onClick={() => handlePresetPreview(preset.id)}
                     className="rounded-full border border-dashed border-black/15 bg-[#faf6f0] px-3 py-1.5 text-xs font-medium text-black/62 transition hover:border-black/25 hover:bg-white"
                   >
-                    테스트 결과: {preset.summaryLabel}
+                    {copy.presetPrefix} {copy.skinPresetLabels[preset.id] || preset.summaryLabel}
                   </button>
                 ))}
               </div>
@@ -712,9 +806,9 @@ export default function HomePage() {
                   />
                   <ErrorMessage message={error} />
                   <SubmitButton disabled={isLoading}>
-                    {isLoading ? "진단 준비 중..." : "진단 시작하기"}
+                    {isLoading ? copy.submitLoading : copy.startCta}
                   </SubmitButton>
-                  {profilePreview ? <ProfileSummaryCard items={profilePreview} /> : null}
+                  {profilePreview ? <ProfileSummaryCard items={profilePreview} locale={locale} /> : null}
                 </form>
               ) : (
                 <div className="mt-5 space-y-5">
@@ -726,7 +820,7 @@ export default function HomePage() {
                         onClick={() => handleFaceLabPresetPreview(preset.id)}
                         className="rounded-full border border-dashed border-black/15 bg-[#faf6f0] px-3 py-1.5 text-xs font-medium text-black/62 transition hover:border-black/25 hover:bg-white"
                       >
-                        {preset.buttonLabel}
+                        {copy.facePresetLabels[preset.id] || preset.buttonLabel}
                       </button>
                     ))}
                   </div>
@@ -767,11 +861,11 @@ export default function HomePage() {
                     disabled={faceLabLoading}
                     className="inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {faceLabLoading ? "Face Lab 분석 중..." : "Face Lab 보기"}
+                    {faceLabLoading ? copy.faceLabLoading : copy.faceLabButton}
                   </button>
 
                   {faceLabLoading ? (
-                    <LoadingSpinner label="Face Lab 결과를 생성하고 있습니다..." />
+                    <LoadingSpinner label={copy.faceLabSpinner} />
                   ) : null}
 
                   {faceLabResult ? (
@@ -812,24 +906,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[1.8rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f2e3cf_0%,#fff8f1_100%)] px-5 py-7 shadow-soft sm:px-8 sm:py-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-[#7d5724]">Final CTA</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-[2rem]">
-                지금 바로 시작해보세요
-              </h2>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => scrollToId("start-report")}
-              className="inline-flex items-center justify-center rounded-full bg-[#1f1811] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black"
-            >
-              진단 시작하기
-            </button>
-          </div>
-        </section>
       </div>
     </main>
   );

@@ -5,41 +5,213 @@ import { Suspense, useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import ResultSection from "@/components/ResultSection";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { buildSkinProfileSummary } from "@/lib/skin-profile-summary";
-
 const displayMap = {
-  skinType: {
-    oily: "지성",
-    dry: "건성",
-    combination: "복합성",
-    not_sure: "잘 모르겠음"
+  ko: {
+    skinType: {
+      oily: "지성",
+      dry: "건성",
+      combination: "복합성",
+      not_sure: "잘 모르겠음"
+    },
+    mainConcern: {
+      oiliness: "유분",
+      dehydration: "건조",
+      acne: "트러블",
+      uneven_tone: "톤 불균일",
+      pores: "모공",
+      redness: "붉은기",
+      barrier: "장벽 약화"
+    }
   },
-  mainConcern: {
-    oiliness: "유분",
-    dehydration: "건조",
-    acne: "트러블",
-    uneven_tone: "톤 불균일",
-    pores: "모공",
-    redness: "붉은기",
-    barrier: "장벽 약화"
+  en: {
+    skinType: {
+      oily: "Oily",
+      dry: "Dry",
+      combination: "Combination",
+      not_sure: "Not sure"
+    },
+    mainConcern: {
+      oiliness: "Oiliness",
+      dehydration: "Dehydration",
+      acne: "Breakouts",
+      uneven_tone: "Uneven tone",
+      pores: "Pores",
+      redness: "Redness",
+      barrier: "Barrier"
+    }
   }
 };
 
 const topPickHeadlineMap = {
-  oiliness: "유분과 모공 흐름에서 가장 먼저 체감 차이가 나는 1순위",
-  pores: "모공과 번들거림 기준으로 먼저 바꿔야 할 1순위",
-  dehydration: "지금 피부 건조감에서 가장 먼저 보완할 1순위",
-  acne: "트러블 부담을 줄이기 위해 먼저 바꿔야 할 1순위",
-  uneven_tone: "톤 컨디션을 정리할 때 가장 먼저 손댈 1순위",
-  redness: "예민하게 올라오는 피부에서 가장 먼저 바꿔야 할 1순위",
-  barrier: "장벽이 흔들리는 지금 가장 먼저 써야 할 1순위"
+  ko: {
+    oiliness: "유분과 모공 흐름에서 가장 먼저 체감 차이가 나는 1순위",
+    pores: "모공과 번들거림 기준으로 먼저 바꿔야 할 1순위",
+    dehydration: "지금 피부 건조감에서 가장 먼저 보완할 1순위",
+    acne: "트러블 부담을 줄이기 위해 먼저 바꿔야 할 1순위",
+    uneven_tone: "톤 컨디션을 정리할 때 가장 먼저 손댈 1순위",
+    redness: "예민하게 올라오는 피부에서 가장 먼저 바꿔야 할 1순위",
+    barrier: "장벽이 흔들리는 지금 가장 먼저 써야 할 1순위"
+  },
+  en: {
+    oiliness: "The first product to switch for oil flow and pore control",
+    pores: "The first product to check for pores and midday shine",
+    dehydration: "The first product to add for current dehydration",
+    acne: "The first product to reach for when breakouts keep returning",
+    uneven_tone: "The first product to check when tone looks uneven",
+    redness: "The first product to calm visibly reactive skin",
+    barrier: "The first product to use when your barrier feels shaky"
+  }
 };
 
-const feedbackQuestions = [
-  { id: "reflects_skin", text: "내 피부 상태를 잘 반영했나요?" },
-  { id: "recommendation_makes_sense", text: "추천이 납득됐나요?" },
-  { id: "worth_buying", text: "사볼 만한 제품이 있었나요?" }
-];
+const feedbackQuestionMap = {
+  ko: [
+    { id: "reflects_skin", text: "내 피부 상태를 잘 반영했나요?" },
+    { id: "recommendation_makes_sense", text: "추천이 납득됐나요?" },
+    { id: "worth_buying", text: "사볼 만한 제품이 있었나요?" }
+  ],
+  en: [
+    { id: "reflects_skin", text: "Did this reflect your skin well?" },
+    { id: "recommendation_makes_sense", text: "Did the recommendation make sense?" },
+    { id: "worth_buying", text: "Was there anything you would actually buy?" }
+  ]
+};
+
+const resultCopy = {
+  ko: {
+    loading: "결과를 불러오는 중입니다...",
+    title: "당신의 K-뷰티 매치",
+    tryAgain: "다시 테스트하기",
+    skinProfile: "당신의 피부 프로필",
+    profileBody: "이 조건을 기준으로 가장 안정적인 루틴을 정리했습니다.",
+    currentConcern: "현재 고민",
+    currentSkin: "지금 피부",
+    currentConcernBasis: "현재 고민 기준",
+    topPickFallback: "이 조건에서는 이 제품을 먼저 써야 합니다",
+    productStartHere: "가장 먼저 시작할 제품",
+    recommendationDirection: "추천 방향",
+    categoryPicks: "함께 보면 좋은 추천",
+    dailyRoutine: "아침 · 저녁 루틴",
+    notes: "주의사항 · 참고할 점",
+    cautions: "주의사항",
+    skinNote: "참고할 점",
+    quickFeedback: "짧은 피드백",
+    feedbackSaved: "저장됨",
+    especiallyGoodFor: "이럴 때 특히 좋아요",
+    imageEmpty: "이미지 없음",
+    imagePreparing: "이미지 준비 중",
+    previous: "이전",
+    next: "다음",
+    topPickBadge: "1순위 추천",
+    more: "더보기",
+    less: "접기",
+    buyNow: "구매하기",
+    findStore: "구매처 찾기",
+    fitHeading: "현재 입력 기준 적합도",
+    fitHeadingCompact: "현재 입력 기준",
+    fitLabels: ["보습", "장벽", "트러블", "사용감", "민감도"],
+    directionSummaryBarrier: "지금은 장벽 회복과 가벼운 보습 연결이 우선입니다.",
+    directionSummaryOil: "지금은 유분 흐름을 먼저 정리하는 쪽이 맞습니다.",
+    directionSummaryCalm: "지금은 자극 부담을 줄이는 쪽이 먼저입니다.",
+    directionSummaryDefault: "지금은 피부 흐름을 단순하게 정리하는 편이 맞습니다.",
+    directionActionLight: "무거운 마무리보다 흡수 빠른 루틴부터 시작하세요.",
+    directionActionLayer: "보습이 끊기지 않게 얇게 여러 단계로 이어가세요.",
+    directionActionCalm: "자극 가능성이 큰 단계보다 순한 구성부터 맞춰보세요.",
+    directionActionDefault: "제품 수를 늘리기보다 기본 단계부터 안정적으로 맞춰보세요.",
+    routineCleanser: "순한 클렌저로 가볍게 세안",
+    routineToner: "가벼운 토너로 수분 연결",
+    routineSerum: "필요한 고민 위주로 세럼 한 단계 추가",
+    routineSunscreen: "가벼운 선크림으로 마무리",
+    routineMoisturizer: "무겁지 않은 보습으로 마무리",
+    useTime: { day: "아침", night: "저녁", both: "아침·저녁" },
+    especiallyOil: "오후 유분이 빠르게 올라오는 피부",
+    especiallyTight: "세안 후 당김이 오래 남는 피부",
+    especiallyMask: "마스크 마찰로 예민해지는 피부",
+    especiallyPores: "모공과 번들거림이 함께 신경 쓰이는 피부",
+    especiallyAcne: "잔여감이 무거우면 트러블이 올라오는 피부",
+    especiallyNight: "밤 루틴에서 집중 관리가 필요한 날",
+    especiallyDay: "아침 루틴에서 가볍게 마무리하고 싶은 날",
+    especiallyDefault: "매일 부담 없이 루틴을 이어가고 싶은 피부",
+    signalConcern: "일치",
+    signalSkin: "맞춤",
+    signalTextureExact: "사용감 일치",
+    signalTextureNear: "사용감 근접",
+    signalFinish: "마무리감 적합",
+    signalSensitive: "민감 피부 우호",
+    signalLowIrritation: "저자극 축",
+    noResultTitle: "결과를 불러오지 못했습니다.",
+    noResultBody: "표시할 결과가 없습니다. 홈으로 돌아가 다시 테스트해 주세요.",
+    notesSubtitle: "시작 전에 가볍게 보고 넘어갈 포인트만 묶었습니다.",
+    routineSubtitle: "아침과 저녁 루틴을 한 번에 짧게 정리했습니다.",
+    feedbackSubtitle: "한두 번만 눌러 주셔도 다음 추천 개선에 바로 도움이 됩니다."
+  },
+  en: {
+    loading: "Loading your result...",
+    title: "Your K-Beauty Match",
+    tryAgain: "Try Again",
+    skinProfile: "Your Skin Profile",
+    profileBody: "We organized the most stable routine around these conditions.",
+    currentConcern: "Current concern",
+    currentSkin: "Current skin",
+    currentConcernBasis: "Current concern",
+    topPickFallback: "This is the first product to start with for your current condition",
+    productStartHere: "Start Here",
+    recommendationDirection: "Recommendation Direction",
+    categoryPicks: "Also Worth Checking",
+    dailyRoutine: "Morning · Night Routine",
+    notes: "Cautions · Notes",
+    cautions: "Cautions",
+    skinNote: "Skin Note",
+    quickFeedback: "Quick Feedback",
+    feedbackSaved: "Saved",
+    especiallyGoodFor: "Especially good for",
+    imageEmpty: "No image",
+    imagePreparing: "Image coming soon",
+    previous: "Previous",
+    next: "Next",
+    topPickBadge: "Top Pick",
+    more: "More",
+    less: "Less",
+    buyNow: "Buy Now",
+    findStore: "Find Store",
+    fitHeading: "Fit for your current inputs",
+    fitHeadingCompact: "Current fit",
+    fitLabels: ["Hydration", "Barrier", "Breakouts", "Texture", "Sensitivity"],
+    directionSummaryBarrier: "Barrier support and lighter hydration should come first right now.",
+    directionSummaryOil: "It makes more sense to control oil flow first right now.",
+    directionSummaryCalm: "Lowering irritation should come first right now.",
+    directionSummaryDefault: "A simpler, steadier routine is the better direction right now.",
+    directionActionLight: "Start with faster-absorbing layers instead of heavier finishes.",
+    directionActionLayer: "Keep hydration going with thinner, layered steps.",
+    directionActionCalm: "Start with gentler steps before anything more active.",
+    directionActionDefault: "Stabilize the basics before adding more products.",
+    routineCleanser: "Cleanse lightly with a gentle cleanser",
+    routineToner: "Add hydration with a light toner",
+    routineSerum: "Add one serum focused on the main concern",
+    routineSunscreen: "Finish with a light sunscreen",
+    routineMoisturizer: "Seal in with a light moisturizer",
+    useTime: { day: "Morning", night: "Night", both: "Morning·Night" },
+    especiallyOil: "skin that gets shiny quickly by the afternoon",
+    especiallyTight: "skin that stays tight after cleansing",
+    especiallyMask: "skin that reacts more easily with mask friction",
+    especiallyPores: "skin concerned with both pores and shine",
+    especiallyAcne: "skin that breaks out when residue feels heavy",
+    especiallyNight: "nights when you need more focused care",
+    especiallyDay: "mornings when you want a lighter finish",
+    especiallyDefault: "skin that needs an easy routine every day",
+    signalConcern: "match",
+    signalSkin: "fit",
+    signalTextureExact: "texture match",
+    signalTextureNear: "texture close",
+    signalFinish: "finish fit",
+    signalSensitive: "sensitive-safe",
+    signalLowIrritation: "low irritation",
+    noResultTitle: "Could not load the result.",
+    noResultBody: "There is no result to show yet. Please go back and try again.",
+    notesSubtitle: "Only the quick notes worth checking before you start.",
+    routineSubtitle: "A short, practical summary of your morning and night routine.",
+    feedbackSubtitle: "A quick tap helps improve the next recommendation."
+  }
+};
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
@@ -101,56 +273,168 @@ function trackEvent(eventName, data = {}) {
     });
 }
 
-function getTextureLabel(texture) {
-  const map = {
-    watery: "워터리하게",
-    gel: "가볍게",
-    lotion: "부드럽게",
-    cream: "보습감 있게",
-    heavy: "리치하게"
-  };
-
-  return map[texture] || "부담 없이";
+function getResultCopy(locale = "ko") {
+  return resultCopy[locale] || resultCopy.ko;
 }
 
-function getFinishLabel(finish) {
-  const map = {
-    light: "마무리를 가볍게",
-    natural: "표면을 과하게 남기지 않고",
-    matte: "번들거림을 덜 남기고",
-    "soft-matte": "번들 흐름을 눌러주고",
-    soft_matte: "번들 흐름을 눌러주고",
-    dewy: "건조한 결을 덜 들뜨게 하고",
-    rich: "보습막을 더 안정적으로 남기고",
-    fresh: "답답함을 덜 남기고"
-  };
-
-  return map[finish] || "사용감을 더 깔끔하게";
+function getDisplayMap(locale = "ko") {
+  return displayMap[locale] || displayMap.ko;
 }
 
-function getTopPickHeadline(form) {
-  return topPickHeadlineMap[form?.mainConcern] || "이 조건에서는 이 제품을 먼저 써야 합니다";
+function getFeedbackQuestions(locale = "ko") {
+  return feedbackQuestionMap[locale] || feedbackQuestionMap.ko;
 }
 
-function getTopPickSummary(product, form) {
-  const concern = displayMap.mainConcern[form?.mainConcern] || "현재 고민";
-  const skinType = displayMap.skinType[form?.skinType] || "지금 피부";
-  const texture = getTextureLabel(product.texture);
-  const finish = getFinishLabel(product.finish);
+function buildLocalizedSkinProfileSummary(form = {}, locale = "ko") {
+  const map = getDisplayMap(locale);
+  const copy = getResultCopy(locale);
+  const items = [];
+
+  if (form.skinType) {
+    const skinType = map.skinType[form.skinType] || copy.currentSkin;
+    const afternoonMap =
+      locale === "en"
+        ? {
+            more_oily: "more afternoon shine",
+            more_dry: "more dryness in the afternoon",
+            red_or_irritated: "more afternoon sensitivity",
+            mostly_same: "little change in the afternoon"
+          }
+        : {
+            more_oily: "오후 유분 증가",
+            more_dry: "오후 건조 심화",
+            red_or_irritated: "오후 예민함 증가",
+            mostly_same: "오후에도 큰 변화 없음"
+          };
+    const afternoon = afternoonMap[form.afternoonSkinChange];
+    items.push(afternoon ? `${skinType} / ${afternoon}` : skinType);
+  }
+
+  if (form.mainConcern) {
+    items.push(map.mainConcern[form.mainConcern] || copy.currentConcernBasis);
+  }
+
+  if (form.preferredTexture) {
+    const textureMap =
+      locale === "en"
+        ? {
+            gel: "prefers light textures",
+            watery: "prefers watery textures",
+            lotion: "prefers lotion textures",
+            cream: "prefers cream textures"
+          }
+        : {
+            gel: "가벼운 제형 선호",
+            watery: "워터 제형 선호",
+            lotion: "로션 제형 선호",
+            cream: "크림 제형 선호"
+          };
+    items.push(textureMap[form.preferredTexture]);
+  }
+
+  if (form.mostDislikedFeel) {
+    const dislikeMap =
+      locale === "en"
+        ? {
+            sticky: "avoids stickiness",
+            greasy: "avoids greasiness",
+            heavy: "avoids heavy feel",
+            fragranced: "avoids strong fragrance",
+            pilling: "avoids pilling"
+          }
+        : {
+            sticky: "끈적임 회피",
+            greasy: "번들거림 회피",
+            heavy: "무거운 사용감 회피",
+            fragranced: "강한 향 회피",
+            pilling: "밀림 회피"
+          };
+    items.push(dislikeMap[form.mostDislikedFeel]);
+  }
+
+  return items.filter(Boolean).slice(0, 4);
+}
+
+function getTextureLabel(texture, locale = "ko") {
+  const map = locale === "en"
+    ? {
+        watery: "more lightly",
+        gel: "lightly",
+        lotion: "smoothly",
+        cream: "with more cushion",
+        heavy: "more richly"
+      }
+    : {
+        watery: "워터리하게",
+        gel: "가볍게",
+        lotion: "부드럽게",
+        cream: "보습감 있게",
+        heavy: "리치하게"
+      };
+  return map[texture] || (locale === "en" ? "without heaviness" : "부담 없이");
+}
+
+function getFinishLabel(finish, locale = "ko") {
+  const map = locale === "en"
+    ? {
+        light: "with a lighter finish",
+        natural: "without leaving too much on the surface",
+        matte: "with less shine left behind",
+        "soft-matte": "while keeping shine more controlled",
+        soft_matte: "while keeping shine more controlled",
+        dewy: "while softening dry texture",
+        rich: "while leaving a steadier moisture layer",
+        fresh: "while feeling less stuffy"
+      }
+    : {
+        light: "마무리를 가볍게",
+        natural: "표면을 과하게 남기지 않고",
+        matte: "번들거림을 덜 남기고",
+        "soft-matte": "번들 흐름을 눌러주고",
+        soft_matte: "번들 흐름을 눌러주고",
+        dewy: "건조한 결을 덜 들뜨게 하고",
+        rich: "보습막을 더 안정적으로 남기고",
+        fresh: "답답함을 덜 남기고"
+      };
+
+  return map[finish] || (locale === "en" ? "with a cleaner finish" : "사용감을 더 깔끔하게");
+}
+
+function getTopPickHeadline(form, locale = "ko") {
+  const map = topPickHeadlineMap[locale] || topPickHeadlineMap.ko;
+  const copy = getResultCopy(locale);
+  return map[form?.mainConcern] || copy.topPickFallback;
+}
+
+function getTopPickSummary(product, form, locale = "ko") {
+  const map = getDisplayMap(locale);
+  const copy = getResultCopy(locale);
+  const concern = map.mainConcern[form?.mainConcern] || copy.currentConcern;
+  const skinType = map.skinType[form?.skinType] || copy.currentSkin;
+  const texture = getTextureLabel(product.texture, locale);
+  const finish = getFinishLabel(product.finish, locale);
 
   if (form?.mainConcern === "oiliness" || form?.mainConcern === "pores") {
-    return `${concern} 고민이 함께 있는 ${skinType} 상태에서는, ${texture} 흡수되고 ${finish} 이 제품이 가장 먼저 체감 차이를 만듭니다.`;
+    return locale === "en"
+      ? `For ${skinType.toLowerCase()} skin dealing with ${concern.toLowerCase()}, this one absorbs ${texture} and lands ${finish}, so it creates the clearest first difference.`
+      : `${concern} 고민이 함께 있는 ${skinType} 상태에서는, ${texture} 흡수되고 ${finish} 이 제품이 가장 먼저 체감 차이를 만듭니다.`;
   }
 
   if (form?.mainConcern === "dehydration" || form?.mainConcern === "barrier") {
-    return `${skinType} 피부가 쉽게 메마르는 지금은, ${texture} 쌓이면서도 ${finish} 이 제품부터 바꾸는 편이 체감이 가장 큽니다.`;
+    return locale === "en"
+      ? `When ${skinType.toLowerCase()} skin dries out easily, this one layers ${texture} and stays ${finish}, so it is the first switch that feels different.`
+      : `${skinType} 피부가 쉽게 메마르는 지금은, ${texture} 쌓이면서도 ${finish} 이 제품부터 바꾸는 편이 체감이 가장 큽니다.`;
   }
 
   if (form?.mainConcern === "redness" || form?.mainConcern === "acne") {
-    return `${concern}이 반복되는 ${skinType} 상태에서는, ${finish} 자극 부담을 덜어주는 이 제품이 가장 먼저 손에 잡힐 선택입니다.`;
+    return locale === "en"
+      ? `For ${skinType.toLowerCase()} skin that keeps dealing with ${concern.toLowerCase()}, this one feels ${finish} and lowers irritation load first.`
+      : `${concern}이 반복되는 ${skinType} 상태에서는, ${finish} 자극 부담을 덜어주는 이 제품이 가장 먼저 손에 잡힐 선택입니다.`;
   }
 
-  return `현재 ${concern} 기준에서는, ${texture} 이어지고 ${finish} 이 제품이 가장 먼저 피부 흐름을 정리해 줍니다.`;
+  return locale === "en"
+    ? `For your current ${concern.toLowerCase()} concern, this one layers ${texture} and stays ${finish}, making the routine feel steadier first.`
+    : `현재 ${concern} 기준에서는, ${texture} 이어지고 ${finish} 이 제품이 가장 먼저 피부 흐름을 정리해 줍니다.`;
 }
 
 function getTopPickReason(product) {
@@ -223,7 +507,8 @@ function mapTierToGauge(value, fallback = 3) {
   return fallback;
 }
 
-function buildFitMetrics(product, form) {
+function buildFitMetrics(product, form, locale = "ko") {
+  const copy = getResultCopy(locale);
   const concerns = Array.isArray(product?.concerns) ? product.concerns : [];
   const signals = product?.matched_signals || {};
   const hydrationBase = mapTierToGauge(product?.hydration_level, 3);
@@ -272,47 +557,50 @@ function buildFitMetrics(product, form) {
           : 3;
 
   return [
-    { label: "보습 적합도", value: hydration },
-    { label: "장벽 적합도", value: barrier },
-    { label: "트러블 적합도", value: trouble },
-    { label: "사용감 적합도", value: texture },
-    { label: "민감도 적합도", value: clampGauge(sensitivity + (signals.sensitivity_safe ? 1 : 0)) },
+    { label: copy.fitLabels[0], value: hydration },
+    { label: copy.fitLabels[1], value: barrier },
+    { label: copy.fitLabels[2], value: trouble },
+    { label: copy.fitLabels[3], value: texture },
+    { label: copy.fitLabels[4], value: clampGauge(sensitivity + (signals.sensitivity_safe ? 1 : 0)) },
   ];
 }
 
-function getDirectionSummary(form) {
+function getDirectionSummary(form, locale = "ko") {
+  const copy = getResultCopy(locale);
   if (form?.mainConcern === "barrier" || form?.mainConcern === "dehydration") {
-    return "지금은 장벽 회복과 가벼운 보습 연결이 우선입니다.";
+    return copy.directionSummaryBarrier;
   }
 
   if (form?.mainConcern === "oiliness" || form?.mainConcern === "pores") {
-    return "지금은 유분 흐름을 먼저 정리하는 쪽이 맞습니다.";
+    return copy.directionSummaryOil;
   }
 
   if (form?.mainConcern === "acne" || form?.mainConcern === "redness") {
-    return "지금은 자극 부담을 줄이는 쪽이 먼저입니다.";
+    return copy.directionSummaryCalm;
   }
 
-  return "지금은 피부 흐름을 단순하게 정리하는 편이 맞습니다.";
+  return copy.directionSummaryDefault;
 }
 
-function getDirectionAction(form) {
+function getDirectionAction(form, locale = "ko") {
+  const copy = getResultCopy(locale);
   if (form?.preferredTexture === "gel" || form?.mostDislikedFeel === "sticky") {
-    return "무거운 마무리보다 흡수 빠른 루틴부터 시작하세요.";
+    return copy.directionActionLight;
   }
 
   if (form?.preferredTexture === "cream" || form?.postWashFeeling === "tight") {
-    return "보습이 끊기지 않게 얇게 여러 단계로 이어가세요.";
+    return copy.directionActionLayer;
   }
 
   if (form?.mainConcern === "acne" || form?.mainConcern === "redness") {
-    return "자극 가능성이 큰 단계보다 순한 구성부터 맞춰보세요.";
+    return copy.directionActionCalm;
   }
 
-  return "제품 수를 늘리기보다 기본 단계부터 안정적으로 맞춰보세요.";
+  return copy.directionActionDefault;
 }
 
-function toRoutineAction(item) {
+function toRoutineAction(item, locale = "ko") {
+  const copy = getResultCopy(locale);
   const text = normalizeCopy(item);
 
   if (!text) {
@@ -320,37 +608,32 @@ function toRoutineAction(item) {
   }
 
   if (text.includes("클렌저") || text.includes("세안")) {
-    return "순한 클렌저로 가볍게 세안";
+    return copy.routineCleanser;
   }
 
   if (text.includes("토너") || text.includes("에센스")) {
-    return "가벼운 토너로 수분 연결";
+    return copy.routineToner;
   }
 
   if (text.includes("세럼") || text.includes("앰플")) {
-    return "필요한 고민 위주로 세럼 한 단계 추가";
+    return copy.routineSerum;
   }
 
   if (text.includes("선크림") || text.includes("자외선")) {
-    return "가벼운 선크림으로 마무리";
+    return copy.routineSunscreen;
   }
 
   if (text.includes("보습") || text.includes("크림") || text.includes("로션")) {
-    return "무겁지 않은 보습으로 마무리";
+    return copy.routineMoisturizer;
   }
 
   return text;
 }
 
-function getUsageTimingLabel(useTime) {
+function getUsageTimingLabel(useTime, locale = "ko") {
+  const copy = getResultCopy(locale);
   const value = Array.isArray(useTime) ? useTime[0] : useTime;
-  const map = {
-    day: "아침",
-    night: "저녁",
-    both: "아침·저녁"
-  };
-
-  return map[value] || "아침·저녁";
+  return copy.useTime[value] || copy.useTime.both;
 }
 
 function getPriceLabel(priceRange) {
@@ -370,31 +653,33 @@ function hasPurchaseLink(buyLink) {
   );
 }
 
-function getPurchaseLinkInfo(product) {
+function getPurchaseLinkInfo(product, locale = "ko") {
+  const copy = getResultCopy(locale);
   if (hasPurchaseLink(product?.buy_link)) {
     return {
       href: product.buy_link,
-      label: "구매하기",
+      label: copy.buyNow,
       isFallback: false
     };
   }
 
-  const query = encodeURIComponent(`${product?.brand || ""} ${product?.name || ""} 구매`);
+  const query = encodeURIComponent(`${product?.brand || ""} ${product?.name || ""} ${locale === "en" ? "buy" : "구매"}`);
 
   return {
     href: `https://search.shopping.naver.com/search/all?query=${query}`,
-    label: "구매처 찾기",
+    label: copy.findStore,
     isFallback: true
   };
 }
 
-function getEspeciallyGoodFor(product, form) {
+function getEspeciallyGoodFor(product, form, locale = "ko") {
+  const copy = getResultCopy(locale);
   if (form?.afternoonSkinChange === "more_oily" || form?.mainConcern === "oiliness") {
-    return "오후 유분이 빠르게 올라오는 피부";
+    return copy.especiallyOil;
   }
 
   if (form?.postWashFeeling === "tight" || form?.mainConcern === "dehydration") {
-    return "세안 후 당김이 오래 남는 피부";
+    return copy.especiallyTight;
   }
 
   if (
@@ -402,29 +687,31 @@ function getEspeciallyGoodFor(product, form) {
     form?.skinType === "sensitive" ||
     form?.mainConcern === "redness"
   ) {
-    return "마스크 마찰로 예민해지는 피부";
+    return copy.especiallyMask;
   }
 
   if (form?.mainConcern === "pores") {
-    return "모공과 번들거림이 함께 신경 쓰이는 피부";
+    return copy.especiallyPores;
   }
 
   if (form?.mainConcern === "acne") {
-    return "잔여감이 무거우면 트러블이 올라오는 피부";
+    return copy.especiallyAcne;
   }
 
   if (product.use_time === "night") {
-    return "밤 루틴에서 집중 관리가 필요한 날";
+    return copy.especiallyNight;
   }
 
   if (product.use_time === "day") {
-    return "아침 루틴에서 가볍게 마무리하고 싶은 날";
+    return copy.especiallyDay;
   }
 
-  return "매일 부담 없이 루틴을 이어가고 싶은 피부";
+  return copy.especiallyDefault;
 }
 
-function getTopPickSignalLabels(product) {
+function getTopPickSignalLabels(product, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const copy = getResultCopy(locale);
   const signals = product?.matched_signals;
 
   if (!signals || typeof signals !== "object") {
@@ -435,27 +722,27 @@ function getTopPickSignalLabels(product) {
 
   if (Array.isArray(signals.matched_concerns) && signals.matched_concerns.length > 0) {
     const concernKey = signals.matched_concerns[0];
-    labels.push(`${displayMap.mainConcern[concernKey] || concernKey} 일치`);
+    labels.push(`${display.mainConcern[concernKey] || concernKey} ${copy.signalConcern}`);
   }
 
   if (signals.matched_skin_type) {
-    labels.push(`${displayMap.skinType[signals.matched_skin_type] || signals.matched_skin_type} 맞춤`);
+    labels.push(`${display.skinType[signals.matched_skin_type] || signals.matched_skin_type} ${copy.signalSkin}`);
   }
 
   if (signals.texture_match === "exact") {
-    labels.push("사용감 일치");
+    labels.push(copy.signalTextureExact);
   } else if (signals.texture_match === "near") {
-    labels.push("사용감 근접");
+    labels.push(copy.signalTextureNear);
   }
 
   if (signals.finish_match) {
-    labels.push("마무리감 적합");
+    labels.push(copy.signalFinish);
   }
 
   if (signals.sensitivity_safe) {
-    labels.push("민감 피부 우호");
+    labels.push(copy.signalSensitive);
   } else if (signals.irritation_risk === "low") {
-    labels.push("저자극 축");
+    labels.push(copy.signalLowIrritation);
   }
 
   return labels.slice(0, 2);
@@ -478,7 +765,8 @@ function getImageFallbackLabel(product) {
   return product?.brand ? `${product.brand} ${product?.name || ""}`.trim() : product?.name || "Product";
 }
 
-function SmallProductThumb({ product, height = "h-28" }) {
+function SmallProductThumb({ product, height = "h-28", locale = "ko" }) {
+  const copy = getResultCopy(locale);
   return (
     <div className={`overflow-hidden rounded-[1.1rem] border border-black/8 bg-white/80 ${height}`}>
       {product?.image_url ? (
@@ -491,7 +779,7 @@ function SmallProductThumb({ product, height = "h-28" }) {
         <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-3 text-center">
           <div>
             <p className="text-[11px] font-semibold text-black/58">{product?.brand || "Product"}</p>
-            <p className="mt-1 text-[10px] text-black/42">이미지 없음</p>
+            <p className="mt-1 text-[10px] text-black/42">{copy.imageEmpty}</p>
           </div>
         </div>
       )}
@@ -504,7 +792,7 @@ export default function ResultPage() {
     <Suspense
       fallback={
         <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4 py-12">
-          <LoadingSpinner label="결과를 불러오는 중입니다..." />
+          <LoadingSpinner label="Loading your result..." />
         </main>
       }
     >
@@ -517,13 +805,15 @@ function ResultContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
-  const isEnglish = locale === "en";
+  const copy = getResultCopy(locale);
+  const display = getDisplayMap(locale);
+  const feedbackQuestions = getFeedbackQuestions(locale);
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [feedback, setFeedback] = useState({});
   const [feedbackSubmitted, setFeedbackSubmitted] = useState({});
-  const profileSummaryItems = buildSkinProfileSummary(submission?.form || {});
+  const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");
@@ -595,7 +885,7 @@ function ResultContent() {
   if (!isReady) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4 py-12">
-        <LoadingSpinner label="결과를 불러오는 중입니다..." />
+        <LoadingSpinner label={copy.loading} />
       </main>
     );
   }
@@ -609,7 +899,7 @@ function ResultContent() {
               <div className="max-w-2xl">
                 <p className="text-xs uppercase tracking-[0.24em] text-black/40">Result</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-                  {isEnglish ? "Your K-Beauty Match" : "당신의 K-뷰티 매치"}
+                  {copy.title}
                 </h1>
                 {result?.meta?.notice ? (
                   <p className="mt-3 inline-flex rounded-full bg-white/75 px-3 py-1 text-xs text-black/55">
@@ -622,7 +912,7 @@ function ResultContent() {
                 href={getLocalePath(pathname, locale)}
                 className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white/80 px-5 py-3 text-sm font-medium text-black/75 transition hover:border-black/20 hover:bg-white"
               >
-                {isEnglish ? "Try Again" : "다시 테스트하기"}
+                {copy.tryAgain}
               </Link>
             </div>
             <div className="mt-4 flex gap-2">
@@ -651,16 +941,16 @@ function ResultContent() {
           {result ? (
             <div className="grid gap-3 border-t border-black/5 bg-white/70 px-6 py-5 text-sm text-black/60 sm:grid-cols-3 sm:px-8">
               <InsightStat
-                label={isEnglish ? "Skin Type" : "피부 타입"}
-                value={displayMap.skinType[submission?.form?.skinType] || "맞춤 루틴"}
+                label={locale === "en" ? "Skin Type" : "피부 타입"}
+                value={display.skinType[submission?.form?.skinType] || (locale === "en" ? "Matched routine" : "맞춤 루틴")}
               />
               <InsightStat
-                label={isEnglish ? "Routine" : "루틴"}
-                value={isEnglish ? "Morning + Night · 3 steps" : "아침 + 저녁 · 3단계"}
+                label={locale === "en" ? "Routine" : "루틴"}
+                value={locale === "en" ? "Morning + Night · 3 steps" : "아침 + 저녁 · 3단계"}
               />
               <InsightStat
-                label={isEnglish ? "Top Concern" : "주요 고민"}
-                value={displayMap.mainConcern[submission?.form?.mainConcern] || (isEnglish ? "Current concern" : "현재 고민 기준")}
+                label={locale === "en" ? "Top Concern" : "주요 고민"}
+                value={display.mainConcern[submission?.form?.mainConcern] || copy.currentConcernBasis}
               />
             </div>
           ) : null}
@@ -668,14 +958,14 @@ function ResultContent() {
 
         {error ? (
           <div className="rounded-[2rem] border border-red-200 bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f1_100%)] p-6 text-sm leading-6 text-red-600 shadow-soft">
-            <p className="font-semibold text-red-700">결과를 불러오지 못했습니다.</p>
+            <p className="font-semibold text-red-700">{copy.noResultTitle}</p>
             <p className="mt-2">{error}</p>
           </div>
         ) : null}
 
         {!error && !result ? (
           <div className="rounded-[2rem] border border-black/5 bg-white/85 p-6 text-sm leading-6 text-black/65 shadow-soft">
-            표시할 결과가 없습니다. 홈으로 돌아가 다시 테스트해 주세요.
+            {copy.noResultBody}
           </div>
         ) : null}
 
@@ -683,7 +973,7 @@ function ResultContent() {
           <div className="grid gap-5 md:grid-cols-2">
             {profileSummaryItems.length ? (
               <div className="md:col-span-2 rounded-[1.7rem] border border-black/5 bg-[#fcf8f2] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">당신의 피부 프로필</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">{copy.skinProfile}</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {profileSummaryItems.map((item) => (
                     <p key={item} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/76">
@@ -692,67 +982,64 @@ function ResultContent() {
                   ))}
                 </div>
                 <p className="mt-4 text-sm leading-6 text-black/62">
-                  이 조건을 기준으로 가장 안정적인 루틴을 정리했습니다.
+                  {copy.profileBody}
                 </p>
               </div>
             ) : null}
 
             <div className="md:col-span-2 rounded-[1.5rem] border border-black/5 bg-white/85 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">추천 방향</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">{copy.recommendationDirection}</p>
               <div className="mt-3 space-y-2">
-                <p className="text-sm leading-6 text-black/74">{getDirectionSummary(submission?.form)}</p>
-                <p className="text-sm leading-6 text-black/68">{getDirectionAction(submission?.form)}</p>
+                <p className="text-sm leading-6 text-black/74">{getDirectionSummary(submission?.form, locale)}</p>
+                <p className="text-sm leading-6 text-black/68">{getDirectionAction(submission?.form, locale)}</p>
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <ResultSection
-                title={isEnglish ? "Start Here" : "가장 먼저 시작할 제품"}
-              >
+              <ResultSection title={copy.productStartHere}>
                 {result.topPick ? (
                   <ProductDecisionCard
                     product={result.topPick}
                     featured
                     form={submission?.form}
+                    locale={locale}
                   />
                 ) : null}
               </ResultSection>
             </div>
 
             <div className="md:col-span-2">
-              <ResultSection
-                title={isEnglish ? "Category Picks" : "함께 보면 좋은 추천"}
-              >
-                <CategoryCarousel products={result.categoryPicks || []} form={submission?.form} />
+              <ResultSection title={copy.categoryPicks}>
+                <CategoryCarousel products={result.categoryPicks || []} form={submission?.form} locale={locale} />
               </ResultSection>
             </div>
 
             <div className="md:col-span-2">
               <ResultSection
-                title={isEnglish ? "Daily Routine" : "아침 · 저녁 루틴"}
-                subtitle={isEnglish ? "Keep the routine short and practical." : "아침과 저녁 루틴을 한 번에 짧게 정리했습니다."}
+                title={copy.dailyRoutine}
+                subtitle={copy.routineSubtitle}
               >
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-2xl bg-[#faf6f0] p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {isEnglish ? "Morning" : "아침"}
+                      {locale === "en" ? "Morning" : "아침"}
                     </p>
                     <ul className="mt-3 space-y-2.5">
                       {(result.morning || []).map((item, index) => (
                         <li key={`morning-${index}`} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/78">
-                          {toRoutineAction(item)}
+                          {toRoutineAction(item, locale)}
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div className="rounded-2xl bg-[#faf6f0] p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {isEnglish ? "Night" : "저녁"}
+                      {locale === "en" ? "Night" : "저녁"}
                     </p>
                     <ul className="mt-3 space-y-2.5">
                       {(result.night || []).map((item, index) => (
                         <li key={`night-${index}`} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/78">
-                          {toRoutineAction(item)}
+                          {toRoutineAction(item, locale)}
                         </li>
                       ))}
                     </ul>
@@ -763,13 +1050,13 @@ function ResultContent() {
 
             <div className="md:col-span-2">
               <ResultSection
-                title={isEnglish ? "Notes" : "주의사항 · 참고할 점"}
-                subtitle={isEnglish ? "A short note before you start." : "시작 전에 가볍게 보고 넘어갈 포인트만 묶었습니다."}
+                title={copy.notes}
+                subtitle={copy.notesSubtitle}
               >
                 <div className="grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
                   <div className="rounded-2xl bg-[#fffaf4] p-3.5">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {isEnglish ? "Cautions" : "주의사항"}
+                      {copy.cautions}
                     </p>
                     <ul className="mt-2.5 space-y-2">
                       {(result.avoid || []).map((item, index) => (
@@ -782,7 +1069,7 @@ function ResultContent() {
                   {result.funInsight ? (
                     <div className="rounded-2xl bg-[linear-gradient(135deg,#f6efe7_0%,#fff9f2_100%)] p-3.5">
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                        {isEnglish ? "Skin Note" : "참고할 점"}
+                        {copy.skinNote}
                       </p>
                       <p className="mt-2.5 rounded-2xl bg-white/80 px-4 py-3 text-sm leading-6 text-black/72">
                         {result.funInsight.description}
@@ -795,8 +1082,8 @@ function ResultContent() {
 
             <div className="md:col-span-2">
               <ResultSection
-                title={isEnglish ? "Quick Feedback" : "짧은 피드백"}
-                subtitle={isEnglish ? "A quick tap helps improve the next recommendation." : "한두 번만 눌러 주셔도 다음 추천 개선에 바로 도움이 됩니다."}
+                title={copy.quickFeedback}
+                subtitle={copy.feedbackSubtitle}
               >
                 <div className="grid gap-2">
                   {feedbackQuestions.map((question) => (
@@ -808,11 +1095,11 @@ function ResultContent() {
                         <p className="text-sm font-medium text-ink">{question.text}</p>
                       {feedbackSubmitted[question.id] ? (
                         <p className="text-xs font-medium text-[#7d5724]">
-                          {isEnglish ? "Saved" : "저장됨"}
+                          {copy.feedbackSaved}
                         </p>
                       ) : (
                         <div className="flex gap-2">
-                          {(isEnglish ? ["Yes", "No"] : ["예", "아니오"]).map((option) => {
+                          {(locale === "en" ? ["Yes", "No"] : ["예", "아니오"]).map((option) => {
                             const isActive = feedback[question.id] === option;
 
                             return (
@@ -844,7 +1131,7 @@ function ResultContent() {
                 href={getLocalePath(pathname, locale)}
                 className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
               >
-                다시 테스트하기
+                {copy.tryAgain}
               </Link>
             </div>
           </div>
@@ -863,19 +1150,14 @@ function InsightStat({ label, value }) {
   );
 }
 
-function FitGaugeRows({ product, form, compact = false }) {
-  const metrics = buildFitMetrics(product, form);
-  const displayMetrics = compact
-    ? metrics.map((metric) => ({
-        ...metric,
-        label: metric.label.replace(" 적합도", "")
-      }))
-    : metrics;
+function FitGaugeRows({ product, form, compact = false, locale = "ko" }) {
+  const copy = getResultCopy(locale);
+  const displayMetrics = buildFitMetrics(product, form, locale);
 
   return (
     <div className={compact ? "space-y-2" : "space-y-2.5"}>
       <p className={`font-semibold uppercase tracking-[0.14em] text-black/38 ${compact ? "text-[10px]" : "text-xs"}`}>
-        {compact ? "현재 입력 기준" : "현재 입력 기준 적합도"}
+        {compact ? copy.fitHeadingCompact : copy.fitHeading}
       </p>
       {displayMetrics.map((metric) => (
         <div
@@ -899,8 +1181,9 @@ function FitGaugeRows({ product, form, compact = false }) {
   );
 }
 
-function CategoryCarousel({ products, form }) {
+function CategoryCarousel({ products, form, locale = "ko" }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const copy = getResultCopy(locale);
 
   if (!products.length) {
     return null;
@@ -916,7 +1199,7 @@ function CategoryCarousel({ products, form }) {
   return (
     <div className="space-y-4">
       <div className="overflow-hidden">
-        <ProductDecisionCard product={activeProduct} form={form} />
+        <ProductDecisionCard product={activeProduct} form={form} locale={locale} />
       </div>
 
       <div className="flex items-center justify-between gap-3">
@@ -930,7 +1213,7 @@ function CategoryCarousel({ products, form }) {
             disabled={activeIndex === 0}
             className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            이전
+            {copy.previous}
           </button>
           <button
             type="button"
@@ -938,7 +1221,7 @@ function CategoryCarousel({ products, form }) {
             disabled={activeIndex === products.length - 1}
             className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            다음
+            {copy.next}
           </button>
         </div>
       </div>
@@ -946,15 +1229,16 @@ function CategoryCarousel({ products, form }) {
   );
 }
 
-function ProductDecisionCard({ product, featured = false, form = null }) {
+function ProductDecisionCard({ product, featured = false, form = null, locale = "ko" }) {
   const [expanded, setExpanded] = useState(false);
+  const copy = getResultCopy(locale);
 
   if (featured) {
-    const topPickHeadline = getTopPickHeadline(form);
-    const topPickSummary = getTopPickSummary(product, form);
-    const especiallyGoodFor = getEspeciallyGoodFor(product, form);
-    const purchaseLink = getPurchaseLinkInfo(product);
-    const topPickSignals = [product.step, ...getTopPickSignalLabels(product)].slice(0, 5);
+    const topPickHeadline = getTopPickHeadline(form, locale);
+    const topPickSummary = getTopPickSummary(product, form, locale);
+    const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
+    const purchaseLink = getPurchaseLinkInfo(product, locale);
+    const topPickSignals = [product.step, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
     const previewLines = getProductPreviewLines(product, 2);
     const detailLines = getProductReasonSentences(product);
 
@@ -978,7 +1262,7 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="rounded-full border border-[#1f1811]/10 bg-white/85 px-3 py-1.5 text-[11px] font-semibold text-black/65">
-                1순위 추천
+                {copy.topPickBadge}
               </span>
             </div>
 
@@ -1002,7 +1286,7 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
             ) : null}
 
             <p className="mt-4 text-sm leading-6 text-black/70">
-              <span className="font-semibold text-black/78">이럴 때 특히 좋아요</span> {especiallyGoodFor}
+              <span className="font-semibold text-black/78">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/80">{topPickSummary}</p>
             <div className="mt-3 space-y-1.5">
@@ -1021,7 +1305,7 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
               }}
               className="mt-4 text-sm font-medium text-[#7d5724] underline decoration-black/15 underline-offset-4"
             >
-              {expanded ? "접기" : "더보기"}
+              {expanded ? copy.less : copy.more}
             </button>
 
             {expanded ? (
@@ -1051,14 +1335,14 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
                 <div className="flex h-56 items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-6 text-center">
                   <div>
                     <p className="text-sm font-semibold text-black/65">{getImageFallbackLabel(product)}</p>
-                    <p className="mt-2 text-xs text-black/45">이미지 준비 중</p>
+                    <p className="mt-2 text-xs text-black/45">{copy.imagePreparing}</p>
                   </div>
                 </div>
               )}
             </div>
 
             <div className="rounded-[1.35rem] border border-[#cfb48d]/50 bg-white/88 p-3.5">
-              <FitGaugeRows product={product} form={form} compact />
+              <FitGaugeRows product={product} form={form} compact locale={locale} />
             </div>
 
             <div className="rounded-[1.6rem] border border-[#cfb48d]/50 bg-white/88 p-4 sm:p-5">
@@ -1092,10 +1376,10 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
     );
   }
 
-  const purchaseLink = getPurchaseLinkInfo(product);
-  const cardTags = [product.step, ...getTopPickSignalLabels(product).slice(0, 1)].filter(Boolean);
-  const previewLine = getProductPreviewLines(product, 1)[0] || getEspeciallyGoodFor(product, form);
-  const especiallyGoodFor = getEspeciallyGoodFor(product, form);
+  const purchaseLink = getPurchaseLinkInfo(product, locale);
+  const cardTags = [product.step, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean);
+  const previewLine = getProductPreviewLines(product, 1)[0] || getEspeciallyGoodFor(product, form, locale);
+  const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
   const detailLines = getProductReasonSentences(product);
 
   return (
@@ -1135,7 +1419,7 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
 
           <p className="mt-4 text-sm leading-6 text-black/70">{previewLine}</p>
           <p className="mt-2 text-xs leading-5 text-black/52">
-            특히 {especiallyGoodFor}
+            {locale === "en" ? `Best for ${especiallyGoodFor}` : `특히 ${especiallyGoodFor}`}
           </p>
 
           <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -1147,7 +1431,7 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
               }}
               className="text-xs font-medium text-[#7d5724] underline decoration-black/15 underline-offset-4"
             >
-              {expanded ? "접기" : "더보기"}
+              {expanded ? copy.less : copy.more}
             </button>
             <a
               href={purchaseLink.href}
@@ -1187,9 +1471,9 @@ function ProductDecisionCard({ product, featured = false, form = null }) {
           ) : null}
         </div>
         <div className="space-y-3 sm:w-[156px]">
-          <SmallProductThumb product={product} height="h-32" />
+          <SmallProductThumb product={product} height="h-32" locale={locale} />
           <div className="rounded-[1.1rem] border border-black/6 bg-white/80 p-3">
-            <FitGaugeRows product={product} form={form} compact />
+            <FitGaugeRows product={product} form={form} compact locale={locale} />
           </div>
         </div>
       </div>
