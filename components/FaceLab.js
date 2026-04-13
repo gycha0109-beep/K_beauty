@@ -559,6 +559,7 @@ export default function FaceLab({
   const safeResult = isValidFaceLabResult(faceLabResult) ? faceLabResult : null;
   const [activeTab, setActiveTab] = useState(TAB_ORDER[0]);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const showComposer = !safeResult;
 
   useEffect(() => {
     setActiveTab(TAB_ORDER[0]);
@@ -607,22 +608,32 @@ export default function FaceLab({
         </div>
       ) : null}
 
-      <UploadPreview imageFile={imageFile} previewUrl={previewUrl} onChange={onImageChange} onClear={onClearImage} locale={locale} />
+      {showComposer ? (
+        <UploadPreview
+          imageFile={imageFile}
+          previewUrl={previewUrl}
+          onChange={onImageChange}
+          onClear={onClearImage}
+          locale={locale}
+        />
+      ) : null}
 
       <ErrorMessage message={faceLabError} />
 
-      <button
-        type="button"
-        onClick={handleAnalyze}
-        disabled={!imageFile || faceLabLoading}
-        className="w-full rounded-full bg-[#1f1811] px-5 py-4 text-sm font-medium text-white transition hover:bg-[#302118] disabled:cursor-not-allowed disabled:opacity-45"
-      >
-        {copy?.faceLabButton || copy?.faceLab?.button || ui.button}
-      </button>
+      {showComposer ? (
+        <button
+          type="button"
+          onClick={handleAnalyze}
+          disabled={!imageFile || faceLabLoading}
+          className="w-full rounded-full bg-[#1f1811] px-5 py-4 text-sm font-medium text-white transition hover:bg-[#302118] disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {copy?.faceLabButton || copy?.faceLab?.button || ui.button}
+        </button>
+      ) : null}
 
       {faceLabLoading ? <LoadingSpinner label={copy?.faceLabSpinner || copy?.faceLab?.spinner || ui.spinner} /> : null}
 
-      {!safeResult && !faceLabLoading ? (
+      {showComposer && !faceLabLoading ? (
         <div className="rounded-[1.8rem] border border-dashed border-black/10 bg-white/78 px-5 py-6 text-center">
           <p className="text-sm font-medium text-[#1f1811]">{ui.readyTitle}</p>
           <p className="mt-2 text-sm leading-6 text-black/56">{ui.readyBody}</p>
