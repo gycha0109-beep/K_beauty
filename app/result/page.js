@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";
-import ResultSection from "@/components/ResultSection";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import RecommendedProductsStep from "@/components/result/RecommendedProductsStep";
+import ResultBottomCTA from "@/components/result/ResultBottomCTA";
+import ResultOverviewStep from "@/components/result/ResultOverviewStep";
+import ResultProgressDots from "@/components/result/ResultProgressDots";
+import RoutineGuideStep from "@/components/result/RoutineGuideStep";
+import TipsStep from "@/components/result/TipsStep";
+import TopPickStep from "@/components/result/TopPickStep";
 const displayMap = {
   ko: {
     skinType: {
@@ -65,14 +72,14 @@ const topPickHeadlineMap = {
 
 const feedbackQuestionMap = {
   ko: [
-    { id: "reflects_skin", text: "내 피부 상태를 잘 반영했나요?" },
-    { id: "recommendation_makes_sense", text: "추천이 납득됐나요?" },
-    { id: "worth_buying", text: "사볼 만한 제품이 있었나요?" }
+    { id: "overall_satisfaction", text: "결과가 전반적으로 만족스러우셨나요?" },
+    { id: "easy_to_understand", text: "추천 구성이 이해하기 쉬웠나요?" },
+    { id: "reuse_intent", text: "이 서비스를 다시 사용할 의향이 있으신가요?" }
   ],
   en: [
-    { id: "reflects_skin", text: "Did this reflect your skin well?" },
-    { id: "recommendation_makes_sense", text: "Did the recommendation make sense?" },
-    { id: "worth_buying", text: "Was there anything you would actually buy?" }
+    { id: "overall_satisfaction", text: "Were you satisfied with the overall result?" },
+    { id: "easy_to_understand", text: "Was the recommendation easy to understand?" },
+    { id: "reuse_intent", text: "Would you use this service again?" }
   ]
 };
 
@@ -140,9 +147,36 @@ const resultCopy = {
     signalLowIrritation: "저자극 축",
     noResultTitle: "결과를 불러오지 못했습니다.",
     noResultBody: "표시할 결과가 없습니다. 홈으로 돌아가 다시 테스트해 주세요.",
-    notesSubtitle: "시작 전에 가볍게 보고 넘어갈 포인트만 묶었습니다.",
+    notesSubtitle: "사용 전에 가볍게 확인하면 좋은 포인트만 모았습니다.",
     routineSubtitle: "아침과 저녁 루틴을 한 번에 짧게 정리했습니다.",
-    feedbackSubtitle: "한두 번만 눌러 주셔도 다음 추천 개선에 바로 도움이 됩니다."
+    feedbackSubtitle: "한두 번만 눌러 주셔도 다음 추천 개선에 바로 도움이 됩니다.",
+    resultProgressLabel: "RESULT STEP",
+    resultOverviewKicker: "RESULT STEP 1",
+    resultOverviewTitle: "진단 결과",
+    resultOverviewBody: "먼저 내 피부 결과를 한눈에 볼 수 있게 짧게 정리했습니다.",
+    resultPhotoFallback: "업로드한 사진",
+    topPickStepKicker: "RESULT STEP 2",
+    topPickStepTitle: "당신을 위한 Top Pick",
+    topPickStepBody: "지금 가장 먼저 바꾸면 체감 차이가 큰 제품입니다.",
+    recommendedStepKicker: "RESULT STEP 3",
+    recommendedStepTitle: "함께 쓰면 좋은 추천",
+    recommendedStepBody: "가볍게 넘겨보면서 루틴에 붙일 만한 제품만 빠르게 확인하세요.",
+    recommendedStepEmpty: "함께 추천할 제품이 아직 없습니다.",
+    routineStepKicker: "RESULT STEP 4",
+    routineStepTitle: "추천 루틴 가이드",
+    routineStepEmpty: "표시할 루틴 정보가 없습니다.",
+    tipsStepKicker: "RESULT STEP 5",
+    tipsStepTitle: "사용 전에 가볍게 확인하세요",
+    tipsStepEmpty: "추가로 확인할 팁이 없습니다.",
+    feedbackThanksTitle: "피드백 감사합니다",
+    feedbackThanksBody: "다음 추천 개선에 반영하겠습니다.",
+    ctaViewTopPick: "Top Pick 보기",
+    ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
+    ctaViewRoutine: "추천 루틴 보기",
+    ctaViewTips: "주의사항 및 사용 팁 보기",
+    ctaLeaveFeedback: "피드백 남기기",
+    backHome: "처음으로 돌아가기",
+    topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다."
   },
   en: {
     loading: "Loading your result...",
@@ -209,7 +243,34 @@ const resultCopy = {
     noResultBody: "There is no result to show yet. Please go back and try again.",
     notesSubtitle: "Only the quick notes worth checking before you start.",
     routineSubtitle: "A short, practical summary of your morning and night routine.",
-    feedbackSubtitle: "A quick tap helps improve the next recommendation."
+    feedbackSubtitle: "A quick tap helps improve the next recommendation.",
+    resultProgressLabel: "RESULT STEP",
+    resultOverviewKicker: "RESULT STEP 1",
+    resultOverviewTitle: "Your Result",
+    resultOverviewBody: "Start with a short summary of how this result connects to your skin.",
+    resultPhotoFallback: "Uploaded photo",
+    topPickStepKicker: "RESULT STEP 2",
+    topPickStepTitle: "Your Top Pick",
+    topPickStepBody: "This is the product most likely to create the clearest first difference.",
+    recommendedStepKicker: "RESULT STEP 3",
+    recommendedStepTitle: "Also Worth Using",
+    recommendedStepBody: "Swipe through the lighter supporting picks for the rest of your routine.",
+    recommendedStepEmpty: "There are no extra recommendations yet.",
+    routineStepKicker: "RESULT STEP 4",
+    routineStepTitle: "Routine Guide",
+    routineStepEmpty: "There is no routine information to show yet.",
+    tipsStepKicker: "RESULT STEP 5",
+    tipsStepTitle: "Check These Before You Start",
+    tipsStepEmpty: "There are no extra tips to show yet.",
+    feedbackThanksTitle: "Thanks for your feedback",
+    feedbackThanksBody: "We will use it to improve the next recommendation.",
+    ctaViewTopPick: "See Top Pick",
+    ctaViewRecommended: "See Supporting Picks",
+    ctaViewRoutine: "See Routine Guide",
+    ctaViewTips: "See Tips",
+    ctaLeaveFeedback: "Leave Feedback",
+    backHome: "Back to Home",
+    topPickEmpty: "Could not load the Top Pick product."
   }
 };
 
@@ -283,6 +344,46 @@ function getDisplayMap(locale = "ko") {
 
 function getFeedbackQuestions(locale = "ko") {
   return feedbackQuestionMap[locale] || feedbackQuestionMap.ko;
+}
+
+function getConcernDisplay(form = {}, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const copy = getResultCopy(locale);
+  const concernKeys = Array.isArray(form.mainConcerns) && form.mainConcerns.length
+    ? form.mainConcerns
+    : form.mainConcern
+      ? [form.mainConcern]
+      : [];
+  const labels = concernKeys
+    .map((item) => display.mainConcern[item])
+    .filter(Boolean);
+
+  return labels.length ? labels.slice(0, 3).join(" · ") : copy.currentConcernBasis;
+}
+
+function getRoutineStructureLabel(result, locale = "ko") {
+  const morningCount = Array.isArray(result?.morning) ? result.morning.filter(Boolean).length : 0;
+  const nightCount = Array.isArray(result?.night) ? result.night.filter(Boolean).length : 0;
+  const stepCount = Math.max(morningCount, nightCount, 0);
+
+  if (locale === "en") {
+    return stepCount > 0 ? `Morning + Night · ${stepCount} ${stepCount === 1 ? "step" : "steps"}` : "Morning + Night";
+  }
+
+  return stepCount > 0 ? `아침 + 저녁 · ${stepCount}단계` : "아침 + 저녁";
+}
+
+function getOverviewSummary(form = {}, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const concernLabel = getConcernDisplay(form, locale);
+  const skinTypeLabel = display.skinType[form?.skinType] || (locale === "en" ? "Skin" : "피부");
+  const directionSummary = getDirectionSummary(form, locale);
+
+  if (locale === "en") {
+    return `${skinTypeLabel} with ${concernLabel.toLowerCase()}, so ${directionSummary.charAt(0).toLowerCase()}${directionSummary.slice(1)}`;
+  }
+
+  return `${skinTypeLabel} 피부이고 ${concernLabel} 고민이 있어, ${directionSummary}`;
 }
 
 function buildLocalizedSkinProfileSummary(form = {}, locale = "ko") {
@@ -761,6 +862,10 @@ function getLocalePath(pathname, nextLocale) {
   return nextLocale === "en" ? `/en${normalized === "/" ? "" : normalized}` : normalized;
 }
 
+function getHomePath(locale = "ko") {
+  return locale === "en" ? "/en" : "/";
+}
+
 function getImageFallbackLabel(product) {
   return product?.brand ? `${product.brand} ${product?.name || ""}`.trim() : product?.name || "Product";
 }
@@ -777,9 +882,15 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko" }) {
         />
       ) : (
         <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-3 text-center">
-          <div>
-            <p className="text-[11px] font-semibold text-black/58">{product?.brand || "Product"}</p>
-            <p className="mt-1 text-[10px] text-black/42">{copy.imageEmpty}</p>
+          <div className="flex flex-col items-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-black/6 bg-white/72 text-black/25">
+              <svg viewBox="0 0 48 48" className="h-5 w-5" fill="none" aria-hidden="true">
+                <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
+              </svg>
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-black/54">{product?.brand || "Product"}</p>
+            <p className="mt-0.5 text-[9px] text-black/34">{copy.imagePreparing}</p>
           </div>
         </div>
       )}
@@ -811,9 +922,18 @@ function ResultContent() {
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const [currentResultStep, setCurrentResultStep] = useState(0);
+  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0);
   const [feedback, setFeedback] = useState({});
   const [feedbackSubmitted, setFeedbackSubmitted] = useState({});
+  const [feedbackComplete, setFeedbackComplete] = useState(false);
   const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
+  const error = searchParams.get("error");
+  const totalResultSteps = 5;
+  const homePath = getHomePath(locale);
+  const localizedPath = getLocalePath(pathname, locale);
+  const yesLabel = locale === "en" ? "Yes" : "예";
+  const noLabel = locale === "en" ? "No" : "아니오";
 
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");
@@ -853,18 +973,31 @@ function ResultContent() {
     }
   }, [isReady, result]);
 
-  function handleFeedback(questionId, answer) {
-    if (feedbackSubmitted[questionId]) {
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }, [currentResultStep]);
+
+  function handleFeedback(answer) {
+    const currentQuestion = feedbackQuestions[currentFeedbackIndex];
+
+    if (!currentQuestion || feedbackSubmitted[currentQuestion.id]) {
       return;
     }
 
     setFeedback((current) => ({
       ...current,
-      [questionId]: answer
+      [currentQuestion.id]: answer
     }));
     setFeedbackSubmitted((current) => ({
       ...current,
-      [questionId]: true
+      [currentQuestion.id]: true
     }));
 
     trackEvent("feedback_response", {
@@ -872,15 +1005,20 @@ function ResultContent() {
       feature_name: "feedback",
       result_type: "result_feedback",
       is_top_pick: false,
-      question_id: questionId,
+      question_id: currentQuestion.id,
       answer,
       meta_json: {
-        question_text: feedbackQuestions.find((item) => item.id === questionId)?.text || null
+        question_text: currentQuestion.text
       }
     });
-  }
 
-  const error = searchParams.get("error");
+    if (currentFeedbackIndex === feedbackQuestions.length - 1) {
+      setFeedbackComplete(true);
+      return;
+    }
+
+    setCurrentFeedbackIndex((current) => current + 1);
+  }
 
   if (!isReady) {
     return (
@@ -890,32 +1028,124 @@ function ResultContent() {
     );
   }
 
+  const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
+  const overviewCards = [
+    {
+      label: locale === "en" ? "Skin Type" : "피부 타입",
+      value: display.skinType[submission?.form?.skinType] || (locale === "en" ? "Matched routine" : "맞춤 루틴")
+    },
+    {
+      label: locale === "en" ? "Main Concern" : "주요 고민",
+      value: getConcernDisplay(submission?.form || {}, locale)
+    },
+    {
+      label: locale === "en" ? "Routine Structure" : "추천 루틴 구조",
+      value: getRoutineStructureLabel(result, locale)
+    }
+  ];
+  const stepCtaLabels = [
+    copy.ctaViewTopPick,
+    copy.ctaViewRecommended,
+    copy.ctaViewRoutine,
+    copy.ctaViewTips,
+    null
+  ];
+  const resultSteps = result
+    ? [
+        <ResultOverviewStep
+          key="overview"
+          copy={copy}
+          photoUrl={photoUrl}
+          photoAlt={submission?.imageName || copy.resultPhotoFallback}
+          summaryCards={overviewCards}
+          overviewSummary={getOverviewSummary(submission?.form, locale)}
+        />,
+        <TopPickStep
+          key="top-pick"
+          copy={copy}
+          card={
+            result.topPick ? (
+              <ProductDecisionCard
+                product={result.topPick}
+                featured
+                form={submission?.form}
+                locale={locale}
+                detailItems={profileSummaryItems}
+              />
+            ) : (
+              <div className="rounded-[1.8rem] border border-black/5 bg-white/88 p-6 text-sm leading-6 text-black/62 shadow-soft">
+                {copy.topPickEmpty}
+              </div>
+            )
+          }
+        />,
+        <RecommendedProductsStep
+          key="recommended"
+          copy={copy}
+          products={result.categoryPicks || []}
+          renderProduct={(product) => (
+            <ProductDecisionCard
+              product={product}
+              form={submission?.form}
+              locale={locale}
+            />
+          )}
+        />,
+        <RoutineGuideStep
+          key="routine"
+          copy={copy}
+          locale={locale}
+          morning={result.morning || []}
+          night={result.night || []}
+          toRoutineAction={toRoutineAction}
+        />,
+        <TipsStep
+          key="tips"
+          copy={copy}
+          cautions={result.avoid || []}
+          insightDescription={result.funInsight?.description || ""}
+          feedbackQuestions={feedbackQuestions}
+          currentFeedbackIndex={currentFeedbackIndex}
+          feedback={feedback}
+          feedbackComplete={feedbackComplete}
+          yesLabel={yesLabel}
+          noLabel={noLabel}
+          onAnswer={handleFeedback}
+        />
+      ]
+    : [];
+  const activeResultStep = resultSteps[currentResultStep] || null;
+  const showBottomCta = Boolean(result) && currentResultStep < totalResultSteps - 1;
+
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
-      <div className="flex flex-col gap-6">
-        <header className="overflow-hidden rounded-[2rem] border border-black/5 bg-white/85 shadow-soft backdrop-blur">
-          <div className="bg-[linear-gradient(135deg,rgba(216,195,173,0.36),rgba(255,255,255,0.72))] px-6 py-8 sm:px-8 sm:py-9">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-xs uppercase tracking-[0.24em] text-black/40">Result</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf9_0%,#f6efe6_100%)]">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
+        <div className="space-y-4">
+          <header className="space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
+                  K-Beauty Result
+                </p>
+                <h1 className="mt-2 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
                   {copy.title}
                 </h1>
                 {result?.meta?.notice ? (
-                  <p className="mt-3 inline-flex rounded-full bg-white/75 px-3 py-1 text-xs text-black/55">
+                  <p className="mt-3 inline-flex rounded-full bg-white/85 px-3 py-1.5 text-xs text-black/55">
                     {result.meta.notice}
                   </p>
                 ) : null}
               </div>
 
               <Link
-                href={getLocalePath(pathname, locale)}
-                className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white/80 px-5 py-3 text-sm font-medium text-black/75 transition hover:border-black/20 hover:bg-white"
+                href={homePath}
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/88 px-4 py-2.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5"
               >
                 {copy.tryAgain}
               </Link>
             </div>
-            <div className="mt-4 flex gap-2">
+
+            <div className="flex flex-wrap gap-2">
               {[
                 { code: "ko", label: "한국어" },
                 { code: "en", label: "English" }
@@ -928,7 +1158,7 @@ function ResultContent() {
                     className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
                       active
                         ? "bg-[#1f1811] text-white"
-                        : "border border-black/10 bg-white/80 text-black/60 hover:border-black/20"
+                        : "border border-black/10 bg-white/88 text-black/60 hover:border-black/20"
                     }`}
                   >
                     {item.label}
@@ -936,207 +1166,58 @@ function ResultContent() {
                 );
               })}
             </div>
-          </div>
 
-          {result ? (
-            <div className="grid gap-3 border-t border-black/5 bg-white/70 px-6 py-5 text-sm text-black/60 sm:grid-cols-3 sm:px-8">
-              <InsightStat
-                label={locale === "en" ? "Skin Type" : "피부 타입"}
-                value={display.skinType[submission?.form?.skinType] || (locale === "en" ? "Matched routine" : "맞춤 루틴")}
+            {result ? (
+              <ResultProgressDots
+                currentStep={currentResultStep + 1}
+                totalSteps={totalResultSteps}
+                label={copy.resultProgressLabel}
               />
-              <InsightStat
-                label={locale === "en" ? "Routine" : "루틴"}
-                value={locale === "en" ? "Morning + Night · 3 steps" : "아침 + 저녁 · 3단계"}
-              />
-              <InsightStat
-                label={locale === "en" ? "Top Concern" : "주요 고민"}
-                value={display.mainConcern[submission?.form?.mainConcern] || copy.currentConcernBasis}
-              />
+            ) : null}
+          </header>
+
+          {error ? (
+            <div className="rounded-[2rem] border border-red-200 bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f1_100%)] p-6 text-sm leading-6 text-red-600 shadow-soft">
+              <p className="font-semibold text-red-700">{copy.noResultTitle}</p>
+              <p className="mt-2">{error}</p>
             </div>
           ) : null}
-        </header>
 
-        {error ? (
-          <div className="rounded-[2rem] border border-red-200 bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f1_100%)] p-6 text-sm leading-6 text-red-600 shadow-soft">
-            <p className="font-semibold text-red-700">{copy.noResultTitle}</p>
-            <p className="mt-2">{error}</p>
-          </div>
-        ) : null}
-
-        {!error && !result ? (
-          <div className="rounded-[2rem] border border-black/5 bg-white/85 p-6 text-sm leading-6 text-black/65 shadow-soft">
-            {copy.noResultBody}
-          </div>
-        ) : null}
-
-        {result ? (
-          <div className="grid gap-5 md:grid-cols-2">
-            {profileSummaryItems.length ? (
-              <div className="md:col-span-2 rounded-[1.7rem] border border-black/5 bg-[#fcf8f2] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">{copy.skinProfile}</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {profileSummaryItems.map((item) => (
-                    <p key={item} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/76">
-                      ✔ {item}
-                    </p>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm leading-6 text-black/62">
-                  {copy.profileBody}
-                </p>
-              </div>
-            ) : null}
-
-            <div className="md:col-span-2 rounded-[1.5rem] border border-black/5 bg-white/85 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/40">{copy.recommendationDirection}</p>
-              <div className="mt-3 space-y-2">
-                <p className="text-sm leading-6 text-black/74">{getDirectionSummary(submission?.form, locale)}</p>
-                <p className="text-sm leading-6 text-black/68">{getDirectionAction(submission?.form, locale)}</p>
-              </div>
+          {!error && !result ? (
+            <div className="rounded-[2rem] border border-black/5 bg-white/88 p-6 text-sm leading-6 text-black/65 shadow-soft">
+              {copy.noResultBody}
             </div>
+          ) : null}
 
-            <div className="md:col-span-2">
-              <ResultSection title={copy.productStartHere}>
-                {result.topPick ? (
-                  <ProductDecisionCard
-                    product={result.topPick}
-                    featured
-                    form={submission?.form}
-                    locale={locale}
-                  />
-                ) : null}
-              </ResultSection>
-            </div>
-
-            <div className="md:col-span-2">
-              <ResultSection title={copy.categoryPicks}>
-                <CategoryCarousel products={result.categoryPicks || []} form={submission?.form} locale={locale} />
-              </ResultSection>
-            </div>
-
-            <div className="md:col-span-2">
-              <ResultSection
-                title={copy.dailyRoutine}
-                subtitle={copy.routineSubtitle}
+          {result ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${localizedPath}-${currentResultStep}`}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="flex-1"
               >
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl bg-[#faf6f0] p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {locale === "en" ? "Morning" : "아침"}
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {(result.morning || []).map((item, index) => (
-                        <li key={`morning-${index}`} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/78">
-                          {toRoutineAction(item, locale)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="rounded-2xl bg-[#faf6f0] p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {locale === "en" ? "Night" : "저녁"}
-                    </p>
-                    <ul className="mt-3 space-y-2.5">
-                      {(result.night || []).map((item, index) => (
-                        <li key={`night-${index}`} className="rounded-2xl bg-white/85 px-4 py-3 text-sm leading-6 text-black/78">
-                          {toRoutineAction(item, locale)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </ResultSection>
-            </div>
-
-            <div className="md:col-span-2">
-              <ResultSection
-                title={copy.notes}
-                subtitle={copy.notesSubtitle}
-              >
-                <div className="grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
-                  <div className="rounded-2xl bg-[#fffaf4] p-3.5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                      {copy.cautions}
-                    </p>
-                    <ul className="mt-2.5 space-y-2">
-                      {(result.avoid || []).map((item, index) => (
-                        <li key={`avoid-${index}`} className="rounded-2xl bg-white/90 px-4 py-2.5 text-sm leading-6 text-black/78">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  {result.funInsight ? (
-                    <div className="rounded-2xl bg-[linear-gradient(135deg,#f6efe7_0%,#fff9f2_100%)] p-3.5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                        {copy.skinNote}
-                      </p>
-                      <p className="mt-2.5 rounded-2xl bg-white/80 px-4 py-3 text-sm leading-6 text-black/72">
-                        {result.funInsight.description}
-                      </p>
-                    </div>
-                  ) : null}
-                </div>
-              </ResultSection>
-            </div>
-
-            <div className="md:col-span-2">
-              <ResultSection
-                title={copy.quickFeedback}
-                subtitle={copy.feedbackSubtitle}
-              >
-                <div className="grid gap-2">
-                  {feedbackQuestions.map((question) => (
-                    <div
-                      key={question.id}
-                      className="rounded-2xl border border-black/5 bg-white/85 px-4 py-3"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-medium text-ink">{question.text}</p>
-                      {feedbackSubmitted[question.id] ? (
-                        <p className="text-xs font-medium text-[#7d5724]">
-                          {copy.feedbackSaved}
-                        </p>
-                      ) : (
-                        <div className="flex gap-2">
-                          {(locale === "en" ? ["Yes", "No"] : ["예", "아니오"]).map((option) => {
-                            const isActive = feedback[question.id] === option;
-
-                            return (
-                              <button
-                                key={`${question.id}-${option}`}
-                                type="button"
-                                onClick={() => handleFeedback(question.id, option)}
-                                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                                  isActive
-                                    ? "bg-[#1f1811] text-white"
-                                    : "border border-black/10 bg-white text-black/65 hover:border-black/20"
-                                }`}
-                              >
-                                {option}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ResultSection>
-            </div>
-
-            <div className="md:col-span-2 flex justify-center">
-              <Link
-                href={getLocalePath(pathname, locale)}
-                className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
-              >
-                {copy.tryAgain}
-              </Link>
-            </div>
-          </div>
-        ) : null}
+                {activeResultStep}
+              </motion.div>
+            </AnimatePresence>
+          ) : null}
+        </div>
       </div>
+
+      {showBottomCta ? (
+        <ResultBottomCTA
+          label={stepCtaLabels[currentResultStep]}
+          onClick={() => setCurrentResultStep((current) => Math.min(totalResultSteps - 1, current + 1))}
+          previousLabel={currentResultStep > 0 ? copy.previous : null}
+          onPrevious={
+            currentResultStep > 0
+              ? () => setCurrentResultStep((current) => Math.max(0, current - 1))
+              : null
+          }
+        />
+      ) : null}
     </main>
   );
 }
@@ -1229,7 +1310,7 @@ function CategoryCarousel({ products, form, locale = "ko" }) {
   );
 }
 
-function ProductDecisionCard({ product, featured = false, form = null, locale = "ko" }) {
+function ProductDecisionCard({ product, featured = false, form = null, locale = "ko", detailItems = [] }) {
   const [expanded, setExpanded] = useState(false);
   const copy = getResultCopy(locale);
 
@@ -1239,7 +1320,6 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
     const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
     const purchaseLink = getPurchaseLinkInfo(product, locale);
     const topPickSignals = [product.step, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
-    const previewLines = getProductPreviewLines(product, 2);
     const detailLines = getProductReasonSentences(product);
 
     return (
@@ -1289,13 +1369,6 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
               <span className="font-semibold text-black/78">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/80">{topPickSummary}</p>
-            <div className="mt-3 space-y-1.5">
-              {previewLines.map((line) => (
-                <p key={`${product.id}-${line}`} className="text-sm leading-6 text-black/68">
-                  {line}
-                </p>
-              ))}
-            </div>
 
             <button
               type="button"
@@ -1310,6 +1383,18 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
             {expanded ? (
               <div className="mt-4 space-y-4 rounded-[1.4rem] border border-black/8 bg-white/72 p-4">
+                {detailItems.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {detailItems.map((item) => (
+                      <span
+                        key={`${product.id}-detail-item-${item}`}
+                        className="rounded-full border border-black/8 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-black/60"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 {detailLines.length ? (
                   <div className="space-y-2">
                     {detailLines.map((line) => (
@@ -1329,13 +1414,19 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 <img
                   src={product.image_url}
                   alt={getImageFallbackLabel(product)}
-                  className="h-56 w-full object-cover"
+                  className="h-48 w-full object-cover"
                 />
               ) : (
-                <div className="flex h-56 items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-6 text-center">
-                  <div>
-                    <p className="text-sm font-semibold text-black/65">{getImageFallbackLabel(product)}</p>
-                    <p className="mt-2 text-xs text-black/45">{copy.imagePreparing}</p>
+                <div className="flex h-48 items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-6 text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-[1.1rem] border border-black/6 bg-white/72 text-black/25">
+                      <svg viewBox="0 0 48 48" className="h-7 w-7" fill="none" aria-hidden="true">
+                        <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                        <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
+                      </svg>
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-black/58">{getImageFallbackLabel(product)}</p>
+                    <p className="mt-1 text-[11px] text-black/36">{copy.imagePreparing}</p>
                   </div>
                 </div>
               )}
@@ -1377,14 +1468,13 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
   }
 
   const purchaseLink = getPurchaseLinkInfo(product, locale);
-  const cardTags = [product.step, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean);
+  const cardTags = [product.step, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean).slice(0, 2);
   const previewLine = getProductPreviewLines(product, 1)[0] || getEspeciallyGoodFor(product, form, locale);
-  const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
   const detailLines = getProductReasonSentences(product);
 
   return (
     <div
-      className="rounded-[1.5rem] border border-black/5 bg-[#fbf7f2] p-5"
+      className="rounded-[1.45rem] border border-black/5 bg-[#fbf7f2] p-4"
       onClick={() =>
         trackEvent("click_product_card", {
           product_id: product.id,
@@ -1398,14 +1488,14 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
         })
       }
     >
-      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_156px] sm:items-start">
-        <div>
+      <div className="grid min-h-[236px] gap-3 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-stretch">
+        <div className="flex min-h-full flex-col">
           <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
           <p className="mt-2 text-base font-semibold text-ink">{product.name}</p>
           <p className="mt-1 text-xs text-black/45">{product.brand}</p>
 
           {cardTags.length ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {cardTags.map((label) => (
                 <span
                   key={`${product.id}-${label}`}
@@ -1417,21 +1507,28 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
             </div>
           ) : null}
 
-          <p className="mt-4 text-sm leading-6 text-black/70">{previewLine}</p>
-          <p className="mt-2 text-xs leading-5 text-black/52">
-            {locale === "en" ? `Best for ${especiallyGoodFor}` : `특히 ${especiallyGoodFor}`}
+          <p
+            className="mt-3 min-h-12 text-sm leading-6 text-black/70"
+            style={{
+              display: "-webkit-box",
+              WebkitBoxOrient: "vertical",
+              WebkitLineClamp: 2,
+              overflow: "hidden"
+            }}
+          >
+            {previewLine}
           </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
             <button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                setExpanded((current) => !current);
+                setExpanded(true);
               }}
-              className="text-xs font-medium text-[#7d5724] underline decoration-black/15 underline-offset-4"
+              className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5"
             >
-              {expanded ? copy.less : copy.more}
+              {locale === "en" ? "Details" : "상세보기"}
             </button>
             <a
               href={purchaseLink.href}
@@ -1452,31 +1549,104 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                   }
                 });
               }}
-              className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
+                className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
             >
               {purchaseLink.label}
             </a>
           </div>
 
-          {expanded ? (
-            <div className="mt-4 rounded-[1.2rem] bg-white/85 p-4">
-              <div className="space-y-2">
-                {detailLines.map((line) => (
-                  <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-black/68">
-                    {line}
-                  </p>
-                ))}
-              </div>
-            </div>
-          ) : null}
         </div>
-        <div className="space-y-3 sm:w-[156px]">
-          <SmallProductThumb product={product} height="h-32" locale={locale} />
-          <div className="rounded-[1.1rem] border border-black/6 bg-white/80 p-3">
-            <FitGaugeRows product={product} form={form} compact locale={locale} />
-          </div>
+        <div className="flex items-center sm:w-[112px]">
+          <SmallProductThumb product={product} height="h-24" locale={locale} />
         </div>
       </div>
+
+      {expanded ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/38 px-4 py-6"
+          onClick={(event) => {
+            event.stopPropagation();
+            setExpanded(false);
+          }}
+        >
+          <div
+            className="relative w-full max-w-md rounded-[2rem] border border-black/6 bg-[#fffdf9] p-5 shadow-[0_28px_80px_rgba(28,20,12,0.22)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-sm text-black/58 transition hover:border-black/20 hover:bg-black/5"
+              aria-label={locale === "en" ? "Close details" : "상세 닫기"}
+            >
+              ×
+            </button>
+
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_132px] sm:items-start">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink">{product.name}</h3>
+                <p className="mt-1 text-sm text-black/45">{product.brand}</p>
+
+                {cardTags.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {cardTags.map((label) => (
+                      <span
+                        key={`${product.id}-modal-${label}`}
+                        className="rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/58"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 space-y-2.5">
+                  {detailLines.map((line) => (
+                    <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-black/72">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="mt-5">
+                  <a
+                    href={purchaseLink.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      trackEvent("click_buy_link", {
+                        product_id: product.id,
+                        feature_name: "skin_analysis",
+                        result_type: "category_pick",
+                        is_top_pick: false,
+                        meta_json: {
+                          step: product.step,
+                          brand: product.brand,
+                          button_label: purchaseLink.label,
+                          fallback_link: purchaseLink.isFallback,
+                          source: "category_pick_modal"
+                        }
+                      });
+                    }}
+                    className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
+                  >
+                    {purchaseLink.label}
+                  </a>
+                </div>
+              </div>
+
+              <div className="space-y-3 sm:w-[132px]">
+                <SmallProductThumb product={product} height="h-28" locale={locale} />
+                <div className="rounded-[1.1rem] border border-black/6 bg-white/88 p-3">
+                  <FitGaugeRows product={product} form={form} compact locale={locale} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

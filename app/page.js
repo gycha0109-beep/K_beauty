@@ -55,6 +55,27 @@ function sleep(ms) {
   });
 }
 
+function fileToDataUrl(file) {
+  return new Promise((resolve) => {
+    if (!file) {
+      resolve("");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(typeof reader.result === "string" ? reader.result : "");
+    };
+
+    reader.onerror = () => {
+      resolve("");
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -97,6 +118,7 @@ export default function HomePage() {
     const runAnalyze = async () => {
       const startedAt = Date.now();
       const completedForm = buildCompleteForm(form);
+      const imagePreviewDataUrlPromise = fileToDataUrl(imageFile);
 
       try {
         setIsSubmitting(true);
@@ -120,11 +142,14 @@ export default function HomePage() {
           throw new Error(data?.error || copy.errors.analyzeFailed);
         }
 
+        const imagePreviewDataUrl = await imagePreviewDataUrlPromise;
+
         sessionStorage.setItem(
           "skinTestSubmission",
           JSON.stringify({
             form: completedForm,
             imageName: imageFile?.name || "",
+            imagePreviewDataUrl,
             locale
           })
         );
