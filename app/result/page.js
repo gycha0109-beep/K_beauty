@@ -111,8 +111,9 @@ const resultCopy = {
     topPickBadge: "1순위 추천",
     more: "더보기",
     less: "접기",
-    buyNow: "구매하기",
+    buyNow: "판매처 보기",
     findStore: "구매처 찾기",
+    priceBand: "가격대",
     fitHeading: "현재 입력 기준 적합도",
     fitHeadingCompact: "현재 입력 기준",
     fitLabels: ["보습", "장벽", "트러블", "사용감", "민감도"],
@@ -205,8 +206,9 @@ const resultCopy = {
     topPickBadge: "Top Pick",
     more: "More",
     less: "Less",
-    buyNow: "Buy Now",
-    findStore: "Find Store",
+    buyNow: "View Store",
+    findStore: "Find Retailers",
+    priceBand: "Price band",
     fitHeading: "Fit for your current inputs",
     fitHeadingCompact: "Current fit",
     fitLabels: ["Hydration", "Barrier", "Breakouts", "Texture", "Sensitivity"],
@@ -737,26 +739,52 @@ function getUsageTimingLabel(useTime, locale = "ko") {
   return copy.useTime[value] || copy.useTime.both;
 }
 
-function getPriceLabel(priceRange) {
+function getDisplayPriceRange(priceRange) {
   if (!priceRange) {
-    return "Price -";
+    return null;
   }
 
-  return `Price ${priceRange}`;
+  if (priceRange === "$") {
+    return "₩";
+  }
+
+  if (priceRange === "$$") {
+    return "₩₩";
+  }
+
+  if (priceRange === "$$$") {
+    return "₩₩₩";
+  }
+
+  return cleanText(priceRange);
 }
 
-function hasPurchaseLink(buyLink) {
-  return Boolean(
-    buyLink &&
-      typeof buyLink === "string" &&
-      buyLink.startsWith("http") &&
-      !buyLink.includes("example.com")
-  );
+function getPriceLabel(priceRange, locale = "ko") {
+  const copy = getResultCopy(locale);
+  const displayRange = getDisplayPriceRange(priceRange);
+
+  if (!displayRange) {
+    return null;
+  }
+
+  return `${copy.priceBand} ${displayRange}`;
+}
+
+function isExactOliveYoungProductLink(buyLink) {
+  if (!buyLink || typeof buyLink !== "string" || !buyLink.startsWith("http")) {
+    return false;
+  }
+
+  if (buyLink.includes("example.com")) {
+    return false;
+  }
+
+  return /oliveyoung\.co\.kr\/.*getGoodsDetail/i.test(buyLink);
 }
 
 function getPurchaseLinkInfo(product, locale = "ko") {
   const copy = getResultCopy(locale);
-  if (hasPurchaseLink(product?.buy_link)) {
+  if (isExactOliveYoungProductLink(product?.buy_link)) {
     return {
       href: product.buy_link,
       label: copy.buyNow,
@@ -1319,6 +1347,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
     const topPickSummary = getTopPickSummary(product, form, locale);
     const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
     const purchaseLink = getPurchaseLinkInfo(product, locale);
+    const priceLabel = getPriceLabel(product.price_range, locale);
     const topPickSignals = [product.step, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
     const detailLines = getProductReasonSentences(product);
 
@@ -1351,6 +1380,9 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
               {product.name}
             </h2>
             <p className="mt-1 text-sm text-black/45 sm:text-[15px]">{product.brand}</p>
+            {priceLabel ? (
+              <p className="mt-1 text-xs font-medium text-black/42 sm:text-[13px]">{priceLabel}</p>
+            ) : null}
 
             {topPickSignals.length ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -1468,6 +1500,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
   }
 
   const purchaseLink = getPurchaseLinkInfo(product, locale);
+  const priceLabel = getPriceLabel(product.price_range, locale);
   const cardTags = [product.step, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean).slice(0, 2);
   const previewLine = getProductPreviewLines(product, 1)[0] || getEspeciallyGoodFor(product, form, locale);
   const detailLines = getProductReasonSentences(product);
@@ -1493,6 +1526,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
           <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
           <p className="mt-2 text-base font-semibold text-ink">{product.name}</p>
           <p className="mt-1 text-xs text-black/45">{product.brand}</p>
+          {priceLabel ? <p className="mt-1 text-[11px] font-medium text-black/42">{priceLabel}</p> : null}
 
           {cardTags.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
@@ -1587,6 +1621,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
                 <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink">{product.name}</h3>
                 <p className="mt-1 text-sm text-black/45">{product.brand}</p>
+                {priceLabel ? <p className="mt-1 text-xs font-medium text-black/42">{priceLabel}</p> : null}
 
                 {cardTags.length ? (
                   <div className="mt-4 flex flex-wrap gap-2">
