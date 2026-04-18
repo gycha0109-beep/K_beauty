@@ -901,24 +901,26 @@ function getImageFallbackLabel(product) {
 function SmallProductThumb({ product, height = "h-28", locale = "ko" }) {
   const copy = getResultCopy(locale);
   return (
-    <div className={`overflow-hidden rounded-[1.1rem] border border-black/8 bg-white/80 ${height}`}>
+    <div className={`ui-image-surface overflow-hidden rounded-[1.1rem] ${height}`}>
       {product?.image_url ? (
-        <img
-          src={product.image_url}
-          alt={getImageFallbackLabel(product)}
-          className="h-full w-full object-cover"
-        />
+        <div className="flex h-full w-full items-center justify-center p-2">
+          <img
+            src={product.image_url}
+            alt={getImageFallbackLabel(product)}
+            className="h-full w-full object-contain"
+          />
+        </div>
       ) : (
-        <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-3 text-center">
+        <div className="ui-image-empty flex h-full items-center justify-center px-3 text-center">
           <div className="flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-black/6 bg-white/72 text-black/25">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-zinc-200 bg-white/72 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500">
               <svg viewBox="0 0 48 48" className="h-5 w-5" fill="none" aria-hidden="true">
                 <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
                 <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
               </svg>
             </div>
-            <p className="mt-2 text-[11px] font-medium text-black/54">{product?.brand || "Product"}</p>
-            <p className="mt-0.5 text-[9px] text-black/34">{copy.imagePreparing}</p>
+            <p className="mt-2 text-[11px] font-medium text-zinc-600 dark:text-zinc-300">{product?.brand || "Product"}</p>
+            <p className="mt-0.5 text-[9px] text-zinc-500 dark:text-zinc-500">{copy.imagePreparing}</p>
           </div>
         </div>
       )}
@@ -1101,7 +1103,7 @@ function ResultContent() {
                 detailItems={profileSummaryItems}
               />
             ) : (
-              <div className="rounded-[1.8rem] border border-black/5 bg-white/88 p-6 text-sm leading-6 text-black/62 shadow-soft">
+              <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                 {copy.topPickEmpty}
               </div>
             )
@@ -1146,20 +1148,20 @@ function ResultContent() {
   const showBottomCta = Boolean(result) && currentResultStep < totalResultSteps - 1;
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf9_0%,#f6efe6_100%)]">
+    <main className="ui-page ui-page-shell min-h-screen">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-4">
           <header className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
+                <p className="ui-kicker">
                   K-Beauty Result
                 </p>
-                <h1 className="mt-2 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+                <h1 className="ui-title mt-2 text-xl sm:text-2xl">
                   {copy.title}
                 </h1>
                 {result?.meta?.notice ? (
-                  <p className="mt-3 inline-flex rounded-full bg-white/85 px-3 py-1.5 text-xs text-black/55">
+                  <p className="mt-3 inline-flex rounded-full bg-zinc-100 px-3 py-1.5 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
                     {result.meta.notice}
                   </p>
                 ) : null}
@@ -1167,7 +1169,7 @@ function ResultContent() {
 
               <Link
                 href={homePath}
-                className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/88 px-4 py-2.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5"
+                className="ui-button-secondary shrink-0 bg-white/88 px-4 py-2.5 text-xs font-medium dark:bg-zinc-900/88"
               >
                 {copy.tryAgain}
               </Link>
@@ -1185,8 +1187,8 @@ function ResultContent() {
                     href={getLocalePath(pathname, item.code)}
                     className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
                       active
-                        ? "bg-[#1f1811] text-white"
-                        : "border border-black/10 bg-white/88 text-black/60 hover:border-black/20"
+                        ? "ui-choice-active"
+                        : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"
                     }`}
                   >
                     {item.label}
@@ -1205,14 +1207,14 @@ function ResultContent() {
           </header>
 
           {error ? (
-            <div className="rounded-[2rem] border border-red-200 bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f1_100%)] p-6 text-sm leading-6 text-red-600 shadow-soft">
-              <p className="font-semibold text-red-700">{copy.noResultTitle}</p>
+            <div className="ui-error">
+              <p className="font-semibold">{copy.noResultTitle}</p>
               <p className="mt-2">{error}</p>
             </div>
           ) : null}
 
           {!error && !result ? (
-            <div className="rounded-[2rem] border border-black/5 bg-white/88 p-6 text-sm leading-6 text-black/65 shadow-soft">
+            <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               {copy.noResultBody}
             </div>
           ) : null}
@@ -1252,9 +1254,9 @@ function ResultContent() {
 
 function InsightStat({ label, value }) {
   return (
-    <div className="rounded-2xl bg-[#faf5ee] px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.16em] text-black/35">{label}</p>
-      <p className="mt-1 font-medium text-ink">{value}</p>
+    <div className="rounded-2xl bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{value}</p>
     </div>
   );
 }
@@ -1265,7 +1267,7 @@ function FitGaugeRows({ product, form, compact = false, locale = "ko" }) {
 
   return (
     <div className={compact ? "space-y-2" : "space-y-2.5"}>
-      <p className={`font-semibold uppercase tracking-[0.14em] text-black/38 ${compact ? "text-[10px]" : "text-xs"}`}>
+      <p className={`font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400 ${compact ? "text-[10px]" : "text-xs"}`}>
         {compact ? copy.fitHeadingCompact : copy.fitHeading}
       </p>
       {displayMetrics.map((metric) => (
@@ -1273,13 +1275,13 @@ function FitGaugeRows({ product, form, compact = false, locale = "ko" }) {
           key={`${product.id}-${metric.label}`}
           className={`grid items-center ${compact ? "grid-cols-[48px_1fr] gap-2.5" : "grid-cols-[86px_1fr] gap-3"}`}
         >
-          <span className={`${compact ? "text-[10px]" : "text-xs"} text-black/52`}>{metric.label}</span>
+          <span className={`${compact ? "text-[10px]" : "text-xs"} text-zinc-500 dark:text-zinc-400`}>{metric.label}</span>
           <div className={`flex ${compact ? "gap-1" : "gap-1.5"}`}>
             {Array.from({ length: 5 }).map((_, index) => (
               <span
                 key={`${metric.label}-${index}`}
                 className={`h-2 flex-1 rounded-full ${
-                  index < metric.value ? "bg-[#7d5724]" : "bg-black/8"
+                  index < metric.value ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"
                 }`}
               />
             ))}
@@ -1312,7 +1314,7 @@ function CategoryCarousel({ products, form, locale = "ko" }) {
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-black/42">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
           {activeIndex + 1} / {products.length}
         </p>
         <div className="flex gap-2">
@@ -1320,7 +1322,7 @@ function CategoryCarousel({ products, form, locale = "ko" }) {
             type="button"
             onClick={() => moveTo(activeIndex - 1)}
             disabled={activeIndex === 0}
-            className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="ui-button-secondary px-3 py-1.5 text-xs font-medium"
           >
             {copy.previous}
           </button>
@@ -1328,7 +1330,7 @@ function CategoryCarousel({ products, form, locale = "ko" }) {
             type="button"
             onClick={() => moveTo(activeIndex + 1)}
             disabled={activeIndex === products.length - 1}
-            className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+            className="ui-button-secondary px-3 py-1.5 text-xs font-medium"
           >
             {copy.next}
           </button>
@@ -1353,7 +1355,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
     return (
       <div
-        className="overflow-hidden rounded-[2rem] border border-[#d6b487] bg-[linear-gradient(135deg,#f1dfc8_0%,#fff7ee_56%,#fffdf9_100%)] shadow-[0_24px_64px_rgba(79,51,8,0.14)]"
+        className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-[linear-gradient(135deg,#fafafa_0%,#ffffff_56%,#ffffff_100%)] shadow-[0_24px_64px_rgba(24,24,27,0.08)] dark:border-zinc-800 dark:bg-[linear-gradient(135deg,#18181b_0%,#111114_56%,#09090b_100%)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
         onClick={() =>
           trackEvent("click_top_pick", {
             product_id: product.id,
@@ -1370,18 +1372,18 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
         <div className="grid gap-5 px-5 py-6 sm:px-7 sm:py-7 lg:grid-cols-[1.28fr_0.72fr] lg:items-start">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="rounded-full border border-[#1f1811]/10 bg-white/85 px-3 py-1.5 text-[11px] font-semibold text-black/65">
-                {copy.topPickBadge}
-              </span>
-            </div>
+                <span className="ui-chip px-3 py-1.5 text-[11px] font-semibold">
+                  {copy.topPickBadge}
+                </span>
+              </div>
 
-            <p className="mt-5 text-sm font-semibold leading-6 text-[#7d5724] sm:text-[15px]">{topPickHeadline}</p>
-            <h2 className="mt-3 text-[2rem] font-semibold tracking-tight text-ink sm:text-[2.4rem]">
+            <p className="mt-5 text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">{topPickHeadline}</p>
+            <h2 className="mt-3 text-[2rem] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
               {product.name}
             </h2>
-            <p className="mt-1 text-sm text-black/45 sm:text-[15px]">{product.brand}</p>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 sm:text-[15px]">{product.brand}</p>
             {priceLabel ? (
-              <p className="mt-1 text-xs font-medium text-black/42 sm:text-[13px]">{priceLabel}</p>
+              <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 sm:text-[13px]">{priceLabel}</p>
             ) : null}
 
             {topPickSignals.length ? (
@@ -1389,7 +1391,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 {topPickSignals.map((label) => (
                   <span
                     key={`${product.id}-${label}`}
-                    className="rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/60"
+                    className="ui-chip-compact"
                   >
                     {label}
                   </span>
@@ -1397,10 +1399,10 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
               </div>
             ) : null}
 
-            <p className="mt-4 text-sm leading-6 text-black/70">
-              <span className="font-semibold text-black/78">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
+            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-black/80">{topPickSummary}</p>
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-zinc-700 dark:text-zinc-300">{topPickSummary}</p>
 
             <button
               type="button"
@@ -1408,19 +1410,19 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 event.stopPropagation();
                 setExpanded((current) => !current);
               }}
-              className="mt-4 text-sm font-medium text-[#7d5724] underline decoration-black/15 underline-offset-4"
+              className="mt-4 text-sm font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 dark:text-zinc-300 dark:decoration-zinc-600"
             >
               {expanded ? copy.less : copy.more}
             </button>
 
             {expanded ? (
-              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-black/8 bg-white/72 p-4">
+              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-zinc-200 bg-white/72 p-4 dark:border-zinc-700 dark:bg-zinc-900/84">
                 {detailItems.length ? (
                   <div className="flex flex-wrap gap-2">
                     {detailItems.map((item) => (
                       <span
                         key={`${product.id}-detail-item-${item}`}
-                        className="rounded-full border border-black/8 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-black/60"
+                        className="ui-chip-compact px-3 py-1.5"
                       >
                         {item}
                       </span>
@@ -1430,7 +1432,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 {detailLines.length ? (
                   <div className="space-y-2">
                     {detailLines.map((line) => (
-                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-black/72">
+                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                         {line}
                       </p>
                     ))}
@@ -1441,34 +1443,36 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
           </div>
 
           <div className="space-y-3">
-            <div className="overflow-hidden rounded-[1.6rem] border border-[#cfb48d]/50 bg-white/88">
+            <div className="ui-image-surface overflow-hidden rounded-[1.6rem]">
               {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={getImageFallbackLabel(product)}
-                  className="h-48 w-full object-cover"
-                />
+                <div className="flex h-48 items-center justify-center px-4 py-3">
+                  <img
+                    src={product.image_url}
+                    alt={getImageFallbackLabel(product)}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
               ) : (
-                <div className="flex h-48 items-center justify-center bg-[linear-gradient(135deg,#f7ede1_0%,#fff9f2_100%)] px-6 text-center">
+                <div className="ui-image-empty flex h-48 items-center justify-center px-6 text-center">
                   <div className="flex flex-col items-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-[1.1rem] border border-black/6 bg-white/72 text-black/25">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-[1.1rem] border border-zinc-200 bg-white/72 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500">
                       <svg viewBox="0 0 48 48" className="h-7 w-7" fill="none" aria-hidden="true">
                         <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
                         <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
                       </svg>
                     </div>
-                    <p className="mt-3 text-sm font-medium text-black/58">{getImageFallbackLabel(product)}</p>
-                    <p className="mt-1 text-[11px] text-black/36">{copy.imagePreparing}</p>
+                    <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">{getImageFallbackLabel(product)}</p>
+                    <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-500">{copy.imagePreparing}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="rounded-[1.35rem] border border-[#cfb48d]/50 bg-white/88 p-3.5">
+            <div className="ui-card-subtle p-3.5">
               <FitGaugeRows product={product} form={form} compact locale={locale} />
             </div>
 
-            <div className="rounded-[1.6rem] border border-[#cfb48d]/50 bg-white/88 p-4 sm:p-5">
+            <div className="ui-card-subtle p-4 sm:p-5">
               <a
                 href={purchaseLink.href}
                 target="_blank"
@@ -1488,7 +1492,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                     }
                   });
                 }}
-                className="inline-flex w-full items-center justify-center rounded-full bg-[#1f1811] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
+                className="ui-button-primary w-full px-4 py-2.5 text-sm font-semibold"
               >
                 {purchaseLink.label}
               </a>
@@ -1507,7 +1511,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
   return (
     <div
-      className="rounded-[1.45rem] border border-black/5 bg-[#fbf7f2] p-4"
+      className="ui-card-muted rounded-[1.45rem] p-4"
       onClick={() =>
         trackEvent("click_product_card", {
           product_id: product.id,
@@ -1523,17 +1527,17 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
     >
       <div className="grid min-h-[236px] gap-3 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-stretch">
         <div className="flex min-h-full flex-col">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
-          <p className="mt-2 text-base font-semibold text-ink">{product.name}</p>
-          <p className="mt-1 text-xs text-black/45">{product.brand}</p>
-          {priceLabel ? <p className="mt-1 text-[11px] font-medium text-black/42">{priceLabel}</p> : null}
+          <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{product.step}</p>
+          <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
+          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{product.brand}</p>
+          {priceLabel ? <p className="mt-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}
 
           {cardTags.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {cardTags.map((label) => (
                 <span
                   key={`${product.id}-${label}`}
-                  className="rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/58"
+                  className="ui-chip-compact"
                 >
                   {label}
                 </span>
@@ -1542,7 +1546,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
           ) : null}
 
           <p
-            className="mt-3 min-h-12 text-sm leading-6 text-black/70"
+            className="mt-3 min-h-12 text-sm leading-6 text-zinc-700 dark:text-zinc-300"
             style={{
               display: "-webkit-box",
               WebkitBoxOrient: "vertical",
@@ -1560,7 +1564,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                 event.stopPropagation();
                 setExpanded(true);
               }}
-              className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5"
+              className="ui-button-secondary px-3.5 py-1.5 text-xs font-medium"
             >
               {locale === "en" ? "Details" : "상세보기"}
             </button>
@@ -1583,7 +1587,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                   }
                 });
               }}
-                className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-xs font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
+                className="ui-button-secondary px-3.5 py-1.5 text-xs font-medium"
             >
               {purchaseLink.label}
             </a>
@@ -1597,20 +1601,20 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
       {expanded ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/38 px-4 py-6"
+          className="ui-overlay fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
           onClick={(event) => {
             event.stopPropagation();
             setExpanded(false);
           }}
         >
           <div
-            className="relative w-full max-w-md rounded-[2rem] border border-black/6 bg-[#fffdf9] p-5 shadow-[0_28px_80px_rgba(28,20,12,0.22)]"
+            className="relative w-full max-w-md rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-[0_28px_80px_rgba(24,24,27,0.18)] dark:border-zinc-800 dark:bg-zinc-900"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white text-sm text-black/58 transition hover:border-black/20 hover:bg-black/5"
+              className="ui-button-secondary absolute right-4 top-4 h-9 w-9 text-sm"
               aria-label={locale === "en" ? "Close details" : "상세 닫기"}
             >
               ×
@@ -1618,17 +1622,17 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_132px] sm:items-start">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-black/35">{product.step}</p>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight text-ink">{product.name}</h3>
-                <p className="mt-1 text-sm text-black/45">{product.brand}</p>
-                {priceLabel ? <p className="mt-1 text-xs font-medium text-black/42">{priceLabel}</p> : null}
+                <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{product.step}</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{product.name}</h3>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{product.brand}</p>
+                {priceLabel ? <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}
 
                 {cardTags.length ? (
                   <div className="mt-4 flex flex-wrap gap-2">
                     {cardTags.map((label) => (
                       <span
                         key={`${product.id}-modal-${label}`}
-                        className="rounded-full border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-black/58"
+                        className="ui-chip-compact"
                       >
                         {label}
                       </span>
@@ -1638,7 +1642,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
                 <div className="mt-4 space-y-2.5">
                   {detailLines.map((line) => (
-                    <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-black/72">
+                    <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                       {line}
                     </p>
                   ))}
@@ -1665,7 +1669,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
                         }
                       });
                     }}
-                    className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black/72 transition hover:border-black/20 hover:bg-black/5"
+                    className="ui-button-secondary px-4 py-2 text-sm font-medium"
                   >
                     {purchaseLink.label}
                   </a>
@@ -1674,7 +1678,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
               <div className="space-y-3 sm:w-[132px]">
                 <SmallProductThumb product={product} height="h-28" locale={locale} />
-                <div className="rounded-[1.1rem] border border-black/6 bg-white/88 p-3">
+                <div className="ui-card-subtle rounded-[1.1rem] p-3">
                   <FitGaugeRows product={product} form={form} compact locale={locale} />
                 </div>
               </div>

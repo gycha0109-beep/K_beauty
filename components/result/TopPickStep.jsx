@@ -1,16 +1,10 @@
 export default function TopPickStep({ copy, card }) {
   return (
     <section className="space-y-4">
-      <div className="rounded-[2rem] border border-black/5 bg-white/88 p-6 shadow-soft">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
-          {copy.topPickStepKicker}
-        </p>
-        <h2 className="mt-2 text-[2rem] font-semibold tracking-tight text-ink">
-          {copy.topPickStepTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-black/62">
-          {copy.topPickStepBody}
-        </p>
+      <div className="ui-card p-6">
+        <p className="ui-kicker">{copy.topPickStepKicker}</p>
+        <h2 className="ui-title mt-2 text-[2rem]">{copy.topPickStepTitle}</h2>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.topPickStepBody}</p>
       </div>
 
       {card}

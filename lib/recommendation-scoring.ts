@@ -19,6 +19,7 @@ export const TOP_PICK_SCORING_WEIGHTS = {
   primaryConcernMatch: 12,
   secondaryConcernMatch: 8,
   categoryPriorityUnit: 2,
+  tier2Penalty: -2,
   highSensitivityLowRiskBonus: 14,
   highSensitivityMediumRiskPenalty: -2,
   highSensitivityHighRiskPenalty: -14,
@@ -47,9 +48,9 @@ export const TOP_PICK_SCORING_WEIGHTS = {
 
 const CATEGORY_PRIORITY_BY_CONCERN: Record<string, Record<string, number>> = {
   oiliness: { serum: 4, cleanser: 3, toner_essence: 2, moisturizer: 1, sunscreen: 1 },
-  pores: { serum: 4, cleanser: 3, toner_essence: 2, moisturizer: 1, sunscreen: 1 },
+  pores: { serum: 4, cleanser: 2, toner_essence: 2, moisturizer: 1, sunscreen: 1 },
   dehydration: { moisturizer: 4, toner_essence: 3, serum: 2, cleanser: 1, sunscreen: 1 },
-  acne: { serum: 4, cleanser: 3, toner_essence: 2, moisturizer: 1, sunscreen: 1 },
+  acne: { serum: 4, cleanser: 2, toner_essence: 2, moisturizer: 1, sunscreen: 1 },
   uneven_tone: { serum: 4, sunscreen: 3, toner_essence: 2, moisturizer: 1, cleanser: 1 },
   redness: { serum: 3, moisturizer: 3, toner_essence: 2, cleanser: 2, sunscreen: 1 },
   barrier: { moisturizer: 4, serum: 3, toner_essence: 3, cleanser: 2, sunscreen: 1 },
@@ -155,6 +156,7 @@ export type CanonicalRecommendationProduct = {
   name: string;
   brand: string;
   category: string;
+  recommendation_tier?: string | null;
   skin_types?: string[] | null;
   concerns?: string[] | null;
   texture?: string | null;
@@ -190,6 +192,7 @@ export type ScoreBreakdown = {
   secondary_concern_match: number;
   concerns_overlap: number;
   category_priority: number;
+  recommendation_tier_penalty: number;
   irritation_penalty: number;
   sensitivity_safe_bonus: number;
   texture_match: number;
@@ -482,6 +485,12 @@ function getSensitivitySafeBonus(
   return answers.sensitivity === "high"
     ? TOP_PICK_SCORING_WEIGHTS.sensitivitySafeHighBonus
     : TOP_PICK_SCORING_WEIGHTS.sensitivitySafeBonus;
+}
+
+function getRecommendationTierPenalty(product: CanonicalRecommendationProduct): number {
+  return product.recommendation_tier === "Tier2"
+    ? TOP_PICK_SCORING_WEIGHTS.tier2Penalty
+    : 0;
 }
 
 function hasExplicitSunscreenIntent(answers: NormalizedRecommendationAnswers): boolean {
@@ -802,6 +811,7 @@ export function scoreCanonicalProduct(
   const textureMatch = getTextureMatch(product.texture as string, answers.preferredTexture);
   const finishMatch = preferredFinishes.includes(normalizeCanonicalFinish(product.finish as string));
   const dislikedFeelPenalty = getDislikedFeelPenalty(product, answers.mostDislikedFeel);
+  const recommendationTierPenalty = getRecommendationTierPenalty(product);
   const postCleanseAdjustment = getPostCleanseAdjustment(product, answers);
   const afternoonStateAdjustment = getAfternoonStateAdjustment(
     product,
@@ -824,6 +834,7 @@ export function scoreCanonicalProduct(
     concerns_overlap:
       concernMatch.primaryConcernMatch + concernMatch.secondaryConcernMatch,
     category_priority: categoryPriority * TOP_PICK_SCORING_WEIGHTS.categoryPriorityUnit,
+    recommendation_tier_penalty: recommendationTierPenalty,
     irritation_penalty: getIrritationPenalty(answers, irritationRisk),
     sensitivity_safe_bonus: getSensitivitySafeBonus(answers, sensitivitySafe),
     texture_match: getTextureScore(textureMatch),
@@ -840,6 +851,7 @@ export function scoreCanonicalProduct(
     breakdown.skin_type_match +
     breakdown.concerns_overlap +
     breakdown.category_priority +
+    breakdown.recommendation_tier_penalty +
     breakdown.irritation_penalty +
     breakdown.sensitivity_safe_bonus +
     breakdown.texture_match +

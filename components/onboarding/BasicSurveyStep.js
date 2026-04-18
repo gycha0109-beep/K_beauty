@@ -2,8 +2,8 @@ import { OPTION_SETS } from "@/components/onboarding/constants";
 
 function ChoiceGroup({ label, name, value, options, optionLabels, onChange }) {
   return (
-    <div className="space-y-3 rounded-[1.6rem] border border-black/5 bg-white/88 p-4 shadow-soft">
-      <p className="text-sm font-semibold text-ink">{label}</p>
+    <div className="ui-card space-y-3 p-4">
+      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>
       <div className="grid grid-cols-2 gap-2">
         {options.map((option) => {
           const active = value === option;
@@ -15,8 +15,8 @@ function ChoiceGroup({ label, name, value, options, optionLabels, onChange }) {
               onClick={() => onChange(name, option)}
               className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
                 active
-                  ? "bg-[#1f1811] text-white"
-                  : "border border-black/10 bg-[#faf6f0] text-black/68 hover:border-black/20"
+                  ? "ui-choice-active"
+                  : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
               }`}
             >
               {optionLabels[option]}
@@ -30,10 +30,10 @@ function ChoiceGroup({ label, name, value, options, optionLabels, onChange }) {
 
 function MultiChoiceGroup({ label, values = [], options, optionLabels, onToggle, helper }) {
   return (
-    <div className="space-y-3 rounded-[1.6rem] border border-black/5 bg-white/88 p-4 shadow-soft">
+    <div className="ui-card space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-ink">{label}</p>
-        {helper ? <p className="text-xs font-medium text-[#7d5724]">{helper}</p> : null}
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>
+        {helper ? <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{helper}</p> : null}
       </div>
       <div className="grid grid-cols-2 gap-2">
         {options.map((option) => {
@@ -46,8 +46,8 @@ function MultiChoiceGroup({ label, values = [], options, optionLabels, onToggle,
               onClick={() => onToggle(option)}
               className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
                 active
-                  ? "bg-[#1f1811] text-white"
-                  : "border border-black/10 bg-[#faf6f0] text-black/68 hover:border-black/20"
+                  ? "ui-choice-active"
+                  : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
               }`}
             >
               {optionLabels[option]}
@@ -65,13 +65,13 @@ export default function BasicSurveyStep({ copy, form, onFieldChange, onMainConce
   return (
     <section className="flex flex-1 flex-col pt-6">
       <div className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
+        <p className="ui-kicker">
           {copy.basic.eyebrow}
         </p>
-        <h2 className="text-[2rem] font-semibold tracking-tight text-ink">
+        <h2 className="ui-title text-[2rem]">
           {copy.basic.title}
         </h2>
-        <p className="text-sm leading-6 text-black/58">
+        <p className="ui-text-secondary text-sm leading-6">
           {copy.basic.description}
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function BasicSurveyStep({ copy, form, onFieldChange, onMainConce
         />
       </div>
 
-      {error ? <p className="mt-4 text-sm font-medium text-[#9c4c2c]">{error}</p> : null}
+      {error ? <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
     </section>
   );
 }

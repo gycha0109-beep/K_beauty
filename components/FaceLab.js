@@ -6,16 +6,21 @@ import ErrorMessage from "@/components/ErrorMessage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import UploadPreview from "@/components/UploadPreview";
 
-const TAB_ORDER = ["physiognomy", "face_shape_hairstyle", "lookalike_celebrities", "color_tone_recommendation"];
+const TAB_ORDER = [
+  "physiognomy",
+  "face_shape_hairstyle",
+  "lookalike_celebrities",
+  "color_tone_recommendation"
+];
 
 const UI_COPY = {
   ko: {
     reportEyebrow: "FACE LAB REPORT",
     reportTitle: "Face Lab",
     reportSummaryLabel: "핵심 인상",
-    reportTagsLabel: "핵심 특징",
+    reportTagsLabel: "공통 특징",
     readyTitle: "사진을 업로드하면 Face Lab 분석을 시작할 수 있습니다.",
-    readyBody: "결과가 나오면 이 얼굴을 4개의 관점으로 카드처럼 넘겨볼 수 있습니다.",
+    readyBody: "결과가 나오면 얼굴을 네 가지 관점으로 나눠 카드처럼 확인할 수 있습니다.",
     button: "Face Lab 보기",
     spinner: "Face Lab 결과를 생성하고 있습니다...",
     tabs: {
@@ -25,14 +30,14 @@ const UI_COPY = {
       color_tone_recommendation: "컬러 톤"
     },
     sections: {
-      summary: "핵심 결론",
-      evidence: "핵심 근거",
+      summary: "핵심 정리",
+      evidence: "근거",
       apply: "활용 포인트",
       avoid: "피하면 좋은 방향",
       strengths: "강점",
       cautions: "주의 포인트",
       style: "추천 스타일",
-      mood: "비슷한 분위기",
+      mood: "닮은 분위기",
       palette: "추천 팔레트",
       profile: "컬러 프로필",
       tags: "공통 특징"
@@ -40,11 +45,13 @@ const UI_COPY = {
     nav: { prev: "이전", next: "다음", card: "CARD", tab: "TAB" },
     nextTabs: {
       physiognomy: "이 인상에 어울리는 헤어 보기",
-      face_shape_hairstyle: "비슷한 분위기 보기",
+      face_shape_hairstyle: "닮은 분위기 보기",
       lookalike_celebrities: "이 분위기의 컬러 톤 보기"
     },
-    fallbackApply: "지금 보이는 얼굴 결을 그대로 살리는 방향이 가장 자연스럽습니다.",
-    fallbackAvoid: "과하게 힘을 주는 해석보다는 원래 결을 유지하는 편이 안정적입니다."
+    fallbackApply: "지금 보이는 얼굴 흐름을 그대로 살리는 방향이 가장 자연스럽습니다.",
+    fallbackAvoid: "과하게 힘을 주는 해석보다 원래 결을 유지하는 편이 더 안정적입니다.",
+    fallbackRender:
+      "Face Lab 결과를 표시하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
   },
   en: {
     reportEyebrow: "FACE LAB REPORT",
@@ -81,7 +88,8 @@ const UI_COPY = {
       lookalike_celebrities: "See the color tone for this vibe"
     },
     fallbackApply: "Keeping the natural flow of the face will usually work best.",
-    fallbackAvoid: "Avoid pushing the interpretation harder than the face already suggests."
+    fallbackAvoid: "Avoid pushing the interpretation harder than the face already suggests.",
+    fallbackRender: "There was a problem rendering the Face Lab result. Please try again."
   }
 };
 
@@ -123,9 +131,7 @@ function getHeaderSummary(result, locale = "ko") {
   return (
     cleanText(physiognomy?.headline_result) ||
     cleanText(physiognomy?.overall_impression) ||
-    (locale === "ko"
-      ? "부드럽게 이어지는 인상 흐름이 먼저 보입니다."
-      : "A clear impression flow shows up first.")
+    (locale === "ko" ? "얼굴에서 가장 먼저 읽히는 인상 흐름을 짧게 정리했습니다." : "A clear impression flow shows up first.")
   );
 }
 
@@ -176,8 +182,8 @@ function FaceLabTabs({ tabs, activeTab, onChange }) {
             onClick={() => onChange(tab.id)}
             className={`rounded-[1.25rem] border px-4 py-3 text-left text-sm font-medium transition ${
               isActive
-                ? "border-[#23180f] bg-[#23180f] text-white shadow-[0_14px_28px_rgba(35,24,15,0.16)]"
-                : "border-black/8 bg-white/92 text-black/70 hover:border-black/16"
+                ? "bg-zinc-900 text-white shadow-[0_14px_28px_rgba(24,24,27,0.14)] dark:bg-zinc-100 dark:text-zinc-950"
+                : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-700"
             }`}
           >
             {tab.label}
@@ -190,16 +196,17 @@ function FaceLabTabs({ tabs, activeTab, onChange }) {
 
 function FaceLabHeader({ locale, previewUrl, summary, tags, faceShape }) {
   const ui = getUi(locale);
+
   return (
-    <section className="rounded-[2rem] border border-black/6 bg-white/90 p-5 shadow-[0_18px_40px_rgba(29,21,14,0.08)]">
+    <section className="ui-card p-5">
       <div className="grid gap-4 sm:grid-cols-[132px_minmax(0,1fr)] sm:items-start">
-        <div className="overflow-hidden rounded-[1.6rem] border border-black/8 bg-[#f5eee3]">
+        <div className="ui-image-surface overflow-hidden rounded-[1.6rem]">
           {previewUrl ? (
             <img src={previewUrl} alt="Face Lab preview" className="h-32 w-full object-contain" />
           ) : (
             <div className="flex h-32 items-center justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-black/8 bg-white text-xl text-black/40">
-                ◌
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white text-xl text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500">
+                +
               </div>
             </div>
           )}
@@ -207,27 +214,25 @@ function FaceLabHeader({ locale, previewUrl, summary, tags, faceShape }) {
 
         <div className="space-y-3">
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/34">{ui.reportEyebrow}</p>
+            <p className="ui-kicker">{ui.reportEyebrow}</p>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-[1.55rem] font-semibold tracking-tight text-[#1f1811]">{ui.reportTitle}</h2>
+              <h2 className="ui-title text-[1.55rem]">{ui.reportTitle}</h2>
               {faceShape ? (
-                <span className="rounded-full border border-black/8 bg-[#f6efe5] px-3 py-1 text-xs font-medium text-black/58">
-                  {faceShape}
-                </span>
+                <span className="ui-chip px-3 py-1 text-xs font-medium">{faceShape}</span>
               ) : null}
             </div>
           </div>
 
-          <div className="rounded-[1.35rem] bg-[#faf5ee] p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/35">{ui.reportSummaryLabel}</p>
-            <p className="mt-2 text-sm leading-6 text-black/76">{summary}</p>
+          <div className="ui-panel-accent p-4">
+            <p className="ui-kicker">{ui.reportSummaryLabel}</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{summary}</p>
           </div>
 
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/35">{ui.reportTagsLabel}</p>
+            <p className="ui-kicker">{ui.reportTagsLabel}</p>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <span key={tag} className="rounded-full border border-black/8 bg-white px-3 py-1.5 text-xs font-medium text-black/64">
+                <span key={tag} className="ui-chip px-3 py-1.5 text-xs font-medium">
                   {tag}
                 </span>
               ))}
@@ -248,9 +253,11 @@ function renderSection(section) {
     return (
       <div className="grid grid-cols-2 gap-3">
         {section.items.map((item) => (
-          <div key={item.label} className="rounded-[1.2rem] border border-black/6 bg-[#faf6f0] p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/34">{item.label}</p>
-            <p className="mt-2 text-sm font-medium text-black/74">{item.value}</p>
+          <div key={item.label} className="ui-card-muted rounded-[1.2rem] p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+              {item.label}
+            </p>
+            <p className="mt-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">{item.value}</p>
           </div>
         ))}
       </div>
@@ -261,9 +268,9 @@ function renderSection(section) {
     return (
       <div className="grid grid-cols-2 gap-3">
         {section.items.map((item) => (
-          <div key={item} className="rounded-[1.2rem] border border-black/6 bg-white p-3">
+          <div key={item} className="ui-card-subtle rounded-[1.2rem] p-3">
             <div className="h-12 rounded-[0.9rem]" style={getColorChipStyle(item)} />
-            <p className="mt-2 text-sm font-medium text-black/72">{item}</p>
+            <p className="mt-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">{item}</p>
           </div>
         ))}
       </div>
@@ -274,9 +281,9 @@ function renderSection(section) {
     return (
       <div className="space-y-3">
         {section.items.map((item) => (
-          <div key={item.name} className="rounded-[1.2rem] border border-black/6 bg-[#faf6f0] p-4">
-            <p className="text-sm font-semibold text-[#1f1811]">{item.name}</p>
-            <p className="mt-2 text-sm leading-6 text-black/68">{item.reason}</p>
+          <div key={item.name} className="ui-card-muted rounded-[1.2rem] p-4">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.name}</p>
+            <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.reason}</p>
           </div>
         ))}
       </div>
@@ -287,7 +294,7 @@ function renderSection(section) {
     return (
       <div className="flex flex-wrap gap-2">
         {section.items.map((item) => (
-          <span key={item} className="rounded-full border border-black/8 bg-white px-3 py-1.5 text-xs font-medium text-black/64">
+          <span key={item} className="ui-chip px-3 py-1.5 text-xs font-medium">
             {item}
           </span>
         ))}
@@ -296,7 +303,7 @@ function renderSection(section) {
   }
 
   if (section.type === "text") {
-    return <p className="text-sm leading-6 text-black/72">{section.text}</p>;
+    return <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">{section.text}</p>;
   }
 
   return (
@@ -306,10 +313,10 @@ function renderSection(section) {
           key={item}
           className={`rounded-[1.2rem] border px-4 py-3 text-sm leading-6 ${
             section.tone === "positive"
-              ? "border-[#bfd6c1] bg-[#f4fbf4] text-black/72"
+              ? "border-emerald-200 bg-emerald-50 text-zinc-800 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-zinc-200"
               : section.tone === "caution"
-                ? "border-[#e4d5bf] bg-[#fff8ef] text-black/72"
-                : "border-black/6 bg-[#faf6f0] text-black/72"
+                ? "border-amber-200 bg-amber-50 text-zinc-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-zinc-200"
+                : "border-zinc-200 bg-zinc-50 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
           }`}
         >
           {item}
@@ -325,7 +332,7 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
   const showNextTab = activeCardIndex === cards.length - 1 && ui.nextTabs[activeTab];
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-black/6 bg-white/90 shadow-[0_18px_40px_rgba(29,21,14,0.08)]">
+    <section className="ui-card overflow-hidden p-0">
       <AnimatePresence mode="wait">
         <motion.article
           key={`${activeTab}-${activeCardIndex}`}
@@ -336,17 +343,19 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
           className="space-y-5 p-5"
         >
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/34">
+            <p className="ui-kicker">
               {ui.nav.card} {activeCardIndex + 1}
             </p>
-            <h3 className="text-[1.7rem] font-semibold tracking-tight text-[#1f1811]">{card.title}</h3>
-            <p className="text-sm leading-6 text-black/68">{card.summary}</p>
+            <h3 className="ui-title text-[1.7rem]">{card.title}</h3>
+            <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.summary}</p>
           </div>
 
           <div className="space-y-4">
             {card.sections.map((section) => (
               <div key={`${card.id}-${section.label}`} className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-black/34">{section.label}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                  {section.label}
+                </p>
                 {renderSection(section)}
               </div>
             ))}
@@ -356,7 +365,7 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
             <button
               type="button"
               onClick={onOpenNextTab}
-              className="inline-flex rounded-full border border-black/10 bg-[#1f1811] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#31241a]"
+              className="ui-button-primary px-4 py-2.5 text-sm font-medium"
             >
               {ui.nextTabs[activeTab]}
             </button>
@@ -364,18 +373,20 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
         </motion.article>
       </AnimatePresence>
 
-      <div className="border-t border-black/6 bg-[#fcf8f1] px-5 py-4">
+      <div className="border-t border-zinc-200 bg-zinc-50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex gap-2">
               {cards.map((item, index) => (
                 <span
                   key={item.id}
-                  className={`h-1.5 flex-1 rounded-full ${index === activeCardIndex ? "bg-[#23180f]" : "bg-black/10"}`}
+                  className={`h-1.5 flex-1 rounded-full ${
+                    index === activeCardIndex ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"
+                  }`}
                 />
               ))}
             </div>
-            <p className="text-xs text-black/44">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {ui.nav.card} {activeCardIndex + 1} / {cards.length}
             </p>
           </div>
@@ -385,7 +396,7 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
               type="button"
               onClick={onPrev}
               disabled={activeCardIndex === 0}
-              className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black/70 disabled:cursor-not-allowed disabled:opacity-40"
+              className="ui-button-secondary px-4 py-2 text-sm font-medium"
             >
               {ui.nav.prev}
             </button>
@@ -393,7 +404,7 @@ function FaceLabCardDeck({ locale, cards, activeTab, activeCardIndex, onPrev, on
               type="button"
               onClick={onNext}
               disabled={activeCardIndex === cards.length - 1}
-              className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-black/70 disabled:cursor-not-allowed disabled:opacity-40"
+              className="ui-button-secondary px-4 py-2 text-sm font-medium"
             >
               {ui.nav.next}
             </button>
@@ -418,20 +429,34 @@ function buildCards(tabId, result, sharedTags, locale = "ko") {
         title: ui.tabs.physiognomy,
         summary: cleanText(feature.headline_result || feature.overall_impression),
         sections: [
-          { label: ui.sections.summary, type: "text", text: cleanText(feature.overall_impression || feature.headline_result) },
-          { label: ui.sections.tags, type: "chips", items: uniqueItems([feature.headline_label, ...compactList(feature.interpretation_axes, 2), ...sharedTags.slice(0, 2)]).slice(0, 5) }
+          {
+            label: ui.sections.summary,
+            type: "text",
+            text: cleanText(feature.overall_impression || feature.headline_result)
+          },
+          {
+            label: ui.sections.tags,
+            type: "chips",
+            items: uniqueItems([feature.headline_label, ...compactList(feature.interpretation_axes, 2), ...sharedTags.slice(0, 2)]).slice(0, 5)
+          }
         ]
       },
       {
         id: "physiognomy-evidence",
         title: locale === "ko" ? "이렇게 읽히는 이유" : "Why it reads this way",
-        summary: locale === "ko" ? "이 인상을 만드는 근거만 짧게 정리했습니다." : "A short view of the features behind the impression.",
+        summary:
+          locale === "ko"
+            ? "인상을 만드는 근거만 짧게 정리했습니다."
+            : "A short view of the features behind the impression.",
         sections: [{ label: ui.sections.evidence, items: compactList(feature.feature_based_interpretation, 3) }]
       },
       {
         id: "physiognomy-apply",
         title: locale === "ko" ? "활용 & 주의" : "Use & caution",
-        summary: locale === "ko" ? "강점과 주의 포인트를 함께 보면 흐름이 더 선명해집니다." : "Strengths and cautions make the read easier to use.",
+        summary:
+          locale === "ko"
+            ? "강점과 주의 포인트를 함께 보면 흐름이 더 선명해집니다."
+            : "Strengths and cautions make the read easier to use.",
         sections: [
           { label: ui.sections.strengths, items: compactList(feature.strengths, 2), tone: "positive" },
           { label: ui.sections.cautions, items: compactList(feature.cautions, 2), tone: "caution" }
@@ -454,13 +479,19 @@ function buildCards(tabId, result, sharedTags, locale = "ko") {
       {
         id: "shape-style",
         title: locale === "ko" ? "추천 스타일" : "Recommended styles",
-        summary: locale === "ko" ? "흐름을 살리는 쪽에만 집중했습니다." : "Focused on the styles that keep the flow working.",
+        summary:
+          locale === "ko"
+            ? "얼굴 흐름을 해치지 않는 쪽에 집중했습니다."
+            : "Focused on the styles that keep the flow working.",
         sections: [{ label: ui.sections.style, items: compactList(feature.recommendations, 3), tone: "positive" }]
       },
       {
         id: "shape-avoid",
-        title: locale === "ko" ? "적용 & 주의" : "Use & avoid",
-        summary: locale === "ko" ? "잘 맞는 방향과 피하면 좋은 방향을 같이 보세요." : "See the working direction and what to avoid together.",
+        title: locale === "ko" ? "활용 & 주의" : "Use & avoid",
+        summary:
+          locale === "ko"
+            ? "잘 맞는 방향과 피하면 좋은 방향을 같이 봐주세요."
+            : "See the working direction and what to avoid together.",
         sections: [
           { label: ui.sections.apply, items: [ui.fallbackApply], tone: "positive" },
           { label: ui.sections.avoid, items: compactList(feature.avoid, 2), tone: "caution" }
@@ -482,16 +513,26 @@ function buildCards(tabId, result, sharedTags, locale = "ko") {
       },
       {
         id: "mood-matches",
-        title: locale === "ko" ? "비슷한 분위기 셀럽" : "Similar vibe references",
-        summary: locale === "ko" ? "닮은 사람보다 닮은 결에 더 집중했습니다." : "Focused on the shared vibe rather than identity.",
+        title: locale === "ko" ? "닮은 분위기 참고" : "Similar vibe references",
+        summary:
+          locale === "ko"
+            ? "실제 인물보다 분위기 결에 집중한 참고입니다."
+            : "Focused on the shared vibe rather than identity.",
         sections: [{ label: ui.sections.mood, type: "matches", items: Array.isArray(feature.matches) ? feature.matches.slice(0, 3) : [] }]
       },
       {
         id: "mood-apply",
         title: locale === "ko" ? "활용 포인트" : "Use points",
-        summary: locale === "ko" ? "이 무드를 살릴 때 과하지 않게 가져가는 편이 좋습니다." : "This mood usually works best when styling stays controlled.",
+        summary:
+          locale === "ko"
+            ? "이 무드를 과장하지 않고 살리는 쪽이 좋습니다."
+            : "This mood usually works best when styling stays controlled.",
         sections: [
-          { label: ui.sections.apply, items: compactList([ui.fallbackApply, ...(feature.matches || []).map((item) => item?.reason)], 2), tone: "positive" },
+          {
+            label: ui.sections.apply,
+            items: compactList([ui.fallbackApply, ...(feature.matches || []).map((item) => item?.reason)], 2),
+            tone: "positive"
+          },
           { label: ui.sections.avoid, items: [ui.fallbackAvoid], tone: "caution" }
         ]
       }
@@ -512,7 +553,10 @@ function buildCards(tabId, result, sharedTags, locale = "ko") {
     {
       id: "color-profile",
       title: locale === "ko" ? "컬러 프로필" : "Color profile",
-      summary: locale === "ko" ? "톤 구조를 4축으로 압축했습니다." : "The tone is compressed into four simple axes.",
+      summary:
+        locale === "ko"
+          ? "톤 구조를 네 축으로 간단히 정리했습니다."
+          : "The tone is compressed into four simple axes.",
       sections: [
         {
           label: ui.sections.profile,
@@ -529,7 +573,10 @@ function buildCards(tabId, result, sharedTags, locale = "ko") {
     {
       id: "color-apply",
       title: locale === "ko" ? "추천 & 주의" : "Recommend & avoid",
-      summary: locale === "ko" ? "추천 팔레트와 피하면 좋은 방향을 같이 보세요." : "See the useful palette and the avoid notes together.",
+      summary:
+        locale === "ko"
+          ? "어울리는 팔레트와 피하면 좋은 방향을 함께 봐주세요."
+          : "See the useful palette and the avoid notes together.",
       sections: [
         { label: ui.sections.palette, type: "palette", items: compactList(feature.palette, 4) },
         { label: ui.sections.apply, items: compactList(feature.recommendations, 2), tone: "positive" },
@@ -577,7 +624,11 @@ export default function FaceLab({
   const openNextTab = () => {
     const currentIndex = TAB_ORDER.indexOf(activeTab);
     const nextTab = TAB_ORDER[currentIndex + 1];
-    if (!nextTab) return;
+
+    if (!nextTab) {
+      return;
+    }
+
     setActiveTab(nextTab);
     setActiveCardIndex(0);
     reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -600,7 +651,7 @@ export default function FaceLab({
               key={preset.id}
               type="button"
               onClick={() => onPresetPreview?.(preset.id)}
-              className="rounded-full border border-black/10 bg-white/85 px-3 py-2 text-xs font-medium text-black/68 transition hover:border-black/20"
+              className="ui-button-secondary bg-white/85 px-3 py-2 text-xs font-medium dark:bg-zinc-900/85"
             >
               {copy?.facePresetLabels?.[preset.id] || preset.buttonLabel}
             </button>
@@ -625,7 +676,7 @@ export default function FaceLab({
           type="button"
           onClick={handleAnalyze}
           disabled={!imageFile || faceLabLoading}
-          className="w-full rounded-full bg-[#1f1811] px-5 py-4 text-sm font-medium text-white transition hover:bg-[#302118] disabled:cursor-not-allowed disabled:opacity-45"
+          className="ui-button-primary w-full px-5 py-4 text-sm font-medium disabled:opacity-45"
         >
           {copy?.faceLabButton || copy?.faceLab?.button || ui.button}
         </button>
@@ -634,19 +685,17 @@ export default function FaceLab({
       {faceLabLoading ? <LoadingSpinner label={copy?.faceLabSpinner || copy?.faceLab?.spinner || ui.spinner} /> : null}
 
       {showComposer && !faceLabLoading ? (
-        <div className="rounded-[1.8rem] border border-dashed border-black/10 bg-white/78 px-5 py-6 text-center">
-          <p className="text-sm font-medium text-[#1f1811]">{ui.readyTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-black/56">{ui.readyBody}</p>
+        <div className="ui-card-dashed px-5 py-6 text-center">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{ui.readyTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{ui.readyBody}</p>
         </div>
       ) : null}
 
       {safeResult ? (
         <FaceLabErrorBoundary
           fallback={
-            <div className="rounded-[1.8rem] border border-[#d7c3aa] bg-[#fff8ef] px-5 py-6 text-sm leading-6 text-black/72">
-              {locale === "ko"
-                ? "Face Lab 결과를 표시하는 중 문제가 발생했습니다. 다시 시도해주세요."
-                : "There was a problem rendering the Face Lab result. Please try again."}
+            <div className="ui-error px-5 py-6">
+              {ui.fallbackRender}
             </div>
           }
         >

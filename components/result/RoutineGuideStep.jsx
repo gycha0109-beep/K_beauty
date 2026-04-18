@@ -23,19 +23,13 @@ export default function RoutineGuideStep({ copy, locale, morning, night, toRouti
 
   return (
     <section className="space-y-4">
-      <div className="rounded-[2rem] border border-black/5 bg-white/88 p-6 shadow-soft">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
-          {copy.routineStepKicker}
-        </p>
-        <h2 className="mt-2 text-[2rem] font-semibold tracking-tight text-ink">
-          {copy.routineStepTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-black/62">
-          {copy.routineSubtitle}
-        </p>
+      <div className="ui-card p-6">
+        <p className="ui-kicker">{copy.routineStepKicker}</p>
+        <h2 className="ui-title mt-2 text-[2rem]">{copy.routineStepTitle}</h2>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.routineSubtitle}</p>
       </div>
 
-      <div className="rounded-[2rem] border border-black/5 bg-white/88 p-5 shadow-soft">
+      <div className="ui-card p-5">
         <div className="grid grid-cols-2 gap-2">
           {tabs.map((tab) => (
             <button
@@ -45,8 +39,8 @@ export default function RoutineGuideStep({ copy, locale, morning, night, toRouti
               disabled={!tab.available}
               className={`rounded-full px-4 py-3 text-sm font-medium transition ${
                 activeTab === tab.key
-                  ? "bg-[#1f1811] text-white"
-                  : "border border-black/10 bg-white text-black/65 hover:border-black/20"
+                  ? "ui-choice-active"
+                  : "ui-button-secondary"
               } disabled:cursor-not-allowed disabled:opacity-40`}
             >
               {tab.label}
@@ -58,13 +52,13 @@ export default function RoutineGuideStep({ copy, locale, morning, night, toRouti
           {currentItems.map((item, index) => (
             <div
               key={`${activeTab}-${index}`}
-              className="rounded-[1.5rem] bg-[#faf6f0] px-4 py-4"
+              className="rounded-[1.5rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70"
             >
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-black/60">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
                   {index + 1}
                 </span>
-                <p className="pt-1 text-sm leading-6 text-black/76">
+                <p className="pt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
                   {toRoutineAction(item, locale)}
                 </p>
               </div>
@@ -72,7 +66,7 @@ export default function RoutineGuideStep({ copy, locale, morning, night, toRouti
           ))}
 
           {!currentItems.length ? (
-            <div className="rounded-[1.5rem] bg-[#faf6f0] px-4 py-4 text-sm leading-6 text-black/60">
+            <div className="rounded-[1.5rem] bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-600 dark:bg-zinc-800/70 dark:text-zinc-400">
               {copy.routineStepEmpty}
             </div>
           ) : null}

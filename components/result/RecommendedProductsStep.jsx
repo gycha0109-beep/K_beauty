@@ -13,16 +13,10 @@ export default function RecommendedProductsStep({ copy, products, renderProduct 
 
   return (
     <section className="space-y-4">
-      <div className="rounded-[2rem] border border-black/5 bg-white/88 p-6 shadow-soft">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
-          {copy.recommendedStepKicker}
-        </p>
-        <h2 className="mt-2 text-[2rem] font-semibold tracking-tight text-ink">
-          {copy.recommendedStepTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-black/62">
-          {copy.recommendedStepBody}
-        </p>
+      <div className="ui-card p-6">
+        <p className="ui-kicker">{copy.recommendedStepKicker}</p>
+        <h2 className="ui-title mt-2 text-[2rem]">{copy.recommendedStepTitle}</h2>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.recommendedStepBody}</p>
       </div>
 
       {products.length ? (
@@ -31,8 +25,8 @@ export default function RecommendedProductsStep({ copy, products, renderProduct 
             {activeProduct ? renderProduct(activeProduct) : null}
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-[1.4rem] border border-black/5 bg-white/88 px-4 py-3 shadow-soft">
-            <p className="text-xs font-medium text-black/45">
+          <div className="ui-card-muted flex items-center justify-between gap-3 px-4 py-3">
+            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
               {activeIndex + 1} / {products.length}
             </p>
 
@@ -41,7 +35,7 @@ export default function RecommendedProductsStep({ copy, products, renderProduct 
                 type="button"
                 onClick={() => moveTo(activeIndex - 1)}
                 disabled={activeIndex === 0}
-                className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+                className="ui-button-secondary px-3 py-1.5 text-xs font-medium"
               >
                 {copy.previous}
               </button>
@@ -49,7 +43,7 @@ export default function RecommendedProductsStep({ copy, products, renderProduct 
                 type="button"
                 onClick={() => moveTo(activeIndex + 1)}
                 disabled={activeIndex === products.length - 1}
-                className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
+                className="ui-button-secondary px-3 py-1.5 text-xs font-medium"
               >
                 {copy.next}
               </button>
@@ -57,7 +51,7 @@ export default function RecommendedProductsStep({ copy, products, renderProduct 
           </div>
         </div>
       ) : (
-        <div className="rounded-[1.7rem] border border-black/5 bg-white/88 p-5 text-sm leading-6 text-black/62 shadow-soft">
+        <div className="ui-card p-5 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
           {copy.recommendedStepEmpty}
         </div>
       )}

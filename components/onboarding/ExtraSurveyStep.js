@@ -3,8 +3,8 @@ import { OPTION_SETS } from "@/components/onboarding/constants";
 
 function CompactChoiceGroup({ label, name, value, options, optionLabels, onChange }) {
   return (
-    <div className="space-y-3 rounded-[1.45rem] border border-black/5 bg-white/85 p-4">
-      <p className="text-sm font-semibold text-ink">{label}</p>
+    <div className="ui-card space-y-3 p-4">
+      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>
       <div className="grid grid-cols-2 gap-2">
         {options.map((option) => {
           const active = value === option;
@@ -16,8 +16,8 @@ function CompactChoiceGroup({ label, name, value, options, optionLabels, onChang
               onClick={() => onChange(name, option)}
               className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
                 active
-                  ? "bg-[#1f1811] text-white"
-                  : "border border-black/10 bg-[#faf6f0] text-black/65 hover:border-black/20"
+                  ? "ui-choice-active"
+                  : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
               }`}
             >
               {optionLabels[option]}
@@ -44,15 +44,9 @@ export default function ExtraSurveyStep({
   return (
     <section className="flex flex-1 flex-col pt-6">
       <div className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
-          {copy.extra.eyebrow}
-        </p>
-        <h2 className="text-[2rem] font-semibold tracking-tight text-ink">
-          {copy.extra.title}
-        </h2>
-        <p className="text-sm leading-6 text-black/58">
-          {copy.extra.description}
-        </p>
+        <p className="ui-kicker">{copy.extra.eyebrow}</p>
+        <h2 className="ui-title text-[2rem]">{copy.extra.title}</h2>
+        <p className="ui-text-secondary text-sm leading-6">{copy.extra.description}</p>
       </div>
 
       <div className="mt-8 space-y-3">
@@ -97,19 +91,25 @@ export default function ExtraSurveyStep({
           onChange={onFieldChange}
         />
 
-        <div className="rounded-[1.45rem] border border-dashed border-black/10 bg-white/80 p-4">
+        <div className="ui-card-dashed p-4">
           <button
             type="button"
             onClick={() => setShowEnvironment((current) => !current)}
             className="flex w-full items-center justify-between text-left"
           >
-            <span className="text-sm font-semibold text-ink">{copy.extra.environmentToggle}</span>
-            <span className="text-lg leading-none text-black/45">{showEnvironment ? "−" : "+"}</span>
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              {copy.extra.environmentToggle}
+            </span>
+            <span className="text-lg leading-none text-zinc-500 dark:text-zinc-400">
+              {showEnvironment ? "−" : "+"}
+            </span>
           </button>
 
           {showEnvironment ? (
             <div className="mt-4">
-              <p className="text-xs leading-5 text-black/50">{copy.extra.environmentDescription}</p>
+              <p className="text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+                {copy.extra.environmentDescription}
+              </p>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 {OPTION_SETS.environmentExposure.map((option) => {
                   const checked = form.environmentExposure.includes(option);
@@ -121,8 +121,8 @@ export default function ExtraSurveyStep({
                       onClick={() => onEnvironmentToggle(option)}
                       className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
                         checked
-                          ? "border border-[#1f1811] bg-[#f5efe6] text-ink"
-                          : "border border-black/10 bg-[#faf6f0] text-black/65 hover:border-black/20"
+                          ? "border border-zinc-900 bg-zinc-100 text-zinc-900 dark:border-zinc-100 dark:bg-zinc-800 dark:text-zinc-100"
+                          : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
                       }`}
                     >
                       {labels.environmentExposure[option]}
@@ -135,7 +135,7 @@ export default function ExtraSurveyStep({
         </div>
       </div>
 
-      {error ? <p className="mt-4 text-sm font-medium text-[#9c4c2c]">{error}</p> : null}
+      {error ? <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
     </section>
   );
 }

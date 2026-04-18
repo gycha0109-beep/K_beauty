@@ -382,13 +382,13 @@ export default function HomePage() {
       return (
         <div className="pt-4">
           <div className="space-y-2 pb-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
+            <p className="ui-kicker">
               Face Lab
             </p>
-            <h1 className="text-[2rem] font-semibold tracking-tight text-ink">
+            <h1 className="ui-title text-[2rem]">
               {copy.faceLab.title}
             </h1>
-            <p className="text-sm leading-6 text-black/58">
+            <p className="ui-text-secondary text-sm leading-6">
               {copy.faceLab.description}
             </p>
           </div>
@@ -463,7 +463,7 @@ export default function HomePage() {
   const showBottomCta = mode === "skin" && currentStep !== "loading";
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf9_0%,#f7efe5_100%)] text-ink">
+    <main className="ui-page ui-page-shell min-h-screen">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-32 pt-4 sm:px-6">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
@@ -476,8 +476,8 @@ export default function HomePage() {
                 href={item.href}
                 className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   locale === item.code
-                    ? "bg-[#1f1811] text-white"
-                    : "border border-black/10 bg-white/80 text-black/60 hover:border-black/20"
+                    ? "ui-choice-active"
+                    : "ui-button-secondary bg-white/80 text-zinc-700 dark:bg-zinc-900/80"
                 }`}
               >
                 {item.label}
@@ -489,23 +489,23 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setShowTestMenu((current) => !current)}
-              className="rounded-full border border-black/10 bg-white/85 px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20"
+              className="ui-button-secondary bg-white/85 px-3 py-1.5 text-xs font-medium dark:bg-zinc-900/85"
             >
               {copy.topActions.test}
             </button>
             <button
               type="button"
               onClick={mode === "face-lab" ? handleOpenSkin : handleOpenFaceLab}
-              className="rounded-full border border-black/10 bg-white/85 px-3 py-1.5 text-xs font-medium text-black/68 transition hover:border-black/20"
+              className="ui-button-secondary bg-white/85 px-3 py-1.5 text-xs font-medium dark:bg-zinc-900/85"
             >
               {mode === "face-lab" ? copy.topActions.skinMatch : copy.topActions.faceLab}
             </button>
 
             {showTestMenu ? (
-              <div className="absolute right-0 top-11 z-20 w-[280px] rounded-[1.4rem] border border-black/6 bg-white p-3 shadow-[0_16px_40px_rgba(28,20,12,0.12)]">
+              <div className="absolute right-0 top-11 z-20 w-[280px] rounded-[1.4rem] border border-zinc-200 bg-white p-3 shadow-[0_16px_40px_rgba(28,20,12,0.12)] dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="space-y-3">
                   <div>
-                    <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/36">
+                    <p className="ui-kicker px-1">
                       Skin Match
                     </p>
                     <div className="mt-2 space-y-2">
@@ -514,7 +514,7 @@ export default function HomePage() {
                           key={`skin-preset-${preset.id}`}
                           type="button"
                           onClick={() => handleSkinPresetPreview(preset.id)}
-                          className="w-full rounded-2xl bg-[#faf6f0] px-3 py-3 text-left text-sm font-medium text-black/72 transition hover:bg-[#f5ede2]"
+                          className="ui-button-secondary w-full rounded-2xl bg-zinc-50 px-3 py-3 text-left text-sm font-medium dark:bg-zinc-800"
                         >
                           {copy.skinPresetLabels?.[preset.id] || preset.summaryLabel}
                         </button>
@@ -523,7 +523,7 @@ export default function HomePage() {
                   </div>
 
                   <div>
-                    <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-black/36">
+                    <p className="ui-kicker px-1">
                       Face Lab
                     </p>
                     <div className="mt-2 space-y-2">
@@ -532,7 +532,7 @@ export default function HomePage() {
                           key={`face-preset-${preset.id}`}
                           type="button"
                           onClick={() => handleFaceLabPresetPreview(preset.id)}
-                          className="w-full rounded-2xl bg-[#faf6f0] px-3 py-3 text-left text-sm font-medium text-black/72 transition hover:bg-[#f5ede2]"
+                          className="ui-button-secondary w-full rounded-2xl bg-zinc-50 px-3 py-3 text-left text-sm font-medium dark:bg-zinc-800"
                         >
                           {copy.facePresetLabels?.[preset.id] || preset.buttonLabel}
                         </button>

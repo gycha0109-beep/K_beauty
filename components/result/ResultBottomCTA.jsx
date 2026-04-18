@@ -6,7 +6,7 @@ export default function ResultBottomCTA({
   onPrevious = null
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/6 bg-[rgba(255,252,247,0.92)] backdrop-blur">
+    <div className="ui-bottom-bar fixed inset-x-0 bottom-0 z-40">
       <div
         className="mx-auto w-full max-w-xl px-4 pt-3 sm:px-6"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
@@ -16,7 +16,7 @@ export default function ResultBottomCTA({
             <button
               type="button"
               onClick={onPrevious}
-              className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-medium text-black/68 transition hover:border-black/20 hover:bg-black/5"
+              className="ui-button-secondary shrink-0 px-4 py-3 text-sm font-medium"
             >
               {previousLabel}
             </button>
@@ -26,7 +26,7 @@ export default function ResultBottomCTA({
             type="button"
             onClick={onClick}
             disabled={disabled}
-            className="inline-flex min-h-14 flex-1 items-center justify-center rounded-full bg-[#1f1811] px-5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-black/20"
+            className="ui-button-primary min-h-14 flex-1 px-5 text-sm font-semibold disabled:bg-zinc-300 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-400"
           >
             {label}
           </button>

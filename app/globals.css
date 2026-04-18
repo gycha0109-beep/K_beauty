@@ -6,8 +6,19 @@
   color-scheme: light;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
 * {
   box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #ffffff;
 }
 
 body {
@@ -16,10 +27,23 @@ body {
   background:
     radial-gradient(circle at top left, rgba(216, 195, 173, 0.35), transparent 32%),
     linear-gradient(180deg, #fcfaf6 0%, #f4eee7 100%);
-  color: #161616;
+  color: #18181b;
   font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   word-break: keep-all;
   text-rendering: optimizeLegibility;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    background: #09090b;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(113, 113, 122, 0.18), transparent 28%),
+      linear-gradient(180deg, #111114 0%, #09090b 100%);
+    color: #f4f4f5;
+  }
 }
 
 button,
@@ -32,4 +56,102 @@ textarea {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+@layer components {
+  .ui-page {
+    @apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+
+  .ui-page-shell {
+    @apply bg-[linear-gradient(180deg,#fffdf9_0%,#f6efe6_100%)] dark:bg-[linear-gradient(180deg,#111114_0%,#09090b_100%)];
+  }
+
+  .ui-card {
+    @apply rounded-[1.6rem] border border-zinc-200 bg-white shadow-soft dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-card-muted {
+    @apply rounded-[1.45rem] border border-zinc-200 bg-zinc-50 shadow-soft dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-card-subtle {
+    @apply rounded-[1.3rem] border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-card-dashed {
+    @apply rounded-[1.45rem] border border-dashed border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900;
+  }
+
+  .ui-panel-accent {
+    @apply rounded-[1.7rem] border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400;
+  }
+
+  .ui-title {
+    @apply font-semibold tracking-tight text-zinc-900 dark:text-zinc-100;
+  }
+
+  .ui-text-primary {
+    @apply text-zinc-700 dark:text-zinc-300;
+  }
+
+  .ui-text-secondary {
+    @apply text-zinc-600 dark:text-zinc-400;
+  }
+
+  .ui-text-faint {
+    @apply text-zinc-500 dark:text-zinc-500;
+  }
+
+  .ui-chip {
+    @apply inline-flex rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800;
+  }
+
+  .ui-chip-compact {
+    @apply inline-flex rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300;
+  }
+
+  .ui-chip-active {
+    @apply inline-flex rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-950;
+  }
+
+  .ui-choice-active {
+    @apply bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950;
+  }
+
+  .ui-button-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-zinc-900 text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-35 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200;
+  }
+
+  .ui-button-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800;
+  }
+
+  .ui-button-tertiary {
+    @apply text-sm font-medium text-zinc-500 dark:text-zinc-400;
+  }
+
+  .ui-bottom-bar {
+    @apply border-t border-zinc-200 bg-white backdrop-blur dark:border-zinc-800 dark:bg-zinc-950;
+  }
+
+  .ui-image-surface {
+    @apply rounded-[1.6rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff_0%,#f4f4f5_100%)] dark:border-zinc-800 dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)];
+  }
+
+  .ui-image-empty {
+    @apply bg-[linear-gradient(135deg,#f5f5f5_0%,#ffffff_100%)] dark:bg-[linear-gradient(135deg,#18181b_0%,#111114_100%)];
+  }
+
+  .ui-overlay {
+    @apply bg-black/45;
+  }
+
+  .ui-error {
+    @apply rounded-[2rem] border border-red-200 bg-red-50 p-6 text-sm leading-6 text-red-700 shadow-soft dark:border-red-900 dark:bg-red-950 dark:text-red-300;
+  }
 }

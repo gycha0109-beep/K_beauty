@@ -13,22 +13,16 @@ export default function PhotoUploadStep({
   return (
     <section className="flex flex-1 flex-col pt-6">
       <div className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-black/40">
-          {copy.photo.eyebrow}
-        </p>
-        <h2 className="text-[2rem] font-semibold tracking-tight text-ink">
-          {copy.photo.title}
-        </h2>
-        <p className="text-sm leading-6 text-black/58">
-          {copy.photo.description}
-        </p>
+        <p className="ui-kicker">{copy.photo.eyebrow}</p>
+        <h2 className="ui-title text-[2rem]">{copy.photo.title}</h2>
+        <p className="ui-text-secondary text-sm leading-6">{copy.photo.description}</p>
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-[1.8rem] border border-black/8 bg-white/90 shadow-soft">
+      <div className="ui-card mt-8 overflow-hidden">
         <label className="block cursor-pointer">
           <input type="file" accept="image/*" className="hidden" onChange={onImageChange} />
           {previewUrl ? (
-            <div className="relative bg-[#f2e7d8]">
+            <div className="relative bg-zinc-100 dark:bg-zinc-800">
               <img
                 src={previewUrl}
                 alt={imageFile?.name || "preview"}
@@ -48,27 +42,27 @@ export default function PhotoUploadStep({
             </div>
           ) : (
             <div className="flex min-h-[360px] flex-col items-center justify-center px-6 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f7efe4] text-2xl text-[#7d5724]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-2xl text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                 +
               </div>
-              <p className="mt-5 text-base font-semibold text-ink">{copy.photo.title}</p>
-              <p className="mt-2 text-sm leading-6 text-black/55">{copy.photo.helper}</p>
+              <p className="mt-5 text-base font-semibold text-zinc-900 dark:text-zinc-100">{copy.photo.title}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{copy.photo.helper}</p>
             </div>
           )}
         </label>
 
         {previewUrl ? (
-          <div className="flex items-center justify-between gap-3 border-t border-black/5 bg-white/85 px-4 py-3">
+          <div className="flex items-center justify-between gap-3 border-t border-zinc-200 bg-white/85 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/85">
             <div>
-              <p className="text-xs text-black/46">
-                {(imageFile?.type || "image/*").toUpperCase()} · {formatFileSize(imageFile?.size || 0)}
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {(imageFile?.type || "image/*").toUpperCase()} 쨌 {formatFileSize(imageFile?.size || 0)}
               </p>
-              <p className="mt-1 text-xs font-medium text-[#7d5724]">{copy.photo.uploaded}</p>
+              <p className="mt-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">{copy.photo.uploaded}</p>
             </div>
             <button
               type="button"
               onClick={onClearImage}
-              className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium text-black/60 transition hover:border-black/20 hover:bg-black/5"
+              className="ui-button-secondary px-3 py-1.5 text-xs font-medium"
             >
               {copy.photo.remove}
             </button>
@@ -76,8 +70,8 @@ export default function PhotoUploadStep({
         ) : null}
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-black/50">{copy.photo.empty}</p>
-      {error ? <p className="mt-3 text-sm font-medium text-[#9c4c2c]">{error}</p> : null}
+      <p className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{copy.photo.empty}</p>
+      {error ? <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
     </section>
   );
 }

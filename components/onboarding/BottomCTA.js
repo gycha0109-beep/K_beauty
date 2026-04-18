@@ -8,13 +8,13 @@ export default function BottomCTA({
   onTertiary
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/5 bg-white/92 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur">
+    <div className="ui-bottom-bar fixed inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
       <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:px-2">
         {tertiaryLabel ? (
           <button
             type="button"
             onClick={onTertiary}
-            className="text-sm font-medium text-black/48"
+            className="ui-button-tertiary"
           >
             {tertiaryLabel}
           </button>
@@ -24,7 +24,7 @@ export default function BottomCTA({
           type="button"
           onClick={onPrimary}
           disabled={primaryDisabled}
-          className="inline-flex w-full items-center justify-center rounded-full bg-[#1f1811] px-5 py-3.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-35"
+          className="ui-button-primary w-full px-5 py-3.5 text-sm font-semibold"
         >
           {primaryLabel}
         </button>
@@ -33,7 +33,7 @@ export default function BottomCTA({
           <button
             type="button"
             onClick={onSecondary}
-            className="text-sm font-medium text-black/58"
+            className="text-sm font-medium text-zinc-600 dark:text-zinc-400"
           >
             {secondaryLabel}
           </button>
