@@ -6,8 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import FaceLab from "@/components/FaceLab";
 import BottomCTA from "@/components/onboarding/BottomCTA";
 import ProgressDots from "@/components/onboarding/ProgressDots";
-import IntroStep from "@/components/onboarding/IntroStep";
-import DescriptionStep from "@/components/onboarding/DescriptionStep";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import BasicSurveyStep from "@/components/onboarding/BasicSurveyStep";
 import ExtraSurveyStep from "@/components/onboarding/ExtraSurveyStep";
@@ -24,8 +22,8 @@ import {
   OPTIONAL_DEFAULTS
 } from "@/components/onboarding/constants";
 
-const STEP_ORDER = ["intro", "description", "photo", "basic", "extra", "loading"];
-const PROGRESS_STEPS = ["description", "photo", "basic", "extra", "loading"];
+const STEP_ORDER = ["photo", "basic", "extra", "loading"];
+const PROGRESS_STEPS = ["basic", "extra", "loading"];
 
 function buildCompleteForm(form = {}) {
   const mainConcerns = Array.isArray(form.mainConcerns)
@@ -85,7 +83,7 @@ export default function HomePage() {
 
   const [mode, setMode] = useState("skin");
   const [showTestMenu, setShowTestMenu] = useState(false);
-  const [currentStep, setCurrentStep] = useState("intro");
+  const [currentStep, setCurrentStep] = useState("photo");
   const [form, setForm] = useState(INITIAL_FORM);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -311,7 +309,7 @@ export default function HomePage() {
 
   const handleOpenSkin = () => {
     setMode("skin");
-    setCurrentStep("intro");
+    setCurrentStep("photo");
     setShowTestMenu(false);
   };
 
@@ -411,18 +409,11 @@ export default function HomePage() {
       );
     }
 
-    if (currentStep === "intro") {
-      return <IntroStep copy={copy} locale={locale} />;
-    }
-
-    if (currentStep === "description") {
-      return <DescriptionStep copy={copy} />;
-    }
-
     if (currentStep === "photo") {
       return (
         <PhotoUploadStep
           copy={copy}
+          locale={locale}
           imageFile={imageFile}
           previewUrl={previewUrl}
           onImageChange={handleImageChange}
@@ -459,7 +450,7 @@ export default function HomePage() {
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
 
-  const showProgress = mode === "skin" && currentStep !== "intro";
+  const showProgress = mode === "skin" && currentStep !== "photo";
   const showBottomCta = mode === "skin" && currentStep !== "loading";
 
   return (
@@ -559,15 +550,11 @@ export default function HomePage() {
       {showBottomCta ? (
         <BottomCTA
           primaryLabel={
-            currentStep === "intro"
-              ? copy.cta.start
-              : currentStep === "description"
+            currentStep === "photo"
+              ? copy.cta.next
+              : currentStep === "basic"
                 ? copy.cta.next
-                : currentStep === "photo"
-                  ? copy.cta.next
-                  : currentStep === "basic"
-                    ? copy.cta.next
-                    : copy.cta.analyze
+                : copy.cta.analyze
           }
           onPrimary={handleNext}
           primaryDisabled={
@@ -578,10 +565,7 @@ export default function HomePage() {
                 : false
           }
           secondaryLabel={
-            currentStep === "description" ||
-            currentStep === "photo" ||
-            currentStep === "basic" ||
-            currentStep === "extra"
+            currentStep === "basic" || currentStep === "extra"
               ? copy.cta.back
               : null
           }
