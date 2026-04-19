@@ -83,9 +83,18 @@ export default function PhotoUploadStep({
           {hasPreview ? (
             <>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
-              <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-3 sm:p-4">
-                <div className="flex w-full justify-center">
-                  <div className="mx-auto w-full max-w-[18rem]">
+              <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-2.5 sm:p-4">
+                <div className="px-2 pb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
+                    {t.title}
+                  </p>
+                  <span className="mt-3 ui-chip-soft">
+                    {t.kicker}
+                  </span>
+                </div>
+
+                <div className="flex w-full justify-center pt-2 sm:pt-4">
+                  <div className="mx-auto w-[90%] max-w-none sm:w-full sm:max-w-[18rem]">
                     <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
                       <img
                         src={previewUrl}
@@ -97,15 +106,6 @@ export default function PhotoUploadStep({
                 </div>
 
                 <div className="px-2 pb-2 pt-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
-                    {t.title}
-                  </p>
-                  <span className="mt-3 ui-chip-soft">
-                    {t.kicker}
-                  </span>
-                </div>
-
-                <div className="px-2">
                   <h1 className="ui-title text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
                     {t.headline}
                   </h1>
@@ -114,7 +114,7 @@ export default function PhotoUploadStep({
                   </p>
                 </div>
 
-                <div className="mt-auto px-2 pt-4">
+                <div className="mt-auto">
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"

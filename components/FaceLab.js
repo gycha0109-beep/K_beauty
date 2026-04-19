@@ -151,7 +151,7 @@ const COMPOSER_COPY = {
     eyebrow: "K-BEAUTY FINDER",
     chip: "FACE LAB",
     body: "사진을 업로드 하면 Face Lab 분석을 시작할 수 있습니다.",
-    hint: "정면에 가까운 밝은 사진 권장.",
+    hint: "정면에 가까운 밝은 사진 권장",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
     previewAlt: "업로드한 얼굴 사진 미리보기"
@@ -160,7 +160,7 @@ const COMPOSER_COPY = {
     eyebrow: "K-BEAUTY FINDER",
     chip: "FACE LAB",
     body: "Upload a photo to start your Face Lab analysis.",
-    hint: "A bright, front-facing photo works best.",
+    hint: "A bright, front-facing photo works best",
     camera: "Use Camera",
     gallery: "Choose Photo",
     previewAlt: "Preview of the uploaded face photo"
