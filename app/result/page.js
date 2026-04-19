@@ -13,6 +13,7 @@ import ResultShareActions from "@/components/result/ResultShareActions";
 import RoutineGuideStep from "@/components/result/RoutineGuideStep";
 import TipsStep from "@/components/result/TipsStep";
 import TopPickStep from "@/components/result/TopPickStep";
+import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
   ko: {
     skinType: {
@@ -296,6 +297,12 @@ function getOrCreateTrackingSessionId() {
 }
 
 function trackEvent(eventName, data = {}) {
+  const writeAccessToken = readWriteAccessToken();
+
+  if (!writeAccessToken) {
+    return;
+  }
+
   const payload = {
     event_name: eventName,
     timestamp: new Date().toISOString(),
@@ -312,7 +319,8 @@ function trackEvent(eventName, data = {}) {
   void fetch("/api/track", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "x-kbeauty-write-token": writeAccessToken
     },
     body: JSON.stringify(payload),
     keepalive: true

@@ -4,6 +4,7 @@ import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ResultShareCard from "@/components/result/ResultShareCard";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
+import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const SHARE_SESSION_KEY = "skinTestShare";
 
@@ -20,6 +21,7 @@ const ACTION_COPY = {
     savedMessage: "결과를 저장했습니다.",
     imageSaved: "이미지를 저장했습니다.",
     saveError: "결과 저장에 실패했습니다.",
+    sessionExpired: "보안을 위해 저장 세션이 만료되었습니다. 다시 분석해 주세요.",
     imageError: "이미지를 저장하지 못했습니다.",
     shareText: "내 피부 결과를 확인해보세요"
   },
@@ -35,6 +37,7 @@ const ACTION_COPY = {
     savedMessage: "Result saved.",
     imageSaved: "Image saved.",
     saveError: "Failed to save the result.",
+    sessionExpired: "The save session expired. Please run the analysis again.",
     imageError: "Failed to save the image.",
     shareText: "Check out my skin result"
   }
@@ -96,11 +99,8 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       return;
     }
 
-    if (!result || !submission?.form) {
-      return;
-    }
-
-    void saveResult();
+    setShareInfo(null);
+    setStatus("");
   }, [fingerprint, result, submission]);
 
   async function saveResult(force = false) {
@@ -113,6 +113,13 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       return null;
     }
 
+    const writeAccessToken = readWriteAccessToken();
+
+    if (!writeAccessToken) {
+      setStatus(copy.sessionExpired);
+      return null;
+    }
+
     try {
       setIsSaving(true);
       setStatus("");
@@ -120,19 +127,25 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       const response = await fetch("/api/results", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-kbeauty-write-token": writeAccessToken
         },
         body: JSON.stringify({
           locale,
           result,
-          submission
+          submission,
+          share: true
         })
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data?.shareId) {
-        throw new Error(data?.error || copy.saveError);
+        const responseError = response.status === 401
+          ? copy.sessionExpired
+          : data?.error || copy.saveError;
+
+        throw new Error(responseError);
       }
 
       const nextShare = {

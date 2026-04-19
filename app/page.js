@@ -21,6 +21,7 @@ import {
   ONBOARDING_COPY,
   OPTIONAL_DEFAULTS
 } from "@/components/onboarding/constants";
+import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "basic", "extra", "loading"];
 const PROGRESS_STEPS = ["basic", "extra", "loading"];
@@ -120,6 +121,7 @@ export default function HomePage() {
 
       try {
         setIsSubmitting(true);
+        clearWriteAccessToken();
 
         const payload = new FormData();
         payload.append("image", imageFile);
@@ -139,6 +141,8 @@ export default function HomePage() {
         if (!response.ok || !data) {
           throw new Error(data?.error || copy.errors.analyzeFailed);
         }
+
+        writeWriteAccessToken(data.writeAccessToken);
 
         const imagePreviewDataUrl = await imagePreviewDataUrlPromise;
 
@@ -369,6 +373,7 @@ export default function HomePage() {
       return;
     }
 
+    clearWriteAccessToken();
     sessionStorage.setItem("skinTestSubmission", JSON.stringify(preset.submission));
     sessionStorage.setItem("skinTestResult", JSON.stringify(preset.result));
     setShowTestMenu(false);

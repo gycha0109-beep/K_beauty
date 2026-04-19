@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
@@ -8,6 +9,8 @@ const MODEL = "openai/gpt-4o-mini";
 const COPY = {
   ko: {
     errorNeedImage: "얼굴 사진이 필요합니다.",
+    invalidImageType: "JPEG, PNG, WEBP 이미지만 업로드할 수 있습니다.",
+    imageTooLarge: `이미지 용량은 ${formatUploadSize()} 이하만 업로드할 수 있습니다.`,
     parseError: "Face Lab 응답을 해석하지 못했습니다.",
     serverError: "Face Lab 처리 중 오류가 발생했습니다.",
     systemLanguage: "Output must be entirely in Korean.",
@@ -85,6 +88,8 @@ const COPY = {
   },
   en: {
     errorNeedImage: "A face photo is required.",
+    invalidImageType: "Only JPEG, PNG, and WEBP images are allowed.",
+    imageTooLarge: `Images must be ${formatUploadSize()} or smaller.`,
     parseError: "Could not parse the Face Lab response.",
     serverError: "Something went wrong while generating Face Lab.",
     systemLanguage: "Output must be entirely in English.",
@@ -651,9 +656,18 @@ export async function POST(request) {
     const image = formData.get("image");
     const locale = formData.get("locale") === "en" ? "en" : "ko";
     const copy = getCopy(locale);
+    const imageValidation = validateImageUpload(image);
 
     if (!image || typeof image.arrayBuffer !== "function") {
       return NextResponse.json({ error: copy.errorNeedImage }, { status: 400 });
+    }
+
+    if (!imageValidation.ok) {
+      const errorMessage = imageValidation.code === "too_large"
+        ? copy.imageTooLarge
+        : copy.invalidImageType;
+
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -704,10 +718,27 @@ export async function POST(request) {
     }
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
-    const parsed = safeParse(rawContent, locale);
-    return NextResponse.json(normalizeFaceLab(parsed, locale));
+
+    if (!rawContent) {
+      console.error("[face-reading] Empty model content", { status, rawText });
+      return NextResponse.json(buildMockFaceLab(locale));
+    }
+
+    try {
+      const parsed = safeParse(rawContent, locale);
+      return NextResponse.json(normalizeFaceLab(parsed, locale));
+    } catch (parseError) {
+      console.error("[face-reading] parse failed", {
+        message: parseError instanceof Error ? parseError.message : String(parseError),
+        contentPreview: rawContent.slice(0, 240)
+      });
+      return NextResponse.json(buildMockFaceLab(locale));
+    }
   } catch (error) {
     console.error("[face-reading] failed", error);
-    return NextResponse.json({ error: error.message || getCopy("ko").serverError }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : getCopy("ko").serverError },
+      { status: 500 }
+    );
   }
 }

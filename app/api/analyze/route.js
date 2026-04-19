@@ -1,6 +1,8 @@
 ﻿import { NextResponse } from "next/server";
 import { buildFallbackAnalysis, buildRuleBasedPlan } from "@/lib/fallback-analysis";
 import { buildRecommendationBundle } from "@/lib/recommendation";
+import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { createWriteAccessToken } from "@/lib/write-access";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
@@ -37,6 +39,8 @@ const ANALYZE_COPY = {
     selectedProducts: "아래는 코드가 이미 선택한 최종 제품 목록",
     imageFallbackText: "얼굴 사진은 업로드되었지만 현재는 MVP 구조 기준으로만 반영합니다.",
     missingRequired: "필수 입력값이 비어 있습니다.",
+    invalidImageType: "JPEG, PNG, WEBP 이미지만 업로드할 수 있습니다.",
+    imageTooLarge: `이미지 용량은 ${formatUploadSize()} 이하만 업로드할 수 있습니다.`,
     missingApiKeyNotice: "OpenRouter API 키가 없어 mock 결과를 표시합니다.",
     fetchFailNotice: "OpenRouter 호출이 실패해 mock 결과를 대신 표시합니다.",
     fetchFailError: "OpenRouter 호출이 실패했습니다.",
@@ -62,6 +66,8 @@ const ANALYZE_COPY = {
     selectedProducts: "Below is the final product list already selected by code",
     imageFallbackText: "A face photo was uploaded, but in this MVP it is only used as lightweight visual context.",
     missingRequired: "Required input values are missing.",
+    invalidImageType: "Only JPEG, PNG, and WEBP images are allowed.",
+    imageTooLarge: `Images must be ${formatUploadSize()} or smaller.`,
     missingApiKeyNotice: "OpenRouter API key is missing, so a mock result is shown instead.",
     fetchFailNotice: "OpenRouter request failed, so a mock result is shown instead.",
     fetchFailError: "OpenRouter request failed.",
@@ -467,6 +473,7 @@ export async function POST(request) {
     const copy = getAnalyzeCopy(locale);
     const resolvedMainConcern =
       (typeof mainConcern === "string" && mainConcern) || mainConcerns[0] || "";
+    const imageValidation = validateImageUpload(image);
 
     if (
       !image ||
@@ -481,6 +488,17 @@ export async function POST(request) {
     ) {
       return NextResponse.json(
         { error: copy.missingRequired },
+        { status: 400 }
+      );
+    }
+
+    if (!imageValidation.ok) {
+      const errorMessage = imageValidation.code === "too_large"
+        ? copy.imageTooLarge
+        : copy.invalidImageType;
+
+      return NextResponse.json(
+        { error: errorMessage },
         { status: 400 }
       );
     }
@@ -513,6 +531,11 @@ export async function POST(request) {
       locale
     );
     const apiKey = process.env.OPENROUTER_API_KEY;
+    const writeAccessToken = createWriteAccessToken();
+    const withWriteAccessToken = (payload) => ({
+      ...payload,
+      writeAccessToken
+    });
 
     logAnalyze("request:prepared", {
       hasApiKey: Boolean(apiKey),
@@ -531,7 +554,7 @@ export async function POST(request) {
         env: process.env.VERCEL ? "vercel" : "local"
       });
 
-      return NextResponse.json({
+      return NextResponse.json(withWriteAccessToken({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
         categoryPicks: recommendation.categoryPicks,
@@ -543,7 +566,7 @@ export async function POST(request) {
           source: "mock",
           notice: copy.missingApiKeyNotice
         }
-      });
+      }));
     }
 
     let imageDataUrl = null;
@@ -631,7 +654,7 @@ export async function POST(request) {
         errorPreview: previewText(data?.error?.message || data?.error)
       });
 
-      return NextResponse.json({
+      return NextResponse.json(withWriteAccessToken({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
         categoryPicks: recommendation.categoryPicks,
@@ -648,7 +671,7 @@ export async function POST(request) {
           data?.error ||
           rawText ||
           `${copy.fetchFailError} (${status})`
-      });
+      }));
     }
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
@@ -664,7 +687,7 @@ export async function POST(request) {
         bodyPreview: previewText(rawText)
       });
 
-      return NextResponse.json({
+      return NextResponse.json(withWriteAccessToken({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
         categoryPicks: recommendation.categoryPicks,
@@ -676,7 +699,7 @@ export async function POST(request) {
           source: "mock",
           notice: copy.emptyBodyNotice
         }
-      });
+      }));
     }
 
     try {
@@ -693,7 +716,7 @@ export async function POST(request) {
         normalized.productExplanations
       );
 
-      return NextResponse.json({
+      return NextResponse.json(withWriteAccessToken({
         summary: normalized.summary || ruleBasedPlan.summary,
         strategy: normalized.strategy || ruleBasedPlan.strategy,
         morning: normalized.morning?.length ? normalized.morning : ruleBasedPlan.morning,
@@ -709,14 +732,14 @@ export async function POST(request) {
           source: "openrouter",
           notice: ""
         }
-      });
+      }));
     } catch (parseError) {
       logAnalyze("fallback:parse_error", {
-        message: parseError.message,
+        message: parseError instanceof Error ? parseError.message : String(parseError),
         contentPreview: previewText(rawContent)
       });
 
-      return NextResponse.json({
+      return NextResponse.json(withWriteAccessToken({
         ...fallbackAnalysis,
         topPick: recommendation.topPick,
         categoryPicks: recommendation.categoryPicks,
@@ -729,18 +752,18 @@ export async function POST(request) {
           notice: copy.parseFailNotice
         },
         error:
-          parseError.message ||
+          (parseError instanceof Error ? parseError.message : "") ||
           copy.parseFailError
-      });
+      }));
     }
   } catch (error) {
     logAnalyze("fallback:catch", {
-      message: error.message,
-      stack: previewText(error.stack, 600)
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? previewText(error.stack, 600) : ""
     });
 
     return NextResponse.json(
-      { error: error.message || "서버 오류가 발생했습니다." },
+      { error: error instanceof Error ? error.message : "서버 오류가 발생했습니다." },
       { status: 500 }
     );
   }
