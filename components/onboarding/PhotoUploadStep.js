@@ -206,7 +206,7 @@ export default function PhotoUploadStep({
                         autoPlay
                         playsInline
                         muted
-                        className="mx-auto block h-full w-full object-contain object-center"
+                        className="mx-auto block h-full w-full scale-x-[-1] object-contain object-center"
                       />
                     </div>
                   </div>
