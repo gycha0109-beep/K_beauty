@@ -12,6 +12,9 @@ const STEP_COPY = {
     gallery: "사진에서 선택",
     retake: "다시 촬영",
     change: "사진 변경",
+    capture: "촬영",
+    cancel: "취소",
+    cameraError: "카메라 접근 실패",
     previewAlt: "업로드한 얼굴 사진 미리보기",
     exampleAlt: "예시 얼굴 이미지"
   },
@@ -24,6 +27,9 @@ const STEP_COPY = {
     gallery: "Choose Photo",
     retake: "Retake",
     change: "Change Photo",
+    capture: "Capture",
+    cancel: "Cancel",
+    cameraError: "Camera access failed",
     previewAlt: "Preview of the uploaded face photo",
     exampleAlt: "Example face image"
   }
@@ -57,8 +63,13 @@ export default function PhotoUploadStep({
   const t = STEP_COPY[locale] || STEP_COPY.ko;
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const hasPreview = Boolean(previewUrl);
   const [showIntroVisual, setShowIntroVisual] = useState(true);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [stream, setStream] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
 
   useEffect(() => {
     if (hasPreview) {
@@ -74,13 +85,163 @@ export default function PhotoUploadStep({
     return () => clearTimeout(timer);
   }, [hasPreview]);
 
+  useEffect(() => {
+    if (!isCameraOpen || !stream || !videoRef.current) {
+      return;
+    }
+
+    videoRef.current.srcObject = stream;
+  }, [isCameraOpen, stream]);
+
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
   const isContrastSurface = hasPreview || showIntroVisual;
+
+  const handleFileChange = (file) => {
+    if (!file) {
+      return;
+    }
+
+    setCameraError(null);
+    onImageChange?.({ target: { files: [file] } });
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    setStream(null);
+    setIsCameraOpen(false);
+  };
+
+  const openCamera = async () => {
+    let nextStream = null;
+
+    try {
+      setCameraError(null);
+
+      try {
+        nextStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false
+        });
+      } catch (preferredCameraError) {
+        nextStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
+
+      setStream(nextStream);
+      setIsCameraOpen(true);
+    } catch (cameraOpenError) {
+      console.error("camera open failed", cameraOpenError);
+      setCameraError(t.cameraError);
+      cameraInputRef.current?.click();
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+      return;
+    }
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      return;
+    }
+
+    context.drawImage(video, 0, 0);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          return;
+        }
+
+        const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
+        handleFileChange(file);
+        stopCamera();
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
 
   return (
     <section className="flex flex-1 flex-col justify-center py-4">
       <div className="ui-surface-tint relative overflow-hidden rounded-[2.4rem] shadow-[0_28px_80px_rgba(46,30,10,0.12)]">
-        <div className={`relative ${hasPreview ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "min-h-[560px]"}`}>
-          {hasPreview ? (
+        <div className={`relative ${hasPreview || isCameraOpen ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "min-h-[560px]"}`}>
+          {isCameraOpen ? (
+            <>
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+              <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-2.5 sm:p-4">
+                <div className="px-2 pb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
+                    {t.title}
+                  </p>
+                  <span className="mt-3 ui-chip-soft">
+                    {t.kicker}
+                  </span>
+                </div>
+
+                <div className="flex justify-center pt-2 sm:pt-4">
+                  <div className="w-[90%] mx-auto flex justify-center sm:w-full sm:max-w-md">
+                    <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="mx-auto block h-full w-full object-contain object-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-2 pb-2 pt-4">
+                  <h1 className="ui-title text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
+                    {t.headline}
+                  </h1>
+                  <p className="ui-text-subtle mt-2 text-[11px] font-medium">
+                    {t.hint}
+                  </p>
+                </div>
+
+                <div className="mt-auto">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={capturePhoto}
+                      className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
+                    >
+                      {t.capture}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopCamera}
+                      className="ui-button-secondary-soft min-h-[54px] px-4 text-sm font-semibold"
+                    >
+                      {t.cancel}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : hasPreview ? (
             <>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
               <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-2.5 sm:p-4">
@@ -118,7 +279,7 @@ export default function PhotoUploadStep({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => cameraInputRef.current?.click()}
+                      onClick={openCamera}
                       className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
                     >
                       {t.retake}
@@ -188,7 +349,7 @@ export default function PhotoUploadStep({
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => cameraInputRef.current?.click()}
+                      onClick={openCamera}
                       className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
                     >
                       {t.camera}
@@ -224,8 +385,10 @@ export default function PhotoUploadStep({
           className="hidden"
           onChange={onImageChange}
         />
+        <canvas ref={canvasRef} className="hidden" />
       </div>
 
+      {cameraError ? <p className="ui-text-danger mt-4 text-sm font-medium">{cameraError}</p> : null}
       {error ? <p className="ui-text-danger mt-4 text-sm font-medium">{error}</p> : null}
     </section>
   );
