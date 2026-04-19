@@ -9,6 +9,7 @@ import RecommendedProductsStep from "@/components/result/RecommendedProductsStep
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
+import ResultShareActions from "@/components/result/ResultShareActions";
 import RoutineGuideStep from "@/components/result/RoutineGuideStep";
 import TipsStep from "@/components/result/TipsStep";
 import TopPickStep from "@/components/result/TopPickStep";
@@ -1196,6 +1197,14 @@ function ResultContent() {
                 );
               })}
             </div>
+
+            {result && submission ? (
+              <ResultShareActions
+                result={result}
+                submission={submission}
+                locale={locale}
+              />
+            ) : null}
 
             {result ? (
               <ResultProgressDots

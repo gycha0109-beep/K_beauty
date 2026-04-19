@@ -131,6 +131,18 @@ a {
     @apply inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800;
   }
 
+  .ui-button-secondary-soft {
+    @apply ui-button-secondary bg-white/90 dark:bg-zinc-900/90;
+  }
+
+  .ui-button-secondary-muted {
+    @apply ui-button-secondary bg-zinc-50 dark:bg-zinc-800;
+  }
+
+  .ui-button-secondary-contrast {
+    @apply inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20;
+  }
+
   .ui-button-tertiary {
     @apply text-sm font-medium text-zinc-500 dark:text-zinc-400;
   }
@@ -145,6 +157,58 @@ a {
 
   .ui-image-empty {
     @apply bg-[linear-gradient(135deg,#f5f5f5_0%,#ffffff_100%)] dark:bg-[linear-gradient(135deg,#18181b_0%,#111114_100%)];
+  }
+
+  .ui-progress-active {
+    @apply bg-zinc-900 dark:bg-zinc-100;
+  }
+
+  .ui-progress-inactive {
+    @apply bg-zinc-200 dark:bg-zinc-800;
+  }
+
+  .ui-choice-idle {
+    @apply ui-button-secondary-muted text-zinc-700 dark:text-zinc-300;
+  }
+
+  .ui-popover {
+    @apply rounded-[1.4rem] border border-zinc-200 bg-white shadow-[0_16px_40px_rgba(28,20,12,0.12)] dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-text-contrast {
+    @apply text-white;
+  }
+
+  .ui-text-contrast-soft {
+    @apply text-white/80;
+  }
+
+  .ui-text-subtle {
+    @apply text-black/50 dark:text-zinc-400;
+  }
+
+  .ui-text-subtle-strong {
+    @apply text-black/40 dark:text-zinc-500;
+  }
+
+  .ui-chip-contrast {
+    @apply inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur;
+  }
+
+  .ui-chip-soft {
+    @apply inline-flex rounded-full border border-zinc-200 bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-600 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-300;
+  }
+
+  .ui-icon-surface {
+    @apply flex items-center justify-center rounded-full border border-zinc-200 bg-white text-2xl text-zinc-500 shadow-[0_14px_28px_rgba(26,20,12,0.08)] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400;
+  }
+
+  .ui-surface-tint {
+    @apply border border-zinc-200 bg-[#f7efe4] dark:border-zinc-800 dark:bg-zinc-900;
+  }
+
+  .ui-text-danger {
+    @apply text-red-600 dark:text-red-400;
   }
 
   .ui-overlay {

@@ -6,7 +6,7 @@ const STEP_COPY = {
   ko: {
     title: "K-Beauty Finder",
     kicker: "Skin Match",
-    headline: "사진 한 장, 몇 가지 질문으로\n피부에 맞는 추천을 받아보세요",
+    headline: "사진 한 장, 몇 가지 질문으로 내 피부에 맞는 추천을 받아보세요",
     hint: "정면에 가까운 밝은 사진 권장",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
@@ -28,6 +28,25 @@ const STEP_COPY = {
     exampleAlt: "Example face image"
   }
 };
+
+function FaceSilhouette() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-[calc(11%+20px)] bottom-[168px] z-0 flex items-start justify-center">
+      <div className="relative h-full w-[56%] max-w-[272px]">
+        <div className="absolute -left-[30px] -right-[30px] top-[4%] bottom-[calc(18%-35px)] rounded-[2rem] border-2 border-[#444444] dark:border-[#7A7A7A]" />
+        <div className="h-full w-full text-[#444444] dark:text-[#7A7A7A]">
+          <svg viewBox="0 0 800 800" aria-hidden="true" className="h-full w-full object-contain object-center fill-current">
+          <g opacity="1">
+            <path d="M400 108C295.066 108 210 193.066 210 298V360C210 441.873 261.77 511.653 334.38 538.42C347.9 543.404 357 556.363 357 570.772V583.9C357 605.994 343.705 625.914 323.304 634.321L177.788 694.278C119.99 718.091 82 774.373 82 836V860H718V836C718 774.373 680.01 718.091 622.212 694.278L476.696 634.321C456.295 625.914 443 605.994 443 583.9V570.772C443 556.363 452.1 543.404 465.62 538.42C538.23 511.653 590 441.873 590 360V298C590 193.066 504.934 108 400 108Z" />
+            <path d="M239 344C218.565 344 202 360.565 202 381V427C202 447.435 218.565 464 239 464C259.435 464 276 447.435 276 427V381C276 360.565 259.435 344 239 344Z" />
+            <path d="M561 344C540.565 344 524 360.565 524 381V427C524 447.435 540.565 464 561 464C581.435 464 598 447.435 598 427V381C598 360.565 581.435 344 561 344Z" />
+          </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PhotoUploadStep({
   locale = "ko",
@@ -55,17 +74,17 @@ export default function PhotoUploadStep({
     return () => clearTimeout(timer);
   }, [hasPreview]);
 
-  const darkMode = hasPreview || showIntroVisual;
+  const isContrastSurface = hasPreview || showIntroVisual;
 
   return (
     <section className="flex flex-1 flex-col justify-center py-4">
-      <div className="relative overflow-hidden rounded-[2.4rem] border border-black/6 bg-[#f7efe4] shadow-[0_28px_80px_rgba(46,30,10,0.12)]">
+      <div className="ui-surface-tint relative overflow-hidden rounded-[2.4rem] shadow-[0_28px_80px_rgba(46,30,10,0.12)]">
         <div className={`relative ${hasPreview ? "min-h-[260px]" : "min-h-[560px]"}`}>
           {hasPreview ? (
             <img src={previewUrl} alt={t.previewAlt} className="h-full min-h-[260px] w-full object-cover" />
           ) : (
             <>
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
               <div
                 className={`absolute inset-0 transition-opacity duration-700 ${
                   showIntroVisual ? "opacity-100" : "pointer-events-none opacity-0"
@@ -86,41 +105,33 @@ export default function PhotoUploadStep({
                   showIntroVisual ? "opacity-0" : "opacity-100"
                 }`}
               >
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)]" />
-                <div className="flex min-h-[560px] flex-col items-center justify-center px-7 text-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-black/8 bg-white text-[2rem] text-black/45 shadow-[0_14px_28px_rgba(26,20,12,0.08)]">
-                    +
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+                <FaceSilhouette />
               </div>
             </>
           )}
 
-          <div className={`relative flex flex-col p-5 sm:p-6 ${hasPreview ? "min-h-[260px]" : "min-h-[560px]"}`}>
+          <div className={`relative z-10 flex flex-col p-5 sm:p-6 ${hasPreview ? "min-h-[260px]" : "min-h-[560px]"}`}>
             <div>
-              <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${darkMode ? "text-white/72" : "text-black/34"}`}>
+              <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle-strong"}`}>
                 {t.title}
               </p>
-              <span
-                className={`mt-3 inline-flex rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] backdrop-blur ${
-                  darkMode
-                    ? "border border-white/20 bg-white/14 text-white"
-                    : "border border-black/8 bg-white/78 text-black/60"
-                }`}
-              >
+              <span className={`mt-3 ${isContrastSurface ? "ui-chip-contrast" : "ui-chip-soft"}`}>
                 {t.kicker}
               </span>
             </div>
 
             <div
-              className={`absolute inset-x-6 max-w-[21rem] ${darkMode ? "text-white" : "text-[#1f1811]"} sm:inset-x-7 ${
-                hasPreview ? "top-[92px] sm:top-[96px]" : "bottom-[102px] sm:bottom-[108px]"
-              }`}
+              className={`absolute inset-x-6 max-w-[21rem] sm:inset-x-7 ${
+                isContrastSurface ? "ui-text-contrast" : "ui-title"
+              } ${hasPreview ? "top-[92px] sm:top-[96px]" : "bottom-[102px] sm:bottom-[108px]"}`}
             >
-              <h1 className="text-[1.18rem] font-semibold leading-[1.22] tracking-[-0.03em] sm:text-[1.28rem]">
+              <h1 className="text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
                 {t.headline}
               </h1>
-              <p className={`mt-2 text-[11px] font-medium ${darkMode ? "text-white/78" : "text-black/48"}`}>{t.hint}</p>
+              <p className={`mt-2 text-[11px] font-medium ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle"}`}>
+                {t.hint}
+              </p>
             </div>
 
             <div className="mt-auto">
@@ -128,17 +139,15 @@ export default function PhotoUploadStep({
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="inline-flex min-h-[54px] items-center justify-center rounded-full bg-[#1f1811] px-4 text-sm font-semibold text-white transition hover:bg-black"
+                  className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
                 >
                   {hasPreview ? t.retake : t.camera}
                 </button>
                 <button
                   type="button"
                   onClick={() => galleryInputRef.current?.click()}
-                  className={`inline-flex min-h-[54px] items-center justify-center rounded-full px-4 text-sm font-semibold backdrop-blur transition ${
-                    darkMode
-                      ? "border border-white/22 bg-white/14 text-white hover:bg-white/18"
-                      : "border border-black/10 bg-white/84 text-black/72 hover:bg-white"
+                  className={`min-h-[54px] px-4 text-sm font-semibold ${
+                    isContrastSurface ? "ui-button-secondary-contrast" : "ui-button-secondary-soft"
                   }`}
                 >
                   {hasPreview ? t.change : t.gallery}
@@ -165,7 +174,7 @@ export default function PhotoUploadStep({
         />
       </div>
 
-      {error ? <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="ui-text-danger mt-4 text-sm font-medium">{error}</p> : null}
     </section>
   );
 }

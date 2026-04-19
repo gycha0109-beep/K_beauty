@@ -4,7 +4,7 @@ import { OPTION_SETS } from "@/components/onboarding/constants";
 function CompactChoiceGroup({ label, name, value, options, optionLabels, onChange }) {
   return (
     <div className="ui-card space-y-3 p-4">
-      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>
+      <p className="ui-title text-sm">{label}</p>
       <div className="grid grid-cols-2 gap-2">
         {options.map((option) => {
           const active = value === option;
@@ -15,9 +15,7 @@ function CompactChoiceGroup({ label, name, value, options, optionLabels, onChang
               type="button"
               onClick={() => onChange(name, option)}
               className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
-                active
-                  ? "ui-choice-active"
-                  : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
+                active ? "ui-choice-active" : "ui-choice-idle"
               }`}
             >
               {optionLabels[option]}
@@ -97,19 +95,13 @@ export default function ExtraSurveyStep({
             onClick={() => setShowEnvironment((current) => !current)}
             className="flex w-full items-center justify-between text-left"
           >
-            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {copy.extra.environmentToggle}
-            </span>
-            <span className="text-lg leading-none text-zinc-500 dark:text-zinc-400">
-              {showEnvironment ? "−" : "+"}
-            </span>
+            <span className="ui-title text-sm">{copy.extra.environmentToggle}</span>
+            <span className="ui-text-faint text-lg leading-none">{showEnvironment ? "-" : "+"}</span>
           </button>
 
           {showEnvironment ? (
             <div className="mt-4">
-              <p className="text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-                {copy.extra.environmentDescription}
-              </p>
+              <p className="ui-text-secondary text-xs leading-5">{copy.extra.environmentDescription}</p>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 {OPTION_SETS.environmentExposure.map((option) => {
                   const checked = form.environmentExposure.includes(option);
@@ -120,9 +112,7 @@ export default function ExtraSurveyStep({
                       type="button"
                       onClick={() => onEnvironmentToggle(option)}
                       className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
-                        checked
-                          ? "border border-zinc-900 bg-zinc-100 text-zinc-900 dark:border-zinc-100 dark:bg-zinc-800 dark:text-zinc-100"
-                          : "ui-button-secondary bg-zinc-50 text-zinc-700 dark:bg-zinc-900"
+                        checked ? "ui-choice-active" : "ui-choice-idle"
                       }`}
                     >
                       {labels.environmentExposure[option]}
@@ -135,7 +125,7 @@ export default function ExtraSurveyStep({
         </div>
       </div>
 
-      {error ? <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="ui-text-danger mt-4 text-sm font-medium">{error}</p> : null}
     </section>
   );
 }

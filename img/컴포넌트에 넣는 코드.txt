@@ -1,0 +1,33 @@
+<div className="relative overflow-hidden rounded-[32px] bg-[var(--card)]">
+  {!imagePreview && (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <img
+        src="/guide-face-silhouette.svg"
+        alt=""
+        aria-hidden="true"
+        className="h-[74%] w-[64%] object-contain text-black/20 dark:text-white/12"
+      />
+    </div>
+  )}
+
+  {!imagePreview && (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="h-[74%] w-[64%] text-black/22 dark:text-white/14">
+        <img
+          src="/guide-face-silhouette.svg"
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-contain"
+        />
+      </div>
+    </div>
+  )}
+
+  {imagePreview && (
+    <img
+      src={imagePreview}
+      alt="preview"
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+  )}
+</div>

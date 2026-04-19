@@ -468,7 +468,7 @@ export default function HomePage() {
                 className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   locale === item.code
                     ? "ui-choice-active"
-                    : "ui-button-secondary bg-white/80 text-zinc-700 dark:bg-zinc-900/80"
+                    : "ui-button-secondary-soft"
                 }`}
               >
                 {item.label}
@@ -480,20 +480,20 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setShowTestMenu((current) => !current)}
-              className="ui-button-secondary bg-white/85 px-3 py-1.5 text-xs font-medium dark:bg-zinc-900/85"
+              className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
             >
               {copy.topActions.test}
             </button>
             <button
               type="button"
               onClick={mode === "face-lab" ? handleOpenSkin : handleOpenFaceLab}
-              className="ui-button-secondary bg-white/85 px-3 py-1.5 text-xs font-medium dark:bg-zinc-900/85"
+              className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
             >
               {mode === "face-lab" ? copy.topActions.skinMatch : copy.topActions.faceLab}
             </button>
 
             {showTestMenu ? (
-              <div className="absolute right-0 top-11 z-20 w-[280px] rounded-[1.4rem] border border-zinc-200 bg-white p-3 shadow-[0_16px_40px_rgba(28,20,12,0.12)] dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="ui-popover absolute right-0 top-11 z-20 w-[280px] p-3">
                 <div className="space-y-3">
                   <div>
                     <p className="ui-kicker px-1">
@@ -505,7 +505,7 @@ export default function HomePage() {
                           key={`skin-preset-${preset.id}`}
                           type="button"
                           onClick={() => handleSkinPresetPreview(preset.id)}
-                          className="ui-button-secondary w-full rounded-2xl bg-zinc-50 px-3 py-3 text-left text-sm font-medium dark:bg-zinc-800"
+                          className="ui-button-secondary-muted w-full rounded-2xl px-3 py-3 text-left text-sm font-medium"
                         >
                           {copy.skinPresetLabels?.[preset.id] || preset.summaryLabel}
                         </button>
@@ -523,7 +523,7 @@ export default function HomePage() {
                           key={`face-preset-${preset.id}`}
                           type="button"
                           onClick={() => handleFaceLabPresetPreview(preset.id)}
-                          className="ui-button-secondary w-full rounded-2xl bg-zinc-50 px-3 py-3 text-left text-sm font-medium dark:bg-zinc-800"
+                          className="ui-button-secondary-muted w-full rounded-2xl px-3 py-3 text-left text-sm font-medium"
                         >
                           {copy.facePresetLabels?.[preset.id] || preset.buttonLabel}
                         </button>

@@ -10,9 +10,9 @@ export default function LoadingStep({ copy, isSubmitting }) {
         </p>
         {isSubmitting ? (
           <div className="mt-6 flex justify-center gap-2">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-zinc-900 dark:bg-zinc-100" />
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-zinc-900 [animation-delay:120ms] dark:bg-zinc-100" />
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-zinc-900 [animation-delay:240ms] dark:bg-zinc-100" />
+            <span className="ui-progress-active h-2.5 w-2.5 animate-pulse rounded-full" />
+            <span className="ui-progress-active h-2.5 w-2.5 animate-pulse rounded-full [animation-delay:120ms]" />
+            <span className="ui-progress-active h-2.5 w-2.5 animate-pulse rounded-full [animation-delay:240ms]" />
           </div>
         ) : null}
       </div>

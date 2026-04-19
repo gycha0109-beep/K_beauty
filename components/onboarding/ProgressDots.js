@@ -9,7 +9,7 @@ export default function ProgressDots({ current = 1, total = 5, copy }) {
           <span
             key={`dot-${index}`}
             className={`h-2.5 flex-1 rounded-full transition ${
-              index < current ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"
+              index < current ? "ui-progress-active" : "ui-progress-inactive"
             }`}
           />
         ))}

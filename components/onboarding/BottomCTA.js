@@ -33,7 +33,7 @@ export default function BottomCTA({
           <button
             type="button"
             onClick={onSecondary}
-            className="text-sm font-medium text-zinc-600 dark:text-zinc-400"
+            className="ui-button-tertiary"
           >
             {secondaryLabel}
           </button>
