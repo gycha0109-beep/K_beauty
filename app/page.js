@@ -378,34 +378,20 @@ export default function HomePage() {
   const renderStep = () => {
     if (mode === "face-lab") {
       return (
-        <div className="pt-4">
-          <div className="space-y-2 pb-4">
-            <p className="ui-kicker">
-              Face Lab
-            </p>
-            <h1 className="ui-title text-[2rem]">
-              {copy.faceLab.title}
-            </h1>
-            <p className="ui-text-secondary text-sm leading-6">
-              {copy.faceLab.description}
-            </p>
-          </div>
-
-          <FaceLab
-            locale={locale}
-            copy={copy}
-            imageFile={imageFile}
-            previewUrl={previewUrl}
-            onImageChange={handleImageChange}
-            onClearImage={clearImage}
-            presets={FACE_LAB_TEST_PRESETS}
-            onPresetPreview={handleFaceLabPresetPreview}
-            faceLabResult={faceLabResult}
-            faceLabError={faceLabError}
-            faceLabLoading={faceLabLoading}
-            onAnalyze={handleFaceLabAnalyze}
-          />
-        </div>
+        <FaceLab
+          locale={locale}
+          copy={copy}
+          imageFile={imageFile}
+          previewUrl={previewUrl}
+          onImageChange={handleImageChange}
+          onClearImage={clearImage}
+          presets={FACE_LAB_TEST_PRESETS}
+          onPresetPreview={handleFaceLabPresetPreview}
+          faceLabResult={faceLabResult}
+          faceLabError={faceLabError}
+          faceLabLoading={faceLabLoading}
+          onAnalyze={handleFaceLabAnalyze}
+        />
       );
     }
 
@@ -452,6 +438,7 @@ export default function HomePage() {
 
   const showProgress = mode === "skin" && currentStep !== "photo";
   const showBottomCta = mode === "skin" && currentStep !== "loading";
+  const showFaceLabBottomCta = mode === "face-lab" && !faceLabResult;
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
@@ -477,13 +464,15 @@ export default function HomePage() {
           </div>
 
           <div className="relative flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowTestMenu((current) => !current)}
-              className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
-            >
-              {copy.topActions.test}
-            </button>
+            {mode !== "face-lab" ? (
+              <button
+                type="button"
+                onClick={() => setShowTestMenu((current) => !current)}
+                className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
+              >
+                {copy.topActions.test}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={mode === "face-lab" ? handleOpenSkin : handleOpenFaceLab}
@@ -492,7 +481,7 @@ export default function HomePage() {
               {mode === "face-lab" ? copy.topActions.skinMatch : copy.topActions.faceLab}
             </button>
 
-            {showTestMenu ? (
+            {mode !== "face-lab" && showTestMenu ? (
               <div className="ui-popover absolute right-0 top-11 z-20 w-[280px] p-3">
                 <div className="space-y-3">
                   <div>
@@ -572,6 +561,14 @@ export default function HomePage() {
           onSecondary={handleBack}
           tertiaryLabel={currentStep === "extra" ? copy.cta.skip : null}
           onTertiary={currentStep === "extra" ? handleSkipExtra : null}
+        />
+      ) : null}
+
+      {showFaceLabBottomCta ? (
+        <BottomCTA
+          primaryLabel={copy.faceLabButton}
+          onPrimary={handleFaceLabAnalyze}
+          primaryDisabled={!imageFile || faceLabLoading}
         />
       ) : null}
 

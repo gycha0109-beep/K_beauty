@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import ErrorMessage from "@/components/ErrorMessage";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import UploadPreview from "@/components/UploadPreview";
 
 const TAB_ORDER = [
   "physiognomy",
@@ -147,6 +146,140 @@ function getColorChipStyle(label) {
   return { backgroundColor: "#ece4d8", color: "#2f241b" };
 }
 
+const COMPOSER_COPY = {
+  ko: {
+    eyebrow: "K-BEAUTY FINDER",
+    chip: "FACE LAB",
+    body: "사진을 업로드 하면 Face Lab 분석을 시작할 수 있습니다.",
+    hint: "정면에 가까운 밝은 사진 권장.",
+    camera: "지금 촬영하기",
+    gallery: "사진에서 선택",
+    previewAlt: "업로드한 얼굴 사진 미리보기"
+  },
+  en: {
+    eyebrow: "K-BEAUTY FINDER",
+    chip: "FACE LAB",
+    body: "Upload a photo to start your Face Lab analysis.",
+    hint: "A bright, front-facing photo works best.",
+    camera: "Use Camera",
+    gallery: "Choose Photo",
+    previewAlt: "Preview of the uploaded face photo"
+  }
+};
+
+function FaceLabGuideSilhouette() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-[calc(11%+20px)] bottom-[168px] z-0 flex items-start justify-center">
+      <div className="relative h-full w-[56%] max-w-[272px]">
+        <div className="absolute -left-[30px] -right-[30px] top-[4%] bottom-[calc(18%-35px)] rounded-[2rem] border-2 border-[#444444] dark:border-[#7A7A7A]" />
+        <div className="h-full w-full text-[#444444] dark:text-[#7A7A7A]">
+          <svg viewBox="0 0 800 800" aria-hidden="true" className="h-full w-full object-contain object-center fill-current">
+            <g opacity="1">
+              <path d="M400 108C295.066 108 210 193.066 210 298V360C210 441.873 261.77 511.653 334.38 538.42C347.9 543.404 357 556.363 357 570.772V583.9C357 605.994 343.705 625.914 323.304 634.321L177.788 694.278C119.99 718.091 82 774.373 82 836V860H718V836C718 774.373 680.01 718.091 622.212 694.278L476.696 634.321C456.295 625.914 443 605.994 443 583.9V570.772C443 556.363 452.1 543.404 465.62 538.42C538.23 511.653 590 441.873 590 360V298C590 193.066 504.934 108 400 108Z" />
+              <path d="M239 344C218.565 344 202 360.565 202 381V427C202 447.435 218.565 464 239 464C259.435 464 276 447.435 276 427V381C276 360.565 259.435 344 239 344Z" />
+              <path d="M561 344C540.565 344 524 360.565 524 381V427C524 447.435 540.565 464 561 464C581.435 464 598 447.435 598 427V381C598 360.565 581.435 344 561 344Z" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FaceLabComposerCard({ locale = "ko", previewUrl, onImageChange }) {
+  const t = COMPOSER_COPY[locale] || COMPOSER_COPY.ko;
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  const hasPreview = Boolean(previewUrl);
+
+  return (
+    <section className="ui-surface-tint relative overflow-hidden rounded-[2.4rem] shadow-[0_28px_80px_rgba(46,30,10,0.12)]">
+      <div className={`relative ${hasPreview ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "h-[560px]"}`}>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+
+        <div className={`relative z-10 flex flex-col p-5 sm:p-6 ${hasPreview ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "h-[560px]"}`}>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
+              {t.eyebrow}
+            </p>
+            <span className="mt-3 ui-chip-soft">
+              {t.chip}
+            </span>
+          </div>
+
+          {hasPreview ? (
+            <div className="flex w-full justify-center pt-4">
+              <div className="w-full max-w-[18rem]">
+                <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                  <img
+                    src={previewUrl}
+                    alt={t.previewAlt}
+                    className="block h-full w-full object-contain object-center"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <FaceLabGuideSilhouette />
+          )}
+
+          <div
+            className={`${
+              hasPreview
+                ? "px-2 pb-2 pt-4"
+                : "absolute inset-x-6 bottom-[102px] max-w-[21rem] sm:inset-x-7 sm:bottom-[108px]"
+            }`}
+          >
+            <div className={`${hasPreview ? "max-w-[21rem]" : ""}`}>
+              <p className="ui-title text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
+                {t.body}
+              </p>
+              <p className="ui-text-subtle mt-2 text-[11px] font-medium">
+                {t.hint}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
+              >
+                {t.camera}
+              </button>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="ui-button-secondary-soft min-h-[54px] px-4 text-sm font-semibold"
+              >
+                {t.gallery}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        className="hidden"
+        onChange={onImageChange}
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onImageChange}
+      />
+    </section>
+  );
+}
+
 class FaceLabErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -194,35 +327,31 @@ function FaceLabTabs({ tabs, activeTab, onChange }) {
   );
 }
 
-function FaceLabHeader({ locale, previewUrl, summary, tags, faceShape }) {
+function FaceLabHeader({ locale, previewUrl, summary, tags }) {
   const ui = getUi(locale);
 
   return (
     <section className="ui-card p-5">
-      <div className="grid gap-4 sm:grid-cols-[132px_minmax(0,1fr)] sm:items-start">
-        <div className="ui-image-surface overflow-hidden rounded-[1.6rem]">
-          {previewUrl ? (
-            <img src={previewUrl} alt="Face Lab preview" className="h-32 w-full object-contain" />
-          ) : (
-            <div className="flex h-32 items-center justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white text-xl text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500">
-                +
+      <div className="space-y-5">
+        <div className="space-y-1">
+          <h2 className="ui-title text-[1.55rem]">{ui.reportTitle}</h2>
+        </div>
+
+        <div className="mx-auto w-full max-w-[132px]">
+          <div className="ui-image-surface overflow-hidden rounded-[1.6rem]">
+            {previewUrl ? (
+              <img src={previewUrl} alt="Face Lab preview" className="h-32 w-full object-contain" />
+            ) : (
+              <div className="flex h-32 items-center justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white text-xl text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500">
+                  +
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="ui-kicker">{ui.reportEyebrow}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="ui-title text-[1.55rem]">{ui.reportTitle}</h2>
-              {faceShape ? (
-                <span className="ui-chip px-3 py-1 text-xs font-medium">{faceShape}</span>
-              ) : null}
-            </div>
-          </div>
-
           <div className="ui-panel-accent p-4">
             <p className="ui-kicker">{ui.reportSummaryLabel}</p>
             <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{summary}</p>
@@ -592,13 +721,9 @@ export default function FaceLab({
   imageFile,
   previewUrl,
   onImageChange,
-  onClearImage,
-  presets = [],
-  onPresetPreview,
   faceLabResult,
   faceLabError,
-  faceLabLoading,
-  onAnalyze
+  faceLabLoading
 }) {
   const ui = getUi(locale);
   const reportRef = useRef(null);
@@ -634,94 +759,55 @@ export default function FaceLab({
     reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleAnalyze = () => {
-    try {
-      onAnalyze?.();
-    } catch (error) {
-      console.error("FaceLab action error:", error);
-    }
-  };
-
   return (
-    <div className="space-y-5 pb-6">
-      {presets.length ? (
-        <div className="flex flex-wrap gap-2">
-          {presets.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => onPresetPreview?.(preset.id)}
-              className="ui-button-secondary bg-white/85 px-3 py-2 text-xs font-medium dark:bg-zinc-900/85"
-            >
-              {copy?.facePresetLabels?.[preset.id] || preset.buttonLabel}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
+    <>
       {showComposer ? (
-        <UploadPreview
-          imageFile={imageFile}
-          previewUrl={previewUrl}
-          onChange={onImageChange}
-          onClear={onClearImage}
-          locale={locale}
-        />
-      ) : null}
-
-      <ErrorMessage message={faceLabError} />
-
-      {showComposer ? (
-        <button
-          type="button"
-          onClick={handleAnalyze}
-          disabled={!imageFile || faceLabLoading}
-          className="ui-button-primary w-full px-5 py-4 text-sm font-medium disabled:opacity-45"
-        >
-          {copy?.faceLabButton || copy?.faceLab?.button || ui.button}
-        </button>
-      ) : null}
-
-      {faceLabLoading ? <LoadingSpinner label={copy?.faceLabSpinner || copy?.faceLab?.spinner || ui.spinner} /> : null}
-
-      {showComposer && !faceLabLoading ? (
-        <div className="ui-card-dashed px-5 py-6 text-center">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{ui.readyTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{ui.readyBody}</p>
-        </div>
+        <section className="flex flex-1 flex-col justify-center py-4">
+          <FaceLabComposerCard
+            locale={locale}
+            previewUrl={previewUrl}
+            onImageChange={onImageChange}
+          />
+          <ErrorMessage message={faceLabError} />
+          {faceLabLoading ? <LoadingSpinner label={copy?.faceLabSpinner || copy?.faceLab?.spinner || ui.spinner} /> : null}
+        </section>
       ) : null}
 
       {safeResult ? (
-        <FaceLabErrorBoundary
-          fallback={
-            <div className="ui-error px-5 py-6">
-              {ui.fallbackRender}
+        <div className="mt-[30px] space-y-5 pb-6">
+          <ErrorMessage message={faceLabError} />
+          {faceLabLoading ? <LoadingSpinner label={copy?.faceLabSpinner || copy?.faceLab?.spinner || ui.spinner} /> : null}
+          <FaceLabErrorBoundary
+            fallback={
+              <div className="ui-error px-5 py-6">
+                {ui.fallbackRender}
+              </div>
+            }
+          >
+            <div ref={reportRef} className="space-y-4">
+              <FaceLabHeader
+                locale={locale}
+                previewUrl={previewUrl}
+                summary={headerSummary}
+                tags={sharedTags}
+                faceShape={cleanText(safeResult?.base_data?.face_shape)}
+              />
+
+              <FaceLabTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+
+              <FaceLabCardDeck
+                locale={locale}
+                cards={cards}
+                activeTab={activeTab}
+                activeCardIndex={activeCardIndex}
+                onPrev={() => setActiveCardIndex((current) => Math.max(0, current - 1))}
+                onNext={() => setActiveCardIndex((current) => Math.min(cards.length - 1, current + 1))}
+                onOpenNextTab={openNextTab}
+              />
             </div>
-          }
-        >
-          <div ref={reportRef} className="space-y-4">
-            <FaceLabHeader
-              locale={locale}
-              previewUrl={previewUrl}
-              summary={headerSummary}
-              tags={sharedTags}
-              faceShape={cleanText(safeResult?.base_data?.face_shape)}
-            />
-
-            <FaceLabTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-
-            <FaceLabCardDeck
-              locale={locale}
-              cards={cards}
-              activeTab={activeTab}
-              activeCardIndex={activeCardIndex}
-              onPrev={() => setActiveCardIndex((current) => Math.max(0, current - 1))}
-              onNext={() => setActiveCardIndex((current) => Math.min(cards.length - 1, current + 1))}
-              onOpenNextTab={openNextTab}
-            />
-          </div>
-        </FaceLabErrorBoundary>
+          </FaceLabErrorBoundary>
+        </div>
       ) : null}
-    </div>
+    </>
   );
 }
