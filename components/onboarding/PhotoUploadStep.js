@@ -36,11 +36,11 @@ function FaceSilhouette() {
         <div className="absolute -left-[30px] -right-[30px] top-[4%] bottom-[calc(18%-35px)] rounded-[2rem] border-2 border-[#444444] dark:border-[#7A7A7A]" />
         <div className="h-full w-full text-[#444444] dark:text-[#7A7A7A]">
           <svg viewBox="0 0 800 800" aria-hidden="true" className="h-full w-full object-contain object-center fill-current">
-          <g opacity="1">
-            <path d="M400 108C295.066 108 210 193.066 210 298V360C210 441.873 261.77 511.653 334.38 538.42C347.9 543.404 357 556.363 357 570.772V583.9C357 605.994 343.705 625.914 323.304 634.321L177.788 694.278C119.99 718.091 82 774.373 82 836V860H718V836C718 774.373 680.01 718.091 622.212 694.278L476.696 634.321C456.295 625.914 443 605.994 443 583.9V570.772C443 556.363 452.1 543.404 465.62 538.42C538.23 511.653 590 441.873 590 360V298C590 193.066 504.934 108 400 108Z" />
-            <path d="M239 344C218.565 344 202 360.565 202 381V427C202 447.435 218.565 464 239 464C259.435 464 276 447.435 276 427V381C276 360.565 259.435 344 239 344Z" />
-            <path d="M561 344C540.565 344 524 360.565 524 381V427C524 447.435 540.565 464 561 464C581.435 464 598 447.435 598 427V381C598 360.565 581.435 344 561 344Z" />
-          </g>
+            <g opacity="1">
+              <path d="M400 108C295.066 108 210 193.066 210 298V360C210 441.873 261.77 511.653 334.38 538.42C347.9 543.404 357 556.363 357 570.772V583.9C357 605.994 343.705 625.914 323.304 634.321L177.788 694.278C119.99 718.091 82 774.373 82 836V860H718V836C718 774.373 680.01 718.091 622.212 694.278L476.696 634.321C456.295 625.914 443 605.994 443 583.9V570.772C443 556.363 452.1 543.404 465.62 538.42C538.23 511.653 590 441.873 590 360V298C590 193.066 504.934 108 400 108Z" />
+              <path d="M239 344C218.565 344 202 360.565 202 381V427C202 447.435 218.565 464 239 464C259.435 464 276 447.435 276 427V381C276 360.565 259.435 344 239 344Z" />
+              <path d="M561 344C540.565 344 524 360.565 524 381V427C524 447.435 540.565 464 561 464C581.435 464 598 447.435 598 427V381C598 360.565 581.435 344 561 344Z" />
+            </g>
           </svg>
         </div>
       </div>
@@ -79,9 +79,59 @@ export default function PhotoUploadStep({
   return (
     <section className="flex flex-1 flex-col justify-center py-4">
       <div className="ui-surface-tint relative overflow-hidden rounded-[2.4rem] shadow-[0_28px_80px_rgba(46,30,10,0.12)]">
-        <div className={`relative ${hasPreview ? "min-h-[260px]" : "min-h-[560px]"}`}>
+        <div className={`relative ${hasPreview ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "min-h-[560px]"}`}>
           {hasPreview ? (
-            <img src={previewUrl} alt={t.previewAlt} className="h-full min-h-[260px] w-full object-cover" />
+            <>
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+              <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-3 sm:p-4">
+                <div className="mx-auto w-full max-w-[18rem]">
+                  <div className="aspect-[4/5] max-h-[min(42dvh,360px)] overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                    <img
+                      src={previewUrl}
+                      alt={t.previewAlt}
+                      className="h-full w-full object-contain object-center"
+                    />
+                  </div>
+                </div>
+
+                <div className="px-2 pb-2 pt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
+                    {t.title}
+                  </p>
+                  <span className="mt-3 ui-chip-soft">
+                    {t.kicker}
+                  </span>
+                </div>
+
+                <div className="px-2">
+                  <h1 className="ui-title text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
+                    {t.headline}
+                  </h1>
+                  <p className="ui-text-subtle mt-2 text-[11px] font-medium">
+                    {t.hint}
+                  </p>
+                </div>
+
+                <div className="mt-auto px-2 pt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
+                    >
+                      {t.retake}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="ui-button-secondary-soft min-h-[54px] px-4 text-sm font-semibold"
+                    >
+                      {t.change}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
@@ -108,53 +158,53 @@ export default function PhotoUploadStep({
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
                 <FaceSilhouette />
               </div>
+
+              <div className="relative z-10 flex min-h-[560px] flex-col p-5 sm:p-6">
+                <div>
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle-strong"}`}>
+                    {t.title}
+                  </p>
+                  <span className={`mt-3 ${isContrastSurface ? "ui-chip-contrast" : "ui-chip-soft"}`}>
+                    {t.kicker}
+                  </span>
+                </div>
+
+                <div
+                  className={`absolute inset-x-6 max-w-[21rem] sm:inset-x-7 ${
+                    isContrastSurface ? "ui-text-contrast" : "ui-title"
+                  } bottom-[102px] sm:bottom-[108px]`}
+                >
+                  <h1 className="text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
+                    {t.headline}
+                  </h1>
+                  <p className={`mt-2 text-[11px] font-medium ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle"}`}>
+                    {t.hint}
+                  </p>
+                </div>
+
+                <div className="mt-auto">
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
+                    >
+                      {t.camera}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className={`min-h-[54px] px-4 text-sm font-semibold ${
+                        isContrastSurface ? "ui-button-secondary-contrast" : "ui-button-secondary-soft"
+                      }`}
+                    >
+                      {t.gallery}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </>
           )}
-
-          <div className={`relative z-10 flex flex-col p-5 sm:p-6 ${hasPreview ? "min-h-[260px]" : "min-h-[560px]"}`}>
-            <div>
-              <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle-strong"}`}>
-                {t.title}
-              </p>
-              <span className={`mt-3 ${isContrastSurface ? "ui-chip-contrast" : "ui-chip-soft"}`}>
-                {t.kicker}
-              </span>
-            </div>
-
-            <div
-              className={`absolute inset-x-6 max-w-[21rem] sm:inset-x-7 ${
-                isContrastSurface ? "ui-text-contrast" : "ui-title"
-              } ${hasPreview ? "top-[92px] sm:top-[96px]" : "bottom-[102px] sm:bottom-[108px]"}`}
-            >
-              <h1 className="text-[1.02rem] font-semibold leading-[1.42] tracking-[-0.02em] sm:text-[1.1rem]">
-                {t.headline}
-              </h1>
-              <p className={`mt-2 text-[11px] font-medium ${isContrastSurface ? "ui-text-contrast-soft" : "ui-text-subtle"}`}>
-                {t.hint}
-              </p>
-            </div>
-
-            <div className="mt-auto">
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="ui-button-primary min-h-[54px] px-4 text-sm font-semibold"
-                >
-                  {hasPreview ? t.retake : t.camera}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => galleryInputRef.current?.click()}
-                  className={`min-h-[54px] px-4 text-sm font-semibold ${
-                    isContrastSurface ? "ui-button-secondary-contrast" : "ui-button-secondary-soft"
-                  }`}
-                >
-                  {hasPreview ? t.change : t.gallery}
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <input
