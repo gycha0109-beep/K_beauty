@@ -94,7 +94,7 @@ export default function PhotoUploadStep({
                 </div>
 
                 <div className="flex w-full justify-center pt-2 sm:pt-4">
-                  <div className="mx-auto w-[90%] max-w-none sm:w-full sm:max-w-[18rem]">
+                  <div className="mx-auto w-full max-w-md">
                     <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
                       <img
                         src={previewUrl}
