@@ -209,12 +209,12 @@ function FaceLabComposerCard({ locale = "ko", previewUrl, onImageChange }) {
 
           {hasPreview ? (
             <div className="flex w-full justify-center pt-4">
-              <div className="w-full max-w-[18rem]">
+              <div className="mx-auto w-full max-w-[18rem]">
                 <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
                   <img
                     src={previewUrl}
                     alt={t.previewAlt}
-                    className="block h-full w-full object-contain object-center"
+                    className="mx-auto block h-full w-full object-contain object-center"
                   />
                 </div>
               </div>

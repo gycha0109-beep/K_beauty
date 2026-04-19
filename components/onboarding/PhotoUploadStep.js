@@ -85,13 +85,13 @@ export default function PhotoUploadStep({
               <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
               <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-3 sm:p-4">
                 <div className="flex w-full justify-center">
-                  <div className="w-full max-w-[18rem]">
+                  <div className="mx-auto w-full max-w-[18rem]">
                     <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
-                    <img
-                      src={previewUrl}
-                      alt={t.previewAlt}
-                      className="block h-full w-full object-contain object-center"
-                    />
+                      <img
+                        src={previewUrl}
+                        alt={t.previewAlt}
+                        className="mx-auto block h-full w-full object-contain object-center"
+                      />
                     </div>
                   </div>
                 </div>
