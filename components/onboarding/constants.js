@@ -1,6 +1,7 @@
 export const INITIAL_FORM = {
   skinType: "",
   sensitivity: "",
+  genderPreference: "unspecified",
   mainConcern: "",
   mainConcerns: [],
   cleansingFrequency: "",
@@ -90,7 +91,6 @@ export const ONBOARDING_COPY = {
       errorLoad: "Face Lab 결과를 불러오지 못했습니다."
     },
     topActions: {
-      test: "테스트",
       faceLab: "Face Lab",
       skinMatch: "Skin Match"
     },
@@ -109,14 +109,6 @@ export const ONBOARDING_COPY = {
       completeBasicSurvey: "핵심 질문을 먼저 선택해주세요.",
       analyzeFailed: "결과 생성에 실패했습니다.",
       unexpected: "예상하지 못한 오류가 발생했습니다."
-    },
-    skinPresetLabels: {
-      "oily-quick": "지성 / 유분 / 끈적임 싫음",
-      "dry-cream": "건성 / 건조 / 크림 선호"
-    },
-    facePresetLabels: {
-      "sharp-leader": "가상 결과: 선명한 리더형",
-      "friendly-coordinator": "가상 결과: 친화적 조율형"
     },
     faceLabUi: {
       headline: "핵심 인상",
@@ -240,6 +232,7 @@ export const ONBOARDING_COPY = {
       description: "These answers shape the result the most.",
       skinType: "Skin type",
       sensitivity: "Sensitivity",
+      genderPreference: "Gender (optional)",
       mainConcern: "Main concern",
       multiSelectHint: "Multiple selection allowed"
     },
@@ -269,7 +262,6 @@ export const ONBOARDING_COPY = {
       errorLoad: "Could not load the Face Lab result."
     },
     topActions: {
-      test: "Test",
       faceLab: "Face Lab",
       skinMatch: "Skin Match"
     },
@@ -288,14 +280,6 @@ export const ONBOARDING_COPY = {
       completeBasicSurvey: "Please answer the core questions first.",
       analyzeFailed: "Failed to generate the result.",
       unexpected: "Something unexpected went wrong."
-    },
-    skinPresetLabels: {
-      "oily-quick": "Oily / oil control / hates stickiness",
-      "dry-cream": "Dry / dehydration / prefers cream"
-    },
-    facePresetLabels: {
-      "sharp-leader": "Sample: sharp leader",
-      "friendly-coordinator": "Sample: friendly coordinator"
     },
     faceLabUi: {
       headline: "Headline",
@@ -325,6 +309,11 @@ export const ONBOARDING_COPY = {
         dry: "Dry",
         combination: "Combination",
         not_sure: "Not sure"
+      },
+      genderPreference: {
+        female: "Female",
+        male: "Male",
+        unspecified: "Prefer not to say"
       },
       sensitivity: {
         low: "Low",
@@ -384,6 +373,7 @@ export const ONBOARDING_COPY = {
 export const OPTION_SETS = {
   skinType: ["oily", "dry", "combination", "not_sure"],
   sensitivity: ["low", "medium", "high"],
+  genderPreference: ["female", "male", "unspecified"],
   mainConcern: ["oiliness", "dehydration", "acne", "uneven_tone", "pores", "redness", "barrier"],
   preferredTexture: ["gel", "watery", "lotion", "cream"],
   postWashFeeling: ["tight", "comfortable", "still_oily"],

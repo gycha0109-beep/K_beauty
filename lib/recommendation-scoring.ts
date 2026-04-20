@@ -44,6 +44,8 @@ export const TOP_PICK_SCORING_WEIGHTS = {
   verySensitiveHighRiskPenalty: -4,
   verySensitiveConcernBonus: 2,
   verySensitiveSafeBonus: 2,
+  femaleMensPenalty: -3,
+  maleMensBonus: 1,
 } as const;
 
 const CATEGORY_PRIORITY_BY_CONCERN: Record<string, Record<string, number>> = {
@@ -115,6 +117,7 @@ export type RecommendationAnswers = {
   skinType?: string | null;
   sensitivity?: string | null;
   sensitivityLevel?: string | null;
+  genderPreference?: "female" | "male" | "unspecified" | string | null;
   mainConcern?: string | null;
   mainConcerns?: string[] | null;
   concerns?: string[] | null;
@@ -137,6 +140,7 @@ export type RecommendationAnswers = {
 export type NormalizedRecommendationAnswers = {
   skinType: string | null;
   sensitivity: string | null;
+  genderPreference: "female" | "male" | "unspecified";
   mainConcern: string | null;
   mainConcerns: string[];
   preferredTexture: string | null;
@@ -157,6 +161,7 @@ export type CanonicalRecommendationProduct = {
   brand: string;
   category: string;
   recommendation_tier?: string | null;
+  is_mens?: boolean | null;
   skin_types?: string[] | null;
   concerns?: string[] | null;
   texture?: string | null;
@@ -184,6 +189,7 @@ export type MatchedSignals = {
   disliked_feel_conflict: boolean;
   outdoor_sunscreen_bonus: number;
   very_sensitive_period_bonus: number;
+  gender_preference_adjustment: number;
 };
 
 export type ScoreBreakdown = {
@@ -193,6 +199,7 @@ export type ScoreBreakdown = {
   concerns_overlap: number;
   category_priority: number;
   recommendation_tier_penalty: number;
+  gender_preference_adjustment: number;
   irritation_penalty: number;
   sensitivity_safe_bonus: number;
   texture_match: number;
@@ -281,6 +288,16 @@ function getSkinTypeLabel(skinType: string | null | undefined): string {
   return SKIN_TYPE_LABELS[skinType || ""] || skinType || "현재 피부";
 }
 
+function normalizeGenderPreference(
+  value: RecommendationAnswers["genderPreference"],
+): "female" | "male" | "unspecified" {
+  if (value === "female" || value === "male") {
+    return value;
+  }
+
+  return "unspecified";
+}
+
 export function normalizeRecommendationAnswers(
   answers: RecommendationAnswers,
 ): NormalizedRecommendationAnswers {
@@ -294,6 +311,7 @@ export function normalizeRecommendationAnswers(
   return {
     skinType: normalizeString(answers.skinType),
     sensitivity: normalizeString(answers.sensitivityLevel || answers.sensitivity) || "medium",
+    genderPreference: normalizeGenderPreference(answers.genderPreference),
     mainConcern: mainConcerns[0] || null,
     mainConcerns,
     preferredTexture:
@@ -491,6 +509,25 @@ function getRecommendationTierPenalty(product: CanonicalRecommendationProduct): 
   return product.recommendation_tier === "Tier2"
     ? TOP_PICK_SCORING_WEIGHTS.tier2Penalty
     : 0;
+}
+
+function getGenderPreferenceAdjustment(
+  answers: NormalizedRecommendationAnswers,
+  product: CanonicalRecommendationProduct,
+): number {
+  if (product.is_mens !== true) {
+    return 0;
+  }
+
+  if (answers.genderPreference === "female") {
+    return TOP_PICK_SCORING_WEIGHTS.femaleMensPenalty;
+  }
+
+  if (answers.genderPreference === "male") {
+    return TOP_PICK_SCORING_WEIGHTS.maleMensBonus;
+  }
+
+  return 0;
 }
 
 function hasExplicitSunscreenIntent(answers: NormalizedRecommendationAnswers): boolean {
@@ -812,6 +849,7 @@ export function scoreCanonicalProduct(
   const finishMatch = preferredFinishes.includes(normalizeCanonicalFinish(product.finish as string));
   const dislikedFeelPenalty = getDislikedFeelPenalty(product, answers.mostDislikedFeel);
   const recommendationTierPenalty = getRecommendationTierPenalty(product);
+  const genderPreferenceAdjustment = getGenderPreferenceAdjustment(answers, product);
   const postCleanseAdjustment = getPostCleanseAdjustment(product, answers);
   const afternoonStateAdjustment = getAfternoonStateAdjustment(
     product,
@@ -835,6 +873,7 @@ export function scoreCanonicalProduct(
       concernMatch.primaryConcernMatch + concernMatch.secondaryConcernMatch,
     category_priority: categoryPriority * TOP_PICK_SCORING_WEIGHTS.categoryPriorityUnit,
     recommendation_tier_penalty: recommendationTierPenalty,
+    gender_preference_adjustment: genderPreferenceAdjustment,
     irritation_penalty: getIrritationPenalty(answers, irritationRisk),
     sensitivity_safe_bonus: getSensitivitySafeBonus(answers, sensitivitySafe),
     texture_match: getTextureScore(textureMatch),
@@ -852,6 +891,7 @@ export function scoreCanonicalProduct(
     breakdown.concerns_overlap +
     breakdown.category_priority +
     breakdown.recommendation_tier_penalty +
+    breakdown.gender_preference_adjustment +
     breakdown.irritation_penalty +
     breakdown.sensitivity_safe_bonus +
     breakdown.texture_match +
@@ -879,6 +919,7 @@ export function scoreCanonicalProduct(
     disliked_feel_conflict: dislikedFeelPenalty < 0,
     outdoor_sunscreen_bonus: outdoorSunscreenBonus,
     very_sensitive_period_bonus: verySensitivePeriodBonus,
+    gender_preference_adjustment: genderPreferenceAdjustment,
   };
 
   return {
@@ -936,52 +977,4 @@ export function compareRankedProducts(
   }
 
   return left.name.localeCompare(right.name);
-}
-
-export function buildSampleScoringInput(): {
-  answers: RecommendationAnswers;
-  products: CanonicalRecommendationProduct[];
-} {
-  return {
-    answers: {
-      skinType: "combination",
-      sensitivityLevel: "high",
-      mainConcerns: ["redness", "barrier"],
-      texturePreference: "gel",
-      postCleanseFeel: "tight",
-      afternoonState: "red_or_irritated",
-      dislikedFeel: "sticky",
-      environmentExposure: ["mask"],
-      verySensitivePeriod: true,
-      cleansingFrequency: "2",
-    },
-    products: [
-      {
-        id: "sample-toner",
-        name: "Calming Balance Toner",
-        brand: "Sample Lab",
-        category: "toner_essence",
-        skin_types: ["combination", "sensitive"],
-        concerns: ["redness", "barrier"],
-        texture: "gel",
-        finish: "natural",
-        irritation_risk: "low",
-        sensitivity_safe: true,
-        is_kbeauty: true,
-      },
-      {
-        id: "sample-serum",
-        name: "Daily Trouble Serum",
-        brand: "Sample Lab",
-        category: "serum",
-        skin_types: ["oily", "combination"],
-        concerns: ["acne", "redness"],
-        texture: "watery",
-        finish: "fresh",
-        irritation_risk: "medium",
-        sensitivity_safe: false,
-        is_kbeauty: true,
-      },
-    ],
-  };
 }

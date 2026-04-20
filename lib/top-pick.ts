@@ -2,11 +2,8 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   TOP_PICK_SCORING_WEIGHTS,
-  buildSampleScoringInput,
   compareRankedProducts,
   normalizeRecommendationAnswers,
-  normalizeCanonicalFinish,
-  normalizeCanonicalTexture,
   scoreCanonicalProduct,
   type CanonicalRecommendationProduct,
   type RankedRecommendationProduct,
@@ -199,17 +196,3 @@ export function buildTopPickBundleFromProducts(
     },
   };
 }
-
-export function buildSampleTopPickSelection() {
-  const { answers, products } = buildSampleScoringInput();
-  return buildTopPickBundleFromProducts(answers, products, {
-    includeAlternative: true,
-  });
-}
-
-export {
-  CATEGORY_LABELS,
-  CATEGORY_ORDER,
-  normalizeCanonicalFinish,
-  normalizeCanonicalTexture,
-};

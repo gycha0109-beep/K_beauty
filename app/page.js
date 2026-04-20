@@ -3,19 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import FaceLab from "@/components/FaceLab";
 import BottomCTA from "@/components/onboarding/BottomCTA";
 import ProgressDots from "@/components/onboarding/ProgressDots";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import BasicSurveyStep from "@/components/onboarding/BasicSurveyStep";
 import ExtraSurveyStep from "@/components/onboarding/ExtraSurveyStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
-import {
-  FACE_LAB_TEST_PRESETS,
-  TEST_RESULT_PRESETS,
-  getFaceLabTestPreset,
-  getTestResultPreset
-} from "@/lib/test-result-presets";
+import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
 import {
   INITIAL_FORM,
   ONBOARDING_COPY,
@@ -35,6 +29,7 @@ function buildCompleteForm(form = {}) {
 
   return {
     ...form,
+    genderPreference: form.genderPreference || "unspecified",
     mainConcern: form.mainConcern || mainConcerns[0] || "",
     mainConcerns,
     cleansingFrequency: form.cleansingFrequency || OPTIONAL_DEFAULTS.cleansingFrequency,
@@ -75,14 +70,41 @@ function fileToDataUrl(file) {
   });
 }
 
+async function requestFaceLabResult(file, locale) {
+  const payload = new FormData();
+  payload.append("image", file);
+  payload.append("locale", locale);
+
+  try {
+    const response = await fetch("/api/face-reading", {
+      method: "POST",
+      body: payload
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("[onboarding] face lab request failed", error);
+    return null;
+  }
+}
+
 export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = pathname?.startsWith("/en") ? "en" : "ko";
   const copy = ONBOARDING_COPY[locale] || ONBOARDING_COPY.ko;
   const analyzeStartedRef = useRef(false);
+  const devMenuCopy = locale === "en"
+    ? { toggle: "Test", skin: "Skin Match" }
+    : { toggle: "테스트", skin: "Skin Match" };
 
-  const [mode, setMode] = useState("skin");
+  const [isDevMode, setIsDevMode] = useState(false);
   const [showTestMenu, setShowTestMenu] = useState(false);
   const [currentStep, setCurrentStep] = useState("photo");
   const [form, setForm] = useState(INITIAL_FORM);
@@ -90,9 +112,15 @@ export default function HomePage() {
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [faceLabLoading, setFaceLabLoading] = useState(false);
-  const [faceLabError, setFaceLabError] = useState("");
-  const [faceLabResult, setFaceLabResult] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    setIsDevMode(params.get("dev") === "1");
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -103,12 +131,12 @@ export default function HomePage() {
   }, [previewUrl]);
 
   useEffect(() => {
-    if (currentStep !== "loading" || mode !== "skin") {
+    if (currentStep !== "loading") {
       analyzeStartedRef.current = false;
       return;
     }
 
-    if (analyzeStartedRef.current) {
+    if (analyzeStartedRef.current || !imageFile) {
       return;
     }
 
@@ -123,17 +151,18 @@ export default function HomePage() {
         setIsSubmitting(true);
         clearWriteAccessToken();
 
-        const payload = new FormData();
-        payload.append("image", imageFile);
+        const analyzePayload = new FormData();
+        analyzePayload.append("image", imageFile);
 
         Object.entries(completedForm).forEach(([key, value]) => {
-          payload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
+          analyzePayload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
         });
-        payload.append("locale", locale);
+        analyzePayload.append("locale", locale);
 
+        const faceLabPromise = requestFaceLabResult(imageFile, locale);
         const response = await fetch("/api/analyze", {
           method: "POST",
-          body: payload
+          body: analyzePayload
         });
 
         const data = await response.json().catch(() => null);
@@ -144,7 +173,10 @@ export default function HomePage() {
 
         writeWriteAccessToken(data.writeAccessToken);
 
-        const imagePreviewDataUrl = await imagePreviewDataUrlPromise;
+        const [imagePreviewDataUrl, faceLabResult] = await Promise.all([
+          imagePreviewDataUrlPromise,
+          faceLabPromise
+        ]);
 
         sessionStorage.setItem(
           "skinTestSubmission",
@@ -155,7 +187,10 @@ export default function HomePage() {
             locale
           })
         );
-        sessionStorage.setItem("skinTestResult", JSON.stringify(data));
+        sessionStorage.setItem(
+          "skinTestResult",
+          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult } : data)
+        );
 
         const elapsed = Date.now() - startedAt;
         const minimumLoading = 1800;
@@ -175,7 +210,7 @@ export default function HomePage() {
     };
 
     void runAnalyze();
-  }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentStep, form, imageFile, locale, mode, router]);
+  }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentStep, form, imageFile, locale, router]);
 
   const progress = useMemo(() => {
     const index = PROGRESS_STEPS.indexOf(currentStep);
@@ -236,16 +271,12 @@ export default function HomePage() {
       setImageFile(null);
       setPreviewUrl("");
       setError("");
-      setFaceLabError("");
-      setFaceLabResult(null);
       return;
     }
 
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setError("");
-    setFaceLabError("");
-    setFaceLabResult(null);
   };
 
   const clearImage = () => {
@@ -256,8 +287,6 @@ export default function HomePage() {
     setImageFile(null);
     setPreviewUrl("");
     setError("");
-    setFaceLabError("");
-    setFaceLabResult(null);
   };
 
   const goToStep = (nextStep) => {
@@ -306,66 +335,6 @@ export default function HomePage() {
     goToStep("loading");
   };
 
-  const handleOpenFaceLab = () => {
-    setMode("face-lab");
-    setShowTestMenu(false);
-  };
-
-  const handleOpenSkin = () => {
-    setMode("skin");
-    setCurrentStep("photo");
-    setShowTestMenu(false);
-  };
-
-  const handleFaceLabAnalyze = async () => {
-    if (!imageFile) {
-      setFaceLabError(copy.errors.needPhoto);
-      return;
-    }
-
-    setFaceLabError("");
-    setFaceLabLoading(true);
-
-    try {
-      const payload = new FormData();
-      payload.append("image", imageFile);
-      payload.append("locale", locale);
-
-      const response = await fetch("/api/face-reading", {
-        method: "POST",
-        body: payload
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok || !data) {
-        throw new Error(copy.faceLab.errorLoad);
-      }
-
-      setFaceLabResult(data);
-    } catch (requestError) {
-      console.error("[face-lab] analyze failed", requestError);
-      setFaceLabResult(null);
-      setFaceLabError(requestError.message || copy.faceLab.errorLoad);
-    } finally {
-      setFaceLabLoading(false);
-    }
-  };
-
-  const handleFaceLabPresetPreview = (presetId) => {
-    const preset = getFaceLabTestPreset(presetId);
-
-    if (!preset?.result) {
-      setFaceLabError(copy.faceLab.errorLoad);
-      return;
-    }
-
-    setMode("face-lab");
-    setFaceLabError("");
-    setFaceLabResult(preset.result);
-    setShowTestMenu(false);
-  };
-
   const handleSkinPresetPreview = (presetId) => {
     const preset = getTestResultPreset(presetId);
 
@@ -373,33 +342,19 @@ export default function HomePage() {
       return;
     }
 
+    const faceLabPreset = getFaceLabTestPreset("friendly-coordinator");
+
     clearWriteAccessToken();
     sessionStorage.setItem("skinTestSubmission", JSON.stringify(preset.submission));
-    sessionStorage.setItem("skinTestResult", JSON.stringify(preset.result));
+    sessionStorage.setItem(
+      "skinTestResult",
+      JSON.stringify(faceLabPreset?.result ? { ...preset.result, faceLab: faceLabPreset.result } : preset.result)
+    );
     setShowTestMenu(false);
     router.push(locale === "en" ? "/en/result" : "/result");
   };
 
   const renderStep = () => {
-    if (mode === "face-lab") {
-      return (
-        <FaceLab
-          locale={locale}
-          copy={copy}
-          imageFile={imageFile}
-          previewUrl={previewUrl}
-          onImageChange={handleImageChange}
-          onClearImage={clearImage}
-          presets={FACE_LAB_TEST_PRESETS}
-          onPresetPreview={handleFaceLabPresetPreview}
-          faceLabResult={faceLabResult}
-          faceLabError={faceLabError}
-          faceLabLoading={faceLabLoading}
-          onAnalyze={handleFaceLabAnalyze}
-        />
-      );
-    }
-
     if (currentStep === "photo") {
       return (
         <PhotoUploadStep
@@ -441,9 +396,8 @@ export default function HomePage() {
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
 
-  const showProgress = mode === "skin" && currentStep !== "photo";
-  const showBottomCta = mode === "skin" && currentStep !== "loading";
-  const showFaceLabBottomCta = mode === "face-lab" && !faceLabResult;
+  const showProgress = currentStep !== "photo";
+  const showBottomCta = currentStep !== "loading";
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
@@ -469,60 +423,31 @@ export default function HomePage() {
           </div>
 
           <div className="relative flex items-center gap-2">
-            {mode !== "face-lab" ? (
+            {isDevMode ? (
               <button
                 type="button"
                 onClick={() => setShowTestMenu((current) => !current)}
                 className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
               >
-                {copy.topActions.test}
+                {devMenuCopy.toggle}
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={mode === "face-lab" ? handleOpenSkin : handleOpenFaceLab}
-              className="ui-button-secondary-soft px-3 py-1.5 text-xs font-medium"
-            >
-              {mode === "face-lab" ? copy.topActions.skinMatch : copy.topActions.faceLab}
-            </button>
 
-            {mode !== "face-lab" && showTestMenu ? (
+            {isDevMode && showTestMenu ? (
               <div className="ui-popover absolute right-0 top-11 z-20 w-[280px] p-3">
-                <div className="space-y-3">
-                  <div>
-                    <p className="ui-kicker px-1">
-                      Skin Match
-                    </p>
-                    <div className="mt-2 space-y-2">
-                      {TEST_RESULT_PRESETS.map((preset) => (
-                        <button
-                          key={`skin-preset-${preset.id}`}
-                          type="button"
-                          onClick={() => handleSkinPresetPreview(preset.id)}
-                          className="ui-button-secondary-muted w-full rounded-2xl px-3 py-3 text-left text-sm font-medium"
-                        >
-                          {copy.skinPresetLabels?.[preset.id] || preset.summaryLabel}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="ui-kicker px-1">
-                      Face Lab
-                    </p>
-                    <div className="mt-2 space-y-2">
-                      {FACE_LAB_TEST_PRESETS.map((preset) => (
-                        <button
-                          key={`face-preset-${preset.id}`}
-                          type="button"
-                          onClick={() => handleFaceLabPresetPreview(preset.id)}
-                          className="ui-button-secondary-muted w-full rounded-2xl px-3 py-3 text-left text-sm font-medium"
-                        >
-                          {copy.facePresetLabels?.[preset.id] || preset.buttonLabel}
-                        </button>
-                      ))}
-                    </div>
+                <div>
+                  <p className="ui-kicker px-1">{devMenuCopy.skin}</p>
+                  <div className="mt-2 space-y-2">
+                    {TEST_RESULT_PRESETS.map((preset) => (
+                      <button
+                        key={`skin-preset-${preset.id}`}
+                        type="button"
+                        onClick={() => handleSkinPresetPreview(preset.id)}
+                        className="ui-button-secondary-muted w-full rounded-2xl px-3 py-3 text-left text-sm font-medium"
+                      >
+                        {preset.summaryLabel}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -536,7 +461,7 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        <div key={`${mode}-${currentStep}`} className="step-enter flex flex-1 flex-col">
+        <div key={currentStep} className="step-enter flex flex-1 flex-col">
           {renderStep()}
         </div>
       </div>
@@ -566,14 +491,6 @@ export default function HomePage() {
           onSecondary={handleBack}
           tertiaryLabel={currentStep === "extra" ? copy.cta.skip : null}
           onTertiary={currentStep === "extra" ? handleSkipExtra : null}
-        />
-      ) : null}
-
-      {showFaceLabBottomCta ? (
-        <BottomCTA
-          primaryLabel={copy.faceLabButton}
-          onPrimary={handleFaceLabAnalyze}
-          primaryDisabled={!imageFile || faceLabLoading}
         />
       ) : null}
 

@@ -364,9 +364,10 @@ function applyExplanationBundle(recommendation, explanationItems) {
 
 function buildUserContext(formInput, locale = "ko") {
   const labels = locale === "en"
-    ? {
+      ? {
         skinType: "Skin type",
         sensitivity: "Sensitivity",
+        gender: "Gender preference",
         concern: "Main concern",
         cleansing: "Cleansing frequency",
         texture: "Preferred texture",
@@ -378,11 +379,17 @@ function buildUserContext(formInput, locale = "ko") {
         sensitivePeriod: "Very sensitive period",
         none: "None",
         yes: "Yes",
-        no: "No"
+        no: "No",
+        genderValues: {
+          female: "Female",
+          male: "Male",
+          unspecified: "Unspecified"
+        }
       }
     : {
         skinType: "피부 타입",
         sensitivity: "민감도",
+        gender: "성별 선택",
         concern: "주요 고민",
         cleansing: "세안 빈도",
         texture: "선호 제형",
@@ -394,7 +401,12 @@ function buildUserContext(formInput, locale = "ko") {
         sensitivePeriod: "매우 예민한 시기",
         none: "없음",
         yes: "예",
-        no: "아니오"
+        no: "아니오",
+        genderValues: {
+          female: "여성",
+          male: "남성",
+          unspecified: "선택 안 함"
+        }
       };
   const mainConcerns = Array.isArray(formInput.mainConcerns) && formInput.mainConcerns.length
     ? formInput.mainConcerns.join(", ")
@@ -403,6 +415,7 @@ function buildUserContext(formInput, locale = "ko") {
   return [
     `- ${labels.skinType}: ${formInput.skinType}`,
     `- ${labels.sensitivity}: ${formInput.sensitivity}`,
+    `- ${labels.gender}: ${labels.genderValues?.[formInput.genderPreference] || formInput.genderPreference || labels.none}`,
     `- ${labels.concern}: ${mainConcerns}`,
     `- ${labels.cleansing}: ${formInput.cleansingFrequency}`,
     `- ${labels.texture}: ${formInput.preferredTexture}`,
@@ -455,6 +468,7 @@ export async function POST(request) {
     const skinType = formData.get("skinType");
     const sensitivity =
       formData.get("sensitivityLevel") || formData.get("sensitivity");
+    const genderPreference = formData.get("genderPreference");
     const mainConcern = formData.get("mainConcern");
     const mainConcerns = parseJsonArrayField(formData.get("mainConcerns"));
     const cleansingFrequency = formData.get("cleansingFrequency");
@@ -506,6 +520,10 @@ export async function POST(request) {
     const formInput = {
       skinType,
       sensitivity,
+      genderPreference:
+        typeof genderPreference === "string" && genderPreference
+          ? genderPreference
+          : "unspecified",
       mainConcern: resolvedMainConcern,
       mainConcerns: mainConcerns.length ? mainConcerns : undefined,
       cleansingFrequency,

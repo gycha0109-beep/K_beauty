@@ -61,6 +61,12 @@ function MultiChoiceGroup({ label, values = [], options, optionLabels, onToggle,
 
 export default function BasicSurveyStep({ copy, form, onFieldChange, onMainConcernToggle, error }) {
   const labels = copy.optionLabels;
+  const genderLabel = copy.basic.genderPreference || "성별 (선택)";
+  const genderOptionLabels = labels.genderPreference || {
+    female: "여성",
+    male: "남성",
+    unspecified: "선택 안 함"
+  };
 
   return (
     <section className="flex flex-1 flex-col pt-6">
@@ -91,6 +97,14 @@ export default function BasicSurveyStep({ copy, form, onFieldChange, onMainConce
           value={form.sensitivity}
           options={OPTION_SETS.sensitivity}
           optionLabels={labels.sensitivity}
+          onChange={onFieldChange}
+        />
+        <ChoiceGroup
+          label={genderLabel}
+          name="genderPreference"
+          value={form.genderPreference || "unspecified"}
+          options={OPTION_SETS.genderPreference}
+          optionLabels={genderOptionLabels}
           onChange={onFieldChange}
         />
         <MultiChoiceGroup

@@ -5,13 +5,12 @@ import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import RecommendedProductsStep from "@/components/result/RecommendedProductsStep";
+import FaceShapePreviewCard from "@/components/result/FaceShapePreviewCard";
+import PremiumReportCard from "@/components/result/PremiumReportCard";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
-import RoutineGuideStep from "@/components/result/RoutineGuideStep";
-import TipsStep from "@/components/result/TipsStep";
 import TopPickStep from "@/components/result/TopPickStep";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
@@ -70,19 +69,6 @@ const topPickHeadlineMap = {
     redness: "The first product to calm visibly reactive skin",
     barrier: "The first product to use when your barrier feels shaky"
   }
-};
-
-const feedbackQuestionMap = {
-  ko: [
-    { id: "overall_satisfaction", text: "결과가 전반적으로 만족스러우셨나요?" },
-    { id: "easy_to_understand", text: "추천 구성이 이해하기 쉬웠나요?" },
-    { id: "reuse_intent", text: "이 서비스를 다시 사용할 의향이 있으신가요?" }
-  ],
-  en: [
-    { id: "overall_satisfaction", text: "Were you satisfied with the overall result?" },
-    { id: "easy_to_understand", text: "Was the recommendation easy to understand?" },
-    { id: "reuse_intent", text: "Would you use this service again?" }
-  ]
 };
 
 const resultCopy = {
@@ -159,8 +145,16 @@ const resultCopy = {
     resultOverviewBody: "먼저 내 피부 결과를 한눈에 볼 수 있게 짧게 정리했습니다.",
     resultPhotoFallback: "업로드한 사진",
     topPickStepKicker: "RESULT STEP 2",
-    topPickStepTitle: "당신을 위한 Top Pick",
-    topPickStepBody: "지금 가장 먼저 바꾸면 체감 차이가 큰 제품입니다.",
+    topPickStepTitle: "무료 결과 미리보기",
+    topPickStepBody: "Top Pick을 먼저 보고, 다음 탭에서 얼굴형 분석까지 이어서 확인하세요.",
+    topPickTabLabel: "Top Pick",
+    faceShapeTabLabel: "얼굴형 분석",
+    faceShapeFreeKicker: "FACE LAB",
+    faceShapeFreeTitle: "얼굴형 분석",
+    faceShapeLabel: "얼굴형",
+    faceShapeSummaryLabel: "한 줄 분석",
+    faceShapeTagsLabel: "보이는 특징",
+    faceShapeEmpty: "얼굴형 분석을 아직 불러오지 못했습니다.",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "함께 쓰면 좋은 추천",
     recommendedStepBody: "가볍게 넘겨보면서 루틴에 붙일 만한 제품만 빠르게 확인하세요.",
@@ -179,7 +173,11 @@ const resultCopy = {
     ctaViewTips: "주의사항 및 사용 팁 보기",
     ctaLeaveFeedback: "피드백 남기기",
     backHome: "처음으로 돌아가기",
-    topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다."
+    topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다.",
+    premiumCardKicker: "FULL REPORT",
+    premiumCardTitle: "이 결과를 실제 루틴으로 정리해볼까요?",
+    premiumCardBody: "무료 결과는 여기까지 가볍게 확인하고, 다음 단계부터는 바로 실행 가능한 전체 리포트로 정리됩니다.",
+    premiumCardButton: "전체 리포트 보기 (₩3,900)"
   },
   en: {
     loading: "Loading your result...",
@@ -254,8 +252,16 @@ const resultCopy = {
     resultOverviewBody: "Start with a short summary of how this result connects to your skin.",
     resultPhotoFallback: "Uploaded photo",
     topPickStepKicker: "RESULT STEP 2",
-    topPickStepTitle: "Your Top Pick",
-    topPickStepBody: "This is the product most likely to create the clearest first difference.",
+    topPickStepTitle: "Free Result Preview",
+    topPickStepBody: "Start with the Top Pick, then move to the next tab for your face-shape read.",
+    topPickTabLabel: "Top Pick",
+    faceShapeTabLabel: "Face Shape",
+    faceShapeFreeKicker: "FACE LAB",
+    faceShapeFreeTitle: "Face Shape Analysis",
+    faceShapeLabel: "Face shape",
+    faceShapeSummaryLabel: "One-line read",
+    faceShapeTagsLabel: "Visible features",
+    faceShapeEmpty: "Could not load the face-shape analysis yet.",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "Also Worth Using",
     recommendedStepBody: "Swipe through the lighter supporting picks for the rest of your routine.",
@@ -274,7 +280,11 @@ const resultCopy = {
     ctaViewTips: "See Tips",
     ctaLeaveFeedback: "Leave Feedback",
     backHome: "Back to Home",
-    topPickEmpty: "Could not load the Top Pick product."
+    topPickEmpty: "Could not load the Top Pick product.",
+    premiumCardKicker: "FULL REPORT",
+    premiumCardTitle: "Ready to turn this result into a practical routine?",
+    premiumCardBody: "The free result stops here. The next step expands into a full report you can actually follow.",
+    premiumCardButton: "View Full Report (₩3,900)"
   }
 };
 
@@ -351,10 +361,6 @@ function getResultCopy(locale = "ko") {
 
 function getDisplayMap(locale = "ko") {
   return displayMap[locale] || displayMap.ko;
-}
-
-function getFeedbackQuestions(locale = "ko") {
-  return feedbackQuestionMap[locale] || feedbackQuestionMap.ko;
 }
 
 function getConcernDisplay(form = {}, locale = "ko") {
@@ -957,22 +963,15 @@ function ResultContent() {
   const locale = getLocaleFromPathname(pathname);
   const copy = getResultCopy(locale);
   const display = getDisplayMap(locale);
-  const feedbackQuestions = getFeedbackQuestions(locale);
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
-  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0);
-  const [feedback, setFeedback] = useState({});
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState({});
-  const [feedbackComplete, setFeedbackComplete] = useState(false);
+  const [activeFreeTab, setActiveFreeTab] = useState("top-pick");
   const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
   const error = searchParams.get("error");
-  const totalResultSteps = 5;
   const homePath = getHomePath(locale);
   const localizedPath = getLocalePath(pathname, locale);
-  const yesLabel = locale === "en" ? "Yes" : "예";
-  const noLabel = locale === "en" ? "No" : "아니오";
 
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");
@@ -1023,42 +1022,6 @@ function ResultContent() {
     });
   }, [currentResultStep]);
 
-  function handleFeedback(answer) {
-    const currentQuestion = feedbackQuestions[currentFeedbackIndex];
-
-    if (!currentQuestion || feedbackSubmitted[currentQuestion.id]) {
-      return;
-    }
-
-    setFeedback((current) => ({
-      ...current,
-      [currentQuestion.id]: answer
-    }));
-    setFeedbackSubmitted((current) => ({
-      ...current,
-      [currentQuestion.id]: true
-    }));
-
-    trackEvent("feedback_response", {
-      product_id: result?.topPick?.id || null,
-      feature_name: "feedback",
-      result_type: "result_feedback",
-      is_top_pick: false,
-      question_id: currentQuestion.id,
-      answer,
-      meta_json: {
-        question_text: currentQuestion.text
-      }
-    });
-
-    if (currentFeedbackIndex === feedbackQuestions.length - 1) {
-      setFeedbackComplete(true);
-      return;
-    }
-
-    setCurrentFeedbackIndex((current) => current + 1);
-  }
-
   if (!isReady) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4 py-12">
@@ -1082,11 +1045,27 @@ function ResultContent() {
       value: getRoutineStructureLabel(result, locale)
     }
   ];
+  const topPickTabCard = result?.topPick ? (
+    <ProductDecisionCard
+      product={result.topPick}
+      featured
+      form={submission?.form}
+      locale={locale}
+      detailItems={profileSummaryItems}
+    />
+  ) : (
+    <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+      {copy.topPickEmpty}
+    </div>
+  );
+  const faceShapeTabCard = (
+    <FaceShapePreviewCard
+      copy={copy}
+      faceLab={result?.faceLab}
+    />
+  );
   const stepCtaLabels = [
     copy.ctaViewTopPick,
-    copy.ctaViewRecommended,
-    copy.ctaViewRoutine,
-    copy.ctaViewTips,
     null
   ];
   const resultSteps = result
@@ -1102,57 +1081,30 @@ function ResultContent() {
         <TopPickStep
           key="top-pick"
           copy={copy}
-          card={
-            result.topPick ? (
-              <ProductDecisionCard
-                product={result.topPick}
-                featured
-                form={submission?.form}
-                locale={locale}
-                detailItems={profileSummaryItems}
-              />
-            ) : (
-              <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                {copy.topPickEmpty}
-              </div>
-            )
-          }
-        />,
-        <RecommendedProductsStep
-          key="recommended"
-          copy={copy}
-          products={result.categoryPicks || []}
-          renderProduct={(product) => (
-            <ProductDecisionCard
-              product={product}
-              form={submission?.form}
+          tabs={[
+            {
+              id: "top-pick",
+              label: copy.topPickTabLabel,
+              content: topPickTabCard
+            },
+            {
+              id: "face-shape",
+              label: copy.faceShapeTabLabel,
+              content: faceShapeTabCard
+            }
+          ]}
+          activeTab={activeFreeTab}
+          onTabChange={setActiveFreeTab}
+          premiumCard={
+            <PremiumReportCard
+              copy={copy}
               locale={locale}
             />
-          )}
-        />,
-        <RoutineGuideStep
-          key="routine"
-          copy={copy}
-          locale={locale}
-          morning={result.morning || []}
-          night={result.night || []}
-          toRoutineAction={toRoutineAction}
-        />,
-        <TipsStep
-          key="tips"
-          copy={copy}
-          cautions={result.avoid || []}
-          insightDescription={result.funInsight?.description || ""}
-          feedbackQuestions={feedbackQuestions}
-          currentFeedbackIndex={currentFeedbackIndex}
-          feedback={feedback}
-          feedbackComplete={feedbackComplete}
-          yesLabel={yesLabel}
-          noLabel={noLabel}
-          onAnswer={handleFeedback}
+          }
         />
       ]
     : [];
+  const totalResultSteps = resultSteps.length;
   const activeResultStep = resultSteps[currentResultStep] || null;
   const showBottomCta = Boolean(result) && currentResultStep < totalResultSteps - 1;
 
