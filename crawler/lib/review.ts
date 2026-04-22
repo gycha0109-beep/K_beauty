@@ -9,7 +9,10 @@ import {
 export type ServiceCategory =
   | "cleanser"
   | "toner_essence"
+  | "essence"
   | "serum"
+  | "ampoule"
+  | "serum_ampoule"
   | "moisturizer"
   | "sunscreen";
 
@@ -98,7 +101,7 @@ type InferredPromotionProduct = {
 
 const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "skincare/toner": "toner_essence",
-  "skincare/serum": "serum",
+  "skincare/serum": "serum_ampoule",
   "skincare/cream": "moisturizer",
   "skincare/suncare": "sunscreen",
   "cleansing/cleansing": "cleanser",
@@ -109,9 +112,11 @@ const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; regex: RegExp }> =
     category: "sunscreen",
     regex: /\b(?:sunscreen|sun\s*cream|sun\s*screen|sunblock|uv|sun\s*essence|sun\s*stick|sun\s*pact|sun\s*cushion|tone[\s-]*up\s+sun)\b/i,
   },
-  { category: "serum", regex: /\b(?:serum|ampoule)\b/i },
+  { category: "ampoule", regex: /\bampoule\b/i },
+  { category: "serum", regex: /\bserum\b/i },
+  { category: "essence", regex: /\bessence\b/i },
   { category: "moisturizer", regex: /\b(?:cream|lotion|gel\s+cream)\b/i },
-  { category: "toner_essence", regex: /\b(?:toner|essence|skin)\b/i },
+  { category: "toner_essence", regex: /\b(?:toner|skin)\b/i },
   { category: "cleanser", regex: /\b(?:cleanser|cleansing|foam|wash)\b/i },
 ];
 
@@ -204,7 +209,22 @@ const SERVICE_CATEGORY_DEFAULTS: Record<ServiceCategory, { texture: string; fini
     finish: "natural",
     concerns: ["dehydration", "redness"],
   },
+  essence: {
+    texture: "watery",
+    finish: "natural",
+    concerns: ["dehydration", "uneven_tone"],
+  },
   serum: {
+    texture: "gel",
+    finish: "natural",
+    concerns: ["acne", "pores"],
+  },
+  ampoule: {
+    texture: "gel",
+    finish: "natural",
+    concerns: ["acne", "pores"],
+  },
+  serum_ampoule: {
     texture: "gel",
     finish: "natural",
     concerns: ["acne", "pores"],
@@ -270,6 +290,10 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
     return "toner_essence";
   }
 
+  if (normalized === "essence") {
+    return "essence";
+  }
+
   if (normalized === "cream") {
     return "moisturizer";
   }
@@ -278,7 +302,11 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
     return "sunscreen";
   }
 
-  if (["cleanser", "toner_essence", "serum", "moisturizer", "sunscreen"].includes(normalized)) {
+  if (
+    ["cleanser", "toner_essence", "essence", "serum", "ampoule", "serum_ampoule", "moisturizer", "sunscreen"].includes(
+      normalized,
+    )
+  ) {
     return normalized as ServiceCategory;
   }
 
@@ -300,6 +328,40 @@ function inferCategoryFromName(canonicalName: string): ServiceCategory | null {
 
   const uniqueMatches = Array.from(new Set(matchedCategories));
   return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+}
+
+function getServiceCategorySlot(category: ServiceCategory | null | undefined): ServiceCategory | null {
+  if (!category) {
+    return null;
+  }
+
+  if (["serum", "ampoule", "essence", "serum_ampoule"].includes(category)) {
+    return "serum";
+  }
+
+  return category;
+}
+
+function isCompatibleServiceCategory(
+  left: ServiceCategory | null | undefined,
+  right: ServiceCategory | null | undefined,
+): boolean {
+  if (!left || !right) {
+    return false;
+  }
+
+  return getServiceCategorySlot(left) === getServiceCategorySlot(right);
+}
+
+function resolveInitialServiceCategory(
+  pathCategory: ServiceCategory | null,
+  inferredNameCategory: ServiceCategory | null,
+): ServiceCategory | null {
+  if (pathCategory === "serum_ampoule" && inferredNameCategory && isCompatibleServiceCategory(pathCategory, inferredNameCategory)) {
+    return inferredNameCategory;
+  }
+
+  return pathCategory ?? inferredNameCategory;
 }
 
 function mapTexture(value: string | null | undefined): string | null {
@@ -588,7 +650,7 @@ export function prepareCandidateReview(
   const rawNormalizedBrand = normalizeBrandName(candidate.brand_name_raw);
   const pathCategory = mapCategoryFromPath(candidate.category_path);
   const inferredNameCategory = inferCategoryFromName(canonicalName);
-  const initialServiceCategory = pathCategory ?? inferredNameCategory;
+  const initialServiceCategory = resolveInitialServiceCategory(pathCategory, inferredNameCategory);
   const matchResult =
     canonicalName && canonicalBrand
       ? findBestProductMatch(products, {
@@ -609,7 +671,12 @@ export function prepareCandidateReview(
     reviewFlagSet.add("ambiguous_category");
   }
 
-  if (pathCategory && inferredNameCategory && pathCategory !== inferredNameCategory && matchResult.kind !== "exact") {
+  if (
+    pathCategory &&
+    inferredNameCategory &&
+    !isCompatibleServiceCategory(pathCategory, inferredNameCategory) &&
+    matchResult.kind !== "exact"
+  ) {
     reviewFlagSet.add("ambiguous_category");
   }
 

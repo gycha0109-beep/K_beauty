@@ -494,18 +494,20 @@ export async function upsertProductCandidates(
   let skippedCount = 0;
 
   for (const candidate of deduplicatedCandidates.values()) {
-    const { data: existing, error: lookupError } = await client
+    const { data: existingRows, error: lookupError } = await client
       .from("product_candidates")
       .select("id")
+      .eq("source_name", candidate.source_name)
+      .eq("category_path", candidate.category_path)
       .eq("normalized_name", candidate.normalized_name)
       .eq("normalized_brand", candidate.normalized_brand)
-      .maybeSingle();
+      .limit(1);
 
     if (lookupError) {
       throw new Error(`Failed to lookup product candidate: ${lookupError.message}`);
     }
 
-    if (existing) {
+    if ((existingRows?.length ?? 0) > 0) {
       skippedCount += 1;
       continue;
     }

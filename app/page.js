@@ -37,6 +37,10 @@ function buildCompleteForm(form = {}) {
     postWashFeeling: form.postWashFeeling || OPTIONAL_DEFAULTS.postWashFeeling,
     afternoonSkinChange: form.afternoonSkinChange || OPTIONAL_DEFAULTS.afternoonSkinChange,
     mostDislikedFeel: form.mostDislikedFeel || OPTIONAL_DEFAULTS.mostDislikedFeel,
+    whiteCastHate: Boolean(form.whiteCastHate),
+    toneUpWanted: Boolean(form.toneUpWanted),
+    makeupUse: Boolean(form.makeupUse),
+    eyeSensitive: Boolean(form.eyeSensitive),
     environmentExposure: Array.isArray(form.environmentExposure)
       ? form.environmentExposure
       : OPTIONAL_DEFAULTS.environmentExposure

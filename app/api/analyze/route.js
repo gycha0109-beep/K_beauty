@@ -375,6 +375,10 @@ function buildUserContext(formInput, locale = "ko") {
         afternoon: "Afternoon skin change",
         exposure: "Environment exposure",
         dislike: "Most disliked feel",
+        whiteCastHate: "White cast dislike",
+        toneUpWanted: "Tone-up wanted",
+        makeupUse: "Used with makeup",
+        eyeSensitive: "Eye sting sensitivity",
         outdoor: "Outdoor exposure context",
         sensitivePeriod: "Very sensitive period",
         none: "None",
@@ -397,6 +401,10 @@ function buildUserContext(formInput, locale = "ko") {
         afternoon: "오후 피부 변화",
         exposure: "환경 노출",
         dislike: "피하고 싶은 사용감",
+        whiteCastHate: "백탁 회피",
+        toneUpWanted: "톤업 필요",
+        makeupUse: "메이크업 병행",
+        eyeSensitive: "눈시림 민감",
         outdoor: "야외 노출 컨텍스트",
         sensitivePeriod: "매우 예민한 시기",
         none: "없음",
@@ -423,6 +431,10 @@ function buildUserContext(formInput, locale = "ko") {
     `- ${labels.afternoon}: ${formInput.afternoonSkinChange}`,
     `- ${labels.exposure}: ${(formInput.environmentExposure || []).join(", ") || labels.none}`,
     `- ${labels.dislike}: ${formInput.mostDislikedFeel}`,
+    `- ${labels.whiteCastHate}: ${formInput.whiteCastHate ? labels.yes : labels.no}`,
+    `- ${labels.toneUpWanted}: ${formInput.toneUpWanted ? labels.yes : labels.no}`,
+    `- ${labels.makeupUse}: ${formInput.makeupUse ? labels.yes : labels.no}`,
+    `- ${labels.eyeSensitive}: ${formInput.eyeSensitive ? labels.yes : labels.no}`,
     `- ${labels.outdoor}: ${formInput.outdoorExposure ? labels.yes : labels.no}`,
     `- ${labels.sensitivePeriod}: ${formInput.verySensitivePeriod ? labels.yes : labels.no}`
   ].join("\n");
@@ -481,6 +493,10 @@ export async function POST(request) {
     const environmentExposure = parseJsonArrayField(formData.get("environmentExposure"));
     const mostDislikedFeel =
       formData.get("dislikedFeel") || formData.get("mostDislikedFeel");
+    const whiteCastHate = parseBooleanField(formData.get("whiteCastHate"));
+    const toneUpWanted = parseBooleanField(formData.get("toneUpWanted"));
+    const makeupUse = parseBooleanField(formData.get("makeupUse"));
+    const eyeSensitive = parseBooleanField(formData.get("eyeSensitive"));
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
     const locale = formData.get("locale") === "en" ? "en" : "ko";
@@ -532,6 +548,10 @@ export async function POST(request) {
       afternoonSkinChange,
       environmentExposure,
       mostDislikedFeel,
+      whiteCastHate: Boolean(whiteCastHate),
+      toneUpWanted: Boolean(toneUpWanted),
+      makeupUse: Boolean(makeupUse),
+      eyeSensitive: Boolean(eyeSensitive),
       outdoorExposure:
         typeof outdoorExposure === "boolean"
           ? outdoorExposure

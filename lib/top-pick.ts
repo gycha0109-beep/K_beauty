@@ -2,12 +2,20 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   TOP_PICK_SCORING_WEIGHTS,
+  buildSunscreenExplanationContext,
   compareRankedProducts,
+  filterSunscreenCandidates,
+  matchesRecommendationCategorySlot,
   normalizeRecommendationAnswers,
+  pickTopSunscreen,
+  scoreSunscreenProduct,
   scoreCanonicalProduct,
   type CanonicalRecommendationProduct,
   type RankedRecommendationProduct,
   type RecommendationAnswers,
+  type SunscreenExplanationContext,
+  type SunscreenRankedProduct,
+  type SunscreenSelectionMeta,
 } from "@/lib/recommendation-scoring";
 
 type RecommendationBundleOptions = {
@@ -23,6 +31,9 @@ type DecoratedRecommendationProduct = RankedRecommendationProduct & {
     concern: string | null;
     preferredTexture: string | null;
     skinType: string | null;
+    sunscreen?: SunscreenExplanationContext & {
+      selection_meta?: SunscreenSelectionMeta | null;
+    };
   };
 };
 
@@ -100,11 +111,22 @@ function decorateProduct(
   answers: RecommendationAnswers,
   runnerUp: RankedRecommendationProduct | null,
   featured = false,
+  sunscreenSelectionMeta: SunscreenSelectionMeta | null = null,
 ): DecoratedRecommendationProduct {
   const normalizedAnswers = normalizeRecommendationAnswers(answers);
+  const {
+    sunscreen_debug: _sunscreenDebug,
+    sunscreen_selection_meta: productSelectionMeta,
+    ...safeProduct
+  } = product as SunscreenRankedProduct;
+  const resolvedSunscreenSelectionMeta = sunscreenSelectionMeta || productSelectionMeta || null;
+  const sunscreenContext =
+    product.category === "sunscreen"
+      ? buildSunscreenExplanationContext(product, normalizedAnswers)
+      : null;
 
   return {
-    ...product,
+    ...safeProduct,
     step: CATEGORY_LABELS[product.category] || product.category,
     labels: buildLabels(product, featured),
     reason: buildReason(product),
@@ -113,6 +135,14 @@ function decorateProduct(
       concern: normalizedAnswers.mainConcern || null,
       preferredTexture: normalizedAnswers.preferredTexture || null,
       skinType: normalizedAnswers.skinType || null,
+      ...(sunscreenContext
+        ? {
+            sunscreen: {
+              ...sunscreenContext,
+              selection_meta: resolvedSunscreenSelectionMeta,
+            },
+          }
+        : {}),
     },
   };
 }
@@ -137,11 +167,129 @@ function getCategoryRunnerUp(
   return (
     rankedProducts.find(
       (product) =>
-        product.category === category &&
+        matchesRecommendationCategorySlot(category, product.category) &&
         product.id !== winnerId &&
         product.id !== topPickId,
     ) || null
   );
+}
+
+function buildAltPickSummary(
+  topPick: RankedRecommendationProduct,
+  altPick: RankedRecommendationProduct | null,
+): SunscreenSelectionMeta["altPickSummary"] {
+  if (!altPick) {
+    return null;
+  }
+
+  return {
+    id: altPick.id,
+    name: altPick.name,
+    brand: altPick.brand,
+    uv_filter_type: altPick.uv_filter_type || null,
+    scoreGap: topPick.score - altPick.score,
+  };
+}
+
+function buildSunscreenCategoryWinner(
+  answers: RecommendationAnswers,
+  products: CanonicalRecommendationProduct[],
+  rankedProducts: RankedRecommendationProduct[],
+  excludedIds: Set<string>,
+  topPickId: string | null,
+): {
+  winner: RankedRecommendationProduct;
+  runnerUp: RankedRecommendationProduct | null;
+  selectionMeta: SunscreenSelectionMeta | null;
+} | null {
+  const availableProducts = products.filter(
+    (product) => product.category === "sunscreen" && !excludedIds.has(product.id),
+  );
+
+  if (availableProducts.length === 0) {
+    return null;
+  }
+
+  const normalizedAnswers = normalizeRecommendationAnswers(answers);
+  const filteredCandidates = filterSunscreenCandidates(availableProducts, normalizedAnswers);
+
+  if (filteredCandidates.strictCandidates.length > 0) {
+    const strictPick = pickTopSunscreen(
+      filteredCandidates.strictCandidates.map((product) =>
+        scoreSunscreenProduct(product, normalizedAnswers),
+      ),
+    );
+
+    if (strictPick.topPick) {
+      return {
+        winner: strictPick.topPick,
+        runnerUp:
+          strictPick.altPick ||
+          getCategoryRunnerUp(rankedProducts, "sunscreen", strictPick.topPick.id, topPickId),
+        selectionMeta: strictPick.meta,
+      };
+    }
+  }
+
+  if (filteredCandidates.penaltyOnlyCandidates.length > 0) {
+    const penaltyOnlyPick = pickTopSunscreen(
+      filteredCandidates.penaltyOnlyCandidates.map((product) =>
+        scoreSunscreenProduct(product, normalizedAnswers),
+      ),
+    );
+
+    if (penaltyOnlyPick.topPick) {
+      return {
+        winner: penaltyOnlyPick.topPick,
+        runnerUp:
+          penaltyOnlyPick.altPick ||
+          getCategoryRunnerUp(rankedProducts, "sunscreen", penaltyOnlyPick.topPick.id, topPickId),
+        selectionMeta: penaltyOnlyPick.meta,
+      };
+    }
+  }
+
+  const safetyRejectedIds = new Set(
+    filteredCandidates.rejected
+      .filter((product) =>
+        (product.sunscreen_debug?.hardRejectReasons || []).some((reason) =>
+          reason === "sensitive_high_irritation" || reason === "eye_sensitive_high_eye_sting",
+        ),
+      )
+      .map((product) => product.id),
+  );
+
+  const generalCandidates = rankedProducts.filter(
+    (product) =>
+      product.category === "sunscreen" &&
+      !excludedIds.has(product.id) &&
+      !safetyRejectedIds.has(product.id),
+  );
+  const generalTopPick = generalCandidates[0] || null;
+
+  if (!generalTopPick) {
+    return null;
+  }
+
+  const generalAltPick =
+    generalCandidates[1] &&
+    generalTopPick.score - generalCandidates[1].score <= 6 &&
+    Boolean(generalTopPick.uv_filter_type) &&
+    Boolean(generalCandidates[1].uv_filter_type) &&
+    generalTopPick.uv_filter_type !== generalCandidates[1].uv_filter_type
+      ? generalCandidates[1]
+      : null;
+
+  return {
+    winner: generalTopPick,
+    runnerUp:
+      generalAltPick ||
+      getCategoryRunnerUp(rankedProducts, "sunscreen", generalTopPick.id, topPickId),
+    selectionMeta: {
+      fallbackMode: "general",
+      altPickSummary: buildAltPickSummary(generalTopPick, generalAltPick),
+    },
+  };
 }
 
 export function buildTopPickBundleFromProducts(
@@ -157,8 +305,31 @@ export function buildTopPickBundleFromProducts(
   const excludedIds = new Set<string>(topPick ? [topPick.id] : []);
   const categoryPicks = CATEGORY_ORDER
     .map((category) => {
+      if (category === "sunscreen") {
+        const sunscreenSelection = buildSunscreenCategoryWinner(
+          answers,
+          products,
+          rankedProducts,
+          excludedIds,
+          topPick?.id || null,
+        );
+
+        if (!sunscreenSelection) {
+          return null;
+        }
+
+        excludedIds.add(sunscreenSelection.winner.id);
+        return decorateProduct(
+          sunscreenSelection.winner,
+          answers,
+          sunscreenSelection.runnerUp,
+          false,
+          sunscreenSelection.selectionMeta,
+        );
+      }
+
       const winner = rankedProducts.find(
-        (product) => product.category === category && !excludedIds.has(product.id),
+        (product) => matchesRecommendationCategorySlot(category, product.category) && !excludedIds.has(product.id),
       );
 
       if (!winner) {

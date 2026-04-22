@@ -27,6 +27,19 @@ function CompactChoiceGroup({ label, name, value, options, optionLabels, onChang
   );
 }
 
+function BooleanChoiceGroup({ label, name, value, optionLabels, onChange }) {
+  return (
+    <CompactChoiceGroup
+      label={label}
+      name={name}
+      value={String(Boolean(value))}
+      options={OPTION_SETS.booleanChoice}
+      optionLabels={optionLabels}
+      onChange={(fieldName, nextValue) => onChange(fieldName, nextValue === "true")}
+    />
+  );
+}
+
 export default function ExtraSurveyStep({
   copy,
   form,
@@ -38,6 +51,17 @@ export default function ExtraSurveyStep({
     Array.isArray(form.environmentExposure) && form.environmentExposure.length > 0
   );
   const labels = copy.optionLabels;
+  const isEnglish = copy.extra.environmentExposure === "Environment exposure";
+  const extraLabels = {
+    whiteCastHate: copy.extra.whiteCastHate || (isEnglish ? "Do you dislike white cast?" : "백탁이 싫나요?"),
+    toneUpWanted: copy.extra.toneUpWanted || (isEnglish ? "Do you want tone-up?" : "톤업이 필요하나요?"),
+    makeupUse: copy.extra.makeupUse || (isEnglish ? "Do you wear it with makeup?" : "메이크업과 같이 쓰나요?"),
+    eyeSensitive: copy.extra.eyeSensitive || (isEnglish ? "Are your eyes sensitive to sting?" : "눈시림에 민감한가요?")
+  };
+  const booleanOptionLabels = labels.booleanChoice || {
+    true: isEnglish ? "Yes" : "예",
+    false: isEnglish ? "No" : "아니오"
+  };
 
   return (
     <section className="flex flex-1 flex-col pt-6">
@@ -86,6 +110,34 @@ export default function ExtraSurveyStep({
           value={form.cleansingFrequency}
           options={OPTION_SETS.cleansingFrequency}
           optionLabels={labels.cleansingFrequency}
+          onChange={onFieldChange}
+        />
+        <BooleanChoiceGroup
+          label={extraLabels.whiteCastHate}
+          name="whiteCastHate"
+          value={form.whiteCastHate}
+          optionLabels={booleanOptionLabels}
+          onChange={onFieldChange}
+        />
+        <BooleanChoiceGroup
+          label={extraLabels.toneUpWanted}
+          name="toneUpWanted"
+          value={form.toneUpWanted}
+          optionLabels={booleanOptionLabels}
+          onChange={onFieldChange}
+        />
+        <BooleanChoiceGroup
+          label={extraLabels.makeupUse}
+          name="makeupUse"
+          value={form.makeupUse}
+          optionLabels={booleanOptionLabels}
+          onChange={onFieldChange}
+        />
+        <BooleanChoiceGroup
+          label={extraLabels.eyeSensitive}
+          name="eyeSensitive"
+          value={form.eyeSensitive}
+          optionLabels={booleanOptionLabels}
           onChange={onFieldChange}
         />
 

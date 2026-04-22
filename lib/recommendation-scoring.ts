@@ -78,6 +78,8 @@ const IRRITATION_RANK: Record<string, number> = {
   high: 2,
 };
 
+const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule", "essence", "serum_ampoule"]);
+
 const VERY_SENSITIVE_CONCERNS = new Set(["redness", "barrier", "dehydration"]);
 const SUNSCREEN_INTENT_CONCERNS = new Set(["oiliness", "redness"]);
 
@@ -135,6 +137,10 @@ export type RecommendationAnswers = {
   sunscreenIntent?: boolean | null;
   explicitCategoryIntent?: string | null;
   verySensitivePeriod?: boolean | null;
+  whiteCastHate?: boolean | null;
+  toneUpWanted?: boolean | null;
+  makeupUse?: boolean | null;
+  eyeSensitive?: boolean | null;
 };
 
 export type NormalizedRecommendationAnswers = {
@@ -153,6 +159,10 @@ export type NormalizedRecommendationAnswers = {
   sunscreenIntent: boolean;
   explicitCategoryIntent: string | null;
   verySensitivePeriod: boolean;
+  whiteCastHate: boolean;
+  toneUpWanted: boolean;
+  makeupUse: boolean;
+  eyeSensitive: boolean;
 };
 
 export type CanonicalRecommendationProduct = {
@@ -168,6 +178,11 @@ export type CanonicalRecommendationProduct = {
   finish?: string | null;
   irritation_risk?: string | null;
   sensitivity_safe?: boolean | null;
+  uv_filter_type?: "mineral" | "organic" | "hybrid" | null;
+  tone_up?: boolean | null;
+  white_cast?: "none" | "low" | "medium" | "high" | null;
+  eye_sting?: "low" | "medium" | "high" | null;
+  pilling_risk?: "low" | "medium" | "high" | null;
   is_kbeauty?: boolean | null;
   [key: string]: unknown;
 };
@@ -218,6 +233,39 @@ export type RankedRecommendationProduct = CanonicalRecommendationProduct & {
   matched_signals: MatchedSignals;
   score_breakdown: ScoreBreakdown;
   caution_note: string | null;
+};
+
+export type SunscreenExplanationContext = {
+  matchedSkinType: boolean;
+  matchedConcerns: string[];
+  finishMatch: boolean;
+  filterTypeMatch: boolean;
+  toneUpFit: boolean | null;
+  whiteCastFit: boolean | null;
+  eyeStingFit: boolean | null;
+  pillingFit: boolean | null;
+  hardRejectReasons: string[];
+  strongPenaltyReasons: string[];
+};
+
+export type SunscreenSelectionMeta = {
+  fallbackMode: "strict" | "penalty_only" | "general";
+  altPickSummary: {
+    id: string;
+    name: string;
+    brand: string;
+    uv_filter_type: string | null;
+    scoreGap: number;
+  } | null;
+};
+
+export type SunscreenRankedProduct = RankedRecommendationProduct & {
+  sunscreen_debug?: {
+    hardRejectReasons: string[];
+    strongPenaltyReasons: string[];
+    evaluationMode: "strict" | "penalty_only" | "general";
+  };
+  sunscreen_selection_meta?: SunscreenSelectionMeta | null;
 };
 
 function normalizeString(value: unknown): string | null {
@@ -328,6 +376,10 @@ export function normalizeRecommendationAnswers(
     sunscreenIntent: Boolean(answers.sunscreenIntent),
     explicitCategoryIntent: normalizeString(answers.explicitCategoryIntent),
     verySensitivePeriod: Boolean(answers.verySensitivePeriod),
+    whiteCastHate: Boolean(answers.whiteCastHate),
+    toneUpWanted: Boolean(answers.toneUpWanted),
+    makeupUse: Boolean(answers.makeupUse),
+    eyeSensitive: Boolean(answers.eyeSensitive),
   };
 }
 
@@ -359,7 +411,22 @@ export function getCategoryPriority(
     return 0;
   }
 
-  return CATEGORY_PRIORITY_BY_CONCERN[mainConcern]?.[category] ?? 0;
+  return CATEGORY_PRIORITY_BY_CONCERN[mainConcern]?.[getCategorySlot(category)] ?? 0;
+}
+
+export function getCategorySlot(category: string | null | undefined): string {
+  if (!category) {
+    return "";
+  }
+
+  return SERUM_FAMILY_CATEGORIES.has(category) ? "serum" : category;
+}
+
+export function matchesRecommendationCategorySlot(
+  slot: string,
+  category: string | null | undefined,
+): boolean {
+  return getCategorySlot(category) === slot;
 }
 
 function getPreferredFinishes(answers: NormalizedRecommendationAnswers): string[] {
@@ -977,4 +1044,501 @@ export function compareRankedProducts(
   }
 
   return left.name.localeCompare(right.name);
+}
+
+type FilterableSunscreenProduct = CanonicalRecommendationProduct & {
+  sunscreen_debug?: SunscreenRankedProduct["sunscreen_debug"];
+};
+
+function normalizeSunscreenAnswers(
+  user: RecommendationAnswers | NormalizedRecommendationAnswers,
+): NormalizedRecommendationAnswers {
+  return normalizeRecommendationAnswers(user as RecommendationAnswers);
+}
+
+function getPrimaryConcern(answers: NormalizedRecommendationAnswers): string | null {
+  return answers.mainConcerns[0] || answers.mainConcern || null;
+}
+
+function getSecondaryConcern(answers: NormalizedRecommendationAnswers): string | null {
+  return answers.mainConcerns[1] || null;
+}
+
+function isSensitiveSunscreenUser(answers: NormalizedRecommendationAnswers): boolean {
+  return (
+    answers.sensitivity === "high" ||
+    answers.skinType === "sensitive" ||
+    answers.verySensitivePeriod ||
+    answers.mainConcern === "redness" ||
+    answers.mainConcern === "barrier"
+  );
+}
+
+function getExpectedSunscreenFinish(
+  answers: NormalizedRecommendationAnswers,
+): "fresh" | "dewy" | "natural" | null {
+  const primaryConcern = getPrimaryConcern(answers);
+  const preferredFinishes = getPreferredFinishes(answers);
+
+  if (answers.skinType === "oily" && primaryConcern !== "dehydration") {
+    return "fresh";
+  }
+
+  if (
+    answers.skinType === "dry" ||
+    answers.postWashFeeling === "tight" ||
+    answers.afternoonSkinChange === "more_dry"
+  ) {
+    return "dewy";
+  }
+
+  if (preferredFinishes.includes("fresh")) {
+    return "fresh";
+  }
+
+  if (preferredFinishes.includes("dewy")) {
+    return "dewy";
+  }
+
+  if (preferredFinishes.includes("natural")) {
+    return "natural";
+  }
+
+  return null;
+}
+
+function getExpectedSunscreenFilterType(
+  answers: NormalizedRecommendationAnswers,
+): CanonicalRecommendationProduct["uv_filter_type"] {
+  if (answers.whiteCastHate && !answers.toneUpWanted) {
+    return "organic";
+  }
+
+  if (answers.toneUpWanted) {
+    return isSensitiveSunscreenUser(answers) ? "hybrid" : "mineral";
+  }
+
+  if (isSensitiveSunscreenUser(answers) || answers.eyeSensitive) {
+    return "hybrid";
+  }
+
+  return null;
+}
+
+function getSunscreenHardRejectReasons(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  evaluationMode: "strict" | "penalty_only" = "strict",
+): string[] {
+  const reasons: string[] = [];
+  const primaryConcern = getPrimaryConcern(answers);
+
+  if (isSensitiveSunscreenUser(answers) && product.irritation_risk === "high") {
+    reasons.push("sensitive_high_irritation");
+  }
+
+  if (answers.eyeSensitive && product.eye_sting === "high") {
+    reasons.push("eye_sensitive_high_eye_sting");
+  }
+
+  if (evaluationMode === "strict") {
+    if (!answers.toneUpWanted && answers.whiteCastHate && product.white_cast === "high") {
+      reasons.push("white_cast_high");
+    }
+
+    if (answers.makeupUse && product.pilling_risk === "high") {
+      reasons.push("makeup_high_pilling");
+    }
+
+    if (
+      answers.skinType === "dry" &&
+      primaryConcern !== "oiliness" &&
+      normalizeCanonicalFinish(product.finish as string) === "soft_matte"
+    ) {
+      reasons.push("dry_soft_matte_conflict");
+    }
+  }
+
+  return reasons;
+}
+
+function getSunscreenStrongPenaltyReasons(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  evaluationMode: "strict" | "penalty_only" = "strict",
+): string[] {
+  const reasons: string[] = [];
+  const primaryConcern = getPrimaryConcern(answers);
+  const finish = normalizeCanonicalFinish(product.finish as string);
+
+  if (answers.skinType === "oily" && primaryConcern !== "dehydration" && finish === "dewy") {
+    reasons.push("oily_dewy_conflict");
+  }
+
+  if (!answers.toneUpWanted && product.tone_up === true) {
+    reasons.push("tone_up_mismatch");
+  }
+
+  if (answers.whiteCastHate && product.white_cast === "medium") {
+    reasons.push("white_cast_medium");
+  }
+
+  if (answers.eyeSensitive && product.eye_sting === "medium") {
+    reasons.push("eye_sting_medium");
+  }
+
+  if (answers.makeupUse && product.pilling_risk === "medium") {
+    reasons.push("pilling_medium");
+  }
+
+  if (evaluationMode === "penalty_only") {
+    if (!answers.toneUpWanted && answers.whiteCastHate && product.white_cast === "high") {
+      reasons.push("white_cast_high");
+    }
+
+    if (answers.makeupUse && product.pilling_risk === "high") {
+      reasons.push("makeup_high_pilling");
+    }
+
+    if (
+      answers.skinType === "dry" &&
+      primaryConcern !== "oiliness" &&
+      finish === "soft_matte"
+    ) {
+      reasons.push("dry_soft_matte_conflict");
+    }
+  }
+
+  return Array.from(new Set(reasons));
+}
+
+function getSunscreenStrongPenaltyScore(reasons: string[]): number {
+  return reasons.reduce((total, reason) => {
+    if (reason === "oily_dewy_conflict") {
+      return total - 10;
+    }
+
+    if (reason === "dry_soft_matte_conflict") {
+      return total - 12;
+    }
+
+    return total;
+  }, 0);
+}
+
+function getSunscreenWhiteCastScore(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+): number {
+  if (!answers.whiteCastHate) {
+    return 0;
+  }
+
+  if (product.white_cast === "none") {
+    return 10;
+  }
+
+  if (product.white_cast === "low") {
+    return 4;
+  }
+
+  if (product.white_cast === "medium") {
+    return -8;
+  }
+
+  if (product.white_cast === "high") {
+    return -20;
+  }
+
+  return 0;
+}
+
+function getSunscreenEyeStingScore(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+): number {
+  if (!answers.eyeSensitive) {
+    return 0;
+  }
+
+  if (product.eye_sting === "low") {
+    return 8;
+  }
+
+  if (product.eye_sting === "medium") {
+    return -6;
+  }
+
+  if (product.eye_sting === "high") {
+    return -20;
+  }
+
+  return 0;
+}
+
+function getSunscreenPillingScore(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+): number {
+  if (!answers.makeupUse) {
+    return 0;
+  }
+
+  if (product.pilling_risk === "low") {
+    return 8;
+  }
+
+  if (product.pilling_risk === "medium") {
+    return -4;
+  }
+
+  if (product.pilling_risk === "high") {
+    return -16;
+  }
+
+  return 0;
+}
+
+function buildSunscreenWhyPicked(
+  product: CanonicalRecommendationProduct,
+  answers: NormalizedRecommendationAnswers,
+  context: SunscreenExplanationContext,
+): string[] {
+  const reasons: string[] = [];
+
+  if (context.matchedSkinType) {
+    reasons.push("Texture and finish stay closer to this skin type's daily sunscreen comfort range.");
+  }
+
+  if (context.matchedConcerns.length > 0) {
+    reasons.push(
+      `Matches the current sunscreen priority around ${context.matchedConcerns.slice(0, 2).join(" and ")}.`,
+    );
+  }
+
+  if (context.finishMatch) {
+    reasons.push(
+      `The ${normalizeCanonicalFinish(product.finish as string)} finish stays closer to the current wear preference.`,
+    );
+  }
+
+  if (answers.whiteCastHate && context.whiteCastFit === true) {
+    reasons.push("White cast stays lower, so it is easier to repeat during the day.");
+  } else if (answers.eyeSensitive && context.eyeStingFit === true) {
+    reasons.push("Eye-area sting risk stays lower for repeatable daytime wear.");
+  } else if (answers.makeupUse && context.pillingFit === true) {
+    reasons.push("Layering risk stays lower when sunscreen needs to sit under makeup.");
+  } else if (answers.toneUpWanted && context.toneUpFit === true) {
+    reasons.push("Tone-up effect is present without pushing the finish too far off daily wear.");
+  }
+
+  return reasons.slice(0, 4);
+}
+
+export function filterSunscreenCandidates(
+  products: CanonicalRecommendationProduct[],
+  user: RecommendationAnswers | NormalizedRecommendationAnswers,
+): {
+  strictCandidates: FilterableSunscreenProduct[];
+  penaltyOnlyCandidates: FilterableSunscreenProduct[];
+  rejected: FilterableSunscreenProduct[];
+} {
+  const answers = normalizeSunscreenAnswers(user);
+  const strictCandidates: FilterableSunscreenProduct[] = [];
+  const penaltyOnlyCandidates: FilterableSunscreenProduct[] = [];
+  const rejected: FilterableSunscreenProduct[] = [];
+
+  for (const product of products.filter((item) => item.category === "sunscreen")) {
+    const strictHardRejectReasons = getSunscreenHardRejectReasons(product, answers, "strict");
+    const strictStrongPenaltyReasons = getSunscreenStrongPenaltyReasons(product, answers, "strict");
+    const penaltyOnlyHardRejectReasons = getSunscreenHardRejectReasons(product, answers, "penalty_only");
+    const penaltyOnlyStrongPenaltyReasons = getSunscreenStrongPenaltyReasons(product, answers, "penalty_only");
+
+    if (strictHardRejectReasons.length === 0) {
+      strictCandidates.push({
+        ...product,
+        sunscreen_debug: {
+          hardRejectReasons: [],
+          strongPenaltyReasons: strictStrongPenaltyReasons,
+          evaluationMode: "strict",
+        },
+      });
+    } else {
+      rejected.push({
+        ...product,
+        sunscreen_debug: {
+          hardRejectReasons: strictHardRejectReasons,
+          strongPenaltyReasons: strictStrongPenaltyReasons,
+          evaluationMode: "strict",
+        },
+      });
+    }
+
+    if (penaltyOnlyHardRejectReasons.length === 0) {
+      penaltyOnlyCandidates.push({
+        ...product,
+        sunscreen_debug: {
+          hardRejectReasons: [],
+          strongPenaltyReasons: penaltyOnlyStrongPenaltyReasons,
+          evaluationMode: "penalty_only",
+        },
+      });
+    }
+  }
+
+  return {
+    strictCandidates,
+    penaltyOnlyCandidates,
+    rejected,
+  };
+}
+
+export function buildSunscreenExplanationContext(
+  product: CanonicalRecommendationProduct,
+  user: RecommendationAnswers | NormalizedRecommendationAnswers,
+): SunscreenExplanationContext {
+  const answers = normalizeSunscreenAnswers(user);
+  const debugInfo = (product as SunscreenRankedProduct).sunscreen_debug;
+  const strictHardRejectReasons = getSunscreenHardRejectReasons(product, answers, "strict");
+  const strictStrongPenaltyReasons = getSunscreenStrongPenaltyReasons(
+    product,
+    answers,
+    debugInfo?.evaluationMode === "penalty_only" ? "penalty_only" : "strict",
+  );
+  const preferredFilterType = getExpectedSunscreenFilterType(answers);
+  const preferredFinish = getExpectedSunscreenFinish(answers);
+  const matchedConcerns = (Array.isArray(product.concerns) ? product.concerns : []).filter((concern) =>
+    answers.mainConcerns.includes(concern),
+  );
+
+  return {
+    matchedSkinType: includesValue(product.skin_types, answers.skinType),
+    matchedConcerns,
+    finishMatch: Boolean(preferredFinish) && normalizeCanonicalFinish(product.finish as string) === preferredFinish,
+    filterTypeMatch: Boolean(preferredFilterType) && product.uv_filter_type === preferredFilterType,
+    toneUpFit:
+      product.tone_up == null
+        ? null
+        : answers.toneUpWanted
+          ? product.tone_up === true
+          : product.tone_up === false,
+    whiteCastFit:
+      !answers.whiteCastHate
+        ? null
+        : product.white_cast == null
+          ? null
+          : product.white_cast === "none" || product.white_cast === "low",
+    eyeStingFit:
+      !answers.eyeSensitive
+        ? null
+        : product.eye_sting == null
+          ? null
+          : product.eye_sting === "low",
+    pillingFit:
+      !answers.makeupUse
+        ? null
+        : product.pilling_risk == null
+          ? null
+          : product.pilling_risk === "low",
+    hardRejectReasons: debugInfo?.hardRejectReasons ?? strictHardRejectReasons,
+    strongPenaltyReasons: debugInfo?.strongPenaltyReasons ?? strictStrongPenaltyReasons,
+  };
+}
+
+export function scoreSunscreenProduct(
+  product: CanonicalRecommendationProduct,
+  user: RecommendationAnswers | NormalizedRecommendationAnswers,
+): SunscreenRankedProduct {
+  const answers = normalizeSunscreenAnswers(user);
+  const baseRanked = scoreCanonicalProduct(product, answers);
+  const context = buildSunscreenExplanationContext(product, answers);
+  const primaryConcern = getPrimaryConcern(answers);
+  const secondaryConcern = getSecondaryConcern(answers);
+  const preferredFinish = getExpectedSunscreenFinish(answers);
+  const preferredFilterType = getExpectedSunscreenFilterType(answers);
+  const productConcerns = Array.isArray(product.concerns) ? product.concerns : [];
+  const isSensitiveUser = isSensitiveSunscreenUser(answers);
+  const strongPenaltyReasons =
+    (product as SunscreenRankedProduct).sunscreen_debug?.strongPenaltyReasons ??
+    context.strongPenaltyReasons;
+
+  const sunscreenScore =
+    (includesValue(product.skin_types, answers.skinType) ? 24 : 0) +
+    (primaryConcern && productConcerns.includes(primaryConcern) ? 20 : 0) +
+    (secondaryConcern && productConcerns.includes(secondaryConcern) ? 10 : 0) +
+    (preferredFinish && normalizeCanonicalFinish(product.finish as string) === preferredFinish ? 12 : 0) +
+    (preferredFilterType && product.uv_filter_type === preferredFilterType ? 12 : 0) +
+    (isSensitiveUser
+      ? product.sensitivity_safe === true
+        ? 16
+        : product.sensitivity_safe === false
+          ? -16
+          : 0
+      : 0) +
+    (answers.toneUpWanted
+      ? product.tone_up === true
+        ? 10
+        : 0
+      : product.tone_up === true
+        ? -8
+        : 0) +
+    getSunscreenWhiteCastScore(product, answers) +
+    getSunscreenEyeStingScore(product, answers) +
+    getSunscreenPillingScore(product, answers) +
+    getSunscreenStrongPenaltyScore(strongPenaltyReasons);
+
+  return {
+    ...baseRanked,
+    score: sunscreenScore,
+    why_picked: buildSunscreenWhyPicked(product, answers, context),
+    sunscreen_debug: (product as SunscreenRankedProduct).sunscreen_debug ?? {
+      hardRejectReasons: context.hardRejectReasons,
+      strongPenaltyReasons,
+      evaluationMode: "strict",
+    },
+  };
+}
+
+export function pickTopSunscreen(
+  scoredCandidates: SunscreenRankedProduct[],
+): {
+  topPick: SunscreenRankedProduct | null;
+  altPick: SunscreenRankedProduct | null;
+  meta: SunscreenSelectionMeta | null;
+} {
+  const sorted = scoredCandidates
+    .slice()
+    .sort((left, right) => compareRankedProducts(left, right));
+  const topPick = sorted[0] || null;
+  const top2 = sorted[1] || null;
+  const useTop2AsAlternative =
+    Boolean(topPick) &&
+    Boolean(top2) &&
+    topPick !== null &&
+    top2 !== null &&
+    topPick.score - top2.score <= 6 &&
+    Boolean(topPick.uv_filter_type) &&
+    Boolean(top2.uv_filter_type) &&
+    topPick.uv_filter_type !== top2.uv_filter_type;
+  const altPick = useTop2AsAlternative ? top2 : null;
+  const meta = topPick
+    ? {
+        fallbackMode: topPick.sunscreen_debug?.evaluationMode || "strict",
+        altPickSummary: altPick
+          ? {
+              id: altPick.id,
+              name: altPick.name,
+              brand: altPick.brand,
+              uv_filter_type: altPick.uv_filter_type || null,
+              scoreGap: topPick.score - altPick.score,
+            }
+          : null,
+      }
+    : null;
+
+  return {
+    topPick,
+    altPick,
+    meta,
+  };
 }

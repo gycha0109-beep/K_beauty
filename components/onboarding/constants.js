@@ -9,7 +9,11 @@ export const INITIAL_FORM = {
   postWashFeeling: "",
   afternoonSkinChange: "",
   environmentExposure: [],
-  mostDislikedFeel: ""
+  mostDislikedFeel: "",
+  whiteCastHate: false,
+  toneUpWanted: false,
+  makeupUse: false,
+  eyeSensitive: false
 };
 
 export const OPTIONAL_DEFAULTS = {
@@ -379,6 +383,7 @@ export const OPTION_SETS = {
   postWashFeeling: ["tight", "comfortable", "still_oily"],
   afternoonSkinChange: ["more_oily", "more_dry", "red_or_irritated", "mostly_same"],
   mostDislikedFeel: ["sticky", "greasy", "heavy", "fragranced", "pilling"],
+  booleanChoice: ["true", "false"],
   cleansingFrequency: ["once", "twice", "3_plus"],
   environmentExposure: ["heat", "humidity", "mask", "kitchen", "outdoor", "aircon"]
 };
