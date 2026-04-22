@@ -9,10 +9,10 @@ import {
 export type ServiceCategory =
   | "cleanser"
   | "toner_essence"
+  | "toner_pad"
   | "essence"
   | "serum"
   | "ampoule"
-  | "serum_ampoule"
   | "moisturizer"
   | "sunscreen";
 
@@ -28,7 +28,6 @@ export type ReviewFlag =
   | "ambiguous_category"
   | "missing_canonical_name"
   | "missing_canonical_brand"
-  | "pad_like_name"
   | "remover_like_name"
   | "peeling_like_name"
   | "powder_wash_like_name"
@@ -101,7 +100,7 @@ type InferredPromotionProduct = {
 
 const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "skincare/toner": "toner_essence",
-  "skincare/serum": "serum_ampoule",
+  "skincare/serum": "serum",
   "skincare/cream": "moisturizer",
   "skincare/suncare": "sunscreen",
   "cleansing/cleansing": "cleanser",
@@ -112,6 +111,7 @@ const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; regex: RegExp }> =
     category: "sunscreen",
     regex: /\b(?:sunscreen|sun\s*cream|sun\s*screen|sunblock|uv|sun\s*essence|sun\s*stick|sun\s*pact|sun\s*cushion|tone[\s-]*up\s+sun)\b/i,
   },
+  { category: "toner_pad", regex: /\b(?:toner\s+)?pads?\b/i },
   { category: "ampoule", regex: /\bampoule\b/i },
   { category: "serum", regex: /\bserum\b/i },
   { category: "essence", regex: /\bessence\b/i },
@@ -130,7 +130,6 @@ const AUTO_REJECT_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
 ];
 
 const NEEDS_REVIEW_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
-  { flag: "pad_like_name", regex: /\b(?:toner\s+)?pads?\b/i },
   { flag: "peeling_like_name", regex: /\bpeeling\s+gel\b/i },
   { flag: "powder_wash_like_name", regex: /\bpowder\s+wash\b/i },
   { flag: "cleansing_serum_like_name", regex: /\bcleansing\s+serum\b/i },
@@ -209,6 +208,11 @@ const SERVICE_CATEGORY_DEFAULTS: Record<ServiceCategory, { texture: string; fini
     finish: "natural",
     concerns: ["dehydration", "redness"],
   },
+  toner_pad: {
+    texture: "watery",
+    finish: "fresh",
+    concerns: ["pores", "oiliness", "acne"],
+  },
   essence: {
     texture: "watery",
     finish: "natural",
@@ -220,11 +224,6 @@ const SERVICE_CATEGORY_DEFAULTS: Record<ServiceCategory, { texture: string; fini
     concerns: ["acne", "pores"],
   },
   ampoule: {
-    texture: "gel",
-    finish: "natural",
-    concerns: ["acne", "pores"],
-  },
-  serum_ampoule: {
     texture: "gel",
     finish: "natural",
     concerns: ["acne", "pores"],
@@ -290,6 +289,10 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
     return "toner_essence";
   }
 
+  if (normalized === "toner_pad") {
+    return "toner_pad";
+  }
+
   if (normalized === "essence") {
     return "essence";
   }
@@ -303,7 +306,7 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
   }
 
   if (
-    ["cleanser", "toner_essence", "essence", "serum", "ampoule", "serum_ampoule", "moisturizer", "sunscreen"].includes(
+    ["cleanser", "toner_essence", "toner_pad", "essence", "serum", "ampoule", "moisturizer", "sunscreen"].includes(
       normalized,
     )
   ) {
@@ -335,8 +338,12 @@ function getServiceCategorySlot(category: ServiceCategory | null | undefined): S
     return null;
   }
 
-  if (["serum", "ampoule", "essence", "serum_ampoule"].includes(category)) {
+  if (["serum", "ampoule"].includes(category)) {
     return "serum";
+  }
+
+  if (category === "toner_pad" || category === "essence") {
+    return "toner_essence";
   }
 
   return category;
@@ -357,7 +364,7 @@ function resolveInitialServiceCategory(
   pathCategory: ServiceCategory | null,
   inferredNameCategory: ServiceCategory | null,
 ): ServiceCategory | null {
-  if (pathCategory === "serum_ampoule" && inferredNameCategory && isCompatibleServiceCategory(pathCategory, inferredNameCategory)) {
+  if (pathCategory && inferredNameCategory && isCompatibleServiceCategory(pathCategory, inferredNameCategory)) {
     return inferredNameCategory;
   }
 

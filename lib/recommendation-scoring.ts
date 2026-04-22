@@ -14,6 +14,12 @@ export const CATEGORY_LABELS: Record<string, string> = {
   sunscreen: "선크림",
 };
 
+Object.assign(CATEGORY_LABELS, {
+  toner_pad: "토너 패드",
+  ampoule: "앰플",
+  essence: "에센스",
+});
+
 export const TOP_PICK_SCORING_WEIGHTS = {
   skinTypeMatch: 4,
   primaryConcernMatch: 12,
@@ -78,7 +84,8 @@ const IRRITATION_RANK: Record<string, number> = {
   high: 2,
 };
 
-const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule", "essence", "serum_ampoule"]);
+const TONER_FAMILY_CATEGORIES = new Set(["toner_essence", "toner_pad", "essence"]);
+const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule"]);
 
 const VERY_SENSITIVE_CONCERNS = new Set(["redness", "barrier", "dehydration"]);
 const SUNSCREEN_INTENT_CONCERNS = new Set(["oiliness", "redness"]);
@@ -417,6 +424,10 @@ export function getCategoryPriority(
 export function getCategorySlot(category: string | null | undefined): string {
   if (!category) {
     return "";
+  }
+
+  if (TONER_FAMILY_CATEGORIES.has(category)) {
+    return "toner_essence";
   }
 
   return SERUM_FAMILY_CATEGORIES.has(category) ? "serum" : category;
