@@ -1,38 +1,58 @@
-export default function PremiumReportCard({ copy, locale = "ko" }) {
+export default function PremiumReportCard({
+  copy,
+  locale = "ko",
+  premiumReport = null,
+  faceLabPaid = null,
+  onCtaClick
+}) {
+  const supportingCount = Array.isArray(premiumReport?.supportingProducts)
+    ? premiumReport.supportingProducts.length
+    : 0;
+  const budgetCount = Array.isArray(premiumReport?.budgetAlternatives)
+    ? premiumReport.budgetAlternatives.length
+    : 0;
+  const hasFaceLabPaid =
+    Boolean(faceLabPaid?.hairDirection?.length) ||
+    Boolean(faceLabPaid?.avoidStyles?.length) ||
+    Boolean(faceLabPaid?.colorPalette?.length) ||
+    Boolean(faceLabPaid?.vibeKeywords?.length);
+
   const premiumGroups = locale === "en"
     ? [
         {
-          label: "Skin Match full report",
+          label: "Skin Match practical build",
           items: [
-            "Full morning and night routine",
-            "Supporting product picks",
-            "What combinations to avoid"
+            "Top Pick reasoning you can actually follow",
+            `${Math.max(2, supportingCount || 2)} supporting product directions`,
+            "Full morning and night guidance",
+            "Avoid combinations to skip"
           ]
         },
         {
-          label: "Face Lab extended report",
+          label: "Launch report extras",
           items: [
-            "Hair direction for your face shape",
-            "Curated color palette",
-            "Styling application tips"
+            budgetCount ? `${budgetCount} budget alternative lanes` : "Budget alternative lanes",
+            hasFaceLabPaid ? "Face Lab hair, avoid-style, palette, and vibe guidance" : "Face Lab style guidance",
+            "A report structured around real use, not just browsing"
           ]
         }
       ]
     : [
         {
-          label: "Skin Match 전체 리포트",
+          label: "Skin Match 실사용 구성",
           items: [
-            "아침/저녁 전체 루틴",
-            "함께 보면 좋은 추천 전체",
-            "피해야 할 조합"
+            "Top Pick을 왜 이렇게 써야 하는지 정리",
+            `${Math.max(2, supportingCount || 2)}개 보조 제품 방향`,
+            "아침 · 저녁 전체 사용 가이드",
+            "같이 피해야 할 조합 정리"
           ]
         },
         {
-          label: "Face Lab 확장 리포트",
+          label: "Launch 보고서 확장",
           items: [
-            "얼굴형에 맞는 헤어 방향",
-            "컬러 팔레트",
-            "스타일 활용 팁"
+            budgetCount ? `${budgetCount}개 예산 대안 방향` : "예산 대안 방향",
+            hasFaceLabPaid ? "Face Lab 헤어 방향 · 피할 스타일 · 팔레트 · 분위기 키워드" : "Face Lab 스타일 확장 가이드",
+            "구경용이 아니라 실제 사용 기준으로 정리"
           ]
         }
       ];
@@ -65,6 +85,7 @@ export default function PremiumReportCard({ copy, locale = "ko" }) {
 
         <button
           type="button"
+          onClick={onCtaClick}
           className="ui-button-primary min-h-14 w-full px-5 text-sm font-semibold"
         >
           {copy.premiumCardButton}

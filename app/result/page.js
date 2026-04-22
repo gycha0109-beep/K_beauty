@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import FaceShapePreviewCard from "@/components/result/FaceShapePreviewCard";
 import PremiumReportCard from "@/components/result/PremiumReportCard";
@@ -12,6 +12,7 @@ import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import TopPickStep from "@/components/result/TopPickStep";
+import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
   ko: {
@@ -28,7 +29,8 @@ const displayMap = {
       uneven_tone: "톤 불균일",
       pores: "모공",
       redness: "붉은기",
-      barrier: "장벽 약화"
+      barrier: "장벽 약화",
+      uv: "자외선"
     }
   },
   en: {
@@ -45,13 +47,15 @@ const displayMap = {
       uneven_tone: "Uneven tone",
       pores: "Pores",
       redness: "Redness",
-      barrier: "Barrier"
+      barrier: "Barrier",
+      uv: "UV"
     }
   }
 };
 
 const topPickHeadlineMap = {
   ko: {
+    uv: "자외선 부담이 커서 가장 먼저 지켜야 할 1순위",
     oiliness: "유분과 모공 흐름에서 가장 먼저 체감 차이가 나는 1순위",
     pores: "모공과 번들거림 기준으로 먼저 바꿔야 할 1순위",
     dehydration: "지금 피부 건조감에서 가장 먼저 보완할 1순위",
@@ -61,6 +65,7 @@ const topPickHeadlineMap = {
     barrier: "장벽이 흔들리는 지금 가장 먼저 써야 할 1순위"
   },
   en: {
+    uv: "The first product to lock in when UV pressure is carrying the daytime result",
     oiliness: "The first product to switch for oil flow and pore control",
     pores: "The first product to check for pores and midday shine",
     dehydration: "The first product to add for current dehydration",
@@ -146,15 +151,22 @@ const resultCopy = {
     resultPhotoFallback: "업로드한 사진",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "무료 결과 미리보기",
-    topPickStepBody: "Top Pick을 먼저 보고, 다음 탭에서 얼굴형 분석까지 이어서 확인하세요.",
+    topPickStepBody: "Top Pick과 바로 따라갈 핵심 방향만 먼저 보여드릴게요.",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "얼굴형 분석",
     faceShapeFreeKicker: "FACE LAB",
-    faceShapeFreeTitle: "얼굴형 분석",
+    faceShapeFreeTitle: "Face Lab 티저",
+    faceLabTeaserTitle: "Face Lab 티저",
+    faceLabTeaserBody: "Skin Match를 방해하지 않게, 지금은 세 줄만 짧게 보여드립니다.",
+    faceLabImpressionLabel: "인상 라인",
+    faceLabShapeLabel: "형태 라인",
+    faceLabStyleLabel: "스타일 라인",
     faceShapeLabel: "얼굴형",
     faceShapeSummaryLabel: "한 줄 분석",
     faceShapeTagsLabel: "보이는 특징",
     faceShapeEmpty: "얼굴형 분석을 아직 불러오지 못했습니다.",
+    alternativeLabel: "함께 볼 대안 1개",
+    freeFocusTitle: "지금 바로 따라갈 포인트",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "함께 쓰면 좋은 추천",
     recommendedStepBody: "가볍게 넘겨보면서 루틴에 붙일 만한 제품만 빠르게 확인하세요.",
@@ -176,8 +188,8 @@ const resultCopy = {
     topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다.",
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "이 결과를 실제 루틴으로 정리해볼까요?",
-    premiumCardBody: "무료 결과는 여기까지 가볍게 확인하고, 다음 단계부터는 바로 실행 가능한 전체 리포트로 정리됩니다.",
-    premiumCardButton: "전체 리포트 보기 (₩3,900)"
+    premiumCardBody: "지금 결과를 끝까지 따라갈 수 있게, 내 피부에 맞는 구성과 실제 사용 가이드로 이어집니다.",
+    premiumCardButton: "내 피부에 맞게 구성하기 (₩3,900)"
   },
   en: {
     loading: "Loading your result...",
@@ -253,15 +265,22 @@ const resultCopy = {
     resultPhotoFallback: "Uploaded photo",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "Free Result Preview",
-    topPickStepBody: "Start with the Top Pick, then move to the next tab for your face-shape read.",
+    topPickStepBody: "Start with the Top Pick and the few lines that make the result usable right away.",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "Face Shape",
     faceShapeFreeKicker: "FACE LAB",
-    faceShapeFreeTitle: "Face Shape Analysis",
+    faceShapeFreeTitle: "Face Lab Teaser",
+    faceLabTeaserTitle: "Face Lab Teaser",
+    faceLabTeaserBody: "To keep Skin Match in front, the launch result keeps Face Lab to three short lines.",
+    faceLabImpressionLabel: "Impression Line",
+    faceLabShapeLabel: "Shape Line",
+    faceLabStyleLabel: "Style Line",
     faceShapeLabel: "Face shape",
     faceShapeSummaryLabel: "One-line read",
     faceShapeTagsLabel: "Visible features",
     faceShapeEmpty: "Could not load the face-shape analysis yet.",
+    alternativeLabel: "One Alternative",
+    freeFocusTitle: "What To Follow Right Now",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "Also Worth Using",
     recommendedStepBody: "Swipe through the lighter supporting picks for the rest of your routine.",
@@ -283,8 +302,8 @@ const resultCopy = {
     topPickEmpty: "Could not load the Top Pick product.",
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "Ready to turn this result into a practical routine?",
-    premiumCardBody: "The free result stops here. The next step expands into a full report you can actually follow.",
-    premiumCardButton: "View Full Report (₩3,900)"
+    premiumCardBody: "This next step organizes the result into a setup you can actually follow for your skin.",
+    premiumCardButton: "Build This For My Skin (₩3,900)"
   }
 };
 
@@ -363,6 +382,32 @@ function getDisplayMap(locale = "ko") {
   return displayMap[locale] || displayMap.ko;
 }
 
+function getDecisionCopy(locale = "ko") {
+  if (locale === "en") {
+    return {
+      priority: "Decision Priority",
+      amFocus: "AM Focus",
+      pmFocus: "PM Focus",
+      warnings: "Warnings",
+      photoEvidence: "Photo Evidence",
+      surveyEvidence: "Survey Evidence",
+      noWarnings: "No extra warnings were needed for this match.",
+      noEvidence: "Evidence was limited, so the survey carried more of the decision."
+    };
+  }
+
+  return {
+    priority: "결정 우선순위",
+    amFocus: "아침 포커스",
+    pmFocus: "저녁 포커스",
+    warnings: "주의 포인트",
+    photoEvidence: "사진 근거",
+    surveyEvidence: "설문 근거",
+    noWarnings: "이번 매치에서는 추가 경고를 늘리지 않았습니다.",
+    noEvidence: "사진 근거가 제한적이라 설문 비중을 더 높게 두었습니다."
+  };
+}
+
 function getConcernDisplay(form = {}, locale = "ko") {
   const display = getDisplayMap(locale);
   const copy = getResultCopy(locale);
@@ -382,19 +427,28 @@ function getRoutineStructureLabel(result, locale = "ko") {
   const morningCount = Array.isArray(result?.morning) ? result.morning.filter(Boolean).length : 0;
   const nightCount = Array.isArray(result?.night) ? result.night.filter(Boolean).length : 0;
   const stepCount = Math.max(morningCount, nightCount, 0);
+  const focusCount = Number(Boolean(result?.amFocus)) + Number(Boolean(result?.pmFocus));
 
   if (locale === "en") {
-    return stepCount > 0 ? `Morning + Night · ${stepCount} ${stepCount === 1 ? "step" : "steps"}` : "Morning + Night";
+    if (stepCount > 0) {
+      return `Morning + Night · ${stepCount} ${stepCount === 1 ? "step" : "steps"}`;
+    }
+
+    return focusCount > 0 ? `Morning + Night · ${focusCount} focus lines` : "Morning + Night";
   }
 
-  return stepCount > 0 ? `아침 + 저녁 · ${stepCount}단계` : "아침 + 저녁";
+  if (stepCount > 0) {
+    return `아침 + 저녁 · ${stepCount}단계`;
+  }
+
+  return focusCount > 0 ? `아침 + 저녁 · ${focusCount}개 포커스` : "아침 + 저녁";
 }
 
-function getOverviewSummary(form = {}, locale = "ko") {
+function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   const display = getDisplayMap(locale);
-  const concernLabel = getConcernDisplay(form, locale);
+  const concernLabel = decision?.priority?.label || getConcernDisplay(form, locale);
   const skinTypeLabel = display.skinType[form?.skinType] || (locale === "en" ? "Skin" : "피부");
-  const directionSummary = getDirectionSummary(form, locale);
+  const directionSummary = getDirectionSummary(form, decision, locale);
 
   if (locale === "en") {
     return `${skinTypeLabel} with ${concernLabel.toLowerCase()}, so ${directionSummary.charAt(0).toLowerCase()}${directionSummary.slice(1)}`;
@@ -518,33 +572,41 @@ function getFinishLabel(finish, locale = "ko") {
   return map[finish] || (locale === "en" ? "with a cleaner finish" : "사용감을 더 깔끔하게");
 }
 
-function getTopPickHeadline(form, locale = "ko") {
+function getTopPickHeadline(form, decision = null, locale = "ko") {
   const map = topPickHeadlineMap[locale] || topPickHeadlineMap.ko;
   const copy = getResultCopy(locale);
-  return map[form?.mainConcern] || copy.topPickFallback;
+  const concernKey = decision?.priority?.axis || form?.mainConcern;
+  return map[concernKey] || copy.topPickFallback;
 }
 
-function getTopPickSummary(product, form, locale = "ko") {
+function getTopPickSummary(product, form, decision = null, locale = "ko") {
+  const reasonPreview = getProductPreviewLines(product, 1)[0];
+
+  if (reasonPreview) {
+    return reasonPreview;
+  }
+
   const map = getDisplayMap(locale);
   const copy = getResultCopy(locale);
-  const concern = map.mainConcern[form?.mainConcern] || copy.currentConcern;
+  const concernKey = decision?.priority?.axis || form?.mainConcern;
+  const concern = decision?.priority?.label || map.mainConcern[concernKey] || copy.currentConcern;
   const skinType = map.skinType[form?.skinType] || copy.currentSkin;
   const texture = getTextureLabel(product.texture, locale);
   const finish = getFinishLabel(product.finish, locale);
 
-  if (form?.mainConcern === "oiliness" || form?.mainConcern === "pores") {
+  if (concernKey === "oiliness" || concernKey === "pores") {
     return locale === "en"
       ? `For ${skinType.toLowerCase()} skin dealing with ${concern.toLowerCase()}, this one absorbs ${texture} and lands ${finish}, so it creates the clearest first difference.`
       : `${concern} 고민이 함께 있는 ${skinType} 상태에서는, ${texture} 흡수되고 ${finish} 이 제품이 가장 먼저 체감 차이를 만듭니다.`;
   }
 
-  if (form?.mainConcern === "dehydration" || form?.mainConcern === "barrier") {
+  if (concernKey === "dehydration" || concernKey === "barrier") {
     return locale === "en"
       ? `When ${skinType.toLowerCase()} skin dries out easily, this one layers ${texture} and stays ${finish}, so it is the first switch that feels different.`
       : `${skinType} 피부가 쉽게 메마르는 지금은, ${texture} 쌓이면서도 ${finish} 이 제품부터 바꾸는 편이 체감이 가장 큽니다.`;
   }
 
-  if (form?.mainConcern === "redness" || form?.mainConcern === "acne") {
+  if (concernKey === "redness" || concernKey === "acne") {
     return locale === "en"
       ? `For ${skinType.toLowerCase()} skin that keeps dealing with ${concern.toLowerCase()}, this one feels ${finish} and lowers irritation load first.`
       : `${concern}이 반복되는 ${skinType} 상태에서는, ${finish} 자극 부담을 덜어주는 이 제품이 가장 먼저 손에 잡힐 선택입니다.`;
@@ -683,17 +745,19 @@ function buildFitMetrics(product, form, locale = "ko") {
   ];
 }
 
-function getDirectionSummary(form, locale = "ko") {
+function getDirectionSummary(form, decision = null, locale = "ko") {
   const copy = getResultCopy(locale);
-  if (form?.mainConcern === "barrier" || form?.mainConcern === "dehydration") {
+  const concernKey = decision?.priority?.axis || form?.mainConcern;
+
+  if (concernKey === "barrier" || concernKey === "dehydration") {
     return copy.directionSummaryBarrier;
   }
 
-  if (form?.mainConcern === "oiliness" || form?.mainConcern === "pores") {
+  if (concernKey === "oiliness" || concernKey === "pores") {
     return copy.directionSummaryOil;
   }
 
-  if (form?.mainConcern === "acne" || form?.mainConcern === "redness") {
+  if (concernKey === "acne" || concernKey === "redness") {
     return copy.directionSummaryCalm;
   }
 
@@ -958,16 +1022,17 @@ export default function ResultPage() {
 }
 
 function ResultContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
   const copy = getResultCopy(locale);
+  const decisionCopy = getDecisionCopy(locale);
   const display = getDisplayMap(locale);
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
-  const [activeFreeTab, setActiveFreeTab] = useState("top-pick");
   const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
@@ -1005,7 +1070,13 @@ function ResultContent() {
         is_top_pick: false,
         meta_json: {
           has_top_pick: Boolean(result.topPick),
-          category_pick_count: Array.isArray(result.categoryPicks) ? result.categoryPicks.length : 0
+          category_pick_count: result.alternative
+            ? 1
+            : Array.isArray(result.categoryPicks)
+              ? result.categoryPicks.length
+              : Array.isArray(result.altPicks)
+                ? result.altPicks.length
+                : 0
         }
       });
     }
@@ -1031,38 +1102,105 @@ function ResultContent() {
   }
 
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
+  const faceLabLaunch = buildFaceLabLaunchData(result?.faceLab, locale);
   const overviewCards = [
     {
       label: locale === "en" ? "Skin Type" : "피부 타입",
       value: display.skinType[submission?.form?.skinType] || (locale === "en" ? "Matched routine" : "맞춤 루틴")
     },
     {
-      label: locale === "en" ? "Main Concern" : "주요 고민",
-      value: getConcernDisplay(submission?.form || {}, locale)
+      label: decisionCopy.priority,
+      value: result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)
     },
     {
       label: locale === "en" ? "Routine Structure" : "추천 루틴 구조",
       value: getRoutineStructureLabel(result, locale)
     }
   ];
+  const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
+  const warningItems = Array.isArray(result?.avoid)
+    ? result.avoid.slice(0, 1)
+    : Array.isArray(result?.warnings)
+      ? result.warnings.slice(0, 1)
+      : [];
   const topPickTabCard = result?.topPick ? (
-    <ProductDecisionCard
-      product={result.topPick}
-      featured
-      form={submission?.form}
-      locale={locale}
-      detailItems={profileSummaryItems}
-    />
+    <div className="space-y-4">
+      <ProductDecisionCard
+        product={result.topPick}
+        featured
+        form={submission?.form}
+        decision={result}
+        locale={locale}
+        detailItems={profileSummaryItems}
+        allowExpand={false}
+        showDiagnostics={false}
+      />
+
+      {freeAlternative ? (
+        <section className="space-y-3">
+          <div className="ui-card p-5">
+            <p className="ui-kicker">{copy.alternativeLabel}</p>
+            <p className="ui-text-secondary mt-2 text-sm leading-6">
+              {locale === "en"
+                ? "One nearby alternative stays visible in the free result."
+                : "무료 결과에서는 가까운 대안 1개만 함께 보여드립니다."}
+            </p>
+          </div>
+          <ProductDecisionCard
+            product={freeAlternative}
+            form={submission?.form}
+            locale={locale}
+            allowExpand={false}
+            showDiagnostics={false}
+          />
+        </section>
+      ) : null}
+
+      <section className="ui-card p-5">
+        <div className="space-y-4">
+          <div>
+            <p className="ui-kicker">{copy.freeFocusTitle}</p>
+            <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              {result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)}
+            </p>
+          </div>
+
+          {result?.amFocus ? (
+            <div>
+              <p className="ui-kicker">{decisionCopy.amFocus}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
+            </div>
+          ) : null}
+
+          {result?.pmFocus ? (
+            <div>
+              <p className="ui-kicker">{decisionCopy.pmFocus}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
+            </div>
+          ) : null}
+
+          <div>
+            <p className="ui-kicker">{decisionCopy.warnings}</p>
+            <div className="mt-2 space-y-2">
+              {warningItems.length ? (
+                warningItems.map((item) => (
+                  <p key={item} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                    {item}
+                  </p>
+                ))
+              ) : (
+                <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{decisionCopy.noWarnings}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
   ) : (
     <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
       {copy.topPickEmpty}
     </div>
-  );
-  const faceShapeTabCard = (
-    <FaceShapePreviewCard
-      copy={copy}
-      faceLab={result?.faceLab}
-    />
   );
   const stepCtaLabels = [
     copy.ctaViewTopPick,
@@ -1076,32 +1214,55 @@ function ResultContent() {
           photoUrl={photoUrl}
           photoAlt={submission?.imageName || copy.resultPhotoFallback}
           summaryCards={overviewCards}
-          overviewSummary={getOverviewSummary(submission?.form, locale)}
+          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
         />,
         <TopPickStep
           key="top-pick"
           copy={copy}
-          tabs={[
-            {
-              id: "top-pick",
-              label: copy.topPickTabLabel,
-              content: topPickTabCard
-            },
-            {
-              id: "face-shape",
-              label: copy.faceShapeTabLabel,
-              content: faceShapeTabCard
-            }
-          ]}
-          activeTab={activeFreeTab}
-          onTabChange={setActiveFreeTab}
           premiumCard={
             <PremiumReportCard
               copy={copy}
               locale={locale}
+              premiumReport={null}
+              faceLabPaid={null}
+              onCtaClick={() => {
+                trackEvent("click_full_report_cta", {
+                  product_id: result.topPick?.id || null,
+                  feature_name: "skin_analysis",
+                  result_type: "full_report_cta",
+                  is_top_pick: false,
+                  meta_json: {
+                    has_premium_session: true,
+                    has_face_lab_teaser: Boolean(
+                      faceLabLaunch?.free?.impressionLine ||
+                      faceLabLaunch?.free?.shapeLine ||
+                      faceLabLaunch?.free?.styleLine
+                    )
+                  }
+                });
+                router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
+              }}
             />
           }
-        />
+          afterPremium={
+            <FaceShapePreviewCard
+              copy={copy}
+              launchData={faceLabLaunch}
+              onEngage={() =>
+                trackEvent("click_face_lab_teaser", {
+                  feature_name: "face_lab",
+                  result_type: "face_lab_teaser",
+                  is_top_pick: false,
+                  meta_json: {
+                    has_teaser: Boolean(faceLabLaunch?.free?.impressionLine || faceLabLaunch?.free?.shapeLine || faceLabLaunch?.free?.styleLine)
+                  }
+                })
+              }
+            />
+          }
+        >
+          {topPickTabCard}
+        </TopPickStep>
       ]
     : [];
   const totalResultSteps = resultSteps.length;
@@ -1309,13 +1470,22 @@ function CategoryCarousel({ products, form, locale = "ko" }) {
   );
 }
 
-function ProductDecisionCard({ product, featured = false, form = null, locale = "ko", detailItems = [] }) {
+function ProductDecisionCard({
+  product,
+  featured = false,
+  form = null,
+  decision = null,
+  locale = "ko",
+  detailItems = [],
+  allowExpand = true,
+  showDiagnostics = true
+}) {
   const [expanded, setExpanded] = useState(false);
   const copy = getResultCopy(locale);
 
   if (featured) {
-    const topPickHeadline = getTopPickHeadline(form, locale);
-    const topPickSummary = getTopPickSummary(product, form, locale);
+    const topPickHeadline = getTopPickHeadline(form, decision, locale);
+    const topPickSummary = getTopPickSummary(product, form, decision, locale);
     const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
     const purchaseLink = getPurchaseLinkInfo(product, locale);
     const priceLabel = getPriceLabel(product.price_range, locale);
@@ -1373,18 +1543,20 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
             </p>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-zinc-700 dark:text-zinc-300">{topPickSummary}</p>
 
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                setExpanded((current) => !current);
-              }}
-              className="mt-4 text-sm font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 dark:text-zinc-300 dark:decoration-zinc-600"
-            >
-              {expanded ? copy.less : copy.more}
-            </button>
+            {allowExpand ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setExpanded((current) => !current);
+                }}
+                className="mt-4 text-sm font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 dark:text-zinc-300 dark:decoration-zinc-600"
+              >
+                {expanded ? copy.less : copy.more}
+              </button>
+            ) : null}
 
-            {expanded ? (
+            {allowExpand && expanded ? (
               <div className="mt-4 space-y-4 rounded-[1.4rem] border border-zinc-200 bg-white/72 p-4 dark:border-zinc-700 dark:bg-zinc-900/84">
                 {detailItems.length ? (
                   <div className="flex flex-wrap gap-2">
@@ -1437,9 +1609,11 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
               )}
             </div>
 
-            <div className="ui-card-subtle p-3.5">
-              <FitGaugeRows product={product} form={form} compact locale={locale} />
-            </div>
+            {showDiagnostics ? (
+              <div className="ui-card-subtle p-3.5">
+                <FitGaugeRows product={product} form={form} compact locale={locale} />
+              </div>
+            ) : null}
 
             <div className="ui-card-subtle p-4 sm:p-5">
               <a
@@ -1527,16 +1701,18 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
           </p>
 
           <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                setExpanded(true);
-              }}
-              className="ui-button-secondary px-3.5 py-1.5 text-xs font-medium"
-            >
-              {locale === "en" ? "Details" : "상세보기"}
-            </button>
+            {allowExpand ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setExpanded(true);
+                }}
+                className="ui-button-secondary px-3.5 py-1.5 text-xs font-medium"
+              >
+                {locale === "en" ? "Details" : "상세보기"}
+              </button>
+            ) : null}
             <a
               href={purchaseLink.href}
               target="_blank"
@@ -1568,7 +1744,7 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
         </div>
       </div>
 
-      {expanded ? (
+      {allowExpand && expanded ? (
         <div
           className="ui-overlay fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
           onClick={(event) => {
@@ -1647,9 +1823,11 @@ function ProductDecisionCard({ product, featured = false, form = null, locale = 
 
               <div className="space-y-3 sm:w-[132px]">
                 <SmallProductThumb product={product} height="h-28" locale={locale} />
-                <div className="ui-card-subtle rounded-[1.1rem] p-3">
-                  <FitGaugeRows product={product} form={form} compact locale={locale} />
-                </div>
+                {showDiagnostics ? (
+                  <div className="ui-card-subtle rounded-[1.1rem] p-3">
+                    <FitGaugeRows product={product} form={form} compact locale={locale} />
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

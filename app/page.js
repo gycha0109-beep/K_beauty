@@ -15,6 +15,7 @@ import {
   ONBOARDING_COPY,
   OPTIONAL_DEFAULTS
 } from "@/components/onboarding/constants";
+import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "basic", "extra", "loading"];
@@ -154,6 +155,7 @@ export default function HomePage() {
       try {
         setIsSubmitting(true);
         clearWriteAccessToken();
+        sessionStorage.removeItem("skinTestFaceLabFull");
 
         const analyzePayload = new FormData();
         analyzePayload.append("image", imageFile);
@@ -170,17 +172,21 @@ export default function HomePage() {
         });
 
         const data = await response.json().catch(() => null);
+        const nextWriteAccessToken = response.headers.get("x-kbeauty-write-token");
 
         if (!response.ok || !data) {
           throw new Error(data?.error || copy.errors.analyzeFailed);
         }
 
-        writeWriteAccessToken(data.writeAccessToken);
+        writeWriteAccessToken(nextWriteAccessToken);
 
         const [imagePreviewDataUrl, faceLabResult] = await Promise.all([
           imagePreviewDataUrlPromise,
           faceLabPromise
         ]);
+        const faceLabTeaser = faceLabResult
+          ? buildFaceLabLaunchData(faceLabResult, locale).free
+          : null;
 
         sessionStorage.setItem(
           "skinTestSubmission",
@@ -193,8 +199,12 @@ export default function HomePage() {
         );
         sessionStorage.setItem(
           "skinTestResult",
-          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult } : data)
+          JSON.stringify(faceLabTeaser ? { ...data, faceLab: faceLabTeaser } : data)
         );
+
+        if (faceLabResult) {
+          sessionStorage.setItem("skinTestFaceLabFull", JSON.stringify(faceLabResult));
+        }
 
         const elapsed = Date.now() - startedAt;
         const minimumLoading = 1800;

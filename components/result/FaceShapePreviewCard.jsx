@@ -1,24 +1,28 @@
-function cleanText(value) {
-  return typeof value === "string" ? value.trim() : "";
+function hasTeaserLines(data) {
+  return Boolean(
+    data?.free?.impressionLine ||
+      data?.free?.shapeLine ||
+      data?.free?.styleLine
+  );
 }
 
-function getFeatureTags(faceLab) {
-  const items = [
-    ...((Array.isArray(faceLab?.base_data?.landmarks) ? faceLab.base_data.landmarks : [])),
-    ...((Array.isArray(faceLab?.base_data?.embedding) ? faceLab.base_data.embedding : []))
-  ]
-    .map((item) => cleanText(item))
-    .filter(Boolean);
+export default function FaceShapePreviewCard({ copy, launchData, onEngage }) {
+  const teaserLines = [
+    {
+      label: copy.faceLabImpressionLabel || (copy.faceShapeSummaryLabel || "Impression"),
+      value: launchData?.free?.impressionLine || ""
+    },
+    {
+      label: copy.faceLabShapeLabel || copy.faceShapeLabel || "Shape",
+      value: launchData?.free?.shapeLine || ""
+    },
+    {
+      label: copy.faceLabStyleLabel || (copy.faceShapeTagsLabel || "Style"),
+      value: launchData?.free?.styleLine || ""
+    }
+  ].filter((item) => item.value);
 
-  return [...new Set(items)].slice(0, 4);
-}
-
-export default function FaceShapePreviewCard({ copy, faceLab }) {
-  const faceShape = cleanText(faceLab?.base_data?.face_shape);
-  const summary = cleanText(faceLab?.features?.face_shape_hairstyle?.summary);
-  const featureTags = getFeatureTags(faceLab);
-
-  if (!faceShape && !summary) {
+  if (!hasTeaserLines(launchData)) {
     return (
       <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
         {copy.faceShapeEmpty}
@@ -27,43 +31,41 @@ export default function FaceShapePreviewCard({ copy, faceLab }) {
   }
 
   return (
-    <section className="ui-card p-6">
+    <section
+      className="ui-card p-6"
+      onClick={onEngage}
+      role={onEngage ? "button" : undefined}
+      tabIndex={onEngage ? 0 : undefined}
+      onKeyDown={
+        onEngage
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onEngage();
+              }
+            }
+          : undefined
+      }
+    >
       <div className="space-y-5">
         <div className="space-y-2">
           <p className="ui-kicker">{copy.faceShapeFreeKicker}</p>
-          <h3 className="ui-title text-[1.6rem]">{copy.faceShapeFreeTitle}</h3>
+          <h3 className="ui-title text-[1.35rem] sm:text-[1.45rem]">{copy.faceLabTeaserTitle || copy.faceShapeFreeTitle}</h3>
+          <p className="ui-text-secondary text-sm leading-6">
+            {copy.faceLabTeaserBody || copy.faceShapeEmpty}
+          </p>
         </div>
 
-        {faceShape ? (
-          <div className="ui-card-muted p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-              {copy.faceShapeLabel}
-            </p>
-            <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">{faceShape}</p>
-          </div>
-        ) : null}
-
-        {summary ? (
-          <div className="ui-panel-accent p-5 shadow-soft">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-              {copy.faceShapeSummaryLabel}
-            </p>
-            <p className="mt-2.5 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{summary}</p>
-          </div>
-        ) : null}
-
-        {featureTags.length ? (
-          <div className="space-y-2">
-            <p className="ui-kicker">{copy.faceShapeTagsLabel}</p>
-            <div className="flex flex-wrap gap-2">
-              {featureTags.map((tag) => (
-                <span key={tag} className="ui-chip px-3 py-1.5 text-xs font-medium">
-                  {tag}
-                </span>
-              ))}
+        <div className="space-y-3">
+          {teaserLines.map((item) => (
+            <div key={item.label} className="rounded-[1.15rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-900">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                {item.label}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.value}</p>
             </div>
-          </div>
-        ) : null}
+          ))}
+        </div>
       </div>
     </section>
   );
