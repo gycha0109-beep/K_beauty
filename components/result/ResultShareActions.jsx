@@ -85,7 +85,7 @@ function writeSavedShare(payload) {
 
 async function getShareAccessToken() {
   const token = await getBrowserSupabaseAccessToken();
-  console.debug("[result/share] token ready before /api/results", {
+  console.log("[result/share] token ready before /api/results", {
     hasToken: Boolean(token)
   });
   return token;
@@ -116,19 +116,28 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
     setStatus("");
   }, [fingerprint, result, submission]);
 
-  async function saveResult(force = false) {
-    if (!force && shareInfo?.shareId) {
-      setStatus(copy.savedMessage);
-      return shareInfo;
-    }
+  async function saveResult({ force = false, source = "save-button" } = {}) {
+    console.log("[result/share] button click start", {
+      source,
+      force,
+      hasCachedShare: Boolean(shareInfo?.shareId),
+      cachedSavedWithAuth: Boolean(shareInfo?.savedWithAuth),
+      hasResult: Boolean(result),
+      hasSubmissionForm: Boolean(submission?.form)
+    });
 
     if (!result || !submission?.form) {
+      console.log("[result/share] abort before fetch: missing payload", {
+        hasResult: Boolean(result),
+        hasSubmissionForm: Boolean(submission?.form)
+      });
       return null;
     }
 
     const writeAccessToken = readWriteAccessToken();
 
     if (!writeAccessToken) {
+      console.log("[result/share] abort before fetch: missing write access token");
       setStatus(copy.sessionExpired);
       return null;
     }
@@ -136,8 +145,29 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
     try {
       setIsSaving(true);
       setStatus("");
+      console.log("[result/share] before token acquisition", { source });
       const supabaseAccessToken = await getShareAccessToken();
+      console.log("[result/share] after token acquisition", {
+        source,
+        hasToken: Boolean(supabaseAccessToken)
+      });
 
+      if (!force && shareInfo?.shareId && (!supabaseAccessToken || shareInfo?.savedWithAuth)) {
+        console.log("[result/share] using cached share without new request", {
+          source,
+          shareId: shareInfo.shareId,
+          hasToken: Boolean(supabaseAccessToken),
+          cachedSavedWithAuth: Boolean(shareInfo?.savedWithAuth)
+        });
+        setStatus(copy.savedMessage);
+        return shareInfo;
+      }
+
+      console.log("[result/share] immediately before fetch('/api/results')", {
+        source,
+        hasAuthorization: Boolean(supabaseAccessToken),
+        hasWriteAccessToken: true
+      });
       const response = await fetch("/api/results", {
         method: "POST",
         headers: {
@@ -151,6 +181,11 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
           submission,
           share: true
         })
+      });
+      console.log("[result/share] after response", {
+        source,
+        ok: response.ok,
+        status: response.status
       });
 
       const data = await response.json().catch(() => null);
@@ -167,7 +202,8 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
         shareId: data.shareId,
         sharePath: data.sharePath || getSharePath(data.shareId),
         shareUrl: getAbsoluteShareUrl(data.shareId),
-        fingerprint
+        fingerprint,
+        savedWithAuth: Boolean(supabaseAccessToken)
       };
 
       setShareInfo(nextShare);
@@ -184,7 +220,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
   }
 
   async function handleCopy() {
-    const saved = await saveResult();
+    const saved = await saveResult({ source: "copy-button" });
 
     if (!saved?.shareUrl) {
       return;
@@ -195,7 +231,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
   }
 
   async function handleShare() {
-    const saved = await saveResult();
+    const saved = await saveResult({ source: "share-button" });
 
     if (!saved?.shareUrl) {
       return;
@@ -250,7 +286,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <button
             type="button"
-            onClick={() => saveResult()}
+            onClick={() => saveResult({ source: "save-button" })}
             disabled={isSaving}
             className="ui-button-secondary min-h-11 px-3 text-sm font-medium"
           >
