@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { normalizeStoredAnalysisResult } from "@/lib/analysis-results";
+import {
+  normalizeStoredAnalysisResult,
+  PUBLIC_ANALYSIS_RESULT_SELECT
+} from "@/lib/analysis-results";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
 export async function GET(request, { params }) {
@@ -24,7 +27,7 @@ export async function GET(request, { params }) {
 
     const { data, error } = await supabase
       .from("analysis_results")
-      .select("*")
+      .select(PUBLIC_ANALYSIS_RESULT_SELECT)
       .eq("share_id", shareId)
       .eq("is_public", true)
       .single();

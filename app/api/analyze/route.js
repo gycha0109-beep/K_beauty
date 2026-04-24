@@ -9,18 +9,18 @@ import {
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
-const X_TITLE = process.env.OPENROUTER_X_TITLE || "K-Beauty AI Skin Test";
-const OPENROUTER_MODEL = "openai/gpt-4o-mini";
-const OPENROUTER_MAX_TOKENS = 1000;
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const FREE_OPENAI_MODEL = "gpt-4o-mini";
+const PREMIUM_OPENAI_MODEL = "gpt-4o";
+const PHOTO_ANALYSIS_MAX_TOKENS = 600;
+const PRODUCT_EXPLANATION_MAX_TOKENS = 700;
 
 const ANALYZE_COPY = {
   ko: {
     missingRequired: "필수 입력값이 비어 있습니다.",
     invalidImageType: "JPEG, PNG, WEBP 이미지만 업로드할 수 있습니다.",
     imageTooLarge: `이미지 용량은 ${formatUploadSize()} 이하만 업로드할 수 있습니다.`,
-    missingApiKeyNotice: "API 키가 없어 결정 엔진 기본 설명으로 결과를 표시합니다.",
+    missingApiKeyNotice: "OpenAI API 키가 없어 결정 엔진 기본 설명으로 결과를 표시합니다.",
     photoFallbackNotice: "사진 판독은 보수적으로 처리되고 설문 비중이 높아졌습니다.",
     explanationFallbackNotice: "설명 생성에 실패해 결정 엔진 기본 설명을 표시합니다.",
     serverError: "서버 오류가 발생했습니다."
@@ -29,7 +29,7 @@ const ANALYZE_COPY = {
     missingRequired: "Required input values are missing.",
     invalidImageType: "Only JPEG, PNG, and WEBP images are allowed.",
     imageTooLarge: `Images must be ${formatUploadSize()} or smaller.`,
-    missingApiKeyNotice: "No API key was found, so the deterministic engine text is shown instead.",
+    missingApiKeyNotice: "No OpenAI API key was found, so the deterministic engine text is shown instead.",
     photoFallbackNotice: "Photo evidence was handled conservatively, so the survey carried more weight.",
     explanationFallbackNotice: "Explanation generation failed, so the deterministic engine text is shown instead.",
     serverError: "A server error occurred."
@@ -86,6 +86,10 @@ function parseJsonArrayField(value) {
   }
 }
 
+function resolveAnalyzeModel(isPremium = false) {
+  return isPremium ? PREMIUM_OPENAI_MODEL : FREE_OPENAI_MODEL;
+}
+
 function extractTextContent(content) {
   if (typeof content === "string") {
     return content;
@@ -123,7 +127,7 @@ function safeParse(content) {
   }
 }
 
-async function readOpenRouterResponse(response) {
+async function readOpenAiResponse(response) {
   const rawText = await response.text();
 
   if (!rawText) {
@@ -344,19 +348,17 @@ function buildFreeDecisionPayload(decision) {
   };
 }
 
-async function fetchOpenRouterJson({ apiKey, body, stage }) {
-  const response = await fetch(OPENROUTER_URL, {
+async function fetchOpenAiJson({ apiKey, body, stage }) {
+  const response = await fetch(OPENAI_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": HTTP_REFERER,
-      "X-Title": X_TITLE
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
   });
 
-  const payload = await readOpenRouterResponse(response);
+  const payload = await readOpenAiResponse(response);
 
   logAnalyze(stage, {
     status: payload.status,
@@ -369,30 +371,30 @@ async function fetchOpenRouterJson({ apiKey, body, stage }) {
       payload.data?.error?.message ||
       payload.data?.error ||
       payload.rawText ||
-      `OpenRouter failed (${payload.status}).`
+      `OpenAI failed (${payload.status}).`
     );
   }
 
   const content = extractTextContent(payload.data?.choices?.[0]?.message?.content);
 
   if (!content) {
-    throw new Error("OpenRouter returned empty content.");
+    throw new Error("OpenAI returned empty content.");
   }
 
   return safeParse(content);
 }
 
-async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale }) {
+async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model }) {
   if (!apiKey || !imageDataUrl) {
     return buildFallbackPhotoAnalysis(locale);
   }
 
-  const parsed = await fetchOpenRouterJson({
+  const parsed = await fetchOpenAiJson({
     apiKey,
     stage: "photo-evidence",
     body: {
-      model: OPENROUTER_MODEL,
-      max_tokens: 500,
+      model,
+      max_tokens: PHOTO_ANALYSIS_MAX_TOKENS,
       temperature: 0,
       response_format: { type: "json_object" },
       messages: [
@@ -422,7 +424,7 @@ async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale }) {
   return normalizePhotoAnalysis(parsed, locale);
 }
 
-async function generateProductExplanations({ apiKey, locale, decision, formInput }) {
+async function generateProductExplanations({ apiKey, locale, decision, formInput, model }) {
   if (!apiKey || !(decision.explanationProducts || decision.products)?.length) {
     return [];
   }
@@ -430,12 +432,12 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
   const selectedProducts = buildSelectedProductsContext(decision);
   const allowedIds = new Set(selectedProducts.map((product) => product.id).filter(Boolean));
   const prompt = buildExplanationPrompt(locale, selectedProducts);
-  const parsed = await fetchOpenRouterJson({
+  const parsed = await fetchOpenAiJson({
     apiKey,
     stage: "product-explanations",
     body: {
-      model: OPENROUTER_MODEL,
-      max_tokens: OPENROUTER_MAX_TOKENS,
+      model,
+      max_tokens: PRODUCT_EXPLANATION_MAX_TOKENS,
       temperature: 0.2,
       response_format: { type: "json_object" },
       messages: [
@@ -526,8 +528,10 @@ export async function POST(request) {
     const eyeSensitive = parseBooleanField(formData.get("eyeSensitive"));
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
+    const isPremium = false;
     const locale = formData.get("locale") === "en" ? "en" : "ko";
     const copy = getAnalyzeCopy(locale);
+    const model = resolveAnalyzeModel(isPremium) || FREE_OPENAI_MODEL;
     const resolvedMainConcern =
       (typeof mainConcern === "string" && mainConcern) || mainConcerns[0] || "";
     const imageValidation = validateImageUpload(image);
@@ -584,7 +588,7 @@ export async function POST(request) {
       verySensitivePeriod: Boolean(verySensitivePeriod)
     };
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     const writeAccessToken = createWriteAccessToken();
 
     let imageDataUrl = null;
@@ -596,8 +600,9 @@ export async function POST(request) {
 
     logAnalyze("request:prepared", {
       hasApiKey: Boolean(apiKey),
+      isPremium,
       locale,
-      model: OPENROUTER_MODEL,
+      model,
       mainConcern: formInput.mainConcern,
       skinType: formInput.skinType
     });
@@ -610,7 +615,8 @@ export async function POST(request) {
         photoAnalysis = await extractPhotoAnalysis({
           apiKey,
           imageDataUrl,
-          locale
+          locale,
+          model
         });
       } catch (photoError) {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
@@ -636,7 +642,8 @@ export async function POST(request) {
           apiKey,
           locale,
           decision,
-          formInput
+          formInput,
+          model
         });
 
         if (explanationItems.length) {
@@ -663,8 +670,8 @@ export async function POST(request) {
       meta: {
         source: "skin-match-v2",
         notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
-        explanationSource: apiKey && !explanationNotice ? "openrouter" : "deterministic",
-        photoEvidenceSource: apiKey && !photoNotice ? "openrouter" : "fallback"
+        explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
+        photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback"
       }
     });
 

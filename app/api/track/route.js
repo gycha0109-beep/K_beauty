@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
 import {
   consumeRateLimit,
   getRequestClientKey,
@@ -116,6 +117,7 @@ export async function POST(request) {
     }
 
     const supabase = createSupabaseAdminClient();
+    const currentUser = await getRouteSupabaseUser(request);
 
     if (!supabase) {
       return NextResponse.json(
@@ -159,7 +161,10 @@ export async function POST(request) {
 
     const { error } = await supabase
       .from("recommendation_logs")
-      .insert([payload]);
+      .insert([{
+        ...payload,
+        user_id: currentUser?.id || null
+      }]);
 
     if (error) {
       console.error("[api/track] insert failed", {

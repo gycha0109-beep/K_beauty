@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ResultShareCard from "@/components/result/ResultShareCard";
-import { getShareCopy, normalizeStoredAnalysisResult } from "@/lib/analysis-results";
+import {
+  getShareCopy,
+  normalizeStoredAnalysisResult,
+  PUBLIC_ANALYSIS_RESULT_SELECT
+} from "@/lib/analysis-results";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 
 async function getSharedResult(shareId) {
@@ -13,7 +17,7 @@ async function getSharedResult(shareId) {
 
   const { data, error } = await supabase
     .from("analysis_results")
-    .select("*")
+    .select(PUBLIC_ANALYSIS_RESULT_SELECT)
     .eq("share_id", shareId)
     .eq("is_public", true)
     .single();

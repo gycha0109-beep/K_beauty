@@ -105,6 +105,7 @@ export default function HomePage() {
   const locale = pathname?.startsWith("/en") ? "en" : "ko";
   const copy = ONBOARDING_COPY[locale] || ONBOARDING_COPY.ko;
   const analyzeStartedRef = useRef(false);
+  const stepScrollReadyRef = useRef(false);
   const devMenuCopy = locale === "en"
     ? { toggle: "Test", skin: "Skin Match" }
     : { toggle: "테스트", skin: "Skin Match" };
@@ -134,6 +135,22 @@ export default function HomePage() {
       }
     };
   }, [previewUrl]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!stepScrollReadyRef.current) {
+      stepScrollReadyRef.current = true;
+      return;
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }, [currentStep]);
 
   useEffect(() => {
     if (currentStep !== "loading") {

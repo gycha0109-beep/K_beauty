@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
-import { buildAnalysisResultRow, createShareId, getSharePath } from "@/lib/analysis-results";
+import {
+  buildAnalysisRequestRow,
+  buildAnalysisResultRow,
+  createShareId,
+  getSharePath
+} from "@/lib/analysis-results";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
 import {
   consumeRateLimit,
   getRequestClientKey,
@@ -10,6 +16,18 @@ import {
 
 const SAVE_RESULTS_LIMIT = 10;
 const SAVE_RESULTS_WINDOW_MS = 10 * 60 * 1000;
+
+function getResultSaveErrorMessage(error) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (typeof error?.message === "string" && error.message) {
+    return error.message;
+  }
+
+  return "Failed to save result.";
+}
 
 async function insertAnalysisResult(supabase, payload) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -33,6 +51,21 @@ async function insertAnalysisResult(supabase, payload) {
   throw new Error("Could not generate a unique share id.");
 }
 
+async function createAnalysisRequest(supabase, payload) {
+  const row = buildAnalysisRequestRow(payload);
+  const { data, error } = await supabase
+    .from("analysis_requests")
+    .insert([row])
+    .select("id")
+    .single();
+
+  if (error || !data?.id) {
+    throw error || new Error("Failed to create analysis request.");
+  }
+
+  return data.id;
+}
+
 function getUnauthorizedResponse() {
   return NextResponse.json(
     {
@@ -44,6 +77,8 @@ function getUnauthorizedResponse() {
 }
 
 export async function POST(request) {
+  let requestId = null;
+
   try {
     const verification = verifyWriteAccessToken(
       request.headers.get(WRITE_ACCESS_HEADER)
@@ -75,6 +110,7 @@ export async function POST(request) {
     }
 
     const supabase = createSupabaseAdminClient();
+    const currentUser = await getRouteSupabaseUser(request);
 
     if (!supabase) {
       return NextResponse.json(
@@ -115,11 +151,16 @@ export async function POST(request) {
       );
     }
 
+    requestId = await createAnalysisRequest(supabase, {
+      submission
+    });
+
     const saved = await insertAnalysisResult(supabase, {
       result,
       submission,
       locale,
-      userId: null,
+      requestId,
+      userId: currentUser?.id || null,
       isPublic: true
     });
 
@@ -133,10 +174,21 @@ export async function POST(request) {
   } catch (error) {
     console.error("[api/results] save failed", error);
 
+    if (requestId) {
+      try {
+        await createSupabaseAdminClient()
+          ?.from("analysis_requests")
+          .delete()
+          .eq("id", requestId);
+      } catch (cleanupError) {
+        console.error("[api/results] request cleanup failed", cleanupError);
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to save result."
+        error: getResultSaveErrorMessage(error)
       },
       { status: 500 }
     );

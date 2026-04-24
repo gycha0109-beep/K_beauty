@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const HTTP_REFERER = process.env.OPENROUTER_HTTP_REFERER || "http://localhost:3001";
-const X_TITLE = process.env.OPENROUTER_X_TITLE || "K-Beauty AI Skin Test";
-const MODEL = "openai/gpt-4o-mini";
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const MODEL = "gpt-4o-mini";
 
 const COPY = {
   ko: {
@@ -630,7 +628,7 @@ Rules:
 `.trim();
 }
 
-async function readOpenRouterResponse(response) {
+async function readOpenAiResponse(response) {
   const rawText = await response.text();
 
   try {
@@ -670,7 +668,7 @@ export async function POST(request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(buildMockFaceLab(locale));
     }
@@ -678,13 +676,11 @@ export async function POST(request) {
     const buffer = Buffer.from(await image.arrayBuffer());
     const imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
 
-    const response = await fetch(OPENROUTER_URL, {
+    const response = await fetch(OPENAI_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": HTTP_REFERER,
-        "X-Title": X_TITLE
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: MODEL,
@@ -710,10 +706,10 @@ export async function POST(request) {
       })
     });
 
-    const { ok, status, data, rawText } = await readOpenRouterResponse(response);
+    const { ok, status, data, rawText } = await readOpenAiResponse(response);
 
     if (!ok) {
-      console.error("[face-reading] OpenRouter failed", { status, rawText });
+      console.error("[face-reading] OpenAI failed", { status, rawText });
       return NextResponse.json(buildMockFaceLab(locale));
     }
 

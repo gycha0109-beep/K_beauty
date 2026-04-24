@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
@@ -96,28 +97,32 @@ function trackEvent(eventName, data = {}) {
     return;
   }
 
-  const payload = {
-    event_name: eventName,
-    timestamp: new Date().toISOString(),
-    session_id: data.session_id ?? getOrCreateTrackingSessionId(),
-    product_id: data.product_id ?? null,
-    feature_name: data.feature_name ?? "skin_analysis",
-    result_type: data.result_type ?? null,
-    is_top_pick: Boolean(data.is_top_pick),
-    question_id: data.question_id ?? null,
-    answer: data.answer ?? null,
-    meta_json: data.meta_json ?? null
-  };
+  void (async () => {
+    const payload = {
+      event_name: eventName,
+      timestamp: new Date().toISOString(),
+      session_id: data.session_id ?? getOrCreateTrackingSessionId(),
+      product_id: data.product_id ?? null,
+      feature_name: data.feature_name ?? "skin_analysis",
+      result_type: data.result_type ?? null,
+      is_top_pick: Boolean(data.is_top_pick),
+      question_id: data.question_id ?? null,
+      answer: data.answer ?? null,
+      meta_json: data.meta_json ?? null
+    };
+    const supabaseAccessToken = await getBrowserSupabaseAccessToken();
 
-  void fetch("/api/track", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-kbeauty-write-token": writeAccessToken
-    },
-    body: JSON.stringify(payload),
-    keepalive: true
-  }).catch(() => {});
+    return fetch("/api/track", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {}),
+        "x-kbeauty-write-token": writeAccessToken
+      },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(() => {});
+  })();
 }
 
 function renderList(items = []) {
@@ -226,10 +231,12 @@ export default function FullReportPage() {
       }
 
       try {
+        const supabaseAccessToken = await getBrowserSupabaseAccessToken();
         const response = await fetch("/api/full-report", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {}),
             "x-kbeauty-write-token": writeAccessToken
           },
           body: JSON.stringify({

@@ -169,8 +169,6 @@ order by row_count desc, normalized_brand, normalized_name;
 
 ## Env Checks
 
-- `OPENROUTER_API_KEY`
+- `OPENAI_API_KEY`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `OPENROUTER_HTTP_REFERER`
-- `OPENROUTER_X_TITLE`

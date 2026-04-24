@@ -4,6 +4,7 @@ import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ResultShareCard from "@/components/result/ResultShareCard";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
+import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const SHARE_SESSION_KEY = "skinTestShare";
@@ -123,11 +124,13 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
     try {
       setIsSaving(true);
       setStatus("");
+      const supabaseAccessToken = await getBrowserSupabaseAccessToken();
 
       const response = await fetch("/api/results", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {}),
           "x-kbeauty-write-token": writeAccessToken
         },
         body: JSON.stringify({

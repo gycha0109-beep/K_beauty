@@ -13,6 +13,7 @@ import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import TopPickStep from "@/components/result/TopPickStep";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
   ko: {
@@ -332,46 +333,50 @@ function trackEvent(eventName, data = {}) {
     return;
   }
 
-  const payload = {
-    event_name: eventName,
-    timestamp: new Date().toISOString(),
-    session_id: data.session_id ?? getOrCreateTrackingSessionId(),
-    product_id: data.product_id ?? null,
-    feature_name: data.feature_name ?? "skin_analysis",
-    result_type: data.result_type ?? null,
-    is_top_pick: Boolean(data.is_top_pick),
-    question_id: data.question_id ?? null,
-    answer: data.answer ?? null,
-    meta_json: data.meta_json ?? null
-  };
+  void (async () => {
+    const payload = {
+      event_name: eventName,
+      timestamp: new Date().toISOString(),
+      session_id: data.session_id ?? getOrCreateTrackingSessionId(),
+      product_id: data.product_id ?? null,
+      feature_name: data.feature_name ?? "skin_analysis",
+      result_type: data.result_type ?? null,
+      is_top_pick: Boolean(data.is_top_pick),
+      question_id: data.question_id ?? null,
+      answer: data.answer ?? null,
+      meta_json: data.meta_json ?? null
+    };
+    const supabaseAccessToken = await getBrowserSupabaseAccessToken();
 
-  void fetch("/api/track", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-kbeauty-write-token": writeAccessToken
-    },
-    body: JSON.stringify(payload),
-    keepalive: true
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        let details = null;
-
-        try {
-          details = await response.json();
-        } catch {}
-
-        console.error("[trackEvent] request failed", {
-          status: response.status,
-          details,
-          payload
-        });
-      }
+    return fetch("/api/track", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {}),
+        "x-kbeauty-write-token": writeAccessToken
+      },
+      body: JSON.stringify(payload),
+      keepalive: true
     })
-    .catch((requestError) => {
-      console.error("[trackEvent] request error", requestError, payload);
-    });
+      .then(async (response) => {
+        if (!response.ok) {
+          let details = null;
+
+          try {
+            details = await response.json();
+          } catch {}
+
+          console.error("[trackEvent] request failed", {
+            status: response.status,
+            details,
+            payload
+          });
+        }
+      })
+      .catch((requestError) => {
+        console.error("[trackEvent] request error", requestError, payload);
+      });
+  })();
 }
 
 function getResultCopy(locale = "ko") {
