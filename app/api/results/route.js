@@ -16,6 +16,7 @@ import {
 
 const SAVE_RESULTS_LIMIT = 10;
 const SAVE_RESULTS_WINDOW_MS = 10 * 60 * 1000;
+const USER_ID_COLUMN_SUPPORT = new Map();
 
 function getResultSaveErrorMessage(error) {
   if (error instanceof Error && error.message) {
@@ -49,6 +50,29 @@ async function insertAnalysisResult(supabase, payload) {
   }
 
   throw new Error("Could not generate a unique share id.");
+}
+
+async function supportsUserIdColumn(supabase, tableName) {
+  if (USER_ID_COLUMN_SUPPORT.has(tableName)) {
+    return USER_ID_COLUMN_SUPPORT.get(tableName);
+  }
+
+  const { error } = await supabase
+    .from(tableName)
+    .select("id, user_id")
+    .limit(1);
+
+  if (error?.code === "42703") {
+    USER_ID_COLUMN_SUPPORT.set(tableName, false);
+    return false;
+  }
+
+  if (error) {
+    console.error(`[api/results] failed to inspect ${tableName}.user_id support`, error);
+  }
+
+  USER_ID_COLUMN_SUPPORT.set(tableName, true);
+  return true;
 }
 
 async function createAnalysisRequest(supabase, payload) {
@@ -111,6 +135,7 @@ export async function POST(request) {
 
     const supabase = createSupabaseAdminClient();
     const currentUser = await getRouteSupabaseUser(request);
+    const resolvedUserId = currentUser?.id || null;
 
     if (!supabase) {
       return NextResponse.json(
@@ -151,8 +176,15 @@ export async function POST(request) {
       );
     }
 
+    const [requestSupportsUserId, resultSupportsUserId] = await Promise.all([
+      supportsUserIdColumn(supabase, "analysis_requests"),
+      supportsUserIdColumn(supabase, "analysis_results")
+    ]);
+
     requestId = await createAnalysisRequest(supabase, {
-      submission
+      submission,
+      userId: resolvedUserId,
+      supportsUserId: requestSupportsUserId
     });
 
     const saved = await insertAnalysisResult(supabase, {
@@ -160,7 +192,8 @@ export async function POST(request) {
       submission,
       locale,
       requestId,
-      userId: currentUser?.id || null,
+      userId: resolvedUserId,
+      supportsUserId: resultSupportsUserId,
       isPublic: true
     });
 

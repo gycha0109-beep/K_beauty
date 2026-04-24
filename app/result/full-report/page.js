@@ -9,6 +9,15 @@ import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
+async function getFullReportAccessToken(requestPath) {
+  const token = await getBrowserSupabaseAccessToken();
+  console.debug("[full-report] token ready before request", {
+    requestPath,
+    hasToken: Boolean(token)
+  });
+  return token;
+}
+
 const COPY = {
   ko: {
     loading: "Full Report를 불러오는 중입니다...",
@@ -110,7 +119,7 @@ function trackEvent(eventName, data = {}) {
       answer: data.answer ?? null,
       meta_json: data.meta_json ?? null
     };
-    const supabaseAccessToken = await getBrowserSupabaseAccessToken();
+    const supabaseAccessToken = await getFullReportAccessToken("/api/track");
 
     return fetch("/api/track", {
       method: "POST",
@@ -200,6 +209,10 @@ export default function FullReportPage() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    void getFullReportAccessToken("full-report-page-init");
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -231,7 +244,7 @@ export default function FullReportPage() {
       }
 
       try {
-        const supabaseAccessToken = await getBrowserSupabaseAccessToken();
+        const supabaseAccessToken = await getFullReportAccessToken("/api/full-report");
         const response = await fetch("/api/full-report", {
           method: "POST",
           headers: {

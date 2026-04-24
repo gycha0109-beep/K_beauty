@@ -83,6 +83,14 @@ function writeSavedShare(payload) {
   sessionStorage.setItem(SHARE_SESSION_KEY, JSON.stringify(payload));
 }
 
+async function getShareAccessToken() {
+  const token = await getBrowserSupabaseAccessToken();
+  console.debug("[result/share] token ready before /api/results", {
+    hasToken: Boolean(token)
+  });
+  return token;
+}
+
 export default function ResultShareActions({ result, submission, locale = "ko" }) {
   const copy = getActionCopy(locale);
   const exportRef = useRef(null);
@@ -91,6 +99,10 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    void getShareAccessToken();
+  }, []);
 
   useEffect(() => {
     const saved = readSavedShare(fingerprint);
@@ -124,7 +136,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
     try {
       setIsSaving(true);
       setStatus("");
-      const supabaseAccessToken = await getBrowserSupabaseAccessToken();
+      const supabaseAccessToken = await getShareAccessToken();
 
       const response = await fetch("/api/results", {
         method: "POST",

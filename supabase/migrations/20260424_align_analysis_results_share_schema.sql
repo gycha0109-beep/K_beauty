@@ -5,6 +5,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.analysis_requests (
   id uuid primary key default gen_random_uuid(),
   session_id text,
+  user_id uuid,
   feature_type text not null default 'skin',
   image_url text,
   survey_json jsonb not null default '{}'::jsonb,
@@ -16,6 +17,9 @@ create table if not exists public.analysis_requests (
 
 alter table public.analysis_requests
   add column if not exists session_id text;
+
+alter table public.analysis_requests
+  add column if not exists user_id uuid;
 
 alter table public.analysis_requests
   add column if not exists feature_type text;
@@ -132,6 +136,9 @@ create index if not exists analysis_results_public_share_idx
 
 comment on column public.analysis_results.request_id is
   'Stable request identifier for a single saved analysis result.';
+
+comment on column public.analysis_requests.user_id is
+  'Optional Supabase auth user id associated with the saved analysis request.';
 
 comment on column public.analysis_results.feature_type is
   'Feature identifier for analytics and future multi-feature result storage.';

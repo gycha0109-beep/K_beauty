@@ -310,6 +310,15 @@ const resultCopy = {
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
+async function getResultPageAccessToken(requestPath) {
+  const token = await getBrowserSupabaseAccessToken();
+  console.debug("[result/page] token ready before request", {
+    requestPath,
+    hasToken: Boolean(token)
+  });
+  return token;
+}
+
 function getOrCreateTrackingSessionId() {
   if (typeof window === "undefined") {
     return null;
@@ -346,7 +355,7 @@ function trackEvent(eventName, data = {}) {
       answer: data.answer ?? null,
       meta_json: data.meta_json ?? null
     };
-    const supabaseAccessToken = await getBrowserSupabaseAccessToken();
+    const supabaseAccessToken = await getResultPageAccessToken("/api/track");
 
     return fetch("/api/track", {
       method: "POST",
@@ -1042,6 +1051,10 @@ function ResultContent() {
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
   const localizedPath = getLocalePath(pathname, locale);
+
+  useEffect(() => {
+    void getResultPageAccessToken("result-page-init");
+  }, []);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");
