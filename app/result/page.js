@@ -310,13 +310,8 @@ const resultCopy = {
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
-async function getResultPageAccessToken(requestPath) {
-  const token = await getBrowserSupabaseAccessToken();
-  console.debug("[result/page] token ready before request", {
-    requestPath,
-    hasToken: Boolean(token)
-  });
-  return token;
+async function getResultPageAccessToken() {
+  return getBrowserSupabaseAccessToken();
 }
 
 function getOrCreateTrackingSessionId() {
@@ -338,10 +333,6 @@ function getOrCreateTrackingSessionId() {
 function trackEvent(eventName, data = {}) {
   const writeAccessToken = readWriteAccessToken();
 
-  if (!writeAccessToken) {
-    return;
-  }
-
   void (async () => {
     const payload = {
       event_name: eventName,
@@ -355,15 +346,28 @@ function trackEvent(eventName, data = {}) {
       answer: data.answer ?? null,
       meta_json: data.meta_json ?? null
     };
-    const supabaseAccessToken = await getResultPageAccessToken("/api/track");
+    const supabaseAccessToken = await getResultPageAccessToken();
+    const token = supabaseAccessToken;
+
+    if (!token && !writeAccessToken) {
+      return;
+    }
+
+    const headers = {
+      "Content-Type": "application/json"
+    };
+
+    if (writeAccessToken) {
+      headers["x-kbeauty-write-token"] = writeAccessToken;
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     return fetch("/api/track", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {}),
-        "x-kbeauty-write-token": writeAccessToken
-      },
+      headers,
       body: JSON.stringify(payload),
       keepalive: true
     })

@@ -87,12 +87,16 @@ function getUnauthorizedResponse() {
 
 export async function POST(request) {
   try {
-    const verification = verifyWriteAccessToken(
-      request.headers.get(WRITE_ACCESS_HEADER)
-    );
+    const currentUser = await getRouteSupabaseUser(request);
 
-    if (!verification.ok) {
-      return getUnauthorizedResponse();
+    if (!currentUser) {
+      const verification = verifyWriteAccessToken(
+        request.headers.get(WRITE_ACCESS_HEADER)
+      );
+
+      if (!verification.ok) {
+        return getUnauthorizedResponse();
+      }
     }
 
     const rateLimit = consumeRateLimit({
@@ -117,7 +121,6 @@ export async function POST(request) {
     }
 
     const supabase = createSupabaseAdminClient();
-    const currentUser = await getRouteSupabaseUser(request);
 
     if (!supabase) {
       return NextResponse.json(
