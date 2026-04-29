@@ -1,1 +1,25 @@
-null
+{
+  "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+  "review_signals": {
+    "source": "hwahae_ai_review",
+    "positive": [
+      { "label": "속건조에 효과있는", "count": 9954, "mapped": ["dehydration"] },
+      { "label": "가벼운", "count": 7226, "mapped": ["fresh"] },
+      { "label": "트러블 안생기는", "count": 5796, "mapped": ["acne_safe"] },
+      { "label": "산뜻한", "count": 3152, "mapped": ["fresh", "oiliness"] },
+      { "label": "유분없는", "count": 2981, "mapped": ["fresh", "oiliness"] },
+      { "label": "편안해지는", "count": 1261, "mapped": ["sensitive_safe"] },
+      { "label": "밀림없는", "count": 1128, "mapped": ["makeup_safe"] }
+    ],
+    "negative": [
+      { "label": "알러지 반응오는", "count": 1324, "mapped": ["sensitivity_risk"] },
+      { "label": "흘러내리는", "count": 1162, "mapped": ["lasting_weak"] },
+      { "label": "지속력 안좋은", "count": 589, "mapped": ["lasting_weak"] },
+      { "label": "유수분 밸런스가 맞지않는", "count": 384, "mapped": ["balance_mismatch"] },
+      { "label": "미끌거리는", "count": 381, "mapped": ["slippery"] },
+      { "label": "잘굳는", "count": 321, "mapped": ["texture_issue"] },
+      { "label": "가려운", "count": 293, "mapped": ["irritation_risk", "sensitivity_risk"] }
+    ],
+    "updated_at": "2026-04-30"
+  }
+}

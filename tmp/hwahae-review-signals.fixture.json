@@ -1,0 +1,78 @@
+{
+  "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+  "review_signals": {
+    "source": "hwahae_ai_review",
+    "positive": [
+      {
+        "label": "hydrating",
+        "count": 9954,
+        "mapped": []
+      }
+    ],
+    "negative": [
+      {
+        "label": "drying",
+        "count": 321,
+        "mapped": []
+      }
+    ],
+    "updated_at": "2026-04-30"
+  },
+  "market_signals": {
+    "source": "hwahae_visible_page",
+    "review_count": 12345,
+    "rating": 4.7,
+    "rating_distribution": {
+      "4": 2500,
+      "5": 9000
+    },
+    "updated_at": "2026-04-30"
+  },
+  "ingredient_signals": {
+    "source": "hwahae_visible_page",
+    "total_ingredients": 42,
+    "risk": {
+      "low": 36,
+      "medium": 4,
+      "high": 1,
+      "unknown": 1
+    },
+    "functional": [
+      {
+        "label": "skin hydration",
+        "count": 6,
+        "mapped": [
+          "dehydration"
+        ]
+      },
+      {
+        "label": "soothing/astringent",
+        "count": 4,
+        "mapped": [
+          "redness",
+          "oiliness"
+        ]
+      }
+    ],
+    "functional_summary": {
+      "dehydration": 6,
+      "redness": 4,
+      "oiliness": 4
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 5,
+        "negative": 1
+      },
+      "dry": {
+        "positive": 4,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 3,
+        "negative": 1
+      }
+    },
+    "updated_at": "2026-04-30"
+  }
+}
