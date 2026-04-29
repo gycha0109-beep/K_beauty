@@ -10,25 +10,19 @@ export default function ResultOverviewStep({
       <div className="ui-card p-5">
         <p className="ui-kicker">{copy.resultOverviewKicker}</p>
         <h1 className="ui-title mt-2 text-[1.75rem] sm:text-[1.9rem]">{copy.resultOverviewTitle}</h1>
-        <p className="ui-text-secondary mt-1.5 text-sm leading-6">{copy.resultOverviewBody}</p>
+        {copy.resultOverviewBody ? (
+          <p className="ui-text-secondary mt-1.5 text-sm leading-6">{copy.resultOverviewBody}</p>
+        ) : null}
       </div>
 
       <div className="ui-card overflow-hidden p-0">
         {photoUrl ? (
-          <div>
-            <div className="flex h-[224px] items-start justify-center bg-[linear-gradient(180deg,#f4f4f5_0%,#ffffff_100%)] p-3 dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]">
-              <img
-                src={photoUrl}
-                alt={photoAlt}
-                className="h-full w-full rounded-[1.4rem] object-contain object-top"
-              />
-            </div>
-            <div className="border-t border-zinc-200/80 px-4 py-3 dark:border-zinc-800">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                {copy.resultPhotoBadge}
-              </p>
-              <p className="mt-1.5 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{copy.resultPhotoBody}</p>
-            </div>
+          <div className="flex h-[224px] items-start justify-center bg-[linear-gradient(180deg,#f4f4f5_0%,#ffffff_100%)] p-3 dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]">
+            <img
+              src={photoUrl}
+              alt={photoAlt}
+              className="h-full w-full rounded-[1.4rem] object-contain object-top"
+            />
           </div>
         ) : (
           <div className="flex h-[224px] items-center justify-center bg-[linear-gradient(135deg,#f4f4f5_0%,#ffffff_100%)] px-6 text-center dark:bg-[linear-gradient(135deg,#18181b_0%,#111114_100%)]">

@@ -7,6 +7,7 @@ function hasTeaserLines(data) {
 }
 
 export default function FaceShapePreviewCard({ copy, launchData }) {
+  const teaserBody = copy.faceLabTeaserBody || "";
   const teaserLines = [
     {
       label: copy.faceLabImpressionLabel || (copy.faceShapeSummaryLabel || "Impression"),
@@ -36,9 +37,7 @@ export default function FaceShapePreviewCard({ copy, launchData }) {
         <div className="space-y-2">
           <p className="ui-kicker">{copy.faceShapeFreeKicker}</p>
           <h3 className="ui-title text-[1.35rem] sm:text-[1.45rem]">{copy.faceLabTeaserTitle || copy.faceShapeFreeTitle}</h3>
-          <p className="ui-text-secondary text-sm leading-6">
-            {copy.faceLabTeaserBody || copy.faceShapeEmpty}
-          </p>
+          {teaserBody ? <p className="ui-text-secondary text-sm leading-6">{teaserBody}</p> : null}
         </div>
 
         <div className="space-y-3">

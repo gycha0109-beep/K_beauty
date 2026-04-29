@@ -1,5 +1,4 @@
 {
-  "/api/results/route": "app/api/results/route.js",
   "/page": "app/page.js",
   "/result/page": "app/result/page.js",
   "/r/[shareId]/page": "app/r/[shareId]/page.js"

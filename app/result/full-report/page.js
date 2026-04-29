@@ -150,10 +150,67 @@ function renderList(items = []) {
   ) : null;
 }
 
+function getRoutineSections(report, copy) {
+  const structure = report?.routineStructure;
+  const cards = Array.isArray(structure?.cards) ? structure.cards : [];
+
+  if (!cards.length) {
+    return [
+      { key: "morning", label: copy.morning, items: report.fullRoutine?.morning || [] },
+      { key: "night", label: copy.night, items: report.fullRoutine?.night || [] }
+    ];
+  }
+
+  if (structure.type === "am_only") {
+    return [
+      {
+        key: "morning",
+        label: cards[0]?.label || copy.morning,
+        items: report.fullRoutine?.morning || []
+      }
+    ];
+  }
+
+  if (structure.type === "pm_only") {
+    return [
+      {
+        key: "night",
+        label: cards[0]?.label || copy.night,
+        items: report.fullRoutine?.night || []
+      }
+    ];
+  }
+
+  if (structure.type === "single_track") {
+    return [
+      {
+        key: "core",
+        label: cards[0]?.label || copy.fullRoutine,
+        items: (report.fullRoutine?.morning || []).length ? report.fullRoutine.morning : (report.fullRoutine?.night || [])
+      }
+    ];
+  }
+
+  return [
+    {
+      key: "morning",
+      label: cards.find((item) => item.key === "morning")?.label || copy.morning,
+      items: report.fullRoutine?.morning || []
+    },
+    {
+      key: "night",
+      label: cards.find((item) => item.key === "night")?.label || copy.night,
+      items: report.fullRoutine?.night || []
+    }
+  ];
+}
+
 function SupportingProductCard({ product, copy }) {
   if (!product) {
     return null;
   }
+
+  const routineSections = getRoutineSections(report, copy);
 
   return (
     <article className="ui-card-muted rounded-[1.35rem] p-4">
@@ -369,19 +426,15 @@ export default function FullReportPage() {
 
           <section className="ui-card p-6">
             <p className="ui-kicker">{copy.fullRoutine}</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.morning}</p>
-                {renderList(report.fullRoutine?.morning || []) || (
-                  <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-                )}
-              </div>
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.night}</p>
-                {renderList(report.fullRoutine?.night || []) || (
-                  <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-                )}
-              </div>
+            <div className={`mt-4 grid gap-3 ${routineSections.length > 1 ? "sm:grid-cols-2" : ""}`}>
+              {routineSections.map((section) => (
+                <div key={section.key} className="ui-card-subtle p-4">
+                  <p className="ui-kicker">{section.label}</p>
+                  {renderList(section.items || []) || (
+                    <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+                  )}
+                </div>
+              ))}
             </div>
           </section>
 

@@ -60,6 +60,7 @@ export default async function SharedResultPage({ params }) {
             summary={result.summary}
             topPick={result.topPick}
             categoryPicks={result.categoryPicks}
+            routineStructure={result.routineStructure}
             routineAm={result.routineAm}
             routinePm={result.routinePm}
           />

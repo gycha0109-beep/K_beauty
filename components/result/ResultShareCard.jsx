@@ -1,5 +1,37 @@
 import { getConcernLabels, getShareCopy, getSkinTypeLabel } from "@/lib/analysis-results";
 
+function buildRoutineSections({ locale = "ko", routineStructure = null, routineAm = [], routinePm = [] }) {
+  const copy = getShareCopy(locale);
+  const cards = Array.isArray(routineStructure?.cards) ? routineStructure.cards : [];
+
+  if (cards.length) {
+    return cards
+      .map((card, index) => ({
+        key: card?.key || `routine-${index}`,
+        label: card?.label || (card?.key === "night" ? copy.routinePm : copy.routineAm),
+        items: [card?.body].filter(Boolean)
+      }))
+      .filter((section) => section.items.length);
+  }
+
+  return [
+    routineAm.length
+      ? {
+          key: "morning",
+          label: copy.routineAm,
+          items: routineAm
+        }
+      : null,
+    routinePm.length
+      ? {
+          key: "night",
+          label: copy.routinePm,
+          items: routinePm
+        }
+      : null
+  ].filter(Boolean);
+}
+
 export default function ResultShareCard({
   locale = "ko",
   skinType = "",
@@ -7,6 +39,7 @@ export default function ResultShareCard({
   summary = "",
   topPick = null,
   categoryPicks = [],
+  routineStructure = null,
   routineAm = [],
   routinePm = [],
   compact = false
@@ -14,6 +47,14 @@ export default function ResultShareCard({
   const copy = getShareCopy(locale);
   const concerns = getConcernLabels(mainConcerns, locale);
   const visibleProducts = [topPick, ...categoryPicks].filter(Boolean).slice(0, compact ? 3 : 5);
+  const routineSections = compact
+    ? []
+    : buildRoutineSections({
+        locale,
+        routineStructure,
+        routineAm,
+        routinePm
+      });
 
   return (
     <div className="ui-card overflow-hidden p-0">
@@ -27,7 +68,7 @@ export default function ResultShareCard({
           </div>
           <div className="ui-card-subtle p-4">
             <p className="ui-kicker">{copy.concern}</p>
-            <p className="ui-title mt-2 text-base">{concerns.length ? concerns.join(" · ") : "-"}</p>
+            <p className="ui-title mt-2 text-base">{concerns.length ? concerns.join(locale === "en" ? ", " : " · ") : "-"}</p>
           </div>
         </div>
         <div className="ui-panel-accent mt-3 p-4">
@@ -63,35 +104,31 @@ export default function ResultShareCard({
           </div>
         ) : null}
 
-        {!compact && (routineAm.length || routinePm.length) ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="ui-card-subtle p-4">
-              <p className="ui-kicker">{copy.routineAm}</p>
-              <div className="mt-3 space-y-2">
-                {routineAm.length ? (
-                  routineAm.map((item, index) => (
-                    <p key={`${item}-${index}`} className="ui-text-primary text-sm leading-6">
-                      {item}
-                    </p>
-                  ))
-                ) : (
-                  <p className="ui-text-secondary text-sm">-</p>
-                )}
+        {routineSections.length ? (
+          <div className="space-y-3">
+            {routineStructure?.title || routineStructure?.body ? (
+              <div className="ui-card-subtle p-4">
+                <p className="ui-kicker">{routineStructure?.label || (locale === "en" ? "Routine" : "루틴 구조")}</p>
+                {routineStructure?.title ? <p className="ui-title mt-2 text-base">{routineStructure.title}</p> : null}
+                {routineStructure?.body ? (
+                  <p className="ui-text-primary mt-2 text-sm leading-6">{routineStructure.body}</p>
+                ) : null}
               </div>
-            </div>
-            <div className="ui-card-subtle p-4">
-              <p className="ui-kicker">{copy.routinePm}</p>
-              <div className="mt-3 space-y-2">
-                {routinePm.length ? (
-                  routinePm.map((item, index) => (
-                    <p key={`${item}-${index}`} className="ui-text-primary text-sm leading-6">
-                      {item}
-                    </p>
-                  ))
-                ) : (
-                  <p className="ui-text-secondary text-sm">-</p>
-                )}
-              </div>
+            ) : null}
+
+            <div className={`grid gap-3 ${routineSections.length > 1 ? "sm:grid-cols-2" : ""}`}>
+              {routineSections.map((section) => (
+                <div key={section.key} className="ui-card-subtle p-4">
+                  <p className="ui-kicker">{section.label}</p>
+                  <div className="mt-3 space-y-2">
+                    {section.items.map((item, index) => (
+                      <p key={`${section.key}-${index}`} className="ui-text-primary text-sm leading-6">
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ) : null}

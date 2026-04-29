@@ -27,16 +27,32 @@ function CompactChoiceGroup({ label, name, value, options, optionLabels, onChang
   );
 }
 
-function BooleanChoiceGroup({ label, name, value, optionLabels, onChange }) {
+function MultiChoiceGroup({ label, values = [], options, optionLabels, onToggle, helper }) {
   return (
-    <CompactChoiceGroup
-      label={label}
-      name={name}
-      value={String(Boolean(value))}
-      options={OPTION_SETS.booleanChoice}
-      optionLabels={optionLabels}
-      onChange={(fieldName, nextValue) => onChange(fieldName, nextValue === "true")}
-    />
+    <div className="ui-card space-y-3 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="ui-title text-sm">{label}</p>
+        {helper ? <p className="ui-text-faint text-xs font-medium">{helper}</p> : null}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {options.map((option) => {
+          const active = values.includes(option);
+
+          return (
+            <button
+              key={`multi-${option}`}
+              type="button"
+              onClick={() => onToggle(option)}
+              className={`rounded-2xl px-3 py-3 text-sm font-medium transition ${
+                active ? "ui-choice-active" : "ui-choice-idle"
+              }`}
+            >
+              {optionLabels[option]}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -52,16 +68,19 @@ export default function ExtraSurveyStep({
   );
   const labels = copy.optionLabels;
   const isEnglish = copy.extra.environmentExposure === "Environment exposure";
-  const extraLabels = {
-    whiteCastHate: copy.extra.whiteCastHate || (isEnglish ? "Do you dislike white cast?" : "백탁이 싫나요?"),
-    toneUpWanted: copy.extra.toneUpWanted || (isEnglish ? "Do you want tone-up?" : "톤업이 필요하나요?"),
-    makeupUse: copy.extra.makeupUse || (isEnglish ? "Do you wear it with makeup?" : "메이크업과 같이 쓰나요?"),
-    eyeSensitive: copy.extra.eyeSensitive || (isEnglish ? "Are your eyes sensitive to sting?" : "눈시림에 민감한가요?")
+  const sunscreenLabel = copy.extra.sunscreenConsiderations || (
+    isEnglish ? "What do you consider when choosing sunscreen?" : "선크림을 고를 때 고려하는 사항"
+  );
+  const sunscreenOptionLabels = labels.sunscreenConsiderations || {
+    whiteCastHate: isEnglish ? "No white cast" : "백탁 없음",
+    toneUpWanted: isEnglish ? "Tone-up effect" : "톤업 가능",
+    makeupUse: isEnglish ? "Works with makeup" : "메이크업과 함께 사용",
+    eyeSensitive: isEnglish ? "Low eye sting" : "눈 시림 적음"
   };
-  const booleanOptionLabels = labels.booleanChoice || {
-    true: isEnglish ? "Yes" : "예",
-    false: isEnglish ? "No" : "아니오"
-  };
+  const sunscreenValues = OPTION_SETS.sunscreenConsiderations.filter((option) => Boolean(form[option]));
+  const multiSelectHint = copy.extra.multiSelectHint || copy.basic.multiSelectHint || (
+    isEnglish ? "Multiple selection allowed" : "복수 선택 가능"
+  );
 
   return (
     <section className="flex flex-1 flex-col pt-6">
@@ -112,33 +131,13 @@ export default function ExtraSurveyStep({
           optionLabels={labels.cleansingFrequency}
           onChange={onFieldChange}
         />
-        <BooleanChoiceGroup
-          label={extraLabels.whiteCastHate}
-          name="whiteCastHate"
-          value={form.whiteCastHate}
-          optionLabels={booleanOptionLabels}
-          onChange={onFieldChange}
-        />
-        <BooleanChoiceGroup
-          label={extraLabels.toneUpWanted}
-          name="toneUpWanted"
-          value={form.toneUpWanted}
-          optionLabels={booleanOptionLabels}
-          onChange={onFieldChange}
-        />
-        <BooleanChoiceGroup
-          label={extraLabels.makeupUse}
-          name="makeupUse"
-          value={form.makeupUse}
-          optionLabels={booleanOptionLabels}
-          onChange={onFieldChange}
-        />
-        <BooleanChoiceGroup
-          label={extraLabels.eyeSensitive}
-          name="eyeSensitive"
-          value={form.eyeSensitive}
-          optionLabels={booleanOptionLabels}
-          onChange={onFieldChange}
+        <MultiChoiceGroup
+          label={sunscreenLabel}
+          values={sunscreenValues}
+          options={OPTION_SETS.sunscreenConsiderations}
+          optionLabels={sunscreenOptionLabels}
+          onToggle={(fieldName) => onFieldChange(fieldName, !Boolean(form[fieldName]))}
+          helper={multiSelectHint}
         />
 
         <div className="ui-card-dashed p-4">

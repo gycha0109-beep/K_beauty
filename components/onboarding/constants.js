@@ -384,6 +384,7 @@ export const OPTION_SETS = {
   afternoonSkinChange: ["more_oily", "more_dry", "red_or_irritated", "mostly_same"],
   mostDislikedFeel: ["sticky", "greasy", "heavy", "fragranced", "pilling"],
   booleanChoice: ["true", "false"],
+  sunscreenConsiderations: ["whiteCastHate", "toneUpWanted", "makeupUse", "eyeSensitive"],
   cleansingFrequency: ["once", "twice", "3_plus"],
   environmentExposure: ["heat", "humidity", "mask", "kitchen", "outdoor", "aircon"]
 };

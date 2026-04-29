@@ -190,6 +190,7 @@ export type CanonicalRecommendationProduct = {
   white_cast?: "none" | "low" | "medium" | "high" | null;
   eye_sting?: "low" | "medium" | "high" | null;
   pilling_risk?: "low" | "medium" | "high" | null;
+  review_signals?: Record<string, unknown> | null;
   is_kbeauty?: boolean | null;
   [key: string]: unknown;
 };
@@ -231,6 +232,7 @@ export type ScoreBreakdown = {
   afternoon_state_adjustment: number;
   outdoor_sunscreen_bonus: number;
   very_sensitive_period_bonus: number;
+  review_signal_score: number;
   total: number;
 };
 
@@ -961,6 +963,7 @@ export function scoreCanonicalProduct(
     afternoon_state_adjustment: afternoonStateAdjustment,
     outdoor_sunscreen_bonus: outdoorSunscreenBonus,
     very_sensitive_period_bonus: verySensitivePeriodBonus,
+    review_signal_score: 0,
     total: 0,
   };
 

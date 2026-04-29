@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import FaceShapePreviewCard from "@/components/result/FaceShapePreviewCard";
-import PremiumReportCard from "@/components/result/PremiumReportCard";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
@@ -147,19 +146,17 @@ const resultCopy = {
     resultProgressLabel: "RESULT STEP",
     resultOverviewKicker: "RESULT STEP 1",
     resultOverviewTitle: "진단 결과",
-    resultOverviewBody: "먼저 내 피부 결과를 한눈에 볼 수 있게 짧게 정리했습니다.",
+    resultOverviewBody: "",
     resultPhotoFallback: "업로드한 사진",
-    resultPhotoBadge: "분석에 사용된 사진",
-    resultPhotoBody: "이 결과는 방금 업로드한 사진을 기준으로 정리했습니다.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "무료 결과 미리보기",
-    topPickStepBody: "Top Pick과 바로 따라갈 핵심 방향만 먼저 보여드릴게요.",
+    topPickStepBody: "",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "얼굴형 분석",
     faceShapeFreeKicker: "FACE LAB",
     faceShapeFreeTitle: "Face Lab 티저",
     faceLabTeaserTitle: "Face Lab 티저",
-    faceLabTeaserBody: "Skin Match를 방해하지 않게, 지금은 세 줄만 짧게 보여드립니다.",
+    faceLabTeaserBody: "",
     faceLabImpressionLabel: "인상 라인",
     faceLabShapeLabel: "형태 라인",
     faceLabStyleLabel: "스타일 라인",
@@ -171,20 +168,20 @@ const resultCopy = {
     freeFocusTitle: "지금 바로 따라갈 포인트",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "함께 쓰면 좋은 추천",
-    recommendedStepBody: "가볍게 넘겨보면서 루틴에 붙일 만한 제품만 빠르게 확인하세요.",
+    recommendedStepBody: "",
     recommendedStepEmpty: "함께 추천할 제품이 아직 없습니다.",
     alternativeStepTitle: "대안 1개",
-    alternativeStepBody: "무료 결과에서는 가장 가까운 대안 1개만 따로 확인할 수 있습니다.",
+    alternativeStepBody: "",
     faceLabStepTitle: "Face Lab 티저",
-    faceLabStepBody: "Skin Match 흐름을 끊지 않게, 얼굴형 티저는 여기서 한 번만 짧게 보여줍니다.",
+    faceLabStepBody: "",
     routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "추천 루틴 가이드",
-    routineStepBody: "아침과 저녁 흐름은 먼저 짧게 보고, 실제 사용 순서는 마지막 미리보기에서 끊기게 구성했습니다.",
+    routineStepBody: "",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
-    routineGateHint: "이어서 실제 사용 순서와 구성이 이어집니다.",
+    routineGateHint: "루틴 실행 직전부터 전체 구성과 실제 사용 순서를 이어서 볼 수 있습니다.",
     routinePreviewTitle: "실행 순서 미리보기",
-    premiumPreviewTitle: "유료 페이지 미리보기",
-    premiumPreviewBody: "여기까지 보고 난 뒤, 실제 사용 순서와 구성이 이어지는 지점에서 넘어가게 구성했습니다.",
+    premiumPreviewTitle: "전체 리포트",
+    premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "사용 전에 가볍게 확인하세요",
     tipsStepEmpty: "추가로 확인할 팁이 없습니다.",
@@ -195,7 +192,7 @@ const resultCopy = {
     ctaViewAlternative: "대안 보기",
     ctaViewFaceLab: "Face Lab 티저 보기",
     ctaViewRoutine: "추천 루틴 보기",
-    ctaViewPremiumPreview: "유료 미리보기",
+    ctaViewPremiumPreview: "전체 리포트 보기",
     ctaViewTips: "주의사항 및 사용 팁 보기",
     ctaLeaveFeedback: "피드백 남기기",
     backHome: "처음으로 돌아가기",
@@ -276,19 +273,17 @@ const resultCopy = {
     resultProgressLabel: "RESULT STEP",
     resultOverviewKicker: "RESULT STEP 1",
     resultOverviewTitle: "Your Result",
-    resultOverviewBody: "Start with a short summary of how this result connects to your skin.",
+    resultOverviewBody: "",
     resultPhotoFallback: "Uploaded photo",
-    resultPhotoBadge: "Photo used for analysis",
-    resultPhotoBody: "This result was organized from the photo you just uploaded.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "Free Result Preview",
-    topPickStepBody: "Start with the Top Pick and the few lines that make the result usable right away.",
+    topPickStepBody: "",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "Face Shape",
     faceShapeFreeKicker: "FACE LAB",
     faceShapeFreeTitle: "Face Lab Teaser",
     faceLabTeaserTitle: "Face Lab Teaser",
-    faceLabTeaserBody: "To keep Skin Match in front, the launch result keeps Face Lab to three short lines.",
+    faceLabTeaserBody: "",
     faceLabImpressionLabel: "Impression Line",
     faceLabShapeLabel: "Shape Line",
     faceLabStyleLabel: "Style Line",
@@ -300,20 +295,20 @@ const resultCopy = {
     freeFocusTitle: "What To Follow Right Now",
     recommendedStepKicker: "RESULT STEP 3",
     recommendedStepTitle: "Also Worth Using",
-    recommendedStepBody: "Swipe through the lighter supporting picks for the rest of your routine.",
+    recommendedStepBody: "",
     recommendedStepEmpty: "There are no extra recommendations yet.",
     alternativeStepTitle: "One Alternative",
-    alternativeStepBody: "The free result keeps one nearby alternative visible as a separate step.",
+    alternativeStepBody: "",
     faceLabStepTitle: "Face Lab Teaser",
-    faceLabStepBody: "To keep Skin Match leading the flow, the Face Lab teaser appears here as one short stop.",
+    faceLabStepBody: "",
     routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "Routine Guide",
-    routineStepBody: "See the morning and night flow first, then let the final preview stop right before execution.",
+    routineStepBody: "",
     routineStepEmpty: "There is no routine information to show yet.",
-    routineGateHint: "The actual usage order and product setup continue from here.",
+    routineGateHint: "From the point right before execution, you can continue into the full setup and actual order.",
     routinePreviewTitle: "Next Sequence Preview",
-    premiumPreviewTitle: "Premium Page Preview",
-    premiumPreviewBody: "After the free cards, the flow stops right where the actual order and setup continue.",
+    premiumPreviewTitle: "Full Report",
+    premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "Check These Before You Start",
     tipsStepEmpty: "There are no extra tips to show yet.",
@@ -324,7 +319,7 @@ const resultCopy = {
     ctaViewAlternative: "See Alternative",
     ctaViewFaceLab: "See Face Lab Teaser",
     ctaViewRoutine: "See Routine Guide",
-    ctaViewPremiumPreview: "See Premium Preview",
+    ctaViewPremiumPreview: "See Full Report",
     ctaViewTips: "See Tips",
     ctaLeaveFeedback: "Leave Feedback",
     backHome: "Back to Home",
@@ -470,41 +465,96 @@ function getConcernDisplay(form = {}, locale = "ko") {
   return labels.length ? labels.slice(0, 3).join(" · ") : copy.currentConcernBasis;
 }
 
-function getRoutineStructureLabel(result, locale = "ko") {
-  const morningCount = Array.isArray(result?.morning) ? result.morning.filter(Boolean).length : 0;
-  const nightCount = Array.isArray(result?.night) ? result.night.filter(Boolean).length : 0;
-  const hasMorning = morningCount > 0 || Boolean(result?.amFocus);
-  const hasNight = nightCount > 0 || Boolean(result?.pmFocus);
-
-  if (locale === "en") {
-    if (hasMorning && hasNight) {
-      return "Morning + Night flow";
-    }
-
-    if (hasMorning) {
-      return "Morning-led flow";
-    }
-
-    if (hasNight) {
-      return "Night-led flow";
-    }
-
-    return "Core routine flow";
-  }
+function buildFallbackRoutineStructure(result, locale = "ko") {
+  const hasMorning = Boolean(result?.amFocus);
+  const hasNight = Boolean(result?.pmFocus);
 
   if (hasMorning && hasNight) {
-    return "아침 + 저녁 흐름";
+    return {
+      type: "am_pm_balanced",
+      label: locale === "en" ? "AM + PM split" : "아침 + 저녁 분리형",
+      title: locale === "en" ? "AM + PM Split Routine" : "아침 · 저녁 분리 루틴",
+      body:
+        locale === "en"
+          ? "The current result still reads more naturally as separate daytime and evening roles."
+          : "현재 결과는 낮과 밤 역할을 나눠 보는 구조로 읽는 편이 더 자연스럽습니다.",
+      cards: [
+        {
+          key: "morning",
+          label: locale === "en" ? "Morning Focus" : "아침 핵심",
+          body: result.amFocus
+        },
+        {
+          key: "night",
+          label: locale === "en" ? "Night Focus" : "저녁 핵심",
+          body: result.pmFocus
+        }
+      ].filter((item) => item.body)
+    };
   }
 
   if (hasMorning) {
-    return "아침 중심 흐름";
+    return {
+      type: "am_only",
+      label: locale === "en" ? "Morning-led" : "아침 집중형",
+      title: locale === "en" ? "Morning-led Routine" : "아침 집중 루틴",
+      body:
+        locale === "en"
+          ? "The current result leans more heavily on the morning side."
+          : "현재 결과는 아침 쪽 역할 비중이 더 크게 잡혀 있습니다.",
+      cards: [
+        {
+          key: "morning",
+          label: locale === "en" ? "Morning Focus" : "아침 핵심",
+          body: result.amFocus
+        }
+      ]
+    };
   }
 
   if (hasNight) {
-    return "저녁 중심 흐름";
+    return {
+      type: "pm_only",
+      label: locale === "en" ? "Night-led" : "저녁 회복형",
+      title: locale === "en" ? "Night-led Routine" : "저녁 집중 루틴",
+      body:
+        locale === "en"
+          ? "The current result leans more heavily on the evening side."
+          : "현재 결과는 저녁 쪽에서 회복과 보정을 먼저 잡는 구조로 읽힙니다.",
+      cards: [
+        {
+          key: "night",
+          label: locale === "en" ? "Night Focus" : "저녁 핵심",
+          body: result.pmFocus
+        }
+      ]
+    };
   }
 
-  return "기본 루틴 흐름";
+  return {
+    type: "single_track",
+    label: locale === "en" ? "All-day single track" : "하루 공통 1포인트",
+    title: locale === "en" ? "All-day Core Routine" : "하루 공통 루틴",
+    body:
+      locale === "en"
+        ? "The routine reads better as one common track for now."
+        : "현재는 하루 공통 포인트 하나로 읽는 편이 더 자연스럽습니다.",
+    cards: []
+  };
+}
+
+function getRoutineStructureData(result, locale = "ko") {
+  const structure = result?.routineStructure;
+
+  if (structure && Array.isArray(structure.cards) && structure.cards.length) {
+    return structure;
+  }
+
+  return buildFallbackRoutineStructure(result, locale);
+}
+
+function getRoutineStructureLabel(result, locale = "ko") {
+  return getRoutineStructureData(result, locale).label;
 }
 
 function getOverviewSummary(form = {}, decision = null, locale = "ko") {
@@ -523,20 +573,22 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
 function buildRoutinePreviewItems(result, locale = "ko") {
   const items = [];
   const topPickName = result?.topPick?.name || (locale === "en" ? "Top Pick" : "Top Pick");
+  const structure = getRoutineStructureData(result, locale);
+  const cardBodies = Array.isArray(structure.cards)
+    ? structure.cards.map((item) => item.body).filter(Boolean)
+    : [];
 
   if (locale === "en") {
-    items.push(`Cleanse lightly and place ${topPickName} at the core of the routine.`);
-    items.push(result?.amFocus || "Keep the morning side light and easy to finish.");
-    items.push(result?.pmFocus || "Layer the evening side more steadily around recovery.");
+    items.push(`Keep ${topPickName} at the center of the ${structure.title.toLowerCase()}.`);
+    items.push(...cardBodies.slice(0, 2));
     items.push("The detailed order, combinations, and alternation continue next.");
-    return items;
+    return items.slice(0, 4);
   }
 
-  items.push(`가볍게 정리한 뒤 ${topPickName}을 루틴 중심에 두고 이어갑니다.`);
-  items.push(result?.amFocus || "아침은 가볍게 마무리되는 흐름으로 정리합니다.");
-  items.push(result?.pmFocus || "저녁은 회복 중심으로 한 단계씩 이어갑니다.");
+  items.push(`${topPickName}을 ${structure.title}의 중심 단계로 두고 이어갑니다.`);
+  items.push(...cardBodies.slice(0, 2));
   items.push("세부 순서와 조합, 번갈아 쓰는 구성은 다음 단계에서 이어집니다.");
-  return items;
+  return items.slice(0, 4);
 }
 
 function hasFaceLabTeaser(launchData) {
@@ -1229,6 +1281,7 @@ function ResultContent() {
     }
   ];
   const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
+  const routineStructure = getRoutineStructureData(result, locale);
   const routinePreviewItems = buildRoutinePreviewItems(result, locale);
   const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
@@ -1269,19 +1322,12 @@ function ResultContent() {
                 </p>
               </div>
 
-              {result?.amFocus ? (
-                <div>
-                  <p className="ui-kicker">{decisionCopy.amFocus}</p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
+              {routineStructure.cards.map((card) => (
+                <div key={`overview-routine-${card.key}`}>
+                  <p className="ui-kicker">{card.label}</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
                 </div>
-              ) : null}
-
-              {result?.pmFocus ? (
-                <div>
-                  <p className="ui-kicker">{decisionCopy.pmFocus}</p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
-                </div>
-              ) : null}
+              ))}
             </div>
           </section>
         </section>
@@ -1295,7 +1341,7 @@ function ResultContent() {
           <ResultStepLead
             kicker={copy.topPickStepKicker}
             title={copy.topPickStepTitle}
-            body={copy.topPickStepBody}
+            body={null}
           />
           <ProductDecisionCard
             product={result.topPick}
@@ -1323,7 +1369,7 @@ function ResultContent() {
             <ResultStepLead
               kicker={copy.recommendedStepKicker}
               title={copy.alternativeStepTitle}
-              body={copy.alternativeStepBody}
+              body={null}
             />
             <ProductDecisionCard
               product={freeAlternative}
@@ -1355,35 +1401,26 @@ function ResultContent() {
         <section className="space-y-4">
           <ResultStepLead
             kicker={copy.routineStepKicker}
-            title={copy.routineStepTitle}
-            body={copy.routineStepBody}
+            title={routineStructure.title || copy.routineStepTitle}
+            body={null}
           />
 
           <section className="ui-card p-5">
             <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {result?.amFocus ? (
-                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
+              <div className={`grid gap-3 ${routineStructure.cards.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                {routineStructure.cards.length ? routineStructure.cards.map((card) => (
+                  <div key={`routine-structure-${card.key}`} className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                      {locale === "en" ? "Morning" : "아침 루틴"}
+                      {card.label}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
                   </div>
-                ) : null}
-
-                {result?.pmFocus ? (
-                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                      {locale === "en" ? "Night" : "저녁 루틴"}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
+                )) : (
+                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-500 dark:bg-zinc-800/70 dark:text-zinc-400">
+                    {copy.routineStepEmpty}
                   </div>
-                ) : null}
+                )}
               </div>
-
-              <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                {copy.routineGateHint}
-              </p>
             </div>
           </section>
         </section>
@@ -1397,7 +1434,7 @@ function ResultContent() {
           <ResultStepLead
             kicker={copy.premiumCardKicker}
             title={copy.premiumPreviewTitle}
-            body={copy.premiumPreviewBody}
+            body={null}
           />
 
           <ResultPreviewMaskCard
@@ -1405,9 +1442,6 @@ function ResultContent() {
             itemCount={routinePreviewItems.length}
           />
 
-          <PremiumReportCard
-            copy={copy}
-          />
         </section>
       )
     });
@@ -1559,7 +1593,7 @@ function ResultStepLead({ kicker, title, body }) {
     <section className="ui-card p-5">
       <p className="ui-kicker">{kicker}</p>
       <h2 className="ui-title mt-2 text-[1.55rem] sm:text-[1.7rem]">{title}</h2>
-      <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p>
+      {body ? <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p> : null}
     </section>
   );
 }

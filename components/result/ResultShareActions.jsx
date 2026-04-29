@@ -318,8 +318,9 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
             summary={result?.summary || ""}
             topPick={result?.topPick || null}
             categoryPicks={result?.alternative ? [result.alternative] : []}
-            routineAm={result?.amFocus ? [result.amFocus] : []}
-            routinePm={result?.pmFocus ? [result.pmFocus] : []}
+            routineStructure={result?.routineStructure || null}
+            routineAm={Array.isArray(result?.morning) && result.morning.length ? result.morning : result?.amFocus ? [result.amFocus] : []}
+            routinePm={Array.isArray(result?.night) && result.night.length ? result.night : result?.pmFocus ? [result.pmFocus] : []}
           />
         </div>
       </div>

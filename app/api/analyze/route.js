@@ -6,6 +6,7 @@ import {
   getPremiumReportCookieOptions,
   PREMIUM_REPORT_COOKIE
 } from "@/lib/premium-report-session";
+import { appendReviewEvidenceSentence } from "@/lib/review-signals";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 
@@ -210,6 +211,7 @@ function buildSelectedProductsContext(decision) {
     score: product.engine_score,
     base_score: product.decision_meta?.base_score,
     hero_boost: product.decision_meta?.hero_boost,
+    review_signal_score: product.decision_meta?.review_signal_score,
     hard_penalty: product.decision_meta?.hard_penalty,
     current_reason: product.reason,
     current_comparison_reason: product.comparison_reason
@@ -297,6 +299,85 @@ function sanitizeProductForPremium(product) {
   };
 }
 
+function stripReviewSignals(product) {
+  if (!product || typeof product !== "object") {
+    return product || null;
+  }
+
+  const nextProduct = {
+    ...product
+  };
+
+  delete nextProduct.review_signals;
+  return nextProduct;
+}
+
+function appendTopPickReviewEvidence(decision, locale = "ko") {
+  if (!decision?.topPick) {
+    return decision;
+  }
+
+  const applyToProduct = (product) => {
+    if (!product) {
+      return product;
+    }
+
+    const nextReason = appendReviewEvidenceSentence(product.reason, product.review_signals, locale);
+    return nextReason === product.reason
+      ? product
+      : {
+          ...product,
+          reason: nextReason
+        };
+  };
+
+  const topPick = applyToProduct(decision.topPick);
+  const topPickId = topPick?.id;
+  const updateById = (product) => (product?.id === topPickId ? applyToProduct(product) : product);
+
+  return {
+    ...decision,
+    topPick,
+    products: Array.isArray(decision.products) ? decision.products.map(updateById) : decision.products,
+    explanationProducts: Array.isArray(decision.explanationProducts)
+      ? decision.explanationProducts.map(updateById)
+      : decision.explanationProducts,
+    premiumReport: decision.premiumReport
+      ? {
+          ...decision.premiumReport,
+          topPickDetailedReason: appendReviewEvidenceSentence(
+            decision.premiumReport.topPickDetailedReason,
+            topPick?.review_signals,
+            locale
+          )
+        }
+      : decision.premiumReport
+  };
+}
+
+function sanitizeRoutineStructure(structure) {
+  if (!structure || typeof structure !== "object") {
+    return null;
+  }
+
+  return {
+    type: String(structure.type || "").trim(),
+    label: String(structure.label || "").trim(),
+    title: String(structure.title || "").trim(),
+    body: String(structure.body || "").trim(),
+    cards: Array.isArray(structure.cards)
+      ? structure.cards
+          .map((item) => ({
+            key: String(item?.key || "").trim(),
+            label: String(item?.label || "").trim(),
+            body: String(item?.body || "").trim()
+          }))
+          .filter((item) => item.label || item.body)
+          .slice(0, 3)
+      : []
+  };
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -307,6 +388,7 @@ function sanitizePremiumReport(report) {
     supportingProducts: Array.isArray(report.supportingProducts)
       ? report.supportingProducts.map(sanitizeProductForPremium).filter(Boolean).slice(0, 3)
       : [],
+    routineStructure: sanitizeRoutineStructure(report.routineStructure),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 4)
@@ -338,10 +420,13 @@ function buildFreeDecisionPayload(decision) {
   return {
     summary: decision.summary || "",
     priority: decision.priority || null,
-    topPick: decision.topPick || null,
-    alternative: decision.alternative || null,
+    topPick: stripReviewSignals(decision.topPick || null),
+    alternative: stripReviewSignals(decision.alternative || null),
     amFocus: decision.amFocus || "",
     pmFocus: decision.pmFocus || "",
+    routineStructure: sanitizeRoutineStructure(decision.routineStructure),
+    morning: Array.isArray(decision.morning) ? decision.morning.slice(0, 3) : [],
+    night: Array.isArray(decision.night) ? decision.night.slice(0, 3) : [],
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
     surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : []
@@ -658,6 +743,8 @@ export async function POST(request) {
     } else {
       explanationNotice = copy.missingApiKeyNotice;
     }
+
+    decision = appendTopPickReviewEvidence(decision, locale);
 
     const publicDecision = buildFreeDecisionPayload(decision);
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
