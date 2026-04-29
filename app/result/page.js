@@ -11,7 +11,6 @@ import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
-import TopPickStep from "@/components/result/TopPickStep";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
@@ -150,6 +149,8 @@ const resultCopy = {
     resultOverviewTitle: "진단 결과",
     resultOverviewBody: "먼저 내 피부 결과를 한눈에 볼 수 있게 짧게 정리했습니다.",
     resultPhotoFallback: "업로드한 사진",
+    resultPhotoBadge: "분석에 사용된 사진",
+    resultPhotoBody: "이 결과는 방금 업로드한 사진을 기준으로 정리했습니다.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "무료 결과 미리보기",
     topPickStepBody: "Top Pick과 바로 따라갈 핵심 방향만 먼저 보여드릴게요.",
@@ -172,9 +173,18 @@ const resultCopy = {
     recommendedStepTitle: "함께 쓰면 좋은 추천",
     recommendedStepBody: "가볍게 넘겨보면서 루틴에 붙일 만한 제품만 빠르게 확인하세요.",
     recommendedStepEmpty: "함께 추천할 제품이 아직 없습니다.",
+    alternativeStepTitle: "대안 1개",
+    alternativeStepBody: "무료 결과에서는 가장 가까운 대안 1개만 따로 확인할 수 있습니다.",
+    faceLabStepTitle: "Face Lab 티저",
+    faceLabStepBody: "Skin Match 흐름을 끊지 않게, 얼굴형 티저는 여기서 한 번만 짧게 보여줍니다.",
     routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "추천 루틴 가이드",
+    routineStepBody: "아침과 저녁 흐름은 먼저 짧게 보고, 실제 사용 순서는 마지막 미리보기에서 끊기게 구성했습니다.",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
+    routineGateHint: "이어서 실제 사용 순서와 구성이 이어집니다.",
+    routinePreviewTitle: "실행 순서 미리보기",
+    premiumPreviewTitle: "유료 페이지 미리보기",
+    premiumPreviewBody: "여기까지 보고 난 뒤, 실제 사용 순서와 구성이 이어지는 지점에서 넘어가게 구성했습니다.",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "사용 전에 가볍게 확인하세요",
     tipsStepEmpty: "추가로 확인할 팁이 없습니다.",
@@ -182,15 +192,19 @@ const resultCopy = {
     feedbackThanksBody: "다음 추천 개선에 반영하겠습니다.",
     ctaViewTopPick: "Top Pick 보기",
     ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
+    ctaViewAlternative: "대안 보기",
+    ctaViewFaceLab: "Face Lab 티저 보기",
     ctaViewRoutine: "추천 루틴 보기",
+    ctaViewPremiumPreview: "유료 미리보기",
     ctaViewTips: "주의사항 및 사용 팁 보기",
     ctaLeaveFeedback: "피드백 남기기",
     backHome: "처음으로 돌아가기",
+    revisitResult: "결과 다시보기",
     topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다.",
     premiumCardKicker: "FULL REPORT",
-    premiumCardTitle: "이 결과를 실제 루틴으로 정리해볼까요?",
-    premiumCardBody: "지금 결과를 끝까지 따라갈 수 있게, 내 피부에 맞는 구성과 실제 사용 가이드로 이어집니다.",
-    premiumCardButton: "내 피부에 맞게 구성하기 (₩3,900)"
+    premiumCardTitle: "실행 순서 이어보기",
+    premiumCardBody: "루틴 실행 직전부터 전체 구성과 실제 사용 순서를 이어서 볼 수 있습니다.",
+    premiumCardButton: "이어서 보기 (₩3,900)"
   },
   en: {
     loading: "Loading your result...",
@@ -264,6 +278,8 @@ const resultCopy = {
     resultOverviewTitle: "Your Result",
     resultOverviewBody: "Start with a short summary of how this result connects to your skin.",
     resultPhotoFallback: "Uploaded photo",
+    resultPhotoBadge: "Photo used for analysis",
+    resultPhotoBody: "This result was organized from the photo you just uploaded.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "Free Result Preview",
     topPickStepBody: "Start with the Top Pick and the few lines that make the result usable right away.",
@@ -286,9 +302,18 @@ const resultCopy = {
     recommendedStepTitle: "Also Worth Using",
     recommendedStepBody: "Swipe through the lighter supporting picks for the rest of your routine.",
     recommendedStepEmpty: "There are no extra recommendations yet.",
+    alternativeStepTitle: "One Alternative",
+    alternativeStepBody: "The free result keeps one nearby alternative visible as a separate step.",
+    faceLabStepTitle: "Face Lab Teaser",
+    faceLabStepBody: "To keep Skin Match leading the flow, the Face Lab teaser appears here as one short stop.",
     routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "Routine Guide",
+    routineStepBody: "See the morning and night flow first, then let the final preview stop right before execution.",
     routineStepEmpty: "There is no routine information to show yet.",
+    routineGateHint: "The actual usage order and product setup continue from here.",
+    routinePreviewTitle: "Next Sequence Preview",
+    premiumPreviewTitle: "Premium Page Preview",
+    premiumPreviewBody: "After the free cards, the flow stops right where the actual order and setup continue.",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "Check These Before You Start",
     tipsStepEmpty: "There are no extra tips to show yet.",
@@ -296,15 +321,19 @@ const resultCopy = {
     feedbackThanksBody: "We will use it to improve the next recommendation.",
     ctaViewTopPick: "See Top Pick",
     ctaViewRecommended: "See Supporting Picks",
+    ctaViewAlternative: "See Alternative",
+    ctaViewFaceLab: "See Face Lab Teaser",
     ctaViewRoutine: "See Routine Guide",
+    ctaViewPremiumPreview: "See Premium Preview",
     ctaViewTips: "See Tips",
     ctaLeaveFeedback: "Leave Feedback",
     backHome: "Back to Home",
+    revisitResult: "Review Result Again",
     topPickEmpty: "Could not load the Top Pick product.",
     premiumCardKicker: "FULL REPORT",
-    premiumCardTitle: "Ready to turn this result into a practical routine?",
-    premiumCardBody: "This next step organizes the result into a setup you can actually follow for your skin.",
-    premiumCardButton: "Build This For My Skin (₩3,900)"
+    premiumCardTitle: "Continue Into The Full Routine",
+    premiumCardBody: "From this point, the full setup and actual order continue.",
+    premiumCardButton: "Continue (₩3,900)"
   }
 };
 
@@ -444,22 +473,38 @@ function getConcernDisplay(form = {}, locale = "ko") {
 function getRoutineStructureLabel(result, locale = "ko") {
   const morningCount = Array.isArray(result?.morning) ? result.morning.filter(Boolean).length : 0;
   const nightCount = Array.isArray(result?.night) ? result.night.filter(Boolean).length : 0;
-  const stepCount = Math.max(morningCount, nightCount, 0);
-  const focusCount = Number(Boolean(result?.amFocus)) + Number(Boolean(result?.pmFocus));
+  const hasMorning = morningCount > 0 || Boolean(result?.amFocus);
+  const hasNight = nightCount > 0 || Boolean(result?.pmFocus);
 
   if (locale === "en") {
-    if (stepCount > 0) {
-      return `Morning + Night · ${stepCount} ${stepCount === 1 ? "step" : "steps"}`;
+    if (hasMorning && hasNight) {
+      return "Morning + Night flow";
     }
 
-    return focusCount > 0 ? `Morning + Night · ${focusCount} focus lines` : "Morning + Night";
+    if (hasMorning) {
+      return "Morning-led flow";
+    }
+
+    if (hasNight) {
+      return "Night-led flow";
+    }
+
+    return "Core routine flow";
   }
 
-  if (stepCount > 0) {
-    return `아침 + 저녁 · ${stepCount}단계`;
+  if (hasMorning && hasNight) {
+    return "아침 + 저녁 흐름";
   }
 
-  return focusCount > 0 ? `아침 + 저녁 · ${focusCount}개 포커스` : "아침 + 저녁";
+  if (hasMorning) {
+    return "아침 중심 흐름";
+  }
+
+  if (hasNight) {
+    return "저녁 중심 흐름";
+  }
+
+  return "기본 루틴 흐름";
 }
 
 function getOverviewSummary(form = {}, decision = null, locale = "ko") {
@@ -473,6 +518,50 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   }
 
   return `${skinTypeLabel} 피부이고 ${concernLabel} 고민이 있어, ${directionSummary}`;
+}
+
+function buildRoutinePreviewItems(result, locale = "ko") {
+  const items = [];
+  const topPickName = result?.topPick?.name || (locale === "en" ? "Top Pick" : "Top Pick");
+
+  if (locale === "en") {
+    items.push(`Cleanse lightly and place ${topPickName} at the core of the routine.`);
+    items.push(result?.amFocus || "Keep the morning side light and easy to finish.");
+    items.push(result?.pmFocus || "Layer the evening side more steadily around recovery.");
+    items.push("The detailed order, combinations, and alternation continue next.");
+    return items;
+  }
+
+  items.push(`가볍게 정리한 뒤 ${topPickName}을 루틴 중심에 두고 이어갑니다.`);
+  items.push(result?.amFocus || "아침은 가볍게 마무리되는 흐름으로 정리합니다.");
+  items.push(result?.pmFocus || "저녁은 회복 중심으로 한 단계씩 이어갑니다.");
+  items.push("세부 순서와 조합, 번갈아 쓰는 구성은 다음 단계에서 이어집니다.");
+  return items;
+}
+
+function hasFaceLabTeaser(launchData) {
+  return Boolean(
+    launchData?.free?.impressionLine ||
+    launchData?.free?.shapeLine ||
+    launchData?.free?.styleLine
+  );
+}
+
+function getAdvanceLabelForStep(stepId, copy) {
+  switch (stepId) {
+    case "top-pick":
+      return copy.ctaViewTopPick;
+    case "alternative":
+      return copy.ctaViewAlternative;
+    case "face-lab":
+      return copy.ctaViewFaceLab;
+    case "routine-summary":
+      return copy.ctaViewRoutine;
+    case "premium-preview":
+      return copy.ctaViewPremiumPreview;
+    default:
+      return copy.next;
+  }
 }
 
 function buildLocalizedSkinProfileSummary(form = {}, locale = "ko") {
@@ -1140,156 +1229,212 @@ function ResultContent() {
     }
   ];
   const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
-  const warningItems = Array.isArray(result?.avoid)
-    ? result.avoid.slice(0, 1)
-    : Array.isArray(result?.warnings)
-      ? result.warnings.slice(0, 1)
-      : [];
-  const topPickTabCard = result?.topPick ? (
-    <div className="space-y-4">
-      <ProductDecisionCard
-        product={result.topPick}
-        featured
-        form={submission?.form}
-        decision={result}
-        locale={locale}
-        detailItems={profileSummaryItems}
-        allowExpand={false}
-        showDiagnostics={false}
-      />
+  const routinePreviewItems = buildRoutinePreviewItems(result, locale);
+  const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
+  const goToFullReport = () => {
+    trackEvent("click_full_report_cta", {
+      product_id: result?.topPick?.id || null,
+      feature_name: "skin_analysis",
+      result_type: "full_report_cta",
+      is_top_pick: false,
+      meta_json: {
+        has_premium_session: true,
+        has_face_lab_teaser: showFaceLabStep
+      }
+    });
+    router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
+  };
 
-      {freeAlternative ? (
-        <section className="space-y-3">
-          <div className="ui-card p-5">
-            <p className="ui-kicker">{copy.alternativeLabel}</p>
-            <p className="ui-text-secondary mt-2 text-sm leading-6">
-              {locale === "en"
-                ? "One nearby alternative stays visible in the free result."
-                : "무료 결과에서는 가까운 대안 1개만 함께 보여드립니다."}
-            </p>
-          </div>
+  const resultSteps = [];
+
+  if (result) {
+    resultSteps.push({
+      id: "overview",
+      content: (
+        <section className="space-y-4">
+          <ResultOverviewStep
+            copy={copy}
+            photoUrl={photoUrl}
+            photoAlt={submission?.imageName || copy.resultPhotoFallback}
+            summaryCards={overviewCards}
+            overviewSummary={getOverviewSummary(submission?.form, result, locale)}
+          />
+
+          <section className="ui-card p-5">
+            <div className="space-y-4">
+              <div>
+                <p className="ui-kicker">{copy.freeFocusTitle}</p>
+                <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                  {result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)}
+                </p>
+              </div>
+
+              {result?.amFocus ? (
+                <div>
+                  <p className="ui-kicker">{decisionCopy.amFocus}</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
+                </div>
+              ) : null}
+
+              {result?.pmFocus ? (
+                <div>
+                  <p className="ui-kicker">{decisionCopy.pmFocus}</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        </section>
+      )
+    });
+
+    resultSteps.push({
+      id: "top-pick",
+      content: result?.topPick ? (
+        <section className="space-y-4">
+          <ResultStepLead
+            kicker={copy.topPickStepKicker}
+            title={copy.topPickStepTitle}
+            body={copy.topPickStepBody}
+          />
           <ProductDecisionCard
-            product={freeAlternative}
+            product={result.topPick}
+            featured
             form={submission?.form}
+            decision={result}
             locale={locale}
+            detailItems={profileSummaryItems}
             allowExpand={false}
             showDiagnostics={false}
           />
         </section>
-      ) : null}
-
-      <section className="ui-card p-5">
-        <div className="space-y-4">
-          <div>
-            <p className="ui-kicker">{copy.freeFocusTitle}</p>
-            <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              {result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)}
-            </p>
-          </div>
-
-          {result?.amFocus ? (
-            <div>
-              <p className="ui-kicker">{decisionCopy.amFocus}</p>
-              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
-            </div>
-          ) : null}
-
-          {result?.pmFocus ? (
-            <div>
-              <p className="ui-kicker">{decisionCopy.pmFocus}</p>
-              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
-            </div>
-          ) : null}
-
-          <div>
-            <p className="ui-kicker">{decisionCopy.warnings}</p>
-            <div className="mt-2 space-y-2">
-              {warningItems.length ? (
-                warningItems.map((item) => (
-                  <p key={item} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                    {item}
-                  </p>
-                ))
-              ) : (
-                <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{decisionCopy.noWarnings}</p>
-              )}
-            </div>
-          </div>
+      ) : (
+        <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          {copy.topPickEmpty}
         </div>
-      </section>
+      )
+    });
 
-    </div>
-  ) : (
-    <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-      {copy.topPickEmpty}
-    </div>
-  );
-  const stepCtaLabels = [
-    copy.ctaViewTopPick,
-    null
-  ];
-  const resultSteps = result
-    ? [
-        <ResultOverviewStep
-          key="overview"
-          copy={copy}
-          photoUrl={photoUrl}
-          photoAlt={submission?.imageName || copy.resultPhotoFallback}
-          summaryCards={overviewCards}
-          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
-        />,
-        <TopPickStep
-          key="top-pick"
-          copy={copy}
-          premiumCard={
-            <PremiumReportCard
-              copy={copy}
+    if (freeAlternative) {
+      resultSteps.push({
+        id: "alternative",
+        content: (
+          <section className="space-y-4">
+            <ResultStepLead
+              kicker={copy.recommendedStepKicker}
+              title={copy.alternativeStepTitle}
+              body={copy.alternativeStepBody}
+            />
+            <ProductDecisionCard
+              product={freeAlternative}
+              form={submission?.form}
               locale={locale}
-              premiumReport={null}
-              faceLabPaid={null}
-              onCtaClick={() => {
-                trackEvent("click_full_report_cta", {
-                  product_id: result.topPick?.id || null,
-                  feature_name: "skin_analysis",
-                  result_type: "full_report_cta",
-                  is_top_pick: false,
-                  meta_json: {
-                    has_premium_session: true,
-                    has_face_lab_teaser: Boolean(
-                      faceLabLaunch?.free?.impressionLine ||
-                      faceLabLaunch?.free?.shapeLine ||
-                      faceLabLaunch?.free?.styleLine
-                    )
-                  }
-                });
-                router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
-              }}
+              allowExpand={false}
+              showDiagnostics={false}
             />
-          }
-          afterPremium={
-            <FaceShapePreviewCard
-              copy={copy}
-              launchData={faceLabLaunch}
-              onEngage={() =>
-                trackEvent("click_face_lab_teaser", {
-                  feature_name: "face_lab",
-                  result_type: "face_lab_teaser",
-                  is_top_pick: false,
-                  meta_json: {
-                    has_teaser: Boolean(faceLabLaunch?.free?.impressionLine || faceLabLaunch?.free?.shapeLine || faceLabLaunch?.free?.styleLine)
-                  }
-                })
-              }
-            />
-          }
-        >
-          {topPickTabCard}
-        </TopPickStep>
-      ]
-    : [];
+          </section>
+        )
+      });
+    }
+
+    if (showFaceLabStep) {
+      resultSteps.push({
+        id: "face-lab",
+        content: (
+          <FaceShapePreviewCard
+            copy={copy}
+            launchData={faceLabLaunch}
+          />
+        )
+      });
+    }
+
+    resultSteps.push({
+      id: "routine-summary",
+      content: (
+        <section className="space-y-4">
+          <ResultStepLead
+            kicker={copy.routineStepKicker}
+            title={copy.routineStepTitle}
+            body={copy.routineStepBody}
+          />
+
+          <section className="ui-card p-5">
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {result?.amFocus ? (
+                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                      {locale === "en" ? "Morning" : "아침 루틴"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.amFocus}</p>
+                  </div>
+                ) : null}
+
+                {result?.pmFocus ? (
+                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                      {locale === "en" ? "Night" : "저녁 루틴"}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{result.pmFocus}</p>
+                  </div>
+                ) : null}
+              </div>
+
+              <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {copy.routineGateHint}
+              </p>
+            </div>
+          </section>
+        </section>
+      )
+    });
+
+    resultSteps.push({
+      id: "premium-preview",
+      content: (
+        <section className="space-y-4">
+          <ResultStepLead
+            kicker={copy.premiumCardKicker}
+            title={copy.premiumPreviewTitle}
+            body={copy.premiumPreviewBody}
+          />
+
+          <ResultPreviewMaskCard
+            copy={copy}
+            itemCount={routinePreviewItems.length}
+          />
+
+          <PremiumReportCard
+            copy={copy}
+          />
+        </section>
+      )
+    });
+  }
+
   const totalResultSteps = resultSteps.length;
-  const activeResultStep = resultSteps[currentResultStep] || null;
-  const showBottomCta = Boolean(result) && currentResultStep < totalResultSteps - 1;
+  const activeResultStep = resultSteps[currentResultStep]?.content || null;
+  const isFinalResultStep = Boolean(result) && currentResultStep === totalResultSteps - 1;
+  const showBottomCta = Boolean(result) && totalResultSteps > 0;
+  const nextStepLabel = !isFinalResultStep
+    ? getAdvanceLabelForStep(resultSteps[currentResultStep + 1]?.id, copy)
+    : null;
+  const secondaryActions = [];
+
+  if (isFinalResultStep) {
+    if (currentResultStep > 0) {
+      secondaryActions.push({
+        label: copy.previous,
+        onClick: () => setCurrentResultStep((current) => Math.max(0, current - 1))
+      });
+    }
+
+    secondaryActions.push({
+      label: copy.revisitResult,
+      onClick: () => setCurrentResultStep(0)
+    });
+  }
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
@@ -1390,17 +1535,90 @@ function ResultContent() {
 
       {showBottomCta ? (
         <ResultBottomCTA
-          label={stepCtaLabels[currentResultStep]}
-          onClick={() => setCurrentResultStep((current) => Math.min(totalResultSteps - 1, current + 1))}
-          previousLabel={currentResultStep > 0 ? copy.previous : null}
+          label={isFinalResultStep ? copy.premiumCardButton : nextStepLabel}
+          onClick={
+            isFinalResultStep
+              ? goToFullReport
+              : () => setCurrentResultStep((current) => Math.min(totalResultSteps - 1, current + 1))
+          }
+          previousLabel={!isFinalResultStep && currentResultStep > 0 ? copy.previous : null}
           onPrevious={
-            currentResultStep > 0
+            !isFinalResultStep && currentResultStep > 0
               ? () => setCurrentResultStep((current) => Math.max(0, current - 1))
               : null
           }
+          secondaryActions={secondaryActions}
         />
       ) : null}
     </main>
+  );
+}
+
+function ResultStepLead({ kicker, title, body }) {
+  return (
+    <section className="ui-card p-5">
+      <p className="ui-kicker">{kicker}</p>
+      <h2 className="ui-title mt-2 text-[1.55rem] sm:text-[1.7rem]">{title}</h2>
+      <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p>
+    </section>
+  );
+}
+
+function ResultPreviewMaskCard({ copy, itemCount = 4 }) {
+  const widthSets = [
+    ["78%", "56%"],
+    ["68%", "62%"],
+    ["74%", "49%"],
+    ["71%", "58%"]
+  ];
+
+  return (
+    <section className="ui-card overflow-hidden p-5">
+      <div className="space-y-4">
+        <div>
+          <p className="ui-kicker">{copy.routinePreviewTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            {copy.routineGateHint}
+          </p>
+        </div>
+
+        <div
+          className="relative overflow-hidden rounded-[1.5rem] border border-zinc-200/80 bg-white/70 p-4 select-none dark:border-zinc-800 dark:bg-zinc-950/60"
+          aria-hidden="true"
+        >
+          <div className="mt-1 space-y-3">
+            {Array.from({ length: itemCount }).map((_, index) => {
+              const widths = widthSets[index % widthSets.length];
+
+              return (
+                <div
+                  key={`preview-mask-${index}`}
+                  className="rounded-[1.2rem] bg-zinc-50/90 px-4 py-3 dark:bg-zinc-900/80"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] font-semibold text-zinc-400 blur-[0.5px] dark:bg-zinc-950/90 dark:text-zinc-500">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1 space-y-2.5 pt-0.5">
+                      {widths.map((width, lineIndex) => (
+                        <div
+                          key={`preview-mask-${index}-${lineIndex}`}
+                          className="h-3 rounded-full bg-[linear-gradient(90deg,rgba(148,163,184,0.18)_0%,rgba(148,163,184,0.34)_48%,rgba(148,163,184,0.18)_100%)] blur-[2.5px] dark:bg-[linear-gradient(90deg,rgba(71,85,105,0.28)_0%,rgba(100,116,139,0.42)_48%,rgba(71,85,105,0.28)_100%)]"
+                          style={{ width }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0)_0%,rgba(255,255,255,0.16)_44%,rgba(255,255,255,0.58)_100%)] dark:bg-[radial-gradient(circle_at_center,rgba(9,9,11,0)_0%,rgba(9,9,11,0.18)_44%,rgba(9,9,11,0.6)_100%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-white/0 via-white/72 to-white dark:from-zinc-950/0 dark:via-zinc-950/84 dark:to-zinc-950" />
+        </div>
+      </div>
+    </section>
   );
 }
 

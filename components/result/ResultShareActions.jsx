@@ -87,6 +87,20 @@ async function getShareAccessToken() {
   return getBrowserSupabaseAccessToken();
 }
 
+async function tryWriteClipboardText(text) {
+  if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
+    return false;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error("[result/share] clipboard write failed", error);
+    return false;
+  }
+}
+
 export default function ResultShareActions({ result, submission, locale = "ko" }) {
   const copy = getActionCopy(locale);
   const exportRef = useRef(null);
@@ -195,8 +209,9 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       return;
     }
 
-    await navigator.clipboard.writeText(saved.shareUrl);
-    setStatus(copy.copied);
+    const copied = await tryWriteClipboardText(saved.shareUrl);
+
+    setStatus(copied ? copy.copied : saved.shareUrl);
   }
 
   async function handleShare() {
@@ -219,8 +234,8 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       }
     }
 
-    await navigator.clipboard.writeText(saved.shareUrl);
-    setStatus(copy.sharedFallback);
+    const copied = await tryWriteClipboardText(saved.shareUrl);
+    setStatus(copied ? copy.sharedFallback : saved.shareUrl);
   }
 
   async function handleDownloadImage() {

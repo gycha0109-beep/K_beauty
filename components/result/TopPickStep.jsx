@@ -13,8 +13,8 @@ export default function TopPickStep({
       </div>
 
       {children}
-      {premiumCard}
       {afterPremium}
+      {premiumCard}
     </section>
   );
 }

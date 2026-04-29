@@ -6,7 +6,7 @@ function hasTeaserLines(data) {
   );
 }
 
-export default function FaceShapePreviewCard({ copy, launchData, onEngage }) {
+export default function FaceShapePreviewCard({ copy, launchData }) {
   const teaserLines = [
     {
       label: copy.faceLabImpressionLabel || (copy.faceShapeSummaryLabel || "Impression"),
@@ -31,22 +31,7 @@ export default function FaceShapePreviewCard({ copy, launchData, onEngage }) {
   }
 
   return (
-    <section
-      className="ui-card p-6"
-      onClick={onEngage}
-      role={onEngage ? "button" : undefined}
-      tabIndex={onEngage ? 0 : undefined}
-      onKeyDown={
-        onEngage
-          ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onEngage();
-              }
-            }
-          : undefined
-      }
-    >
+    <section className="ui-card p-6">
       <div className="space-y-5">
         <div className="space-y-2">
           <p className="ui-kicker">{copy.faceShapeFreeKicker}</p>
