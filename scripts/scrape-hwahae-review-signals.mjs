@@ -171,6 +171,17 @@ function parseKeywordLine(line) {
   return { label, count };
 }
 
+function extractAiReviewText(bodyText) {
+  const marker = "AI가 분석한 리뷰";
+  const startIndex = String(bodyText || "").indexOf(marker);
+
+  if (startIndex < 0) {
+    return null;
+  }
+
+  return bodyText.slice(startIndex, startIndex + 3000);
+}
+
 function parseReviewSectionText(sectionText) {
   const lines = String(sectionText || "")
     .split(/\r?\n/)
@@ -179,6 +190,7 @@ function parseReviewSectionText(sectionText) {
 
   const positive = [];
   const negative = [];
+  let hasAiSection = false;
   let state = null;
   let pendingLabel = "";
 
@@ -201,6 +213,11 @@ function parseReviewSectionText(sectionText) {
 
   for (const line of lines) {
     if (line.includes("AI가 분석한 리뷰")) {
+      hasAiSection = true;
+      continue;
+    }
+
+    if (!hasAiSection) {
       continue;
     }
 
@@ -243,6 +260,19 @@ function parseReviewSectionText(sectionText) {
   };
 }
 
+async function writeOutput(payload, outFile) {
+  const output = `${payload === null ? "null" : JSON.stringify(payload, null, 2)}\n`;
+
+  if (outFile) {
+    const resolvedPath = path.resolve(process.cwd(), outFile);
+    await fs.writeFile(resolvedPath, output, "utf8");
+    process.stdout.write(`Saved ${resolvedPath}\n`);
+    return;
+  }
+
+  process.stdout.write(output);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const url = String(args.url || "").trim();
@@ -265,38 +295,54 @@ async function main() {
   const browser = await chromium.launch({ headless: !headed });
 
   try {
-    const page = await browser.newPage({
-      viewport: {
-        width: 1440,
-        height: 2200
-      }
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
     });
+    const page = await context.newPage();
 
     await page.goto(url, {
       waitUntil: "domcontentloaded",
       timeout: 30000
     });
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(2000);
 
-    const section = page
-      .locator("section, article, div")
-      .filter({ hasText: "AI가 분석한 리뷰" })
-      .filter({ hasText: "좋아요" })
-      .first();
+    console.log(await page.evaluate(() => navigator.userAgent));
+    console.log(page.viewportSize());
 
-    await section.waitFor({
-      state: "visible",
-      timeout: 15000
-    });
+    const debugScreenshotPath = path.resolve(process.cwd(), "debug.png");
+    await page.screenshot({ path: debugScreenshotPath, fullPage: true });
 
-    await section.scrollIntoViewIfNeeded();
-    const sectionText = await section.innerText();
-    const parsed = parseReviewSectionText(sectionText);
+    const hasAiSection = await page
+      .getByText("AI가 분석한 리뷰")
+      .first()
+      .isVisible()
+      .catch(() => false);
+
+    if (!hasAiSection) {
+      process.stdout.write(
+        "AI review section not found (likely unsupported product or blocked view)\n"
+      );
+      await writeOutput(null, outFile);
+      return;
+    }
+
+    const bodyText = await page.locator("body").innerText();
+    const aiReviewText = extractAiReviewText(bodyText);
+    const parsed = parseReviewSectionText(aiReviewText || bodyText);
 
     if (!parsed.positive.length && !parsed.negative.length) {
-      throw new Error("Could not extract keyword/count pairs from the visible AI review section.");
+      process.stdout.write(
+        "AI review section not found (likely unsupported product or blocked view)\n"
+      );
+      await writeOutput(null, outFile);
+      return;
     }
 
     const payload = {
+      productId,
       product_id: productId,
       url,
       review_signals: {
@@ -307,16 +353,7 @@ async function main() {
       }
     };
 
-    const output = `${JSON.stringify(payload, null, 2)}\n`;
-
-    if (outFile) {
-      const resolvedPath = path.resolve(process.cwd(), outFile);
-      await fs.writeFile(resolvedPath, output, "utf8");
-      process.stdout.write(`Saved ${resolvedPath}\n`);
-      return;
-    }
-
-    process.stdout.write(output);
+    await writeOutput(payload, outFile);
   } finally {
     await browser.close();
   }
