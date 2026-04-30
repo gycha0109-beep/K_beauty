@@ -299,7 +299,7 @@ function sanitizeProductForPremium(product) {
   };
 }
 
-function stripReviewSignals(product) {
+function stripRawSignalBlobs(product) {
   if (!product || typeof product !== "object") {
     return product || null;
   }
@@ -309,6 +309,8 @@ function stripReviewSignals(product) {
   };
 
   delete nextProduct.review_signals;
+  delete nextProduct.market_signals;
+  delete nextProduct.ingredient_signals;
   return nextProduct;
 }
 
@@ -420,8 +422,8 @@ function buildFreeDecisionPayload(decision) {
   return {
     summary: decision.summary || "",
     priority: decision.priority || null,
-    topPick: stripReviewSignals(decision.topPick || null),
-    alternative: stripReviewSignals(decision.alternative || null),
+    topPick: stripRawSignalBlobs(decision.topPick || null),
+    alternative: stripRawSignalBlobs(decision.alternative || null),
     amFocus: decision.amFocus || "",
     pmFocus: decision.pmFocus || "",
     routineStructure: sanitizeRoutineStructure(decision.routineStructure),

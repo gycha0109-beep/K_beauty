@@ -12,6 +12,7 @@ async function main() {
 
   process.stdout.write(
     [
+      "This script is now a workflow helper, not the active scraper.",
       "Playwright-first Hwahae scraping is deprecated in this repo.",
       "Use the visible-page browser-console workflow instead:",
       "1. Open a Hwahae product page in your own browser.",
@@ -19,6 +20,9 @@ async function main() {
       '3. Save the raw JSON and replace "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID".',
       '4. Build a fixture with: node scripts/build-review-signal-fixture.mjs --input tmp/hwahae-raw.json --out tmp/hwahae-review-signals.fixture.json',
       '5. Dry-run import with: node scripts/import-review-signals-to-supabase.mjs --file tmp/hwahae-review-signals.fixture.json --dry-run',
+      '6. If the dry-run looks correct, run the same import command without --dry-run.',
+      "",
+      "See scripts/README.md for the end-to-end workflow and required columns.",
       "",
       "--- snippet ---",
       snippet,

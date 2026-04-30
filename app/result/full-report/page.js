@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { buildRoutineSections } from "@/lib/routine-structure";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
@@ -150,67 +151,10 @@ function renderList(items = []) {
   ) : null;
 }
 
-function getRoutineSections(report, copy) {
-  const structure = report?.routineStructure;
-  const cards = Array.isArray(structure?.cards) ? structure.cards : [];
-
-  if (!cards.length) {
-    return [
-      { key: "morning", label: copy.morning, items: report.fullRoutine?.morning || [] },
-      { key: "night", label: copy.night, items: report.fullRoutine?.night || [] }
-    ];
-  }
-
-  if (structure.type === "am_only") {
-    return [
-      {
-        key: "morning",
-        label: cards[0]?.label || copy.morning,
-        items: report.fullRoutine?.morning || []
-      }
-    ];
-  }
-
-  if (structure.type === "pm_only") {
-    return [
-      {
-        key: "night",
-        label: cards[0]?.label || copy.night,
-        items: report.fullRoutine?.night || []
-      }
-    ];
-  }
-
-  if (structure.type === "single_track") {
-    return [
-      {
-        key: "core",
-        label: cards[0]?.label || copy.fullRoutine,
-        items: (report.fullRoutine?.morning || []).length ? report.fullRoutine.morning : (report.fullRoutine?.night || [])
-      }
-    ];
-  }
-
-  return [
-    {
-      key: "morning",
-      label: cards.find((item) => item.key === "morning")?.label || copy.morning,
-      items: report.fullRoutine?.morning || []
-    },
-    {
-      key: "night",
-      label: cards.find((item) => item.key === "night")?.label || copy.night,
-      items: report.fullRoutine?.night || []
-    }
-  ];
-}
-
 function SupportingProductCard({ product, copy }) {
   if (!product) {
     return null;
   }
-
-  const routineSections = getRoutineSections(report, copy);
 
   return (
     <article className="ui-card-muted rounded-[1.35rem] p-4">
@@ -268,10 +212,6 @@ export default function FullReportPage() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    void getFullReportAccessToken("full-report-page-init");
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -380,6 +320,18 @@ export default function FullReportPage() {
       </main>
     );
   }
+
+  const routineSections = buildRoutineSections({
+    locale,
+    routineStructure: report?.routineStructure || null,
+    morningItems: report?.fullRoutine?.morning || [],
+    nightItems: report?.fullRoutine?.night || [],
+    labels: {
+      morning: copy.morning,
+      night: copy.night,
+      core: copy.fullRoutine
+    }
+  });
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">

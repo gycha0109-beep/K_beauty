@@ -11,6 +11,7 @@ import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import { getRoutineStructureData, getRoutineStructureLabel } from "@/lib/routine-structure";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
@@ -463,98 +464,6 @@ function getConcernDisplay(form = {}, locale = "ko") {
     .filter(Boolean);
 
   return labels.length ? labels.slice(0, 3).join(" · ") : copy.currentConcernBasis;
-}
-
-function buildFallbackRoutineStructure(result, locale = "ko") {
-  const hasMorning = Boolean(result?.amFocus);
-  const hasNight = Boolean(result?.pmFocus);
-
-  if (hasMorning && hasNight) {
-    return {
-      type: "am_pm_balanced",
-      label: locale === "en" ? "AM + PM split" : "아침 + 저녁 분리형",
-      title: locale === "en" ? "AM + PM Split Routine" : "아침 · 저녁 분리 루틴",
-      body:
-        locale === "en"
-          ? "The current result still reads more naturally as separate daytime and evening roles."
-          : "현재 결과는 낮과 밤 역할을 나눠 보는 구조로 읽는 편이 더 자연스럽습니다.",
-      cards: [
-        {
-          key: "morning",
-          label: locale === "en" ? "Morning Focus" : "아침 핵심",
-          body: result.amFocus
-        },
-        {
-          key: "night",
-          label: locale === "en" ? "Night Focus" : "저녁 핵심",
-          body: result.pmFocus
-        }
-      ].filter((item) => item.body)
-    };
-  }
-
-  if (hasMorning) {
-    return {
-      type: "am_only",
-      label: locale === "en" ? "Morning-led" : "아침 집중형",
-      title: locale === "en" ? "Morning-led Routine" : "아침 집중 루틴",
-      body:
-        locale === "en"
-          ? "The current result leans more heavily on the morning side."
-          : "현재 결과는 아침 쪽 역할 비중이 더 크게 잡혀 있습니다.",
-      cards: [
-        {
-          key: "morning",
-          label: locale === "en" ? "Morning Focus" : "아침 핵심",
-          body: result.amFocus
-        }
-      ]
-    };
-  }
-
-  if (hasNight) {
-    return {
-      type: "pm_only",
-      label: locale === "en" ? "Night-led" : "저녁 회복형",
-      title: locale === "en" ? "Night-led Routine" : "저녁 집중 루틴",
-      body:
-        locale === "en"
-          ? "The current result leans more heavily on the evening side."
-          : "현재 결과는 저녁 쪽에서 회복과 보정을 먼저 잡는 구조로 읽힙니다.",
-      cards: [
-        {
-          key: "night",
-          label: locale === "en" ? "Night Focus" : "저녁 핵심",
-          body: result.pmFocus
-        }
-      ]
-    };
-  }
-
-  return {
-    type: "single_track",
-    label: locale === "en" ? "All-day single track" : "하루 공통 1포인트",
-    title: locale === "en" ? "All-day Core Routine" : "하루 공통 루틴",
-    body:
-      locale === "en"
-        ? "The routine reads better as one common track for now."
-        : "현재는 하루 공통 포인트 하나로 읽는 편이 더 자연스럽습니다.",
-    cards: []
-  };
-}
-
-function getRoutineStructureData(result, locale = "ko") {
-  const structure = result?.routineStructure;
-
-  if (structure && Array.isArray(structure.cards) && structure.cards.length) {
-    return structure;
-  }
-
-  return buildFallbackRoutineStructure(result, locale);
-}
-
-function getRoutineStructureLabel(result, locale = "ko") {
-  return getRoutineStructureData(result, locale).label;
 }
 
 function getOverviewSummary(form = {}, decision = null, locale = "ko") {
@@ -1196,10 +1105,6 @@ function ResultContent() {
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
   const localizedPath = getLocalePath(pathname, locale);
-
-  useEffect(() => {
-    void getResultPageAccessToken("result-page-init");
-  }, []);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");

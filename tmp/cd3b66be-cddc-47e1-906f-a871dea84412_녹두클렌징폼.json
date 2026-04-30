@@ -1,0 +1,105 @@
+{
+  "productId": "cd3b66be-cddc-47e1-906f-a871dea84412",
+  "review_raw": {
+    "positive": [
+      [
+        "알갱이있는",
+        4279
+      ],
+      [
+        "트러블안생기는",
+        3576
+      ],
+      [
+        "각질제거잘되는",
+        2149
+      ],
+      [
+        "트러블없어지는",
+        1996
+      ],
+      [
+        "2차세안에적합한",
+        1445
+      ],
+      [
+        "미끌거리지않는",
+        1291
+      ],
+      [
+        "진정되는",
+        845
+      ]
+    ],
+    "negative": [
+      [
+        "알러지반응오는",
+        956
+      ],
+      [
+        "거품이풍성하지않은",
+        427
+      ],
+      [
+        "리치한",
+        342
+      ],
+      [
+        "워터프루프안지워지는",
+        215
+      ],
+      [
+        "가려운",
+        183
+      ],
+      [
+        "잘굳는",
+        98
+      ],
+      [
+        "흘러내리는",
+        78
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 47935,
+    "rating": 4.63,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 37,
+    "risk": {
+      "low": 33,
+      "medium": 2,
+      "high": 0,
+      "unknown": 2
+    },
+    "functional": {
+      "skin hydration": 25,
+      "moisture evaporation blocking": 2,
+      "skin protection": 2,
+      "soothing/astringent": 1,
+      "exfoliation": 0,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 2,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 5,
+        "negative": 1
+      },
+      "sensitive": {
+        "positive": 3,
+        "negative": 1
+      }
+    }
+  },
+  "category": "cleanser"
+}

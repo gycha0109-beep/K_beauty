@@ -1,0 +1,105 @@
+{
+  "productId": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+  "review_raw": {
+    "positive": [
+      [
+        "끈적하지않은",
+        3138
+      ],
+      [
+        "흡수잘되는",
+        2671
+      ],
+      [
+        "가벼운",
+        2655
+      ],
+      [
+        "눈통증없는",
+        1696
+      ],
+      [
+        "밀림없는",
+        1686
+      ],
+      [
+        "산뜻한",
+        1005
+      ],
+      [
+        "답답하지않은",
+        854
+      ]
+    ],
+    "negative": [
+      [
+        "유분있는",
+        3109
+      ],
+      [
+        "따가운",
+        1057
+      ],
+      [
+        "알러지반응오는",
+        1057
+      ],
+      [
+        "톤업안되는",
+        790
+      ],
+      [
+        "톤보정안되는",
+        368
+      ],
+      [
+        "지속력안좋은",
+        276
+      ],
+      [
+        "미백효과가없는",
+        179
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 28799,
+    "rating": 4.6,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 40,
+    "risk": {
+      "low": 36,
+      "medium": 4,
+      "high": 0,
+      "unknown": 0
+    },
+    "functional": {
+      "skin hydration": 19,
+      "moisture evaporation blocking": 2,
+      "skin protection": 5,
+      "soothing/astringent": 0,
+      "exfoliation": 0,
+      "whitening": 1,
+      "acne relief": 0,
+      "uv protection": 4,
+      "wrinkle improvement": 1
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 1,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 6,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 2,
+        "negative": 0
+      }
+    }
+  },
+  "category": "sunscreen"
+}

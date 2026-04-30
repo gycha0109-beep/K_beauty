@@ -1,6 +1,5 @@
 "use client";
 
-import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ResultShareCard from "@/components/result/ResultShareCard";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
@@ -109,10 +108,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  useEffect(() => {
-    void getShareAccessToken();
-  }, []);
+  const [isExportMounted, setIsExportMounted] = useState(false);
 
   useEffect(() => {
     const saved = readSavedShare(fingerprint);
@@ -239,12 +235,20 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
   }
 
   async function handleDownloadImage() {
-    if (!exportRef.current) {
-      return;
-    }
-
     try {
       setIsDownloading(true);
+      setIsExportMounted(true);
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(resolve);
+        });
+      });
+
+      if (!exportRef.current) {
+        return;
+      }
+
+      const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(exportRef.current, {
         pixelRatio: 2,
         cacheBust: true,
@@ -261,6 +265,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
       setStatus(copy.imageError);
     } finally {
       setIsDownloading(false);
+      setIsExportMounted(false);
     }
   }
 
@@ -309,21 +314,23 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
         {status ? <p className="ui-text-secondary mt-2 text-xs">{status}</p> : null}
       </div>
 
-      <div className="pointer-events-none fixed left-0 top-0 -z-10 opacity-0">
-        <div ref={exportRef} className="w-[720px] p-6">
-          <ResultShareCard
-            locale={locale}
-            skinType={submission?.form?.skinType || ""}
-            mainConcerns={submission?.form?.mainConcerns || (submission?.form?.mainConcern ? [submission.form.mainConcern] : [])}
-            summary={result?.summary || ""}
-            topPick={result?.topPick || null}
-            categoryPicks={result?.alternative ? [result.alternative] : []}
-            routineStructure={result?.routineStructure || null}
-            routineAm={Array.isArray(result?.morning) && result.morning.length ? result.morning : result?.amFocus ? [result.amFocus] : []}
-            routinePm={Array.isArray(result?.night) && result.night.length ? result.night : result?.pmFocus ? [result.pmFocus] : []}
-          />
+      {isExportMounted ? (
+        <div className="pointer-events-none fixed left-0 top-0 -z-10 opacity-0">
+          <div ref={exportRef} className="w-[720px] p-6">
+            <ResultShareCard
+              locale={locale}
+              skinType={submission?.form?.skinType || ""}
+              mainConcerns={submission?.form?.mainConcerns || (submission?.form?.mainConcern ? [submission.form.mainConcern] : [])}
+              summary={result?.summary || ""}
+              topPick={result?.topPick || null}
+              categoryPicks={result?.alternative ? [result.alternative] : []}
+              routineStructure={result?.routineStructure || null}
+              routineAm={Array.isArray(result?.morning) && result.morning.length ? result.morning : result?.amFocus ? [result.amFocus] : []}
+              routinePm={Array.isArray(result?.night) && result.night.length ? result.night : result?.pmFocus ? [result.pmFocus] : []}
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
     </>
   );
 }

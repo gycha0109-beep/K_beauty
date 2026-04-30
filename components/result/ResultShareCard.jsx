@@ -1,36 +1,5 @@
 import { getConcernLabels, getShareCopy, getSkinTypeLabel } from "@/lib/analysis-results";
-
-function buildRoutineSections({ locale = "ko", routineStructure = null, routineAm = [], routinePm = [] }) {
-  const copy = getShareCopy(locale);
-  const cards = Array.isArray(routineStructure?.cards) ? routineStructure.cards : [];
-
-  if (cards.length) {
-    return cards
-      .map((card, index) => ({
-        key: card?.key || `routine-${index}`,
-        label: card?.label || (card?.key === "night" ? copy.routinePm : copy.routineAm),
-        items: [card?.body].filter(Boolean)
-      }))
-      .filter((section) => section.items.length);
-  }
-
-  return [
-    routineAm.length
-      ? {
-          key: "morning",
-          label: copy.routineAm,
-          items: routineAm
-        }
-      : null,
-    routinePm.length
-      ? {
-          key: "night",
-          label: copy.routinePm,
-          items: routinePm
-        }
-      : null
-  ].filter(Boolean);
-}
+import { buildRoutineSections } from "@/lib/routine-structure";
 
 export default function ResultShareCard({
   locale = "ko",
@@ -52,8 +21,13 @@ export default function ResultShareCard({
     : buildRoutineSections({
         locale,
         routineStructure,
-        routineAm,
-        routinePm
+        morningItems: routineAm,
+        nightItems: routinePm,
+        labels: {
+          morning: copy.routineAm,
+          night: copy.routinePm,
+          core: locale === "en" ? "Routine" : "루틴"
+        }
       });
 
   return (

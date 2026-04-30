@@ -1,0 +1,105 @@
+{
+  "productId": "2d52e270-0429-4c5f-89dd-5c608b92fe8c",
+  "review_raw": {
+    "positive": [
+      [
+        "보습잘되는",
+        801
+      ],
+      [
+        "수분있는",
+        650
+      ],
+      [
+        "자극없는",
+        518
+      ],
+      [
+        "잘발리는",
+        496
+      ],
+      [
+        "흡수잘되는",
+        308
+      ],
+      [
+        "편안해지는",
+        109
+      ],
+      [
+        "피부강화되는",
+        82
+      ]
+    ],
+    "negative": [
+      [
+        "유분있는",
+        377
+      ],
+      [
+        "알러지반응오는",
+        62
+      ],
+      [
+        "가려운",
+        30
+      ],
+      [
+        "답답한",
+        28
+      ],
+      [
+        "잘굳는",
+        22
+      ],
+      [
+        "모공관리안되는",
+        21
+      ],
+      [
+        "유수분밸런스가맞지않는",
+        18
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 2488,
+    "rating": 4.67,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 38,
+    "risk": {
+      "low": 35,
+      "medium": 3,
+      "high": 0,
+      "unknown": 0
+    },
+    "functional": {
+      "skin hydration": 13,
+      "moisture evaporation blocking": 6,
+      "skin protection": 9,
+      "soothing/astringent": 0,
+      "exfoliation": 1,
+      "whitening": 1,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 0,
+        "negative": 2
+      },
+      "dry": {
+        "positive": 3,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 0,
+        "negative": 0
+      }
+    }
+  },
+  "category": "moisturizer"
+}

@@ -1,0 +1,105 @@
+{
+  "productId": "eb675aef-b910-4e5c-b76b-6ade44966775",
+  "review_raw": {
+    "positive": [
+      [
+        "각질제거잘되는",
+        4414
+      ],
+      [
+        "피부결좋아지는",
+        4289
+      ],
+      [
+        "잘발리는",
+        3967
+      ],
+      [
+        "산뜻한",
+        3900
+      ],
+      [
+        "따갑지않은",
+        1900
+      ],
+      [
+        "뒤집어지지않는",
+        1529
+      ],
+      [
+        "매끄러운",
+        1151
+      ]
+    ],
+    "negative": [
+      [
+        "흘러내리는",
+        2943
+      ],
+      [
+        "알러지반응오는",
+        2175
+      ],
+      [
+        "가려운",
+        402
+      ],
+      [
+        "블랙헤드안없어지는",
+        322
+      ],
+      [
+        "잘굳는",
+        290
+      ],
+      [
+        "눈통증있는",
+        239
+      ],
+      [
+        "지속력안좋은",
+        220
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 94287,
+    "rating": 4.43,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 16,
+    "risk": {
+      "low": 15,
+      "medium": 1,
+      "high": 0,
+      "unknown": 0
+    },
+    "functional": {
+      "skin hydration": 13,
+      "moisture evaporation blocking": 0,
+      "skin protection": 2,
+      "soothing/astringent": 0,
+      "exfoliation": 1,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 1,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 3,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 1,
+        "negative": 0
+      }
+    }
+  },
+  "category": "toner_essence"
+}

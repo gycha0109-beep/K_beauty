@@ -2,7 +2,11 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { normalizeReviewSignals } from "../lib/review-signals.js";
+import { createClient } from "@supabase/supabase-js";
+import {
+  getReviewSignalCategoryFamily,
+  normalizeReviewSignals,
+} from "../lib/review-signals.js";
 
 const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
 const FUNCTIONAL_SIGNAL_RULES = [
@@ -14,7 +18,19 @@ const FUNCTIONAL_SIGNAL_RULES = [
   { label: "whitening", mapped: ["uneven_tone"] },
   { label: "acne relief", mapped: ["acne"] },
   { label: "uv protection", mapped: ["uv"] },
+  { label: "wrinkle improvement", mapped: ["wrinkle_improvement"] },
 ];
+
+function logStatus(kind, message) {
+  const prefixes = {
+    success: "[ok]",
+    warn: "[warn]",
+    error: "[error]",
+    info: "[info]",
+  };
+
+  process.stdout.write(`${prefixes[kind] || "[info]"} ${message}\n`);
+}
 
 function parseArgs(argv) {
   const args = {};
@@ -39,6 +55,65 @@ function parseArgs(argv) {
   }
 
   return args;
+}
+
+async function loadEnvFile(filePath) {
+  try {
+    const content = await fs.readFile(filePath, "utf8");
+    const lines = content.split(/\r?\n/);
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (!trimmed || trimmed.startsWith("#")) {
+        continue;
+      }
+
+      const separatorIndex = trimmed.indexOf("=");
+
+      if (separatorIndex <= 0) {
+        continue;
+      }
+
+      const key = trimmed.slice(0, separatorIndex).trim();
+      let value = trimmed.slice(separatorIndex + 1).trim();
+
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+
+      if (!process.env[key]) {
+        process.env[key] = value;
+      }
+    }
+  } catch (error) {
+    if (error && typeof error === "object" && error.code === "ENOENT") {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+async function loadLocalEnv() {
+  await loadEnvFile(path.resolve(process.cwd(), ".env.local"));
+  await loadEnvFile(path.resolve(process.cwd(), ".env"));
+}
+
+function getSupabaseReadConfig() {
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    "";
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+  return {
+    supabaseUrl: String(supabaseUrl).trim(),
+    serviceRoleKey: String(serviceRoleKey).trim(),
+  };
 }
 
 function normalizeText(value) {
@@ -78,6 +153,153 @@ function getLocalDateString(date = new Date()) {
   const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+function normalizeOptionalText(value) {
+  const normalized = String(value || "").trim();
+  return normalized || null;
+}
+
+function normalizeCategoryFamilyToken(value) {
+  const normalized = normalizeOptionalText(value);
+  return normalized ? normalized.toLowerCase().replace(/\s+/g, "_") : null;
+}
+
+function createCategoryLookupContext() {
+  const { supabaseUrl, serviceRoleKey } = getSupabaseReadConfig();
+
+  if (!supabaseUrl) {
+    return {
+      supabase: null,
+      cache: new Map(),
+      availabilityWarning:
+        "Missing Supabase URL. Category auto-lookup skipped; using common mapping only when raw category is absent.",
+    };
+  }
+
+  if (!serviceRoleKey) {
+    return {
+      supabase: null,
+      cache: new Map(),
+      availabilityWarning:
+        "Missing SUPABASE_SERVICE_ROLE_KEY. Category auto-lookup skipped; using common mapping only when raw category is absent.",
+    };
+  }
+
+  return {
+    supabase: createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }),
+    cache: new Map(),
+    availabilityWarning: "",
+  };
+}
+
+async function fetchProductCategory(categoryLookup, productId) {
+  if (!categoryLookup?.supabase) {
+    return null;
+  }
+
+  if (categoryLookup.cache.has(productId)) {
+    return categoryLookup.cache.get(productId);
+  }
+
+  const { data, error } = await categoryLookup.supabase
+    .from("products")
+    .select("category")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Supabase category lookup failed for ${productId}: ${error.message}`);
+  }
+
+  const category = normalizeOptionalText(data?.category);
+  categoryLookup.cache.set(productId, category);
+  return category;
+}
+
+async function resolveReviewCategory(rawItem, categoryLookup) {
+  const productId = normalizeOptionalText(rawItem?.productId);
+  const rawCategory = normalizeOptionalText(rawItem?.category);
+  const rawCategoryFamily = normalizeCategoryFamilyToken(rawItem?.categoryFamily);
+
+  if (rawCategory) {
+    return {
+      category: rawCategory,
+      categoryFamily: getReviewSignalCategoryFamily(rawCategory),
+      source: "raw",
+      warning: "",
+    };
+  }
+
+  if (productId && categoryLookup?.supabase) {
+    try {
+      const category = await fetchProductCategory(categoryLookup, productId);
+
+      if (category) {
+        return {
+          category,
+          categoryFamily: getReviewSignalCategoryFamily(category),
+          source: "supabase",
+          warning: "",
+        };
+      }
+
+      if (rawCategoryFamily) {
+        return {
+          category: null,
+          categoryFamily: rawCategoryFamily,
+          source: "raw",
+          warning: `products.category is empty for ${productId}; using raw categoryFamily fallback.`,
+        };
+      }
+
+      return {
+        category: null,
+        categoryFamily: null,
+        source: "missing/common-only",
+        warning: `products.category is empty or missing for ${productId}; using common mapping only.`,
+      };
+    } catch (error) {
+      if (rawCategoryFamily) {
+        return {
+          category: null,
+          categoryFamily: rawCategoryFamily,
+          source: "raw",
+          warning: `${
+            error instanceof Error ? error.message : String(error)
+          } Falling back to raw categoryFamily.`,
+        };
+      }
+
+      return {
+        category: null,
+        categoryFamily: null,
+        source: "missing/common-only",
+        warning: `${error instanceof Error ? error.message : String(error)} Using common mapping only.`,
+      };
+    }
+  }
+
+  if (rawCategoryFamily) {
+    return {
+      category: null,
+      categoryFamily: rawCategoryFamily,
+      source: "raw",
+      warning: "",
+    };
+  }
+
+  return {
+    category: null,
+    categoryFamily: null,
+    source: "missing/common-only",
+    warning: "",
+  };
 }
 
 async function readInput(args) {
@@ -146,7 +368,7 @@ function normalizeReviewRawList(entries) {
     .filter((entry) => entry?.label && entry.count > 0);
 }
 
-function buildReviewSignals(reviewRaw, warnings) {
+function buildReviewSignals(reviewRaw, warnings, options = {}) {
   const positive = normalizeReviewRawList(reviewRaw?.positive);
   const negative = normalizeReviewRawList(reviewRaw?.negative);
 
@@ -159,7 +381,7 @@ function buildReviewSignals(reviewRaw, warnings) {
     positive,
     negative,
     updated_at: getLocalDateString(),
-  });
+  }, options);
 
   if (!normalized) {
     return null;
@@ -330,7 +552,7 @@ function validateProductId(productId) {
   }
 }
 
-function buildFixtureItem(rawItem) {
+async function buildFixtureItem(rawItem, categoryLookup) {
   const warnings = {
     unmappedReviewLabels: new Set(),
     unmappedFunctionalLabels: new Set(),
@@ -338,10 +560,14 @@ function buildFixtureItem(rawItem) {
   const productId = String(rawItem?.productId || "").trim();
 
   validateProductId(productId);
+  const categoryResolution = await resolveReviewCategory(rawItem, categoryLookup);
 
   const fixture = {
     productId,
-    review_signals: buildReviewSignals(rawItem?.review_raw, warnings),
+    review_signals: buildReviewSignals(rawItem?.review_raw, warnings, {
+      category: categoryResolution.category,
+      categoryFamily: categoryResolution.categoryFamily,
+    }),
     market_signals: buildMarketSignals(rawItem?.market_raw),
     ingredient_signals: buildIngredientSignals(rawItem?.ingredient_raw, warnings),
   };
@@ -349,6 +575,7 @@ function buildFixtureItem(rawItem) {
   return {
     fixture,
     warnings,
+    categoryResolution,
   };
 }
 
@@ -368,15 +595,32 @@ function printWarnings(index, warnings) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  await loadLocalEnv();
+  const categoryLookup = createCategoryLookupContext();
   const input = await readInput(args);
   const items = Array.isArray(input) ? input : [input];
   const outputItems = [];
 
-  items.forEach((item, index) => {
-    const { fixture, warnings } = buildFixtureItem(item || {});
+  if (categoryLookup.availabilityWarning) {
+    logStatus("warn", categoryLookup.availabilityWarning);
+  }
+
+  for (const [index, item] of items.entries()) {
+    const { fixture, warnings, categoryResolution } = await buildFixtureItem(item || {}, categoryLookup);
     outputItems.push(fixture);
+    logStatus(
+      "info",
+      `item ${index + 1}: productId=${fixture.productId} resolved category=${
+        categoryResolution.category || "-"
+      } resolved categoryFamily=${categoryResolution.categoryFamily || "-"} category source=${
+        categoryResolution.source
+      }`
+    );
+    if (categoryResolution.warning) {
+      logStatus("warn", `item ${index + 1}: ${categoryResolution.warning}`);
+    }
     printWarnings(index + 1, warnings);
-  });
+  }
 
   const outputPayload = Array.isArray(input) ? outputItems : outputItems[0];
   await writeOutput(outputPayload, args.out ? String(args.out) : "");
