@@ -685,7 +685,7 @@ export async function POST(request) {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1400,
-        temperature: 0.4,
+        temperature: 0,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: createPrompt(locale) },

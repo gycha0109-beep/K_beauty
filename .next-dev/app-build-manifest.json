@@ -31,15 +31,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/track/route.js"
     ],
-    "/api/results/route": [
+    "/api/full-report/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/results/route.js"
+      "static/chunks/app/api/full-report/route.js"
     ],
-    "/r/[shareId]/page": [
+    "/result/full-report/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/r/[shareId]/page.js"
+      "static/chunks/app/result/full-report/page.js"
     ]
   }
 }

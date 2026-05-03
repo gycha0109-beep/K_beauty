@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import {
   getPremiumReportCookieOptions,
   PREMIUM_REPORT_COOKIE,
@@ -44,8 +45,10 @@ export async function POST(request) {
 
   const locale = body?.locale === "en" ? "en" : "ko";
   const faceLabLaunch = buildFaceLabLaunchData(body?.faceLab || null, locale);
+  const topPickFitGauges = buildProductFitGauges(body?.topPick || null, { locale });
   const response = NextResponse.json({
     ...premiumSession.payload.premiumReport,
+    topPickFitGauges,
     faceLab: {
       hairDirection: Array.isArray(faceLabLaunch?.paid?.hairDirection) ? faceLabLaunch.paid.hairDirection : [],
       avoidStyles: Array.isArray(faceLabLaunch?.paid?.avoidStyles) ? faceLabLaunch.paid.avoidStyles : [],

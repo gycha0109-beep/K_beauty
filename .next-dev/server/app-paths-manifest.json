@@ -1,5 +1,6 @@
 {
+  "/api/full-report/route": "app/api/full-report/route.js",
   "/page": "app/page.js",
   "/result/page": "app/result/page.js",
-  "/r/[shareId]/page": "app/r/[shareId]/page.js"
+  "/result/full-report/page": "app/result/full-report/page.js"
 }

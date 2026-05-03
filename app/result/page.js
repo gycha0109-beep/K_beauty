@@ -165,6 +165,7 @@ const resultCopy = {
     faceShapeSummaryLabel: "한 줄 분석",
     faceShapeTagsLabel: "보이는 특징",
     faceShapeEmpty: "얼굴형 분석을 아직 불러오지 못했습니다.",
+    routineProductLabel: "추천 제품",
     alternativeLabel: "함께 볼 대안 1개",
     freeFocusTitle: "지금 바로 따라갈 포인트",
     recommendedStepKicker: "RESULT STEP 3",
@@ -292,6 +293,7 @@ const resultCopy = {
     faceShapeSummaryLabel: "One-line read",
     faceShapeTagsLabel: "Visible features",
     faceShapeEmpty: "Could not load the face-shape analysis yet.",
+    routineProductLabel: "Suggested product",
     alternativeLabel: "One Alternative",
     freeFocusTitle: "What To Follow Right Now",
     recommendedStepKicker: "RESULT STEP 3",
@@ -498,6 +500,46 @@ function buildRoutinePreviewItems(result, locale = "ko") {
   items.push(...cardBodies.slice(0, 2));
   items.push("세부 순서와 조합, 번갈아 쓰는 구성은 다음 단계에서 이어집니다.");
   return items.slice(0, 4);
+}
+
+function buildRoutineSupportProducts(result) {
+  const seen = new Set();
+  const items = [
+    result?.topPick,
+    result?.alternative,
+    ...(Array.isArray(result?.categoryPicks) ? result.categoryPicks : []),
+    ...(Array.isArray(result?.altPicks) ? result.altPicks : [])
+  ].filter(Boolean).filter((item) => {
+    const key = item?.id || `${item?.brand}-${item?.name}`;
+
+    if (!key || seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+
+  const pickBySlot = (slot, usedIds = new Set()) => {
+    const exactMatch = items.find((item) => item?.use_time === slot && !usedIds.has(item?.id || `${item?.brand}-${item?.name}`));
+
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    return items.find((item) => item?.use_time === "both" && !usedIds.has(item?.id || `${item?.brand}-${item?.name}`)) || null;
+  };
+
+  const usedIds = new Set();
+  const morning = pickBySlot("day", usedIds);
+
+  if (morning) {
+    usedIds.add(morning.id || `${morning.brand}-${morning.name}`);
+  }
+
+  const night = pickBySlot("night", usedIds) || pickBySlot("both", usedIds) || morning;
+
+  return { morning, night };
 }
 
 function hasFaceLabTeaser(launchData) {
@@ -1161,6 +1203,36 @@ function ResultContent() {
     });
   }, [currentResultStep]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !result) {
+      return;
+    }
+
+    const message = locale === "en"
+      ? "Do you want to go back to the survey page?"
+      : "설문페이지로 돌아가시겠습니까?";
+
+    window.history.pushState({ resultGuard: true }, "", window.location.href);
+
+    const handlePopState = () => {
+      const shouldLeave = window.confirm(message);
+
+      if (shouldLeave) {
+        window.removeEventListener("popstate", handlePopState);
+        window.history.back();
+        return;
+      }
+
+      window.history.pushState({ resultGuard: true }, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [locale, result]);
+
   if (!isReady) {
     return (
       <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4 py-12">
@@ -1188,6 +1260,7 @@ function ResultContent() {
   const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
   const routineStructure = getRoutineStructureData(result, locale);
   const routinePreviewItems = buildRoutinePreviewItems(result, locale);
+  const routineSupportProducts = buildRoutineSupportProducts(result);
   const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
@@ -1319,6 +1392,20 @@ function ResultContent() {
                       {card.label}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
+                    {card.key === "morning" && routineSupportProducts.morning ? (
+                      <RoutineSupportProductCard
+                        copy={copy}
+                        product={routineSupportProducts.morning}
+                        locale={locale}
+                      />
+                    ) : null}
+                    {card.key === "night" && routineSupportProducts.night ? (
+                      <RoutineSupportProductCard
+                        copy={copy}
+                        product={routineSupportProducts.night}
+                        locale={locale}
+                      />
+                    ) : null}
                   </div>
                 )) : (
                   <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-500 dark:bg-zinc-800/70 dark:text-zinc-400">
@@ -1558,6 +1645,46 @@ function ResultPreviewMaskCard({ copy, itemCount = 4 }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function RoutineSupportProductCard({ copy, product, locale = "ko" }) {
+  if (!product) {
+    return null;
+  }
+
+  const purchaseLink = getPurchaseLinkInfo(product, locale);
+
+  return (
+    <div className="mt-4 rounded-[1.2rem] border border-zinc-200/80 bg-white/78 p-3 dark:border-zinc-700 dark:bg-zinc-950/60">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+        {copy.routineProductLabel}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
+      <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{product.brand}</p>
+      <a
+        href={purchaseLink.href}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() =>
+          trackEvent("click_buy_link", {
+            product_id: product.id || null,
+            feature_name: "skin_analysis",
+            result_type: "routine_support_pick",
+            is_top_pick: false,
+            meta_json: {
+              step: product.step || null,
+              brand: product.brand || null,
+              button_label: purchaseLink.label,
+              fallback_link: purchaseLink.isFallback
+            }
+          })
+        }
+        className="ui-button-secondary mt-3 inline-flex px-3.5 py-2 text-xs font-medium"
+      >
+        {purchaseLink.label}
+      </a>
+    </div>
   );
 }
 

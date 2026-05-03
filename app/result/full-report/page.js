@@ -4,31 +4,29 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { buildRoutineSections } from "@/lib/routine-structure";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
-async function getFullReportAccessToken() {
-  return getBrowserSupabaseAccessToken();
-}
-
 const COPY = {
   ko: {
-    loading: "Full Report를 불러오는 중입니다...",
+    loading: "전체 리포트를 불러오는 중입니다...",
     title: "실행 가능한 Full Report",
-    body: "무료 결과에서 고른 Top Pick을 기준으로, 실제로 따라갈 수 있는 루틴과 보조 선택지를 정리했습니다.",
+    body: "무료 결과의 Top Pick을 기준으로, 실제로 따라가기 쉬운 루틴과 확장 가이드를 정리했습니다.",
     backResult: "무료 결과로 돌아가기",
     restart: "다시 테스트하기",
-    errorTitle: "Full Report를 불러오지 못했습니다.",
+    errorTitle: "전체 리포트를 불러오지 못했습니다.",
     errorBody: "분석 세션이 만료되었거나 필요한 데이터가 없습니다. 무료 결과로 돌아가 다시 이어가 주세요.",
     topPickReason: "Top Pick 상세 이유",
-    supportingProducts: "함께 구성할 보조 제품",
+    supportingProducts: "함께 쓰기 좋은 제품",
     fullRoutine: "실제 사용 가이드",
     morning: "아침",
     night: "저녁",
-    avoid: "피할 조합",
+    avoid: "피하면 좋은 조합",
     budget: "예산 대안",
     faceLab: "Face Lab 확장 가이드",
     hairDirection: "헤어 방향",
@@ -36,7 +34,11 @@ const COPY = {
     colorPalette: "컬러 팔레트",
     vibeKeywords: "분위기 키워드",
     buyNow: "판매처 보기",
-    empty: "표시할 내용이 아직 없습니다."
+    empty: "표시할 내용이 아직 없습니다.",
+    skinMatchTab: "Skin Match",
+    faceLabTab: "Face Lab",
+    fitSectionTitle: "제품 적합도",
+    fitSectionBody: "이 점수는 제품의 사용감과 적합도를 요약한 참고 지표입니다."
   },
   en: {
     loading: "Loading your full report...",
@@ -59,7 +61,11 @@ const COPY = {
     colorPalette: "Color Palette",
     vibeKeywords: "Vibe Keywords",
     buyNow: "View store",
-    empty: "There is nothing to show yet."
+    empty: "There is nothing to show yet.",
+    skinMatchTab: "Skin Match",
+    faceLabTab: "Face Lab",
+    fitSectionTitle: "Product fit",
+    fitSectionBody: "These scores are a compact reference for wear profile and fit."
   }
 };
 
@@ -95,6 +101,10 @@ function getOrCreateTrackingSessionId() {
   return nextSessionId;
 }
 
+async function getFullReportAccessToken() {
+  return getBrowserSupabaseAccessToken();
+}
+
 function trackEvent(eventName, data = {}) {
   const writeAccessToken = readWriteAccessToken();
 
@@ -112,9 +122,8 @@ function trackEvent(eventName, data = {}) {
       meta_json: data.meta_json ?? null
     };
     const supabaseAccessToken = await getFullReportAccessToken();
-    const token = supabaseAccessToken;
 
-    if (!token && !writeAccessToken) {
+    if (!supabaseAccessToken && !writeAccessToken) {
       return;
     }
 
@@ -126,8 +135,8 @@ function trackEvent(eventName, data = {}) {
       headers["x-kbeauty-write-token"] = writeAccessToken;
     }
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    if (supabaseAccessToken) {
+      headers.Authorization = `Bearer ${supabaseAccessToken}`;
     }
 
     return fetch("/api/track", {
@@ -140,15 +149,19 @@ function trackEvent(eventName, data = {}) {
 }
 
 function renderList(items = []) {
-  return items.length ? (
+  if (!items.length) {
+    return null;
+  }
+
+  return (
     <div className="mt-3 space-y-2">
-      {items.map((item) => (
-        <p key={item} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+      {items.map((item, index) => (
+        <p key={`${item}-${index}`} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
           {item}
         </p>
       ))}
     </div>
-  ) : null;
+  );
 }
 
 function SupportingProductCard({ product, copy }) {
@@ -203,6 +216,128 @@ function SupportingProductCard({ product, copy }) {
   );
 }
 
+function FitGaugeSection({ fitData, copy }) {
+  const gauges = Array.isArray(fitData?.gauges) ? fitData.gauges : [];
+
+  if (!gauges.length) {
+    return null;
+  }
+
+  return (
+    <section className="ui-card p-6">
+      <p className="ui-kicker">{copy.fitSectionTitle}</p>
+      <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.fitSectionBody}</p>
+      <div className="mt-4 space-y-3">
+        {gauges.map((gauge) => (
+          <div key={gauge.key} className="ui-card-subtle rounded-[1.2rem] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{gauge.label}</p>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{gauge.score}</p>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+              <div
+                className="h-full rounded-full bg-zinc-900 transition-[width] dark:bg-zinc-100"
+                style={{ width: `${gauge.score}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{gauge.reason}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
+  const premiumReport = result?.premiumReport || {};
+  const faceLabLaunch = buildFaceLabLaunchData(faceLabResult || result?.faceLab || null, locale);
+
+  return {
+    topPickDetailedReason:
+      premiumReport.topPickDetailedReason ||
+      result?.topPick?.reason ||
+      result?.topPick?.explanation ||
+      result?.directionSummary ||
+      "",
+    supportingProducts:
+      (Array.isArray(premiumReport.supportingProducts) && premiumReport.supportingProducts.length
+        ? premiumReport.supportingProducts
+        : Array.isArray(result?.altPicks) && result.altPicks.length
+          ? result.altPicks.slice(0, 3)
+          : Array.isArray(result?.categoryPicks)
+            ? result.categoryPicks.slice(0, 3)
+            : []) || [],
+    fullRoutine: {
+      morning:
+        (Array.isArray(premiumReport.fullRoutine?.morning) && premiumReport.fullRoutine.morning.length
+          ? premiumReport.fullRoutine.morning
+          : Array.isArray(result?.morning)
+            ? result.morning.slice(0, 4)
+            : []) || [],
+      night:
+        (Array.isArray(premiumReport.fullRoutine?.night) && premiumReport.fullRoutine.night.length
+          ? premiumReport.fullRoutine.night
+          : Array.isArray(result?.night)
+            ? result.night.slice(0, 4)
+            : []) || []
+    },
+    avoidCombinations:
+      (Array.isArray(premiumReport.avoidCombinations) && premiumReport.avoidCombinations.length
+        ? premiumReport.avoidCombinations
+        : Array.isArray(result?.avoid)
+          ? result.avoid.slice(0, 4)
+          : []) || [],
+    budgetAlternatives:
+      (Array.isArray(premiumReport.budgetAlternatives) && premiumReport.budgetAlternatives.length
+        ? premiumReport.budgetAlternatives
+        : Array.isArray(result?.budgetAlternatives)
+          ? result.budgetAlternatives.slice(0, 3)
+          : []) || [],
+    faceLab: {
+      hairDirection: faceLabLaunch?.paid?.hairDirection || [],
+      avoidStyles: faceLabLaunch?.paid?.avoidStyles || [],
+      colorPalette: faceLabLaunch?.paid?.colorPalette || [],
+      vibeKeywords: faceLabLaunch?.paid?.vibeKeywords || []
+    },
+    topPickFitGauges: buildProductFitGauges(result?.topPick || null, { locale }),
+    routineStructure: premiumReport.routineStructure || result?.routineStructure || null
+  };
+}
+
+function FaceLabSection({ report, copy }) {
+  return (
+    <section className="ui-card p-6">
+      <p className="ui-kicker">{copy.faceLab}</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="ui-card-subtle p-4">
+          <p className="ui-kicker">{copy.hairDirection}</p>
+          {renderList(report.faceLab?.hairDirection || []) || (
+            <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+          )}
+        </div>
+        <div className="ui-card-subtle p-4">
+          <p className="ui-kicker">{copy.avoidStyles}</p>
+          {renderList(report.faceLab?.avoidStyles || []) || (
+            <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+          )}
+        </div>
+        <div className="ui-card-subtle p-4">
+          <p className="ui-kicker">{copy.colorPalette}</p>
+          {renderList(report.faceLab?.colorPalette || []) || (
+            <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+          )}
+        </div>
+        <div className="ui-card-subtle p-4">
+          <p className="ui-kicker">{copy.vibeKeywords}</p>
+          {renderList(report.faceLab?.vibeKeywords || []) || (
+            <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function FullReportPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -212,6 +347,7 @@ export default function FullReportPage() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [activeTab, setActiveTab] = useState("skin_match");
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -226,8 +362,11 @@ export default function FullReportPage() {
       return;
     }
 
+    let parsedResult = null;
+
     try {
-      setFreeResult(JSON.parse(storedResult));
+      parsedResult = JSON.parse(storedResult);
+      setFreeResult(parsedResult);
     } catch {
       setError(copy.errorBody);
       setIsReady(true);
@@ -237,15 +376,24 @@ export default function FullReportPage() {
     async function loadFullReport() {
       const writeAccessToken = readWriteAccessToken();
       const storedFaceLab = sessionStorage.getItem("skinTestFaceLabFull");
+      let parsedFaceLab = null;
+
+      try {
+        parsedFaceLab = storedFaceLab ? JSON.parse(storedFaceLab) : null;
+      } catch {
+        parsedFaceLab = null;
+      }
+
+      const fallbackReport = buildDevelopmentReport(parsedResult, parsedFaceLab, locale);
 
       if (!writeAccessToken) {
-        setError(copy.errorBody);
+        setReport(fallbackReport);
         setIsReady(true);
         return;
       }
 
       try {
-        const supabaseAccessToken = await getFullReportAccessToken("/api/full-report");
+        const supabaseAccessToken = await getFullReportAccessToken();
         const response = await fetch("/api/full-report", {
           method: "POST",
           headers: {
@@ -255,7 +403,8 @@ export default function FullReportPage() {
           },
           body: JSON.stringify({
             locale,
-            faceLab: storedFaceLab ? JSON.parse(storedFaceLab) : null
+            faceLab: parsedFaceLab,
+            topPick: parsedResult?.topPick || null
           })
         });
         const data = await response.json().catch(() => null);
@@ -266,7 +415,7 @@ export default function FullReportPage() {
 
         setReport(data);
         trackEvent("view_full_report", {
-          product_id: JSON.parse(storedResult)?.topPick?.id || null,
+          product_id: parsedResult?.topPick?.id || null,
           feature_name: "skin_analysis",
           result_type: "full_report",
           is_top_pick: false,
@@ -274,15 +423,16 @@ export default function FullReportPage() {
             supporting_count: Array.isArray(data.supportingProducts) ? data.supportingProducts.length : 0,
             has_face_lab_paid: Boolean(
               data.faceLab?.hairDirection?.length ||
-              data.faceLab?.avoidStyles?.length ||
-              data.faceLab?.colorPalette?.length ||
-              data.faceLab?.vibeKeywords?.length
-            )
+                data.faceLab?.avoidStyles?.length ||
+                data.faceLab?.colorPalette?.length ||
+                data.faceLab?.vibeKeywords?.length
+            ),
+            has_fit_gauges: Boolean(data.topPickFitGauges?.gauges?.length)
           }
         });
       } catch (requestError) {
         console.error("[full-report] load failed", requestError);
-        setError(copy.errorBody);
+        setReport(fallbackReport);
       } finally {
         setIsReady(true);
       }
@@ -354,102 +504,107 @@ export default function FullReportPage() {
             </div>
           </header>
 
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.topPickReason}</p>
-            <h2 className="ui-title mt-2 text-[1.35rem] sm:text-[1.45rem]">{freeResult?.topPick?.name || freeResult?.priority?.label || "Top Pick"}</h2>
-            <p className="ui-text-secondary mt-1 text-sm">{freeResult?.topPick?.brand || ""}</p>
-            <p className="mt-4 text-sm leading-7 text-zinc-700 dark:text-zinc-300">
-              {report.topPickDetailedReason || copy.empty}
-            </p>
-          </section>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("skin_match")}
+              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "skin_match" ? "ui-choice-active" : ""}`}
+            >
+              {copy.skinMatchTab}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("face_lab")}
+              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "face_lab" ? "ui-choice-active" : ""}`}
+            >
+              {copy.faceLabTab}
+            </button>
+          </div>
 
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.supportingProducts}</p>
-            <div className="mt-4 grid gap-3">
-              {Array.isArray(report.supportingProducts) && report.supportingProducts.length ? (
-                report.supportingProducts.map((product) => (
-                  <SupportingProductCard key={product.id || `${product.brand}-${product.name}`} product={product} copy={copy} />
-                ))
-              ) : (
-                <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-              )}
-            </div>
-          </section>
+          {activeTab === "skin_match" ? (
+            <>
+              <section className="ui-card p-6">
+                <p className="ui-kicker">{copy.topPickReason}</p>
+                <h2 className="ui-title mt-2 text-[1.35rem] sm:text-[1.45rem]">
+                  {freeResult?.topPick?.name || freeResult?.priority?.label || "Top Pick"}
+                </h2>
+                <p className="ui-text-secondary mt-1 text-sm">{freeResult?.topPick?.brand || ""}</p>
+                <p className="mt-4 text-sm leading-7 text-zinc-700 dark:text-zinc-300">
+                  {report.topPickDetailedReason || copy.empty}
+                </p>
+              </section>
 
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.fullRoutine}</p>
-            <div className={`mt-4 grid gap-3 ${routineSections.length > 1 ? "sm:grid-cols-2" : ""}`}>
-              {routineSections.map((section) => (
-                <div key={section.key} className="ui-card-subtle p-4">
-                  <p className="ui-kicker">{section.label}</p>
-                  {renderList(section.items || []) || (
-                    <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+              <FitGaugeSection fitData={report.topPickFitGauges} copy={copy} />
+
+              <section className="ui-card p-6">
+                <p className="ui-kicker">{copy.supportingProducts}</p>
+                <div className="mt-4 grid gap-3">
+                  {Array.isArray(report.supportingProducts) && report.supportingProducts.length ? (
+                    report.supportingProducts.map((product) => (
+                      <SupportingProductCard
+                        key={product.id || `${product.brand}-${product.name}`}
+                        product={product}
+                        copy={copy}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
                   )}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.avoid}</p>
-            {renderList(report.avoidCombinations || []) || (
-              <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-            )}
-          </section>
-
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.budget}</p>
-            <div className="mt-4 grid gap-3">
-              {Array.isArray(report.budgetAlternatives) && report.budgetAlternatives.length ? (
-                report.budgetAlternatives.map((item) => (
-                  <div key={item.id || `${item.brand}-${item.name}`} className="ui-card-muted rounded-[1.25rem] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="ui-title text-sm">{item.name}</p>
-                        <p className="ui-text-secondary mt-1 text-xs">{item.brand}</p>
+              <section className="ui-card p-6">
+                <p className="ui-kicker">{copy.fullRoutine}</p>
+                <div className={`mt-4 grid gap-3 ${routineSections.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                  {routineSections.length ? (
+                    routineSections.map((section) => (
+                      <div key={section.key} className="ui-card-subtle p-4">
+                        <p className="ui-kicker">{section.label}</p>
+                        {renderList(section.items || []) || (
+                          <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+                        )}
                       </div>
-                      {item.price_range ? <span className="ui-chip-compact shrink-0">{item.price_range}</span> : null}
-                    </div>
-                    {item.summary ? (
-                      <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.summary}</p>
-                    ) : null}
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-              )}
-            </div>
-          </section>
+                    ))
+                  ) : (
+                    <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+                  )}
+                </div>
+              </section>
 
-          <section className="ui-card p-6">
-            <p className="ui-kicker">{copy.faceLab}</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.hairDirection}</p>
-                {renderList(report.faceLab?.hairDirection || []) || (
+              <section className="ui-card p-6">
+                <p className="ui-kicker">{copy.avoid}</p>
+                {renderList(report.avoidCombinations || []) || (
                   <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
                 )}
-              </div>
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.avoidStyles}</p>
-                {renderList(report.faceLab?.avoidStyles || []) || (
-                  <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-                )}
-              </div>
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.colorPalette}</p>
-                {renderList(report.faceLab?.colorPalette || []) || (
-                  <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-                )}
-              </div>
-              <div className="ui-card-subtle p-4">
-                <p className="ui-kicker">{copy.vibeKeywords}</p>
-                {renderList(report.faceLab?.vibeKeywords || []) || (
-                  <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
-                )}
-              </div>
-            </div>
-          </section>
+              </section>
+
+              <section className="ui-card p-6">
+                <p className="ui-kicker">{copy.budget}</p>
+                <div className="mt-4 grid gap-3">
+                  {Array.isArray(report.budgetAlternatives) && report.budgetAlternatives.length ? (
+                    report.budgetAlternatives.map((item) => (
+                      <div key={item.id || `${item.brand}-${item.name}`} className="ui-card-muted rounded-[1.25rem] p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="ui-title text-sm">{item.name}</p>
+                            <p className="ui-text-secondary mt-1 text-xs">{item.brand}</p>
+                          </div>
+                          {item.price_range ? <span className="ui-chip-compact shrink-0">{item.price_range}</span> : null}
+                        </div>
+                        {item.summary ? (
+                          <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.summary}</p>
+                        ) : null}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">{copy.empty}</p>
+                  )}
+                </div>
+              </section>
+            </>
+          ) : (
+            <FaceLabSection report={report} copy={copy} />
+          )}
         </div>
       </div>
     </main>
