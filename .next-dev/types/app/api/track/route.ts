@@ -1,4 +1,4 @@
-// File: C:\Users\hun\Documents\K-beauty AI\app\api\track\route.js
+// File: D:\Ji_hwan\K_Beauti AI\app\api\track\route.js
 import * as entry from '../../../../../app/api/track/route.js'
 import type { NextRequest } from 'next/server.js'
 

@@ -183,12 +183,36 @@ Required JSON shape:
 
 Rules:
 - Product ids are fixed and must match the provided ids only.
-- Ground every reason in the provided survey evidence, photo evidence, and decision priority.
-- Every reason must mention:
-  1. skin type or current skin state
-  2. main concern or selected priority
-  3. texture or finish fit
-  4. one avoidance point or constraint the product avoids
+- Ground every reason in the provided survey evidence, photo evidence, decision priority, and the product's existing category/role.
+- You may rewrite explanation only. You may not choose, replace, reorder, rename, or invent products.
+- Use the detailed survey block and the product-step survey cues block together. Do not ignore step-specific survey details.
+- Every reason must follow this structure:
+  1. current user skin state
+  2. the priority being addressed
+  3. why this product category or role fits
+  4. one concrete usage direction
+- Keep the explanation consultative and specific, like a beauty consultation.
+- Prefer natural user-facing Korean. Avoid stiff translated phrasing.
+- Do not use generic filler such as:
+  - "피부에 좋습니다"
+  - "추천할 만합니다"
+  - "적합합니다" without explaining why
+- For sunscreen, mention UV or outdoor protection and finish burden when relevant.
+- For cleanser, mention oiliness, breakouts, or cleansing burden when relevant.
+- For toner_essence or toner_pad, mention pores, texture, surface refinement, and frequency caution when relevant.
+- For serum or ampoule, mention calming, hydration, breakouts, or redness support when relevant.
+- For moisturizer, mention hydration retention, barrier comfort, or recovery when relevant.
+- When relevant, reflect concrete survey details such as:
+  - post-wash tightness
+  - afternoon oil rise
+  - high sensitivity
+  - cleansing frequency
+  - dislike of stickiness or heaviness
+  - outdoor exposure
+  - white-cast dislike
+  - tone-up preference
+  - makeup use
+  - eye sensitivity
 - comparison_reason must explain why this product is more practical than nearby alternatives for this exact user.
 - Keep reason to 2 short sentences max.
 - Keep comparison_reason to 1 sentence max.
@@ -216,6 +240,87 @@ function buildSelectedProductsContext(decision) {
     current_reason: product.reason,
     current_comparison_reason: product.comparison_reason
   }));
+}
+
+function getPromptCategoryFamily(category = "") {
+  const normalized = String(category || "").trim().toLowerCase();
+
+  if (normalized === "toner_pad" || normalized === "toner_essence" || normalized === "essence") {
+    return "toner_essence";
+  }
+
+  if (normalized === "serum" || normalized === "ampoule") {
+    return "serum_ampoule";
+  }
+
+  return normalized;
+}
+
+function buildSurveyContextForLlm(formInput = {}) {
+  return {
+    skinType: formInput.skinType,
+    sensitivity: formInput.sensitivity,
+    genderPreference: formInput.genderPreference,
+    mainConcern: formInput.mainConcern,
+    mainConcerns: formInput.mainConcerns || [],
+    cleansingFrequency: formInput.cleansingFrequency,
+    preferredTexture: formInput.preferredTexture,
+    postWashFeeling: formInput.postWashFeeling,
+    afternoonSkinChange: formInput.afternoonSkinChange,
+    environmentExposure: formInput.environmentExposure || [],
+    mostDislikedFeel: formInput.mostDislikedFeel,
+    whiteCastHate: Boolean(formInput.whiteCastHate),
+    toneUpWanted: Boolean(formInput.toneUpWanted),
+    makeupUse: Boolean(formInput.makeupUse),
+    eyeSensitive: Boolean(formInput.eyeSensitive),
+    outdoorExposure: Boolean(formInput.outdoorExposure),
+    verySensitivePeriod: Boolean(formInput.verySensitivePeriod)
+  };
+}
+
+function buildStepSurveyCues(formInput = {}) {
+  return {
+    cleanser: {
+      cleansingFrequency: formInput.cleansingFrequency,
+      postWashFeeling: formInput.postWashFeeling,
+      afternoonSkinChange: formInput.afternoonSkinChange,
+      sensitivity: formInput.sensitivity,
+      mostDislikedFeel: formInput.mostDislikedFeel
+    },
+    toner_essence: {
+      mainConcern: formInput.mainConcern,
+      mainConcerns: formInput.mainConcerns || [],
+      sensitivity: formInput.sensitivity,
+      postWashFeeling: formInput.postWashFeeling,
+      afternoonSkinChange: formInput.afternoonSkinChange,
+      preferredTexture: formInput.preferredTexture
+    },
+    serum_ampoule: {
+      mainConcern: formInput.mainConcern,
+      mainConcerns: formInput.mainConcerns || [],
+      sensitivity: formInput.sensitivity,
+      verySensitivePeriod: Boolean(formInput.verySensitivePeriod),
+      postWashFeeling: formInput.postWashFeeling,
+      afternoonSkinChange: formInput.afternoonSkinChange
+    },
+    moisturizer: {
+      skinType: formInput.skinType,
+      sensitivity: formInput.sensitivity,
+      postWashFeeling: formInput.postWashFeeling,
+      afternoonSkinChange: formInput.afternoonSkinChange,
+      mostDislikedFeel: formInput.mostDislikedFeel,
+      verySensitivePeriod: Boolean(formInput.verySensitivePeriod)
+    },
+    sunscreen: {
+      outdoorExposure: Boolean(formInput.outdoorExposure),
+      whiteCastHate: Boolean(formInput.whiteCastHate),
+      toneUpWanted: Boolean(formInput.toneUpWanted),
+      makeupUse: Boolean(formInput.makeupUse),
+      eyeSensitive: Boolean(formInput.eyeSensitive),
+      mostDislikedFeel: formInput.mostDislikedFeel,
+      preferredTexture: formInput.preferredTexture
+    }
+  };
 }
 
 function applyProductExplanations(products, explanationItems) {
@@ -367,12 +472,27 @@ function sanitizeRoutineStructure(structure) {
     label: String(structure.label || "").trim(),
     title: String(structure.title || "").trim(),
     body: String(structure.body || "").trim(),
+    am: structure.am && typeof structure.am === "object"
+      ? {
+          mode: String(structure.am.mode || "").trim(),
+          label: String(structure.am.label || "").trim(),
+          strategyLine: String(structure.am.strategyLine || "").trim()
+        }
+      : null,
+    pm: structure.pm && typeof structure.pm === "object"
+      ? {
+          mode: String(structure.pm.mode || "").trim(),
+          label: String(structure.pm.label || "").trim(),
+          strategyLine: String(structure.pm.strategyLine || "").trim()
+        }
+      : null,
     cards: Array.isArray(structure.cards)
       ? structure.cards
           .map((item) => ({
             key: String(item?.key || "").trim(),
             label: String(item?.label || "").trim(),
-            body: String(item?.body || "").trim()
+            body: String(item?.body || "").trim(),
+            mode: String(item?.mode || "").trim()
           }))
           .filter((item) => item.label || item.body)
           .slice(0, 3)
@@ -393,12 +513,24 @@ function sanitizePremiumReport(report) {
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
-        ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 4)
+        ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
         : [],
       night: Array.isArray(report.fullRoutine?.night)
-        ? report.fullRoutine.night.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 4)
+        ? report.fullRoutine.night.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
         : []
     },
+    routineVariants: Array.isArray(report.fullRoutine?.variants)
+      ? report.fullRoutine.variants
+          .map((variant) => ({
+            key: String(variant?.key || "").trim(),
+            label: String(variant?.label || "").trim(),
+            items: Array.isArray(variant?.items)
+              ? variant.items.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 3)
+              : []
+          }))
+          .filter((variant) => variant.label || variant.items.length)
+          .slice(0, 4)
+      : [],
     avoidCombinations: Array.isArray(report.avoidCombinations)
       ? report.avoidCombinations.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 4)
       : [],
@@ -517,8 +649,15 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
   }
 
   const selectedProducts = buildSelectedProductsContext(decision);
+  const surveyContext = buildSurveyContextForLlm(formInput);
+  const stepSurveyCues = buildStepSurveyCues(formInput);
+  const selectedProductsWithSurveyCues = selectedProducts.map((product) => ({
+    ...product,
+    categoryFamily: getPromptCategoryFamily(product.category),
+    relevantSurveyCues: stepSurveyCues[getPromptCategoryFamily(product.category)] || {}
+  }));
   const allowedIds = new Set(selectedProducts.map((product) => product.id).filter(Boolean));
-  const prompt = buildExplanationPrompt(locale, selectedProducts);
+  const prompt = buildExplanationPrompt(locale, selectedProductsWithSurveyCues);
   const parsed = await fetchOpenAiJson({
     apiKey,
     stage: "product-explanations",
@@ -539,22 +678,13 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
             "",
             "User input",
             JSON.stringify(
-              {
-                skinType: formInput.skinType,
-                sensitivity: formInput.sensitivity,
-                mainConcern: formInput.mainConcern,
-                mainConcerns: formInput.mainConcerns || [],
-                preferredTexture: formInput.preferredTexture,
-                postWashFeeling: formInput.postWashFeeling,
-                afternoonSkinChange: formInput.afternoonSkinChange,
-                environmentExposure: formInput.environmentExposure || [],
-                mostDislikedFeel: formInput.mostDislikedFeel,
-                outdoorExposure: formInput.outdoorExposure,
-                verySensitivePeriod: formInput.verySensitivePeriod
-              },
+              surveyContext,
               null,
               2
             ),
+            "",
+            "Product-step survey cues",
+            JSON.stringify(stepSurveyCues, null, 2),
             "",
             "Decision context",
             JSON.stringify(
@@ -571,7 +701,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
             ),
             "",
             "Selected products",
-            JSON.stringify(selectedProducts, null, 2)
+            JSON.stringify(selectedProductsWithSurveyCues, null, 2)
           ].join("\n")
         }
       ]

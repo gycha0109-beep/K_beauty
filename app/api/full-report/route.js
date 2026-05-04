@@ -50,10 +50,12 @@ export async function POST(request) {
     ...premiumSession.payload.premiumReport,
     topPickFitGauges,
     faceLab: {
-      hairDirection: Array.isArray(faceLabLaunch?.paid?.hairDirection) ? faceLabLaunch.paid.hairDirection : [],
+      faceSummary: String(faceLabLaunch?.paid?.faceSummary || "").trim(),
+      hairDirections: Array.isArray(faceLabLaunch?.paid?.hairDirections) ? faceLabLaunch.paid.hairDirections : [],
       avoidStyles: Array.isArray(faceLabLaunch?.paid?.avoidStyles) ? faceLabLaunch.paid.avoidStyles : [],
-      colorPalette: Array.isArray(faceLabLaunch?.paid?.colorPalette) ? faceLabLaunch.paid.colorPalette : [],
-      vibeKeywords: Array.isArray(faceLabLaunch?.paid?.vibeKeywords) ? faceLabLaunch.paid.vibeKeywords : []
+      styleKeywords: Array.isArray(faceLabLaunch?.paid?.styleKeywords) ? faceLabLaunch.paid.styleKeywords : [],
+      toneDirection: String(faceLabLaunch?.paid?.toneDirection || "").trim(),
+      reasoningLines: Array.isArray(faceLabLaunch?.paid?.reasoningLines) ? faceLabLaunch.paid.reasoningLines : []
     },
     meta: {
       source: "premium-session",

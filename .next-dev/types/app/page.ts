@@ -1,4 +1,4 @@
-// File: C:\Users\hun\Documents\K-beauty AI\app\page.js
+// File: D:\Ji_hwan\K_Beauti AI\app\page.js
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

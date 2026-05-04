@@ -498,12 +498,8 @@ function normalizeFaceLab(parsed, locale = "ko") {
         avoid: normalizeArray(parsed?.features?.face_shape_hairstyle?.avoid, fallback.features.face_shape_hairstyle.avoid, 2)
       },
       lookalike_celebrities: {
-        summary: String(parsed?.features?.lookalike_celebrities?.summary || fallback.features.lookalike_celebrities.summary),
-        matches: normalizeMatches(
-          parsed?.features?.lookalike_celebrities?.matches,
-          fallback.features.lookalike_celebrities.matches,
-          presentationHint
-        )
+        summary: "",
+        matches: []
       },
       color_tone_recommendation: {
         summary: String(parsed?.features?.color_tone_recommendation?.summary || fallback.features.color_tone_recommendation.summary),
@@ -592,12 +588,8 @@ Use this exact JSON shape:
       "avoid": ["line 1", "line 2"]
     },
     "lookalike_celebrities": {
-      "summary": "1 sentence",
-      "matches": [
-        { "name": "real public figure 1", "reason": "structured reason" },
-        { "name": "real public figure 2", "reason": "structured reason" },
-        { "name": "real public figure 3", "reason": "structured reason" }
-      ]
+      "summary": "",
+      "matches": []
     },
     "color_tone_recommendation": {
       "summary": "1 sentence",
@@ -610,18 +602,15 @@ Use this exact JSON shape:
 
 Rules:
 - Keep the tone analytical, structural, and observation-based.
+- This is style guidance, not diagnosis, face reading, or attractiveness scoring.
 - Do not use mystical, medical, or absolute wording.
-- Do not return placeholder celebrity names such as "Celebrity A", "Celebrity B", "Celebrity C", "Person 1", or "Sample 1".
+- Do not identify celebrities or public figures.
+- Keep lookalike_celebrities.summary empty and lookalike_celebrities.matches empty.
 - presentation_hint must be exactly one of: masculine, feminine, neutral.
-- Look-alike matches must be real public figures.
-- Prefer public figures with the same apparent gender presentation and a similar age/styling zone seen in the photo.
-- For masculine-presenting faces, stay in masculine public-figure candidates first.
-- For feminine-presenting faces, stay in feminine public-figure candidates first.
-- Do not mix masculine and feminine celebrity sets unless the face is genuinely neutral in presentation.
-- If the face is too obscured to make a solid look-alike call, still pick plausible real figures but briefly note the visual limitation in the reason.
-- Explain matches with facial structure, not fandom language.
-- Use this format for each look-alike:
-  [Name] : [structural similarity] because [impression similarity]
+- overall_impression must connect visible impression to styling direction.
+- Hairstyle summary and recommendations must connect face observations to style decisions such as forehead exposure, side volume, top volume, jaw balance, or length balance.
+- Avoid fortune-like lines, vague praise, and blunt feature judgment.
+- Do not write lines such as "얼굴의 구조가 조화롭게 배치되어 있습니다", "구조적으로 유사한 유명 인상입니다", or "부드럽고 친근한 인상을 줍니다".
 - Hairstyle recommendations should use structure -> visual effect -> recommendation.
 - Feature-based lines should follow observation -> visual effect -> impression outcome.
 - ${copy.toneRule}

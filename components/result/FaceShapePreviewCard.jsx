@@ -1,29 +1,12 @@
-function hasTeaserLines(data) {
-  return Boolean(
-    data?.free?.impressionLine ||
-      data?.free?.shapeLine ||
-      data?.free?.styleLine
-  );
+function hasTeaserLine(data) {
+  return Boolean(data?.free?.teaserLine);
 }
 
 export default function FaceShapePreviewCard({ copy, launchData }) {
   const teaserBody = copy.faceLabTeaserBody || "";
-  const teaserLines = [
-    {
-      label: copy.faceLabImpressionLabel || (copy.faceShapeSummaryLabel || "Impression"),
-      value: launchData?.free?.impressionLine || ""
-    },
-    {
-      label: copy.faceLabShapeLabel || copy.faceShapeLabel || "Shape",
-      value: launchData?.free?.shapeLine || ""
-    },
-    {
-      label: copy.faceLabStyleLabel || (copy.faceShapeTagsLabel || "Style"),
-      value: launchData?.free?.styleLine || ""
-    }
-  ].filter((item) => item.value);
+  const teaserLine = launchData?.free?.teaserLine || "";
 
-  if (!hasTeaserLines(launchData)) {
+  if (!hasTeaserLine(launchData)) {
     return (
       <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
         {copy.faceShapeEmpty}
@@ -40,15 +23,11 @@ export default function FaceShapePreviewCard({ copy, launchData }) {
           {teaserBody ? <p className="ui-text-secondary text-sm leading-6">{teaserBody}</p> : null}
         </div>
 
-        <div className="space-y-3">
-          {teaserLines.map((item) => (
-            <div key={item.label} className="rounded-[1.15rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-900">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                {item.label}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.value}</p>
-            </div>
-          ))}
+        <div className="rounded-[1.15rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-900">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+            {copy.faceShapeSummaryLabel || "Teaser"}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{teaserLine}</p>
         </div>
       </div>
     </section>

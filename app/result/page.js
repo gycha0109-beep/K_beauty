@@ -192,8 +192,8 @@ const resultCopy = {
     ctaViewTopPick: "Top Pick 보기",
     ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
     ctaViewAlternative: "대안 보기",
-    ctaViewFaceLab: "Face Lab 티저 보기",
-    ctaViewRoutine: "추천 루틴 보기",
+    ctaViewFaceLab: "스타일 방향까지 보기",
+    ctaViewRoutine: "실제 루틴으로 정리하기",
     ctaViewPremiumPreview: "전체 리포트 보기",
     ctaViewTips: "주의사항 및 사용 팁 보기",
     ctaLeaveFeedback: "피드백 남기기",
@@ -203,7 +203,7 @@ const resultCopy = {
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "실행 순서 이어보기",
     premiumCardBody: "루틴 실행 직전부터 전체 구성과 실제 사용 순서를 이어서 볼 수 있습니다.",
-    premiumCardButton: "이어서 보기 (₩3,900)"
+    premiumCardButton: "전체 리포트 보기"
   },
   en: {
     loading: "Loading your result...",
@@ -320,8 +320,8 @@ const resultCopy = {
     ctaViewTopPick: "See Top Pick",
     ctaViewRecommended: "See Supporting Picks",
     ctaViewAlternative: "See Alternative",
-    ctaViewFaceLab: "See Face Lab Teaser",
-    ctaViewRoutine: "See Routine Guide",
+    ctaViewFaceLab: "See style direction",
+    ctaViewRoutine: "Turn into a real routine",
     ctaViewPremiumPreview: "See Full Report",
     ctaViewTips: "See Tips",
     ctaLeaveFeedback: "Leave Feedback",
@@ -331,7 +331,7 @@ const resultCopy = {
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "Continue Into The Full Routine",
     premiumCardBody: "From this point, the full setup and actual order continue.",
-    premiumCardButton: "Continue (₩3,900)"
+    premiumCardButton: "See Full Report"
   }
 };
 
@@ -483,71 +483,33 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
 
 function buildRoutinePreviewItems(result, locale = "ko") {
   const items = [];
-  const topPickName = result?.topPick?.name || (locale === "en" ? "Top Pick" : "Top Pick");
   const structure = getRoutineStructureData(result, locale);
-  const cardBodies = Array.isArray(structure.cards)
-    ? structure.cards.map((item) => item.body).filter(Boolean)
-    : [];
+  const amLine = structure?.am?.strategyLine || "";
+  const pmLine = structure?.pm?.strategyLine || "";
 
   if (locale === "en") {
-    items.push(`Keep ${topPickName} at the center of the ${structure.title.toLowerCase()}.`);
-    items.push(...cardBodies.slice(0, 2));
-    items.push("The detailed order, combinations, and alternation continue next.");
+    if (amLine) {
+      items.push(`AM: ${amLine}`);
+    }
+    if (pmLine) {
+      items.push(`PM: ${pmLine}`);
+    }
+    items.push("The full report opens the exact step order, situation variants, and what not to overlap.");
     return items.slice(0, 4);
   }
 
-  items.push(`${topPickName}을 ${structure.title}의 중심 단계로 두고 이어갑니다.`);
-  items.push(...cardBodies.slice(0, 2));
-  items.push("세부 순서와 조합, 번갈아 쓰는 구성은 다음 단계에서 이어집니다.");
+  if (amLine) {
+    items.push(`AM: ${amLine}`);
+  }
+  if (pmLine) {
+    items.push(`PM: ${pmLine}`);
+  }
+  items.push("전체 리포트에서는 실제 순서, 상황별 변형, 겹치지 말아야 할 조합까지 이어집니다.");
   return items.slice(0, 4);
 }
 
-function buildRoutineSupportProducts(result) {
-  const seen = new Set();
-  const items = [
-    result?.topPick,
-    result?.alternative,
-    ...(Array.isArray(result?.categoryPicks) ? result.categoryPicks : []),
-    ...(Array.isArray(result?.altPicks) ? result.altPicks : [])
-  ].filter(Boolean).filter((item) => {
-    const key = item?.id || `${item?.brand}-${item?.name}`;
-
-    if (!key || seen.has(key)) {
-      return false;
-    }
-
-    seen.add(key);
-    return true;
-  });
-
-  const pickBySlot = (slot, usedIds = new Set()) => {
-    const exactMatch = items.find((item) => item?.use_time === slot && !usedIds.has(item?.id || `${item?.brand}-${item?.name}`));
-
-    if (exactMatch) {
-      return exactMatch;
-    }
-
-    return items.find((item) => item?.use_time === "both" && !usedIds.has(item?.id || `${item?.brand}-${item?.name}`)) || null;
-  };
-
-  const usedIds = new Set();
-  const morning = pickBySlot("day", usedIds);
-
-  if (morning) {
-    usedIds.add(morning.id || `${morning.brand}-${morning.name}`);
-  }
-
-  const night = pickBySlot("night", usedIds) || pickBySlot("both", usedIds) || morning;
-
-  return { morning, night };
-}
-
 function hasFaceLabTeaser(launchData) {
-  return Boolean(
-    launchData?.free?.impressionLine ||
-    launchData?.free?.shapeLine ||
-    launchData?.free?.styleLine
-  );
+  return Boolean(launchData?.free?.teaserLine);
 }
 
 function getAdvanceLabelForStep(stepId, copy) {
@@ -556,15 +518,55 @@ function getAdvanceLabelForStep(stepId, copy) {
       return copy.ctaViewTopPick;
     case "alternative":
       return copy.ctaViewAlternative;
-    case "face-lab":
-      return copy.ctaViewFaceLab;
     case "routine-summary":
       return copy.ctaViewRoutine;
+    case "warnings":
+      return copy.ctaViewTips;
     case "premium-preview":
       return copy.ctaViewPremiumPreview;
     default:
       return copy.next;
   }
+}
+
+function normalizeResultCategory(product = {}) {
+  const category = String(product?.category || "").trim().toLowerCase();
+
+  if (category === "toner_pad" || category === "toner_essence" || category === "essence") {
+    return "toner_essence";
+  }
+
+  if (category === "serum" || category === "ampoule") {
+    return "serum_ampoule";
+  }
+
+  return category;
+}
+
+function getCategoryFamilyForDisplay(category) {
+  const normalized = normalizeResultCategory({ category });
+
+  if (normalized === "toner_essence") {
+    return "toner";
+  }
+
+  if (normalized === "serum_ampoule") {
+    return "serum_ampoule";
+  }
+
+  return normalized;
+}
+
+function getAlternativeStepTitle(topPick, alternative, locale = "ko") {
+  const topFamily = getCategoryFamilyForDisplay(topPick?.category);
+  const alternativeFamily = getCategoryFamilyForDisplay(alternative?.category);
+  const sameFamily = topFamily && alternativeFamily && topFamily === alternativeFamily;
+
+  if (locale === "en") {
+    return sameFamily ? "Alternative for the same concern" : "Alternative from a different direction";
+  }
+
+  return sameFamily ? "같은 고민을 보는 대체 제품" : "다른 방향의 대안";
 }
 
 function buildLocalizedSkinProfileSummary(form = {}, locale = "ko") {
@@ -690,41 +692,58 @@ function getTopPickHeadline(form, decision = null, locale = "ko") {
 }
 
 function getTopPickSummary(product, form, decision = null, locale = "ko") {
-  const reasonPreview = getProductPreviewLines(product, 1)[0];
-
-  if (reasonPreview) {
-    return reasonPreview;
-  }
-
   const map = getDisplayMap(locale);
   const copy = getResultCopy(locale);
   const concernKey = decision?.priority?.axis || form?.mainConcern;
   const concern = decision?.priority?.label || map.mainConcern[concernKey] || copy.currentConcern;
   const skinType = map.skinType[form?.skinType] || copy.currentSkin;
-  const texture = getTextureLabel(product.texture, locale);
-  const finish = getFinishLabel(product.finish, locale);
+  const category = normalizeResultCategory(product);
 
-  if (concernKey === "oiliness" || concernKey === "pores") {
-    return locale === "en"
-      ? `For ${skinType.toLowerCase()} skin dealing with ${concern.toLowerCase()}, this one absorbs ${texture} and lands ${finish}, so it creates the clearest first difference.`
-      : `${concern} 고민이 함께 있는 ${skinType} 상태에서는, ${texture} 흡수되고 ${finish} 이 제품이 가장 먼저 체감 차이를 만듭니다.`;
+  if (locale === "en") {
+    if (category === "toner_essence" && (concernKey === "pores" || concernKey === "oiliness" || concernKey === "uneven_tone")) {
+      return `When ${skinType.toLowerCase()} skin shows both ${concern.toLowerCase()} and surface shine, it helps to smooth the surface first instead of adding heavier coverage. This toner-type step is a steady way to start pore and texture care, and it is safer to begin in thin layers or only a few nights a week.`;
+    }
+
+    if (category === "sunscreen") {
+      return `With UV pressure carrying the daytime result, the first job is full, comfortable protection that you will actually keep on. This sunscreen is easier to keep in the routine without a heavy finish, so use it as the last morning step and reapply on longer outdoor days.`;
+    }
+
+    if (category === "moisturizer") {
+      return `When ${skinType.toLowerCase()} skin is losing hydration or barrier comfort, the first fix is holding water in instead of stacking stronger actives. This moisturizer supports a steadier recovery layer, so keep it thin after cleansing and let it do the sealing work.`;
+    }
+
+    if (category === "cleanser") {
+      return `When oil, breakouts, or cleansing burden are climbing together, the better first move is removing residue cleanly without stripping the skin. This cleanser fits that reset role, especially on sunscreen or makeup days, and works best when you avoid over-scrubbing.`;
+    }
+
+    if (category === "serum_ampoule") {
+      return `When ${concern.toLowerCase()} keeps repeating, it is usually safer to support the skin with one focused calming or hydration lane instead of stacking more correction. This serum step helps fill that gap, so start with a small amount after toner and keep the rest of the routine simple.`;
+    }
+
+    return `For your current ${concern.toLowerCase()} concern, this category helps solve the main bottleneck first instead of widening the routine too early. Keep it as the anchor step and adjust the surrounding layers only after the skin feels steadier.`;
   }
 
-  if (concernKey === "dehydration" || concernKey === "barrier") {
-    return locale === "en"
-      ? `When ${skinType.toLowerCase()} skin dries out easily, this one layers ${texture} and stays ${finish}, so it is the first switch that feels different.`
-      : `${skinType} 피부가 쉽게 메마르는 지금은, ${texture} 쌓이면서도 ${finish} 이 제품부터 바꾸는 편이 체감이 가장 큽니다.`;
+  if (category === "toner_essence" && (concernKey === "pores" || concernKey === "oiliness" || concernKey === "uneven_tone")) {
+    return `${skinType} 피부에서 ${concern}과 번들거림이 함께 보이면, 먼저 피부 표면의 결을 정돈하는 쪽이 좋습니다. 이 제품은 과하게 무겁지 않게 모공·결 케어를 시작하기 좋은 선택이라 얇게 쓰거나 주 2~3회 간격으로 시작하는 편이 안전합니다.`;
   }
 
-  if (concernKey === "redness" || concernKey === "acne") {
-    return locale === "en"
-      ? `For ${skinType.toLowerCase()} skin that keeps dealing with ${concern.toLowerCase()}, this one feels ${finish} and lowers irritation load first.`
-      : `${concern}이 반복되는 ${skinType} 상태에서는, ${finish} 자극 부담을 덜어주는 이 제품이 가장 먼저 손에 잡힐 선택입니다.`;
+  if (category === "sunscreen") {
+    return `자외선과 야외 노출 비중이 높은 지금은, 충분한 양을 편하게 바를 수 있는 보호 단계가 먼저입니다. 이 제품은 무겁게 남지 않는 선케어 쪽에 가까워 아침 루틴 끝에 넉넉히 바르고 외출이 길면 오후에 덧바르기 좋습니다.`;
   }
 
-  return locale === "en"
-    ? `For your current ${concern.toLowerCase()} concern, this one layers ${texture} and stays ${finish}, making the routine feel steadier first.`
-    : `현재 ${concern} 기준에서는, ${texture} 이어지고 ${finish} 이 제품이 가장 먼저 피부 흐름을 정리해 줍니다.`;
+  if (category === "moisturizer") {
+    return `${skinType} 피부에서 ${concern}이 올라오면, 기능을 더 얹기보다 수분이 빠지지 않게 붙잡는 보습제가 먼저입니다. 이 제품은 회복용 보습 축에 가까워 세안 후 얇게 깔고 예민한 날에도 단계를 늘리지 않은 채 마무리하기 좋습니다.`;
+  }
+
+  if (category === "cleanser") {
+    return `${skinType} 피부에서 ${concern}과 세안 부담이 같이 걸리면, 세정력을 세게 올리기보다 남김 없이 지우되 벗겨내지 않는 쪽이 먼저입니다. 이 제품은 그런 초기 리셋용 클렌저에 가까워 선크림을 쓴 날 저녁에 특히 맞추기 좋습니다.`;
+  }
+
+  if (category === "serum_ampoule") {
+    return `${skinType} 피부에서 ${concern}이 반복될 때는, 기능을 여러 개 겹치기보다 진정·수분 보조를 한 축으로 좁히는 편이 안정적입니다. 이 제품은 그 사이를 메우는 세럼 단계에 가까워 토너 다음에 소량만 두고 반응을 보는 쪽이 좋습니다.`;
+  }
+
+  return `${skinType} 피부에서 ${concern}이 핵심으로 올라온 지금은, 이 카테고리부터 맞춰 피부 흐름의 병목을 먼저 푸는 편이 좋습니다. 한 단계만 안정적으로 고정한 뒤 주변 제품을 늘리는 순서로 가져가세요.`;
 }
 
 function getTopPickReason(product) {
@@ -1260,7 +1279,6 @@ function ResultContent() {
   const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
   const routineStructure = getRoutineStructureData(result, locale);
   const routinePreviewItems = buildRoutinePreviewItems(result, locale);
-  const routineSupportProducts = buildRoutineSupportProducts(result);
   const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
@@ -1282,33 +1300,13 @@ function ResultContent() {
     resultSteps.push({
       id: "overview",
       content: (
-        <section className="space-y-4">
-          <ResultOverviewStep
-            copy={copy}
-            photoUrl={photoUrl}
-            photoAlt={submission?.imageName || copy.resultPhotoFallback}
-            summaryCards={overviewCards}
-            overviewSummary={getOverviewSummary(submission?.form, result, locale)}
-          />
-
-          <section className="ui-card p-5">
-            <div className="space-y-4">
-              <div>
-                <p className="ui-kicker">{copy.freeFocusTitle}</p>
-                <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                  {result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)}
-                </p>
-              </div>
-
-              {routineStructure.cards.map((card) => (
-                <div key={`overview-routine-${card.key}`}>
-                  <p className="ui-kicker">{card.label}</p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        </section>
+        <ResultOverviewStep
+          copy={copy}
+          photoUrl={photoUrl}
+          photoAlt={submission?.imageName || copy.resultPhotoFallback}
+          summaryCards={overviewCards}
+          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
+        />
       )
     });
 
@@ -1346,7 +1344,7 @@ function ResultContent() {
           <section className="space-y-4">
             <ResultStepLead
               kicker={copy.recommendedStepKicker}
-              title={copy.alternativeStepTitle}
+              title={getAlternativeStepTitle(result?.topPick, freeAlternative, locale)}
               body={null}
             />
             <ProductDecisionCard
@@ -1357,18 +1355,6 @@ function ResultContent() {
               showDiagnostics={false}
             />
           </section>
-        )
-      });
-    }
-
-    if (showFaceLabStep) {
-      resultSteps.push({
-        id: "face-lab",
-        content: (
-          <FaceShapePreviewCard
-            copy={copy}
-            launchData={faceLabLaunch}
-          />
         )
       });
     }
@@ -1392,20 +1378,6 @@ function ResultContent() {
                       {card.label}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
-                    {card.key === "morning" && routineSupportProducts.morning ? (
-                      <RoutineSupportProductCard
-                        copy={copy}
-                        product={routineSupportProducts.morning}
-                        locale={locale}
-                      />
-                    ) : null}
-                    {card.key === "night" && routineSupportProducts.night ? (
-                      <RoutineSupportProductCard
-                        copy={copy}
-                        product={routineSupportProducts.night}
-                        locale={locale}
-                      />
-                    ) : null}
                   </div>
                 )) : (
                   <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-500 dark:bg-zinc-800/70 dark:text-zinc-400">
@@ -1418,6 +1390,32 @@ function ResultContent() {
         </section>
       )
     });
+
+    if (Array.isArray(result?.warnings) && result.warnings.length) {
+      resultSteps.push({
+        id: "warnings",
+        content: (
+          <section className="space-y-4">
+            <ResultStepLead
+              kicker={copy.tipsStepKicker}
+              title={copy.tipsStepTitle}
+              body={null}
+            />
+
+            <section className="ui-card p-5">
+              <div className="space-y-4">
+                <div>
+                  <p className="ui-kicker">{decisionCopy.warnings}</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                    {result.warnings[0]}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </section>
+        )
+      });
+    }
 
     resultSteps.push({
       id: "premium-preview",
@@ -1433,7 +1431,12 @@ function ResultContent() {
             copy={copy}
             itemCount={routinePreviewItems.length}
           />
-
+          {showFaceLabStep ? (
+            <FaceShapePreviewCard
+              copy={copy}
+              launchData={faceLabLaunch}
+            />
+          ) : null}
         </section>
       )
     });
@@ -1645,46 +1648,6 @@ function ResultPreviewMaskCard({ copy, itemCount = 4 }) {
         </div>
       </div>
     </section>
-  );
-}
-
-function RoutineSupportProductCard({ copy, product, locale = "ko" }) {
-  if (!product) {
-    return null;
-  }
-
-  const purchaseLink = getPurchaseLinkInfo(product, locale);
-
-  return (
-    <div className="mt-4 rounded-[1.2rem] border border-zinc-200/80 bg-white/78 p-3 dark:border-zinc-700 dark:bg-zinc-950/60">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-        {copy.routineProductLabel}
-      </p>
-      <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
-      <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{product.brand}</p>
-      <a
-        href={purchaseLink.href}
-        target="_blank"
-        rel="noreferrer"
-        onClick={() =>
-          trackEvent("click_buy_link", {
-            product_id: product.id || null,
-            feature_name: "skin_analysis",
-            result_type: "routine_support_pick",
-            is_top_pick: false,
-            meta_json: {
-              step: product.step || null,
-              brand: product.brand || null,
-              button_label: purchaseLink.label,
-              fallback_link: purchaseLink.isFallback
-            }
-          })
-        }
-        className="ui-button-secondary mt-3 inline-flex px-3.5 py-2 text-xs font-medium"
-      >
-        {purchaseLink.label}
-      </a>
-    </div>
   );
 }
 
