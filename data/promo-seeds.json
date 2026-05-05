@@ -1,0 +1,122 @@
+[
+  {
+    "id": "oliveyoung-overload-heartleaf-toner",
+    "productName": "Heartleaf 77 Soothing Toner",
+    "brand": "Anua",
+    "skinType": "combination",
+    "concerns": ["visible redness", "uneven texture", "routine overwhelm"],
+    "contentAngle": "oliveyoung_overload",
+    "recommendationResult": "A calm toner step for a simple first layer.",
+    "routineStep": "toner",
+    "texture": "watery",
+    "keyIngredients": ["heartleaf extract"]
+  },
+  {
+    "id": "oily-skin-green-tea-serum",
+    "productName": "Green Tea Seed Hyaluronic Serum",
+    "brand": "Innisfree",
+    "skinType": "oily",
+    "concerns": ["midday shine", "dehydrated feel"],
+    "contentAngle": "oily_skin",
+    "recommendationResult": "A light serum option that keeps the routine fresh.",
+    "routineStep": "serum",
+    "texture": "lightweight gel",
+    "keyIngredients": ["green tea", "hyaluronic acid"]
+  },
+  {
+    "id": "dry-skin-birch-cream",
+    "productName": "Birch 70 Moisture Calming Cream",
+    "brand": "Round Lab",
+    "skinType": "dry",
+    "concerns": ["tight feel", "flaky-looking texture"],
+    "contentAngle": "dry_skin",
+    "recommendationResult": "A moisture-first cream for a soft finish.",
+    "routineStep": "moisturizer",
+    "texture": "soft cream",
+    "keyIngredients": ["birch sap", "panthenol"]
+  },
+  {
+    "id": "sensitive-skin-centella-ampoule",
+    "productName": "Madagascar Centella Ampoule",
+    "brand": "SKIN1004",
+    "skinType": "sensitive",
+    "concerns": ["easily reactive feel", "visible redness"],
+    "contentAngle": "sensitive_skin",
+    "recommendationResult": "A minimal ampoule pick for low-drama layering.",
+    "routineStep": "ampoule",
+    "texture": "watery",
+    "keyIngredients": ["centella asiatica extract"]
+  },
+  {
+    "id": "acne-concern-snail-essence",
+    "productName": "Advanced Snail 96 Mucin Power Essence",
+    "brand": "COSRX",
+    "skinType": "combination",
+    "concerns": ["post-blemish look", "rough-looking texture"],
+    "contentAngle": "acne_concern",
+    "recommendationResult": "A simple essence step for a smoother-looking routine.",
+    "routineStep": "essence",
+    "texture": "bouncy essence",
+    "keyIngredients": ["snail mucin"]
+  },
+  {
+    "id": "sunscreen-choice-relief-sun",
+    "productName": "Relief Sun Rice + Probiotics SPF50+",
+    "brand": "Beauty of Joseon",
+    "skinType": "normal",
+    "concerns": ["daily UV exposure", "white cast worry"],
+    "contentAngle": "sunscreen_choice",
+    "recommendationResult": "A daily sunscreen pick with a comfortable finish.",
+    "routineStep": "sunscreen",
+    "texture": "creamy lotion",
+    "keyIngredients": ["rice extract", "probiotics"]
+  },
+  {
+    "id": "routine-builder-dive-in-serum",
+    "productName": "Dive-In Low Molecular Hyaluronic Acid Serum",
+    "brand": "Torriden",
+    "skinType": "dehydrated",
+    "concerns": ["tight feel", "dull-looking skin"],
+    "contentAngle": "routine_builder",
+    "recommendationResult": "A hydration layer that fits into a three-step routine.",
+    "routineStep": "serum",
+    "texture": "light gel serum",
+    "keyIngredients": ["hyaluronic acid", "panthenol"]
+  },
+  {
+    "id": "avoid-mistake-red-blemish-cream",
+    "productName": "Red Blemish Clear Soothing Cream",
+    "brand": "Dr. G",
+    "skinType": "combination",
+    "concerns": ["visible redness", "heavy routine feel"],
+    "contentAngle": "avoid_mistake",
+    "recommendationResult": "A soothing cream option when the routine needs restraint.",
+    "routineStep": "moisturizer",
+    "texture": "gel cream",
+    "keyIngredients": ["cica complex"]
+  },
+  {
+    "id": "sunscreen-choice-watery-sun-gel",
+    "productName": "Hyaluronic Acid Watery Sun Gel SPF50+",
+    "brand": "Isntree",
+    "skinType": "combination",
+    "concerns": ["sticky sunscreen feel", "daily UV exposure"],
+    "contentAngle": "sunscreen_choice",
+    "recommendationResult": "A watery sunscreen pick for a lighter morning finish.",
+    "routineStep": "sunscreen",
+    "texture": "watery gel",
+    "keyIngredients": ["hyaluronic acid"]
+  },
+  {
+    "id": "oliveyoung-overload-glow-serum",
+    "productName": "Dark Spot Correcting Glow Serum",
+    "brand": "AXIS-Y",
+    "skinType": "dull-looking",
+    "concerns": ["uneven tone look", "post-blemish marks"],
+    "contentAngle": "oliveyoung_overload",
+    "recommendationResult": "A focused serum pick when the shelf feels too loud.",
+    "routineStep": "serum",
+    "texture": "light gel serum",
+    "keyIngredients": ["niacinamide", "squalane"]
+  }
+]

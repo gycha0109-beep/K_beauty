@@ -96,7 +96,7 @@ const resultCopy = {
     skinNote: "참고할 점",
     quickFeedback: "짧은 피드백",
     feedbackSaved: "저장됨",
-    especiallyGoodFor: "이럴 때 특히 좋아요",
+    especiallyGoodFor: "이럴때 특히 좋아요",
     imageEmpty: "이미지 없음",
     imagePreparing: "이미지 준비 중",
     previous: "이전",
@@ -150,7 +150,7 @@ const resultCopy = {
     resultOverviewBody: "",
     resultPhotoFallback: "업로드한 사진",
     topPickStepKicker: "RESULT STEP 2",
-    topPickStepTitle: "무료 결과 미리보기",
+    topPickStepTitle: "Top Pick",
     topPickStepBody: "",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "얼굴형 분석",
@@ -177,11 +177,11 @@ const resultCopy = {
     faceLabStepTitle: "Face Lab 티저",
     faceLabStepBody: "",
     routineStepKicker: "RESULT STEP 4",
-    routineStepTitle: "추천 루틴 가이드",
+    routineStepTitle: "루틴 및 주의할 점",
     routineStepBody: "",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
-    routineGateHint: "루틴 실행 직전부터 전체 구성과 실제 사용 순서를 이어서 볼 수 있습니다.",
-    routinePreviewTitle: "실행 순서 미리보기",
+    routineGateHint: "",
+    routinePreviewTitle: "전체 리포트에서 추가로 볼 수 있어요",
     premiumPreviewTitle: "전체 리포트",
     premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
@@ -193,7 +193,7 @@ const resultCopy = {
     ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
     ctaViewAlternative: "대안 보기",
     ctaViewFaceLab: "스타일 방향까지 보기",
-    ctaViewRoutine: "실제 루틴으로 정리하기",
+    ctaViewRoutine: "루틴 및 주의사항",
     ctaViewPremiumPreview: "전체 리포트 보기",
     ctaViewTips: "주의사항 및 사용 팁 보기",
     ctaLeaveFeedback: "피드백 남기기",
@@ -278,7 +278,7 @@ const resultCopy = {
     resultOverviewBody: "",
     resultPhotoFallback: "Uploaded photo",
     topPickStepKicker: "RESULT STEP 2",
-    topPickStepTitle: "Free Result Preview",
+    topPickStepTitle: "Top Pick",
     topPickStepBody: "",
     topPickTabLabel: "Top Pick",
     faceShapeTabLabel: "Face Shape",
@@ -305,11 +305,11 @@ const resultCopy = {
     faceLabStepTitle: "Face Lab Teaser",
     faceLabStepBody: "",
     routineStepKicker: "RESULT STEP 4",
-    routineStepTitle: "Routine Guide",
+    routineStepTitle: "Routine & Notes",
     routineStepBody: "",
     routineStepEmpty: "There is no routine information to show yet.",
-    routineGateHint: "From the point right before execution, you can continue into the full setup and actual order.",
-    routinePreviewTitle: "Next Sequence Preview",
+    routineGateHint: "",
+    routinePreviewTitle: "You can unlock more in the full report",
     premiumPreviewTitle: "Full Report",
     premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
@@ -321,7 +321,7 @@ const resultCopy = {
     ctaViewRecommended: "See Supporting Picks",
     ctaViewAlternative: "See Alternative",
     ctaViewFaceLab: "See style direction",
-    ctaViewRoutine: "Turn into a real routine",
+    ctaViewRoutine: "Routine & Notes",
     ctaViewPremiumPreview: "See Full Report",
     ctaViewTips: "See Tips",
     ctaLeaveFeedback: "Leave Feedback",
@@ -508,6 +508,165 @@ function buildRoutinePreviewItems(result, locale = "ko") {
   return items.slice(0, 4);
 }
 
+function buildFinalReportPreviewSections(locale = "ko") {
+  const isEnglish = locale === "en";
+
+  if (isEnglish) {
+    return [
+      {
+        key: "alternative_strategy",
+        title: "Alternative product strategy",
+        body: "We explain when and how to switch products instead of relying only on the Top Pick."
+      },
+      {
+        key: "routine_execution",
+        title: "Morning · night execution routine",
+        body: "We organize which product to use, in what order, and at which step."
+      },
+      {
+        key: "avoid_combinations",
+        title: "Avoid combinations",
+        body: "We point out pairings that can increase irritation or make the routine feel too heavy."
+      },
+      {
+        key: "situation_routines",
+        title: "Situation-based routine changes",
+        body: "We adjust the routine for sensitive days, breakout days, outdoor-heavy days, and makeup days."
+      },
+      {
+        key: "face_lab_expanded",
+        title: "Face Lab expanded guide",
+        body: "We organize hair direction, avoid styles, and mood keywords that fit your face shape."
+      }
+    ];
+  }
+
+  return [
+    {
+      key: "alternative_strategy",
+      title: "대체 제품 사용 전략",
+      body: "Top Pick 대신 어떤 제품을 언제 바꿔 쓰면 좋은지 정리합니다."
+    },
+    {
+      key: "routine_execution",
+      title: "아침·저녁 실행 루틴",
+      body: "제품을 어느 순서로, 어느 단계에서 쓰면 되는지 정리합니다."
+    },
+    {
+      key: "avoid_combinations",
+      title: "피해야 할 조합",
+      body: "같이 쓰면 자극이 커지거나 루틴이 무거워지는 조합을 알려줍니다."
+    },
+    {
+      key: "situation_routines",
+      title: "상황별 루틴 변형",
+      body: "민감한 날, 트러블 올라온 날, 야외활동 많은 날, 메이크업하는 날 기준으로 루틴을 바꿔줍니다."
+    },
+    {
+      key: "face_lab_expanded",
+      title: "Face Lab 확장 가이드",
+      body: "얼굴형에 맞는 헤어 방향, 피해야 할 스타일, 분위기 키워드를 정리합니다."
+    }
+  ];
+}
+
+function buildRoutineDirectionCards(result, locale = "ko") {
+  const axis = result?.priority?.axis || "";
+  const isEnglish = locale === "en";
+
+  const copy = {
+    ko: {
+      morning: "Morning",
+      night: "Night",
+      core: "루틴 방향"
+    },
+    en: {
+      morning: "Morning Direction",
+      night: "Night Direction",
+      core: "Routine Direction"
+    }
+  }[locale] || {
+    morning: "Morning",
+    night: "Night",
+    core: "루틴 방향"
+  };
+
+  if (isEnglish) {
+    const englishMap = {
+      uv: {
+        morning: "Because daytime UV exposure is a key condition, a comfortable protection-focused product is the right direction.",
+        night: "Because sunscreen and outdoor residue can build up, a gentle reset and light moisture direction is better at night."
+      },
+      oiliness: {
+        morning: "Because oil can rise quickly through the day, a fresher finish product direction is more useful.",
+        night: "Because surface residue and shine need to settle, a non-heavy recovery direction is better at night."
+      },
+      pores: {
+        morning: "Because shine and visible texture are linked, a light texture-smoothing product direction is better.",
+        night: "Because pore-related buildup can feel heavier by night, a gentle reset direction is useful."
+      },
+      dehydration: {
+        morning: "Because moisture can drop early, a light hydration-support product direction is better.",
+        night: "Because the skin needs to hold moisture longer, a barrier-supporting product direction is better."
+      },
+      acne: {
+        morning: "Because heavy residue can feel risky, a lighter low-burden product direction is better.",
+        night: "Because repeated breakouts need a steadier base, a simple calming-support direction is better."
+      },
+      redness: {
+        morning: "Because visible sensitivity can rise during the day, a lower-irritation protection direction is better.",
+        night: "Because redness needs a calmer base, a comfort-support product direction is better."
+      },
+      barrier: {
+        morning: "Because the barrier looks unsettled, a lower-irritation protection direction is better.",
+        night: "Because comfort needs to last longer, a barrier-support product direction is better."
+      }
+    };
+    const selected = englishMap[axis] || englishMap.dehydration;
+    return [
+      { key: "morning", label: copy.morning, body: selected.morning },
+      { key: "night", label: copy.night, body: selected.night }
+    ];
+  }
+
+  const koreanMap = {
+    uv: {
+      morning: "야외 노출과 자외선 부담이 있는 상태이므로, 편하게 덧바를 수 있는 보호 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "낮 동안 남은 선케어와 잔여감을 정리해야 하는 상태이므로, 순한 세정과 가벼운 보습 방향이 좋습니다."
+    },
+    oiliness: {
+      morning: "오후에 유분이 빠르게 올라올 수 있는 상태이므로, 산뜻하게 마무리되는 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "표면 유분과 잔여감을 정리해야 하는 상태이므로, 무겁지 않게 회복을 돕는 방향이 좋습니다."
+    },
+    pores: {
+      morning: "모공과 번들거림이 함께 보이는 상태이므로, 결을 가볍게 정돈하는 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "하루 동안 쌓인 피지와 잔여감이 부담될 수 있는 상태이므로, 순하게 정리하는 방향이 좋습니다."
+    },
+    dehydration: {
+      morning: "수분감이 빨리 끊길 수 있는 상태이므로, 가볍게 수분을 이어주는 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "건조감이 오래 남을 수 있는 상태이므로, 수분을 잡아두는 장벽 보조 방향이 좋습니다."
+    },
+    acne: {
+      morning: "무거운 잔여감이 부담될 수 있는 상태이므로, 가볍고 답답하지 않은 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "트러블 부담이 반복될 수 있는 상태이므로, 단계를 늘리기보다 진정 보조 방향이 좋습니다."
+    },
+    redness: {
+      morning: "붉은기와 예민함이 올라올 수 있는 상태이므로, 자극 부담이 낮은 보호 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "피부가 쉽게 달아오를 수 있는 상태이므로, 편안함을 회복하는 방향의 제품을 사용하는 것이 좋습니다."
+    },
+    barrier: {
+      morning: "장벽과 예민함이 함께 잡힌 상태이므로, 자극 부담이 낮은 보호 방향의 제품을 사용하는 것이 좋습니다.",
+      night: "편안함이 오래 이어져야 하는 상태이므로, 장벽을 보조하는 방향의 제품을 사용하는 것이 좋습니다."
+    }
+  };
+  const selected = koreanMap[axis] || koreanMap.dehydration;
+
+  return [
+    { key: "morning", label: copy.morning, body: selected.morning },
+    { key: "night", label: copy.night, body: selected.night }
+  ];
+}
+
 function hasFaceLabTeaser(launchData) {
   return Boolean(launchData?.free?.teaserLine);
 }
@@ -520,6 +679,8 @@ function getAdvanceLabelForStep(stepId, copy) {
       return copy.ctaViewAlternative;
     case "routine-summary":
       return copy.ctaViewRoutine;
+    case "face-lab-teaser":
+      return copy.ctaViewFaceLab;
     case "warnings":
       return copy.ctaViewTips;
     case "premium-preview":
@@ -1276,9 +1437,9 @@ function ResultContent() {
       value: getRoutineStructureLabel(result, locale)
     }
   ];
-  const freeAlternative = result?.alternative || (Array.isArray(result?.altPicks) ? result.altPicks[0] : null) || null;
-  const routineStructure = getRoutineStructureData(result, locale);
-  const routinePreviewItems = buildRoutinePreviewItems(result, locale);
+  const routineDirectionCards = buildRoutineDirectionCards(result, locale);
+  const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
+  const routineWarnings = Array.isArray(result?.warnings) ? result.warnings.filter(Boolean).slice(0, 2) : [];
   const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
@@ -1337,42 +1498,20 @@ function ResultContent() {
       )
     });
 
-    if (freeAlternative) {
-      resultSteps.push({
-        id: "alternative",
-        content: (
-          <section className="space-y-4">
-            <ResultStepLead
-              kicker={copy.recommendedStepKicker}
-              title={getAlternativeStepTitle(result?.topPick, freeAlternative, locale)}
-              body={null}
-            />
-            <ProductDecisionCard
-              product={freeAlternative}
-              form={submission?.form}
-              locale={locale}
-              allowExpand={false}
-              showDiagnostics={false}
-            />
-          </section>
-        )
-      });
-    }
-
     resultSteps.push({
       id: "routine-summary",
       content: (
         <section className="space-y-4">
           <ResultStepLead
             kicker={copy.routineStepKicker}
-            title={routineStructure.title || copy.routineStepTitle}
+            title={copy.routineStepTitle}
             body={null}
           />
 
           <section className="ui-card p-5">
             <div className="space-y-4">
-              <div className={`grid gap-3 ${routineStructure.cards.length > 1 ? "sm:grid-cols-2" : ""}`}>
-                {routineStructure.cards.length ? routineStructure.cards.map((card) => (
+              <div className={`grid gap-3 ${routineDirectionCards.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                {routineDirectionCards.length ? routineDirectionCards.map((card) => (
                   <div key={`routine-structure-${card.key}`} className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
                       {card.label}
@@ -1385,33 +1524,42 @@ function ResultContent() {
                   </div>
                 )}
               </div>
+
+              {routineWarnings.length ? (
+                <div className="rounded-[1.4rem] border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/70">
+                  <p className="ui-kicker">{decisionCopy.warnings}</p>
+                  <div className="mt-3 space-y-2">
+                    {routineWarnings.map((warning, index) => (
+                      <p
+                        key={`routine-warning-${index}`}
+                        className="text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                      >
+                        {warning}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
         </section>
       )
     });
 
-    if (Array.isArray(result?.warnings) && result.warnings.length) {
+    if (showFaceLabStep) {
       resultSteps.push({
-        id: "warnings",
+        id: "face-lab-teaser",
         content: (
           <section className="space-y-4">
             <ResultStepLead
-              kicker={copy.tipsStepKicker}
-              title={copy.tipsStepTitle}
+              kicker={copy.faceShapeFreeKicker}
+              title={copy.faceLabStepTitle}
               body={null}
             />
-
-            <section className="ui-card p-5">
-              <div className="space-y-4">
-                <div>
-                  <p className="ui-kicker">{decisionCopy.warnings}</p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                    {result.warnings[0]}
-                  </p>
-                </div>
-              </div>
-            </section>
+            <FaceShapePreviewCard
+              copy={copy}
+              launchData={faceLabLaunch}
+            />
           </section>
         )
       });
@@ -1429,14 +1577,8 @@ function ResultContent() {
 
           <ResultPreviewMaskCard
             copy={copy}
-            itemCount={routinePreviewItems.length}
+            sections={finalReportPreviewSections}
           />
-          {showFaceLabStep ? (
-            <FaceShapePreviewCard
-              copy={copy}
-              launchData={faceLabLaunch}
-            />
-          ) : null}
         </section>
       )
     });
@@ -1593,58 +1735,49 @@ function ResultStepLead({ kicker, title, body }) {
   );
 }
 
-function ResultPreviewMaskCard({ copy, itemCount = 4 }) {
-  const widthSets = [
-    ["78%", "56%"],
-    ["68%", "62%"],
-    ["74%", "49%"],
-    ["71%", "58%"]
-  ];
+function ResultPreviewMaskCard({ copy, sections = [] }) {
+  const visibleSections = Array.isArray(sections)
+    ? sections
+        .map((section) => ({
+          ...section,
+          body: String(section?.body || "").trim()
+        }))
+        .filter((section) => section.title && section.body)
+    : [];
+
+  if (!visibleSections.length) {
+    return null;
+  }
 
   return (
-    <section className="ui-card overflow-hidden p-5">
+    <section className="ui-card p-5">
       <div className="space-y-4">
         <div>
           <p className="ui-kicker">{copy.routinePreviewTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            {copy.routineGateHint}
-          </p>
+          {copy.routineGateHint ? (
+            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              {copy.routineGateHint}
+            </p>
+          ) : null}
         </div>
 
-        <div
-          className="relative overflow-hidden rounded-[1.5rem] border border-zinc-200/80 bg-white/70 p-4 select-none dark:border-zinc-800 dark:bg-zinc-950/60"
-          aria-hidden="true"
-        >
-          <div className="mt-1 space-y-3">
-            {Array.from({ length: itemCount }).map((_, index) => {
-              const widths = widthSets[index % widthSets.length];
-
-              return (
-                <div
-                  key={`preview-mask-${index}`}
-                  className="rounded-[1.2rem] bg-zinc-50/90 px-4 py-3 dark:bg-zinc-900/80"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] font-semibold text-zinc-400 blur-[0.5px] dark:bg-zinc-950/90 dark:text-zinc-500">
-                      {index + 1}
-                    </span>
-                    <div className="flex-1 space-y-2.5 pt-0.5">
-                      {widths.map((width, lineIndex) => (
-                        <div
-                          key={`preview-mask-${index}-${lineIndex}`}
-                          className="h-3 rounded-full bg-[linear-gradient(90deg,rgba(148,163,184,0.18)_0%,rgba(148,163,184,0.34)_48%,rgba(148,163,184,0.18)_100%)] blur-[2.5px] dark:bg-[linear-gradient(90deg,rgba(71,85,105,0.28)_0%,rgba(100,116,139,0.42)_48%,rgba(71,85,105,0.28)_100%)]"
-                          style={{ width }}
-                        />
-                      ))}
-                    </div>
-                  </div>
+        <div className="space-y-3">
+          {visibleSections.map((section, index) => (
+            <div
+              key={section.key || section.title}
+              className="rounded-[1.2rem] bg-zinc-50/90 px-4 py-3 dark:bg-zinc-900/80"
+            >
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] font-semibold text-zinc-500 dark:bg-zinc-950/90 dark:text-zinc-400">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</p>
+                  <p className="mt-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{section.body}</p>
                 </div>
-              );
-            })}
-          </div>
-
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0)_0%,rgba(255,255,255,0.16)_44%,rgba(255,255,255,0.58)_100%)] dark:bg-[radial-gradient(circle_at_center,rgba(9,9,11,0)_0%,rgba(9,9,11,0.18)_44%,rgba(9,9,11,0.6)_100%)]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-white/0 via-white/72 to-white dark:from-zinc-950/0 dark:via-zinc-950/84 dark:to-zinc-950" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1807,6 +1940,10 @@ function ProductDecisionCard({
               </div>
             ) : null}
 
+            <div className="mt-5">
+              <SmallProductThumb product={product} height="h-48" locale={locale} />
+            </div>
+
             <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
@@ -1853,31 +1990,6 @@ function ProductDecisionCard({
           </div>
 
           <div className="space-y-3">
-            <div className="ui-image-surface overflow-hidden rounded-[1.6rem]">
-              {product.image_url ? (
-                <div className="flex h-48 items-center justify-center px-4 py-3">
-                  <img
-                    src={product.image_url}
-                    alt={getImageFallbackLabel(product)}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="ui-image-empty flex h-48 items-center justify-center px-6 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-[1.1rem] border border-zinc-200 bg-white/72 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500">
-                      <svg viewBox="0 0 48 48" className="h-7 w-7" fill="none" aria-hidden="true">
-                        <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                        <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
-                      </svg>
-                    </div>
-                    <p className="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">{getImageFallbackLabel(product)}</p>
-                    <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-500">{copy.imagePreparing}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {showDiagnostics ? (
               <div className="ui-card-subtle p-3.5">
                 <FitGaugeRows product={product} form={form} compact locale={locale} />

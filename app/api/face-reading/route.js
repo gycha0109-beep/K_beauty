@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
@@ -657,7 +658,17 @@ export async function POST(request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const { apiKey } = resolveOpenAiApiKey();
+    if (process.env.NODE_ENV !== "production") {
+      console.info(
+        "[face-reading] openai-env:diagnostic",
+        getOpenAiEnvDiagnostics({
+          route: "face-reading",
+          routeUsesOpenAi: true,
+          routeUsesOpenRouter: false
+        })
+      );
+    }
     if (!apiKey) {
       return NextResponse.json(buildMockFaceLab(locale));
     }
@@ -698,14 +709,20 @@ export async function POST(request) {
     const { ok, status, data, rawText } = await readOpenAiResponse(response);
 
     if (!ok) {
-      console.error("[face-reading] OpenAI failed", { status, rawText });
+      console.error("[face-reading] OpenAI failed", {
+        status,
+        preview: previewDiagnosticText(data?.error?.message || data?.error || rawText)
+      });
       return NextResponse.json(buildMockFaceLab(locale));
     }
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
 
     if (!rawContent) {
-      console.error("[face-reading] Empty model content", { status, rawText });
+      console.error("[face-reading] Empty model content", {
+        status,
+        preview: previewDiagnosticText(rawText)
+      });
       return NextResponse.json(buildMockFaceLab(locale));
     }
 

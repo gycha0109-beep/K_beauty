@@ -9,12 +9,13 @@ import {
 import { appendReviewEvidenceSentence } from "@/lib/review-signals";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
+import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
 const PHOTO_ANALYSIS_MAX_TOKENS = 600;
-const PRODUCT_EXPLANATION_MAX_TOKENS = 700;
+const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
 
 const ANALYZE_COPY = {
   ko: {
@@ -42,12 +43,7 @@ function getAnalyzeCopy(locale = "ko") {
 }
 
 function previewText(value, maxLength = 240) {
-  if (!value) {
-    return "";
-  }
-
-  const text = String(value).replace(/\s+/g, " ").trim();
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+  return previewDiagnosticText(value, maxLength);
 }
 
 function logAnalyze(stage, payload = {}) {
@@ -373,9 +369,16 @@ function applyExplanationBundle(decision, explanationItems) {
           ...decision.premiumReport,
           topPickDetailedReason: decision.premiumReport.topPickDetailedReason || "",
           supportingProducts: Array.isArray(decision.premiumReport.supportingProducts)
-            ? decision.premiumReport.supportingProducts.map(
-                (product) => byExpandedId.get(product.id) || product
-              )
+            ? decision.premiumReport.supportingProducts.map((item) => {
+                if (item?.product) {
+                  return {
+                    ...item,
+                    product: byExpandedId.get(item.product.id) || item.product
+                  };
+                }
+
+                return byExpandedId.get(item?.id) || item;
+              })
             : []
         }
       : null
@@ -402,6 +405,31 @@ function sanitizeProductForPremium(product) {
     reason: product.reason || "",
     comparison_reason: product.comparison_reason || ""
   };
+}
+
+function sanitizeSupportingProductForPremium(item) {
+  if (!item) {
+    return null;
+  }
+
+  if (item.product) {
+    const product = sanitizeProductForPremium(item.product);
+
+    if (!product) {
+      return null;
+    }
+
+    return {
+      role: String(item.role || "").trim(),
+      label: String(item.label || "").trim(),
+      product,
+      reason: String(item.reason || "").trim(),
+      usage: String(item.usage || "").trim(),
+      relationToTopPick: String(item.relationToTopPick || "").trim()
+    };
+  }
+
+  return sanitizeProductForPremium(item);
 }
 
 function stripRawSignalBlobs(product) {
@@ -500,6 +528,22 @@ function sanitizeRoutineStructure(structure) {
   };
 }
 
+function sanitizeRoutineStepForPremium(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  return {
+    order: Number.isFinite(Number(item.order)) ? Number(item.order) : null,
+    stepName: String(item.stepName || "").trim(),
+    productRole: String(item.productRole || "").trim(),
+    product: sanitizeProductForPremium(item.product || null),
+    instruction: String(item.instruction || "").trim(),
+    frequency: String(item.frequency || "").trim(),
+    caution: String(item.caution || "").trim()
+  };
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -507,8 +551,11 @@ function sanitizePremiumReport(report) {
 
   return {
     topPickDetailedReason: String(report.topPickDetailedReason || "").trim(),
+    supportingConcerns: Array.isArray(report.supportingConcerns)
+      ? report.supportingConcerns.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 3)
+      : [],
     supportingProducts: Array.isArray(report.supportingProducts)
-      ? report.supportingProducts.map(sanitizeProductForPremium).filter(Boolean).slice(0, 3)
+      ? report.supportingProducts.map(sanitizeSupportingProductForPremium).filter(Boolean).slice(0, 3)
       : [],
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     fullRoutine: {
@@ -517,6 +564,18 @@ function sanitizePremiumReport(report) {
         : [],
       night: Array.isArray(report.fullRoutine?.night)
         ? report.fullRoutine.night.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
+        : [],
+      morningSteps: Array.isArray(report.fullRoutine?.morningSteps)
+        ? report.fullRoutine.morningSteps
+            .map(sanitizeRoutineStepForPremium)
+            .filter((item) => item?.stepName || item?.instruction || item?.product)
+            .slice(0, 5)
+        : [],
+      nightSteps: Array.isArray(report.fullRoutine?.nightSteps)
+        ? report.fullRoutine.nightSteps
+            .map(sanitizeRoutineStepForPremium)
+            .filter((item) => item?.stepName || item?.instruction || item?.product)
+            .slice(0, 5)
         : []
     },
     routineVariants: Array.isArray(report.fullRoutine?.variants)
@@ -805,7 +864,7 @@ export async function POST(request) {
       verySensitivePeriod: Boolean(verySensitivePeriod)
     };
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const { apiKey } = resolveOpenAiApiKey();
     const writeAccessToken = createWriteAccessToken();
 
     let imageDataUrl = null;
@@ -823,6 +882,16 @@ export async function POST(request) {
       mainConcern: formInput.mainConcern,
       skinType: formInput.skinType
     });
+    if (process.env.NODE_ENV !== "production") {
+      logAnalyze(
+        "openai-env:diagnostic",
+        getOpenAiEnvDiagnostics({
+          route: "analyze",
+          routeUsesOpenAi: true,
+          routeUsesOpenRouter: false
+        })
+      );
+    }
 
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
     let photoNotice = "";
@@ -839,7 +908,7 @@ export async function POST(request) {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
         photoNotice = copy.photoFallbackNotice;
         logAnalyze("photo-evidence:fallback", {
-          message: photoError instanceof Error ? photoError.message : String(photoError)
+          message: previewDiagnosticText(photoError instanceof Error ? photoError.message : String(photoError))
         });
       }
     } else {
@@ -869,7 +938,7 @@ export async function POST(request) {
       } catch (explanationError) {
         explanationNotice = copy.explanationFallbackNotice;
         logAnalyze("product-explanations:fallback", {
-          message: explanationError instanceof Error ? explanationError.message : String(explanationError)
+          message: previewDiagnosticText(explanationError instanceof Error ? explanationError.message : String(explanationError))
         });
       }
     } else {

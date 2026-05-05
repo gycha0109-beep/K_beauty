@@ -1,0 +1,843 @@
+[
+  {
+    "id": "promo-001-oliveyoung-overload-heartleaf-toner",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Too many K-beauty choices? Start with Heartleaf 77 Soothing Toner.",
+    "problem": "The shelf looks exciting, then suddenly impossible.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Too many K-beauty choices? Start with Heartleaf 77 Soothing Toner.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: combination",
+        "voiceover": "The shelf looks exciting, then suddenly impossible.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: visible redness, uneven texture, and routine overwhelm",
+        "voiceover": "Pick one concern first: visible redness, uneven texture, and routine overwhelm.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Anua pick",
+        "voiceover": "The recommendation is Heartleaf 77 Soothing Toner.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "watery",
+        "voiceover": "Make it one clear toner step. Look for heartleaf extract.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A calm toner step for a simple first layer. Save this before your next Olive Young scroll.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Too many K-beauty choices? Start with Heartleaf 77 Soothing Toner.",
+      "The shelf looks exciting, then suddenly impossible.",
+      "Pick one concern first: visible redness, uneven texture, and routine...",
+      "Anua Heartleaf 77 Soothing Toner.",
+      "Make it one clear toner step.",
+      "Patch test first.",
+      "Save this before your next Olive Young scroll."
+    ],
+    "caption": "Choice overload is real. Start with one skin goal and one pick, like Anua Heartleaf 77 Soothing Toner. Patch test and keep the routine simple.",
+    "hashtags": [
+      "#KBeauty",
+      "#OliveYoungFinds",
+      "#SkincareRoutine",
+      "#BeautyShorts"
+    ],
+    "cta": "Save this before your next Olive Young scroll.",
+    "visualNotes": [
+      "Open on a fast shelf scroll.",
+      "Cut to one product in the center.",
+      "Use simple arrows and one concern label."
+    ],
+    "productName": "Heartleaf 77 Soothing Toner",
+    "brand": "Anua",
+    "skinType": "combination",
+    "concerns": [
+      "visible redness",
+      "uneven texture",
+      "routine overwhelm"
+    ],
+    "contentAngle": "oliveyoung_overload"
+  },
+  {
+    "id": "promo-002-oily-skin-green-tea-serum",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Oily by noon? Your routine may need a lighter layer.",
+    "problem": "Heavy layers can make shine feel louder.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Oily by noon? Your routine may need a lighter layer.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: oily",
+        "voiceover": "Heavy layers can make shine feel louder.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: midday shine and dehydrated feel",
+        "voiceover": "Keep the goal simple: midday shine and dehydrated feel.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Innisfree pick",
+        "voiceover": "The recommendation is Green Tea Seed Hyaluronic Serum.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "lightweight gel",
+        "voiceover": "Try a lightweight gel serum before adding more. Look for green tea and hyaluronic acid.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A light serum option that keeps the routine fresh. Save this for your next lighter routine reset.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Oily by noon? Your routine may need a lighter layer.",
+      "Heavy layers can make shine feel louder.",
+      "Keep the goal simple: midday shine and dehydrated feel.",
+      "Innisfree Green Tea Seed Hyaluronic Serum.",
+      "Try a lightweight gel serum before adding more.",
+      "Patch test first.",
+      "Save this for your next lighter routine reset."
+    ],
+    "caption": "For oily skin days, keep layers light and easy. Innisfree Green Tea Seed Hyaluronic Serum is a simple pick to test in a balanced routine.",
+    "hashtags": [
+      "#OilySkinRoutine",
+      "#KBeauty",
+      "#SkincareTips",
+      "#Shorts"
+    ],
+    "cta": "Save this for your next lighter routine reset.",
+    "visualNotes": [
+      "Show blotting paper or midday mirror check.",
+      "Use a light texture swipe shot.",
+      "End with a clean two-step routine layout."
+    ],
+    "productName": "Green Tea Seed Hyaluronic Serum",
+    "brand": "Innisfree",
+    "skinType": "oily",
+    "concerns": [
+      "midday shine",
+      "dehydrated feel"
+    ],
+    "contentAngle": "oily_skin"
+  },
+  {
+    "id": "promo-003-dry-skin-birch-cream",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Dry skin feeling tight? Build moisture before glow.",
+    "problem": "Glow makeup cannot do all the work when skin feels tight.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Dry skin feeling tight? Build moisture before glow.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: dry",
+        "voiceover": "Glow makeup cannot do all the work when skin feels tight.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: tight feel and flaky-looking texture",
+        "voiceover": "Focus on tight feel and flaky-looking texture first.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Round Lab pick",
+        "voiceover": "The recommendation is Birch 70 Moisture Calming Cream.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "soft cream",
+        "voiceover": "Add a soft cream moisturizer and keep it steady. Look for birch sap and panthenol.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A moisture-first cream for a soft finish. Save this for your dry-skin checklist.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Dry skin feeling tight? Build moisture before glow.",
+      "Glow makeup cannot do all the work when skin feels tight.",
+      "Focus on tight feel and flaky-looking texture first.",
+      "Round Lab Birch 70 Moisture Calming Cream.",
+      "Add a soft cream moisturizer and keep it steady.",
+      "Patch test first.",
+      "Save this for your dry-skin checklist."
+    ],
+    "caption": "When dry skin feels tight, choose comfort over a crowded routine. Try a moisture-first pick like Round Lab Birch 70 Moisture Calming Cream.",
+    "hashtags": [
+      "#DrySkinRoutine",
+      "#KBeauty",
+      "#SkinBarrierCare",
+      "#BeautyShorts"
+    ],
+    "cta": "Save this for your dry-skin checklist.",
+    "visualNotes": [
+      "Start with tight-skin text overlay.",
+      "Show cream texture on fingertips.",
+      "Use warm lighting and soft close-ups."
+    ],
+    "productName": "Birch 70 Moisture Calming Cream",
+    "brand": "Round Lab",
+    "skinType": "dry",
+    "concerns": [
+      "tight feel",
+      "flaky-looking texture"
+    ],
+    "contentAngle": "dry_skin"
+  },
+  {
+    "id": "promo-004-sensitive-skin-centella-ampoule",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Sensitive-feeling skin? Fewer steps can be the flex.",
+    "problem": "Too many new products at once can make feedback confusing.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Sensitive-feeling skin? Fewer steps can be the flex.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: sensitive",
+        "voiceover": "Too many new products at once can make feedback confusing.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: easily reactive feel and visible redness",
+        "voiceover": "Watch for easily reactive feel and visible redness without overloading the routine.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "SKIN1004 pick",
+        "voiceover": "The recommendation is Madagascar Centella Ampoule.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "watery",
+        "voiceover": "Keep this as one quiet ampoule step. Look for centella asiatica extract.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A minimal ampoule pick for low-drama layering. Save this if your routine needs a calmer edit.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Sensitive-feeling skin? Fewer steps can be the flex.",
+      "Too many new products at once can make feedback confusing.",
+      "Watch for easily reactive feel and visible redness without overloadin...",
+      "SKIN1004 Madagascar Centella Ampoule.",
+      "Keep this as one quiet ampoule step.",
+      "Patch test first.",
+      "Save this if your routine needs a calmer edit."
+    ],
+    "caption": "For sensitive-feeling skin, keep changes slow and simple. SKIN1004 Madagascar Centella Ampoule can be tested as one focused step.",
+    "hashtags": [
+      "#SensitiveSkinRoutine",
+      "#KBeauty",
+      "#MinimalSkincare",
+      "#Reels"
+    ],
+    "cta": "Save this if your routine needs a calmer edit.",
+    "visualNotes": [
+      "Show a messy routine, then remove extra products.",
+      "Use calm neutral colors.",
+      "Add a clear patch-test reminder."
+    ],
+    "productName": "Madagascar Centella Ampoule",
+    "brand": "SKIN1004",
+    "skinType": "sensitive",
+    "concerns": [
+      "easily reactive feel",
+      "visible redness"
+    ],
+    "contentAngle": "sensitive_skin"
+  },
+  {
+    "id": "promo-005-acne-concern-snail-essence",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Breakout-prone days? Do not turn the routine into chaos.",
+    "problem": "Adding five new steps makes it harder to know what works for you.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Breakout-prone days? Do not turn the routine into chaos.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: combination",
+        "voiceover": "Adding five new steps makes it harder to know what works for you.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: post-blemish look and rough-looking texture",
+        "voiceover": "Keep the focus cosmetic: post-blemish look and rough-looking texture.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "COSRX pick",
+        "voiceover": "The recommendation is Advanced Snail 96 Mucin Power Essence.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "bouncy essence",
+        "voiceover": "Use one supportive essence and track how skin feels. Look for snail mucin.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A simple essence step for a smoother-looking routine. Save this before adding another random step.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Breakout-prone days? Do not turn the routine into chaos.",
+      "Adding five new steps makes it harder to know what works for you.",
+      "Keep the focus cosmetic: post-blemish look and rough-looking texture.",
+      "COSRX Advanced Snail 96 Mucin Power Essence.",
+      "Use one supportive essence and track how skin feels.",
+      "Patch test first.",
+      "Save this before adding another random step."
+    ],
+    "caption": "For breakout-prone days, keep the routine steady and cosmetic-focused. COSRX Advanced Snail 96 Mucin Power Essence is one option to patch test slowly.",
+    "hashtags": [
+      "#BreakoutProneSkin",
+      "#KBeautyRoutine",
+      "#SkincareTips",
+      "#Shorts"
+    ],
+    "cta": "Save this before adding another random step.",
+    "visualNotes": [
+      "Show a routine with too many products crossed out.",
+      "Cut to one product plus a simple tracker note.",
+      "Keep the tone gentle, not fear-based."
+    ],
+    "productName": "Advanced Snail 96 Mucin Power Essence",
+    "brand": "COSRX",
+    "skinType": "combination",
+    "concerns": [
+      "post-blemish look",
+      "rough-looking texture"
+    ],
+    "contentAngle": "acne_concern"
+  },
+  {
+    "id": "promo-006-sunscreen-choice-relief-sun",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "The best sunscreen is the one you will actually wear.",
+    "problem": "Sticky texture or white cast worry can make daily SPF harder.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "The best sunscreen is the one you will actually wear.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: normal",
+        "voiceover": "Sticky texture or white cast worry can make daily SPF harder.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: daily UV exposure and white cast worry",
+        "voiceover": "Choose around your real friction: daily UV exposure and white cast worry.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Beauty of Joseon pick",
+        "voiceover": "The recommendation is Relief Sun Rice + Probiotics SPF50+.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "creamy lotion",
+        "voiceover": "Look for a creamy lotion finish that fits your morning. Look for rice extract and probiotics.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A daily sunscreen pick with a comfortable finish. Save this for your next sunscreen comparison.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "The best sunscreen is the one you will actually wear.",
+      "Sticky texture or white cast worry can make daily SPF harder.",
+      "Choose around your real friction: daily UV exposure and white cast wo...",
+      "Beauty of Joseon Relief Sun Rice + Probiotics SPF50+.",
+      "Look for a creamy lotion finish that fits your morning.",
+      "Patch test first.",
+      "Save this for your next sunscreen comparison."
+    ],
+    "caption": "Daily SPF gets easier when the texture fits your life. Beauty of Joseon Relief Sun Rice + Probiotics SPF50+ is a K-beauty sunscreen option to test.",
+    "hashtags": [
+      "#SunscreenRoutine",
+      "#KBeautySPF",
+      "#SkincareTips",
+      "#YouTubeShorts"
+    ],
+    "cta": "Save this for your next sunscreen comparison.",
+    "visualNotes": [
+      "Compare two texture swatches.",
+      "Show a morning bag or vanity setup.",
+      "End with SPF as the final AM step."
+    ],
+    "productName": "Relief Sun Rice + Probiotics SPF50+",
+    "brand": "Beauty of Joseon",
+    "skinType": "normal",
+    "concerns": [
+      "daily UV exposure",
+      "white cast worry"
+    ],
+    "contentAngle": "sunscreen_choice"
+  },
+  {
+    "id": "promo-007-routine-builder-dive-in-serum",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "New to K-beauty? Build the routine in three steps.",
+    "problem": "A long routine looks fun, but it is harder to keep consistent.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "New to K-beauty? Build the routine in three steps.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: dehydrated",
+        "voiceover": "A long routine looks fun, but it is harder to keep consistent.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: tight feel and dull-looking skin",
+        "voiceover": "Start with one goal: tight feel and dull-looking skin.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Torriden pick",
+        "voiceover": "The recommendation is Dive-In Low Molecular Hyaluronic Acid Serum.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "light gel serum",
+        "voiceover": "Place this serum after cleansing and before cream. Look for hyaluronic acid and panthenol.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A hydration layer that fits into a three-step routine. Save this simple routine map.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "New to K-beauty? Build the routine in three steps.",
+      "A long routine looks fun, but it is harder to keep consistent.",
+      "Start with one goal: tight feel and dull-looking skin.",
+      "Torriden Dive-In Low Molecular Hyaluronic Acid Serum.",
+      "Place this serum after cleansing and before cream.",
+      "Patch test first.",
+      "Save this simple routine map."
+    ],
+    "caption": "Keep the starter routine simple: cleanse, one focused layer, moisturize, then SPF in the morning. Torriden Dive-In Low Molecular Hyaluronic Acid Serum can be the focused layer.",
+    "hashtags": [
+      "#KBeautyBeginner",
+      "#RoutineBuilder",
+      "#SkincareRoutine",
+      "#Reels"
+    ],
+    "cta": "Save this simple routine map.",
+    "visualNotes": [
+      "Use a three-card routine layout.",
+      "Animate product placement into the middle card.",
+      "Keep the text large and beginner-friendly."
+    ],
+    "productName": "Dive-In Low Molecular Hyaluronic Acid Serum",
+    "brand": "Torriden",
+    "skinType": "dehydrated",
+    "concerns": [
+      "tight feel",
+      "dull-looking skin"
+    ],
+    "contentAngle": "routine_builder"
+  },
+  {
+    "id": "promo-008-avoid-mistake-red-blemish-cream",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "One common skincare mistake: changing everything at once.",
+    "problem": "If every step is new, your skin feedback gets noisy.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "One common skincare mistake: changing everything at once.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: combination",
+        "voiceover": "If every step is new, your skin feedback gets noisy.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: visible redness and heavy routine feel",
+        "voiceover": "Pick one concern lane: visible redness and heavy routine feel.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Dr. G pick",
+        "voiceover": "The recommendation is Red Blemish Clear Soothing Cream.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "gel cream",
+        "voiceover": "Add one moisturizer, then wait before changing more. Look for cica complex.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A soothing cream option when the routine needs restraint. Save this before your next routine overhaul.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "One common skincare mistake: changing everything at once.",
+      "If every step is new, your skin feedback gets noisy.",
+      "Pick one concern lane: visible redness and heavy routine feel.",
+      "Dr. G Red Blemish Clear Soothing Cream.",
+      "Add one moisturizer, then wait before changing more.",
+      "Patch test first.",
+      "Save this before your next routine overhaul."
+    ],
+    "caption": "Routine mistake to avoid: swapping every step at once. Test one product at a time, like Dr. G Red Blemish Clear Soothing Cream, and keep notes.",
+    "hashtags": [
+      "#SkincareMistakes",
+      "#KBeautyTips",
+      "#RoutineReset",
+      "#Shorts"
+    ],
+    "cta": "Save this before your next routine overhaul.",
+    "visualNotes": [
+      "Open with too many products dropping into frame.",
+      "Freeze frame on one chosen product.",
+      "End with a simple one-product testing note."
+    ],
+    "productName": "Red Blemish Clear Soothing Cream",
+    "brand": "Dr. G",
+    "skinType": "combination",
+    "concerns": [
+      "visible redness",
+      "heavy routine feel"
+    ],
+    "contentAngle": "avoid_mistake"
+  },
+  {
+    "id": "promo-009-sunscreen-choice-watery-sun-gel",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "The best sunscreen is the one you will actually wear.",
+    "problem": "Sticky texture or white cast worry can make daily SPF harder.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "The best sunscreen is the one you will actually wear.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: combination",
+        "voiceover": "Sticky texture or white cast worry can make daily SPF harder.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: sticky sunscreen feel and daily UV exposure",
+        "voiceover": "Choose around your real friction: sticky sunscreen feel and daily UV exposure.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "Isntree pick",
+        "voiceover": "The recommendation is Hyaluronic Acid Watery Sun Gel SPF50+.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "watery gel",
+        "voiceover": "Look for a watery gel finish that fits your morning. Look for hyaluronic acid.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A watery sunscreen pick for a lighter morning finish. Save this for your next sunscreen comparison.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "The best sunscreen is the one you will actually wear.",
+      "Sticky texture or white cast worry can make daily SPF harder.",
+      "Choose around your real friction: sticky sunscreen feel and daily UV...",
+      "Isntree Hyaluronic Acid Watery Sun Gel SPF50+.",
+      "Look for a watery gel finish that fits your morning.",
+      "Patch test first.",
+      "Save this for your next sunscreen comparison."
+    ],
+    "caption": "Daily SPF gets easier when the texture fits your life. Isntree Hyaluronic Acid Watery Sun Gel SPF50+ is a K-beauty sunscreen option to test.",
+    "hashtags": [
+      "#SunscreenRoutine",
+      "#KBeautySPF",
+      "#SkincareTips",
+      "#YouTubeShorts"
+    ],
+    "cta": "Save this for your next sunscreen comparison.",
+    "visualNotes": [
+      "Compare two texture swatches.",
+      "Show a morning bag or vanity setup.",
+      "End with SPF as the final AM step."
+    ],
+    "productName": "Hyaluronic Acid Watery Sun Gel SPF50+",
+    "brand": "Isntree",
+    "skinType": "combination",
+    "concerns": [
+      "sticky sunscreen feel",
+      "daily UV exposure"
+    ],
+    "contentAngle": "sunscreen_choice"
+  },
+  {
+    "id": "promo-010-oliveyoung-overload-glow-serum",
+    "platformTargets": [
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts"
+    ],
+    "hook": "Too many K-beauty choices? Start with Dark Spot Correcting Glow Serum.",
+    "problem": "The shelf looks exciting, then suddenly impossible.",
+    "sceneScript": [
+      {
+        "scene": 1,
+        "durationSec": 2,
+        "onScreenText": "Stop the scroll",
+        "voiceover": "Too many K-beauty choices? Start with Dark Spot Correcting Glow Serum.",
+        "visual": "Fast product shelf or vanity scroll, then a quick freeze frame."
+      },
+      {
+        "scene": 2,
+        "durationSec": 3,
+        "onScreenText": "Skin type: dull-looking",
+        "voiceover": "The shelf looks exciting, then suddenly impossible.",
+        "visual": "Creator points to one short skin-type label on screen."
+      },
+      {
+        "scene": 3,
+        "durationSec": 3,
+        "onScreenText": "Concern: uneven tone look and post-blemish marks",
+        "voiceover": "Pick one concern first: uneven tone look and post-blemish marks.",
+        "visual": "Close-up of a note card with one clear skin goal."
+      },
+      {
+        "scene": 4,
+        "durationSec": 3,
+        "onScreenText": "AXIS-Y pick",
+        "voiceover": "The recommendation is Dark Spot Correcting Glow Serum.",
+        "visual": "Product hero shot with clean lighting and no crowded background."
+      },
+      {
+        "scene": 5,
+        "durationSec": 3,
+        "onScreenText": "light gel serum",
+        "voiceover": "Make it one clear serum step. Look for niacinamide and squalane.",
+        "visual": "Texture swatch, then product placed into the routine order."
+      },
+      {
+        "scene": 6,
+        "durationSec": 2,
+        "onScreenText": "Patch test first",
+        "voiceover": "A focused serum pick when the shelf feels too loud. Save this before your next Olive Young scroll.",
+        "visual": "End card with product, skin type, and save prompt."
+      }
+    ],
+    "subtitles": [
+      "Too many K-beauty choices? Start with Dark Spot Correcting Glow Serum.",
+      "The shelf looks exciting, then suddenly impossible.",
+      "Pick one concern first: uneven tone look and post-blemish marks.",
+      "AXIS-Y Dark Spot Correcting Glow Serum.",
+      "Make it one clear serum step.",
+      "Patch test first.",
+      "Save this before your next Olive Young scroll."
+    ],
+    "caption": "Choice overload is real. Start with one skin goal and one pick, like AXIS-Y Dark Spot Correcting Glow Serum. Patch test and keep the routine simple.",
+    "hashtags": [
+      "#KBeauty",
+      "#OliveYoungFinds",
+      "#SkincareRoutine",
+      "#BeautyShorts"
+    ],
+    "cta": "Save this before your next Olive Young scroll.",
+    "visualNotes": [
+      "Open on a fast shelf scroll.",
+      "Cut to one product in the center.",
+      "Use simple arrows and one concern label."
+    ],
+    "productName": "Dark Spot Correcting Glow Serum",
+    "brand": "AXIS-Y",
+    "skinType": "dull-looking",
+    "concerns": [
+      "uneven tone look",
+      "post-blemish marks"
+    ],
+    "contentAngle": "oliveyoung_overload"
+  }
+]

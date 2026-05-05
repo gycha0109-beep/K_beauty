@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import { getOpenAiEnvDiagnostics } from "@/lib/openai-env-diagnostics";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import {
   getPremiumReportCookieOptions,
@@ -22,6 +23,17 @@ function getUnauthorizedResponse() {
 }
 
 export async function POST(request) {
+  if (process.env.NODE_ENV !== "production") {
+    console.info(
+      "[full-report] openai-env:diagnostic",
+      getOpenAiEnvDiagnostics({
+        route: "full-report",
+        routeUsesOpenAi: false,
+        routeUsesOpenRouter: false
+      })
+    );
+  }
+
   const verification = verifyWriteAccessToken(
     request.headers.get(WRITE_ACCESS_HEADER)
   );
@@ -50,12 +62,17 @@ export async function POST(request) {
     ...premiumSession.payload.premiumReport,
     topPickFitGauges,
     faceLab: {
+      summary: faceLabLaunch?.paid?.summary || null,
+      faceMood: faceLabLaunch?.paid?.faceMood || null,
       faceSummary: String(faceLabLaunch?.paid?.faceSummary || "").trim(),
       hairDirections: Array.isArray(faceLabLaunch?.paid?.hairDirections) ? faceLabLaunch.paid.hairDirections : [],
       avoidStyles: Array.isArray(faceLabLaunch?.paid?.avoidStyles) ? faceLabLaunch.paid.avoidStyles : [],
       styleKeywords: Array.isArray(faceLabLaunch?.paid?.styleKeywords) ? faceLabLaunch.paid.styleKeywords : [],
       toneDirection: String(faceLabLaunch?.paid?.toneDirection || "").trim(),
-      reasoningLines: Array.isArray(faceLabLaunch?.paid?.reasoningLines) ? faceLabLaunch.paid.reasoningLines : []
+      reasoningLines: Array.isArray(faceLabLaunch?.paid?.reasoningLines) ? faceLabLaunch.paid.reasoningLines : [],
+      practicalGuide: faceLabLaunch?.paid?.practicalGuide || null,
+      sections: Array.isArray(faceLabLaunch?.paid?.sections) ? faceLabLaunch.paid.sections : [],
+      steps: Array.isArray(faceLabLaunch?.paid?.steps) ? faceLabLaunch.paid.steps : []
     },
     meta: {
       source: "premium-session",
