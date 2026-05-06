@@ -43,9 +43,12 @@ export async function POST(request) {
   }
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
-  const premiumSession = verifyPremiumReportSession(premiumCookie);
+  const premiumSession = await verifyPremiumReportSession(premiumCookie);
 
   if (!premiumSession.ok || !premiumSession.payload?.premiumReport) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[full-report] premium session rejected", premiumSession.code);
+    }
     return getUnauthorizedResponse();
   }
 

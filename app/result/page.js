@@ -149,6 +149,8 @@ const resultCopy = {
     resultOverviewTitle: "진단 결과",
     resultOverviewBody: "",
     resultPhotoFallback: "업로드한 사진",
+    photoObservationTitle: "사진 기준 관찰",
+    photoObservationFallback: "사진 분석이 제한되어 설문 답변을 중심으로 정리했습니다.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "Top Pick",
     topPickStepBody: "",
@@ -277,6 +279,8 @@ const resultCopy = {
     resultOverviewTitle: "Your Result",
     resultOverviewBody: "",
     resultPhotoFallback: "Uploaded photo",
+    photoObservationTitle: "Photo-based read",
+    photoObservationFallback: "Photo analysis was limited, so the result is organized mainly around the survey answers.",
     topPickStepKicker: "RESULT STEP 2",
     topPickStepTitle: "Top Pick",
     topPickStepBody: "",
@@ -453,6 +457,16 @@ function getDecisionCopy(locale = "ko") {
   };
 }
 
+function hasKoreanText(value) {
+  return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(String(value || ""));
+}
+
+function getResultLeaveMessage(locale = "ko") {
+  return locale === "en"
+    ? "Do you want to go back to the survey page?"
+    : "설문페이지로 돌아가시겠습니까?";
+}
+
 function getConcernDisplay(form = {}, locale = "ko") {
   const display = getDisplayMap(locale);
   const copy = getResultCopy(locale);
@@ -468,9 +482,21 @@ function getConcernDisplay(form = {}, locale = "ko") {
   return labels.length ? labels.slice(0, 3).join(" · ") : copy.currentConcernBasis;
 }
 
+function getPriorityDisplay(decision = null, form = {}, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const key = decision?.priority?.axis || form?.mainConcern;
+  const label = decision?.priority?.label;
+
+  if (locale === "en") {
+    return display.mainConcern[key] || (hasKoreanText(label) ? getConcernDisplay(form, locale) : label) || getConcernDisplay(form, locale);
+  }
+
+  return label || getConcernDisplay(form, locale);
+}
+
 function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   const display = getDisplayMap(locale);
-  const concernLabel = decision?.priority?.label || getConcernDisplay(form, locale);
+  const concernLabel = getPriorityDisplay(decision, form, locale);
   const skinTypeLabel = display.skinType[form?.skinType] || (locale === "en" ? "Skin" : "피부");
   const directionSummary = getDirectionSummary(form, decision, locale);
 
@@ -479,6 +505,80 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   }
 
   return `${skinTypeLabel} 피부이고 ${concernLabel} 고민이 있어, ${directionSummary}`;
+}
+
+function normalizePhotoObservationsForDisplay(observations, copy, locale = "ko") {
+  const fallbackSummary = copy.photoObservationFallback;
+  const source = observations && typeof observations === "object" ? observations : null;
+  const signals = Array.isArray(source?.signals)
+    ? source.signals
+        .map((item) => ({
+          key: String(item?.key || "").trim(),
+          label: String(item?.label || "").trim(),
+          area: String(item?.area || "").trim(),
+          confidence: ["low", "medium", "high"].includes(item?.confidence) ? item.confidence : "low",
+          description: String(item?.description || "").trim()
+        }))
+        .filter((item) => item.label || item.area || item.description)
+        .slice(0, 3)
+    : [];
+  const summary = String(source?.summary || "").trim() || fallbackSummary;
+  const surveyAlignment = source?.surveyAlignment && typeof source.surveyAlignment === "object"
+    ? {
+        status: String(source.surveyAlignment.status || "unknown").trim(),
+        note: String(source.surveyAlignment.note || "").trim()
+      }
+    : { status: "unknown", note: "" };
+
+  return {
+    summary,
+    signals,
+    surveyAlignment,
+    isFallback: !signals.length && summary === fallbackSummary
+  };
+}
+
+function buildPhotoObservationSignalTitle(signal) {
+  const label = String(signal?.label || "").trim();
+  const area = String(signal?.area || "").trim();
+
+  if (label && area) {
+    return `${label} · ${area}`;
+  }
+
+  return label || area || String(signal?.description || "").trim();
+}
+
+function buildPhotoRecommendationLine(observations, priorityKey, locale = "ko") {
+  const source = observations && typeof observations === "object" ? observations : null;
+  const signals = Array.isArray(source?.signals) ? source.signals : [];
+  const selected =
+    signals.find((signal) => signal?.key === priorityKey) ||
+    signals.find((signal) => signal?.confidence !== "low") ||
+    signals[0] ||
+    null;
+
+  if (selected) {
+    const label = String(selected.label || "").trim();
+    const area = String(selected.area || "").trim();
+    const weak = selected.confidence === "low";
+
+    if (locale === "en") {
+      const cue = area ? `${label.toLowerCase()} around ${area}` : label.toLowerCase();
+      return `From the photo, ${cue || "a visible skin cue"} ${weak ? "appears lightly" : "also appears"}, so the recommendation keeps that visual tendency as supporting context.`;
+    }
+
+    const cue = area ? `${area} 쪽 ${label}` : label;
+    return `사진 기준으로 ${cue || "피부 경향"}이 ${weak ? "약하게 보이는 편이라" : "함께 보여"}, 이 시각적 경향을 보조 근거로 함께 봤습니다.`;
+  }
+
+  if (source?.surveyAlignment?.status === "unknown") {
+    return locale === "en"
+      ? "Because photo detail was limited, the recommendation keeps the survey answers as the main basis."
+      : "사진 분석이 제한된 경우에는 설문에서 확인된 흐름을 우선 기준으로 제품을 정리했습니다.";
+  }
+
+  return "";
 }
 
 function buildRoutinePreviewItems(result, locale = "ko") {
@@ -514,14 +614,14 @@ function buildFinalReportPreviewSections(locale = "ko") {
   if (isEnglish) {
     return [
       {
-        key: "alternative_strategy",
-        title: "Alternative product strategy",
-        body: "We explain when and how to switch products instead of relying only on the Top Pick."
-      },
-      {
         key: "routine_execution",
         title: "Morning · night execution routine",
         body: "We organize which product to use, in what order, and at which step."
+      },
+      {
+        key: "situation_routines",
+        title: "Situation-based routine changes",
+        body: "We adjust the routine for sensitive days, breakout days, outdoor-heavy days, and makeup days."
       },
       {
         key: "avoid_combinations",
@@ -529,9 +629,9 @@ function buildFinalReportPreviewSections(locale = "ko") {
         body: "We point out pairings that can increase irritation or make the routine feel too heavy."
       },
       {
-        key: "situation_routines",
-        title: "Situation-based routine changes",
-        body: "We adjust the routine for sensitive days, breakout days, outdoor-heavy days, and makeup days."
+        key: "alternative_strategy",
+        title: "Alternative product strategy",
+        body: "We explain when and how to switch products instead of relying only on the Top Pick."
       },
       {
         key: "face_lab_expanded",
@@ -543,14 +643,14 @@ function buildFinalReportPreviewSections(locale = "ko") {
 
   return [
     {
-      key: "alternative_strategy",
-      title: "대체 제품 사용 전략",
-      body: "Top Pick 대신 어떤 제품을 언제 바꿔 쓰면 좋은지 정리합니다."
-    },
-    {
       key: "routine_execution",
       title: "아침·저녁 실행 루틴",
       body: "제품을 어느 순서로, 어느 단계에서 쓰면 되는지 정리합니다."
+    },
+    {
+      key: "situation_routines",
+      title: "상황별 루틴 변형",
+      body: "민감한 날, 트러블 올라온 날, 야외활동 많은 날, 메이크업하는 날 기준으로 루틴을 바꿔줍니다."
     },
     {
       key: "avoid_combinations",
@@ -558,9 +658,9 @@ function buildFinalReportPreviewSections(locale = "ko") {
       body: "같이 쓰면 자극이 커지거나 루틴이 무거워지는 조합을 알려줍니다."
     },
     {
-      key: "situation_routines",
-      title: "상황별 루틴 변형",
-      body: "민감한 날, 트러블 올라온 날, 야외활동 많은 날, 메이크업하는 날 기준으로 루틴을 바꿔줍니다."
+      key: "alternative_strategy",
+      title: "대체 제품 사용 전략",
+      body: "Top Pick 대신 어떤 제품을 언제 바꿔 쓰면 좋은지 정리합니다."
     },
     {
       key: "face_lab_expanded",
@@ -576,18 +676,18 @@ function buildRoutineDirectionCards(result, locale = "ko") {
 
   const copy = {
     ko: {
-      morning: "Morning",
-      night: "Night",
+      morning: "아침",
+      night: "저녁",
       core: "루틴 방향"
     },
     en: {
-      morning: "Morning Direction",
-      night: "Night Direction",
+      morning: "Morning",
+      night: "Night",
       core: "Routine Direction"
     }
   }[locale] || {
-    morning: "Morning",
-    night: "Night",
+    morning: "아침",
+    night: "저녁",
     core: "루틴 방향"
   };
 
@@ -702,6 +802,32 @@ function normalizeResultCategory(product = {}) {
   }
 
   return category;
+}
+
+function getProductStepLabel(product = {}, locale = "ko") {
+  const normalized = normalizeResultCategory(product);
+  const rawStep = String(product?.step || "").trim();
+  const labels = locale === "en"
+    ? {
+        cleanser: "Cleanser",
+        toner_essence: "Toner / Essence",
+        serum_ampoule: "Serum",
+        moisturizer: "Moisturizer",
+        sunscreen: "Sunscreen"
+      }
+    : {
+        cleanser: "클렌저",
+        toner_essence: "토너 / 에센스",
+        serum_ampoule: "세럼",
+        moisturizer: "보습제",
+        sunscreen: "선크림"
+      };
+
+  if (locale === "en" && hasKoreanText(rawStep)) {
+    return labels[normalized] || "Product";
+  }
+
+  return rawStep || labels[normalized] || (locale === "en" ? "Product" : "제품");
 }
 
 function getCategoryFamilyForDisplay(category) {
@@ -856,7 +982,7 @@ function getTopPickSummary(product, form, decision = null, locale = "ko") {
   const map = getDisplayMap(locale);
   const copy = getResultCopy(locale);
   const concernKey = decision?.priority?.axis || form?.mainConcern;
-  const concern = decision?.priority?.label || map.mainConcern[concernKey] || copy.currentConcern;
+  const concern = getPriorityDisplay(decision, form, locale) || map.mainConcern[concernKey] || copy.currentConcern;
   const skinType = map.skinType[form?.skinType] || copy.currentSkin;
   const category = normalizeResultCategory(product);
 
@@ -946,18 +1072,19 @@ function uniqueItems(items) {
   return Array.from(new Set(items.filter(Boolean)));
 }
 
-function getProductReasonSentences(product) {
+function getProductReasonSentences(product, locale = "ko") {
   const fromReason = splitSentences(product?.reason);
   const fromPicked = Array.isArray(product?.why_picked)
     ? product.why_picked.flatMap((item) => splitSentences(item))
     : [];
   const caution = product?.caution_note ? splitSentences(product.caution_note) : [];
 
-  return uniqueItems([...fromReason, ...fromPicked, ...caution]);
+  const sentences = uniqueItems([...fromReason, ...fromPicked, ...caution]);
+  return locale === "en" ? sentences.filter((item) => !hasKoreanText(item)) : sentences;
 }
 
-function getProductPreviewLines(product, count = 1) {
-  const sentences = getProductReasonSentences(product);
+function getProductPreviewLines(product, count = 1, locale = "ko") {
+  const sentences = getProductReasonSentences(product, locale);
   return sentences.slice(0, count);
 }
 
@@ -1207,6 +1334,30 @@ function getEspeciallyGoodFor(product, form, locale = "ko") {
   return copy.especiallyDefault;
 }
 
+function getLocalizedRoutineWarnings(result = null, form = {}, locale = "ko") {
+  const warnings = Array.isArray(result?.warnings) ? result.warnings.filter(Boolean).slice(0, 2) : [];
+
+  if (locale !== "en") {
+    return warnings;
+  }
+
+  const axis = result?.priority?.axis || form?.mainConcern || "";
+  const warningMap = {
+    uv: ["Do not replace sunscreen reapplication with a thicker morning base or heavier makeup."],
+    oiliness: ["Do not over-cleanse just because shine rises through the day; keep the reset gentle."],
+    pores: ["Avoid stacking exfoliating pads, pore care, and strong cleansing in the same routine."],
+    dehydration: ["Do not make the routine heavier too quickly; cleanse gently and add hydration in thin layers."],
+    acne: ["Do not stack spot care, exfoliation, and strong active serums on the same night."],
+    uneven_tone: ["Do not add multiple tone-correction steps at once when the skin already feels unsettled."],
+    redness: ["On red or reactive days, avoid hot water, strong rubbing, and strong cleansing in the same routine."],
+    barrier: ["When the barrier feels unsettled, avoid exfoliating steps and high-friction cleansing in the same routine."]
+  };
+
+  return warnings.some(hasKoreanText) || !warnings.length
+    ? warningMap[axis] || ["Keep the routine simple first, and avoid adding multiple corrective steps at the same time."]
+    : warnings;
+}
+
 function getTopPickSignalLabels(product, locale = "ko") {
   const display = getDisplayMap(locale);
   const copy = getResultCopy(locale);
@@ -1321,6 +1472,7 @@ function ResultContent() {
   const display = getDisplayMap(locale);
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
+  const [faceLabFull, setFaceLabFull] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
   const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
@@ -1331,6 +1483,7 @@ function ResultContent() {
   useEffect(() => {
     const saved = sessionStorage.getItem("skinTestResult");
     const savedSubmission = sessionStorage.getItem("skinTestSubmission");
+    const savedFaceLabFull = sessionStorage.getItem("skinTestFaceLabFull");
 
     if (saved) {
       try {
@@ -1345,6 +1498,14 @@ function ResultContent() {
         setSubmission(JSON.parse(savedSubmission));
       } catch {
         setSubmission(null);
+      }
+    }
+
+    if (savedFaceLabFull) {
+      try {
+        setFaceLabFull(JSON.parse(savedFaceLabFull));
+      } catch {
+        setFaceLabFull(null);
       }
     }
 
@@ -1388,9 +1549,7 @@ function ResultContent() {
       return;
     }
 
-    const message = locale === "en"
-      ? "Do you want to go back to the survey page?"
-      : "설문페이지로 돌아가시겠습니까?";
+    const message = getResultLeaveMessage(locale);
 
     window.history.pushState({ resultGuard: true }, "", window.location.href);
 
@@ -1422,7 +1581,7 @@ function ResultContent() {
   }
 
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
-  const faceLabLaunch = buildFaceLabLaunchData(result?.faceLab, locale);
+  const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
   const overviewCards = [
     {
       label: locale === "en" ? "Skin Type" : "피부 타입",
@@ -1430,7 +1589,7 @@ function ResultContent() {
     },
     {
       label: decisionCopy.priority,
-      value: result?.priority?.label || getConcernDisplay(submission?.form || {}, locale)
+      value: getPriorityDisplay(result, submission?.form || {}, locale)
     },
     {
       label: locale === "en" ? "Routine Structure" : "추천 루틴 구조",
@@ -1439,7 +1598,7 @@ function ResultContent() {
   ];
   const routineDirectionCards = buildRoutineDirectionCards(result, locale);
   const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
-  const routineWarnings = Array.isArray(result?.warnings) ? result.warnings.filter(Boolean).slice(0, 2) : [];
+  const routineWarnings = getLocalizedRoutineWarnings(result, submission?.form || {}, locale);
   const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
@@ -1461,13 +1620,20 @@ function ResultContent() {
     resultSteps.push({
       id: "overview",
       content: (
-        <ResultOverviewStep
-          copy={copy}
-          photoUrl={photoUrl}
-          photoAlt={submission?.imageName || copy.resultPhotoFallback}
-          summaryCards={overviewCards}
-          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
-        />
+        <section className="space-y-4">
+          <ResultOverviewStep
+            copy={copy}
+            photoUrl={photoUrl}
+            photoAlt={submission?.imageName || copy.resultPhotoFallback}
+            summaryCards={overviewCards}
+            overviewSummary={getOverviewSummary(submission?.form, result, locale)}
+          />
+          <PhotoObservationCard
+            observations={result.photoObservations}
+            copy={copy}
+            locale={locale}
+          />
+        </section>
       )
     });
 
@@ -1629,6 +1795,11 @@ function ResultContent() {
 
               <Link
                 href={homePath}
+                onClick={(event) => {
+                  if (result && !window.confirm(getResultLeaveMessage(locale))) {
+                    event.preventDefault();
+                  }
+                }}
                 className="ui-button-secondary shrink-0 bg-white/88 px-4 py-2.5 text-xs font-medium dark:bg-zinc-900/88"
               >
                 {copy.tryAgain}
@@ -1731,6 +1902,52 @@ function ResultStepLead({ kicker, title, body }) {
       <p className="ui-kicker">{kicker}</p>
       <h2 className="ui-title mt-2 text-[1.55rem] sm:text-[1.7rem]">{title}</h2>
       {body ? <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p> : null}
+    </section>
+  );
+}
+
+function PhotoObservationCard({ observations, copy, locale = "ko" }) {
+  const normalized = normalizePhotoObservationsForDisplay(observations, copy, locale);
+  const alignment = normalized.surveyAlignment;
+  const showAlignmentNote = ["mixed", "conflict"].includes(alignment.status) && alignment.note;
+
+  return (
+    <section className="ui-card p-5">
+      <p className="ui-kicker">{copy.photoObservationTitle}</p>
+      <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+        {normalized.summary || copy.photoObservationFallback}
+      </p>
+
+      {normalized.signals.length ? (
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          {normalized.signals.map((signal, index) => {
+            const title = buildPhotoObservationSignalTitle(signal);
+            const isLowConfidence = signal.confidence === "low";
+
+            return (
+              <div
+                key={`${signal.key || "photo"}-${title}-${index}`}
+                className={`rounded-[1rem] border px-3 py-3 ${
+                  isLowConfidence
+                    ? "border-zinc-200/70 bg-zinc-50/60 text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-950/35 dark:text-zinc-400"
+                    : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300"
+                }`}
+              >
+                <p className="text-xs font-semibold leading-5 text-zinc-900 dark:text-zinc-100">{title}</p>
+                {signal.description ? (
+                  <p className="mt-1.5 text-[11px] leading-5">{signal.description}</p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {showAlignmentNote ? (
+        <p className="mt-4 rounded-[1rem] border border-zinc-200 bg-zinc-50 px-3 py-3 text-xs leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+          {alignment.note}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1888,11 +2105,17 @@ function ProductDecisionCard({
   if (featured) {
     const topPickHeadline = getTopPickHeadline(form, decision, locale);
     const topPickSummary = getTopPickSummary(product, form, decision, locale);
+    const photoRecommendationLine = buildPhotoRecommendationLine(
+      decision?.photoObservations,
+      decision?.priority?.axis || form?.mainConcern,
+      locale
+    );
     const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
     const purchaseLink = getPurchaseLinkInfo(product, locale);
     const priceLabel = getPriceLabel(product.price_range, locale);
-    const topPickSignals = [product.step, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
-    const detailLines = getProductReasonSentences(product);
+    const productStepLabel = getProductStepLabel(product, locale);
+    const topPickSignals = [productStepLabel, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
+    const detailLines = getProductReasonSentences(product, locale);
 
     return (
       <div
@@ -1948,6 +2171,11 @@ function ProductDecisionCard({
               <span className="font-semibold text-zinc-900 dark:text-zinc-100">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
             <p className="mt-4 max-w-2xl text-[15px] leading-7 text-zinc-700 dark:text-zinc-300">{topPickSummary}</p>
+            {photoRecommendationLine ? (
+              <p className="mt-3 max-w-2xl rounded-[1rem] bg-zinc-50 px-3 py-3 text-sm leading-6 text-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-400">
+                {photoRecommendationLine}
+              </p>
+            ) : null}
 
             {allowExpand ? (
               <button
@@ -2029,9 +2257,10 @@ function ProductDecisionCard({
 
   const purchaseLink = getPurchaseLinkInfo(product, locale);
   const priceLabel = getPriceLabel(product.price_range, locale);
-  const cardTags = [product.step, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean).slice(0, 2);
-  const previewLine = getProductPreviewLines(product, 1)[0] || getEspeciallyGoodFor(product, form, locale);
-  const detailLines = getProductReasonSentences(product);
+  const productStepLabel = getProductStepLabel(product, locale);
+  const cardTags = [productStepLabel, ...getTopPickSignalLabels(product, locale).slice(0, 1)].filter(Boolean).slice(0, 2);
+  const previewLine = getProductPreviewLines(product, 1, locale)[0] || getEspeciallyGoodFor(product, form, locale);
+  const detailLines = getProductReasonSentences(product, locale);
 
   return (
     <div
@@ -2051,7 +2280,7 @@ function ProductDecisionCard({
     >
       <div className="grid min-h-[236px] gap-3 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-stretch">
         <div className="flex min-h-full flex-col">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{product.step}</p>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{productStepLabel}</p>
           <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{product.brand}</p>
           {priceLabel ? <p className="mt-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}
@@ -2148,7 +2377,7 @@ function ProductDecisionCard({
 
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_132px] sm:items-start">
               <div>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{product.step}</p>
+                <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{productStepLabel}</p>
                 <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{product.name}</h3>
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{product.brand}</p>
                 {priceLabel ? <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}

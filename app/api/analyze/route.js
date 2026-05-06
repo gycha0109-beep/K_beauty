@@ -14,7 +14,7 @@ import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } f
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
-const PHOTO_ANALYSIS_MAX_TOKENS = 600;
+const PHOTO_ANALYSIS_MAX_TOKENS = 900;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
 
 const ANALYZE_COPY = {
@@ -180,6 +180,7 @@ Required JSON shape:
 Rules:
 - Product ids are fixed and must match the provided ids only.
 - Ground every reason in the provided survey evidence, photo evidence, decision priority, and the product's existing category/role.
+- Use photoObservations as cautious visual support when it is available, but do not overstate photo findings.
 - You may rewrite explanation only. You may not choose, replace, reorder, rename, or invent products.
 - Use the detailed survey block and the product-step survey cues block together. Do not ignore step-specific survey details.
 - Every reason must follow this structure:
@@ -214,6 +215,7 @@ Rules:
 - Keep comparison_reason to 1 sentence max.
 - Do not use ranking language like "won", "beat", or "first place".
 - If photo evidence is limited, lean more on survey evidence rather than inventing visual claims.
+- If photoObservations has usable signals, weave at most one cautious photo-based phrase into the reason.
 - productExplanations must contain exactly ${selectedProducts.length} items.
 `.trim();
 }
@@ -544,6 +546,34 @@ function sanitizeRoutineStepForPremium(item) {
   };
 }
 
+function sanitizePhotoObservationsForPremium(observations) {
+  if (!observations || typeof observations !== "object") {
+    return null;
+  }
+
+  return {
+    summary: String(observations.summary || "").trim(),
+    signals: Array.isArray(observations.signals)
+      ? observations.signals
+          .map((item) => ({
+            key: String(item?.key || "").trim(),
+            label: String(item?.label || "").trim(),
+            area: String(item?.area || "").trim(),
+            confidence: String(item?.confidence || "").trim(),
+            description: String(item?.description || "").trim()
+          }))
+          .filter((item) => item.key && (item.label || item.area || item.description))
+          .slice(0, 3)
+      : [],
+    surveyAlignment: observations.surveyAlignment && typeof observations.surveyAlignment === "object"
+      ? {
+          status: String(observations.surveyAlignment.status || "").trim(),
+          note: String(observations.surveyAlignment.note || "").trim()
+        }
+      : null
+  };
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -558,6 +588,7 @@ function sanitizePremiumReport(report) {
       ? report.supportingProducts.map(sanitizeSupportingProductForPremium).filter(Boolean).slice(0, 3)
       : [],
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
+    photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
@@ -595,14 +626,22 @@ function sanitizePremiumReport(report) {
       : [],
     budgetAlternatives: Array.isArray(report.budgetAlternatives)
       ? report.budgetAlternatives
-          .map((item) => ({
-            id: item?.id || "",
-            name: item?.name || "",
-            brand: item?.brand || "",
-            step: item?.step || "",
-            price_range: item?.price_range || "",
-            summary: item?.summary || ""
-          }))
+            .map((item) => ({
+              id: item?.id || "",
+              name: item?.name || "",
+              brand: item?.brand || "",
+              category: item?.category || "",
+              step: item?.step || "",
+              texture: item?.texture || "",
+              finish: item?.finish || "",
+              use_time: item?.use_time || "",
+              price_range: item?.price_range || "",
+              price_min: Number.isFinite(Number(item?.price_min)) ? Number(item.price_min) : null,
+              price_max: Number.isFinite(Number(item?.price_max)) ? Number(item.price_max) : null,
+              buy_link: item?.buy_link || "",
+              image_url: item?.image_url || "",
+              summary: item?.summary || ""
+            }))
           .filter((item) => item.id || item.name)
           .slice(0, 3)
       : []
@@ -622,6 +661,7 @@ function buildFreeDecisionPayload(decision) {
     night: Array.isArray(decision.night) ? decision.night.slice(0, 3) : [],
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
+    photoObservations: decision.photoObservations || null,
     surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : []
   };
 }
@@ -662,11 +702,12 @@ async function fetchOpenAiJson({ apiKey, body, stage }) {
   return safeParse(content);
 }
 
-async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model }) {
+async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model, formInput }) {
   if (!apiKey || !imageDataUrl) {
     return buildFallbackPhotoAnalysis(locale);
   }
 
+  const photoPrompt = createPhotoEvidencePrompt(locale, buildSurveyContextForLlm(formInput));
   const parsed = await fetchOpenAiJson({
     apiKey,
     stage: "photo-evidence",
@@ -678,14 +719,14 @@ async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model }) {
       messages: [
         {
           role: "system",
-          content: createPhotoEvidencePrompt(locale)
+          content: photoPrompt
         },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: createPhotoEvidencePrompt(locale)
+              text: photoPrompt
             },
             {
               type: "image_url",
@@ -753,6 +794,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
                 pmFocus: decision.pmFocus,
                 warnings: decision.warnings,
                 photoEvidence: decision.photoEvidence,
+                photoObservations: decision.photoObservations,
                 surveyEvidence: decision.surveyEvidence
               },
               null,
@@ -902,7 +944,8 @@ export async function POST(request) {
           apiKey,
           imageDataUrl,
           locale,
-          model
+          model,
+          formInput
         });
       } catch (photoError) {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
@@ -949,7 +992,7 @@ export async function POST(request) {
 
     const publicDecision = buildFreeDecisionPayload(decision);
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
-    const premiumSessionToken = createPremiumReportSession({
+    const premiumSessionToken = await createPremiumReportSession({
       premiumReport,
       locale
     });
@@ -959,7 +1002,8 @@ export async function POST(request) {
         source: "skin-match-v2",
         notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
         explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
-        photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback"
+        photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback",
+        photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback"
       }
     });
 
