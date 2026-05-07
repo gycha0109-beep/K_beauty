@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
@@ -1882,6 +1883,16 @@ function SituationAdjustmentStep({ variants = [], avoidItems = [], copy }) {
   );
 }
 
+function buildStepAdvanceLabel(step, locale = "ko") {
+  const label = String(step?.label || "").trim();
+
+  if (!label) {
+    return locale === "en" ? "See next section" : "다음 항목 보기";
+  }
+
+  return locale === "en" ? `See ${label}` : `${label} 보기`;
+}
+
 function SkinMatchStepReport({
   freeResult,
   report,
@@ -1896,6 +1907,7 @@ function SkinMatchStepReport({
   budgetSectionTitle
 }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const router = useRouter();
   const labels = locale === "en"
     ? {
         stepKicker: "SKIN MATCH STEP",
@@ -1951,6 +1963,7 @@ function SkinMatchStepReport({
           content: (
             <section className="ui-card p-6">
               <RoutineTimelineGroup
+                key="skin-match-morning-routine"
                 title={copy.morning}
                 steps={morningSteps}
                 copy={copy}
@@ -1967,6 +1980,7 @@ function SkinMatchStepReport({
           content: (
             <section className="ui-card p-6">
               <RoutineTimelineGroup
+                key="skin-match-night-routine"
                 title={copy.night}
                 steps={nightSteps}
                 copy={copy}
@@ -2007,6 +2021,8 @@ function SkinMatchStepReport({
   const maxStepIndex = Math.max(steps.length - 1, 0);
   const currentStepIndex = Math.min(activeStepIndex, maxStepIndex);
   const activeStep = steps[currentStepIndex];
+  const nextStep = currentStepIndex < maxStepIndex ? steps[currentStepIndex + 1] : null;
+  const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.backResult;
 
   useEffect(() => {
     if (activeStepIndex > maxStepIndex) {
@@ -2051,32 +2067,23 @@ function SkinMatchStepReport({
 
       {activeStep.content}
 
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => setActiveStepIndex((current) => Math.max(current - 1, 0))}
-          disabled={currentStepIndex === 0}
-          className="ui-button-secondary min-h-12 px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {labels.previous}
-        </button>
-        {currentStepIndex === maxStepIndex ? (
-          <Link
-            href={getResultPath(locale)}
-            className="ui-button-primary min-h-12 justify-center px-4 py-3 text-sm font-semibold"
-          >
-            {labels.backResult}
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setActiveStepIndex((current) => Math.min(current + 1, maxStepIndex))}
-            className="ui-button-primary min-h-12 px-4 py-3 text-sm font-semibold"
-          >
-            {labels.next}
-          </button>
-        )}
-      </div>
+      <ResultBottomCTA
+        label={primaryLabel}
+        onClick={() => {
+          if (currentStepIndex === maxStepIndex) {
+            router.push(getResultPath(locale));
+            return;
+          }
+
+          setActiveStepIndex((current) => Math.min(current + 1, maxStepIndex));
+        }}
+        previousLabel={currentStepIndex > 0 ? labels.previous : null}
+        onPrevious={
+          currentStepIndex > 0
+            ? () => setActiveStepIndex((current) => Math.max(current - 1, 0))
+            : null
+        }
+      />
     </section>
   );
 }
@@ -2293,28 +2300,78 @@ function RoutineTimelineCard({ step, copy, locale = "ko" }) {
 }
 
 function RoutineTimelineGroup({ title, steps, copy, locale = "ko" }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [steps.length, title]);
+
   if (!steps.length) {
     return null;
   }
 
+  const displaySteps = steps.map((step) => ({
+    ...step,
+    stepName: normalizeRoutineStepTitle(step, title, steps.length, locale)
+  }));
+  const maxIndex = Math.max(displaySteps.length - 1, 0);
+  const currentIndex = Math.min(activeIndex, maxIndex);
+  const activeStep = displaySteps[currentIndex];
+  const moveTo = (nextIndex) => setActiveIndex(Math.max(0, Math.min(maxIndex, nextIndex)));
+
   return (
     <div className="space-y-3">
-      <p className="ui-kicker">{title}</p>
-      {steps.map((step) => {
-        const displayStep = {
-          ...step,
-          stepName: normalizeRoutineStepTitle(step, title, steps.length, locale)
-        };
+      <div className="flex items-center justify-between gap-3">
+        <p className="ui-kicker">{title}</p>
+        <span className="ui-chip-compact">{currentIndex + 1} / {displaySteps.length}</span>
+      </div>
 
-        return (
+      {displaySteps.length > 1 ? (
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => moveTo(currentIndex - 1)}
+            disabled={currentIndex === 0}
+            className="ui-button-secondary flex h-9 w-9 shrink-0 items-center justify-center p-0 text-lg font-semibold disabled:cursor-not-allowed disabled:opacity-35"
+            aria-label={locale === "en" ? "Previous routine step" : "이전 루틴 단계"}
+          >
+            ‹
+          </button>
+          <div className="flex flex-1 justify-center gap-1.5">
+            {displaySteps.map((step, index) => (
+              <button
+                key={`${title}-dot-${step.order}-${index}`}
+                type="button"
+                onClick={() => moveTo(index)}
+                className={`h-1.5 rounded-full transition ${
+                  index === currentIndex
+                    ? "w-8 bg-zinc-900 dark:bg-zinc-100"
+                    : "w-3 bg-zinc-200 dark:bg-zinc-800"
+                }`}
+                aria-label={`${step.stepName || title} ${index + 1}`}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => moveTo(currentIndex + 1)}
+            disabled={currentIndex === maxIndex}
+            className="ui-button-secondary flex h-9 w-9 shrink-0 items-center justify-center p-0 text-lg font-semibold disabled:cursor-not-allowed disabled:opacity-35"
+            aria-label={locale === "en" ? "Next routine step" : "다음 루틴 단계"}
+          >
+            ›
+          </button>
+        </div>
+      ) : null}
+
+      {activeStep ? (
         <RoutineTimelineCard
-          key={`${title}-${displayStep.order}-${displayStep.stepName}`}
-          step={displayStep}
+          key={`${title}-${activeStep.order}-${activeStep.stepName}`}
+          step={activeStep}
           copy={copy}
           locale={locale}
         />
-        );
-      })}
+      ) : null}
     </div>
   );
 }
@@ -3025,7 +3082,7 @@ export default function FullReportPage() {
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-20 pt-4 sm:px-6 sm:pt-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-4">
           <header className="ui-card p-6">
             <div className="flex items-start justify-between gap-3">
