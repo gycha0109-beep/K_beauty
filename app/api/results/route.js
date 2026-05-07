@@ -18,15 +18,7 @@ const SAVE_RESULTS_LIMIT = 10;
 const SAVE_RESULTS_WINDOW_MS = 10 * 60 * 1000;
 const USER_ID_COLUMN_SUPPORT = new Map();
 
-function getResultSaveErrorMessage(error) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  if (typeof error?.message === "string" && error.message) {
-    return error.message;
-  }
-
+function getResultSaveErrorMessage() {
   return "Failed to save result.";
 }
 
@@ -142,7 +134,7 @@ export async function POST(request) {
 
     if (!supabase) {
       return NextResponse.json(
-        { success: false, error: "Supabase environment variables are missing." },
+        { success: false, error: getResultSaveErrorMessage() },
         { status: 500 }
       );
     }
@@ -224,7 +216,7 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: false,
-        error: getResultSaveErrorMessage(error)
+        error: getResultSaveErrorMessage()
       },
       { status: 500 }
     );

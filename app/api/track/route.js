@@ -12,7 +12,14 @@ const TRACK_LIMIT = 50;
 const TRACK_WINDOW_MS = 10 * 60 * 1000;
 const ALLOWED_EVENTS = new Set([
   "view_result",
-  "feedback_response"
+  "feedback_response",
+  "click_full_report_cta",
+  "click_top_pick",
+  "click_buy_link",
+  "click_product_card",
+  "view_full_report",
+  "view_face_lab",
+  "click_share"
 ]);
 
 function normalizeOptionalString(value, maxLength) {

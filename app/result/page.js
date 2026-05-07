@@ -1725,6 +1725,7 @@ function ResultContent() {
             <FaceShapePreviewCard
               copy={copy}
               launchData={faceLabLaunch}
+              locale={locale}
             />
           </section>
         )
@@ -2142,7 +2143,7 @@ function ProductDecisionCard({
               </div>
 
             <p className="mt-5 text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">{topPickHeadline}</p>
-            <h2 className="mt-3 text-[2rem] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
+            <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
               {product.name}
             </h2>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 sm:text-[15px]">{product.brand}</p>
@@ -2281,7 +2282,7 @@ function ProductDecisionCard({
       <div className="grid min-h-[236px] gap-3 sm:grid-cols-[minmax(0,1fr)_112px] sm:items-stretch">
         <div className="flex min-h-full flex-col">
           <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{productStepLabel}</p>
-          <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
+          <p className="mt-2 break-words text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
           <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{product.brand}</p>
           {priceLabel ? <p className="mt-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}
 
@@ -2378,7 +2379,7 @@ function ProductDecisionCard({
             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_132px] sm:items-start">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{productStepLabel}</p>
-                <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{product.name}</h3>
+                <h3 className="mt-2 break-words text-xl font-semibold leading-snug tracking-tight text-zinc-900 dark:text-zinc-100">{product.name}</h3>
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{product.brand}</p>
                 {priceLabel ? <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">{priceLabel}</p> : null}
 

@@ -125,7 +125,7 @@ export default function HomePage() {
     }
 
     const params = new URLSearchParams(window.location.search);
-    setIsDevMode(params.get("dev") === "1");
+    setIsDevMode(process.env.NODE_ENV !== "production" && params.get("dev") === "1");
   }, []);
 
   useEffect(() => {

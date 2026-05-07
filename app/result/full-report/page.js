@@ -5,7 +5,11 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
-import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import {
+  buildFaceLabLaunchData,
+  formatFaceLabDisplayList,
+  formatFaceLabDisplayText
+} from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { clearWriteAccessToken, readWriteAccessToken } from "@/lib/write-access-client";
@@ -351,7 +355,78 @@ function hasKoreanText(value) {
 }
 
 function compactText(value) {
-  return String(value || "").replace(/\s+/g, " ").trim();
+  if (value == null) {
+    return "";
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value).replace(/\s+/g, " ").trim();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => compactText(item)).filter(Boolean).join(" ");
+  }
+
+  if (typeof value === "object") {
+    const preferredKeys = [
+      "text",
+      "body",
+      "summary",
+      "note",
+      "description",
+      "reason",
+      "label",
+      "title",
+      "value",
+      "content",
+      "en",
+      "ko"
+    ];
+
+    for (const key of preferredKeys) {
+      const text = compactText(value[key]);
+
+      if (text) {
+        return text;
+      }
+    }
+
+    return "";
+  }
+
+  return "";
+}
+
+function compactLocalizedText(value, locale = "ko") {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return compactText(value);
+  }
+
+  const preferredKeys = [
+    locale,
+    locale === "en" ? "english" : "korean",
+    "text",
+    "body",
+    "summary",
+    "note",
+    "description",
+    "reason",
+    "label",
+    "title",
+    "value",
+    "content",
+    locale === "en" ? "ko" : "en"
+  ];
+
+  for (const key of preferredKeys) {
+    const text = compactText(value[key]);
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return compactText(value);
 }
 
 function uniqueDisplayTexts(items = []) {
@@ -571,12 +646,41 @@ function buildTopPickWhyText(product = {}, result = {}, locale = "ko") {
 }
 
 function buildTopPickEvidenceText(result = {}, locale = "ko") {
+  const photoSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
+  const signals = Array.isArray(result?.photoObservations?.signals)
+    ? result.photoObservations.signals
+    : Array.isArray(result?.premiumReport?.photoObservations?.signals)
+      ? result.premiumReport.photoObservations.signals
+      : [];
+  const firstSignal = signals.find((signal) => compactLocalizedText(signal?.label, locale) || compactLocalizedText(signal?.area, locale));
+  const alignment = result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null;
+  const hasMixedPhotoSurvey = ["mixed", "conflict"].includes(String(alignment?.status || ""));
+
+  if (photoSummary && !/제한|limited/i.test(photoSummary)) {
+    if (hasMixedPhotoSurvey && alignment?.note) {
+      return compactLocalizedText(alignment.note, locale);
+    }
+
+    return locale === "en"
+      ? `The photo read is used as supporting context: ${photoSummary}`
+      : `사진 기준으로 ${photoSummary} 이 흐름을 1순위 제품 설명의 보조 근거로 함께 반영했습니다.`;
+  }
+
+  if (firstSignal) {
+    const label = compactLocalizedText(firstSignal.label, locale);
+    const area = compactLocalizedText(firstSignal.area, locale);
+
+    return locale === "en"
+      ? `The photo shows a ${label || "skin"} tendency${area ? ` around ${area}` : ""}, so the routine keeps that read as supporting context.`
+      : `사진 기준으로 ${area ? `${area} 쪽 ` : ""}${label || "피부"} 경향이 함께 보여, 이 흐름을 루틴 방향에 보조로 반영했습니다.`;
+  }
+
   const evidenceSources = [
     ...(Array.isArray(result?.surveyEvidence) ? result.surveyEvidence : []),
     ...(Array.isArray(result?.photoEvidence) ? result.photoEvidence : []),
     ...(Array.isArray(result?.evidenceLines) ? result.evidenceLines : [])
   ];
-  const evidenceLines = uniqueDisplayTexts(evidenceSources).filter((item) => locale !== "en" || !hasKoreanText(item));
+  const evidenceLines = uniqueDisplayTexts(evidenceSources.map((item) => compactLocalizedText(item, locale))).filter((item) => locale !== "en" || !hasKoreanText(item));
 
   if (evidenceLines.length) {
     return evidenceLines.slice(0, 2).join(" ");
@@ -592,6 +696,24 @@ function buildTopPickEvidenceText(result = {}, locale = "ko") {
   return locale === "en"
     ? `The photo and survey inputs point toward ${concern}, so the report keeps the routine anchored to that priority.`
     : `사진과 설문에서 ${concern} 흐름이 우선으로 잡혀, 루틴의 기준도 이 방향에 맞췄습니다.`;
+}
+
+function buildFullReportHeaderBody(copy, result = {}, locale = "ko") {
+  const photoSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
+  const alignment = result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null;
+
+  if (["mixed", "conflict"].includes(String(alignment?.status || "")) && compactLocalizedText(alignment?.note, locale)) {
+    return locale === "en"
+      ? `Using the same first product as the free result, this report organizes the survey answer and photo read into AM/PM steps, situation variants, and combinations to avoid.`
+      : `${copy.body} ${compactLocalizedText(alignment.note, locale)}`;
+  }
+  if (photoSummary && !/제한|limited/i.test(photoSummary)) {
+    return locale === "en"
+      ? `Using the same first product as the free result, this report turns the photo-based read and survey answers into AM/PM steps, situation variants, and combinations to avoid.`
+      : `무료 결과의 1순위 제품을 기준으로, 사진에서 보인 피부 흐름과 설문 답변을 AM/PM 실행 루틴, 상황별 조정, 피해야 할 조합으로 정리했습니다.`;
+  }
+
+  return copy.body;
 }
 
 function buildTopPickUsageText(product = {}, result = {}, locale = "ko") {
@@ -674,8 +796,8 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
     ? report.topPickReasonBlocks
         .map((block) => ({
           key: block?.key || "custom",
-          label: labels[block?.key] || compactText(block?.label) || compactText(block?.key),
-          body: compactText(block?.body)
+          label: labels[block?.key] || compactLocalizedText(block?.label, locale) || compactLocalizedText(block?.key, locale),
+          body: compactLocalizedText(block?.body, locale)
         }))
         .filter((block) => block.body && (locale !== "en" || !hasKoreanText(block.body)))
     : [];
@@ -694,13 +816,12 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
     });
   }
 
-  const detailedReason = compactText(
-    report?.topPickDetailedReason ||
-    product?.reason ||
-    product?.explanation ||
-    result?.directionSummary ||
-    ""
-  );
+  const detailedReason = [
+    report?.topPickDetailedReason,
+    product?.reason,
+    product?.explanation,
+    result?.directionSummary
+  ].map((item) => compactLocalizedText(item, locale)).find(Boolean) || "";
   const sentences = splitReasonSentences(detailedReason);
   const usedSentences = new Set();
   const takeSentences = (patterns, maxCount = 2) => {
@@ -1005,19 +1126,19 @@ function buildKoreanRoutineCaution(step, slot, result = {}) {
   const axis = getReportPriorityAxis(result);
 
   if (category === "sunscreen") {
-    return "처음부터 두껍게 올리는 방식으로 덧바름을 대신하지 않습니다.";
+    return "두껍게 한 번 올리는 방식으로 덧바름을 대신하지 마세요.";
   }
   if (category === "cleanser") {
-    return "번들거림이나 잔여감이 느껴져도 문지르는 강도를 높이지 않습니다.";
+    return "번들거림이 보여도 문지르는 힘부터 올리지는 마세요.";
   }
   if (axis === "redness" || axis === "barrier") {
-    return "마찰이 큰 단계나 강한 기능성 제품과 같은 날 겹치지 않습니다.";
+    return "마찰 큰 단계와 강한 기능성은 같은 날 한쪽만 남깁니다.";
   }
   if (slot === "night") {
-    return "보정 제품을 여러 개 한 번에 겹치지 않습니다.";
+    return "보정 제품은 한 번에 여러 개 묶지 마세요.";
   }
 
-  return "피부가 안정될 때까지 주변 단계는 단순하게 유지합니다.";
+  return "피부가 안정될 때까지 주변 단계는 단순하게 둡니다.";
 }
 
 function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "morning", result = {}) {
@@ -1092,22 +1213,22 @@ function buildKoreanRoutineVariants(result = {}) {
     {
       key: "sensitive_day",
       label: "민감한 날",
-      items: ["세안은 마찰을 줄이고 짧게 끝냅니다.", "각질 케어나 고기능 제품은 추가하지 않습니다.", "1순위 제품을 중심 단계로만 두고 루틴을 가볍게 유지합니다."]
+      items: ["세안은 짧게 끝내고 손 마찰을 줄입니다.", "각질 패드나 고기능 제품은 하루 쉬어갑니다.", "1순위 제품만 중심 단계에 두고 나머지는 가볍게 둡니다."]
     },
     {
       key: "breakout_day",
       label: "트러블 올라온 날",
-      items: ["스팟 케어 제품을 여러 개 겹치지 않습니다.", `루틴 중심은 ${concern} 방향으로 유지합니다.`, "답답한 마무리감이 느껴지면 두꺼운 마감 제품은 줄입니다."]
+      items: ["새 스팟 케어를 여러 개 더하기보다 기존 루틴에서 답답한 단계를 하나 뺍니다.", `루틴 중심은 ${concern} 축으로 잡습니다.`, "무거운 크림이나 두꺼운 베이스는 얇게 조정합니다."]
     },
     {
       key: "outdoor_day",
       label: "야외활동 많은 날",
-      items: ["아침 루틴은 보호 단계를 먼저 안정시킵니다.", "노출 시간이 길면 선크림은 덧바르는 쪽으로 봅니다.", "저녁에는 선크림과 표면 잔여감을 순하게 정리합니다."]
+      items: ["아침에는 보호 단계를 먼저 고정합니다.", "노출이 길면 덧바름 시간을 기준으로 봅니다.", "저녁에는 선크림과 표면 잔여감만 부드럽게 지웁니다."]
     },
     {
       key: "makeup_day",
       label: "메이크업하는 날",
-      items: ["베이스 전 단계는 얇게 가져갑니다.", "밀림이 생기는 조합은 피합니다.", "밤에는 메이크업과 선크림 잔여감을 먼저 충분히 지웁니다."]
+      items: ["베이스 전 단계는 얇게 남깁니다.", "밀리는 조합은 같은 날 제외합니다.", "밤에는 메이크업과 선크림 잔여감을 먼저 풀어냅니다."]
     }
   ];
 }
@@ -1540,7 +1661,17 @@ function SupportingProductCard({ item: itemProp, product: productProp, copy, loc
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
                 {roleLabel}
               </p>
-              <h3 className="ui-title mt-2 break-words text-base">{product.name}</h3>
+              <h3
+                className="ui-title mt-2 break-words text-base leading-snug"
+                style={{
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 2,
+                  overflow: "hidden"
+                }}
+              >
+                {product.name}
+              </h3>
               <p className="ui-text-secondary mt-1 text-sm">{product.brand}</p>
             </div>
             {product.price_range ? <span className="ui-chip-compact shrink-0">{product.price_range}</span> : null}
@@ -1798,7 +1929,17 @@ function BudgetAlternativeCard({ item, copy, locale = "ko" }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="ui-title break-words text-sm">{item.name}</p>
+              <p
+                className="ui-title break-words text-sm leading-snug"
+                style={{
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 2,
+                  overflow: "hidden"
+                }}
+              >
+                {item.name}
+              </p>
               <p className="ui-text-secondary mt-1 text-xs">{item.brand}</p>
             </div>
             {item.price_range ? <span className="ui-chip-compact shrink-0">{item.price_range}</span> : null}
@@ -1912,10 +2053,10 @@ function SkinMatchStepReport({
     ? {
         stepKicker: "SKIN MATCH STEP",
         topPick: "Primary Product Analysis",
-        alternatives: "Alternative Product Strategy",
-        morning: "Morning Routine",
-        night: "Night Routine",
-        adjustment: "Situation Adjustments",
+        alternatives: "Alternative Use Strategy",
+        morning: "Morning Action Routine",
+        night: "Night Action Routine",
+        adjustment: "Situation Routine Adjustments",
         budget: budgetSectionTitle || "Lower-burden alternatives",
         previous: "Previous",
         next: "Next",
@@ -1924,10 +2065,10 @@ function SkinMatchStepReport({
     : {
         stepKicker: "SKIN MATCH STEP",
         topPick: "1순위 제품 분석",
-        alternatives: "대체 제품 전략",
-        morning: "아침 루틴",
-        night: "저녁 루틴",
-        adjustment: "상황별 조정",
+        alternatives: "대체 제품 사용 전략",
+        morning: "아침 실행 루틴",
+        night: "저녁 실행 루틴",
+        adjustment: "상황별 루틴 조정",
         budget: budgetSectionTitle || "부담 낮춘 대안",
         previous: "이전",
         next: "다음",
@@ -2168,7 +2309,17 @@ function RoutineStepSupport({ product, copy, locale = "ko" }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
           {copy.recommendedForThisStep}
         </p>
-        <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
+        <p
+          className="mt-2 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100"
+          style={{
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 2,
+            overflow: "hidden"
+          }}
+        >
+          {product.name}
+        </p>
         <p className="mt-1 text-xs text-zinc-400">{product.brand}</p>
         <a
           href={purchaseLink.href}
@@ -2224,20 +2375,30 @@ function RoutineProductInline({ product, copy, locale = "ko" }) {
   const purchaseLink = getPurchaseLinkInfo(product, copy, locale);
 
   return (
-    <div className="mt-3 flex items-center gap-3 rounded-[1rem] border border-white/10 bg-white/5 p-3">
+    <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[1rem] border border-white/10 bg-white/5 p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
       <ProductThumb product={product} copy={copy} sizeClass="h-14 w-12" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
           {copy.recommendedForThisStep}
         </p>
-        <p className="mt-1 truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{product.name}</p>
+        <p
+          className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100"
+          style={{
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            WebkitLineClamp: 2,
+            overflow: "hidden"
+          }}
+        >
+          {product.name}
+        </p>
         <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
       </div>
       <a
         href={purchaseLink.href}
         target="_blank"
         rel="noreferrer"
-        className="ui-button-secondary shrink-0 px-3 py-2 text-[11px] font-medium"
+        className="ui-button-secondary col-span-2 justify-center px-3 py-2 text-[11px] font-medium sm:col-span-1 sm:shrink-0"
       >
         {purchaseLink.label}
       </a>
@@ -2532,14 +2693,29 @@ function cleanReportText(value) {
   return typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
 }
 
+function cleanFaceLabText(value, locale = "ko") {
+  return formatFaceLabDisplayText(cleanReportText(value), locale);
+}
+
 function compactReportList(values, limit = 10) {
   return Array.isArray(values)
     ? values.map((item) => cleanReportText(item)).filter(Boolean).slice(0, limit)
     : [];
 }
 
+function compactFaceLabReportList(values, locale = "ko", limit = 10) {
+  return formatFaceLabDisplayList(Array.isArray(values) ? values : [], locale, limit);
+}
+
 function uniqueReportList(values, limit = 10) {
   return [...new Set(values.map((item) => cleanReportText(item)).filter(Boolean))].slice(0, limit);
+}
+
+function uniqueFaceLabReportList(values, locale = "ko", limit = 10) {
+  return [...new Set((Array.isArray(values) ? values : [])
+    .map((item) => cleanFaceLabText(item, locale))
+    .filter(Boolean))]
+    .slice(0, limit);
 }
 
 function normalizeFaceLabSectionId(section) {
@@ -2564,13 +2740,37 @@ function normalizeFaceLabSectionId(section) {
 function normalizeFaceLabSection(section, locale = "ko") {
   const ui = getFaceLabUi(locale);
   const id = normalizeFaceLabSectionId(section);
-  const label = id === "mood" ? ui.labels.mood : cleanReportText(section?.label || section?.title) || ui.labels[id] || id;
+  const label = id === "mood" ? ui.labels.mood : cleanFaceLabText(section?.label || section?.title, locale) || ui.labels[id] || id;
 
   return {
     ...section,
     id,
     label,
-    title: id === "mood" ? ui.labels.mood : cleanReportText(section?.title) || label
+    title: id === "mood" ? ui.labels.mood : cleanFaceLabText(section?.title, locale) || label
+  };
+}
+
+function sanitizeFaceLabSectionForDisplay(section, locale = "ko") {
+  if (!section) {
+    return section;
+  }
+
+  return {
+    ...section,
+    label: cleanFaceLabText(section.label, locale),
+    title: cleanFaceLabText(section.title, locale),
+    content: compactFaceLabReportList(section.content, locale, 8),
+    recommended: compactFaceLabReportList(section.recommended, locale, 6),
+    avoid: compactFaceLabReportList(section.avoid, locale, 6),
+    baseSetup: compactFaceLabReportList(section.baseSetup, locale, 4),
+    keywords: compactFaceLabReportList(section.keywords, locale, 10),
+    cards: Array.isArray(section.cards)
+      ? section.cards.map((card) => ({
+          ...card,
+          label: cleanFaceLabText(card?.label, locale),
+          body: cleanFaceLabText(card?.body, locale)
+        })).filter((card) => card.label || card.body)
+      : []
   };
 }
 
@@ -2662,18 +2862,19 @@ function getFaceLabSections(faceLab, locale = "ko") {
 
   return rawSections
     .map((section) => normalizeFaceLabSection(section, locale))
+    .map((section) => sanitizeFaceLabSectionForDisplay(section, locale))
     .filter((section) => {
       if (section.id === "structure") {
-        return compactReportList(section.content, 4).length;
+        return compactFaceLabReportList(section.content, locale, 4).length;
       }
       if (section.id === "direction") {
-        return compactReportList(section.recommended, 4).length || compactReportList(section.avoid, 4).length;
+        return compactFaceLabReportList(section.recommended, locale, 4).length || compactFaceLabReportList(section.avoid, locale, 4).length;
       }
       if (section.id === "guide") {
-        return compactReportList(section.baseSetup, 3).length || (Array.isArray(section.cards) && section.cards.length);
+        return compactFaceLabReportList(section.baseSetup, locale, 3).length || (Array.isArray(section.cards) && section.cards.length);
       }
       if (section.id === "mood") {
-        return compactReportList(section.content, 4).length || compactReportList(section.keywords, 8).length;
+        return compactFaceLabReportList(section.content, locale, 4).length || compactFaceLabReportList(section.keywords, locale, 8).length;
       }
 
       return true;
@@ -2685,15 +2886,15 @@ function getFaceLabMood(faceLab, sections, locale = "ko") {
   const ui = getFaceLabUi(locale);
   const mood = faceLab?.faceMood || {};
   const moodSection = sections.find((section) => section.id === "mood") || {};
-  const legacyKeywords = compactReportList(faceLab?.styleKeywords, 8);
-  const moodKeywords = compactReportList(mood.keywords, 8);
-  const sectionKeywords = compactReportList(moodSection.keywords, 8);
+  const legacyKeywords = compactFaceLabReportList(faceLab?.styleKeywords, locale, 8);
+  const moodKeywords = compactFaceLabReportList(mood.keywords, locale, 8);
+  const sectionKeywords = compactFaceLabReportList(moodSection.keywords, locale, 8);
 
   return {
-    primary: cleanReportText(mood.primary) || ui.moodFallback.primary,
-    secondary: compactReportList(mood.secondary, 3).length ? compactReportList(mood.secondary, 3) : ui.moodFallback.secondary,
-    keywords: uniqueReportList([...moodKeywords, ...sectionKeywords, ...legacyKeywords, ...ui.moodFallback.keywords], 8),
-    impression: cleanReportText(mood.impression) || ui.moodFallback.impression
+    primary: cleanFaceLabText(mood.primary, locale) || ui.moodFallback.primary,
+    secondary: compactFaceLabReportList(mood.secondary, locale, 3).length ? compactFaceLabReportList(mood.secondary, locale, 3) : ui.moodFallback.secondary,
+    keywords: uniqueFaceLabReportList([...moodKeywords, ...sectionKeywords, ...legacyKeywords, ...ui.moodFallback.keywords], locale, 8),
+    impression: cleanFaceLabText(mood.impression, locale) || ui.moodFallback.impression
   };
 }
 
@@ -2719,6 +2920,8 @@ function FaceMoodCard({ mood, locale = "ko" }) {
   const ui = getFaceLabUi(locale);
   const secondary = compactReportList(mood.secondary, 3);
   const keywords = compactReportList(mood.keywords, 8);
+  const styleReadLabel = locale === "en" ? "Photo-based style mood" : "사진 기준 스타일 무드";
+  const summaryLabel = locale === "en" ? "Summary" : "요약";
 
   return (
     <section className="ui-card-subtle overflow-hidden p-5">
@@ -2731,13 +2934,18 @@ function FaceMoodCard({ mood, locale = "ko" }) {
           </div>
         </div>
         <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[11px] font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-          Mood
+          {styleReadLabel}
         </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-        {mood.impression || ui.moodFallback.impression}
-      </p>
+      <div className="mt-4 rounded-[1.25rem] border border-zinc-200 bg-zinc-50/80 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/35">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+          {summaryLabel}
+        </p>
+        <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+          {mood.impression || ui.moodFallback.impression}
+        </p>
+      </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-[1rem] border border-zinc-200 bg-zinc-50/80 p-3 dark:border-zinc-800 dark:bg-zinc-950/35">
@@ -2939,6 +3147,7 @@ export default function FullReportPage() {
     try {
       parsedResult = JSON.parse(storedResult);
       setFreeResult(parsedResult);
+      setError("");
     } catch {
       setError(copy.errorBody);
       setIsReady(true);
@@ -2956,10 +3165,18 @@ export default function FullReportPage() {
         parsedFaceLab = null;
       }
 
-      const fallbackReport = buildDevelopmentReport(parsedResult, parsedFaceLab, locale);
+      const developmentFallbackReport =
+        process.env.NODE_ENV !== "production"
+          ? buildDevelopmentReport(parsedResult, parsedFaceLab, locale)
+          : null;
 
       if (!writeAccessToken) {
-        setReport(fallbackReport);
+        if (developmentFallbackReport) {
+          setReport(developmentFallbackReport);
+        } else {
+          setReport(null);
+          setError(copy.errorBody);
+        }
         setIsReady(true);
         return;
       }
@@ -2983,7 +3200,12 @@ export default function FullReportPage() {
 
         if (response.status === 401) {
           clearWriteAccessToken();
-          setReport(fallbackReport);
+          if (developmentFallbackReport) {
+            setReport(developmentFallbackReport);
+          } else {
+            setReport(null);
+            setError(copy.errorBody);
+          }
           return;
         }
 
@@ -3017,8 +3239,12 @@ export default function FullReportPage() {
       } catch (requestError) {
         if (process.env.NODE_ENV !== "production") {
           console.warn("[full-report] using fallback report", requestError);
+          setReport(developmentFallbackReport);
+        } else {
+          console.error("[full-report] failed to load report", requestError);
+          setReport(null);
+          setError(copy.errorBody);
         }
-        setReport(fallbackReport);
       } finally {
         setIsReady(true);
       }
@@ -3079,6 +3305,7 @@ export default function FullReportPage() {
   const displayAvoidCombinations = uniqueDisplayTexts(report.avoidCombinations || []);
   const displayBudgetAlternatives = buildDisplayBudgetAlternatives(report.budgetAlternatives || [], freeResult, locale);
   const budgetSectionTitle = getBudgetSectionTitle(copy, displayBudgetAlternatives, locale);
+  const fullReportBody = buildFullReportHeaderBody(copy, freeResult, locale);
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
@@ -3089,7 +3316,7 @@ export default function FullReportPage() {
               <div className="min-w-0">
                 <p className="ui-kicker">FULL REPORT</p>
                 <h1 className="ui-title mt-2 text-xl sm:text-2xl">{copy.title}</h1>
-                <p className="ui-text-secondary mt-3 text-sm leading-6">{copy.body}</p>
+                <p className="ui-text-secondary mt-3 text-sm leading-6">{fullReportBody}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {[
                     { code: "ko", label: "한국어" },

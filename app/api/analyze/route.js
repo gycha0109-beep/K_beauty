@@ -821,6 +821,8 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
 }
 
 export async function POST(request) {
+  let responseLocale = "ko";
+
   try {
     const formData = await request.formData();
     const image = formData.get("image");
@@ -848,6 +850,7 @@ export async function POST(request) {
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
     const isPremium = false;
     const locale = formData.get("locale") === "en" ? "en" : "ko";
+    responseLocale = locale;
     const copy = getAnalyzeCopy(locale);
     const model = resolveAnalyzeModel(isPremium) || FREE_OPENAI_MODEL;
     const resolvedMainConcern =
@@ -1027,7 +1030,7 @@ export async function POST(request) {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Server error."
+        error: getAnalyzeCopy(responseLocale).serverError
       },
       { status: 500 }
     );

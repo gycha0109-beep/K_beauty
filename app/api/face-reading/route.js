@@ -639,10 +639,13 @@ async function readOpenAiResponse(response) {
 }
 
 export async function POST(request) {
+  let responseLocale = "ko";
+
   try {
     const formData = await request.formData();
     const image = formData.get("image");
     const locale = formData.get("locale") === "en" ? "en" : "ko";
+    responseLocale = locale;
     const copy = getCopy(locale);
     const imageValidation = validateImageUpload(image);
 
@@ -739,7 +742,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("[face-reading] failed", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : getCopy("ko").serverError },
+      { error: getCopy(responseLocale).serverError },
       { status: 500 }
     );
   }

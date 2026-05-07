@@ -1,9 +1,11 @@
+import { formatFaceLabDisplayText } from "@/lib/face-lab-launch";
+
 function hasTeaserLine(data) {
   return Boolean(data?.free?.teaserLine);
 }
 
-export default function FaceShapePreviewCard({ copy, launchData }) {
-  const teaserLine = launchData?.free?.teaserLine || "";
+export default function FaceShapePreviewCard({ copy, launchData, locale = "ko" }) {
+  const teaserLine = formatFaceLabDisplayText(launchData?.free?.teaserLine || "", locale);
 
   if (!hasTeaserLine(launchData)) {
     return (
