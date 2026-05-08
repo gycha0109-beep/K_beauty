@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
@@ -645,19 +646,96 @@ function buildTopPickWhyText(product = {}, result = {}, locale = "ko") {
   return `${concern} 흐름이 우선으로 잡힌 상태라, 이 제품을 기준 단계로 두고 주변 루틴은 단순하게 맞춥니다.`;
 }
 
-function buildTopPickEvidenceText(result = {}, locale = "ko") {
-  const photoSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
+function getReportPhotoSignalLabel(signal = {}, locale = "ko") {
+  const key = String(signal?.key || "").trim();
+  const label = compactLocalizedText(signal?.label, locale);
+
+  if (locale !== "en") {
+    return label;
+  }
+
+  const labels = {
+    oiliness: "oiliness",
+    dehydration: "dryness",
+    acne: "breakout tendency",
+    uneven_tone: "uneven tone",
+    pores: "visible pores",
+    redness: "redness",
+    barrier: "barrier stress"
+  };
+
+  return labels[key] || (hasKoreanText(label) ? "visible skin cue" : label);
+}
+
+function getReportPhotoSignalArea(area, locale = "ko") {
+  const text = compactLocalizedText(area, locale);
+
+  if (locale !== "en" || !text) {
+    return text;
+  }
+
+  const normalized = text.replace(/\s+/g, "");
+  const areaMap = [
+    [/볼\/턱라인|볼과턱라인|볼턱라인/i, "cheek / jawline"],
+    [/볼주변|볼/i, "cheek area"],
+    [/턱라인|턱/i, "jawline"],
+    [/티존|T존|T-zone/i, "T-zone"],
+    [/이마와코|이마\/코/i, "forehead / nose"],
+    [/코주변|코/i, "nose area"],
+    [/전체/i, "overall"]
+  ];
+  const match = areaMap.find(([pattern]) => pattern.test(normalized));
+
+  if (match) {
+    return match[1];
+  }
+
+  return hasKoreanText(text) ? "visible area" : text;
+}
+
+function buildReportPhotoSummary(result = {}, locale = "ko") {
+  const rawSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
   const signals = Array.isArray(result?.photoObservations?.signals)
     ? result.photoObservations.signals
     : Array.isArray(result?.premiumReport?.photoObservations?.signals)
       ? result.premiumReport.photoObservations.signals
       : [];
-  const firstSignal = signals.find((signal) => compactLocalizedText(signal?.label, locale) || compactLocalizedText(signal?.area, locale));
+
+  if (locale !== "en") {
+    return rawSummary;
+  }
+
+  if (rawSummary && !hasKoreanText(rawSummary)) {
+    return rawSummary;
+  }
+
+  const cues = signals
+    .slice(0, 2)
+    .map((signal) => {
+      const label = getReportPhotoSignalLabel(signal, locale);
+      const area = getReportPhotoSignalArea(signal?.area, locale);
+      return area ? `${label} around the ${area}` : label;
+    })
+    .filter(Boolean);
+
+  return cues.length
+    ? `The photo shows ${cues.join(" and ")} as supporting skin cues.`
+    : "";
+}
+
+function buildTopPickEvidenceText(result = {}, locale = "ko") {
+  const photoSummary = buildReportPhotoSummary(result, locale);
+  const signals = Array.isArray(result?.photoObservations?.signals)
+    ? result.photoObservations.signals
+    : Array.isArray(result?.premiumReport?.photoObservations?.signals)
+      ? result.premiumReport.photoObservations.signals
+      : [];
+  const firstSignal = signals.find((signal) => getReportPhotoSignalLabel(signal, locale) || getReportPhotoSignalArea(signal?.area, locale));
   const alignment = result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null;
   const hasMixedPhotoSurvey = ["mixed", "conflict"].includes(String(alignment?.status || ""));
 
   if (photoSummary && !/제한|limited/i.test(photoSummary)) {
-    if (hasMixedPhotoSurvey && alignment?.note) {
+    if (hasMixedPhotoSurvey && alignment?.note && (locale !== "en" || !hasKoreanText(alignment.note))) {
       return compactLocalizedText(alignment.note, locale);
     }
 
@@ -667,8 +745,8 @@ function buildTopPickEvidenceText(result = {}, locale = "ko") {
   }
 
   if (firstSignal) {
-    const label = compactLocalizedText(firstSignal.label, locale);
-    const area = compactLocalizedText(firstSignal.area, locale);
+    const label = getReportPhotoSignalLabel(firstSignal, locale);
+    const area = getReportPhotoSignalArea(firstSignal.area, locale);
 
     return locale === "en"
       ? `The photo shows a ${label || "skin"} tendency${area ? ` around ${area}` : ""}, so the routine keeps that read as supporting context.`
@@ -1871,6 +1949,167 @@ function AlternativeCarousel({ items, copy, locale = "ko" }) {
   );
 }
 
+function normalizeSituationVariantLabel(label) {
+  const text = String(label || "").trim();
+
+  if (text === "야외 노출이 긴 날") {
+    return "야외 외출이 긴 날";
+  }
+
+  return text;
+}
+
+function getSituationVariantButtonLabel(label) {
+  const text = normalizeSituationVariantLabel(label);
+  const lineBreakLabels = {
+    "야외 외출이 긴 날": "야외 외출이\n긴 날",
+    "트러블이 올라온 날": "트러블이\n올라온 날",
+    "메이크업 하는 날": "메이크업\n하는 날"
+  };
+
+  return lineBreakLabels[text] || text;
+}
+
+function FullReportFeedbackCard({ locale = "ko", productId = null }) {
+  const [mode, setMode] = useState("idle");
+  const [customComment, setCustomComment] = useState("");
+
+  const copy = locale === "en"
+    ? {
+        title: "Was this result helpful?",
+        helpful: "Helpful",
+        notHelpful: "Could be better",
+        thanks: "Thanks. We will use this to improve future recommendations.",
+        reasonTitle: "What felt off?",
+        otherPlaceholder: "Leave a short note",
+        submit: "Submit",
+        reasons: [
+          { value: "product_mismatch", label: "Product fit feels off" },
+          { value: "repetitive_text", label: "Explanations feel repetitive" },
+          { value: "face_lab_unclear", label: "Face Lab feels unclear" },
+          { value: "not_enough_detail", label: "Report feels too thin" },
+          { value: "other", label: "Other" }
+        ]
+      }
+    : {
+        title: "결과가 도움이 되었나요?",
+        helpful: "도움 됨",
+        notHelpful: "아쉬움 있음",
+        thanks: "감사합니다. 더 나은 추천에 반영할게요.",
+        reasonTitle: "어떤 점이 아쉬웠나요?",
+        otherPlaceholder: "짧게 남겨주세요",
+        submit: "보내기",
+        reasons: [
+          { value: "product_mismatch", label: "추천 제품이 안 맞아요" },
+          { value: "repetitive_text", label: "설명이 반복돼요" },
+          { value: "face_lab_unclear", label: "Face Lab이 애매해요" },
+          { value: "not_enough_detail", label: "내용이 부족해요" },
+          { value: "other", label: "기타" }
+        ]
+      };
+
+  const submitFeedback = ({ rating, reason = null, comment = null }) => {
+    trackEvent("feedback_response", {
+      product_id: productId,
+      feature_name: "skin_analysis",
+      result_type: "full_report",
+      question_id: "full_report_feedback",
+      answer: rating,
+      meta_json: {
+        report_type: "full_report",
+        rating,
+        reason,
+        comment
+      }
+    });
+    setMode("submitted");
+  };
+
+  if (mode === "submitted") {
+    return (
+      <section className="ui-card p-5">
+        <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">{copy.thanks}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="ui-card p-5">
+      <p className="ui-kicker">FEEDBACK</p>
+      <h3 className="ui-title mt-2 text-lg">{copy.title}</h3>
+
+      {mode === "idle" ? (
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => submitFeedback({ rating: "helpful" })}
+            className="ui-button-secondary px-4 py-3 text-sm font-medium"
+          >
+            {copy.helpful}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("not_helpful")}
+            className="ui-button-secondary px-4 py-3 text-sm font-medium"
+          >
+            {copy.notHelpful}
+          </button>
+        </div>
+      ) : null}
+
+      {mode === "not_helpful" ? (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{copy.reasonTitle}</p>
+          <div className="grid gap-2">
+            {copy.reasons.map((reason) => (
+              <button
+                key={reason.value}
+                type="button"
+                onClick={() => {
+                  if (reason.value === "other") {
+                    setMode("other");
+                    return;
+                  }
+
+                  submitFeedback({
+                    rating: "not_helpful",
+                    reason: reason.value
+                  });
+                }}
+                className="ui-button-secondary justify-start px-4 py-3 text-left text-sm font-medium"
+              >
+                {reason.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {mode === "other" ? (
+        <div className="mt-4 space-y-3">
+          <textarea
+            value={customComment}
+            onChange={(event) => setCustomComment(event.target.value.slice(0, 400))}
+            placeholder={copy.otherPlaceholder}
+            className="min-h-24 w-full rounded-[1rem] border border-zinc-200 bg-white px-4 py-3 text-sm leading-6 text-zinc-900 outline-none transition focus:border-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-100"
+          />
+          <button
+            type="button"
+            onClick={() => submitFeedback({
+              rating: "not_helpful",
+              reason: "other",
+              comment: customComment.trim() || null
+            })}
+            className="ui-button-primary min-h-12 w-full px-4 text-sm font-semibold"
+          >
+            {copy.submit}
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function SituationVariantsSelector({ variants = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -1890,15 +2129,16 @@ function SituationVariantsSelector({ variants = [] }) {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {variants.map((variant, index) => {
             const active = index === activeIndex;
+            const buttonLabel = getSituationVariantButtonLabel(variant.label);
 
             return (
               <button
                 key={variant.key || variant.label}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                className={`ui-button-secondary px-3 py-2.5 text-xs font-medium ${active ? "ui-choice-active" : ""}`}
+                className={`ui-button-secondary min-h-12 whitespace-pre-line px-3 py-2.5 text-xs font-medium leading-tight ${active ? "ui-choice-active" : ""}`}
               >
-                {variant.label}
+                {buttonLabel}
               </button>
             );
           })}
@@ -1906,7 +2146,7 @@ function SituationVariantsSelector({ variants = [] }) {
       ) : null}
 
       <div className="ui-card-subtle p-4">
-        <p className="ui-kicker">{activeVariant.label}</p>
+        <p className="ui-kicker">{normalizeSituationVariantLabel(activeVariant.label)}</p>
         {renderList(activeVariant.items)}
       </div>
     </div>
@@ -2048,6 +2288,7 @@ function SkinMatchStepReport({
   budgetSectionTitle
 }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const hasMountedStepRef = useRef(false);
   const router = useRouter();
   const labels = locale === "en"
     ? {
@@ -2164,12 +2405,34 @@ function SkinMatchStepReport({
   const activeStep = steps[currentStepIndex];
   const nextStep = currentStepIndex < maxStepIndex ? steps[currentStepIndex + 1] : null;
   const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.backResult;
+  const moveToStep = (nextIndex) => {
+    const boundedIndex = Math.max(0, Math.min(maxStepIndex, nextIndex));
+
+    if (boundedIndex === currentStepIndex) {
+      return;
+    }
+
+    setActiveStepIndex(boundedIndex);
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      });
+    }
+  };
 
   useEffect(() => {
     if (activeStepIndex > maxStepIndex) {
       setActiveStepIndex(maxStepIndex);
     }
   }, [activeStepIndex, maxStepIndex]);
+
+  useEffect(() => {
+    hasMountedStepRef.current = true;
+  }, []);
 
   if (!activeStep) {
     return null;
@@ -2194,7 +2457,7 @@ function SkinMatchStepReport({
             <button
               key={step.key}
               type="button"
-              onClick={() => setActiveStepIndex(index)}
+              onClick={() => moveToStep(index)}
               className={`h-2 rounded-full transition ${
                 index === currentStepIndex
                   ? "bg-zinc-900 dark:bg-zinc-100"
@@ -2206,7 +2469,24 @@ function SkinMatchStepReport({
         </div>
       </div>
 
-      {activeStep.content}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeStep.key}
+          initial={hasMountedStepRef.current ? { opacity: 0, y: 18 } : false}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.24, ease: "easeOut" }}
+        >
+          {activeStep.content}
+        </motion.div>
+      </AnimatePresence>
+
+      {currentStepIndex === maxStepIndex ? (
+        <FullReportFeedbackCard
+          locale={locale}
+          productId={freeResult?.topPick?.id || null}
+        />
+      ) : null}
 
       <ResultBottomCTA
         label={primaryLabel}
@@ -2216,12 +2496,12 @@ function SkinMatchStepReport({
             return;
           }
 
-          setActiveStepIndex((current) => Math.min(current + 1, maxStepIndex));
+          moveToStep(currentStepIndex + 1);
         }}
         previousLabel={currentStepIndex > 0 ? labels.previous : null}
         onPrevious={
           currentStepIndex > 0
-            ? () => setActiveStepIndex((current) => Math.max(current - 1, 0))
+            ? () => moveToStep(currentStepIndex - 1)
             : null
         }
       />
@@ -2526,12 +2806,21 @@ function RoutineTimelineGroup({ title, steps, copy, locale = "ko" }) {
       ) : null}
 
       {activeStep ? (
-        <RoutineTimelineCard
-          key={`${title}-${activeStep.order}-${activeStep.stepName}`}
-          step={activeStep}
-          copy={copy}
-          locale={locale}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${title}-${activeStep.order}-${activeStep.stepName}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <RoutineTimelineCard
+              step={activeStep}
+              copy={copy}
+              locale={locale}
+            />
+          </motion.div>
+        </AnimatePresence>
       ) : null}
     </div>
   );
@@ -2920,21 +3209,17 @@ function FaceMoodCard({ mood, locale = "ko" }) {
   const ui = getFaceLabUi(locale);
   const secondary = compactReportList(mood.secondary, 3);
   const keywords = compactReportList(mood.keywords, 8);
-  const styleReadLabel = locale === "en" ? "Photo-based style mood" : "사진 기준 스타일 무드";
   const summaryLabel = locale === "en" ? "Summary" : "요약";
 
   return (
     <section className="ui-card-subtle overflow-hidden p-5">
-      <div className="flex items-start justify-between gap-3">
+      <div>
         <div>
           <p className="ui-kicker">{ui.moodTitle}</p>
           <div className="mt-3">
             <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">{ui.moodLabels.primary}</p>
             <h3 className="ui-title mt-1 text-2xl sm:text-[1.75rem]">{mood.primary || ui.moodFallback.primary}</h3>
           </div>
-        </div>
-        <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[11px] font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-          {styleReadLabel}
         </div>
       </div>
 
@@ -3092,7 +3377,7 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
               key={section.id}
               type="button"
               onClick={() => setActiveSection(section.id)}
-              className={`ui-button-secondary min-h-14 w-full justify-start px-3 py-3 text-left text-sm font-semibold ${
+              className={`ui-button-secondary min-h-14 w-full justify-center px-3 py-3 text-center text-sm font-semibold ${
                 isActive
                   ? "!border-zinc-900 !bg-zinc-900 !text-white dark:!border-zinc-100 dark:!bg-zinc-100 dark:!text-zinc-950"
                   : ""
@@ -3305,18 +3590,16 @@ export default function FullReportPage() {
   const displayAvoidCombinations = uniqueDisplayTexts(report.avoidCombinations || []);
   const displayBudgetAlternatives = buildDisplayBudgetAlternatives(report.budgetAlternatives || [], freeResult, locale);
   const budgetSectionTitle = getBudgetSectionTitle(copy, displayBudgetAlternatives, locale);
-  const fullReportBody = buildFullReportHeaderBody(copy, freeResult, locale);
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-4">
-          <header className="ui-card p-6">
+          <header className="ui-card p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="ui-kicker">FULL REPORT</p>
                 <h1 className="ui-title mt-2 text-xl sm:text-2xl">{copy.title}</h1>
-                <p className="ui-text-secondary mt-3 text-sm leading-6">{fullReportBody}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {[
                     { code: "ko", label: "한국어" },

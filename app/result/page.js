@@ -5,12 +5,15 @@ import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import FaceShapePreviewCard from "@/components/result/FaceShapePreviewCard";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
-import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import {
+  buildFaceLabLaunchData,
+  formatFaceLabDisplayList,
+  formatFaceLabDisplayText
+} from "@/lib/face-lab-launch";
 import { getRoutineStructureData, getRoutineStructureLabel } from "@/lib/routine-structure";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
@@ -178,7 +181,7 @@ const resultCopy = {
     alternativeStepBody: "",
     faceLabStepTitle: "Face Lab 티저",
     faceLabStepBody: "",
-    routineStepKicker: "RESULT STEP 4",
+    routineStepKicker: "RESULT STEP 3",
     routineStepTitle: "루틴 및 주의할 점",
     routineStepBody: "",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
@@ -194,7 +197,6 @@ const resultCopy = {
     ctaViewTopPick: "Top Pick 보기",
     ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
     ctaViewAlternative: "대안 보기",
-    ctaViewFaceLab: "스타일 방향까지 보기",
     ctaViewRoutine: "루틴 및 주의사항",
     ctaViewPremiumPreview: "전체 리포트 보기",
     ctaViewTips: "주의사항 및 사용 팁 보기",
@@ -308,7 +310,7 @@ const resultCopy = {
     alternativeStepBody: "",
     faceLabStepTitle: "Face Lab Teaser",
     faceLabStepBody: "",
-    routineStepKicker: "RESULT STEP 4",
+    routineStepKicker: "RESULT STEP 3",
     routineStepTitle: "Routine & Notes",
     routineStepBody: "",
     routineStepEmpty: "There is no routine information to show yet.",
@@ -324,7 +326,6 @@ const resultCopy = {
     ctaViewTopPick: "See Top Pick",
     ctaViewRecommended: "See Supporting Picks",
     ctaViewAlternative: "See Alternative",
-    ctaViewFaceLab: "See style direction",
     ctaViewRoutine: "Routine & Notes",
     ctaViewPremiumPreview: "See Full Report",
     ctaViewTips: "See Tips",
@@ -507,26 +508,130 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   return `${skinTypeLabel} 피부이고 ${concernLabel} 고민이 있어, ${directionSummary}`;
 }
 
+function getPhotoSignalLabel(signal = {}, locale = "ko") {
+  const key = String(signal?.key || "").trim();
+  const label = String(signal?.label || "").trim();
+
+  if (locale !== "en") {
+    return label;
+  }
+
+  const labels = {
+    oiliness: "oiliness",
+    dehydration: "dryness",
+    acne: "breakout tendency",
+    uneven_tone: "uneven tone",
+    pores: "visible pores",
+    redness: "redness",
+    barrier: "barrier stress"
+  };
+
+  return labels[key] || (hasKoreanText(label) ? "visible skin cue" : label);
+}
+
+function getPhotoSignalArea(area, locale = "ko") {
+  const text = String(area || "").trim();
+
+  if (locale !== "en" || !text) {
+    return text;
+  }
+
+  const normalized = text.replace(/\s+/g, "");
+  const areaMap = [
+    [/볼\/턱라인|볼과턱라인|볼턱라인/i, "cheek / jawline"],
+    [/볼주변|볼/i, "cheek area"],
+    [/턱라인|턱/i, "jawline"],
+    [/티존|T존|T-zone/i, "T-zone"],
+    [/이마와코|이마\/코/i, "forehead / nose"],
+    [/코주변|코/i, "nose area"],
+    [/전체/i, "overall"]
+  ];
+
+  const match = areaMap.find(([pattern]) => pattern.test(normalized));
+
+  if (match) {
+    return match[1];
+  }
+
+  return hasKoreanText(text) ? "visible area" : text;
+}
+
+function buildPhotoSignalDescription(signal = {}, locale = "ko") {
+  const description = String(signal?.description || "").trim();
+
+  if (locale !== "en") {
+    return description;
+  }
+
+  if (description && !hasKoreanText(description)) {
+    return description;
+  }
+
+  const label = getPhotoSignalLabel(signal, locale);
+  const area = getPhotoSignalArea(signal?.area, locale);
+  const verb = signal?.confidence === "low" ? "appears lightly" : "is visible";
+
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${verb}${area ? ` around the ${area}` : " in the photo"}.`;
+}
+
+function buildPhotoObservationSummary(signals = [], rawSummary = "", fallbackSummary = "", locale = "ko") {
+  const summary = String(rawSummary || "").trim();
+
+  if (locale !== "en") {
+    return summary || fallbackSummary;
+  }
+
+  if (summary && !hasKoreanText(summary)) {
+    return summary;
+  }
+
+  const cues = signals
+    .slice(0, 2)
+    .map((signal) => {
+      const label = getPhotoSignalLabel(signal, locale);
+      const area = getPhotoSignalArea(signal?.area, locale);
+      return area ? `${label} around the ${area}` : label;
+    })
+    .filter(Boolean);
+
+  if (!cues.length) {
+    return fallbackSummary;
+  }
+
+  return `The photo shows ${cues.join(" and ")} as supporting skin cues.`;
+}
+
 function normalizePhotoObservationsForDisplay(observations, copy, locale = "ko") {
   const fallbackSummary = copy.photoObservationFallback;
   const source = observations && typeof observations === "object" ? observations : null;
   const signals = Array.isArray(source?.signals)
     ? source.signals
-        .map((item) => ({
-          key: String(item?.key || "").trim(),
-          label: String(item?.label || "").trim(),
-          area: String(item?.area || "").trim(),
-          confidence: ["low", "medium", "high"].includes(item?.confidence) ? item.confidence : "low",
-          description: String(item?.description || "").trim()
-        }))
+        .map((item) => {
+          const signal = {
+            key: String(item?.key || "").trim(),
+            label: String(item?.label || "").trim(),
+            area: String(item?.area || "").trim(),
+            confidence: ["low", "medium", "high"].includes(item?.confidence) ? item.confidence : "low",
+            description: String(item?.description || "").trim()
+          };
+
+          return {
+            ...signal,
+            label: getPhotoSignalLabel(signal, locale),
+            area: getPhotoSignalArea(signal.area, locale),
+            description: buildPhotoSignalDescription(signal, locale)
+          };
+        })
         .filter((item) => item.label || item.area || item.description)
         .slice(0, 3)
     : [];
-  const summary = String(source?.summary || "").trim() || fallbackSummary;
+  const summary = buildPhotoObservationSummary(signals, source?.summary, fallbackSummary, locale);
   const surveyAlignment = source?.surveyAlignment && typeof source.surveyAlignment === "object"
     ? {
         status: String(source.surveyAlignment.status || "unknown").trim(),
-        note: String(source.surveyAlignment.note || "").trim()
+        note: locale === "en" && hasKoreanText(source.surveyAlignment.note)
+          ? ""
+          : String(source.surveyAlignment.note || "").trim()
       }
     : { status: "unknown", note: "" };
 
@@ -559,8 +664,8 @@ function buildPhotoRecommendationLine(observations, priorityKey, locale = "ko") 
     null;
 
   if (selected) {
-    const label = String(selected.label || "").trim();
-    const area = String(selected.area || "").trim();
+    const label = getPhotoSignalLabel(selected, locale);
+    const area = getPhotoSignalArea(selected.area, locale);
     const weak = selected.confidence === "low";
 
     if (locale === "en") {
@@ -767,8 +872,27 @@ function buildRoutineDirectionCards(result, locale = "ko") {
   ];
 }
 
-function hasFaceLabTeaser(launchData) {
-  return Boolean(launchData?.free?.teaserLine);
+function getFaceLabProfilePreview(launchData, locale = "ko") {
+  const paid = launchData?.paid || {};
+  const primary = formatFaceLabDisplayText(paid.faceMood?.primary || "", locale);
+  const keywords = formatFaceLabDisplayList(
+    [
+      ...(Array.isArray(paid.styleKeywords) ? paid.styleKeywords : []),
+      ...(Array.isArray(paid.faceMood?.keywords) ? paid.faceMood.keywords : [])
+    ],
+    locale,
+    5
+  );
+
+  if (!primary && !keywords.length) {
+    return null;
+  }
+
+  return {
+    label: locale === "en" ? "Face Lab mood" : "Face Lab 대표 무드",
+    primary,
+    keywords
+  };
 }
 
 function getAdvanceLabelForStep(stepId, copy) {
@@ -779,8 +903,6 @@ function getAdvanceLabelForStep(stepId, copy) {
       return copy.ctaViewAlternative;
     case "routine-summary":
       return copy.ctaViewRoutine;
-    case "face-lab-teaser":
-      return copy.ctaViewFaceLab;
     case "warnings":
       return copy.ctaViewTips;
     case "premium-preview":
@@ -1582,6 +1704,7 @@ function ResultContent() {
 
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
+  const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
   const overviewCards = [
     {
       label: locale === "en" ? "Skin Type" : "피부 타입",
@@ -1599,7 +1722,6 @@ function ResultContent() {
   const routineDirectionCards = buildRoutineDirectionCards(result, locale);
   const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
   const routineWarnings = getLocalizedRoutineWarnings(result, submission?.form || {}, locale);
-  const showFaceLabStep = hasFaceLabTeaser(faceLabLaunch);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
       product_id: result?.topPick?.id || null,
@@ -1608,7 +1730,7 @@ function ResultContent() {
       is_top_pick: false,
       meta_json: {
         has_premium_session: true,
-        has_face_lab_teaser: showFaceLabStep
+        has_face_lab_preview: Boolean(faceLabProfilePreview)
       }
     });
     router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
@@ -1627,6 +1749,7 @@ function ResultContent() {
             photoAlt={submission?.imageName || copy.resultPhotoFallback}
             summaryCards={overviewCards}
             overviewSummary={getOverviewSummary(submission?.form, result, locale)}
+            faceLabPreview={faceLabProfilePreview}
           />
           <PhotoObservationCard
             observations={result.photoObservations}
@@ -1676,7 +1799,7 @@ function ResultContent() {
 
           <section className="ui-card p-5">
             <div className="space-y-4">
-              <div className={`grid gap-3 ${routineDirectionCards.length > 1 ? "sm:grid-cols-2" : ""}`}>
+              <div className="grid gap-3">
                 {routineDirectionCards.length ? routineDirectionCards.map((card) => (
                   <div key={`routine-structure-${card.key}`} className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
@@ -1711,26 +1834,6 @@ function ResultContent() {
         </section>
       )
     });
-
-    if (showFaceLabStep) {
-      resultSteps.push({
-        id: "face-lab-teaser",
-        content: (
-          <section className="space-y-4">
-            <ResultStepLead
-              kicker={copy.faceShapeFreeKicker}
-              title={copy.faceLabStepTitle}
-              body={null}
-            />
-            <FaceShapePreviewCard
-              copy={copy}
-              launchData={faceLabLaunch}
-              locale={locale}
-            />
-          </section>
-        )
-      });
-    }
 
     resultSteps.push({
       id: "premium-preview",
@@ -1920,7 +2023,7 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
       </p>
 
       {normalized.signals.length ? (
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <div className="mt-4 grid gap-2">
           {normalized.signals.map((signal, index) => {
             const title = buildPhotoObservationSignalTitle(signal);
             const isLowConfidence = signal.confidence === "low";
@@ -1928,15 +2031,15 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
             return (
               <div
                 key={`${signal.key || "photo"}-${title}-${index}`}
-                className={`rounded-[1rem] border px-3 py-3 ${
+                className={`rounded-[1rem] border px-4 py-3 ${
                   isLowConfidence
                     ? "border-zinc-200/70 bg-zinc-50/60 text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-950/35 dark:text-zinc-400"
                     : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300"
                 }`}
               >
-                <p className="text-xs font-semibold leading-5 text-zinc-900 dark:text-zinc-100">{title}</p>
+                <p className="text-sm font-semibold leading-5 text-zinc-900 dark:text-zinc-100">{title}</p>
                 {signal.description ? (
-                  <p className="mt-1.5 text-[11px] leading-5">{signal.description}</p>
+                  <p className="mt-1.5 text-sm leading-6">{signal.description}</p>
                 ) : null}
               </div>
             );
@@ -2134,22 +2237,50 @@ function ProductDecisionCard({
           })
         }
       >
-        <div className="grid gap-5 px-5 py-6 sm:px-7 sm:py-7 lg:grid-cols-[1.28fr_0.72fr] lg:items-start">
-          <div>
+        <div className="px-5 py-6 sm:px-7 sm:py-7">
+          <div className={showDiagnostics ? "grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start" : ""}>
+            <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
                 <span className="ui-chip px-3 py-1.5 text-[11px] font-semibold">
                   {copy.topPickBadge}
                 </span>
               </div>
 
-            <p className="mt-5 text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">{topPickHeadline}</p>
-            <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
-              {product.name}
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 sm:text-[15px]">{product.brand}</p>
-            {priceLabel ? (
-              <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 sm:text-[13px]">{priceLabel}</p>
-            ) : null}
+            <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">{topPickHeadline}</p>
+                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
+                  {product.name}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 sm:text-[15px]">{product.brand}</p>
+                {priceLabel ? (
+                  <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 sm:text-[13px]">{priceLabel}</p>
+                ) : null}
+              </div>
+              <a
+                href={purchaseLink.href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  trackEvent("click_buy_link", {
+                    product_id: product.id,
+                    feature_name: "skin_analysis",
+                    result_type: "top_pick",
+                    is_top_pick: true,
+                    meta_json: {
+                      step: product.step,
+                      brand: product.brand,
+                      button_label: purchaseLink.label,
+                      fallback_link: purchaseLink.isFallback
+                    }
+                  });
+                }}
+                className="ui-button-primary min-h-12 shrink-0 justify-center px-5 text-sm font-semibold sm:mb-1"
+              >
+                {purchaseLink.label}
+              </a>
+            </div>
 
             {topPickSignals.length ? (
               <div className="mt-4 flex flex-wrap gap-2">
@@ -2216,40 +2347,13 @@ function ProductDecisionCard({
                 ) : null}
               </div>
             ) : null}
-          </div>
+            </div>
 
-          <div className="space-y-3">
             {showDiagnostics ? (
               <div className="ui-card-subtle p-3.5">
                 <FitGaugeRows product={product} form={form} compact locale={locale} />
               </div>
             ) : null}
-
-            <div className="ui-card-subtle p-4 sm:p-5">
-              <a
-                href={purchaseLink.href}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  trackEvent("click_buy_link", {
-                    product_id: product.id,
-                    feature_name: "skin_analysis",
-                    result_type: "top_pick",
-                    is_top_pick: true,
-                    meta_json: {
-                      step: product.step,
-                      brand: product.brand,
-                      button_label: purchaseLink.label,
-                      fallback_link: purchaseLink.isFallback
-                    }
-                  });
-                }}
-                className="ui-button-primary w-full px-4 py-2.5 text-sm font-semibold"
-              >
-                {purchaseLink.label}
-              </a>
-            </div>
           </div>
         </div>
       </div>
