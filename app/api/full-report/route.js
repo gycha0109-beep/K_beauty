@@ -7,10 +7,6 @@ import {
   PREMIUM_REPORT_COOKIE,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
-import {
-  verifyWriteAccessToken,
-  WRITE_ACCESS_HEADER
-} from "@/lib/write-access";
 
 function getUnauthorizedResponse() {
   return NextResponse.json(
@@ -34,14 +30,6 @@ export async function POST(request) {
     );
   }
 
-  const verification = verifyWriteAccessToken(
-    request.headers.get(WRITE_ACCESS_HEADER)
-  );
-
-  if (!verification.ok) {
-    return getUnauthorizedResponse();
-  }
-
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
   const premiumSession = await verifyPremiumReportSession(premiumCookie);
 
@@ -60,9 +48,14 @@ export async function POST(request) {
 
   const locale = body?.locale === "en" ? "en" : "ko";
   const faceLabLaunch = buildFaceLabLaunchData(body?.faceLab || null, locale);
-  const topPickFitGauges = buildProductFitGauges(body?.topPick || null, { locale });
+  const storedPremiumReport = premiumSession.payload.premiumReport || {};
+  const storedFreeResult =
+    storedPremiumReport?.freeResult && typeof storedPremiumReport.freeResult === "object"
+      ? storedPremiumReport.freeResult
+      : null;
+  const topPickFitGauges = buildProductFitGauges(body?.topPick || storedFreeResult?.topPick || null, { locale });
   const response = NextResponse.json({
-    ...premiumSession.payload.premiumReport,
+    ...storedPremiumReport,
     topPickFitGauges,
     faceLab: {
       summary: faceLabLaunch?.paid?.summary || null,

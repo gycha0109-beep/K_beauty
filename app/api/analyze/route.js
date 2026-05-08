@@ -995,8 +995,14 @@ export async function POST(request) {
 
     const publicDecision = buildFreeDecisionPayload(decision);
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
+    const premiumSessionReport = premiumReport
+      ? {
+          ...premiumReport,
+          freeResult: publicDecision
+        }
+      : null;
     const premiumSessionToken = await createPremiumReportSession({
-      premiumReport,
+      premiumReport: premiumSessionReport,
       locale
     });
     const response = NextResponse.json({
