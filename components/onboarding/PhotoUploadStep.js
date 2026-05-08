@@ -8,6 +8,7 @@ const STEP_COPY = {
     kicker: "Skin Match",
     headline: "사진 한 장, 몇 가지 질문으로 내 피부에 맞는 추천을 받아보세요",
     hint: "정면에 가까운 밝은 사진 권장",
+    guide: "얼굴이 중앙에 오도록 맞춰주세요",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
     retake: "다시 촬영",
@@ -23,6 +24,7 @@ const STEP_COPY = {
     kicker: "Skin Match",
     headline: "One photo and a few questions help organize recommendations for your skin.",
     hint: "A bright, front-facing photo works best",
+    guide: "Keep your face near the center",
     camera: "Use Camera",
     gallery: "Choose Photo",
     retake: "Retake",
@@ -50,6 +52,27 @@ function FaceSilhouette() {
           </svg>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PhotoOvalGuide({ label, dimmed = false }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center px-6 py-7">
+      <div
+        className={`h-[62%] min-h-[170px] w-[54%] min-w-[142px] max-w-[220px] rounded-[999px] border border-dashed shadow-[0_0_30px_rgba(255,255,255,0.08)] ${
+          dimmed
+            ? "border-white/30 opacity-25"
+            : "border-white/55 opacity-45"
+        }`}
+      />
+      <p
+        className={`mt-3 rounded-full bg-black/30 px-3 py-1 text-center text-[11px] font-medium leading-5 text-white shadow-sm backdrop-blur-sm ${
+          dimmed ? "opacity-35" : "opacity-70"
+        }`}
+      >
+        {label}
+      </p>
     </div>
   );
 }
@@ -200,7 +223,7 @@ export default function PhotoUploadStep({
 
                 <div className="flex justify-center pt-2 sm:pt-4">
                   <div className="w-[90%] mx-auto flex justify-center sm:w-full sm:max-w-md">
-                    <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
                       <video
                         ref={videoRef}
                         autoPlay
@@ -208,6 +231,7 @@ export default function PhotoUploadStep({
                         muted
                         className="mx-auto block h-full w-full scale-x-[-1] object-contain object-center"
                       />
+                      <PhotoOvalGuide label={t.guide} />
                     </div>
                   </div>
                 </div>
@@ -256,12 +280,13 @@ export default function PhotoUploadStep({
 
                 <div className="flex justify-center pt-2 sm:pt-4">
                   <div className="w-[90%] mx-auto flex justify-center sm:w-full sm:max-w-md">
-                    <div className="flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
                       <img
                         src={previewUrl}
                         alt={t.previewAlt}
                         className="mx-auto block h-full w-full object-contain object-center"
                       />
+                      <PhotoOvalGuide label={t.guide} dimmed />
                     </div>
                   </div>
                 </div>

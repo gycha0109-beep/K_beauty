@@ -169,6 +169,37 @@ export async function POST(request) {
       );
     }
 
+    if (payload.event_name === "feedback_response" && payload.session_id && payload.question_id) {
+      let duplicateQuery = supabase
+        .from("recommendation_logs")
+        .select("id")
+        .eq("event_name", payload.event_name)
+        .eq("session_id", payload.session_id)
+        .eq("question_id", payload.question_id)
+        .eq("result_type", payload.result_type)
+        .limit(1);
+
+      duplicateQuery = payload.product_id
+        ? duplicateQuery.eq("product_id", payload.product_id)
+        : duplicateQuery.is("product_id", null);
+
+      const { data: existingRows, error: duplicateLookupError } = await duplicateQuery;
+
+      if (duplicateLookupError) {
+        console.error("[api/track] duplicate lookup failed", {
+          message: duplicateLookupError.message,
+          event_name: payload.event_name,
+          session_id: payload.session_id,
+          question_id: payload.question_id
+        });
+      } else if (existingRows?.length) {
+        return NextResponse.json({
+          success: true,
+          deduped: true
+        });
+      }
+    }
+
     const { error } = await supabase
       .from("recommendation_logs")
       .insert([{

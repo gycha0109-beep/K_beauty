@@ -945,6 +945,278 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
   return blocks;
 }
 
+function getTopPickOperationLabels(locale = "ko") {
+  return locale === "en"
+    ? {
+        kicker: "Primary product manual",
+        fit: "Current fit",
+        role: "Role in the routine",
+        reasons: "Why it fits",
+        caution: "Watch point",
+        action: "Start today"
+      }
+    : {
+        kicker: "1순위 제품 운용법",
+        fit: "현재 적합도 요약",
+        role: "역할 요약",
+        reasons: "잘 맞는 이유",
+        caution: "주의할 점",
+        action: "오늘부터 쓰는 법"
+      };
+}
+
+function getNumericTopPickScore(product = {}, report = {}) {
+  const candidates = [
+    product?.finalScore,
+    product?.final_score,
+    product?.matchScore,
+    product?.match_score,
+    product?.score,
+    product?.decision_meta?.finalScore,
+    product?.decision_meta?.final_score,
+    product?.decisionMeta?.finalScore,
+    report?.topPickScore,
+    report?.topPickFinalScore
+  ];
+
+  const score = candidates
+    .map((item) => Number(item))
+    .find((item) => Number.isFinite(item) && item > 0);
+
+  if (!Number.isFinite(score)) {
+    return null;
+  }
+
+  return Math.round(Math.max(0, Math.min(100, score)));
+}
+
+function buildTopPickFitSummary(product = {}, report = {}, locale = "ko") {
+  const score = getNumericTopPickScore(product, report);
+
+  if (score != null) {
+    return locale === "en"
+      ? `Current condition fit ${score}%`
+      : `현재 조건과의 적합도 ${score}%`;
+  }
+
+  return locale === "en"
+    ? "Stable choice for the current condition"
+    : "현재 조건에서 안정적인 선택";
+}
+
+function buildTopPickRoleSummary(product = {}, result = {}, locale = "ko") {
+  const axis = getReportPriorityAxis(result);
+  const concern = getReportPriorityLabel(result, locale);
+  const stepLabel = getReportStepLabel(product, locale);
+
+  if (locale === "en") {
+    if (axis === "redness" || axis === "barrier") {
+      return `A ${stepLabel.toLowerCase()} lane that lowers reactive burden before adding more steps.`;
+    }
+    if (axis === "dehydration") {
+      return `A ${stepLabel.toLowerCase()} lane for adding hydration without making the routine heavy.`;
+    }
+    if (axis === "oiliness" || axis === "pores") {
+      return `A ${stepLabel.toLowerCase()} lane that keeps oiliness and texture easier to manage.`;
+    }
+    if (axis === "acne") {
+      return `A ${stepLabel.toLowerCase()} lane that keeps breakout-day care narrow and repeatable.`;
+    }
+    if (axis === "uneven_tone") {
+      return `A ${stepLabel.toLowerCase()} lane for texture and tone support without overcorrecting.`;
+    }
+
+    return `A ${stepLabel.toLowerCase()} lane that keeps the ${concern} priority simple.`;
+  }
+
+  if (axis === "redness" || axis === "barrier") {
+    return `${concern} 부담을 먼저 낮추는 ${stepLabel} 축`;
+  }
+  if (axis === "dehydration") {
+    return `수분감을 보완하면서 단계 부담을 줄이는 ${stepLabel}`;
+  }
+  if (axis === "oiliness" || axis === "pores") {
+    return `유분과 결 부담을 가볍게 정리하는 ${stepLabel}`;
+  }
+  if (axis === "acne") {
+    return `트러블이 올라온 날에도 루틴을 단순하게 잡는 ${stepLabel}`;
+  }
+  if (axis === "uneven_tone") {
+    return `톤과 결 보완을 과하지 않게 가져가는 ${stepLabel}`;
+  }
+
+  return `${concern} 우선순위를 단순하게 받쳐주는 ${stepLabel}`;
+}
+
+function getTopPickCategoryReason(product = {}, locale = "ko") {
+  const category = normalizeReportCategory(product);
+
+  if (locale === "en") {
+    if (category === "sunscreen") {
+      return "Fits as the final morning protection step";
+    }
+    if (category === "cleanser") {
+      return "Resets residue without making cleansing stronger";
+    }
+    if (category === "toner_pad" || category === "toner_essence") {
+      return "Works as a thin first layer before heavier steps";
+    }
+    if (category === "serum_ampoule") {
+      return "Keeps active care focused in one lane";
+    }
+    if (category === "moisturizer") {
+      return "Holds the sealing role without adding more correction";
+    }
+
+    return "Keeps the surrounding routine easier to repeat";
+  }
+
+  if (category === "sunscreen") {
+    return "아침 보호 단계에 바로 배치 가능";
+  }
+  if (category === "cleanser") {
+    return "세안 강도를 높이지 않고 잔여감 정리";
+  }
+  if (category === "toner_pad" || category === "toner_essence") {
+    return "무거운 단계 전 얇은 첫 레이어로 사용";
+  }
+  if (category === "serum_ampoule") {
+    return "기능을 한 방향으로 좁혀 사용";
+  }
+  if (category === "moisturizer") {
+    return "마무리 보습 축을 안정적으로 확보";
+  }
+
+  return "주변 루틴을 단순하게 유지";
+}
+
+function buildTopPickReasonChecklist(product = {}, result = {}, reasonBlocks = [], locale = "ko") {
+  const concern = getReportPriorityLabel(result, locale);
+  const hasEvidence = reasonBlocks.some((block) => block?.key === "evidence" && compactLocalizedText(block.body, locale));
+  const hasReview = Boolean(buildReviewSignalText(product, locale));
+  const items = locale === "en"
+    ? [
+        `${concern} priority match`,
+        getTopPickCategoryReason(product, locale),
+        hasEvidence
+          ? "Photo and survey read are used only as supporting context"
+          : hasReview
+            ? "Review signals are checked as a light support signal"
+            : "Easy to keep other steps simple"
+      ]
+    : [
+        `${concern} 우선순위와 역할이 맞음`,
+        getTopPickCategoryReason(product, locale),
+        hasEvidence
+          ? "사진·설문 흐름을 보조 근거로 확인"
+          : hasReview
+            ? "리뷰 반응을 보조 근거로 확인"
+            : "다른 단계와 겹침을 줄이기 쉬움"
+      ];
+
+  return uniqueDisplayTexts(items).slice(0, 3);
+}
+
+function buildTopPickCaution(product = {}, locale = "ko") {
+  const category = normalizeReportCategory(product);
+
+  if (locale === "en") {
+    if (category === "sunscreen") {
+      return "Reapply on long outdoor days, and cleanse the residue gently at night.";
+    }
+    if (category === "cleanser") {
+      return "Avoid cleansing until the skin feels squeaky or stripped.";
+    }
+    if (category === "toner_pad" || category === "toner_essence") {
+      return "Do not stack several pad or toner layers on the same routine.";
+    }
+    if (category === "serum_ampoule") {
+      return "On reactive days, do not layer it with several active products in the same night.";
+    }
+    if (category === "moisturizer") {
+      return "If the finish feels heavy, reduce the amount and focus on dry areas.";
+    }
+
+    return "Use less on reactive days and keep the surrounding steps simple.";
+  }
+
+  if (category === "sunscreen") {
+    return "야외 시간이 길면 덧바르고, 저녁에는 잔여감을 부드럽게 정리하세요.";
+  }
+  if (category === "cleanser") {
+    return "뽀득하게 오래 문지르는 세안은 피하세요.";
+  }
+  if (category === "toner_pad" || category === "toner_essence") {
+    return "패드나 토너를 여러 장 겹치지 마세요.";
+  }
+  if (category === "serum_ampoule") {
+    return "예민한 날에는 다른 활성 제품과 같은 밤에 겹치지 마세요.";
+  }
+  if (category === "moisturizer") {
+    return "답답하게 느껴지면 양을 줄이고 건조한 부위 중심으로 둡니다.";
+  }
+
+  return "반응이 예민한 날에는 사용량을 줄이고 주변 단계를 단순하게 유지하세요.";
+}
+
+function buildTopPickStartAction(product = {}, locale = "ko") {
+  const category = normalizeReportCategory(product);
+
+  if (locale === "en") {
+    if (category === "sunscreen") {
+      return "Use enough as the final morning step, then reapply when exposure is long.";
+    }
+    if (category === "cleanser") {
+      return "Use it briefly at the cleansing step, then move straight into hydration.";
+    }
+    if (category === "toner_pad") {
+      return "After cleansing, use one pad lightly or press it where the skin feels dry.";
+    }
+    if (category === "toner_essence") {
+      return "Apply a thin first layer right after cleansing before heavier products.";
+    }
+    if (category === "serum_ampoule") {
+      return "Start with a small amount after toner and watch how the skin responds.";
+    }
+    if (category === "moisturizer") {
+      return "Finish with a thin layer after serum, then add a little more only on dry areas.";
+    }
+
+    return "Use it as the anchor step and keep the rest of the routine light.";
+  }
+
+  if (category === "sunscreen") {
+    return "아침 마지막 단계에서 충분히 바르고, 긴 외출 전에는 덧바름을 기준으로 보세요.";
+  }
+  if (category === "cleanser") {
+    return "세안 단계에서 짧게 사용하고 바로 보습 단계로 이어가세요.";
+  }
+  if (category === "toner_pad") {
+    return "세안 직후 한 장으로 짧게 닦거나 필요한 부위에 가볍게 눌러 주세요.";
+  }
+  if (category === "toner_essence") {
+    return "세안 직후 얇게 먼저 올리고 다음 단계는 가볍게 이어가세요.";
+  }
+  if (category === "serum_ampoule") {
+    return "토너 다음 단계에서 소량만 먼저 사용하세요.";
+  }
+  if (category === "moisturizer") {
+    return "세럼 다음 단계에서 얇게 마무리하고 건조 부위만 한 번 더 보완하세요.";
+  }
+
+  return "기준 단계로 소량만 먼저 쓰고, 주변 루틴은 가볍게 유지하세요.";
+}
+
+function buildTopPickOperationManual({ product = {}, report = {}, result = {}, reasonBlocks = [], locale = "ko" } = {}) {
+  return {
+    fitSummary: buildTopPickFitSummary(product, report, locale),
+    roleSummary: buildTopPickRoleSummary(product, result, locale),
+    reasons: buildTopPickReasonChecklist(product, result, reasonBlocks, locale),
+    caution: buildTopPickCaution(product, locale),
+    action: buildTopPickStartAction(product, locale)
+  };
+}
+
 function getEnglishRoleLabel(role, product) {
   if (role === "support_concern_booster") {
     return "Supporting concern booster";
@@ -1653,26 +1925,77 @@ function TopPickHeroCard({ product, report, copy, locale, result }) {
   const topPickReasonBlocks = Array.isArray(report?.topPickReasonBlocks) && report.topPickReasonBlocks.length
     ? report.topPickReasonBlocks
     : buildTopPickReasonBlocks({ report, result, product, locale });
+  const manualLabels = getTopPickOperationLabels(locale);
+  const manual = buildTopPickOperationManual({
+    product,
+    report,
+    result,
+    reasonBlocks: topPickReasonBlocks,
+    locale
+  });
 
   return (
     <section className="ui-card p-6">
       <div className="grid grid-cols-[1fr_96px] gap-4 sm:grid-cols-[1fr_120px] sm:gap-5">
         <div className="min-w-0">
-          <p className="ui-kicker">{copy.topPickReason}</p>
+          <p className="ui-kicker">{manualLabels.kicker}</p>
           <h2 className="ui-title mt-2 break-words text-[1.35rem] sm:text-[1.45rem]">{product.name || "Top Pick"}</h2>
           <p className="ui-text-secondary mt-1 text-sm">{product.brand || ""}</p>
-          {topPickReasonBlocks.length ? (
-            <div className="mt-4 grid gap-3">
-              {topPickReasonBlocks.map((block, index) => (
-                <div key={`${block.key}-${index}`} className="rounded-[1rem] bg-white/5 px-3 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                    {block.label}
+
+          <div className="mt-4 grid gap-3">
+            {manual.fitSummary ? (
+              <div className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                  {manualLabels.fit}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">{manual.fitSummary}</p>
+              </div>
+            ) : null}
+
+            {manual.roleSummary ? (
+              <div className="rounded-[1.15rem] border border-sky-300/20 bg-sky-500/10 px-3 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-700 dark:text-sky-200">
+                  {manualLabels.role}
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">{manual.roleSummary}</p>
+              </div>
+            ) : null}
+
+            {manual.reasons.length ? (
+              <div className="rounded-[1rem] bg-white/5 px-3 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                  {manualLabels.reasons}
+                </p>
+                <ul className="mt-2 space-y-2">
+                  {manual.reasons.map((reason, index) => (
+                    <li key={`${reason}-${index}`} className="flex gap-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                      <span className="mt-0.5 text-xs font-semibold text-sky-700 dark:text-sky-200">✓</span>
+                      <span>{reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {manual.caution ? (
+                <div className="rounded-[1rem] border border-amber-300/20 bg-amber-500/10 px-3 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-700 dark:text-amber-200">
+                    {manualLabels.caution}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{block.body}</p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{manual.caution}</p>
                 </div>
-              ))}
+              ) : null}
+              {manual.action ? (
+                <div className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+                    {manualLabels.action}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{manual.action}</p>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
         <div className="flex flex-col items-stretch justify-start">
           <ProductThumb product={product} copy={copy} sizeClass="h-28 w-24 sm:h-32 sm:w-28" />
@@ -1970,9 +2293,19 @@ function getSituationVariantButtonLabel(label) {
   return lineBreakLabels[text] || text;
 }
 
+function getFullReportFeedbackStorageKey(productId) {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  const sessionId = getOrCreateTrackingSessionId();
+  return `skinTestFullReportFeedback:${sessionId || "session"}:${productId || "unknown"}`;
+}
+
 function FullReportFeedbackCard({ locale = "ko", productId = null }) {
-  const [mode, setMode] = useState("idle");
+  const [mode, setMode] = useState("checking");
   const [customComment, setCustomComment] = useState("");
+  const [storageKey, setStorageKey] = useState("");
 
   const copy = locale === "en"
     ? {
@@ -2008,7 +2341,31 @@ function FullReportFeedbackCard({ locale = "ko", productId = null }) {
         ]
       };
 
+  useEffect(() => {
+    const nextStorageKey = getFullReportFeedbackStorageKey(productId);
+    setStorageKey(nextStorageKey);
+
+    if (nextStorageKey && sessionStorage.getItem(nextStorageKey)) {
+      setMode("submitted");
+      return;
+    }
+
+    setMode("idle");
+  }, [productId]);
+
   const submitFeedback = ({ rating, reason = null, comment = null }) => {
+    if (mode === "submitted") {
+      return;
+    }
+
+    if (storageKey) {
+      sessionStorage.setItem(storageKey, JSON.stringify({
+        rating,
+        reason,
+        submitted_at: new Date().toISOString()
+      }));
+    }
+
     trackEvent("feedback_response", {
       product_id: productId,
       feature_name: "skin_analysis",
@@ -2024,6 +2381,10 @@ function FullReportFeedbackCard({ locale = "ko", productId = null }) {
     });
     setMode("submitted");
   };
+
+  if (mode === "checking") {
+    return null;
+  }
 
   if (mode === "submitted") {
     return (
@@ -2293,7 +2654,7 @@ function SkinMatchStepReport({
   const labels = locale === "en"
     ? {
         stepKicker: "SKIN MATCH STEP",
-        topPick: "Primary Product Analysis",
+        topPick: "Primary Product Manual",
         alternatives: "Alternative Use Strategy",
         morning: "Morning Action Routine",
         night: "Night Action Routine",
@@ -2305,7 +2666,7 @@ function SkinMatchStepReport({
       }
     : {
         stepKicker: "SKIN MATCH STEP",
-        topPick: "1순위 제품 분석",
+        topPick: "1순위 제품 운용법",
         alternatives: "대체 제품 사용 전략",
         morning: "아침 실행 루틴",
         night: "저녁 실행 루틴",
@@ -2716,21 +3077,21 @@ function RoutineTimelineCard({ step, copy, locale = "ko" }) {
             <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{step.instruction}</p>
           ) : null}
           <RoutineProductInline product={step.product} copy={copy} locale={locale} />
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="mt-3 space-y-2">
             {step.frequency ? (
-              <div className="rounded-[0.9rem] bg-white/5 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-start gap-3 rounded-[0.9rem] bg-white/5 px-3 py-2">
+                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
                   {locale === "en" ? "Frequency" : "빈도"}
                 </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{step.frequency}</p>
+                <p className="min-w-0 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{step.frequency}</p>
               </div>
             ) : null}
             {step.caution ? (
-              <div className="rounded-[0.9rem] bg-white/5 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-start gap-3 rounded-[0.9rem] bg-white/5 px-3 py-2">
+                <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
                   {locale === "en" ? "Caution" : "주의"}
                 </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{step.caution}</p>
+                <p className="min-w-0 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{step.caution}</p>
               </div>
             ) : null}
           </div>
