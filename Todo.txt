@@ -1,29 +1,6 @@
-최근 반영:
-- 유료 /result/full-report Skin Match 탭을 6단계 UI로 재구성
-  1순위 제품 분석 / 대체 제품 전략 / 아침 루틴 / 저녁 루틴 / 상황별 조정 / 예산 대안
-- 유료 Skin Match 표시 문구 마감
-  topPickReasonBlocks, productRole 한국어화, relationToTopPick 자연화, 선크림/선케어 역할 표시, 빈 값/중복 방어
-- premium_report_sessions를 Supabase 저장/조회로 전환
-  signed sid cookie 기반 조회, dev TTL 7일, production TTL 24시간
-- 사진 기준 관찰 photoObservations 구조 추가
-  OpenAI vision prompt, normalize/fallback, result UI, Top Pick 근거 문장에 반영
-  추천 점수/priority/Top Pick 선택 로직에는 반영하지 않음
-- Face Lab 무료 티저 문구가 고정처럼 보이던 문제 보완
-  full Face Lab 결과와 source teaserLine을 우선 사용
-- full-report 예산 대안 이미지/제품 메타 누락 방어 추가
-  budgetAlternatives에 category/texture/finish/use_time/price/buy_link/image_url 유지
-- 무료 결과 흐름/문구 정리
-  사진 기준 관찰 섹션, Face Lab 티저, 루틴/리포트 CTA 문구 정리
-
-Next:
-- 새 진단 후 /result와 /result/full-report 전체 QA
-- photoObservations가 OpenAI 정상 응답과 fallback 양쪽에서 자연스럽게 보이는지 확인
-- Supabase premium_report_sessions 저장/조회가 새 결과 생성마다 정상 동작하는지 확인
-- 역할별 선택지 2~3개 노출 케이스 확인
-- relationToTopPick에 엉뚱한 제품명이나 반복 문장 없는지 확인
-- AM/PM 단계별 루틴 UI와 모바일 스크롤 흐름 확인
-- Face Lab 유료 결과 깊이 개선
-- 결제 전환 CTA/가격/로그 설계
+Todo:
+유료 리포트 결과 마지막에 리포트 저장 기능 구현 완성
+리뷰 크롤링 알고리즘 역질문으로 지피티에 소스 추가하기
 
 메모:
 - 현재 작업을 학원 로컬/집 로컬 두 공간에서 번갈아가며 진행 중
