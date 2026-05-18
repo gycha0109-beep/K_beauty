@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -3537,6 +3538,7 @@ function SkinMatchStepReport({
       ) : null}
 
       <ResultBottomCTA
+        fixed={false}
         label={primaryLabel}
         onClick={() => {
           if (currentStepIndex === maxStepIndex) {
@@ -4691,13 +4693,16 @@ export default function FullReportPage() {
                   })}
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => router.push(getResultPath(locale))}
-                className="ui-button-secondary shrink-0 px-4 py-2.5 text-xs font-medium"
-              >
-                {copy.backResult}
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <ThemeToggle locale={locale} compact />
+                <button
+                  type="button"
+                  onClick={() => router.push(getResultPath(locale))}
+                  className="ui-button-secondary px-4 py-2.5 text-xs font-medium"
+                >
+                  {copy.backResult}
+                </button>
+              </div>
             </div>
           </header>
 

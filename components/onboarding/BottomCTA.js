@@ -8,7 +8,7 @@ export default function BottomCTA({
   onTertiary
 }) {
   return (
-    <div className="ui-bottom-bar fixed inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4">
+    <div className="px-4 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-4">
       <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:px-2">
         {tertiaryLabel ? (
           <button

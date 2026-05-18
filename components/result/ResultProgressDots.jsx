@@ -5,7 +5,7 @@ export default function ResultProgressDots({ currentStep, totalSteps, label }) {
         <p className="ui-kicker">
           {label}
         </p>
-        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs font-medium text-[#7e5261] dark:text-[#c7aeb8]">
           {currentStep} / {totalSteps}
         </p>
       </div>
@@ -19,8 +19,8 @@ export default function ResultProgressDots({ currentStep, totalSteps, label }) {
               key={`result-dot-${index}`}
               className={`h-2 flex-1 rounded-full transition ${
                 active
-                  ? "bg-zinc-900 dark:bg-zinc-100"
-                  : "bg-zinc-200 dark:bg-zinc-800"
+                  ? "bg-[#3a1824] dark:bg-[#fff7f2]"
+                  : "bg-[#d8c2bc] dark:bg-[#3a2a33]"
               }`}
             />
           );

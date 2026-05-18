@@ -9,6 +9,7 @@ import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import BasicSurveyStep from "@/components/onboarding/BasicSurveyStep";
 import ExtraSurveyStep from "@/components/onboarding/ExtraSurveyStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
+import ThemeToggle from "@/components/ThemeToggle";
 import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
 import {
   INITIAL_FORM,
@@ -432,7 +433,7 @@ export default function HomePage() {
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-32 pt-4 sm:px-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             {[
@@ -454,6 +455,7 @@ export default function HomePage() {
           </div>
 
           <div className="relative flex items-center gap-2">
+            <ThemeToggle locale={locale} compact />
             {isDevMode ? (
               <button
                 type="button"
@@ -492,7 +494,7 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        <div key={currentStep} className="step-enter flex flex-1 flex-col">
+        <div key={currentStep} className="step-enter flex flex-col">
           {renderStep()}
         </div>
       </div>

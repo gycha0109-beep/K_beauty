@@ -41,8 +41,8 @@ function FaceSilhouette() {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-[calc(11%+20px)] bottom-[168px] z-0 flex items-start justify-center">
       <div className="relative h-full w-[56%] max-w-[272px]">
-        <div className="absolute -left-[30px] -right-[30px] top-[4%] bottom-[calc(18%-35px)] rounded-[2rem] border-2 border-[#444444] dark:border-[#7A7A7A]" />
-        <div className="h-full w-full text-[#444444] dark:text-[#7A7A7A]">
+        <div className="absolute -left-[30px] -right-[30px] top-[4%] bottom-[calc(18%-35px)] rounded-[2rem] border-2 border-[#9f756e] dark:border-[#80606a]" />
+        <div className="h-full w-full text-[#9f756e] dark:text-[#80606a]">
           <svg viewBox="0 0 800 800" aria-hidden="true" className="h-full w-full object-contain object-center fill-current">
             <g opacity="1">
               <path d="M400 108C295.066 108 210 193.066 210 298V360C210 441.873 261.77 511.653 334.38 538.42C347.9 543.404 357 556.363 357 570.772V583.9C357 605.994 343.705 625.914 323.304 634.321L177.788 694.278C119.99 718.091 82 774.373 82 836V860H718V836C718 774.373 680.01 718.091 622.212 694.278L476.696 634.321C456.295 625.914 443 605.994 443 583.9V570.772C443 556.363 452.1 543.404 465.62 538.42C538.23 511.653 590 441.873 590 360V298C590 193.066 504.934 108 400 108Z" />
@@ -62,12 +62,12 @@ function PhotoOvalGuide({ label, dimmed = false }) {
       <div
         className={`h-[62%] min-h-[170px] w-[54%] min-w-[142px] max-w-[220px] rounded-[999px] border border-dashed shadow-[0_0_30px_rgba(255,255,255,0.08)] ${
           dimmed
-            ? "border-white/30 opacity-25"
-            : "border-white/55 opacity-45"
+            ? "border-[#9f756e]/35 opacity-30 dark:border-white/30"
+            : "border-[#9f756e]/60 opacity-50 dark:border-white/55"
         }`}
       />
       <p
-        className={`mt-3 rounded-full bg-black/30 px-3 py-1 text-center text-[11px] font-medium leading-5 text-white shadow-sm backdrop-blur-sm ${
+        className={`mt-3 rounded-full bg-white/60 px-3 py-1 text-center text-[11px] font-medium leading-5 text-[#5a2d3c] shadow-sm backdrop-blur-sm dark:bg-black/30 dark:text-white ${
           dimmed ? "opacity-35" : "opacity-70"
         }`}
       >
@@ -210,7 +210,7 @@ export default function PhotoUploadStep({
         <div className={`relative ${hasPreview || isCameraOpen ? "min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)]" : "min-h-[560px]"}`}>
           {isCameraOpen ? (
             <>
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#fff8f3_0%,#f4dfd7_100%)] dark:bg-[linear-gradient(180deg,#241420_0%,#171018_100%)]" />
               <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-2.5 sm:p-4">
                 <div className="px-2 pb-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
@@ -223,7 +223,7 @@ export default function PhotoUploadStep({
 
                 <div className="flex justify-center pt-2 sm:pt-4">
                   <div className="w-[90%] mx-auto flex justify-center sm:w-full sm:max-w-md">
-                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] border border-[#d9b7ae] bg-white/35 dark:border-[#6f4655] dark:bg-white/[0.04]">
                       <video
                         ref={videoRef}
                         autoPlay
@@ -267,7 +267,7 @@ export default function PhotoUploadStep({
             </>
           ) : hasPreview ? (
             <>
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#fff8f3_0%,#f4dfd7_100%)] dark:bg-[linear-gradient(180deg,#241420_0%,#171018_100%)]" />
               <div className="relative z-10 flex min-h-[min(74dvh,640px)] max-h-[min(74dvh,640px)] flex-col p-2.5 sm:p-4">
                 <div className="px-2 pb-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.22em] ui-text-subtle-strong">
@@ -280,7 +280,7 @@ export default function PhotoUploadStep({
 
                 <div className="flex justify-center pt-2 sm:pt-4">
                   <div className="w-[90%] mx-auto flex justify-center sm:w-full sm:max-w-md">
-                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] bg-black/[0.05] dark:bg-white/[0.04]">
+                    <div className="relative flex aspect-[4/5] max-h-[min(42dvh,360px)] items-center justify-center overflow-hidden rounded-[1.85rem] border border-[#d9b7ae] bg-white/35 dark:border-[#6f4655] dark:bg-white/[0.04]">
                       <img
                         src={previewUrl}
                         alt={t.previewAlt}
@@ -322,7 +322,7 @@ export default function PhotoUploadStep({
             </>
           ) : (
             <>
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,#fff8f3_0%,#f4dfd7_100%)] dark:bg-[linear-gradient(180deg,#241420_0%,#171018_100%)]" />
               <div
                 className={`absolute inset-0 transition-opacity duration-700 ${
                   showIntroVisual ? "opacity-100" : "pointer-events-none opacity-0"
@@ -343,7 +343,7 @@ export default function PhotoUploadStep({
                   showIntroVisual ? "opacity-0" : "opacity-100"
                 }`}
               >
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,#f4ede3_0%,#f7f1e7_100%)] dark:bg-[linear-gradient(180deg,#18181b_0%,#111114_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#fff8f3_0%,#f4dfd7_100%)] dark:bg-[linear-gradient(180deg,#241420_0%,#171018_100%)]" />
                 <FaceSilhouette />
               </div>
 

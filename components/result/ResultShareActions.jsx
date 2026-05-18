@@ -10,11 +10,11 @@ const SHARE_SESSION_KEY = "skinTestShare";
 
 const ACTION_COPY = {
   ko: {
-    save: "Save result",
-    saved: "Saved",
-    copy: "Copy link",
-    share: "Share",
-    saveImage: "Save image",
+    save: "결과 저장",
+    saved: "저장됨",
+    copy: "링크 복사",
+    share: "공유",
+    saveImage: "이미지 저장",
     saving: "저장 중...",
     copied: "링크를 복사했습니다.",
     sharedFallback: "공유를 열 수 없어 링크를 복사했습니다.",
@@ -100,7 +100,7 @@ async function tryWriteClipboardText(text) {
   }
 }
 
-export default function ResultShareActions({ result, submission, locale = "ko" }) {
+export default function ResultShareActions({ result, submission, locale = "ko", variant = "card" }) {
   const copy = getActionCopy(locale);
   const exportRef = useRef(null);
   const fingerprint = useMemo(() => buildResultFingerprint(result, submission), [result, submission]);
@@ -269,15 +269,26 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
     }
   }
 
+  const isHeaderVariant = variant === "header";
+  const containerClassName = isHeaderVariant
+    ? "ml-auto w-fit max-w-full rounded-none border-0 bg-transparent p-0 shadow-none"
+    : "rounded-[1.6rem] border border-white/10 bg-white/90 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)]";
+  const gridClassName = isHeaderVariant
+    ? "flex flex-wrap justify-end gap-2"
+    : "grid grid-cols-2 gap-2.5 sm:grid-cols-4";
+  const buttonClassName = isHeaderVariant
+    ? "inline-flex min-h-0 items-center justify-center rounded-full border border-[#ead9d6] bg-white px-4 py-2 text-xs font-medium leading-none text-[#3a1824] shadow-[0_8px_18px_rgba(52,20,35,0.06)] transition hover:bg-[#fff4f1] disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430]"
+    : "ui-button-secondary min-h-11 border-[#ead9d6] bg-white px-3 text-sm font-medium text-[#3a1824] hover:bg-[#fff4f1]";
+
   return (
     <>
-      <div className="ui-card p-4">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+    <div className={containerClassName}>
+      <div className={gridClassName}>
           <button
             type="button"
             onClick={() => saveResult()}
             disabled={isSaving}
-            className="ui-button-secondary min-h-11 px-3 text-sm font-medium"
+          className={buttonClassName}
           >
             {isSaving ? copy.saving : shareInfo?.shareId ? copy.saved : copy.save}
           </button>
@@ -285,7 +296,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
             type="button"
             onClick={handleCopy}
             disabled={isSaving}
-            className="ui-button-secondary min-h-11 px-3 text-sm font-medium"
+          className={buttonClassName}
           >
             {copy.copy}
           </button>
@@ -293,7 +304,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
             type="button"
             onClick={handleShare}
             disabled={isSaving}
-            className="ui-button-secondary min-h-11 px-3 text-sm font-medium"
+          className={buttonClassName}
           >
             {copy.share}
           </button>
@@ -301,7 +312,7 @@ export default function ResultShareActions({ result, submission, locale = "ko" }
             type="button"
             onClick={handleDownloadImage}
             disabled={isDownloading}
-            className="ui-button-secondary min-h-11 px-3 text-sm font-medium"
+          className={buttonClassName}
           >
             {copy.saveImage}
           </button>

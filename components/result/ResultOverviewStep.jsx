@@ -4,17 +4,41 @@ export default function ResultOverviewStep({
   photoAlt,
   summaryCards,
   overviewSummary,
-  faceLabPreview = null
+  faceLabPreview = null,
+  photoObservations = null,
+  locale = "ko"
 }) {
   const hasFaceLabPreview = Boolean(faceLabPreview?.primary || faceLabPreview?.keywords?.length);
+  const isEnglish = copy.resultOverviewTitle === "Your Result";
+  const photoSummary = String(photoObservations?.summary || "").trim();
+  const photoSignals = Array.isArray(photoObservations?.signals)
+    ? photoObservations.signals
+        .map((signal) => {
+          const label = String(signal?.label || "").trim();
+          const area = String(signal?.area || "").trim();
+          return label && area ? `${label} · ${area}` : label || area;
+        })
+        .filter(Boolean)
+        .slice(0, 2)
+    : [];
+  const showPhotoObservation = Boolean(photoSummary || photoSignals.length);
 
   return (
-    <section className="ui-card overflow-hidden p-5">
-      <p className="ui-kicker">{copy.resultOverviewKicker}</p>
-      <h1 className="ui-title mt-2 text-[1.75rem] leading-tight sm:text-[1.9rem]">{copy.resultOverviewTitle}</h1>
+    <section className="overflow-hidden rounded-[2.15rem] border border-[#f1d9d3] bg-[#fff1f1] p-5 shadow-[0_26px_80px_rgba(52,20,35,0.16)] dark:border-[#4a303c] dark:bg-[#21151d] sm:p-6">
+      <div className="flex items-start gap-4">
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+          01
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7e5261] dark:text-[#c7aeb8]">
+            {isEnglish ? "Diagnosis Summary" : "진단 요약"}
+          </p>
+          <h1 className="mt-1 text-[1.9rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2.15rem]">{copy.resultOverviewTitle}</h1>
+        </div>
+      </div>
 
-      <div className="mt-5 grid grid-cols-[minmax(118px,0.9fr)_minmax(0,1.1fr)] gap-3">
-        <div className="ui-image-surface flex aspect-[4/5] h-full min-h-[190px] items-center justify-center overflow-hidden rounded-[1.5rem]">
+      <div className="mt-5 grid grid-cols-[minmax(124px,0.9fr)_minmax(0,1.1fr)] gap-4">
+        <div className="flex aspect-[4/5] h-full min-h-[210px] items-center justify-center overflow-hidden rounded-[1.55rem] border border-[#ead2cf] bg-white/70 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -38,27 +62,27 @@ export default function ResultOverviewStep({
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="ui-card-muted px-3 py-2.5"
+              className="rounded-full border border-[#ead9d6] bg-white/70 px-4 py-3 dark:border-[#5a3a48] dark:bg-[#301f28]"
             >
-              <p className="text-[9px] font-semibold uppercase tracking-[0.13em] text-zinc-500 dark:text-zinc-400">{card.label}</p>
-              <p className="mt-1 break-words text-[13px] font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{card.value}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8b6370] dark:text-[#c7aeb8]">{card.label}</p>
+              <p className="mt-1 break-words text-sm font-semibold leading-snug text-[#26101a] dark:text-[#fff7f2]">{card.value}</p>
             </div>
           ))}
         </div>
       </div>
 
       {hasFaceLabPreview ? (
-        <div className="ui-card-muted mt-3 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
+        <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/50 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">
             {faceLabPreview.label}
           </p>
           {faceLabPreview.primary ? (
-            <p className="mt-2 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{faceLabPreview.primary}</p>
+            <p className="mt-2 text-lg font-semibold tracking-tight text-[#26101a] dark:text-[#fff7f2]">{faceLabPreview.primary}</p>
           ) : null}
           {faceLabPreview.keywords?.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
               {faceLabPreview.keywords.map((keyword) => (
-                <span key={keyword} className="ui-chip-compact px-3 py-1.5">
+                <span key={keyword} className="rounded-full border border-[#ead9d6] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {keyword}
                 </span>
               ))}
@@ -67,10 +91,30 @@ export default function ResultOverviewStep({
         </div>
       ) : null}
 
-      <div className="ui-panel-accent mt-3 p-4 shadow-soft">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">{copy.recommendationDirection}</p>
-        <p className="mt-2.5 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{overviewSummary}</p>
+      <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/40 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">{copy.recommendationDirection}</p>
+        <p className="mt-2.5 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{overviewSummary}</p>
       </div>
+
+      {showPhotoObservation ? (
+        <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/40 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">
+            {locale === "en" ? "Photo-based read" : "사진 기준 관찰"}
+          </p>
+          {photoSummary ? (
+            <p className="mt-2.5 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{photoSummary}</p>
+          ) : null}
+          {photoSignals.length ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {photoSignals.map((signal) => (
+                <span key={signal} className="rounded-full border border-[#ead9d6] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+                  {signal}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -9,6 +9,7 @@ import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -195,6 +196,7 @@ const resultCopy = {
     feedbackThanksTitle: "피드백 감사합니다",
     feedbackThanksBody: "다음 추천 개선에 반영하겠습니다.",
     ctaViewTopPick: "Top Pick 보기",
+    ctaViewSkinDashboard: "피부 상태 대시보드 보기",
     ctaViewRecommended: "함께 쓰면 좋은 제품 보기",
     ctaViewAlternative: "대안 보기",
     ctaViewRoutine: "루틴 및 주의사항",
@@ -324,6 +326,7 @@ const resultCopy = {
     feedbackThanksTitle: "Thanks for your feedback",
     feedbackThanksBody: "We will use it to improve the next recommendation.",
     ctaViewTopPick: "See Top Pick",
+    ctaViewSkinDashboard: "See Skin Dashboard",
     ctaViewRecommended: "See Supporting Picks",
     ctaViewAlternative: "See Alternative",
     ctaViewRoutine: "Routine & Notes",
@@ -897,6 +900,8 @@ function getFaceLabProfilePreview(launchData, locale = "ko") {
 
 function getAdvanceLabelForStep(stepId, copy) {
   switch (stepId) {
+    case "skin-dashboard":
+      return copy.ctaViewSkinDashboard || copy.next;
     case "top-pick":
       return copy.ctaViewTopPick;
     case "alternative":
@@ -1214,6 +1219,10 @@ function clampGauge(value) {
   return Math.max(0, Math.min(5, Math.round(value)));
 }
 
+function clampPercent(value) {
+  return Math.max(28, Math.min(99, Math.round(value)));
+}
+
 function mapTierToGauge(value, fallback = 3) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return clampGauge(value);
@@ -1282,6 +1291,115 @@ function buildFitMetrics(product, form, locale = "ko") {
     { label: copy.fitLabels[3], value: texture },
     { label: copy.fitLabels[4], value: clampGauge(sensitivity + (signals.sensitivity_safe ? 1 : 0)) },
   ];
+}
+
+function buildSkinDashboardMetrics(result, form = {}, locale = "ko") {
+  const priority = result?.priority?.axis || form?.mainConcern || "";
+  const photoSignals = Array.isArray(result?.photoObservations?.signals)
+    ? result.photoObservations.signals.map((signal) => String(signal?.key || "").trim()).filter(Boolean)
+    : [];
+  const hasPhotoSignal = (key) => photoSignals.includes(key);
+  const isEnglish = locale === "en";
+
+  const hydrationAttention =
+    (form?.skinType === "dry" ? 12 : 0) +
+    (priority === "dehydration" || priority === "barrier" ? 20 : 0) +
+    (form?.postWashFeeling === "tight" ? 14 : 0) +
+    (hasPhotoSignal("dehydration") ? 12 : 0);
+  const oilAttention =
+    (form?.skinType === "oily" || form?.skinType === "combination" ? 12 : 0) +
+    (priority === "oiliness" || priority === "pores" ? 18 : 0) +
+    (form?.afternoonChange === "more_oily" ? 14 : 0) +
+    (hasPhotoSignal("oiliness") || hasPhotoSignal("pores") ? 10 : 0);
+  const sensitivityAttention =
+    (form?.sensitivity === "high" ? 26 : form?.sensitivity === "medium" ? 14 : 0) +
+    (priority === "redness" || priority === "barrier" || priority === "acne" ? 20 : 0) +
+    (form?.afternoonChange === "red_or_irritated" ? 12 : 0) +
+    (hasPhotoSignal("redness") || hasPhotoSignal("acne") ? 12 : 0);
+  const barrierAttention =
+    (priority === "barrier" || priority === "redness" || priority === "dehydration" ? 18 : 0) +
+    (form?.skinType === "dry" ? 8 : 0) +
+    (form?.postWashFeeling === "tight" ? 10 : 0) +
+    (hasPhotoSignal("barrier") || hasPhotoSignal("dehydration") || hasPhotoSignal("redness") ? 10 : 0);
+
+  const statusFor = (value) => {
+    if (isEnglish) {
+      if (value >= 78) return "High";
+      if (value >= 52) return "Balanced";
+      return "Low";
+    }
+
+    if (value >= 78) return "높음";
+    if (value >= 52) return "균형";
+    return "낮음";
+  };
+
+  const metrics = isEnglish
+    ? [
+        {
+          key: "hydration",
+          label: "Hydration",
+          value: clampPercent(46 + hydrationAttention),
+          description: hydrationAttention >= 24 ? "Check moisture retention before adding stronger steps." : "Moisture looks moderate, but retention still matters.",
+          color: "#e86b93"
+        },
+        {
+          key: "oil",
+          label: "Oil Balance",
+          value: clampPercent(44 + oilAttention),
+          description: oilAttention >= 24 ? "Keep shine and surface texture under control." : "Oil balance looks generally steady.",
+          color: "#ff8769"
+        },
+        {
+          key: "sensitivity",
+          label: "Sensitivity",
+          value: clampPercent(40 + sensitivityAttention),
+          description: sensitivityAttention >= 24 ? "Lower-irritation choices should come first." : "Sensitivity pressure looks manageable.",
+          color: "#9bd6bd"
+        },
+        {
+          key: "barrier",
+          label: "Barrier",
+          value: clampPercent(46 + barrierAttention),
+          description: barrierAttention >= 24 ? "Support comfort and moisture-holding power together." : "Barrier support is worth checking lightly.",
+          color: "#8a5a70"
+        }
+      ]
+    : [
+        {
+          key: "hydration",
+          label: "보습감",
+          value: clampPercent(46 + hydrationAttention),
+          description: hydrationAttention >= 24 ? "수분 유지력을 먼저 확인합니다." : "보습은 무난하지만 유지력을 함께 봅니다.",
+          color: "#e86b93"
+        },
+        {
+          key: "oil",
+          label: "유분 밸런스",
+          value: clampPercent(44 + oilAttention),
+          description: oilAttention >= 24 ? "번들거림과 표면 결을 함께 봅니다." : "유분감은 균형적으로 봅니다.",
+          color: "#ff8769"
+        },
+        {
+          key: "sensitivity",
+          label: "민감도",
+          value: clampPercent(40 + sensitivityAttention),
+          description: sensitivityAttention >= 24 ? "자극 부담을 낮추는 쪽이 먼저입니다." : "민감 부담은 낮은 편입니다.",
+          color: "#9bd6bd"
+        },
+        {
+          key: "barrier",
+          label: "장벽",
+          value: clampPercent(46 + barrierAttention),
+          description: barrierAttention >= 24 ? "장벽 보조와 편안함을 함께 봅니다." : "장벽 보조는 무난한 편입니다.",
+          color: "#8a5a70"
+        }
+      ];
+
+  return metrics.map((metric) => ({
+    ...metric,
+    status: statusFor(metric.value)
+  }));
 }
 
 function getDirectionSummary(form, decision = null, locale = "ko") {
@@ -1555,7 +1673,7 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko" }) {
       ) : (
         <div className="ui-image-empty flex h-full items-center justify-center px-3 text-center">
           <div className="flex flex-col items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-zinc-200 bg-white/72 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-zinc-200 bg-white/70 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500">
               <svg viewBox="0 0 48 48" className="h-5 w-5" fill="none" aria-hidden="true">
                 <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
                 <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
@@ -1597,6 +1715,8 @@ function ResultContent() {
   const [faceLabFull, setFaceLabFull] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
+  const resultProgressRef = useRef(null);
+  const didMountProgressScrollRef = useRef(false);
   const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
@@ -1660,10 +1780,35 @@ function ResultContent() {
       return;
     }
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
+    if (!didMountProgressScrollRef.current) {
+      didMountProgressScrollRef.current = true;
+      return;
+    }
+
+    let firstFrame = 0;
+    let secondFrame = 0;
+
+    firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        const target = resultProgressRef.current;
+
+        if (!target) {
+          return;
+        }
+
+        const targetTop = target.getBoundingClientRect().top + window.scrollY - 8;
+
+        window.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth"
+        });
+      });
     });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
   }, [currentResultStep]);
 
   useEffect(() => {
@@ -1742,21 +1887,26 @@ function ResultContent() {
     resultSteps.push({
       id: "overview",
       content: (
-        <section className="space-y-4">
-          <ResultOverviewStep
-            copy={copy}
-            photoUrl={photoUrl}
-            photoAlt={submission?.imageName || copy.resultPhotoFallback}
-            summaryCards={overviewCards}
-            overviewSummary={getOverviewSummary(submission?.form, result, locale)}
-            faceLabPreview={faceLabProfilePreview}
-          />
-          <PhotoObservationCard
-            observations={result.photoObservations}
-            copy={copy}
-            locale={locale}
-          />
-        </section>
+        <ResultOverviewStep
+          copy={copy}
+          photoUrl={photoUrl}
+          photoAlt={submission?.imageName || copy.resultPhotoFallback}
+          summaryCards={overviewCards}
+          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
+          faceLabPreview={faceLabProfilePreview}
+          photoObservations={result.photoObservations}
+          locale={locale}
+        />
+      )
+    });
+
+    resultSteps.push({
+      id: "skin-dashboard",
+      content: (
+        <SkinDashboardCard
+          metrics={buildSkinDashboardMetrics(result, submission?.form, locale)}
+          locale={locale}
+        />
       )
     });
 
@@ -1797,31 +1947,36 @@ function ResultContent() {
             body={null}
           />
 
-          <section className="ui-card p-5">
+          <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fff8ef] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.16)] dark:border-[#4a303c] dark:bg-[#21151d]">
             <div className="space-y-4">
-              <div className="grid gap-3">
+              <div className="grid gap-0">
                 {routineDirectionCards.length ? routineDirectionCards.map((card) => (
-                  <div key={`routine-structure-${card.key}`} className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 dark:bg-zinc-800/70">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500 dark:text-zinc-400">
-                      {card.label}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{card.body}</p>
+                  <div key={`routine-structure-${card.key}`} className="relative grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 border-b border-[#ead9d2] py-4 last:border-b-0 dark:border-[#4a303c]">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ead9d2] bg-white text-xs font-semibold text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#fff7f2]">
+                      {card.key === "night" ? 2 : 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[#26101a] dark:text-[#fff7f2]">
+                        {card.label}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{card.body}</p>
+                    </div>
                   </div>
                 )) : (
-                  <div className="rounded-[1.4rem] bg-zinc-50 px-4 py-4 text-sm leading-6 text-zinc-500 dark:bg-zinc-800/70 dark:text-zinc-400">
+                  <div className="rounded-[1.4rem] bg-white/60 px-4 py-4 text-sm leading-6 text-[#69424f] dark:bg-[#301f28] dark:text-[#c7aeb8]">
                     {copy.routineStepEmpty}
                   </div>
                 )}
               </div>
 
               {routineWarnings.length ? (
-                <div className="rounded-[1.4rem] border border-zinc-200/80 bg-zinc-50/90 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-900/70">
-                  <p className="ui-kicker">{decisionCopy.warnings}</p>
+                <div className="rounded-[1.4rem] border border-[#ead9d2] bg-white/60 px-4 py-4 dark:border-[#5a3a48] dark:bg-[#301f28]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">{decisionCopy.warnings}</p>
                   <div className="mt-3 space-y-2">
                     {routineWarnings.map((warning, index) => (
                       <p
                         key={`routine-warning-${index}`}
-                        className="text-sm leading-6 text-zinc-700 dark:text-zinc-300"
+                        className="text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]"
                       >
                         {warning}
                       </p>
@@ -1878,76 +2033,89 @@ function ResultContent() {
   }
 
   return (
-    <main className="ui-page ui-page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
-        <div className="space-y-4">
-          <header className="space-y-4">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7f2_0%,#f5e5e0_42%,#ead7cf_100%)] text-[#26101a] dark:bg-[radial-gradient(circle_at_top,#24101a_0%,#1a1016_46%,#140b11_100%)] dark:text-[#fff7f2]">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
+        <div className="space-y-5">
+          <header className="rounded-[2rem] border border-white/10 bg-white/[0.92] p-5 text-[#26101a] shadow-[0_24px_70px_rgba(0,0,0,0.22)] dark:border-[#4a303c] dark:bg-[#21151d] dark:text-[#fff7f2]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="ui-kicker">
-                  K-Beauty Result
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">
+                  AI Beauty Platform
                 </p>
-                <h1 className="ui-title mt-2 text-xl sm:text-2xl">
+                <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-2xl">
                   {copy.title}
                 </h1>
+                <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c7aeb8]">
+                  {locale === "en"
+                    ? "A personal beauty dashboard that connects Skin Match, Face Lab, and the full report."
+                    : "무료 결과도 Skin Match, Face Lab 프리뷰, 프리미엄 확장까지 이어지는 개인 뷰티 대시보드로 정리했습니다."}
+                </p>
                 {result?.meta?.notice ? (
-                  <p className="mt-3 inline-flex rounded-full bg-zinc-100 px-3 py-1.5 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                  <p className="mt-3 inline-flex rounded-full bg-[#fff4f1] px-3 py-1.5 text-xs text-[#7a5360] dark:bg-[#301f28] dark:text-[#f4d7df]">
                     {result.meta.notice}
                   </p>
                 ) : null}
               </div>
 
-              <Link
-                href={homePath}
-                onClick={(event) => {
-                  if (result && !window.confirm(getResultLeaveMessage(locale))) {
-                    event.preventDefault();
-                  }
-                }}
-                className="ui-button-secondary shrink-0 bg-white/88 px-4 py-2.5 text-xs font-medium dark:bg-zinc-900/88"
-              >
-                {copy.tryAgain}
-              </Link>
+              <div className="flex shrink-0 items-center gap-2">
+                <ThemeToggle locale={locale} compact />
+                <Link
+                  href={homePath}
+                  onClick={(event) => {
+                    if (result && !window.confirm(getResultLeaveMessage(locale))) {
+                      event.preventDefault();
+                    }
+                  }}
+                  className="inline-flex items-center justify-center rounded-full border border-[#ead9d6] bg-white px-4 py-2.5 text-xs font-medium text-[#3a1824] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430]"
+                >
+                  {copy.tryAgain}
+                </Link>
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {[
-                { code: "ko", label: "한국어" },
-                { code: "en", label: "English" }
-              ].map((item) => {
-                const active = locale === item.code;
-                return (
-                  <Link
-                    key={item.code}
-                    href={getLocalePath(pathname, item.code)}
-                    className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                      active
-                        ? "ui-choice-active"
-                        : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { code: "ko", label: "한국어" },
+                  { code: "en", label: "English" }
+                ].map((item) => {
+                  const active = locale === item.code;
+                  return (
+                    <Link
+                      key={item.code}
+                      href={getLocalePath(pathname, item.code)}
+                      className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                        active
+                          ? "bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] text-white"
+                          : "border border-[#ead9d6] bg-white text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {result && submission ? (
+                <ResultShareActions
+                  result={result}
+                  submission={submission}
+                  locale={locale}
+                  variant="header"
+                />
+              ) : null}
             </div>
+          </header>
 
-            {result && submission ? (
-              <ResultShareActions
-                result={result}
-                submission={submission}
-                locale={locale}
-              />
-            ) : null}
-
-            {result ? (
+          {result ? (
+            <div ref={resultProgressRef} className="scroll-mt-3 px-1">
               <ResultProgressDots
                 currentStep={currentResultStep + 1}
                 totalSteps={totalResultSteps}
                 label={copy.resultProgressLabel}
               />
-            ) : null}
-          </header>
+            </div>
+          ) : null}
 
           {error ? (
             <div className="ui-error">
@@ -1976,36 +2144,106 @@ function ResultContent() {
               </motion.div>
             </AnimatePresence>
           ) : null}
+
+          {showBottomCta ? (
+            <ResultBottomCTA
+              fixed={false}
+              label={isFinalResultStep ? copy.premiumCardButton : nextStepLabel}
+              onClick={
+                isFinalResultStep
+                  ? goToFullReport
+                  : () => setCurrentResultStep((current) => Math.min(totalResultSteps - 1, current + 1))
+              }
+              previousLabel={!isFinalResultStep && currentResultStep > 0 ? copy.previous : null}
+              onPrevious={
+                !isFinalResultStep && currentResultStep > 0
+                  ? () => setCurrentResultStep((current) => Math.max(0, current - 1))
+                  : null
+              }
+              secondaryActions={secondaryActions}
+            />
+          ) : null}
         </div>
       </div>
-
-      {showBottomCta ? (
-        <ResultBottomCTA
-          label={isFinalResultStep ? copy.premiumCardButton : nextStepLabel}
-          onClick={
-            isFinalResultStep
-              ? goToFullReport
-              : () => setCurrentResultStep((current) => Math.min(totalResultSteps - 1, current + 1))
-          }
-          previousLabel={!isFinalResultStep && currentResultStep > 0 ? copy.previous : null}
-          onPrevious={
-            !isFinalResultStep && currentResultStep > 0
-              ? () => setCurrentResultStep((current) => Math.max(0, current - 1))
-              : null
-          }
-          secondaryActions={secondaryActions}
-        />
-      ) : null}
     </main>
   );
 }
 
 function ResultStepLead({ kicker, title, body }) {
+  const sectionMeta = {
+    [resultCopy.ko.topPickStepKicker]: { number: "03", eyebrow: "SKIN MATCH" },
+    [resultCopy.ko.routineStepKicker]: { number: "04", eyebrow: "ROUTINE SUMMARY" },
+    [resultCopy.ko.premiumCardKicker]: { number: "05", eyebrow: "PREMIUM REPORT" },
+    [resultCopy.en.topPickStepKicker]: { number: "03", eyebrow: "SKIN MATCH" },
+    [resultCopy.en.routineStepKicker]: { number: "04", eyebrow: "ROUTINE SUMMARY" },
+    [resultCopy.en.premiumCardKicker]: { number: "05", eyebrow: "PREMIUM REPORT" }
+  }[kicker] || { number: null, eyebrow: kicker };
+
   return (
-    <section className="ui-card p-5">
-      <p className="ui-kicker">{kicker}</p>
-      <h2 className="ui-title mt-2 text-[1.55rem] sm:text-[1.7rem]">{title}</h2>
+    <section className="rounded-[2rem] border border-[#ead9d6] bg-transparent p-1 dark:border-[#4a303c]">
+      <div className="flex items-start gap-4">
+        {sectionMeta.number ? (
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/[0.92] text-sm font-semibold text-[#2b101b] shadow-[0_14px_30px_rgba(0,0,0,0.18)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+            {sectionMeta.number}
+          </span>
+        ) : null}
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9e7482] dark:text-[#c7aeb8]">{sectionMeta.eyebrow}</p>
+          <h2 className="mt-1 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2rem]">{title}</h2>
+        </div>
+      </div>
       {body ? <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p> : null}
+    </section>
+  );
+}
+
+function SkinDashboardCard({ metrics = [], locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const items = Array.isArray(metrics) ? metrics.slice(0, 4) : [];
+
+  return (
+    <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-6 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#21151d]">
+      <div className="flex items-start gap-4">
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+          02
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">SKIN DASHBOARD</p>
+          <h2 className="mt-1 text-[1.8rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2rem]">
+            {isEnglish ? "Skin Dashboard" : "피부 상태 대시보드"}
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c7aeb8]">
+            {isEnglish
+              ? "Before the Top Pick, check four skin signals briefly."
+              : "Top Pick 전에 4개 피부 신호만 짧게 확인합니다."}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-7 space-y-5">
+        {items.map((metric) => (
+          <div key={metric.key} className="border-b border-[#ead9d2] pb-4 last:border-b-0 last:pb-0 dark:border-[#4a303c]">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff7f2]">{metric.label}</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c7aeb8] sm:text-sm">{metric.description}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="rounded-full border border-[#e7c5bc] bg-white px-2.5 py-1 text-[11px] font-medium text-[#8a4c5d] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+                  {metric.status}
+                </span>
+                <span className="min-w-9 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff7f2]">{metric.value}%</span>
+              </div>
+            </div>
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2a33]">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${metric.value}%`, backgroundColor: metric.color }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -2016,14 +2254,24 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
   const showAlignmentNote = ["mixed", "conflict"].includes(alignment.status) && alignment.note;
 
   return (
-    <section className="ui-card p-5">
-      <p className="ui-kicker">{copy.photoObservationTitle}</p>
-      <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-        {normalized.summary || copy.photoObservationFallback}
-      </p>
+    <section className="rounded-[2rem] border border-[#e9d9d3] bg-[#fffaf5] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#21151d]">
+      <div className="flex items-start gap-4">
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+          02
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">SKIN DASHBOARD</p>
+          <h2 className="mt-1 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2]">
+            {locale === "en" ? "Skin Dashboard" : "피부 상태 대시보드"}
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-[#69424f] dark:text-[#c7aeb8]">
+            {normalized.summary || copy.photoObservationFallback}
+          </p>
+        </div>
+      </div>
 
       {normalized.signals.length ? (
-        <div className="mt-4 grid gap-2">
+        <div className="mt-5 grid gap-3">
           {normalized.signals.map((signal, index) => {
             const title = buildPhotoObservationSignalTitle(signal);
             const isLowConfidence = signal.confidence === "low";
@@ -2031,13 +2279,13 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
             return (
               <div
                 key={`${signal.key || "photo"}-${title}-${index}`}
-                className={`rounded-[1rem] border px-4 py-3 ${
+                className={`rounded-[1.15rem] border px-4 py-3 ${
                   isLowConfidence
-                    ? "border-zinc-200/70 bg-zinc-50/60 text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-950/35 dark:text-zinc-400"
-                    : "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300"
+                    ? "border-[#ead9d6] bg-white/50 text-[#8c6874] dark:border-[#5a3a48] dark:bg-[#2a1b24] dark:text-[#c7aeb8]"
+                    : "border-[#e7cfc8] bg-white/80 text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f2e2df]"
                 }`}
               >
-                <p className="text-sm font-semibold leading-5 text-zinc-900 dark:text-zinc-100">{title}</p>
+                <p className="text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff7f2]">{title}</p>
                 {signal.description ? (
                   <p className="mt-1.5 text-sm leading-6">{signal.description}</p>
                 ) : null}
@@ -2048,7 +2296,7 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
       ) : null}
 
       {showAlignmentNote ? (
-        <p className="mt-4 rounded-[1rem] border border-zinc-200 bg-zinc-50 px-3 py-3 text-xs leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+        <p className="mt-4 rounded-[1rem] border border-[#ead9d6] bg-white/60 px-3 py-3 text-xs leading-5 text-[#69424f] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c7aeb8]">
           {alignment.note}
         </p>
       ) : null}
@@ -2071,12 +2319,15 @@ function ResultPreviewMaskCard({ copy, sections = [] }) {
   }
 
   return (
-    <section className="ui-card p-5">
+    <section className="rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[#f6ece8] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-white/20 dark:bg-[linear-gradient(135deg,#5a3140_0%,#3a1826_54%,#2a101c_100%)] dark:text-white dark:shadow-[0_28px_80px_rgba(0,0,0,0.28)]">
       <div className="space-y-4">
         <div>
-          <p className="ui-kicker">{copy.routinePreviewTitle}</p>
+          <span className="inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fbf2ee] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#ffb199]/40 dark:bg-white/10 dark:text-[#ffd9cf]">
+            Premium Report
+          </span>
+          <p className="mt-4 text-lg font-semibold tracking-tight text-[#28121b] dark:text-white">{copy.routinePreviewTitle}</p>
           {copy.routineGateHint ? (
-            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-white/70">
               {copy.routineGateHint}
             </p>
           ) : null}
@@ -2086,15 +2337,15 @@ function ResultPreviewMaskCard({ copy, sections = [] }) {
           {visibleSections.map((section, index) => (
             <div
               key={section.key || section.title}
-              className="rounded-[1.2rem] bg-zinc-50/90 px-4 py-3 dark:bg-zinc-900/80"
+              className="rounded-full border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee] px-4 py-3 dark:border-white/20 dark:bg-black/10"
             >
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] font-semibold text-zinc-500 dark:bg-zinc-950/90 dark:text-zinc-400">
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ead0c8] text-[11px] font-semibold text-[#6a3344] dark:bg-white/10 dark:text-white/80">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{section.title}</p>
-                  <p className="mt-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400">{section.body}</p>
+                  <p className="text-xs font-semibold text-[#28121b] dark:text-white">{section.title}</p>
+                  <p className="mt-2 text-xs leading-5 text-[#6f4a56] dark:text-white/70">{section.body}</p>
                 </div>
               </div>
             </div>
@@ -2223,7 +2474,7 @@ function ProductDecisionCard({
 
     return (
       <div
-        className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-[linear-gradient(135deg,#fafafa_0%,#ffffff_56%,#ffffff_100%)] shadow-[0_24px_64px_rgba(24,24,27,0.08)] dark:border-zinc-800 dark:bg-[linear-gradient(135deg,#18181b_0%,#111114_56%,#09090b_100%)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+        className="overflow-hidden rounded-[2.15rem] border border-[#f0d7d1] bg-[linear-gradient(135deg,#fff6f2_0%,#fff1ef_64%,#ffe8ea_100%)] shadow-[0_26px_80px_rgba(50,18,33,0.18)] dark:border-[#4a303c] dark:bg-[linear-gradient(135deg,#241821_0%,#21151d_62%,#2a1b24_100%)]"
         onClick={() =>
           trackEvent("click_top_pick", {
             product_id: product.id,
@@ -2241,20 +2492,20 @@ function ProductDecisionCard({
           <div className={showDiagnostics ? "grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start" : ""}>
             <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
-                <span className="ui-chip px-3 py-1.5 text-[11px] font-semibold">
+                <span className="rounded-full border border-[#e9c8c0] bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-[#5e3140] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {copy.topPickBadge}
                 </span>
               </div>
 
             <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-semibold leading-6 text-zinc-600 dark:text-zinc-300 sm:text-[15px]">{topPickHeadline}</p>
-                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-[2.4rem]">
+                <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c7aeb8] sm:text-[15px]">{topPickHeadline}</p>
+                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2.4rem]">
                   {product.name}
                 </h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 sm:text-[15px]">{product.brand}</p>
+                <p className="mt-1 text-sm text-[#69424f] dark:text-[#c7aeb8] sm:text-[15px]">{product.brand}</p>
                 {priceLabel ? (
-                  <p className="mt-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 sm:text-[13px]">{priceLabel}</p>
+                  <p className="mt-1 text-xs font-medium text-[#8b6370] dark:text-[#a98792] sm:text-[13px]">{priceLabel}</p>
                 ) : null}
               </div>
               <a
@@ -2276,7 +2527,7 @@ function ProductDecisionCard({
                     }
                   });
                 }}
-                className="ui-button-primary min-h-12 shrink-0 justify-center px-5 text-sm font-semibold sm:mb-1"
+                className="ui-button-primary min-h-12 shrink-0 justify-center bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] px-5 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(232,96,116,0.28)] hover:opacity-95 sm:mb-1"
               >
                 {purchaseLink.label}
               </a>
@@ -2287,7 +2538,7 @@ function ProductDecisionCard({
                 {topPickSignals.map((label) => (
                   <span
                     key={`${product.id}-${label}`}
-                    className="ui-chip-compact"
+                    className="rounded-full border border-[#e9d4cf] bg-white/60 px-2.5 py-1 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
                   >
                     {label}
                   </span>
@@ -2299,12 +2550,12 @@ function ProductDecisionCard({
               <SmallProductThumb product={product} height="h-48" locale={locale} />
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
+            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f2e2df]">
+              <span className="font-semibold text-[#26101a] dark:text-[#fff7f2]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-zinc-700 dark:text-zinc-300">{topPickSummary}</p>
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#3a1824] dark:text-[#f2e2df]">{topPickSummary}</p>
             {photoRecommendationLine ? (
-              <p className="mt-3 max-w-2xl rounded-[1rem] bg-zinc-50 px-3 py-3 text-sm leading-6 text-zinc-600 dark:bg-zinc-900/80 dark:text-zinc-400">
+              <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#301f28] dark:text-[#c7aeb8]">
                 {photoRecommendationLine}
               </p>
             ) : null}
@@ -2316,20 +2567,20 @@ function ProductDecisionCard({
                   event.stopPropagation();
                   setExpanded((current) => !current);
                 }}
-                className="mt-4 text-sm font-medium text-zinc-700 underline decoration-zinc-300 underline-offset-4 dark:text-zinc-300 dark:decoration-zinc-600"
+                className="mt-4 text-sm font-medium text-[#5e3140] underline decoration-[#d9aaa2] underline-offset-4 dark:text-[#f4d7df] dark:decoration-[#8f596a]"
               >
                 {expanded ? copy.less : copy.more}
               </button>
             ) : null}
 
             {allowExpand && expanded ? (
-              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-zinc-200 bg-white/72 p-4 dark:border-zinc-700 dark:bg-zinc-900/84">
+              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-[#ead9d6] bg-white/70 p-4 dark:border-[#5a3a48] dark:bg-[#301f28]">
                 {detailItems.length ? (
                   <div className="flex flex-wrap gap-2">
                     {detailItems.map((item) => (
                       <span
                         key={`${product.id}-detail-item-${item}`}
-                        className="ui-chip-compact px-3 py-1.5"
+                        className="rounded-full border border-[#e9d4cf] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#2a1b24] dark:text-[#f4d7df]"
                       >
                         {item}
                       </span>
@@ -2339,7 +2590,7 @@ function ProductDecisionCard({
                 {detailLines.length ? (
                   <div className="space-y-2">
                     {detailLines.map((line) => (
-                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">
                         {line}
                       </p>
                     ))}
