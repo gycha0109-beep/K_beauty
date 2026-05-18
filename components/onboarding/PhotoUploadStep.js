@@ -316,20 +316,27 @@ export default function PhotoUploadStep({
       );
     }
 
-    if (showIntroVisual) {
-      return (
-        <Image
-          src={exampleFace}
-          alt={t.exampleAlt}
-          fill
-          priority
-          sizes="(max-width: 768px) 78vw, 560px"
-          className="object-cover"
-        />
-      );
-    }
-
-    return <FaceSilhouette />;
+    return (
+      <>
+        <FaceSilhouette />
+        <div
+          className={`absolute inset-0 rounded-full transition-[opacity,filter,transform] duration-1000 ease-out ${
+            showIntroVisual
+              ? "opacity-100 blur-0 scale-100"
+              : "pointer-events-none opacity-0 blur-[2px] scale-[1.015]"
+          }`}
+        >
+          <Image
+            src={exampleFace}
+            alt={t.exampleAlt}
+            fill
+            priority
+            sizes="(max-width: 768px) 78vw, 560px"
+            className="rounded-full object-cover"
+          />
+        </div>
+      </>
+    );
   };
 
   const primaryLabel = isCameraOpen ? t.capture : hasPreview ? t.retake : t.camera;
