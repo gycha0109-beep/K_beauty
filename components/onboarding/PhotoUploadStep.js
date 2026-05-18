@@ -301,7 +301,7 @@ export default function PhotoUploadStep({
           autoPlay
           playsInline
           muted
-          className="mx-auto block h-full w-full scale-x-[-1] object-contain object-center"
+          className="absolute inset-0 h-full w-full scale-x-[-1] rounded-full object-cover object-center"
         />
       );
     }
@@ -311,7 +311,7 @@ export default function PhotoUploadStep({
         <img
           src={previewUrl}
           alt={t.previewAlt}
-          className="mx-auto block h-full w-full object-contain object-center"
+          className="absolute inset-0 h-full w-full rounded-full object-cover object-center"
         />
       );
     }
@@ -364,8 +364,8 @@ export default function PhotoUploadStep({
             <MobileStepChips steps={t.steps} />
 
             <div className="relative mx-auto mt-5 flex w-full justify-center sm:mt-6">
-              <div className="relative aspect-square w-[min(68vw,560px)] max-w-[560px] overflow-hidden rounded-full border border-[rgba(205,174,167,0.48)] bg-[#fffaf7]/58 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.26),0_18px_48px_rgba(87,46,54,0.13)] dark:border-[rgba(106,64,80,0.54)] dark:bg-[#21151d]/72 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_20px_58px_rgba(0,0,0,0.28)] sm:w-[min(78vw,560px)]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_58%,rgba(43,31,38,0.14)_100%)] dark:bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_58%,rgba(8,5,7,0.24)_100%)]" />
+              <div className="relative aspect-square w-[min(68vw,560px)] max-w-[560px] overflow-hidden rounded-full border border-[rgba(205,174,167,0.4)] bg-[#fffaf7]/58 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_14px_38px_rgba(87,46,54,0.1)] dark:border-[rgba(106,64,80,0.46)] dark:bg-[#21151d]/72 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03),0_16px_44px_rgba(0,0,0,0.23)] sm:w-[min(78vw,560px)]">
+                <div className="absolute inset-0 z-10 rounded-full bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(43,31,38,0.1)_100%)] dark:bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(8,5,7,0.18)_100%)]" />
                 {stageContent()}
                 <PhotoGuideHint label={t.guide} visible={!hasPreview} />
               </div>
