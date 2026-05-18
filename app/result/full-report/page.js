@@ -21,6 +21,283 @@ const LAST_REPORT_URL_KEY = "lastReportUrl";
 const LAST_VIEWED_AT_KEY = "lastViewedAt";
 const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
 
+function FullReportLightThemeStyles() {
+  return (
+    <style>{`
+      html:not(.dark) .full-report-light-theme.ui-page {
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255, 248, 243, 0.96) 0%, rgba(246, 236, 232, 0.96) 42%, rgba(236, 218, 211, 0.95) 100%);
+        color: #2b1f26;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-card {
+        background: linear-gradient(180deg, #fffaf7 0%, #fff4f1 100%);
+        border-color: #ead8cf;
+        color: #2b1f26;
+        box-shadow: 0 18px 48px rgba(102, 54, 62, 0.08);
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-card-subtle,
+      html:not(.dark) .full-report-light-theme .ui-card-muted {
+        background: #fff8f3;
+        border-color: #ead8cf;
+        color: #2b1f26;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-title {
+        color: #2b1f26;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-text-secondary {
+        color: #7a6268;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-kicker {
+        color: #8a5260;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-chip-compact {
+        background: rgba(255, 250, 247, 0.86);
+        border-color: #e4c9bf;
+        color: #6f3f4b;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-button-secondary {
+        background: rgba(255, 250, 247, 0.86);
+        border-color: #ddbfb5;
+        color: #4a2b34;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-button-secondary:hover {
+        background: rgba(255, 128, 104, 0.08);
+        border-color: #d7aa9d;
+      }
+
+      html:not(.dark) .full-report-light-theme .ui-choice-active {
+        background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
+        border-color: transparent;
+        color: #fffaf7;
+        box-shadow: 0 12px 28px rgba(239, 99, 135, 0.2);
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-white\\/5"] {
+        background-color: #fff4f1;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="border-white\\/10"] {
+        border-color: #ead8cf;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-900"],
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-950"] {
+        color: #2b1f26;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-700"],
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-600"] {
+        color: #4f363d;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-500"],
+      html:not(.dark) .full-report-light-theme [class*="text-zinc-400"] {
+        color: #7a6268;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-zinc-900"] {
+        background-color: #3a1f2a;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-zinc-200"],
+      html:not(.dark) .full-report-light-theme [class*="bg-zinc-800"] {
+        background-color: #e6d2ca;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-sky-500\\/10"] {
+        background-color: #fff1ef;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="border-sky-300\\/20"] {
+        border-color: #efcfc8;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-sky-700"] {
+        color: #a24e5f;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-amber-500\\/10"] {
+        background-color: #fff2e6;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="border-amber-300\\/20"] {
+        border-color: #f0c9a8;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-amber-700"] {
+        color: #a35b43;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="bg-emerald-500\\/10"] {
+        background-color: #eff8f1;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="border-emerald-300\\/20"] {
+        border-color: #c9dfce;
+      }
+
+      html:not(.dark) .full-report-light-theme [class*="text-emerald-700"] {
+        color: #4f7657;
+      }
+
+      .full-report-light-theme .full-report-step-cta > div {
+        margin-top: 1.125rem;
+      }
+
+      .full-report-light-theme .full-report-step-cta .ui-button-secondary {
+        min-height: 3rem;
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+      }
+
+      .full-report-light-theme .full-report-step-cta .ui-button-primary {
+        min-height: 3.25rem;
+        color: #ffffff;
+        text-shadow: 0 1px 1px rgba(70, 32, 42, 0.18);
+      }
+
+      html:not(.dark) .full-report-light-theme .full-report-locale-link:not(.ui-choice-active) {
+        background: rgba(255, 250, 247, 0.9);
+        border: 1px solid #ddbfb5;
+        color: #5f3844;
+      }
+
+      html:not(.dark) .full-report-light-theme .full-report-locale-link:not(.ui-choice-active):hover {
+        background: rgba(255, 128, 104, 0.08);
+        color: #3a1f2a;
+      }
+
+      html.dark .full-report-light-theme.ui-page {
+        background:
+          radial-gradient(circle at 50% 0%, rgba(36, 23, 32, 0.92) 0%, rgba(27, 16, 23, 0.96) 44%, #160d13 100%);
+        color: #fff8f3;
+      }
+
+      html.dark .full-report-light-theme .ui-card {
+        background: linear-gradient(180deg, #241720 0%, #21151d 100%);
+        border-color: #4a303c;
+        color: #fff8f3;
+        box-shadow: 0 24px 70px rgba(18, 10, 16, 0.32);
+      }
+
+      html.dark .full-report-light-theme .ui-card-subtle,
+      html.dark .full-report-light-theme .ui-card-muted {
+        background: #2b1c26;
+        border-color: #4a303c;
+        color: #f3e4df;
+      }
+
+      html.dark .full-report-light-theme .ui-title {
+        color: #fff8f3;
+      }
+
+      html.dark .full-report-light-theme .ui-text-secondary {
+        color: #c8aeb8;
+      }
+
+      html.dark .full-report-light-theme .ui-kicker {
+        color: #c8aeb8;
+      }
+
+      html.dark .full-report-light-theme .ui-chip-compact,
+      html.dark .full-report-light-theme .ui-chip {
+        background: #301f28;
+        border-color: #5a3a48;
+        color: #f4d7df;
+      }
+
+      html.dark .full-report-light-theme .ui-button-secondary {
+        background: #301f28;
+        border-color: #5a3a48;
+        color: #f4d7df;
+      }
+
+      html.dark .full-report-light-theme .ui-button-secondary:hover {
+        background: #352430;
+        border-color: #6a4050;
+      }
+
+      html.dark .full-report-light-theme .ui-choice-active {
+        background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
+        color: #fffaf7;
+        box-shadow: 0 12px 26px rgba(239, 99, 135, 0.18);
+      }
+
+      html.dark .full-report-light-theme [class*="bg-white\\/5"],
+      html.dark .full-report-light-theme [class*="bg-zinc-950\\/35"],
+      html.dark .full-report-light-theme [class*="bg-zinc-900\\/50"] {
+        background-color: #2f202a;
+      }
+
+      html.dark .full-report-light-theme [class*="border-white\\/10"],
+      html.dark .full-report-light-theme [class*="border-zinc-800"] {
+        border-color: #4a303c;
+      }
+
+      html.dark .full-report-light-theme [class*="text-zinc-100"],
+      html.dark .full-report-light-theme [class*="text-zinc-200"] {
+        color: #fff8f3;
+      }
+
+      html.dark .full-report-light-theme [class*="text-zinc-300"] {
+        color: #f3e4df;
+      }
+
+      html.dark .full-report-light-theme [class*="text-zinc-400"],
+      html.dark .full-report-light-theme [class*="text-zinc-500"] {
+        color: #c8aeb8;
+      }
+
+      html.dark .full-report-light-theme [class*="bg-zinc-100"] {
+        background-color: #fff8f3;
+      }
+
+      html.dark .full-report-light-theme [class*="bg-zinc-800"],
+      html.dark .full-report-light-theme [class*="bg-zinc-700"] {
+        background-color: #3a2630;
+      }
+
+      html.dark .full-report-light-theme [class*="bg-sky-500\\/10"] {
+        background-color: #1d2b35;
+      }
+
+      html.dark .full-report-light-theme [class*="border-sky-300\\/20"] {
+        border-color: #315061;
+      }
+
+      html.dark .full-report-light-theme [class*="text-sky-200"] {
+        color: #c9e7f0;
+      }
+
+      html.dark .full-report-light-theme [class*="bg-amber-500\\/10"] {
+        background-color: #3a2818;
+      }
+
+      html.dark .full-report-light-theme [class*="border-amber-300\\/20"] {
+        border-color: #6a4a25;
+      }
+
+      html.dark .full-report-light-theme [class*="text-amber-200"],
+      html.dark .full-report-light-theme [class*="text-amber-300"] {
+        color: #f2c879;
+      }
+
+      html.dark .full-report-light-theme .ui-image-surface {
+        background: linear-gradient(180deg, #2f202a 0%, #21151d 100%);
+        border-color: #5a3a48;
+      }
+    `}</style>
+  );
+}
+
 const COPY = {
   ko: {
     loading: "전체 리포트를 불러오는 중입니다...",
@@ -3334,6 +3611,7 @@ function SkinMatchStepReport({
 }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const hasMountedStepRef = useRef(false);
+  const skinMatchStepHeaderRef = useRef(null);
   const router = useRouter();
   const labels = locale === "en"
     ? {
@@ -3462,10 +3740,25 @@ function SkinMatchStepReport({
 
     if (typeof window !== "undefined") {
       window.requestAnimationFrame(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+        window.requestAnimationFrame(() => {
+          const target = skinMatchStepHeaderRef.current;
+
+          if (!target) {
+            return;
+          }
+
+          const rawTargetTop = target.getBoundingClientRect().top + window.scrollY - 8;
+          const maxScrollTop = Math.max(
+            0,
+            document.documentElement.scrollHeight - window.innerHeight
+          );
+          const targetTop = Math.min(Math.max(0, rawTargetTop), maxScrollTop);
+
+          window.scrollTo({
+            top: targetTop,
+            behavior: "smooth"
+          });
+      });
       });
     }
   };
@@ -3486,17 +3779,17 @@ function SkinMatchStepReport({
 
   return (
     <section className="space-y-4">
-      <div className="ui-card p-5">
+      <div ref={skinMatchStepHeaderRef} className="ui-card p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="ui-kicker">{labels.stepKicker}</p>
-            <h2 className="ui-title mt-2 text-xl">{activeStep.label}</h2>
+            <h2 className="ui-title mt-1.5 text-xl">{activeStep.label}</h2>
           </div>
           <span className="ui-chip-compact shrink-0">{currentStepIndex + 1} / {steps.length}</span>
         </div>
 
         <div
-          className="mt-4 grid gap-2"
+          className="mt-3 grid gap-2"
           style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
         >
           {steps.map((step, index) => (
@@ -3537,24 +3830,26 @@ function SkinMatchStepReport({
         </>
       ) : null}
 
-      <ResultBottomCTA
-        fixed={false}
-        label={primaryLabel}
-        onClick={() => {
-          if (currentStepIndex === maxStepIndex) {
-            router.push(getResultPath(locale));
-            return;
-          }
+      <div className="full-report-step-cta">
+        <ResultBottomCTA
+          fixed={false}
+          label={primaryLabel}
+          onClick={() => {
+            if (currentStepIndex === maxStepIndex) {
+              router.push(getResultPath(locale));
+              return;
+            }
 
-          moveToStep(currentStepIndex + 1);
-        }}
-        previousLabel={currentStepIndex > 0 ? labels.previous : null}
-        onPrevious={
-          currentStepIndex > 0
-            ? () => moveToStep(currentStepIndex - 1)
-            : null
-        }
-      />
+            moveToStep(currentStepIndex + 1);
+          }}
+          previousLabel={currentStepIndex > 0 ? labels.previous : null}
+          onPrevious={
+            currentStepIndex > 0
+              ? () => moveToStep(currentStepIndex - 1)
+              : null
+          }
+        />
+      </div>
     </section>
   );
 }
@@ -4619,8 +4914,9 @@ export default function FullReportPage() {
 
   if (error || !freeResult || !report) {
     return (
-      <main className="ui-page ui-page-shell min-h-screen">
-        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 py-6 sm:px-6">
+      <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
+        <FullReportLightThemeStyles />
+        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 py-6 sm:px-6 md:max-w-[800px]">
           <div className="ui-card p-6">
             <p className="ui-kicker">FULL REPORT</p>
             <h1 className="ui-title mt-2 text-xl sm:text-2xl">{copy.errorTitle}</h1>
@@ -4663,8 +4959,9 @@ export default function FullReportPage() {
   const budgetSectionTitle = getBudgetSectionTitle(copy, displayBudgetAlternatives, locale);
 
   return (
-    <main className="ui-page ui-page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6">
+    <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
+      <FullReportLightThemeStyles />
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[800px]">
         <div className="space-y-4">
           <header className="ui-card p-5 sm:p-6">
             <div className="flex items-start justify-between gap-3">
@@ -4681,7 +4978,7 @@ export default function FullReportPage() {
                       <Link
                         key={item.code}
                         href={getLocalePath(pathname, item.code)}
-                        className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                        className={`full-report-locale-link inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
                           active
                             ? "ui-choice-active"
                             : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"

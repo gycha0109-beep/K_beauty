@@ -1785,29 +1785,34 @@ function ResultContent() {
       return;
     }
 
-    let firstFrame = 0;
-    let secondFrame = 0;
+    const scrollToProgress = () => {
+      const target = resultProgressRef.current;
 
-    firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => {
-        const target = resultProgressRef.current;
+      if (!target) {
+        return;
+      }
 
-        if (!target) {
-          return;
-        }
+      const labelTarget = target.querySelector("[data-result-progress-label]");
+      const targetNode = labelTarget || target;
+      const rawTargetTop = targetNode.getBoundingClientRect().top + window.scrollY - 4;
+      const maxScrollTop = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      const targetTop = Math.min(Math.max(0, rawTargetTop), maxScrollTop);
 
-        const targetTop = target.getBoundingClientRect().top + window.scrollY - 8;
-
-        window.scrollTo({
-          top: Math.max(0, targetTop),
-          behavior: "smooth"
-        });
+      window.scrollTo({
+        top: targetTop,
+        behavior: "smooth"
       });
-    });
+    };
+
+    const frameId = window.requestAnimationFrame(scrollToProgress);
+    const settledTimer = window.setTimeout(scrollToProgress, 320);
 
     return () => {
-      window.cancelAnimationFrame(firstFrame);
-      window.cancelAnimationFrame(secondFrame);
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(settledTimer);
     };
   }, [currentResultStep]);
 
@@ -1947,36 +1952,36 @@ function ResultContent() {
             body={null}
           />
 
-          <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fff8ef] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.16)] dark:border-[#4a303c] dark:bg-[#21151d]">
+          <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fff8ef] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.16)] dark:border-[#4a303c] dark:bg-[#241720]">
             <div className="space-y-4">
               <div className="grid gap-0">
                 {routineDirectionCards.length ? routineDirectionCards.map((card) => (
                   <div key={`routine-structure-${card.key}`} className="relative grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 border-b border-[#ead9d2] py-4 last:border-b-0 dark:border-[#4a303c]">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ead9d2] bg-white text-xs font-semibold text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#fff7f2]">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ead9d2] bg-white text-xs font-semibold text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#fff8f3]">
                       {card.key === "night" ? 2 : 1}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-base font-semibold text-[#26101a] dark:text-[#fff7f2]">
+                      <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
                         {card.label}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{card.body}</p>
+                      <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{card.body}</p>
                     </div>
                   </div>
                 )) : (
-                  <div className="rounded-[1.4rem] bg-white/60 px-4 py-4 text-sm leading-6 text-[#69424f] dark:bg-[#301f28] dark:text-[#c7aeb8]">
+                  <div className="rounded-[1.4rem] bg-white/60 px-4 py-4 text-sm leading-6 text-[#69424f] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
                     {copy.routineStepEmpty}
                   </div>
                 )}
               </div>
 
               {routineWarnings.length ? (
-                <div className="rounded-[1.4rem] border border-[#ead9d2] bg-white/60 px-4 py-4 dark:border-[#5a3a48] dark:bg-[#301f28]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">{decisionCopy.warnings}</p>
+                <div className="rounded-[1.4rem] border border-[#ead9d2] bg-white/60 px-4 py-4 dark:border-[#6a4a25] dark:bg-[#3a2818]">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#f2c879]">{decisionCopy.warnings}</p>
                   <div className="mt-3 space-y-2">
                     {routineWarnings.map((warning, index) => (
                       <p
                         key={`routine-warning-${index}`}
-                        className="text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]"
+                        className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]"
                       >
                         {warning}
                       </p>
@@ -2033,19 +2038,19 @@ function ResultContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7f2_0%,#f5e5e0_42%,#ead7cf_100%)] text-[#26101a] dark:bg-[radial-gradient(circle_at_top,#24101a_0%,#1a1016_46%,#140b11_100%)] dark:text-[#fff7f2]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7f2_0%,#f5e5e0_42%,#ead7cf_100%)] text-[#26101a] dark:bg-[radial-gradient(circle_at_top,#241720_0%,#1b1017_46%,#160d13_100%)] dark:text-[#fff8f3]">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-5">
-          <header className="rounded-[2rem] border border-white/10 bg-white/[0.92] p-5 text-[#26101a] shadow-[0_24px_70px_rgba(0,0,0,0.22)] dark:border-[#4a303c] dark:bg-[#21151d] dark:text-[#fff7f2]">
+          <header className="rounded-[2rem] border border-white/10 bg-white/[0.92] p-5 text-[#26101a] shadow-[0_24px_70px_rgba(0,0,0,0.22)] dark:border-[#4a303c] dark:bg-[#241720] dark:text-[#fff8f3]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c8aeb8]">
                   AI Beauty Platform
                 </p>
-                <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-2xl">
+                <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-2xl">
                   {copy.title}
                 </h1>
-                <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c7aeb8]">
+                <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
                   {locale === "en"
                     ? "A personal beauty dashboard that connects Skin Match, Face Lab, and the full report."
                     : "무료 결과도 Skin Match, Face Lab 프리뷰, 프리미엄 확장까지 이어지는 개인 뷰티 대시보드로 정리했습니다."}
@@ -2066,7 +2071,7 @@ function ResultContent() {
                       event.preventDefault();
                     }
                   }}
-                  className="inline-flex items-center justify-center rounded-full border border-[#ead9d6] bg-white px-4 py-2.5 text-xs font-medium text-[#3a1824] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430]"
+                  className="inline-flex items-center justify-center rounded-full border border-[#ead9d6] bg-white px-4 py-2.5 text-xs font-medium text-[#3a1824] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#352430]"
                 >
                   {copy.tryAgain}
                 </Link>
@@ -2202,17 +2207,17 @@ function SkinDashboardCard({ metrics = [], locale = "ko" }) {
   const items = Array.isArray(metrics) ? metrics.slice(0, 4) : [];
 
   return (
-    <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-6 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#21151d]">
+      <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-6 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#241720]">
       <div className="flex items-start gap-4">
-        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff8f3]">
           02
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">SKIN DASHBOARD</p>
-          <h2 className="mt-1 text-[1.8rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2rem]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c8aeb8]">SKIN DASHBOARD</p>
+          <h2 className="mt-1 text-[1.8rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2rem]">
             {isEnglish ? "Skin Dashboard" : "피부 상태 대시보드"}
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c7aeb8]">
+          <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
             {isEnglish
               ? "Before the Top Pick, check four skin signals briefly."
               : "Top Pick 전에 4개 피부 신호만 짧게 확인합니다."}
@@ -2225,17 +2230,17 @@ function SkinDashboardCard({ metrics = [], locale = "ko" }) {
           <div key={metric.key} className="border-b border-[#ead9d2] pb-4 last:border-b-0 last:pb-0 dark:border-[#4a303c]">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff7f2]">{metric.label}</p>
-                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c7aeb8] sm:text-sm">{metric.description}</p>
+                <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.label}</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8] sm:text-sm">{metric.description}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <span className="rounded-full border border-[#e7c5bc] bg-white px-2.5 py-1 text-[11px] font-medium text-[#8a4c5d] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {metric.status}
                 </span>
-                <span className="min-w-9 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff7f2]">{metric.value}%</span>
+                <span className="min-w-9 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.value}%</span>
               </div>
             </div>
-            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2a33]">
+            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2630]">
               <div
                 className="h-full rounded-full"
                 style={{ width: `${metric.value}%`, backgroundColor: metric.color }}
@@ -2254,17 +2259,17 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
   const showAlignmentNote = ["mixed", "conflict"].includes(alignment.status) && alignment.note;
 
   return (
-    <section className="rounded-[2rem] border border-[#e9d9d3] bg-[#fffaf5] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#21151d]">
+    <section className="rounded-[2rem] border border-[#e9d9d3] bg-[#fffaf5] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#241720]">
       <div className="flex items-start gap-4">
-        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff8f3]">
           02
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c7aeb8]">SKIN DASHBOARD</p>
-          <h2 className="mt-1 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c8aeb8]">SKIN DASHBOARD</p>
+          <h2 className="mt-1 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3]">
             {locale === "en" ? "Skin Dashboard" : "피부 상태 대시보드"}
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#69424f] dark:text-[#c7aeb8]">
+          <p className="mt-3 text-sm leading-6 text-[#69424f] dark:text-[#c8aeb8]">
             {normalized.summary || copy.photoObservationFallback}
           </p>
         </div>
@@ -2281,11 +2286,11 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
                 key={`${signal.key || "photo"}-${title}-${index}`}
                 className={`rounded-[1.15rem] border px-4 py-3 ${
                   isLowConfidence
-                    ? "border-[#ead9d6] bg-white/50 text-[#8c6874] dark:border-[#5a3a48] dark:bg-[#2a1b24] dark:text-[#c7aeb8]"
-                    : "border-[#e7cfc8] bg-white/80 text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f2e2df]"
+                    ? "border-[#ead9d6] bg-white/50 text-[#8c6874] dark:border-[#5a3a48] dark:bg-[#2b1c26] dark:text-[#c8aeb8]"
+                    : "border-[#e7cfc8] bg-white/80 text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f3e4df]"
                 }`}
               >
-                <p className="text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff7f2]">{title}</p>
+                <p className="text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{title}</p>
                 {signal.description ? (
                   <p className="mt-1.5 text-sm leading-6">{signal.description}</p>
                 ) : null}
@@ -2296,7 +2301,7 @@ function PhotoObservationCard({ observations, copy, locale = "ko" }) {
       ) : null}
 
       {showAlignmentNote ? (
-        <p className="mt-4 rounded-[1rem] border border-[#ead9d6] bg-white/60 px-3 py-3 text-xs leading-5 text-[#69424f] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c7aeb8]">
+        <p className="mt-4 rounded-[1rem] border border-[#ead9d6] bg-white/60 px-3 py-3 text-xs leading-5 text-[#69424f] dark:border-[#5a3a48] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
           {alignment.note}
         </p>
       ) : null}
@@ -2319,15 +2324,15 @@ function ResultPreviewMaskCard({ copy, sections = [] }) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[#f6ece8] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-white/20 dark:bg-[linear-gradient(135deg,#5a3140_0%,#3a1826_54%,#2a101c_100%)] dark:text-white dark:shadow-[0_28px_80px_rgba(0,0,0,0.28)]">
+    <section className="rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[#f6ece8] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
       <div className="space-y-4">
         <div>
-          <span className="inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fbf2ee] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#ffb199]/40 dark:bg-white/10 dark:text-[#ffd9cf]">
+          <span className="inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fbf2ee] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#704557] dark:bg-[#301f28] dark:text-[#f2c879]">
             Premium Report
           </span>
-          <p className="mt-4 text-lg font-semibold tracking-tight text-[#28121b] dark:text-white">{copy.routinePreviewTitle}</p>
+          <p className="mt-4 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{copy.routinePreviewTitle}</p>
           {copy.routineGateHint ? (
-            <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-white/70">
+            <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
               {copy.routineGateHint}
             </p>
           ) : null}
@@ -2337,15 +2342,15 @@ function ResultPreviewMaskCard({ copy, sections = [] }) {
           {visibleSections.map((section, index) => (
             <div
               key={section.key || section.title}
-              className="rounded-full border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee] px-4 py-3 dark:border-white/20 dark:bg-black/10"
+              className="rounded-full border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee] px-4 py-3 dark:border-[#704557] dark:bg-[#2a1823]"
             >
               <div className="flex items-start gap-3">
                 <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ead0c8] text-[11px] font-semibold text-[#6a3344] dark:bg-white/10 dark:text-white/80">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#28121b] dark:text-white">{section.title}</p>
-                  <p className="mt-2 text-xs leading-5 text-[#6f4a56] dark:text-white/70">{section.body}</p>
+                  <p className="text-xs font-semibold text-[#28121b] dark:text-[#fff8f3]">{section.title}</p>
+                  <p className="mt-2 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{section.body}</p>
                 </div>
               </div>
             </div>
@@ -2474,7 +2479,7 @@ function ProductDecisionCard({
 
     return (
       <div
-        className="overflow-hidden rounded-[2.15rem] border border-[#f0d7d1] bg-[linear-gradient(135deg,#fff6f2_0%,#fff1ef_64%,#ffe8ea_100%)] shadow-[0_26px_80px_rgba(50,18,33,0.18)] dark:border-[#4a303c] dark:bg-[linear-gradient(135deg,#241821_0%,#21151d_62%,#2a1b24_100%)]"
+        className="overflow-hidden rounded-[2.15rem] border border-[#f0d7d1] bg-[linear-gradient(135deg,#fff6f2_0%,#fff1ef_64%,#ffe8ea_100%)] shadow-[0_26px_80px_rgba(50,18,33,0.18)] dark:border-[#4a303c] dark:bg-[linear-gradient(135deg,#241720_0%,#2b1c26_62%,#30202b_100%)]"
         onClick={() =>
           trackEvent("click_top_pick", {
             product_id: product.id,
@@ -2499,11 +2504,11 @@ function ProductDecisionCard({
 
             <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c7aeb8] sm:text-[15px]">{topPickHeadline}</p>
-                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[2.4rem]">
+                <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c8aeb8] sm:text-[15px]">{topPickHeadline}</p>
+                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2.4rem]">
                   {product.name}
                 </h2>
-                <p className="mt-1 text-sm text-[#69424f] dark:text-[#c7aeb8] sm:text-[15px]">{product.brand}</p>
+                <p className="mt-1 text-sm text-[#69424f] dark:text-[#c8aeb8] sm:text-[15px]">{product.brand}</p>
                 {priceLabel ? (
                   <p className="mt-1 text-xs font-medium text-[#8b6370] dark:text-[#a98792] sm:text-[13px]">{priceLabel}</p>
                 ) : null}
@@ -2527,7 +2532,7 @@ function ProductDecisionCard({
                     }
                   });
                 }}
-                className="ui-button-primary min-h-12 shrink-0 justify-center bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] px-5 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(232,96,116,0.28)] hover:opacity-95 sm:mb-1"
+                className="ui-button-primary min-h-12 shrink-0 justify-center bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)] px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(239,99,135,0.2)] hover:opacity-95 sm:mb-1"
               >
                 {purchaseLink.label}
               </a>
@@ -2550,12 +2555,12 @@ function ProductDecisionCard({
               <SmallProductThumb product={product} height="h-48" locale={locale} />
             </div>
 
-            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f2e2df]">
-              <span className="font-semibold text-[#26101a] dark:text-[#fff7f2]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
+            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f3e4df]">
+              <span className="font-semibold text-[#26101a] dark:text-[#fff8f3]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
             </p>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#3a1824] dark:text-[#f2e2df]">{topPickSummary}</p>
+            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#3a1824] dark:text-[#f3e4df]">{topPickSummary}</p>
             {photoRecommendationLine ? (
-              <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#301f28] dark:text-[#c7aeb8]">
+              <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
                 {photoRecommendationLine}
               </p>
             ) : null}
@@ -2574,13 +2579,13 @@ function ProductDecisionCard({
             ) : null}
 
             {allowExpand && expanded ? (
-              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-[#ead9d6] bg-white/70 p-4 dark:border-[#5a3a48] dark:bg-[#301f28]">
+              <div className="mt-4 space-y-4 rounded-[1.4rem] border border-[#ead9d6] bg-white/70 p-4 dark:border-[#5a3a48] dark:bg-[#2f202a]">
                 {detailItems.length ? (
                   <div className="flex flex-wrap gap-2">
                     {detailItems.map((item) => (
                       <span
                         key={`${product.id}-detail-item-${item}`}
-                        className="rounded-full border border-[#e9d4cf] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#2a1b24] dark:text-[#f4d7df]"
+                        className="rounded-full border border-[#e9d4cf] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
                       >
                         {item}
                       </span>
@@ -2590,7 +2595,7 @@ function ProductDecisionCard({
                 {detailLines.length ? (
                   <div className="space-y-2">
                     {detailLines.map((line) => (
-                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">
+                      <p key={`${product.id}-detail-${line}`} className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">
                         {line}
                       </p>
                     ))}

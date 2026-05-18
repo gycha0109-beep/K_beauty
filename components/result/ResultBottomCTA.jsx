@@ -18,7 +18,7 @@ export default function ResultBottomCTA({
     : undefined;
   const primaryButtonClass = fixed
     ? "ui-button-primary"
-    : "ui-button-primary bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] text-white shadow-[0_16px_34px_rgba(232,96,116,0.28)] hover:opacity-95";
+    : "ui-button-primary bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] !text-white shadow-[0_16px_34px_rgba(232,96,116,0.28)] hover:opacity-95";
   const secondaryButtonClass = fixed
     ? "ui-button-secondary"
     : "ui-button-secondary border-[rgba(90,50,50,0.18)] bg-white/[0.36] text-[#5a2d3c] hover:bg-[rgba(255,120,120,0.06)] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430]";

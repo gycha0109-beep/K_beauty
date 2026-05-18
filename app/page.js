@@ -252,6 +252,9 @@ export default function HomePage() {
       total: PROGRESS_STEPS.length
     };
   }, [currentStep]);
+  const pageShellClassName = currentStep === "photo"
+    ? "mx-auto flex w-full max-w-5xl flex-col px-4 pb-6 pt-4 sm:px-6 lg:px-8"
+    : "mx-auto flex w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
 
   const mainConcernCount = Array.isArray(form.mainConcerns) ? form.mainConcerns.length : 0;
   const canProceedFromPhoto = Boolean(imageFile);
@@ -433,7 +436,7 @@ export default function HomePage() {
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6">
+      <div className={pageShellClassName}>
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             {[

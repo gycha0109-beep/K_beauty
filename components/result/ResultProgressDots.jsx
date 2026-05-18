@@ -2,7 +2,7 @@ export default function ResultProgressDots({ currentStep, totalSteps, label }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="ui-kicker">
+        <p className="ui-kicker" data-result-progress-label>
           {label}
         </p>
         <p className="text-xs font-medium text-[#7e5261] dark:text-[#c7aeb8]">
