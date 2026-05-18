@@ -24,7 +24,7 @@ export default function ResultOverviewStep({
   const showPhotoObservation = Boolean(photoSummary || photoSignals.length);
 
   return (
-    <section className="overflow-hidden rounded-[2.15rem] border border-[#f1d9d3] bg-[#fff1f1] p-5 shadow-[0_26px_80px_rgba(52,20,35,0.16)] dark:border-[#4a303c] dark:bg-[#21151d] sm:p-6">
+    <section className="w-full max-w-full overflow-hidden rounded-[2.15rem] border border-[#f1d9d3] bg-[#fff1f1] p-5 shadow-[0_26px_80px_rgba(52,20,35,0.16)] dark:border-[#4a303c] dark:bg-[#21151d] sm:p-6">
       <div className="flex items-start gap-4">
         <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff7f2]">
           01
@@ -37,8 +37,8 @@ export default function ResultOverviewStep({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-[minmax(124px,0.9fr)_minmax(0,1.1fr)] gap-4">
-        <div className="flex aspect-[4/5] h-full min-h-[210px] items-center justify-center overflow-hidden rounded-[1.55rem] border border-[#ead2cf] bg-white/70 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+      <div className="mt-5 grid min-w-0 grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] gap-3 sm:grid-cols-[minmax(160px,0.9fr)_minmax(0,1.1fr)] sm:gap-4">
+        <div className="flex aspect-[4/5] h-full min-h-[176px] min-w-0 items-center justify-center overflow-hidden rounded-[1.45rem] border border-[#ead2cf] bg-white/70 dark:border-[#5a3a48] dark:bg-[#2a1b24] sm:min-h-[210px] sm:rounded-[1.55rem]">
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -58,14 +58,14 @@ export default function ResultOverviewStep({
           )}
         </div>
 
-        <div className="grid min-w-0 content-start gap-2">
+        <div className="grid min-w-0 max-w-full content-start gap-2">
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="rounded-full border border-[#ead9d6] bg-white/70 px-4 py-3 dark:border-[#5a3a48] dark:bg-[#301f28]"
+              className="min-w-0 rounded-[1.35rem] border border-[#ead9d6] bg-white/70 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#301f28] sm:rounded-full sm:px-4 sm:py-3"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#8b6370] dark:text-[#c7aeb8]">{card.label}</p>
-              <p className="mt-1 break-words text-sm font-semibold leading-snug text-[#26101a] dark:text-[#fff7f2]">{card.value}</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#8b6370] dark:text-[#c7aeb8] sm:text-[10px] sm:tracking-[0.15em]">{card.label}</p>
+              <p className="mt-1 break-words text-[13px] font-semibold leading-snug text-[#26101a] dark:text-[#fff7f2] sm:text-sm">{card.value}</p>
             </div>
           ))}
         </div>
