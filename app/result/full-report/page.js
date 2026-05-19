@@ -301,7 +301,7 @@ function FullReportLightThemeStyles() {
 const COPY = {
   ko: {
     loading: "전체 리포트를 불러오는 중입니다...",
-    title: "실행 가능한 Full Report",
+    title: "실행 가능한 리포트",
     body: "무료 결과의 1순위 제품을 기준으로, 실제로 따라가기 쉬운 루틴과 확장 가이드를 정리했습니다.",
     backResult: "무료 결과로 돌아가기",
     restart: "다시 테스트하기",
@@ -4744,6 +4744,7 @@ export default function FullReportPage() {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
   const copy = getCopy(locale);
+  const isTestFullReport = pathname.includes("/test-full-report");
   const [freeResult, setFreeResult] = useState(null);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
@@ -4825,6 +4826,14 @@ export default function FullReportPage() {
           ? buildDevelopmentReport(parsedResult, parsedFaceLab, locale)
           : null;
 
+      if (isTestFullReport && developmentFallbackReport) {
+        setFreeResult(parsedResult);
+        setReport(developmentFallbackReport);
+        setError("");
+        setIsReady(true);
+        return;
+      }
+
       try {
         const supabaseAccessToken = await getFullReportAccessToken();
         const response = await fetch("/api/full-report", {
@@ -4902,7 +4911,7 @@ export default function FullReportPage() {
     }
 
     void loadFullReport();
-  }, [copy.errorBody, locale]);
+  }, [copy.errorBody, isTestFullReport, locale]);
 
   if (!isReady) {
     return (
@@ -4963,42 +4972,49 @@ export default function FullReportPage() {
       <FullReportLightThemeStyles />
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[800px]">
         <div className="space-y-4">
-          <header className="ui-card p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { code: "ko", label: "한국어" },
+                { code: "en", label: "English" }
+              ].map((item) => {
+                const active = locale === item.code;
+                return (
+                  <Link
+                    key={item.code}
+                    href={getLocalePath(pathname, item.code)}
+                    className={`full-report-locale-link inline-flex min-h-8 rounded-full px-3 py-1.5 text-[11px] font-medium transition sm:text-xs ${
+                      active
+                        ? "ui-choice-active"
+                        : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <ThemeToggle locale={locale} compact />
+              <button
+                type="button"
+                onClick={() => router.push(getResultPath(locale))}
+                className="ui-button-secondary min-h-8 px-3 py-1.5 text-[11px] font-medium sm:min-h-10 sm:px-4 sm:py-2.5 sm:text-xs"
+              >
+                {copy.backResult}
+              </button>
+            </div>
+          </div>
+
+          <header className="ui-card px-5 py-5 sm:p-6">
+            <div className="flex items-start">
               <div className="min-w-0">
                 <p className="ui-kicker">FULL REPORT</p>
-                <h1 className="ui-title mt-2 text-xl sm:text-2xl">{copy.title}</h1>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {[
-                    { code: "ko", label: "한국어" },
-                    { code: "en", label: "English" }
-                  ].map((item) => {
-                    const active = locale === item.code;
-                    return (
-                      <Link
-                        key={item.code}
-                        href={getLocalePath(pathname, item.code)}
-                        className={`full-report-locale-link inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                          active
-                            ? "ui-choice-active"
-                            : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <ThemeToggle locale={locale} compact />
-                <button
-                  type="button"
-                  onClick={() => router.push(getResultPath(locale))}
-                  className="ui-button-secondary px-4 py-2.5 text-xs font-medium"
-                >
-                  {copy.backResult}
-                </button>
+                <h1 className="ui-title mt-2 text-[26px] leading-[1.18] sm:text-2xl sm:leading-tight">{copy.title}</h1>
+                {locale === "ko" ? (
+                  <p className="ui-text-secondary mt-1 text-xs font-medium leading-5">Full Report</p>
+                ) : null}
               </div>
             </div>
           </header>

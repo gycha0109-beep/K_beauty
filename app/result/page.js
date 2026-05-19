@@ -2040,17 +2040,56 @@ function ResultContent() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7f2_0%,#f5e5e0_42%,#ead7cf_100%)] text-[#26101a] dark:bg-[radial-gradient(circle_at_top,#241720_0%,#1b1017_46%,#160d13_100%)] dark:text-[#fff8f3]">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
-        <div className="space-y-5">
-          <header className="rounded-[2rem] border border-white/10 bg-white/[0.92] p-5 text-[#26101a] shadow-[0_24px_70px_rgba(0,0,0,0.22)] dark:border-[#4a303c] dark:bg-[#241720] dark:text-[#fff8f3]">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7e5261] dark:text-[#c8aeb8]">
+        <div className="space-y-4 sm:space-y-5">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { code: "ko", label: "한국어" },
+                { code: "en", label: "English" }
+              ].map((item) => {
+                const active = locale === item.code;
+                return (
+                  <Link
+                    key={item.code}
+                    href={getLocalePath(pathname, item.code)}
+                    className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                      active
+                        ? "bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] text-white"
+                        : "border border-[#ead9d6] bg-white text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <ThemeToggle locale={locale} compact />
+              <Link
+                href={homePath}
+                onClick={(event) => {
+                  if (result && !window.confirm(getResultLeaveMessage(locale))) {
+                    event.preventDefault();
+                  }
+                }}
+                className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#ead9d6] bg-white px-3 py-1.5 text-[11px] font-medium text-[#3a1824] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#352430] sm:min-h-10 sm:px-4 sm:py-2.5 sm:text-xs"
+              >
+                {copy.tryAgain}
+              </Link>
+            </div>
+          </div>
+
+          <header className="rounded-[1.65rem] border border-white/10 bg-white/[0.92] px-5 py-5 text-[#26101a] shadow-[0_24px_70px_rgba(0,0,0,0.22)] dark:border-[#4a303c] dark:bg-[#241720] dark:text-[#fff8f3] sm:rounded-[2rem] sm:p-5">
+            <div className="flex items-start">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7e5261] dark:text-[#c8aeb8] sm:text-[11px] sm:tracking-[0.22em]">
                   AI Beauty Platform
                 </p>
-                <h1 className="mt-2 text-xl font-semibold tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-2xl">
+                <h1 className="mt-2 text-[26px] font-semibold leading-[1.18] tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-2xl sm:leading-tight">
                   {copy.title}
                 </h1>
-                <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
+                <p className="mt-2.5 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8] sm:mt-3">
                   {locale === "en"
                     ? "A personal beauty dashboard that connects Skin Match, Face Lab, and the full report."
                     : "무료 결과도 Skin Match, Face Lab 프리뷰, 프리미엄 확장까지 이어지는 개인 뷰티 대시보드로 정리했습니다."}
@@ -2061,46 +2100,9 @@ function ResultContent() {
                   </p>
                 ) : null}
               </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                <ThemeToggle locale={locale} compact />
-                <Link
-                  href={homePath}
-                  onClick={(event) => {
-                    if (result && !window.confirm(getResultLeaveMessage(locale))) {
-                      event.preventDefault();
-                    }
-                  }}
-                  className="inline-flex items-center justify-center rounded-full border border-[#ead9d6] bg-white px-4 py-2.5 text-xs font-medium text-[#3a1824] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#352430]"
-                >
-                  {copy.tryAgain}
-                </Link>
-              </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { code: "ko", label: "한국어" },
-                  { code: "en", label: "English" }
-                ].map((item) => {
-                  const active = locale === item.code;
-                  return (
-                    <Link
-                      key={item.code}
-                      href={getLocalePath(pathname, item.code)}
-                      className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                        active
-                          ? "bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] text-white"
-                          : "border border-[#ead9d6] bg-white text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-
+            <div className="mt-2 flex justify-end">
               {result && submission ? (
                 <ResultShareActions
                   result={result}
