@@ -16,3 +16,4 @@ debug.png
 *.local
 *headers*.txt
 *.log
+supabase/.temp/
