@@ -120,12 +120,12 @@ function MobileStepChips({ steps }) {
   return (
     <div className="mt-5 lg:hidden">
       <div className="relative mx-auto max-w-sm px-2">
-        <div className="absolute left-8 right-8 top-[13px] h-px bg-[#d8aaa8]/60 dark:bg-[#5a3a48]/70" />
+        <div className="pointer-events-none absolute left-8 right-8 top-[13px] z-0 h-px bg-[#d8aaa8]/60 dark:bg-[#5a3a48]/70" />
         <div className="relative grid grid-cols-3">
       {steps.map((step, index) => (
         <div
           key={step.title}
-          className="flex flex-col items-center text-center"
+          className="relative z-10 flex flex-col items-center text-center"
         >
           <span
             className={`relative z-10 flex h-[27px] w-[27px] items-center justify-center rounded-full border text-[10px] font-semibold ${
@@ -137,10 +137,10 @@ function MobileStepChips({ steps }) {
             {index + 1}
           </span>
           <span
-            className={`mt-1.5 text-[10px] font-semibold leading-4 ${
+            className={`mt-1.5 rounded-full px-1.5 text-[10px] font-semibold leading-4 ${
               index === 0
-                ? "text-[#6b2f3f] dark:text-[#ffe6e3]"
-                : "text-[#8a6970] dark:text-[#c8aeb8]"
+                ? "bg-[#fff4f1] text-[#6b2f3f] dark:bg-[#241720] dark:text-[#ffe6e3]"
+                : "bg-[#fff4f1] text-[#8a6970] dark:bg-[#241720] dark:text-[#c8aeb8]"
             }`}
           >
             {step.title}

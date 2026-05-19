@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import BottomCTA from "@/components/onboarding/BottomCTA";
-import ProgressDots from "@/components/onboarding/ProgressDots";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
-import BasicSurveyStep from "@/components/onboarding/BasicSurveyStep";
-import ExtraSurveyStep from "@/components/onboarding/ExtraSurveyStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
+import SurveyFlow from "@/components/onboarding/SurveyFlow";
 import ThemeToggle from "@/components/ThemeToggle";
 import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
 import {
@@ -19,10 +17,9 @@ import {
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
-const STEP_ORDER = ["photo", "basic", "extra", "loading"];
-const PROGRESS_STEPS = ["basic", "extra", "loading"];
+const STEP_ORDER = ["photo", "survey", "loading"];
 
-function buildCompleteForm(form = {}) {
+function normalizeSurveyAnswers(form = {}) {
   const mainConcerns = Array.isArray(form.mainConcerns)
     ? form.mainConcerns.filter(Boolean)
     : form.mainConcern
@@ -167,7 +164,7 @@ export default function HomePage() {
 
     const runAnalyze = async () => {
       const startedAt = Date.now();
-      const completedForm = buildCompleteForm(form);
+      const completedForm = normalizeSurveyAnswers(form);
       const imagePreviewDataUrlPromise = fileToDataUrl(imageFile);
 
       try {
@@ -235,7 +232,7 @@ export default function HomePage() {
       } catch (submitError) {
         console.error("[onboarding] analyze failed", submitError);
         setError(submitError.message || copy.errors.unexpected);
-        setCurrentStep("extra");
+        setCurrentStep("survey");
       } finally {
         setIsSubmitting(false);
       }
@@ -244,55 +241,44 @@ export default function HomePage() {
     void runAnalyze();
   }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentStep, form, imageFile, locale, router]);
 
-  const progress = useMemo(() => {
-    const index = PROGRESS_STEPS.indexOf(currentStep);
-
-    return {
-      current: index === -1 ? 0 : index + 1,
-      total: PROGRESS_STEPS.length
-    };
-  }, [currentStep]);
   const pageShellClassName = currentStep === "photo"
     ? "mx-auto flex w-full max-w-5xl flex-col px-4 pb-6 pt-4 sm:px-6 lg:px-8"
-    : "mx-auto flex w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
+    : currentStep === "survey"
+      ? "mx-auto flex w-full max-w-lg flex-col px-4 pb-6 pt-4 sm:px-6"
+      : "mx-auto flex w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
 
-  const mainConcernCount = Array.isArray(form.mainConcerns) ? form.mainConcerns.length : 0;
   const canProceedFromPhoto = Boolean(imageFile);
-  const canProceedFromBasic = Boolean(form.skinType && form.sensitivity && mainConcernCount > 0);
 
-  const handleFieldChange = (name, value) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setError("");
-  };
-
-  const handleMainConcernToggle = (value) => {
+  const handleSurveyAnswerChange = (name, value) => {
     setForm((prev) => {
-      const current = Array.isArray(prev.mainConcerns) ? prev.mainConcerns : [];
-      const nextValues = current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value];
+      if (name === "mainConcerns") {
+        const nextValues = Array.isArray(value) ? value.filter(Boolean) : [];
+
+        return {
+          ...prev,
+          mainConcern: nextValues[0] || "",
+          mainConcerns: nextValues
+        };
+      }
+
+      if (name === "sunscreenConsiderations") {
+        const nextValues = Array.isArray(value) ? value : [];
+
+        return {
+          ...prev,
+          whiteCastHate: nextValues.includes("whiteCastHate"),
+          toneUpWanted: nextValues.includes("toneUpWanted"),
+          makeupUse: nextValues.includes("makeupUse"),
+          eyeSensitive: nextValues.includes("eyeSensitive")
+        };
+      }
 
       return {
         ...prev,
-        mainConcern: nextValues[0] || "",
-        mainConcerns: nextValues
+        [name]: value
       };
     });
     setError("");
-  };
-
-  const handleEnvironmentToggle = (value) => {
-    setForm((prev) => {
-      const current = Array.isArray(prev.environmentExposure) ? prev.environmentExposure : [];
-      const nextValues = current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value];
-
-      return {
-        ...prev,
-        environmentExposure: nextValues
-      };
-    });
   };
 
   const handleImageChange = (event) => {
@@ -335,16 +321,6 @@ export default function HomePage() {
       return;
     }
 
-    if (currentStep === "basic" && !canProceedFromBasic) {
-      setError(copy.errors.completeBasicSurvey);
-      return;
-    }
-
-    if (currentStep === "extra") {
-      goToStep("loading");
-      return;
-    }
-
     const currentIndex = STEP_ORDER.indexOf(currentStep);
     const nextStep = STEP_ORDER[currentIndex + 1];
 
@@ -364,10 +340,6 @@ export default function HomePage() {
     if (previousStep) {
       goToStep(previousStep);
     }
-  };
-
-  const handleSkipExtra = () => {
-    goToStep("loading");
   };
 
   const handleSkinPresetPreview = (presetId) => {
@@ -404,25 +376,14 @@ export default function HomePage() {
       );
     }
 
-    if (currentStep === "basic") {
+    if (currentStep === "survey") {
       return (
-        <BasicSurveyStep
-          copy={copy}
+        <SurveyFlow
+          locale={locale}
           form={form}
-          onFieldChange={handleFieldChange}
-          onMainConcernToggle={handleMainConcernToggle}
-          error={error}
-        />
-      );
-    }
-
-    if (currentStep === "extra") {
-      return (
-        <ExtraSurveyStep
-          copy={copy}
-          form={form}
-          onFieldChange={handleFieldChange}
-          onEnvironmentToggle={handleEnvironmentToggle}
+          onAnswerChange={handleSurveyAnswerChange}
+          onBackToPhoto={() => goToStep("photo")}
+          onComplete={() => goToStep("loading")}
           error={error}
         />
       );
@@ -431,8 +392,7 @@ export default function HomePage() {
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
 
-  const showProgress = currentStep !== "photo";
-  const showBottomCta = currentStep !== "loading";
+  const showBottomCta = currentStep === "photo";
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">
@@ -491,12 +451,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {showProgress ? (
-          <div className="mb-6 mt-4">
-            <ProgressDots current={progress.current} total={progress.total} copy={copy} />
-          </div>
-        ) : null}
-
         <div key={currentStep} className="step-enter flex flex-col">
           {renderStep()}
         </div>
@@ -507,26 +461,14 @@ export default function HomePage() {
           primaryLabel={
             currentStep === "photo"
               ? copy.cta.next
-              : currentStep === "basic"
-                ? copy.cta.next
-                : copy.cta.analyze
+              : copy.cta.analyze
           }
           onPrimary={handleNext}
-          primaryDisabled={
-            currentStep === "photo"
-              ? !canProceedFromPhoto
-              : currentStep === "basic"
-                ? !canProceedFromBasic
-                : false
-          }
-          secondaryLabel={
-            currentStep === "basic" || currentStep === "extra"
-              ? copy.cta.back
-              : null
-          }
+          primaryDisabled={!canProceedFromPhoto}
+          secondaryLabel={null}
           onSecondary={handleBack}
-          tertiaryLabel={currentStep === "extra" ? copy.cta.skip : null}
-          onTertiary={currentStep === "extra" ? handleSkipExtra : null}
+          tertiaryLabel={null}
+          onTertiary={null}
         />
       ) : null}
 
