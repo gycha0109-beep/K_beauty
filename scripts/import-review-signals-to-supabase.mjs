@@ -373,7 +373,7 @@ async function main() {
   const dryRun = Boolean(args["dry-run"]);
 
   if (!filePath) {
-    throw new Error('Missing required --file argument. Example: --file "tmp/hwahae-review-signals.fixture.json"');
+    throw new Error('Missing required --file argument. Example: --file "data/hwahae-review-signals/samples/single/hwahae-review-signals.single.fixture.json"');
   }
 
   await loadLocalEnv();

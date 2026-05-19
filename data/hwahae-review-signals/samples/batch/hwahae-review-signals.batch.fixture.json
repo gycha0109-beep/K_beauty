@@ -1,0 +1,936 @@
+[
+  {
+    "productId": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "끈적하지않은",
+          "count": 3138,
+          "mapped": [
+            "non_sticky",
+            "fresh"
+          ]
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 2671,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "가벼운",
+          "count": 2655,
+          "mapped": [
+            "fresh",
+            "lightweight"
+          ]
+        },
+        {
+          "label": "눈통증없는",
+          "count": 1696,
+          "mapped": [
+            "eye_sting_low"
+          ]
+        },
+        {
+          "label": "밀림없는",
+          "count": 1686,
+          "mapped": [
+            "makeup_safe",
+            "pilling_low"
+          ]
+        },
+        {
+          "label": "산뜻한",
+          "count": 1005,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "답답하지않은",
+          "count": 854,
+          "mapped": [
+            "breathable",
+            "non_heavy"
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "label": "유분있는",
+          "count": 3109,
+          "mapped": [
+            "oily_finish"
+          ]
+        },
+        {
+          "label": "따가운",
+          "count": 1057,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 1057,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "톤업안되는",
+          "count": 790,
+          "mapped": [
+            "tone_up_weak"
+          ]
+        },
+        {
+          "label": "톤보정안되는",
+          "count": 368,
+          "mapped": [
+            "tone_correction_weak"
+          ]
+        },
+        {
+          "label": "지속력안좋은",
+          "count": 276,
+          "mapped": [
+            "lasting_weak"
+          ]
+        },
+        {
+          "label": "미백효과가없는",
+          "count": 179,
+          "mapped": [
+            "tone_effect_weak"
+          ]
+        }
+      ],
+      "updated_at": "2026-04-30",
+      "unmapped_summary": {
+        "positive": [],
+        "negative": [],
+        "all": []
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 28799,
+      "rating": 4.6,
+      "rating_distribution": {},
+      "updated_at": "2026-04-30"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 40,
+      "risk": {
+        "low": 36,
+        "medium": 4,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 19,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 5,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "uv protection",
+          "count": 4,
+          "mapped": [
+            "uv"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 19,
+        "barrier": 7,
+        "uneven_tone": 1,
+        "uv": 4,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 6,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 2,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-04-30"
+    }
+  },
+  {
+    "productId": "2d52e270-0429-4c5f-89dd-5c608b92fe8c",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "보습잘되는",
+          "count": 801,
+          "mapped": [
+            "dehydration",
+            "barrier"
+          ]
+        },
+        {
+          "label": "수분있는",
+          "count": 650,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "자극없는",
+          "count": 518,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "잘발리는",
+          "count": 496,
+          "mapped": [
+            "spreadability"
+          ]
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 308,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "편안해지는",
+          "count": 109,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "피부강화되는",
+          "count": 82,
+          "mapped": [
+            "barrier"
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "label": "유분있는",
+          "count": 377,
+          "mapped": [
+            "oily_finish"
+          ]
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 62,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "가려운",
+          "count": 30,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "답답한",
+          "count": 28,
+          "mapped": [
+            "heavy_finish"
+          ]
+        },
+        {
+          "label": "잘굳는",
+          "count": 22,
+          "mapped": [
+            "texture_issue"
+          ]
+        },
+        {
+          "label": "모공관리안되는",
+          "count": 21,
+          "mapped": [
+            "pores_weak"
+          ]
+        },
+        {
+          "label": "유수분밸런스가맞지않는",
+          "count": 18,
+          "mapped": [
+            "balance_mismatch"
+          ]
+        }
+      ],
+      "updated_at": "2026-04-30",
+      "unmapped_summary": {
+        "positive": [],
+        "negative": [],
+        "all": []
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 2488,
+      "rating": 4.67,
+      "rating_distribution": {},
+      "updated_at": "2026-04-30"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 38,
+      "risk": {
+        "low": 35,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 13,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 6,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 9,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "exfoliation",
+          "count": 1,
+          "mapped": [
+            "pores",
+            "acne"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 13,
+        "barrier": 15,
+        "pores": 1,
+        "acne": 1,
+        "uneven_tone": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 2
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-04-30"
+    }
+  },
+  {
+    "productId": "31015762-2741-4211-a553-3ceb7fdf32e8",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "속건조에효과있는",
+          "count": 9959,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "가벼운",
+          "count": 7230,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "트러블안생기는",
+          "count": 5797,
+          "mapped": [
+            "acne_safe"
+          ]
+        },
+        {
+          "label": "산뜻한",
+          "count": 3153,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "유분없는",
+          "count": 2982,
+          "mapped": [
+            "oiliness"
+          ]
+        },
+        {
+          "label": "편안해지는",
+          "count": 1262,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "밀림없는",
+          "count": 1129,
+          "mapped": [
+            "makeup_safe"
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "label": "알러지반응오는",
+          "count": 1324,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "흘러내리는",
+          "count": 1162,
+          "mapped": [
+            "watery_texture"
+          ]
+        },
+        {
+          "label": "지속력안좋은",
+          "count": 589,
+          "mapped": [
+            "lasting_weak"
+          ]
+        },
+        {
+          "label": "유수분밸런스가맞지않는",
+          "count": 384,
+          "mapped": [
+            "balance_mismatch"
+          ]
+        },
+        {
+          "label": "미끌거리는",
+          "count": 382,
+          "mapped": [
+            "texture_mismatch"
+          ]
+        },
+        {
+          "label": "잘굳는",
+          "count": 321,
+          "mapped": [
+            "texture_issue"
+          ]
+        },
+        {
+          "label": "가려운",
+          "count": 293,
+          "mapped": [
+            "irritation_risk"
+          ]
+        }
+      ],
+      "updated_at": "2026-04-30",
+      "unmapped_summary": {
+        "positive": [],
+        "negative": [],
+        "all": []
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 80754,
+      "rating": 4.6,
+      "rating_distribution": {},
+      "updated_at": "2026-04-30"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 33,
+      "risk": {
+        "low": 30,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 27,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 3,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "soothing/astringent",
+          "count": 1,
+          "mapped": [
+            "redness",
+            "oiliness"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 27,
+        "barrier": 3,
+        "redness": 1,
+        "oiliness": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-04-30"
+    }
+  },
+  {
+    "productId": "cd3b66be-cddc-47e1-906f-a871dea84412",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "알갱이있는",
+          "count": 4279,
+          "mapped": [
+            "physical_exfoliation",
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "트러블안생기는",
+          "count": 3576,
+          "mapped": [
+            "acne_safe"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 2149,
+          "mapped": [
+            "exfoliation",
+            "pores"
+          ]
+        },
+        {
+          "label": "트러블없어지는",
+          "count": 1996,
+          "mapped": [
+            "acne_safe"
+          ]
+        },
+        {
+          "label": "2차세안에적합한",
+          "count": 1445,
+          "mapped": [
+            "second_cleanse"
+          ]
+        },
+        {
+          "label": "미끌거리지않는",
+          "count": 1291,
+          "mapped": [
+            "non_slippery",
+            "fresh"
+          ]
+        },
+        {
+          "label": "진정되는",
+          "count": 845,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "label": "알러지반응오는",
+          "count": 956,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "거품이풍성하지않은",
+          "count": 427,
+          "mapped": [
+            "foam_weak"
+          ]
+        },
+        {
+          "label": "리치한",
+          "count": 342,
+          "mapped": [
+            "rich_texture"
+          ]
+        },
+        {
+          "label": "워터프루프안지워지는",
+          "count": 215,
+          "mapped": [
+            "cleansing_power_weak"
+          ]
+        },
+        {
+          "label": "가려운",
+          "count": 183,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "잘굳는",
+          "count": 98,
+          "mapped": [
+            "texture_issue"
+          ]
+        },
+        {
+          "label": "흘러내리는",
+          "count": 78,
+          "mapped": [
+            "watery_texture"
+          ]
+        }
+      ],
+      "updated_at": "2026-04-30",
+      "unmapped_summary": {
+        "positive": [],
+        "negative": [],
+        "all": []
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 47935,
+      "rating": 4.63,
+      "rating_distribution": {},
+      "updated_at": "2026-04-30"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 37,
+      "risk": {
+        "low": 33,
+        "medium": 2,
+        "high": 0,
+        "unknown": 2
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 25,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "soothing/astringent",
+          "count": 1,
+          "mapped": [
+            "redness",
+            "oiliness"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 25,
+        "barrier": 4,
+        "redness": 1,
+        "oiliness": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 2,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 5,
+          "negative": 1
+        },
+        "sensitive": {
+          "positive": 3,
+          "negative": 1
+        }
+      },
+      "updated_at": "2026-04-30"
+    }
+  },
+  {
+    "productId": "eb675aef-b910-4e5c-b76b-6ade44966775",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "각질제거잘되는",
+          "count": 4414,
+          "mapped": [
+            "exfoliation",
+            "pores"
+          ]
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 4289,
+          "mapped": [
+            "texture_refining"
+          ]
+        },
+        {
+          "label": "잘발리는",
+          "count": 3967,
+          "mapped": [
+            "spreadability"
+          ]
+        },
+        {
+          "label": "산뜻한",
+          "count": 3900,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "따갑지않은",
+          "count": 1900,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "뒤집어지지않는",
+          "count": 1529,
+          "mapped": [
+            "acne_safe",
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 1151,
+          "mapped": [
+            "texture_refining"
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "label": "흘러내리는",
+          "count": 2943,
+          "mapped": [
+            "watery_texture"
+          ]
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 2175,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "가려운",
+          "count": 402,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "블랙헤드안없어지는",
+          "count": 322,
+          "mapped": [
+            "blackhead_weak",
+            "pores_weak"
+          ]
+        },
+        {
+          "label": "잘굳는",
+          "count": 290,
+          "mapped": [
+            "texture_issue"
+          ]
+        },
+        {
+          "label": "눈통증있는",
+          "count": 239,
+          "mapped": [
+            "eye_sting"
+          ]
+        },
+        {
+          "label": "지속력안좋은",
+          "count": 220,
+          "mapped": [
+            "lasting_weak"
+          ]
+        }
+      ],
+      "updated_at": "2026-04-30",
+      "unmapped_summary": {
+        "positive": [],
+        "negative": [],
+        "all": []
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 94287,
+      "rating": 4.43,
+      "rating_distribution": {},
+      "updated_at": "2026-04-30"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 16,
+      "risk": {
+        "low": 15,
+        "medium": 1,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 13,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "exfoliation",
+          "count": 1,
+          "mapped": [
+            "pores",
+            "acne"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 13,
+        "barrier": 2,
+        "pores": 1,
+        "acne": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-04-30"
+    }
+  }
+]

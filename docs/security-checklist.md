@@ -16,7 +16,8 @@ Deleting the file from the repository is not enough once a service-role key has 
 
 - Keep local environment files untracked: `.env`, `.env.*`, `.env.local`, `crawler/.env`.
 - Keep generated Next.js outputs untracked: `.next/`, `.next-dev/`.
-- Keep debug outputs and temporary scraper/import files untracked: `tmp/`, `.tmp-*`, `debug.png`, `*headers*.txt`.
+- Keep debug outputs and disposable scratch files untracked: `tmp/`, `.tmp-*`, `debug.png`, `*headers*.txt`.
+- Curated Hwahae review raw/fixture/batch assets are intentionally tracked under `data/hwahae-review-signals/`.
 
 ## Public Product Read Surface
 

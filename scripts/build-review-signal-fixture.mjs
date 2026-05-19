@@ -325,7 +325,7 @@ async function readInput(args) {
     return JSON.parse(raw);
   }
 
-  throw new Error('Missing input. Use --input "tmp/raw.json" or pipe JSON through stdin.');
+  throw new Error('Missing input. Use --input "data/hwahae-review-signals/samples/single/hwahae-raw.single.json" or pipe JSON through stdin.');
 }
 
 async function writeOutput(payload, outFile) {
