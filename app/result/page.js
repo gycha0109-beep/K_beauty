@@ -155,7 +155,7 @@ const resultCopy = {
     resultPhotoFallback: "업로드한 사진",
     photoObservationTitle: "사진 기준 관찰",
     photoObservationFallback: "사진 분석이 제한되어 설문 답변을 중심으로 정리했습니다.",
-    topPickStepKicker: "RESULT STEP 2",
+    topPickStepKicker: "RESULT STEP 3",
     topPickStepTitle: "Top Pick",
     topPickStepBody: "",
     topPickTabLabel: "Top Pick",
@@ -182,7 +182,7 @@ const resultCopy = {
     alternativeStepBody: "",
     faceLabStepTitle: "Face Lab 티저",
     faceLabStepBody: "",
-    routineStepKicker: "RESULT STEP 3",
+    routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "루틴 및 주의할 점",
     routineStepBody: "",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
@@ -285,7 +285,7 @@ const resultCopy = {
     resultPhotoFallback: "Uploaded photo",
     photoObservationTitle: "Photo-based read",
     photoObservationFallback: "Photo analysis was limited, so the result is organized mainly around the survey answers.",
-    topPickStepKicker: "RESULT STEP 2",
+    topPickStepKicker: "RESULT STEP 3",
     topPickStepTitle: "Top Pick",
     topPickStepBody: "",
     topPickTabLabel: "Top Pick",
@@ -312,7 +312,7 @@ const resultCopy = {
     alternativeStepBody: "",
     faceLabStepTitle: "Face Lab Teaser",
     faceLabStepBody: "",
-    routineStepKicker: "RESULT STEP 3",
+    routineStepKicker: "RESULT STEP 4",
     routineStepTitle: "Routine & Notes",
     routineStepBody: "",
     routineStepEmpty: "There is no routine information to show yet.",
@@ -509,6 +509,58 @@ function getOverviewSummary(form = {}, decision = null, locale = "ko") {
   }
 
   return `${skinTypeLabel} 피부이고 ${concernLabel} 고민이 있어, ${directionSummary}`;
+}
+
+function buildOverviewRoutineHighlights(result = null, form = {}, locale = "ko") {
+  const structure = getRoutineStructureData(result, locale);
+  const amLine = structure?.am?.strategyLine || "";
+  const pmLine = structure?.pm?.strategyLine || "";
+  const morning = Array.isArray(result?.morning) ? result.morning : [];
+  const night = Array.isArray(result?.night) ? result.night : [];
+  const fallbackAction = getDirectionAction(form, locale);
+  const labels = locale === "en"
+    ? { am: "AM strategy", pm: "PM strategy" }
+    : { am: "AM 전략", pm: "PM 전략" };
+
+  return [
+    {
+      key: "am",
+      label: labels.am,
+      body: amLine || toRoutineAction(morning[0], locale) || fallbackAction
+    },
+    {
+      key: "pm",
+      label: labels.pm,
+      body: pmLine || toRoutineAction(night[0], locale) || fallbackAction
+    }
+  ].filter((item) => item.body);
+}
+
+function buildOverviewMatchSummary(form = {}, result = null, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const skinTypeLabel = display.skinType[form?.skinType] || (locale === "en" ? "Matched skin" : "맞춤 피부");
+  const priorityLabel = getPriorityDisplay(result, form, locale);
+  const concernKeys = Array.isArray(form?.mainConcerns) && form.mainConcerns.length
+    ? form.mainConcerns
+    : form?.mainConcern
+      ? [form.mainConcern]
+      : [];
+  const concerns = concernKeys
+    .map((key) => display.mainConcern[key])
+    .filter(Boolean)
+    .slice(0, 3);
+  const score = typeof result?.topPick?.score === "number" && Number.isFinite(result.topPick.score)
+    ? Math.round(result.topPick.score)
+    : null;
+
+  return {
+    matchLabel: priorityLabel ? `${skinTypeLabel} · ${priorityLabel}` : skinTypeLabel,
+    skinTypeLabel,
+    priorityLabel,
+    concerns,
+    routineHighlights: buildOverviewRoutineHighlights(result, form, locale),
+    score
+  };
 }
 
 function getPhotoSignalLabel(signal = {}, locale = "ko") {
@@ -1210,6 +1262,60 @@ function getProductReasonSentences(product, locale = "ko") {
   return locale === "en" ? sentences.filter((item) => !hasKoreanText(item)) : sentences;
 }
 
+function buildTopPickReasonBullets(product, form, decision = null, locale = "ko") {
+  const productReasons = getProductReasonSentences(product, locale);
+  const summaryReasons = splitSentences(getTopPickSummary(product, form, decision, locale));
+  const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
+  const fallback = locale === "en"
+    ? `Fits ${especiallyGoodFor} without widening the routine too early.`
+    : `${especiallyGoodFor}에 먼저 맞추기 좋은 선택입니다.`;
+
+  return uniqueItems([...productReasons, ...summaryReasons, fallback]).slice(0, 3);
+}
+
+function buildTopPickAITip(product, form, decision = null, locale = "ko") {
+  const category = normalizeResultCategory(product);
+  const concern = getPriorityDisplay(decision, form, locale);
+
+  if (locale === "en") {
+    if (category === "sunscreen") {
+      return "Use it as the last AM step, then reapply on longer outdoor days.";
+    }
+
+    if (category === "cleanser") {
+      return "Keep the cleanse short and gentle; more rubbing usually adds stress.";
+    }
+
+    if (category === "serum_ampoule") {
+      return "Start with a small amount after toner and keep the next layer simple.";
+    }
+
+    if (category === "moisturizer") {
+      return "Apply a thin layer first, then add more only where tightness remains.";
+    }
+
+    return `Keep this as the anchor step while ${concern.toLowerCase()} settles.`;
+  }
+
+  if (category === "sunscreen") {
+    return "아침 마지막 단계에 충분히 바르고, 외출이 길면 오후에 가볍게 덧바르세요.";
+  }
+
+  if (category === "cleanser") {
+    return "세안 시간은 짧게 두고, 문지르는 힘을 줄이는 쪽이 더 안정적입니다.";
+  }
+
+  if (category === "serum_ampoule") {
+    return "토너 다음 소량부터 시작하고, 다음 단계는 단순하게 유지하세요.";
+  }
+
+  if (category === "moisturizer") {
+    return "먼저 얇게 바른 뒤 당김이 남는 부위만 한 번 더 보충하세요.";
+  }
+
+  return `${concern} 흐름이 안정될 때까지 이 단계를 중심으로 루틴을 좁혀보세요.`;
+}
+
 function getProductPreviewLines(product, count = 1, locale = "ko") {
   const sentences = getProductReasonSentences(product, locale);
   return sentences.slice(0, count);
@@ -1300,6 +1406,7 @@ function buildSkinDashboardMetrics(result, form = {}, locale = "ko") {
     : [];
   const hasPhotoSignal = (key) => photoSignals.includes(key);
   const isEnglish = locale === "en";
+  const afternoonChange = form?.afternoonSkinChange || form?.afternoonChange || "";
 
   const hydrationAttention =
     (form?.skinType === "dry" ? 12 : 0) +
@@ -1309,28 +1416,34 @@ function buildSkinDashboardMetrics(result, form = {}, locale = "ko") {
   const oilAttention =
     (form?.skinType === "oily" || form?.skinType === "combination" ? 12 : 0) +
     (priority === "oiliness" || priority === "pores" ? 18 : 0) +
-    (form?.afternoonChange === "more_oily" ? 14 : 0) +
+    (afternoonChange === "more_oily" ? 14 : 0) +
     (hasPhotoSignal("oiliness") || hasPhotoSignal("pores") ? 10 : 0);
   const sensitivityAttention =
     (form?.sensitivity === "high" ? 26 : form?.sensitivity === "medium" ? 14 : 0) +
     (priority === "redness" || priority === "barrier" || priority === "acne" ? 20 : 0) +
-    (form?.afternoonChange === "red_or_irritated" ? 12 : 0) +
+    (afternoonChange === "red_or_irritated" ? 12 : 0) +
     (hasPhotoSignal("redness") || hasPhotoSignal("acne") ? 12 : 0);
   const barrierAttention =
     (priority === "barrier" || priority === "redness" || priority === "dehydration" ? 18 : 0) +
     (form?.skinType === "dry" ? 8 : 0) +
     (form?.postWashFeeling === "tight" ? 10 : 0) +
     (hasPhotoSignal("barrier") || hasPhotoSignal("dehydration") || hasPhotoSignal("redness") ? 10 : 0);
+  const toneAttention =
+    (priority === "uneven_tone" || priority === "uv" ? 20 : 0) +
+    (hasPhotoSignal("uneven_tone") ? 14 : 0) +
+    ((form?.environmentExposure || []).includes("outdoor") ? 10 : 0);
 
   const statusFor = (value) => {
     if (isEnglish) {
-      if (value >= 78) return "High";
-      if (value >= 52) return "Balanced";
+      if (value >= 78) return "Watch";
+      if (value >= 62) return "High";
+      if (value >= 44) return "Balanced";
       return "Low";
     }
 
-    if (value >= 78) return "높음";
-    if (value >= 52) return "균형";
+    if (value >= 78) return "주의";
+    if (value >= 62) return "높음";
+    if (value >= 44) return "보통";
     return "낮음";
   };
 
@@ -1363,6 +1476,13 @@ function buildSkinDashboardMetrics(result, form = {}, locale = "ko") {
           value: clampPercent(46 + barrierAttention),
           description: barrierAttention >= 24 ? "Support comfort and moisture-holding power together." : "Barrier support is worth checking lightly.",
           color: "#8a5a70"
+        },
+        {
+          key: "tone",
+          label: "Tone",
+          value: clampPercent(42 + toneAttention),
+          description: toneAttention >= 24 ? "Keep daytime protection and tone-care steps consistent." : "Tone pressure looks secondary for now.",
+          color: "#f6b6a8"
         }
       ]
     : [
@@ -1393,6 +1513,13 @@ function buildSkinDashboardMetrics(result, form = {}, locale = "ko") {
           value: clampPercent(46 + barrierAttention),
           description: barrierAttention >= 24 ? "장벽 보조와 편안함을 함께 봅니다." : "장벽 보조는 무난한 편입니다.",
           color: "#8a5a70"
+        },
+        {
+          key: "tone",
+          label: "톤",
+          value: clampPercent(42 + toneAttention),
+          description: toneAttention >= 24 ? "낮 시간 보호와 톤 케어를 꾸준히 봅니다." : "톤 부담은 보조 지표로만 봅니다.",
+          color: "#f6b6a8"
         }
       ];
 
@@ -1467,6 +1594,51 @@ function toRoutineAction(item, locale = "ko") {
   }
 
   return text;
+}
+
+function buildRoutineFlowSections(result = null, locale = "ko") {
+  const structure = getRoutineStructureData(result, locale);
+  const morningItems = Array.isArray(result?.morning) ? result.morning : [];
+  const nightItems = Array.isArray(result?.night) ? result.night : [];
+  const labels = locale === "en"
+    ? {
+        morning: "AM routine",
+        night: "PM routine",
+        morningMeta: "Light daytime setup",
+        nightMeta: "Reset and support"
+      }
+    : {
+        morning: "AM 루틴",
+        night: "PM 루틴",
+        morningMeta: "가볍게 시작",
+        nightMeta: "정리와 회복"
+      };
+
+  const normalizeItems = (items, fallback) => {
+    const normalized = items
+      .map((item) => toRoutineAction(item, locale))
+      .filter(Boolean)
+      .slice(0, 4);
+
+    return normalized.length ? normalized : fallback ? [fallback] : [];
+  };
+
+  return [
+    {
+      key: "morning",
+      label: labels.morning,
+      meta: labels.morningMeta,
+      strategy: structure?.am?.strategyLine || "",
+      items: normalizeItems(morningItems, structure?.am?.strategyLine)
+    },
+    {
+      key: "night",
+      label: labels.night,
+      meta: labels.nightMeta,
+      strategy: structure?.pm?.strategyLine || "",
+      items: normalizeItems(nightItems, structure?.pm?.strategyLine)
+    }
+  ].filter((section) => section.items.length || section.strategy);
 }
 
 function getUsageTimingLabel(useTime, locale = "ko") {
@@ -1855,6 +2027,7 @@ function ResultContent() {
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
   const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
+  const overviewMatchSummary = buildOverviewMatchSummary(submission?.form || {}, result, locale);
   const overviewCards = [
     {
       label: locale === "en" ? "Skin Type" : "피부 타입",
@@ -1870,6 +2043,7 @@ function ResultContent() {
     }
   ];
   const routineDirectionCards = buildRoutineDirectionCards(result, locale);
+  const routineFlowSections = buildRoutineFlowSections(result, locale);
   const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
   const routineWarnings = getLocalizedRoutineWarnings(result, submission?.form || {}, locale);
   const goToFullReport = () => {
@@ -1897,6 +2071,7 @@ function ResultContent() {
           photoUrl={photoUrl}
           photoAlt={submission?.imageName || copy.resultPhotoFallback}
           summaryCards={overviewCards}
+          matchSummary={overviewMatchSummary}
           overviewSummary={getOverviewSummary(submission?.form, result, locale)}
           faceLabPreview={faceLabProfilePreview}
           photoObservations={result.photoObservations}
@@ -1936,9 +2111,14 @@ function ResultContent() {
           />
         </section>
       ) : (
-        <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          {copy.topPickEmpty}
-        </div>
+        <section className="space-y-4">
+          <ResultStepLead
+            kicker={copy.topPickStepKicker}
+            title={copy.topPickStepTitle}
+            body={null}
+          />
+          <TopPickFallbackCard copy={copy} locale={locale} />
+        </section>
       )
     });
 
@@ -1952,45 +2132,14 @@ function ResultContent() {
             body={null}
           />
 
-          <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fff8ef] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.16)] dark:border-[#4a303c] dark:bg-[#241720]">
-            <div className="space-y-4">
-              <div className="grid gap-0">
-                {routineDirectionCards.length ? routineDirectionCards.map((card) => (
-                  <div key={`routine-structure-${card.key}`} className="relative grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3 border-b border-[#ead9d2] py-4 last:border-b-0 dark:border-[#4a303c]">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ead9d2] bg-white text-xs font-semibold text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#fff8f3]">
-                      {card.key === "night" ? 2 : 1}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
-                        {card.label}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{card.body}</p>
-                    </div>
-                  </div>
-                )) : (
-                  <div className="rounded-[1.4rem] bg-white/60 px-4 py-4 text-sm leading-6 text-[#69424f] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
-                    {copy.routineStepEmpty}
-                  </div>
-                )}
-              </div>
-
-              {routineWarnings.length ? (
-                <div className="rounded-[1.4rem] border border-[#ead9d2] bg-white/60 px-4 py-4 dark:border-[#6a4a25] dark:bg-[#3a2818]">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#f2c879]">{decisionCopy.warnings}</p>
-                  <div className="mt-3 space-y-2">
-                    {routineWarnings.map((warning, index) => (
-                      <p
-                        key={`routine-warning-${index}`}
-                        className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]"
-                      >
-                        {warning}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </section>
+          <RoutineFlowCard
+            sections={routineFlowSections}
+            directionCards={routineDirectionCards}
+            warnings={routineWarnings}
+            emptyText={copy.routineStepEmpty}
+            warningsLabel={decisionCopy.warnings}
+            locale={locale}
+          />
         </section>
       )
     });
@@ -2206,10 +2355,11 @@ function ResultStepLead({ kicker, title, body }) {
 
 function SkinDashboardCard({ metrics = [], locale = "ko" }) {
   const isEnglish = locale === "en";
-  const items = Array.isArray(metrics) ? metrics.slice(0, 4) : [];
+  const items = Array.isArray(metrics) ? metrics.slice(0, 5) : [];
+  const primaryMetric = items[0] || null;
 
   return (
-      <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-6 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#241720]">
+    <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#241720] sm:p-6">
       <div className="flex items-start gap-4">
         <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#2b101b] shadow-[0_12px_26px_rgba(52,20,35,0.08)] dark:bg-[#301f28] dark:text-[#fff8f3]">
           02
@@ -2221,25 +2371,48 @@ function SkinDashboardCard({ metrics = [], locale = "ko" }) {
           </h2>
           <p className="mt-3 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
             {isEnglish
-              ? "Before the Top Pick, check four skin signals briefly."
-              : "Top Pick 전에 4개 피부 신호만 짧게 확인합니다."}
+              ? "Before the Top Pick, check the main skin signals briefly."
+              : "Top Pick 전에 주요 피부 신호만 짧게 확인합니다."}
           </p>
         </div>
       </div>
 
-      <div className="mt-7 space-y-5">
+      {primaryMetric ? (
+        <div className="mt-6 rounded-[1.5rem] border border-[#ead9d2] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">
+                {isEnglish ? "Main signal" : "대표 지표"}
+              </p>
+              <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#26101a] dark:text-[#fff8f3]">{primaryMetric.label}</p>
+              <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{primaryMetric.description}</p>
+            </div>
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#fff7f2] dark:bg-[#301f28]">
+              <span
+                className="absolute inset-0 rounded-full"
+                style={{ background: `conic-gradient(${primaryMetric.color} ${primaryMetric.value * 3.6}deg, rgba(234,217,210,0.75) 0deg)` }}
+              />
+              <span className="relative flex h-[4.15rem] w-[4.15rem] items-center justify-center rounded-full bg-white text-lg font-semibold text-[#26101a] dark:bg-[#241720] dark:text-[#fff8f3]">
+                {primaryMetric.value}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mt-4 grid gap-3">
         {items.map((metric) => (
-          <div key={metric.key} className="border-b border-[#ead9d2] pb-4 last:border-b-0 last:pb-0 dark:border-[#4a303c]">
-            <div className="flex items-start justify-between gap-4">
+          <div key={metric.key} className="rounded-[1.25rem] border border-[#ead9d2] bg-white/54 px-4 py-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.label}</p>
-                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8] sm:text-sm">{metric.description}</p>
+                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{metric.description}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <span className="rounded-full border border-[#e7c5bc] bg-white px-2.5 py-1 text-[11px] font-medium text-[#8a4c5d] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {metric.status}
                 </span>
-                <span className="min-w-9 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.value}%</span>
+                <span className="min-w-8 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.value}</span>
               </div>
             </div>
             <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2630]">
@@ -2250,6 +2423,105 @@ function SkinDashboardCard({ metrics = [], locale = "ko" }) {
             </div>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function TopPickFallbackCard({ copy, locale = "ko" }) {
+  return (
+    <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-5 text-sm leading-6 text-[#69424f] shadow-[0_24px_70px_rgba(35,16,25,0.14)] dark:border-[#4a303c] dark:bg-[#241720] dark:text-[#c8aeb8]">
+      <div className="rounded-[1.5rem] border border-[#ead9d6] bg-white/58 p-5 text-center dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-[#ead9d6] bg-[#fff4f1] text-[#e6507a] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#ff9aa8]">
+          <svg viewBox="0 0 48 48" className="h-8 w-8" fill="none" aria-hidden="true">
+            <path d="M14 17.5h20M14 24h20M18 30.5h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            <rect x="11" y="9" width="26" height="30" rx="6" stroke="currentColor" strokeWidth="2.2" />
+          </svg>
+        </div>
+        <p className="mt-4 font-semibold text-[#26101a] dark:text-[#fff8f3]">
+          {copy.topPickEmpty}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+          {locale === "en"
+            ? "The rest of the free report is still available from your analysis data."
+            : "제품 데이터가 비어도 분석 요약과 루틴 가이드는 계속 확인할 수 있습니다."}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function RoutineFlowCard({ sections = [], directionCards = [], warnings = [], emptyText, warningsLabel, locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const visibleSections = sections.length
+    ? sections
+    : directionCards.map((card) => ({
+        key: card.key,
+        label: card.label,
+        meta: isEnglish ? "Routine direction" : "루틴 방향",
+        strategy: card.body,
+        items: [card.body].filter(Boolean)
+      }));
+
+  return (
+    <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fff8ef] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.16)] dark:border-[#4a303c] dark:bg-[#241720]">
+      <div className="space-y-4">
+        {visibleSections.length ? (
+          <div className="grid gap-3">
+            {visibleSections.map((section) => (
+              <div key={`routine-flow-${section.key}`} className="rounded-[1.45rem] border border-[#ead9d2] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#e6507a] dark:text-[#ff9aa8]">{section.meta}</p>
+                    <h3 className="mt-1 text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{section.label}</h3>
+                  </div>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#ead9d2] bg-[#fff4f1] text-sm font-semibold text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#fff8f3]">
+                    {section.key === "night" ? "PM" : "AM"}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-2">
+                  {section.items.map((item, index) => (
+                    <div key={`${section.key}-${item}-${index}`} className="grid grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-2 rounded-[1rem] bg-[#fff8f3]/72 px-3 py-2.5 dark:bg-[#301f28]">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-semibold text-[#e6507a] dark:bg-[#241720] dark:text-[#ff9aa8]">
+                        {index + 1}
+                      </span>
+                      <p className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{item}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {section.strategy && !section.items.includes(section.strategy) ? (
+                  <p className="mt-3 rounded-[1rem] border border-[#ead9d2] bg-white/45 px-3 py-2 text-xs leading-5 text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#251820] dark:text-[#c8aeb8]">
+                    {section.strategy}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[1.4rem] bg-white/60 px-4 py-4 text-sm leading-6 text-[#69424f] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
+            {emptyText}
+          </div>
+        )}
+
+        <div className="rounded-[1.45rem] border border-[#ead9d2] bg-white/58 p-4 dark:border-[#6a4a25] dark:bg-[#3a2818]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#f2c879]">
+            {warningsLabel}
+          </p>
+          <div className="mt-3 space-y-2.5">
+            {(warnings.length ? warnings : [
+              isEnglish
+                ? "Keep the routine simple first and add new steps one at a time."
+                : "처음에는 루틴을 단순하게 두고 새 단계는 하나씩만 추가하세요."
+            ]).map((warning, index) => (
+              <p key={`routine-warning-${index}`} className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">
+                <span className="text-[#ff8068]">!</span>
+                <span>{warning}</span>
+              </p>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -2326,33 +2598,34 @@ function ResultPreviewMaskCard({ copy, sections = [] }) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[#f6ece8] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
-      <div className="space-y-4">
-        <div>
-          <span className="inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fbf2ee] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#704557] dark:bg-[#301f28] dark:text-[#f2c879]">
+    <section className="overflow-hidden rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[linear-gradient(145deg,#fff4ef_0%,#f6ece8_52%,#ffe1e5_100%)] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
+      <div className="space-y-5">
+        <div className="rounded-[1.6rem] border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee]/70 p-5 text-center dark:border-[#704557] dark:bg-[#2a1823]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#ff9aa8]/45 bg-white/58 text-2xl text-[#ff8068] shadow-[0_0_28px_rgba(255,128,104,0.22)] dark:bg-[#301f28]">
+            ✓
+          </div>
+          <span className="mt-4 inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fff8f3] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#704557] dark:bg-[#301f28] dark:text-[#f2c879]">
             Premium Report
           </span>
-          <p className="mt-4 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{copy.routinePreviewTitle}</p>
-          {copy.routineGateHint ? (
-            <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
-              {copy.routineGateHint}
-            </p>
-          ) : null}
+          <p className="mt-3 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{copy.routinePreviewTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
+            {copy.premiumCardBody}
+          </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid gap-3">
           {visibleSections.map((section, index) => (
             <div
               key={section.key || section.title}
-              className="rounded-full border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee] px-4 py-3 dark:border-[#704557] dark:bg-[#2a1823]"
+              className="rounded-[1.25rem] border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee]/72 px-4 py-3.5 dark:border-[#704557] dark:bg-[#2a1823]"
             >
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ead0c8] text-[11px] font-semibold text-[#6a3344] dark:bg-white/10 dark:text-white/80">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#ead0c8] text-[11px] font-semibold text-[#6a3344] dark:bg-white/10 dark:text-white/80">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#28121b] dark:text-[#fff8f3]">{section.title}</p>
-                  <p className="mt-2 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{section.body}</p>
+                  <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{section.title}</p>
+                  <p className="mt-1.5 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{section.body}</p>
                 </div>
               </div>
             </div>
@@ -2478,10 +2751,12 @@ function ProductDecisionCard({
     const productStepLabel = getProductStepLabel(product, locale);
     const topPickSignals = [productStepLabel, ...getTopPickSignalLabels(product, locale)].slice(0, 5);
     const detailLines = getProductReasonSentences(product, locale);
+    const topPickBullets = buildTopPickReasonBullets(product, form, decision, locale);
+    const aiTip = buildTopPickAITip(product, form, decision, locale);
 
     return (
       <div
-        className="overflow-hidden rounded-[2.15rem] border border-[#f0d7d1] bg-[linear-gradient(135deg,#fff6f2_0%,#fff1ef_64%,#ffe8ea_100%)] shadow-[0_26px_80px_rgba(50,18,33,0.18)] dark:border-[#4a303c] dark:bg-[linear-gradient(135deg,#241720_0%,#2b1c26_62%,#30202b_100%)]"
+        className="overflow-hidden rounded-[2.15rem] border border-[#f0d7d1] bg-[linear-gradient(145deg,#fff8f4_0%,#fff0ef_55%,#ffe4e7_100%)] shadow-[0_26px_80px_rgba(50,18,33,0.18)] dark:border-[#4a303c] dark:bg-[linear-gradient(145deg,#241720_0%,#2b1c26_60%,#30202b_100%)]"
         onClick={() =>
           trackEvent("click_top_pick", {
             product_id: product.id,
@@ -2498,74 +2773,98 @@ function ProductDecisionCard({
         <div className="px-5 py-6 sm:px-7 sm:py-7">
           <div className={showDiagnostics ? "grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start" : ""}>
             <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2.5">
-                <span className="rounded-full border border-[#e9c8c0] bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-[#5e3140] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="rounded-full border border-[#e9c8c0] bg-white/72 px-3 py-1.5 text-[11px] font-semibold text-[#5e3140] shadow-[0_10px_22px_rgba(236,81,126,0.12)] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {copy.topPickBadge}
+                </span>
+                <span className="rounded-full border border-[#e9d4cf] bg-white/54 px-3 py-1.5 text-[11px] font-medium text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#2a1b24] dark:text-[#c8aeb8]">
+                  {productStepLabel}
                 </span>
               </div>
 
-            <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c8aeb8] sm:text-[15px]">{topPickHeadline}</p>
-                <h2 className="mt-3 break-words text-[2rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2.4rem]">
-                  {product.name}
-                </h2>
-                <p className="mt-1 text-sm text-[#69424f] dark:text-[#c8aeb8] sm:text-[15px]">{product.brand}</p>
-                {priceLabel ? (
-                  <p className="mt-1 text-xs font-medium text-[#8b6370] dark:text-[#a98792] sm:text-[13px]">{priceLabel}</p>
-                ) : null}
+              <div className="mt-5 grid gap-5">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c8aeb8] sm:text-[15px]">{topPickHeadline}</p>
+                  <h2 className="mt-3 break-words text-[1.85rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2.25rem]">
+                    {product.name}
+                  </h2>
+                  <p className="mt-1 text-sm text-[#69424f] dark:text-[#c8aeb8] sm:text-[15px]">{product.brand}</p>
+                  {priceLabel ? (
+                    <p className="mt-1 text-xs font-medium text-[#8b6370] dark:text-[#a98792] sm:text-[13px]">{priceLabel}</p>
+                  ) : null}
+                </div>
+                <div className="mx-auto w-full max-w-[220px]">
+                  <SmallProductThumb product={product} height="h-44" locale={locale} />
+                </div>
               </div>
-              <a
-                href={purchaseLink.href}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  trackEvent("click_buy_link", {
-                    product_id: product.id,
-                    feature_name: "skin_analysis",
-                    result_type: "top_pick",
-                    is_top_pick: true,
-                    meta_json: {
-                      step: product.step,
-                      brand: product.brand,
-                      button_label: purchaseLink.label,
-                      fallback_link: purchaseLink.isFallback
-                    }
-                  });
-                }}
-                className="ui-button-primary min-h-12 shrink-0 justify-center bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)] px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(239,99,135,0.2)] hover:opacity-95 sm:mb-1"
-              >
-                {purchaseLink.label}
-              </a>
-            </div>
 
-            {topPickSignals.length ? (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {topPickSignals.map((label) => (
-                  <span
-                    key={`${product.id}-${label}`}
-                    className="rounded-full border border-[#e9d4cf] bg-white/60 px-2.5 py-1 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            ) : null}
+              {topPickSignals.length ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {topPickSignals.map((label) => (
+                    <span
+                      key={`${product.id}-${label}`}
+                      className="rounded-full border border-[#e9d4cf] bg-white/60 px-2.5 py-1 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
 
-            <div className="mt-5">
-              <SmallProductThumb product={product} height="h-48" locale={locale} />
-            </div>
-
-            <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f3e4df]">
-              <span className="font-semibold text-[#26101a] dark:text-[#fff8f3]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
-            </p>
-            <p className="mt-4 max-w-2xl text-[15px] leading-7 text-[#3a1824] dark:text-[#f3e4df]">{topPickSummary}</p>
-            {photoRecommendationLine ? (
-              <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
-                {photoRecommendationLine}
+              <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f3e4df]">
+                <span className="font-semibold text-[#26101a] dark:text-[#fff8f3]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
               </p>
-            ) : null}
+
+              <div className="mt-5 rounded-[1.45rem] border border-[#ead9d6] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">
+                  {locale === "en" ? "Why this fits" : "추천 이유"}
+                </p>
+                <div className="mt-3 space-y-2.5">
+                  {topPickBullets.map((line) => (
+                    <p key={`${product.id}-bullet-${line}`} className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">
+                      <span className="pt-0.5 text-[#ef6387]">✓</span>
+                      <span>{line}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/44 px-4 py-3.5 dark:border-[#5a3a48] dark:bg-[#2f202a]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">AI Tip</p>
+                <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{aiTip}</p>
+              </div>
+
+              {photoRecommendationLine ? (
+                <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
+                  {photoRecommendationLine}
+                </p>
+              ) : null}
+
+              <div className="mt-5">
+                <a
+                  href={purchaseLink.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    trackEvent("click_buy_link", {
+                      product_id: product.id,
+                      feature_name: "skin_analysis",
+                      result_type: "top_pick",
+                      is_top_pick: true,
+                      meta_json: {
+                        step: product.step,
+                        brand: product.brand,
+                        button_label: purchaseLink.label,
+                        fallback_link: purchaseLink.isFallback
+                      }
+                    });
+                  }}
+                  className="ui-button-primary min-h-12 w-full justify-center bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)] px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(239,99,135,0.2)] hover:opacity-95"
+                >
+                  {purchaseLink.label}
+                </a>
+              </div>
 
             {allowExpand ? (
               <button
@@ -2594,6 +2893,7 @@ function ProductDecisionCard({
                     ))}
                   </div>
                 ) : null}
+                <p className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{topPickSummary}</p>
                 {detailLines.length ? (
                   <div className="space-y-2">
                     {detailLines.map((line) => (
