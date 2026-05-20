@@ -58,14 +58,14 @@ export default function ResultOverviewStep({
           )}
         </div>
 
-        <div className="grid min-w-0 max-w-full content-start gap-2">
+        <div className="grid min-w-0 max-w-full content-start gap-1.5 sm:gap-2">
           {summaryCards.map((card) => (
             <div
               key={card.label}
-              className="min-w-0 rounded-[1.35rem] border border-[#ead9d6] bg-white/70 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#301f28] sm:rounded-full sm:px-4 sm:py-3"
+              className="min-w-0 w-[90%] justify-self-end rounded-[1.2rem] border border-[#ead9d6] bg-white/70 px-2.5 py-2 dark:border-[#5a3a48] dark:bg-[#301f28] sm:w-full sm:rounded-full sm:px-4 sm:py-3"
             >
-              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#8b6370] dark:text-[#c7aeb8] sm:text-[10px] sm:tracking-[0.15em]">{card.label}</p>
-              <p className="mt-1 break-words text-[13px] font-semibold leading-snug text-[#26101a] dark:text-[#fff7f2] sm:text-sm">{card.value}</p>
+              <p className="text-[8px] font-semibold uppercase tracking-[0.08em] text-[#8b6370] dark:text-[#c7aeb8] sm:text-[10px] sm:tracking-[0.15em]">{card.label}</p>
+              <p className="mt-0.5 whitespace-normal break-words text-[12px] font-semibold leading-snug text-[#26101a] dark:text-[#fff7f2] sm:mt-1 sm:text-sm">{card.value}</p>
             </div>
           ))}
         </div>

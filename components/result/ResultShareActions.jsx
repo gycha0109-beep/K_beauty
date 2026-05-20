@@ -274,10 +274,10 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
     ? "w-full rounded-none border-0 bg-transparent p-0 shadow-none"
     : "rounded-[1.6rem] border border-white/10 bg-white/90 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)]";
   const gridClassName = isHeaderVariant
-    ? "flex flex-wrap justify-end gap-1.5"
+    ? "flex flex-wrap justify-end gap-1.5 max-[360px]:grid max-[360px]:grid-cols-2 max-[360px]:gap-2"
     : "grid grid-cols-2 gap-2.5 sm:grid-cols-4";
   const buttonClassName = isHeaderVariant
-    ? "inline-flex min-h-0 items-center justify-center rounded-full border border-[#ead9d6] bg-white px-2.5 py-1.5 text-[11px] font-medium leading-none text-[#3a1824] shadow-[0_8px_18px_rgba(52,20,35,0.06)] transition hover:bg-[#fff4f1] disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430]"
+    ? "inline-flex min-h-0 items-center justify-center rounded-full border border-[#ead9d6] bg-white px-2.5 py-1.5 text-[11px] font-medium leading-none text-[#3a1824] shadow-[0_8px_18px_rgba(52,20,35,0.06)] transition hover:bg-[#fff4f1] disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430] max-[360px]:min-h-9 max-[360px]:w-full max-[360px]:px-3 max-[360px]:py-2"
     : "ui-button-secondary min-h-11 border-[#ead9d6] bg-white px-3 text-sm font-medium text-[#3a1824] hover:bg-[#fff4f1]";
 
   return (

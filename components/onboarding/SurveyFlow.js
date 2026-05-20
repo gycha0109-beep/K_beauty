@@ -929,6 +929,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   const isFinalQuestion = questionIndex >= questions.length - 1;
   const finalCtaEnabled = isFinalQuestion && screenIsValid;
   const finalCtaText = locale === "ko" ? "AI 분석 시작" : "Start AI analysis";
+  const finalCtaShowsSparkles = finalCtaEnabled && finalCtaText === "AI 분석 시작";
   const finalCtaCaption = locale === "ko"
     ? "사진과 답변을 바탕으로 맞춤 리포트를 생성합니다."
     : "Your custom report will be generated from the photo and answers.";
@@ -1020,32 +1021,49 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           ) : null}
         </div>
 
-        <div className="grid grid-cols-[0.38fr_0.62fr] gap-3">
+        {isFinalQuestion ? (
+          <p className={`text-center text-[11px] font-medium leading-5 transition ${
+            finalCtaEnabled
+              ? "text-[#8a4a5c] dark:text-[#f0c5cf]"
+              : "text-[#b3929c] dark:text-[#8f7480]"
+          }`}>
+            {finalCtaCaption}
+          </p>
+        ) : null}
+
+        <div className={`grid gap-3 ${isFinalQuestion ? "grid-cols-[0.32fr_0.68fr]" : "grid-cols-[0.38fr_0.62fr]"}`}>
           <button
             type="button"
             onClick={handleBack}
-            className="ui-button-secondary px-4 py-3 text-sm font-semibold"
+            className={`ui-button-secondary px-4 py-3 text-sm font-semibold ${isFinalQuestion ? "opacity-85" : ""}`}
           >
             {copy.back}
           </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            className={`ui-button-primary px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
-              finalCtaEnabled
-                ? "border border-white/25 shadow-[0_12px_28px_rgba(231,107,145,0.22)] ring-1 ring-[#ff8066]/25 dark:shadow-[0_12px_30px_rgba(239,99,135,0.22)] dark:ring-white/15"
-                : ""
-            }`}
-          >
-            <span className="inline-flex items-center justify-center gap-1.5">
-              {isFinalQuestion ? copy.startAnalyze : copy.next}
+          <span className="relative block min-w-0">
+            {finalCtaShowsSparkles ? (
+              <span aria-hidden="true" className="final-cta-sparkles pointer-events-none absolute -inset-x-2 -inset-y-2 z-0 overflow-visible">
+                <span className="final-cta-sparkle final-cta-sparkle-one">✦</span>
+                <span className="final-cta-sparkle final-cta-sparkle-two">✦</span>
+                <span className="final-cta-sparkle final-cta-sparkle-three">✦</span>
+              </span>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleNext}
+              className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
+                finalCtaEnabled
+                  ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
+                  : ""
+              }`}
+            >
               {finalCtaEnabled ? (
-                <span aria-hidden="true" className="text-[13px] leading-none opacity-90">
-                  →
-                </span>
+                <span aria-hidden="true" className="final-cta-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-white/25 blur-sm" />
               ) : null}
-            </span>
-          </button>
+              <span className="relative inline-flex items-center justify-center">
+                {isFinalQuestion ? finalCtaText : copy.next}
+              </span>
+            </button>
+          </span>
         </div>
       </div>
 
@@ -1092,6 +1110,96 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           to {
             opacity: 1;
             transform: scale(1);
+          }
+        }
+
+        :global(.final-cta-shimmer) {
+          animation: final-cta-shimmer 3.1s ease-in-out infinite;
+        }
+
+        :global(.final-cta-sparkle) {
+          position: absolute;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(255, 247, 242, 0.68);
+          filter: drop-shadow(0 0 4px rgba(255, 150, 134, 0.2));
+          font-size: 5px;
+          line-height: 1;
+          opacity: 0;
+          text-shadow: 0 0 5px rgba(255, 255, 255, 0.28);
+          transform-origin: center;
+          animation: final-cta-sparkle-soft 3.4s ease-in-out infinite;
+        }
+
+        :global(.final-cta-sparkle-one) {
+          left: 9%;
+          top: -1px;
+          animation-delay: -0.45s;
+          color: rgba(255, 255, 255, 0.62);
+          font-size: 4px;
+        }
+
+        :global(.final-cta-sparkle-two) {
+          right: 13%;
+          top: -5px;
+          animation-delay: -1.55s;
+          color: rgba(255, 205, 201, 0.64);
+          font-size: 6px;
+        }
+
+        :global(.final-cta-sparkle-three) {
+          right: -1px;
+          top: 52%;
+          animation-delay: -2.35s;
+          color: rgba(255, 151, 124, 0.52);
+          font-size: 4px;
+        }
+
+        @keyframes final-cta-shimmer {
+          0%,
+          42% {
+            opacity: 0;
+            transform: translateX(-120%) skewX(-18deg);
+          }
+
+          55% {
+            opacity: 0.42;
+          }
+
+          100% {
+            opacity: 0;
+            transform: translateX(440%) skewX(-18deg);
+          }
+        }
+
+        @keyframes final-cta-sparkle-soft {
+          0%,
+          100% {
+            opacity: 0;
+            transform: translate3d(0, 2px, 0) scale(0.74) rotate(0deg);
+          }
+
+          42% {
+            opacity: 0.38;
+            transform: translate3d(0, 0, 0) scale(1.04) rotate(8deg);
+          }
+
+          68% {
+            opacity: 0.18;
+            transform: translate3d(0, -1px, 0) scale(0.92) rotate(12deg);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          :global(.final-cta-shimmer) {
+            animation: none;
+          }
+
+          :global(.final-cta-sparkle) {
+            animation: none;
+            opacity: 0.24;
+            transform: scale(0.9);
           }
         }
       `}</style>
