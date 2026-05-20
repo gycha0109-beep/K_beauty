@@ -1,5 +1,8 @@
 # 비주얼리 재방문 구조 DB ERD
 
+> Version: v0.2  
+> Updated: profiles 생성 전략, active skin_profile partial unique index, report_version, local date 규칙, routine_logs derived cache 정책, weekly report lazy generation 원칙을 보강했다.
+
 ## 1. 문서 목적
 
 이 문서는 비주얼리의 재방문 구조를 구현하기 위한 DB ERD 정의서다.
@@ -152,6 +155,7 @@ erDiagram
         text source_type
         text source_session_id
         text title
+        text report_version
         jsonb free_result
         jsonb premium_report
         jsonb face_lab
@@ -295,6 +299,39 @@ primary key (id)
 foreign key (id) references auth.users(id) on delete cascade
 ```
 
+
+### profiles 생성 전략
+
+OAuth 로그인 성공 후 `auth.users`에는 사용자가 생성되지만, `public.profiles` row는 자동으로 생기지 않을 수 있다.
+
+MVP 권장 방식:
+
+```txt
+/auth/callback/route.js에서 현재 user 정보를 읽고 profiles를 upsert한다.
+```
+
+권장 이유:
+
+```txt
+Supabase trigger 기반 자동 생성보다 Next route에서 명시적으로 upsert하는 방식이 초기 디버깅에 유리하다.
+```
+
+upsert 기준:
+
+```txt
+id = auth.users.id
+nickname = user_metadata.name 또는 user_metadata.full_name
+avatar_url = user_metadata.avatar_url
+provider = app_metadata.provider 또는 identities[0].provider
+```
+
+주의:
+
+```txt
+profiles가 없어도 로그인 자체는 성공할 수 있다.
+따라서 /my 진입 전에 profiles upsert를 보장하거나, /my dashboard API에서 보정 upsert를 수행한다.
+```
+
 ---
 
 ## 4.3 `skin_profiles`
@@ -344,6 +381,10 @@ on public.skin_profiles (user_id, created_at desc);
 
 create index idx_skin_profiles_user_id_active
 on public.skin_profiles (user_id, is_active);
+
+create unique index idx_skin_profiles_single_active
+on public.skin_profiles (user_id)
+where is_active = true;
 ```
 
 ### 운영 규칙
@@ -351,6 +392,8 @@ on public.skin_profiles (user_id, is_active);
 - 사용자가 새 진단을 저장하면 새 row를 만든다.
 - 최신 row를 `is_active = true`로 둔다.
 - 같은 사용자의 기존 active profile은 false로 변경한다.
+- DB 차원에서 사용자당 active profile은 1개만 허용한다.
+- 이를 위해 `where is_active = true` partial unique index를 사용한다.
 - 과거 진단 기록은 삭제하지 않는다.
 
 ---
@@ -377,6 +420,7 @@ on public.skin_profiles (user_id, is_active);
 | source_type | text | N | session, premium_report_session, share, manual |
 | source_session_id | text | N | 기존 sid 또는 share id |
 | title | text | N | 리포트 표시 제목 |
+| report_version | text | N | 결과/프롬프트/렌더링 버전 |
 | free_result | jsonb | N | 무료 결과 JSON |
 | premium_report | jsonb | N | 유료 리포트 JSON |
 | face_lab | jsonb | N | Face Lab JSON |
@@ -397,6 +441,29 @@ session
 premium_report_session
 share
 manual
+```
+
+
+### report_version 운영 규칙
+
+`free_result`, `premium_report`, `face_lab`은 JSONB로 저장되므로 시간이 지나면서 결과 shape가 바뀔 수 있다.
+
+`report_version`은 아래 용도로 사용한다.
+
+```txt
+- 예전 리포트 렌더링 호환
+- 프롬프트 버전 구분
+- 결과 JSON 구조 변경 추적
+- 향후 report migration 판단
+```
+
+예시:
+
+```txt
+free-v1
+premium-v1
+face-lab-v1
+2026-05-report-v1
 ```
 
 ### 인덱스
@@ -458,6 +525,25 @@ on public.saved_reports (skin_profile_id);
 4 = 매우 강함
 ```
 
+
+### checkin_date 운영 규칙
+
+`checkin_date`는 서버 UTC 기준이 아니라 **사용자 로컬 날짜 기준**으로 저장한다.
+
+MVP 권장:
+
+```txt
+클라이언트에서 사용자의 local date를 YYYY-MM-DD 형식으로 계산해 서버에 전송한다.
+서버의 default current_date는 fallback으로만 사용한다.
+```
+
+이유:
+
+```txt
+Supabase/PostgreSQL 서버 timezone과 한국 사용자 날짜가 어긋나면,
+새벽 시간대에 하루 체크인이 잘못 묶일 수 있다.
+```
+
 ### 제약
 
 ```sql
@@ -494,6 +580,20 @@ on public.daily_checkins (user_id, checkin_date desc);
 - 오늘 피해야 할 조합 저장
 - `/my` 홈에서 루틴 카드 재조회
 - 새로고침/재방문 시 결과 유지
+
+
+### 성격
+
+`routine_logs`는 원본 데이터가 아니라, `skin_profiles + daily_checkins` 기반으로 생성된 **derived cache** 성격의 데이터다.
+
+운영 원칙:
+
+```txt
+- 필요하면 regenerate 가능하다.
+- 같은 날짜의 체크인이 수정되면 overwrite/update 가능하다.
+- generation_source로 rule / llm / hybrid 출처를 구분한다.
+- 사용자는 최종 루틴 카드를 안정적으로 다시 볼 수 있어야 한다.
+```
 
 ### 컬럼
 
@@ -712,7 +812,8 @@ on public.weekly_reports (user_id, week_start desc);
 ### 운영 규칙
 
 - 최근 7일 내 checkin이 2개 이상일 때만 생성한다.
-- MVP에서는 수동 조회 시 생성해도 된다.
+- MVP에서는 `/my/report/weekly` 접근 시 필요한 경우 생성하는 lazy generation 방식을 권장한다.
+- 최근 weekly_report가 있으면 재사용하고, 없거나 오래되었으면 최근 daily_checkins를 조회해 생성한다.
 - 나중에 cron/edge function으로 자동 생성 가능하다.
 
 ---
@@ -999,7 +1100,35 @@ weekly_reports
 
 ---
 
+
+## 8.1 Phase 1 명시적 제외
+
+Phase 1 migration에서는 아래 테이블을 만들지 않는다.
+
+```txt
+user_products
+sos_logs
+weekly_reports
+```
+
+단, 이 문서에는 Phase 2 이후 확장 설계를 위해 정의를 유지한다.
+
+Phase 1 API/UI에서도 아래 기능은 구현하지 않는다.
+
+```txt
+/my/routine
+/my/sos
+/my/report/weekly
+/api/my/products
+/api/my/sos
+/api/my/weekly-report
+```
+
 # 9. API route 권장 구조
+
+아래 API 목록은 전체 로드맵 기준이다. Phase 1에서는 `/api/my/dashboard`, `/api/my/save-report`, `/api/my/check-in`, `/api/my/routine-log` 중심으로 구현한다.
+
+Phase 2 이후에 `/api/my/products`, `/api/my/sos`, `/api/my/weekly-report`를 추가한다.
 
 ## 인증
 
@@ -1299,6 +1428,7 @@ create table if not exists public.saved_reports (
   source_type text check (source_type in ('session', 'premium_report_session', 'share', 'manual')),
   source_session_id text,
   title text,
+  report_version text,
   free_result jsonb,
   premium_report jsonb,
   face_lab jsonb,
@@ -1387,6 +1517,34 @@ create table if not exists public.weekly_reports (
 
 ---
 
+
+## 12.1 updated_at 자동 갱신 정책
+
+각 테이블의 `updated_at`은 row 수정 시 자동 갱신되는 것이 좋다.
+
+권장:
+
+```txt
+이미 프로젝트에 updated_at trigger function이 있으면 재사용한다.
+없으면 migration에서 공통 trigger function을 추가한다.
+```
+
+예시 정책:
+
+```txt
+profiles.updated_at
+skin_profiles.updated_at
+saved_reports.updated_at
+daily_checkins.updated_at
+routine_logs.updated_at
+user_products.updated_at
+weekly_reports.updated_at
+```
+
+`sos_logs`는 생성 기록 성격이 강하므로 `updated_at` 없이 `created_at`만 유지해도 된다.
+
+---
+
 # 13. 인덱스 초안
 
 ```sql
@@ -1395,6 +1553,10 @@ on public.skin_profiles (user_id, created_at desc);
 
 create index if not exists idx_skin_profiles_user_id_active
 on public.skin_profiles (user_id, is_active);
+
+create unique index if not exists idx_skin_profiles_single_active
+on public.skin_profiles (user_id)
+where is_active = true;
 
 create index if not exists idx_saved_reports_user_id_created_at
 on public.saved_reports (user_id, created_at desc);
@@ -1520,9 +1682,9 @@ Codex는 `TABLE_NAME`을 실제 테이블명으로 치환해서 정책을 생성
 [ ] saved_reports 생성
 [ ] daily_checkins 생성
 [ ] routine_logs 생성
-[ ] user_products 생성
-[ ] sos_logs 생성
-[ ] weekly_reports 생성
+[ ] user_products 생성 - Phase 2
+[ ] sos_logs 생성 - Phase 2
+[ ] weekly_reports 생성 - Phase 3
 [ ] 인덱스 생성
 [ ] RLS 활성화
 [ ] RLS 정책 생성
@@ -1540,9 +1702,9 @@ Codex는 `TABLE_NAME`을 실제 테이블명으로 치환해서 정책을 생성
 [ ] /api/my/save-report
 [ ] /api/my/check-in
 [ ] /api/my/routine-log
-[ ] /api/my/products
-[ ] /api/my/sos
-[ ] /api/my/weekly-report
+[ ] /api/my/products - Phase 2
+[ ] /api/my/sos - Phase 2
+[ ] /api/my/weekly-report - Phase 3
 ```
 
 ---
@@ -1552,9 +1714,9 @@ Codex는 `TABLE_NAME`을 실제 테이블명으로 치환해서 정책을 생성
 ```txt
 [ ] /my
 [ ] /my/check-in
-[ ] /my/routine
-[ ] /my/sos
-[ ] /my/report/weekly
+[ ] /my/routine - Phase 2
+[ ] /my/sos - Phase 2
+[ ] /my/report/weekly - Phase 3
 [ ] / result 저장 CTA
 [ ] 로그인 후 /my redirect
 ```
@@ -1566,7 +1728,7 @@ Codex는 `TABLE_NAME`을 실제 테이블명으로 치환해서 정책을 생성
 Phase 1 완료 기준:
 
 ```txt
-1. Supabase Auth 사용자와 profiles가 연결된다.
+1. Supabase Auth 사용자와 profiles가 연결된다. OAuth callback 또는 dashboard 진입 시 profiles upsert가 보장된다.
 2. 로그인 사용자는 진단 결과를 skin_profiles에 저장할 수 있다.
 3. 저장된 진단 결과는 saved_reports에도 남는다.
 4. /my에서 최신 skin_profile을 읽어올 수 있다.

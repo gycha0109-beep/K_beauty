@@ -1,5 +1,8 @@
 # 비주얼리 재방문 구조 Implementation Plan
 
+> Version: v0.2  
+> Updated: Phase 1 후순위 테이블 생성 금지, middleware 보호 대상 Phase 분리, OAuth 결과 복구 흐름, checkinDate/routineDate local date 규칙, DB migration prompt 최신화를 반영했다.
+
 ## 1. 문서 목적
 
 이 문서는 비주얼리의 재방문 구조를 실제 코드에 반영하기 위한 구현 계획서다.
@@ -7,8 +10,8 @@
 이미 작성된 문서:
 
 ```txt
-docs/visualy-revisit-usecase.md
-docs/visualy-db-erd.md
+docs/Bejewely-revisit-usecase-v0.2.md
+docs/Bejewely-revisit-db-erd-v0.2.md
 ```
 
 이 문서는 위 두 문서를 기준으로 Codex가 다음 작업을 안전하게 수행하도록 통제한다.
@@ -185,7 +188,7 @@ daily_checkins
 routine_logs
 ```
 
-후순위 테이블:
+Phase 1에서 명시적으로 제외할 테이블:
 
 ```txt
 user_products
@@ -193,7 +196,14 @@ sos_logs
 weekly_reports
 ```
 
-Phase 1에서는 후순위 테이블을 만들 수는 있지만, UI 구현은 하지 않는다.
+Phase 1에서는 위 후순위 테이블을 만들지 않는다. ERD 문서에는 Phase 2/3 확장을 위해 정의되어 있지만, 이번 core migration 대상은 아니다.
+
+주의:
+
+```txt
+ERD 문서의 SQL 초안 전체를 그대로 복사하지 않는다.
+이번 migration은 Phase 1 테이블 5개만 생성한다.
+```
 
 권장 migration 파일명:
 
@@ -212,6 +222,9 @@ supabase/migrations/YYYYMMDDHHMMSS_add_revisit_core_tables.sql
 6. index 생성
 7. RLS 활성화
 8. RLS policy 생성
+9. skin_profiles active partial unique index 생성
+10. saved_reports.report_version 컬럼 포함
+11. updated_at trigger function 재사용 또는 안전한 신규 생성
 ```
 
 주의:
@@ -220,6 +233,7 @@ supabase/migrations/YYYYMMDDHHMMSS_add_revisit_core_tables.sql
 products 테이블은 이미 존재한다고 가정한다.
 기존 products enum/check constraint를 건드리지 않는다.
 premium_report_sessions는 삭제하지 않는다.
+user_products, sos_logs, weekly_reports는 Phase 1 migration에 포함하지 않는다.
 ```
 
 검증 SQL:
@@ -280,7 +294,7 @@ app/api/auth/signout/route.js
 
 ---
 
-## 2.1 `lib/supabase/browser.js`
+### `lib/supabase/browser.js`
 
 목적:
 
@@ -298,7 +312,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY 사용
 
 ---
 
-## 2.2 `lib/supabase/server.js`
+### `lib/supabase/server.js`
 
 목적:
 
@@ -322,7 +336,7 @@ service role key를 browser client에 절대 노출하지 않는다.
 
 ---
 
-## 2.3 `lib/supabase/middleware.js`
+### `lib/supabase/middleware.js`
 
 목적:
 
@@ -340,7 +354,7 @@ Supabase auth session 유지
 
 ---
 
-## 2.4 `middleware.js`
+### `middleware.js`
 
 목적:
 
@@ -348,11 +362,16 @@ Supabase auth session 유지
 인증 세션 refresh 및 보호 라우트 제어
 ```
 
-보호 대상:
+Phase 1 보호 대상:
 
 ```txt
 /my
 /my/check-in
+```
+
+Phase 2 이후 보호 대상:
+
+```txt
 /my/routine
 /my/sos
 /my/report/weekly
@@ -372,7 +391,7 @@ MVP 정책:
 
 ---
 
-## 2.5 `app/auth/callback/route.js`
+### `app/auth/callback/route.js`
 
 목적:
 
@@ -385,13 +404,15 @@ OAuth 로그인 이후 Supabase code exchange 처리
 ```txt
 1. URL query에서 code 읽기
 2. Supabase auth exchangeCodeForSession 실행
-3. next 파라미터가 있으면 해당 경로로 이동
-4. 없으면 /my로 이동
+3. 현재 user 정보를 조회한다.
+4. public.profiles에 사용자 정보를 upsert한다.
+5. next 파라미터가 있으면 해당 경로로 이동
+6. 없으면 /my로 이동
 ```
 
 ---
 
-## 2.6 `app/api/auth/signout/route.js`
+### `app/api/auth/signout/route.js`
 
 목적:
 
@@ -528,8 +549,12 @@ app/result/page.js
   /api/my/save-report 호출 후 /my 이동
 
 비로그인 상태:
+  현재 freeResult / surveySnapshot / faceLab 요약을 sessionStorage에 저장
+  pendingSaveReport=true 같은 플래그를 저장
   로그인 버튼 표시 또는 로그인 페이지/모달 표시
-  로그인 후 다시 저장 flow 실행
+  OAuth redirectTo에 next=/result 또는 저장 복구용 경로를 포함
+  로그인 후 복구 가능한 결과를 찾아 /api/my/save-report 호출
+  복구 실패 시 새 진단 안내
 ```
 
 주의:
@@ -549,6 +574,42 @@ app/result/page.js
 
 ---
 
+## 5.1.1 OAuth 이후 결과 복구 규칙
+
+OAuth 로그인은 페이지 이동과 리로드가 발생할 수 있으므로, 비로그인 사용자가 결과 저장 CTA를 누른 시점의 결과 데이터를 복구할 수 있어야 한다.
+
+저장 대상 후보:
+
+```txt
+freeResult
+surveySnapshot
+faceLab 요약
+photoAnalysis 요약
+sourceSessionId
+premium_report_sessions sid
+```
+
+권장 흐름:
+
+```txt
+1. 결과 저장 CTA 클릭
+2. sessionStorage에 pendingSaveReport payload 저장
+3. OAuth 로그인 시작
+4. /auth/callback에서 세션 교환 및 profiles upsert
+5. next 경로로 복귀
+6. 클라이언트 또는 서버 route가 pending payload를 읽어 /api/my/save-report 호출
+7. 저장 성공 시 pending payload 제거
+8. 저장 실패 또는 payload 없음이면 새 진단 안내
+```
+
+주의:
+
+```txt
+로그인 성공만 하고 결과 저장 데이터가 사라지는 흐름을 만들면 안 된다.
+```
+
+---
+
 ## 5.2 `/api/my/save-report`
 
 메서드:
@@ -562,9 +623,10 @@ POST
 ```txt
 1. 현재 로그인 user 조회
 2. request body에서 result data 받기
-3. skin_profiles에 핵심 진단 정보 저장
-4. saved_reports에 원본 결과 저장
-5. 저장된 skin_profile_id 반환
+3. 같은 user_id의 기존 active skin_profile을 false로 변경
+4. 새 active skin_profile 생성
+5. saved_reports에 원본 결과 저장
+6. 저장된 skin_profile_id 반환
 ```
 
 Request 예시:
@@ -609,6 +671,18 @@ Response 예시:
 같은 user_id의 기존 active skin_profiles를 is_active = false로 변경한다.
 새 row를 is_active = true로 생성한다.
 ```
+
+DB ERD v0.2 기준으로 `skin_profiles`에는 사용자당 active profile 1개만 허용하는 partial unique index가 있다.
+
+따라서 저장 순서가 중요하다.
+
+```txt
+1. 기존 active profile false 처리
+2. 새 active profile insert
+3. partial unique index 충돌 시 기존 active false 처리 후 retry
+```
+
+가능하면 transaction/RPC 또는 서버 route의 순차 처리로 보장한다.
 
 저장 필드 매핑:
 
@@ -662,6 +736,25 @@ GET
 ```
 
 역할:
+Phase 1 dashboard payload에는 제품/주간 리포트 필드를 포함하지 않는다.
+
+Phase 1 response 기준:
+
+```txt
+latestSkinProfile
+todayCheckin
+todayRoutine
+latestSavedReport
+hasProfile
+needsCheckIn
+```
+
+Phase 2/3 이후에만 추가할 수 있는 필드:
+
+```txt
+activeProductsPreview
+latestWeeklyReport
+```
 
 ```txt
 1. 현재 user 조회
@@ -791,6 +884,34 @@ memo는 optional
 
 ---
 
+## 7.1.1 checkinDate / routineDate local date 규칙
+
+`daily_checkins.checkin_date`와 `routine_logs.routine_date`는 서버 UTC 날짜가 아니라 사용자 local date 기준으로 저장한다.
+
+POST 요청 시 클라이언트는 아래 값을 포함한다.
+
+```json
+{
+  "checkinDate": "YYYY-MM-DD"
+}
+```
+
+운영 규칙:
+
+```txt
+checkin_date = checkinDate
+routine_date = checkinDate
+서버 current_date default는 fallback으로만 사용한다.
+```
+
+이유:
+
+```txt
+한국 사용자 기준 새벽 시간대에 UTC 날짜와 local date가 어긋날 수 있다.
+```
+
+---
+
 ## 7.2 `/api/my/check-in`
 
 메서드:
@@ -811,9 +932,11 @@ POST 역할:
 ```txt
 1. 현재 user 조회
 2. active skin_profile 조회
-3. daily_checkins upsert
-4. routine_logs 생성 또는 업데이트
-5. 결과 반환
+3. request body의 checkinDate를 사용자 local date로 사용
+4. daily_checkins upsert
+5. routine_logs.routine_date도 checkinDate와 동일하게 저장
+6. routine_logs 생성 또는 업데이트
+7. 결과 반환
 ```
 
 POST Response 예시:
@@ -1268,29 +1391,64 @@ https://실서비스도메인/**
 아래 프롬프트는 Phase 1-A 작업용이다.
 
 ```txt
-docs/visualy-revisit-usecase.md와 docs/visualy-db-erd.md, docs/visualy-revisit-implementation-plan.md를 먼저 읽어라.
+docs/Bejewely-revisit-usecase-v0.2.md
+docs/Bejewely-revisit-db-erd-v0.2.md
+docs/Bejewely-revisit-implementation-plan-v0.2.md
 
-이번 작업 범위는 Phase 1-A DB migration만이다.
+위 3개 문서를 먼저 읽어라.
+
+이번 작업 범위는 반드시 Phase 1-A DB migration only다.
 
 목표:
-- 재방문 구조의 core tables를 생성한다.
-- profiles, skin_profiles, saved_reports, daily_checkins, routine_logs를 만든다.
+- 재방문 구조의 core tables만 생성한다.
+- 생성 대상은 profiles, skin_profiles, saved_reports, daily_checkins, routine_logs 5개 테이블이다.
 - 필요한 index를 추가한다.
 - RLS를 활성화한다.
 - 사용자별 데이터는 auth.uid() = user_id 또는 profiles.id 기준으로만 접근 가능하게 한다.
 - 기존 products, premium_report_sessions, result/full-report/share 구조는 절대 변경하지 않는다.
 
+절대 하지 말 것:
+- ERD SQL 초안 전체를 그대로 복사하지 말 것.
+- user_products 생성 금지.
+- sos_logs 생성 금지.
+- weekly_reports 생성 금지.
+- products 테이블 수정 금지.
+- premium_report_sessions 수정/삭제 금지.
+- API route 구현 금지.
+- UI 구현 금지.
+- Auth SSR 구현 금지.
+
 작업:
 1. 현재 supabase/migrations 폴더 구조를 확인한다.
 2. 새 migration 파일을 생성한다.
-3. docs/visualy-db-erd.md의 SQL 초안을 현재 DB와 충돌 없게 보정한다.
-4. products FK가 필요한 작업은 Phase 2로 미루고 이번 migration에서는 건드리지 않는다.
-5. SQL 문법 오류가 없도록 작성한다.
+3. Phase 1 테이블 5개만 생성한다.
+4. saved_reports에는 report_version 컬럼을 포함한다.
+5. skin_profiles에는 사용자당 active profile 1개만 허용하는 partial unique index를 추가한다.
+   - create unique index ... on public.skin_profiles(user_id) where is_active = true
+6. daily_checkins.checkin_date는 date 컬럼으로 두고 default current_date는 fallback으로만 둔다.
+7. routine_logs.routine_date도 date 컬럼으로 두고 default current_date는 fallback으로만 둔다.
+8. updated_at trigger function이 이미 있으면 재사용한다.
+9. 없으면 이름 충돌이 없도록 공통 updated_at trigger function을 추가한다.
+10. profiles, skin_profiles, saved_reports, daily_checkins, routine_logs에 updated_at trigger를 적용한다.
+11. RLS를 활성화한다.
+12. profiles는 auth.uid() = id 기준으로 정책을 만든다.
+13. 나머지 user_id 기반 테이블은 auth.uid() = user_id 기준으로 select/insert/update/delete 정책을 만든다.
+14. policy 중복 생성 문제가 생기지 않도록 drop policy if exists 후 create policy 하거나 현재 프로젝트 스타일에 맞춰 안전하게 처리한다.
 
 검증:
+- SQL 문법 오류가 없어야 한다.
 - npm run build가 가능하면 실행한다.
 - Supabase migration 적용 명령은 직접 실행하지 말고, 사용자가 실행할 SQL/명령어를 알려준다.
 - 변경 파일 목록과 주의사항을 요약한다.
+- 기존 result/full-report/share 기능은 수정하지 않았다고 명시한다.
+
+최종 응답 형식:
+1. 변경 파일 목록
+2. 생성된 테이블 목록
+3. 생성된 index 목록
+4. RLS 정책 요약
+5. 사용자가 실행할 명령어
+6. 주의사항
 ```
 
 ---
@@ -1377,6 +1535,7 @@ Supabase Dashboard SQL Editor에 migration SQL을 붙여 실행한다.
 5. routine_logs row 생성 확인
 6. /my에서 오늘 루틴 카드 표시
 7. 같은 날짜 재제출 시 update/upsert 확인
+8. checkin_date와 routine_date가 클라이언트 local date 기준으로 저장되는지 확인
 ```
 
 ---
@@ -1443,10 +1602,13 @@ AI 주간 리포트 자동 생성
 2. RLS가 활성화되어 있다.
 3. Supabase SSR client가 구성되어 있다.
 4. Google 로그인/로그아웃이 가능하다.
+4-1. OAuth callback 또는 /my dashboard 진입 시 profiles upsert가 보장된다.
 5. /my 보호 라우트가 동작한다.
 6. 비로그인 사용자는 기존처럼 진단할 수 있다.
 7. 결과 저장 CTA가 추가되어 있다.
 8. 로그인 사용자는 결과를 skin_profiles/saved_reports에 저장할 수 있다.
+8-1. OAuth 이후 pending result payload가 유실되지 않는다.
+8-2. 사용자당 active skin_profile은 1개만 유지된다.
 9. /my에서 최신 skin_profile을 볼 수 있다.
 10. /my/check-in에서 오늘 피부 체크를 저장할 수 있다.
 11. 체크인 후 routine_logs가 생성된다.
@@ -1473,10 +1635,11 @@ AI 주간 리포트 자동 생성
 11. /result 저장 CTA 추가
 12. /api/my/check-in 추가
 13. /my/check-in UI 추가
-14. routine-generator 추가
-15. routine_logs 저장
-16. 회귀 테스트
-17. build 검증
+14. checkinDate/routineDate local date 처리
+15. routine-generator 추가
+16. routine_logs 저장
+17. 회귀 테스트
+18. build 검증
 ```
 
 ---
@@ -1486,7 +1649,7 @@ AI 주간 리포트 자동 생성
 이 Implementation Plan 이후 필요한 문서는 다음이다.
 
 ```txt
-docs/visualy-revisit-codex-prompts.md
+docs/Bejewely-revisit-codex-prompts.md
 ```
 
 목적:
