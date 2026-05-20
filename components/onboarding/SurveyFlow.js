@@ -5,9 +5,9 @@ import { useMemo, useState } from "react";
 const FLOW_COPY = {
   ko: {
     badge: "Skin Match",
-    headline: "몇 가지 질문으로",
-    headlineAccent: "내 피부를 더 정확히 분석할게요",
-    description: "사진에서 보이지 않는 생활 패턴과 사용감을 함께 확인합니다.",
+    headline: "피부 정보를",
+    headlineAccent: "확인할게요",
+    description: "사진에 보이지 않는 사용감과 생활 패턴만 짧게 확인합니다.",
     questionCount: "질문",
     required: "필수",
     optional: "선택",
@@ -28,9 +28,9 @@ const FLOW_COPY = {
   },
   en: {
     badge: "Skin Match",
-    headline: "A few questions",
-    headlineAccent: "make your skin read more precise",
-    description: "We combine your photo with skin feel, lifestyle, and texture preferences.",
+    headline: "Tell us",
+    headlineAccent: "your skin context",
+    description: "A quick read of texture feel, routine habits, and preferences.",
     questionCount: "Question",
     required: "Required",
     optional: "Optional",
@@ -555,6 +555,62 @@ function renderHighlightedTitle(title, highlightText) {
   );
 }
 
+const SURVEY_HINT_COPY = {
+  ko: {
+    skin: {
+      label: "피부 메모",
+      text: "피부 기본 컨디션을 먼저 정리하고 있어요."
+    },
+    lifestyle: {
+      label: "생활 패턴 메모",
+      text: "생활 패턴이 피부에 주는 영향을 함께 확인 중이에요."
+    },
+    preference: {
+      label: "선호도 메모",
+      text: "사용감 선호를 반영해 오래 쓰기 쉬운 방향을 좁힙니다."
+    },
+    sunscreen: {
+      label: "선케어 메모",
+      text: "선케어 프로필을 추천 맥락에 가볍게 반영합니다."
+    },
+    default: {
+      label: "AI 메모"
+    }
+  },
+  en: {
+    skin: {
+      label: "Skin note",
+      text: "Checking your baseline skin condition first."
+    },
+    lifestyle: {
+      label: "Lifestyle note",
+      text: "Reading how daily patterns may affect the routine."
+    },
+    preference: {
+      label: "Preference note",
+      text: "Using texture preferences to keep recommendations wearable."
+    },
+    sunscreen: {
+      label: "Suncare note",
+      text: "Adding sunscreen preferences as light recommendation context."
+    },
+    default: {
+      label: "AI note"
+    }
+  }
+};
+
+function getSurveyHintCopy(question, locale) {
+  const copy = SURVEY_HINT_COPY[locale] || SURVEY_HINT_COPY.ko;
+  const key = question?.id === "sunscreenConsiderations" ? "sunscreen" : question?.stage;
+  const item = copy[key] || copy.default;
+
+  return {
+    label: item.label,
+    text: item.text || question?.hint || ""
+  };
+}
+
 function MiniIcon({ type, className = "h-3.5 w-3.5" }) {
   const commonProps = {
     viewBox: "0 0 24 24",
@@ -628,10 +684,10 @@ function SurveyProgress({ stages, currentStage }) {
               <span
                 className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-semibold transition duration-200 ${
                   active
-                    ? "border-transparent bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] text-white shadow-[0_4px_12px_rgba(231,107,145,0.18)] dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]"
+                    ? "border-transparent bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] text-white shadow-[0_4px_12px_rgba(231,107,145,0.22)] ring-1 ring-[#e76b91]/20 dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)] dark:ring-white/15"
                     : done
-                      ? "border-[#e7bfc1] bg-[#fff4f1] text-[#a95b70] dark:border-[#6a4050] dark:bg-white/[0.07] dark:text-[#f4c5d0]"
-                      : "border-[#ead2ca] bg-[#fffaf6]/62 text-[#9b7280] opacity-75 dark:border-white/15 dark:bg-white/[0.035] dark:text-[#9e7f8c]"
+                      ? "border-[#e7bfc1] bg-[#fff4f1] font-bold text-[#9f4f65] dark:border-[#6a4050] dark:bg-[#1b1017] dark:text-[#f8d0da]"
+                      : "border-[#ead2ca] bg-[#fffaf6] text-[#9b7280] opacity-85 dark:border-white/[0.18] dark:bg-[#1b1017] dark:text-[#b69aa7]"
                 }`}
               >
                 {done ? "✓" : index + 1}
@@ -640,7 +696,7 @@ function SurveyProgress({ stages, currentStage }) {
                 className={`mt-0.5 rounded-full px-1 text-[8.5px] font-semibold leading-4 ${
                   active
                     ? "bg-[#fff4f1] text-[#28121b] dark:bg-[#160d13] dark:text-[#fff8f3]"
-                    : "text-[#9b7280] dark:text-[#9e7f8c]"
+                    : "text-[#9b7280] dark:text-[#ad909d]"
                 }`}
               >
                 {stage.label}
@@ -684,8 +740,8 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
           <span
             className={`flex h-[52px] w-[52px] items-center justify-center rounded-full border transition duration-[180ms] ${
               selected
-                ? "border-[#df527c]/35 bg-white/42 text-[#df527c] shadow-[inset_0_0_16px_rgba(231,107,145,0.08)] dark:border-[#ef6387]/35 dark:bg-white/[0.045] dark:text-[#ff9aa8]"
-                : "border-[#ead2ca]/68 bg-white/18 text-[#9b7280]/52 dark:border-white/[0.10] dark:bg-white/[0.026] dark:text-[#d7c1c7]/48"
+                ? "border-[#df527c]/38 bg-white/44 text-[#d94373] shadow-[inset_0_0_14px_rgba(231,107,145,0.08)] dark:border-[#ef6387]/38 dark:bg-white/[0.05] dark:text-[#ffa4af]"
+                : "border-[#ead2ca]/68 bg-white/18 text-[#9b7280]/60 dark:border-white/[0.11] dark:bg-white/[0.03] dark:text-[#d7c1c7]/58"
             }`}
           >
             <MiniIcon type={iconKey} className="h-[30px] w-[30px]" />
@@ -703,9 +759,9 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group relative min-h-[46px] rounded-[1.05rem] border px-3 py-2.5 text-left transition duration-[180ms] ease-out will-change-transform hover:-translate-y-px active:scale-[0.995] ${
+      className={`group relative min-h-[44px] rounded-[1.05rem] border px-3 py-2 text-left transition duration-[180ms] ease-out will-change-transform hover:-translate-y-px active:scale-[0.995] ${
         selected
-          ? "-translate-y-px border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.17),rgba(255,119,93,0.10))] shadow-[0_8px_20px_rgba(231,107,145,0.11)] ring-1 ring-[#e76b91]/25 dark:border-[#ff6f92] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.145),rgba(255,119,93,0.08))] dark:ring-[#ef6387]/12"
+          ? "-translate-y-px border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.17),rgba(255,119,93,0.10))] shadow-[0_8px_20px_rgba(231,107,145,0.11)] ring-1 ring-[#e76b91]/25 dark:border-[#ff6f92] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.13),rgba(255,119,93,0.07))] dark:ring-[#ef6387]/12"
           : "border-[#ead2ca] bg-[#fffaf6]/78 hover:border-[#dbaea4] hover:bg-white dark:border-white/[0.16] dark:bg-white/[0.058] dark:hover:border-[#6a4050] dark:hover:bg-white/[0.075]"
       }`}
     >
@@ -713,8 +769,8 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
         <span
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition duration-[180ms] ${
             selected
-              ? "scale-[1.02] border-[#df527c]/38 bg-white/48 text-[#df527c]/62 dark:border-[#ef6387]/38 dark:bg-white/[0.05] dark:text-[#ff9aa8]/62"
-              : "border-[#ead2ca]/80 bg-white/25 text-[#9b7280]/48 dark:border-white/[0.10] dark:bg-white/[0.03] dark:text-[#d7c1c7]/50"
+              ? "scale-[1.02] border-[#df527c]/40 bg-white/48 text-[#df527c]/68 dark:border-[#ef6387]/40 dark:bg-white/[0.05] dark:text-[#ff9aa8]/68"
+              : "border-[#ead2ca]/80 bg-white/25 text-[#9b7280]/52 dark:border-white/[0.11] dark:bg-white/[0.032] dark:text-[#d7c1c7]/56"
           }`}
         >
           <MiniIcon type={iconKey} className="h-3 w-3" />
@@ -724,7 +780,7 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
             {option.label}
           </span>
           {option.description ? (
-            <span className="option-description-single mt-0.5 block text-[11.5px] leading-4 text-[#6d4856]/82 dark:text-[#d7c1c7]/88">
+            <span className="option-description-single mt-0.5 block text-[11.25px] leading-4 text-[#6d4856]/82 dark:text-[#d7c1c7]/88">
               {option.description}
             </span>
           ) : null}
@@ -806,7 +862,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
               </span>
             ) : null}
           </div>
-          <h3 className="ui-title mt-2 text-[1.48rem] leading-[1.14] tracking-[-0.018em] sm:text-[1.62rem]">
+          <h3 className="ui-title mt-2 text-[1.46rem] leading-[1.12] tracking-[-0.018em] sm:text-[1.6rem]">
             {renderHighlightedTitle(question.title, highlightText)}
           </h3>
           {question.subtitle ? (
@@ -817,7 +873,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
         </div>
       </div>
 
-      <div className="mt-3.5">
+      <div className="mt-3">
         <OptionGrid
           question={question}
           form={form}
@@ -830,11 +886,11 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
   );
 }
 
-function SurveyHintPanel({ hint, locale }) {
-  const label = locale === "en" ? "AI note" : "AI 메모";
+function SurveyHintPanel({ question, locale }) {
+  const { label, text } = getSurveyHintCopy(question, locale);
 
   return (
-    <aside className="rounded-[1rem] border border-[#ead2ca]/60 bg-[linear-gradient(135deg,rgba(255,248,243,0.58),rgba(255,240,241,0.36))] px-3.5 py-2.5 dark:border-white/[0.085] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.028),rgba(239,99,135,0.026))]">
+    <aside className="rounded-[1rem] border border-[#ead2ca]/55 bg-[linear-gradient(135deg,rgba(255,248,243,0.52),rgba(255,240,241,0.3))] px-3.5 py-2.5 dark:border-white/[0.08] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.024),rgba(239,99,135,0.022))]">
       <div className="flex items-center gap-2.5">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ead2ca]/80 bg-white/62 text-[#e76b91] dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-[#ff9aa8]">
           <MiniIcon type="sparkle" className="h-3 w-3" />
@@ -844,7 +900,7 @@ function SurveyHintPanel({ hint, locale }) {
             {label}
           </p>
           <p className="ui-text-secondary mt-0.5 text-[11.5px] leading-5">
-            {hint}
+            {text}
           </p>
         </div>
       </div>
@@ -910,16 +966,16 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
 
   return (
     <section className="flex flex-1 flex-col pt-0.5">
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         <div className="text-center">
           <span className="ui-chip-soft text-[10px]">{copy.badge}</span>
-          <h2 className="ui-title mx-auto mt-1.5 max-w-xs text-[1.36rem] leading-[1.13] sm:max-w-sm sm:text-[1.6rem]">
+          <h2 className="ui-title mx-auto mt-1 max-w-xs text-[1.24rem] leading-[1.12] sm:max-w-sm sm:text-[1.5rem]">
             {copy.headline}
             <span className="block bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]">
               {copy.headlineAccent}
             </span>
           </h2>
-          <p className="ui-text-secondary mx-auto mt-1 max-w-sm text-[11px] leading-[1.55] sm:text-sm sm:leading-6">
+          <p className="ui-text-secondary mx-auto mt-0.5 max-w-sm text-[10.5px] leading-[1.45] sm:text-[13px] sm:leading-5">
             {copy.description}
           </p>
         </div>
@@ -948,7 +1004,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           </div>
 
           <div className="mt-2">
-            <SurveyHintPanel hint={currentQuestion.hint} locale={locale} />
+            <SurveyHintPanel question={currentQuestion} locale={locale} />
           </div>
 
           {message || error ? (
