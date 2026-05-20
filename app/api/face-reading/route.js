@@ -4,6 +4,7 @@ import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } f
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
+const FACE_READING_RESPONSE_SCHEMA_VERSION = 1;
 
 const COPY = {
   ko: {
@@ -168,6 +169,39 @@ const COPY = {
 
 function getCopy(locale = "ko") {
   return COPY[locale] || COPY.ko;
+}
+
+function buildFaceReadingMeta({ source, locale }) {
+  return {
+    schemaVersion: FACE_READING_RESPONSE_SCHEMA_VERSION,
+    source,
+    locale,
+    generatedAt: new Date().toISOString()
+  };
+}
+
+function hasFaceReadingPayloadShape(payload) {
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    payload.base_data &&
+    typeof payload.base_data === "object" &&
+    payload.features &&
+    typeof payload.features === "object"
+  );
+}
+
+function buildFaceReadingResponse(payload, { source, locale }) {
+  const hasExpectedShape = hasFaceReadingPayloadShape(payload);
+  const body = hasExpectedShape
+    ? payload
+    : buildMockFaceLab(locale);
+  const resolvedSource = hasExpectedShape ? source : "mock_fallback";
+
+  return {
+    ...body,
+    meta: buildFaceReadingMeta({ source: resolvedSource, locale })
+  };
 }
 
 const KNOWN_PRESENTATION_BY_NAME = {
@@ -673,7 +707,12 @@ export async function POST(request) {
       );
     }
     if (!apiKey) {
-      return NextResponse.json(buildMockFaceLab(locale));
+      return NextResponse.json(
+        buildFaceReadingResponse(buildMockFaceLab(locale), {
+          source: "mock_fallback",
+          locale
+        })
+      );
     }
 
     const buffer = Buffer.from(await image.arrayBuffer());
@@ -716,7 +755,12 @@ export async function POST(request) {
         status,
         preview: previewDiagnosticText(data?.error?.message || data?.error || rawText)
       });
-      return NextResponse.json(buildMockFaceLab(locale));
+      return NextResponse.json(
+        buildFaceReadingResponse(buildMockFaceLab(locale), {
+          source: "mock_fallback",
+          locale
+        })
+      );
     }
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
@@ -726,18 +770,42 @@ export async function POST(request) {
         status,
         preview: previewDiagnosticText(rawText)
       });
-      return NextResponse.json(buildMockFaceLab(locale));
+      return NextResponse.json(
+        buildFaceReadingResponse(buildMockFaceLab(locale), {
+          source: "mock_fallback",
+          locale
+        })
+      );
     }
 
     try {
       const parsed = safeParse(rawContent, locale);
-      return NextResponse.json(normalizeFaceLab(parsed, locale));
+      const normalizedFaceLab = normalizeFaceLab(parsed, locale);
+
+      if (process.env.NODE_ENV !== "production" && !hasFaceReadingPayloadShape(normalizedFaceLab)) {
+        console.warn("[face-reading] response shape warning", {
+          hasBaseData: Boolean(normalizedFaceLab?.base_data),
+          hasFeatures: Boolean(normalizedFaceLab?.features)
+        });
+      }
+
+      return NextResponse.json(
+        buildFaceReadingResponse(normalizedFaceLab, {
+          source: "openai",
+          locale
+        })
+      );
     } catch (parseError) {
       console.error("[face-reading] parse failed", {
         message: parseError instanceof Error ? parseError.message : String(parseError),
         contentPreview: rawContent.slice(0, 240)
       });
-      return NextResponse.json(buildMockFaceLab(locale));
+      return NextResponse.json(
+        buildFaceReadingResponse(buildMockFaceLab(locale), {
+          source: "mock_fallback",
+          locale
+        })
+      );
     }
   } catch (error) {
     console.error("[face-reading] failed", error);

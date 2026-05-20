@@ -618,27 +618,29 @@ function SurveyProgress({ stages, currentStage }) {
   return (
     <div className="mx-auto w-full max-w-xl">
       <div className="relative grid grid-cols-5 gap-0">
-        <span className="pointer-events-none absolute left-[10%] right-[10%] top-3 h-px bg-[#ead2ca] dark:bg-[#4a303c]" />
+        <span className="pointer-events-none absolute left-[10%] right-[10%] top-[10px] h-px bg-[#ead2ca]/80 dark:bg-[#4a303c]/85" />
         {stages.map((stage, index) => {
           const active = index === currentIndex;
           const done = index < currentIndex;
 
           return (
-            <div key={stage.key} className="relative z-10 flex flex-col items-center gap-1.5 text-center">
+            <div key={stage.key} className="relative z-10 flex flex-col items-center gap-1 text-center">
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-semibold transition ${
-                  active || done
-                    ? "border-transparent bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] text-white dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]"
-                    : "border-[#ead2ca] bg-[#fffaf6]/70 text-[#9b7280] opacity-80 dark:border-white/15 dark:bg-white/[0.035] dark:text-[#9e7f8c]"
+                className={`flex h-5 w-5 items-center justify-center rounded-full border text-[9px] font-semibold transition duration-200 ${
+                  active
+                    ? "border-transparent bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] text-white shadow-[0_4px_12px_rgba(231,107,145,0.18)] dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]"
+                    : done
+                      ? "border-[#e7bfc1] bg-[#fff4f1] text-[#a95b70] dark:border-[#6a4050] dark:bg-white/[0.07] dark:text-[#f4c5d0]"
+                      : "border-[#ead2ca] bg-[#fffaf6]/62 text-[#9b7280] opacity-75 dark:border-white/15 dark:bg-white/[0.035] dark:text-[#9e7f8c]"
                 }`}
               >
                 {done ? "✓" : index + 1}
               </span>
               <span
-                className={`mt-0.5 rounded-full px-1 text-[9px] font-semibold leading-4 ${
+                className={`mt-0.5 rounded-full px-1 text-[8.5px] font-semibold leading-4 ${
                   active
                     ? "bg-[#fff4f1] text-[#28121b] dark:bg-[#160d13] dark:text-[#fff8f3]"
-                    : "bg-[#fff4f1] text-[#9b7280] dark:bg-[#160d13] dark:text-[#9e7f8c]"
+                    : "text-[#9b7280] dark:text-[#9e7f8c]"
                 }`}
               >
                 {stage.label}
@@ -653,8 +655,8 @@ function SurveyProgress({ stages, currentStage }) {
 
 function OptionButton({ option, selected, onClick, multiple, selectedText, compact }) {
   const iconKey = option.visualKey || OPTION_ICON_KEYS[option.value] || "question";
-  const checkClassName = `option-check-pop flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[linear-gradient(90deg,#df4776_0%,#ff7666_100%)] text-[10px] font-bold text-white shadow-sm ring-1 ring-white/50 transition duration-200 ${
-    selected ? "scale-100 opacity-100" : "scale-75 opacity-0"
+  const checkClassName = `option-check-pop flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[linear-gradient(90deg,#df4776_0%,#ff7666_100%)] text-[10px] font-bold text-white shadow-sm ring-1 ring-white/50 transition duration-[180ms] ease-out ${
+    selected ? "scale-100 opacity-100" : "scale-[0.82] opacity-0"
   }`;
 
   if (!compact) {
@@ -663,10 +665,10 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
         type="button"
         onClick={onClick}
         aria-pressed={selected}
-        className={`group relative min-h-[128px] rounded-[1.25rem] border px-3.5 py-4 text-center transition duration-200 ease-out will-change-transform hover:-translate-y-0.5 active:scale-[0.99] ${
+        className={`group relative min-h-[120px] rounded-[1.25rem] border px-3.5 py-3.5 text-center transition duration-[180ms] ease-out will-change-transform hover:-translate-y-px active:scale-[0.995] ${
           selected
-            ? "-translate-y-0.5 border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.12),rgba(255,119,93,0.065))] shadow-[0_12px_28px_rgba(231,107,145,0.10)] ring-1 ring-[#e76b91]/18 dark:border-[#ef6387] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.11),rgba(255,119,93,0.055))] dark:ring-[#ef6387]/10"
-            : "border-[#ead2ca] bg-[#fffaf6]/70 hover:border-[#dbaea4] hover:bg-white dark:border-white/[0.13] dark:bg-white/[0.04] dark:hover:border-[#6a4050] dark:hover:bg-white/[0.06]"
+            ? "-translate-y-px border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.145),rgba(255,119,93,0.075))] shadow-[0_10px_24px_rgba(231,107,145,0.11)] ring-1 ring-[#e76b91]/20 dark:border-[#ff6f92] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.13),rgba(255,119,93,0.065))] dark:ring-[#ef6387]/12"
+            : "border-[#ead2ca] bg-[#fffaf6]/72 hover:border-[#dbaea4] hover:bg-white dark:border-white/[0.16] dark:bg-white/[0.052] dark:hover:border-[#6a4050] dark:hover:bg-white/[0.07]"
         }`}
       >
         <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center">
@@ -678,17 +680,17 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
           </span>
         </span>
 
-        <span className="flex h-full min-h-[96px] flex-col items-center justify-center gap-3.5">
+        <span className="flex h-full min-h-[88px] flex-col items-center justify-center gap-3">
           <span
-            className={`flex h-14 w-14 items-center justify-center rounded-full border transition duration-200 ${
+            className={`flex h-[52px] w-[52px] items-center justify-center rounded-full border transition duration-[180ms] ${
               selected
-                ? "border-[#df527c]/32 bg-white/42 text-[#df527c] shadow-[inset_0_0_18px_rgba(231,107,145,0.08)] dark:border-[#ef6387]/32 dark:bg-white/[0.04] dark:text-[#ff9aa8]"
-                : "border-[#ead2ca]/70 bg-white/18 text-[#9b7280]/48 dark:border-white/[0.085] dark:bg-white/[0.022] dark:text-[#d7c1c7]/42"
+                ? "border-[#df527c]/35 bg-white/42 text-[#df527c] shadow-[inset_0_0_16px_rgba(231,107,145,0.08)] dark:border-[#ef6387]/35 dark:bg-white/[0.045] dark:text-[#ff9aa8]"
+                : "border-[#ead2ca]/68 bg-white/18 text-[#9b7280]/52 dark:border-white/[0.10] dark:bg-white/[0.026] dark:text-[#d7c1c7]/48"
             }`}
           >
-            <MiniIcon type={iconKey} className="h-8 w-8" />
+            <MiniIcon type={iconKey} className="h-[30px] w-[30px]" />
           </span>
-          <span className="block max-w-full break-keep text-[16px] font-bold leading-5 tracking-[-0.01em] text-[#1f1016] dark:text-[#fffaf7]">
+          <span className="block max-w-full break-keep text-[16px] font-extrabold leading-5 tracking-[-0.012em] text-[#1f1016] dark:text-[#fffaf7]">
             {option.label}
           </span>
         </span>
@@ -701,28 +703,28 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`group relative min-h-[46px] rounded-[1.05rem] border px-3 py-2.5 text-left transition duration-200 ease-out will-change-transform hover:-translate-y-0.5 active:scale-[0.99] ${
+      className={`group relative min-h-[46px] rounded-[1.05rem] border px-3 py-2.5 text-left transition duration-[180ms] ease-out will-change-transform hover:-translate-y-px active:scale-[0.995] ${
         selected
-          ? "-translate-y-0.5 border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.16),rgba(255,119,93,0.09))] shadow-[0_10px_24px_rgba(231,107,145,0.12)] ring-1 ring-[#e76b91]/25 dark:border-[#ef6387] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.14),rgba(255,119,93,0.075))] dark:ring-[#ef6387]/10"
-          : "border-[#ead2ca] bg-[#fffaf6]/78 hover:border-[#dbaea4] hover:bg-white dark:border-white/[0.15] dark:bg-white/[0.055] dark:hover:border-[#6a4050] dark:hover:bg-white/[0.075]"
+          ? "-translate-y-px border-[#dc4775] bg-[linear-gradient(135deg,rgba(244,96,130,0.17),rgba(255,119,93,0.10))] shadow-[0_8px_20px_rgba(231,107,145,0.11)] ring-1 ring-[#e76b91]/25 dark:border-[#ff6f92] dark:bg-[linear-gradient(135deg,rgba(244,96,130,0.145),rgba(255,119,93,0.08))] dark:ring-[#ef6387]/12"
+          : "border-[#ead2ca] bg-[#fffaf6]/78 hover:border-[#dbaea4] hover:bg-white dark:border-white/[0.16] dark:bg-white/[0.058] dark:hover:border-[#6a4050] dark:hover:bg-white/[0.075]"
       }`}
     >
       <span className="grid grid-cols-[26px_minmax(0,1fr)_24px] items-center gap-2.5">
         <span
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition duration-200 ${
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition duration-[180ms] ${
             selected
-              ? "scale-[1.02] border-[#df527c]/35 bg-white/45 text-[#df527c]/55 dark:border-[#ef6387]/35 dark:bg-white/[0.045] dark:text-[#ff9aa8]/55"
-              : "border-[#ead2ca]/80 bg-white/25 text-[#9b7280]/45 dark:border-white/[0.09] dark:bg-white/[0.025] dark:text-[#d7c1c7]/45"
+              ? "scale-[1.02] border-[#df527c]/38 bg-white/48 text-[#df527c]/62 dark:border-[#ef6387]/38 dark:bg-white/[0.05] dark:text-[#ff9aa8]/62"
+              : "border-[#ead2ca]/80 bg-white/25 text-[#9b7280]/48 dark:border-white/[0.10] dark:bg-white/[0.03] dark:text-[#d7c1c7]/50"
           }`}
         >
           <MiniIcon type={iconKey} className="h-3 w-3" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block whitespace-normal break-keep text-[14.5px] font-bold leading-5 tracking-[-0.01em] text-[#1f1016] dark:text-[#fffaf7]">
+          <span className="block whitespace-normal break-keep text-[14.75px] font-bold leading-5 tracking-[-0.01em] text-[#1f1016] dark:text-[#fffaf7]">
             {option.label}
           </span>
           {option.description ? (
-            <span className="option-description-single mt-0.5 block text-[11px] leading-4 text-[#6d4856]/78 dark:text-[#d7c1c7]/82">
+            <span className="option-description-single mt-0.5 block text-[11.5px] leading-4 text-[#6d4856]/82 dark:text-[#d7c1c7]/88">
               {option.description}
             </span>
           ) : null}
@@ -804,18 +806,18 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
               </span>
             ) : null}
           </div>
-          <h3 className="ui-title mt-2.5 text-[1.5rem] leading-[1.16] sm:text-[1.62rem]">
+          <h3 className="ui-title mt-2 text-[1.48rem] leading-[1.14] tracking-[-0.018em] sm:text-[1.62rem]">
             {renderHighlightedTitle(question.title, highlightText)}
           </h3>
           {question.subtitle ? (
-            <p className="ui-text-secondary mt-1.5 text-[13px] leading-5 sm:text-sm sm:leading-6">
+            <p className="ui-text-secondary mt-1.5 text-[13px] leading-5 opacity-90 sm:text-sm sm:leading-6">
               {question.subtitle}
             </p>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3.5">
         <OptionGrid
           question={question}
           form={form}
@@ -832,16 +834,16 @@ function SurveyHintPanel({ hint, locale }) {
   const label = locale === "en" ? "AI note" : "AI 메모";
 
   return (
-    <aside className="rounded-[1rem] border border-[#ead2ca]/70 bg-[linear-gradient(135deg,rgba(255,248,243,0.70),rgba(255,240,241,0.48))] px-3.5 py-2.5 dark:border-white/[0.10] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.035),rgba(239,99,135,0.035))]">
-      <div className="flex items-center gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#ead2ca] bg-white/70 text-[#e76b91] dark:border-white/[0.12] dark:bg-white/[0.05] dark:text-[#ff9aa8]">
-          <MiniIcon type="sparkle" />
+    <aside className="rounded-[1rem] border border-[#ead2ca]/60 bg-[linear-gradient(135deg,rgba(255,248,243,0.58),rgba(255,240,241,0.36))] px-3.5 py-2.5 dark:border-white/[0.085] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.028),rgba(239,99,135,0.026))]">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ead2ca]/80 bg-white/62 text-[#e76b91] dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-[#ff9aa8]">
+          <MiniIcon type="sparkle" className="h-3 w-3" />
         </span>
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8d5b6b] dark:text-[#9e7f8c]">
+          <p className="text-[9.5px] font-semibold uppercase tracking-[0.15em] text-[#8d5b6b] dark:text-[#9e7f8c]">
             {label}
           </p>
-          <p className="ui-text-secondary mt-0.5 text-xs leading-5">
+          <p className="ui-text-secondary mt-0.5 text-[11.5px] leading-5">
             {hint}
           </p>
         </div>
@@ -907,17 +909,17 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   };
 
   return (
-    <section className="flex flex-1 flex-col pt-1">
-      <div className="space-y-3">
+    <section className="flex flex-1 flex-col pt-0.5">
+      <div className="space-y-2.5">
         <div className="text-center">
           <span className="ui-chip-soft text-[10px]">{copy.badge}</span>
-          <h2 className="ui-title mx-auto mt-2 max-w-xs text-[1.42rem] leading-[1.14] sm:max-w-sm sm:text-[1.65rem]">
+          <h2 className="ui-title mx-auto mt-1.5 max-w-xs text-[1.36rem] leading-[1.13] sm:max-w-sm sm:text-[1.6rem]">
             {copy.headline}
             <span className="block bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]">
               {copy.headlineAccent}
             </span>
           </h2>
-          <p className="ui-text-secondary mx-auto mt-1 max-w-sm text-[11.5px] leading-5 sm:text-sm sm:leading-6">
+          <p className="ui-text-secondary mx-auto mt-1 max-w-sm text-[11px] leading-[1.55] sm:text-sm sm:leading-6">
             {copy.description}
           </p>
         </div>
@@ -925,11 +927,11 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
         <SurveyProgress stages={copy.stages} currentStage={currentQuestion.stage} />
 
         <div className="ui-card p-3 sm:p-4">
-          <div className="mb-2.5 flex items-center justify-between gap-3 px-1">
-            <span className="rounded-full border border-[#ead2ca] bg-white/45 px-3 py-1 text-[11px] font-semibold text-[#6e4050] backdrop-blur dark:border-white/[0.12] dark:bg-white/[0.04] dark:text-[#f4d7df]">
+          <div className="mb-2 flex items-center justify-between gap-3 px-1">
+            <span className="rounded-full border border-[#ead2ca]/80 bg-white/38 px-2.5 py-0.5 text-[10.5px] font-semibold text-[#6e4050] backdrop-blur dark:border-white/[0.10] dark:bg-white/[0.035] dark:text-[#f4d7df]">
               {currentStageLabel}
             </span>
-            <p className="ui-text-faint text-xs font-semibold tabular-nums">
+            <p className="ui-text-faint text-[11.5px] font-semibold tabular-nums">
               {formatProgressNumber(questionIndex + 1)} / {formatProgressNumber(totalQuestions)}
             </p>
           </div>
@@ -945,7 +947,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
             />
           </div>
 
-          <div className="mt-2.5">
+          <div className="mt-2">
             <SurveyHintPanel hint={currentQuestion.hint} locale={locale} />
           </div>
 

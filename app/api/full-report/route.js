@@ -8,6 +8,27 @@ import {
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
 
+const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
+
+function buildFullReportMeta(locale) {
+  return {
+    schemaVersion: FULL_REPORT_RESPONSE_SCHEMA_VERSION,
+    source: "premium-session",
+    locale,
+    generatedAt: new Date().toISOString()
+  };
+}
+
+function hasFullReportPayloadShape(report) {
+  return Boolean(
+    report &&
+    typeof report === "object" &&
+    "freeResult" in report &&
+    report.fullRoutine &&
+    typeof report.fullRoutine === "object"
+  );
+}
+
 function getUnauthorizedResponse() {
   return NextResponse.json(
     {
@@ -49,6 +70,14 @@ export async function POST(request) {
   const locale = body?.locale === "en" ? "en" : "ko";
   const faceLabLaunch = buildFaceLabLaunchData(body?.faceLab || null, locale);
   const storedPremiumReport = premiumSession.payload.premiumReport || {};
+
+  if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {
+    console.warn("[full-report] response shape warning", {
+      hasFreeResult: storedPremiumReport && "freeResult" in storedPremiumReport,
+      hasFullRoutine: Boolean(storedPremiumReport?.fullRoutine)
+    });
+  }
+
   const storedFreeResult =
     storedPremiumReport?.freeResult && typeof storedPremiumReport.freeResult === "object"
       ? storedPremiumReport.freeResult
@@ -70,10 +99,7 @@ export async function POST(request) {
       sections: Array.isArray(faceLabLaunch?.paid?.sections) ? faceLabLaunch.paid.sections : [],
       steps: Array.isArray(faceLabLaunch?.paid?.steps) ? faceLabLaunch.paid.steps : []
     },
-    meta: {
-      source: "premium-session",
-      locale
-    }
+    meta: buildFullReportMeta(locale)
   });
 
   response.cookies.set(

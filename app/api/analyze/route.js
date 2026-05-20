@@ -16,6 +16,7 @@ const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
 const PHOTO_ANALYSIS_MAX_TOKENS = 900;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
+const ANALYZE_RESPONSE_SCHEMA_VERSION = 1;
 
 const ANALYZE_COPY = {
   ko: {
@@ -48,6 +49,35 @@ function previewText(value, maxLength = 240) {
 
 function logAnalyze(stage, payload = {}) {
   console.log(`[analyze] ${stage}`, payload);
+}
+
+function hasAnalyzeResponseShape(payload) {
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    typeof payload.summary === "string" &&
+    "topPick" in payload &&
+    Array.isArray(payload.morning) &&
+    Array.isArray(payload.night)
+  );
+}
+
+function buildAnalyzeMeta({
+  locale,
+  photoNotice,
+  explanationNotice,
+  apiKey
+}) {
+  return {
+    schemaVersion: ANALYZE_RESPONSE_SCHEMA_VERSION,
+    source: "skin-match-v2",
+    locale,
+    generatedAt: new Date().toISOString(),
+    notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
+    explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
+    photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback",
+    photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback"
+  };
 }
 
 function parseBooleanField(value) {
@@ -994,6 +1024,16 @@ export async function POST(request) {
     decision = appendTopPickReviewEvidence(decision, locale);
 
     const publicDecision = buildFreeDecisionPayload(decision);
+
+    if (process.env.NODE_ENV !== "production" && !hasAnalyzeResponseShape(publicDecision)) {
+      logAnalyze("response:shape-warning", {
+        hasSummary: typeof publicDecision?.summary === "string",
+        hasTopPickKey: publicDecision && "topPick" in publicDecision,
+        hasMorning: Array.isArray(publicDecision?.morning),
+        hasNight: Array.isArray(publicDecision?.night)
+      });
+    }
+
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
     const premiumSessionReport = premiumReport
       ? {
@@ -1007,13 +1047,12 @@ export async function POST(request) {
     });
     const response = NextResponse.json({
       ...publicDecision,
-      meta: {
-        source: "skin-match-v2",
-        notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
-        explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
-        photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback",
-        photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback"
-      }
+      meta: buildAnalyzeMeta({
+        locale,
+        photoNotice,
+        explanationNotice,
+        apiKey
+      })
     });
 
     if (premiumSessionToken) {

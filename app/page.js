@@ -18,6 +18,31 @@ import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
+const STALE_ANALYSIS_SESSION_KEYS = [
+  "skinTestShare",
+  "skinTestFaceLabFull"
+];
+const STALE_FULL_REPORT_LOCAL_STORAGE_KEYS = [
+  "lastReportUrl",
+  "lastViewedAt",
+  "lastFullReportTab"
+];
+
+function clearStaleAnalysisStorage() {
+  clearWriteAccessToken();
+
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  STALE_ANALYSIS_SESSION_KEYS.forEach((key) => {
+    sessionStorage.removeItem(key);
+  });
+
+  STALE_FULL_REPORT_LOCAL_STORAGE_KEYS.forEach((key) => {
+    localStorage.removeItem(key);
+  });
+}
 
 function normalizeSurveyAnswers(form = {}) {
   const mainConcerns = Array.isArray(form.mainConcerns)
@@ -169,8 +194,7 @@ export default function HomePage() {
 
       try {
         setIsSubmitting(true);
-        clearWriteAccessToken();
-        sessionStorage.removeItem("skinTestFaceLabFull");
+        clearStaleAnalysisStorage();
 
         const analyzePayload = new FormData();
         analyzePayload.append("image", imageFile);
@@ -351,7 +375,7 @@ export default function HomePage() {
 
     const faceLabPreset = getFaceLabTestPreset("friendly-coordinator");
 
-    clearWriteAccessToken();
+    clearStaleAnalysisStorage();
     sessionStorage.setItem("skinTestSubmission", JSON.stringify(preset.submission));
     sessionStorage.setItem(
       "skinTestResult",
