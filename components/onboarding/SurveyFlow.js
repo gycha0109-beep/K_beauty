@@ -926,6 +926,12 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   const currentStageLabel = copy.stages.find((stage) => stage.key === currentQuestion.stage)?.label || currentQuestion.stage;
 
   const screenIsValid = currentQuestion.required ? hasAnswer(currentQuestion, form) : true;
+  const isFinalQuestion = questionIndex >= questions.length - 1;
+  const finalCtaEnabled = isFinalQuestion && screenIsValid;
+  const finalCtaText = locale === "ko" ? "AI 분석 시작" : "Start AI analysis";
+  const finalCtaCaption = locale === "ko"
+    ? "사진과 답변을 바탕으로 맞춤 리포트를 생성합니다."
+    : "Your custom report will be generated from the photo and answers.";
 
   const scrollToTop = () => {
     if (typeof window === "undefined") {
@@ -1025,9 +1031,20 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           <button
             type="button"
             onClick={handleNext}
-            className="ui-button-primary px-5 py-3 text-sm font-semibold"
+            className={`ui-button-primary px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
+              finalCtaEnabled
+                ? "border border-white/25 shadow-[0_12px_28px_rgba(231,107,145,0.22)] ring-1 ring-[#ff8066]/25 dark:shadow-[0_12px_30px_rgba(239,99,135,0.22)] dark:ring-white/15"
+                : ""
+            }`}
           >
-            {questionIndex >= questions.length - 1 ? copy.startAnalyze : copy.next}
+            <span className="inline-flex items-center justify-center gap-1.5">
+              {isFinalQuestion ? copy.startAnalyze : copy.next}
+              {finalCtaEnabled ? (
+                <span aria-hidden="true" className="text-[13px] leading-none opacity-90">
+                  →
+                </span>
+              ) : null}
+            </span>
           </button>
         </div>
       </div>
