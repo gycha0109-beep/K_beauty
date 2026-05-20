@@ -80,6 +80,16 @@ function FullReportLightThemeStyles() {
         box-shadow: 0 12px 28px rgba(239, 99, 135, 0.2);
       }
 
+      html:not(.dark) .full-report-light-theme .full-report-tab-active,
+      html:not(.dark) .full-report-light-theme .full-report-tab-active:hover {
+        background: linear-gradient(135deg, #ec4f79 0%, #ff735d 100%);
+        border-color: rgba(255, 250, 247, 0.7);
+        color: #fffaf7;
+        box-shadow:
+          0 14px 30px rgba(239, 99, 135, 0.28),
+          inset 0 0 0 1px rgba(255, 250, 247, 0.24);
+      }
+
       html:not(.dark) .full-report-light-theme [class*="bg-white\\/5"] {
         background-color: #fff4f1;
       }
@@ -229,6 +239,16 @@ function FullReportLightThemeStyles() {
         background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
         color: #fffaf7;
         box-shadow: 0 12px 26px rgba(239, 99, 135, 0.18);
+      }
+
+      html.dark .full-report-light-theme .full-report-tab-active,
+      html.dark .full-report-light-theme .full-report-tab-active:hover {
+        background: linear-gradient(135deg, #ff6b92 0%, #ff876f 100%);
+        border-color: rgba(255, 226, 219, 0.42);
+        color: #fffaf7;
+        box-shadow:
+          0 16px 34px rgba(255, 106, 134, 0.34),
+          inset 0 0 0 1px rgba(255, 226, 219, 0.18);
       }
 
       html.dark .full-report-light-theme [class*="bg-white\\/5"],
@@ -4972,8 +4992,8 @@ export default function FullReportPage() {
       <FullReportLightThemeStyles />
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[800px]">
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 px-1">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex items-center justify-between gap-1 px-1 sm:gap-2">
+            <div className="flex shrink-0 gap-1 sm:gap-2">
               {[
                 { code: "ko", label: "한국어" },
                 { code: "en", label: "English" }
@@ -4983,7 +5003,7 @@ export default function FullReportPage() {
                   <Link
                     key={item.code}
                     href={getLocalePath(pathname, item.code)}
-                    className={`full-report-locale-link inline-flex min-h-8 rounded-full px-3 py-1.5 text-[11px] font-medium transition sm:text-xs ${
+                    className={`full-report-locale-link inline-flex min-h-10 items-center justify-center rounded-full px-2.5 py-2 text-[11px] font-medium transition sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-xs ${
                       active
                         ? "ui-choice-active"
                         : "ui-button-secondary bg-white/88 text-zinc-600 dark:bg-zinc-900/88"
@@ -4995,12 +5015,12 @@ export default function FullReportPage() {
               })}
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-              <ThemeToggle locale={locale} compact />
+            <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+              <ThemeToggle locale={locale} compact className="h-10 min-h-10 px-2.5 text-[11px] sm:h-8 sm:min-h-8 sm:px-3 sm:text-xs" />
               <button
                 type="button"
                 onClick={() => router.push(getResultPath(locale))}
-                className="ui-button-secondary min-h-8 px-3 py-1.5 text-[11px] font-medium sm:min-h-10 sm:px-4 sm:py-2.5 sm:text-xs"
+                className="ui-button-secondary min-h-10 whitespace-nowrap px-2.5 py-2 text-[11px] font-medium sm:min-h-10 sm:px-4 sm:py-2.5 sm:text-xs"
               >
                 {copy.backResult}
               </button>
@@ -5023,14 +5043,14 @@ export default function FullReportPage() {
             <button
               type="button"
               onClick={() => setActiveTab("skin_match")}
-              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "skin_match" ? "ui-choice-active" : ""}`}
+              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "skin_match" ? "ui-choice-active full-report-tab-active" : ""}`}
             >
               {copy.skinMatchTab}
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("face_lab")}
-              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "face_lab" ? "ui-choice-active" : ""}`}
+              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "face_lab" ? "ui-choice-active full-report-tab-active" : ""}`}
             >
               {copy.faceLabTab}
             </button>
