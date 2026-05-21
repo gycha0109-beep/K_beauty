@@ -2121,7 +2121,8 @@ function ResultContent() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mt-5 border-t border-[#f0ddd6] pt-4 dark:border-[#4a303c]">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
               {result && submission ? (
                 <SaveReportCTA
                   result={result}
@@ -2133,7 +2134,7 @@ function ResultContent() {
                 <span aria-hidden="true" />
               )}
 
-              <div className="flex justify-end">
+              <div className="flex justify-start sm:justify-end">
                 {result && submission ? (
                   <ResultShareActions
                     result={result}
@@ -2142,6 +2143,7 @@ function ResultContent() {
                     variant="header"
                   />
                 ) : null}
+              </div>
               </div>
             </div>
           </header>

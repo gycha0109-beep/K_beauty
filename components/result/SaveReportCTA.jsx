@@ -1,7 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import LoginButtons from "@/components/auth/LoginButtons";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -103,15 +103,21 @@ async function saveReport(payload) {
 }
 
 export default function SaveReportCTA({ result, submission, faceLabFull, locale = "ko" }) {
-  const router = useRouter();
   const restoreAttemptedRef = useRef(false);
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [message, setMessage] = useState("");
   const isEnglish = locale === "en";
   const nextPath = isEnglish ? "/en/result" : "/result";
+
+  useEffect(() => {
+    setIsSaved(false);
+    setMessage("");
+    setShowLogin(false);
+  }, [result, submission, faceLabFull]);
 
   useEffect(() => {
     let isMounted = true;
@@ -171,7 +177,7 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
 
     restoreAttemptedRef.current = true;
     setIsSaving(true);
-    setMessage(isEnglish ? "Saving your pending result..." : "이전 결과를 저장하는 중입니다...");
+    setMessage(isEnglish ? "Saving your previous result..." : "이전 결과를 저장하는 중입니다.");
 
     let pendingPayload;
 
@@ -193,7 +199,9 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
         }
 
         window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
-        router.push("/my");
+        setIsSaved(true);
+        setShowLogin(false);
+        setMessage("");
       })
       .catch((error) => {
         console.error("[result/save-report] pending save failed", error);
@@ -206,7 +214,7 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
       .finally(() => {
         setIsSaving(false);
       });
-  }, [isAuthLoading, user, router, isEnglish]);
+  }, [isAuthLoading, user, isEnglish]);
 
   async function handleSaveClick() {
     if (!result) {
@@ -223,7 +231,7 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
     if (!user) {
       window.sessionStorage.setItem(PENDING_SAVE_REPORT_KEY, JSON.stringify(payload));
       setShowLogin(true);
-      setMessage(isEnglish ? "Sign in with Google and this result will be saved." : "Google 로그인 후 이 결과를 저장합니다.");
+      setMessage(isEnglish ? "Sign in with Google to save this result." : "Google 로그인 후 내 피부 기록에 저장합니다.");
       return;
     }
 
@@ -241,7 +249,8 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
       }
 
       window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
-      router.push("/my");
+      setIsSaved(true);
+      setShowLogin(false);
     } catch (error) {
       console.error("[result/save-report] save failed", error);
       setMessage(
@@ -254,14 +263,27 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
     }
   }
 
+  if (isSaved) {
+    return (
+      <div className="flex w-full flex-col gap-2 sm:max-w-[18rem]">
+        <div className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#d8b99f] bg-[#fff8ef] px-4 py-2 text-sm font-semibold text-[#5a2d3c] dark:border-[#6a4a25] dark:bg-[#332314] dark:text-[#f2d3b6]">
+          {isEnglish ? "Saved to My Skin" : "✓ 내 피부 기록에 저장됨"}
+        </div>
+        <Link href="/my" className="ui-button-secondary min-h-10 w-full px-4 text-sm font-semibold sm:w-auto">
+          {isEnglish ? "View My" : "/my 보기"}
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-w-0 flex-col items-stretch gap-2 sm:items-end">
+    <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:max-w-[20rem]">
       <button
         type="button"
         data-testid="save-report-to-account"
         onClick={handleSaveClick}
         disabled={isAuthLoading || isSaving}
-        className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#5a2d3c] transition hover:border-[#dbaea4] hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
+        className="ui-button-primary min-h-11 w-full px-4 text-sm font-semibold"
       >
         {isSaving
           ? isEnglish
@@ -269,11 +291,11 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
             : "저장 중..."
           : user
             ? isEnglish
-              ? "Save to My"
-              : "My에 저장"
+              ? "Save to My Skin"
+              : "내 피부 기록 저장"
             : isEnglish
-              ? "Sign in to save"
-              : "로그인하고 저장"}
+              ? "Sign in with Google to save"
+              : "Google 로그인 후 내 피부 기록 저장"}
       </button>
 
       {showLogin ? (
@@ -286,7 +308,7 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
       ) : null}
 
       {message ? (
-        <p className="max-w-[18rem] text-right text-[11px] leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+        <p className="text-left text-[11px] leading-5 text-[#7a5360] dark:text-[#c8aeb8] sm:text-right">
           {message}
         </p>
       ) : null}

@@ -16,18 +16,22 @@ function renderList(values) {
 
 export default function SkinProfileSummaryCard({ profile }) {
   return (
-    <section className="ui-card p-5 sm:p-6">
-      <p className="ui-kicker">Skin Profile</p>
-      <h2 className="ui-title mt-2 text-2xl">최근 피부 프로필 요약</h2>
+    <section className="rounded-[1.25rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a] sm:p-5">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="ui-kicker">Skin Profile</p>
+          <h2 className="ui-title mt-1 text-xl">최근 피부 프로필</h2>
+        </div>
+      </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-[1.1rem] border border-[#ead2ca] bg-white/60 p-4 dark:border-[#4a303c] dark:bg-[#301f28]">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="border-b border-[#ead2ca] pb-3 dark:border-[#4a303c] sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
           <p className="ui-text-faint text-xs font-semibold uppercase">Skin Type</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
             {profile?.skin_type || "미정"}
           </p>
         </div>
-        <div className="rounded-[1.1rem] border border-[#ead2ca] bg-white/60 p-4 dark:border-[#4a303c] dark:bg-[#301f28]">
+        <div className="sm:pl-1">
           <p className="ui-text-faint text-xs font-semibold uppercase">Sensitivity</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
             {profile?.sensitivity_level || "미정"}
@@ -38,11 +42,11 @@ export default function SkinProfileSummaryCard({ profile }) {
       {renderList(profile?.concerns)}
 
       {profile?.skin_summary ? (
-        <p className="ui-text-primary mt-5 text-sm leading-6">{profile.skin_summary}</p>
+        <p className="ui-text-primary mt-4 text-sm leading-6">{profile.skin_summary}</p>
       ) : null}
 
       {profile?.face_summary ? (
-        <p className="ui-text-secondary mt-3 text-sm leading-6">{profile.face_summary}</p>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{profile.face_summary}</p>
       ) : null}
     </section>
   );

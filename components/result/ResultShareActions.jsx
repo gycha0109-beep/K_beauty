@@ -10,33 +10,29 @@ const SHARE_SESSION_KEY = "skinTestShare";
 
 const ACTION_COPY = {
   ko: {
-    save: "결과 저장",
-    saved: "저장됨",
+    groupLabel: "공유 옵션",
     copy: "링크 복사",
     share: "공유",
     saveImage: "이미지 저장",
-    saving: "저장 중...",
     copied: "링크를 복사했습니다.",
-    sharedFallback: "공유를 열 수 없어 링크를 복사했습니다.",
-    savedMessage: "결과를 저장했습니다.",
+    sharedFallback: "공유가 어려워 링크를 복사했습니다.",
+    savedMessage: "공유 링크가 준비되었습니다.",
     imageSaved: "이미지를 저장했습니다.",
-    saveError: "결과 저장에 실패했습니다.",
-    sessionExpired: "보안을 위해 저장 세션이 만료되었습니다. 다시 분석해 주세요.",
+    saveError: "공유 링크를 만들지 못했습니다.",
+    sessionExpired: "저장 세션이 만료되었습니다. 다시 진단해 주세요.",
     imageError: "이미지를 저장하지 못했습니다.",
     shareText: "내 피부 결과를 확인해보세요"
   },
   en: {
-    save: "Save result",
-    saved: "Saved",
+    groupLabel: "Share",
     copy: "Copy link",
     share: "Share",
     saveImage: "Save image",
-    saving: "Saving...",
     copied: "Link copied.",
     sharedFallback: "Native share failed, so the link was copied.",
-    savedMessage: "Result saved.",
+    savedMessage: "Share link is ready.",
     imageSaved: "Image saved.",
-    saveError: "Failed to save the result.",
+    saveError: "Failed to prepare the share link.",
     sessionExpired: "The save session expired. Please run the analysis again.",
     imageError: "Failed to save the image.",
     shareText: "Check out my skin result"
@@ -271,32 +267,24 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
 
   const isHeaderVariant = variant === "header";
   const containerClassName = isHeaderVariant
-    ? "w-full rounded-none border-0 bg-transparent p-0 shadow-none"
-    : "rounded-[1.6rem] border border-white/10 bg-white/90 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.18)]";
-  const gridClassName = isHeaderVariant
-    ? "flex flex-wrap justify-end gap-1.5 max-[360px]:grid max-[360px]:grid-cols-2 max-[360px]:gap-2"
-    : "grid grid-cols-2 gap-2.5 sm:grid-cols-4";
+    ? "w-full sm:w-auto"
+    : "rounded-[1.3rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a]";
   const buttonClassName = isHeaderVariant
-    ? "inline-flex min-h-0 items-center justify-center rounded-full border border-[#ead9d6] bg-white px-2.5 py-1.5 text-[11px] font-medium leading-none text-[#3a1824] shadow-[0_8px_18px_rgba(52,20,35,0.06)] transition hover:bg-[#fff4f1] disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#382430] max-[360px]:min-h-9 max-[360px]:w-full max-[360px]:px-3 max-[360px]:py-2"
-    : "ui-button-secondary min-h-11 border-[#ead9d6] bg-white px-3 text-sm font-medium text-[#3a1824] hover:bg-[#fff4f1]";
+    ? "inline-flex min-h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full border border-[#ead9d6] bg-white/70 px-3 py-2 text-[11px] font-medium text-[#6e4050] transition hover:bg-white disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#c8aeb8] dark:hover:bg-[#352430] sm:flex-none"
+    : "ui-button-secondary min-h-10 px-3 text-sm font-medium";
 
   return (
     <>
-    <div className={containerClassName}>
-      <div className={gridClassName}>
-          <button
-            type="button"
-            onClick={() => saveResult()}
-            disabled={isSaving}
-          className={buttonClassName}
-          >
-            {isSaving ? copy.saving : shareInfo?.shareId ? copy.saved : copy.save}
-          </button>
+      <div className={containerClassName}>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a6c78] dark:text-[#b99aa6]">
+          {copy.groupLabel}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={handleCopy}
             disabled={isSaving}
-          className={buttonClassName}
+            className={buttonClassName}
           >
             {copy.copy}
           </button>
@@ -304,7 +292,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
             type="button"
             onClick={handleShare}
             disabled={isSaving}
-          className={buttonClassName}
+            className={buttonClassName}
           >
             {copy.share}
           </button>
@@ -312,14 +300,14 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
             type="button"
             onClick={handleDownloadImage}
             disabled={isDownloading}
-          className={buttonClassName}
+            className={buttonClassName}
           >
             {copy.saveImage}
           </button>
         </div>
 
         {shareInfo?.shareUrl ? (
-          <p className="ui-text-secondary mt-3 truncate text-xs">{shareInfo.shareUrl}</p>
+          <p className="ui-text-secondary mt-2 max-w-[18rem] truncate text-xs">{shareInfo.shareUrl}</p>
         ) : null}
 
         {status ? <p className="ui-text-secondary mt-2 text-xs">{status}</p> : null}

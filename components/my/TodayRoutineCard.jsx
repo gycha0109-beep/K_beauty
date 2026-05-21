@@ -33,11 +33,17 @@ function normalizeRoutineSteps(values) {
     .filter(Boolean);
 }
 
-function TextList({ title, values }) {
+function TextList({ title, values, tone = "neutral" }) {
   const items = normalizeTextList(values);
+  const toneClassName = {
+    keep: "border-[#d9c4a8] bg-[#fff8ef] dark:border-[#6a4a25] dark:bg-[#332314]",
+    reduce: "border-[#ead2ca] bg-white/70 dark:border-[#4a303c] dark:bg-[#2f202a]",
+    avoid: "border-[#e0b9b0] bg-[#fff3ee] dark:border-[#6a4050] dark:bg-[#351f28]",
+    neutral: "border-[#ead2ca] bg-white/70 dark:border-[#4a303c] dark:bg-[#2f202a]"
+  }[tone];
 
   return (
-    <div className="rounded-[1.1rem] border border-[#ead2ca] bg-white/60 p-4 dark:border-[#4a303c] dark:bg-[#301f28]">
+    <div className={`rounded-[1rem] border p-4 ${toneClassName}`}>
       <p className="ui-text-primary text-sm font-semibold">{title}</p>
       {items.length ? (
         <ul className="mt-3 space-y-2 text-sm leading-6 ui-text-secondary">
@@ -56,18 +62,23 @@ function RoutineList({ title, values }) {
   const steps = normalizeRoutineSteps(values);
 
   return (
-    <div className="rounded-[1.1rem] border border-[#ead2ca] bg-white/60 p-4 dark:border-[#4a303c] dark:bg-[#301f28]">
+    <div className="border-t border-[#ead2ca] pt-4 dark:border-[#4a303c]">
       <p className="ui-text-primary text-sm font-semibold">{title}</p>
       {steps.length ? (
         <ol className="mt-3 space-y-3">
           {steps.map((step, index) => (
-            <li key={`${step.title}-${index}`} className="text-sm leading-6">
-              <span className="font-semibold text-[#4a2834] dark:text-[#f3e4df]">
-                {index + 1}. {step.title}
+            <li key={`${step.title}-${index}`} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2 text-sm leading-6">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#5a2d3c] text-xs font-semibold text-white dark:bg-[#ef6387]">
+                {index + 1}
               </span>
-              {step.note ? (
-                <p className="ui-text-secondary mt-1">{step.note}</p>
-              ) : null}
+              <span>
+                <span className="font-semibold text-[#4a2834] dark:text-[#f3e4df]">
+                  {step.title}
+                </span>
+                {step.note ? (
+                  <span className="ui-text-secondary mt-1 block">{step.note}</span>
+                ) : null}
+              </span>
             </li>
           ))}
         </ol>
@@ -82,12 +93,15 @@ export default function TodayRoutineCard({ routine }) {
   return (
     <section className="ui-card p-5 sm:p-6">
       <p className="ui-kicker">Today Routine</p>
-      <h2 className="ui-title mt-2 text-xl">오늘 루틴 카드</h2>
+      <h2 className="ui-title mt-2 text-2xl sm:text-3xl">오늘 루틴</h2>
 
-      <div className="mt-5 grid gap-3">
-        <TextList title="오늘 유지할 것" values={routine.keep_items} />
-        <TextList title="오늘 줄일 것" values={routine.reduce_items} />
-        <TextList title="오늘 피할 것" values={routine.avoid_items} />
+      <div className="mt-5 grid gap-3 lg:grid-cols-3">
+        <TextList title="유지할 것" values={routine.keep_items} tone="keep" />
+        <TextList title="줄일 것" values={routine.reduce_items} tone="reduce" />
+        <TextList title="피할 것" values={routine.avoid_items} tone="avoid" />
+      </div>
+
+      <div className="mt-5 grid gap-5 md:grid-cols-2">
         <RoutineList title="AM 루틴" values={routine.am_routine} />
         <RoutineList title="PM 루틴" values={routine.pm_routine} />
       </div>

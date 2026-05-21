@@ -21,20 +21,26 @@ function formatDate(value) {
 
 function LatestSavedReport({ report }) {
   if (!report) {
-    return null;
+    return (
+      <section className="rounded-[1.1rem] border border-[#ead2ca] bg-white/55 p-4 dark:border-[#3a2630] dark:bg-[#2f202a]/70">
+        <p className="ui-kicker">Saved Report</p>
+        <p className="ui-text-secondary mt-2 text-sm">아직 저장된 리포트가 없습니다.</p>
+      </section>
+    );
   }
 
   return (
-    <section className="ui-card-subtle p-5">
-      <p className="ui-kicker">Saved Report</p>
-      <h2 className="ui-title mt-2 text-lg">최근 저장 리포트</h2>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="ui-chip-compact">{report.report_type || "report"}</span>
-        {report.report_version ? (
-          <span className="ui-chip-compact">{report.report_version}</span>
-        ) : null}
+    <section className="rounded-[1.1rem] border border-[#ead2ca] bg-white/55 p-4 dark:border-[#3a2630] dark:bg-[#2f202a]/70">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="ui-kicker">Saved Report</p>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="ui-chip-compact">{report.report_type || "report"}</span>
+          {report.report_version ? (
+            <span className="ui-chip-compact">{report.report_version}</span>
+          ) : null}
+        </div>
       </div>
-      <p className="ui-text-primary mt-3 text-sm font-semibold">
+      <p className="ui-text-primary mt-3 truncate text-sm font-semibold">
         {report.title || "저장된 피부 리포트"}
       </p>
       {report.created_at ? (
@@ -52,11 +58,42 @@ function EmptyProfileState() {
         아직 저장된 피부 프로필이 없습니다.
       </h1>
       <p className="ui-text-secondary mt-3 text-sm leading-6">
-        먼저 무료 진단을 진행해 주세요.
+        먼저 무료 진단을 진행하면 이곳에서 오늘 체크와 루틴을 이어갈 수 있습니다.
       </p>
-      <Link href="/" className="ui-button-primary mt-6 min-h-11 px-5 text-sm font-semibold">
+      <Link href="/" className="ui-button-primary mt-6 min-h-11 w-full px-5 text-sm font-semibold sm:w-auto">
         무료 진단 시작하기
       </Link>
+    </section>
+  );
+}
+
+function TodayCheckInDone({ checkin }) {
+  return (
+    <section className="rounded-[1.25rem] border border-[#ead2ca] bg-white/65 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="ui-kicker">Today Check-in</p>
+          <h2 className="ui-title mt-1 text-lg">오늘 피부 상태 체크 완료</h2>
+          {checkin?.checkin_date ? (
+            <p className="ui-text-faint mt-1 text-xs">{formatDate(checkin.checkin_date)}</p>
+          ) : null}
+        </div>
+        <Link href="/my/check-in" className="ui-button-secondary min-h-10 w-full px-4 text-sm font-semibold sm:w-auto">
+          다시 체크하기
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function RoutinePendingNotice() {
+  return (
+    <section className="rounded-[1.25rem] border border-[#ead2ca] bg-white/65 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26]">
+      <p className="ui-kicker">Today Routine</p>
+      <h2 className="ui-title mt-1 text-lg">오늘 체크인은 저장되었습니다.</h2>
+      <p className="ui-text-secondary mt-2 text-sm leading-6">
+        루틴 카드가 아직 없으면 잠시 후 다시 확인해 주세요.
+      </p>
     </section>
   );
 }
@@ -72,44 +109,42 @@ export default function MyDashboard({ dashboard }) {
   } = dashboard;
 
   return (
-    <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">
+    <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-5xl">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="ui-kicker">Bejewely Revisit</p>
-            <h1 className="ui-title mt-2 text-3xl sm:text-4xl">My Skin Dashboard</h1>
+            <h1 className="ui-title mt-2 text-3xl sm:text-4xl">My Skin</h1>
+            <p className="ui-text-secondary mt-2 text-sm leading-6">
+              오늘 상태를 먼저 보고, 필요한 루틴만 빠르게 확인합니다.
+            </p>
           </div>
-          <Link href="/api/auth/signout" className="ui-button-secondary min-h-10 px-4 text-sm font-semibold">
+          <Link href="/api/auth/signout" className="ui-button-secondary min-h-10 w-full px-4 text-sm font-semibold sm:w-auto">
             로그아웃
           </Link>
         </header>
 
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           {!hasProfile ? (
             <EmptyProfileState />
           ) : (
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-              <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
+              {needsCheckIn ? (
+                <TodayCheckInPrompt />
+              ) : (
+                <TodayCheckInDone checkin={todayCheckin} />
+              )}
+
+              {todayRoutine ? (
+                <TodayRoutineCard routine={todayRoutine} />
+              ) : todayCheckin ? (
+                <RoutinePendingNotice />
+              ) : null}
+
+              <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.52fr)]">
                 <SkinProfileSummaryCard profile={latestSkinProfile} />
                 <LatestSavedReport report={latestSavedReport} />
-              </div>
-              <div className="space-y-5">
-                {needsCheckIn ? (
-                  <TodayCheckInPrompt />
-                ) : todayCheckin && todayRoutine ? (
-                  <TodayRoutineCard checkin={todayCheckin} routine={todayRoutine} />
-                ) : todayCheckin ? (
-                  <section className="ui-card p-5">
-                    <p className="ui-kicker">Today</p>
-                    <h2 className="ui-title mt-2 text-xl">오늘 체크인이 저장되었습니다.</h2>
-                    <p className="ui-text-secondary mt-3 text-sm leading-6">
-                      오늘 루틴 카드는 체크인 루틴 생성 단계에서 표시됩니다.
-                    </p>
-                  </section>
-                ) : (
-                  <TodayCheckInPrompt />
-                )}
-              </div>
+              </section>
             </div>
           )}
         </div>
