@@ -10,6 +10,7 @@ import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import ThemeToggle from "@/components/ThemeToggle";
+import AuthNav from "@/components/auth/AuthNav";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -2041,7 +2042,7 @@ function ResultContent() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7f2_0%,#f5e5e0_42%,#ead7cf_100%)] text-[#26101a] dark:bg-[radial-gradient(circle_at_top,#241720_0%,#1b1017_46%,#160d13_100%)] dark:text-[#fff8f3]">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-4 sm:space-y-5">
-          <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
             <div className="flex flex-wrap gap-2">
               {[
                 { code: "ko", label: "한국어" },
@@ -2064,7 +2065,8 @@ function ResultContent() {
               })}
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+              <AuthNav />
               <ThemeToggle locale={locale} compact />
               <Link
                 href={homePath}

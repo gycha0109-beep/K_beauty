@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ThemeToggle from "@/components/ThemeToggle";
+import AuthNav from "@/components/auth/AuthNav";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -4992,7 +4993,7 @@ export default function FullReportPage() {
       <FullReportLightThemeStyles />
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[800px]">
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-1 px-1 sm:gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-1 px-1 sm:gap-2">
             <div className="flex shrink-0 gap-1 sm:gap-2">
               {[
                 { code: "ko", label: "한국어" },
@@ -5015,7 +5016,8 @@ export default function FullReportPage() {
               })}
             </div>
 
-            <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1 sm:gap-2">
+              <AuthNav />
               <ThemeToggle locale={locale} compact className="h-10 min-h-10 px-2.5 text-[11px] sm:h-8 sm:min-h-8 sm:px-3 sm:text-xs" />
               <button
                 type="button"

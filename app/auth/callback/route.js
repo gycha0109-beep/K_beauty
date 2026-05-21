@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  serializeSupabaseError,
+  upsertProfileForUser
+} from "@/lib/auth/profile-upsert";
+
+export const dynamic = "force-dynamic";
 
 function getSafeRedirectPath(value, origin) {
   if (!value) {
@@ -23,19 +29,23 @@ function getSafeRedirectPath(value, origin) {
   return "/my";
 }
 
-function getProfilePayload(user) {
-  const metadata = user.user_metadata || {};
-  const appMetadata = user.app_metadata || {};
+function logAuthCallbackError(label, error, context = {}) {
+  console.error(`[auth/callback] ${label}`, {
+    ...context,
+    error: serializeSupabaseError(error)
+  });
+}
+
+function getAuthCookieDiagnostics(request) {
+  const cookieNames = request.cookies
+    .getAll()
+    .map((cookie) => cookie.name)
+    .filter((name) => name.includes("auth-token"));
 
   return {
-    id: user.id,
-    nickname:
-      metadata.name ||
-      metadata.full_name ||
-      user.email ||
-      null,
-    avatar_url: metadata.avatar_url || null,
-    provider: appMetadata.provider || null
+    hasCodeVerifierCookie: cookieNames.some((name) => name.endsWith("-code-verifier")),
+    authCookieNames: cookieNames,
+    authCookieCount: cookieNames.length
   };
 }
 
@@ -56,6 +66,12 @@ export async function GET(request) {
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (exchangeError) {
+    logAuthCallbackError("exchange_code_for_session_failed", exchangeError, {
+      codeLength: code.length,
+      callbackOrigin: requestUrl.origin,
+      redirectPath,
+      ...getAuthCookieDiagnostics(request)
+    });
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "exchange_failed");
     return NextResponse.redirect(redirectUrl);
@@ -67,19 +83,50 @@ export async function GET(request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
+    logAuthCallbackError("get_user_failed_after_exchange", userError, {
+      hasUser: Boolean(user)
+    });
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "user_lookup_failed");
     return NextResponse.redirect(redirectUrl);
   }
 
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .upsert(getProfilePayload(user), { onConflict: "id" });
+  const profileUpsertResult = await upsertProfileForUser({
+    supabase,
+    user,
+    preferAdmin: true
+  });
+  const profilePayload = profileUpsertResult.profilePayload;
+
+  if (!profilePayload?.id || profilePayload.id !== user.id) {
+    console.error("[auth/callback] profile_payload_user_id_mismatch", {
+      userId: user.id,
+      profileId: profilePayload?.id || null,
+      idMatchesUser: profilePayload?.id === user.id,
+      attempts: profileUpsertResult.attempts
+    });
+
+    redirectUrl.pathname = "/";
+    redirectUrl.searchParams.set("auth_error", "user_lookup_failed");
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  const profileError = profileUpsertResult.error;
 
   if (profileError) {
-    redirectUrl.pathname = "/";
-    redirectUrl.searchParams.set("auth_error", "profile_upsert_failed");
-    return NextResponse.redirect(redirectUrl);
+    logAuthCallbackError("profile_upsert_failed", profileError, {
+      userId: user.id,
+      profileId: profilePayload.id,
+      idMatchesUser: profilePayload.id === user.id,
+      provider: profilePayload.provider,
+      method: profileUpsertResult.method,
+      payload: profileUpsertResult.payload,
+      attempts: profileUpsertResult.attempts
+    });
+
+    const warningUrl = new URL("/my", requestUrl.origin);
+    warningUrl.searchParams.set("auth_warning", "profile_upsert_failed");
+    return NextResponse.redirect(warningUrl);
   }
 
   return NextResponse.redirect(redirectUrl);
