@@ -312,7 +312,7 @@ async function getProductCandidateColumnSupport(client: SupabaseClient): Promise
 }
 
 export function createServiceRoleClient(): SupabaseClient {
-  return createClient(getRequiredEnv("SUPABASE_URL"), getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+  return createClient(getRequiredEnv("NEXT_PUBLIC_SUPABASE_URL"), getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY"), {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

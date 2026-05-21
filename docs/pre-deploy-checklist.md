@@ -170,5 +170,5 @@ order by row_count desc, normalized_brand, normalized_name;
 ## Env Checks
 
 - `OPENAI_API_KEY`
-- `SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
