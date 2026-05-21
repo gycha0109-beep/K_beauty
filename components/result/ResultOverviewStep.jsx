@@ -68,11 +68,11 @@ export default function ResultOverviewStep({
           <span className="pointer-events-none absolute bottom-4 right-4 h-5 w-5 border-b border-r border-white/80 dark:border-[#ffd4d6]/70" />
         </div>
 
-        <div className="order-1 min-w-0 rounded-[1.55rem] border border-[#ead9d6] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/88">
+        <div className="order-1 min-w-0 overflow-hidden rounded-[1.55rem] border border-[#ead9d6] bg-[linear-gradient(145deg,rgba(255,255,255,0.68),rgba(255,239,237,0.58))] p-4 dark:border-[#5a3a48] dark:bg-[linear-gradient(145deg,rgba(48,31,40,0.96),rgba(37,24,32,0.96))]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8b6370] dark:text-[#c7aeb8]">
-            {isEnglish ? "Match result" : "매치 결과"}
+            {isEnglish ? "Core match" : "핵심 매치"}
           </p>
-          <h2 className="mt-2 break-keep text-[1.55rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff7f2]">
+          <h2 className="mt-2 break-keep text-[1.45rem] font-semibold leading-[1.18] tracking-tight text-[#26101a] dark:text-[#fff7f2] sm:text-[1.6rem]">
             {matchSummary?.matchLabel || summaryCards?.[0]?.value || copy.resultOverviewTitle}
           </h2>
 
@@ -106,9 +106,9 @@ export default function ResultOverviewStep({
           ) : null}
 
           {routineHighlights.length ? (
-            <div className="mt-4 space-y-2">
+            <div className="mt-3 space-y-2">
               {routineHighlights.map((item) => (
-                <div key={item.key} className="grid grid-cols-[3.6rem_minmax(0,1fr)] gap-2 rounded-[1rem] border border-[#ead9d6] bg-white/56 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#251820]">
+                <div key={item.key} className="grid grid-cols-[3.4rem_minmax(0,1fr)] gap-2 rounded-[1rem] border border-[#ead9d6] bg-white/46 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#251820]">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#e6507a] dark:text-[#ff9aa8]">{item.label}</span>
                   <span className="text-xs font-medium leading-5 text-[#3a1824] dark:text-[#f2e2df]">{item.body}</span>
                 </div>
@@ -138,30 +138,32 @@ export default function ResultOverviewStep({
         </div>
       ) : null}
 
-      <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/40 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">{copy.recommendationDirection}</p>
-        <p className="mt-2.5 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{overviewSummary}</p>
-      </div>
-
-      {showPhotoObservation ? (
-        <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/40 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c7aeb8]">
-            {locale === "en" ? "Photo-based read" : "사진 기준 관찰"}
-          </p>
-          {photoSummary ? (
-            <p className="mt-2.5 text-sm leading-6 text-[#3a1824] dark:text-[#f2e2df]">{photoSummary}</p>
-          ) : null}
-          {photoSignals.length ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {photoSignals.map((signal) => (
-                <span key={signal} className="rounded-full border border-[#ead9d6] bg-white/70 px-3 py-1.5 text-[11px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
-                  {signal}
-                </span>
-              ))}
-            </div>
-          ) : null}
+      <div className="mt-4 grid gap-3">
+        <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/34 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/88">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7e5261] dark:text-[#c7aeb8]">{copy.recommendationDirection}</p>
+          <p className="mt-2 text-sm leading-5 text-[#3a1824] dark:text-[#f2e2df]">{overviewSummary}</p>
         </div>
-      ) : null}
+
+        {showPhotoObservation ? (
+          <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/28 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8f6672] dark:text-[#bfa8b1]">
+              {locale === "en" ? "Photo-based read" : "사진 기준 관찰"}
+            </p>
+            {photoSummary ? (
+              <p className="mt-2 text-xs leading-5 text-[#6f4a56] dark:text-[#d8c2c9]">{photoSummary}</p>
+            ) : null}
+            {photoSignals.length ? (
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {photoSignals.map((signal) => (
+                  <span key={signal} className="rounded-full border border-[#ead9d6] bg-white/58 px-2.5 py-1 text-[10px] font-medium text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+                    {signal}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }

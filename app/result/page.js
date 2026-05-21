@@ -1006,7 +1006,8 @@ function getProductStepLabel(product = {}, locale = "ko") {
     return labels[normalized] || "Product";
   }
 
-  return rawStep || labels[normalized] || (locale === "en" ? "Product" : "제품");
+  const normalizedStep = rawStep.toLowerCase();
+  return labels[normalizedStep] || rawStep || labels[normalized] || (locale === "en" ? "Product" : "제품");
 }
 
 function getCategoryFamilyForDisplay(category) {
@@ -1262,15 +1263,89 @@ function getProductReasonSentences(product, locale = "ko") {
   return locale === "en" ? sentences.filter((item) => !hasKoreanText(item)) : sentences;
 }
 
+function compactTopPickReasonLine(line, locale = "ko") {
+  const cleaned = normalizeCopy(line)
+    .replace(/\s+/g, " ")
+    .replace(/^이 제품은\s*/, "")
+    .replace(/^추천 이유는\s*/, "")
+    .replace(/^특히\s*/, "")
+    .replace(/^This product\s+/i, "")
+    .trim();
+
+  if (!cleaned) {
+    return "";
+  }
+
+  const maxLength = locale === "en" ? 86 : 38;
+  const chars = Array.from(cleaned);
+
+  if (chars.length <= maxLength) {
+    return cleaned;
+  }
+
+  const breakpoints = locale === "en"
+    ? [", ", "; ", " because ", " while ", " so "]
+    : [" 때문에", "라서", "해서", "하며", "이고", ",", "，"];
+
+  for (const point of breakpoints) {
+    const index = cleaned.indexOf(point);
+    if (index >= 12 && index <= maxLength) {
+      return cleaned.slice(0, index).replace(/[,\s]+$/g, "").trim();
+    }
+  }
+
+  return `${chars.slice(0, maxLength - 1).join("").trim()}…`;
+}
+
+function getTopPickCategoryReason(product, locale = "ko") {
+  const category = normalizeResultCategory(product);
+
+  if (locale === "en") {
+    if (category === "cleanser") return "Keeps the cleansing step gentle and focused.";
+    if (category === "toner_essence") return "Adds a light first layer before heavier care.";
+    if (category === "serum_ampoule") return "Starts targeted care without widening the routine.";
+    if (category === "moisturizer") return "Supports comfort at the final moisture step.";
+    if (category === "sunscreen") return "Stabilizes the AM protection step.";
+    return "Connects to the routine without feeling too heavy.";
+  }
+
+  if (category === "cleanser") return "세안 단계에서 자극 부담을 낮춤";
+  if (category === "toner_essence") return "첫 보습 단계에서 결 정돈을 보조";
+  if (category === "serum_ampoule") return "세럼 단계로 타깃 케어를 좁게 시작";
+  if (category === "moisturizer") return "마무리 보습으로 편안함을 보조";
+  if (category === "sunscreen") return "아침 보호 단계를 안정적으로 연결";
+  return "기존 루틴에 무겁지 않게 연결";
+}
+
 function buildTopPickReasonBullets(product, form, decision = null, locale = "ko") {
   const productReasons = getProductReasonSentences(product, locale);
   const summaryReasons = splitSentences(getTopPickSummary(product, form, decision, locale));
   const especiallyGoodFor = getEspeciallyGoodFor(product, form, locale);
+  const hasPhotoSignal = Array.isArray(decision?.photoObservations?.signals)
+    && decision.photoObservations.signals.length > 0;
+  const structuredReasons = locale === "en"
+    ? [
+        `Focuses on ${especiallyGoodFor}.`,
+        getTopPickCategoryReason(product, locale),
+        hasPhotoSignal
+          ? "Matches both photo signals and survey priorities."
+          : "Reflects the skin type and top concern together."
+      ]
+    : [
+        `${especiallyGoodFor}에 초점을 맞춘 추천`,
+        getTopPickCategoryReason(product, locale),
+        hasPhotoSignal
+          ? "사진 신호와 설문 고민이 함께 겹침"
+          : "피부 타입과 우선 고민을 함께 반영"
+      ];
   const fallback = locale === "en"
     ? `Fits ${especiallyGoodFor} without widening the routine too early.`
     : `${especiallyGoodFor}에 먼저 맞추기 좋은 선택입니다.`;
 
-  return uniqueItems([...productReasons, ...summaryReasons, fallback]).slice(0, 3);
+  return uniqueItems([...structuredReasons, ...productReasons, ...summaryReasons, fallback])
+    .map((line) => compactTopPickReasonLine(line, locale))
+    .filter(Boolean)
+    .slice(0, 3);
 }
 
 function buildTopPickAITip(product, form, decision = null, locale = "ko") {
@@ -2356,7 +2431,10 @@ function ResultStepLead({ kicker, title, body }) {
 function SkinDashboardCard({ metrics = [], locale = "ko" }) {
   const isEnglish = locale === "en";
   const items = Array.isArray(metrics) ? metrics.slice(0, 5) : [];
-  const primaryMetric = items[0] || null;
+  const primaryMetric = [...items].sort((a, b) => b.value - a.value)[0] || null;
+  const secondaryMetrics = primaryMetric
+    ? items.filter((metric) => metric.key !== primaryMetric.key)
+    : items;
 
   return (
     <section className="rounded-[2rem] border border-[#ead9d2] bg-[#fffaf5] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.18)] dark:border-[#4a303c] dark:bg-[#241720] sm:p-6">
@@ -2378,44 +2456,55 @@ function SkinDashboardCard({ metrics = [], locale = "ko" }) {
       </div>
 
       {primaryMetric ? (
-        <div className="mt-6 rounded-[1.5rem] border border-[#ead9d2] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">
-                {isEnglish ? "Main signal" : "대표 지표"}
+        <div className="mt-6 overflow-hidden rounded-[1.65rem] border border-[#efcfc9] bg-[linear-gradient(135deg,rgba(255,255,255,0.78),rgba(255,232,231,0.76))] p-4 shadow-[0_18px_42px_rgba(80,28,46,0.12)] dark:border-[#5a3a48] dark:bg-[linear-gradient(135deg,rgba(55,35,47,0.96),rgba(40,25,34,0.96))]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">
+                  {isEnglish ? "Main signal" : "대표 지표"}
+                </p>
+                <span className="rounded-full border border-[#e7c5bc] bg-white/72 px-2.5 py-1 text-[11px] font-semibold text-[#8a4c5d] dark:border-[#6a4353] dark:bg-[#301f28] dark:text-[#f4d7df]">
+                  {primaryMetric.status}
+                </span>
+              </div>
+              <p className="mt-2 text-[1.55rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3]">
+                {primaryMetric.label}
               </p>
-              <p className="mt-1.5 text-lg font-semibold tracking-tight text-[#26101a] dark:text-[#fff8f3]">{primaryMetric.label}</p>
-              <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{primaryMetric.description}</p>
+              <p className="mt-2 max-w-[26rem] text-sm leading-6 text-[#6f4a56] dark:text-[#d8c2c9]">{primaryMetric.description}</p>
             </div>
-            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#fff7f2] dark:bg-[#301f28]">
+            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center self-center rounded-full bg-[#fff7f2] shadow-inner dark:bg-[#301f28]">
               <span
                 className="absolute inset-0 rounded-full"
                 style={{ background: `conic-gradient(${primaryMetric.color} ${primaryMetric.value * 3.6}deg, rgba(234,217,210,0.75) 0deg)` }}
               />
-              <span className="relative flex h-[4.15rem] w-[4.15rem] items-center justify-center rounded-full bg-white text-lg font-semibold text-[#26101a] dark:bg-[#241720] dark:text-[#fff8f3]">
-                {primaryMetric.value}
+              <span className="relative flex h-[4.9rem] w-[4.9rem] flex-col items-center justify-center rounded-full bg-white text-[#26101a] dark:bg-[#241720] dark:text-[#fff8f3]">
+                <span className="text-2xl font-semibold leading-none">{primaryMetric.value}</span>
+                <span className="mt-0.5 text-[10px] font-medium text-[#8b6370] dark:text-[#c8aeb8]">/100</span>
               </span>
             </div>
           </div>
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-3">
-        {items.map((metric) => (
-          <div key={metric.key} className="rounded-[1.25rem] border border-[#ead9d2] bg-white/54 px-4 py-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
-            <div className="flex items-center justify-between gap-3">
+      <div className="mt-4 grid gap-2.5">
+        {secondaryMetrics.map((metric) => (
+          <div key={metric.key} className="rounded-[1.15rem] border border-[#ead9d2] bg-white/48 px-3.5 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/88">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.label}</p>
-                <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{metric.description}</p>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: metric.color }} />
+                  <p className="text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{metric.label}</p>
+                </div>
+                <p className="mt-1 text-[11px] leading-4 text-[#7a5360] dark:text-[#c8aeb8]">{metric.description}</p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className="rounded-full border border-[#e7c5bc] bg-white px-2.5 py-1 text-[11px] font-medium text-[#8a4c5d] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+              <div className="flex min-w-[4.9rem] shrink-0 flex-col items-end gap-1">
+                <span className="text-sm font-semibold leading-none text-[#26101a] dark:text-[#fff8f3]">{metric.value}</span>
+                <span className="rounded-full border border-[#e7c5bc] bg-white/72 px-2.5 py-0.5 text-[10px] font-medium text-[#8a4c5d] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
                   {metric.status}
                 </span>
-                <span className="min-w-8 text-right text-xs font-semibold text-[#26101a] dark:text-[#fff8f3]">{metric.value}</span>
               </div>
             </div>
-            <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2630]">
+            <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#e7dcda] dark:bg-[#3a2630]">
               <div
                 className="h-full rounded-full"
                 style={{ width: `${metric.value}%`, backgroundColor: metric.color }}
@@ -2782,19 +2871,19 @@ function ProductDecisionCard({
                 </span>
               </div>
 
-              <div className="mt-5 grid gap-5">
+              <div className="mt-4 rounded-[1.65rem] border border-[#ead9d6] bg-white/56 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/92">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold leading-6 text-[#764c59] dark:text-[#c8aeb8] sm:text-[15px]">{topPickHeadline}</p>
-                  <h2 className="mt-3 break-words text-[1.85rem] font-semibold leading-tight tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2.25rem]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#e6507a] dark:text-[#ff9aa8]">{topPickHeadline}</p>
+                  <h2 className="mt-2 max-w-[19rem] break-keep text-[1.45rem] font-semibold leading-[1.18] tracking-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[1.65rem]">
                     {product.name}
                   </h2>
-                  <p className="mt-1 text-sm text-[#69424f] dark:text-[#c8aeb8] sm:text-[15px]">{product.brand}</p>
-                  {priceLabel ? (
-                    <p className="mt-1 text-xs font-medium text-[#8b6370] dark:text-[#a98792] sm:text-[13px]">{priceLabel}</p>
-                  ) : null}
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#69424f] dark:text-[#c8aeb8]">
+                    <span className="font-semibold">{product.brand}</span>
+                    {priceLabel ? <span className="text-[#8b6370] dark:text-[#a98792]">{priceLabel}</span> : null}
+                  </div>
                 </div>
-                <div className="mx-auto w-full max-w-[220px]">
-                  <SmallProductThumb product={product} height="h-44" locale={locale} />
+                <div className="mx-auto mt-4 w-full max-w-[184px]">
+                  <SmallProductThumb product={product} height="h-36" locale={locale} />
                 </div>
               </div>
 
@@ -2811,33 +2900,37 @@ function ProductDecisionCard({
                 </div>
               ) : null}
 
-              <p className="mt-4 text-sm leading-6 text-zinc-700 dark:text-[#f3e4df]">
-                <span className="font-semibold text-[#26101a] dark:text-[#fff8f3]">{copy.especiallyGoodFor}</span> {especiallyGoodFor}
-              </p>
+              <div className="mt-4 rounded-[1.2rem] border border-[#ead9d6] bg-white/42 px-3.5 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7e5261] dark:text-[#c8aeb8]">{copy.especiallyGoodFor}</p>
+                <p className="mt-1.5 text-sm font-medium leading-5 text-[#3a1824] dark:text-[#f3e4df]">{especiallyGoodFor}</p>
+              </div>
 
-              <div className="mt-5 rounded-[1.45rem] border border-[#ead9d6] bg-white/58 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+              <div className="mt-4 rounded-[1.45rem] border border-[#ead9d6] bg-white/58 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">
                   {locale === "en" ? "Why this fits" : "추천 이유"}
                 </p>
-                <div className="mt-3 space-y-2.5">
+                <div className="mt-3 grid gap-2">
                   {topPickBullets.map((line) => (
-                    <p key={`${product.id}-bullet-${line}`} className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">
-                      <span className="pt-0.5 text-[#ef6387]">✓</span>
-                      <span>{line}</span>
+                    <p key={`${product.id}-bullet-${line}`} className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-2 rounded-[0.95rem] bg-white/54 px-3 py-2.5 text-sm leading-5 text-[#3a1824] dark:bg-[#301f28] dark:text-[#f3e4df]">
+                      <span className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#ffe4e7] text-[10px] font-semibold text-[#ef6387] dark:bg-[#4a2a37]">✓</span>
+                      <span className="overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">{line}</span>
                     </p>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[1.35rem] border border-[#ead9d6] bg-white/44 px-4 py-3.5 dark:border-[#5a3a48] dark:bg-[#2f202a]">
+              <div className="mt-3 rounded-[1.25rem] border border-[#ead9d6] bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,232,231,0.5))] px-3.5 py-3 dark:border-[#5a3a48] dark:bg-[#2f202a]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7e5261] dark:text-[#c8aeb8]">AI Tip</p>
-                <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{aiTip}</p>
+                <p className="mt-1.5 text-sm leading-5 text-[#3a1824] dark:text-[#f3e4df]">{aiTip}</p>
               </div>
 
               {photoRecommendationLine ? (
-                <p className="mt-3 max-w-2xl border-l-2 border-[#ff7b69] bg-white/40 px-3 py-3 text-sm leading-6 text-[#764c59] dark:bg-[#2f202a] dark:text-[#c8aeb8]">
-                  {photoRecommendationLine}
-                </p>
+                <div className="mt-3 rounded-[1.05rem] border border-[#ead9d6] bg-white/34 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/80">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9b6c78] dark:text-[#bba2ac]">
+                    {locale === "en" ? "Photo note" : "사진 기반 관찰"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[#764c59] dark:text-[#c8aeb8]">{photoRecommendationLine}</p>
+                </div>
               ) : null}
 
               <div className="mt-5">
