@@ -19,7 +19,8 @@ function getAuthCallbackOrigin() {
 export default function LoginButtons({
   compact = false,
   label = "Google로 로그인",
-  loadingLabel = "연결 중..."
+  loadingLabel = "연결 중...",
+  next = "/my"
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -31,10 +32,11 @@ export default function LoginButtons({
     try {
       const supabase = createBrowserSupabaseClient();
       const origin = getAuthCallbackOrigin();
+      const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/my";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback?next=/my`
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
         }
       });
 

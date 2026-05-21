@@ -9,6 +9,7 @@ import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
+import SaveReportCTA from "@/components/result/SaveReportCTA";
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
 import {
@@ -1727,6 +1728,16 @@ function ResultContent() {
     const saved = sessionStorage.getItem("skinTestResult");
     const savedSubmission = sessionStorage.getItem("skinTestSubmission");
     const savedFaceLabFull = sessionStorage.getItem("skinTestFaceLabFull");
+    const pendingSaveReport = sessionStorage.getItem("pendingSaveReport");
+    let pendingPayload = null;
+
+    if (pendingSaveReport) {
+      try {
+        pendingPayload = JSON.parse(pendingSaveReport);
+      } catch {
+        pendingPayload = null;
+      }
+    }
 
     if (saved) {
       try {
@@ -1734,6 +1745,8 @@ function ResultContent() {
       } catch {
         setResult(null);
       }
+    } else if (pendingPayload?.freeResult) {
+      setResult(pendingPayload.freeResult);
     }
 
     if (savedSubmission) {
@@ -1742,6 +1755,8 @@ function ResultContent() {
       } catch {
         setSubmission(null);
       }
+    } else if (pendingPayload?.surveySnapshot) {
+      setSubmission(pendingPayload.surveySnapshot);
     }
 
     if (savedFaceLabFull) {
@@ -1750,6 +1765,8 @@ function ResultContent() {
       } catch {
         setFaceLabFull(null);
       }
+    } else if (pendingPayload?.faceLab) {
+      setFaceLabFull(pendingPayload.faceLab);
     }
 
     setIsReady(true);
@@ -2104,15 +2121,28 @@ function ResultContent() {
               </div>
             </div>
 
-            <div className="mt-2 flex justify-end">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               {result && submission ? (
-                <ResultShareActions
+                <SaveReportCTA
                   result={result}
                   submission={submission}
+                  faceLabFull={faceLabFull}
                   locale={locale}
-                  variant="header"
                 />
-              ) : null}
+              ) : (
+                <span aria-hidden="true" />
+              )}
+
+              <div className="flex justify-end">
+                {result && submission ? (
+                  <ResultShareActions
+                    result={result}
+                    submission={submission}
+                    locale={locale}
+                    variant="header"
+                  />
+                ) : null}
+              </div>
             </div>
           </header>
 
