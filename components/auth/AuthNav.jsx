@@ -19,9 +19,10 @@ function getVisibleUser(user) {
   return user;
 }
 
-export default function AuthNav() {
+export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut = true, menu = false }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isEnglish = locale === "en";
 
   useEffect(() => {
     let isMounted = true;
@@ -70,18 +71,24 @@ export default function AuthNav() {
 
   if (isLoading) {
     return (
-      <div className="h-9 w-[104px] rounded-full border border-[#ead2ca] bg-white/40 dark:border-[#5a3a48] dark:bg-[#301f28]/50" />
+      <div className="h-9 w-full min-w-[104px] rounded-full border border-[#ead2ca] bg-white/40 dark:border-[#5a3a48] dark:bg-[#301f28]/50" />
     );
   }
 
   if (!user) {
-    return <LoginButtons compact />;
+    return (
+      <LoginButtons
+        compact
+        label={isEnglish ? "Sign in with Google" : "Google로 로그인"}
+        loadingLabel={isEnglish ? "Connecting..." : "연결 중..."}
+      />
+    );
   }
 
   const avatarUrl = getAvatarUrl(user);
 
   return (
-    <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
+    <div className={menu ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-end gap-1.5 sm:gap-2"}>
       {avatarUrl ? (
         <img
           src={avatarUrl}
@@ -90,18 +97,22 @@ export default function AuthNav() {
           referrerPolicy="no-referrer"
         />
       ) : null}
-      <Link
-        href="/my"
-        className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#5a2d3c] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
-      >
-        My
-      </Link>
-      <a
-        href="/api/auth/signout"
-        className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
-      >
-        로그아웃
-      </a>
+      {showMyLink ? (
+        <Link
+          href="/my"
+          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#5a2d3c] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
+        >
+          My
+        </Link>
+      ) : null}
+      {showSignOut ? (
+        <a
+          href="/api/auth/signout"
+          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
+        >
+          {isEnglish ? "Sign out" : "로그아웃"}
+        </a>
+      ) : null}
     </div>
   );
 }

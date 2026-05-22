@@ -98,3 +98,8 @@ Medium 이상 작업 또는 문제가 발생한 작업은 `.codex/AI_WORK_LOG.md
 - 메타포 피드백은 문제 탐지용으로만 사용한다.
 - 실제 수정은 component / hierarchy / spacing / contrast / glow / divider / padding 단위로 수행한다.
 - hierarchy, spacing rhythm, visual fatigue, card fragmentation 판단은 screenshot 기준으로 한다.
+
+## 10. revisit 기능 구현
+
+- 세부 사항은 `.codex/AI_REVISIT.md`를 참조한다.
+- 브랜치를 확인하고 작업한다.

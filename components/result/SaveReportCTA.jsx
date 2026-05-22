@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import LoginButtons from "@/components/auth/LoginButtons";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const PENDING_SAVE_REPORT_KEY = "pendingSaveReport";
@@ -51,6 +49,43 @@ function getSourceSessionId() {
   }
 
   return window.sessionStorage.getItem(TRACKING_SESSION_KEY) || null;
+}
+
+function getAuthCallbackOrigin() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    return siteUrl.replace(/\/$/, "");
+  }
+
+  return "";
+}
+
+async function startGoogleSignIn(next) {
+  const supabase = createBrowserSupabaseClient();
+  const origin = getAuthCallbackOrigin();
+  const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/my";
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+function showSavedAlert(isEnglish) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.alert(isEnglish ? "You can continue today's routine in My skin." : "My skin에서 오늘 루틴을 이어볼 수 있어요.");
 }
 
 function buildPendingSavePayload({ result, submission, faceLabFull }) {
@@ -102,13 +137,20 @@ async function saveReport(payload) {
   };
 }
 
-export default function SaveReportCTA({ result, submission, faceLabFull, locale = "ko" }) {
+export default function SaveReportCTA({
+  result,
+  submission,
+  faceLabFull,
+  locale = "ko",
+  onSaved = null,
+  previousLabel = "",
+  onPrevious = null
+}) {
   const restoreAttemptedRef = useRef(false);
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [message, setMessage] = useState("");
   const isEnglish = locale === "en";
   const nextPath = isEnglish ? "/en/result" : "/result";
@@ -116,7 +158,6 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
   useEffect(() => {
     setIsSaved(false);
     setMessage("");
-    setShowLogin(false);
   }, [result, submission, faceLabFull]);
 
   useEffect(() => {
@@ -193,15 +234,15 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
     saveReport(pendingPayload)
       .then(({ unauthorized }) => {
         if (unauthorized) {
-          setShowLogin(true);
           setMessage(isEnglish ? "Please sign in to save this result." : "로그인 후 결과를 저장할 수 있습니다.");
           return;
         }
 
         window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
         setIsSaved(true);
-        setShowLogin(false);
         setMessage("");
+        onSaved?.();
+        showSavedAlert(isEnglish);
       })
       .catch((error) => {
         console.error("[result/save-report] pending save failed", error);
@@ -214,7 +255,7 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
       .finally(() => {
         setIsSaving(false);
       });
-  }, [isAuthLoading, user, isEnglish]);
+  }, [isAuthLoading, user, isEnglish, onSaved]);
 
   async function handleSaveClick() {
     if (!result) {
@@ -230,8 +271,20 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
 
     if (!user) {
       window.sessionStorage.setItem(PENDING_SAVE_REPORT_KEY, JSON.stringify(payload));
-      setShowLogin(true);
-      setMessage(isEnglish ? "Sign in with Google to save this result." : "Google 로그인 후 내 피부 기록에 저장합니다.");
+      setIsSaving(true);
+      setMessage("");
+
+      try {
+        await startGoogleSignIn(nextPath);
+      } catch (error) {
+        console.error("[result/save-report] google sign-in failed", error);
+        setIsSaving(false);
+        setMessage(
+          isEnglish
+            ? "Could not start Google sign-in. Please try again."
+            : "Google 로그인을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요."
+        );
+      }
       return;
     }
 
@@ -243,14 +296,14 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
 
       if (unauthorized) {
         window.sessionStorage.setItem(PENDING_SAVE_REPORT_KEY, JSON.stringify(payload));
-        setShowLogin(true);
         setMessage(isEnglish ? "Please sign in to save this result." : "로그인 후 결과를 저장할 수 있습니다.");
         return;
       }
 
       window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
       setIsSaved(true);
-      setShowLogin(false);
+      onSaved?.();
+      showSavedAlert(isEnglish);
     } catch (error) {
       console.error("[result/save-report] save failed", error);
       setMessage(
@@ -265,13 +318,24 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
 
   if (isSaved) {
     return (
-      <div className="flex w-full flex-col gap-2 sm:max-w-[18rem]">
-        <div className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#d8b99f] bg-[#fff8ef] px-4 py-2 text-sm font-semibold text-[#5a2d3c] dark:border-[#6a4a25] dark:bg-[#332314] dark:text-[#f2d3b6]">
-          {isEnglish ? "Saved to My Skin" : "✓ 내 피부 기록에 저장됨"}
+      <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:max-w-[20rem]">
+        <div className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#ead9d6] bg-white/55 px-3 py-1.5 text-xs font-semibold text-[#6e4050] dark:border-[#5a3a48] dark:bg-[#301f28]/55 dark:text-[#f4d7df]">
+          {isEnglish ? "\u2713 Saved" : "\u2713 \uc800\uc7a5\ub428"}
         </div>
-        <Link href="/my" className="ui-button-secondary min-h-10 w-full px-4 text-sm font-semibold sm:w-auto">
-          {isEnglish ? "View My" : "/my 보기"}
-        </Link>
+        <div className={onPrevious ? "grid grid-cols-[0.76fr_1.24fr] gap-2" : ""}>
+          {onPrevious ? (
+            <button
+              type="button"
+              onClick={onPrevious}
+              className="ui-button-secondary min-h-10 w-full px-3 text-sm font-semibold"
+            >
+              {previousLabel || (isEnglish ? "Back" : "\uc774\uc804")}
+            </button>
+          ) : null}
+          <a href="/my" className="ui-button-secondary min-h-10 w-full px-3 text-sm font-semibold">
+            {isEnglish ? "View saved result" : "\uc800\uc7a5\ub41c \uacb0\uacfc \ubcf4\ub7ec\uac00\uae30"}
+          </a>
+        </div>
       </div>
     );
   }
@@ -283,28 +347,29 @@ export default function SaveReportCTA({ result, submission, faceLabFull, locale 
         data-testid="save-report-to-account"
         onClick={handleSaveClick}
         disabled={isAuthLoading || isSaving}
-        className="ui-button-primary min-h-11 w-full px-4 text-sm font-semibold"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#e2c5bf] bg-white/72 px-4 text-sm font-semibold text-[#5a2d3c] shadow-[0_12px_28px_rgba(52,20,35,0.08)] transition hover:border-[#dbaea4] hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#f4d7df] dark:hover:bg-[#352430]"
       >
         {isSaving
           ? isEnglish
-            ? "Saving..."
-            : "저장 중..."
+            ? user
+              ? "Saving..."
+              : "Opening Google..."
+            : user
+              ? "저장 중..."
+              : "Google로 이동 중..."
           : user
             ? isEnglish
               ? "Save to My Skin"
-              : "내 피부 기록 저장"
+              : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5"
             : isEnglish
               ? "Sign in with Google to save"
-              : "Google 로그인 후 내 피부 기록 저장"}
+              : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5"}
       </button>
 
-      {showLogin ? (
-        <LoginButtons
-          compact
-          next={nextPath}
-          label={isEnglish ? "Continue with Google" : "Google로 로그인"}
-          loadingLabel={isEnglish ? "Connecting..." : "연결 중..."}
-        />
+      {!isSaved ? (
+        <p className="text-left text-[11px] leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+          {isEnglish ? "Save this to continue today's routine in My skin." : "\uc800\uc7a5\ud558\uba74 \uc624\ub298 \ub8e8\ud2f4\uc744 My skin\uc5d0\uc11c \uc774\uc5b4\ubcfc \uc218 \uc788\uc5b4\uc694."}
+        </p>
       ) : null}
 
       {message ? (

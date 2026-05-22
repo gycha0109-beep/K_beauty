@@ -10,7 +10,7 @@ const SHARE_SESSION_KEY = "skinTestShare";
 
 const ACTION_COPY = {
   ko: {
-    groupLabel: "공유 옵션",
+    groupLabel: "결과 공유",
     copy: "링크 복사",
     share: "공유",
     saveImage: "이미지 저장",
@@ -24,7 +24,7 @@ const ACTION_COPY = {
     shareText: "내 피부 결과를 확인해보세요"
   },
   en: {
-    groupLabel: "Share",
+    groupLabel: "Share result",
     copy: "Copy link",
     share: "Share",
     saveImage: "Save image",
@@ -96,6 +96,54 @@ async function tryWriteClipboardText(text) {
   }
 }
 
+function ShareActionIcon({ type }) {
+  if (type === "image") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path
+          d="M5.5 19h13a1.5 1.5 0 0 0 1.5-1.5v-11A1.5 1.5 0 0 0 18.5 5h-13A1.5 1.5 0 0 0 4 6.5v11A1.5 1.5 0 0 0 5.5 19Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <path
+          d="m6.8 16.8 4.15-4.55 3.15 3.1 1.8-2.05 2.8 3.5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M8.3 8.7h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "share") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M8.4 12.8 15.6 17M15.6 7 8.4 11.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+        <path d="M6.4 14.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2ZM17.6 8.9a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2ZM17.6 20.3a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+      <path
+        d="M8 7.5V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-1.5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6 8h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function ResultShareActions({ result, submission, locale = "ko", variant = "card" }) {
   const copy = getActionCopy(locale);
   const exportRef = useRef(null);
@@ -120,6 +168,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
 
   async function saveResult({ force = false } = {}) {
     if (!result || !submission?.form) {
+      setStatus(copy.sessionExpired);
       return null;
     }
 
@@ -266,51 +315,82 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
   }
 
   const isHeaderVariant = variant === "header";
-  const containerClassName = isHeaderVariant
+  const isCompactVariant = variant === "compact";
+  const containerClassName = isCompactVariant
     ? "w-full sm:w-auto"
-    : "rounded-[1.3rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a]";
-  const buttonClassName = isHeaderVariant
-    ? "inline-flex min-h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full border border-[#ead9d6] bg-white/70 px-3 py-2 text-[11px] font-medium text-[#6e4050] transition hover:bg-white disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#c8aeb8] dark:hover:bg-[#352430] sm:flex-none"
-    : "ui-button-secondary min-h-10 px-3 text-sm font-medium";
+    : isHeaderVariant
+      ? "w-full sm:w-auto"
+      : "rounded-[1.3rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a]";
+  const actionsClassName = isCompactVariant ? "flex items-center gap-1.5" : "mt-2 flex flex-wrap gap-2";
+  const buttonClassName = isCompactVariant
+    ? "inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#ead9d6] bg-white/55 text-[#203755] shadow-sm transition hover:border-[#d8b7ad] hover:bg-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#5a3a48] dark:bg-[#301f28]/70 dark:text-[#f4d7df] dark:hover:bg-[#352430]"
+    : isHeaderVariant
+      ? "inline-flex min-h-9 flex-1 items-center justify-center whitespace-nowrap rounded-full border border-[#ead9d6] bg-white/70 px-3 py-2 text-[11px] font-medium text-[#6e4050] transition hover:bg-white disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#c8aeb8] dark:hover:bg-[#352430] sm:flex-none"
+      : "ui-button-secondary min-h-10 px-3 text-sm font-medium";
+  const actions = [
+    {
+      key: "copy",
+      label: copy.copy,
+      icon: "copy",
+      onClick: handleCopy,
+      disabled: isSaving
+    },
+    {
+      key: "share",
+      label: copy.share,
+      icon: "share",
+      onClick: handleShare,
+      disabled: isSaving
+    },
+    {
+      key: "image",
+      label: copy.saveImage,
+      icon: "image",
+      onClick: handleDownloadImage,
+      disabled: isDownloading
+    }
+  ];
 
   return (
     <>
       <div className={containerClassName}>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a6c78] dark:text-[#b99aa6]">
-          {copy.groupLabel}
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleCopy}
-            disabled={isSaving}
-            className={buttonClassName}
-          >
-            {copy.copy}
-          </button>
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={isSaving}
-            className={buttonClassName}
-          >
-            {copy.share}
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadImage}
-            disabled={isDownloading}
-            className={buttonClassName}
-          >
-            {copy.saveImage}
-          </button>
+        {!isCompactVariant ? (
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a6c78] dark:text-[#b99aa6]">
+            {copy.groupLabel}
+          </p>
+        ) : null}
+        <div className={actionsClassName}>
+          {actions.map((action) => (
+            <button
+              key={action.key}
+              type="button"
+              onClick={action.onClick}
+              disabled={action.disabled}
+              className={buttonClassName}
+              aria-label={action.label}
+              title={action.label}
+            >
+              {isCompactVariant ? (
+                <>
+                  <ShareActionIcon type={action.icon} />
+                  <span className="sr-only">{action.label}</span>
+                </>
+              ) : (
+                action.label
+              )}
+            </button>
+          ))}
         </div>
 
-        {shareInfo?.shareUrl ? (
+        {!isCompactVariant && shareInfo?.shareUrl ? (
           <p className="ui-text-secondary mt-2 max-w-[18rem] truncate text-xs">{shareInfo.shareUrl}</p>
         ) : null}
 
-        {status ? <p className="ui-text-secondary mt-2 text-xs">{status}</p> : null}
+        {status ? (
+          <p className={isCompactVariant ? "mt-1.5 max-w-[13rem] truncate text-[11px] text-[#7a5360] dark:text-[#c8aeb8]" : "ui-text-secondary mt-2 text-xs"}>
+            {status}
+          </p>
+        ) : null}
       </div>
 
       {isExportMounted ? (
