@@ -81,6 +81,16 @@ function FullReportLightThemeStyles() {
         box-shadow: 0 12px 28px rgba(239, 99, 135, 0.2);
       }
 
+      html:not(.dark) .full-report-light-theme .ui-button-secondary.ui-choice-active,
+      html:not(.dark) .full-report-light-theme .ui-button-secondary.ui-choice-active:hover,
+      html:not(.dark) .full-report-light-theme .ui-button-secondary.ui-choice-active:focus,
+      html:not(.dark) .full-report-light-theme .ui-button-secondary.ui-choice-active:active {
+        background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
+        border-color: transparent;
+        color: #fffaf7;
+        box-shadow: 0 12px 28px rgba(239, 99, 135, 0.2);
+      }
+
       html:not(.dark) .full-report-light-theme .full-report-tab-active,
       html:not(.dark) .full-report-light-theme .full-report-tab-active:hover {
         background: linear-gradient(135deg, #ec4f79 0%, #ff735d 100%);
@@ -238,6 +248,17 @@ function FullReportLightThemeStyles() {
 
       html.dark .full-report-light-theme .ui-choice-active {
         background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
+        border-color: transparent;
+        color: #fffaf7;
+        box-shadow: 0 12px 26px rgba(239, 99, 135, 0.18);
+      }
+
+      html.dark .full-report-light-theme .ui-button-secondary.ui-choice-active,
+      html.dark .full-report-light-theme .ui-button-secondary.ui-choice-active:hover,
+      html.dark .full-report-light-theme .ui-button-secondary.ui-choice-active:focus,
+      html.dark .full-report-light-theme .ui-button-secondary.ui-choice-active:active {
+        background: linear-gradient(135deg, #ef6387 0%, #ff8068 100%);
+        border-color: transparent;
         color: #fffaf7;
         box-shadow: 0 12px 26px rgba(239, 99, 135, 0.18);
       }
