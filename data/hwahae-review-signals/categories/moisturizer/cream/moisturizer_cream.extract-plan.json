@@ -1,0 +1,112 @@
+{
+  "summary": {
+    "csvPath": "C:\\Users\\hun\\Downloads\\moisturizer_cream_rows.csv",
+    "category": "moisturizer_cream",
+    "categoryFolder": "moisturizer\\cream",
+    "outDir": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream",
+    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\화해 제품 리뷰 추출.js",
+    "mode": "extract",
+    "supabaseStatus": "checked 6/6",
+    "totalRows": 6,
+    "ready": 6,
+    "blocked": 0
+  },
+  "items": [
+    {
+      "id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "name": "리얼 히알루로닉 수딩크림",
+      "brand": "웰라쥬",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/75134",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\15b45c92-8b35-493a-8329-bc6b4ab5a53d 리얼 히알루로닉 수딩크림.json",
+      "live": {
+        "name": "리얼 히알루로닉 수딩크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/75134"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "brand": "에스네이처",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/45194",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\b639c8b4-6a61-440e-b4db-fac7381593ff 아쿠아 스쿠알란 수분크림.json",
+      "live": {
+        "name": "아쿠아 스쿠알란 수분크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/45194"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "name": "피디알엔 히알루론산캡슐 100 크림",
+      "brand": "아누아",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/70767",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\976c13ef-8ebd-4b69-acae-0d070f6cd590 피디알엔 히알루론산캡슐 100 크림.json",
+      "live": {
+        "name": "피디알엔 히알루론산캡슐 100 크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/70767"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "9e727419-40e6-4c61-b44c-609507b7b822",
+      "name": "녹두 모공 타이트업 수딩 크림",
+      "brand": "비플레인",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/68900",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\9e727419-40e6-4c61-b44c-609507b7b822 녹두 모공 타이트업 수딩 크림.json",
+      "live": {
+        "name": "녹두 모공 타이트업 수딩 크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/68900"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "a59880f2-be88-4938-9958-254b87fd37ea",
+      "name": "더마 배리어 P 크림",
+      "brand": "셀린저",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/%EC%85%80%EB%A6%B0%EC%A0%80-%EB%8D%94%EB%A7%88-%EB%B0%B0%EB%A6%AC%EC%96%B4-P-%ED%81%AC%EB%A6%BC-100ml/75889?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\a59880f2-be88-4938-9958-254b87fd37ea 더마 배리어 P 크림.json",
+      "live": {
+        "name": "더마 배리어 P 크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/%EC%85%80%EB%A6%B0%EC%A0%80-%EB%8D%94%EB%A7%88-%EB%B0%B0%EB%A6%AC%EC%96%B4-P-%ED%81%AC%EB%A6%BC-100ml/75889?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "fd00be48-42e4-4db5-8838-e0820f147254",
+      "name": "데일리 페이셜 크림",
+      "brand": "에코미니멀",
+      "category": "moisturizer_cream",
+      "categoryFolder": "moisturizer\\cream",
+      "url": "https://www.hwahae.co.kr/goods/%EC%97%90%EC%BD%94%EB%AF%B8%EB%8B%88%EB%A9%80-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%ED%8E%98%EC%9D%B4%EC%85%9C-%ED%81%AC%EB%A6%BC/76860?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream\\fd00be48-42e4-4db5-8838-e0820f147254 데일리 페이셜 크림.json",
+      "live": {
+        "name": "데일리 페이셜 크림",
+        "category": "moisturizer_cream",
+        "url": "https://www.hwahae.co.kr/goods/%EC%97%90%EC%BD%94%EB%AF%B8%EB%8B%88%EB%A9%80-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%ED%8E%98%EC%9D%B4%EC%85%9C-%ED%81%AC%EB%A6%BC/76860?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    }
+  ]
+}
