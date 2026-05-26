@@ -93,6 +93,7 @@ git push
 
 - push 전 working tree가 clean인지 확인한다.
 - build 실패 상태로 push하지 않는다.
+- 작업 종료 push용 커밋 메시지는 `MMDD_home: ...` 또는 `MMDD_academy: ...` 형식으로 시작해 어느 환경에서 끝냈는지 남긴다.
 - 단, 명시적으로 WIP 공유가 필요한 경우는 예외로 기록한다.
 
 ---
