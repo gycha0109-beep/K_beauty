@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import ErrorState from "@/components/common/ErrorState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultOverviewStep from "@/components/result/ResultOverviewStep";
@@ -2214,6 +2215,42 @@ function ResultContent() {
     );
   }
 
+  if (error) {
+    return (
+      <ErrorState
+        variant="analysis_failed"
+        title={locale === "en" ? "We could not complete the analysis" : undefined}
+        description={
+          locale === "en"
+            ? "Your photo and answers were received, but a temporary issue kept us from creating the result. Please try again in a moment."
+            : undefined
+        }
+        primaryActionLabel={locale === "en" ? "Analyze again" : undefined}
+        primaryActionHref={homePath}
+        secondaryActionLabel={locale === "en" ? "Back to home" : undefined}
+        secondaryActionHref={homePath}
+      />
+    );
+  }
+
+  if (!result) {
+    return (
+      <ErrorState
+        variant="result_empty"
+        title={locale === "en" ? "We could not find your result" : undefined}
+        description={
+          locale === "en"
+            ? "Your previous result may have expired or may not have been saved. Start a new analysis to receive the report again."
+            : undefined
+        }
+        primaryActionLabel={locale === "en" ? "Start a new analysis" : undefined}
+        primaryActionHref={homePath}
+        secondaryActionLabel=""
+        secondaryActionHref=""
+      />
+    );
+  }
+
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
   const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
@@ -2455,19 +2492,6 @@ function ResultContent() {
                 totalSteps={totalResultSteps}
                 label={copy.resultProgressLabel}
               />
-            </div>
-          ) : null}
-
-          {error ? (
-            <div className="ui-error">
-              <p className="font-semibold">{copy.noResultTitle}</p>
-              <p className="mt-2">{error}</p>
-            </div>
-          ) : null}
-
-          {!error && !result ? (
-            <div className="ui-card p-6 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-              {copy.noResultBody}
             </div>
           ) : null}
 

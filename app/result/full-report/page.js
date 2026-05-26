@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import ErrorState from "@/components/common/ErrorState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -4943,24 +4944,15 @@ export default function FullReportPage() {
 
   if (error || !freeResult || !report) {
     return (
-      <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
-        <FullReportLightThemeStyles />
-        <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 py-6 sm:px-6 md:max-w-[800px]">
-          <div className="ui-card p-6">
-            <p className="ui-kicker">FULL REPORT</p>
-            <h1 className="ui-title mt-2 text-xl sm:text-2xl">{copy.errorTitle}</h1>
-            <p className="ui-text-secondary mt-3 text-sm leading-6">{error || copy.errorBody}</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Link href={getResultPath(locale)} className="ui-button-secondary px-4 py-2.5 text-sm font-medium">
-                {copy.backResult}
-              </Link>
-              <Link href={getHomePath(locale)} className="ui-button-secondary px-4 py-2.5 text-sm font-medium">
-                {copy.restart}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </main>
+      <ErrorState
+        variant="result_empty"
+        title={locale === "en" ? copy.errorTitle : undefined}
+        description={locale === "en" ? copy.errorBody : undefined}
+        primaryActionLabel={locale === "en" ? copy.restart : undefined}
+        primaryActionHref={getHomePath(locale)}
+        secondaryActionLabel={copy.backResult}
+        secondaryActionHref={getResultPath(locale)}
+      />
     );
   }
 
