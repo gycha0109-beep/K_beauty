@@ -70,14 +70,23 @@ globalThis.__hwahaeExtractFromText = function __hwahaeExtractFromText(rawText) {
   }
 
   function parseRating(value) {
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value;
-    }
-
-    const match = String(value || "").match(/(?:^|[^\d])([0-4]\.\d+|5(?:\.0+)?)(?:[^\d]|$)/);
-    const parsed = match ? Number.parseFloat(match[1]) : Number.NaN;
-    return Number.isFinite(parsed) ? parsed : 0;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value >= 1 && value <= 5 ? value : 0;
   }
+
+  const text = String(value || "").trim();
+
+  // "5점", "4점", "5점 659" 같은 별점 분포 라인은 평점으로 보지 않음
+  if (/^[1-5]\s*점(?:\s+\d[\d,]*)?$/.test(text)) {
+    return 0;
+  }
+
+  // 평균 평점은 보통 4.68처럼 소수점 2자리/1자리
+  const match = text.match(/(?:^|[^\d])([1-4]\.\d{1,2}|5\.0{1,2})(?:[^\d]|$)/);
+  const parsed = match ? Number.parseFloat(match[1]) : Number.NaN;
+
+  return Number.isFinite(parsed) && parsed >= 1 && parsed <= 5 ? parsed : 0;
+}
 
   const containsKeyword = (line, keywords) => {
     const compact = normalizeCompact(line);
@@ -110,7 +119,7 @@ globalThis.__hwahaeExtractFromText = function __hwahaeExtractFromText(rawText) {
 
   const isIntegerCountLine = (line) => /^\d[\d,]*$/.test(String(line || "").trim());
   const isRangeLabel = (line) => /^\d+\s*-\s*\d+$/.test(String(line || "").trim());
-  const isRatingOnlyLine = (line) => /^(?:[0-4]\.\d+|5(?:\.0+)?)$/.test(String(line || "").trim());
+  const isRatingOnlyLine = (line) => /^(?:[1-4]\.\d+|5\.0+)$/.test(String(line || "").trim());
   const isNumericOnlyLine = (line) => {
     const trimmed = String(line || "").trim();
     return Boolean(trimmed) && !/[a-zA-Z\uac00-\ud7af]/.test(trimmed) && readNumbersInText(trimmed).length > 0;
@@ -289,11 +298,7 @@ globalThis.__hwahaeExtractFromText = function __hwahaeExtractFromText(rawText) {
         break;
       }
 
-      if (looksLikeMarketBoundary(line)) {
-        break;
-      }
-
-      const trailingMatch = line.match(/^(.+?)\s+(\d[\d,]*)$/);
+            const trailingMatch = line.match(/^(.+?)\s+(\d[\d,]*)$/);
 
       if (trailingMatch) {
         if (pushEntry(trailingMatch[1], trailingMatch[2])) {
@@ -303,12 +308,18 @@ globalThis.__hwahaeExtractFromText = function __hwahaeExtractFromText(rawText) {
         continue;
       }
 
+      // AI 리뷰에서는 "주름없어지는" 다음 줄의 "5"처럼
+      // 단독 정수가 리뷰 카운트일 수 있으므로 market boundary보다 먼저 처리한다.
       if (pendingLabel && isIntegerCountLine(line)) {
         if (pushEntry(pendingLabel, line)) {
           break;
         }
         pendingLabel = "";
         continue;
+      }
+
+      if (looksLikeMarketBoundary(line)) {
+        break;
       }
 
       if (!isRangeLabel(line) && !/^\d+(?:\.\d+)?$/.test(line)) {
@@ -348,16 +359,51 @@ globalThis.__hwahaeExtractFromText = function __hwahaeExtractFromText(rawText) {
   };
 
   const extractRating = () => {
-    for (const line of marketLines) {
-      const rating = parseRating(line);
+  // 1순위: 4.68 같은 소수점 평점만 우선 탐색
+  for (const line of marketLines) {
+    const text = String(line || "").trim();
 
+    if (/^[1-5]\s*점/.test(text)) {
+      continue;
+    }
+
+    const exactDecimal = text.match(/^(?:[1-4]\.\d{1,2}|5\.0{1,2})$/);
+
+    if (exactDecimal) {
+      return Number.parseFloat(exactDecimal[0]);
+    }
+  }
+
+  // 2순위: "평점 4.68", "별점 4.68" 같은 라인 탐색
+  for (const line of marketLines) {
+    const text = String(line || "").trim();
+
+    if (/^[1-5]\s*점/.test(text)) {
+      continue;
+    }
+
+    if (
+      text.includes(K.rating) ||
+      text.includes(K.starRating)
+    ) {
+      const rating = parseRating(text);
       if (rating > 0 && rating <= 5) {
         return rating;
       }
     }
+  }
 
-    return 0;
-  };
+  // 3순위: fallback
+  for (const line of marketLines) {
+    const rating = parseRating(line);
+
+    if (rating > 0 && rating <= 5) {
+      return rating;
+    }
+  }
+
+  return 0;
+};
 
   const extractRatingDistribution = () => {
     const distribution = {};

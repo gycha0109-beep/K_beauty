@@ -1,0 +1,104 @@
+{
+  "productId": "dfc4b232-9997-4584-a886-bc7074b6f247",
+  "review_raw": {
+    "positive": [
+      [
+        "수분있는",
+        702
+      ],
+      [
+        "자극없는",
+        492
+      ],
+      [
+        "흡수잘되는",
+        430
+      ],
+      [
+        "가벼운",
+        273
+      ],
+      [
+        "끈적하지않은",
+        238
+      ],
+      [
+        "진정되는",
+        238
+      ],
+      [
+        "산뜻한",
+        189
+      ]
+    ],
+    "negative": [
+      [
+        "블랙헤드안없어지는",
+        49
+      ],
+      [
+        "흘러내리는",
+        48
+      ],
+      [
+        "화이트헤드안없어지는",
+        33
+      ],
+      [
+        "인공향나는",
+        20
+      ],
+      [
+        "알러지반응오는",
+        19
+      ],
+      [
+        "알콜냄새나는",
+        10
+      ],
+      [
+        "유수분밸런스가맞지않는",
+        9
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 2050,
+    "rating": 4.64,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 25,
+    "risk": {
+      "low": 23,
+      "medium": 2,
+      "high": 0,
+      "unknown": 0
+    },
+    "functional": {
+      "skin hydration": 21,
+      "moisture evaporation blocking": 1,
+      "skin protection": 2,
+      "soothing/astringent": 1,
+      "exfoliation": 0,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 1,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 4,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 1,
+        "negative": 0
+      }
+    }
+  }
+}

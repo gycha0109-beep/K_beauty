@@ -1,0 +1,152 @@
+#!/usr/bin/env node
+
+import fs from "node:fs/promises";
+import path from "node:path";
+import { spawn } from "node:child_process";
+
+const ROOT_DIR = process.cwd();
+const DEFAULT_PORT = 9222;
+const DEFAULT_START_URL = "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4184";
+
+function parseArgs(argv) {
+  const args = {};
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+
+    if (!token.startsWith("--")) {
+      continue;
+    }
+
+    const key = token.slice(2);
+    const next = argv[index + 1];
+
+    if (!next || next.startsWith("--")) {
+      args[key] = true;
+      continue;
+    }
+
+    args[key] = next;
+    index += 1;
+  }
+
+  return args;
+}
+
+async function exists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function findChromePath(explicitPath) {
+  const candidates = [
+    explicitPath,
+    process.env.CHROME_PATH,
+    process.env.LOCALAPPDATA
+      ? path.join(process.env.LOCALAPPDATA, "Google", "Chrome", "Application", "chrome.exe")
+      : "",
+    process.env.PROGRAMFILES
+      ? path.join(process.env.PROGRAMFILES, "Google", "Chrome", "Application", "chrome.exe")
+      : "",
+    process.env["PROGRAMFILES(X86)"]
+      ? path.join(process.env["PROGRAMFILES(X86)"], "Google", "Chrome", "Application", "chrome.exe")
+      : "",
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (await exists(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Chrome executable not found. Pass --chrome-path \"C:/path/to/chrome.exe\".");
+}
+
+async function isCdpReady(cdpUrl) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const response = await fetch(`${cdpUrl.replace(/\/$/, "")}/json/version`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const json = await response.json();
+    return Boolean(json.Browser || json.webSocketDebuggerUrl);
+  } catch {
+    return false;
+  }
+}
+
+async function waitForCdp(cdpUrl, timeoutMs = 15000) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    if (await isCdpReady(cdpUrl)) {
+      return true;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  return false;
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const port = Number.parseInt(String(args.port || DEFAULT_PORT), 10);
+  const cdpUrl = `http://127.0.0.1:${port}`;
+  const startUrl = String(args.url || DEFAULT_START_URL);
+  const userDataDir = path.resolve(
+    ROOT_DIR,
+    String(args["user-data-dir"] || path.join(".codex", "review-chrome-profile")),
+  );
+
+  if (await isCdpReady(cdpUrl)) {
+    process.stdout.write(`Chrome remote debugging is already ready: ${cdpUrl}\n`);
+    process.stdout.write("Put one CSV in data, then run: node review_in_supabase\n");
+    return;
+  }
+
+  const chromePath = await findChromePath(args["chrome-path"] ? String(args["chrome-path"]) : "");
+  await fs.mkdir(userDataDir, { recursive: true });
+
+  const chromeArgs = [
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${userDataDir}`,
+    "--no-first-run",
+    "--new-window",
+    startUrl,
+  ];
+
+  const child = spawn(chromePath, chromeArgs, {
+    cwd: ROOT_DIR,
+    detached: true,
+    stdio: "ignore",
+    windowsHide: false,
+  });
+  child.unref();
+
+  const ready = await waitForCdp(cdpUrl);
+
+  if (!ready) {
+    throw new Error(`Chrome opened, but remote debugging did not become ready at ${cdpUrl}.`);
+  }
+
+  process.stdout.write(`Chrome remote debugging ready: ${cdpUrl}\n`);
+  process.stdout.write(`Profile: ${userDataDir}\n`);
+  process.stdout.write("Put one CSV in data, then run: node review_in_supabase\n");
+}
+
+main().catch((error) => {
+  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+});
