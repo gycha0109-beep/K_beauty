@@ -9,11 +9,14 @@
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/prepare_hwahae_batch.py",
     "hwahae:override": "python -X utf8 scripts/prepare_hwahae_batch.py",
+    "review_prepare": "node review_prepare",
+    "review_in_supabase": "node review_in_supabase",
     "lint": "next lint"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.101.1",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
     "next": "^15.0.0",
