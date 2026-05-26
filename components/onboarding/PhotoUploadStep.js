@@ -6,9 +6,9 @@ const STEP_COPY = {
   ko: {
     title: "K-BEAUTY FINDER",
     kicker: "Skin Match",
-    lead: "사진 한 장, 몇 가지 질문으로",
+    lead: "사진 한 장으로",
     highlight: "내 피부에 맞는 추천을 받아보세요",
-    hint: "정면에 가까운 밝은 사진을 권장합니다.",
+    hint: "촬영하거나 사진을 선택하면 바로 시작할 수 있어요.",
     guide: "얼굴이 중앙에 오도록 맞춰주세요",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
@@ -33,9 +33,9 @@ const STEP_COPY = {
   en: {
     title: "K-BEAUTY FINDER",
     kicker: "Skin Match",
-    lead: "One photo and a few questions",
-    highlight: "to organize recommendations for your skin",
-    hint: "A bright, front-facing photo works best.",
+    lead: "With one photo",
+    highlight: "get recommendations matched to your skin",
+    hint: "Take or choose a photo to get started.",
     guide: "Keep your face near the center",
     camera: "Use Camera",
     gallery: "Choose Photo",
@@ -78,7 +78,7 @@ function PhotoGuideHint({ label, visible = true }) {
 
   return (
     <div className="pointer-events-none absolute inset-x-4 top-[18%] z-20 flex justify-center">
-      <p className="rounded-full bg-[#2b1f26]/42 px-3 py-1 text-[11px] font-medium leading-5 text-white/85 shadow-sm backdrop-blur-md dark:bg-black/24 dark:text-white/82">
+      <p className="px-2 py-0.5 text-[11px] font-semibold leading-5 text-[#6b5060] drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] dark:text-white/86 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">
         {label}
       </p>
     </div>
@@ -118,9 +118,9 @@ function StepRail({ steps }) {
 
 function MobileStepChips({ steps }) {
   return (
-    <div className="mt-5 lg:hidden">
-      <div className="relative mx-auto max-w-sm px-2">
-        <div className="pointer-events-none absolute left-8 right-8 top-[13px] z-0 h-px bg-[#d8aaa8]/60 dark:bg-[#5a3a48]/70" />
+    <div className="mt-2 lg:hidden">
+      <div className="relative mx-auto max-w-[300px] px-1">
+        <div className="pointer-events-none absolute left-8 right-8 top-[10px] z-0 h-px bg-[#d8aaa8]/55 dark:bg-[#5a3a48]/65" />
         <div className="relative grid grid-cols-3">
       {steps.map((step, index) => (
         <div
@@ -128,16 +128,16 @@ function MobileStepChips({ steps }) {
           className="relative z-10 flex flex-col items-center text-center"
         >
           <span
-            className={`relative z-10 flex h-[27px] w-[27px] items-center justify-center rounded-full border text-[10px] font-semibold ${
+            className={`relative z-10 flex h-[21px] w-[21px] items-center justify-center rounded-full border text-[9px] font-semibold ${
               index === 0
-                ? "border-transparent bg-[linear-gradient(135deg,#ef6387,#ff8068)] text-white shadow-[0_8px_16px_rgba(239,99,135,0.18)]"
+                ? "border-transparent bg-[linear-gradient(135deg,#ef6387,#ff8068)] text-white shadow-[0_7px_14px_rgba(239,99,135,0.16)]"
                 : "border-[#d8aaa8]/70 bg-[#fff8f3]/70 text-[#8a6970] dark:border-[#5a3a48] dark:bg-[#241720] dark:text-[#c8aeb8]"
             }`}
           >
             {index + 1}
           </span>
           <span
-            className={`mt-1.5 rounded-full px-1.5 text-[10px] font-semibold leading-4 ${
+            className={`mt-0.5 rounded-full px-1 text-[9px] font-semibold leading-4 ${
               index === 0
                 ? "bg-[#fff4f1] text-[#6b2f3f] dark:bg-[#241720] dark:text-[#ffe6e3]"
                 : "bg-[#fff4f1] text-[#8a6970] dark:bg-[#241720] dark:text-[#c8aeb8]"
@@ -155,14 +155,47 @@ function MobileStepChips({ steps }) {
 
 function ShootingTips({ tips }) {
   return (
-    <div className="mx-auto mt-5 grid w-full max-w-3xl gap-2 rounded-[1.35rem] border border-[#ead8cf] bg-white/35 px-4 py-3.5 dark:border-[#4a303c] dark:bg-[#21151d]/80 sm:mt-6 sm:grid-cols-3 sm:p-3">
-      {tips.map((tip) => (
-        <div key={tip.title} className="rounded-2xl px-2 py-2 sm:px-3 sm:py-2.5">
-          <p className="text-xs font-semibold text-[#5a2d3c] dark:text-[#fff8f3]">{tip.title}</p>
-          <p className="ui-text-subtle mt-1 text-xs leading-5 sm:text-[11px]">{tip.body}</p>
+    <div className="mx-auto mt-1.5 grid w-full max-w-3xl grid-cols-3 gap-2 sm:mt-5">
+      {tips.map((tip, index) => (
+        <div
+          key={tip.title}
+          className="flex min-w-0 flex-col items-center justify-center rounded-[0.95rem] border border-[#ead8cf] bg-white/42 px-2 py-2.5 text-center shadow-[0_8px_20px_rgba(83,43,51,0.06)] dark:border-[#4a303c] dark:bg-[#21151d]/58 sm:rounded-[1.1rem] sm:px-3 sm:py-3"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d7b7ae] bg-white/38 text-[#a67b84] dark:border-[#5a3a48] dark:bg-white/5 dark:text-[#c8aeb8]">
+            <ShootingTipIcon index={index} />
+          </span>
+          <p className="mt-1.5 truncate text-[11px] font-bold text-[#5a2d3c] dark:text-[#fff8f3] sm:text-xs">{tip.title}</p>
         </div>
       ))}
     </div>
+  );
+}
+
+function ShootingTipIcon({ index }) {
+  if (index === 0) {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 3.5v2.2M12 18.3v2.2M4.5 12h2.2M17.3 12h2.2M6.7 6.7l1.55 1.55M15.75 15.75l1.55 1.55M17.3 6.7l-1.55 1.55M8.25 15.75 6.7 17.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (index === 1) {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+        <path d="M8 14.5c1.15-1.05 2.48-1.58 4-1.58s2.85.53 4 1.58" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8.2 9.2c.75-1.2 2.05-1.95 3.8-1.95s3.05.75 3.8 1.95" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M9.2 17.2h5.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+      <circle cx="10.5" cy="10.5" r="4.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="m14 14 4.2 4.2M10.5 8.2v4.6M8.2 10.5h4.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -343,57 +376,59 @@ export default function PhotoUploadStep({
   const secondaryAction = isCameraOpen ? stopCamera : () => galleryInputRef.current?.click();
 
   return (
-    <section className="relative flex flex-1 flex-col py-3 lg:py-8">
-      <div className="relative overflow-hidden rounded-[2.25rem] border border-[#ead8cf] bg-[radial-gradient(circle_at_50%_24%,rgba(255,226,219,0.9),rgba(255,248,243,0.92)_34%,rgba(246,236,232,0.98)_100%)] shadow-[0_20px_68px_rgba(83,43,51,0.1)] dark:border-[#4a303c] dark:bg-[radial-gradient(circle_at_50%_28%,rgba(48,32,43,0.95),rgba(36,23,32,0.98)_42%,rgba(22,13,19,0.99)_100%)] dark:shadow-[0_24px_72px_rgba(0,0,0,0.28)]">
+    <section className="relative flex flex-1 flex-col py-2 lg:py-8">
+      <div className="relative overflow-hidden rounded-[1.65rem] border border-[#ead8cf] bg-[radial-gradient(circle_at_50%_18%,rgba(255,226,219,0.78),rgba(255,248,243,0.92)_32%,rgba(246,236,232,0.98)_100%)] shadow-[0_16px_46px_rgba(83,43,51,0.09)] dark:border-[#4a303c] dark:bg-[radial-gradient(circle_at_50%_20%,rgba(48,32,43,0.9),rgba(36,23,32,0.98)_42%,rgba(22,13,19,0.99)_100%)] dark:shadow-[0_20px_58px_rgba(0,0,0,0.24)] sm:rounded-[2.25rem]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(239,99,135,0.09),transparent_48%)] dark:bg-[radial-gradient(circle_at_50%_40%,rgba(239,99,135,0.1),transparent_48%)]" />
-        <div className="relative z-10 grid gap-5 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-[185px_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-8">
+        <div className="relative z-10 grid gap-3 px-3.5 py-3.5 sm:gap-5 sm:px-6 sm:py-6 lg:grid-cols-[185px_minmax(0,1fr)] lg:gap-8 lg:px-8 lg:py-8">
           <StepRail steps={t.steps} />
 
-          <div className="min-w-0">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#8a5f68] dark:text-[#c8aeb8]">
-                {t.title}
-              </p>
-              <span className="mt-3 inline-flex rounded-full border border-[#ead8cf] bg-white/55 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#5a2d3c] backdrop-blur dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#f4d7df]">
+          <div className="flex min-w-0 flex-col">
+            <div className="order-1 mx-auto max-w-2xl text-center">
+              <span className="inline-flex rounded-full border border-[#ead8cf] bg-white/55 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5a2d3c] backdrop-blur dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#f4d7df] sm:px-4 sm:py-1.5 sm:text-xs sm:tracking-[0.18em]">
                 {t.kicker}
               </span>
-              <h1 className="mt-6 text-[1.45rem] font-semibold leading-[1.28] tracking-[-0.04em] text-[#2b1f26] dark:text-[#fff8f3] sm:mt-5 sm:text-[2.1rem]">
+              <h1 className="mt-2 text-[1.18rem] font-semibold leading-[1.14] tracking-[-0.02em] text-[#2b1f26] dark:text-[#fff8f3] sm:mt-5 sm:text-[2.1rem] sm:leading-[1.28] sm:tracking-[-0.04em]">
                 <span className="block">{t.lead}</span>
                 <span className="block bg-[linear-gradient(90deg,#ef6387,#ff8068)] bg-clip-text text-transparent">
                   {t.highlight}
                 </span>
               </h1>
-              <p className="mt-4 text-sm font-medium text-[#8a6970] dark:text-[#c8aeb8] sm:mt-3">{t.hint}</p>
             </div>
 
-            <MobileStepChips steps={t.steps} />
+            <div className="order-2">
+              <MobileStepChips steps={t.steps} />
+            </div>
 
-            <div className="relative mx-auto mt-5 flex w-full justify-center sm:mt-6">
-              <div className="relative aspect-square w-[min(68vw,560px)] max-w-[560px] overflow-hidden rounded-full border border-[rgba(205,174,167,0.4)] bg-[#fffaf7]/58 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_14px_38px_rgba(87,46,54,0.1)] dark:border-[rgba(106,64,80,0.46)] dark:bg-[#21151d]/72 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03),0_16px_44px_rgba(0,0,0,0.23)] sm:w-[min(78vw,560px)]">
-                <div className="absolute inset-0 z-10 rounded-full bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(43,31,38,0.1)_100%)] dark:bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(8,5,7,0.18)_100%)]" />
-                {stageContent()}
-                <PhotoGuideHint label={t.guide} visible={!hasPreview} />
+            <div className="order-3">
+              <div className="relative mx-auto mt-3 flex w-full justify-center sm:mt-5">
+                <div className="relative aspect-square w-[min(60vw,246px)] max-w-[246px] overflow-hidden rounded-full border border-[rgba(205,174,167,0.4)] bg-[#fffaf7]/58 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2),0_12px_30px_rgba(87,46,54,0.1)] dark:border-[rgba(106,64,80,0.46)] dark:bg-[#21151d]/72 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03),0_14px_34px_rgba(0,0,0,0.22)] sm:w-[min(62vw,420px)] sm:max-w-[420px] lg:w-[min(68vw,560px)] lg:max-w-[560px]">
+                  <div className="absolute inset-0 z-10 rounded-full bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(43,31,38,0.1)_100%)] dark:bg-[radial-gradient(circle_at_50%_42%,transparent_0%,transparent_60%,rgba(8,5,7,0.18)_100%)]" />
+                  {stageContent()}
+                  <PhotoGuideHint label={t.guide} visible={!hasPreview} />
+                </div>
+              </div>
+
+              <div className="mx-auto mt-3 grid w-full max-w-[340px] grid-cols-[1fr_0.82fr] gap-2.5 sm:mt-5 sm:max-w-[370px] sm:gap-3">
+                <button
+                  type="button"
+                  onClick={primaryAction}
+                  className="ui-button-primary min-h-11 rounded-full px-4 text-sm font-semibold sm:min-h-[58px] sm:px-5"
+                >
+                  {primaryLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={secondaryAction}
+                  className="ui-button-secondary-soft min-h-11 rounded-full px-4 text-sm font-semibold sm:min-h-[58px] sm:px-5"
+                >
+                  {secondaryLabel}
+                </button>
               </div>
             </div>
 
-            <div className="mx-auto mt-5 grid w-full max-w-[370px] grid-cols-[1fr_0.82fr] gap-3">
-              <button
-                type="button"
-                onClick={primaryAction}
-                className="ui-button-primary min-h-[58px] rounded-full px-5 text-sm font-semibold"
-              >
-                {primaryLabel}
-              </button>
-              <button
-                type="button"
-                onClick={secondaryAction}
-                className="ui-button-secondary-soft min-h-[58px] rounded-full px-5 text-sm font-semibold"
-              >
-                {secondaryLabel}
-              </button>
+            <div className="order-4">
+              <ShootingTips tips={t.tips} />
             </div>
-
-            <ShootingTips tips={t.tips} />
           </div>
         </div>
 

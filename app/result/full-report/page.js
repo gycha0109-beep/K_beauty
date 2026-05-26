@@ -7,8 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
-import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
+import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -338,22 +338,6 @@ function FullReportLightThemeStyles() {
         border-color: #5a3a48;
       }
     `}</style>
-  );
-}
-
-function FullReportMenuIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function FullReportMenuCloseIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -4810,9 +4794,7 @@ export default function FullReportPage() {
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [activeTab, setActiveTab] = useState("skin_match");
-  const [isFullReportMenuOpen, setIsFullReportMenuOpen] = useState(false);
   const [submissionImageUrl, setSubmissionImageUrl] = useState("");
-  const fullReportMenuRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -4844,34 +4826,6 @@ export default function FullReportPage() {
       localStorage.setItem(LAST_FULL_REPORT_TAB_KEY, activeTab);
     }
   }, [activeTab]);
-
-  useEffect(() => {
-    if (!isFullReportMenuOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event) => {
-      if (fullReportMenuRef.current?.contains(event.target)) {
-        return;
-      }
-
-      setIsFullReportMenuOpen(false);
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setIsFullReportMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isFullReportMenuOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -5064,99 +5018,27 @@ export default function FullReportPage() {
             </Link>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Link
-                href="/my"
-                className="inline-flex h-10 items-center justify-center rounded-full border border-[#ddbfb5] bg-white/85 px-3 text-xs font-semibold text-[#5a2d3c] shadow-sm transition hover:border-[#d7aa9d] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
-              >
-                My
-              </Link>
+              <AuthNav locale={locale} showSignOut={false} />
 
-              <div ref={fullReportMenuRef} className="relative">
-                <button
-                  type="button"
-                  aria-label={
-                    isFullReportMenuOpen
-                      ? isEnglish
-                        ? "Close full report menu"
-                        : "\ud480 \ub9ac\ud3ec\ud2b8 \uba54\ub274 \ub2eb\uae30"
-                      : isEnglish
-                        ? "Open full report menu"
-                        : "\ud480 \ub9ac\ud3ec\ud2b8 \uba54\ub274 \uc5f4\uae30"
+              <AppHamburgerMenu
+                locale={locale}
+                languageOptions={[
+                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko") },
+                  { code: "en", label: "English", href: getLocalePath(pathname, "en") }
+                ]}
+                actions={[
+                  {
+                    label: copy.backResult,
+                    onClick: () => router.push(getResultPath(locale))
+                  },
+                  {
+                    label: copy.restart,
+                    href: getHomePath(locale)
                   }
-                  aria-expanded={isFullReportMenuOpen}
-                  onClick={() => setIsFullReportMenuOpen((current) => !current)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#ddbfb5] bg-white/85 text-[#203755] shadow-sm transition hover:border-[#d7aa9d] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
-                >
-                  {isFullReportMenuOpen ? <FullReportMenuCloseIcon /> : <FullReportMenuIcon />}
-                </button>
-
-                {isFullReportMenuOpen ? (
-                  <div className="absolute right-0 z-30 mt-2 w-[min(18rem,calc(100vw-2rem))] rounded-[1.25rem] border border-[#ead8cf] bg-white/95 p-3 text-[#2b1f26] shadow-[0_18px_50px_rgba(38,16,26,0.18)] backdrop-blur dark:border-[#5a3a48] dark:bg-[#241720]/95 dark:text-[#fff8f3]">
-                    <div>
-                      <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a5260] dark:text-[#c8aeb8]">
-                        {isEnglish ? "Language" : "\uc5b8\uc5b4"}
-                      </p>
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        {[
-                          { code: "ko", label: "\ud55c\uad6d\uc5b4" },
-                          { code: "en", label: "English" }
-                        ].map((item) => {
-                          const active = locale === item.code;
-                          return (
-                            <Link
-                              key={item.code}
-                              href={getLocalePath(pathname, item.code)}
-                              onClick={() => setIsFullReportMenuOpen(false)}
-                              className={`inline-flex min-h-9 items-center justify-center rounded-full px-3 text-xs font-semibold transition ${
-                                active
-                                  ? "ui-choice-active"
-                                  : "ui-button-secondary bg-white/70 text-[#7a6268] hover:bg-white dark:bg-[#301f28]/80 dark:text-[#f4d7df]"
-                              }`}
-                            >
-                              {item.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="mt-3 border-t border-[#ead8cf] pt-3 dark:border-[#4a303c]">
-                      <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a5260] dark:text-[#c8aeb8]">
-                        {isEnglish ? "Account" : "\uacc4\uc815"}
-                      </p>
-                      <div className="mt-2">
-                        <AuthNav locale={locale} showMyLink={false} menu />
-                      </div>
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#ead8cf] pt-3 dark:border-[#4a303c]">
-                      <span className="px-1 text-xs font-semibold text-[#6e4050] dark:text-[#f4d7df]">
-                        {isEnglish ? "Theme" : "\ud654\uba74 \ubaa8\ub4dc"}
-                      </span>
-                      <ThemeToggle locale={locale} compact className="h-8 min-h-8 px-3 text-xs" />
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsFullReportMenuOpen(false);
-                        router.push(getResultPath(locale));
-                      }}
-                      className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-full border border-[#ddbfb5] bg-white/70 px-4 text-xs font-semibold text-[#5a2d3c] transition hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#f4d7df] dark:hover:bg-[#352430]"
-                    >
-                      {copy.backResult}
-                    </button>
-
-                    <Link
-                      href={getHomePath(locale)}
-                      onClick={() => setIsFullReportMenuOpen(false)}
-                      className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-full border border-[#ddbfb5] bg-white/50 px-4 text-xs font-semibold text-[#7a6268] transition hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28]/60 dark:text-[#c8aeb8] dark:hover:bg-[#352430]"
-                    >
-                      {copy.restart}
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
+                ]}
+                openLabel={isEnglish ? "Open full report menu" : "풀 리포트 메뉴 열기"}
+                closeLabel={isEnglish ? "Close full report menu" : "풀 리포트 메뉴 닫기"}
+              />
             </div>
           </div>
 

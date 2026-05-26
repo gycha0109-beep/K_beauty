@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MyDashboardMenu from "@/components/my/MyDashboardMenu";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
 import TodayCheckInPrompt from "@/components/my/TodayCheckInPrompt";
 import TodayRoutineCard from "@/components/my/TodayRoutineCard";
@@ -111,17 +112,15 @@ export default function MyDashboard({ dashboard }) {
   return (
     <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-5xl">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+        <header className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <p className="ui-kicker">Bejewely Revisit</p>
             <h1 className="ui-title mt-2 text-3xl sm:text-4xl">My Skin</h1>
             <p className="ui-text-secondary mt-2 text-sm leading-6">
               오늘 상태를 먼저 보고, 필요한 루틴만 빠르게 확인합니다.
             </p>
           </div>
-          <Link href="/api/auth/signout" className="ui-button-secondary min-h-10 w-full px-4 text-sm font-semibold sm:w-auto">
-            로그아웃
-          </Link>
+          <MyDashboardMenu />
         </header>
 
         <div className="mt-6 sm:mt-8">

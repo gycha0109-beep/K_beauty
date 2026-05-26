@@ -267,7 +267,7 @@ export default function HomePage() {
   }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentStep, form, imageFile, locale, router]);
 
   const pageShellClassName = currentStep === "photo"
-    ? "mx-auto flex w-full max-w-5xl flex-col px-4 pb-6 pt-4 sm:px-6 lg:px-8"
+    ? "mx-auto flex w-full max-w-5xl flex-col px-3 pb-5 pt-2 sm:px-6 sm:pt-4 lg:px-8"
     : currentStep === "survey"
       ? "mx-auto flex w-full max-w-lg flex-col px-4 pb-6 pt-4 sm:px-6"
       : "mx-auto flex w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
@@ -422,8 +422,8 @@ export default function HomePage() {
   return (
     <main className="ui-page ui-page-shell min-h-screen">
       <div className={pageShellClassName}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-0.5 sm:gap-3 sm:px-0">
+          <div className="flex gap-1.5 sm:gap-2">
             {[
               { code: "ko", label: "KO", href: "/" },
               { code: "en", label: "EN", href: "/en" }
@@ -431,7 +431,7 @@ export default function HomePage() {
               <Link
                 key={item.code}
                 href={item.href}
-                className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium transition sm:px-3 sm:py-1.5 sm:text-xs ${
                   locale === item.code
                     ? "ui-choice-active"
                     : "ui-button-secondary-soft"
@@ -442,7 +442,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="relative flex min-w-0 items-center justify-end gap-2">
+          <div className="relative flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
             <AuthNav />
             <ThemeToggle locale={locale} compact />
             {isDevMode ? (

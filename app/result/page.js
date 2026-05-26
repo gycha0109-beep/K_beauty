@@ -11,8 +11,8 @@ import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import SaveReportCTA from "@/components/result/SaveReportCTA";
-import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
+import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -2079,12 +2079,10 @@ function ResultContent() {
   const [submission, setSubmission] = useState(null);
   const [faceLabFull, setFaceLabFull] = useState(null);
   const [isReady, setIsReady] = useState(false);
-  const [isResultMenuOpen, setIsResultMenuOpen] = useState(false);
   const [isReportSaved, setIsReportSaved] = useState(false);
   const [showSavedNudgeLabel, setShowSavedNudgeLabel] = useState(false);
   const [savedNudgeBounce, setSavedNudgeBounce] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
-  const resultMenuRef = useRef(null);
   const resultProgressRef = useRef(null);
   const didMountProgressScrollRef = useRef(false);
   const savedNudgeShownRef = useRef(false);
@@ -2239,34 +2237,6 @@ function ResultContent() {
       window.clearTimeout(bounceTimer);
     };
   }, [isReportSaved, isSavedNudgeFinalStep]);
-
-  useEffect(() => {
-    if (!isResultMenuOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event) => {
-      if (resultMenuRef.current?.contains(event.target)) {
-        return;
-      }
-
-      setIsResultMenuOpen(false);
-    };
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setIsResultMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isResultMenuOpen]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !result) {
@@ -2530,86 +2500,22 @@ function ResultContent() {
             <div className="flex shrink-0 items-center gap-2">
               <AuthNav locale={locale} showSignOut={false} />
 
-              <div ref={resultMenuRef} className="relative">
-                <button
-                  type="button"
-                  aria-label={
-                    isResultMenuOpen
-                      ? isEnglish
-                        ? "Close result menu"
-                        : "결과 메뉴 닫기"
-                      : isEnglish
-                        ? "Open result menu"
-                        : "결과 메뉴 열기"
+              <AppHamburgerMenu
+                locale={locale}
+                languageOptions={[
+                  { code: "ko", label: "한국어", href: getLocalePath(pathname, "ko") },
+                  { code: "en", label: "English", href: getLocalePath(pathname, "en") }
+                ]}
+                actions={[
+                  {
+                    label: copy.tryAgain,
+                    href: homePath,
+                    onClick: handleTryAgainClick
                   }
-                  aria-expanded={isResultMenuOpen}
-                  onClick={() => setIsResultMenuOpen((current) => !current)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#ead9d6] bg-white/85 text-[#203755] shadow-sm transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]"
-                >
-                  {isResultMenuOpen ? <ResultMenuCloseIcon /> : <ResultMenuIcon />}
-                </button>
-
-                {isResultMenuOpen ? (
-                  <div className="absolute right-0 z-30 mt-2 w-[min(16.5rem,calc(100vw-2rem))] rounded-[1rem] border border-[#ead9d6] bg-white/95 p-2.5 text-[#26101a] shadow-[0_14px_36px_rgba(38,16,26,0.14)] backdrop-blur dark:border-[#5a3a48] dark:bg-[#241720]/95 dark:text-[#fff8f3]">
-                    <div>
-                      <p className="px-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9a6c78] dark:text-[#c8aeb8]">
-                        {isEnglish ? "Language" : "언어"}
-                      </p>
-                      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-                        {[
-                          { code: "ko", label: "한국어" },
-                          { code: "en", label: "English" }
-                        ].map((item) => {
-                          const active = locale === item.code;
-                          return (
-                            <Link
-                              key={item.code}
-                              href={getLocalePath(pathname, item.code)}
-                              onClick={() => setIsResultMenuOpen(false)}
-                              className={`inline-flex min-h-8 items-center justify-center rounded-full px-2.5 text-[11px] font-semibold transition ${
-                                active
-                                  ? "bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] text-white"
-                                  : "border border-[#ead9d6] bg-white/70 text-[#7a5360] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28]/80 dark:text-[#f4d7df]"
-                              }`}
-                            >
-                              {item.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="mt-2 border-t border-[#f0ddd6] pt-2 dark:border-[#4a303c]">
-                      <p className="px-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9a6c78] dark:text-[#c8aeb8]">
-                        {isEnglish ? "Account" : "계정"}
-                      </p>
-                      <div className="mt-1.5">
-                        <AuthNav locale={locale} showMyLink={false} menu />
-                      </div>
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#f0ddd6] pt-2 dark:border-[#4a303c]">
-                      <span className="px-1 text-[11px] font-semibold text-[#6e4050] dark:text-[#f4d7df]">
-                        {isEnglish ? "Theme" : "화면 모드"}
-                      </span>
-                      <ThemeToggle locale={locale} compact className="h-8 min-h-8 px-3 text-[11px]" />
-                    </div>
-
-                    <Link
-                      href={homePath}
-                      onClick={(event) => {
-                        handleTryAgainClick(event);
-                        if (!event.defaultPrevented) {
-                          setIsResultMenuOpen(false);
-                        }
-                      }}
-                      className="mt-2 inline-flex min-h-8 w-full items-center justify-center rounded-full border border-[#ead9d6] bg-white/60 px-3 text-[11px] font-semibold text-[#5a2d3c] transition hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28]/75 dark:text-[#f4d7df] dark:hover:bg-[#352430]"
-                    >
-                      {copy.tryAgain}
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
+                ]}
+                openLabel={isEnglish ? "Open result menu" : "결과 메뉴 열기"}
+                closeLabel={isEnglish ? "Close result menu" : "결과 메뉴 닫기"}
+              />
             </div>
           </div>
 
@@ -2738,22 +2644,6 @@ function ResultContent() {
         </motion.a>
       ) : null}
     </main>
-  );
-}
-
-function ResultMenuIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ResultMenuCloseIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
   );
 }
 
