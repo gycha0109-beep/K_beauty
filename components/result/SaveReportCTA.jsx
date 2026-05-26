@@ -319,9 +319,6 @@ export default function SaveReportCTA({
   if (isSaved) {
     return (
       <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:max-w-[20rem]">
-        <div className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#ead9d6] bg-white/55 px-3 py-1.5 text-xs font-semibold text-[#6e4050] dark:border-[#5a3a48] dark:bg-[#301f28]/55 dark:text-[#f4d7df]">
-          {isEnglish ? "\u2713 Saved" : "\u2713 \uc800\uc7a5\ub428"}
-        </div>
         <div className={onPrevious ? "grid grid-cols-[0.76fr_1.24fr] gap-2" : ""}>
           {onPrevious ? (
             <button
