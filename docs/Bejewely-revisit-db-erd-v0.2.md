@@ -1,6 +1,6 @@
 # 비주얼리 재방문 구조 DB ERD
 
-> Version: v0.2  
+> Version: v0.2
 > Updated: profiles 생성 전략, active skin_profile partial unique index, report_version, local date 규칙, routine_logs derived cache 정책, weekly report lazy generation 원칙을 보강했다.
 
 ## 1. 문서 목적

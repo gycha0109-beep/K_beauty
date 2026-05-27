@@ -1,6 +1,6 @@
 # 비주얼리 재방문 구조 Implementation Plan
 
-> Version: v0.2  
+> Version: v0.2
 > Updated: Phase 1 후순위 테이블 생성 금지, middleware 보호 대상 Phase 분리, OAuth 결과 복구 흐름, checkinDate/routineDate local date 규칙, DB migration prompt 최신화를 반영했다.
 
 ## 1. 문서 목적

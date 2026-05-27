@@ -1,6 +1,6 @@
 # 비주얼리 재방문 구조 Usecase
 
-> Version: v0.2  
+> Version: v0.2
 > Updated: OAuth 로그인 후 결과 복구, `/my` empty state, 체크인 예외 흐름, Phase 1 범위 명확화, RLS 완료 기준을 보강했다.
 
 ## 1. 문서 목적
