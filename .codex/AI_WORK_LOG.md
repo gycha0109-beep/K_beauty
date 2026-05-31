@@ -144,3 +144,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙: main merge 전 점검은 작업 브랜치 diff뿐 아니라 origin/main 기준 diff-check도 함께 확인한다.
 - 규칙 승격 후보: `NULL`
 - Context 반영 후보: `NULL`
+
+### 2026-05-31 / Supabase anonymous user data policy hardening
+
+- Branch: main
+- Task type: diagnostic with limited execution
+- Routing decision: Supabase RLS/auth policy work is High risk, but user explicitly requested applying only the anonymous-user policy restriction and committing/pushing it.
+- Goal: Block Supabase anonymous-auth users from owner-scoped My Skin data policies while preserving permanent authenticated-user access.
+- Changed files: supabase/migrations/20260531123349_restrict_anonymous_user_data_policies.sql
+- Protected areas: DB policy touched with explicit user instruction; no env/auth redirect/deployment config changes.
+- Validation: Applied SQL to linked Supabase project with `supabase db query --linked --file ...`; verified affected policies include `is_anonymous = false`; `supabase db advisors --linked --type security --level warn -o json` now reports only `auth_leaked_password_protection`.
+- Notes/risks: Existing unrelated working-tree changes were not staged or modified. Leaked password protection remains a dashboard/plan-dependent Auth setting.
+- Reusable rule: When anonymous Supabase sign-in is enabled, `to authenticated` RLS policies for account-owned data should explicitly exclude anonymous users with the JWT `is_anonymous` claim.
+- Context promotion candidate: Bridge
