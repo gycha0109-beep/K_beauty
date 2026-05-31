@@ -113,6 +113,14 @@ Deactivated 내용을 현재 기준으로 되살리지 않는다.
 
 ---
 
+## 7.1 Hooks
+
+- `.codex/hooks.json`의 PreToolUse Hook은 secret/env/service_role/위험 명령을 차단하고, 고위험 변경은 경고한다.
+- Hook 경고는 작업을 막지 않지만, 경고가 나온 파일은 관련 `.codex` 문서와 검증 기준을 다시 확인한다.
+- Hook은 보조 안전장치이며, Protected Areas와 Stop Conditions 판단을 대체하지 않는다.
+
+---
+
 ## 8. Stop Conditions
 
 아래 상황이면 임의로 계속 수정하지 말고 원인과 복구 후보를 보고한다.
