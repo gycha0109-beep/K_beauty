@@ -4,7 +4,7 @@
 
 ## 1. Review signal workflow
 
-화해 제품 상세 페이지에서 사람이 브라우저 콘솔 snippet을 실행해 raw JSON을 얻고, Node 변환 스크립트로 normalized fixture를 만든 뒤 필요할 때 Supabase에 반영한다.
+화해 제품 상세 페이지에서 사람이 브라우저 콘솔 snippet을 실행해 raw JSON을 얻고, Node 변환 스크립트로 normalized fixture를 만든 뒤 필요할 때 Supabase에 반영한다. CSV 기반 review raw batch의 canonical 파일은 `scripts/prepare-hwahae-review-raw-batch.mjs`다.
 
 1. 화해 제품 상세 페이지를 브라우저에서 연다.
 2. `scripts/console-snippets/화해 제품 리뷰 추출.js` 내용을 DevTools Console에 붙여넣는다.
@@ -39,21 +39,13 @@ DB write 가능성이 있는 스크립트는 실행 전 입력 fixture와 대상
 
 `generate-promo-content.mjs`는 `data/promo-seeds.json`을 읽어 `content/promo/generated/` 아래 promo JSON/CSV를 생성한다. 외부 API나 DB를 호출하지 않는다.
 
-## 6. 정리 후보
-
-- `scrape-hwahae-review-signals.mjs`: 실제 scraper가 아니라 snippet/workflow 출력 helper다. 현재 이름은 역할보다 강하게 보이므로 rename 후보다.
-- `CODEX 리뷰 크롤링 자동화 batch.mjs`: `prepare-hwahae-review-raw-batch.mjs`와 거의 중복 가능성이 있어 정리 후보다.
-- DB write 가능 파일과 console snippet은 폴더로 더 분리하면 실수 실행 위험을 줄일 수 있다.
-
 ## 역할표
 
 | 파일 | 역할 | 실행 환경 | DB write | 비고 |
 |---|---|---|---|---|
 | `build-review-signal-fixture.mjs` | 화해 raw JSON을 normalized review signal fixture로 변환 | Node | 없음 | Supabase category read는 가능 |
 | `import-review-signals-to-supabase.mjs` | fixture를 `products` signal columns에 반영 | Node | 있음 | `--dry-run` 없이 실행 시 DB update 가능 |
-| `prepare-hwahae-review-raw-batch.mjs` | CSV 기반 review raw 추출 계획 생성, 옵션으로 Playwright 추출 | Node | 없음 | Supabase products read 검증 가능 |
-| `scrape-hwahae-review-signals.mjs` | snippet/workflow 출력 helper | Node | 없음 | 실제 scraper 아님 |
-| `CODEX 리뷰 크롤링 자동화 batch.mjs` | batch review raw 추출 계획/실행 보조 | Node | 없음 | `prepare-hwahae-review-raw-batch.mjs`와 중복 가능, 정리 후보 |
+| `prepare-hwahae-review-raw-batch.mjs` | CSV 기반 review raw 추출 계획 생성, 옵션으로 Playwright 추출 | Node | 없음 | canonical review raw batch 파일, Supabase products read 검증 가능 |
 | `build_hwahae_import_package.py` | 화해 후보와 products export를 비교해 신규/중복/제외 후보 산출 | Python | 없음 | 변환/검토용 |
 | `prepare_hwahae_batch.py` | live products read 후 화해 후보 batch 변환 실행 | Python | 없음 | package script `hwahae:prepare`, `hwahae:override`에서 호출 |
 | `generate-promo-content.mjs` | promo seed 기반 콘텐츠 JSON/CSV 생성 | Node | 없음 | package script `promo:generate`에서 호출 |
