@@ -1010,37 +1010,65 @@ function getFreeResultV2CorePatternLine(form = {}, result = null, matchSummary =
 
   if (locale === "en") {
     if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
-      return "This looks close to a dehydrated combination pattern: moisture runs low while oil still rises.";
+      return "The surface looks shiny,\nbut the inside feels closer to dry.";
     }
 
     if (axis === "oiliness" || axis === "pores") {
-      return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where oil and visible texture need balancing first.`;
+      return "Oil and pore texture are the first things your skin is showing right now.";
     }
 
     if (axis === "redness" || axis === "acne") {
-      return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where irritation load should stay low first.`;
+      return "Your skin looks like it needs less irritation before stronger care.";
     }
 
-    return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where ${priorityLabel.toLowerCase()} should come first.`;
+    return `${priorityLabel} looks like the condition to handle first.`;
   }
 
   if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
-    return "수분은 부족한데 유분과 모공 신호가 함께 올라오는 수분 부족형 복합성 패턴에 가깝습니다.";
+    return "겉으로는 번들거리는데,\n속은 건조한 상태에 가깝습니다.";
   }
 
   if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
-    return "겉으로는 번들거림이 있지만 속은 건조한 신호가 함께 보이는 패턴에 가깝습니다.";
+    return "겉으로는 번들거리는데,\n속은 건조한 상태에 가깝습니다.";
   }
 
   if (axis === "oiliness" || axis === "pores") {
-    return `${skinTypeLabel} 피부에서 유분과 모공 밸런스를 먼저 잡아야 하는 패턴에 가깝습니다.`;
+    return "지금은 유분과 모공 흐름이\n먼저 눈에 띄는 상태입니다.";
   }
 
   if (axis === "redness" || axis === "acne") {
-    return `${skinTypeLabel} 피부에서 자극 부담을 낮추는 것이 먼저인 패턴에 가깝습니다.`;
+    return "피부가 쉽게 예민해질 수 있어\n자극을 먼저 줄이는 편이 좋습니다.";
   }
 
-  return `현재는 ${priorityLabel}을 먼저 정리해야 하는 ${skinTypeLabel} 패턴에 가깝습니다.`;
+  return `현재는 ${priorityLabel}을\n먼저 정리해야 하는 상태입니다.`;
+}
+
+function getFreeResultV2PatternLabel(form = {}, result = null, matchSummary = null, locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const skinTypeLabel = matchSummary?.skinTypeLabel || getDisplayMap(locale).skinType[form?.skinType] || (locale === "en" ? "Matched skin" : "맞춤 피부");
+  const priorityLabel = getPriorityDisplay(result, form, locale);
+  const secondaryConcerns = Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [];
+  const concernHints = uniqueItems([
+    axis,
+    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
+    ...secondaryConcerns
+  ]);
+  const hasOilFlow = form?.skinType === "oily" || form?.skinType === "combination" || concernHints.some((item) => item === "oiliness" || item === "pores");
+  const hasDehydrationFlow = form?.postWashFeeling === "tight" || concernHints.some((item) => item === "dehydration" || item === "barrier");
+
+  if (locale === "en") {
+    if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+      return "Dehydrated combination · oil / pore balance";
+    }
+
+    return `${skinTypeLabel} · ${priorityLabel}`;
+  }
+
+  if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+    return "수분 부족형 복합성 · 유분/모공 밸런스";
+  }
+
+  return `${skinTypeLabel} · ${priorityLabel}`;
 }
 
 function buildFreeResultV2Priorities(axis = "", locale = "ko") {
@@ -1199,6 +1227,7 @@ function buildFreeResultV2Diagnosis(form = {}, result = null, matchSummary = nul
 
   return {
     coreLine: getFreeResultV2CorePatternLine(form, result, matchSummary, locale),
+    patternLine: getFreeResultV2PatternLabel(form, result, matchSummary, locale),
     tags: [
       { label: locale === "en" ? "Skin type" : "피부 타입", value: skinTypeLabel },
       { label: locale === "en" ? "Core concern" : "핵심 고민", value: concernLabels.slice(0, 2).join(" · ") || priorityLabel },
@@ -1320,18 +1349,31 @@ function buildSurveyEvidenceSignals(form = {}, locale = "ko") {
 function buildFreeResultV2Interpretation(form = {}, result = null, photoSignals = [], surveySignals = [], locale = "ko") {
   const axis = getPrimaryConcernKey(result, form);
   const priorityLabel = getPriorityDisplay(result, form, locale);
-  const hasOilFlow = form?.skinType === "oily" || form?.skinType === "combination" || form?.afternoonSkinChange === "more_oily";
+  const secondaryConcerns = Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [];
+  const concernHints = uniqueItems([
+    axis,
+    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
+    ...secondaryConcerns
+  ]);
+  const hasOilFlow =
+    form?.skinType === "oily" ||
+    form?.skinType === "combination" ||
+    form?.afternoonSkinChange === "more_oily" ||
+    concernHints.some((item) => item === "oiliness" || item === "pores");
+  const hasDehydrationFlow =
+    form?.postWashFeeling === "tight" ||
+    concernHints.some((item) => item === "dehydration" || item === "barrier");
 
   if (locale === "en") {
-    if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
-      return "Because surface shine and inner dryness cues appear together, we read this as a dehydrated combination-leaning pattern.";
+    if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+      return "So this reads closer to a dehydrated combination pattern than simple oily skin.";
     }
 
     return `The photo and survey cues both point toward ${priorityLabel.toLowerCase()}, so the free result keeps that as the first decision axis.`;
   }
 
-  if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
-    return "겉으로는 번들거림이 있지만, 속은 건조한 패턴이 함께 보여 수분 부족형 복합성으로 판단했습니다.";
+  if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+    return "그래서 단순 지성보다는 수분 부족형 복합성 패턴으로 판단했습니다.";
   }
 
   if (photoSignals.length && surveySignals.length) {
@@ -1339,6 +1381,32 @@ function buildFreeResultV2Interpretation(form = {}, result = null, photoSignals 
   }
 
   return `${priorityLabel} 흐름을 우선 기준으로 보고, 부족한 사진 신호는 설문 답변으로 보완해 판단했습니다.`;
+}
+
+function buildFreeResultV2EvidenceStory(form = {}, result = null, photoSignals = [], surveySignals = [], locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const secondaryConcerns = Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [];
+  const concernHints = uniqueItems([
+    axis,
+    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
+    ...secondaryConcerns
+  ]);
+  const hasOilFlow = concernHints.some((item) => item === "oiliness" || item === "pores") || form?.skinType === "oily" || form?.skinType === "combination";
+  const hasDehydrationFlow = concernHints.some((item) => item === "dehydration" || item === "barrier") || form?.postWashFeeling === "tight";
+
+  if (locale === "en") {
+    if (hasOilFlow && hasDehydrationFlow) {
+      return "The photo first showed oil around the T-zone and visible pore texture, while the survey showed both oil and dryness concerns.";
+    }
+
+    return "The photo cues and survey answers point in the same direction, so we used them together instead of reading either one alone.";
+  }
+
+  if (hasOilFlow && hasDehydrationFlow) {
+    return "사진에서는 T존 쪽 유분감과 모공 가시성이 먼저 보였고,\n설문에서는 유분 고민과 건조 고민이 함께 나타났습니다.";
+  }
+
+  return "사진에서 보인 신호와 설문 답변을 함께 보니,\n현재 우선순위가 한쪽으로 모였습니다.";
 }
 
 function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko") {
@@ -1362,6 +1430,7 @@ function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko"
   return {
     photoSignals,
     surveySignals,
+    story: buildFreeResultV2EvidenceStory(form, result, photoSignals, surveySignals, locale),
     interpretation: buildFreeResultV2Interpretation(form, result, photoSignals, surveySignals, locale)
   };
 }
@@ -1394,18 +1463,26 @@ function buildFreeResultV2TopPick(product, form = {}, result = null, locale = "k
 }
 
 function buildFreeResultV2RoutinePreview(result = null, locale = "ko") {
-  const structure = getRoutineStructureData(result, locale);
-  const directionCards = buildRoutineDirectionCards(result, locale);
-  const morningDirection = structure?.am?.strategyLine || directionCards.find((item) => item.key === "morning")?.body || "";
-  const nightDirection = structure?.pm?.strategyLine || directionCards.find((item) => item.key === "night")?.body || "";
+  if (locale === "en") {
+    return {
+      morning: "Light reset → moisture hold → UV protection",
+      night: "Gentle cleanse → moisture refill → barrier comfort",
+      morningSteps: ["Light reset", "Moisture hold", "UV protection"],
+      nightSteps: ["Gentle cleanse", "Moisture refill", "Barrier comfort"],
+      morningNote: "A light flow that keeps the skin from feeling heavy.",
+      nightNote: "A gentle flow that clears residue and supports comfort.",
+      gateNote: "Detailed product order and usage frequency are available in the full report."
+    };
+  }
 
   return {
-    morning: morningDirection || (locale === "en"
-      ? "Lightly reset the surface and keep hydration steady."
-      : "가볍게 정돈하고 수분감을 유지하는 방향이 좋습니다."),
-    night: nightDirection || (locale === "en"
-      ? "Gently clear daily oil and residue, then keep the barrier comfortable."
-      : "하루 동안 쌓인 유분과 잔여감을 순하게 정리하는 방향이 좋습니다.")
+    morning: "가볍게 정돈 → 수분 유지 → 자외선 차단",
+    night: "순한 세안 → 수분 보충 → 장벽 안정",
+    morningSteps: ["가볍게 정돈", "수분 유지", "자외선 차단"],
+    nightSteps: ["순한 세안", "수분 보충", "장벽 안정"],
+    morningNote: "무겁게 덮기보다 가볍게 유지하는 흐름입니다.",
+    nightNote: "잔여감을 순하게 정리하고 장벽을 안정시키는 흐름입니다.",
+    gateNote: "세부 제품 순서와 사용 빈도는 전체 리포트에서 확인할 수 있어요."
   };
 }
 
@@ -3180,9 +3257,14 @@ function FreeResultV2DiagnosisStep({ data, photoUrl, photoAlt, photoFallback, lo
             <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">
               {isEnglish ? "One-line diagnosis" : "한 줄 진단"}
             </p>
-            <p className="mt-2 break-keep text-[1.35rem] font-semibold leading-9 text-[#fff8f3] dark:text-[#fff8f3] sm:text-[1.5rem]">
+            <p className="mt-2 whitespace-pre-line break-keep text-[1.45rem] font-semibold leading-9 text-[#fff8f3] dark:text-[#fff8f3] sm:text-[1.65rem]">
               <span className="text-[#26101a] dark:text-[#fff8f3]">{data.coreLine}</span>
             </p>
+            {data.patternLine ? (
+              <div className="mt-4">
+                <FreeResultV2Pill>{data.patternLine}</FreeResultV2Pill>
+              </div>
+            ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
               {data.tags.map((tag) => (
                 <FreeResultV2Pill key={`${tag.label}-${tag.value}`}>
@@ -3252,6 +3334,11 @@ function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback,
             signals={evidence.photoSignals}
           />
         </div>
+        {evidence.story ? (
+          <p className="mt-4 whitespace-pre-line rounded-[1.25rem] border border-[#ead9d6] bg-white/34 px-4 py-3 text-sm leading-7 text-[#3a1824] dark:border-[#5a3a48] dark:bg-[#2a1b24]/74 dark:text-[#f3e4df]">
+            {evidence.story}
+          </p>
+        ) : null}
       </FreeResultV2Card>
 
       <FreeResultV2SignalList
@@ -3333,6 +3420,29 @@ function FreeResultV2TopPickStep({ preview, routinePreview, copy, locale = "ko" 
   );
 }
 
+function FreeResultV2RoutineFlow({ title, steps = [], note = "" }) {
+  return (
+    <div className="rounded-[1.35rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+      <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{title}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {steps.map((step, index) => (
+          <div key={`${title}-${step}`} className="flex items-center gap-2">
+            <span className="rounded-full border border-[#ead9d6] bg-white/52 px-3 py-2 text-sm font-semibold text-[#3a1824] dark:border-[#6a4353] dark:bg-[#301f28] dark:text-[#f3e4df]">
+              {step}
+            </span>
+            {index < steps.length - 1 ? (
+              <span className="text-sm font-semibold text-[#e6507a] dark:text-[#ff9aa8]">→</span>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {note ? (
+        <p className="mt-3 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{note}</p>
+      ) : null}
+    </div>
+  );
+}
+
 function FreeResultV2RoutineFaceLabStep({ routinePreview, faceLabPreview, locale = "ko" }) {
   const isEnglish = locale === "en";
 
@@ -3344,17 +3454,19 @@ function FreeResultV2RoutineFaceLabStep({ routinePreview, faceLabPreview, locale
       <FreeResultV2Card>
         <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">AM / PM</p>
         <div className="mt-4 grid gap-3">
-          <div className="rounded-[1.35rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
-            <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Morning" : "아침"}</p>
-            <p className="mt-2 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">{routinePreview.morning}</p>
-          </div>
-          <div className="rounded-[1.35rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
-            <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Night" : "저녁"}</p>
-            <p className="mt-2 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">{routinePreview.night}</p>
-          </div>
+          <FreeResultV2RoutineFlow
+            title={isEnglish ? "Morning direction" : "아침 방향"}
+            steps={routinePreview.morningSteps}
+            note={routinePreview.morningNote}
+          />
+          <FreeResultV2RoutineFlow
+            title={isEnglish ? "Night direction" : "저녁 방향"}
+            steps={routinePreview.nightSteps}
+            note={routinePreview.nightNote}
+          />
         </div>
         <p className="mt-4 text-center text-xs leading-5 text-[#9b7280] dark:text-[#9e7f8c]">
-          {isEnglish ? "Detailed order and product placement are in the full report." : "세부 순서와 제품 배치는 전체 리포트에서 확인 가능"}
+          {routinePreview.gateNote || (isEnglish ? "Detailed order and product placement are in the full report." : "세부 제품 순서와 사용 빈도는 전체 리포트에서 확인할 수 있어요.")}
         </p>
       </FreeResultV2Card>
 
