@@ -6,10 +6,11 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 
-const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DEFAULT_EXTRACTOR_PATH = path.join(
   ROOT_DIR,
   "scripts",
+  "console-snippets",
   "\uD654\uD574 \uC81C\uD488 \uB9AC\uBDF0 \uCD94\uCD9C.js",
 );
 const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
@@ -409,7 +410,7 @@ async function main() {
   const csvPath = args.csv ? path.resolve(process.cwd(), String(args.csv)) : "";
 
   if (!csvPath) {
-    throw new Error('Missing --csv. Example: node scripts/prepare-hwahae-review-raw-batch.mjs --csv "C:/Users/hun/Downloads/moisturizer_cream_rows.csv" --category moisturizer_cream');
+    throw new Error('Missing --csv. Example: node scripts/review-signals/prepare-hwahae-review-raw-batch.mjs --csv "C:/Users/hun/Downloads/moisturizer_cream_rows.csv" --category moisturizer_cream');
   }
 
   await loadEnv();

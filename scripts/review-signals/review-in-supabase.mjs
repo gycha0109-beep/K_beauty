@@ -383,7 +383,7 @@ async function main() {
       : requestedCdpUrl;
 
   const prepareArgs = [
-    "scripts/prepare-hwahae-review-raw-batch.mjs",
+    "scripts/review-signals/prepare-hwahae-review-raw-batch.mjs",
     "--csv",
     csvPath,
     "--category",
@@ -415,7 +415,7 @@ async function main() {
   await buildRawBatchFromPlan(planPath, rawBatchPath);
   await runNode(
     [
-      "scripts/build-review-signal-fixture.mjs",
+      "scripts/review-signals/build-review-signal-fixture.mjs",
       "--input",
       rawBatchPath,
       "--out",
@@ -428,7 +428,7 @@ async function main() {
     `\n[review_in_supabase] fixture ${JSON.stringify(fixtureStatus, null, 2)}\n`,
   );
   await runNode(
-    ["scripts/import-review-signals-to-supabase.mjs", "--file", fixturePath, "--dry-run"],
+    ["scripts/review-signals/import-review-signals-to-supabase.mjs", "--file", fixturePath, "--dry-run"],
     "dry-run Supabase import",
   );
 
@@ -438,7 +438,7 @@ async function main() {
   }
 
   await runNode(
-    ["scripts/import-review-signals-to-supabase.mjs", "--file", fixturePath],
+    ["scripts/review-signals/import-review-signals-to-supabase.mjs", "--file", fixturePath],
     "apply review signals to Supabase products",
   );
 

@@ -3,7 +3,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import { normalizeReviewSignals } from "../lib/review-signals.js";
+import { normalizeReviewSignals } from "../../lib/review-signals.js";
 
 function parseArgs(argv) {
   const args = {};

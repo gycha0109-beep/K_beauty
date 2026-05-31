@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   getReviewSignalCategoryFamily,
   normalizeReviewSignals,
-} from "../lib/review-signals.js";
+} from "../../lib/review-signals.js";
 
 const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
 const FUNCTIONAL_SIGNAL_RULES = [

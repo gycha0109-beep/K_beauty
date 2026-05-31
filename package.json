@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start -p 3001",
     "promo:generate": "node scripts/generate-promo-content.mjs",
-    "hwahae:prepare": "python -X utf8 scripts/prepare_hwahae_batch.py",
-    "hwahae:override": "python -X utf8 scripts/prepare_hwahae_batch.py",
-    "review_prepare": "node review_prepare",
-    "review_in_supabase": "node review_in_supabase",
+    "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
+    "hwahae:override": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
+    "review_prepare": "node scripts/review-signals/review-prepare.mjs",
+    "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "lint": "next lint"
   },
   "dependencies": {

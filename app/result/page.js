@@ -7,7 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
-import ResultOverviewStep from "@/components/result/ResultOverviewStep";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
 import ResultShareActions from "@/components/result/ResultShareActions";
 import SaveReportCTA from "@/components/result/SaveReportCTA";
@@ -18,7 +17,7 @@ import {
   formatFaceLabDisplayList,
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
-import { getRoutineStructureData, getRoutineStructureLabel } from "@/lib/routine-structure";
+import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
@@ -954,7 +953,15 @@ function getFaceLabProfilePreview(launchData, locale = "ko") {
 }
 
 function getAdvanceLabelForStep(stepId, copy) {
+  const isEnglish = copy.resultOverviewTitle === "Your Result";
+
   switch (stepId) {
+    case "evidence":
+      return isEnglish ? "See why" : "왜 이렇게 판단했나요?";
+    case "top-pick-preview":
+      return copy.ctaViewTopPick;
+    case "routine-face-lab":
+      return isEnglish ? "See routine direction" : "루틴 방향 미리보기";
     case "skin-dashboard":
       return copy.ctaViewSkinDashboard || copy.next;
     case "top-pick":
@@ -966,10 +973,455 @@ function getAdvanceLabelForStep(stepId, copy) {
     case "warnings":
       return copy.ctaViewTips;
     case "premium-preview":
-      return copy.ctaViewPremiumPreview;
+      return getFreeResultV2FullReportCtaLabel(isEnglish ? "en" : "ko");
     default:
       return copy.next;
   }
+}
+
+function getPrimaryConcernKey(result = null, form = {}) {
+  return result?.priority?.axis || form?.mainConcern || (Array.isArray(form?.mainConcerns) ? form.mainConcerns[0] : "") || "";
+}
+
+function getFreeResultV2FullReportCtaLabel(locale = "ko") {
+  return locale === "en"
+    ? "See the full report with execution steps"
+    : "전체 리포트에서 실행 방법까지 확인하기";
+}
+
+function getFreeResultV2CorePatternLine(form = {}, result = null, matchSummary = null, locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const skinTypeLabel = matchSummary?.skinTypeLabel || getDisplayMap(locale).skinType[form?.skinType] || (locale === "en" ? "skin" : "피부");
+  const priorityLabel = getPriorityDisplay(result, form, locale);
+  const secondaryConcerns = Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [];
+  const concernHints = uniqueItems([
+    axis,
+    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
+    ...secondaryConcerns
+  ]);
+  const hasOilFlow =
+    form?.skinType === "oily" ||
+    form?.skinType === "combination" ||
+    form?.afternoonSkinChange === "more_oily" ||
+    concernHints.some((item) => item === "oiliness" || item === "pores");
+  const hasDehydrationFlow =
+    form?.postWashFeeling === "tight" ||
+    concernHints.some((item) => item === "dehydration" || item === "barrier");
+
+  if (locale === "en") {
+    if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+      return "This looks close to a dehydrated combination pattern: moisture runs low while oil still rises.";
+    }
+
+    if (axis === "oiliness" || axis === "pores") {
+      return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where oil and visible texture need balancing first.`;
+    }
+
+    if (axis === "redness" || axis === "acne") {
+      return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where irritation load should stay low first.`;
+    }
+
+    return `This looks like a ${skinTypeLabel.toLowerCase()} pattern where ${priorityLabel.toLowerCase()} should come first.`;
+  }
+
+  if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
+    return "수분은 부족한데 유분과 모공 신호가 함께 올라오는 수분 부족형 복합성 패턴에 가깝습니다.";
+  }
+
+  if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
+    return "겉으로는 번들거림이 있지만 속은 건조한 신호가 함께 보이는 패턴에 가깝습니다.";
+  }
+
+  if (axis === "oiliness" || axis === "pores") {
+    return `${skinTypeLabel} 피부에서 유분과 모공 밸런스를 먼저 잡아야 하는 패턴에 가깝습니다.`;
+  }
+
+  if (axis === "redness" || axis === "acne") {
+    return `${skinTypeLabel} 피부에서 자극 부담을 낮추는 것이 먼저인 패턴에 가깝습니다.`;
+  }
+
+  return `현재는 ${priorityLabel}을 먼저 정리해야 하는 ${skinTypeLabel} 패턴에 가깝습니다.`;
+}
+
+function buildFreeResultV2Priorities(axis = "", locale = "ko") {
+  const priorityMap = locale === "en"
+    ? {
+        dehydration: [
+          ["Moisture retention", "Keep hydration from dropping too fast."],
+          ["Barrier comfort", "Avoid irritating the skin while adding moisture."],
+          ["Oil / pore balance", "Control shine without over-cleansing."]
+        ],
+        barrier: [
+          ["Barrier comfort", "Keep the routine low-irritation first."],
+          ["Moisture retention", "Hold hydration with lighter layers."],
+          ["Oil / pore balance", "Do not strip the surface too hard."]
+        ],
+        oiliness: [
+          ["Oil balance", "Reduce surface heaviness without stripping."],
+          ["Moisture retention", "Keep the skin from rebounding with more oil."],
+          ["Pore texture", "Keep the surface smoother and lighter."]
+        ],
+        pores: [
+          ["Oil / pore balance", "Start with lighter surface control."],
+          ["Moisture retention", "Keep hydration steady so texture does not look rougher."],
+          ["Barrier comfort", "Avoid stacking strong pore care too fast."]
+        ],
+        acne: [
+          ["Low irritation", "Keep heavy residue and friction low."],
+          ["Barrier comfort", "Stabilize the base before adding stronger care."],
+          ["Moisture retention", "Keep the routine light but not drying."]
+        ],
+        redness: [
+          ["Low irritation", "Reduce heat, rubbing, and reactive steps first."],
+          ["Barrier comfort", "Keep comfort stable through the day."],
+          ["Moisture retention", "Use hydration without making the routine heavy."]
+        ],
+        uneven_tone: [
+          ["Daytime protection", "Keep the tone-care base steady."],
+          ["Moisture retention", "Avoid making texture look drier."],
+          ["Low irritation", "Add brightening care slowly."]
+        ],
+        uv: [
+          ["Daytime protection", "Keep sunscreen comfortable and repeatable."],
+          ["Moisture retention", "Prevent dryness under daytime products."],
+          ["Low irritation", "Avoid heavy or reactive layering."]
+        ]
+      }
+    : {
+        dehydration: [
+          ["수분 유지", "수분감이 빨리 끊기지 않게 먼저 잡습니다."],
+          ["장벽 안정", "수분을 더해도 자극이 커지지 않게 둡니다."],
+          ["유분/모공 밸런스", "피지를 더 벗겨내기보다 균형을 봅니다."]
+        ],
+        barrier: [
+          ["장벽 안정", "자극 부담을 낮추는 구성이 먼저입니다."],
+          ["수분 유지", "얇은 보습으로 수분감을 이어갑니다."],
+          ["유분/모공 밸런스", "표면을 과하게 벗겨내지 않습니다."]
+        ],
+        oiliness: [
+          ["유분 밸런스", "표면 번들거림을 무겁지 않게 정리합니다."],
+          ["수분 유지", "수분 부족으로 유분이 더 올라오지 않게 봅니다."],
+          ["모공/결 정돈", "피부결이 거칠어 보이지 않게 정리합니다."]
+        ],
+        pores: [
+          ["유분/모공 밸런스", "가벼운 표면 정돈부터 시작합니다."],
+          ["수분 유지", "수분감이 끊겨 결이 더 도드라지지 않게 합니다."],
+          ["장벽 안정", "강한 모공 케어를 한 번에 겹치지 않습니다."]
+        ],
+        acne: [
+          ["자극 최소화", "무거운 잔여감과 마찰을 먼저 줄입니다."],
+          ["장벽 안정", "강한 기능을 늘리기 전 기본 상태를 잡습니다."],
+          ["수분 유지", "건조하지 않지만 답답하지 않게 유지합니다."]
+        ],
+        redness: [
+          ["자극 최소화", "열감, 마찰, 강한 단계를 먼저 줄입니다."],
+          ["장벽 안정", "하루 동안 편안함이 이어지게 둡니다."],
+          ["수분 유지", "무겁지 않게 수분감을 보강합니다."]
+        ],
+        uneven_tone: [
+          ["낮 시간 보호", "톤 케어의 기본이 되는 보호를 유지합니다."],
+          ["수분 유지", "건조로 결이 거칠어 보이지 않게 합니다."],
+          ["자극 최소화", "톤 케어 성분은 천천히 늘립니다."]
+        ],
+        uv: [
+          ["낮 시간 보호", "편하게 반복 가능한 선케어를 먼저 둡니다."],
+          ["수분 유지", "낮 시간 제품 아래 수분감을 유지합니다."],
+          ["자극 최소화", "무겁거나 자극적인 겹침을 줄입니다."]
+        ]
+      };
+  const fallback = priorityMap.dehydration;
+  return (priorityMap[axis] || fallback).map(([title, body], index) => ({
+    rank: index + 1,
+    title,
+    body
+  }));
+}
+
+function buildFreeResultV2DirectionTags(axis = "", form = {}, locale = "ko") {
+  const isEnglish = locale === "en";
+  const base = isEnglish
+    ? ["Avoid over-cleansing", "Hydration first", "Minimize irritation"]
+    : ["과한 세안 자제", "수분 보강 우선", "자극 최소화"];
+  const byAxis = isEnglish
+    ? {
+        oiliness: ["Light finish", "Avoid stripping", "Pore balance"],
+        pores: ["Texture reset", "Light hydration", "Avoid stacking actives"],
+        acne: ["Low residue", "Calming first", "Simple routine"],
+        redness: ["Low irritation", "Barrier comfort", "Avoid friction"],
+        uneven_tone: ["Daytime protection", "Slow tone care", "Hydration support"],
+        uv: ["Sunscreen consistency", "Light finish", "Reapply-friendly"]
+      }
+    : {
+        oiliness: ["산뜻한 마무리", "벗겨내기 자제", "모공 밸런스"],
+        pores: ["결 정돈", "가벼운 수분", "기능 겹침 자제"],
+        acne: ["잔여감 낮추기", "진정 우선", "단순 루틴"],
+        redness: ["자극 최소화", "장벽 안정", "마찰 줄이기"],
+        uneven_tone: ["낮 시간 보호", "톤 케어 천천히", "수분 보조"],
+        uv: ["선케어 유지", "가벼운 마무리", "덧바르기 편한 구성"]
+      };
+  const selected = byAxis[axis] || base;
+
+  if (form?.postWashFeeling === "tight" && !selected.includes(base[1])) {
+    return uniqueItems([base[1], ...selected]).slice(0, 3);
+  }
+
+  return selected.slice(0, 3);
+}
+
+function getFreeResultV2DirectionLine(form = {}, result = null, locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const hasOilFlow = form?.skinType === "oily" || form?.skinType === "combination" || form?.afternoonSkinChange === "more_oily";
+
+  if (locale === "en") {
+    if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
+      return "Right now, it is better to hold moisture and stabilize the barrier than to keep removing more oil.";
+    }
+
+    return getDirectionSummary(form, result, locale);
+  }
+
+  if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
+    return "지금은 피지를 더 제거하기보다 수분을 유지하고 피부 장벽을 안정시키는 방향이 더 적합합니다.";
+  }
+
+  return getDirectionSummary(form, result, locale);
+}
+
+function buildFreeResultV2Diagnosis(form = {}, result = null, matchSummary = null, locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const display = getDisplayMap(locale);
+  const priorities = buildFreeResultV2Priorities(axis, locale);
+  const concernLabels = Array.isArray(matchSummary?.concerns) && matchSummary.concerns.length
+    ? matchSummary.concerns
+    : getConcernDisplay(form, locale).split(" · ").filter(Boolean);
+  const priorityLabel = getPriorityDisplay(result, form, locale);
+  const skinTypeLabel = matchSummary?.skinTypeLabel || display.skinType[form?.skinType] || (locale === "en" ? "Matched skin" : "맞춤 피부");
+
+  return {
+    coreLine: getFreeResultV2CorePatternLine(form, result, matchSummary, locale),
+    tags: [
+      { label: locale === "en" ? "Skin type" : "피부 타입", value: skinTypeLabel },
+      { label: locale === "en" ? "Core concern" : "핵심 고민", value: concernLabels.slice(0, 2).join(" · ") || priorityLabel },
+      { label: locale === "en" ? "Current priority" : "현재 우선순위", value: priorities[0]?.title || priorityLabel }
+    ],
+    priorities,
+    directionLine: getFreeResultV2DirectionLine(form, result, locale),
+    directionTags: buildFreeResultV2DirectionTags(axis, form, locale)
+  };
+}
+
+function buildSurveyEvidenceSignals(form = {}, locale = "ko") {
+  const display = getDisplayMap(locale);
+  const isEnglish = locale === "en";
+  const labels = isEnglish
+    ? {
+        postWashFeeling: {
+          tight: "tightness after cleansing",
+          comfortable: "comfortable after cleansing",
+          still_oily: "oiliness remains after cleansing"
+        },
+        afternoonSkinChange: {
+          more_oily: "oil increases later in the day",
+          more_dry: "dryness increases later in the day",
+          red_or_irritated: "reactivity rises later in the day",
+          mostly_same: "condition stays mostly steady"
+        },
+        sensitivity: {
+          high: "high sensitivity",
+          medium: "moderate sensitivity",
+          low: "low sensitivity"
+        },
+        texture: {
+          gel: "prefers a light gel texture",
+          watery: "prefers a watery texture",
+          lotion: "prefers a lotion texture",
+          cream: "prefers a cream texture"
+        },
+        finish: {
+          fresh: "prefers a fresh finish",
+          dewy: "prefers a dewy finish",
+          matte: "prefers a matte finish"
+        }
+      }
+    : {
+        postWashFeeling: {
+          tight: "세안 후 당김",
+          comfortable: "세안 후 편안함",
+          still_oily: "세안 직후에도 유분감"
+        },
+        afternoonSkinChange: {
+          more_oily: "시간이 지나면 유분 증가",
+          more_dry: "시간이 지나면 건조감 증가",
+          red_or_irritated: "오후에 예민함 증가",
+          mostly_same: "오후 변화가 크지 않음"
+        },
+        sensitivity: {
+          high: "민감 반응 우려",
+          medium: "중간 민감도",
+          low: "민감도 낮음"
+        },
+        texture: {
+          gel: "가벼운 젤 선호",
+          watery: "워터 타입 선호",
+          lotion: "로션 타입 선호",
+          cream: "크림 타입 선호"
+        },
+        finish: {
+          fresh: "산뜻한 마무리 선호",
+          dewy: "촉촉한 마무리 선호",
+          matte: "보송한 마무리 선호"
+        }
+      };
+
+  const signals = [];
+  const push = (value) => {
+    const cleaned = normalizeCopy(value);
+    if (cleaned) {
+      signals.push(cleaned);
+    }
+  };
+
+  push(labels.postWashFeeling[form?.postWashFeeling]);
+  push(labels.afternoonSkinChange[form?.afternoonSkinChange]);
+
+  const concernKeys = Array.isArray(form?.mainConcerns) && form.mainConcerns.length
+    ? form.mainConcerns
+    : form?.mainConcern
+      ? [form.mainConcern]
+      : [];
+  const secondaryConcernKeys = Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [];
+  uniqueItems([...concernKeys, ...secondaryConcernKeys]).slice(0, 3).forEach((key) => {
+    const label = display.mainConcern[key];
+    if (label) {
+      push(isEnglish ? `${label} concern` : `${label} 고민`);
+    }
+  });
+
+  if (form?.sensitivity === "high" || form?.sensitivity === "medium") {
+    push(labels.sensitivity[form.sensitivity]);
+  }
+
+  if (signals.length < 3) {
+    push(labels.texture[form?.preferredTexture]);
+  }
+
+  if (signals.length < 3) {
+    push(labels.finish[form?.preferredFinish]);
+  }
+
+  // TODO: replace these derived survey fallback lines with structured survey evidence if the API exposes it.
+  if (!signals.length) {
+    push(isEnglish ? "survey answers were limited" : "설문 신호가 제한적임");
+  }
+
+  return uniqueItems(signals).slice(0, 3);
+}
+
+function buildFreeResultV2Interpretation(form = {}, result = null, photoSignals = [], surveySignals = [], locale = "ko") {
+  const axis = getPrimaryConcernKey(result, form);
+  const priorityLabel = getPriorityDisplay(result, form, locale);
+  const hasOilFlow = form?.skinType === "oily" || form?.skinType === "combination" || form?.afternoonSkinChange === "more_oily";
+
+  if (locale === "en") {
+    if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
+      return "Because surface shine and inner dryness cues appear together, we read this as a dehydrated combination-leaning pattern.";
+    }
+
+    return `The photo and survey cues both point toward ${priorityLabel.toLowerCase()}, so the free result keeps that as the first decision axis.`;
+  }
+
+  if ((axis === "dehydration" || axis === "barrier") && hasOilFlow) {
+    return "겉으로는 번들거림이 있지만, 속은 건조한 패턴이 함께 보여 수분 부족형 복합성으로 판단했습니다.";
+  }
+
+  if (photoSignals.length && surveySignals.length) {
+    return `사진 신호와 설문 답변이 모두 ${priorityLabel} 쪽으로 모여, 이 축을 먼저 정리하는 방향으로 판단했습니다.`;
+  }
+
+  return `${priorityLabel} 흐름을 우선 기준으로 보고, 부족한 사진 신호는 설문 답변으로 보완해 판단했습니다.`;
+}
+
+function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko") {
+  const normalized = normalizePhotoObservationsForDisplay(result?.photoObservations, copy, locale);
+  const photoSignals = normalized.signals
+    .map((signal) => buildPhotoObservationSignalTitle(signal))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  if (!photoSignals.length && normalized.summary && !normalized.isFallback) {
+    photoSignals.push(normalized.summary);
+  }
+
+  // TODO: replace this display fallback once photo analysis always returns structured visible signals.
+  if (!photoSignals.length) {
+    photoSignals.push(locale === "en" ? "photo cues were limited" : "사진 신호는 제한적으로 확인됨");
+  }
+
+  const surveySignals = buildSurveyEvidenceSignals(form, locale);
+
+  return {
+    photoSignals,
+    surveySignals,
+    interpretation: buildFreeResultV2Interpretation(form, result, photoSignals, surveySignals, locale)
+  };
+}
+
+function buildFreeResultV2TopPick(product, form = {}, result = null, locale = "ko") {
+  if (!product) {
+    return null;
+  }
+
+  const reason =
+    getProductPreviewLines(product, 1, locale)[0] ||
+    getTopPickSummary(product, form, result, locale) ||
+    getTopPickReason(product) ||
+    (locale === "en"
+      ? "A candidate that fits the current skin direction."
+      : "현재 피부 방향에 맞는 후보입니다.");
+  const fitPoints = uniqueItems([
+    ...buildTopPickDisplayTags(product, form, result, locale),
+    ...getTopPickSignalLabels(product, locale),
+    getTopPickCategoryReason(product, locale)
+  ]).slice(0, 3);
+
+  return {
+    product,
+    reason: compactTopPickReasonLine(reason, locale),
+    fitPoints: fitPoints.length
+      ? fitPoints
+      : [locale === "en" ? "Current pattern fit" : "현재 피부 패턴 적합"]
+  };
+}
+
+function buildFreeResultV2RoutinePreview(result = null, locale = "ko") {
+  const structure = getRoutineStructureData(result, locale);
+  const directionCards = buildRoutineDirectionCards(result, locale);
+  const morningDirection = structure?.am?.strategyLine || directionCards.find((item) => item.key === "morning")?.body || "";
+  const nightDirection = structure?.pm?.strategyLine || directionCards.find((item) => item.key === "night")?.body || "";
+
+  return {
+    morning: morningDirection || (locale === "en"
+      ? "Lightly reset the surface and keep hydration steady."
+      : "가볍게 정돈하고 수분감을 유지하는 방향이 좋습니다."),
+    night: nightDirection || (locale === "en"
+      ? "Gently clear daily oil and residue, then keep the barrier comfortable."
+      : "하루 동안 쌓인 유분과 잔여감을 순하게 정리하는 방향이 좋습니다.")
+  };
+}
+
+function buildFreeResultV2FaceLabPreview(faceLabPreview = null, locale = "ko") {
+  if (faceLabPreview?.primary || faceLabPreview?.keywords?.length) {
+    return {
+      primary: faceLabPreview.primary || (locale === "en" ? "Mood preview" : "대표 무드"),
+      keywords: (faceLabPreview.keywords || []).slice(0, 4)
+    };
+  }
+
+  // TODO: replace this fallback after Face Lab free preview always includes a mood and style keywords.
+  return {
+    primary: locale === "en" ? "Mood preview pending" : "대표 무드 분석 준비 중",
+    keywords: [locale === "en" ? "style keywords pending" : "스타일 키워드 준비 중"]
+  };
 }
 
 function normalizeResultCategory(product = {}) {
@@ -2073,8 +2525,6 @@ function ResultContent() {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
   const copy = getResultCopy(locale);
-  const decisionCopy = getDecisionCopy(locale);
-  const display = getDisplayMap(locale);
   const [result, setResult] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [faceLabFull, setFaceLabFull] = useState(null);
@@ -2087,7 +2537,6 @@ function ResultContent() {
   const didMountProgressScrollRef = useRef(false);
   const savedNudgeShownRef = useRef(false);
   const isEnglish = locale === "en";
-  const profileSummaryItems = buildLocalizedSkinProfileSummary(submission?.form || {}, locale);
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
   const localizedPath = getLocalePath(pathname, locale);
@@ -2311,27 +2760,17 @@ function ResultContent() {
   }
 
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
+  const resultForm = submission?.form || {};
+  const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
   const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
   const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
-  const overviewMatchSummary = buildOverviewMatchSummary(submission?.form || {}, result, locale);
-  const overviewCards = [
-    {
-      label: locale === "en" ? "Skin Type" : "피부 타입",
-      value: display.skinType[submission?.form?.skinType] || (locale === "en" ? "Matched routine" : "맞춤 루틴")
-    },
-    {
-      label: decisionCopy.priority,
-      value: getPriorityDisplay(result, submission?.form || {}, locale)
-    },
-    {
-      label: locale === "en" ? "Routine Structure" : "추천 루틴 구조",
-      value: getRoutineStructureLabel(result, locale)
-    }
-  ];
-  const routineDirectionCards = buildRoutineDirectionCards(result, locale);
-  const routineFlowSections = buildRoutineFlowSections(result, locale);
+  const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
+  const freeResultV2Diagnosis = buildFreeResultV2Diagnosis(resultForm, result, overviewMatchSummary, locale);
+  const freeResultV2Evidence = buildFreeResultV2Evidence(resultForm, result, copy, locale);
+  const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
+  const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
+  const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
   const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
-  const routineWarnings = getLocalizedRoutineWarnings(result, submission?.form || {}, locale);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
       product_id: result?.topPick?.id || null,
@@ -2355,83 +2794,51 @@ function ResultContent() {
 
   if (result) {
     resultSteps.push({
-      id: "overview",
+      id: "diagnosis",
       content: (
-        <ResultOverviewStep
-          copy={copy}
+        <FreeResultV2DiagnosisStep
+          data={freeResultV2Diagnosis}
           photoUrl={photoUrl}
-          photoAlt={submission?.imageName || copy.resultPhotoFallback}
-          summaryCards={overviewCards}
-          matchSummary={overviewMatchSummary}
-          overviewSummary={getOverviewSummary(submission?.form, result, locale)}
-          faceLabPreview={faceLabProfilePreview}
-          photoObservations={result.photoObservations}
+          photoAlt={resultPhotoAlt}
+          photoFallback={copy.resultPhotoFallback}
           locale={locale}
         />
       )
     });
 
     resultSteps.push({
-      id: "skin-dashboard",
+      id: "evidence",
       content: (
-        <SkinDashboardCard
-          metrics={buildSkinDashboardMetrics(result, submission?.form, locale)}
+        <FreeResultV2EvidenceStep
+          evidence={freeResultV2Evidence}
+          photoUrl={photoUrl}
+          photoAlt={resultPhotoAlt}
+          photoFallback={copy.resultPhotoFallback}
           locale={locale}
         />
       )
     });
 
     resultSteps.push({
-      id: "top-pick",
-      content: result?.topPick ? (
-        <section className="space-y-4">
-          <ResultStepLead
-            kicker={copy.topPickStepKicker}
-            title={copy.topPickStepTitle}
-            body={null}
-          />
-          <ProductDecisionCard
-            product={result.topPick}
-            featured
-            form={submission?.form}
-            decision={result}
-            locale={locale}
-            detailItems={profileSummaryItems}
-            allowExpand={false}
-            showDiagnostics={false}
-          />
-        </section>
-      ) : (
-        <section className="space-y-4">
-          <ResultStepLead
-            kicker={copy.topPickStepKicker}
-            title={copy.topPickStepTitle}
-            body={null}
-          />
-          <TopPickFallbackCard copy={copy} locale={locale} />
-        </section>
+      id: "top-pick-preview",
+      content: (
+        <FreeResultV2TopPickStep
+          preview={freeResultV2TopPick}
+          routinePreview={freeResultV2RoutinePreview}
+          copy={copy}
+          locale={locale}
+        />
       )
     });
 
     resultSteps.push({
-      id: "routine-summary",
+      id: "routine-face-lab",
       content: (
-        <section className="space-y-4">
-          <ResultStepLead
-            kicker={copy.routineStepKicker}
-            title={copy.routineStepTitle}
-            body={null}
-          />
-
-          <RoutineFlowCard
-            sections={routineFlowSections}
-            directionCards={routineDirectionCards}
-            warnings={routineWarnings}
-            emptyText={copy.routineStepEmpty}
-            warningsLabel={decisionCopy.warnings}
-            locale={locale}
-          />
-        </section>
+        <FreeResultV2RoutineFaceLabStep
+          routinePreview={freeResultV2RoutinePreview}
+          faceLabPreview={freeResultV2FaceLabPreview}
+          locale={locale}
+        />
       )
     });
 
@@ -2448,7 +2855,7 @@ function ResultContent() {
           <ResultPreviewMaskCard
             copy={copy}
             sections={finalReportPreviewSections}
-            ctaLabel={copy.premiumCardButton}
+            ctaLabel={getFreeResultV2FullReportCtaLabel(locale)}
             onCtaClick={goToFullReport}
           />
         </section>
@@ -2672,6 +3079,307 @@ function ResultStepLead({ kicker, title, body }) {
       </div>
       {body ? <p className="ui-text-secondary mt-2 text-sm leading-6">{body}</p> : null}
     </section>
+  );
+}
+
+function FreeResultV2StepFrame({ eyebrow, title, children }) {
+  return (
+    <section className="space-y-4">
+      <div className="px-1">
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{eyebrow}</p>
+        <h2 className="mt-2 text-[2rem] font-semibold leading-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[2.25rem]">
+          {title}
+        </h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function FreeResultV2Card({ children, className = "" }) {
+  return (
+    <div className={`rounded-[2rem] border border-[#ead9d6] bg-[#fffaf6] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.14)] dark:border-[#4a303c] dark:bg-[#241720] ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function FreeResultV2PhotoFrame({ photoUrl, photoAlt, fallback }) {
+  return (
+    <div className="relative mx-auto flex aspect-[4/5] min-h-[170px] w-full max-w-[230px] items-center justify-center overflow-hidden rounded-[1.35rem] border border-[#ead2cf] bg-white/68 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+      {photoUrl ? (
+        <img src={photoUrl} alt={photoAlt} className="h-full w-full object-cover object-center" />
+      ) : (
+        <div className="px-4 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{fallback}</div>
+      )}
+    </div>
+  );
+}
+
+function FreeResultV2Pill({ children }) {
+  return (
+    <span className="inline-flex rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-medium text-[#5a2d3c] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df]">
+      {children}
+    </span>
+  );
+}
+
+function FreeResultV2LockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path d="M8 10V7.8C8 5.7 9.6 4 12 4s4 1.7 4 3.8V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="6.5" y="10" width="11" height="9" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function FreeResultV2LockRow({ label, subLabel = "", locked = true }) {
+  return (
+    <div className="flex items-center gap-3 rounded-[1.05rem] border border-[#ead9d6] bg-white/42 px-4 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-[#3a1824] dark:text-[#f3e4df]">{label}</p>
+        {subLabel ? <p className="mt-0.5 text-xs leading-5 text-[#8b6370] dark:text-[#c8aeb8]">{subLabel}</p> : null}
+      </div>
+      {locked ? (
+        <span className="shrink-0 text-[#9b7280] dark:text-[#9e7f8c]">
+          <FreeResultV2LockIcon />
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function FreeResultV2SignalList({ title, signals = [] }) {
+  return (
+    <div className="rounded-[1.45rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+      <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{title}</p>
+      <div className="mt-3 grid gap-2">
+        {signals.map((signal, index) => (
+          <div key={`${title}-${signal}-${index}`} className="flex items-start gap-2.5 rounded-[1rem] border border-[#ead9d6] bg-white/52 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#301f28]">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#e6507a] dark:bg-[#ff9aa8]" />
+            <p className="text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">{signal}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FreeResultV2DiagnosisStep({ data, photoUrl, photoAlt, photoFallback, locale = "ko" }) {
+  const isEnglish = locale === "en";
+
+  return (
+    <FreeResultV2StepFrame
+      eyebrow={isEnglish ? "Diagnosis summary" : "진단 요약"}
+      title={isEnglish ? "Core Diagnosis" : "핵심 진단"}
+    >
+      <FreeResultV2Card>
+        <div className="grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+          <FreeResultV2PhotoFrame photoUrl={photoUrl} photoAlt={photoAlt} fallback={photoFallback} />
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">
+              {isEnglish ? "One-line diagnosis" : "한 줄 진단"}
+            </p>
+            <p className="mt-2 break-keep text-[1.35rem] font-semibold leading-9 text-[#fff8f3] dark:text-[#fff8f3] sm:text-[1.5rem]">
+              <span className="text-[#26101a] dark:text-[#fff8f3]">{data.coreLine}</span>
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {data.tags.map((tag) => (
+                <FreeResultV2Pill key={`${tag.label}-${tag.value}`}>
+                  <span className="text-[#9b7280] dark:text-[#c8aeb8]">{tag.label}</span>
+                  <span className="ml-1 font-semibold">{tag.value}</span>
+                </FreeResultV2Pill>
+              ))}
+            </div>
+          </div>
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Current priority" : "지금 우선순위"}</p>
+        <div className="mt-4 grid gap-3">
+          {data.priorities.map((priority) => (
+            <div key={priority.rank} className="rounded-[1.25rem] border border-[#ead9d6] bg-white/46 px-4 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/82">
+              <div className="flex items-start gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e7c5bc] bg-[#fff4f1] text-sm font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#301f28] dark:text-[#ff9aa8]">
+                  {priority.rank}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{priority.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{priority.body}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{isEnglish ? "Recommendation direction" : "추천 방향"}</p>
+        <p className="mt-3 text-base leading-8 text-[#3a1824] dark:text-[#f3e4df]">{data.directionLine}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {data.directionTags.map((tag) => (
+            <FreeResultV2Pill key={tag}>{tag}</FreeResultV2Pill>
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Coming next" : "다음에서 확인 가능"}</p>
+        <div className="mt-3 grid gap-2">
+          <FreeResultV2LockRow label={isEnglish ? "Decision evidence" : "판단 근거"} subLabel={isEnglish ? "Photo cues and survey cues" : "사진 신호와 설문 신호"} />
+          <FreeResultV2LockRow label={isEnglish ? "Top Pick preview" : "Top Pick 미리보기"} subLabel={isEnglish ? "Name, brand, and short fit points" : "제품명, 브랜드, 짧은 적합 포인트"} />
+          <FreeResultV2LockRow label={isEnglish ? "Routine and Face Lab preview" : "루틴 방향과 Face Lab 프리뷰"} subLabel={isEnglish ? "Only the free preview level" : "무료에서 볼 수 있는 수준만 공개"} />
+        </div>
+      </FreeResultV2Card>
+    </FreeResultV2StepFrame>
+  );
+}
+
+function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback, locale = "ko" }) {
+  const isEnglish = locale === "en";
+
+  return (
+    <FreeResultV2StepFrame
+      eyebrow={isEnglish ? "Diagnosis evidence" : "진단 근거"}
+      title={isEnglish ? "Why this diagnosis?" : "왜 이렇게 판단했을까?"}
+    >
+      <FreeResultV2Card>
+        <div className="grid gap-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-start">
+          <FreeResultV2PhotoFrame photoUrl={photoUrl} photoAlt={photoAlt} fallback={photoFallback} />
+          <FreeResultV2SignalList
+            title={isEnglish ? "Photo cues" : "사진에서 보인 신호"}
+            signals={evidence.photoSignals}
+          />
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2SignalList
+        title={isEnglish ? "Survey cues" : "설문에서 보인 신호"}
+        signals={evidence.surveySignals}
+      />
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{isEnglish ? "Combined read" : "종합 해석"}</p>
+        <p className="mt-3 text-base leading-8 text-[#3a1824] dark:text-[#f3e4df]">{evidence.interpretation}</p>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Next step" : "다음 단계"}</p>
+        <p className="mt-2 text-sm leading-6 text-[#3a1824] dark:text-[#f3e4df]">
+          {isEnglish
+            ? "Next, we will open the current priority and recommendation direction."
+            : "이제 지금 우선순위와 추천 방향을 정리해드릴게요."}
+        </p>
+      </FreeResultV2Card>
+    </FreeResultV2StepFrame>
+  );
+}
+
+function FreeResultV2TopPickStep({ preview, routinePreview, copy, locale = "ko" }) {
+  const isEnglish = locale === "en";
+
+  return (
+    <FreeResultV2StepFrame
+      eyebrow={isEnglish ? "Recommendation preview" : "추천 미리보기"}
+      title={isEnglish ? "Top Pick at a glance" : "Top Pick 한눈에"}
+    >
+      {preview ? (
+        <FreeResultV2Card>
+          <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-center">
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{isEnglish ? "Candidate #1" : "1순위 후보"}</p>
+              <h3 className="mt-3 break-keep text-[1.75rem] font-semibold leading-tight text-[#26101a] dark:text-[#fff8f3]">
+                {preview.product.name}
+              </h3>
+              <p className="mt-2 text-base text-[#7a5360] dark:text-[#c8aeb8]">{preview.product.brand}</p>
+              <p className="mt-4 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">“{preview.reason}”</p>
+            </div>
+            <SmallProductThumb product={preview.product} height="h-40" locale={locale} elevated />
+          </div>
+
+          <div className="mt-5 border-t border-[#ead9d6] pt-4 dark:border-[#4a303c]">
+            <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Fit points" : "적합 포인트"}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {preview.fitPoints.map((point) => (
+                <FreeResultV2Pill key={point}>{point}</FreeResultV2Pill>
+              ))}
+            </div>
+          </div>
+        </FreeResultV2Card>
+      ) : (
+        <TopPickFallbackCard copy={copy} locale={locale} />
+      )}
+
+      <div className="grid gap-2">
+        <FreeResultV2LockRow
+          label={isEnglish ? "Full recommendation reason" : "추천 이유 전체"}
+          subLabel={isEnglish ? "Available in the full report." : "전체 리포트에서 확인할 수 있어요."}
+        />
+        <FreeResultV2LockRow
+          label={isEnglish ? "Alternative product comparison" : "대안 제품 비교"}
+          subLabel={isEnglish ? "Available in the full report." : "전체 리포트에서 확인할 수 있어요."}
+        />
+      </div>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Routine preview" : "루틴 미리보기"}</p>
+        <div className="mt-3 grid gap-2">
+          <FreeResultV2LockRow label={`AM: ${routinePreview.morning}`} locked={false} />
+          <FreeResultV2LockRow label={`PM: ${routinePreview.night}`} locked={false} />
+        </div>
+      </FreeResultV2Card>
+    </FreeResultV2StepFrame>
+  );
+}
+
+function FreeResultV2RoutineFaceLabStep({ routinePreview, faceLabPreview, locale = "ko" }) {
+  const isEnglish = locale === "en";
+
+  return (
+    <FreeResultV2StepFrame
+      eyebrow={isEnglish ? "Next step" : "다음 단계"}
+      title={isEnglish ? "Routine direction preview" : "루틴 방향 미리보기"}
+    >
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">AM / PM</p>
+        <div className="mt-4 grid gap-3">
+          <div className="rounded-[1.35rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+            <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Morning" : "아침"}</p>
+            <p className="mt-2 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">{routinePreview.morning}</p>
+          </div>
+          <div className="rounded-[1.35rem] border border-[#ead9d6] bg-white/42 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+            <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Night" : "저녁"}</p>
+            <p className="mt-2 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">{routinePreview.night}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-center text-xs leading-5 text-[#9b7280] dark:text-[#9e7f8c]">
+          {isEnglish ? "Detailed order and product placement are in the full report." : "세부 순서와 제품 배치는 전체 리포트에서 확인 가능"}
+        </p>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">Face Lab</p>
+        <p className="mt-3 text-base leading-7 text-[#3a1824] dark:text-[#f3e4df]">
+          {isEnglish ? "Representative mood: " : "대표 무드: "}
+          <span className="font-semibold text-[#26101a] dark:text-[#fff8f3]">{faceLabPreview.primary}</span>
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {faceLabPreview.keywords.map((keyword) => (
+            <FreeResultV2Pill key={keyword}>{keyword}</FreeResultV2Pill>
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card>
+        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Unlocked in the full report" : "전체 리포트에서 열리는 항목"}</p>
+        <div className="mt-3 grid gap-2">
+          <FreeResultV2LockRow label={isEnglish ? "Product operation guide" : "제품 운용법"} />
+          <FreeResultV2LockRow label={isEnglish ? "Alternative product comparison" : "대안 제품 비교"} />
+          <FreeResultV2LockRow label={isEnglish ? "Combinations to watch" : "주의할 조합"} />
+        </div>
+      </FreeResultV2Card>
+    </FreeResultV2StepFrame>
   );
 }
 

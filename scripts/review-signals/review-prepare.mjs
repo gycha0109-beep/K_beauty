@@ -112,7 +112,7 @@ async function main() {
 
   if (await isCdpReady(cdpUrl)) {
     process.stdout.write(`Chrome remote debugging is already ready: ${cdpUrl}\n`);
-    process.stdout.write("Put one CSV in data, then run: node review_in_supabase\n");
+    process.stdout.write("Put one CSV in data, then run: npm run review_in_supabase\n");
     return;
   }
 
@@ -143,7 +143,7 @@ async function main() {
 
   process.stdout.write(`Chrome remote debugging ready: ${cdpUrl}\n`);
   process.stdout.write(`Profile: ${userDataDir}\n`);
-  process.stdout.write("Put one CSV in data, then run: node review_in_supabase\n");
+  process.stdout.write("Put one CSV in data, then run: npm run review_in_supabase\n");
 }
 
 main().catch((error) => {

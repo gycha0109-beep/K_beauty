@@ -11,9 +11,9 @@ import urllib.request
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_DATA_DIR = ROOT_DIR / "data" / "hwahae"
-BUILD_SCRIPT = ROOT_DIR / "scripts" / "build_hwahae_import_package.py"
+BUILD_SCRIPT = Path(__file__).resolve().parent / "build_hwahae_import_package.py"
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")

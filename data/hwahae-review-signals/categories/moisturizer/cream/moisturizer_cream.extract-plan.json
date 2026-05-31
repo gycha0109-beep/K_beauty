@@ -4,7 +4,7 @@
     "category": "moisturizer_cream",
     "categoryFolder": "moisturizer\\cream",
     "outDir": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\cream",
-    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\화해 제품 리뷰 추출.js",
+    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\console-snippets\\화해 제품 리뷰 추출.js",
     "mode": "extract",
     "supabaseStatus": "checked 6/6",
     "totalRows": 6,

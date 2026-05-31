@@ -1,5 +1,5 @@
 r'''
-python ".\scripts\build_hwahae_import_package.py" `
+python ".\scripts\hwahae-import\build_hwahae_import_package.py" `
   --products ".\data\hwahae\products_rows.csv" `
   --candidates ".\data\hwahae\크롤링 한 제이슨.json" `
   --manual-overrides ".\data\hwahae\manual_overrides.csv" `
