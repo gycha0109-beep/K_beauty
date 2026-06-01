@@ -43,8 +43,8 @@ Package wrapper:
 
 | npm script | 실제 파일 | 역할 |
 |---|---|---|
-| `hwahae:prepare` | `scripts/hwahae-import/prepare_hwahae_batch.py` | `data/hwahae/*.json`을 찾아 live products CSV를 임시 생성하고 batch 변환 실행 |
-| `hwahae:override` | `scripts/hwahae-import/prepare_hwahae_batch.py` | `manual_overrides.*` 반영 후 같은 batch 변환 재실행 |
+| `npm run hwahae:prepare` | `scripts/hwahae-import/prepare_hwahae_batch.py` | `data/hwahae/*.json`을 찾아 live products CSV를 임시 생성하고 batch 변환 실행 |
+| `npm run hwahae:override` | `scripts/hwahae-import/prepare_hwahae_batch.py` | `manual_overrides.*` 반영 후 같은 batch 변환 재실행 |
 
 내부 변환기:
 
