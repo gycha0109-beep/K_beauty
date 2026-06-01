@@ -227,3 +227,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Step 4 is intentionally a placeholder for the next expected-change task. Existing unrelated dirty files remained untouched.
 - Reusable rule: Free result v2 should keep roles separated by step: 1 summary, 2 evidence, 3 recommendation plus use direction, 4 expected change, 5 premium continuation.
 - Context promotion candidate: Candidates
+
+### 2026-06-01 / free result v2 step 3 density refinement
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 3 UI density and copy refinement in `app/result/page.js` only; API, DB, recommendation logic, step count, and other result steps were out of scope.
+- Goal: Improve the Step 3 recommendation/use guide layout using the reference for hierarchy and density while preserving the current information structure.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 3 with scrollWidth/clientWidth 390/390 and no console/page errors.
+- Notes/risks: The in-app browser control path had a click-runtime issue, so the 390px verification used Playwright directly against the same localhost page.
+- Reusable rule: Step 3 should keep Top Pick compact, make the use routine the visual focus, and phrase locked cards as decisions the user can resolve.
+- Context promotion candidate: Candidates

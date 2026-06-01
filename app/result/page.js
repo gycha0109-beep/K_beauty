@@ -3765,28 +3765,100 @@ function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback,
 
 function getFreeResultV2ProductRoles(locale = "ko") {
   return locale === "en"
-    ? ["Moisture boost", "Light feel", "Daily use"]
-    : ["수분 보강", "가벼운 사용감", "데일리 사용"];
+    ? [
+        { key: "moisture", title: "Moisture boost", body: "Helps with inner dryness" },
+        { key: "light", title: "Light feel", body: "Keeps oil burden low" },
+        { key: "daily", title: "Daily use", body: "Easy to keep using" }
+      ]
+    : [
+        { key: "moisture", title: "수분 보강", body: "속건조 케어" },
+        { key: "light", title: "가벼운 사용감", body: "유분 부담 최소화" },
+        { key: "daily", title: "데일리 사용", body: "매일 편하게" }
+      ];
+}
+
+function FreeResultV2RoleIcon({ type = "moisture" }) {
+  if (type === "light") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M5 15.5C10.8 14.9 15.4 11 18.4 5c1.4 6.8-1 11.8-6.1 13.5-2.5.8-5 .2-7.3-3Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8.8 15.2c1.9-1.6 3.7-2.8 5.8-3.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "daily") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <rect x="5" y="5.5" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M8 4v3M16 4v3M5 10h14M9 14h1.5M13.5 14H15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="M12 4.4c3 3.5 5.1 6.4 5.1 9.1a5.1 5.1 0 0 1-10.2 0c0-2.7 2.1-5.6 5.1-9.1Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FreeResultV2RoleCard({ role }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-[1.05rem] border border-[#ead9d6] bg-white/42 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/30 bg-[#ff9aa8]/12 text-[#ff9aa8]">
+        <FreeResultV2RoleIcon type={role.key} />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{role.title}</span>
+        <span className="mt-0.5 block text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{role.body}</span>
+      </span>
+    </div>
+  );
 }
 
 function FreeResultV2CompactRoutineFlow({ title, steps = [], tone = "morning" }) {
   const safeSteps = steps.slice(0, 3);
+  const flowText = safeSteps.join(" → ");
 
   return (
-    <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/38 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/72">
+    <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/42 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/76">
       <div className="flex items-center gap-2.5">
         <FreeResultV2RoutineIcon tone={tone} />
-        <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{title}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{title}</p>
+          <p className="mt-0.5 truncate text-xs text-[#7a5360] dark:text-[#c8aeb8]">{flowText}</p>
+        </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2">
         {safeSteps.map((step, index) => (
-          <div key={`${title}-${step}`} className="min-w-0 rounded-[0.95rem] border border-[#ead9d6] bg-white/50 px-2 py-2 text-center dark:border-[#6a4353] dark:bg-[#301f28]">
+          <div key={`${title}-${step}`} className="min-w-0 rounded-[0.9rem] border border-[#ead9d6] bg-white/50 px-2 py-2 text-center dark:border-[#6a4353] dark:bg-[#301f28]">
             <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full border border-[#f2c4ca] bg-[#fff8f3] text-[10px] font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#241720] dark:text-[#ff9aa8]">
               {index + 1}
             </span>
             <span className="mt-1.5 block break-keep text-[11px] font-semibold leading-4 text-[#3a1824] dark:text-[#f3e4df]">{step}</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function FreeResultV2Step3LockCard({ title, subLabel = "" }) {
+  return (
+    <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/34 p-4 dark:border-[#5a3a48] dark:bg-[#241720]/82">
+      <div className="flex items-start gap-3 sm:block sm:text-center">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/32 bg-[#ff9aa8]/10 text-[#ff9aa8] sm:mx-auto">
+          <FreeResultV2LockIcon />
+        </span>
+        <div className="min-w-0 sm:mt-3">
+          <p className="break-keep text-sm font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">{title}</p>
+          {subLabel ? <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{subLabel}</p> : null}
+          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#ff9aa8]/34 px-3 py-1.5 text-xs font-semibold text-[#e6507a] dark:text-[#ff9aa8]">
+            {subLabel ? "자세히 보기" : "보기"}
+            <span aria-hidden="true">›</span>
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -3803,15 +3875,20 @@ function FreeResultV2RecommendationGuideStep({ preview, routinePreview, copy, lo
       body={isEnglish ? "Your matched product and how to use it, in one flow." : "맞춤 추천 제품과 사용 방향을 한 번에 정리했어요."}
     >
       {preview ? (
-        <FreeResultV2Card>
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[#e6507a] dark:text-[#ff9aa8]">Top Pick</p>
-          <div className="mt-4 grid grid-cols-[7rem_minmax(0,1fr)] gap-4 sm:grid-cols-[14rem_minmax(0,1fr)] sm:items-center">
-            <SmallProductThumb product={preview.product} height="h-36 sm:h-64" locale={locale} elevated />
+        <FreeResultV2Card className="bg-[linear-gradient(145deg,rgba(255,250,246,0.96),rgba(255,244,241,0.88))] dark:bg-[linear-gradient(145deg,rgba(36,23,32,0.98),rgba(31,18,27,0.98))]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#ff9aa8]/36 bg-[#ff9aa8]/10 px-3 py-1.5 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#e6507a] dark:text-[#ff9aa8]">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+              <path d="m5 8.4 3.5 2.2L12 5l3.5 5.6L19 8.4 17.8 17H6.2L5 8.4Z" />
+            </svg>
+            Top Pick
+          </span>
+          <div className="mt-4 grid grid-cols-[6.4rem_minmax(0,1fr)] gap-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-center">
+            <SmallProductThumb product={preview.product} height="h-32 sm:h-56" locale={locale} elevated />
             <div className="min-w-0">
               <h3 className="break-keep text-[1.45rem] font-semibold leading-tight text-[#26101a] dark:text-[#fff8f3] sm:text-[1.75rem]">
                 {preview.product.name}
               </h3>
-              <p className="mt-2 text-base text-[#7a5360] dark:text-[#c8aeb8]">{preview.product.brand}</p>
+              <p className="mt-2 text-base font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{preview.product.brand}</p>
               <p className="mt-4 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">“{preview.reason}”</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {preview.fitPoints.slice(0, 3).map((point) => (
@@ -3821,17 +3898,20 @@ function FreeResultV2RecommendationGuideStep({ preview, routinePreview, copy, lo
             </div>
           </div>
 
-          <div className="mt-5 rounded-[1.25rem] border border-[#ead9d6] bg-white/34 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/62">
+          <div className="mt-5 rounded-[1.35rem] border border-[#ead9d6] bg-white/34 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/62">
             <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Role in your routine" : "이 제품이 맡는 역할"}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {productRoles.map((role) => (
-                <FreeResultV2Pill key={role}>{role}</FreeResultV2Pill>
+                <FreeResultV2RoleCard key={role.key} role={role} />
               ))}
             </div>
           </div>
 
-          <div className="mt-5 border-t border-[#ead9d6] pt-5 dark:border-[#5a3a48]">
-            <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Custom use routine" : "맞춤 활용 루틴"}</p>
+          <div className="mt-5 rounded-[1.55rem] border border-[#ff9aa8]/22 bg-[rgba(255,154,168,0.045)] p-4 dark:border-[#6a4353] dark:bg-[#2a1b24]/72">
+            <p className="flex items-center gap-2 text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
+              <span className="text-[#e6507a] dark:text-[#ff9aa8]" aria-hidden="true">✦</span>
+              {isEnglish ? "Custom use routine" : "맞춤 활용 루틴"}
+            </p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <FreeResultV2CompactRoutineFlow
                 title={isEnglish ? "Morning direction" : "아침 방향"}
@@ -3853,18 +3933,18 @@ function FreeResultV2RecommendationGuideStep({ preview, routinePreview, copy, lo
         <TopPickFallbackCard copy={copy} locale={locale} />
       )}
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        <FreeResultV2LockRow
-          label={isEnglish ? "Full Top Pick reason" : "Top Pick 선정 이유 전체"}
-          subLabel={isEnglish ? "Why this became #1." : "1순위로 추천한 근거"}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <FreeResultV2Step3LockCard
+          title={isEnglish ? "Why was this product ranked #1?" : "왜 이 제품이 1순위였을까?"}
+          subLabel={isEnglish ? "See the full selection reason." : "상세 선정 이유 전체 보기"}
         />
-        <FreeResultV2LockRow
-          label={isEnglish ? "Alternative comparison" : "대안 제품 비교"}
-          subLabel={isEnglish ? "Other candidates for your skin." : "피부에 맞는 다른 후보"}
+        <FreeResultV2Step3LockCard
+          title={isEnglish ? "What if this product does not fit?" : "이 제품이 안 맞으면 어떤 대안이 있을까?"}
+          subLabel={isEnglish ? "Compare alternative products." : "대안 제품 비교 보기"}
         />
-        <FreeResultV2LockRow
-          label={isEnglish ? "Detailed order and frequency" : "세부 제품 순서와 사용 빈도"}
-          subLabel={isEnglish ? "When and how often to use it." : "언제, 얼마나 쓸지"}
+        <FreeResultV2Step3LockCard
+          title={isEnglish ? "See the 3-minute AM / 5-minute PM routine" : "아침 3분 / 저녁 5분 루틴 자세히 보기"}
+          subLabel={isEnglish ? "Detailed product order and frequency." : "세부 제품 순서와 사용 빈도"}
         />
       </div>
 
