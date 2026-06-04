@@ -240,3 +240,141 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The in-app browser control path had a click-runtime issue, so the 390px verification used Playwright directly against the same localhost page.
 - Reusable rule: Step 3 should keep Top Pick compact, make the use routine the visual focus, and phrase locked cards as decisions the user can resolve.
 - Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 3 mobile readability cleanup
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 3 UI-only cleanup in `app/result/page.js`; recommendation logic, API, DB, data fields, step structure, and other steps were out of scope.
+- Goal: Make Step 3 easier to scan on mobile by emphasizing the core product role, changing AM/PM routines to a clearer vertical flow, and compressing locked cards.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 3 with scrollWidth/clientWidth 390/390 and no console/page errors.
+- Notes/risks: Verification used Playwright directly against localhost:3001; no API/DB/recommendation code was changed.
+- Reusable rule: On mobile, Step 3 roles should distinguish core vs supporting roles, routines should read vertically, and locked cards should use compact decision-oriented rows.
+- Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 4 management checkpoints
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 4 UI role rebuild in `app/result/page.js`; API, DB, recommendation logic, data fields, payment, and full-report pages were out of scope.
+- Goal: Replace the temporary routine/expected-change Step 4 with a management checkpoint page focused on observation, maintenance, and caution signals after applying the recommendation.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 4 with scrollWidth/clientWidth 390/390, no console/page errors, required checkpoint sections present, and forbidden Step 3 repeats absent.
+- Notes/risks: Step 4 now has a clearer management role, but the final flow still needs the next UX decision for whether Step 4 should become expected-change content later or keep the checkpoint role.
+- Reusable rule: Step 4 should avoid Top Pick, AM/PM routine, Face Lab, current-priority, and recommendation-direction repeats; it should focus on management, observation, and caution.
+- Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 4 recommendation validation
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 4 UI-only role change in `app/result/page.js`; API, DB, recommendation logic, data fields, payment, and full-report pages were out of scope.
+- Goal: Reframe Step 4 from management checkpoints into a recommendation validation page that helps the user judge whether the recommended routine fits their skin.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 4 with scrollWidth/clientWidth 390/390, no console/page errors, required validation sections present, and Step 3 repeats absent.
+- Notes/risks: Section 1 uses four fit signals, so Step 4 is slightly longer than the reference. The hierarchy is clearer, but the Step 4-to-Step 5 CTA wording may still need tuning after Step 5 is finalized.
+- Reusable rule: Step 4 should answer "how do I know this recommendation fits?" with positive fit signals and adjustment signals, not repeat recommendation product, AM/PM routine, Face Lab, or priority content.
+- Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 3 structure compression
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 3 UI structure refactor in `app/result/page.js`; API, DB, recommendation logic, data fields, payment, and full-report pages were out of scope.
+- Goal: Compress Step 3 by merging product tags and role information, switching AM/PM routine display to a single tabbed routine card, and consolidating paid prompts into one preview list.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 3 with scrollWidth/clientWidth 390/390, no console/page errors, default morning tab visible, night tab switch working, and Step 4 validation content absent from Step 3.
+- Notes/risks: Step 3 is shorter and less lock-heavy, but the product image placeholder still limits the visual polish until a real product image is available.
+- Reusable rule: Step 3 should show one recommendation, one active routine view, and one consolidated premium preview box; avoid separate lock cards and repeated fit/role tags.
+- Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 4 signal toggle compression
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 4 UI-only refactor in `app/result/page.js`; API, DB, recommendation logic, data fields, payment, and other result steps were out of scope.
+- Goal: Compress Step 4 into the same toggle pattern as Step 3, showing either fit signals or adjustment signals while consolidating the full-report preview into one list box.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px Playwright check passed on Step 4 with scrollWidth/clientWidth 390/390, no console/page errors, fit tab default active, adjustment tab switching correctly, and full-report items rendered as one list box.
+- Notes/risks: Step 4 is now much shorter, but the visual balance depends on whether the full-report CTA remains below this step or moves into Step 5 copy later.
+- Reusable rule: Step 4 validation signals should use one toggle card and one consolidated full-report preview; do not show fit and adjustment groups simultaneously.
+- Context promotion candidate: Candidates
+
+### 2026-06-02 / free result v2 step 5 execution guide conversion
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 5 UI-only premium conversion refactor in `app/result/page.js`, with display-label support in `components/result/SaveReportCTA.jsx`; API, DB, payment, recommendation logic, Full Report, and Step 1-4 content were out of scope.
+- Goal: Replace the final locked-card list with a compact "my skin execution guide" conversion screen focused on order, frequency, avoided combinations, and alternatives.
+- Changed files: app/result/page.js, components/result/SaveReportCTA.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Auth/save behavior was not changed; `SaveReportCTA` only received optional label/helper text overrides for the final free-save presentation.
+- Validation: `git diff --check` passed with CRLF warnings only; `npm run build` passed; `/test-result` 390px in-app browser check passed on localhost:3002 with scrollWidth/clientWidth 390/390, required Step 5 copy present, old large AM/PM cards absent, no new console/page errors, and a clean Playwright screenshot saved.
+- Notes/risks: localhost:3001 was an older long-running Next server, so latest UI verification used a separate localhost:3002 dev server. Production `next start` cannot verify `/test-result` because that route redirects in production mode.
+- Reusable rule: Step 5 should close the free flow with one execution-guide card, one blurred routine preview, one compact included-items list, and one primary action-oriented CTA.
+- Context promotion candidate: Candidates
+
+### 2026-06-04 / free result v2 step 2 evidence signal flip toggle
+
+- 브랜치: feature/free-result-flow-v2
+- 작업 유형: 실행형
+- 라우팅 판단: /test-result Step 2의 판단 근거 카드 표시 방식만 바꾸는 제한된 UI 작업이며, API/DB/추천 로직/저장 구조/결제/Full Report는 범위 밖이므로 실행형으로 처리
+- 목표: Step 3 루틴 카드처럼 사진/설문 신호를 토글로 전환하고, 신호 카드 영역 클릭 시 뒤집히는 애니메이션으로 두 신호 묶음을 확인하게 만들기
+- 변경 파일: app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: API 응답 필드, 저장 데이터 구조, 인증/권한, DB schema/migration/policy, 결제, 배포 설정 미수정
+- 검증 결과: `git diff --check` 통과(CRLF warning만 있음), `npm run build` 성공, in-app Browser에서 `/test-result` Step 2 진입 후 사진/설문 탭 각각 1개 노출 확인, 설문 탭 전환과 카드 클릭 후 사진 탭 복귀 확인, scrollWidth/clientWidth 380/380, console error 없음
+- 문제/주의점: in-app Browser viewport screenshot 캡처는 CDP timeout으로 실패했지만, DOM/상태/폭/콘솔 검증은 완료함
+- 다음 작업: 실제 모바일 화면에서 flip 전환이 너무 빠르거나 느리면 duration만 미세 조정
+- 재사용할 규칙: 무료 결과의 병렬 근거 정보는 한 화면에 모두 펼치기보다 탭과 단일 active card로 압축해 텍스트 밀도를 낮춘다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
+### 2026-06-04 / free result v2 step 2 photo cue reveal animation
+
+- 브랜치: feature/free-result-flow-v2
+- 작업 유형: 실행형
+- 라우팅 판단: /test-result Step 2 사진 분석 카드의 설명 노출 방식만 조정하는 제한된 UI 작업이며, API/DB/추천 로직/저장 구조/인증/결제/Full Report는 범위 밖이므로 실행형으로 처리
+- 목표: 사진 분석 설명 텍스트를 기본 숨김 상태로 두고, 사진을 누르면 유도 문구가 사라지며 설명 callout들이 튀어나오는 애니메이션을 적용
+- 변경 파일: app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: API 응답 필드, 저장 데이터 구조, 인증/권한, DB schema/migration/policy, 결제, 배포 설정 미수정
+- 검증 결과: `git diff --check` 통과(CRLF warning만 있음), `npm run build` 성공, Playwright 390px에서 Step 2 진입 확인, 사진 CTA `눌러보세요!` 기본 노출 확인, 사진 클릭 후 `aria-expanded=true` 및 유도 문구 제거 확인, scrollWidth/clientWidth 390/390, console/page error 없음
+- 문제/주의점: in-app Browser 현재 탭에서는 하단 CTA 클릭이 step을 이동시키지 않아, 동일 localhost에 대해 별도 Playwright로 상호작용 검증함
+- 다음 작업: 실제 모바일 화면에서 callout 튀어나오는 강도가 과하면 spring stiffness/damping만 미세 조정
+- 재사용할 규칙: 사진 위 분석 설명은 처음부터 전부 노출하지 않고, 클릭 유도와 reveal 애니메이션으로 단계적으로 열어 모바일 밀도를 낮춘다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
+### 2026-06-04 / free result v2 step 2 photo cue persistence
+
+- 브랜치: feature/free-result-flow-v2
+- 작업 유형: 실행형
+- 라우팅 판단: Step 2 사진 분석 카드의 reveal 상태와 점선 오버레이 노출만 조정하는 UI 상태 작업이며, API/DB/추천 로직/저장 데이터/인증/결제/Full Report는 범위 밖이므로 실행형으로 처리
+- 목표: 사진을 한 번 누른 뒤 다른 step이나 새로고침 후 돌아와도 분석 설명이 펼쳐진 상태로 유지되고, 점선 동그라미도 설명과 함께 나타나도록 조정
+- 변경 파일: app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: API 응답 필드, 저장 데이터 구조, 인증/권한, DB schema/migration/policy, 결제, 배포 설정 미수정. UI reveal 여부만 sessionStorage에 저장
+- 검증 결과: `git diff --check` 통과(CRLF warning만 있음), `npm run build` 성공, Playwright 390px에서 기본 상태 `aria-expanded=false`, CTA 노출, 점선 오버레이 `aria-hidden=true`/opacity 0 확인. 클릭 후 `aria-expanded=true`, CTA 제거, 점선 오버레이 `aria-hidden=false`/opacity 1 확인. Step 3 이동 후 이전 및 새로고침 후 Step 2 재진입에서도 펼쳐진 상태 유지 확인. scrollWidth/clientWidth 390/390, console/page error 없음
+- 문제/주의점: 없음
+- 다음 작업: 실제 모바일 화면에서 sessionStorage 유지 범위가 과하면 브라우저 세션 한정 대신 parent state로 좁힐 수 있음
+- 재사용할 규칙: 인터랙션으로 한 번 연 분석 보조 정보는 같은 결과 확인 세션 안에서는 다시 접히지 않게 유지해 반복 클릭 부담을 줄인다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
+### 2026-06-04 / free result v2 step 2 bridge CTA lead-in
+
+- 브랜치: feature/free-result-flow-v2
+- 작업 유형: 실행형
+- 라우팅 판단: Step 2 마지막에 Step 3 CTA를 연결하는 단일 UI 요소를 추가하는 작업이며, API/DB/추천 로직/저장 데이터/인증/결제/Full Report는 범위 밖이므로 실행형으로 처리
+- 목표: CTA 직전에 정보 카드보다 가벼운 bridge 영역을 추가해 "이 분석을 바탕으로 가장 적합한 제품과 활용 방법을 정리했습니다." 문구로 Step 2에서 Step 3로 자연스럽게 연결
+- 변경 파일: app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: API 응답 필드, 저장 데이터 구조, 인증/권한, DB schema/migration/policy, 결제, 배포 설정 미수정
+- 검증 결과: `git diff --check` 통과(CRLF warning만 있음), `npm run build` 성공, Playwright 390px에서 bridge 문구 노출, `종합 해석` 미노출 유지, bridge가 CTA 바로 위에 배치됨 확인, bridge 높이 66px, scrollWidth/clientWidth 390/390, console/page error 없음
+- 문제/주의점: 없음
+- 다음 작업: 실제 기기에서 CTA보다 bridge가 강하게 보이면 border/background opacity만 낮춰 조정
+- 재사용할 규칙: Step 간 연결 문구는 독립 정보 카드가 아니라 CTA 직전의 낮은 무게 bridge로 처리해 다음 행동을 방해하지 않는다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`

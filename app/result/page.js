@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Fragment, Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
@@ -970,6 +970,8 @@ function getAdvanceLabelForStep(stepId, copy) {
       return isEnglish ? "See why" : "왜 이렇게 판단했나요?";
     case "recommendation-guide":
       return isEnglish ? "See recommendation guide" : "추천 & 활용 보기";
+    case "recommendation-validation":
+      return isEnglish ? "Check recommendation fit" : "추천이 맞는지 확인하기";
     case "top-pick-preview":
       return copy.ctaViewTopPick;
     case "expected-change-preview":
@@ -987,7 +989,7 @@ function getAdvanceLabelForStep(stepId, copy) {
     case "warnings":
       return copy.ctaViewTips;
     case "premium-preview":
-      return getFreeResultV2FullReportCtaLabel(isEnglish ? "en" : "ko");
+      return isEnglish ? "See full management guide" : "전체 관리 가이드 보기";
     default:
       return copy.next;
   }
@@ -2983,7 +2985,6 @@ function ResultContent() {
   const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
   const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
   const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
-  const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
       product_id: result?.topPick?.id || null,
@@ -3046,30 +3047,19 @@ function ResultContent() {
     });
 
     resultSteps.push({
-      id: "expected-change-preview",
+      id: "recommendation-validation",
       content: (
-        <FreeResultV2ExpectedChangePlaceholderStep locale={locale} />
+        <FreeResultV2RecommendationValidationStep locale={locale} />
       )
     });
 
     resultSteps.push({
       id: "premium-preview",
       content: (
-        <section className="space-y-4">
-          <ResultStepLead
-            kicker={copy.premiumCardKicker}
-            title={copy.premiumPreviewTitle}
-            body={null}
-          />
-
-          <ResultPreviewMaskCard
-            copy={copy}
-            sections={finalReportPreviewSections}
-            ctaLabel={getFreeResultV2FullReportCtaLabel(locale)}
-            onCtaClick={goToFullReport}
-            locale={locale}
-          />
-        </section>
+        <FreeResultV2FullReportCompletionStep
+          locale={locale}
+          onCtaClick={goToFullReport}
+        />
       )
     });
   }
@@ -3205,6 +3195,8 @@ function ResultContent() {
                 submission={submission}
                 faceLabFull={faceLabFull}
                 locale={locale}
+                labelOverride={isEnglish ? "Save only to my skin record" : "내 피부 기록에만 무료 저장"}
+                helperTextOverride=""
                 onSaved={() => setIsReportSaved(true)}
                 previousLabel={copy.previous}
                 onPrevious={
@@ -3372,62 +3364,165 @@ function FreeResultV2AnalysisOverlay({ locale = "ko" }) {
   );
 }
 
-function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = "left" }) {
+function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = "left", isVisible = true, origin = "left", delay = 0 }) {
   const colorClass = tone === "blue"
-    ? "border-[#9fb4ff]/42 bg-[#2c2d45]/58 text-[#d8e0ff]"
-    : "border-[#ff9aa8]/42 bg-[#3b2431]/58 text-[#ffe4e8]";
+    ? "border-[#9fb4ff]/60 bg-[#eef3ff]/90 text-[#465f9a] dark:border-[#9fb4ff]/40 dark:bg-[#2c2d45]/60 dark:text-[#d8e0ff]"
+    : "border-[#ff9aa8]/60 bg-[#fff0f4]/90 text-[#9a3657] dark:border-[#ff9aa8]/40 dark:bg-[#3b2431]/60 dark:text-[#ffe4e8]";
+  const hiddenX = origin === "left" ? 42 : -42;
 
   return (
-    <div className={`max-w-[6.75rem] ${align === "right" ? "text-left" : "text-right"}`}>
+    <motion.div
+      className={`max-w-[6.75rem] ${align === "right" ? "text-left" : "text-right"}`}
+      initial={false}
+      animate={isVisible ? { opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 } : { opacity: 0, x: hiddenX, y: 8, scale: 0.86, rotate: origin === "left" ? 4 : -4 }}
+      transition={{
+        type: "spring",
+        stiffness: 430,
+        damping: 23,
+        mass: 0.8,
+        delay
+      }}
+      style={{ pointerEvents: isVisible ? "auto" : "none" }}
+      aria-hidden={!isVisible}
+    >
       <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-none shadow-[0_0_16px_rgba(255,154,168,0.12)] ${colorClass}`}>
         {title}
       </span>
-      <p className="mt-2 text-[10px] leading-4 text-[#c8aeb8]">{body}</p>
-    </div>
+      <p className="mt-2 text-[10px] leading-4 text-[#664250] dark:text-[#c8aeb8]">{body}</p>
+    </motion.div>
   );
 }
 
 function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, locale = "ko" }) {
   const isEnglish = locale === "en";
+  const [isCalloutsOpen, setIsCalloutsOpen] = useState(false);
+  const storageKey = "bejewely:free-result-v2:evidence-photo-callouts-open";
   const callouts = isEnglish
     ? {
         badge: "AI analysis view",
+        reveal: "Tap to reveal",
+        revealLabel: "Reveal photo analysis cues",
         oil: ["T-zone oiliness", "Forehead and nose shine"],
         pores: ["Visible pores", "Pore texture around cheeks"],
         dry: ["Lower moisture", "Cheek area looks dry"]
       }
     : {
         badge: "AI 분석 뷰",
+        reveal: "눌러보세요!",
+        revealLabel: "사진 분석 신호 보기",
         oil: ["T존 유분감", "이마와 코 주변 유분감 확인"],
         pores: ["모공 가시성", "볼 주변 모공이 보이는 편"],
         dry: ["수분감 저하", "볼 주변이 건조해 보임"]
       };
+  const revealCallouts = () => {
+    setIsCalloutsOpen(true);
+
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(storageKey, "true");
+      } catch {
+        // Ignore storage failures; the reveal still works for the current view.
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (window.sessionStorage.getItem(storageKey) === "true") {
+        setIsCalloutsOpen(true);
+      }
+    } catch {
+      // Ignore storage failures; the default collapsed state is acceptable.
+    }
+  }, [storageKey]);
 
   return (
     <FreeResultV2Card className="overflow-hidden">
       <div className="relative">
-        <span className="absolute left-0 top-0 z-20 rounded-full border border-[#ead9d6] bg-white/52 px-3 py-1.5 text-[11px] font-semibold text-[#3a1824] backdrop-blur-sm dark:border-[#5a3a48] dark:bg-[#2a1b24]/72 dark:text-[#f3e4df]">
+        <span className="absolute left-0 top-0 z-20 rounded-full border border-[#e8c8d0] bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-[#321724] backdrop-blur-sm dark:border-[#5a3a48] dark:bg-[#2a1b24]/75 dark:text-[#f3e4df]">
           {callouts.badge}
         </span>
         <div className="grid min-h-[16rem] grid-cols-[minmax(3.6rem,0.8fr)_minmax(7.4rem,1.7fr)_minmax(3.6rem,0.8fr)] items-center gap-2 pt-8">
           <div className="flex h-full items-center justify-end">
-            <FreeResultV2EvidencePhotoCallout title={callouts.dry[0]} body={callouts.dry[1]} tone="blue" />
+            <FreeResultV2EvidencePhotoCallout
+              title={callouts.dry[0]}
+              body={callouts.dry[1]}
+              tone="blue"
+              isVisible={isCalloutsOpen}
+              origin="left"
+              delay={isCalloutsOpen ? 0.06 : 0}
+            />
           </div>
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-[13rem] overflow-hidden rounded-[1.6rem] border border-[#ead2cf] bg-white/68 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+          <button
+            type="button"
+            onClick={revealCallouts}
+            className="relative mx-auto block aspect-[4/5] w-full max-w-[13rem] overflow-hidden rounded-[1.6rem] border border-[#ead2cf] bg-white/68 p-0 text-left outline-none transition hover:border-[#ff9aa8]/52 focus-visible:ring-2 focus-visible:ring-[#ff9aa8]/70 dark:border-[#5a3a48] dark:bg-[#2a1b24]"
+            aria-label={callouts.revealLabel}
+            aria-expanded={isCalloutsOpen}
+          >
             {photoUrl ? (
               <img src={photoUrl} alt={photoAlt} className="h-full w-full object-cover object-center" />
             ) : (
               <div className="flex h-full items-center justify-center px-4 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{fallback}</div>
             )}
-            <div className="pointer-events-none absolute inset-0">
+            <motion.div
+              className="pointer-events-none absolute inset-0"
+              initial={false}
+              animate={isCalloutsOpen ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.94 }}
+              transition={{
+                type: "spring",
+                stiffness: 430,
+                damping: 24,
+                mass: 0.8,
+                delay: isCalloutsOpen ? 0.02 : 0
+              }}
+              aria-hidden={!isCalloutsOpen}
+            >
               <span className="absolute left-[42%] top-[12%] flex h-[22%] w-[25%] items-center justify-center rounded-[48%] border border-dashed border-[#ff9aa8]/82 bg-[#ff9aa8]/10 text-[12px] font-semibold text-[#ffd9de] shadow-[0_0_18px_rgba(255,154,168,0.28)]">T</span>
               <span className="absolute left-[24%] top-[52%] h-[17%] w-[21%] rounded-full border border-dashed border-[#9fb4ff]/76 bg-[#9fb4ff]/12 shadow-[0_0_18px_rgba(159,180,255,0.24)]" />
               <span className="absolute right-[18%] top-[41%] h-[16%] w-[18%] rounded-full border border-dashed border-[#ff9a8a]/76 bg-[#ff9a8a]/12 shadow-[0_0_18px_rgba(255,154,168,0.24)]" />
-            </div>
-          </div>
+            </motion.div>
+            <AnimatePresence>
+              {!isCalloutsOpen ? (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 z-10 flex items-end justify-center bg-[linear-gradient(180deg,transparent_46%,rgba(26,13,21,0.42)_100%)] p-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.22 }}
+                >
+                  <motion.span
+                    className="inline-flex items-center rounded-full border border-white/44 bg-[#241720]/78 px-3 py-1.5 text-[11px] font-semibold text-[#fff8f3] shadow-[0_12px_30px_rgba(20,10,16,0.28)] backdrop-blur-sm"
+                    animate={{ y: [0, -4, 0], scale: [1, 1.04, 1] }}
+                    transition={{ duration: 1.35, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    {callouts.reveal}
+                  </motion.span>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </button>
           <div className="flex h-full flex-col justify-center gap-8">
-            <FreeResultV2EvidencePhotoCallout title={callouts.oil[0]} body={callouts.oil[1]} align="right" />
-            <FreeResultV2EvidencePhotoCallout title={callouts.pores[0]} body={callouts.pores[1]} align="right" />
+            <FreeResultV2EvidencePhotoCallout
+              title={callouts.oil[0]}
+              body={callouts.oil[1]}
+              align="right"
+              isVisible={isCalloutsOpen}
+              origin="right"
+              delay={isCalloutsOpen ? 0.14 : 0}
+            />
+            <FreeResultV2EvidencePhotoCallout
+              title={callouts.pores[0]}
+              body={callouts.pores[1]}
+              align="right"
+              isVisible={isCalloutsOpen}
+              origin="right"
+              delay={isCalloutsOpen ? 0.22 : 0}
+            />
           </div>
         </div>
       </div>
@@ -3553,6 +3648,22 @@ function FreeResultV2LockRow({ label, subLabel = "", locked = true }) {
   );
 }
 
+function FreeResultV2EvidenceSourceIcon({ tone = "photo", className = "h-5 w-5" }) {
+  const isSurvey = tone === "survey";
+
+  return isSurvey ? (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path d="M8 5h8M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <rect x="6" y="3" width="12" height="18" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path d="M8 7h8l1 2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h2l1-2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <circle cx="12" cy="14" r="3" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
 function FreeResultV2EvidenceSignalGroup({ title, signals = [], tone = "photo" }) {
   const isSurvey = tone === "survey";
   const dotClass = isSurvey ? "bg-[#9aaeff]" : "bg-[#e6507a] dark:bg-[#ff9aa8]";
@@ -3564,17 +3675,7 @@ function FreeResultV2EvidenceSignalGroup({ title, signals = [], tone = "photo" }
     <div className="min-w-0">
       <div className="flex items-center gap-3">
         <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${iconBg}`}>
-          {isSurvey ? (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-              <path d="M8 5h8M8 9h8M8 13h5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-              <rect x="6" y="3" width="12" height="18" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-              <path d="M8 7h8l1 2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h2l1-2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-              <circle cx="12" cy="14" r="3" stroke="currentColor" strokeWidth="1.7" />
-            </svg>
-          )}
+          <FreeResultV2EvidenceSourceIcon tone={tone} />
         </span>
         <p className={`text-sm font-semibold ${isSurvey ? "text-[#6f5ca8] dark:text-[#b8c4ff]" : "text-[#e6507a] dark:text-[#ff9aa8]"}`}>
           {title}
@@ -3624,49 +3725,130 @@ function getFreeResultV2EvidenceSignalNote(signal = "", tone = "photo") {
   return /[ㄱ-ㅎ가-힣]/.test(text) ? "사진에서 확인된 신호" : "Visible cue in the photo";
 }
 
+function FreeResultV2EvidenceSignalFace({ source, isActive }) {
+  return (
+    <div
+      className={`col-start-1 row-start-1 min-w-0 rounded-[1.35rem] border border-[#ead9d6] bg-white/28 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66 ${isActive ? "" : "pointer-events-none"}`}
+      style={{
+        backfaceVisibility: "hidden",
+        transform: source.key === "survey" ? "rotateY(180deg)" : "rotateY(0deg)"
+      }}
+      aria-hidden={!isActive}
+    >
+      <FreeResultV2EvidenceSignalGroup title={source.title} signals={source.signals} tone={source.key} />
+    </div>
+  );
+}
+
 function FreeResultV2EvidenceSignalsCard({ photoSignals = [], surveySignals = [], locale = "ko" }) {
   const isEnglish = locale === "en";
+  const [activeSource, setActiveSource] = useState("photo");
+  const sources = [
+    {
+      key: "photo",
+      tabLabel: isEnglish ? "Photo" : "사진 신호",
+      title: isEnglish ? "Photo cues" : "사진에서 보인 신호",
+      signals: photoSignals
+    },
+    {
+      key: "survey",
+      tabLabel: isEnglish ? "Survey" : "설문 신호",
+      title: isEnglish ? "Survey overlap" : "설문에서 겹친 신호",
+      signals: surveySignals
+    }
+  ];
+  const activeSourceData = sources.find((source) => source.key === activeSource) || sources[0];
+  const nextSourceData = activeSource === "photo" ? sources[1] : sources[0];
+  const setSignalSource = (sourceKey) => {
+    setActiveSource(sourceKey);
+  };
+  const toggleSignalSource = () => {
+    setActiveSource((current) => (current === "photo" ? "survey" : "photo"));
+  };
+  const handleFlipKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleSignalSource();
+    }
+  };
 
   return (
     <FreeResultV2Card>
       <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">
         {isEnglish ? "Signals used for the decision" : "판단에 사용한 신호"}
       </p>
-      <div className="mt-4 grid gap-5 sm:grid-cols-2">
-        <FreeResultV2EvidenceSignalGroup
-          title={isEnglish ? "Photo cues" : "사진에서 보인 신호"}
-          signals={photoSignals}
-          tone="photo"
-        />
-        <FreeResultV2EvidenceSignalGroup
-          title={isEnglish ? "Survey overlap" : "설문에서 겹친 신호"}
-          signals={surveySignals}
-          tone="survey"
-        />
+
+      <div className="mt-4 grid grid-cols-2 gap-2 rounded-[1.15rem] border border-[#ead9d6] bg-white/28 p-1 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+        {sources.map((source) => {
+          const isActive = source.key === activeSourceData.key;
+
+          return (
+            <button
+              key={source.key}
+              type="button"
+              onClick={() => setSignalSource(source.key)}
+              className={`inline-flex min-h-[2.65rem] items-center justify-center gap-2 rounded-[0.95rem] px-3 py-2 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-[linear-gradient(135deg,#f45f88,#ff7b68)] text-white shadow-[0_14px_28px_rgba(230,80,122,0.22)]"
+                  : "text-[#7a5360] hover:bg-white/40 dark:text-[#c8aeb8] dark:hover:bg-[#301f28]"
+              }`}
+              aria-pressed={isActive}
+            >
+              <FreeResultV2EvidenceSourceIcon tone={source.key} className="h-4 w-4" />
+              {source.tabLabel}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        className="mt-4 cursor-pointer outline-none"
+        role="button"
+        tabIndex={0}
+        onClick={toggleSignalSource}
+        onKeyDown={handleFlipKeyDown}
+        aria-label={isEnglish ? `Show ${nextSourceData.tabLabel}` : `${nextSourceData.tabLabel} 보기`}
+        style={{ perspective: 1200 }}
+      >
+        <motion.div
+          className="grid"
+          animate={{ rotateY: activeSourceData.key === "survey" ? 180 : 0 }}
+          transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          style={{ transformStyle: "preserve-3d" }}
+          whileTap={{ scale: 0.985 }}
+        >
+          {sources.map((source) => (
+            <FreeResultV2EvidenceSignalFace
+              key={source.key}
+              source={source}
+              isActive={source.key === activeSourceData.key}
+            />
+          ))}
+        </motion.div>
       </div>
     </FreeResultV2Card>
   );
 }
 
-function FreeResultV2EvidenceInterpretationCard({ interpretation = "", locale = "ko" }) {
+function FreeResultV2EvidenceBridge({ locale = "ko" }) {
   const isEnglish = locale === "en";
 
   return (
-    <FreeResultV2Card>
-      <p className="text-[13px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">
-        {isEnglish ? "Combined read" : "종합 해석"}
-      </p>
-      <div className="mt-4 flex items-start gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/38 bg-[#ff9aa8]/12 text-[#ff9aa8] shadow-[0_0_22px_rgba(255,154,168,0.14)]">
-          <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" aria-hidden="true">
-            <path d="m6 12.5 3.4 3.4L18 7.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <div className="relative overflow-hidden rounded-[1.35rem] border border-[#ead9d6]/55 bg-[linear-gradient(135deg,rgba(255,253,251,0.62),rgba(255,250,248,0.48))] px-4 py-2 shadow-none dark:border-[rgba(255,154,168,0.18)] dark:bg-[linear-gradient(135deg,rgba(244,95,136,0.13),rgba(166,122,255,0.075))] dark:shadow-[0_0_28px_rgba(244,95,136,0.055)]">
+      <div className="flex min-h-12 items-center gap-3">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/24 bg-white/34 text-[#e6507a] dark:border-[#ff9aa8]/20 dark:bg-white/[0.04] dark:text-[#ff9aa8]">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+            <path d="M12 3.8 13.6 8.4 18.2 10 13.6 11.6 12 16.2 10.4 11.6 5.8 10 10.4 8.4 12 3.8Z" fill="currentColor" opacity="0.9" />
+            <path d="M18 14.5 18.7 16.3 20.5 17 18.7 17.7 18 19.5 17.3 17.7 15.5 17 17.3 16.3 18 14.5Z" fill="currentColor" opacity="0.58" />
           </svg>
         </span>
-        <p className="whitespace-pre-line text-base leading-8 text-[#3a1824] dark:text-[#f3e4df]">
-          {interpretation}
+        <p className="min-w-0 break-keep text-left text-[13px] font-semibold leading-5 text-[#4d2635] dark:text-[#f1d9e2]">
+          {isEnglish
+            ? "Based on this analysis, we organized the best-fit product and how to use it."
+            : "이 분석을 바탕으로 가장 적합한 제품과 활용 방법을 정리했습니다."}
         </p>
       </div>
-    </FreeResultV2Card>
+    </div>
   );
 }
 
@@ -3758,7 +3940,7 @@ function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback,
         locale={locale}
       />
 
-      <FreeResultV2EvidenceInterpretationCard interpretation={evidence.interpretation} locale={locale} />
+      <FreeResultV2EvidenceBridge locale={locale} />
     </FreeResultV2StepFrame>
   );
 }
@@ -3766,14 +3948,14 @@ function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback,
 function getFreeResultV2ProductRoles(locale = "ko") {
   return locale === "en"
     ? [
-        { key: "moisture", title: "Moisture boost", body: "Helps with inner dryness" },
+        { key: "moisture", title: "Moisture boost", body: "Core role", primary: true },
         { key: "light", title: "Light feel", body: "Keeps oil burden low" },
-        { key: "daily", title: "Daily use", body: "Easy to keep using" }
+        { key: "daily", title: "Daily care", body: "Easy to keep using" }
       ]
     : [
-        { key: "moisture", title: "수분 보강", body: "속건조 케어" },
+        { key: "moisture", title: "수분 보강", body: "핵심 역할", primary: true },
         { key: "light", title: "가벼운 사용감", body: "유분 부담 최소화" },
-        { key: "daily", title: "데일리 사용", body: "매일 편하게" }
+        { key: "daily", title: "데일리 케어", body: "매일 편하게" }
       ];
 }
 
@@ -3804,13 +3986,24 @@ function FreeResultV2RoleIcon({ type = "moisture" }) {
 }
 
 function FreeResultV2RoleCard({ role }) {
+  const isPrimary = Boolean(role?.primary);
+  const containerClass = isPrimary
+    ? "border-[#ff9aa8]/52 bg-[#ff9aa8]/10 px-3.5 py-3.5 shadow-[0_0_24px_rgba(255,154,168,0.09)]"
+    : "border-[#ead9d6] bg-white/34 px-3 py-2.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74";
+  const iconClass = isPrimary
+    ? "h-11 w-11 border-[#ff9aa8]/46 bg-[#ff9aa8]/16 text-[#ff9aa8]"
+    : "h-9 w-9 border-[#ff9aa8]/24 bg-[#ff9aa8]/10 text-[#d8a2b0]";
+  const titleClass = isPrimary
+    ? "text-base leading-6 text-[#26101a] dark:text-[#fff8f3]"
+    : "text-sm leading-5 text-[#26101a] dark:text-[#fff8f3]";
+
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[1.05rem] border border-[#ead9d6] bg-white/42 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/30 bg-[#ff9aa8]/12 text-[#ff9aa8]">
+    <div className={`flex min-w-0 items-center gap-3 rounded-[1.05rem] border dark:border-[#5a3a48] ${containerClass}`}>
+      <span className={`flex shrink-0 items-center justify-center rounded-full border ${iconClass}`}>
         <FreeResultV2RoleIcon type={role.key} />
       </span>
       <span className="min-w-0">
-        <span className="block text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{role.title}</span>
+        <span className={`block font-semibold ${titleClass}`}>{role.title}</span>
         <span className="mt-0.5 block text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{role.body}</span>
       </span>
     </div>
@@ -3819,7 +4012,6 @@ function FreeResultV2RoleCard({ role }) {
 
 function FreeResultV2CompactRoutineFlow({ title, steps = [], tone = "morning" }) {
   const safeSteps = steps.slice(0, 3);
-  const flowText = safeSteps.join(" → ");
 
   return (
     <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/42 p-3.5 dark:border-[#5a3a48] dark:bg-[#2a1b24]/76">
@@ -3827,16 +4019,23 @@ function FreeResultV2CompactRoutineFlow({ title, steps = [], tone = "morning" })
         <FreeResultV2RoutineIcon tone={tone} />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{title}</p>
-          <p className="mt-0.5 truncate text-xs text-[#7a5360] dark:text-[#c8aeb8]">{flowText}</p>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-3 space-y-1">
         {safeSteps.map((step, index) => (
-          <div key={`${title}-${step}`} className="min-w-0 rounded-[0.9rem] border border-[#ead9d6] bg-white/50 px-2 py-2 text-center dark:border-[#6a4353] dark:bg-[#301f28]">
-            <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full border border-[#f2c4ca] bg-[#fff8f3] text-[10px] font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#241720] dark:text-[#ff9aa8]">
-              {index + 1}
-            </span>
-            <span className="mt-1.5 block break-keep text-[11px] font-semibold leading-4 text-[#3a1824] dark:text-[#f3e4df]">{step}</span>
+          <div key={`${title}-${step}`}>
+            <div className="grid grid-cols-[1.7rem_minmax(0,1fr)] items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#f2c4ca] bg-[#fff8f3] text-[10px] font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#241720] dark:text-[#ff9aa8]">
+                {index + 1}
+              </span>
+              <span className="break-keep text-sm font-semibold leading-5 text-[#3a1824] dark:text-[#f3e4df]">{step}</span>
+            </div>
+            {index < safeSteps.length - 1 ? (
+              <div className="grid grid-cols-[1.7rem_minmax(0,1fr)] gap-2 py-0.5" aria-hidden="true">
+                <span className="text-center text-xs leading-4 text-[#b17888] dark:text-[#d6a1af]">↓</span>
+                <span />
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
@@ -3846,21 +4045,152 @@ function FreeResultV2CompactRoutineFlow({ title, steps = [], tone = "morning" })
 
 function FreeResultV2Step3LockCard({ title, subLabel = "" }) {
   return (
-    <div className="rounded-[1.25rem] border border-[#ead9d6] bg-white/34 p-4 dark:border-[#5a3a48] dark:bg-[#241720]/82">
-      <div className="flex items-start gap-3 sm:block sm:text-center">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/32 bg-[#ff9aa8]/10 text-[#ff9aa8] sm:mx-auto">
+    <div className="rounded-[1.05rem] border border-[#ead9d6] bg-white/34 px-3.5 py-3 dark:border-[#5a3a48] dark:bg-[#241720]/82">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/32 bg-[#ff9aa8]/10 text-[#ff9aa8]">
           <FreeResultV2LockIcon />
         </span>
-        <div className="min-w-0 sm:mt-3">
+        <div className="min-w-0">
           <p className="break-keep text-sm font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">{title}</p>
-          {subLabel ? <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{subLabel}</p> : null}
-          <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#ff9aa8]/34 px-3 py-1.5 text-xs font-semibold text-[#e6507a] dark:text-[#ff9aa8]">
-            {subLabel ? "자세히 보기" : "보기"}
-            <span aria-hidden="true">›</span>
-          </span>
+          {subLabel ? <p className="mt-0.5 text-xs font-semibold leading-5 text-[#e6507a] dark:text-[#ff9aa8]">{subLabel} →</p> : null}
         </div>
       </div>
     </div>
+  );
+}
+
+function FreeResultV2RolePill({ role }) {
+  return (
+    <span className="inline-flex min-w-0 items-center gap-2 rounded-full border border-[#ead9d6] bg-white/34 px-3 py-2 text-xs font-semibold text-[#26101a] dark:border-[#5a3a48] dark:bg-[#2a1b24]/74 dark:text-[#fff8f3]">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/26 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+        <FreeResultV2RoleIcon type={role.key} />
+      </span>
+      <span className="min-w-0 break-keep">{role.title}</span>
+    </span>
+  );
+}
+
+function FreeResultV2RoutineModeIcon({ tone = "morning" }) {
+  const isNight = tone === "night";
+
+  return isNight ? (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path d="M17.4 15.7A7.1 7.1 0 0 1 8.3 6.6 7.4 7.4 0 1 0 17.4 15.7Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.6" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 3.8v2M12 18.2v2M4.8 12h2M17.2 12h2M6.9 6.9l1.4 1.4M15.7 15.7l1.4 1.4M17.1 6.9l-1.4 1.4M8.3 15.7l-1.4 1.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FreeResultV2TabbedRoutinePreview({ routinePreview, locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const [activeRoutine, setActiveRoutine] = useState("morning");
+  const tabs = [
+    {
+      key: "morning",
+      label: isEnglish ? "Morning routine" : "아침 루틴",
+      tone: "morning",
+      steps: routinePreview?.morningSteps || []
+    },
+    {
+      key: "night",
+      label: isEnglish ? "Night routine" : "저녁 루틴",
+      tone: "night",
+      steps: routinePreview?.nightSteps || []
+    }
+  ];
+  const activeTab = tabs.find((tab) => tab.key === activeRoutine) || tabs[0];
+  const safeSteps = activeTab.steps.slice(0, 3);
+
+  return (
+    <FreeResultV2Card>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Custom use routine" : "맞춤 활용 루틴"}</p>
+        <span className="text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+          {isEnglish ? "Switch morning and night." : "아침과 저녁 루틴을 전환해 보세요."}
+        </span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2 rounded-[1.15rem] border border-[#ead9d6] bg-white/28 p-1 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+        {tabs.map((tab) => {
+          const isActive = tab.key === activeTab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveRoutine(tab.key)}
+              className={`inline-flex min-h-[2.65rem] items-center justify-center gap-2 rounded-[0.95rem] px-3 py-2 text-sm font-semibold transition ${
+                isActive
+                  ? "bg-[linear-gradient(135deg,#f45f88,#ff7b68)] text-white shadow-[0_14px_28px_rgba(230,80,122,0.22)]"
+                  : "text-[#7a5360] hover:bg-white/40 dark:text-[#c8aeb8] dark:hover:bg-[#301f28]"
+              }`}
+              aria-pressed={isActive}
+            >
+              <FreeResultV2RoutineModeIcon tone={tab.tone} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_1rem_minmax(0,1fr)_1rem_minmax(0,1fr)] items-stretch gap-2">
+        {safeSteps.map((step, index) => (
+          <Fragment key={`${activeTab.key}-${step}`}>
+            <div className="min-w-0 rounded-[1rem] border border-[#ead9d6] bg-white/34 px-2.5 py-3 text-center dark:border-[#5a3a48] dark:bg-[#2a1b24]/74">
+              <span className="mx-auto flex h-6 w-6 items-center justify-center rounded-full border border-[#f2c4ca] bg-[#fff8f3] text-[11px] font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#241720] dark:text-[#ff9aa8]">
+                {index + 1}
+              </span>
+              <span className="mt-2 block break-keep text-xs font-semibold leading-5 text-[#3a1824] dark:text-[#f3e4df]">{step}</span>
+            </div>
+            {index < safeSteps.length - 1 ? (
+              <div className="flex items-center justify-center text-[#b17888] dark:text-[#d6a1af]" aria-hidden="true">→</div>
+            ) : null}
+          </Fragment>
+        ))}
+      </div>
+
+      <p className="mt-4 rounded-[0.95rem] border border-[#ead9d6] bg-white/30 px-3 py-2 text-xs leading-5 text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#2a1b24]/62 dark:text-[#c8aeb8]">
+        {routinePreview?.gateNote || (isEnglish ? "Detailed order and frequency continue in the full report." : "세부 제품 순서와 사용 빈도는 전체 리포트에서 확인할 수 있어요.")}
+      </p>
+    </FreeResultV2Card>
+  );
+}
+
+function FreeResultV2Step3PremiumPreview({ locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const items = isEnglish
+    ? ["Why this product ranked #1", "Alternatives if it does not fit", "Detailed morning/night order"]
+    : ["왜 이 제품이 1순위인지", "안 맞을 때 대체 제품", "아침/저녁 상세 사용 순서"];
+
+  return (
+    <FreeResultV2Card className="space-y-3">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/32 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+          <FreeResultV2LockIcon />
+        </span>
+        <div className="min-w-0">
+          <p className="break-keep text-base font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">
+            {isEnglish ? "Unlocked in the full report" : "전체 리포트에서 열리는 내용"}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+            {isEnglish ? "The key details continue after this preview." : "결제 후 아래 핵심 정보를 이어서 확인할 수 있어요."}
+          </p>
+        </div>
+      </div>
+      <div className="overflow-hidden rounded-[1.15rem] border border-[#ead9d6] bg-white/28 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+        {items.map((item, index) => (
+          <div key={item} className={`flex items-center gap-3 px-3.5 py-3 ${index ? "border-t border-[#ead9d6]/80 dark:border-[#5a3a48]" : ""}`}>
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/28 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+              <FreeResultV2LockIcon />
+            </span>
+            <span className="min-w-0 break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item}</span>
+          </div>
+        ))}
+      </div>
+    </FreeResultV2Card>
   );
 }
 
@@ -3890,63 +4220,23 @@ function FreeResultV2RecommendationGuideStep({ preview, routinePreview, copy, lo
               </h3>
               <p className="mt-2 text-base font-semibold text-[#e6507a] dark:text-[#ff9aa8]">{preview.product.brand}</p>
               <p className="mt-4 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">“{preview.reason}”</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {preview.fitPoints.slice(0, 3).map((point) => (
-                  <FreeResultV2Pill key={point}>{point}</FreeResultV2Pill>
-                ))}
-              </div>
             </div>
           </div>
-
-          <div className="mt-5 rounded-[1.35rem] border border-[#ead9d6] bg-white/34 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/62">
-            <p className="text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Role in your routine" : "이 제품이 맡는 역할"}</p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-4 border-t border-[#ead9d6] pt-4 dark:border-[#5a3a48]">
+            <p className="text-xs font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Core roles" : "핵심 역할"}</p>
+            <div className="mt-2 grid grid-cols-3 gap-2">
               {productRoles.map((role) => (
-                <FreeResultV2RoleCard key={role.key} role={role} />
+                <FreeResultV2RolePill key={role.key} role={role} />
               ))}
             </div>
-          </div>
-
-          <div className="mt-5 rounded-[1.55rem] border border-[#ff9aa8]/22 bg-[rgba(255,154,168,0.045)] p-4 dark:border-[#6a4353] dark:bg-[#2a1b24]/72">
-            <p className="flex items-center gap-2 text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
-              <span className="text-[#e6507a] dark:text-[#ff9aa8]" aria-hidden="true">✦</span>
-              {isEnglish ? "Custom use routine" : "맞춤 활용 루틴"}
-            </p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <FreeResultV2CompactRoutineFlow
-                title={isEnglish ? "Morning direction" : "아침 방향"}
-                steps={routinePreview.morningSteps}
-                tone="morning"
-              />
-              <FreeResultV2CompactRoutineFlow
-                title={isEnglish ? "Night direction" : "저녁 방향"}
-                steps={routinePreview.nightSteps}
-                tone="night"
-              />
-            </div>
-            <p className="mt-3 text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
-              {routinePreview.gateNote || (isEnglish ? "Detailed order and frequency continue in the full report." : "세부 제품 순서와 사용 빈도는 전체 리포트에서 확인할 수 있어요.")}
-            </p>
           </div>
         </FreeResultV2Card>
       ) : (
         <TopPickFallbackCard copy={copy} locale={locale} />
       )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <FreeResultV2Step3LockCard
-          title={isEnglish ? "Why was this product ranked #1?" : "왜 이 제품이 1순위였을까?"}
-          subLabel={isEnglish ? "See the full selection reason." : "상세 선정 이유 전체 보기"}
-        />
-        <FreeResultV2Step3LockCard
-          title={isEnglish ? "What if this product does not fit?" : "이 제품이 안 맞으면 어떤 대안이 있을까?"}
-          subLabel={isEnglish ? "Compare alternative products." : "대안 제품 비교 보기"}
-        />
-        <FreeResultV2Step3LockCard
-          title={isEnglish ? "See the 3-minute AM / 5-minute PM routine" : "아침 3분 / 저녁 5분 루틴 자세히 보기"}
-          subLabel={isEnglish ? "Detailed product order and frequency." : "세부 제품 순서와 사용 빈도"}
-        />
-      </div>
+      <FreeResultV2TabbedRoutinePreview routinePreview={routinePreview} locale={locale} />
+      <FreeResultV2Step3PremiumPreview locale={locale} />
 
     </FreeResultV2StepFrame>
   );
@@ -4075,35 +4365,414 @@ function FreeResultV2RoutineFaceLabStep({ routinePreview, diagnosis = null, face
   );
 }
 
-function FreeResultV2ExpectedChangePlaceholderStep({ locale = "ko" }) {
+function FreeResultV2ManagementIcon({ type = "moisture" }) {
+  if (type === "oil") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M6 15.5c1.8-1.3 3.6-1.3 5.4 0s3.6 1.3 5.4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M7.2 10.2c1.4-.9 2.8-.9 4.2 0 1.4.9 2.8.9 4.2 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" opacity="0.72" />
+      </svg>
+    );
+  }
+
+  if (type === "comfort") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M12 4.4c3 3.5 5.1 6.4 5.1 9.1a5.1 5.1 0 0 1-10.2 0c0-2.7 2.1-5.6 5.1-9.1Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        <path d="M9.3 14.2c1.7 1.2 3.7 1.2 5.4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.75" />
+      </svg>
+    );
+  }
+
+  if (type === "texture") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M5.5 8.5h13M5.5 12h13M5.5 15.5h13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M8 6.5v2M16 14.5v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.72" />
+      </svg>
+    );
+  }
+
+  if (type === "refine") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M5.5 14.5c4.6-.5 8.2-3.3 10.9-8.3 1 5.6-.8 9.7-4.9 11.1-2 .7-4 .1-6-2.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9.2 14.2c1.5-1.3 3-2.2 4.6-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.78" />
+      </svg>
+    );
+  }
+
+  if (type === "shield") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M12 4.5 18 7v5.2c0 3.4-2.2 5.9-6 7.3-3.8-1.4-6-3.9-6-7.3V7l6-2.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        <path d="m9.5 12 1.6 1.6 3.4-3.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.78" />
+      </svg>
+    );
+  }
+
+  if (type === "signal") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M12 4v6.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 14.7v.1" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+        <path d="M5.2 19h13.6L12 4.4 5.2 19Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="M12 4.4c3 3.5 5.1 6.4 5.1 9.1a5.1 5.1 0 0 1-10.2 0c0-2.7 2.1-5.6 5.1-9.1Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FreeResultV2RecommendationValidationStep({ locale = "ko" }) {
   const isEnglish = locale === "en";
+  const [activeSignalTab, setActiveSignalTab] = useState("fit");
+  const signalGroups = isEnglish
+    ? [
+        {
+          key: "fit",
+          label: "Good signs",
+          icon: "comfort",
+          items: [
+            { key: "oil", title: "Afternoon shine rises more slowly", body: "A sign that oil and moisture are balancing better.", icon: "oil" },
+            { key: "comfort", title: "Tightness after cleansing feels lower", body: "A sign that moisture is holding for longer.", icon: "comfort" },
+            { key: "dry", title: "Cheek dryness feels calmer", body: "A sign that the moisture step is fitting without burden.", icon: "moisture" }
+          ]
+        },
+        {
+          key: "adjust",
+          label: "Adjustment signs",
+          icon: "signal",
+          items: [
+            { key: "dry", title: "Dryness gets stronger", body: "The moisture step may be insufficient or the amount may be too much.", icon: "moisture" },
+            { key: "red", title: "Stinging or redness appears", body: "Active products may be irritating, so pause them for a bit.", icon: "signal" },
+            { key: "cleanse", title: "Stronger cleansing increases", body: "Trying to control shine can disrupt the balance further.", icon: "oil" }
+          ]
+        }
+      ]
+    : [
+        {
+          key: "fit",
+          label: "잘 맞는 신호",
+          icon: "comfort",
+          items: [
+            { key: "oil", title: "오후 번들거림이 덜 빨리 올라옴", body: "유분과 수분 균형이 안정되는 쪽으로 가고 있다는 신호예요.", icon: "oil" },
+            { key: "comfort", title: "세안 후 당김이 줄어듦", body: "수분감이 더 오래 유지되고 있다는 뜻이에요.", icon: "comfort" },
+            { key: "dry", title: "볼 주변 건조감이 편해짐", body: "수분 보강이 피부에 부담 없이 이어지고 있어요.", icon: "moisture" }
+          ]
+        },
+        {
+          key: "adjust",
+          label: "조정 신호",
+          icon: "signal",
+          items: [
+            { key: "dry", title: "건조함이 심해짐", body: "수분 단계가 부족하거나 사용량이 과할 수 있어요.", icon: "moisture" },
+            { key: "red", title: "따가움·붉어짐 발생", body: "기능성 제품이 자극이 될 수 있어 잠시 쉬는 편이 좋아요.", icon: "signal" },
+            { key: "cleanse", title: "강한 세안이 늘어남", body: "번들거림을 잡는 과정에서 균형이 무너질 수 있어요.", icon: "oil" }
+          ]
+        }
+      ];
+  const activeSignalGroup = signalGroups.find((group) => group.key === activeSignalTab) || signalGroups[0];
+  const lockedItems = isEnglish
+    ? ["Situation adjustments", "Frequency guide", "Combinations to avoid", "Matched alternatives"]
+    : ["상황별 조정법", "사용 빈도 가이드", "피해야 할 조합", "맞춤 대체 제품"];
 
   return (
     <FreeResultV2StepFrame
-      eyebrow={isEnglish ? "Expected changes" : "예상 변화"}
-      title={isEnglish ? "Expected Change Preview" : "예상 변화 미리보기"}
-      body={isEnglish ? "This step will summarize what can change when you follow this direction." : "이 방향으로 관리했을 때 기대할 수 있는 변화를 다음 단계에서 정리할 예정입니다."}
+      title={isEnglish ? "Check If the Recommendation Fits" : "추천이 맞는지 확인하기"}
+      body={isEnglish ? "These signs show whether the current recommendation fits your skin." : "이 신호를 보면 지금 추천이 내 피부에 맞고 있는지 알 수 있어요."}
     >
-      <FreeResultV2Card>
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/38 bg-[#ff9aa8]/12 text-[#ff9aa8]">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden="true">
-              <path d="M5 17c3.2-6.7 8-9.7 14-9.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              <path d="M15 5.5 19 7.8l-2.4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      <FreeResultV2Card className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 rounded-[1.15rem] border border-[#ead9d6] bg-white/28 p-1 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+          {signalGroups.map((group) => {
+            const isActive = group.key === activeSignalGroup.key;
+            return (
+              <button
+                key={group.key}
+                type="button"
+                onClick={() => setActiveSignalTab(group.key)}
+                className={`inline-flex min-h-[2.65rem] items-center justify-center gap-2 rounded-[0.95rem] px-3 py-2 text-sm font-semibold transition ${
+                  isActive
+                    ? "bg-[linear-gradient(135deg,#f45f88,#ff7b68)] text-white shadow-[0_14px_28px_rgba(230,80,122,0.22)]"
+                    : "text-[#7a5360] hover:bg-white/40 dark:text-[#c8aeb8] dark:hover:bg-[#301f28]"
+                }`}
+                aria-pressed={isActive}
+              >
+                <FreeResultV2ManagementIcon type={group.icon} />
+                {group.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="overflow-hidden rounded-[1.35rem] border border-[#ead9d6] bg-white/28 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+          {activeSignalGroup.items.map((item, index) => (
+            <div key={item.key} className={`flex items-start gap-3 px-3.5 py-3.5 ${index ? "border-t border-[#ead9d6]/80 dark:border-[#5a3a48]" : ""}`}>
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${
+                activeSignalGroup.key === "fit"
+                  ? "border-[#8bd9b2]/30 bg-[#8bd9b2]/14 text-[#8bd9b2]"
+                  : "border-[#ff8fa3]/32 bg-[#ff8fa3]/14 text-[#ff8fa3]"
+              }`}>
+                <FreeResultV2ManagementIcon type={item.icon} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item.title}</span>
+                <span className="mt-1 block break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{item.body}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card className="space-y-3">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/32 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+            <FreeResultV2LockIcon />
           </span>
           <div className="min-w-0">
-            <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
-              {isEnglish ? "Next, this becomes the expected change step." : "다음 작업에서 예상 변화 단계로 교체됩니다."}
+            <p className="break-keep text-base font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">
+              {isEnglish ? "Unlocked in the full report" : "전체 리포트에서 열리는 내용"}
             </p>
-            <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
-              {isEnglish
-                ? "For now, the recommendation and routine content has been moved into Step 3 to avoid repeating the same information."
-                : "이번 작업에서는 추천 제품과 활용 루틴을 Step 3으로 합쳐, 같은 정보가 반복되지 않도록 정리했습니다."}
+            <p className="mt-1 break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+              {isEnglish ? "Continue with sensitive-day changes and product frequency." : "민감해진 날부터 제품 사용 빈도까지 이어서 확인할 수 있어요."}
             </p>
           </div>
         </div>
+        <div className="overflow-hidden rounded-[1.15rem] border border-[#ead9d6] bg-white/28 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
+          {lockedItems.map((item) => (
+            <div key={item} className="flex items-center gap-3 border-t border-[#ead9d6]/80 px-3.5 py-3 first:border-t-0 dark:border-[#5a3a48]">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/28 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+                <FreeResultV2LockIcon />
+              </span>
+              <span className="min-w-0 break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item}</span>
+            </div>
+          ))}
+        </div>
       </FreeResultV2Card>
+    </FreeResultV2StepFrame>
+  );
+}
+
+function FreeResultV2ExecutionGuideIcon({ type = "order" }) {
+  if (type === "frequency") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <rect x="5" y="5.5" width="14" height="14" rx="3" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M8 4v3M16 4v3M5 10h14M9 14h1.5M13.5 14H15M9 17h1.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "avoid") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M12 4v6.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 14.7v.1" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+        <path d="M5.2 19h13.6L12 4.4 5.2 19Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (type === "alternative") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M7.5 7.5h9.2l-2-2M16.5 16.5H7.3l2 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16.5 7.5c1.6 1.2 2.5 2.9 2.5 5M7.5 16.5A6.3 6.3 0 0 1 5 11.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "score") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M6 18V11M12 18V7M18 18v-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M5 18.5h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "style") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <circle cx="12" cy="9.2" r="3.2" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M6.4 19.2c.8-3.4 3-5.1 5.6-5.1s4.8 1.7 5.6 5.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M18.7 5.5v3M20.2 7h-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "track") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M5.5 17.5c2.2-4.8 5-5.8 7.4-3.1 1.7 1.9 3.6 1.5 5.6-2.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M5 6.5h14M5 10h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" opacity="0.72" />
+      </svg>
+    );
+  }
+
+  if (type === "pdf") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M7 4.5h6.3L18 9.2v10.3H7V4.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        <path d="M13 4.8V9h4.2M9.5 13h5M9.5 16h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="M8 7.5h8M8 12h8M8 16.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M5 7.5h.1M5 12h.1M5 16.5h.1" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FreeResultV2ExecutionGuideItem({ item }) {
+  return (
+    <div className="min-w-0 rounded-[1.15rem] border border-[#ead9d6] bg-white/30 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/72">
+      <div className="flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/30 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+          <FreeResultV2ExecutionGuideIcon type={item.icon} />
+        </span>
+        <div className="min-w-0">
+          <p className="break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item.title}</p>
+          <p className="mt-1 break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{item.body}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FreeResultV2BlurredRoutinePreview({ locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const rows = isEnglish
+    ? ["Product order by routine", "Frequency and amount guide"]
+    : ["제품 사용 순서 미리보기", "사용 빈도 가이드 미리보기"];
+
+  return (
+    <div className="relative overflow-hidden rounded-[1.35rem] border border-[#ead9d6] bg-white/26 p-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/72">
+      <div className="space-y-2 blur-[2.5px]">
+        {rows.map((row, index) => (
+          <div key={row} className="grid grid-cols-[2.8rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[1rem] border border-[#ead9d6] bg-white/34 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#241720]/80">
+            <span className={`flex h-9 w-9 items-center justify-center rounded-full border ${
+              index ? "border-[#cda7ff]/32 bg-[#3a2340]/40 text-[#d8b6ff]" : "border-[#ff9a8a]/36 bg-[#ff9a8a]/10 text-[#ff9a8a]"
+            }`}>
+              <FreeResultV2RoutineModeIcon tone={index ? "night" : "morning"} />
+            </span>
+            <span className="min-w-0 break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{row}</span>
+            <span className="text-[#b17888] dark:text-[#d6a1af]" aria-hidden="true">›</span>
+          </div>
+        ))}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center bg-[#fffaf6]/28 backdrop-blur-[1px] dark:bg-[#241720]/30">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#ff9aa8]/34 bg-[#241720]/82 px-4 py-2 text-xs font-semibold text-[#fff8f3] shadow-[0_16px_34px_rgba(18,10,16,0.28)]">
+          <FreeResultV2LockIcon />
+          {isEnglish ? "Available after checkout" : "결제 후 확인 가능"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function FreeResultV2FullReportCompletionStep({ locale = "ko", onCtaClick = null }) {
+  const isEnglish = locale === "en";
+  const guideItems = isEnglish
+    ? [
+        { key: "order", icon: "order", title: "Product order", body: "Exact order for morning and night routines." },
+        { key: "frequency", icon: "frequency", title: "Frequency guide", body: "When to use daily, alternate, or reduce." },
+        { key: "avoid", icon: "avoid", title: "Combinations to avoid", body: "Pairings that may feel burdensome together." },
+        { key: "alternative", icon: "alternative", title: "Alternatives if it does not fit", body: "Candidates to try if the Top Pick is not right." }
+      ]
+    : [
+        { key: "order", icon: "order", title: "제품 사용 순서", body: "아침/저녁 루틴에서 어떤 순서로 쓸지 정리합니다." },
+        { key: "frequency", icon: "frequency", title: "사용 빈도 가이드", body: "매일/격일 사용과 줄일 타이밍을 안내합니다." },
+        { key: "avoid", icon: "avoid", title: "피해야 할 조합", body: "부담될 수 있는 성분/제품 조합을 정리합니다." },
+        { key: "alternative", icon: "alternative", title: "안 맞을 때 대체 제품", body: "Top Pick 대신 바꿔볼 후보를 안내합니다." }
+      ];
+  const includedItems = isEnglish
+    ? [
+        { key: "score", icon: "score", label: "AI detail matching score" },
+        { key: "flare", icon: "moisture", label: "Flare-up day response" },
+        { key: "style", icon: "style", label: "Face Lab style expansion" },
+        { key: "track", icon: "track", label: "Change tracking record" },
+        { key: "pdf", icon: "pdf", label: "PDF save and share" }
+      ]
+    : [
+        { key: "score", icon: "score", label: "AI 디테일 매칭 점수" },
+        { key: "flare", icon: "moisture", label: "피부 뒤집힌 날 대응법" },
+        { key: "style", icon: "style", label: "Face Lab 스타일 확장" },
+        { key: "track", icon: "track", label: "나의 변화 추적 기록" },
+        { key: "pdf", icon: "pdf", label: "PDF 저장 및 공유" }
+      ];
+
+  return (
+    <FreeResultV2StepFrame
+      title={isEnglish ? "Full Report Complete" : "전체 리포트 완성"}
+      body={isEnglish ? "The free result showed the direction. Now get the execution guide you can follow." : "무료 결과는 방향을 알려드렸어요. 이제 그대로 따라 할 실행 가이드를 받아보세요."}
+    >
+      <FreeResultV2Card className="overflow-hidden">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/34 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+            <FreeResultV2ExecutionGuideIcon type="order" />
+          </span>
+          <div className="min-w-0">
+            <p className="break-keep text-xl font-semibold leading-7 text-[#26101a] dark:text-[#fff8f3]">
+              {isEnglish ? "Your Skin Execution Guide" : "내 피부 전용 실행 가이드"}
+            </p>
+            <p className="mt-2 break-keep text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
+              {isEnglish ? "These criteria open immediately after checkout." : "결제 즉시 아래 기준들이 모두 열립니다."}
+            </p>
+          </div>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-2.5">
+          {guideItems.map((item) => (
+            <FreeResultV2ExecutionGuideItem key={item.key} item={item} />
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <FreeResultV2Card className="space-y-4">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Preview" : "미리보기"}</p>
+          <span className="break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+            {isEnglish ? "Morning and night routines include product order and frequency." : "아침·저녁 루틴은 제품 순서와 사용 빈도까지 정리됩니다."}
+          </span>
+        </div>
+        <FreeResultV2BlurredRoutinePreview locale={locale} />
+      </FreeResultV2Card>
+
+      <FreeResultV2Card className="space-y-3">
+        <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
+          {isEnglish ? "Included in the full report" : "전체 리포트에 포함되는 것"}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {includedItems.map((item) => (
+            <span key={item.key} className="inline-flex items-center gap-2 rounded-full border border-[#ead9d6] bg-white/30 px-3 py-2 text-xs font-semibold text-[#26101a] dark:border-[#5a3a48] dark:bg-[#2a1b24]/74 dark:text-[#fff8f3]">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/24 bg-[#ff9aa8]/10 text-[#ff9aa8]">
+                <FreeResultV2ExecutionGuideIcon type={item.icon} />
+              </span>
+              {item.label}
+            </span>
+          ))}
+        </div>
+      </FreeResultV2Card>
+
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={onCtaClick}
+          className="ui-button-primary min-h-14 w-full bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] px-5 text-sm font-semibold !text-white shadow-[0_16px_34px_rgba(232,96,116,0.28)] hover:opacity-95"
+        >
+          {isEnglish ? "Get tonight's routine guide" : "오늘 밤부터 그대로 따라 할 루틴 받기"}
+        </button>
+        <p className="break-keep px-1 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+          {isEnglish ? "Unlocks immediately after checkout and saves to My page." : "결제 즉시 잠금이 해제되며, 마이페이지에 저장됩니다."}
+        </p>
+      </div>
     </FreeResultV2StepFrame>
   );
 }
