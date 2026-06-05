@@ -378,3 +378,146 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙: Step 간 연결 문구는 독립 정보 카드가 아니라 CTA 직전의 낮은 무게 bridge로 처리해 다음 행동을 방해하지 않는다.
 - 규칙 승격 후보: `NULL`
 - Context 반영 후보: `NULL`
+
+### 2026-06-04 / free result v2 step 1 diagnosis structure polish
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 UI-only polish in `app/result/page.js`; API, DB, recommendation logic, payment, result step count, and Step 2-5 structures were out of scope.
+- Goal: Promote the one-line diagnosis, combine photo and compact pentagon parameters, reduce Face Lab into an auxiliary chip strip, and tighten priority TOP 3 with a subtle core badge.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reload confirmed required Step 1 texts and no console errors; Playwright 390px checks passed for light and dark themes with scrollWidth/clientWidth 390/390 and required Step 1 labels/CTA present.
+- Notes/risks: The top global result header still sits above Step 1, so the CTA is not guaranteed to be in the first viewport from absolute page top at 390px. Step 1 itself keeps the diagnosis first within the step and does not change data/recommendation behavior.
+- Reusable rule: Step 1 should prioritize a large diagnosis statement, keep the photo plus pentagon as one compact visual summary, keep Face Lab as auxiliary chips, and show priority TOP 3 as the execution order.
+- Context promotion candidate: NULL
+
+### 2026-06-04 / free result v2 step 1 radar help modal
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 i-button copy and popover behavior in `app/result/page.js`; API, DB, recommendation logic, saved data, payment, and result step count were out of scope.
+- Goal: Make the skin-state pentagon understandable by renaming axes to care-attention terms and connecting the i button to a compact explanatory modal.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; Playwright 390px light/dark checks confirmed the renamed axes, help modal title/body/axis list/footer copy, close button, outside-click close, scrollWidth/clientWidth 390/390, and no console/page errors.
+- Notes/risks: The radar values remain display-only derived UI values. They should continue to be framed as care-priority signals, not exact skin scores.
+- Reusable rule: When a visual summary uses derived skin axes, axis names and help copy should make the direction explicit: farther outward means stronger current care signal, not a medical measurement.
+- Context promotion candidate: NULL
+
+### 2026-06-04 / free result v2 step 1 mobile compression polish
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 UI compression and interaction polish in `app/result/page.js`; API, DB, recommendation logic, payment, saved data, and result step count were out of scope.
+- Goal: Shorten radar labels, make the i button more discoverable without competing with CTA, organize Face Lab as grouped auxiliary info, remove the priority helper link, and collapse priority descriptions behind a simple accordion.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reload confirmed short radar labels, Face Lab groups, removed priority helper link, and no browser errors; Playwright 390px light/dark checks confirmed short labels, help modal, grouped Face Lab, collapsed priority descriptions, first priority accordion open, scrollWidth/clientWidth 390/390, and no console/page errors.
+- Notes/risks: The priority accordion defaults to all rows collapsed, so users must tap a priority row to read the short description.
+- Reusable rule: Step 1 should keep derived radar labels short on the graph and move explanatory detail into help; priority text should default to title-first and reveal short detail only on tap.
+- Context promotion candidate: NULL
+
+### 2026-06-04 / free result v2 step 1 photo and radar structure split
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 UI-only structure rearrangement in `app/result/page.js`; API, DB, recommendation logic, payment, saved data, result step count, and Step 2-5 flow were out of scope.
+- Goal: Keep the Step 1 information set while moving Face Lab beside a larger photo, separating the skin radar into its own card, and keeping priority TOP 3 below the radar.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; Playwright 390px checks confirmed the larger photo, standalone radar with legend, unclipped/non-overlapping radar labels, collapsed priority list, CTA visibility path, and scrollWidth/clientWidth parity.
+- Notes/risks: Step 1 becomes taller because the photo/mood card and radar card are split. This improves photo and radar readability at the cost of slightly more vertical scroll.
+- Reusable rule: When Step 1 has both face mood and skin-state visualization, keep Face Lab attached to the photo as auxiliary face mood context and keep the pentagon as a separate skin snapshot card.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 conclusion card experiment
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 UI-only experiment in `app/result/page.js`; recommendation logic, API, DB, payment, Face Lab, radar structure, result step count, and Step 2-5 flow were out of scope.
+- Goal: Replace the free-form one-line diagnosis block with a compact conclusion card that makes the core result easier to notice without modal/position/absorption animation.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; in-app Browser 390-ish dark viewport confirmed conclusion card, photo/radar/priority order, no horizontal overflow, and no radar label clipping/overlap.
+- Notes/risks: The conclusion card improves first-read clarity while reducing the large headline height, but it is visually less dramatic than the previous oversized text treatment by design.
+- Reusable rule: Step 1 conclusion emphasis should use a lightweight static card plus one-time opacity/Y entrance only; avoid central popups, position movement, repeated animation, scale, and CTA-level visual weight.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 loading reveal test flow
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Development-only test route addition in `app/loading/page.js`; recommendation logic, API response shape, DB, payment, saved data, and existing Step 1-5 result flow were out of scope.
+- Goal: Add a 15-second forced loading UX that changes analysis-stage copy, then reveals a one-line diagnosis completion screen with CTA into the existing `/test-result` Step 1 flow.
+- Changed files: app/loading/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed and generated `/loading`; Playwright 390px light flow confirmed 0-5s/5-10s/10-15s active loading details, 15s completion reveal, CTA click to `/test-result`, Step 1 `RESULT STEP` 1/5, and no horizontal overflow; Playwright 390px dark completion screen confirmed completion copy, diagnosis, CTA, and no horizontal overflow; in-app Browser `/loading` flow confirmed 15s reveal and CTA navigation to `/test-result`.
+- Notes/risks: `/loading` is a development verification route and redirects to `/` in production via client effect. It does not call analysis APIs or seed/write result data directly; `/test-result` continues to handle fixture seeding.
+- Reusable rule: Result-entry experiments should be isolated on development routes first, use fixture-backed navigation, and avoid modifying production analysis or result data flow.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 radar dashboard polish
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 skin-state radar card internal UI polish in `app/result/page.js`; Step 1 overall structure, Face Lab, priority TOP 3, recommendation logic, API, DB, payment, saved data, and result step count were out of scope.
+- Goal: Make the pentagon card read as an interpretable skin-state dashboard by adding a concise interpretation sentence, status sublabels, compact TOP3 signal chips, a slightly larger chart, and a quieter guide legend.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reload confirmed the new radar interpretation and TOP3 chips with no label clipping/overlap; Playwright 390px light/dark checks confirmed interpretation text, signal chips, legend, SVG size 247x242, scrollWidth/clientWidth 390/390, no SVG label overlap/clipping, and no console/page errors.
+- Notes/risks: The radar card is taller because it now includes interpretation and signal chips, but the chart remains below hero scale and the priority card remains the action-order section.
+- Reusable rule: Radar cards should separate current-state signals from management priority: chart/chips summarize current signal strength, while priority TOP 3 remains the care order.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 radar card final spacing
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 internal UI polish and selected conclusion-card removal in `app/result/page.js`; Face Lab, priority TOP 3, recommendation logic, API, DB, payment, saved data, and result step count were out of scope.
+- Goal: Finish the skin-state radar card by removing the strong divider, removing the repeated `핵심 신호 TOP3` label, moving the legend directly under the graph, keeping the chips lightweight, and removing the selected `AI 진단 결과` conclusion card.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; Playwright 390px light/dark checks confirmed the conclusion card and `핵심 신호 TOP3` label are removed, legend appears before chips, chips remain visible, SVG size remains 247x242, scrollWidth/clientWidth 390/390, no SVG label overlap/clipping, and no console/page errors; in-app Browser `/test-result` reload confirmed the same with scrollWidth/clientWidth 380/380.
+- Notes/risks: Removing the conclusion card reduces repeated messaging and shortens Step 1, but the one-line diagnosis no longer appears as a separate card inside Step 1.
+- Reusable rule: If Step 1 already has a clear heading and radar interpretation, avoid adding a separate conclusion card that competes with the photo/radar flow.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 face lab card polish
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 photo plus Face Lab card internal UI polish in `app/result/page.js`; Step 1 overall structure, skin radar card, priority TOP 3, recommendation logic, API, DB, payment, saved data, and result step count were out of scope.
+- Goal: Make Face Lab read more clearly as a photo-derived face mood summary by renaming the title to `Face Lab · 얼굴 분위기` and changing the rows into icon, label, and value mini-list items.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check` passed with CRLF warning only; `npm run build` passed; Playwright 390px light/dark checks confirmed the new title, `대표 무드`/`톤/컬러`/`스타일 방향` labels, values, preserved photo size at 156x195, scrollWidth/clientWidth 390/390, and no console/page errors; in-app Browser `/test-result` reload confirmed Face Lab, radar, priority, and no horizontal overflow at the current viewport.
+- Notes/risks: The longer style value wraps naturally to multiple lines on 390px, which increases the Face Lab side panel height slightly without shrinking the photo.
+- Reusable rule: Face Lab should stay tied to the photo as face-mood context, using compact icon rows for scanability while avoiding skin-state terminology and new interactions.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 face lab vertical carousel
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 photo plus Face Lab card internal interaction polish in `app/result/page.js`; Step 1 overall structure, skin radar card, priority TOP 3, recommendation logic, API, DB, payment, saved data, and result step count were out of scope.
+- Goal: Replace the side-by-side Face Lab panel with one large photo followed by a single Face Lab lens value that advances by mobile swipe, desktop arrows, or dots.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check -- app/result/page.js` passed with CRLF warning only; `npm run build` passed; Playwright checks confirmed 390px dark photo size 251x314, no horizontal overflow, mobile arrows hidden, mobile swipe 1/3 -> 2/3 -> 3/3, 390px light no horizontal overflow, desktop 900px arrows visible, desktop next arrow 1/3 -> 2/3, and no console/page errors.
+- Notes/risks: The larger photo makes the Face Lab card taller. This matches the requested photo-first direction but pushes the priority card lower on 390px screens.
+- Reusable rule: Face Lab interaction should stay inside the photo card, with the photo as the primary object and only one face-mood lens value visible at a time; use mobile swipe and desktop arrows without turning Step 1 into a full carousel.
+- Context promotion candidate: NULL
+
+### 2026-06-05 / free result v2 step 1 face lab carousel final polish
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Step 1 Face Lab card and priority rank circle UI-only polish in `app/result/page.js`; skin radar, recommendation logic, API, DB, payment, saved data, and result step count were out of scope.
+- Goal: Reduce the Face Lab photo by 10%, remove the visible `1 / 3` counter, move desktop arrows beside the value text, remove the Face Lab icon, enlarge Face Lab text, move the one-time hint animation from the photo to the text, and shrink priority rank circles by about 15%.
+- Changed files: app/result/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --check -- app/result/page.js` passed with CRLF warning only; `npm run build` passed; Playwright 390px dark check confirmed no horizontal overflow, no visible `1 / 3`, no Face Lab icon, photo 225x282, mobile arrows hidden, priority circle 27x27, and mobile swipe advanced the active Face Lab dot; Playwright 703px dark check confirmed desktop arrows visible beside the value text and next arrow advanced the active dot; 390px light screenshot confirmed no layout break.
+- Notes/risks: The Face Lab card remains taller than the pre-carousel design, but the latest photo reduction shortens it while keeping the photo visually dominant.
+- Reusable rule: For this Face Lab carousel, keep visible progress in dots only, keep mobile swipe hint on the text area, and keep desktop arrows adjacent to the value text rather than in the card header.
+- Context promotion candidate: NULL

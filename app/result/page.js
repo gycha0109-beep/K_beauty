@@ -3300,17 +3300,20 @@ function FreeResultV2StepFrame({ title, body = "", children }) {
   );
 }
 
-function FreeResultV2Card({ children, className = "" }) {
+function FreeResultV2Card({ children, className = "", ...props }) {
   return (
-    <div className={`rounded-[2rem] border border-[#ead9d6] bg-[#fffaf6] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.14)] dark:border-[#4a303c] dark:bg-[#241720] ${className}`}>
+    <div
+      className={`rounded-[2rem] border border-[#ead9d6] bg-[#fffaf6] p-5 shadow-[0_24px_70px_rgba(35,16,25,0.14)] dark:border-[#4a303c] dark:bg-[#241720] ${className}`}
+      {...props}
+    >
       {children}
     </div>
   );
 }
 
-function FreeResultV2PhotoFrame({ photoUrl, photoAlt, fallback, showAnalysisOverlay = false, locale = "ko" }) {
+function FreeResultV2PhotoFrame({ photoUrl, photoAlt, fallback, showAnalysisOverlay = false, locale = "ko", className = "" }) {
   return (
-    <div className="relative mx-auto flex aspect-[4/5] min-h-[170px] w-full max-w-[230px] items-center justify-center overflow-hidden rounded-[1.35rem] border border-[#ead2cf] bg-white/68 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+    <div className={`relative mx-auto flex aspect-[4/5] min-h-[170px] w-full max-w-[230px] items-center justify-center overflow-hidden rounded-[1.35rem] border border-[#ead2cf] bg-white/68 dark:border-[#5a3a48] dark:bg-[#2a1b24] ${className}`}>
       {photoUrl ? (
         <>
           <img src={photoUrl} alt={photoAlt} className="h-full w-full object-cover object-center" />
@@ -3561,34 +3564,322 @@ function FreeResultV2FaceLabPreviewPanel({ faceLabPreview = null, locale = "ko",
   );
 }
 
-function FreeResultV2FaceLabMiniPanel({ faceLabPreview = null, locale = "ko" }) {
+function getFreeResultV2FaceLabMoodGroups(faceLabPreview = null, locale = "ko") {
   if (!faceLabPreview) {
-    return null;
+    return [];
   }
 
   const isEnglish = locale === "en";
-  const keywords = Array.isArray(faceLabPreview.keywords) ? faceLabPreview.keywords.slice(0, 4) : [];
+  const fallbacks = isEnglish
+    ? {
+        mood: "Face mood in analysis",
+        tone: "Natural color match",
+        style: "Clean style direction"
+      }
+    : {
+        mood: "분석 중인 얼굴 분위기",
+        tone: "자연스러운 컬러 매치",
+        style: "정돈된 스타일 방향"
+      };
+  const primary = String(faceLabPreview.primary || "").trim();
+  const keywords = uniqueItems([
+    ...(Array.isArray(faceLabPreview.keywords) ? faceLabPreview.keywords : [])
+  ]).filter(Boolean).slice(0, 5);
+  const colorPattern = isEnglish
+    ? /peach|coral|pink|cool|warm|tone|color/i
+    : /피치|코랄|핑크|쿨|웜|톤|컬러|색/;
+  const colorKeywords = keywords.filter((keyword) => colorPattern.test(keyword)).slice(0, 3);
+  const styleKeywords = keywords
+    .filter((keyword) => keyword !== primary && !colorKeywords.includes(keyword))
+    .slice(0, 3);
+
+  return [
+    {
+      key: "mood",
+      label: isEnglish ? "Representative mood" : "대표 무드",
+      value: primary || fallbacks.mood
+    },
+    {
+      key: "tone",
+      label: isEnglish ? "Best-fit color" : "잘 맞는 컬러",
+      value: colorKeywords.join(" · ") || fallbacks.tone
+    },
+    {
+      key: "style",
+      label: isEnglish ? "Style direction" : "스타일 방향",
+      value: styleKeywords.join(" · ") || fallbacks.style
+    }
+  ];
+}
+
+function FreeResultV2FaceLabMoodIcon({ type = "mood" }) {
+  if (type === "tone") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+        <path
+          d="M12.2 4.2c4.4 0 7.8 2.8 7.8 6.7 0 3-2 5.4-4.9 5.4h-.9c-.8 0-1.3.5-1.3 1.2 0 .6.4 1 .4 1.5 0 .6-.6.9-1.3.9-4.5 0-8-3.3-8-7.8 0-4.4 3.5-7.9 8.2-7.9Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="8.3" cy="10" r="1" fill="currentColor" />
+        <circle cx="11.4" cy="7.8" r="1" fill="currentColor" opacity="0.8" />
+        <circle cx="15.1" cy="9.1" r="1" fill="currentColor" opacity="0.68" />
+      </svg>
+    );
+  }
+
+  if (type === "style") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+        <path d="M12 4.5 13.2 8.5 17.2 9.7 13.2 10.9 12 14.9 10.8 10.9 6.8 9.7 10.8 8.5 12 4.5Z" fill="currentColor" />
+        <path d="M17.5 13.6 18.2 15.5 20 16.2 18.2 16.9 17.5 18.8 16.8 16.9 15 16.2 16.8 15.5 17.5 13.6Z" fill="currentColor" opacity="0.62" />
+        <path d="M6.2 14.5 6.8 15.9 8.2 16.5 6.8 17.1 6.2 18.5 5.6 17.1 4.2 16.5 5.6 15.9 6.2 14.5Z" fill="currentColor" opacity="0.5" />
+      </svg>
+    );
+  }
 
   return (
-    <div className="mt-4 rounded-[1.1rem] border border-[#ead9d6] bg-white/34 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/58">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <p className="text-[11px] font-semibold text-[#e6507a] dark:text-[#ff9aa8]">Face Lab</p>
-        <span className="h-1 w-1 rounded-full bg-[#c8aeb8]/70" aria-hidden="true" />
-        <p className="text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
-          {isEnglish ? "Mood: " : "대표 무드: "}
-          <span className="font-semibold text-[#3a1824] dark:text-[#f3e4df]">{faceLabPreview.primary}</span>
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path
+        d="M5.8 18.2h12.4l.9-9-3.8 2-3.3-5-3.3 5-3.8-2 .9 9Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M7.2 15.3h9.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" opacity="0.72" />
+    </svg>
+  );
+}
+
+function FreeResultV2FaceLabPhotoCarousel({ photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const groups = getFreeResultV2FaceLabMoodGroups(faceLabPreview, locale);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [hasPlayedHint, setHasPlayedHint] = useState(false);
+  const [valueTextNode, setValueTextNode] = useState(null);
+  const touchStartXRef = useRef(null);
+  const activeGroup = groups[activeIndex] || groups[0];
+
+  useEffect(() => {
+    const valueNode = valueTextNode;
+
+    if (!valueNode) {
+      return undefined;
+    }
+
+    const maxFontSize = 20.8;
+    const minFontSize = 8.5;
+    let frameId = null;
+    let cancelled = false;
+
+    const fitValueText = () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        if (cancelled) {
+          return;
+        }
+
+        const currentNode = valueTextNode;
+        const parentWidth = currentNode?.parentElement?.clientWidth ?? 0;
+
+        if (!currentNode || parentWidth <= 0) {
+          return;
+        }
+
+        currentNode.style.fontSize = `${maxFontSize}px`;
+
+        const contentWidth = currentNode.scrollWidth;
+        const nextFontSize = contentWidth > parentWidth
+          ? Math.max(minFontSize, Math.min(maxFontSize, (maxFontSize * parentWidth) / contentWidth))
+          : maxFontSize;
+
+        currentNode.style.fontSize = `${Math.floor(nextFontSize * 10) / 10}px`;
+      });
+    };
+
+    fitValueText();
+
+    const parentNode = valueNode.parentElement;
+    const observer = typeof ResizeObserver !== "undefined" && parentNode
+      ? new ResizeObserver(fitValueText)
+      : null;
+
+    observer?.observe(parentNode);
+    window.addEventListener("resize", fitValueText);
+
+    const fontsReady = typeof document !== "undefined" ? document.fonts?.ready : null;
+    fontsReady?.then(() => {
+      if (!cancelled) {
+        fitValueText();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+      observer?.disconnect();
+      window.removeEventListener("resize", fitValueText);
+    };
+  }, [activeGroup?.value, valueTextNode]);
+
+  if (!faceLabPreview || !activeGroup) {
+    return (
+      <FreeResultV2PhotoFrame
+        photoUrl={photoUrl}
+        photoAlt={photoAlt}
+        fallback={photoFallback}
+        locale={locale}
+        className="max-w-[14.2rem] min-h-[212px] sm:max-w-[16.2rem] sm:min-h-[243px]"
+      />
+    );
+  }
+
+  const goToIndex = (nextIndex) => {
+    if (!groups.length) {
+      return;
+    }
+
+    setActiveIndex(((nextIndex % groups.length) + groups.length) % groups.length);
+  };
+
+  const goNext = () => goToIndex(activeIndex + 1);
+  const goPrevious = () => goToIndex(activeIndex - 1);
+
+  const handleTouchStart = (event) => {
+    touchStartXRef.current = event.touches?.[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event) => {
+    const startX = touchStartXRef.current;
+    touchStartXRef.current = null;
+
+    if (typeof startX !== "number") {
+      return;
+    }
+
+    const endX = event.changedTouches?.[0]?.clientX;
+    if (typeof endX !== "number") {
+      return;
+    }
+
+    const deltaX = endX - startX;
+    if (Math.abs(deltaX) < 32) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      goNext();
+    } else {
+      goPrevious();
+    }
+  };
+
+  return (
+    <FreeResultV2Card
+      className="touch-pan-y p-4 sm:p-5"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="relative">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-[13px] font-semibold leading-5 text-[#d9416f] dark:text-[#ff9aa8]">
+          Face Lab · 무드 요약
         </p>
       </div>
-      {keywords.length ? (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {keywords.map((keyword) => (
-            <span key={keyword} className="rounded-full border border-[#ead2ca] bg-white/56 px-2.5 py-1 text-[11px] font-medium text-[#6f4a56] dark:border-[#5a3a48] dark:bg-[#301f28]/76 dark:text-[#d8c2c9]">
-              {keyword}
-            </span>
-          ))}
-        </div>
+      {activeGroup ? (
+        <>
+          <div className="mx-auto flex max-w-[18rem] flex-col items-center">
+            <FreeResultV2PhotoFrame
+              photoUrl={photoUrl}
+              photoAlt={photoAlt}
+              fallback={photoFallback}
+              locale={locale}
+              className="max-w-[14.2rem] min-h-[212px] sm:max-w-[16.2rem] sm:min-h-[243px]"
+            />
+            <motion.div
+              className="mt-3.5 min-h-[4.05rem] w-full px-1 text-center"
+              initial={{ x: 0 }}
+              animate={hasPlayedHint ? { x: 0 } : { x: [0, 7, -6, 0] }}
+              transition={{ delay: 0.25, duration: 0.52, ease: "easeOut" }}
+              onAnimationComplete={() => setHasPlayedHint(true)}
+            >
+              <div className="mx-auto flex max-w-[16rem] flex-col items-center">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={`${activeGroup.key}-label`}
+                    className="block text-[14px] font-semibold leading-5 text-[#9b5a6d] dark:text-[#d8a1b0]"
+                    initial={{ opacity: 0, x: 8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                  >
+                    {activeGroup.label}
+                  </motion.span>
+                </AnimatePresence>
+                <div className="mt-1 flex min-h-[1.65rem] min-w-0 items-center justify-center" aria-live="polite">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      ref={setValueTextNode}
+                      key={`${activeGroup.key}-value`}
+                      className="block max-w-full min-w-0 whitespace-nowrap break-keep text-center text-[1.3rem] font-semibold leading-[1.18] text-[#26101a] dark:text-[#fff8f3]"
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -8 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    >
+                      {activeGroup.value}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+          <div className="mt-0.5 flex items-center justify-center gap-2" aria-label={isEnglish ? "Face Lab lens position" : "Face Lab 관점 위치"}>
+              <button
+                type="button"
+                onClick={goPrevious}
+                className="hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#ead9d6]/72 bg-white/20 text-[13px] font-semibold leading-none text-[#9b5a6d] transition hover:border-[#f2c4ca] hover:bg-white/34 sm:flex dark:border-[#5a3a48]/76 dark:bg-white/[0.032] dark:text-[#d8a1b0] dark:hover:border-[#ff9aa8]/30"
+                aria-label={isEnglish ? "Previous Face Lab lens" : "이전 Face Lab 관점"}
+              >
+                ‹
+              </button>
+              <div className="flex items-center justify-center gap-1.5">
+              {groups.map((group, index) => (
+                <button
+                  key={group.key}
+                  type="button"
+                  onClick={() => goToIndex(index)}
+                  className={`h-2 rounded-full transition ${index === activeIndex ? "w-4 bg-[#e6507a] dark:bg-[#ff8fa2]" : "w-2 bg-[#d9bdc6] dark:bg-[#6b4b59]"}`}
+                  aria-label={isEnglish ? `Show Face Lab lens ${index + 1}` : `${index + 1}번째 Face Lab 관점 보기`}
+                  aria-current={index === activeIndex}
+                />
+              ))}
+              </div>
+              <button
+                type="button"
+                onClick={goNext}
+                className="hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#ead9d6]/72 bg-white/20 text-[13px] font-semibold leading-none text-[#9b5a6d] transition hover:border-[#f2c4ca] hover:bg-white/34 sm:flex dark:border-[#5a3a48]/76 dark:bg-white/[0.032] dark:text-[#d8a1b0] dark:hover:border-[#ff9aa8]/30"
+                aria-label={isEnglish ? "Next Face Lab lens" : "다음 Face Lab 관점"}
+              >
+                ›
+              </button>
+            </div>
+        </>
       ) : null}
-    </div>
+      </div>
+    </FreeResultV2Card>
   );
 }
 
@@ -3852,68 +4143,503 @@ function FreeResultV2EvidenceBridge({ locale = "ko" }) {
   );
 }
 
+function getFreeResultV2SkinRadarMetrics(data = {}, locale = "ko") {
+  const isEnglish = locale === "en";
+  const summaryText = [
+    data?.coreLine,
+    ...(Array.isArray(data?.priorities) ? data.priorities.flatMap((priority) => [priority.title, priority.body]) : []),
+    ...(Array.isArray(data?.tags) ? data.tags.flatMap((tag) => [tag.label, tag.value]) : [])
+  ].filter(Boolean).join(" ").toLowerCase();
+  const includesAny = (terms) => terms.some((term) => summaryText.includes(term.toLowerCase()));
+  const hasMoistureCue = includesAny(["수분", "건조", "moisture", "dry", "dehydrat"]);
+  const hasOilCue = includesAny(["유분", "피지", "번들", "oil", "shine"]);
+  const hasPoreCue = includesAny(["모공", "pore"]);
+  const hasBarrierCue = includesAny(["장벽", "barrier"]);
+  const hasSensitivityCue = includesAny(["민감", "예민", "자극", "붉", "트러블", "sensitive", "irritation", "redness", "breakout", "acne"]);
+
+  return [
+    { key: "moisture", label: isEnglish ? "Dryness" : "수분부족", value: hasMoistureCue ? 76 : 42 },
+    { key: "oil", label: isEnglish ? "Oil" : "유분감", value: hasOilCue ? 78 : 44 },
+    { key: "pores", label: isEnglish ? "Pores" : "모공", value: hasPoreCue ? 72 : 42 },
+    { key: "barrier", label: isEnglish ? "Barrier" : "장벽", value: hasBarrierCue ? 68 : 40 },
+    { key: "sensitivity", label: isEnglish ? "Sensitive" : "민감", value: hasSensitivityCue ? 64 : 36 }
+  ];
+}
+
+function getFreeResultV2PentagonPoint(value, index, radius = 48, center = { x: 88, y: 88 }) {
+  const angle = (-90 + index * 72) * (Math.PI / 180);
+  const scale = Math.max(0, Math.min(100, Number(value) || 0)) / 100;
+
+  return {
+    x: center.x + Math.cos(angle) * radius * scale,
+    y: center.y + Math.sin(angle) * radius * scale
+  };
+}
+
+function getFreeResultV2PentagonPoints(values, radius = 48, center = { x: 88, y: 88 }) {
+  return values
+    .map((value, index) => {
+      const point = getFreeResultV2PentagonPoint(value, index, radius, center);
+      return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+function getFreeResultV2RadarStatus(metric = {}, locale = "ko") {
+  const value = Math.max(0, Math.min(100, Number(metric.value) || 0));
+  const isEnglish = locale === "en";
+  const copy = {
+    high: { label: isEnglish ? "High" : "높음", rank: 4 },
+    medium: { label: isEnglish ? "Medium" : "중간", rank: 3 },
+    caution: { label: isEnglish ? "Watch" : "주의", rank: 2 },
+    normal: { label: isEnglish ? "Stable" : "보통", rank: 1 }
+  };
+
+  if (value < 55) {
+    return { tone: "normal", ...copy.normal };
+  }
+
+  if (metric.key === "moisture") {
+    return { tone: value >= 70 ? "high" : "medium", ...(value >= 70 ? copy.high : copy.medium) };
+  }
+
+  if (metric.key === "oil") {
+    return { tone: value >= 64 ? "medium" : "normal", ...(value >= 64 ? copy.medium : copy.normal) };
+  }
+
+  if (metric.key === "pores") {
+    return { tone: value >= 64 ? "caution" : "normal", ...(value >= 64 ? copy.caution : copy.normal) };
+  }
+
+  return { tone: "normal", ...copy.normal };
+}
+
+function getFreeResultV2RadarChipClass(tone = "normal") {
+  if (tone === "high") {
+    return "border-[#f3bbc7] bg-[#fff4f6]/72 text-[#cf466b] dark:border-[#ff8fa2]/32 dark:bg-[#ff8fa2]/10 dark:text-[#ff9aa8]";
+  }
+
+  if (tone === "medium") {
+    return "border-[#ead0e4] bg-[#fcf5ff]/68 text-[#865878] dark:border-[#d8a1d8]/25 dark:bg-[#d8a1d8]/10 dark:text-[#e8b5df]";
+  }
+
+  if (tone === "caution") {
+    return "border-[#efcfac] bg-[#fff7ed]/72 text-[#94613b] dark:border-[#ffbf78]/25 dark:bg-[#ffbf78]/10 dark:text-[#ffd0a2]";
+  }
+
+  return "border-[#ead9d6] bg-white/38 text-[#7a5360] dark:border-[#5a3a48] dark:bg-[#2a1b24]/54 dark:text-[#c8aeb8]";
+}
+
+function FreeResultV2SkinRadarHelpModal({ isOpen, onClose, locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const axisItems = isEnglish
+    ? [
+        ["Moisture lack", "How easily the skin loses hydration and starts to feel dry."],
+        ["Oil feel", "How easily shine appears around the forehead and nose."],
+        ["Pore visibility", "How noticeable pores or surface texture look."],
+        ["Barrier burden", "How much the skin's basic moisture-holding comfort needs support."],
+        ["Irritation response", "The chance of redness, stinging, or sensitivity showing up."]
+      ]
+    : [
+        ["수분 부족", "피부가 수분을 오래 유지하지 못하고 쉽게 건조해지는 정도"],
+        ["유분감", "이마와 코 주변 번들거림이 얼마나 쉽게 올라오는지"],
+        ["모공 가시성", "모공이나 피부결이 눈에 얼마나 도드라져 보이는지"],
+        ["장벽 부담", "수분을 붙잡고 자극을 버티는 피부 기본 컨디션"],
+        ["자극 반응", "붉어짐·따가움·예민함 같은 자극 반응 가능성"]
+      ];
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen ? (
+        <>
+          <motion.button
+            type="button"
+            className="fixed inset-0 z-[80] bg-[#2a101b]/24 backdrop-blur-[1px] dark:bg-black/42"
+            onClick={onClose}
+            aria-label={isEnglish ? "Close skin summary help" : "피부 상태 요약 도움말 닫기"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="free-result-v2-skin-radar-help-title"
+            className="fixed inset-x-4 top-[8vh] z-[81] mx-auto max-h-[84vh] w-auto max-w-[22rem] overflow-y-auto rounded-[1.35rem] border border-[#ead9d6] bg-[#fffaf6] p-4 text-left shadow-[0_28px_80px_rgba(35,16,25,0.28)] dark:border-[#5a3a48] dark:bg-[#241720] dark:shadow-[0_28px_80px_rgba(0,0,0,0.48)]"
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.18 }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 id="free-result-v2-skin-radar-help-title" className="text-[1rem] font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">
+                {isEnglish ? "What is the skin state summary?" : "피부 상태 요약이란?"}
+              </h3>
+              <button
+                type="button"
+                onClick={onClose}
+                className="shrink-0 rounded-full border border-[#ead9d6] px-3 py-1 text-[12px] font-semibold text-[#7a5360] transition hover:bg-white dark:border-[#5a3a48] dark:text-[#c8aeb8] dark:hover:bg-[#301f28]"
+              >
+                {isEnglish ? "Close" : "닫기"}
+              </button>
+            </div>
+            <div className="mt-3 space-y-2 break-keep text-[12px] leading-5 text-[#5f3a48] dark:text-[#d8c2c9]">
+              <p>
+                {isEnglish
+                  ? "The pentagon compresses signals from the photo analysis and survey into five care axes."
+                  : "오각형은 사진 분석과 설문 답변에서 확인된 신호를 5가지 관리 축으로 압축한 요약입니다."}
+              </p>
+              <p>
+                {isEnglish
+                  ? "The farther outward an axis is, the more that signal needs attention now. Recommendations reflect this flow together with the care priority."
+                  : "바깥쪽으로 갈수록 현재 더 신경 써야 할 신호가 강하다는 의미이며, 추천 결과는 이 흐름과 관리 우선순위를 함께 반영합니다."}
+              </p>
+            </div>
+            <dl className="mt-3 divide-y divide-[#ead9d6] overflow-hidden rounded-[1rem] border border-[#ead9d6] bg-white/38 dark:divide-[#4a303c] dark:border-[#4a303c] dark:bg-[#2a1b24]/70">
+              {axisItems.map(([label, description]) => (
+                <div key={label} className="grid grid-cols-[5.2rem_minmax(0,1fr)] gap-2 px-3 py-2.5">
+                  <dt className="text-[12px] font-semibold leading-5 text-[#e6507a] dark:text-[#ff9aa8]">{label}</dt>
+                  <dd className="break-keep text-[12px] leading-5 text-[#4d2635] dark:text-[#f1d9e2]">{description}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-3 border-t border-[#ead9d6] pt-3 break-keep text-[11px] leading-5 text-[#7a5360] dark:border-[#4a303c] dark:text-[#c8aeb8]">
+              {isEnglish
+                ? "These are not medical measurements. They are a care-priority summary organized from photo and survey signals."
+                : "이 수치는 의료적 측정값이 아니라, 사진과 설문 신호를 종합해 정리한 관리 우선순위 요약입니다."}
+            </p>
+          </motion.div>
+        </>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+function FreeResultV2SkinRadarSummary({ data, locale = "ko", size = "compact", showLegend = false }) {
+  const isEnglish = locale === "en";
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const metrics = getFreeResultV2SkinRadarMetrics(data, locale);
+  const metricsWithStatus = metrics.map((metric) => ({
+    ...metric,
+    status: getFreeResultV2RadarStatus(metric, locale)
+  }));
+  const preferredSignalKeys = ["moisture", "oil", "pores"];
+  const topSignals = preferredSignalKeys
+    .map((key) => metricsWithStatus.find((metric) => metric.key === key))
+    .filter(Boolean);
+  const isLarge = size === "large";
+  const radarCenter = isLarge ? { x: 94, y: 92 } : { x: 88, y: 88 };
+  const radarRadius = isLarge ? 54 : 48;
+  const currentPoints = getFreeResultV2PentagonPoints(metrics.map((metric) => metric.value), radarRadius, radarCenter);
+  const balancePoints = getFreeResultV2PentagonPoints([62, 62, 62, 62, 62], radarRadius, radarCenter);
+  const guideLevels = [25, 50, 75, 100];
+  const labelPositions = isLarge
+    ? [
+        { x: 94, y: 13, anchor: "middle" },
+        { x: 167, y: 82, anchor: "middle" },
+        { x: 137, y: 161, anchor: "middle" },
+        { x: 51, y: 161, anchor: "middle" },
+        { x: 21, y: 82, anchor: "middle" }
+      ]
+    : [
+        { x: 88, y: 14, anchor: "middle" },
+        { x: 154, y: 84, anchor: "middle" },
+        { x: 128, y: 164, anchor: "middle" },
+        { x: 48, y: 164, anchor: "middle" },
+        { x: 22, y: 84, anchor: "middle" }
+      ];
+
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-semibold text-[#3a1824] dark:text-[#fff8f3]">
+          {isEnglish ? "Skin state summary" : "피부 상태 요약"}
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsHelpOpen(true)}
+          className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#f2a4b6] bg-[#fff0f4]/74 text-[11px] font-semibold text-[#d9416f] shadow-[0_0_0_3px_rgba(230,80,122,0.07)] transition hover:border-[#e6507a] hover:bg-[#ffe5eb] hover:text-[#c93362] hover:shadow-[0_0_0_4px_rgba(230,80,122,0.12)] active:scale-95 dark:border-[#ff9aa8]/48 dark:bg-[#ff9aa8]/10 dark:text-[#ff9aa8] dark:shadow-[0_0_0_3px_rgba(255,154,168,0.055)] dark:hover:border-[#ff9aa8] dark:hover:bg-[#ff9aa8]/14 dark:hover:shadow-[0_0_0_4px_rgba(255,154,168,0.1)]"
+          title={isEnglish ? "View skin state summary help." : "피부 상태 요약 설명 보기"}
+          aria-label={isEnglish ? "Skin state summary help" : "피부 상태 요약 도움말"}
+          aria-haspopup="dialog"
+          aria-expanded={isHelpOpen}
+        >
+          i
+        </button>
+      </div>
+      {showLegend ? (
+        <p className="mx-auto mt-3 max-w-[17rem] break-keep text-center text-[13px] font-medium leading-6 text-[#5f3a48] dark:text-[#d8c2c9]">
+          {isEnglish ? (
+            <>
+              <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">Dryness</span> is the strongest signal,
+              <br />
+              with <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">oil feel</span> and{" "}
+              <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">pores</span> needing care too.
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">수분 부족</span> 신호가 가장 강하고,
+              <br />
+              <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">유분감</span>과{" "}
+              <span className="font-semibold text-[#e6507a] dark:text-[#ff8fa2]">모공</span>도 함께 관리가 필요해요.
+            </>
+          )}
+        </p>
+      ) : null}
+      <div className="mt-2 flex justify-center">
+        <svg
+          viewBox={isLarge ? "0 0 188 184" : "0 0 176 176"}
+          className={`w-full ${isLarge ? "aspect-[188/184] max-w-[15.45rem]" : "aspect-square max-w-[10.9rem]"}`}
+          role="img"
+          aria-label={isEnglish
+            ? "Pentagon skin parameter summary: moisture lack, oil feel, pore visibility, barrier burden, irritation response"
+            : "오각 피부 파라미터 요약: 수분 부족, 유분감, 모공 가시성, 장벽 부담, 자극 반응"}
+        >
+          {guideLevels.map((level) => (
+            <polygon
+              key={level}
+              points={getFreeResultV2PentagonPoints([level, level, level, level, level], radarRadius, radarCenter)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.7"
+              className="text-[#cbb4bc] opacity-[0.38] dark:text-[#63505a] dark:opacity-[0.55]"
+            />
+          ))}
+          {Array.from({ length: 5 }).map((_, index) => {
+            const endPoint = getFreeResultV2PentagonPoint(100, index, radarRadius, radarCenter);
+            return (
+              <line
+                key={index}
+                x1={radarCenter.x}
+                y1={radarCenter.y}
+                x2={endPoint.x.toFixed(1)}
+                y2={endPoint.y.toFixed(1)}
+                stroke="currentColor"
+                strokeWidth="0.7"
+                className="text-[#cbb4bc] opacity-[0.34] dark:text-[#63505a] dark:opacity-[0.48]"
+              />
+            );
+          })}
+          <polygon
+            points={balancePoints}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeDasharray="4 3"
+            className="text-[#8f98a3] opacity-[0.42] dark:opacity-[0.46]"
+          />
+          <polygon points={currentPoints} fill="currentColor" className="text-[#e6507a] opacity-[0.28] dark:text-[#ff7f98] dark:opacity-[0.34]" />
+          <polygon points={currentPoints} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" className="text-[#e6507a] dark:text-[#ff8fa2]" />
+          {metrics.map((metric, index) => {
+            const point = getFreeResultV2PentagonPoint(metric.value, index, radarRadius, radarCenter);
+            return (
+              <circle key={metric.key} cx={point.x.toFixed(1)} cy={point.y.toFixed(1)} r="3" fill="currentColor" className="text-[#e6507a] dark:text-[#ff8fa2]" />
+            );
+          })}
+          {metrics.map((metric, index) => (
+            <text
+              key={metric.key}
+              x={labelPositions[index].x}
+              y={labelPositions[index].y}
+              textAnchor={labelPositions[index].anchor}
+              className={`fill-[#5f3a48] ${isLarge ? "text-[11px]" : "text-[10.5px]"} font-semibold dark:fill-[#d8c2c9]`}
+            >
+              {metric.label}
+              {isLarge ? (
+                <tspan
+                  x={labelPositions[index].x}
+                  dy="1.15em"
+                  className="fill-[#9a6c78] text-[8.5px] font-medium dark:fill-[#b896a2]"
+                >
+                  {metricsWithStatus[index]?.status?.label}
+                </tspan>
+              ) : null}
+            </text>
+          ))}
+        </svg>
+      </div>
+      {showLegend ? (
+        <div className="mt-0.5">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[10.5px] text-[#8b6873] dark:text-[#b896a2]">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-px w-5 rounded-full bg-[#e6507a] dark:bg-[#ff8fa2]" aria-hidden="true" />
+              {isEnglish ? "My state" : "나의 상태"}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-px w-5 border-t border-dashed border-[#8f98a3]" aria-hidden="true" />
+              {isEnglish ? "Guide" : "관리 기준"}
+            </span>
+          </div>
+          <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+            {topSignals.map((metric) => (
+              <span
+                key={metric.key}
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-none shadow-none ${getFreeResultV2RadarChipClass(metric.status.tone)}`}
+              >
+                {metric.label}
+                <span className="font-medium opacity-[0.82]">{metric.status.label}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <FreeResultV2SkinRadarHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} locale={locale} />
+    </div>
+  );
+}
+
+function FreeResultV2DiagnosisSummaryCard({ photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
+  const hasFaceLab = Boolean(faceLabPreview);
+
+  if (hasFaceLab) {
+    return (
+      <FreeResultV2FaceLabPhotoCarousel
+        photoUrl={photoUrl}
+        photoAlt={photoAlt}
+        photoFallback={photoFallback}
+        faceLabPreview={faceLabPreview}
+        locale={locale}
+      />
+    );
+  }
+
+  return (
+    <FreeResultV2Card className="p-4 sm:p-5">
+      <div className="flex justify-center">
+        <FreeResultV2PhotoFrame
+          photoUrl={photoUrl}
+          photoAlt={photoAlt}
+          fallback={photoFallback}
+          locale={locale}
+          className="max-w-[14.2rem] min-h-[212px] sm:max-w-[16.2rem] sm:min-h-[243px]"
+        />
+      </div>
+    </FreeResultV2Card>
+  );
+}
+
+function FreeResultV2SkinRadarCard({ data, locale = "ko" }) {
+  return (
+    <FreeResultV2Card className="p-4 sm:p-5">
+      <FreeResultV2SkinRadarSummary data={data} locale={locale} size="large" showLegend />
+    </FreeResultV2Card>
+  );
+}
+
+function FreeResultV2PriorityListCard({ priorities = [], locale = "ko" }) {
+  const isEnglish = locale === "en";
+  const [openRank, setOpenRank] = useState(null);
+  const displayPriorities = Array.isArray(priorities) ? priorities.slice(0, 3) : [];
+
+  if (!displayPriorities.length) {
+    return null;
+  }
+
+  const getShortBody = (priority) => {
+    const title = String(priority?.title || "");
+
+    if (/oil|pore|유분|모공/i.test(title)) {
+      return isEnglish ? "Start with light surface control." : "가벼운 표면 정돈부터 시작합니다.";
+    }
+
+    if (/moisture|hydration|수분/i.test(title)) {
+      return isEnglish ? "Keep moisture from dropping too easily." : "수분감이 쉽게 떨어지지 않게 관리합니다.";
+    }
+
+    if (/barrier|장벽/i.test(title)) {
+      return isEnglish ? "Keep the skin steady against outside irritation." : "외부 자극에 흔들리지 않게 지켜줍니다.";
+    }
+
+    if (/irritation|sensitivity|redness|자극|민감|붉/i.test(title)) {
+      return isEnglish ? "Lower the irritation burden first." : "자극 부담을 먼저 낮춥니다.";
+    }
+
+    return priority?.body || (isEnglish ? "Check this step first." : "이 항목을 먼저 확인합니다.");
+  };
+
+  return (
+    <FreeResultV2Card className="p-4 sm:p-5">
+      <p className="break-keep text-[1.05rem] font-semibold leading-6 text-[#26101a] dark:text-[#fff8f3]">
+        {isEnglish ? "Care Priority TOP 3" : "지금 관리 우선순위 TOP 3"}
+      </p>
+      <div className="mt-3 overflow-hidden rounded-[1.25rem] border border-[#ead9d6] bg-white/30 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+        {displayPriorities.map((priority, index) => (
+          <div key={priority.rank} className={index ? "border-t border-[#ead9d6] dark:border-[#5a3a48]" : ""}>
+            <button
+              type="button"
+              onClick={() => setOpenRank((current) => (current === priority.rank ? null : priority.rank))}
+              className="grid w-full grid-cols-[2.05rem_1.25rem_minmax(0,1fr)_1rem] items-center gap-2.5 px-3.5 py-2.5 text-left transition hover:bg-white/32 dark:hover:bg-[#301f28]/54"
+              aria-expanded={openRank === priority.rank}
+            >
+              <span className="flex h-[1.7rem] w-[1.7rem] shrink-0 items-center justify-center rounded-full bg-[#ff7d9b] text-[13px] font-semibold text-white shadow-[0_10px_20px_rgba(230,80,122,0.18)] dark:bg-[#ff8fa2] dark:text-[#25131d]">
+                {priority.rank}
+              </span>
+              <span className="flex h-6 w-6 items-center justify-center text-[#e6507a] dark:text-[#ff9aa8]">
+                <FreeResultV2PriorityIcon rank={priority.rank} />
+              </span>
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <p className="min-w-0 break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{priority.title}</p>
+                {index === 0 ? (
+                  <span className="rounded-full bg-[#ffe3e8] px-2 py-0.5 text-[11px] font-semibold text-[#d9416f] dark:bg-[#553043] dark:text-[#ff9aa8]">
+                    {isEnglish ? "Core" : "핵심"}
+                  </span>
+                ) : null}
+              </div>
+              <span className={`text-sm leading-none text-[#b3949f] transition-transform dark:text-[#8f7480] ${openRank === priority.rank ? "rotate-90" : ""}`} aria-hidden="true">›</span>
+            </button>
+            <AnimatePresence initial={false}>
+              {openRank === priority.rank ? (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className="px-3.5 pb-3 pl-[4.85rem] pr-7 break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+                    {getShortBody(priority)}
+                  </p>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+        ))}
+      </div>
+    </FreeResultV2Card>
+  );
+}
+
 function FreeResultV2DiagnosisStep({ data, photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
   const isEnglish = locale === "en";
 
   return (
     <FreeResultV2StepFrame
-      eyebrow={isEnglish ? "Diagnosis summary" : "진단 요약"}
       title={isEnglish ? "Core Diagnosis" : "핵심 진단"}
-      body={isEnglish ? "Your skin state at a glance." : "내 피부 상태를 한눈에 요약했어요."}
     >
-      <FreeResultV2Card>
-        <div className="grid grid-cols-[minmax(7.6rem,0.85fr)_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[13rem_minmax(0,1fr)] sm:gap-5">
-          <FreeResultV2PhotoFrame
-            photoUrl={photoUrl}
-            photoAlt={photoAlt}
-            fallback={photoFallback}
-            locale={locale}
-          />
-          <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">
-              {isEnglish ? "One-line diagnosis" : "한 줄 진단"}
-            </p>
-            <p className="mt-2 whitespace-pre-line break-keep text-[1.28rem] font-semibold leading-8 text-[#fff8f3] dark:text-[#fff8f3] sm:text-[1.65rem] sm:leading-9">
-              <span className="text-[#26101a] dark:text-[#fff8f3]">{data.coreLine}</span>
-            </p>
-            {data.patternLine ? (
-              <div className="mt-4">
-                <FreeResultV2Pill>{data.patternLine}</FreeResultV2Pill>
-              </div>
-            ) : null}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {data.tags.map((tag) => (
-                <FreeResultV2Pill key={`${tag.label}-${tag.value}`}>
-                  <span className="text-[#9b7280] dark:text-[#c8aeb8]">{tag.label}</span>
-                  <span className="ml-1 font-semibold">{tag.value}</span>
-                </FreeResultV2Pill>
-              ))}
-            </div>
-          </div>
-        </div>
-        <FreeResultV2FaceLabMiniPanel faceLabPreview={faceLabPreview} locale={locale} />
-      </FreeResultV2Card>
-
-      <FreeResultV2Card>
-        <p className="text-[13px] font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Current priority" : "지금 우선순위"}</p>
-        <div className="mt-4 overflow-hidden rounded-[1.35rem] border border-[#ead9d6] bg-white/34 dark:border-[#5a3a48] dark:bg-[#2a1b24]/62">
-          {data.priorities.map((priority, index) => (
-            <div key={priority.rank} className={`grid grid-cols-[2.25rem_minmax(0,6.9rem)_minmax(0,1fr)] items-center gap-2 px-3.5 py-3 sm:grid-cols-[2.5rem_minmax(0,10rem)_minmax(0,1fr)] sm:gap-3 sm:px-4 ${index ? "border-t border-[#ead9d6] dark:border-[#5a3a48]" : ""}`}>
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e7c5bc] bg-[#fff4f1] text-sm font-semibold text-[#e6507a] dark:border-[#6a4353] dark:bg-[#301f28] dark:text-[#ff9aa8]">
-                {priority.rank}
-              </span>
-              <div className="flex min-w-0 items-center gap-2 text-[#e6507a] dark:text-[#ff9aa8]">
-                <FreeResultV2PriorityIcon rank={priority.rank} />
-                <p className="min-w-0 break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{priority.title}</p>
-              </div>
-              <p className="border-l border-[#ead9d6] pl-3 text-xs leading-5 text-[#7a5360] dark:border-[#5a3a48] dark:text-[#c8aeb8] sm:pl-4">
-                {priority.body}
-              </p>
-            </div>
-          ))}
-        </div>
-      </FreeResultV2Card>
-
+      <FreeResultV2DiagnosisSummaryCard
+        photoUrl={photoUrl}
+        photoAlt={photoAlt}
+        photoFallback={photoFallback}
+        faceLabPreview={faceLabPreview}
+        locale={locale}
+      />
+      <FreeResultV2SkinRadarCard data={data} locale={locale} />
+      <FreeResultV2PriorityListCard priorities={data.priorities} locale={locale} />
     </FreeResultV2StepFrame>
   );
 }
@@ -4605,6 +5331,15 @@ function FreeResultV2ExecutionGuideIcon({ type = "order" }) {
     );
   }
 
+  if (type === "flare") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+        <path d="M12 5.2c2.4 2.6 4 4.9 4 7a4 4 0 0 1-8 0c0-2.1 1.6-4.4 4-7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        <path d="M8.3 18.4c2.1 1.1 5.3 1.1 7.4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" opacity="0.7" />
+      </svg>
+    );
+  }
+
   if (type === "track") {
     return (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
@@ -4631,16 +5366,25 @@ function FreeResultV2ExecutionGuideIcon({ type = "order" }) {
   );
 }
 
-function FreeResultV2ExecutionGuideItem({ item }) {
+function FreeResultV2ReportValueStrip({ items = [] }) {
   return (
-    <div className="min-w-0 rounded-[1.15rem] border border-[#ead9d6] bg-white/30 px-3 py-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/72">
-      <div className="flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/30 bg-[#ff9aa8]/10 text-[#ff9aa8]">
-          <FreeResultV2ExecutionGuideIcon type={item.icon} />
-        </span>
-        <div className="min-w-0">
-          <p className="break-keep text-sm font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item.title}</p>
-          <p className="mt-1 break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{item.body}</p>
+    <div className="relative mt-4 -mx-4 sm:-mx-5">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-5 bg-[linear-gradient(90deg,#fffaf6_0%,rgba(255,250,246,0)_100%)] dark:bg-[linear-gradient(90deg,#241720_0%,rgba(36,23,32,0)_100%)]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-5 bg-[linear-gradient(270deg,#fffaf6_0%,rgba(255,250,246,0)_100%)] dark:bg-[linear-gradient(270deg,#241720_0%,rgba(36,23,32,0)_100%)]" aria-hidden="true" />
+      <div className="overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:px-5">
+        <div className="flex w-max gap-2.5 pr-2">
+          {items.map((item) => (
+            <article
+              key={item.key}
+              className="flex h-[7.45rem] w-[8.35rem] shrink-0 flex-col rounded-[1rem] border border-[#ead9d6]/82 bg-white/24 px-3 py-3 shadow-[0_10px_24px_rgba(35,16,25,0.06)] dark:border-[#5a3a48]/82 dark:bg-[#2a1b24]/58 dark:shadow-none"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/28 bg-[#ff9aa8]/9 text-[#ff9aa8]">
+                <FreeResultV2ExecutionGuideIcon type={item.icon} />
+              </span>
+              <p className="mt-2 break-keep text-[13px] font-semibold leading-5 text-[#26101a] dark:text-[#fff8f3]">{item.title}</p>
+              <p className="mt-1 break-keep text-[11px] leading-[1.45] text-[#7a5360] dark:text-[#c8aeb8]">{item.body}</p>
+            </article>
+          ))}
         </div>
       </div>
     </div>
@@ -4650,8 +5394,8 @@ function FreeResultV2ExecutionGuideItem({ item }) {
 function FreeResultV2BlurredRoutinePreview({ locale = "ko" }) {
   const isEnglish = locale === "en";
   const rows = isEnglish
-    ? ["Product order by routine", "Frequency and amount guide"]
-    : ["제품 사용 순서 미리보기", "사용 빈도 가이드 미리보기"];
+    ? ["Morning routine order", "Night routine order"]
+    : ["아침 루틴 순서", "저녁 루틴 순서"];
 
   return (
     <div className="relative overflow-hidden rounded-[1.35rem] border border-[#ead9d6] bg-white/26 p-3 dark:border-[#5a3a48] dark:bg-[#2a1b24]/72">
@@ -4671,7 +5415,7 @@ function FreeResultV2BlurredRoutinePreview({ locale = "ko" }) {
       <div className="absolute inset-0 flex items-center justify-center bg-[#fffaf6]/28 backdrop-blur-[1px] dark:bg-[#241720]/30">
         <span className="inline-flex items-center gap-2 rounded-full border border-[#ff9aa8]/34 bg-[#241720]/82 px-4 py-2 text-xs font-semibold text-[#fff8f3] shadow-[0_16px_34px_rgba(18,10,16,0.28)]">
           <FreeResultV2LockIcon />
-          {isEnglish ? "Available after checkout" : "결제 후 확인 가능"}
+          {isEnglish ? "Organized in the full report" : "전체 리포트에서 확인할 수 있어요"}
         </span>
       </div>
     </div>
@@ -4680,33 +5424,20 @@ function FreeResultV2BlurredRoutinePreview({ locale = "ko" }) {
 
 function FreeResultV2FullReportCompletionStep({ locale = "ko", onCtaClick = null }) {
   const isEnglish = locale === "en";
-  const guideItems = isEnglish
+  const reportValueItems = isEnglish
     ? [
-        { key: "order", icon: "order", title: "Product order", body: "Exact order for morning and night routines." },
-        { key: "frequency", icon: "frequency", title: "Frequency guide", body: "When to use daily, alternate, or reduce." },
-        { key: "avoid", icon: "avoid", title: "Combinations to avoid", body: "Pairings that may feel burdensome together." },
-        { key: "alternative", icon: "alternative", title: "Alternatives if it does not fit", body: "Candidates to try if the Top Pick is not right." }
+        { key: "order", icon: "order", title: "Routine order", body: "Follow the morning and night order as-is." },
+        { key: "alternative", icon: "alternative", title: "Alternatives", body: "Check what to switch to if it does not fit." },
+        { key: "avoid", icon: "avoid", title: "Avoid pairings", body: "Reduce irritation risk before it starts." },
+        { key: "flare", icon: "flare", title: "Skin SOS", body: "Adjust the routine on rough skin days." },
+        { key: "style", icon: "style", title: "Style expansion", body: "See Face Lab-based direction too." }
       ]
     : [
-        { key: "order", icon: "order", title: "제품 사용 순서", body: "아침/저녁 루틴에서 어떤 순서로 쓸지 정리합니다." },
-        { key: "frequency", icon: "frequency", title: "사용 빈도 가이드", body: "매일/격일 사용과 줄일 타이밍을 안내합니다." },
-        { key: "avoid", icon: "avoid", title: "피해야 할 조합", body: "부담될 수 있는 성분/제품 조합을 정리합니다." },
-        { key: "alternative", icon: "alternative", title: "안 맞을 때 대체 제품", body: "Top Pick 대신 바꿔볼 후보를 안내합니다." }
-      ];
-  const includedItems = isEnglish
-    ? [
-        { key: "score", icon: "score", label: "AI detail matching score" },
-        { key: "flare", icon: "moisture", label: "Flare-up day response" },
-        { key: "style", icon: "style", label: "Face Lab style expansion" },
-        { key: "track", icon: "track", label: "Change tracking record" },
-        { key: "pdf", icon: "pdf", label: "PDF save and share" }
-      ]
-    : [
-        { key: "score", icon: "score", label: "AI 디테일 매칭 점수" },
-        { key: "flare", icon: "moisture", label: "피부 뒤집힌 날 대응법" },
-        { key: "style", icon: "style", label: "Face Lab 스타일 확장" },
-        { key: "track", icon: "track", label: "나의 변화 추적 기록" },
-        { key: "pdf", icon: "pdf", label: "PDF 저장 및 공유" }
+        { key: "order", icon: "order", title: "루틴 순서", body: "아침·저녁 순서를 그대로 따라가요" },
+        { key: "alternative", icon: "alternative", title: "대체 제품", body: "안 맞을 때 바꿀 후보를 확인해요" },
+        { key: "avoid", icon: "avoid", title: "피해야 할 조합", body: "자극 리스크를 미리 줄여요" },
+        { key: "flare", icon: "flare", title: "피부 응급 대응", body: "뒤집힌 날 조정법을 확인해요" },
+        { key: "style", icon: "style", title: "스타일 확장", body: "Face Lab 기반 방향까지 봐요" }
       ];
 
   return (
@@ -4714,51 +5445,33 @@ function FreeResultV2FullReportCompletionStep({ locale = "ko", onCtaClick = null
       title={isEnglish ? "Full Report Complete" : "전체 리포트 완성"}
       body={isEnglish ? "The free result showed the direction. Now get the execution guide you can follow." : "무료 결과는 방향을 알려드렸어요. 이제 그대로 따라 할 실행 가이드를 받아보세요."}
     >
-      <FreeResultV2Card className="overflow-hidden">
+      <FreeResultV2Card className="space-y-4 overflow-hidden">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/34 bg-[#ff9aa8]/10 text-[#ff9aa8]">
             <FreeResultV2ExecutionGuideIcon type="order" />
           </span>
           <div className="min-w-0">
             <p className="break-keep text-xl font-semibold leading-7 text-[#26101a] dark:text-[#fff8f3]">
-              {isEnglish ? "Your Skin Execution Guide" : "내 피부 전용 실행 가이드"}
+              {isEnglish ? "Your routine is ready" : "이미 준비된 내 루틴"}
             </p>
             <p className="mt-2 break-keep text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
-              {isEnglish ? "These criteria open immediately after checkout." : "결제 즉시 아래 기준들이 모두 열립니다."}
+              {isEnglish ? "Morning, night, switch options, and caution points are organized into one guide." : "아침·저녁 순서와 조정 포인트를 하나의 실행 가이드로 정리합니다."}
             </p>
           </div>
-        </div>
-        <div className="mt-5 grid grid-cols-2 gap-2.5">
-          {guideItems.map((item) => (
-            <FreeResultV2ExecutionGuideItem key={item.key} item={item} />
-          ))}
-        </div>
-      </FreeResultV2Card>
-
-      <FreeResultV2Card className="space-y-4">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">{isEnglish ? "Preview" : "미리보기"}</p>
-          <span className="break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
-            {isEnglish ? "Morning and night routines include product order and frequency." : "아침·저녁 루틴은 제품 순서와 사용 빈도까지 정리됩니다."}
-          </span>
         </div>
         <FreeResultV2BlurredRoutinePreview locale={locale} />
       </FreeResultV2Card>
 
-      <FreeResultV2Card className="space-y-3">
-        <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
-          {isEnglish ? "Included in the full report" : "전체 리포트에 포함되는 것"}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {includedItems.map((item) => (
-            <span key={item.key} className="inline-flex items-center gap-2 rounded-full border border-[#ead9d6] bg-white/30 px-3 py-2 text-xs font-semibold text-[#26101a] dark:border-[#5a3a48] dark:bg-[#2a1b24]/74 dark:text-[#fff8f3]">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/24 bg-[#ff9aa8]/10 text-[#ff9aa8]">
-                <FreeResultV2ExecutionGuideIcon type={item.icon} />
-              </span>
-              {item.label}
-            </span>
-          ))}
+      <FreeResultV2Card className="overflow-hidden px-4 py-4 sm:px-5">
+        <div>
+          <p className="text-base font-semibold text-[#26101a] dark:text-[#fff8f3]">
+            {isEnglish ? "Organized into the full report" : "전체 리포트로 정리되는 것"}
+          </p>
+          <p className="mt-1 break-keep text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
+            {isEnglish ? "The direction becomes concrete actions you can follow from today." : "방향 확인에서 끝나지 않도록, 오늘부터 할 행동으로 이어집니다."}
+          </p>
         </div>
+        <FreeResultV2ReportValueStrip items={reportValueItems} />
       </FreeResultV2Card>
 
       <div className="space-y-3">
@@ -4770,7 +5483,7 @@ function FreeResultV2FullReportCompletionStep({ locale = "ko", onCtaClick = null
           {isEnglish ? "Get tonight's routine guide" : "오늘 밤부터 그대로 따라 할 루틴 받기"}
         </button>
         <p className="break-keep px-1 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
-          {isEnglish ? "Unlocks immediately after checkout and saves to My page." : "결제 즉시 잠금이 해제되며, 마이페이지에 저장됩니다."}
+          {isEnglish ? "Routine order, switch options, and caution points are organized together." : "루틴 순서, 바꿀 후보, 피해야 할 조합까지 함께 정리됩니다."}
         </p>
       </div>
     </FreeResultV2StepFrame>
