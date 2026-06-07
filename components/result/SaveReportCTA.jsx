@@ -142,8 +142,6 @@ export default function SaveReportCTA({
   submission,
   faceLabFull,
   locale = "ko",
-  labelOverride = "",
-  helperTextOverride = null,
   onSaved = null,
   previousLabel = "",
   onPrevious = null
@@ -156,19 +154,6 @@ export default function SaveReportCTA({
   const [message, setMessage] = useState("");
   const isEnglish = locale === "en";
   const nextPath = isEnglish ? "/en/result" : "/result";
-  const defaultIdleLabel = user
-    ? isEnglish
-      ? "Save to My Skin"
-      : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5"
-    : isEnglish
-      ? "Sign in with Google to save"
-      : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5";
-  const idleLabel = labelOverride || defaultIdleLabel;
-  const helperText = helperTextOverride === null
-    ? isEnglish
-      ? "Save this to continue today's routine in My skin."
-      : "\uc800\uc7a5\ud558\uba74 \uc624\ub298 \ub8e8\ud2f4\uc744 My skin\uc5d0\uc11c \uc774\uc5b4\ubcfc \uc218 \uc788\uc5b4\uc694."
-    : helperTextOverride;
 
   useEffect(() => {
     setIsSaved(false);
@@ -369,12 +354,18 @@ export default function SaveReportCTA({
             : user
               ? "저장 중..."
               : "Google로 이동 중..."
-          : idleLabel}
+          : user
+            ? isEnglish
+              ? "Save to My Skin"
+              : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5"
+            : isEnglish
+              ? "Sign in with Google to save"
+              : "\ub0b4 \ud53c\ubd80 \uae30\ub85d\uc5d0 \uc800\uc7a5"}
       </button>
 
-      {!isSaved && helperText ? (
+      {!isSaved ? (
         <p className="text-left text-[11px] leading-5 text-[#7a5360] dark:text-[#c8aeb8]">
-          {helperText}
+          {isEnglish ? "Save this to continue today's routine in My skin." : "\uc800\uc7a5\ud558\uba74 \uc624\ub298 \ub8e8\ud2f4\uc744 My skin\uc5d0\uc11c \uc774\uc5b4\ubcfc \uc218 \uc788\uc5b4\uc694."}
         </p>
       ) : null}
 

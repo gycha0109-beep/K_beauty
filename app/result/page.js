@@ -189,8 +189,8 @@ const resultCopy = {
     routineStepBody: "",
     routineStepEmpty: "표시할 루틴 정보가 없습니다.",
     routineGateHint: "",
-    routinePreviewTitle: "전체 리포트에서는\n오늘 바로 쓸 수 있게 정리됩니다.",
-    premiumPreviewTitle: "이제 전체 리포트로 이어집니다",
+    routinePreviewTitle: "전체 리포트에서 추가로 볼 수 있어요",
+    premiumPreviewTitle: "전체 리포트",
     premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "사용 전에 가볍게 확인하세요",
@@ -210,8 +210,8 @@ const resultCopy = {
     topPickEmpty: "가장 먼저 시작할 제품 정보를 불러오지 못했습니다.",
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "실행 순서 이어보기",
-    premiumCardBody: "아침 3분 / 저녁 5분 기준으로, 제품 순서와 사용 빈도까지 이어서 볼 수 있어요.",
-    premiumCardButton: "오늘 쓸 루틴까지 정리하기"
+    premiumCardBody: "루틴 실행 직전부터 전체 구성과 실제 사용 순서를 이어서 볼 수 있습니다.",
+    premiumCardButton: "전체 리포트 보기"
   },
   en: {
     loading: "Loading your result...",
@@ -319,8 +319,8 @@ const resultCopy = {
     routineStepBody: "",
     routineStepEmpty: "There is no routine information to show yet.",
     routineGateHint: "",
-    routinePreviewTitle: "The full report turns this into a routine you can use today.",
-    premiumPreviewTitle: "Continue into the full report",
+    routinePreviewTitle: "You can unlock more in the full report",
+    premiumPreviewTitle: "Full Report",
     premiumPreviewBody: "",
     tipsStepKicker: "RESULT STEP 5",
     tipsStepTitle: "Check These Before You Start",
@@ -340,8 +340,8 @@ const resultCopy = {
     topPickEmpty: "Could not load the Top Pick product.",
     premiumCardKicker: "FULL REPORT",
     premiumCardTitle: "Continue Into The Full Routine",
-    premiumCardBody: "Built around a 3-minute morning and 5-minute night flow, with product order and frequency.",
-    premiumCardButton: "Decide my routine plan"
+    premiumCardBody: "From this point, the full setup and actual order continue.",
+    premiumCardButton: "See Full Report"
   }
 };
 
@@ -777,33 +777,28 @@ function buildFinalReportPreviewSections(locale = "ko") {
     return [
       {
         key: "routine_execution",
-        previewType: "routine",
-        title: "Routine you can follow today",
-        body: "Product order and frequency for a 3-minute morning and 5-minute night flow."
+        title: "Morning · night execution routine",
+        body: "We organize which product to use, in what order, and at which step."
       },
       {
         key: "situation_routines",
-        previewType: "variants",
-        title: "What to do on flare-up days",
-        body: "How to reduce and adjust the routine when breakouts, redness, or dryness rise."
-      },
-      {
-        key: "alternative_comparison",
-        previewType: "compare",
-        title: "Alternatives if a product does not fit",
-        body: "We compare candidates you can use instead of the Top Pick."
+        title: "Situation-based routine changes",
+        body: "We adjust the routine for sensitive days, breakout days, outdoor-heavy days, and makeup days."
       },
       {
         key: "avoid_combinations",
-        previewType: "avoid",
-        title: "Combinations to avoid",
-        body: "We organize ingredient and product pairings that may feel irritating together."
+        title: "Avoid combinations",
+        body: "We point out pairings that can increase irritation or make the routine feel too heavy."
+      },
+      {
+        key: "alternative_strategy",
+        title: "Alternative product strategy",
+        body: "We explain when and how to switch products instead of relying only on the Top Pick."
       },
       {
         key: "face_lab_expanded",
-        previewType: "face-lab",
-        title: "Face Lab style expansion",
-        body: "We organize hair, color, and mood keywords together."
+        title: "Face Lab expanded guide",
+        body: "We organize hair direction, avoid styles, and mood keywords that fit your face shape."
       }
     ];
   }
@@ -811,33 +806,28 @@ function buildFinalReportPreviewSections(locale = "ko") {
   return [
     {
       key: "routine_execution",
-      previewType: "routine",
-      title: "오늘 바로 따라할 루틴",
-      body: "아침 3분 / 저녁 5분 기준으로 제품 순서와 사용 빈도를 정리합니다."
+      title: "아침·저녁 실행 루틴",
+      body: "제품을 어느 순서로, 어느 단계에서 쓰면 되는지 정리합니다."
     },
     {
       key: "situation_routines",
-      previewType: "variants",
-      title: "피부가 뒤집힌 날 대응",
-      body: "트러블·붉은기·건조감이 올라온 날 루틴을 어떻게 줄일지 보여줍니다."
-    },
-    {
-      key: "alternative_comparison",
-      previewType: "compare",
-      title: "제품이 안 맞을 때 대체안",
-      body: "Top Pick 대신 쓸 수 있는 후보를 비교합니다."
+      title: "상황별 루틴 변형",
+      body: "민감한 날, 트러블 올라온 날, 야외활동 많은 날, 메이크업하는 날 기준으로 루틴을 바꿔줍니다."
     },
     {
       key: "avoid_combinations",
-      previewType: "avoid",
       title: "피해야 할 조합",
-      body: "같이 쓰면 자극될 수 있는 성분/제품 조합을 정리합니다."
+      body: "같이 쓰면 자극이 커지거나 루틴이 무거워지는 조합을 알려줍니다."
+    },
+    {
+      key: "alternative_strategy",
+      title: "대체 제품 사용 전략",
+      body: "Top Pick 대신 어떤 제품을 언제 바꿔 쓰면 좋은지 정리합니다."
     },
     {
       key: "face_lab_expanded",
-      previewType: "face-lab",
-      title: "Face Lab 스타일 확장",
-      body: "헤어·컬러·분위기 키워드까지 정리합니다."
+      title: "Face Lab 확장 가이드",
+      body: "얼굴형에 맞는 헤어 방향, 피해야 할 스타일, 분위기 키워드를 정리합니다."
     }
   ];
 }
@@ -2985,6 +2975,7 @@ function ResultContent() {
   const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
   const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
   const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
+  const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
   const goToFullReport = () => {
     trackEvent("click_full_report_cta", {
       product_id: result?.topPick?.id || null,
@@ -3056,10 +3047,20 @@ function ResultContent() {
     resultSteps.push({
       id: "premium-preview",
       content: (
-        <FreeResultV2FullReportCompletionStep
-          locale={locale}
-          onCtaClick={goToFullReport}
-        />
+        <section className="space-y-4">
+          <ResultStepLead
+            kicker={copy.premiumCardKicker}
+            title={copy.premiumPreviewTitle}
+            body={null}
+          />
+
+          <ResultPreviewMaskCard
+            copy={copy}
+            sections={finalReportPreviewSections}
+            ctaLabel={copy.premiumCardButton}
+            onCtaClick={goToFullReport}
+          />
+        </section>
       )
     });
   }
@@ -3195,8 +3196,6 @@ function ResultContent() {
                 submission={submission}
                 faceLabFull={faceLabFull}
                 locale={locale}
-                labelOverride={isEnglish ? "Save only to my skin record" : "내 피부 기록에만 무료 저장"}
-                helperTextOverride=""
                 onSaved={() => setIsReportSaved(true)}
                 previousLabel={copy.previous}
                 onPrevious={
@@ -5908,8 +5907,7 @@ function ResultPreviewLockedRow({ section }) {
   );
 }
 
-function ResultPreviewMaskCard({ copy, sections = [], ctaLabel = "", onCtaClick = null, locale = "ko" }) {
-  const isEnglish = locale === "en";
+function ResultPreviewMaskCard({ copy, sections = [], ctaLabel = "", onCtaClick = null }) {
   const visibleSections = Array.isArray(sections)
     ? sections
         .map((section) => ({
@@ -5923,48 +5921,40 @@ function ResultPreviewMaskCard({ copy, sections = [], ctaLabel = "", onCtaClick 
     return null;
   }
 
-  const featuredSections = visibleSections.slice(0, 2);
-  const lockedSections = visibleSections.slice(2);
-
   return (
     <section className="overflow-hidden rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[linear-gradient(145deg,#fff4ef_0%,#f6ece8_52%,#ffe1e5_100%)] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
       <div className="space-y-5">
-        <div className="rounded-[1.6rem] border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee]/78 px-5 py-7 text-center dark:border-[#704557] dark:bg-[#2a1823]">
+        <div className="rounded-[1.6rem] border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee]/70 p-5 text-center dark:border-[#704557] dark:bg-[#2a1823]">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#ff9aa8]/45 bg-white/58 text-2xl text-[#ff8068] shadow-[0_0_28px_rgba(255,128,104,0.22)] dark:bg-[#301f28]">
             ✓
           </div>
           <span className="mt-4 inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fff8f3] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#704557] dark:bg-[#301f28] dark:text-[#f2c879]">
             Premium Report
           </span>
-          <p className="mx-auto mt-4 max-w-[19rem] whitespace-pre-line text-[1.45rem] font-semibold leading-tight tracking-tight text-[#28121b] dark:text-[#fff8f3]">
-            {copy.routinePreviewTitle}
-          </p>
-          <p className="mx-auto mt-4 max-w-[20rem] text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
+          <p className="mt-3 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{copy.routinePreviewTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
             {copy.premiumCardBody}
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {featuredSections.map((section, index) => (
-            <ResultPreviewHighlightCard key={section.key || section.title} section={section} index={index} locale={locale} />
+        <div className="grid gap-3">
+          {visibleSections.map((section, index) => (
+            <div
+              key={section.key || section.title}
+              className="rounded-[1.25rem] border border-[rgba(120,70,70,0.14)] bg-[#fbf2ee]/72 px-4 py-3.5 dark:border-[#704557] dark:bg-[#2a1823]"
+            >
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.9rem] bg-[#ead0c8] text-[11px] font-semibold text-[#6a3344] dark:bg-white/10 dark:text-white/80">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{section.title}</p>
+                  <p className="mt-1.5 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{section.body}</p>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-
-        {lockedSections.length ? (
-          <div>
-            <p className="flex items-center gap-2 px-1 text-xs font-semibold text-[#7a5360] dark:text-[#c8aeb8]">
-              <span className="text-[#9b7280] dark:text-[#d6a1af]">
-                <FreeResultV2LockIcon />
-              </span>
-              {isEnglish ? "More decision criteria continue inside" : "이 외에도 결정 기준이 이어집니다"}
-            </p>
-            <div className="mt-3 grid gap-2.5">
-              {lockedSections.map((section) => (
-                <ResultPreviewLockedRow key={section.key || section.title} section={section} />
-              ))}
-            </div>
-          </div>
-        ) : null}
 
         {ctaLabel && onCtaClick ? (
           <button

@@ -521,3 +521,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The Face Lab card remains taller than the pre-carousel design, but the latest photo reduction shortens it while keeping the photo visually dominant.
 - Reusable rule: For this Face Lab carousel, keep visible progress in dots only, keep mobile swipe hint on the text area, and keep desktop arrows adjacent to the value text rather than in the card header.
 - Context promotion candidate: NULL
+
+### 2026-06-07 / free result v2 final step main handoff
+
+- Branch: feature/free-result-flow-v2
+- Task type: execution
+- Routing decision: Result final-step UI handoff from `main` into `feature/free-result-flow-v2`; v2 Steps 1-4, API, DB, payment, saved data shape, auth/redirect logic, and branch merge/delete/create operations were out of scope.
+- Goal: Replace the v2 final premium-preview step with the `main` result final step structure and restore the final save CTA wording to the `main` behavior.
+- Changed files: app/result/page.js, components/result/SaveReportCTA.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No API, DB, payment, stored data, env, or auth/redirect logic changed. `SaveReportCTA` was limited to removing v2-only UI override props and restoring existing default labels/helper copy.
+- Validation: `git diff --check -- app/result/page.js components/result/SaveReportCTA.jsx` passed with CRLF warnings only; `npm run build` passed; in-app Browser `/test-result` confirmed Step 5 shows the `main` full-report preview copy/items, `전체 리포트 보기`, default save CTA, and share area; CTA navigated to `/result/full-report`; `/en/test-result` confirmed the English final step and `See Full Report` navigated to `/en/result/full-report`.
+- Notes/risks: Branch merge, feature branch deletion, and `feature/premium-report-flow-v1` creation were intentionally not performed until the user completes visual confirmation.
+- Reusable rule: When free-result v2 borrows a result step from `main`, copy the step data, wrapper, card component behavior, and final CTA copy together so the step does not mix v2-specific and main-specific messaging.
+- Context promotion candidate: NULL
