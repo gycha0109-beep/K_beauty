@@ -6,6 +6,19 @@ export const CATEGORY_ORDER = [
   "sunscreen",
 ] as const;
 
+export const MOISTURIZER_CATEGORIES = [
+  "moisturizer_lotion_emulsion",
+  "moisturizer_gel",
+  "moisturizer_cream",
+  "moisturizer_balm",
+] as const;
+
+export function isMoisturizerCategory(category: string | null | undefined): boolean {
+  return MOISTURIZER_CATEGORIES.includes(
+    String(category || "").trim().toLowerCase() as (typeof MOISTURIZER_CATEGORIES)[number],
+  );
+}
+
 export const CATEGORY_LABELS: Record<string, string> = {
   cleanser: "클렌저",
   toner_essence: "토너 / 에센스",
@@ -18,6 +31,10 @@ Object.assign(CATEGORY_LABELS, {
   toner_pad: "토너 패드",
   ampoule: "앰플",
   essence: "에센스",
+  moisturizer_lotion_emulsion: "로션 / 에멀전",
+  moisturizer_gel: "수분 젤",
+  moisturizer_cream: "크림",
+  moisturizer_balm: "밤",
 });
 
 export const TOP_PICK_SCORING_WEIGHTS = {
@@ -432,7 +449,11 @@ export function getCategorySlot(category: string | null | undefined): string {
     return "toner_essence";
   }
 
-  return SERUM_FAMILY_CATEGORIES.has(category) ? "serum" : category;
+  if (SERUM_FAMILY_CATEGORIES.has(category)) {
+    return "serum";
+  }
+
+  return isMoisturizerCategory(category) ? "moisturizer" : category;
 }
 
 export function matchesRecommendationCategorySlot(
