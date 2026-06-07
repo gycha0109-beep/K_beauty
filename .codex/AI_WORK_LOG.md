@@ -534,3 +534,42 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Branch merge, feature branch deletion, and `feature/premium-report-flow-v1` creation were intentionally not performed until the user completes visual confirmation.
 - Reusable rule: When free-result v2 borrows a result step from `main`, copy the step data, wrapper, card component behavior, and final CTA copy together so the step does not mix v2-specific and main-specific messaging.
 - Context promotion candidate: NULL
+
+### 2026-06-07 / premium report Skin Match action-plan restructure
+
+- Branch: feature/premium-report-flow-v1
+- Task type: diagnostic -> execution
+- Routing decision: Medium UI refactor after diagnosis. The paid Skin Match report surface, section order, copy, CTA strength, and Face Lab entry hierarchy were in scope; recommendation logic, API, DB, payment, saved data, and free result steps were protected.
+- Goal: Reorder paid Skin Match from a detail-heavy report into a 6-step post-payment action plan: start today, morning routine, evening routine, avoid list, adjustment guide, and alternative/budget plan.
+- Changed files: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: No recommendation engine, API route, DB schema/migration/policy, payment, auth/redirect, env, product data, saved-data structure, free Step1-4, or Step5 file changes.
+- Validation: `npm run build` passed; in-app Browser `/test-full-report` confirmed Skin Match opens first at 390px CSS width, `1/6` today-start plan is first, 2/6 through 6/6 advance in the requested order, no horizontal overflow, 1/6 has no `판매처 보기`, 6/6 includes store CTA and Face Lab ready handoff, Face Lab handoff opens the Face Lab report, and browser console errors were 0; `git diff --check` passed with CRLF warning only.
+- Notes/risks: The UI additions are concentrated in `app/result/full-report/page.js`, which already owns this screen. No production payment/API flow was exercised because this was verified through the development fixture route.
+- Reusable rule: Paid report CTAs should follow the user value sequence: decision and routine first, purchase links as light support inside routine steps, and the strongest store CTAs in the final alternative/budget section.
+- Context promotion candidate: NULL
+
+### 2026-06-07 / premium report Skin Match micro polish
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Second-pass paid report UI polish with the existing 6-step Skin Match structure preserved. Only copy, card hierarchy, routine display text, final CTA grouping, and Face Lab handoff copy were in scope.
+- Goal: Make the paid Skin Match report feel more immediately actionable after payment without adding new product, recommendation, API, DB, payment, auth, free-result, or Step5 behavior.
+- Changed files: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: This task did not edit recommendation/API/DB/payment/auth/free result files. During final verification, separate dirty files were detected in `lib/product-source.js`, `lib/recommendation-scoring.ts`, `lib/skin-match-decision-engine.js`, `lib/product-category-utils.js`, and `supabase/migrations/*.sql`; those were not modified or reverted in this task.
+- Validation: `npm run build` passed; in-app Browser `/test-full-report` at CSS `innerWidth: 390` confirmed Skin Match opens first, 1/6 dashboard summaries are visible with no store CTA, 2/6 and 3/6 show compressed action-first routine copy, 4/6 has a clear `가장 먼저 피할 것` card, 5/6 common safe boundary uses adjustment-guide wording, 6/6 has store links plus `추천 제품 모아보기`, Face Lab handoff copy is strengthened, no horizontal overflow, and console errors were 0; `git diff --check` passed with CRLF warnings only.
+- Notes/risks: The final worktree includes protected-area dirty files from outside this UI task, so final review should separate the paid-report UI diff from those existing recommendation/DB changes before commit.
+- Reusable rule: Second-pass paid-report polish should tighten hierarchy and copy inside existing sections rather than adding new report structure or new purchase behavior.
+- Context promotion candidate: NULL
+
+### 2026-06-07 / moisturizer subcategory recommendation and DB insert
+
+- Branch: feature/premium-report-flow-v1
+- Task type: diagnostic -> execution
+- Routing decision: User explicitly approved protected DB/migration work after backup-branch diagnosis. Scope was limited to Supabase moisturizer subcategory migrations, the 15-item lotion/emulsion insert, recommendation slot support for moisturizer subcategories, and local backup branch cleanup.
+- Goal: Preserve the useful `codex/local-leftovers-backup` changes for moisturizer subcategories, apply the missing Supabase insert, avoid risky package changes, and remove the backup branch.
+- Changed files: lib/product-category-utils.js, lib/product-source.js, lib/recommendation-scoring.ts, lib/skin-match-decision-engine.js, supabase/migrations/20260524054039_split_moisturizer_categories.sql, supabase/migrations/20260524054049_reclassify_existing_moisturizers.sql, supabase/migrations/20260526_moisturizer_lotion_emulsion_insert.sql, .codex/AI_WORK_LOG.md
+- Protected areas: DB/migration changes were performed only after explicit user approval. No package, auth, payment, env, API response field, or saved-data structure changes were made.
+- Validation: `npm run build` passed; `git diff --check` passed for the changed recommendation/migration files; Supabase insert target count returned 15/15; `moisturizer_lotion_emulsion` product count increased to 20; `supabase migration repair 20260526 --status applied --linked --yes` marked the executed data migration as applied remotely.
+- Notes/risks: Existing unrelated dirty files were present before this task: `app/result/full-report/page.js` and prior `.codex/AI_WORK_LOG.md` edits. Older local-only Supabase migrations still appear in `supabase migration list`; they were not touched.
+- Reusable rule: When a data migration is executed directly with `supabase db query --linked --file`, repair the remote migration history for that exact migration only after verifying the target rows exist.
+- Context promotion candidate: NULL
