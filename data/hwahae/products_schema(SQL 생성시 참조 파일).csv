@@ -1,4 +1,4 @@
-column_name,data_type,udt_name
+﻿column_name,data_type,udt_name
 id,uuid,uuid
 name,text,text
 brand,text,text
@@ -38,3 +38,9 @@ external_source,text,text
 external_type,text,text
 external_id,text,text
 source_url,text,text
+balm_functional_tags,ARRAY,_text
+balm_usage_scope,text,text
+balm_type,text,text
+is_primary_moisturizer,boolean,bool
+balm_caution_tags,ARRAY,_text
+balm_research_confidence,text,text
