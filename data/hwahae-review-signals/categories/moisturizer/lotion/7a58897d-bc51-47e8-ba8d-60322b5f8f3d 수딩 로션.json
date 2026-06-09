@@ -1,0 +1,104 @@
+{
+    "productId": "7a58897d-bc51-47e8-ba8d-60322b5f8f3d",
+    "review_raw": {
+        "positive": [
+            [
+                "자극없는",
+                802
+            ],
+            [
+                "보습잘되는",
+                498
+            ],
+            [
+                "잘발리는",
+                362
+            ],
+            [
+                "흡수잘되는",
+                334
+            ],
+            [
+                "유분없는",
+                275
+            ],
+            [
+                "트러블안생기는",
+                236
+            ],
+            [
+                "트러블없어지는",
+                138
+            ]
+        ],
+        "negative": [
+            [
+                "알러지반응오는",
+                115
+            ],
+            [
+                "모공관리안되는",
+                57
+            ],
+            [
+                "속건조에효과없는",
+                38
+            ],
+            [
+                "답답한",
+                25
+            ],
+            [
+                "잘굳는",
+                18
+            ],
+            [
+                "지속력안좋은",
+                17
+            ],
+            [
+                "눈통증있는",
+                11
+            ]
+        ]
+    },
+    "market_raw": {
+        "review_count": 2530,
+        "rating": 4.27,
+        "rating_distribution": {}
+    },
+    "ingredient_raw": {
+        "total_ingredients": 22,
+        "risk": {
+            "low": 19,
+            "medium": 2,
+            "high": 0,
+            "unknown": 1
+        },
+        "functional": {
+            "skin hydration": 10,
+            "moisture evaporation blocking": 3,
+            "skin protection": 5,
+            "soothing/astringent": 0,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+        },
+        "skin_type": {
+            "oily": {
+                "positive": 0,
+                "negative": 1
+            },
+            "dry": {
+                "positive": 2,
+                "negative": 0
+            },
+            "sensitive": {
+                "positive": 0,
+                "negative": 0
+            }
+        }
+    }
+}
