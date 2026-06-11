@@ -30,6 +30,7 @@ CATEGORY_BY_FILENAME = {
     "토너_에센스": "toner_essence",
     "토너패드": "toner_pad",
     "토너_패드": "toner_pad",
+    "toner_pad": "toner_pad",
     "세럼": "serum",
     "serum": "serum",
     "앰플": "ampoule",

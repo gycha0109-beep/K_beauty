@@ -1,87 +1,87 @@
 {
-  "productId": "아비브 어성초 흔적 에센스 패드 클리어터치",
+  "productId": "63a6b2f2-564a-477a-95f7-4e6d0ea29099",
   "review_raw": {
     "positive": [
       [
         "에센스양많은",
-        1228
+        2963
       ],
       [
-        "진정되는",
-        868
-      ],
-      [
-        "수분있는",
-        709
-      ],
-      [
-        "트러블없어지는",
-        603
+        "보습잘되는",
+        1998
       ],
       [
         "흡수잘되는",
-        189
+        1120
+      ],
+      [
+        "트러블없어지는",
+        1009
+      ],
+      [
+        "향에만족한",
+        900
       ],
       [
         "잘굳지않는",
-        141
+        432
       ],
       [
-        "쫀득한",
-        92
+        "속건조에효과있는",
+        413
       ]
     ],
     "negative": [
       [
-        "흘러내리는",
-        274
-      ],
-      [
-        "끈적한",
-        254
-      ],
-      [
-        "트러블생기는",
-        130
-      ],
-      [
         "알러지반응오는",
-        114
-      ],
-      [
-        "유분있는",
-        77
+        923
       ],
       [
         "따가운",
-        73
+        875
       ],
       [
-        "미끌거리는",
-        38
+        "트러블생기는",
+        722
+      ],
+      [
+        "밀착안되는",
+        319
+      ],
+      [
+        "유분있는",
+        211
+      ],
+      [
+        "가려운",
+        186
+      ],
+      [
+        "내장도구없는",
+        166
       ]
     ]
   },
   "market_raw": {
-    "review_count": 2797,
-    "rating": 4.36,
+    "review_count": 20594,
+    "rating": 4.47,
     "rating_distribution": {}
   },
   "ingredient_raw": {
-    "total_ingredients": 38,
+    "total_ingredients": 25,
     "risk": {
-      "low": 36,
-      "medium": 1,
+      "low": 22,
+      "medium": 3,
       "high": 0,
-      "unknown": 1
+      "unknown": 0
     },
     "functional": {
-      "skin hydration": 21,
-      "moisture evaporation blocking": 3,
-      "skin protection": 7,
+      "skin hydration": 14,
+      "moisture evaporation blocking": 1,
+      "skin protection": 3,
       "soothing/astringent": 0,
       "exfoliation": 0,
-      "whitening": 1,
+      "whitening": 0,
       "acne relief": 0,
       "uv protection": 0,
       "wrinkle improvement": 0
@@ -92,12 +92,12 @@
         "negative": 0
       },
       "dry": {
-        "positive": 4,
+        "positive": 3,
         "negative": 0
       },
       "sensitive": {
         "positive": 1,
-        "negative": 0
+        "negative": 2
       }
     }
   }
