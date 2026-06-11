@@ -40,6 +40,36 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-11 / my check-in local date alignment
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 진단형 후 실행형
+- 라우팅 판단: 현재 브랜치 목적 불일치로 1차 중단했으나, 사용자가 현재 브랜치 작업을 명시 승인했고, DB schema/migration 없이 `/my` check-in/routine 날짜 조회 기준만 맞추는 제한 작업으로 실행
+- 목표: daily check-in 저장 날짜와 `/my` 대시보드 조회 날짜를 사용자 브라우저 local date 기준으로 맞추고, Asia/Seoul 고정 today 계산을 제거
+- 변경 파일: components/my/DailyCheckInForm.jsx, components/my/MyDashboard.jsx, app/api/my/check-in/route.js, app/api/my/dashboard/route.js, lib/my/dashboard.js, lib/my/local-date.js, .codex/AI_WORK_LOG.md
+- 보호 구역: DB schema/migration/policy, 저장 테이블 구조, API 기존 응답 필드, 인증/권한/결제/추천 로직은 수정하지 않음. check-in API 저장 경로는 사용자 승인 범위 안에서 형식/범위 검증만 추가
+- 검증 결과: npm run build 성공, git diff --check 통과(CRLF warning만 있음), app/components/lib 내 Asia/Seoul 고정 조회 코드 없음 확인, in-app Browser로 `/my` 접근 시 미인증 상태에서 `/` redirect 및 런타임 표시 확인
+- 문제/주의점: 인증 세션이 없어 실제 `/my` 대시보드의 todayCheckin/todayRoutine DB 조회 결과는 브라우저에서 직접 확인하지 못함
+- 다음 작업: 실제 로그인 세션에서 다른 timezone 브라우저 기준으로 `/my/check-in` 저장 후 `/my` today check-in/routine 노출을 확인
+- 재사용할 규칙: 사용자 달력 날짜와 UTC 이벤트 타임스탬프는 역할을 분리하고, 저장/조회 날짜 컬럼은 같은 local date context를 사용한다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
+### 2026-06-11 / my check-in local date self-review
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 리뷰형 후 제한 실행형
+- 라우팅 판단: 직전 daily check-in localDate 변경 결과의 자체 점검 요청이며, source of truth와 fallback 주석만 최소 보강
+- 목표: `/my` 서버 props와 클라이언트 재조회 데이터 흐름, localDate fallback, UTC 기준 ±2일 검증, 날짜 역할 문서화를 점검
+- 변경 파일: components/my/MyDashboard.jsx, lib/my/local-date.js, .codex/AI_WORK_LOG.md
+- 보호 구역: DB schema/migration/policy, API 응답 필드, UI 구조, 인증/권한/결제/추천 로직 미수정
+- 검증 결과: npm run build 성공, git diff --check 통과(CRLF warning만 있음), `rg "Asia/Seoul|getKoreaDateString" app components lib -n` 결과 없음. `npm run lint`는 ESLint 미설정 프로젝트라 Next.js가 설정 프롬프트를 띄우며 종료되어 수행 불가
+- 문제/주의점: `/my` 첫 서버 렌더는 UTC fallback payload를 쓰고, 클라이언트 refresh 성공 후 브라우저 localDate payload가 source of truth가 된다. 이 흐름을 코드 주석으로 명확히 함
+- 다음 작업: 실제 로그인 세션에서 `/my/check-in` 저장 후 `/my` 클라이언트 재조회 payload가 같은 localDate를 쓰는지 확인
+- 재사용할 규칙: 서버 렌더 fallback과 클라이언트 보정 payload가 공존할 때는 어떤 payload가 최종 source of truth인지 코드에 남긴다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
 ### 2026-05-22 / result 저장 CTA 위치 조정
 
 - 브랜치: feature/revisit-core-db

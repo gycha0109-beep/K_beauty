@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  isLocalDateInServerWindow,
+  isValidLocalDate
+} from "@/lib/my/local-date";
 import { generateDailyRoutine } from "@/lib/my/routine-generator";
 
 export const dynamic = "force-dynamic";
@@ -62,21 +66,6 @@ const ROUTINE_LOG_COLUMNS = [
   "updated_at"
 ].join(",");
 
-function isValidLocalDate(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return false;
-  }
-
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-
-  return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day
-  );
-}
-
 function normalizeLevel(value) {
   const level = Number(value);
 
@@ -98,6 +87,13 @@ function normalizeCheckinPayload(body) {
   if (!isValidLocalDate(body.checkinDate)) {
     return {
       error: "invalid_checkin_date",
+      payload: null
+    };
+  }
+
+  if (!isLocalDateInServerWindow(body.checkinDate)) {
+    return {
+      error: "checkin_date_out_of_range",
       payload: null
     };
   }
@@ -181,6 +177,8 @@ export async function POST(request) {
     }
 
     const now = new Date().toISOString();
+    // checkin_date/routine_date are the user's calendar date.
+    // created_at remains the UTC event timestamp for audit and ordering.
     const checkinRecord = {
       user_id: user.id,
       skin_profile_id: skinProfile.id,

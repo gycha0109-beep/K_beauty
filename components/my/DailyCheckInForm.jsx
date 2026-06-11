@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getBrowserDateContext } from "@/lib/my/local-date";
 
 const LEVEL_FIELDS = [
   {
@@ -36,12 +37,6 @@ const LEVEL_FIELDS = [
   }
 ];
 
-function getLocalDateString(date = new Date()) {
-  const localTime = date.getTime() - date.getTimezoneOffset() * 60 * 1000;
-
-  return new Date(localTime).toISOString().slice(0, 10);
-}
-
 function RangeField({ field, value, onChange }) {
   return (
     <label className="block rounded-[1.1rem] border border-[#ead2ca] bg-white/60 p-4 dark:border-[#4a303c] dark:bg-[#301f28]">
@@ -69,7 +64,8 @@ function RangeField({ field, value, onChange }) {
 export default function DailyCheckInForm({ skinProfile }) {
   const router = useRouter();
   const [form, setForm] = useState({
-    checkinDate: getLocalDateString(),
+    checkinDate: "",
+    timezone: "unknown",
     dryness_level: 0,
     oiliness_level: 0,
     redness_level: 0,
@@ -90,6 +86,16 @@ export default function DailyCheckInForm({ skinProfile }) {
     return skinProfile.concerns.filter(Boolean).slice(0, 3).join(", ");
   }, [skinProfile]);
 
+  useEffect(() => {
+    const dateContext = getBrowserDateContext();
+
+    setForm((current) => ({
+      ...current,
+      checkinDate: current.checkinDate || dateContext.localDate,
+      timezone: dateContext.timezone
+    }));
+  }, []);
+
   function updateField(key, value) {
     setForm((current) => ({
       ...current,
@@ -103,12 +109,19 @@ export default function DailyCheckInForm({ skinProfile }) {
     setErrorMessage("");
 
     try {
+      const dateContext = getBrowserDateContext();
+      const requestBody = {
+        ...form,
+        checkinDate: form.checkinDate || dateContext.localDate,
+        timezone: dateContext.timezone
+      };
+
       const response = await fetch("/api/my/check-in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(form)
+        body: JSON.stringify(requestBody)
       });
       const data = await response.json().catch(() => null);
 

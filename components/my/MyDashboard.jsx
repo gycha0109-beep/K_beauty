@@ -1,8 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
 import TodayCheckInPrompt from "@/components/my/TodayCheckInPrompt";
 import TodayRoutineCard from "@/components/my/TodayRoutineCard";
+import { getBrowserDateContext } from "@/lib/my/local-date";
 
 function formatDate(value) {
   if (!value) {
@@ -10,6 +14,16 @@ function formatDate(value) {
   }
 
   try {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [year, month, day] = value.split("-").map(Number);
+
+      return new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }).format(new Date(year, month - 1, day));
+    }
+
     return new Intl.DateTimeFormat("ko-KR", {
       year: "numeric",
       month: "long",
@@ -100,6 +114,45 @@ function RoutinePendingNotice() {
 }
 
 export default function MyDashboard({ dashboard }) {
+  const [clientDashboard, setClientDashboard] = useState(null);
+  // Server props are the initial fallback; browser-local dashboard data replaces them after refresh.
+  const activeDashboard = clientDashboard || dashboard;
+
+  useEffect(() => {
+    const { localDate, timezone } = getBrowserDateContext();
+    const params = new URLSearchParams({
+      localDate,
+      timezone
+    });
+    let isActive = true;
+
+    async function refreshDashboard() {
+      try {
+        const response = await fetch(`/api/my/dashboard?${params.toString()}`, {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+
+        if (isActive) {
+          setClientDashboard(data);
+        }
+      } catch {
+        // Keep the server fallback payload when the client refresh is unavailable.
+      }
+    }
+
+    refreshDashboard();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   const {
     latestSkinProfile,
     todayCheckin,
@@ -107,7 +160,7 @@ export default function MyDashboard({ dashboard }) {
     latestSavedReport,
     hasProfile,
     needsCheckIn
-  } = dashboard;
+  } = activeDashboard;
 
   return (
     <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">
