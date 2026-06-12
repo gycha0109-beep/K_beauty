@@ -3999,7 +3999,7 @@ function LegacyTodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate 
               onClick={() => onNavigate?.("morning-routine")}
               className="relative mt-5 flex min-h-13 w-full items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-5 py-3 text-base font-semibold text-white shadow-[0_14px_34px_rgba(215,111,91,0.28)] transition hover:translate-y-[-1px] hover:shadow-[0_18px_40px_rgba(215,111,91,0.32)]"
             >
-              {isEnglish ? "See today's first steps" : "오늘 할 일 먼저 보기"}
+              {isEnglish ? "See today's steps" : "오늘 할 일 보기"}
               <span className="ml-2">→</span>
             </button>
           </div>
@@ -4173,7 +4173,7 @@ function TodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
           <p className="text-[0.78rem] font-semibold tracking-[0.02em] text-[#7c4a42] dark:text-[#ddb7aa]">
             {isEnglish ? "Your personalized Skin Match plan" : "님의 맞춤 Skin Match 플랜"}
           </p>
-          <h3 className="mt-3 font-serif text-[2.35rem] font-semibold leading-tight text-[#44251f] dark:text-[#ffe2d7] sm:text-[2.9rem]">
+          <h3 className="mt-2.5 font-serif text-[2.05rem] font-medium leading-tight text-[#44251f] dark:text-[#ffe2d7] sm:text-[2.45rem]">
             {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
           </h3>
           <p className="mx-auto mt-3 max-w-[28rem] text-sm leading-6 text-[#654b45] dark:text-[#f1d7ce]">
@@ -4191,9 +4191,9 @@ function TodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
         </div>
 
         <div className="relative mx-auto mt-7 min-h-[31rem] max-w-[28rem] sm:min-h-[34rem] sm:max-w-[34rem] lg:min-h-[33rem] lg:max-w-[46rem]">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#f0b7a7]/18 dark:border-[#7d4b47]/25" />
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[16.5rem] w-[16.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#edc8bb]/28 dark:border-[#6e3e3c]/34" />
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[11.4rem] w-[11.4rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,241,234,0.58),rgba(255,226,212,0.14),transparent_72%)] dark:bg-[radial-gradient(circle,rgba(151,74,65,0.24),rgba(66,30,33,0.16),transparent_72%)]" />
+          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#f0b7a7]/18 dark:border-[#7d4b47]/25" />
+          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[16.5rem] w-[16.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#edc8bb]/28 dark:border-[#6e3e3c]/34" />
+          <div className="pointer-events-none absolute left-1/2 top-[47%] h-[11.4rem] w-[11.4rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,241,234,0.58),rgba(255,226,212,0.14),transparent_72%)] dark:bg-[radial-gradient(circle,rgba(151,74,65,0.24),rgba(66,30,33,0.16),transparent_72%)]" />
 
           {hubActions.map((action) => (
             <SkinMatchHubQuickCard
@@ -4204,7 +4204,7 @@ function TodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
             />
           ))}
 
-          <div className="absolute left-1/2 top-1/2 z-20 flex h-[11.75rem] w-[11.75rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-[#f3c1ae]/64 bg-[radial-gradient(circle_at_50%_20%,rgba(255,253,250,0.98),rgba(255,236,225,0.9)_68%,rgba(255,223,209,0.78))] px-4 text-center shadow-[0_0_0_7px_rgba(241,173,151,0.09),0_20px_50px_rgba(185,93,74,0.16),inset_0_1px_0_rgba(255,255,255,0.82)] dark:border-[#d28a78]/58 dark:bg-[radial-gradient(circle_at_50%_18%,rgba(70,35,39,0.96),rgba(38,19,24,0.92)_70%,rgba(27,13,18,0.98))] dark:shadow-[0_0_0_7px_rgba(176,83,74,0.09),0_24px_62px_rgba(8,2,5,0.45),inset_0_1px_0_rgba(255,226,215,0.1)] sm:h-[13.75rem] sm:w-[13.75rem] sm:px-5">
+          <div className="absolute left-1/2 top-[47%] z-20 flex h-[11.75rem] w-[11.75rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-[#f3c1ae]/64 bg-[radial-gradient(circle_at_50%_20%,rgba(255,253,250,0.98),rgba(255,236,225,0.9)_68%,rgba(255,223,209,0.78))] px-4 text-center shadow-[0_0_0_7px_rgba(241,173,151,0.09),0_20px_50px_rgba(185,93,74,0.16),inset_0_1px_0_rgba(255,255,255,0.82)] dark:border-[#d28a78]/58 dark:bg-[radial-gradient(circle_at_50%_18%,rgba(70,35,39,0.96),rgba(38,19,24,0.92)_70%,rgba(27,13,18,0.98))] dark:shadow-[0_0_0_7px_rgba(176,83,74,0.09),0_24px_62px_rgba(8,2,5,0.45),inset_0_1px_0_rgba(255,226,215,0.1)] sm:h-[13.75rem] sm:w-[13.75rem] sm:px-5">
             <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#efb09f]/56 bg-[#fff6f0] text-[#d06f60] dark:border-[#8d514b]/72 dark:bg-[#3b2026] dark:text-[#f0b7a7]">
               ✧
             </span>
@@ -4220,9 +4220,9 @@ function TodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
             <button
               type="button"
               onClick={() => onNavigate?.("morning-routine")}
-              className="mt-2.5 inline-flex min-h-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-3.5 text-[0.72rem] font-semibold text-white shadow-[0_12px_26px_rgba(215,111,91,0.24)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:mt-3 sm:min-h-10 sm:px-4 sm:text-xs"
+              className="mt-2.5 inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-4 text-[0.72rem] font-semibold text-white shadow-[0_12px_26px_rgba(215,111,91,0.24)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:mt-3 sm:min-h-10 sm:px-4 sm:text-xs"
             >
-              {isEnglish ? "See today's first steps" : "오늘 할 일 먼저 보기"}
+              {isEnglish ? "See today's steps" : "오늘 할 일 보기"}
               <span className="ml-2">&rarr;</span>
             </button>
           </div>
