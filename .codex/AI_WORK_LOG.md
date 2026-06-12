@@ -804,3 +804,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The new file duplicates the display-only product thumbnail markup for Step 3 so the shared page-level `SmallProductThumb` is not moved away from other legacy/current product cards.
 - Reusable rule: When an extracted free result V2 step depends on a page-local helper that is shared with other sections, keep the shared helper in `page.js` and use a private display-only duplicate only when it avoids changing step props or broader file ownership.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 recommendation validation step extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to `FreeResultV2RecommendationValidationStep` and its Step 4-only tabbed signal UI and locked full-report preview card; step assembly, `currentResultStep`, recommendation logic, data builders, copy maps, tracking/API/sessionStorage/auth/save/share logic, and CTA behavior were out of scope.
+- Goal: Move the free result V2 Step 4 recommendation validation UI into `components/result/free-v2/FreeResultV2RecommendationValidationStep.jsx`, importing shared primitives from `FreeResultV2Primitives.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2RecommendationValidationStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: Normalized source comparison confirmed the moved Step 4 block matches the original except for module imports and default export; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2RecommendationValidationStep.jsx` passed with a CRLF warning only; `npm run build` passed after restoring one adjacent legacy lock-row line affected during extraction; in-app Browser `/test-result` reached Step 4 with validation title, fit/adjust signal tabs, no horizontal overflow, and console error logs 0.
+- Notes/risks: The extraction briefly broke an adjacent legacy `FreeResultV2RoutineFaceLabStep` lock row during block removal, then restored it before final validation.
+- Reusable rule: For move-only extraction near legacy unused blocks, verify the adjacent before/after function boundaries after deletion because older blocks may remain interleaved around the active V2 steps.
+- Context promotion candidate: NULL
