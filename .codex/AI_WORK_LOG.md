@@ -765,3 +765,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `FreeResultV2FaceLabMoodIcon` was moved into the primitive file but not imported back into `page.js` because the current page does not call it. No browser visual verification was run for this move-only task.
 - Reusable rule: For free result V2 extraction, move primitive UI and pure SVG icons before step components, and leave step assembly plus display-data builders in `page.js` until they are targeted explicitly.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 diagnosis step extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to `FreeResultV2DiagnosisStep` and its Step 1-only photo, Face Lab carousel, radar, and priority display UI; step assembly, `currentResultStep`, data builders, recommendation logic, tracking/API/sessionStorage/auth/save/share logic, copy maps, and legacy components were out of scope.
+- Goal: Move `FreeResultV2DiagnosisStep` and Step 1-only pure display helpers into `components/result/free-v2/FreeResultV2DiagnosisStep.jsx`, importing shared primitives from `FreeResultV2Primitives.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2DiagnosisStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: Normalized source comparison confirmed the moved Step 1 block matches the original except for module imports, local `uniqueItems` helper copy, and default export; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2DiagnosisStep.jsx` passed with a CRLF warning only; `npm run build` passed.
+- Notes/risks: `git diff --stat` reports `app/result/page.js` only while the new file is untracked; no browser visual verification was run for this move-only task.
+- Reusable rule: When extracting free result V2 step components, keep the step's props contract and result step assembly unchanged, and only copy tiny local helpers when the shared helper remains in `page.js` for other code.
+- Context promotion candidate: NULL
