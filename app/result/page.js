@@ -2667,6 +2667,10 @@ function getHomePath(locale = "ko") {
   return locale === "en" ? "/en" : "/";
 }
 
+function getMyPath(locale = "ko") {
+  return locale === "en" ? "/en/my" : "/my";
+}
+
 function getImageFallbackLabel(product) {
   return product?.brand ? `${product.brand} ${product?.name || ""}`.trim() : product?.name || "Product";
 }
@@ -2744,6 +2748,7 @@ function ResultContent() {
   const isEnglish = locale === "en";
   const error = searchParams.get("error");
   const homePath = getHomePath(locale);
+  const myPath = getMyPath(locale);
   const localizedPath = getLocalePath(pathname, locale);
   const isSavedNudgeFinalStep = Boolean(result) && currentResultStep === 4;
 
@@ -2987,7 +2992,7 @@ function ResultContent() {
         has_face_lab_preview: Boolean(faceLabProfilePreview)
       }
     });
-    router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
+    router.push(locale === "en" ? "/en/result/full-report/loading" : "/result/full-report/loading");
   };
   const handleTryAgainClick = (event) => {
     if (result && !window.confirm(getResultLeaveMessage(locale))) {
@@ -3232,8 +3237,8 @@ function ResultContent() {
 
       {isReportSaved && !isFinalResultStep ? (
         <motion.a
-          href="/my"
-          aria-label="저장된 결과 보러가기"
+          href={myPath}
+          aria-label={isEnglish ? "View saved result" : "저장된 결과 보러가기"}
           className="fixed bottom-5 right-4 z-40 flex items-center gap-2 sm:right-[calc(50%-18rem)]"
           animate={
             savedNudgeBounce

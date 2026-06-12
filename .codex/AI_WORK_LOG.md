@@ -40,6 +40,103 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-12 / 유료 리포트 Skin Match 첫 화면 허브형 구조 전환
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: `app/result/full-report/page.js` 안의 유료 리포트 첫 화면/상단 Skin Match 흐름을 허브형 UI로 재배치하는 작업이며, 추천/API/DB/결제/인증/저장 로직은 보호 구역으로 제외했다.
+- 목표: 기존 숫자형 첫 화면 대신 중앙 `오늘 시작` 허브 카드와 `루틴 / 제품 / 주의 / 조정` 빠른 진입 카드를 제공하고, 기존 아침/저녁 루틴, 피해야 할 것, 조정법, 제품 콘텐츠는 유지한다.
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 로직, 제품 데이터, API 응답 필드, DB schema/migration/policy, 결제, 인증/리다이렉트, 저장 로직, 무료 결과 페이지, Step5 유료 전환 로직, Face Lab 데이터/분석 로직은 수정하지 않았다.
+- 검증 결과: `npm run build` 성공, `git diff --check -- app/result/full-report/page.js` 성공(CRLF warning만 있음), in-app Browser에서 CSS 390px 모바일 다크/라이트 모두 허브/빠른 진입 카드/CTA 표시 및 가로 오버플로 없음 확인, CSS 1440px 데스크톱 다크 확인, 라이트 모드 CTA가 코랄-피치 그라데이션으로 표시됨 확인, 브라우저 콘솔 에러 없음 확인, 빠른 진입 카드 4개 클릭 시 루틴 2/6, 제품 6/6, 주의 4/6, 조정 5/6 콘텐츠로 이동 확인.
+- 문제/주의점: 브라우저 스크린샷 저장 시 `Page.captureScreenshot` timeout이 발생해 파일 저장은 하지 못했다. DOM/스타일/클릭 동작 기반 검증은 완료했다.
+- 다음 작업: 실제 사용자 세션에서 제품 카드 이미지 로딩 상태와 저장/재확인 안내 카드의 문구 톤을 최종 눈검수하면 좋다.
+- 재사용할 규칙: 유료 리포트 첫 화면은 숫자형 진행보다 `오늘 먼저 볼 것` 중심의 허브로 두고, 상세 콘텐츠는 빠른 진입 카드와 기존 단계 CTA로 연결한다.
+- 규칙 승격 후보: `NULL`
+
+### 2026-06-12 / 유료 리포트 전용 물방울 로딩 화면 추가
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 리포트 진입 전용 `/result/full-report/loading` UI 라우트 추가와 무료 결과의 전체 리포트 CTA 목적지만 변경하는 작업이며, 추천/API/DB/결제/인증/저장 로직은 보호 구역으로 제외했다.
+- 목표: Skin Match 유료 플랜 생성 과정을 물방울 게이지, 단계 문구, 완료 상태, 물방울 터치 후 파문 전환으로 보여주고 완료 후 기존 허브형 `/result/full-report`로 이동시킨다.
+- 변경 파일: app/result/full-report/loading/page.js, app/en/result/full-report/loading/page.js, app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 로직, 제품 데이터, API 응답 필드, DB schema/migration/policy, 결제, 인증/리다이렉트, 저장 로직, 무료 결과 로딩 페이지, Face Lab 분석 로직은 수정하지 않았다. 무료 결과 페이지는 전체 리포트 CTA 목적지만 `/result/full-report/loading`으로 변경했다.
+- 검증 결과: `npm run build` 성공 및 `/result/full-report/loading`, `/en/result/full-report/loading` 라우트 생성 확인. Playwright로 390px 모바일 다크/라이트, 1440px 데스크톱 라이트 확인, 진행률 증가와 단계 문구 표시 확인, 완료 문구/터치 안내/보조 CTA 표시 확인, 물방울 클릭 후 ripple class 적용 및 `/result/full-report` 이동 확인, 로딩 화면 가로 오버플로 없음과 콘솔 에러 없음 확인. 이동 후 `/result/full-report`에서 세션 부재로 401 리소스 에러가 찍히는 것은 테스트 환경의 프리미엄 세션 없음 때문이며 로딩 라우트 에러는 아니었다.
+- 문제/주의점: 첫 Playwright 검증은 PowerShell 파이프 인코딩으로 한국어 selector가 깨져 실패했고, 다음 검증은 Node 실행 옵션 오류로 실패했다. 검증 스크립트만 수정해 재검증 성공. 파문 전환 중 일시 가로 오버플로가 확인되어 로딩 페이지에 `overflow-x: hidden`을 추가했다.
+- 다음 작업: 실제 결제 완료 세션에서 로딩 후 `/result/full-report`가 세션 에러 없이 허브로 이어지는지 최종 확인하면 좋다.
+- 재사용할 규칙: 유료 리포트 전용 진입 연출은 데이터 생성 스토리를 보여주되, 실제 결과 조회/API/결제 흐름과 분리하고 완료 후 기존 리포트 화면으로만 넘긴다.
+- 규칙 승격 후보: `NULL`
+
+### 2026-06-11 / 유료 리포트 Skin Match 5단계 루틴 리포트 전환
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 리포트 `app/result/full-report/page.js` 내부의 정보 구조, 화면 흐름, 카피, 컴포넌트 배치 변경이며 추천/API/DB/결제/저장 로직은 보호 구역으로 제외했다.
+- 목표: 기존 Skin Match 6단계 흐름을 `현재 피부 기준 -> 하루 루틴 가이드 -> 제품별 사용 가이드 -> 상황별 조정법 -> 최종 요약` 5단계 루틴 리포트로 재정렬한다.
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 점수식, 제품 DB, API 응답 필드, DB schema/migration/policy, 결제, 인증/리다이렉트, 저장 로직, production data는 수정하지 않았다.
+- 검증 결과: `npm run build` 성공, `git diff --check -- app/result/full-report/page.js` 성공(CRLF warning만 있음), in-app Browser CSS 390px 기준 1/5~5/5 순서/라벨/콘텐츠 전환 확인, AM/PM이 2/5 한 화면에 함께 표시됨 확인, 3/5 제품 사용 기준과 보조 판매처 링크 확인, 4/5 상황별 조정 기준 확인, 5/5 저장 CTA와 안전 문구 확인, 가로 오버플로 없음, 콘솔 에러 없음, 금지 카피(14일/실행 플랜/처방/치료/개선 보장 계열) 화면 노출 없음 확인.
+- 문제/주의점: 초기 브라우저 검증에서 step header는 바뀌지만 본문이 1단계에 머무는 전환 문제가 있어 `AnimatePresence mode="wait"` 래퍼를 제거하고 keyed `motion.div`로 전환했다. 재검증에서 1/5~5/5 본문 전환이 정상 동작했다.
+- 다음 작업: 실제 로그인/저장 세션에서 `내 루틴 저장하기`가 현재 프로젝트의 My 페이지 경험과 자연스럽게 이어지는지 확인하면 좋다.
+- 재사용할 규칙: 유료 Skin Match는 제품 구매보다 루틴 순서, 사용량, 생략/축소 기준을 먼저 보여주고, 구매 링크는 제품별 사용 가이드 안의 보조 액션으로 둔다.
+- 규칙 승격 후보: `NULL`
+
+### 2026-06-11 / 유료 리포트 Skin Match 첫 장 색감 보정
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: `app/result/full-report/page.js`의 Skin Match 첫 장 색상 토큰과 보조 포인트만 조정하는 UI 작업이며, 정보 구조와 추천/API/DB/결제/저장 로직은 범위에서 제외했다.
+- 목표: 이미지 시안에서 따라온 보라색 네온 톤을 낮추고, Be Jewely 스킨케어 리포트 톤에 맞춰 코랄, 피치, 로즈 브라운 중심으로 색감을 보정한다.
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 DB, API 응답 필드, DB schema/migration/policy, 결제, 인증/리다이렉트, 저장 로직, Step5/무료 결과 로직은 수정하지 않았다.
+- 검증 결과: `npm run build` 성공, `git diff --check -- app/result/full-report/page.js` 성공(CRLF warning만 있음). 첫 장의 섹션 제목, 히어로 강조 텍스트, 중심 제품 카드 하이라이트, 우선 실행 배지, 상세 버튼, 체크 포인트 아이콘, AI 판단 장식 그래픽에서 보라색 계열을 코랄/피치/로즈 계열로 교체했다.
+- 문제/주의점: in-app Browser가 `http://localhost:3001/result/full-report` 검증 중 URL policy 차단을 반환해 모바일 390px 다크/라이트 화면, 콘솔 에러, 가로 오버플로는 이번 턴에서 직접 확인하지 못했다. 이 실패는 코드 문제가 아니라 브라우저 검증 도구 접근 차단으로 기록한다.
+- 다음 작업: 브라우저 접근이 가능해지면 390px 다크/라이트에서 첫 장 색감과 CTA 코랄/피치 유지 여부를 눈으로 최종 확인한다.
+- 재사용할 규칙: 유료 리포트 첫 장에서 보라색은 주조색으로 쓰지 않고, 필요한 경우 탭/작은 보조 포인트 수준으로 제한한다.
+- 규칙 승격 후보: `NULL`
+
+### 2026-06-11 / 유료 리포트 Skin Match 1-6 첫 장 재배치 및 레이아웃 고도화
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 수정 대상이 `app/result/full-report/page.js`의 Skin Match 1/6 UI와 문구로 한정되고, 추천/API/DB/결제/인증 변경 없이 정보 배치와 카드 위계만 조정하는 Medium UI 작업이므로 실행형으로 처리
+- 목표: 1/6 `오늘 시작 플랜`을 현재 피부 기준 → 중심 제품 → AI 판단 → 우선 실행 3가지 → 체크 포인트 → 다음 루틴 CTA 흐름으로 재배치하고, 참고 이미지 톤에 맞춰 큰 히어로/2열 상단/강조 AI 판단/3카드 실행/체크 포인트 레이아웃으로 고도화
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 로직, API, DB schema/migration/policy, 결제, 인증/리다이렉트, 제품 데이터, Skin Match 2/6~6/6 순서, Face Lab 구조 미수정
+- 검증 결과: npm run build 성공, git diff --check 성공(CRLF warning만 있음), in-app Browser에서 390px 기준 1/6 표시/섹션 순서/가로 오버플로 없음/콘솔 에러 없음 확인, 진행 점 클릭으로 1/6~6/6 순서 유지 확인
+- 문제/주의점: 초기 `npm run build`가 `ENOENT: no such file or directory, open '.next\server\app\_not-found\page.js.nft.json'`로 2회 실패했다. `.next` 삭제만으로는 해결되지 않았고, 남아 있던 build 관련 node 프로세스 종료 후 재실행하자 성공했다. in-app Browser viewport override는 장치 배율 영향이 있어 CSS innerWidth 390px가 되도록 보정해 확인함
+- 다음 작업: 실제 유료 데이터 세션에서 제품 이미지가 있는 경우 중심 제품 카드의 시각 밀도를 최종 확인
+- 재사용할 규칙: 유료 리포트 첫 장은 무료 진단을 반복하지 않고 현재 기준, 플랜 앵커, 판단, 실행, 체크 기준, 다음 CTA 순서로 연결한다.
+- 규칙 승격 후보: `NULL`
+
+### 2026-06-11 / my page i18n route completion
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 진단형 후 실행형
+- 라우팅 판단: `/my`의 locale route와 UI copy 누락 원인 확인이 먼저 필요해 진단형으로 시작했고, 원인이 `/en/my` route 부재와 `components/my` 하드코딩 문구로 좁혀져 실행형으로 전환
+- 목표: `/my`, `/ko/my`, `/en/my`와 check-in 하위 흐름에서 ko/en UI copy를 동일 key 구조로 제공하고, `/my` 하위 컴포넌트의 한국어 하드코딩을 제거
+- 변경 파일: lib/my/i18n.js, app/my/page.js, app/my/check-in/page.js, app/en/my/page.js, app/en/my/check-in/page.js, app/ko/my/page.js, app/ko/my/check-in/page.js, components/my/MyDashboard.jsx, components/my/MyDashboardMenu.jsx, components/my/TodayCheckInPrompt.jsx, components/my/TodayRoutineCard.jsx, components/my/SkinProfileSummaryCard.jsx, components/my/DailyCheckInForm.jsx, components/auth/AuthNav.jsx, .codex/AI_WORK_LOG.md
+- 보호 구역: DB schema/migration/policy, 저장 데이터 구조, API 응답 필드, 추천 로직, 결제 로직은 수정하지 않음. 인증/리다이렉트 로직은 직접 변경하지 않고 UI 링크와 route wrapper의 기존 미인증 redirect 대상만 locale copy로 연결
+- 검증 결과: npm run build 성공, `/en/my`, `/en/my/check-in`, `/ko/my`, `/ko/my/check-in` route 생성 확인, `ko/en` copy key/type shape 일치 확인, `/my` import 경로의 한국어 하드코딩 검색 결과 없음, 비로그인 브라우저에서 `/my`/`/ko/my`는 `/`, `/en/my`는 `/en`으로 이동 확인
+- 문제/주의점: 첫 빌드는 실행 중인 Next dev/start 프로세스와 `.next` 산출물 충돌로 `/opengraph-image.png`의 `webpack-runtime.js` 누락, 이후 `_not-found/page.js.nft.json` 누락 에러가 발생함. 프로젝트 Next 프로세스를 종료하고 `.next`를 정리한 뒤 재빌드 성공. 현재 브라우저에 로그인 세션과 저장된 테스트 데이터가 없어 실제 저장 결과 없음/있음 대시보드 상태는 UI 코드 경로와 build로만 확인했고, DB 원문 데이터는 이번 작업 범위상 번역하지 않음
+- 다음 작업: 실제 로그인 세션에서 저장 결과 없음, 저장 결과 있음, today check-in 완료/미완료 상태를 `/my`와 `/en/my`에서 최종 화면 확인
+- 재사용할 규칙: locale route를 추가할 때 page route만 만들지 말고 해당 화면의 menu/auth link/check-in 하위 경로까지 같은 copy source로 연결한다.
+- 규칙 승격 후보: `NULL`
+- Context 반영 후보: `NULL`
+
+### 2026-06-11 / my locale route policy cleanup
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 진단형 후 제한 실행형
+- 라우팅 판단: `/en/my`를 공식 경로로 유지하면서 `/ko/my` alias와 인증 보호 경로를 정리하는 작업이며, 인증 middleware의 리다이렉트 조건을 포함하므로 기존 구조 확인 후 제한 실행
+- 목표: `/ko/my`와 `/ko/my/check-in`은 공식 한국어 경로로 redirect하고, `/en/my`와 `/en/my/check-in`을 보호 경로에 포함하며, 내부 `/my` 링크가 locale 정책을 따르도록 정리
+- 변경 파일: app/ko/my/page.js, app/ko/my/check-in/page.js, lib/supabase/middleware.js, components/result/SaveReportCTA.jsx, app/result/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 인증 middleware는 사용자 명시 요청 범위 안에서 보호 경로와 미인증 redirect 대상만 변경. DB schema/migration/policy, 저장 데이터 구조, API 응답 필드, 결제, 추천 로직은 수정하지 않음
+- Locale routing policy: Korean uses unprefixed routes (`/my`, `/result`). English uses `/en` prefixed routes (`/en/my`, `/en/result`). `/ko` prefixed routes are not official public routes. If `/ko` aliases exist, they should redirect to the unprefixed Korean route.
+- 검증 결과: `npm run build` 성공. `git diff --check` 성공(CRLF warning만 있음). `/ko/my` 내부 링크 검색 결과 없음. 비로그인 redirect 확인: `/my` -> `/`, `/my/check-in` -> `/`, `/en/my` -> `/en`, `/en/my/check-in` -> `/en`, `/ko/my` -> `/my`, `/ko/my/check-in` -> `/my/check-in`
+- 문제/주의점: `/ko`는 공식 public route가 아니므로 wrapper 구현을 유지하지 않고 redirect만 수행. 첫 `npm run build`는 실행 중인 Next 서버가 `.next` 산출물을 사용 중인 상태에서 `ENOENT: no such file or directory, open '.next\server\pages-manifest.json'`로 실패했고, 프로젝트 Next 서버를 종료한 뒤 `.next`를 삭제하고 재실행해 성공
+- 다음 작업: 실제 로그인 세션에서 `/en/my`와 `/en/my/check-in` 진입 시 공통 구현이 영어 UI로 유지되는지 최종 화면 확인
+- 재사용할 규칙: locale 정책이 unprefixed ko + `/en` prefix라면 `/ko` 구현을 만들지 말고 필요한 경우 redirect alias로만 둔다.
+- 규칙 승격 후보: Locale routing policy 항목은 `.codex/AI_CONTEXT.md` Bridge 후보
+- Context 반영 후보: Bridge
+
 ### 2026-06-11 / my check-in local date alignment
 
 - 브랜치: feature/premium-report-flow-v1
@@ -602,4 +699,30 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation: `npm run build` passed; `git diff --check` passed for the changed recommendation/migration files; Supabase insert target count returned 15/15; `moisturizer_lotion_emulsion` product count increased to 20; `supabase migration repair 20260526 --status applied --linked --yes` marked the executed data migration as applied remotely.
 - Notes/risks: Existing unrelated dirty files were present before this task: `app/result/full-report/page.js` and prior `.codex/AI_WORK_LOG.md` edits. Older local-only Supabase migrations still appear in `supabase migration list`; they were not touched.
 - Reusable rule: When a data migration is executed directly with `supabase db query --linked --file`, repair the remote migration history for that exact migration only after verifying the target rows exist.
+- Context promotion candidate: NULL
+
+### 2026-06-12 / premium report main hub ripple redesign
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium UI layout refactor limited to the paid report main hub in `app/result/full-report/page.js`; loading core, recommendation logic, product data, API, DB, payment, auth, free result, Step5, and Face Lab logic were out of scope.
+- Goal: Replace the ordinary central-card plus 2x2 quick-card menu with a ripple/circular hub where `Start Today` is the central node and Routine/Product/Caution/Adjust are surrounding action areas.
+- Changed files: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `npm run build` passed; Playwright `/test-full-report` checks passed for 390px light/dark and 1440px light/dark with no horizontal overflow, no console/page errors, 4 accessible hub action buttons, no ordinary grid button structure, no same-column card overlap, and preserved click navigation for routine/product/caution/adjust.
+- Notes/risks: Verification used the fixture route `/test-full-report` because the real `/result/full-report` route requires a premium session.
+- Reusable rule: Paid report entry hubs should keep the central decision/first-action as the strongest visual node, with secondary destinations arranged around it and wired to existing step navigation rather than new routes or API calls.
+- Context promotion candidate: NULL
+
+### 2026-06-12 / premium report main hub final polish
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Low/Medium UI polish limited to the paid report main hub in `app/result/full-report/page.js`; the central hub plus surrounding 4-action structure was preserved.
+- Goal: Remove the repeated top `Start Today` title, reduce hub/card visual crowding, soften light/dark borders and ripple lines, and change the central CTA copy.
+- Changed files: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Loading core, recommendation logic, product data, API, DB schema, payment, auth, free result, Step5, Face Lab logic, and detailed paid report content were not touched.
+- Validation: `npm run build` passed; Playwright `/test-full-report` checks passed for 390px light/dark and 1440px light/dark with no horizontal overflow, no console/page errors, top title changed to `Skin Match 플랜`, central `오늘 시작` kept, CTA changed to `오늘 할 일 먼저 보기`, 4 accessible action buttons preserved, and routine/product/caution/adjust plus central CTA navigation still moved off the hub.
+- Notes/risks: Visual verification used the fixture route `/test-full-report` because the production full-report route requires a premium session.
+- Reusable rule: For paid report hub polish, adjust hierarchy, spacing, opacity, and copy inside the existing hub layout before considering structural changes.
 - Context promotion candidate: NULL

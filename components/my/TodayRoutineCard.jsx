@@ -1,8 +1,10 @@
+import { getMyCopy } from "@/lib/my/i18n";
+
 function normalizeTextList(values) {
   return Array.isArray(values) ? values.filter(Boolean).map(String) : [];
 }
 
-function normalizeRoutineSteps(values) {
+function normalizeRoutineSteps(values, copy) {
   if (!Array.isArray(values)) {
     return [];
   }
@@ -26,14 +28,14 @@ function normalizeRoutineSteps(values) {
           item.label ||
           item.product ||
           item.step ||
-          `Step ${index + 1}`,
+          `${copy.routine.stepFallback} ${index + 1}`,
         note: item.note || item.reason || item.instruction || item.description || ""
       };
     })
     .filter(Boolean);
 }
 
-function TextList({ title, values, tone = "neutral" }) {
+function TextList({ title, values, copy, tone = "neutral" }) {
   const items = normalizeTextList(values);
   const toneClassName = {
     keep: "border-[#d9c4a8] bg-[#fff8ef] dark:border-[#6a4a25] dark:bg-[#332314]",
@@ -52,14 +54,14 @@ function TextList({ title, values, tone = "neutral" }) {
           ))}
         </ul>
       ) : (
-        <p className="ui-text-faint mt-3 text-sm">아직 항목이 없습니다.</p>
+        <p className="ui-text-faint mt-3 text-sm">{copy.routine.emptyItems}</p>
       )}
     </div>
   );
 }
 
-function RoutineList({ title, values }) {
-  const steps = normalizeRoutineSteps(values);
+function RoutineList({ title, values, copy }) {
+  const steps = normalizeRoutineSteps(values, copy);
 
   return (
     <div className="border-t border-[#ead2ca] pt-4 dark:border-[#4a303c]">
@@ -83,27 +85,27 @@ function RoutineList({ title, values }) {
           ))}
         </ol>
       ) : (
-        <p className="ui-text-faint mt-3 text-sm">아직 루틴이 없습니다.</p>
+        <p className="ui-text-faint mt-3 text-sm">{copy.routine.emptyRoutine}</p>
       )}
     </div>
   );
 }
 
-export default function TodayRoutineCard({ routine }) {
+export default function TodayRoutineCard({ routine, copy = getMyCopy("ko") }) {
   return (
     <section className="ui-card p-5 sm:p-6">
-      <p className="ui-kicker">Today Routine</p>
-      <h2 className="ui-title mt-2 text-2xl sm:text-3xl">오늘 루틴</h2>
+      <p className="ui-kicker">{copy.routine.kicker}</p>
+      <h2 className="ui-title mt-2 text-2xl sm:text-3xl">{copy.routine.title}</h2>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-3">
-        <TextList title="유지할 것" values={routine.keep_items} tone="keep" />
-        <TextList title="줄일 것" values={routine.reduce_items} tone="reduce" />
-        <TextList title="피할 것" values={routine.avoid_items} tone="avoid" />
+        <TextList title={copy.routine.keep} values={routine.keep_items} copy={copy} tone="keep" />
+        <TextList title={copy.routine.reduce} values={routine.reduce_items} copy={copy} tone="reduce" />
+        <TextList title={copy.routine.avoid} values={routine.avoid_items} copy={copy} tone="avoid" />
       </div>
 
       <div className="mt-5 grid gap-5 md:grid-cols-2">
-        <RoutineList title="AM 루틴" values={routine.am_routine} />
-        <RoutineList title="PM 루틴" values={routine.pm_routine} />
+        <RoutineList title={copy.routine.am} values={routine.am_routine} copy={copy} />
+        <RoutineList title={copy.routine.pm} values={routine.pm_routine} copy={copy} />
       </div>
     </section>
   );

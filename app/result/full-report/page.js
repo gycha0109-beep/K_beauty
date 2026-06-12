@@ -23,12 +23,12 @@ const LAST_REPORT_URL_KEY = "lastReportUrl";
 const LAST_VIEWED_AT_KEY = "lastViewedAt";
 const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
 const SKIN_MATCH_SECTION_ORDER = [
-  "today-start-plan",
+  "today-start-hub",
   "morning-routine",
   "evening-routine",
   "avoid-list",
   "adjustment-guide",
-  "alternative-budget-plan"
+  "product-plan"
 ];
 
 function FullReportLightThemeStyles() {
@@ -352,8 +352,8 @@ function FullReportLightThemeStyles() {
 const COPY = {
   ko: {
     loading: "전체 리포트를 불러오는 중입니다...",
-    title: "14일 뷰티 실행 플랜",
-    body: "오늘 밤부터 그대로 따라 할 루틴입니다. 제품 선택, 순서, 피해야 할 조합까지 모두 정리했습니다.",
+    title: "Skin Match 루틴 리포트",
+    body: "오늘부터 덜 헷갈리게 쓸 수 있도록 순서, 사용량, 줄일 기준을 정리했습니다.",
     backResult: "무료 결과로 돌아가기",
     restart: "다시 테스트하기",
     errorTitle: "전체 리포트를 불러오지 못했습니다.",
@@ -392,8 +392,8 @@ const COPY = {
   },
   en: {
     loading: "Loading your full report...",
-    title: "14-Day Beauty Action Plan",
-    body: "This is the routine to start tonight, including product choices, order, and combinations to avoid.",
+    title: "Skin Match Routine Report",
+    body: "A practical guide for using your routine with less guesswork: order, amount, and when to reduce.",
     backResult: "Back to free result",
     restart: "Try again",
     errorTitle: "Could not load the full report.",
@@ -454,6 +454,10 @@ function getResultPath(locale = "ko") {
 
 function getHomePath(locale = "ko") {
   return locale === "en" ? "/en" : "/";
+}
+
+function getMyPath(locale = "ko") {
+  return locale === "en" ? "/en/my" : "/my";
 }
 
 function getOrCreateTrackingSessionId() {
@@ -2056,7 +2060,7 @@ function buildEnglishRoutineInstruction(step, slot, result = {}) {
 
   return slot === "morning"
     ? "Keep the morning step light, protective, and easy to repeat."
-    : "Use the evening step to reset and support recovery without adding unnecessary layers.";
+    : "Use the evening step to reset and lower burden without adding unnecessary layers.";
 }
 
 function buildKoreanRoutineInstruction(step, slot, result = {}) {
@@ -2082,7 +2086,7 @@ function buildKoreanRoutineInstruction(step, slot, result = {}) {
 
   return slot === "morning"
     ? "아침에는 가볍고 반복 가능한 방향으로 루틴을 시작합니다."
-    : "저녁에는 잔여감을 정리하고 회복을 돕는 쪽으로 마무리합니다.";
+    : "저녁에는 잔여감을 정리하고 부담을 낮추는 쪽으로 마무리합니다.";
 }
 
 function buildEnglishRoutineCaution(step, slot, result = {}) {
@@ -2520,7 +2524,7 @@ function localizeFullReportForLocale(report, result, locale = "ko") {
     fullRoutine: {
       ...report.fullRoutine,
       morning: ["Start with a light, repeatable morning routine around the Top Pick."],
-      night: ["Use the evening routine to reset residue and support recovery without stacking too much."],
+      night: ["Use the evening routine to reset residue and lower burden without stacking too much."],
       morningSteps: localizeRoutineStepsForEnglish(
         report.fullRoutine?.morningSteps || [],
         report.fullRoutine?.morning || [],
@@ -3033,7 +3037,7 @@ function getSituationPrescriptionFallback(key = "default", locale = "ko") {
       avoid: "Avoid pads, strong cleansers, and multiple active products together."
     },
     breakout_day: {
-      today: "Do not treat the whole face aggressively; keep care local and light.",
+      today: "Do not push the whole face aggressively; keep care local and light.",
       reduce: ["rich moisturizer", "thick base makeup"],
       keep: ["calming serum", "light moisturizer"],
       usage: "Use breakout care only on local areas.",
@@ -3653,159 +3657,1111 @@ function buildStepAdvanceLabel(step, locale = "ko") {
   return locale === "en" ? `See ${label}` : `${label} 보기`;
 }
 
-function getTodayStartPlanItems({ freeResult, morningSteps = [], nightSteps = [], avoidItems = [], locale = "ko" }) {
-  const topPickName = compactText(freeResult?.topPick?.name);
-  const firstAvoid = uniqueDisplayTexts(avoidItems)[0] || "";
-  const firstMorningProduct = morningSteps.find((step) => step?.product)?.product?.name || "";
-  const firstNightProduct = nightSteps.find((step) => step?.product)?.product?.name || "";
+function getTodaySkinBaseline(result = {}, locale = "ko") {
+  const axis = getReportPriorityAxis(result);
 
+  if (locale === "en") {
+    const summary = ["oiliness", "pores"].includes(axis)
+      ? "Oil can rise through the T-zone, while the overall routine still needs steady, lightweight moisture."
+      : "Moisture retention looks lower, and the skin may react more easily when the routine gets crowded.";
+
+    return {
+      title: "Current skin baseline",
+      summary,
+      chips: ["Moisture gap", "Barrier stress", "Oil balance"],
+      cards: [
+        { title: "Moisture gap", body: "Moisture does not stay long enough." },
+        { title: "Barrier stress", body: "The skin may react to heavier routines." },
+        { title: "Oil balance", body: "Oil can rise while moisture is still low." }
+      ]
+    };
+  }
+
+  const summary = ["oiliness", "pores"].includes(axis)
+    ? "T존 유분은 올라오지만 전체적으로는 안정적인 보습 유지가 필요합니다."
+    : "수분 유지력이 낮고, 자극에 쉽게 반응할 수 있는 상태입니다.";
+
+  return {
+    title: "현재 피부 기준",
+    summary,
+    chips: ["수분 부족", "장벽 스트레스", "유분 밸런스"],
+    cards: [
+      { title: "수분 부족", body: "수분 유지력이 낮음" },
+      { title: "장벽 스트레스", body: "자극에 민감한 상태" },
+      { title: "유분 밸런스", body: "T존 유분은 있으나 전체적 수분 부족" }
+    ]
+  };
+}
+
+function getPlanAnchorReasons(product = {}, result = {}, locale = "ko") {
+  const category = normalizeReportCategory(product);
+  const axis = getReportPriorityAxis(result);
+
+  if (locale === "en") {
+    if (category === "sunscreen") {
+      return ["Simple UV finish", "Low routine conflict", "Easy morning anchor"];
+    }
+    if (["redness", "barrier"].includes(axis)) {
+      return ["Lower irritation burden", "Moisture support", "Low routine conflict"];
+    }
+    return ["Hydration focus", "Lower irritation burden", "Low routine conflict"];
+  }
+
+  if (category === "sunscreen") {
+    return ["아침 보호 연결", "자극 부담 낮음", "현재 루틴과 충돌 적음"];
+  }
+  if (["redness", "barrier"].includes(axis)) {
+    return ["자극 부담 낮음", "수분 유지 보조", "현재 루틴과 충돌 적음"];
+  }
+  return ["수분 집중", "자극 부담 낮음", "현재 루틴과 충돌 적음"];
+}
+
+function getTodayAiJudgement(result = {}, locale = "ko") {
+  const concern = getReportPriorityLabel(result, locale);
+
+  if (locale === "en") {
+    return {
+      title: "AI judgment",
+      body: `Because ${concern} is the current priority, it is better to reduce routine burden and keep moisture steady before adding more active steps.`,
+      sub: "Keep the routine simple while checking whether the skin feels comfortable."
+    };
+  }
+
+  return {
+    title: "AI 판단",
+    body: `지금은 ${concern} 흐름을 기준으로, 기능성을 늘리기보다 자극을 줄이고 수분을 유지하는 쪽이 우선입니다.`,
+    sub: "피부가 편안하게 반응하는지 확인하면서 루틴을 단순하게 가져갑니다."
+  };
+}
+
+function getPriorityActionItems(locale = "ko") {
   if (locale === "en") {
     return [
       {
-        key: "stop",
-        label: "Stop today",
-        summary: "Do not add several active products at once.",
-        items: [
-          firstAvoid || "Strong cleansing and high-friction wiping",
-          "Keep exfoliation, retinol, and vitamin C from stacking"
-        ]
+        key: "pause-actives",
+        badge: "Priority 1",
+        title: "Pause new active steps",
+        body: "Temporarily reduce retinol, exfoliation, vitamin C, and other steps that can add irritation.",
+        detail: "Why it matters"
       },
       {
-        key: "tonight",
-        label: "Do tonight",
-        summary: "Cleanse gently and keep only the core products.",
-        items: [
-          `${topPickName || firstNightProduct ? `Center the routine on ${topPickName || firstNightProduct}` : "Use one or two core products only"}`,
-          "Finish with moisture instead of another active step"
-        ]
+        key: "soft-cleanse",
+        badge: "Priority 2",
+        title: "Lower cleansing intensity",
+        body: "Use enough foam or slip, then cleanse gently with less rubbing.",
+        detail: "Details"
       },
       {
-        key: "morning",
-        label: "Do tomorrow morning",
-        summary: "Keep it light and finish with sunscreen.",
-        items: [
-          `${firstMorningProduct ? `Use ${firstMorningProduct} thinly before sunscreen` : "Connect the routine to sunscreen"}`,
-          "Check pilling before base makeup"
-        ]
-      },
-      {
-        key: "check",
-        label: "Watch for 14 days",
-        summary: "Track dryness, stinging, oil, and breakouts.",
-        items: ["Dryness or tightness", "Oil changes by afternoon", "Stinging or redness", "Breakouts and makeup pilling"]
+        key: "simple-morning",
+        badge: "Priority 3",
+        title: "Connect tomorrow morning to sunscreen",
+        body: "Keep skincare minimal and finish the morning routine lightly with sunscreen.",
+        detail: "Details"
       }
     ];
   }
 
   return [
     {
-      key: "stop",
-      label: "오늘 멈출 것",
-      summary: "기능성 제품을 한 번에 늘리지 않습니다.",
-      items: [
-        firstAvoid || "뽀드득한 세안과 손 마찰 줄이기",
-        "각질, 레티놀, 비타민C 같은 기능성 중복 멈추기"
-      ]
+      key: "pause-actives",
+      badge: "우선 1",
+      title: "기능성 추가 멈추기",
+      body: "레티놀, 각질제거, 비타민C 등 자극이 될 수 있는 기능성은 잠시 줄입니다.",
+      detail: "왜 중요한가요?"
     },
     {
-      key: "tonight",
-      label: "오늘 밤 할 것",
-      summary: "세안은 부드럽게, 핵심 제품만 남깁니다.",
-      items: [
-        `${topPickName || firstNightProduct ? `${topPickName || firstNightProduct} 중심으로 ` : ""}핵심 제품 1~2개만 사용하기`,
-        "수분감이 끊기지 않게 보습으로 마무리하기"
-      ]
+      key: "soft-cleanse",
+      badge: "우선 2",
+      title: "세안 강도 낮추기",
+      body: "거품은 충분히 내고, 마찰을 줄여 부드럽게 세안합니다.",
+      detail: "자세히"
     },
     {
-      key: "morning",
-      label: "내일 아침 할 것",
-      summary: "가볍게 정리하고 선크림으로 마무리합니다.",
-      items: [
-        `${firstMorningProduct ? `${firstMorningProduct} 다음 ` : ""}선크림까지 연결하기`,
-        "화장 전 밀림이 생기는지 확인하기"
-      ]
-    },
-    {
-      key: "check",
-      label: "14일 동안 확인할 것",
-      summary: "건조감·따가움·유분·트러블을 확인합니다.",
-      items: ["건조감과 당김", "오후 유분 변화", "따가움 또는 붉어짐", "트러블과 화장 밀림"]
+      key: "simple-morning",
+      badge: "우선 3",
+      title: "내일 아침, 선크림까지 단순 연결",
+      body: "스킨케어는 최소 단계로, 아침에는 선크림까지 가볍게 마무리합니다.",
+      detail: "자세히"
     }
   ];
 }
 
-function PlanChecklistPanel({ label, summary = "", items = [], tone = "default" }) {
-  const displayItems = uniqueDisplayTexts(items).slice(0, 4);
-  const toneClass = tone === "stop"
-    ? "border-amber-300/20 bg-amber-500/10"
-    : tone === "check"
-      ? "border-sky-300/20 bg-sky-500/10"
-      : "border-white/10 bg-white/5";
+function getTodayCheckPoints(locale = "ko") {
+  if (locale === "en") {
+    return {
+      title: "Watch points",
+      body: "Lightly check daily skin reactions and separate comfortable signs from mismatch signs.",
+      note: "Use the next 2 weeks as a reference window, not as a promised change period.",
+      items: ["Dryness", "Stinging", "Afternoon oil", "Breakouts", "Makeup pilling"]
+    };
+  }
 
+  return {
+    title: "조심할 포인트",
+    body: "피부 반응을 가볍게 확인하면서, 편한 신호와 안 맞는 신호를 나눠 봅니다.",
+    note: "앞으로 참고할 체크 기준입니다.",
+    items: ["건조감", "따가움", "오후 유분", "트러블", "화장 밀림"]
+  };
+}
+
+function TodaySectionTitle({ number, title, body }) {
   return (
-    <div className={`rounded-[1rem] border px-3 py-3 ${toneClass}`}>
-      <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>
-      {summary ? (
-        <p className="mt-2 text-[15px] font-semibold leading-6 text-zinc-900 dark:text-zinc-100">{summary}</p>
-      ) : null}
-      {displayItems.length ? (
-        <ul className="mt-2 space-y-1.5">
-          {displayItems.map((item) => (
-            <li key={item} className="flex gap-2 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-zinc-400 dark:bg-zinc-500" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:gap-4">
+      <h4 className="text-xl font-bold leading-tight text-[#ad6255] dark:text-[#f0b7a7]">
+        <span>{number}. </span>{title}
+      </h4>
+      {body ? (
+        <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">{body}</p>
       ) : null}
     </div>
   );
 }
 
-function TodayStartPlanStep({ freeResult, morningSteps = [], nightSteps = [], avoidItems = [], copy, locale = "ko" }) {
+function PriorityActionCard({ item }) {
+  return (
+    <article className="rounded-[1rem] border border-[#d7b6aa]/35 bg-white/5 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:border-[#7a4f4a]/40">
+      <div className="flex h-full flex-col">
+        <div className="flex items-start gap-3">
+          <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full bg-[#f0b7a7] px-2 text-sm font-bold text-[#2a171b] shadow-[0_0_16px_rgba(240,183,167,0.18)]">
+            {item.badge}
+          </span>
+          <h4 className="min-w-0 text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100">{item.title}</h4>
+        </div>
+        <p className="mt-3 flex-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.body}</p>
+        <div className="mt-4">
+          <span className="inline-flex min-h-9 items-center rounded-[0.75rem] border border-[#c99084]/45 px-4 text-xs font-semibold text-[#9f5b50] dark:text-[#f0b7a7]">
+            {item.detail}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function getSkinMatchHubActions(locale = "ko") {
+  if (locale === "en") {
+    return [
+      {
+        id: "routine",
+        title: "Routine",
+        description: "AM and PM routine order",
+        target: "morning-routine",
+        icon: "☼"
+      },
+      {
+        id: "product",
+        title: "Products",
+        description: "Core products for this plan",
+        target: "product-plan",
+        icon: "▣"
+      },
+      {
+        id: "caution",
+        title: "Caution",
+        description: "Combinations and habits to avoid",
+        target: "avoid-list",
+        icon: "!"
+      },
+      {
+        id: "adjust",
+        title: "Adjust",
+        description: "Dryness, stinging, breakouts",
+        target: "adjustment-guide",
+        icon: "⌁"
+      }
+    ];
+  }
+
+  return [
+    {
+      id: "routine",
+      title: "루틴",
+      description: "아침·저녁 루틴 정리",
+      target: "morning-routine",
+      icon: "☼"
+    },
+    {
+      id: "product",
+      title: "제품",
+      description: "이번 플랜의 핵심 제품",
+      target: "product-plan",
+      icon: "▣"
+    },
+    {
+      id: "caution",
+      title: "주의",
+      description: "피해야 할 조합과 습관",
+      target: "avoid-list",
+      icon: "!"
+    },
+    {
+      id: "adjust",
+      title: "조정",
+      description: "건조·따가움·트러블 조정법",
+      target: "adjustment-guide",
+      icon: "⌁"
+    }
+  ];
+}
+
+function LegacySkinMatchHubQuickCard({ action, onNavigate }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate?.(action.target)}
+      className="group min-h-[8.5rem] rounded-[1.15rem] border border-[#d8b5aa]/45 bg-[#fff8f2]/78 px-4 py-4 text-left shadow-[0_14px_32px_rgba(111,69,54,0.08)] transition hover:-translate-y-0.5 hover:border-[#db917d]/65 hover:bg-[#fff5ee] dark:border-[#71433e]/58 dark:bg-[#24151b]/76 dark:shadow-[0_16px_38px_rgba(12,5,8,0.32)] dark:hover:border-[#d18b7c]/60 dark:hover:bg-[#2b181f]"
+    >
+      <div className="flex h-full flex-col justify-between gap-4">
+        <div>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d8998b]/55 bg-[#f4c6b7]/18 text-base font-semibold text-[#bc6659] dark:border-[#b97168]/55 dark:bg-[#3a1f25] dark:text-[#f2b5a7]">
+            {action.icon}
+          </span>
+          <p className="mt-3 text-lg font-semibold leading-tight text-[#332024] dark:text-[#fff4ef]">{action.title}</p>
+          <p className="mt-1.5 text-sm leading-5 text-[#7a5c55] dark:text-[#cdb2aa]">{action.description}</p>
+        </div>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f2dfd5] text-sm text-[#8c4f47] transition group-hover:bg-[#e98c76] group-hover:text-white dark:bg-[#342127] dark:text-[#f0b7a7] dark:group-hover:bg-[#d97966]">
+          →
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function LegacyTodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
   const isEnglish = locale === "en";
-  const topPick = freeResult?.topPick || null;
-  const planItems = getTodayStartPlanItems({ freeResult, morningSteps, nightSteps, avoidItems, locale });
+  const baseline = getTodaySkinBaseline(freeResult, locale);
+  const actionItems = getPriorityActionItems(locale);
+  const hubActions = getSkinMatchHubActions(locale);
+  const signalChips = (baseline.chips || []).slice(0, 2);
+  const primaryAction = actionItems[0] || {};
 
   return (
-    <section className="ui-card p-5 sm:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="ui-kicker">{isEnglish ? "START TONIGHT" : "오늘 밤부터 시작"}</p>
-          <h3 className="ui-title mt-2 text-xl leading-tight">
-            {isEnglish ? "Start this 14-day plan tonight." : "지금부터 그대로 따라 쓰시면 됩니다."}
+    <section className="relative overflow-hidden rounded-[1.6rem] border border-[#e4cfc4] bg-[#fffaf5] p-4 shadow-[0_24px_60px_rgba(105,66,48,0.09)] dark:border-[#4a3033] dark:bg-[#170d12] dark:shadow-[0_28px_80px_rgba(9,3,6,0.42)] sm:p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_86%_8%,rgba(240,184,166,0.24),transparent_32%),radial-gradient(circle_at_10%_10%,rgba(140,70,64,0.08),transparent_26%)] dark:bg-[radial-gradient(circle_at_78%_4%,rgba(213,124,105,0.18),transparent_34%),radial-gradient(circle_at_20%_16%,rgba(94,47,54,0.38),transparent_38%)]" />
+      <div className="relative space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-serif text-[1.55rem] leading-none tracking-[0.04em] text-[#402930] dark:text-[#f4d8cc]">
+              Be Jewely
+            </p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9b746c] dark:text-[#b99791]">
+              Premium Report
+            </p>
+          </div>
+          <span className="rounded-full border border-[#dfb8ad] bg-[#fff4ee] px-3 py-1 text-[11px] font-semibold text-[#9a594f] dark:border-[#70413f] dark:bg-[#2b171d] dark:text-[#f0b7a7]">
+            Skin Match AI
+          </span>
+        </div>
+
+        <div>
+          <p className="ui-kicker">{isEnglish ? "MATCH ANALYSIS REPORT" : "맞춤 분석 리포트"}</p>
+          <h3 className="mt-2 text-[2rem] font-semibold leading-tight text-[#342127] dark:text-[#fff4ef] sm:text-[2.45rem]">
+            Skin Match
           </h3>
-          <p className="ui-text-secondary mt-2 text-sm leading-6">
-            {isEnglish
-              ? "Products come after the order and adjustment rules. The first screen is the dashboard."
-              : "오늘 밤부터 시작할 14일 플랜입니다. 제품보다 먼저, 순서와 조정 기준을 정리했습니다."}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-stretch">
+          <div className="relative overflow-hidden rounded-[1.5rem] border border-[#e19480]/70 bg-[linear-gradient(145deg,rgba(255,248,242,0.94),rgba(249,229,219,0.78))] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.78),0_20px_54px_rgba(183,111,88,0.16)] dark:border-[#d68673]/70 dark:bg-[linear-gradient(145deg,rgba(98,45,42,0.74),rgba(36,18,22,0.9))] dark:shadow-[inset_0_1px_0_rgba(255,226,215,0.16),0_0_34px_rgba(214,126,105,0.14)] sm:px-7 sm:py-7">
+            <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-[#f0b7a7]/20 blur-3xl dark:bg-[#d97966]/16" />
+            <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#d99384]/60 bg-[#fff7f0] text-2xl text-[#c26d60] shadow-[0_10px_26px_rgba(173,98,85,0.14)] dark:border-[#b56f67]/60 dark:bg-[#321b21] dark:text-[#f0b7a7]">
+              ✧
+            </div>
+            <div className="relative mt-5 text-center">
+              <h4 className="font-serif text-[2.2rem] font-semibold leading-tight text-[#40272c] dark:text-[#ffe0d3] sm:text-[2.7rem]">
+                {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
+              </h4>
+              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#6f5550] dark:text-[#f0d5cc]">
+                {isEnglish
+                  ? "Based on the current skin state, this gathers what to check first today."
+                  : "지금 피부 상태를 기준으로, 오늘 가장 먼저 확인할 내용을 정리했습니다."}
+              </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {signalChips.map((chip) => (
+                  <span key={chip} className="rounded-full border border-[#dba99b]/60 bg-[#fff1eb] px-3 py-1.5 text-xs font-semibold text-[#9b584e] dark:border-[#8a514c]/70 dark:bg-[#3a2025] dark:text-[#f2b9aa]">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative mt-5 border-y border-[#e7cabf] py-4 dark:border-[#5b3839]">
+              <p className="flex items-start justify-center gap-2 text-sm leading-6 text-[#4c3335] dark:text-[#f6ddd4]">
+                <span className="mt-0.5 text-[#c96f61] dark:text-[#f0a18f]">⚑</span>
+                <span>
+                  {isEnglish ? "Priority today:" : "오늘 우선 실행:"}{" "}
+                  <strong className="font-semibold">{primaryAction.title || (isEnglish ? "Pause new active steps" : "기능성 추가 멈추기")}</strong>
+                </span>
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onNavigate?.("morning-routine")}
+              className="relative mt-5 flex min-h-13 w-full items-center justify-center rounded-[1rem] bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-5 py-3 text-base font-semibold text-white shadow-[0_14px_34px_rgba(215,111,91,0.28)] transition hover:translate-y-[-1px] hover:shadow-[0_18px_40px_rgba(215,111,91,0.32)]"
+            >
+              {isEnglish ? "See today's first steps" : "오늘 할 일 먼저 보기"}
+              <span className="ml-2">→</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
+            {hubActions.map((action) => (
+              <SkinMatchHubQuickCard
+                key={action.id}
+                action={action}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex w-full items-center justify-between gap-3 rounded-[1.1rem] border border-[#e1c8bd] bg-[#fff7f1]/82 px-4 py-3 text-left shadow-[0_12px_28px_rgba(105,66,48,0.06)] dark:border-[#52363a] dark:bg-[#21151b]/78 dark:shadow-none">
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#dca396]/55 bg-[#fff1ea] text-[#b76356] dark:border-[#8a514c] dark:bg-[#321b21] dark:text-[#f0b7a7]">
+              ◇
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-[#4c3335] dark:text-[#fff4ef]">
+                {isEnglish ? "Your skin data is protected" : "내 피부 데이터는 안전하게 보호돼요"}
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-[#8b6c64] dark:text-[#bfa59f]">
+                {isEnglish ? "You can reopen this premium report during access." : "구독 기간 동안 리포트를 다시 확인할 수 있어요."}
+              </span>
+            </span>
+          </span>
+          <span className="shrink-0 text-xl text-[#9f5b50] dark:text-[#f0b7a7]">›</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function getSkinMatchHubCardLayout(id) {
+  const layouts = {
+    routine: {
+      card: "left-0 top-0 rounded-tl-[1.65rem] rounded-tr-[4.6rem] rounded-bl-[4.6rem] rounded-br-[1.5rem] pr-[3.2rem] pb-[2.9rem] pt-4 pl-4 sm:pr-[5.2rem] sm:pb-[4.2rem] sm:pt-5 sm:pl-5",
+      content: "items-start text-left",
+      icon: "sun"
+    },
+    product: {
+      card: "right-0 top-0 rounded-tr-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-bl-[1.5rem] pl-[3.2rem] pb-[2.9rem] pt-4 pr-4 sm:pl-[5.2rem] sm:pb-[4.2rem] sm:pt-5 sm:pr-5",
+      content: "items-end text-right",
+      icon: "bottle"
+    },
+    caution: {
+      card: "left-0 bottom-0 rounded-bl-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-tr-[1.5rem] pr-[3.2rem] pt-[3.4rem] pb-4 pl-4 sm:pr-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pl-5",
+      content: "items-start text-left",
+      icon: "alert"
+    },
+    adjust: {
+      card: "right-0 bottom-0 rounded-br-[1.65rem] rounded-tr-[4.6rem] rounded-bl-[4.6rem] rounded-tl-[1.5rem] pl-[3.2rem] pt-[3.4rem] pb-4 pr-4 sm:pl-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pr-5",
+      content: "items-end text-right",
+      icon: "sliders"
+    }
+  };
+
+  return layouts[id] || layouts.routine;
+}
+
+function SkinMatchHubIcon({ type, className = "" }) {
+  const baseClass = `h-6 w-6 ${className}`;
+
+  if (type === "bottle") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 3h4" />
+        <path d="M10.7 3v3.1l-2.2 2.3A3.7 3.7 0 0 0 7.5 11v7.2A2.8 2.8 0 0 0 10.3 21h3.4a2.8 2.8 0 0 0 2.8-2.8V11a3.7 3.7 0 0 0-1-2.6l-2.2-2.3V3" />
+        <path d="M10 14h4" />
+      </svg>
+    );
+  }
+
+  if (type === "alert") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8v5" />
+        <path d="M12 17h.01" />
+        <circle cx="12" cy="12" r="8.5" />
+      </svg>
+    );
+  }
+
+  if (type === "sliders") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 7h14" />
+        <path d="M5 17h14" />
+        <circle cx="9" cy="7" r="2" />
+        <circle cx="15" cy="17" r="2" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.8v2.4" />
+      <path d="M12 18.8v2.4" />
+      <path d="m4.9 4.9 1.7 1.7" />
+      <path d="m17.4 17.4 1.7 1.7" />
+      <path d="M2.8 12h2.4" />
+      <path d="M18.8 12h2.4" />
+      <path d="m4.9 19.1 1.7-1.7" />
+      <path d="m17.4 6.6 1.7-1.7" />
+    </svg>
+  );
+}
+
+function SkinMatchHubQuickCard({ action, onNavigate, locale = "ko" }) {
+  const layout = getSkinMatchHubCardLayout(action.id);
+  const label = locale === "en" ? `Open ${action.title}` : `${action.title} 섹션으로 이동`;
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={() => onNavigate?.(action.target)}
+      className={`group absolute z-10 flex h-[13.1rem] w-[49%] flex-col justify-between overflow-hidden border border-[#ecd1c4]/48 bg-[linear-gradient(145deg,rgba(255,254,251,0.92),rgba(255,246,240,0.76))] text-[#3d2422] shadow-[0_18px_46px_rgba(130,82,64,0.075),inset_0_1px_0_rgba(255,255,255,0.76)] outline-none transition duration-200 hover:-translate-y-0.5 hover:border-[#e6ad9c]/68 hover:shadow-[0_22px_50px_rgba(165,90,72,0.11)] focus-visible:ring-2 focus-visible:ring-[#e87662]/55 dark:border-[#6d3f3a]/54 dark:bg-[linear-gradient(145deg,rgba(45,24,28,0.8),rgba(25,13,17,0.88))] dark:text-[#fff4ee] dark:shadow-[0_18px_48px_rgba(10,3,6,0.34),inset_0_1px_0_rgba(255,226,215,0.07)] dark:hover:border-[#c98577]/56 sm:h-[13.25rem] lg:h-[13rem] ${layout.card}`}
+    >
+      <span className={`flex h-full flex-col ${layout.content}`}>
+        <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#edb29f]/48 bg-[#fff6f1]/82 text-[#cc7668] shadow-[0_10px_24px_rgba(190,112,94,0.08)] dark:border-[#8b514b]/56 dark:bg-[#352026] dark:text-[#efb1a3]">
+          <SkinMatchHubIcon type={layout.icon} />
+        </span>
+        <span className="mt-3 block text-[1.25rem] font-semibold leading-tight text-[#351f1f] dark:text-[#fff4ef]">
+          {action.title}
+        </span>
+        <span className="mt-1.5 block text-[0.76rem] leading-4 text-[#785c54] dark:text-[#cfb4ac] sm:text-[0.82rem] sm:leading-5">
+          {action.description}
+        </span>
+      </span>
+      <span className={`mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#f7e8df] text-sm text-[#9f5b50] transition group-hover:bg-[#e87662] group-hover:text-white dark:bg-[#332027] dark:text-[#f0b7a7] dark:group-hover:bg-[#d97966] ${action.id === "product" || action.id === "adjust" ? "self-end" : "self-start"}`}>
+        &rarr;
+      </span>
+    </button>
+  );
+}
+
+function TodayStartPlanStep({ freeResult, copy, locale = "ko", onNavigate }) {
+  const isEnglish = locale === "en";
+  const baseline = getTodaySkinBaseline(freeResult, locale);
+  const actionItems = getPriorityActionItems(locale);
+  const hubActions = getSkinMatchHubActions(locale);
+  const signalChips = (baseline.chips || []).slice(0, 2);
+  const primaryAction = actionItems[0] || {};
+
+  return (
+    <section className="relative overflow-hidden rounded-[1.6rem] border border-[#efe1d9] bg-[#fffaf5] p-4 shadow-[0_24px_62px_rgba(105,66,48,0.065)] dark:border-[#4a3033] dark:bg-[#170d12] dark:shadow-[0_28px_80px_rgba(9,3,6,0.38)] sm:p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_58%,rgba(238,143,119,0.14),transparent_31%),radial-gradient(circle_at_50%_82%,rgba(246,187,164,0.18),transparent_35%),linear-gradient(180deg,rgba(255,251,248,0.74),rgba(255,242,235,0.54))] dark:bg-[radial-gradient(circle_at_50%_58%,rgba(213,124,105,0.13),transparent_33%),radial-gradient(circle_at_50%_82%,rgba(116,54,53,0.28),transparent_38%),linear-gradient(180deg,rgba(32,17,22,0.94),rgba(20,10,14,0.98))]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-[-8rem] h-80 bg-[radial-gradient(ellipse_at_50%_0%,rgba(237,151,128,0.18),transparent_62%)] dark:bg-[radial-gradient(ellipse_at_50%_0%,rgba(182,92,78,0.18),transparent_64%)]" />
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-serif text-[1.55rem] leading-none tracking-[0.04em] text-[#402930] dark:text-[#f4d8cc]">
+              Be Jewely
+            </p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9b746c] dark:text-[#b99791]">
+              Premium Report
+            </p>
+          </div>
+          <span className="rounded-full border border-[#dfb8ad] bg-[#fff4ee] px-3 py-1 text-[11px] font-semibold text-[#9a594f] dark:border-[#70413f] dark:bg-[#2b171d] dark:text-[#f0b7a7]">
+            Skin Match AI
+          </span>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-[0.78rem] font-semibold tracking-[0.02em] text-[#7c4a42] dark:text-[#ddb7aa]">
+            {isEnglish ? "Your personalized Skin Match plan" : "님의 맞춤 Skin Match 플랜"}
           </p>
+          <h3 className="mt-3 font-serif text-[2.35rem] font-semibold leading-tight text-[#44251f] dark:text-[#ffe2d7] sm:text-[2.9rem]">
+            {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
+          </h3>
+          <p className="mx-auto mt-3 max-w-[28rem] text-sm leading-6 text-[#654b45] dark:text-[#f1d7ce]">
+            {isEnglish
+              ? "Based on the current skin state, this gathers what to check first today."
+              : "지금 피부 상태를 기준으로, 오늘 가장 먼저 확인할 내용을 정리했어요."}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {signalChips.map((chip) => (
+              <span key={chip} className="rounded-full border border-[#e6c8bd]/54 bg-[#fff8f3]/88 px-3 py-1.5 text-xs font-semibold text-[#b96054] dark:border-[#70413f]/64 dark:bg-[#311b21] dark:text-[#f0b7a7]">
+                {chip}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative mx-auto mt-7 min-h-[31rem] max-w-[28rem] sm:min-h-[34rem] sm:max-w-[34rem] lg:min-h-[33rem] lg:max-w-[46rem]">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#f0b7a7]/18 dark:border-[#7d4b47]/25" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[16.5rem] w-[16.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#edc8bb]/28 dark:border-[#6e3e3c]/34" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[11.4rem] w-[11.4rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,241,234,0.58),rgba(255,226,212,0.14),transparent_72%)] dark:bg-[radial-gradient(circle,rgba(151,74,65,0.24),rgba(66,30,33,0.16),transparent_72%)]" />
+
+          {hubActions.map((action) => (
+            <SkinMatchHubQuickCard
+              key={action.id}
+              action={action}
+              locale={locale}
+              onNavigate={onNavigate}
+            />
+          ))}
+
+          <div className="absolute left-1/2 top-1/2 z-20 flex h-[11.75rem] w-[11.75rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-[#f3c1ae]/64 bg-[radial-gradient(circle_at_50%_20%,rgba(255,253,250,0.98),rgba(255,236,225,0.9)_68%,rgba(255,223,209,0.78))] px-4 text-center shadow-[0_0_0_7px_rgba(241,173,151,0.09),0_20px_50px_rgba(185,93,74,0.16),inset_0_1px_0_rgba(255,255,255,0.82)] dark:border-[#d28a78]/58 dark:bg-[radial-gradient(circle_at_50%_18%,rgba(70,35,39,0.96),rgba(38,19,24,0.92)_70%,rgba(27,13,18,0.98))] dark:shadow-[0_0_0_7px_rgba(176,83,74,0.09),0_24px_62px_rgba(8,2,5,0.45),inset_0_1px_0_rgba(255,226,215,0.1)] sm:h-[13.75rem] sm:w-[13.75rem] sm:px-5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#efb09f]/56 bg-[#fff6f0] text-[#d06f60] dark:border-[#8d514b]/72 dark:bg-[#3b2026] dark:text-[#f0b7a7]">
+              ✧
+            </span>
+            <h4 className="mt-2 font-serif text-[1.65rem] font-semibold leading-tight text-[#4b2822] dark:text-[#ffe2d7] sm:text-[1.95rem]">
+              {isEnglish ? "Start Today" : "오늘 시작"}
+            </h4>
+            <p className="mt-1.5 text-[0.74rem] leading-5 text-[#755650] dark:text-[#ead0c7] sm:mt-2 sm:text-[0.82rem]">
+              {isEnglish ? "First priority:" : "오늘 우선 실행:"}<br />
+              <strong className="font-semibold text-[#3d2422] dark:text-[#fff4ef]">
+                {primaryAction.title || (isEnglish ? "Pause new active steps" : "기능성 추가 멈추기")}
+              </strong>
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigate?.("morning-routine")}
+              className="mt-2.5 inline-flex min-h-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-3.5 text-[0.72rem] font-semibold text-white shadow-[0_12px_26px_rgba(215,111,91,0.24)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:mt-3 sm:min-h-10 sm:px-4 sm:text-xs"
+            >
+              {isEnglish ? "See today's first steps" : "오늘 할 일 먼저 보기"}
+              <span className="ml-2">&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 flex w-full items-center justify-between gap-3 rounded-[1.1rem] border border-[#e1c8bd] bg-[#fff7f1]/82 px-4 py-3 text-left shadow-[0_12px_28px_rgba(105,66,48,0.06)] dark:border-[#52363a] dark:bg-[#21151b]/78 dark:shadow-none">
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#dca396]/55 bg-[#fff1ea] text-[#b76356] dark:border-[#8a514c] dark:bg-[#321b21] dark:text-[#f0b7a7]">
+              <SkinMatchHubIcon type="alert" className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-[#4c3335] dark:text-[#fff4ef]">
+                {isEnglish ? "Your skin data is protected" : "내 피부 데이터는 안전하게 보호돼요"}
+              </span>
+              <span className="mt-0.5 block truncate text-xs text-[#8b6c64] dark:text-[#bfa59f]">
+                {isEnglish ? "You can reopen this premium report during access." : "구독 기간 동안 리포트를 다시 확인할 수 있어요."}
+              </span>
+            </span>
+          </span>
+          <span className="shrink-0 text-xl text-[#9f5b50] dark:text-[#f0b7a7]">&rsaquo;</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function getDailyRoutineGuideIntro(locale = "ko") {
+  return locale === "en"
+    ? {
+        kicker: "DAILY ROUTINE GUIDE",
+        title: "Keep morning light and evening less burdensome.",
+        body: "Morning is for a thin finish that works with sunscreen. Evening is for reducing friction and keeping the routine readable."
+      }
+    : {
+        kicker: "하루 루틴 가이드",
+        title: "아침은 밀리지 않게 가볍게, 저녁은 부담이 덜하게 정리합니다.",
+        body: "제품을 더 많이 바르는 페이지가 아니라, 어느 순서로 얼마나 가볍게 쓸지 정리하는 기준입니다."
+      };
+}
+
+function getRoutineGuideSteps(mode = "morning", freeResult = {}, steps = [], locale = "ko") {
+  const sourceSteps = steps.length ? steps : buildRoutineFallbackSteps(mode, freeResult, locale);
+  const title = mode === "morning"
+    ? locale === "en" ? "AM" : "AM 루틴"
+    : locale === "en" ? "PM" : "PM 루틴";
+
+  return sourceSteps
+    .map((step, index) => ({
+      ...step,
+      order: Number.isFinite(Number(step.order)) ? Number(step.order) : index + 1,
+      routineMode: mode,
+      stepName: normalizeRoutineStepTitle({ ...step, routineMode: mode }, title, sourceSteps.length, locale)
+    }))
+    .slice(0, 4);
+}
+
+function RoutineGuideStepCard({ step, copy, locale = "ko" }) {
+  const action = getRoutineStepActionText(step, locale);
+  const caution = getRoutineStepCautionText(step, locale);
+  const product = step.product || null;
+  const frequency = compactText(step.frequency);
+
+  return (
+    <article className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
+      <div className="flex items-start gap-3">
+        <span className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-[#f0b7a7]/90 px-2 text-xs font-bold text-[#2a171b]">
+          {step.order}
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">{step.stepName}</p>
+          <p className="mt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{action}</p>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {planItems.map((item) => (
-          <PlanChecklistPanel
-            key={item.key}
-            label={item.label}
-            summary={item.summary}
-            items={item.items}
-            tone={item.key === "stop" ? "stop" : item.key === "check" ? "check" : "default"}
+      <div className="mt-3 grid gap-2">
+        {product ? (
+          <div className="rounded-[0.85rem] border border-white/10 bg-white/5 px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+              {locale === "en" ? "Product" : "사용할 제품"}
+            </p>
+            <p className="mt-1 break-words text-xs font-semibold leading-5 text-zinc-700 dark:text-zinc-300">
+              {product.brand ? `${product.brand} · ` : ""}{product.name}
+            </p>
+          </div>
+        ) : null}
+        {frequency ? (
+          <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            {locale === "en" ? "Frequency" : "빈도"} · {frequency}
+          </p>
+        ) : null}
+        {caution ? (
+          <p className="text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            {locale === "en" ? "Watch" : "주의"} · {caution}
+          </p>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function DailyRoutineGuideStep({ freeResult, morningSteps = [], nightSteps = [], copy, locale = "ko" }) {
+  const intro = getDailyRoutineGuideIntro(locale);
+  const amSteps = getRoutineGuideSteps("morning", freeResult, morningSteps, locale);
+  const pmSteps = getRoutineGuideSteps("night", freeResult, nightSteps, locale);
+  const groups = [
+    {
+      key: "am",
+      title: locale === "en" ? "AM routine" : "AM 루틴",
+      summary: locale === "en" ? "Thin layers, sunscreen finish." : "얇은 단계, 선크림 마무리",
+      steps: amSteps
+    },
+    {
+      key: "pm",
+      title: locale === "en" ? "PM routine" : "PM 루틴",
+      summary: locale === "en" ? "Gentle cleanse, simple finish." : "부드러운 세안, 단순한 마무리",
+      steps: pmSteps
+    }
+  ];
+
+  return (
+    <div className="space-y-4">
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{intro.kicker}</p>
+        <h3 className="ui-title mt-2 text-xl leading-tight">{intro.title}</h3>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">{intro.body}</p>
+      </section>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {groups.map((group) => (
+          <section key={group.key} className="ui-card p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="ui-kicker">{group.title}</p>
+                <h4 className="ui-title mt-2 text-lg leading-tight">{group.summary}</h4>
+              </div>
+              <span className="ui-chip-compact shrink-0">{group.steps.length}</span>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {group.steps.map((step, index) => (
+                <RoutineGuideStepCard
+                  key={`${group.key}-${step.order}-${step.stepName}-${index}`}
+                  step={step}
+                  copy={copy}
+                  locale={locale}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function collectUsageGuideProducts({ freeResult, report, alternativeItems = [], displayBudgetAlternatives = [] }) {
+  const seen = new Set();
+  const sourceItems = [
+    freeResult?.topPick || null,
+    ...(Array.isArray(report?.supportingProducts) ? report.supportingProducts : []),
+    ...alternativeItems,
+    ...(Array.isArray(freeResult?.altPicks) ? freeResult.altPicks : []),
+    ...displayBudgetAlternatives
+  ];
+
+  return sourceItems
+    .map(unwrapSupportingProductItem)
+    .filter(Boolean)
+    .filter((product) => {
+      const key = product.id || `${product.brand || ""}-${product.name || ""}`;
+
+      if (!key || seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 4);
+}
+
+function getProductUsageMeta(product = {}, result = {}, locale = "ko") {
+  const category = normalizeReportCategory(product);
+  const concern = getReportPriorityLabel(result, locale);
+  const isEnglish = locale === "en";
+
+  if (isEnglish) {
+    if (category === "sunscreen") {
+      return {
+        role: "Morning protection finish",
+        position: "Last AM skincare step",
+        amount: "Use enough to cover the face evenly",
+        frequency: "Every morning",
+        pair: "Works after light moisture",
+        reduce: "Reduce the previous moisturizer if it pills",
+        caution: "Reapply on longer outdoor days"
+      };
+    }
+    if (category === "cleanser") {
+      return {
+        role: "Routine reset step",
+        position: "First PM step",
+        amount: "Enough foam or slip to reduce rubbing",
+        frequency: "Evening, and morning only when needed",
+        pair: "Follow with the core product",
+        reduce: "Shorten cleansing time if tightness appears",
+        caution: "Avoid chasing a squeaky-clean finish"
+      };
+    }
+    if (category === "moisturizer") {
+      return {
+        role: "Moisture finish",
+        position: "After the core product",
+        amount: "Thin layer first, add only if tight",
+        frequency: "AM/PM as needed",
+        pair: "Works with a simple serum or toner layer",
+        reduce: "Reduce AM amount before makeup",
+        caution: "If it feels heavy, reduce amount before switching products"
+      };
+    }
+
+    return {
+      role: `Core support for ${concern}`,
+      position: "After cleansing, before heavier finish",
+      amount: "Thin, even layer",
+      frequency: "Start once daily or as guided",
+      pair: "Pair with simple moisture and sunscreen in the morning",
+      reduce: "Reduce frequency if stinging or breakouts appear",
+      caution: "Do not stack with several strong active steps"
+    };
+  }
+
+  if (category === "sunscreen") {
+    return {
+      role: "아침 보호 마무리",
+      position: "AM 마지막 스킨케어 단계",
+      amount: "얼굴 전체에 고르게 닿을 만큼",
+      frequency: "매일 아침",
+      pair: "가벼운 보습 다음에 연결",
+      reduce: "밀리면 직전 보습량을 먼저 줄이기",
+      caution: "야외 시간이 길면 덧바름 고려"
+    };
+  }
+  if (category === "cleanser") {
+    return {
+      role: "루틴 정리 단계",
+      position: "PM 첫 단계",
+      amount: "마찰이 줄 만큼 충분한 거품/미끄러짐",
+      frequency: "저녁 중심, 아침은 필요할 때만",
+      pair: "세안 뒤 핵심 제품으로 연결",
+      reduce: "당김이 있으면 세안 시간부터 줄이기",
+      caution: "뽀득한 마무리를 목표로 하지 않기"
+    };
+  }
+  if (category === "moisturizer") {
+    return {
+      role: "보습 마무리",
+      position: "핵심 제품 다음",
+      amount: "얇게 먼저, 당기면 소량 추가",
+      frequency: "AM/PM 필요 기준",
+      pair: "단순한 세럼/토너 단계와 연결",
+      reduce: "아침 화장 전에는 양을 먼저 줄이기",
+      caution: "답답하면 제품 교체보다 사용량부터 조정"
+    };
+  }
+
+  return {
+    role: `${concern} 기준 핵심 보조`,
+    position: "세안 뒤, 무거운 마무리 전",
+    amount: "얇고 고르게 한 번",
+    frequency: "하루 1회부터 맞춰보기",
+    pair: "단순 보습, 아침 선크림과 연결",
+    reduce: "따가움이나 트러블이 보이면 빈도 줄이기",
+    caution: "강한 기능성 여러 개와 겹치지 않기"
+  };
+}
+
+function ProductUsageCard({ product, result, copy, locale = "ko", isPrimary = false }) {
+  const meta = getProductUsageMeta(product, result, locale);
+  const purchaseLink = getPurchaseLinkInfo(product, copy, locale);
+
+  return (
+    <article className={`rounded-[1.15rem] border p-4 ${
+      isPrimary
+        ? "border-[#d99a8e]/60 bg-[#efb09f]/10"
+        : "border-white/10 bg-white/5"
+    }`}>
+      <div className="flex items-start gap-3">
+        <ProductThumb product={product} copy={copy} sizeClass="h-20 w-16" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+            {isPrimary ? locale === "en" ? "Core product" : "중심 제품" : meta.role}
+          </p>
+          <p className="mt-1 break-words text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        {[
+          [locale === "en" ? "Role" : "역할", meta.role],
+          [locale === "en" ? "Position" : "사용 위치", meta.position],
+          [locale === "en" ? "Amount" : "사용량", meta.amount],
+          [locale === "en" ? "Frequency" : "빈도", meta.frequency],
+          [locale === "en" ? "Pair with" : "같이 쓰기", meta.pair],
+          [locale === "en" ? "Reduce when" : "줄일 때", meta.reduce],
+          [locale === "en" ? "Watch" : "조심할 상황", meta.caution]
+        ].map(([label, body]) => (
+          <div key={label} className="grid grid-cols-[72px_minmax(0,1fr)] gap-2 text-sm leading-6">
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{label}</span>
+            <span className="text-zinc-700 dark:text-zinc-300">{body}</span>
+          </div>
+        ))}
+      </div>
+
+      <a
+        href={purchaseLink.href}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() =>
+          trackEvent("click_buy_link", {
+            product_id: product.id || null,
+            feature_name: "skin_analysis",
+            result_type: "full_report_product_usage",
+            is_top_pick: isPrimary,
+            meta_json: {
+              button_label: purchaseLink.label,
+              fallback_link: purchaseLink.isFallback
+            }
+          })
+        }
+        className="mt-4 inline-flex text-xs font-semibold text-zinc-500 underline decoration-zinc-400 underline-offset-4 transition hover:text-zinc-900 dark:text-zinc-400 dark:decoration-zinc-700 dark:hover:text-zinc-100"
+      >
+        {purchaseLink.label}
+      </a>
+    </article>
+  );
+}
+
+function ProductUsageGuideStep({ freeResult, report, alternativeItems = [], displayBudgetAlternatives = [], copy, locale = "ko" }) {
+  const products = collectUsageGuideProducts({ freeResult, report, alternativeItems, displayBudgetAlternatives });
+
+  return (
+    <div className="space-y-4">
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{locale === "en" ? "PRODUCT USE GUIDE" : "제품별 사용 가이드"}</p>
+        <h3 className="ui-title mt-2 text-xl leading-tight">
+          {locale === "en" ? "Use each product by role, not by shopping appeal." : "추천 이유보다, 어떻게 써야 덜 헷갈리는지를 봅니다."}
+        </h3>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">
+          {locale === "en"
+            ? "Each card focuses on position, amount, frequency, and when to reduce."
+            : "각 제품은 사용 위치, 사용량, 빈도, 줄일 기준이 먼저 보이도록 정리했습니다."}
+        </p>
+      </section>
+
+      <div className="grid gap-3">
+        {products.map((product, index) => (
+          <ProductUsageCard
+            key={product.id || `${product.brand}-${product.name}-${index}`}
+            product={product}
+            result={freeResult}
+            copy={copy}
+            locale={locale}
+            isPrimary={index === 0}
           />
         ))}
       </div>
 
-      {topPick ? (
-        <div className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-            {isEnglish ? "Plan anchor" : "플랜 기준 제품"}
-          </p>
-          <p className="mt-1.5 break-words text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">
-            {topPick.brand ? `${topPick.brand} · ` : ""}{topPick.name}
-          </p>
+      {!products.length ? <EmptyPlanCard locale={locale} /> : null}
+    </div>
+  );
+}
+
+function getRoutineAdjustmentCases(locale = "ko") {
+  if (locale === "en") {
+    return [
+      { situation: "When it stings", reduce: "New active or exfoliating step", keep: "Gentle cleanse and simple moisture", watch: "Pause and seek professional advice if irritation is severe or persistent" },
+      { situation: "When it feels dry", reduce: "Cleansing time and active frequency", keep: "Moisture finish", watch: "Do not add several products at once" },
+      { situation: "When oil rises quickly", reduce: "Heavy AM moisturizer amount", keep: "Sunscreen", watch: "Avoid removing all moisture" },
+      { situation: "When makeup pills", reduce: "Previous moisturizer or serum amount", keep: "Sunscreen", watch: "Check whether the step before sunscreen is too heavy" },
+      { situation: "When breakouts appear", reduce: "Most recently added product", keep: "Simple calming routine", watch: "Avoid pushing the whole face aggressively" },
+      { situation: "When sunscreen pills", reduce: "AM layers before sunscreen", keep: "Enough sunscreen", watch: "Give the previous step time to settle" }
+    ];
+  }
+
+  return [
+    { situation: "따가울 때", reduce: "새 기능성 또는 각질 단계", keep: "부드러운 세안과 단순 보습", watch: "자극이 심하거나 지속되면 중단하고 상담이 필요합니다" },
+    { situation: "건조할 때", reduce: "세안 시간과 기능성 빈도", keep: "보습 마무리", watch: "제품을 여러 개 한 번에 더하지 않습니다" },
+    { situation: "유분이 빨리 올라올 때", reduce: "아침 보습량", keep: "선크림", watch: "수분 단계를 전부 빼지는 않습니다" },
+    { situation: "화장이 밀릴 때", reduce: "직전 보습제나 세럼 양", keep: "선크림", watch: "선크림 직전 단계가 너무 무거운지 확인합니다" },
+    { situation: "트러블이 올라올 때", reduce: "가장 최근 추가한 제품", keep: "단순 진정 루틴", watch: "얼굴 전체를 강하게 관리하지 않습니다" },
+    { situation: "선크림이 밀릴 때", reduce: "선크림 전 아침 단계 수", keep: "선크림 충분량", watch: "직전 단계가 자리 잡을 시간을 둡니다" }
+  ];
+}
+
+function RoutineAdjustmentGuideStep({ variants = [], avoidItems = [], locale = "ko" }) {
+  const cases = getRoutineAdjustmentCases(locale);
+  const guardItems = uniqueDisplayTexts([
+    ...(locale === "en"
+      ? ["Reduce steps before adding products", "Keep sunscreen in the morning", "Add new products one at a time"]
+      : ["제품을 더하기 전에 단계를 먼저 줄이기", "아침 선크림은 유지하기", "새 제품은 하나씩만 추가하기"]),
+    ...avoidItems
+  ]).slice(0, 4);
+  const variantNotes = (Array.isArray(variants) ? variants : [])
+    .map((variant) => normalizeSituationVariantLabel(variant?.label))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  return (
+    <div className="space-y-4">
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{locale === "en" ? "ADJUSTMENT GUIDE" : "상황별 조정법"}</p>
+        <h3 className="ui-title mt-2 text-xl leading-tight">
+          {locale === "en"
+            ? "If the skin feels uncomfortable, reduce steps before adding products."
+            : "피부가 불편하면 제품을 더하지 말고, 먼저 단계를 줄이는 쪽이 안전합니다."}
+        </h3>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">
+          {locale === "en"
+            ? "Use the situation cards as small adjustment rules, not as fixed instructions."
+            : "상황 카드는 고정 지시가 아니라, 루틴을 덜 헷갈리게 조정하는 기준입니다."}
+        </p>
+      </section>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        {cases.map((item) => (
+          <article key={item.situation} className="rounded-[1rem] border border-white/10 bg-white/5 px-4 py-4">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.situation}</p>
+            <div className="mt-3 space-y-2 text-sm leading-6">
+              <p className="text-zinc-700 dark:text-zinc-300"><span className="font-semibold text-zinc-900 dark:text-zinc-100">{locale === "en" ? "Reduce" : "먼저 줄일 것"} · </span>{item.reduce}</p>
+              <p className="text-zinc-700 dark:text-zinc-300"><span className="font-semibold text-zinc-900 dark:text-zinc-100">{locale === "en" ? "Keep" : "유지할 것"} · </span>{item.keep}</p>
+              <p className="text-zinc-700 dark:text-zinc-300"><span className="font-semibold text-zinc-900 dark:text-zinc-100">{locale === "en" ? "Watch" : "조심할 것"} · </span>{item.watch}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{locale === "en" ? "COMMON GUARDRAILS" : "공통 조정 기준"}</p>
+        <div className="mt-3 grid gap-2">
+          {guardItems.map((item) => (
+            <p key={item} className="rounded-[0.9rem] border border-white/10 bg-white/5 px-3 py-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              {item}
+            </p>
+          ))}
         </div>
-      ) : null}
-    </section>
+        {variantNotes.length ? (
+          <p className="mt-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+            {locale === "en" ? "Also referenced: " : "함께 참고: "}{variantNotes.join(" / ")}
+          </p>
+        ) : null}
+      </section>
+    </div>
+  );
+}
+
+function RoutineSummaryStep({ freeResult, morningSteps = [], nightSteps = [], copy, locale = "ko" }) {
+  const checkPoints = getTodayCheckPoints(locale);
+  const amSteps = getRoutineGuideSteps("morning", freeResult, morningSteps, locale).slice(0, 4);
+  const pmSteps = getRoutineGuideSteps("night", freeResult, nightSteps, locale).slice(0, 4);
+  const isEnglish = locale === "en";
+  const summaryGroups = isEnglish
+    ? [
+        { title: "Do today", items: ["Use the core product thinly", "Finish AM with sunscreen", "Keep PM simple"] },
+        { title: "Reduce", items: ["New active stacking", "Strong cleansing and rubbing", "Heavy AM finish"] },
+        { title: "Watch", items: ["Stinging", "Dryness", "Breakouts or pilling"] }
+      ]
+    : [
+        { title: "오늘 할 것", items: ["핵심 제품은 얇게 사용", "아침은 선크림까지 마무리", "저녁은 단순하게 정리"] },
+        { title: "줄일 것", items: ["새 기능성 중복", "강한 세안과 마찰", "무거운 아침 마무리"] },
+        { title: "조심할 것", items: ["따가움", "건조감", "트러블 또는 밀림"] }
+      ];
+  const safetyText = isEnglish
+    ? "This report is a skincare reference guide based on your inputs and product characteristics. If you have a skin disease, severe irritation, or persistent breakouts, professional consultation is needed."
+    : "본 리포트는 입력한 정보와 제품 특성을 바탕으로 한 스킨케어 참고 가이드입니다. 피부질환, 심한 자극, 지속적인 트러블이 있다면 전문가 상담이 필요합니다.";
+
+  return (
+    <div className="space-y-4">
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{isEnglish ? "FINAL SUMMARY" : "최종 요약"}</p>
+        <h3 className="ui-title mt-2 text-xl leading-tight">
+          {isEnglish ? "Save the small rules, not a long plan." : "긴 설명보다, 다시 볼 기준만 남깁니다."}
+        </h3>
+        <p className="ui-text-secondary mt-2 text-sm leading-6">
+          {isEnglish
+            ? "Use this page as the quick version when you revisit the routine."
+            : "나중에 다시 볼 때는 이 페이지의 체크리스트만 확인해도 흐름을 잡을 수 있습니다."}
+        </p>
+      </section>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {summaryGroups.map((group) => (
+          <section key={group.title} className="ui-card p-4">
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{group.title}</p>
+            <div className="mt-3 space-y-2">
+              {group.items.map((item) => (
+                <p key={item} className="flex gap-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#d98272]" />
+                  <span>{item}</span>
+                </p>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{isEnglish ? "AM / PM SUMMARY" : "AM / PM 최종 루틴 요약"}</p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {[
+            [isEnglish ? "AM" : "AM 루틴", amSteps],
+            [isEnglish ? "PM" : "PM 루틴", pmSteps]
+          ].map(([title, steps]) => (
+            <div key={title} className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
+              <div className="mt-3 space-y-2">
+                {steps.map((step) => (
+                  <p key={`${title}-${step.order}-${step.stepName}`} className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                    {step.order}. {getRoutineStepActionText(step, locale)}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="ui-card p-5 sm:p-6">
+        <p className="ui-kicker">{isEnglish ? "SIGNALS TO CHECK" : "체크할 신호"}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {checkPoints.items.map((item) => (
+            <span key={item} className="ui-chip-compact px-3 py-1.5">{item}</span>
+          ))}
+        </div>
+        <p className="mt-4 rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+          {safetyText}
+        </p>
+      </section>
+    </div>
   );
 }
 
@@ -3838,7 +4794,7 @@ function buildRoutineFallbackSteps(mode = "morning", freeResult = {}, locale = "
         stepName: isMorning ? "Sunscreen finish" : "Moisture finish",
         productRole: "",
         product: null,
-        instruction: isMorning ? "Finish with enough sunscreen and let it settle before makeup." : "Close with moisture so the skin can recover overnight.",
+        instruction: isMorning ? "Finish with enough sunscreen and let it settle before makeup." : "Close with moisture so the skin can feel comfortable overnight.",
         frequency: isMorning ? "Every morning" : "Every night",
         caution: isMorning ? "Do not replace sunscreen with heavier base makeup." : "Do not add another active step just because the routine feels short."
       }
@@ -3857,7 +4813,7 @@ function buildRoutineFallbackSteps(mode = "morning", freeResult = {}, locale = "
     },
     {
       order: 2,
-      stepName: isMorning ? "핵심 제품" : "회복 중심 단계",
+      stepName: isMorning ? "핵심 제품" : "핵심 정리 단계",
       productRole: "",
       product,
       instruction: isMorning ? "다음 단계가 밀리지 않게 얇게 둡니다." : "세안 → 핵심 제품 → 보습 마무리 순서로 단순하게 갑니다.",
@@ -3869,7 +4825,7 @@ function buildRoutineFallbackSteps(mode = "morning", freeResult = {}, locale = "
       stepName: isMorning ? "선크림 마무리" : "보습 마무리",
       productRole: "",
       product: null,
-      instruction: isMorning ? "아침 마무리는 선크림을 충분량으로 끝냅니다." : "따가움이나 당김이 있으면 회복 보습만 남깁니다.",
+      instruction: isMorning ? "아침 마무리는 선크림을 충분량으로 끝냅니다." : "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
       frequency: isMorning ? "매일 아침" : "매일 저녁",
       caution: isMorning ? "밀리면 보습량을 줄이고 흡수 시간을 둡니다." : "기능성은 한 번에 하나만, 매일 겹치지 않습니다."
     }
@@ -3882,7 +4838,7 @@ function getRoutineExecutionMeta(mode = "morning", locale = "ko") {
   if (locale === "en") {
     return {
       kicker: isMorning ? "MORNING ORDER" : "EVENING RESET",
-      title: isMorning ? "Keep the morning routine thin and sunscreen-ready." : "Use the evening routine for recovery, not more correction.",
+      title: isMorning ? "Keep the morning routine thin and sunscreen-ready." : "Use the evening routine to lower burden, not add more correction.",
       body: isMorning
         ? "The important part is when to apply each step and how light the layers stay."
         : "The important part is lower cleansing intensity, fewer actives, and a comfortable finish.",
@@ -3896,15 +4852,15 @@ function getRoutineExecutionMeta(mode = "morning", locale = "ko") {
         : [
             ["Cleansing", "Remove residue without chasing a squeaky-clean finish."],
             ["Order", "Cleanse → core product → moisture finish."],
-            ["Finish", "When the skin feels tight, leave only recovery moisture."],
+            ["Finish", "When the skin feels tight, leave only comfortable moisture."],
             ["Focused care", "Use only one active lane at a time."]
           ]
     };
   }
 
   return {
-    kicker: isMorning ? "아침 순서 고정" : "저녁 회복 루틴",
-    title: isMorning ? "아침은 얇게, 선크림까지 이어지게 씁니다." : "저녁은 더 넣는 시간이 아니라 회복시키는 시간입니다.",
+    kicker: isMorning ? "아침 순서 고정" : "저녁 정리 루틴",
+    title: isMorning ? "아침은 얇게, 선크림까지 이어지게 씁니다." : "저녁은 더 넣는 시간이 아니라 부담을 줄이는 시간입니다.",
     body: isMorning
       ? "제품 설명보다 언제, 어떤 순서로, 얼마나 단순하게 쓸지가 먼저입니다."
       : "세안 강도를 낮추고 기능성 중복을 줄여 피부가 편안하게 돌아오게 만듭니다.",
@@ -3918,7 +4874,7 @@ function getRoutineExecutionMeta(mode = "morning", locale = "ko") {
       : [
           ["세안 강도", "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다."],
           ["사용 순서", "세안 → 핵심 제품 → 보습 마무리 순서로 단순하게 갑니다."],
-          ["보습 마무리", "따가움이나 당김이 있으면 회복 보습만 남깁니다."],
+          ["보습 마무리", "따가움이나 당김이 있으면 편한 보습만 남깁니다."],
           ["집중 케어", "기능성은 한 번에 하나만, 매일 겹치지 않습니다."]
         ]
   };
@@ -4130,13 +5086,13 @@ function getAdjustmentSafetyItems(locale = "ko") {
   return locale === "en"
     ? [
         "Add new products one at a time.",
-        "If it stings, prioritize barrier recovery over actives.",
+        "If it stings, lower irritation burden before actives.",
         "If breakouts appear, pause the most recently added product first.",
         "If dryness is severe, adjust cleansing intensity and moisture finish first."
       ]
     : [
         "새 제품은 하나씩만 추가합니다.",
-        "따가움이 있으면 기능성보다 장벽 회복을 먼저 봅니다.",
+        "따가움이 있으면 기능성보다 부담을 낮추는 기준을 먼저 봅니다.",
         "트러블이 올라오면 최근 추가한 제품부터 멈춥니다.",
         "건조함이 심하면 세안 강도와 마무리 보습부터 조정합니다."
       ];
@@ -4359,41 +5315,49 @@ function SkinMatchStepReport({
   const router = useRouter();
   const labels = locale === "en"
     ? {
-        stepKicker: "SKIN MATCH PLAN",
-        today: "Start Today Plan",
-        morning: "Morning Action Routine",
-        night: "Evening Action Routine",
-        avoid: "What to Avoid",
+        stepKicker: "SKIN MATCH ROUTINE REPORT",
+        hub: "Start Today",
+        morning: "Morning Routine",
+        evening: "Evening Routine",
+        avoid: "Caution",
         adjustment: "Adjustment Guide",
-        budget: "Alternative Products · Budget Plan",
+        product: "Product Guide",
+        summary: "Final Summary",
         previous: "Previous",
         next: "Next",
-        backResult: "Back to free result"
+        finalCta: "Save my routine"
       }
     : {
-        stepKicker: "SKIN MATCH PLAN",
-        today: "오늘 시작 플랜",
+        stepKicker: "SKIN MATCH 루틴 리포트",
+        hub: "오늘 시작",
         morning: "아침 실행 루틴",
-        night: "저녁 실행 루틴",
-        avoid: "피해야 할 것",
-        adjustment: "안 맞을 때 조정법",
-        budget: "대체 제품 · 예산 플랜",
+        evening: "저녁 실행 루틴",
+        avoid: "주의",
+        adjustment: "조정",
+        product: "제품",
+        summary: "최종 요약",
         previous: "이전",
         next: "다음",
-        backResult: "결과 다시보기"
+        finalCta: "내 루틴 저장하기"
       };
+  function moveToStepKey(stepKey) {
+    const targetIndex = SKIN_MATCH_SECTION_ORDER.indexOf(stepKey);
+
+    if (targetIndex >= 0) {
+      moveToStep(targetIndex);
+    }
+  }
+
   const stepMap = {
-    "today-start-plan": {
-      key: "today-start-plan",
-      label: labels.today,
+    "today-start-hub": {
+      key: "today-start-hub",
+      label: labels.hub,
       content: (
         <TodayStartPlanStep
           freeResult={freeResult}
-          morningSteps={morningSteps}
-          nightSteps={nightSteps}
-          avoidItems={displayAvoidCombinations}
           copy={copy}
           locale={locale}
+          onNavigate={moveToStepKey}
         />
       )
     },
@@ -4412,7 +5376,7 @@ function SkinMatchStepReport({
     },
     "evening-routine": {
       key: "evening-routine",
-      label: labels.night,
+      label: labels.evening,
       content: (
         <RoutineExecutionStep
           mode="night"
@@ -4426,7 +5390,12 @@ function SkinMatchStepReport({
     "avoid-list": {
       key: "avoid-list",
       label: labels.avoid,
-      content: <AvoidListStep avoidItems={displayAvoidCombinations} locale={locale} />
+      content: (
+        <AvoidListStep
+          avoidItems={displayAvoidCombinations}
+          locale={locale}
+        />
+      )
     },
     "adjustment-guide": {
       key: "adjustment-guide",
@@ -4439,14 +5408,15 @@ function SkinMatchStepReport({
         />
       )
     },
-    "alternative-budget-plan": {
-      key: "alternative-budget-plan",
-      label: labels.budget,
+    "product-plan": {
+      key: "product-plan",
+      label: labels.product,
       content: (
-        <AlternativeBudgetPlanStep
+        <ProductUsageGuideStep
+          freeResult={freeResult}
+          report={report}
           alternativeItems={alternativeItems}
           displayBudgetAlternatives={displayBudgetAlternatives}
-          budgetSectionTitle={budgetSectionTitle}
           copy={copy}
           locale={locale}
         />
@@ -4458,7 +5428,8 @@ function SkinMatchStepReport({
   const currentStepIndex = Math.min(activeStepIndex, maxStepIndex);
   const activeStep = steps[currentStepIndex];
   const nextStep = currentStepIndex < maxStepIndex ? steps[currentStepIndex + 1] : null;
-  const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.backResult;
+  const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.finalCta;
+  const isHubStep = activeStep?.key === "today-start-hub";
   const moveToStep = (nextIndex) => {
     const boundedIndex = Math.max(0, Math.min(maxStepIndex, nextIndex));
 
@@ -4509,46 +5480,49 @@ function SkinMatchStepReport({
 
   return (
     <section className="space-y-4">
-      <div ref={skinMatchStepHeaderRef} className="ui-card p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="ui-kicker">{labels.stepKicker}</p>
-            <h2 className="ui-title mt-1.5 text-xl">{activeStep.label}</h2>
-          </div>
-          <span className="ui-chip-compact shrink-0">{currentStepIndex + 1}/{steps.length}</span>
-        </div>
+      <div ref={skinMatchStepHeaderRef} className={isHubStep ? "sr-only" : "ui-card p-5 sm:p-6"}>
+        {isHubStep ? (
+          <span>{activeStep.label}</span>
+        ) : (
+          <>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="ui-kicker">{labels.stepKicker}</p>
+                <h2 className="ui-title mt-1.5 text-xl">{activeStep.label}</h2>
+              </div>
+              <span className="ui-chip-compact shrink-0">{currentStepIndex + 1}/{steps.length}</span>
+            </div>
 
-        <div
-          className="mt-3 grid gap-2"
-          style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
-        >
-          {steps.map((step, index) => (
-            <button
-              key={step.key}
-              type="button"
-              onClick={() => moveToStep(index)}
-              className={`h-2 rounded-full transition ${
-                index === currentStepIndex
-                  ? "bg-zinc-900 dark:bg-zinc-100"
-                  : "bg-zinc-200 dark:bg-zinc-800"
-              }`}
-              aria-label={`${step.label} ${index + 1}`}
-            />
-          ))}
-        </div>
+            <div
+              className="mt-3 grid gap-2"
+              style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+            >
+              {steps.map((step, index) => (
+                <button
+                  key={step.key}
+                  type="button"
+                  onClick={() => moveToStep(index)}
+                  className={`h-2 rounded-full transition ${
+                    index === currentStepIndex
+                      ? "bg-zinc-900 dark:bg-zinc-100"
+                      : "bg-zinc-200 dark:bg-zinc-800"
+                  }`}
+                  aria-label={`${step.label} ${index + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeStep.key}
-          initial={hasMountedStepRef.current ? { opacity: 0, y: 18 } : false}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.24, ease: "easeOut" }}
-        >
-          {activeStep.content}
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        key={activeStep.key}
+        initial={hasMountedStepRef.current ? { opacity: 0, y: 18 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.24, ease: "easeOut" }}
+      >
+        {activeStep.content}
+      </motion.div>
 
       {currentStepIndex === maxStepIndex ? (
         <>
@@ -4567,26 +5541,28 @@ function SkinMatchStepReport({
         </>
       ) : null}
 
-      <div className="full-report-step-cta">
-        <ResultBottomCTA
-          fixed={false}
-          label={primaryLabel}
-          onClick={() => {
-            if (currentStepIndex === maxStepIndex) {
-              router.push(getResultPath(locale));
-              return;
-            }
+      {!isHubStep ? (
+        <div className="full-report-step-cta">
+          <ResultBottomCTA
+            fixed={false}
+            label={primaryLabel}
+            onClick={() => {
+              if (currentStepIndex === maxStepIndex) {
+                router.push(getMyPath(locale));
+                return;
+              }
 
-            moveToStep(currentStepIndex + 1);
-          }}
-          previousLabel={currentStepIndex > 0 ? labels.previous : null}
-          onPrevious={
-            currentStepIndex > 0
-              ? () => moveToStep(currentStepIndex - 1)
-              : null
-          }
-        />
-      </div>
+              moveToStep(currentStepIndex + 1);
+            }}
+            previousLabel={currentStepIndex > 0 ? labels.previous : null}
+            onPrevious={
+              currentStepIndex > 0
+                ? () => moveToStep(currentStepIndex - 1)
+                : null
+            }
+          />
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -4807,7 +5783,7 @@ function getRoutineStepActionText(step = {}, locale = "ko") {
       return "Remove residue gently without chasing a stripped finish.";
     }
     if (category === "moisturizer" || /cream|moist|finish/.test(titleIndex) || Number(step.order) >= 3) {
-      return "If it stings or feels tight, leave only recovery moisture.";
+      return "If it stings or feels tight, leave only comfortable moisture.";
     }
     return "Keep the evening order simple: cleanse, core product, moisture.";
   }
@@ -4826,7 +5802,7 @@ function getRoutineStepActionText(step = {}, locale = "ko") {
     return "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.";
   }
   if (category === "moisturizer" || /보습|크림|로션|마무리/.test(titleIndex) || Number(step.order) >= 3) {
-    return "따가움이나 당김이 있으면 회복 보습만 남깁니다.";
+    return "따가움이나 당김이 있으면 편한 보습만 남깁니다.";
   }
   return "세안 → 핵심 제품 → 보습 마무리 순서로 단순하게 갑니다.";
 }
@@ -5768,7 +6744,7 @@ export default function FullReportPage() {
   return (
     <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
       <FullReportLightThemeStyles />
-      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[800px]">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[980px] xl:max-w-[1120px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 px-1">
             <Link href={getResultPath(locale)} className="min-w-0 text-left">

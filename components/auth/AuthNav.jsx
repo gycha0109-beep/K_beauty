@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import LoginButtons from "@/components/auth/LoginButtons";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { getCommonCopy } from "@/lib/ui/i18n";
 
 function getAvatarUrl(user) {
   const metadata = user?.user_metadata || {};
@@ -23,6 +24,8 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const isEnglish = locale === "en";
+  const myPath = isEnglish ? "/en/my" : "/my";
+  const copy = getCommonCopy(locale).auth;
 
   useEffect(() => {
     let isMounted = true;
@@ -79,8 +82,10 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
     return (
       <LoginButtons
         compact
-        label={isEnglish ? "Sign in with Google" : "Google로 로그인"}
-        loadingLabel={isEnglish ? "Connecting..." : "연결 중..."}
+        label={copy.signInGoogle}
+        loadingLabel={copy.connecting}
+        next={myPath}
+        locale={locale}
       />
     );
   }
@@ -99,7 +104,7 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
       ) : null}
       {showMyLink ? (
         <Link
-          href="/my"
+          href={myPath}
           className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/90 px-3 py-1.5 text-xs font-semibold text-[#5a2d3c] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
         >
           My
@@ -110,7 +115,7 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
           href="/api/auth/signout"
           className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
         >
-          {isEnglish ? "Sign out" : "로그아웃"}
+          {copy.signOut}
         </a>
       ) : null}
     </div>
