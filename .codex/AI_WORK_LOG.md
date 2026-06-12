@@ -778,3 +778,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `git diff --stat` reports `app/result/page.js` only while the new file is untracked; no browser visual verification was run for this move-only task.
 - Reusable rule: When extracting free result V2 step components, keep the step's props contract and result step assembly unchanged, and only copy tiny local helpers when the shared helper remains in `page.js` for other code.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 evidence step extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to `FreeResultV2EvidenceStep` and its Step 2-only evidence photo card, signal card, reason note helper, and bridge UI; step assembly, `currentResultStep`, data builders, recommendation logic, tracking/API/auth/save/share logic, copy maps, and legacy components were out of scope.
+- Goal: Move `FreeResultV2EvidenceStep` and Step 2-only pure display helpers into `components/result/free-v2/FreeResultV2EvidenceStep.jsx`, importing shared primitives from `FreeResultV2Primitives.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Tracking/API/auth/save/share logic was not touched; the Step 2 reveal `sessionStorage` behavior was moved unchanged with its UI card.
+- Validation: Normalized source comparison confirmed the moved Step 2 block matches the original except for module imports and default export; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2EvidenceStep.jsx` passed with a CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reloaded successfully with main content rendered, no horizontal overflow, and console error logs 0.
+- Notes/risks: `git diff --stat` reports `app/result/page.js` only while the new file is untracked.
+- Reusable rule: When extracting free result V2 step components, keep props contract and step assembly unchanged, and move UI-local browser state only with the UI block it belongs to.
+- Context promotion candidate: NULL
