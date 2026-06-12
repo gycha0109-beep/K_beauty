@@ -739,3 +739,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The existing droplet loading route remains available, but normal result CTA now goes directly to `/result/full-report`; direct loading-route open uses `router.replace` when moving to the report.
 - Reusable rule: Full-report loading animation should be rendered as a transient UI state on the report route, not as a history-visible intermediate route in the normal CTA flow.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / premium report TodayStartPlanStep extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium refactor/move-only task limited to extracting the TodayStartPlanStep UI bundle from `app/result/full-report/page.js`; UI copy, class names, navigation step order, router/session/API/tracking logic, other Step UI, and protected areas were out of scope.
+- Goal: Move `SkinMatchHubIcon`, `SkinMatchHubQuickCard`, and `TodayStartPlanStep` into `components/full-report/TodayStartPlanStep.jsx`, with page-level data helpers remaining in `page.js` and values/callbacks passed as props.
+- Changed files: app/result/full-report/page.js, components/full-report/TodayStartPlanStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: Normalized source comparison confirmed the moved block matches the original except for exports, removed internal data computations, and prop passing; `git diff --check -- app/result/full-report/page.js components/full-report/TodayStartPlanStep.jsx` passed with a CRLF warning only; `npm run lint` could not run because `next lint` opened the ESLint configuration prompt; `npm run build` passed.
+- Notes/risks: `SkinMatchHubQuickCard` is named-exported from the new component file so the existing `LegacyTodayStartPlanStep` reference in `page.js` keeps the same runtime target if that legacy path is ever invoked.
+- Reusable rule: When extracting a full-report UI subcomponent, keep shared data helpers in the page and pass computed values/callbacks as props unless the helper is private to the extracted UI bundle.
+- Context promotion candidate: NULL
