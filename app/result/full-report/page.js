@@ -5,10 +5,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
+import PremiumReportLoadingPage from "./loading/page";
 import {
   buildFaceLabLaunchData,
   formatFaceLabDisplayList,
@@ -347,6 +347,10 @@ function FullReportLightThemeStyles() {
       }
     `}</style>
   );
+}
+
+function FullReportLoadingBridge({ locale = "ko", onOpen, canOpen = true }) {
+  return <PremiumReportLoadingPage forcedLocale={locale} onOpen={onOpen} canOpen={canOpen} />;
 }
 
 const COPY = {
@@ -6544,6 +6548,7 @@ export default function FullReportPage() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [isReportOpened, setIsReportOpened] = useState(false);
   const [activeTab, setActiveTab] = useState("skin_match");
   const [submissionImageUrl, setSubmissionImageUrl] = useState("");
 
@@ -6696,11 +6701,13 @@ export default function FullReportPage() {
     void loadFullReport();
   }, [copy.errorBody, isTestFullReport, locale]);
 
-  if (!isReady) {
+  if (!isReportOpened || !isReady) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4 py-12">
-        <LoadingSpinner label={copy.loading} />
-      </main>
+      <FullReportLoadingBridge
+        locale={locale}
+        canOpen={isReady}
+        onOpen={() => setIsReportOpened(true)}
+      />
     );
   }
 

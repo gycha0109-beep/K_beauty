@@ -257,10 +257,10 @@ function PremiumReportLoadingStyles() {
   );
 }
 
-export default function PremiumReportLoadingPage() {
+export default function PremiumReportLoadingPage({ forcedLocale = "", onOpen = null, canOpen = true } = {}) {
   const router = useRouter();
   const pathname = usePathname();
-  const locale = getLocaleFromPath(pathname || "");
+  const locale = forcedLocale || getLocaleFromPath(pathname || "");
   const copy = COPY[locale] || COPY.ko;
   const steps = LOADING_STEPS[locale] || LOADING_STEPS.ko;
   const [progress, setProgress] = useState(7);
@@ -291,14 +291,19 @@ export default function PremiumReportLoadingPage() {
   }, [isComplete]);
 
   function openFullReport() {
-    if (isDropping) {
+    if (!canOpen || isDropping) {
       return;
     }
 
     setIsDropping(true);
 
     window.setTimeout(() => {
-      router.push(getTargetPath(locale));
+      if (typeof onOpen === "function") {
+        onOpen();
+        return;
+      }
+
+      router.replace(getTargetPath(locale));
     }, 950);
   }
 
@@ -329,7 +334,7 @@ export default function PremiumReportLoadingPage() {
             <button
               type="button"
               aria-label={copy.openAria}
-              disabled={!isComplete && progress < 100}
+              disabled={!isComplete || !canOpen}
               onClick={openFullReport}
               className={`premium-drop-button ${isDropping ? "is-dropping" : ""}`}
             >
@@ -337,7 +342,7 @@ export default function PremiumReportLoadingPage() {
                 <span className="premium-drop-fill" style={{ height: `${progress}%` }} />
               </span>
               <span className="premium-drop-percent">
-                {!isComplete ? (
+                {!isComplete || !canOpen ? (
                   <>
                     <span className="text-[2.75rem] font-semibold leading-none">{progress}</span>
                     <span className="mt-1 text-sm font-semibold">%</span>
@@ -352,9 +357,9 @@ export default function PremiumReportLoadingPage() {
 
           <div className="mt-1 min-h-[3.5rem]">
             <p className="text-base font-semibold text-[#cc6f61] dark:text-[#ffc0ad]">
-              {isComplete ? copy.tapHint : activeStep.status}
+              {isComplete && canOpen ? copy.tapHint : activeStep.status}
             </p>
-            {isComplete ? (
+            {isComplete && canOpen ? (
               <button
                 type="button"
                 onClick={openFullReport}

@@ -2992,7 +2992,7 @@ function ResultContent() {
         has_face_lab_preview: Boolean(faceLabProfilePreview)
       }
     });
-    router.push(locale === "en" ? "/en/result/full-report/loading" : "/result/full-report/loading");
+    router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
   };
   const handleTryAgainClick = (event) => {
     if (result && !window.confirm(getResultLeaveMessage(locale))) {

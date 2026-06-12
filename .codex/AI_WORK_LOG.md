@@ -726,3 +726,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Visual verification used the fixture route `/test-full-report` because the production full-report route requires a premium session.
 - Reusable rule: For paid report hub polish, adjust hierarchy, spacing, opacity, and copy inside the existing hub layout before considering structural changes.
 - Context promotion candidate: NULL
+
+### 2026-06-12 / premium report loading flow history cleanup
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium UI/navigation bug fix limited to full-report loading transition. Recommendation logic, API response shape, DB, payment, auth, env, and saved-data structure were out of scope.
+- Goal: Keep the full-report URL on `/result/full-report`, show the original droplet loading process until 100%, reveal the existing tap-to-open state, and show the existing ripple transition before rendering the report. Prevent `/result/full-report/loading` from remaining in browser history.
+- Changed files: app/result/page.js, app/result/full-report/page.js, app/result/full-report/loading/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `npm run build` passed.
+- Notes/risks: The existing droplet loading route remains available, but normal result CTA now goes directly to `/result/full-report`; direct loading-route open uses `router.replace` when moving to the report.
+- Reusable rule: Full-report loading animation should be rendered as a transient UI state on the report route, not as a history-visible intermediate route in the normal CTA flow.
+- Context promotion candidate: NULL
