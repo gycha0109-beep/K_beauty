@@ -791,3 +791,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `git diff --stat` reports `app/result/page.js` only while the new file is untracked.
 - Reusable rule: When extracting free result V2 step components, keep props contract and step assembly unchanged, and move UI-local browser state only with the UI block it belongs to.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 recommendation guide step extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to `FreeResultV2RecommendationGuideStep` and its Step 3-only top pick, role pill, tabbed routine preview, premium preview, and fallback UI; step assembly, `currentResultStep`, recommendation logic, product normalization, data builders, tracking/API/sessionStorage/auth/save/share logic, purchase CTA behavior, and legacy components were out of scope.
+- Goal: Move the free result V2 Step 3 recommendation guide UI into `components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx`, importing shared primitives from `FreeResultV2Primitives.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: Normalized source comparison confirmed the moved Step 3 block matches the original except for module imports, default export, and a private Step 3 product thumbnail helper needed because shared `SmallProductThumb` remains in `page.js`; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx` passed with a CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reached Step 3 with guide title, TOP PICK card, routine tabs, no horizontal overflow, and console error logs 0.
+- Notes/risks: The new file duplicates the display-only product thumbnail markup for Step 3 so the shared page-level `SmallProductThumb` is not moved away from other legacy/current product cards.
+- Reusable rule: When an extracted free result V2 step depends on a page-local helper that is shared with other sections, keep the shared helper in `page.js` and use a private display-only duplicate only when it avoids changing step props or broader file ownership.
+- Context promotion candidate: NULL
