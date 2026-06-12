@@ -752,3 +752,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `SkinMatchHubQuickCard` is named-exported from the new component file so the existing `LegacyTodayStartPlanStep` reference in `page.js` keeps the same runtime target if that legacy path is ever invoked.
 - Reusable rule: When extracting a full-report UI subcomponent, keep shared data helpers in the page and pass computed values/callbacks as props unless the helper is private to the extracted UI bundle.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 primitives extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to free result V2 primitive UI and pure icon components in `app/result/page.js`; step structure, data builders, recommendation logic, tracking/API/sessionStorage/auth/save/share logic, and legacy components were out of scope.
+- Goal: Move `FreeResultV2StepFrame`, `FreeResultV2Card`, `FreeResultV2Pill`, `FreeResultV2LockIcon`, and pure V2 icon components into `components/result/free-v2/FreeResultV2Primitives.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2Primitives.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `git diff --stat` showed `app/result/page.js` reduced by 343 deleted lines with 13 import lines added; the new untracked primitive file is 308 lines and listed separately by `git status`; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2Primitives.jsx` passed with a CRLF warning only; `npm run build` passed.
+- Notes/risks: `FreeResultV2FaceLabMoodIcon` was moved into the primitive file but not imported back into `page.js` because the current page does not call it. No browser visual verification was run for this move-only task.
+- Reusable rule: For free result V2 extraction, move primitive UI and pure SVG icons before step components, and leave step assembly plus display-data builders in `page.js` until they are targeted explicitly.
+- Context promotion candidate: NULL
