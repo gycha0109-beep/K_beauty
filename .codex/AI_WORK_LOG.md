@@ -817,3 +817,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The extraction briefly broke an adjacent legacy `FreeResultV2RoutineFaceLabStep` lock row during block removal, then restored it before final validation.
 - Reusable rule: For move-only extraction near legacy unused blocks, verify the adjacent before/after function boundaries after deletion because older blocks may remain interleaved around the active V2 steps.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 premium preview step extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to the free result V2 Step 5 premium-preview display UI; `goToFullReport`, step assembly, `currentResultStep`, `ResultBottomCTA`, `SaveReportCTA`, data builders, copy maps, tracking/API/sessionStorage/auth/save/share logic, and legacy preview helpers were out of scope.
+- Goal: Move the active Step 5 wrapper, premium preview lead display, `ResultPreviewMaskCard`, and its internal CTA button JSX into `components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx`.
+- Changed files: app/result/page.js, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched; the full-report CTA still receives the page-level `goToFullReport` callback via `onFullReportClick`.
+- Validation: Normalized comparison confirmed `ResultPreviewMaskCard` matches the original and the Step 5 wrapper/callback contract is preserved; `git diff --check -- app/result/page.js components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx` passed with a CRLF warning only; `npm run build` passed; in-app Browser `/test-result` reached Step 5 with premium preview text and CTA, no horizontal overflow, console error logs 0; clicking `전체 리포트 보기` navigated to `/result/full-report` and rendered the premium report handoff state.
+- Notes/risks: `FreeResultV2PremiumPreviewLead` keeps the active Step 5 rendered output without moving `resultCopy`; legacy preview helpers (`ResultPreviewThumb`, `ResultPreviewLargeVisual`, `ResultPreviewHighlightCard`, `ResultPreviewLockedRow`) remain in `page.js`.
+- Reusable rule: For final-step extraction, pass page-owned navigation/tracking callbacks down as props and keep save/login/session behavior at the page or dedicated CTA component boundary.
+- Context promotion candidate: NULL
