@@ -830,3 +830,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `FreeResultV2PremiumPreviewLead` keeps the active Step 5 rendered output without moving `resultCopy`; legacy preview helpers (`ResultPreviewThumb`, `ResultPreviewLargeVisual`, `ResultPreviewHighlightCard`, `ResultPreviewLockedRow`) remain in `page.js`.
 - Reusable rule: For final-step extraction, pass page-owned navigation/tracking callbacks down as props and keep save/login/session behavior at the page or dedicated CTA component boundary.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result legacy UI quarantine
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to legacy/inactive UI components that are not directly used by the active free result V2 Step 1-5 `resultSteps` path; step structure, active Step components, display data builders, copy maps, sessionStorage/auth/API/tracking/save/share logic, and deletion were out of scope.
+- Goal: Move inactive legacy UI groups into `components/result/legacy/ResultLegacySections.jsx` as named exports while leaving active free result V2 rendering untouched.
+- Changed files: app/result/page.js, components/result/legacy/ResultLegacySections.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: Not touched.
+- Validation: `rg` confirmed moved legacy components now live only in `ResultLegacySections.jsx`; normalized source comparison confirmed the moved legacy UI block matches the original except for module imports and named exports; `git diff --check -- app/result/page.js components/result/legacy/ResultLegacySections.jsx` passed with a CRLF warning only; `npm run build` passed; in-app Browser `/test-result` confirmed Steps 1-5 render with no horizontal overflow and console error logs 0.
+- Notes/risks: `PhotoObservationCard`, `CategoryCarousel`, and `ProductDecisionCard` stayed in `page.js` because they depend on page-level display builders, product helpers, and tracking. Smaller legacy helpers `FreeResultV2RoleCard`, `FreeResultV2CompactRoutineFlow`, and `FreeResultV2Step3LockCard` also stayed because they were outside the confirmed move group.
+- Reusable rule: Legacy UI quarantine should move only self-contained inactive UI bundles; leave candidates with display-builder or tracking dependencies in `page.js` until their helper contracts are explicitly extracted.
+- Context promotion candidate: NULL
