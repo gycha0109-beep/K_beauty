@@ -1552,15 +1552,38 @@ function buildFreeResultV2TopPick(product, form = {}, result = null, locale = "k
 function normalizeResultCategory(product = {}) {
   const category = String(product?.category || "").trim().toLowerCase();
 
-  if (category === "toner_pad" || category === "toner_essence" || category === "essence") {
+  if (category === "toner_pad" || category === "toner_essence") {
     return "toner_essence";
   }
 
-  if (category === "serum" || category === "ampoule") {
+  if (category === "serum" || category === "ampoule" || category === "essence" || category === "treatment") {
     return "serum_ampoule";
   }
 
   return category;
+}
+
+function getProductFormStepLabel(product = {}, locale = "ko") {
+  const form = String(product?.product_form || product?.productForm || "").trim().toLowerCase();
+  const labels = locale === "en"
+    ? {
+        serum: "Serum",
+        ampoule: "Ampoule",
+        essence: "Essence",
+        booster: "Booster",
+        peeling_solution: "Peeling Solution",
+        unknown: "Treatment"
+      }
+    : {
+        serum: "세럼",
+        ampoule: "앰플",
+        essence: "에센스",
+        booster: "부스터",
+        peeling_solution: "필링 솔루션",
+        unknown: "트리트먼트"
+      };
+
+  return labels[form] || "";
 }
 
 function getProductStepLabel(product = {}, locale = "ko") {
@@ -1581,6 +1604,13 @@ function getProductStepLabel(product = {}, locale = "ko") {
         moisturizer: "보습제",
         sunscreen: "선크림"
       };
+
+  if (normalized === "serum_ampoule") {
+    const formLabel = getProductFormStepLabel(product, locale);
+    if (formLabel) {
+      return formLabel;
+    }
+  }
 
   if (locale === "en" && hasKoreanText(rawStep)) {
     return labels[normalized] || "Product";

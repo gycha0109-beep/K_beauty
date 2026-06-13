@@ -3,6 +3,7 @@ id,uuid,uuid
 name,text,text
 brand,text,text
 category,USER-DEFINED,product_category
+product_form,USER-DEFINED,product_form
 price_min,integer,int4
 price_max,integer,int4
 buy_link,text,text

@@ -1,3 +1,4 @@
+
 do $$
 begin
   if exists (
@@ -13,3 +14,5 @@ begin
   end if;
 end
 $$;
+
+;

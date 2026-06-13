@@ -31,6 +31,7 @@ Object.assign(CATEGORY_LABELS, {
   toner_pad: "토너 패드",
   ampoule: "앰플",
   essence: "에센스",
+  treatment: "세럼/앰플/에센스",
   moisturizer_lotion_emulsion: "로션 / 에멀전",
   moisturizer_gel: "수분 젤",
   moisturizer_cream: "크림",
@@ -101,8 +102,8 @@ const IRRITATION_RANK: Record<string, number> = {
   high: 2,
 };
 
-const TONER_FAMILY_CATEGORIES = new Set(["toner_essence", "toner_pad", "essence"]);
-const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule"]);
+const TONER_FAMILY_CATEGORIES = new Set(["toner_essence", "toner_pad"]);
+const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule", "essence", "treatment"]);
 
 const VERY_SENSITIVE_CONCERNS = new Set(["redness", "barrier", "dehydration"]);
 const SUNSCREEN_INTENT_CONCERNS = new Set(["oiliness", "redness"]);

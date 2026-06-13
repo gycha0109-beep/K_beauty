@@ -856,3 +856,43 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The dev server was initially not running, so Browser first saw connection refused. Started `npm run dev` on port 3001 and verified via `http://127.0.0.1:3001/test-result`. Step 5 showed the previous animated body immediately after advancing, then settled to the premium preview after the transition completed.
 - Reusable rule: For display builder move-only work, compare normalized moved function bodies against the original before relying on build/browser checks.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / products treatment category migration draft
+
+- Branch: feature/premium-report-flow-v1
+- Task type: diagnostic to limited execution
+- Routing decision: High DB schema/data migration task. Protected production data was not modified directly; work was limited to local migration files and read-only linked Supabase checks.
+- Goal: Add `treatment` as the high-level category for serum/ampoule/essence products, preserve the original form in `product_form`, and provide verification SQL without touching recommendation, crawler, tagging, or duplicate-key logic.
+- Changed files: supabase/migrations/20260613025816_add_treatment_product_form.sql, supabase/migrations/20260613030023_migrate_treatment_product_forms.sql, data/hwahae/products_schema(SQL 생성시 참조 파일).csv, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, auth, RLS policy, payment, API response field names, recommendation logic, crawler logic, product tagging logic, or normalized brand/name unique index changes.
+- Validation: Confirmed linked Supabase `products.category` is `USER-DEFINED product_category`; confirmed `product_form` does not yet exist; confirmed current enum values do not include `treatment`; confirmed current target rows are exactly 9 (`serum` 3, `ampoule` 3, `essence` 3) and listed their ids/names; `git diff --check` passed for changed files with only the existing LF-to-CRLF warning on the CSV.
+- Issues/risks: Supabase MCP failed to handshake, so CLI was used for read-only checks. Local Supabase DB could not be started because Docker is not installed. `supabase db push --dry-run` did not validate pending migrations because remote migration history contains versions missing locally (`20260506070849`, `20260506092454`); do not push until migration history is reconciled.
+- Next work: Reconcile remote/local migration history, then apply migrations and run the verification queries in the migration comment block.
+- Reusable rule: For Postgres enum migrations that add and then use a new enum value, split enum DDL and data updates into separate migration files to avoid same-transaction enum visibility problems.
+- Context promotion candidate: NULL
+
+### 2026-06-13 / treatment category local safety patch
+
+- Branch: feature/premium-report-flow-v1
+- Task type: limited execution
+- Routing decision: High DB-related change limited to local migration SQL and app interpretation helpers. No remote DB write, migration push, repair, crawler edit, or broad recommendation redesign was performed.
+- Goal: Preserve the remote `map_product_category()` search_path attribute in the local migration and make app/result/analyze category interpretation treat `treatment` plus legacy `serum`/`ampoule`/`essence` as the serum/ampoule routine family.
+- Changed files: supabase/migrations/20260613030023_migrate_treatment_product_forms.sql, lib/product-category-utils.js, lib/recommendation-scoring.ts, app/result/page.js, app/result/full-report/page.js, app/api/analyze/route.js, .codex/AI_WORK_LOG.md
+- Protected areas: Remote DB, migration history, Python import scripts, crawler logic, auth, payment, policy, and large scoring formula changes were not touched.
+- Validation: `git diff --check` passed for touched migration/app files with CRLF warnings only; `npm run build` passed. Search confirmed requested app-scope serum-family branches include `treatment` and legacy `essence`.
+- Issues/risks: `lib/review-signals.js`, crawler, and Hwahae import scripts still contain serum/ampoule/essence assumptions and remain intentionally unchanged for a later step. Remote migration history still has missing local versions `20260506070849` and `20260506092454`.
+- Next work: Resolve migration history mismatch before any push, then apply migrations only after approval and run verification SELECTs.
+- Reusable rule: When category enum semantics shift, update all display/slot/LLM category-family normalizers before applying the data migration.
+- Context promotion candidate: NULL
+
+### 2026-06-13 / Hwahae treatment import product_form inference
+
+- Branch: feature/premium-report-flow-v1
+- Task type: limited execution
+- Routing decision: Medium pipeline change scoped to Hwahae import preparation and final candidate field passthrough. Remote DB, migration files, app recommendation logic, and crawler/Python outside the import package were out of scope.
+- Goal: Route treatment category files through `category=treatment`, stop emitting serum/ampoule/essence as categories from the batch wrapper, and infer `product_form` from product names for treatment candidates.
+- Changed files: scripts/hwahae-import/prepare_hwahae_batch.py, scripts/hwahae-import/build_hwahae_import_package.py, .codex/AI_WORK_LOG.md
+- Protected areas: No remote DB write, migration edit, app code edit, recommendation scoring change, or crawler change.
+- Validation: `python -m py_compile scripts/hwahae-import/prepare_hwahae_batch.py scripts/hwahae-import/build_hwahae_import_package.py` passed; `python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py --dry-run` mapped current `각질.json` to `treatment` and printed product_form counts `ampoule=2, essence=1, peeling_solution=1, serum=6`; temporary `treatment.json` dry-run produced the same treatment mapping and counts; temporary `클렌저.json` dry-run still mapped to `cleanser`; local temp build confirmed final new candidates preserve `category`, `inferredCategory`, `product_form`, and `productForm`.
+- Issues/risks: The repo currently has `data/hwahae/각질.json`, not `data/hwahae/treatment.json`; `treatment.json` behavior was verified with a temporary copy. Product form inference follows the requested keyword order, so names containing both an ampoule/serum word and acid keywords resolve to the earlier form keyword.
+- Context promotion candidate: NULL

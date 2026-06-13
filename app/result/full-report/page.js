@@ -804,10 +804,10 @@ function isSameDisplayText(left, right) {
 function normalizeReportCategory(product = {}) {
   const category = String(product?.category || "").trim().toLowerCase();
 
-  if (category === "toner_pad" || category === "toner_essence" || category === "essence") {
+  if (category === "toner_pad" || category === "toner_essence") {
     return "toner_essence";
   }
-  if (category === "serum" || category === "ampoule") {
+  if (category === "serum" || category === "ampoule" || category === "essence" || category === "treatment") {
     return "serum_ampoule";
   }
 
@@ -820,13 +820,13 @@ function normalizeDisplayStepKey(value) {
   if (!key) {
     return "";
   }
-  if (key === "serum" || key === "ampoule" || key === "serum_ampoule") {
+  if (key === "serum" || key === "ampoule" || key === "essence" || key === "treatment" || key === "serum_ampoule") {
     return "serum_ampoule";
   }
   if (key === "toner_pad") {
     return "toner_pad";
   }
-  if (key === "toner_essence" || key === "essence") {
+  if (key === "toner_essence") {
     return "toner_essence";
   }
   if (["cleanser", "sunscreen", "moisturizer"].includes(key)) {
@@ -834,6 +834,29 @@ function normalizeDisplayStepKey(value) {
   }
 
   return "";
+}
+
+function getTreatmentFormStepLabel(product = {}, locale = "ko") {
+  const form = String(product?.product_form || product?.productForm || "").trim().toLowerCase();
+  const labels = locale === "en"
+    ? {
+        serum: "Serum",
+        ampoule: "Ampoule",
+        essence: "Essence",
+        booster: "Booster",
+        peeling_solution: "Peeling Solution",
+        unknown: "Treatment"
+      }
+    : {
+        serum: "세럼",
+        ampoule: "앰플",
+        essence: "에센스",
+        booster: "부스터",
+        peeling_solution: "필링 솔루션",
+        unknown: "트리트먼트"
+      };
+
+  return labels[form] || "";
 }
 
 function getReportStepLabel(product = {}, locale = "ko") {
@@ -859,6 +882,13 @@ function getReportStepLabel(product = {}, locale = "ko") {
         moisturizer: "보습제",
         sunscreen: "선크림"
       };
+
+  if (displayKey === "serum_ampoule") {
+    const formLabel = getTreatmentFormStepLabel(product, locale);
+    if (formLabel) {
+      return formLabel;
+    }
+  }
 
   if (labels[displayKey]) {
     return labels[displayKey];

@@ -1,3 +1,4 @@
+
 create or replace function public.map_product_category(input text)
 returns public.product_category
 language sql
@@ -51,3 +52,5 @@ where category = 'moisturizer'::public.product_category
     '4aa41038-de5b-4125-97b0-a50e7575cc00',
     'd2141a9d-3975-4d93-83f7-a4814c9c6a57'
   );
+
+;
