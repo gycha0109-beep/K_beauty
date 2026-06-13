@@ -843,3 +843,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: `PhotoObservationCard`, `CategoryCarousel`, and `ProductDecisionCard` stayed in `page.js` because they depend on page-level display builders, product helpers, and tracking. Smaller legacy helpers `FreeResultV2RoleCard`, `FreeResultV2CompactRoutineFlow`, and `FreeResultV2Step3LockCard` also stayed because they were outside the confirmed move group.
 - Reusable rule: Legacy UI quarantine should move only self-contained inactive UI bundles; leave candidates with display-builder or tracking dependencies in `page.js` until their helper contracts are explicitly extracted.
 - Context promotion candidate: NULL
+
+### 2026-06-13 / free result V2 static display builder extraction
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium move-only refactor limited to three self-contained free result V2 display builders; copy maps, product/evidence/diagnosis helpers, step assembly, recommendation logic, sessionStorage/auth/API/tracking/save/share logic, and CTA behavior were out of scope.
+- Goal: Move `buildFreeResultV2RoutinePreview`, `buildFreeResultV2FaceLabPreview`, and `buildFinalReportPreviewSections` into `lib/result/free-result-v2-static-builders.js`, then import them from `app/result/page.js` without changing call sites.
+- Changed files: app/result/page.js, lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
+- Protected areas: `resultCopy`, `displayMap`, `topPickHeadlineMap`, Diagnosis/Evidence/Top Pick builders/helpers, `currentResultStep`, `resultSteps`, sessionStorage/auth/API/tracking/save/share, and recommendation logic were not changed.
+- Validation: Normalized source comparison reported all three moved functions as `same`; `git diff --check -- app/result/page.js` passed with a CRLF warning only; new-file whitespace check passed; `npm run build` passed; in-app Browser verified `/test-result` Step 1-5 rendering, Step 3 night routine tab, Step 5 premium preview, no horizontal overflow, and console error logs 0.
+- Notes/risks: The dev server was initially not running, so Browser first saw connection refused. Started `npm run dev` on port 3001 and verified via `http://127.0.0.1:3001/test-result`. Step 5 showed the previous animated body immediately after advancing, then settled to the premium preview after the transition completed.
+- Reusable rule: For display builder move-only work, compare normalized moved function bodies against the original before relying on build/browser checks.
+- Context promotion candidate: NULL
