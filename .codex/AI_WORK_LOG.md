@@ -740,6 +740,19 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Reusable rule: Full-report loading animation should be rendered as a transient UI state on the report route, not as a history-visible intermediate route in the normal CTA flow.
 - Context promotion candidate: NULL
 
+### 2026-06-15 / Hwahae review signal treatment folder split
+
+- Branch: feature/premium-report-flow-v1
+- Task type: execution
+- Routing decision: Medium filesystem/script path update scoped to `data/hwahae-review-signals` treatment raw structure and review-signals script path resolution. Supabase, SQL, tag values, DB writes, API fields, and other category structures were out of scope.
+- Goal: Move applied treatment product raw JSON files from `categories/treatment/raw/` into product-form `raw/` folders, create the requested `concerns` folder shells, keep treatment batch files at the treatment category root, and keep `npm run review_in_supabase` from writing treatment raw output to the old path. Follow-ups in the same scope made treatment batches accept mixed serum/ampoule/essence rows, use live `products.product_form` first when choosing the product-form raw folder, and made newly generated non-treatment product raw JSON write into each category's `raw/` folder while keeping batch/plan/fixture files at category roots.
+- Changed files: data/hwahae-review-signals/categories product raw JSON locations, data/hwahae-review-signals/README.md, scripts/review-signals/review-in-supabase.mjs, scripts/review-signals/prepare-hwahae-review-raw-batch.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, auth, DB schema/migration/policy, payment, production data, API response field names, stored JSON content, deployment config, or package changes were touched.
+- Validation: Confirmed `data/hwahae-review-signals/categories/treatment/raw` was removed after becoming empty; confirmed treatment root still contains `hwahae-serum-essence-ampoule-review-signals.batch.json`, `.jsonl`, and `notes.md`; confirmed existing non-treatment product JSON files that were outside `raw/` remain outside `raw/` because they are not known applied outputs; confirmed the 8 moved treatment product JSON blobs match their previous HEAD content hashes; `node --check` passed for both touched review-signals scripts; `git diff --check` passed with existing LF-to-CRLF warnings only; a temp `prepare-hwahae-review-raw-batch.mjs --no-verify-supabase` plan-only run confirmed mixed serum/ampoule/essence treatment rows output to `categories/treatment/{serum,ampoule,essence}/raw`; a temp `review-in-supabase.mjs --plan-only --category treatment` run confirmed the wrapper includes all 3 mixed rows in the treatment plan, then the generated temp plan was removed; a temp cleanser plan-only run confirmed newly generated non-treatment output resolves to `categories/cleanser/raw`.
+- Notes/risks: Empty folders such as `concerns/*` and `treatment/unknown/raw` exist in the working tree but are not represented by Git unless placeholder files are added later. Full `npm run review_in_supabase` was not run because it can reach browser extraction and Supabase import stages.
+- Reusable rule: When a category folder changes from `category/raw` to `category/product-form/raw`, keep generated batch/fixture files at the category root and route only per-product raw extraction output into the product-form raw folders.
+- Context promotion candidate: NULL
+
 ### 2026-06-13 / premium report TodayStartPlanStep extraction
 
 - Branch: feature/premium-report-flow-v1

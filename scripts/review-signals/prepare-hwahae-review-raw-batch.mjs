@@ -18,7 +18,7 @@ const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
 const CATEGORY_FOLDER_BY_PREFIX = [
   [/^cleanser/, "cleanser"],
   [/^(toner|toner_essence|toner_pad)/, "toner"],
-  [/^(serum|ampoule|essence)/, "serum"],
+  [/^(treatment|serum|ampoule|essence)/, "treatment"],
   [/^moisturizer_lotion_emulsion/, path.join("moisturizer", "lotion")],
   [/^moisturizer_cream/, path.join("moisturizer", "cream")],
   [/^moisturizer_gel/, path.join("moisturizer", "gel")],
@@ -26,6 +26,14 @@ const CATEGORY_FOLDER_BY_PREFIX = [
   [/^moisturizer/, "moisturizer"],
   [/^sunscreen/, "sunscreen"],
 ];
+
+const TREATMENT_PRODUCT_FORM_BY_KEYWORD = [
+  ["ampoule", ["앰플", "ampoule"]],
+  ["serum", ["세럼", "serum"]],
+  ["essence", ["에센스", "essence"]],
+];
+
+const TREATMENT_CATEGORY_TOKENS = new Set(["treatment", "serum", "ampoule", "essence"]);
 
 function parseArgs(argv) {
   const args = {};
@@ -137,6 +145,55 @@ function inferCategoryFolder(category) {
   const normalized = String(category || "").trim().toLowerCase();
   const matched = CATEGORY_FOLDER_BY_PREFIX.find(([pattern]) => pattern.test(normalized));
   return matched ? matched[1] : normalized || "unknown";
+}
+
+function isTreatmentCategory(category) {
+  return TREATMENT_CATEGORY_TOKENS.has(String(category || "").trim().toLowerCase());
+}
+
+function categoriesAreCompatible(rowCategory, requestedCategory) {
+  if (!rowCategory || !requestedCategory) {
+    return true;
+  }
+
+  if (isTreatmentCategory(rowCategory) && isTreatmentCategory(requestedCategory)) {
+    return true;
+  }
+
+  return rowCategory === requestedCategory;
+}
+
+function inferTreatmentProductForm(row, category, liveProduct = null) {
+  const values = [
+    liveProduct?.product_form,
+    liveProduct?.productForm,
+    row.product_form,
+    row.productForm,
+    row.form,
+    category,
+    row.category,
+    row.name,
+    row.product_name,
+    row.productName,
+  ];
+  const haystack = values.map((value) => normalizeText(value)).join(" ");
+  const matched = TREATMENT_PRODUCT_FORM_BY_KEYWORD.find(([, keywords]) =>
+    keywords.some((keyword) => haystack.includes(keyword)),
+  );
+
+  return matched ? matched[0] : "unknown";
+}
+
+function resolveRawOutputDir(row, options) {
+  if (options.categoryFolder !== "treatment") {
+    return path.join(options.outDir, "raw");
+  }
+
+  return path.join(
+    options.outDir,
+    inferTreatmentProductForm(row, options.category, options.liveProduct),
+    "raw",
+  );
 }
 
 function sanitizeFileSegment(value) {
@@ -260,7 +317,7 @@ async function fetchLiveProducts(supabase, ids) {
     const batch = ids.slice(index, index + batchSize);
     const { data, error } = await supabase
       .from("products")
-      .select("id,name,brand,category,hwahae_url,source_url,buy_link,external_source,external_type,external_id")
+      .select("id,name,brand,category,product_form,hwahae_url,source_url,buy_link,external_source,external_type,external_id")
       .in("id", batch);
 
     if (error) {
@@ -283,10 +340,14 @@ function buildPlanItem(row, options, liveProduct = null) {
   const url = ensureHwahaeUrl(row);
   const categoryFolder = options.categoryFolder || inferCategoryFolder(category || options.category);
   const outputName = `${id} ${sanitizeFileSegment(name)}.json`;
-  const outputPath = path.join(options.outDir, outputName);
+  const outputPath = path.join(
+    resolveRawOutputDir(row, { ...options, categoryFolder, liveProduct }),
+    outputName,
+  );
   const liveUrl = liveProduct ? ensureHwahaeUrl(liveProduct) : "";
   const liveName = liveProduct?.name || "";
   const liveCategory = liveProduct?.category || "";
+  const liveProductForm = liveProduct?.product_form || "";
   const warnings = [];
 
   if (!id) {
@@ -298,13 +359,13 @@ function buildPlanItem(row, options, liveProduct = null) {
   if (!url) {
     warnings.push("missing hwahae url");
   }
-  if (category && options.category && category !== options.category) {
+  if (category && options.category && !categoriesAreCompatible(category, options.category)) {
     warnings.push(`csv category ${category} differs from requested category ${options.category}`);
   }
   if (liveProduct && liveName && normalizeCompact(liveName) !== normalizeCompact(name)) {
     warnings.push(`live name differs: ${liveName}`);
   }
-  if (liveProduct && liveCategory && category && liveCategory !== category) {
+  if (liveProduct && liveCategory && category && !categoriesAreCompatible(category, liveCategory)) {
     warnings.push(`live category differs: ${liveCategory}`);
   }
   if (liveProduct && liveUrl && url && liveUrl !== url) {
@@ -326,6 +387,7 @@ function buildPlanItem(row, options, liveProduct = null) {
       ? {
           name: liveName,
           category: liveCategory,
+          product_form: liveProductForm,
           url: liveUrl,
         }
       : null,
@@ -383,6 +445,7 @@ async function maybeExtract(plan, options) {
             `extracted empty signals; page title=${JSON.stringify(title)} body=${JSON.stringify(bodyPreview)}`,
           );
         }
+        await fs.mkdir(path.dirname(item.outputPath), { recursive: true });
         await fs.writeFile(item.outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
         extracted += 1;
       } catch (error) {
@@ -437,7 +500,7 @@ async function main() {
       return true;
     }
 
-    return String(row.category || "").trim() === category;
+    return categoriesAreCompatible(String(row.category || "").trim(), category);
   });
 
   const ids = [...new Set(rows.map((row) => pickFirst(row, ["id", "productId", "product_id"])).filter(Boolean))];
