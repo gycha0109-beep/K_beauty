@@ -7,20 +7,22 @@ function getSkinMatchHubCardLayout(id) {
       content: "items-start text-left",
       icon: "sun"
     },
-    product: {
+    functional: {
       card: "right-0 top-0 rounded-tr-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-bl-[1.5rem] pl-[3.2rem] pb-[2.9rem] pt-4 pr-4 sm:pl-[5.2rem] sm:pb-[4.2rem] sm:pt-5 sm:pr-5",
       content: "items-end text-right",
-      icon: "bottle"
+      icon: "sliders",
+      arrow: "end"
     },
-    caution: {
+    condition: {
       card: "left-0 bottom-0 rounded-bl-[1.65rem] rounded-tl-[4.6rem] rounded-br-[4.6rem] rounded-tr-[1.5rem] pr-[3.2rem] pt-[3.4rem] pb-4 pl-4 sm:pr-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pl-5",
       content: "items-start text-left",
       icon: "alert"
     },
-    adjust: {
+    "face-lab": {
       card: "right-0 bottom-0 rounded-br-[1.65rem] rounded-tr-[4.6rem] rounded-bl-[4.6rem] rounded-tl-[1.5rem] pl-[3.2rem] pt-[3.4rem] pb-4 pr-4 sm:pl-[5.2rem] sm:pt-[4.8rem] sm:pb-5 sm:pr-5",
       content: "items-end text-right",
-      icon: "sliders"
+      icon: "sparkle",
+      arrow: "end"
     }
   };
 
@@ -61,6 +63,16 @@ function SkinMatchHubIcon({ type, className = "" }) {
     );
   }
 
+  if (type === "sparkle") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3.5 14.2 9 20 11.2 14.2 13.4 12 19 9.8 13.4 4 11.2 9.8 9 12 3.5Z" />
+        <path d="M18 4.5v3" />
+        <path d="M19.5 6h-3" />
+      </svg>
+    );
+  }
+
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="4" />
@@ -91,14 +103,14 @@ export function SkinMatchHubQuickCard({ action, onNavigate, locale = "ko" }) {
         <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#edb29f]/48 bg-[#fff6f1]/82 text-[#cc7668] shadow-[0_10px_24px_rgba(190,112,94,0.08)] dark:border-[#8b514b]/56 dark:bg-[#352026] dark:text-[#efb1a3]">
           <SkinMatchHubIcon type={layout.icon} />
         </span>
-        <span className="mt-3 block text-[1.25rem] font-semibold leading-tight text-[#351f1f] dark:text-[#fff4ef]">
+        <span className="mt-3 block text-[1.08rem] font-semibold leading-tight text-[#351f1f] dark:text-[#fff4ef] sm:text-[1.2rem]">
           {action.title}
         </span>
         <span className="mt-1.5 block text-[0.76rem] leading-4 text-[#785c54] dark:text-[#cfb4ac] sm:text-[0.82rem] sm:leading-5">
           {action.description}
         </span>
       </span>
-      <span className={`mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#f7e8df] text-sm text-[#9f5b50] transition group-hover:bg-[#e87662] group-hover:text-white dark:bg-[#332027] dark:text-[#f0b7a7] dark:group-hover:bg-[#d97966] ${action.id === "product" || action.id === "adjust" ? "self-end" : "self-start"}`}>
+      <span className={`mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#f7e8df] text-sm text-[#9f5b50] transition group-hover:bg-[#e87662] group-hover:text-white dark:bg-[#332027] dark:text-[#f0b7a7] dark:group-hover:bg-[#d97966] ${layout.arrow === "end" ? "self-end" : "self-start"}`}>
         &rarr;
       </span>
     </button>
@@ -132,15 +144,15 @@ export default function TodayStartPlanStep({ baseline, actionItems, hubActions, 
 
         <div className="mt-8 text-center">
           <p className="text-[0.78rem] font-semibold tracking-[0.02em] text-[#7c4a42] dark:text-[#ddb7aa]">
-            {isEnglish ? "Your personalized Skin Match plan" : "님의 맞춤 Skin Match 플랜"}
+            {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
           </p>
           <h3 className="mt-2.5 font-serif text-[2.05rem] font-medium leading-tight text-[#44251f] dark:text-[#ffe2d7] sm:text-[2.45rem]">
-            {isEnglish ? "Skin Match Plan" : "Skin Match 플랜"}
+            {isEnglish ? "Personal Skin Map" : "퍼스널 피부 상담 맵"}
           </h3>
           <p className="mx-auto mt-3 max-w-[28rem] text-sm leading-6 text-[#654b45] dark:text-[#f1d7ce]">
             {isEnglish
-              ? "Based on the current skin state, this gathers what to check first today."
-              : "지금 피부 상태를 기준으로, 오늘 가장 먼저 확인할 내용을 정리했어요."}
+              ? "Based on your skin right now, this organizes what to keep and what to reduce today."
+              : "지금 피부 기준으로, 오늘 유지할 것과 줄일 것을 먼저 정리했어요."}
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {signalChips.map((chip) => (
@@ -183,7 +195,7 @@ export default function TodayStartPlanStep({ baseline, actionItems, hubActions, 
               onClick={() => onNavigate?.("morning-routine")}
               className="mt-2.5 inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] px-4 text-[0.72rem] font-semibold text-white shadow-[0_12px_26px_rgba(215,111,91,0.24)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2aa91]/70 sm:mt-3 sm:min-h-10 sm:px-4 sm:text-xs"
             >
-              {isEnglish ? "See today's steps" : "오늘 할 일 보기"}
+              {isEnglish ? "Open routine consult" : "루틴 상담 보기"}
               <span className="ml-2">&rarr;</span>
             </button>
           </div>

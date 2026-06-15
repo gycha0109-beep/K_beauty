@@ -40,6 +40,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-15 / paid Skin Match hub 상담 맵 1차 리팩토링
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 Skin Match 메인 허브의 카피/정보 구조/라우팅만 조정하는 Medium UI 작업. 내부 상세 섹션, 추천/점수식, DB schema, 결제, 저장/세션, API 응답 필드, Face Lab 분석 로직은 범위에서 제외.
+- 목표: 기존 꽃잎형 프리미엄 허브를 유지하면서 제품 추천 메뉴가 아니라 퍼스널 피부 상담 맵으로 보이도록 중앙 카피와 4개 섹터명을 정리.
+- 변경 파일: app/result/full-report/page.js, components/full-report/TodayStartPlanStep.jsx, jsconfig.json, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 DB/점수식, DB schema/migration/policy, 결제, 인증, 저장 로직, API 응답 필드, 저장 데이터 구조는 수정하지 않음.
+- 검증 결과: 첫 `npm run build`는 `jsconfig.json`의 `@/* -> ./src/*` alias 때문에 기존 import인 `@/app/result/full-report/page`, `@/app/result/page`, `@/components/full-report/TodayStartPlanStep` 등을 찾지 못해 실패. `jsconfig.json`을 `baseUrl: "."`, `@/*: ["./*"]`로 복구한 뒤 `npm run build` 성공. `git diff --check -- app/result/full-report/page.js components/full-report/TodayStartPlanStep.jsx jsconfig.json`은 CRLF warning만 있고 통과. Playwright 390px `/test-full-report` 검증에서 가로 overflow 없음, 필수 허브 문구 표시, 금지 허브 표현 없음, console/page error 0. Face Lab 꽃잎은 Face Lab 탭으로 전환되고, 루틴 상담 꽃잎은 기존 아침 루틴 섹션으로 연결됨.
+- 문제/주의점: Browser plugin screenshot capture가 1회 timeout되어 로컬 Playwright screenshot(`tmp-skin-match-hub-390.png`, `tmp-skin-match-hub-390-full.png`)으로 시각 검수함. 내부 상세 페이지는 이번 범위 밖이라 기존 제품/루틴 문구와 step indicator가 남아 있음.
+- 다음 작업: 내부 상세 섹션을 루틴 상담, 기능성 판단, 컨디션 대응, Face Lab 기준으로 단계적으로 재정리하되 추천/저장/DB 로직은 계속 분리.
+- 재사용할 규칙: 빌드에서 광범위한 `@/` module-not-found가 발생하면 앱 import를 바꾸기 전에 `jsconfig.json` alias를 먼저 확인한다.
+- 규칙 승격 후보: NULL
+
 ### 2026-06-12 / 유료 리포트 Skin Match 첫 화면 허브형 구조 전환
 - 브랜치: feature/premium-report-flow-v1
 - 작업 유형: 실행형
