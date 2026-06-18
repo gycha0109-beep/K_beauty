@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
@@ -26,10 +26,9 @@ const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
 const SKIN_MATCH_SECTION_ORDER = [
   "today-start-hub",
   "morning-routine",
-  "evening-routine",
-  "avoid-list",
+  "product-plan",
   "adjustment-guide",
-  "product-plan"
+  "avoid-list"
 ];
 
 function FullReportLightThemeStyles() {
@@ -4522,88 +4521,446 @@ function buildRoutineFallbackSteps(mode = "morning", freeResult = {}, locale = "
   ];
 }
 
-function getRoutineExecutionMeta(mode = "morning", locale = "ko") {
+function getRoutineConsultMeta(mode = "morning", locale = "ko") {
   const isMorning = mode === "morning";
 
   if (locale === "en") {
     return {
-      kicker: isMorning ? "MORNING ORDER" : "EVENING RESET",
-      title: isMorning ? "Keep the morning routine thin and sunscreen-ready." : "Use the evening routine to lower burden, not add more correction.",
+      title: isMorning
+        ? "Keep the morning thin and connect it to sunscreen."
+        : "Evening is for lowering burden, not adding more.",
       body: isMorning
-        ? "The important part is when to apply each step and how light the layers stay."
-        : "The important part is lower cleansing intensity, fewer actives, and a comfortable finish.",
-      cards: isMorning
-        ? [
-            ["Order", "Cleanse lightly → core product → moisture → sunscreen"],
-            ["Skippable", "Pause extra pads or support serums when the skin already feels fine."],
-            ["Sunscreen", "Make sunscreen the fixed last skincare step."],
-            ["Before makeup", "If it pills, reduce moisturizer amount and give sunscreen time to settle."]
-          ]
-        : [
-            ["Cleansing", "Remove residue without chasing a squeaky-clean finish."],
-            ["Order", "Cleanse → core product → moisture finish."],
-            ["Finish", "When the skin feels tight, leave only comfortable moisture."],
-            ["Focused care", "Use only one active lane at a time."]
-          ]
+        ? "Instead of adding many layers, keep the order thin enough that it does not pill and can reach the protection step."
+        : "After cleansing, keep the order simple enough for the skin to feel comfortable, and do not stack several active steps at once.",
+      chips: isMorning
+        ? ["Thin layers", "Sunscreen fixed", "Adjust moisture"]
+        : ["Gentle cleanse", "No active stacking", "Moisture finish"]
     };
   }
 
   return {
-    kicker: isMorning ? "아침 순서 고정" : "저녁 정리 루틴",
-    title: isMorning ? "아침은 얇게, 선크림까지 이어지게 씁니다." : "저녁은 더 넣는 시간이 아니라 부담을 줄이는 시간입니다.",
+    title: isMorning
+      ? "아침은 얇게, 선크림까지 이어지게 씁니다."
+      : "저녁은 더 넣는 시간이 아니라, 부담을 줄이는 시간입니다.",
     body: isMorning
-      ? "제품 설명보다 언제, 어떤 순서로, 얼마나 단순하게 쓸지가 먼저입니다."
-      : "세안 강도를 낮추고 기능성 중복을 줄여 피부가 편안하게 돌아오게 만듭니다.",
-    cards: isMorning
-      ? [
-          ["순서", "가벼운 세안 → 핵심 제품 → 보습 → 선크림"],
-          ["생략 가능", "편한 날은 보조 세럼이나 패드를 쉬어갑니다."],
-          ["선크림 연결", "아침 마지막은 선크림을 충분량으로 마무리합니다."],
-          ["화장 전", "밀리면 앞단 보습량을 줄이고 흡수 시간을 둡니다."]
-        ]
-      : [
-          ["세안 강도", "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다."],
-          ["사용 순서", "세안 → 핵심 제품 → 보습 마무리 순서로 단순하게 갑니다."],
-          ["보습 마무리", "따가움이나 당김이 있으면 편한 보습만 남깁니다."],
-          ["집중 케어", "기능성은 한 번에 하나만, 매일 겹치지 않습니다."]
-        ]
+      ? "제품을 많이 바르기보다, 밀리지 않게 얇게 정리하고 보호 단계까지 연결합니다."
+      : "세안 후 피부가 편하게 받아들이는 순서로 단순하게 정리하고, 기능성은 한 번에 여러 개 겹치지 않습니다.",
+    chips: isMorning
+      ? ["얇게 쌓기", "선크림 고정", "보습량 조절"]
+      : ["부드러운 세안", "기능성 중복 금지", "보습 마무리"]
   };
 }
 
-function RoutineExecutionStep({ mode = "morning", freeResult, steps = [], copy, locale = "ko" }) {
-  const meta = getRoutineExecutionMeta(mode, locale);
-  const displaySteps = (steps.length ? steps : buildRoutineFallbackSteps(mode, freeResult, locale))
-    .map((step) => ({ ...step, routineMode: mode }));
-  const groupTitle = mode === "morning" ? copy.morning : copy.night;
+function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
+  const isMorning = mode === "morning";
+
+  if (locale === "en") {
+    return isMorning
+      ? [
+          {
+            order: 1,
+            title: "Light reset",
+            status: "Keep",
+            action: "Keep hydration from breaking by resetting lightly.",
+            adjustment: "If it feels tight, press it in instead of wiping.",
+            roles: ["toner_essence", "serum_ampoule"]
+          },
+          {
+            order: 2,
+            title: "Moisture support",
+            status: "As needed",
+            action: "Keep this layer thin so the next step does not pill.",
+            adjustment: "If makeup pills, reduce this amount first.",
+            roles: ["serum_ampoule", "moisturizer"]
+          },
+          {
+            order: 3,
+            title: "Protection finish",
+            status: "Fixed",
+            action: "Finish the morning with sunscreen.",
+            adjustment: "Let the previous step settle, then spread it thinly.",
+            roles: ["sunscreen"]
+          }
+        ]
+      : [
+          {
+            order: 1,
+            title: "Cleanse",
+            status: "Keep",
+            action: "Gently remove residue instead of chasing a stripped finish.",
+            adjustment: "If tightness is strong, lower cleansing intensity.",
+            roles: ["cleanser"]
+          },
+          {
+            order: 2,
+            title: "Texture reset",
+            status: "Skippable",
+            action: "Lightly reset after cleansing so moisture can follow.",
+            adjustment: "If it stings or feels tight, skip this step.",
+            roles: ["toner_essence", "serum_ampoule"]
+          },
+          {
+            order: 3,
+            title: "Moisture finish",
+            status: "Fixed",
+            action: "If it stings or feels tight, leave only comfortable moisture.",
+            adjustment: "On dry days, reinforce only this step with a small amount.",
+            roles: ["moisturizer"]
+          }
+        ];
+  }
+
+  return isMorning
+    ? [
+        {
+          order: 1,
+          title: "가벼운 정리",
+          status: "유지",
+          action: "수분감이 끊기지 않게 가볍게 정리합니다.",
+          adjustment: "당김이 있으면 닦아내기보다 흡수시키는 방식으로 씁니다.",
+          roles: ["toner_essence", "serum_ampoule"]
+        },
+        {
+          order: 2,
+          title: "수분 보완",
+          status: "필요 시",
+          action: "다음 단계가 밀리지 않게 얇게 둡니다.",
+          adjustment: "화장이 밀리면 이 단계의 양을 먼저 줄입니다.",
+          roles: ["serum_ampoule", "moisturizer"]
+        },
+        {
+          order: 3,
+          title: "보호 마무리",
+          status: "고정",
+          action: "아침 마지막은 선크림으로 마무리합니다.",
+          adjustment: "직전 단계가 충분히 흡수된 뒤 얇게 펴 바릅니다.",
+          roles: ["sunscreen"]
+        }
+      ]
+    : [
+        {
+          order: 1,
+          title: "세안",
+          status: "유지",
+          action: "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.",
+          adjustment: "당김이 심하면 세안 강도를 낮추는 쪽으로 봅니다.",
+          roles: ["cleanser"]
+        },
+        {
+          order: 2,
+          title: "결 정리",
+          status: "생략 가능",
+          action: "세안 후 보습이 이어지도록 가볍게 정돈합니다.",
+          adjustment: "따가움이나 당김이 있으면 이 단계는 쉬어갑니다.",
+          roles: ["toner_essence", "serum_ampoule"]
+        },
+        {
+          order: 3,
+          title: "보습 마무리",
+          status: "고정",
+          action: "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
+          adjustment: "건조한 날은 이 단계만 소량 보강합니다.",
+          roles: ["moisturizer"]
+        }
+      ];
+}
+
+function getRoutineProductKey(product) {
+  return product?.id || `${product?.brand || ""}-${product?.name || ""}`;
+}
+
+function collectRoutineConsultProducts({ freeResult, report, morningSteps = [], nightSteps = [] }) {
+  const seen = new Set();
+  const sourceItems = [
+    ...morningSteps.map((step) => step?.product || null),
+    ...nightSteps.map((step) => step?.product || null),
+    freeResult?.topPick || null,
+    ...(Array.isArray(report?.supportingProducts) ? report.supportingProducts : []),
+    freeResult?.alternative || null,
+    ...(Array.isArray(freeResult?.altPicks) ? freeResult.altPicks : [])
+  ];
+
+  return sourceItems
+    .map(unwrapSupportingProductItem)
+    .filter(Boolean)
+    .filter((product) => {
+      const key = getRoutineProductKey(product);
+
+      if (!key || seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+}
+
+function pickRoutineConsultProduct(candidates, roles = [], fallbackProduct = null, usedKeys = new Set()) {
+  const matchesRole = (product) => roles.includes(normalizeReportCategory(product));
+  const matched = candidates.find((product) => {
+    const key = getRoutineProductKey(product);
+    return key && !usedKeys.has(key) && matchesRole(product);
+  });
+  const fallbackKey = getRoutineProductKey(fallbackProduct);
+  const fallback = fallbackKey && !usedKeys.has(fallbackKey) && matchesRole(fallbackProduct) ? fallbackProduct : null;
+  const product = matched || fallback;
+  const key = getRoutineProductKey(product);
+
+  if (key) {
+    usedKeys.add(key);
+  }
+
+  return product;
+}
+
+function buildRoutineConsultSteps({ mode = "morning", freeResult, report, morningSteps = [], nightSteps = [], locale = "ko" }) {
+  const sourceSteps = mode === "morning"
+    ? (morningSteps.length ? morningSteps : buildRoutineFallbackSteps("morning", freeResult, locale))
+    : (nightSteps.length ? nightSteps : buildRoutineFallbackSteps("night", freeResult, locale));
+  const candidates = collectRoutineConsultProducts({ freeResult, report, morningSteps, nightSteps });
+  const usedKeys = new Set();
+
+  return getRoutineConsultTemplates(mode, locale).map((template, index) => ({
+    ...template,
+    product: pickRoutineConsultProduct(candidates, template.roles, sourceSteps[index]?.product || null, usedKeys)
+  }));
+}
+
+function RoutineConsultProductInline({ product, locale = "ko", copy }) {
+  if (!product) {
+    return (
+      <div className="mt-3 rounded-[0.9rem] border border-white/10 bg-white/[0.035] px-3 py-2 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+        {locale === "en" ? "No specific item is fixed for this step yet." : "현재 입력값 기준으로 고정된 항목은 아직 없습니다."}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <section className="ui-card p-5 sm:p-6">
-        <p className="ui-kicker">{meta.kicker}</p>
-        <h3 className="ui-title mt-2 text-xl leading-tight">{meta.title}</h3>
-        <p className="ui-text-secondary mt-2 text-sm leading-6">{meta.body}</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {meta.cards.map(([label, body]) => (
-            <div key={label} className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+    <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[0.95rem] border border-white/10 bg-white/[0.035] p-3">
+      {product.image_url ? (
+        <ProductThumb product={product} copy={copy} sizeClass="h-12 w-10" />
+      ) : (
+        <div className="mt-1 h-9 w-8 rounded-[0.7rem] border border-white/10 bg-white/5" aria-hidden="true" />
+      )}
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+          {locale === "en" ? "USED IN THIS STEP" : "이 단계에서 쓰는 것"}
+        </p>
+        <p className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
+        {product.brand ? <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function RoutineConsultStatusBadge({ status }) {
+  const tone = status === "고정" || status === "Fixed"
+    ? "border-[#e79582]/45 bg-[#e87662]/12 text-[#a55349] dark:border-[#e79582]/35 dark:bg-[#e87662]/16 dark:text-[#f0b7a7]"
+    : status === "생략 가능" || status === "Skippable"
+      ? "border-zinc-300/60 bg-zinc-500/8 text-zinc-600 dark:border-zinc-700 dark:bg-white/5 dark:text-zinc-300"
+      : "border-[#d8b5aa]/55 bg-white/45 text-[#7a5c55] dark:border-[#6d3f3a]/58 dark:bg-white/5 dark:text-[#d6beb6]";
+
+  return (
+    <span className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[11px] font-semibold ${tone}`}>
+      {status}
+    </span>
+  );
+}
+
+function RoutineConsultStepCard({ step, direction = "left", locale = "ko", copy }) {
+  const cardRef = useRef(null);
+  const prefersReducedMotion = useReducedMotion();
+  const [isVisible, setIsVisible] = useState(false);
+  const initialX = direction === "right" ? 22 : -22;
+  const visibleState = { opacity: 1, x: 0 };
+  const hiddenState = { opacity: 0, x: initialX };
+  const motionState = prefersReducedMotion || isVisible ? visibleState : hiddenState;
+
+  useEffect(() => {
+    const node = cardRef.current;
+
+    if (!node || prefersReducedMotion) {
+      setIsVisible(true);
+      return undefined;
+    }
+
+    setIsVisible(false);
+
+    let observer;
+    const revealIfVisible = () => {
+      const rect = node.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+      if (rect.top < viewportHeight * 0.92 && rect.bottom > viewportHeight * 0.04) {
+        setIsVisible(true);
+        observer?.disconnect();
+        window.removeEventListener("scroll", revealIfVisible);
+        window.removeEventListener("resize", revealIfVisible);
+      }
+    };
+
+    if ("IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer?.disconnect();
+            window.removeEventListener("scroll", revealIfVisible);
+            window.removeEventListener("resize", revealIfVisible);
+          }
+        },
+        { threshold: 0.08 }
+      );
+      observer.observe(node);
+    }
+
+    window.addEventListener("scroll", revealIfVisible, { passive: true });
+    window.addEventListener("resize", revealIfVisible);
+    revealIfVisible();
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("scroll", revealIfVisible);
+      window.removeEventListener("resize", revealIfVisible);
+    };
+  }, [prefersReducedMotion, step.order, step.title, direction]);
+
+  return (
+    <motion.article
+      ref={cardRef}
+      initial={prefersReducedMotion ? false : hiddenState}
+      animate={motionState}
+      transition={{ duration: 0.42, ease: "easeOut" }}
+      className="rounded-[1.1rem] border border-white/10 bg-white/5 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      data-routine-flow-card={direction}
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2b1f26] text-xs font-semibold text-white dark:bg-[#f5ded4] dark:text-[#271318]">
+          {step.order}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="ui-title text-base leading-6">{step.title}</h3>
+            <RoutineConsultStatusBadge status={step.status} />
+          </div>
+          <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{step.action}</p>
+          <RoutineConsultProductInline product={step.product} locale={locale} copy={copy} />
+          <p className="mt-3 rounded-[0.9rem] bg-white/5 px-3 py-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+              {locale === "en" ? "Tip" : "Tip"}
+            </span>
+            <span className="mx-1 text-zinc-400">·</span>
+            {step.adjustment}
+          </p>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function RoutineExecutionStep({ freeResult, report, morningSteps = [], nightSteps = [], copy, locale = "ko", onNavigate }) {
+  const [activeMode, setActiveMode] = useState("morning");
+  const routineTopRef = useRef(null);
+  const meta = getRoutineConsultMeta(activeMode, locale);
+  const displaySteps = buildRoutineConsultSteps({ mode: activeMode, freeResult, report, morningSteps, nightSteps, locale });
+  const isMorning = activeMode === "morning";
+  const scrollToRoutineTop = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      const top = routineTopRef.current?.getBoundingClientRect().top ?? 0;
+
+      if (top < 12 || top > window.innerHeight * 0.35) {
+        routineTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  };
+  const switchToMode = (nextMode, shouldScroll = true) => {
+    if (nextMode === activeMode) {
+      if (shouldScroll) {
+        scrollToRoutineTop();
+      }
+
+      return;
+    }
+
+    setActiveMode(nextMode);
+
+    if (shouldScroll) {
+      scrollToRoutineTop();
+    }
+  };
+
+  return (
+    <section ref={routineTopRef} className="ui-card p-5 sm:p-6">
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="ui-kicker">{locale === "en" ? "ROUTINE CONSULT" : "루틴 상담"}</p>
+          <h3 className="ui-title mt-2 text-xl leading-tight">{meta.title}</h3>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{meta.body}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {meta.chips.map((chip) => (
+              <span key={chip} className="ui-chip-compact px-3 py-1.5">{chip}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 rounded-[1rem] border border-white/10 bg-white/5 p-1">
+          {[
+            ["morning", locale === "en" ? "Morning routine" : "아침 루틴"],
+            ["night", locale === "en" ? "Evening routine" : "저녁 루틴"]
+          ].map(([modeKey, label]) => {
+            const active = activeMode === modeKey;
+
+            return (
+              <button
+                key={modeKey}
+                type="button"
+                onClick={() => switchToMode(modeKey)}
+                className={`min-h-11 rounded-[0.85rem] px-3 text-sm font-semibold transition ${
+                  active
+                    ? "bg-[linear-gradient(135deg,#e87662_0%,#f2aa91_100%)] text-white shadow-[0_10px_24px_rgba(215,111,91,0.22)]"
+                    : "text-zinc-600 hover:bg-white/50 dark:text-zinc-300 dark:hover:bg-white/8"
+                }`}
+              >
                 {label}
-              </p>
-              <p className="mt-1.5 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{body}</p>
-            </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div key={activeMode} className="grid gap-4 overflow-hidden py-1">
+          {displaySteps.map((step, index) => (
+            <RoutineConsultStepCard
+              key={`${activeMode}-${step.order}-${step.title}`}
+              step={step}
+              direction={index % 2 === 1 ? "right" : "left"}
+              copy={copy}
+              locale={locale}
+            />
           ))}
         </div>
-      </section>
 
-      <section className="ui-card p-5 sm:p-6">
-        <RoutineTimelineGroup
-          key={`skin-match-${mode}-routine`}
-          title={groupTitle}
-          steps={displaySteps}
-          copy={copy}
-          locale={locale}
-        />
-      </section>
-    </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (isMorning) {
+              switchToMode("night", true);
+              return;
+            }
+
+            onNavigate?.("product-plan");
+          }}
+          className="ui-button-primary mt-1 min-h-12 w-full justify-center px-5 text-sm font-semibold"
+        >
+          {isMorning
+            ? locale === "en" ? "See evening routine" : "저녁 루틴 보기"
+            : locale === "en" ? "See active check" : "기능성 판단 보기"}
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -5007,11 +5364,11 @@ function SkinMatchStepReport({
     ? {
         stepKicker: "SKIN MATCH ROUTINE REPORT",
         hub: "Start Today",
-        morning: "Morning Routine",
+        morning: "Routine Consult",
         evening: "Evening Routine",
         avoid: "Caution",
         adjustment: "Adjustment Guide",
-        product: "Product Guide",
+        product: "Active Check",
         summary: "Final Summary",
         previous: "Previous",
         next: "Next",
@@ -5020,11 +5377,11 @@ function SkinMatchStepReport({
     : {
         stepKicker: "SKIN MATCH 루틴 리포트",
         hub: "오늘 시작",
-        morning: "아침 실행 루틴",
+        morning: "루틴 상담",
         evening: "저녁 실행 루틴",
         avoid: "주의",
         adjustment: "조정",
-        product: "제품",
+        product: "기능성 판단",
         summary: "최종 요약",
         previous: "이전",
         next: "다음",
@@ -5062,24 +5419,13 @@ function SkinMatchStepReport({
       label: labels.morning,
       content: (
         <RoutineExecutionStep
-          mode="morning"
           freeResult={freeResult}
-          steps={morningSteps}
+          report={report}
+          morningSteps={morningSteps}
+          nightSteps={nightSteps}
           copy={copy}
           locale={locale}
-        />
-      )
-    },
-    "evening-routine": {
-      key: "evening-routine",
-      label: labels.evening,
-      content: (
-        <RoutineExecutionStep
-          mode="night"
-          freeResult={freeResult}
-          steps={nightSteps}
-          copy={copy}
-          locale={locale}
+          onNavigate={moveToStepKey}
         />
       )
     },
@@ -5126,6 +5472,8 @@ function SkinMatchStepReport({
   const nextStep = currentStepIndex < maxStepIndex ? steps[currentStepIndex + 1] : null;
   const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.finalCta;
   const isHubStep = activeStep?.key === "today-start-hub";
+  const isRoutineStep = activeStep?.key === "morning-routine";
+  const hideStepHeader = isHubStep || isRoutineStep;
   const moveToStep = (nextIndex) => {
     const boundedIndex = Math.max(0, Math.min(maxStepIndex, nextIndex));
 
@@ -5176,8 +5524,8 @@ function SkinMatchStepReport({
 
   return (
     <section className="space-y-4">
-      <div ref={skinMatchStepHeaderRef} className={isHubStep ? "sr-only" : "ui-card p-5 sm:p-6"}>
-        {isHubStep ? (
+      <div ref={skinMatchStepHeaderRef} className={hideStepHeader ? "sr-only" : "ui-card p-5 sm:p-6"}>
+        {hideStepHeader ? (
           <span>{activeStep.label}</span>
         ) : (
           <>
@@ -5237,7 +5585,7 @@ function SkinMatchStepReport({
         </>
       ) : null}
 
-      {!isHubStep ? (
+      {!isHubStep && !isRoutineStep ? (
         <div className="full-report-step-cta">
           <ResultBottomCTA
             fixed={false}
@@ -5260,111 +5608,6 @@ function SkinMatchStepReport({
         </div>
       ) : null}
     </section>
-  );
-}
-
-function resolveRoutineSupportProductsV2(freeResult, report, alternativeItems = []) {
-  const seen = new Set();
-  const items = [
-    freeResult?.topPick || null,
-    ...alternativeItems,
-    ...(Array.isArray(report?.supportingProducts) ? report.supportingProducts : []),
-    freeResult?.alternative || null,
-    ...(Array.isArray(freeResult?.altPicks) ? freeResult.altPicks : [])
-  ].map(unwrapSupportingProductItem).filter(Boolean).filter((item) => {
-    const key = item.id || `${item.brand}-${item.name}`;
-    if (!key || seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
-
-  const pickPreferred = (slots, excludeIds = new Set()) =>
-    items.find((item) => {
-      if (!item || excludeIds.has(item.id)) {
-        return false;
-      }
-
-      const useTime = String(item.use_time || "both").toLowerCase();
-      return slots.includes(useTime);
-    }) || null;
-
-  const morning = pickPreferred(["day"]) || pickPreferred(["both"]) || freeResult?.topPick || items[0] || null;
-  const usedIds = new Set(morning?.id ? [morning.id] : []);
-  const night =
-    pickPreferred(["night"], usedIds) ||
-    pickPreferred(["both"], usedIds) ||
-    items.find((item) => item?.id && !usedIds.has(item.id)) ||
-    null;
-
-  return {
-    morning,
-    night
-  };
-}
-
-function resolveRoutineSupportProducts(freeResult, report) {
-  const seen = new Set();
-  const items = [
-    freeResult?.topPick || null,
-    ...(Array.isArray(report?.supportingProducts) ? report.supportingProducts : []),
-    freeResult?.alternative || null,
-    ...(Array.isArray(freeResult?.altPicks) ? freeResult.altPicks : [])
-  ].map(unwrapSupportingProductItem).filter(Boolean).filter((item) => {
-    const key = item.id || `${item.brand}-${item.name}`;
-    if (!key || seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
-
-  const pickByUseTime = (slot) =>
-    items.find((item) => item.use_time === slot || item.use_time === "both") || null;
-
-  return {
-    morning: pickByUseTime("day") || freeResult?.topPick || items[0] || null,
-    night: pickByUseTime("night") || items.find((item) => item.id !== freeResult?.topPick?.id) || freeResult?.topPick || null
-  };
-}
-
-function RoutineStepSupport({ product, copy, locale = "ko" }) {
-  if (!product) {
-    return null;
-  }
-
-  const purchaseLink = getPurchaseLinkInfo(product, copy, locale);
-
-  return (
-    <div className="mb-4 flex items-start gap-3 rounded-[1.2rem] border border-white/10 bg-white/5 p-3">
-      <ProductThumb product={product} copy={copy} sizeClass="h-20 w-16" />
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-          {copy.recommendedForThisStep}
-        </p>
-        <p
-          className="mt-2 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100"
-          style={{
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 2,
-            overflow: "hidden"
-          }}
-        >
-          {product.name}
-        </p>
-        <p className="mt-1 text-xs text-zinc-400">{product.brand}</p>
-        <a
-          href={purchaseLink.href}
-          target="_blank"
-          rel="noreferrer"
-          className="ui-button-secondary mt-3 inline-flex px-3 py-2 text-xs font-medium"
-        >
-          {purchaseLink.label}
-        </a>
-      </div>
-    </div>
   );
 }
 
@@ -5399,45 +5642,6 @@ function normalizeRoutineDisplaySteps(stepItems = [], fallbackItems = [], locale
       caution: ""
     }))
     .filter((item) => item.instruction);
-}
-
-function RoutineProductInline({ product, copy, locale = "ko" }) {
-  if (!product) {
-    return null;
-  }
-
-  const purchaseLink = getPurchaseLinkInfo(product, copy, locale);
-
-  return (
-    <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[1rem] border border-white/10 bg-white/5 p-3">
-      <ProductThumb product={product} copy={copy} sizeClass="h-14 w-12" />
-      <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-          {copy.recommendedForThisStep}
-        </p>
-        <p
-          className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100"
-          style={{
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 2,
-            overflow: "hidden"
-          }}
-        >
-          {product.name}
-        </p>
-        <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
-        <a
-          href={purchaseLink.href}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 inline-flex text-xs font-semibold text-zinc-500 underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-900 dark:text-zinc-400 dark:decoration-zinc-700 dark:hover:text-zinc-100"
-        >
-          {purchaseLink.label}
-        </a>
-      </div>
-    </div>
-  );
 }
 
 function normalizeRoutineStepTitle(step = {}, groupTitle = "", stepCount = 1, locale = "ko") {
@@ -5530,135 +5734,6 @@ function getRoutineStepCautionText(step = {}, locale = "ko") {
   }
 
   return "기능성은 한 번에 하나만, 매일 겹치지 않습니다.";
-}
-
-function RoutineTimelineCard({ step, copy, locale = "ko" }) {
-  const actionText = getRoutineStepActionText(step, locale);
-  const cautionText = getRoutineStepCautionText(step, locale);
-
-  return (
-    <article className="ui-card-subtle p-4">
-      <div className="flex items-start gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-950">
-          {step.order}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="ui-title text-base">{step.stepName}</h3>
-            {step.productRole ? <span className="ui-chip-compact">{step.productRole}</span> : null}
-          </div>
-          {actionText ? (
-            <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{actionText}</p>
-          ) : null}
-          <RoutineProductInline product={step.product} copy={copy} locale={locale} />
-          <div className="mt-3 space-y-2">
-            {step.frequency ? (
-              <div className="rounded-[0.9rem] bg-white/5 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-                  {locale === "en" ? "Frequency" : "빈도"}
-                </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{step.frequency}</p>
-              </div>
-            ) : null}
-            {cautionText ? (
-              <div className="rounded-[0.9rem] bg-white/5 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-                  {locale === "en" ? "Caution" : "주의"}
-                </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-700 dark:text-zinc-300">{cautionText}</p>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function RoutineTimelineGroup({ title, steps, copy, locale = "ko" }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [steps.length, title]);
-
-  if (!steps.length) {
-    return null;
-  }
-
-  const displaySteps = steps.map((step) => ({
-    ...step,
-    stepName: normalizeRoutineStepTitle(step, title, steps.length, locale)
-  }));
-  const maxIndex = Math.max(displaySteps.length - 1, 0);
-  const currentIndex = Math.min(activeIndex, maxIndex);
-  const activeStep = displaySteps[currentIndex];
-  const moveTo = (nextIndex) => setActiveIndex(Math.max(0, Math.min(maxIndex, nextIndex)));
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="ui-kicker">{title}</p>
-        <span className="ui-chip-compact">{currentIndex + 1} / {displaySteps.length}</span>
-      </div>
-
-      {displaySteps.length > 1 ? (
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={() => moveTo(currentIndex - 1)}
-            disabled={currentIndex === 0}
-            className="ui-button-secondary flex h-9 w-9 shrink-0 items-center justify-center p-0 text-lg font-semibold disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={locale === "en" ? "Previous routine step" : "이전 루틴 단계"}
-          >
-            ‹
-          </button>
-          <div className="flex flex-1 justify-center gap-1.5">
-            {displaySteps.map((step, index) => (
-              <button
-                key={`${title}-dot-${step.order}-${index}`}
-                type="button"
-                onClick={() => moveTo(index)}
-                className={`h-1.5 rounded-full transition ${
-                  index === currentIndex
-                    ? "w-8 bg-zinc-900 dark:bg-zinc-100"
-                    : "w-3 bg-zinc-200 dark:bg-zinc-800"
-                }`}
-                aria-label={`${step.stepName || title} ${index + 1}`}
-              />
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => moveTo(currentIndex + 1)}
-            disabled={currentIndex === maxIndex}
-            className="ui-button-secondary flex h-9 w-9 shrink-0 items-center justify-center p-0 text-lg font-semibold disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={locale === "en" ? "Next routine step" : "다음 루틴 단계"}
-          >
-            ›
-          </button>
-        </div>
-      ) : null}
-
-      {activeStep ? (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${title}-${activeStep.order}-${activeStep.stepName}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <RoutineTimelineCard
-              step={activeStep}
-              copy={copy}
-              locale={locale}
-            />
-          </motion.div>
-        </AnimatePresence>
-      ) : null}
-    </div>
-  );
 }
 
 function buildDevelopmentReport(result, faceLabResult, locale = "ko") {

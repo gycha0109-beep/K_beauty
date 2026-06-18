@@ -40,6 +40,34 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-18 / paid Skin Match 루틴 상담 스크롤 플로우 애니메이션
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 Skin Match `루틴 상담` 내부 카드 표시 방식만 조정하는 Medium UI 작업. 메인 꽃잎 허브, 기능성 판단/컨디션 대응/Face Lab, 추천 알고리즘, DB, 결제, 저장 로직은 범위에서 제외.
+- 목표: AM/PM 스위치 구조와 상단/하단 CTA는 유지하면서 루틴 단계 카드가 스크롤 진입 시 좌우 번갈아 부드럽게 등장하는 루틴 플로우처럼 보이게 정리.
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 점수식, DB schema/migration/policy, 결제, 인증, 저장 로직, API 응답 필드, 메인 꽃잎 허브 구조는 수정하지 않음.
+- 검증 결과: `npm run build` 성공. `git diff --check -- app/result/full-report/page.js .codex/AI_WORK_LOG.md` 통과(CRLF warning만 있음). in-app Browser 390px에서 루틴 화면 AM 카드 좌/우 방향 속성, 3단계 스크롤 진입 상태, PM 전환 후 카드 리셋 상태, 기능성 판단 CTA, 가로 overflow 없음, console error 0을 확인. 자동 좌표 검수 중 버튼 위치가 반복적으로 변해 일부 클릭 재시도가 있었음.
+- 문제/주의점: in-app Browser 백그라운드 상태에서 Framer `whileInView`와 `useInView`가 PM 전환 후 관찰을 안정적으로 다시 걸지 못해, 카드 내부에 `IntersectionObserver`와 즉시 viewport 계산 fallback을 함께 적용했다. 중간 수정 과정에서 제거한 `scheduleCheck` 참조가 cleanup에 남아 `ReferenceError: scheduleCheck is not defined` 런타임 에러가 발생했고, 이 에러가 full-report error boundary로 전달되어 “분석을 완료하지 못했어요” 화면이 표시됐다. 남은 참조를 `revealIfVisible`로 교체하고 `Select-String scheduleCheck`, `npm run build`, reload로 복구를 확인했다.
+- 다음 작업: 실제 사용자 세션에서 스크롤 감도와 카드 등장 타이밍을 눈검수하고, 필요하면 카드 간 여백/상단 고정 영역 위치만 미세 조정.
+- 재사용할 규칙: 스크롤 진입 애니메이션은 reduced motion 대응과 observer fallback을 같이 두고, 제품 정보는 단계 카드 안의 낮은 위계로 유지한다.
+- 규칙 승격 후보: NULL
+
+### 2026-06-18 / paid Skin Match 루틴 상담 AM-PM 전환 2차 리팩토링
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 Skin Match의 `루틴 상담` 내부 화면만 정보 구조와 UI 위계를 조정하는 Medium UI 작업. 메인 꽃잎 허브, 기능성 판단/컨디션 대응/Face Lab 상세, 추천 알고리즘, 제품 점수식, DB schema, 결제, 저장 로직은 범위에서 제외.
+- 목표: 루틴 상담을 제품 추천 목록이 아니라 오늘 기준 기본 루틴 상담 화면으로 보이게 하고, AM/PM을 한 페이지 안에서 전환하도록 정리.
+- 변경 파일: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 DB/점수식, DB schema/migration/policy, 결제, 인증, 저장 로직, API 응답 필드, 메인 꽃잎 허브 구조는 수정하지 않음.
+- 검증 결과: `npm run build` 성공. `git diff --check -- app/result/full-report/page.js` 통과(CRLF warning만 있음). in-app Browser 390px `/test-full-report`에서 AM 기본 상태, PM 전환, PM CTA의 기능성 판단 이동, 상태 뱃지, 보조 제품 표시, 판매처 CTA 미노출, 가로 overflow 없음, console/page error 0 확인.
+- 문제/주의점: PM 전환 직후 짧은 fade/slide 애니메이션 동안 자동 계측이 카드 렌더를 너무 빨리 읽을 수 있어 1초 대기 후 DOM으로 재확인함. 실제 화면/DOM에서는 PM 단계 카드가 정상 표시됨.
+- 다음 작업: 기능성 판단, 컨디션 대응, Face Lab 상세 화면을 같은 상담형 위계로 단계적으로 정리. 루틴 상담의 실제 로그인/저장 데이터 케이스에서도 제품 이미지 누락과 긴 제품명 표시를 추가 확인.
+- 재사용할 규칙: 유료 Skin Match 상세 섹션은 제품 카드보다 상담 단계와 행동 기준을 상위 위계로 두고, 제품은 단계 안의 보조 정보로 표시한다.
+- 규칙 승격 후보: NULL
+
 ### 2026-06-15 / paid Skin Match hub 상담 맵 1차 리팩토링
 
 - 브랜치: feature/premium-report-flow-v1
