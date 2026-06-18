@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_DATA_DIR = ROOT_DIR / "data" / "hwahae"
 BUILD_SCRIPT = Path(__file__).resolve().parent / "build_hwahae_import_package.py"
+TREATMENT_CATEGORY = "treatment"
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -30,12 +31,15 @@ CATEGORY_BY_FILENAME = {
     "토너_에센스": "toner_essence",
     "토너패드": "toner_pad",
     "토너_패드": "toner_pad",
-    "세럼": "serum",
-    "serum": "serum",
-    "앰플": "ampoule",
-    "ampoule": "ampoule",
-    "에센스": "essence",
-    "essence": "essence",
+    "toner_pad": "toner_pad",
+    "세럼": TREATMENT_CATEGORY,
+    "serum": TREATMENT_CATEGORY,
+    "앰플": TREATMENT_CATEGORY,
+    "ampoule": TREATMENT_CATEGORY,
+    "에센스": TREATMENT_CATEGORY,
+    "essence": TREATMENT_CATEGORY,
+    "treatment": TREATMENT_CATEGORY,
+    "각질": TREATMENT_CATEGORY,
     "로션": "moisturizer_lotion_emulsion",
     "에멀전": "moisturizer_lotion_emulsion",
     "에멀젼": "moisturizer_lotion_emulsion",
@@ -59,6 +63,17 @@ CATEGORY_BY_FILENAME = {
     "자외선차단제": "sunscreen",
     "sunscreen": "sunscreen",
 }
+
+PRODUCT_FORM_KEYWORDS = (
+    ("ampoule", ("앰플", "ampoule")),
+    ("essence", ("에센스", "essence")),
+    ("serum", ("세럼", "serum")),
+    ("booster", ("부스터", "booster")),
+    (
+        "peeling_solution",
+        ("필링", "peeling", "peel", "acid", "애시드", "아하", "바하", "파하", "aha", "bha", "pha"),
+    ),
+)
 
 
 def load_dotenv(path):
@@ -103,6 +118,94 @@ def infer_category(path):
             f"Cannot infer category from {path.name!r}. Rename it to a known category name. Known names: {valid}"
         )
     return category
+
+
+def extract_candidate_name(row):
+    value = row.get("product_name") or row.get("productName") or row.get("name") or ""
+    if value:
+        return str(value)
+
+    item = row.get("item")
+    if isinstance(item, dict):
+        return str(item.get("name") or "")
+
+    return ""
+
+
+def infer_product_form(name):
+    text = str(name or "").lower()
+    for product_form, keywords in PRODUCT_FORM_KEYWORDS:
+        if any(keyword.lower() in text for keyword in keywords):
+            return product_form
+    return "unknown"
+
+
+def read_json_rows(path):
+    with path.open("r", encoding="utf-8-sig") as f:
+        data = json.load(f)
+
+    if isinstance(data, list):
+        return data
+
+    if isinstance(data, dict):
+        for key in ("rows", "data", "products", "candidates", "items", "itemListElement"):
+            value = data.get(key)
+            if isinstance(value, list):
+                return value
+
+        graph = data.get("@graph")
+        if isinstance(graph, list):
+            for item in graph:
+                if isinstance(item, dict) and isinstance(item.get("itemListElement"), list):
+                    return item["itemListElement"]
+
+    raise ValueError(f"{path} JSON must be a list or an object containing candidate rows.")
+
+
+def augment_treatment_candidates(rows):
+    augmented = []
+    counts = {}
+
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+
+        product_form = infer_product_form(extract_candidate_name(row))
+        counts[product_form] = counts.get(product_form, 0) + 1
+        augmented.append(
+            {
+                **row,
+                "category": TREATMENT_CATEGORY,
+                "inferredCategory": TREATMENT_CATEGORY,
+                "product_form": product_form,
+                "productForm": product_form,
+            }
+        )
+
+    return augmented, counts
+
+
+def prepare_candidates_file(job, temp_dir=None):
+    if job["category"] != TREATMENT_CATEGORY:
+        return job["file"], None
+
+    rows = read_json_rows(job["file"])
+    augmented, counts = augment_treatment_candidates(rows)
+
+    if temp_dir is None:
+        return job["file"], counts
+
+    prepared_path = Path(temp_dir) / f"{job['file'].stem}_prepared_candidates.json"
+    with prepared_path.open("w", encoding="utf-8") as f:
+        json.dump(augmented, f, ensure_ascii=False, indent=2)
+
+    return prepared_path, counts
+
+
+def format_product_form_counts(counts):
+    if not counts:
+        return ""
+    return ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
 
 
 def discover_jobs(data_dir):
@@ -161,14 +264,15 @@ def find_manual_overrides(data_dir):
     return data_dir / "manual_overrides.txt"
 
 
-def run_job(job, products_csv, manual_overrides, dry_run=False):
+def run_job(job, products_csv, manual_overrides, dry_run=False, temp_dir=None):
+    candidates_file, product_form_counts = prepare_candidates_file(job, temp_dir=temp_dir)
     command = [
         sys.executable,
         str(BUILD_SCRIPT),
         "--products",
         str(products_csv),
         "--candidates",
-        str(job["file"]),
+        str(candidates_file),
         "--category",
         job["category"],
         "--out-dir",
@@ -179,6 +283,8 @@ def run_job(job, products_csv, manual_overrides, dry_run=False):
         command.extend(["--manual-overrides", str(manual_overrides)])
 
     print(f"\n[{job['label']}] {job['file'].name} -> {job['category']} -> {job['out_dir']}", flush=True)
+    if product_form_counts is not None:
+        print(f"product_form counts: {format_product_form_counts(product_form_counts)}", flush=True)
     if dry_run:
         print(" ".join(f'"{part}"' if " " in part else part for part in command))
         return
@@ -228,7 +334,7 @@ def main():
         products_csv = Path(temp_dir) / "products_rows.csv"
         write_products_csv(products_csv, products)
         for job in jobs:
-            run_job(job, products_csv, manual_overrides)
+            run_job(job, products_csv, manual_overrides, temp_dir=temp_dir)
 
 
 if __name__ == "__main__":

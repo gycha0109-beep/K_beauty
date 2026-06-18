@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import DailyCheckInForm from "@/components/my/DailyCheckInForm";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getMyCopy } from "@/lib/my/i18n";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Daily Check-in"
+  title: getMyCopy("ko").metadata.checkInTitle
 };
 
 const SKIN_PROFILE_COLUMNS = [
@@ -38,18 +39,18 @@ async function getActiveSkinProfile(supabase, userId) {
   return data || null;
 }
 
-function NoProfileState() {
+function NoProfileState({ copy }) {
   return (
     <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">
       <section className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
         <div className="ui-card w-full p-6 text-center sm:p-8">
-          <p className="ui-kicker">Daily Check-in</p>
-          <h1 className="ui-title mt-3 text-2xl">아직 저장된 피부 프로필이 없습니다.</h1>
+          <p className="ui-kicker">{copy.checkInPage.noProfile.kicker}</p>
+          <h1 className="ui-title mt-3 text-2xl">{copy.checkInPage.noProfile.title}</h1>
           <p className="ui-text-secondary mt-3 text-sm leading-6">
-            오늘 피부 체크는 피부 프로필 저장 후 사용할 수 있습니다.
+            {copy.checkInPage.noProfile.body}
           </p>
-          <Link href="/my" className="ui-button-primary mt-6 min-h-11 px-5 text-sm font-semibold">
-            My로 돌아가기
+          <Link href={copy.paths.my} className="ui-button-primary mt-6 min-h-11 px-5 text-sm font-semibold">
+            {copy.checkInPage.noProfile.back}
           </Link>
         </div>
       </section>
@@ -57,7 +58,8 @@ function NoProfileState() {
   );
 }
 
-export default async function CheckInPage() {
+export async function CheckInPageContent({ locale = "ko" } = {}) {
+  const copy = getMyCopy(locale);
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -65,30 +67,30 @@ export default async function CheckInPage() {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    redirect("/");
+    redirect(copy.paths.home);
   }
 
   try {
     const skinProfile = await getActiveSkinProfile(supabase, user.id);
 
     if (!skinProfile) {
-      return <NoProfileState />;
+      return <NoProfileState copy={copy} />;
     }
 
     return (
       <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">
         <div className="mx-auto w-full max-w-3xl">
           <header className="mb-6">
-            <Link href="/my" className="ui-button-secondary min-h-10 px-4 text-sm font-semibold">
-              My로 돌아가기
+            <Link href={copy.paths.my} className="ui-button-secondary min-h-10 px-4 text-sm font-semibold">
+              {copy.checkInPage.header.back}
             </Link>
-            <p className="ui-kicker mt-6">Daily Check-in</p>
-            <h1 className="ui-title mt-2 text-3xl sm:text-4xl">오늘 피부 체크</h1>
+            <p className="ui-kicker mt-6">{copy.checkInPage.header.kicker}</p>
+            <h1 className="ui-title mt-2 text-3xl sm:text-4xl">{copy.checkInPage.header.title}</h1>
             <p className="ui-text-secondary mt-3 text-sm leading-6">
-              오늘 피부 상태를 저장하면 rule 기반 루틴 카드가 생성됩니다.
+              {copy.checkInPage.header.body}
             </p>
           </header>
-          <DailyCheckInForm skinProfile={skinProfile} />
+          <DailyCheckInForm skinProfile={skinProfile} locale={locale} />
         </div>
       </main>
     );
@@ -99,17 +101,21 @@ export default async function CheckInPage() {
       <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">
         <section className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center justify-center">
           <div className="ui-card w-full p-6 text-center sm:p-8">
-            <p className="ui-kicker">Daily Check-in</p>
-            <h1 className="ui-title mt-3 text-2xl">체크인 화면을 불러오지 못했습니다.</h1>
+            <p className="ui-kicker">{copy.checkInPage.error.kicker}</p>
+            <h1 className="ui-title mt-3 text-2xl">{copy.checkInPage.error.title}</h1>
             <p className="ui-text-secondary mt-3 text-sm leading-6">
-              잠시 후 다시 시도해 주세요.
+              {copy.checkInPage.error.body}
             </p>
-            <Link href="/my" className="ui-button-primary mt-6 min-h-11 px-5 text-sm font-semibold">
-              My로 돌아가기
+            <Link href={copy.paths.my} className="ui-button-primary mt-6 min-h-11 px-5 text-sm font-semibold">
+              {copy.checkInPage.error.back}
             </Link>
           </div>
         </section>
       </main>
     );
   }
+}
+
+export default async function CheckInPage() {
+  return <CheckInPageContent locale="ko" />;
 }

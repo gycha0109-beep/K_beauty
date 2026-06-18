@@ -1,0 +1,104 @@
+{
+  "productId": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+  "review_raw": {
+    "positive": [
+      [
+        "진정되는",
+        505
+      ],
+      [
+        "자극없는",
+        417
+      ],
+      [
+        "트러블없어지는",
+        394
+      ],
+      [
+        "잘발리는",
+        257
+      ],
+      [
+        "저렴한",
+        184
+      ],
+      [
+        "흡수잘되는",
+        180
+      ],
+      [
+        "제형묽지않은",
+        160
+      ]
+    ],
+    "negative": [
+      [
+        "용량적은",
+        282
+      ],
+      [
+        "답답한",
+        62
+      ],
+      [
+        "알러지반응오는",
+        46
+      ],
+      [
+        "여름에사용하기안좋은",
+        44
+      ],
+      [
+        "튜브형인",
+        37
+      ],
+      [
+        "밀림있는",
+        37
+      ],
+      [
+        "유수분밸런스가맞지않는",
+        21
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 1954,
+    "rating": 4.54,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 30,
+    "risk": {
+      "low": 29,
+      "medium": 1,
+      "high": 0,
+      "unknown": 0
+    },
+    "functional": {
+      "skin hydration": 14,
+      "moisture evaporation blocking": 4,
+      "skin protection": 8,
+      "soothing/astringent": 1,
+      "exfoliation": 0,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 0,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 4,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 0,
+        "negative": 0
+      }
+    }
+  }
+}

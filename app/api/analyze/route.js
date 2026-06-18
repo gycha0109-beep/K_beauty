@@ -273,11 +273,11 @@ function buildSelectedProductsContext(decision) {
 function getPromptCategoryFamily(category = "") {
   const normalized = String(category || "").trim().toLowerCase();
 
-  if (normalized === "toner_pad" || normalized === "toner_essence" || normalized === "essence") {
+  if (normalized === "toner_pad" || normalized === "toner_essence") {
     return "toner_essence";
   }
 
-  if (normalized === "serum" || normalized === "ampoule") {
+  if (normalized === "serum" || normalized === "ampoule" || normalized === "essence" || normalized === "treatment") {
     return "serum_ampoule";
   }
 

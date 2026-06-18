@@ -4,11 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
-
-const defaultLanguageOptions = [
-  { code: "ko", label: "한국어", href: "/" },
-  { code: "en", label: "English", href: "/en" }
-];
+import { getCommonCopy } from "@/lib/ui/i18n";
 
 function MenuIcon() {
   return (
@@ -32,7 +28,7 @@ function cx(...classes) {
 
 export default function AppHamburgerMenu({
   locale = "ko",
-  languageOptions = defaultLanguageOptions,
+  languageOptions,
   showLanguage = true,
   showAccount = true,
   showTheme = true,
@@ -45,9 +41,14 @@ export default function AppHamburgerMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const isEnglish = locale === "en";
-  const resolvedOpenLabel = openLabel || (isEnglish ? "Open menu" : "메뉴 열기");
-  const resolvedCloseLabel = closeLabel || (isEnglish ? "Close menu" : "메뉴 닫기");
+  const commonCopy = getCommonCopy(locale);
+  const navigationCopy = commonCopy.navigation;
+  const resolvedOpenLabel = openLabel || navigationCopy.openMenu;
+  const resolvedCloseLabel = closeLabel || navigationCopy.closeMenu;
+  const resolvedLanguageOptions = languageOptions || [
+    { code: "ko", label: navigationCopy.languages.ko, href: "/" },
+    { code: "en", label: navigationCopy.languages.en, href: "/en" }
+  ];
 
   useEffect(() => {
     if (!isOpen) {
@@ -78,7 +79,7 @@ export default function AppHamburgerMenu({
   }, [isOpen]);
 
   const closeMenu = () => setIsOpen(false);
-  const hasLanguage = showLanguage && languageOptions.length > 0;
+  const hasLanguage = showLanguage && resolvedLanguageOptions.length > 0;
   const hasActions = actions.length > 0;
 
   return (
@@ -106,10 +107,10 @@ export default function AppHamburgerMenu({
           {hasLanguage ? (
             <div>
               <p className="px-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9a6c78] dark:text-[#c8aeb8]">
-                {isEnglish ? "Language" : "언어"}
+                {navigationCopy.language}
               </p>
               <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-                {languageOptions.map((item) => {
+                {resolvedLanguageOptions.map((item) => {
                   const active = item.active ?? locale === item.code;
                   return (
                     <Link
@@ -134,7 +135,7 @@ export default function AppHamburgerMenu({
           {showAccount ? (
             <div className={cx(hasLanguage ? "mt-2 border-t border-[#f0ddd6] pt-2 dark:border-[#4a303c]" : "")}>
               <p className="px-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9a6c78] dark:text-[#c8aeb8]">
-                {isEnglish ? "Account" : "계정"}
+                {navigationCopy.account}
               </p>
               <div className="mt-1.5">
                 <AuthNav locale={locale} showMyLink={false} menu />
@@ -145,7 +146,7 @@ export default function AppHamburgerMenu({
           {showTheme ? (
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#f0ddd6] pt-2 dark:border-[#4a303c]">
               <span className="px-1 text-[11px] font-semibold text-[#6e4050] dark:text-[#f4d7df]">
-                {isEnglish ? "Theme" : "화면 모드"}
+                {navigationCopy.theme}
               </span>
               <ThemeToggle
                 locale={locale}

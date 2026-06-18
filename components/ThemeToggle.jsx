@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getCommonCopy } from "@/lib/ui/i18n";
 
 const THEME_STORAGE_KEY = "bejewely-theme";
 
@@ -43,9 +44,10 @@ export default function ThemeToggle({ locale = "ko", compact = false, className 
   };
 
   const isDark = theme === "dark";
-  const label = locale === "en" ? (isDark ? "Dark" : "Light") : (isDark ? "다크" : "라이트");
-  const nextLabel = locale === "en" ? (isDark ? "Light" : "Dark") : (isDark ? "라이트" : "다크");
-  const ariaLabel = locale === "en" ? `Switch to ${nextLabel} theme` : `${nextLabel} 테마로 전환`;
+  const copy = getCommonCopy(locale).theme;
+  const nextTheme = isDark ? "light" : "dark";
+  const label = isDark ? copy.dark : copy.light;
+  const ariaLabel = copy.switchTo[nextTheme];
 
   return (
     <button

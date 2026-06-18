@@ -1,0 +1,104 @@
+{
+  "productId": "ce14cf3d-a033-4ad2-8340-049d1bbfafc0",
+  "review_raw": {
+    "positive": [
+      [
+        "수분있는",
+        102
+      ],
+      [
+        "보습잘되는",
+        66
+      ],
+      [
+        "에센스양많은",
+        49
+      ],
+      [
+        "밀착잘되는",
+        42
+      ],
+      [
+        "편안해지는",
+        31
+      ],
+      [
+        "속건조에효과있는",
+        30
+      ],
+      [
+        "끈적하지않은",
+        21
+      ]
+    ],
+    "negative": [
+      [
+        "잘굳는",
+        12
+      ],
+      [
+        "탄력안생기는",
+        10
+      ],
+      [
+        "따가운",
+        5
+      ],
+      [
+        "유분있는",
+        4
+      ],
+      [
+        "모공관리안되는",
+        4
+      ],
+      [
+        "리치하지않은",
+        3
+      ],
+      [
+        "미끌거리는",
+        3
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 203,
+    "rating": 4.69,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 43,
+    "risk": {
+      "low": 39,
+      "medium": 3,
+      "high": 0,
+      "unknown": 1
+    },
+    "functional": {
+      "skin hydration": 28,
+      "moisture evaporation blocking": 3,
+      "skin protection": 7,
+      "soothing/astringent": 0,
+      "exfoliation": 0,
+      "whitening": 1,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 1
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 1,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 5,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 1,
+        "negative": 2
+      }
+    }
+  }
+}

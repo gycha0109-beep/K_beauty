@@ -13,7 +13,7 @@ const REVIEW_SIGNAL_DIR = path.join(DATA_DIR, "hwahae-review-signals", "categori
 const CATEGORY_FOLDER_BY_PREFIX = [
   [/^cleanser/, "cleanser"],
   [/^(toner|toner_essence|toner_pad)/, "toner"],
-  [/^(serum|ampoule|essence)/, "serum"],
+  [/^(treatment|serum|ampoule|essence)/, "treatment"],
   [/^moisturizer_lotion_emulsion/, path.join("moisturizer", "lotion")],
   [/^moisturizer_cream/, path.join("moisturizer", "cream")],
   [/^moisturizer_gel/, path.join("moisturizer", "gel")],
@@ -21,6 +21,22 @@ const CATEGORY_FOLDER_BY_PREFIX = [
   [/^moisturizer/, "moisturizer"],
   [/^sunscreen/, "sunscreen"],
 ];
+
+const CATEGORY_BY_FILE_TOKEN = [
+  [/cleanser/, "cleanser"],
+  [/toner|toner_essence|toner_pad/, "toner"],
+  [/ampoule/, "ampoule"],
+  [/serum/, "serum"],
+  [/essence/, "essence"],
+  [/moisturizer_lotion_emulsion/, "moisturizer_lotion_emulsion"],
+  [/moisturizer_cream/, "moisturizer_cream"],
+  [/moisturizer_gel/, "moisturizer_gel"],
+  [/moisturizer_balm/, "moisturizer_balm"],
+  [/moisturizer/, "moisturizer"],
+  [/sunscreen/, "sunscreen"],
+];
+
+const TREATMENT_CATEGORY_TOKENS = new Set(["treatment", "serum", "ampoule", "essence"]);
 
 function parseArgs(argv) {
   const args = {};
@@ -122,6 +138,27 @@ function inferCategoryFolder(category) {
   return matched ? matched[1] : normalized || "unknown";
 }
 
+function inferCategoryFromFileToken(fileToken) {
+  const matched = CATEGORY_BY_FILE_TOKEN.find(([pattern]) => pattern.test(fileToken));
+  return matched ? matched[1] : "";
+}
+
+function isTreatmentCategory(category) {
+  return TREATMENT_CATEGORY_TOKENS.has(String(category || "").trim().toLowerCase());
+}
+
+function rowMatchesCategory(rowCategory, category) {
+  if (!rowCategory) {
+    return true;
+  }
+
+  if (category === "treatment") {
+    return isTreatmentCategory(rowCategory);
+  }
+
+  return rowCategory === category;
+}
+
 function normalizeToken(value) {
   return String(value || "")
     .normalize("NFKC")
@@ -181,10 +218,12 @@ async function loadCsvContext(csvPath, requestedCategory) {
     category = categories[0];
   }
 
+  if (!category && categories.length > 1 && categories.every(isTreatmentCategory)) {
+    category = "treatment";
+  }
+
   if (!category) {
-    const categoryFromName = CATEGORY_FOLDER_BY_PREFIX
-      .map(([, folder]) => folder)
-      .find((folder) => fileToken.includes(folder));
+    const categoryFromName = inferCategoryFromFileToken(fileToken);
     category = categoryFromName || "";
   }
 
@@ -194,7 +233,7 @@ async function loadCsvContext(csvPath, requestedCategory) {
 
   const filteredRows = rows.filter((row) => {
     const rowCategory = String(row.category || "").trim();
-    return !rowCategory || rowCategory === category;
+    return rowMatchesCategory(rowCategory, category);
   });
 
   if (!filteredRows.length) {
@@ -388,6 +427,8 @@ async function main() {
     csvPath,
     "--category",
     category,
+    "--category-folder",
+    categoryFolder,
     "--plan-out",
     planPath,
   ];

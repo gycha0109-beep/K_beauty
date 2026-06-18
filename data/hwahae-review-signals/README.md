@@ -10,6 +10,8 @@ This folder stores curated Hwahae review-signal assets that we want to keep in t
   - multi-product batch raw JSON and the matching fixture output
 - `categories/<category>/raw/`
   - visible-page raw JSON captured per product
+- `categories/treatment/<product-form>/raw/`
+  - visible-page raw JSON captured per treatment product form (`serum`, `ampoule`, `essence`, or `unknown`)
 - `categories/<category>/`
   - category batch JSON, JSONL, and review-label notes
 

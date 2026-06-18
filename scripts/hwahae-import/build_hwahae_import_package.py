@@ -588,17 +588,18 @@ def adjusted_price(candidate):
     return price
 
 def normalized_source_url(candidate):
-    if is_hwahae_only(candidate.get("product_name")):
-        return candidate.get("source_url") or None
-    return None
+    return candidate.get("source_url") or None
 
 def to_final_json_row(candidate):
     return {
         "source": candidate.get("source") or "hwahae",
         "external_type": candidate.get("external_type") or None,
         "external_id": candidate.get("external_id") or None,
-        "source_url": normalized_source_url(candidate),
+        "hwahae_url": normalized_source_url(candidate),
         "category": candidate.get("category") or None,
+        "inferredCategory": candidate.get("inferredCategory") or candidate.get("category") or None,
+        "product_form": candidate.get("product_form") or None,
+        "productForm": candidate.get("productForm") or candidate.get("product_form") or None,
         "concern": candidate.get("concern") or None,
         "rank": safe_int(candidate.get("rank")),
         "brand": candidate.get("brand") or None,

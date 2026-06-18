@@ -1,0 +1,104 @@
+{
+  "productId": "113bdded-b5bd-4f93-8d85-db6d831b920e",
+  "review_raw": {
+    "positive": [
+      [
+        "쿨링되는",
+        495
+      ],
+      [
+        "수분있는",
+        185
+      ],
+      [
+        "진정되는",
+        174
+      ],
+      [
+        "에센스양많은",
+        144
+      ],
+      [
+        "밀착잘되는",
+        125
+      ],
+      [
+        "잘굳지않는",
+        41
+      ],
+      [
+        "지속력좋은",
+        27
+      ]
+    ],
+    "negative": [
+      [
+        "자극있는",
+        200
+      ],
+      [
+        "따가운",
+        41
+      ],
+      [
+        "눈통증있는",
+        38
+      ],
+      [
+        "알러지반응오는",
+        34
+      ],
+      [
+        "흘러내리는",
+        28
+      ],
+      [
+        "트러블생기는",
+        27
+      ],
+      [
+        "미끌거리는",
+        16
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 1324,
+    "rating": 4.62,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 28,
+    "risk": {
+      "low": 23,
+      "medium": 4,
+      "high": 0,
+      "unknown": 1
+    },
+    "functional": {
+      "skin hydration": 17,
+      "moisture evaporation blocking": 0,
+      "skin protection": 2,
+      "soothing/astringent": 0,
+      "exfoliation": 0,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 1,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 4,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 1,
+        "negative": 0
+      }
+    }
+  }
+}

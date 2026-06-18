@@ -154,6 +154,7 @@ export default function SaveReportCTA({
   const [message, setMessage] = useState("");
   const isEnglish = locale === "en";
   const nextPath = isEnglish ? "/en/result" : "/result";
+  const myPath = isEnglish ? "/en/my" : "/my";
 
   useEffect(() => {
     setIsSaved(false);
@@ -329,7 +330,7 @@ export default function SaveReportCTA({
               {previousLabel || (isEnglish ? "Back" : "\uc774\uc804")}
             </button>
           ) : null}
-          <a href="/my" className="ui-button-secondary min-h-10 w-full px-3 text-sm font-semibold">
+          <a href={myPath} className="ui-button-secondary min-h-10 w-full px-3 text-sm font-semibold">
             {isEnglish ? "View saved result" : "\uc800\uc7a5\ub41c \uacb0\uacfc \ubcf4\ub7ec\uac00\uae30"}
           </a>
         </div>

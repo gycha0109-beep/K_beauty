@@ -1,46 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-
-const LEVEL_FIELDS = [
-  {
-    key: "dryness_level",
-    label: "건조감",
-    low: "편안함",
-    high: "매우 건조"
-  },
-  {
-    key: "oiliness_level",
-    label: "유분감",
-    low: "산뜻함",
-    high: "매우 번들"
-  },
-  {
-    key: "redness_level",
-    label: "붉음",
-    low: "없음",
-    high: "강함"
-  },
-  {
-    key: "breakout_level",
-    label: "트러블",
-    low: "없음",
-    high: "많음"
-  },
-  {
-    key: "irritation_level",
-    label: "자극감",
-    low: "없음",
-    high: "강함"
-  }
-];
-
-function getLocalDateString(date = new Date()) {
-  const localTime = date.getTime() - date.getTimezoneOffset() * 60 * 1000;
-
-  return new Date(localTime).toISOString().slice(0, 10);
-}
+import { getBrowserDateContext } from "@/lib/my/local-date";
+import { getMyCopy } from "@/lib/my/i18n";
 
 function RangeField({ field, value, onChange }) {
   return (
@@ -66,10 +29,12 @@ function RangeField({ field, value, onChange }) {
   );
 }
 
-export default function DailyCheckInForm({ skinProfile }) {
+export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
+  const copy = getMyCopy(locale);
   const router = useRouter();
   const [form, setForm] = useState({
-    checkinDate: getLocalDateString(),
+    checkinDate: "",
+    timezone: "unknown",
     dryness_level: 0,
     oiliness_level: 0,
     redness_level: 0,
@@ -84,11 +49,21 @@ export default function DailyCheckInForm({ skinProfile }) {
 
   const concernLabel = useMemo(() => {
     if (!Array.isArray(skinProfile?.concerns) || skinProfile.concerns.length === 0) {
-      return "저장된 고민 없음";
+      return copy.checkInForm.noConcerns;
     }
 
     return skinProfile.concerns.filter(Boolean).slice(0, 3).join(", ");
-  }, [skinProfile]);
+  }, [copy.checkInForm.noConcerns, skinProfile]);
+
+  useEffect(() => {
+    const dateContext = getBrowserDateContext();
+
+    setForm((current) => ({
+      ...current,
+      checkinDate: current.checkinDate || dateContext.localDate,
+      timezone: dateContext.timezone
+    }));
+  }, []);
 
   function updateField(key, value) {
     setForm((current) => ({
@@ -103,12 +78,19 @@ export default function DailyCheckInForm({ skinProfile }) {
     setErrorMessage("");
 
     try {
+      const dateContext = getBrowserDateContext();
+      const requestBody = {
+        ...form,
+        checkinDate: form.checkinDate || dateContext.localDate,
+        timezone: dateContext.timezone
+      };
+
       const response = await fetch("/api/my/check-in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(form)
+        body: JSON.stringify(requestBody)
       });
       const data = await response.json().catch(() => null);
 
@@ -116,13 +98,13 @@ export default function DailyCheckInForm({ skinProfile }) {
         throw new Error(data?.error || "checkin_failed");
       }
 
-      router.push("/my");
+      router.push(copy.paths.my);
       router.refresh();
     } catch (error) {
       setErrorMessage(
         error?.message === "skin_profile_required"
-          ? "피부 프로필 저장 후 체크인을 사용할 수 있습니다."
-          : "체크인을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+          ? copy.checkInForm.profileRequired
+          : copy.checkInForm.saveError
       );
       setIsSubmitting(false);
     }
@@ -131,16 +113,16 @@ export default function DailyCheckInForm({ skinProfile }) {
   return (
     <form onSubmit={handleSubmit} className="ui-card p-5 sm:p-6">
       <section className="border-b border-[#ead2ca] pb-5 dark:border-[#4a303c]">
-        <p className="ui-kicker">Active Profile</p>
+        <p className="ui-kicker">{copy.checkInForm.activeProfile}</p>
         <h2 className="ui-title mt-2 text-xl">
-          {skinProfile?.skin_type || "피부 타입 미정"}
+          {skinProfile?.skin_type || copy.checkInForm.unknownSkinType}
         </h2>
         <p className="ui-text-secondary mt-2 text-sm leading-6">{concernLabel}</p>
       </section>
 
       <section className="mt-5">
         <label className="block">
-          <span className="ui-text-primary text-sm font-semibold">체크인 날짜</span>
+          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.date}</span>
           <input
             type="date"
             value={form.checkinDate}
@@ -152,7 +134,7 @@ export default function DailyCheckInForm({ skinProfile }) {
       </section>
 
       <section className="mt-5 grid gap-3">
-        {LEVEL_FIELDS.map((field) => (
+        {copy.checkInForm.levels.map((field) => (
           <RangeField
             key={field.key}
             field={field}
@@ -170,7 +152,7 @@ export default function DailyCheckInForm({ skinProfile }) {
             onChange={(event) => updateField("makeup_today", event.target.checked)}
             className="h-4 w-4 accent-[#e76b91]"
           />
-          <span className="ui-text-primary text-sm font-semibold">오늘 메이크업 예정</span>
+          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.makeupToday}</span>
         </label>
         <label className="flex min-h-14 items-center gap-3 rounded-[1.1rem] border border-[#ead2ca] bg-white/60 px-4 dark:border-[#4a303c] dark:bg-[#301f28]">
           <input
@@ -179,19 +161,19 @@ export default function DailyCheckInForm({ skinProfile }) {
             onChange={(event) => updateField("outdoor_today", event.target.checked)}
             className="h-4 w-4 accent-[#e76b91]"
           />
-          <span className="ui-text-primary text-sm font-semibold">오늘 외출 많음</span>
+          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.outdoorToday}</span>
         </label>
       </section>
 
       <section className="mt-5">
         <label className="block">
-          <span className="ui-text-primary text-sm font-semibold">메모</span>
+          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.memo}</span>
           <textarea
             value={form.memo}
             onChange={(event) => updateField("memo", event.target.value)}
             rows={4}
             maxLength={1000}
-            placeholder="오늘 느낀 피부 상태를 짧게 남겨주세요."
+            placeholder={copy.checkInForm.memoPlaceholder}
             className="mt-2 w-full resize-none rounded-[1.1rem] border border-[#ead2ca] bg-white/70 px-3 py-3 text-sm leading-6 text-[#4a2834] outline-none transition placeholder:text-[#9b7280] focus:border-[#e76b91] dark:border-[#4a303c] dark:bg-[#301f28] dark:text-[#f3e4df] dark:placeholder:text-[#9e7f8c]"
           />
         </label>
@@ -207,14 +189,14 @@ export default function DailyCheckInForm({ skinProfile }) {
           disabled={isSubmitting}
           className="ui-button-primary min-h-11 px-5 text-sm font-semibold disabled:opacity-50"
         >
-          {isSubmitting ? "저장 중..." : "오늘 체크인 저장하기"}
+          {isSubmitting ? copy.checkInForm.saving : copy.checkInForm.submit}
         </button>
         <button
           type="button"
-          onClick={() => router.push("/my")}
+          onClick={() => router.push(copy.paths.my)}
           className="ui-button-secondary min-h-11 px-5 text-sm font-semibold"
         >
-          취소
+          {copy.checkInForm.cancel}
         </button>
       </div>
     </form>

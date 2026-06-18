@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { getCommonCopy } from "@/lib/ui/i18n";
 
 function getAuthCallbackOrigin() {
   if (typeof window !== "undefined" && window.location?.origin) {
@@ -18,10 +19,14 @@ function getAuthCallbackOrigin() {
 
 export default function LoginButtons({
   compact = false,
-  label = "Google로 로그인",
-  loadingLabel = "연결 중...",
+  label,
+  loadingLabel,
+  locale = "ko",
   next = "/my"
 }) {
+  const copy = getCommonCopy(locale).auth;
+  const resolvedLabel = label || copy.signInGoogle;
+  const resolvedLoadingLabel = loadingLabel || copy.connecting;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -41,11 +46,11 @@ export default function LoginButtons({
       });
 
       if (error) {
-        setErrorMessage("Google login failed. Please try again.");
+        setErrorMessage(copy.loginFailed);
         setIsLoading(false);
       }
     } catch {
-      setErrorMessage("Google login is not configured yet.");
+      setErrorMessage(copy.loginNotConfigured);
       setIsLoading(false);
     }
   }
@@ -63,7 +68,7 @@ export default function LoginButtons({
             : "inline-flex min-h-11 items-center justify-center rounded-full border border-[#ead2ca] bg-white px-4 py-2 text-sm font-semibold text-[#5a2d3c] transition hover:bg-[#fff8f3] disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#352430]"
         }
       >
-        {isLoading ? loadingLabel : label}
+        {isLoading ? resolvedLoadingLabel : resolvedLabel}
       </button>
       {errorMessage ? (
         <p className={compact ? "max-w-[180px] text-[11px] text-red-600" : "text-sm text-red-600"}>
