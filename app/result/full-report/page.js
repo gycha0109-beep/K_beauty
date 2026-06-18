@@ -16,6 +16,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { getCurrentProductCategoryLabel } from "@/lib/current-products";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
@@ -5387,6 +5388,129 @@ function FaceLabReadyCard({ copy, locale = "ko", onOpenFaceLab }) {
   );
 }
 
+function getCurrentProductStatusCopy(selection = {}, locale = "ko") {
+  const isEnglish = locale === "en";
+
+  if (selection.category === "sunscreen") {
+    if (selection.status === "selected") {
+      return isEnglish
+        ? "You selected a sunscreen. It can be used as product context for the protection step."
+        : "선크림 제품을 선택했어요. 보호 단계 판단에 반영됩니다.";
+    }
+
+    if (selection.status === "not_in_db") {
+      return isEnglish
+        ? "Sunscreen use is reflected, but detailed product fit is skipped because it is not registered."
+        : "선크림을 사용 중인 것으로 반영했지만, 등록 제품이 아니라 상세 판단은 제외됩니다.";
+    }
+
+    if (selection.status === "not_using") {
+      return isEnglish
+        ? "You marked that you are not using sunscreen. The morning protection slot is empty."
+        : "현재 선크림을 사용하지 않는 것으로 표시했어요. 아침 보호 슬롯이 비어 있습니다.";
+    }
+  }
+
+  if (selection.status === "selected") {
+    return isEnglish
+      ? "DB product selected. Product context is available for this category."
+      : "DB 제품 선택. 이 카테고리는 제품 정보를 참고할 수 있습니다.";
+  }
+
+  if (selection.status === "not_in_db") {
+    return isEnglish
+      ? "Using a product, but it is not in the DB. Detailed fit is skipped."
+      : "사용 중 / DB 미등록. 상세 적합도 판단은 제외됩니다.";
+  }
+
+  return isEnglish
+    ? "Not using. This category slot is empty."
+    : "사용 안 함. 해당 슬롯이 비어 있습니다.";
+}
+
+function getCurrentProductStatusLabel(status, locale = "ko") {
+  const isEnglish = locale === "en";
+
+  if (status === "selected") {
+    return isEnglish ? "DB product selected" : "DB 제품 선택";
+  }
+
+  if (status === "not_in_db") {
+    return isEnglish ? "Using / not in DB" : "사용 중 / DB 미등록";
+  }
+
+  return isEnglish ? "Not using" : "사용 안 함";
+}
+
+function CurrentProductsSummaryBlock({ currentProducts, locale = "ko" }) {
+  const selections = Array.isArray(currentProducts?.selections)
+    ? currentProducts.selections
+    : [];
+
+  if (!selections.length) {
+    return null;
+  }
+
+  const isEnglish = locale === "en";
+
+  return (
+    <section className="ui-card p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="ui-kicker">{isEnglish ? "CURRENT PRODUCT CONTEXT" : "현재 제품 반영"}</p>
+          <h3 className="ui-title mt-2 text-xl leading-tight">
+            {isEnglish ? "Current products were added to this report." : "선택한 제품을 유료 리포트에 반영했어요."}
+          </h3>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">
+            {isEnglish
+              ? "This MVP shows the context only. It does not reorder the full routine yet."
+              : "이번 MVP에서는 요약 표시만 하고, 전체 루틴 재배치는 아직 하지 않습니다."}
+          </p>
+        </div>
+        <span className="ui-chip-compact shrink-0">{selections.length}</span>
+      </div>
+
+      <div className="mt-4 grid gap-3">
+        {selections.map((selection) => {
+          const product = selection.productSnapshot || selection.product || null;
+          const productName = product?.brand || product?.name
+            ? [product.brand, product.name].filter(Boolean).join(" - ")
+            : "";
+          const selectedFallback = isEnglish
+            ? "Selected product / details unavailable"
+            : "선택한 제품 / 상세 정보 확인 불가";
+
+          return (
+            <article
+              key={`${selection.category}-${selection.status}-${selection.productId || "none"}`}
+              className="min-w-0 rounded-[1rem] border border-white/10 bg-white/5 p-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {getCurrentProductCategoryLabel(selection.category, locale)}
+                  </p>
+                  {selection.status === "selected" ? (
+                    <p className="mt-1 break-words text-xs leading-5 text-zinc-600 dark:text-zinc-400">
+                      {productName || selectedFallback}
+                    </p>
+                  ) : null}
+                </div>
+                <span className="shrink-0 rounded-full border border-[#ead2ca]/70 px-2.5 py-1 text-[11px] font-semibold text-[#8a4a5c] dark:border-white/[0.10] dark:text-[#f0c5cf]">
+                  {getCurrentProductStatusLabel(selection.status, locale)}
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                {getCurrentProductStatusCopy(selection, locale)}
+              </p>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function SkinMatchStepReport({
   freeResult,
   report,
@@ -5450,13 +5574,19 @@ function SkinMatchStepReport({
       key: "today-start-hub",
       label: labels.hub,
       content: (
-        <TodayStartPlanStep
-          baseline={getTodaySkinBaseline(freeResult, locale)}
-          actionItems={getPriorityActionItems(locale)}
-          hubActions={getSkinMatchHubActions(locale)}
-          locale={locale}
-          onNavigate={moveToStepKey}
-        />
+        <div className="space-y-4">
+          <TodayStartPlanStep
+            baseline={getTodaySkinBaseline(freeResult, locale)}
+            actionItems={getPriorityActionItems(locale)}
+            hubActions={getSkinMatchHubActions(locale)}
+            locale={locale}
+            onNavigate={moveToStepKey}
+          />
+          <CurrentProductsSummaryBlock
+            currentProducts={report?.currentProducts}
+            locale={locale}
+          />
+        </div>
       )
     },
     "morning-routine": {
@@ -5854,7 +5984,8 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
       steps: faceLabLaunch?.paid?.steps || []
     },
     topPickFitGauges: buildProductFitGauges(result?.topPick || null, { locale }),
-    routineStructure: premiumReport.routineStructure || result?.routineStructure || null
+    routineStructure: premiumReport.routineStructure || result?.routineStructure || null,
+    currentProducts: premiumReport.currentProducts || null
   };
 
   return localizeFullReportForLocale(report, result, locale);
