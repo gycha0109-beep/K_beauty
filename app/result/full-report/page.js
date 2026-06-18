@@ -30,6 +30,23 @@ const SKIN_MATCH_SECTION_ORDER = [
   "adjustment-guide",
   "avoid-list"
 ];
+const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const PREMIUM_REPORT_ENABLED =
+  IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
+const PREMIUM_REPORT_COMING_SOON_COPY = {
+  ko: {
+    title: "Skin Match 유료 리포트 준비 중입니다",
+    body: "아침·저녁 루틴, 기능성 판단, 컨디션 대응까지 한 번에 볼 수 있는 퍼스널 피부 상담 맵을 정리하고 있어요.",
+    button: "무료 결과 다시 보기",
+    eyebrow: "Premium Report"
+  },
+  en: {
+    title: "Skin Match paid report is coming soon",
+    body: "We are organizing a personal skin consultation map that brings morning and evening routine, active checks, and condition responses together.",
+    button: "Back to free result",
+    eyebrow: "Premium Report"
+  }
+};
 
 function FullReportLightThemeStyles() {
   return (
@@ -643,6 +660,34 @@ function FitSegmentBars({ fitData }) {
         })}
       </div>
     </div>
+  );
+}
+
+function PremiumReportComingSoonGate({ locale = "ko" }) {
+  const copy = PREMIUM_REPORT_COMING_SOON_COPY[locale] || PREMIUM_REPORT_COMING_SOON_COPY.ko;
+
+  return (
+    <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
+      <FullReportLightThemeStyles />
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-4 py-10 sm:px-6">
+        <section className="ui-card px-5 py-6 text-center sm:p-7">
+          <span className="mx-auto inline-flex rounded-full border border-[#e79582]/35 bg-[#e87662]/12 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a55349] dark:text-[#f0b7a7]">
+            {copy.eyebrow}
+          </span>
+          <div className="mx-auto mt-5 flex h-16 w-16 items-center justify-center rounded-full border border-[#e79582]/35 bg-white/10 text-2xl text-[#e87662] shadow-[0_0_32px_rgba(232,118,98,0.16)]">
+            ✦
+          </div>
+          <h1 className="ui-title mt-5 text-2xl leading-tight">{copy.title}</h1>
+          <p className="ui-text-secondary mx-auto mt-3 max-w-sm text-sm leading-6">{copy.body}</p>
+          <Link
+            href={getResultPath(locale)}
+            className="ui-button-primary mt-6 min-h-12 w-full justify-center px-5 text-sm font-semibold"
+          >
+            {copy.button}
+          </Link>
+        </section>
+      </div>
+    </main>
   );
 }
 
@@ -6304,7 +6349,7 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   );
 }
 
-export default function FullReportPage() {
+function FullReportPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
@@ -6614,4 +6659,15 @@ export default function FullReportPage() {
       </div>
     </main>
   );
+}
+
+export default function FullReportPage() {
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
+
+  if (!PREMIUM_REPORT_ENABLED) {
+    return <PremiumReportComingSoonGate locale={locale} />;
+  }
+
+  return <FullReportPageContent />;
 }

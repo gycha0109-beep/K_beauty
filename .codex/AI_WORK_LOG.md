@@ -40,6 +40,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-18 / paid full-report release gate and Step5 coming-soon lock
+
+- 브랜치: feature/premium-report-flow-v1
+- 작업 유형: 실행형
+- 라우팅 판단: 유료 리포트 상세 구현을 삭제하지 않고 production 진입만 잠그며 무료 결과 Step5 문구/UI를 준비 중 상태로 바꾸는 Medium UI/flow guard 작업. 추천 알고리즘, 제품 DB, 결제, 저장 로직, DB schema, API 응답 필드는 범위에서 제외.
+- 목표: development에서는 기존 유료 리포트 접근을 유지하고, production 기본값에서는 Step5와 `/result/full-report` 직접 접근을 준비 중 안내로 차단한다.
+- 변경 파일: app/result/page.js, app/result/full-report/page.js, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, .codex/AI_WORK_LOG.md
+- 보호 구역: 추천 알고리즘, 제품 점수식, 제품 DB, 결제, 저장 로직, DB schema/migration/policy, API response field names는 수정하지 않음.
+- 검증 결과: 시작 전 working tree clean 확인 후 `git fetch origin --prune`, `git merge origin/main` 실행 결과 `Already up to date`. merge 후 `npm run build` 성공. 변경 후 `npm run build` 성공. production `next start -p 3002`에서 `/result/full-report` 직접 접근 시 준비 중 안내 표시, 개발자 버튼 미노출, 로딩 브리지 미노출, `/api/full-report` resource 요청 없음, console error 0, overflow 없음 확인. development `http://localhost:3001/result/full-report` 직접 접근은 기존 로딩 브리지로 진입 가능하고 준비 중 gate가 아님을 확인.
+- 문제/주의점: `/test-result`의 Step 이동 UI가 텍스트 없는 dot 중심이라 자동 브라우저 클릭으로 Step5까지 안정적으로 접근하지 못했다. Step5 컴포넌트 코드와 production direct gate는 검증했으며, 실제 Step5 화면은 후속 눈검수 여지가 있다.
+- 다음 작업: 유료 리포트 공개 시 `NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=true`, 결제/권한 확인, 준비 중 카피 제거, 개발자용 진입 버튼 제거, `/result/full-report` 직접 접근 권한 검증을 순서대로 처리.
+- 재사용할 규칙: release 전 숨김 처리는 CSS hidden이 아니라 조건부 렌더링으로 production DOM에서 제거하고, route gate는 hook 순서가 깨지지 않도록 wrapper/content 구조로 나눈다.
+- 규칙 승격 후보: Candidates
+
 ### 2026-06-18 / paid Skin Match 루틴 상담 스크롤 플로우 애니메이션
 
 - 브랜치: feature/premium-report-flow-v1

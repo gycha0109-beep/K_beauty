@@ -34,7 +34,6 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import {
-  buildFinalReportPreviewSections,
   buildFreeResultV2FaceLabPreview,
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
@@ -367,6 +366,9 @@ const resultCopy = {
 };
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
+const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const PREMIUM_REPORT_ENABLED =
+  IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
 
 async function getResultPageAccessToken() {
   return getBrowserSupabaseAccessToken();
@@ -2930,8 +2932,11 @@ function ResultContent() {
   const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
   const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
   const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
-  const finalReportPreviewSections = buildFinalReportPreviewSections(locale);
   const goToFullReport = () => {
+    if (!PREMIUM_REPORT_ENABLED) {
+      return;
+    }
+
     trackEvent("click_full_report_cta", {
       product_id: result?.topPick?.id || null,
       feature_name: "skin_analysis",
@@ -3004,8 +3009,10 @@ function ResultContent() {
       content: (
         <FreeResultV2PremiumPreviewStep
           copy={copy}
-          sections={finalReportPreviewSections}
-          onFullReportClick={goToFullReport}
+          premiumReportEnabled={PREMIUM_REPORT_ENABLED}
+          locale={locale}
+          isDevelopment={IS_DEVELOPMENT}
+          onDeveloperFullReportClick={IS_DEVELOPMENT ? goToFullReport : null}
         />
       )
     });
