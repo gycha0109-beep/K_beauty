@@ -887,6 +887,42 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Reusable rule: For move-only extraction near legacy unused blocks, verify the adjacent before/after function boundaries after deletion because older blocks may remain interleaved around the active V2 steps.
 - Context promotion candidate: NULL
 
+### 2026-06-19 / premium current products MVP-A
+
+- Branch: feature/premium-current-products-mvp
+- Task type: execution
+- Routing decision: Medium feature addition with a protected API/data boundary. DB schema/migration, free result shape, payment, auth, recommendation topPick/supportingProducts/routine recalculation, Face Lab, and saved DB schema were out of scope.
+- Goal: Add first-pass current product selection context for paid Skin Match reports, pass sanitized `currentProducts` through `/api/analyze`, store it only inside `premiumReport`, and show a current-products summary block in `/result/full-report`.
+- Changed files: app/api/current-products/products/route.js, components/current-products/CurrentProductsSelector.jsx, lib/current-products.js, lib/product-source.js, app/page.js, app/api/analyze/route.js, lib/skin-match-decision-engine.js, app/result/full-report/page.js, lib/test-result-fixture.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration/policy, payment, auth, free result payload shape, topPick selection, supportingProducts, full routine recalculation, AM/PM automatic rebalance, condition response, functional decision, or Face Lab behavior changed.
+- Validation: `npm run build` passed; `GET /api/current-products/products?category=sunscreen` returned only `id, brand, name, category, product_form, image_url`; unsupported category returned 400; Playwright 390px `/test-full-report` confirmed `scrollWidth=390`, current-products block visible, selected product visible, sunscreen `not_in_db` copy visible, `not_using` copy visible, and console error logs 0.
+- Issues/risks: The selector is a compact MVP section on the existing survey screen, not a polished separate onboarding step. Product display names in PowerShell output can look mojibake because of terminal encoding, while browser rendering is UTF-8. Product details in premium report are resolved from the recommendation product catalog; if a selected product id is not in that catalog, the report can still show the product id but not brand/name.
+- Context promotion candidate: NULL
+
+### 2026-06-19 / premium current products snapshot stabilization
+
+- Branch: feature/premium-current-products-mvp
+- Task type: execution
+- Routing decision: Medium stabilization scoped to the paid full-report current-products summary block and its premium-only payload. Recommendation ranking, supporting products, routine structure, AM/PM slot placement, DB schema, and free-result shape were out of scope.
+- Goal: Ensure selected current products display from a minimal Supabase productSnapshot instead of depending on the recommendation catalog.
+- Changed files: lib/product-source.js, lib/current-products.js, lib/skin-match-decision-engine.js, app/api/analyze/route.js, app/result/full-report/page.js, lib/test-result-fixture.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration/policy, auth, payment, environment, topPick/supportingProducts/routineStructure, AM/PM rebalance, or free-result payload changes.
+- Validation: `npm run build` passed. Playwright mobile verification on `/en/test-full-report` at 390px confirmed the current-products block renders, selected productSnapshot brand/name displays, productSnapshot null fallback displays, not_in_db and not_using stay distinct, sunscreen not_in_db copy stays distinct, document/body scrollWidth remained 390, and console error count was 0.
+- Notes/risks: productSnapshot fetch uses the same minimal current-product field set as the selector API; lookup failure is intentionally represented as productSnapshot null.
+- Context promotion candidate: NULL
+
+### 2026-06-19 / premium current products feature gate safety check
+
+- Branch: feature/premium-current-products-mvp
+- Task type: diagnostic with minimal execution
+- Routing decision: Medium gate/payload stabilization scoped to `CurrentProductsSelector` exposure and `/api/analyze` currentProducts submission. DB schema, recommendation logic, routine slots, paid report rendering, and free result shape were out of scope.
+- Goal: Align current-products selector exposure and currentProducts FormData submission with the existing premium report gate before merge.
+- Changed files: app/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration/policy, auth/payment, recommendation topPick/supportingProducts/routineStructure, full-report feature gate, or free-result payload shape changes.
+- Validation: Production flag-off build with `NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=false npm run build` passed; production `next start` at 390px confirmed selector absent on the survey step, `/api/analyze` multipart body did not include `currentProducts`, scrollWidth remained 390, and console error count was 0. Development `next dev` at 390px confirmed selector present, selected/not_in_db/not_using controls visible, selecting `not_in_db` sent `currentProducts` JSON to `/api/analyze`, scrollWidth remained 390, and console error count was 0. `/api/current-products/products?category=sunscreen` returned only `id, brand, name, category, product_form, image_url`; `git diff --check` passed with CRLF warnings only.
+- Notes/risks: The current-products API remains callable in production, but it exposes only the agreed minimal public product fields. Selector UI and analyze payload are now gated behind the same premium flag as the paid report.
+- Context promotion candidate: NULL
+
 ### 2026-06-13 / free result V2 premium preview step extraction
 
 - Branch: feature/premium-report-flow-v1

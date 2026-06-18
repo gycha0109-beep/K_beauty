@@ -9,6 +9,7 @@ import LoadingStep from "@/components/onboarding/LoadingStep";
 import SurveyFlow from "@/components/onboarding/SurveyFlow";
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
+import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
 import {
   INITIAL_FORM,
@@ -28,6 +29,9 @@ const STALE_FULL_REPORT_LOCAL_STORAGE_KEYS = [
   "lastViewedAt",
   "lastFullReportTab"
 ];
+const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const PREMIUM_REPORT_ENABLED =
+  IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
 
 function clearStaleAnalysisStorage() {
   clearWriteAccessToken();
@@ -138,6 +142,7 @@ export default function HomePage() {
   const [showTestMenu, setShowTestMenu] = useState(false);
   const [currentStep, setCurrentStep] = useState("photo");
   const [form, setForm] = useState(INITIAL_FORM);
+  const [currentProducts, setCurrentProducts] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
@@ -203,6 +208,9 @@ export default function HomePage() {
         Object.entries(completedForm).forEach(([key, value]) => {
           analyzePayload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
         });
+        if (PREMIUM_REPORT_ENABLED && currentProducts.length) {
+          analyzePayload.append("currentProducts", JSON.stringify(currentProducts));
+        }
         analyzePayload.append("locale", locale);
 
         const faceLabPromise = requestFaceLabResult(imageFile, locale);
@@ -264,7 +272,7 @@ export default function HomePage() {
     };
 
     void runAnalyze();
-  }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentStep, form, imageFile, locale, router]);
+  }, [copy.errors.analyzeFailed, copy.errors.unexpected, currentProducts, currentStep, form, imageFile, locale, router]);
 
   const pageShellClassName = currentStep === "photo"
     ? "mx-auto flex w-full max-w-5xl flex-col px-3 pb-5 pt-2 sm:px-6 sm:pt-4 lg:px-8"
@@ -403,14 +411,23 @@ export default function HomePage() {
 
     if (currentStep === "survey") {
       return (
-        <SurveyFlow
-          locale={locale}
-          form={form}
-          onAnswerChange={handleSurveyAnswerChange}
-          onBackToPhoto={() => goToStep("photo")}
-          onComplete={() => goToStep("loading")}
-          error={error}
-        />
+        <>
+          <SurveyFlow
+            locale={locale}
+            form={form}
+            onAnswerChange={handleSurveyAnswerChange}
+            onBackToPhoto={() => goToStep("photo")}
+            onComplete={() => goToStep("loading")}
+            error={error}
+          />
+          {PREMIUM_REPORT_ENABLED ? (
+            <CurrentProductsSelector
+              locale={locale}
+              value={currentProducts}
+              onChange={setCurrentProducts}
+            />
+          ) : null}
+        </>
       );
     }
 

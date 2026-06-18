@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
+import { sanitizeCurrentProducts } from "@/lib/current-products";
+import { fetchCurrentProductSnapshotsByIds } from "@/lib/product-source";
 import {
   createPremiumReportSession,
   getPremiumReportCookieOptions,
@@ -604,6 +606,65 @@ function sanitizePhotoObservationsForPremium(observations) {
   };
 }
 
+function sanitizeCurrentProductsReportForPremium(currentProducts) {
+  if (!currentProducts || typeof currentProducts !== "object") {
+    return null;
+  }
+
+  const selections = Array.isArray(currentProducts.selections)
+    ? currentProducts.selections
+        .map((item) => {
+          if (!item || typeof item !== "object") {
+            return null;
+          }
+
+          const sanitized = sanitizeCurrentProducts([item])[0] || null;
+
+          if (!sanitized) {
+            return null;
+          }
+
+          if (sanitized.status !== "selected") {
+            return sanitized;
+          }
+
+          const productSnapshot = item.productSnapshot && typeof item.productSnapshot === "object"
+            ? {
+                id: String(item.productSnapshot.id || sanitized.productId || "").trim(),
+                brand: String(item.productSnapshot.brand || "").trim(),
+                name: String(item.productSnapshot.name || "").trim(),
+                category: String(item.productSnapshot.category || sanitized.category || "").trim(),
+                product_form: String(item.productSnapshot.product_form || "").trim(),
+                image_url: String(item.productSnapshot.image_url || "").trim()
+              }
+            : null;
+
+          return {
+            ...sanitized,
+            productSnapshot: productSnapshot && (productSnapshot.id || productSnapshot.name)
+              ? productSnapshot
+              : null
+          };
+        })
+        .filter(Boolean)
+    : [];
+
+  if (!selections.length) {
+    return null;
+  }
+
+  return {
+    selections,
+    summary: {
+      total: selections.length,
+      selectedCount: selections.filter((item) => item.status === "selected").length,
+      notInDbCount: selections.filter((item) => item.status === "not_in_db").length,
+      notUsingCount: selections.filter((item) => item.status === "not_using").length,
+      sunscreenStatus: selections.find((item) => item.category === "sunscreen")?.status || "unknown"
+    }
+  };
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -619,6 +680,7 @@ function sanitizePremiumReport(report) {
       : [],
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
+    currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
@@ -878,6 +940,7 @@ export async function POST(request) {
     const eyeSensitive = parseBooleanField(formData.get("eyeSensitive"));
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
+    const currentProducts = sanitizeCurrentProducts(formData.get("currentProducts"));
     const isPremium = false;
     const locale = formData.get("locale") === "en" ? "en" : "ko";
     responseLocale = locale;
@@ -991,9 +1054,17 @@ export async function POST(request) {
       photoNotice = copy.photoFallbackNotice;
     }
 
+    const currentProductSnapshots = await fetchCurrentProductSnapshotsByIds(
+      currentProducts
+        .filter((item) => item.status === "selected")
+        .map((item) => item.productId)
+    );
+
     let decision = await buildSkinMatchDecisionBundle(formInput, {
       locale,
-      photoAnalysis
+      photoAnalysis,
+      currentProducts,
+      currentProductSnapshots
     });
 
     let explanationNotice = "";
