@@ -1,3 +1,5 @@
+import { normalizeProductCategory } from "./product-category-normalizer.js";
+
 export const CATEGORY_ORDER = [
   "cleanser",
   "toner_essence",
@@ -101,9 +103,6 @@ const IRRITATION_RANK: Record<string, number> = {
   medium: 1,
   high: 2,
 };
-
-const TONER_FAMILY_CATEGORIES = new Set(["toner_essence", "toner_pad"]);
-const SERUM_FAMILY_CATEGORIES = new Set(["serum", "ampoule", "essence", "treatment"]);
 
 const VERY_SENSITIVE_CONCERNS = new Set(["redness", "barrier", "dehydration"]);
 const SUNSCREEN_INTENT_CONCERNS = new Set(["oiliness", "redness"]);
@@ -442,19 +441,15 @@ export function getCategoryPriority(
 }
 
 export function getCategorySlot(category: string | null | undefined): string {
-  if (!category) {
+  const normalized = normalizeProductCategory(category);
+
+  if (normalized.unsupported) {
     return "";
   }
 
-  if (TONER_FAMILY_CATEGORIES.has(category)) {
-    return "toner_essence";
-  }
-
-  if (SERUM_FAMILY_CATEGORIES.has(category)) {
-    return "serum";
-  }
-
-  return isMoisturizerCategory(category) ? "moisturizer" : category;
+  return normalized.productFamily === "serum_ampoule"
+    ? "serum"
+    : normalized.productFamily;
 }
 
 export function matchesRecommendationCategorySlot(
