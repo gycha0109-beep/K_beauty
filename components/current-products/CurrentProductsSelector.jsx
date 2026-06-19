@@ -7,11 +7,11 @@ import {
 } from "@/lib/current-products";
 
 const GROUPS = [
-  { key: "cleanser", categories: ["cleanser"] },
-  { key: "toner_essence", categories: ["toner_essence", "toner_pad", "essence"] },
-  { key: "serum", categories: ["serum", "ampoule", "treatment"] },
-  { key: "moisturizer", categories: ["moisturizer"] },
-  { key: "sunscreen", categories: ["sunscreen"] }
+  { groupId: "cleanser", categoryIntent: "cleanser", categories: ["cleanser"] },
+  { groupId: "toner_essence", categoryIntent: "toner_essence", categories: ["toner_essence", "toner_pad", "essence"] },
+  { groupId: "serum_treatment", categoryIntent: "treatment", categories: ["serum", "ampoule", "treatment"] },
+  { groupId: "moisturizer", categoryIntent: "moisturizer", categories: ["moisturizer"] },
+  { groupId: "sunscreen", categoryIntent: "sunscreen", categories: ["sunscreen"] }
 ];
 
 const COPY = {
@@ -44,15 +44,15 @@ const COPY = {
 };
 
 function getGroupLabel(group, locale) {
-  if (group.key === "toner_essence") {
+  if (group.groupId === "toner_essence") {
     return locale === "en" ? "Toner / pad / essence" : "토너/패드/에센스";
   }
 
-  if (group.key === "serum") {
+  if (group.groupId === "serum_treatment") {
     return locale === "en" ? "Serum / treatment" : "세럼/기능성";
   }
 
-  return getCurrentProductCategoryLabel(group.key, locale);
+  return getCurrentProductCategoryLabel(group.categoryIntent, locale);
 }
 
 function getStatusOptions(copy) {
@@ -95,7 +95,7 @@ export default function CurrentProductsSelector({
       const group = GROUPS.find((candidate) => candidate.categories.includes(category));
 
       if (group && item?.status) {
-        next[group.key] = item;
+        next[group.groupId] = item;
       }
     });
 
@@ -141,7 +141,7 @@ export default function CurrentProductsSelector({
 
   const productsByGroup = useMemo(() => {
     return GROUPS.reduce((acc, group) => {
-      acc[group.key] = products.filter((product) => {
+      acc[group.groupId] = products.filter((product) => {
         const normalized = normalizeOptionGroup(product);
         return group.categories.includes(normalized);
       });
@@ -154,15 +154,18 @@ export default function CurrentProductsSelector({
       const next = { ...current };
 
       if (status === "selected") {
-        const existingProductId = current[group.key]?.productId || "";
-        next[group.key] = {
-          category: group.key,
+        const existingProductId = current[group.groupId]?.productId || "";
+        const existingCategory = existingProductId
+          ? normalizeCurrentProductCategory(current[group.groupId]?.category)
+          : "";
+        next[group.groupId] = {
+          category: existingCategory || group.categoryIntent,
           status: "selected",
           productId: existingProductId
         };
       } else {
-        next[group.key] = {
-          category: group.key,
+        next[group.groupId] = {
+          category: group.categoryIntent,
           status
         };
       }
@@ -173,11 +176,11 @@ export default function CurrentProductsSelector({
 
   const setGroupProduct = (group, productId) => {
     const product = products.find((item) => item.id === productId);
-    const category = normalizeCurrentProductCategory(product?.category) || group.key;
+    const category = normalizeCurrentProductCategory(product?.category) || group.categoryIntent;
 
     setSelectionMap((current) => ({
       ...current,
-      [group.key]: {
+      [group.groupId]: {
         category,
         status: "selected",
         productId
@@ -205,12 +208,12 @@ export default function CurrentProductsSelector({
 
       <div className="grid gap-3">
         {GROUPS.map((group) => {
-          const groupProducts = productsByGroup[group.key] || [];
-          const selection = selectionMap[group.key] || null;
+          const groupProducts = productsByGroup[group.groupId] || [];
+          const selection = selectionMap[group.groupId] || null;
           const status = selection?.status || "";
 
           return (
-            <div key={group.key} className="rounded-[1rem] border border-[#ead2ca]/70 bg-white/32 p-3 dark:border-white/[0.08] dark:bg-white/[0.035]">
+            <div key={group.groupId} className="rounded-[1rem] border border-[#ead2ca]/70 bg-white/32 p-3 dark:border-white/[0.08] dark:bg-white/[0.035]">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm font-semibold text-[#321724] dark:text-[#fff8f3]">
                   {getGroupLabel(group, locale)}
