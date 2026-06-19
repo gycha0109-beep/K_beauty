@@ -38,6 +38,7 @@ import {
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
 import { getRoutineStructureData } from "@/lib/routine-structure";
+import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
@@ -1552,17 +1553,7 @@ function buildFreeResultV2TopPick(product, form = {}, result = null, locale = "k
 }
 
 function normalizeResultCategory(product = {}) {
-  const category = String(product?.category || "").trim().toLowerCase();
-
-  if (category === "toner_pad" || category === "toner_essence") {
-    return "toner_essence";
-  }
-
-  if (category === "serum" || category === "ampoule" || category === "essence" || category === "treatment") {
-    return "serum_ampoule";
-  }
-
-  return category;
+  return getResultSection(product?.category) || "unsupported";
 }
 
 function getProductFormStepLabel(product = {}, locale = "ko") {

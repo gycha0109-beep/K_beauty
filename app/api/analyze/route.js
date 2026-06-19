@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
+import { getResultSection } from "@/lib/product-category-normalizer";
 import { fetchCurrentProductSnapshotsByIds } from "@/lib/product-source";
 import {
   createPremiumReportSession,
@@ -273,17 +274,7 @@ function buildSelectedProductsContext(decision) {
 }
 
 function getPromptCategoryFamily(category = "") {
-  const normalized = String(category || "").trim().toLowerCase();
-
-  if (normalized === "toner_pad" || normalized === "toner_essence") {
-    return "toner_essence";
-  }
-
-  if (normalized === "serum" || normalized === "ampoule" || normalized === "essence" || normalized === "treatment") {
-    return "serum_ampoule";
-  }
-
-  return normalized;
+  return getResultSection(category) || "";
 }
 
 function buildSurveyContextForLlm(formInput = {}) {

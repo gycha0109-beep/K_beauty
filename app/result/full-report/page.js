@@ -19,6 +19,7 @@ import {
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
+import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
@@ -852,16 +853,7 @@ function isSameDisplayText(left, right) {
 }
 
 function normalizeReportCategory(product = {}) {
-  const category = String(product?.category || "").trim().toLowerCase();
-
-  if (category === "toner_pad" || category === "toner_essence") {
-    return "toner_essence";
-  }
-  if (category === "serum" || category === "ampoule" || category === "essence" || category === "treatment") {
-    return "serum_ampoule";
-  }
-
-  return category;
+  return getResultSection(product?.category) || "unsupported";
 }
 
 function normalizeDisplayStepKey(value) {
