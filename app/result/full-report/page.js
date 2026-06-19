@@ -403,6 +403,7 @@ const COPY = {
     empty: "표시할 내용이 아직 없습니다.",
     skinMatchTab: "Skin Match",
     faceLabTab: "Face Lab",
+    mainHubButton: "메인 허브로 이동",
     fitSectionTitle: "제품 적합도",
     fitSectionBody: "이 점수는 제품의 사용감과 적합도를 요약한 참고 지표입니다.",
     alternativesTitle: "대체 제품 · 예산 플랜",
@@ -442,6 +443,7 @@ const COPY = {
     empty: "There is nothing to show yet.",
     skinMatchTab: "Skin Match",
     faceLabTab: "Face Lab",
+    mainHubButton: "Go to main hub",
     fitSectionTitle: "Product fit",
     fitSectionBody: "These scores are a compact reference for wear profile and fit.",
     alternativesTitle: "Alternative Products · Budget Plan",
@@ -5454,6 +5456,7 @@ function SkinMatchStepReport({
   displayAvoidCombinations = [],
   displayBudgetAlternatives = [],
   budgetSectionTitle,
+  hubNavigationRequest = 0,
   onOpenFaceLab
 }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
@@ -5623,6 +5626,20 @@ function SkinMatchStepReport({
   useEffect(() => {
     hasMountedStepRef.current = true;
   }, []);
+
+  useEffect(() => {
+    if (!hubNavigationRequest) {
+      return;
+    }
+
+    setActiveStepIndex(0);
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
+  }, [hubNavigationRequest]);
 
   if (!activeStep) {
     return null;
@@ -6431,6 +6448,7 @@ function FullReportPageContent() {
     return Boolean(window.localStorage.getItem(FULL_REPORT_OPENED_AT_KEY));
   });
   const [activeTab, setActiveTab] = useState("skin_match");
+  const [hubNavigationRequest, setHubNavigationRequest] = useState(0);
   const [submissionImageUrl, setSubmissionImageUrl] = useState("");
 
   useEffect(() => {
@@ -6647,6 +6665,10 @@ function FullReportPageContent() {
   const displayAvoidCombinations = uniqueDisplayTexts(report.avoidCombinations || []);
   const displayBudgetAlternatives = buildDisplayBudgetAlternatives(report.budgetAlternatives || [], freeResult, locale);
   const budgetSectionTitle = getBudgetSectionTitle(copy, displayBudgetAlternatives, locale);
+  const goToMainHub = () => {
+    setActiveTab("skin_match");
+    setHubNavigationRequest((value) => value + 1);
+  };
 
   return (
     <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
@@ -6701,22 +6723,13 @@ function FullReportPageContent() {
             </div>
           </header>
 
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab("skin_match")}
-              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "skin_match" ? "ui-choice-active full-report-tab-active" : ""}`}
-            >
-              {copy.skinMatchTab}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("face_lab")}
-              className={`ui-button-secondary px-4 py-3 text-sm font-medium ${activeTab === "face_lab" ? "ui-choice-active full-report-tab-active" : ""}`}
-            >
-              {copy.faceLabTab}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={goToMainHub}
+            className="ui-button-secondary min-h-11 w-full justify-center px-4 py-3 text-sm font-semibold"
+          >
+            {copy.mainHubButton}
+          </button>
 
           {activeTab === "skin_match" ? (
             <SkinMatchStepReport
@@ -6731,6 +6744,7 @@ function FullReportPageContent() {
               displayAvoidCombinations={displayAvoidCombinations}
               displayBudgetAlternatives={displayBudgetAlternatives}
               budgetSectionTitle={budgetSectionTitle}
+              hubNavigationRequest={hubNavigationRequest}
               onOpenFaceLab={() => {
                 setActiveTab("face_lab");
                 if (typeof window !== "undefined") {
