@@ -71,14 +71,20 @@ function main() {
     return;
   }
 
+  const changeScope = staged ? "staged" : "changed";
+
   console.warn("");
-  console.warn("[architecture-guard] Warning only: docs/architecture was not changed.");
-  console.warn("Architecture docs update: needed / not needed");
+  console.warn(`[architecture-guard] WARNING: architecture-sensitive files are ${changeScope}.`);
+  console.warn("");
+  console.warn("Stop and check before committing:");
+  console.warn("- Did this change a domain term, category, alias, API payload, DB schema, result contract, or recommendation flow?");
+  console.warn("  If yes, update docs/architecture/.");
+  console.warn("- If no, state why docs are not needed in the Codex final report or commit body.");
+  console.warn("");
+  console.warn("Architecture docs update: updated / not needed");
   console.warn("Ghost-code audit: passed / findings");
   console.warn("");
-  console.warn("If no architecture doc update is needed, note that in the task summary.");
-  console.warn("If ghost-code audit found issues, document or fix them before commit.");
+  console.warn("Warning only; commit will continue.");
 }
 
 main();
-

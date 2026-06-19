@@ -856,6 +856,10 @@ function normalizeReportCategory(product = {}) {
   return getResultSection(product?.category) || "unsupported";
 }
 
+function getRawReportCategory(product = {}) {
+  return String(product?.category || "").trim().toLowerCase();
+}
+
 function normalizeDisplayStepKey(value) {
   const key = String(value || "").trim().toLowerCase();
 
@@ -1876,6 +1880,7 @@ function buildTopPickCaution(product = {}, locale = "ko") {
 
 function buildTopPickStartAction(product = {}, locale = "ko") {
   const category = normalizeReportCategory(product);
+  const rawCategory = getRawReportCategory(product);
 
   if (locale === "en") {
     if (category === "sunscreen") {
@@ -1884,7 +1889,7 @@ function buildTopPickStartAction(product = {}, locale = "ko") {
     if (category === "cleanser") {
       return "Use it briefly at the cleansing step, then move straight into hydration.";
     }
-    if (category === "toner_pad") {
+    if (rawCategory === "toner_pad") {
       return "After cleansing, use one pad lightly or press it where the skin feels dry.";
     }
     if (category === "toner_essence") {
@@ -1906,7 +1911,7 @@ function buildTopPickStartAction(product = {}, locale = "ko") {
   if (category === "cleanser") {
     return "세안 단계에서 짧게 사용하고 바로 보습 단계로 이어가세요.";
   }
-  if (category === "toner_pad") {
+  if (rawCategory === "toner_pad") {
     return "세안 직후 한 장으로 짧게 닦거나 필요한 부위에 가볍게 눌러 주세요.";
   }
   if (category === "toner_essence") {
