@@ -7,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
+import CurrentProductSlotNote from "@/components/result/premium/CurrentProductSlotNote";
+import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import PremiumReportLoadingPage from "./loading/page";
@@ -16,13 +18,14 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
-import { getCurrentProductCategoryLabel } from "@/lib/current-products";
+import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 const LAST_REPORT_URL_KEY = "lastReportUrl";
 const LAST_VIEWED_AT_KEY = "lastViewedAt";
+const FULL_REPORT_OPENED_AT_KEY = "fullReportOpenedAt";
 const LAST_FULL_REPORT_TAB_KEY = "lastFullReportTab";
 const SKIN_MATCH_SECTION_ORDER = [
   "today-start-hub",
@@ -4605,6 +4608,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
       ? [
           {
             order: 1,
+            slot: "prep",
             title: "Light reset",
             status: "Keep",
             action: "Keep hydration from breaking by resetting lightly.",
@@ -4613,6 +4617,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
           },
           {
             order: 2,
+            slot: "hydrate",
             title: "Moisture support",
             status: "As needed",
             action: "Keep this layer thin so the next step does not pill.",
@@ -4621,6 +4626,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
           },
           {
             order: 3,
+            slot: "protect",
             title: "Protection finish",
             status: "Fixed",
             action: "Finish the morning with sunscreen.",
@@ -4631,6 +4637,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
       : [
           {
             order: 1,
+            slot: "cleanse",
             title: "Cleanse",
             status: "Keep",
             action: "Gently remove residue instead of chasing a stripped finish.",
@@ -4639,6 +4646,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
           },
           {
             order: 2,
+            slot: "prep",
             title: "Texture reset",
             status: "Skippable",
             action: "Lightly reset after cleansing so moisture can follow.",
@@ -4647,6 +4655,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
           },
           {
             order: 3,
+            slot: "moisturize",
             title: "Moisture finish",
             status: "Fixed",
             action: "If it stings or feels tight, leave only comfortable moisture.",
@@ -4660,6 +4669,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
     ? [
         {
           order: 1,
+          slot: "prep",
           title: "가벼운 정리",
           status: "유지",
           action: "수분감이 끊기지 않게 가볍게 정리합니다.",
@@ -4668,6 +4678,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
         },
         {
           order: 2,
+          slot: "hydrate",
           title: "수분 보완",
           status: "필요 시",
           action: "다음 단계가 밀리지 않게 얇게 둡니다.",
@@ -4676,6 +4687,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
         },
         {
           order: 3,
+          slot: "protect",
           title: "보호 마무리",
           status: "고정",
           action: "아침 마지막은 선크림으로 마무리합니다.",
@@ -4686,6 +4698,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
     : [
         {
           order: 1,
+          slot: "cleanse",
           title: "세안",
           status: "유지",
           action: "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.",
@@ -4694,6 +4707,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
         },
         {
           order: 2,
+          slot: "prep",
           title: "결 정리",
           status: "생략 가능",
           action: "세안 후 보습이 이어지도록 가볍게 정돈합니다.",
@@ -4702,6 +4716,7 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
         },
         {
           order: 3,
+          slot: "moisturize",
           title: "보습 마무리",
           status: "고정",
           action: "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
@@ -4759,16 +4774,28 @@ function pickRoutineConsultProduct(candidates, roles = [], fallbackProduct = nul
   return product;
 }
 
-function buildRoutineConsultSteps({ mode = "morning", freeResult, report, morningSteps = [], nightSteps = [], locale = "ko" }) {
+function buildRoutineConsultSteps({
+  mode = "morning",
+  freeResult,
+  report,
+  morningSteps = [],
+  nightSteps = [],
+  locale = "ko",
+  currentProductSlots = null
+}) {
   const sourceSteps = mode === "morning"
     ? (morningSteps.length ? morningSteps : buildRoutineFallbackSteps("morning", freeResult, locale))
     : (nightSteps.length ? nightSteps : buildRoutineFallbackSteps("night", freeResult, locale));
   const candidates = collectRoutineConsultProducts({ freeResult, report, morningSteps, nightSteps });
   const usedKeys = new Set();
+  const slotMode = mode === "morning" ? "am" : "pm";
 
   return getRoutineConsultTemplates(mode, locale).map((template, index) => ({
     ...template,
-    product: pickRoutineConsultProduct(candidates, template.roles, sourceSteps[index]?.product || null, usedKeys)
+    product: pickRoutineConsultProduct(candidates, template.roles, sourceSteps[index]?.product || null, usedKeys),
+    currentProducts: Array.isArray(currentProductSlots?.[slotMode]?.[template.slot])
+      ? currentProductSlots[slotMode][template.slot]
+      : []
   }));
 }
 
@@ -4790,7 +4817,7 @@ function RoutineConsultProductInline({ product, locale = "ko", copy }) {
       )}
       <div className="min-w-0">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
-          {locale === "en" ? "USED IN THIS STEP" : "이 단계에서 쓰는 것"}
+          {locale === "en" ? "RECOMMENDED FOR THIS STEP" : "이 단계 추천 제품"}
         </p>
         <p className="mt-1 break-words text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{product.name}</p>
         {product.brand ? <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p> : null}
@@ -4891,6 +4918,7 @@ function RoutineConsultStepCard({ step, direction = "left", locale = "ko", copy 
           </div>
           <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{step.action}</p>
           <RoutineConsultProductInline product={step.product} locale={locale} copy={copy} />
+          <CurrentProductSlotNote items={step.currentProducts} />
           <p className="mt-3 rounded-[0.9rem] bg-white/5 px-3 py-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             <span className="font-semibold text-zinc-900 dark:text-zinc-100">
               {locale === "en" ? "Tip" : "Tip"}
@@ -4908,8 +4936,20 @@ function RoutineExecutionStep({ freeResult, report, morningSteps = [], nightStep
   const [activeMode, setActiveMode] = useState("morning");
   const routineTopRef = useRef(null);
   const meta = getRoutineConsultMeta(activeMode, locale);
-  const displaySteps = buildRoutineConsultSteps({ mode: activeMode, freeResult, report, morningSteps, nightSteps, locale });
+  const currentProductSlots = buildCurrentProductRoutineSlots(report?.currentProducts, locale);
+  const displaySteps = buildRoutineConsultSteps({
+    mode: activeMode,
+    freeResult,
+    report,
+    morningSteps,
+    nightSteps,
+    locale,
+    currentProductSlots
+  });
   const isMorning = activeMode === "morning";
+  const functionalCurrentProducts = !isMorning && Array.isArray(currentProductSlots?.pm?.functional)
+    ? currentProductSlots.pm.functional
+    : [];
   const scrollToRoutineTop = () => {
     if (typeof window === "undefined") {
       return;
@@ -4988,6 +5028,20 @@ function RoutineExecutionStep({ freeResult, report, morningSteps = [], nightStep
             />
           ))}
         </div>
+
+        {functionalCurrentProducts.length ? (
+          <div className="rounded-[1rem] border border-white/10 bg-white/[0.035] p-3">
+            <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+              {locale === "en" ? "Active selections" : "기능성 선택값"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
+              {locale === "en"
+                ? "Check these in the active judgment section rather than adding them to the routine here."
+                : "여기서 루틴을 늘리기보다 별도 기능성 판단에서 확인합니다."}
+            </p>
+            <CurrentProductSlotNote items={functionalCurrentProducts} compact />
+          </div>
+        ) : null}
 
         <button
           type="button"
@@ -5388,129 +5442,6 @@ function FaceLabReadyCard({ copy, locale = "ko", onOpenFaceLab }) {
   );
 }
 
-function getCurrentProductStatusCopy(selection = {}, locale = "ko") {
-  const isEnglish = locale === "en";
-
-  if (selection.category === "sunscreen") {
-    if (selection.status === "selected") {
-      return isEnglish
-        ? "You selected a sunscreen. It can be used as product context for the protection step."
-        : "선크림 제품을 선택했어요. 보호 단계 판단에 반영됩니다.";
-    }
-
-    if (selection.status === "not_in_db") {
-      return isEnglish
-        ? "Sunscreen use is reflected, but detailed product fit is skipped because it is not registered."
-        : "선크림을 사용 중인 것으로 반영했지만, 등록 제품이 아니라 상세 판단은 제외됩니다.";
-    }
-
-    if (selection.status === "not_using") {
-      return isEnglish
-        ? "You marked that you are not using sunscreen. The morning protection slot is empty."
-        : "현재 선크림을 사용하지 않는 것으로 표시했어요. 아침 보호 슬롯이 비어 있습니다.";
-    }
-  }
-
-  if (selection.status === "selected") {
-    return isEnglish
-      ? "DB product selected. Product context is available for this category."
-      : "DB 제품 선택. 이 카테고리는 제품 정보를 참고할 수 있습니다.";
-  }
-
-  if (selection.status === "not_in_db") {
-    return isEnglish
-      ? "Using a product, but it is not in the DB. Detailed fit is skipped."
-      : "사용 중 / DB 미등록. 상세 적합도 판단은 제외됩니다.";
-  }
-
-  return isEnglish
-    ? "Not using. This category slot is empty."
-    : "사용 안 함. 해당 슬롯이 비어 있습니다.";
-}
-
-function getCurrentProductStatusLabel(status, locale = "ko") {
-  const isEnglish = locale === "en";
-
-  if (status === "selected") {
-    return isEnglish ? "DB product selected" : "DB 제품 선택";
-  }
-
-  if (status === "not_in_db") {
-    return isEnglish ? "Using / not in DB" : "사용 중 / DB 미등록";
-  }
-
-  return isEnglish ? "Not using" : "사용 안 함";
-}
-
-function CurrentProductsSummaryBlock({ currentProducts, locale = "ko" }) {
-  const selections = Array.isArray(currentProducts?.selections)
-    ? currentProducts.selections
-    : [];
-
-  if (!selections.length) {
-    return null;
-  }
-
-  const isEnglish = locale === "en";
-
-  return (
-    <section className="ui-card p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="ui-kicker">{isEnglish ? "CURRENT PRODUCT CONTEXT" : "현재 제품 반영"}</p>
-          <h3 className="ui-title mt-2 text-xl leading-tight">
-            {isEnglish ? "Current products were added to this report." : "선택한 제품을 유료 리포트에 반영했어요."}
-          </h3>
-          <p className="ui-text-secondary mt-2 text-sm leading-6">
-            {isEnglish
-              ? "This MVP shows the context only. It does not reorder the full routine yet."
-              : "이번 MVP에서는 요약 표시만 하고, 전체 루틴 재배치는 아직 하지 않습니다."}
-          </p>
-        </div>
-        <span className="ui-chip-compact shrink-0">{selections.length}</span>
-      </div>
-
-      <div className="mt-4 grid gap-3">
-        {selections.map((selection) => {
-          const product = selection.productSnapshot || selection.product || null;
-          const productName = product?.brand || product?.name
-            ? [product.brand, product.name].filter(Boolean).join(" - ")
-            : "";
-          const selectedFallback = isEnglish
-            ? "Selected product / details unavailable"
-            : "선택한 제품 / 상세 정보 확인 불가";
-
-          return (
-            <article
-              key={`${selection.category}-${selection.status}-${selection.productId || "none"}`}
-              className="min-w-0 rounded-[1rem] border border-white/10 bg-white/5 p-3"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {getCurrentProductCategoryLabel(selection.category, locale)}
-                  </p>
-                  {selection.status === "selected" ? (
-                    <p className="mt-1 break-words text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-                      {productName || selectedFallback}
-                    </p>
-                  ) : null}
-                </div>
-                <span className="shrink-0 rounded-full border border-[#ead2ca]/70 px-2.5 py-1 text-[11px] font-semibold text-[#8a4a5c] dark:border-white/[0.10] dark:text-[#f0c5cf]">
-                  {getCurrentProductStatusLabel(selection.status, locale)}
-                </span>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
-                {getCurrentProductStatusCopy(selection, locale)}
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function SkinMatchStepReport({
   freeResult,
   report,
@@ -5582,7 +5513,7 @@ function SkinMatchStepReport({
             locale={locale}
             onNavigate={moveToStepKey}
           />
-          <CurrentProductsSummaryBlock
+          <CurrentProductsSummaryCard
             currentProducts={report?.currentProducts}
             locale={locale}
           />
@@ -6492,6 +6423,13 @@ function FullReportPageContent() {
   const [error, setError] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [isReportOpened, setIsReportOpened] = useState(false);
+  const [hasPreviousReportOpen, setHasPreviousReportOpen] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return Boolean(window.localStorage.getItem(FULL_REPORT_OPENED_AT_KEY));
+  });
   const [activeTab, setActiveTab] = useState("skin_match");
   const [submissionImageUrl, setSubmissionImageUrl] = useState("");
 
@@ -6644,12 +6582,21 @@ function FullReportPageContent() {
     void loadFullReport();
   }, [copy.errorBody, isTestFullReport, locale]);
 
-  if (!isReportOpened || !isReady) {
+  const openFullReportContent = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(FULL_REPORT_OPENED_AT_KEY, new Date().toISOString());
+    }
+
+    setHasPreviousReportOpen(true);
+    setIsReportOpened(true);
+  };
+
+  if (!isReady) {
     return (
       <FullReportLoadingBridge
         locale={locale}
-        canOpen={isReady}
-        onOpen={() => setIsReportOpened(true)}
+        canOpen={false}
+        onOpen={openFullReportContent}
       />
     );
   }
@@ -6664,6 +6611,16 @@ function FullReportPageContent() {
         primaryActionHref={getHomePath(locale)}
         secondaryActionLabel={copy.backResult}
         secondaryActionHref={getResultPath(locale)}
+      />
+    );
+  }
+
+  if (!isReportOpened && !hasPreviousReportOpen) {
+    return (
+      <FullReportLoadingBridge
+        locale={locale}
+        canOpen
+        onOpen={openFullReportContent}
       />
     );
   }

@@ -1001,3 +1001,19 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation: `python -m py_compile scripts/hwahae-import/prepare_hwahae_batch.py scripts/hwahae-import/build_hwahae_import_package.py` passed; `python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py --dry-run` mapped current `각질.json` to `treatment` and printed product_form counts `ampoule=2, essence=1, peeling_solution=1, serum=6`; temporary `treatment.json` dry-run produced the same treatment mapping and counts; temporary `클렌저.json` dry-run still mapped to `cleanser`; local temp build confirmed final new candidates preserve `category`, `inferredCategory`, `product_form`, and `productForm`.
 - Issues/risks: The repo currently has `data/hwahae/각질.json`, not `data/hwahae/treatment.json`; `treatment.json` behavior was verified with a temporary copy. Product form inference follows the requested keyword order, so names containing both an ampoule/serum word and acid keywords resolve to the earlier form keyword.
 - Context promotion candidate: NULL
+
+### 2026-06-19 / premium current products routine slots MVP-B
+
+- Branch: feature/premium-current-products-slots
+- Task type: limited execution
+- Routing decision: Medium UI/data-display change scoped to paid full-report routine consultation and currentProducts display model. Recommendation scoring, topPick/supportingProducts selection, routineStructure generation, free result payload/UI, DB schema/migration, payment, and saved data structure were out of scope.
+- Goal: Show `premiumReport.currentProducts` selections as compact current-product rows inside the paid Skin Match routine consultation AM/PM slots without changing recommendation logic.
+- Changed files: app/result/full-report/page.js, lib/current-products.js, .codex/AI_WORK_LOG.md
+- Protected areas: Recommendation algorithms, product DB, API response field names, DB schema/migrations, payment/session structure, free result payload/UI, main flower hub, active judgment, condition response, and Face Lab structure were not changed.
+- Validation: `buildCurrentProductRoutineSlots` direct check confirmed `sunscreen not_in_db` appears as currently using in protect and `sunscreen not_using` appears as an empty morning protection slot; `git diff --check` passed with CRLF warnings only; `npm run build` passed; Playwright 390px `/test-full-report` flow opened the paid report, entered routine consultation, confirmed selected fallback/current product, sunscreen not-in-DB, moisturizer not-using, PM functional note, no horizontal overflow, and console/page errors 0.
+- Follow-up: Compact UI cleanup changed the existing routine product label to `이 단계 추천 제품`, lowered currentProducts rows to thin border-left helper rows, and reduced the bottom `현재 제품 반영` block to short guidance plus status counts. User-facing MVP/development copy was removed.
+- Follow-up: currentProducts rows were raised from border-left helper text to small inset status boxes with muted background/border, still smaller than the recommendation product card. The bottom summary count was condensed to a single `DB 제품 2 · DB 미등록 1 · 사용 안 함 1` line.
+- Follow-up: Moved currentProducts display JSX out of `app/result/full-report/page.js` into `components/result/premium/CurrentProductSlotNote.jsx` and `components/result/premium/CurrentProductsSummaryCard.jsx`. Page-level responsibility is now limited to building slot data and rendering the two components.
+- Follow-up: Full-report loading handoff now uses `fullReportOpenedAt`, written only when `내 플랜 열기` is clicked. First generated entry still shows the water-drop handoff after loading; later entries with that key skip the handoff and render the report body directly.
+- Notes/risks: The in-app Browser plugin could not open local URLs, so verification used local Playwright. `/test-full-report` starts from the existing premium loading handoff on first open and requires clicking `내 플랜 열기` once before later direct entry.
+- Context promotion candidate: NULL
