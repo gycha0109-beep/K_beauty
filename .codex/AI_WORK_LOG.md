@@ -1018,3 +1018,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Follow-up: Replaced the top `Skin Match / Face Lab` segmented control with a single `메인 허브로 이동` button. The button switches back to the Skin Match tab and resets the Skin Match stepper to the main hub; Face Lab remains reachable from the existing hub/CTA path.
 - Notes/risks: The in-app Browser plugin could not open local URLs, so verification used local Playwright. `/test-full-report` starts from the existing premium loading handoff on first open and requires clicking `내 플랜 열기` once before later direct entry.
 - Context promotion candidate: NULL
+
+### 2026-06-20 / current-products legacy group removal
+
+- Branch: main
+- Task type: execution
+- Routing decision: Medium current-products UI/API cleanup. Read-only live Supabase category check was required before editing; DB schema, migrations, production data, auth, payment, API response field names, and saved data structure were not modified.
+- Goal: Remove the legacy current-products group after confirming no live `products.category` rows use the legacy group key, `spot`, or `mask`, while keeping `treatment` as a real selectable category in the serum/treatment group.
+- Changed files: lib/current-products.js, components/current-products/CurrentProductsSelector.jsx, lib/product-source.js, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*` edits, DB writes, schema/migration edits, policy changes, auth/payment changes, or API response field-name changes.
+- Validation: Read-only Supabase anon query found no rows for the legacy group key, `spot`, or `mask`, and found `treatment=18` across 164 products. `npm run build` passed. Local current-products API returned categories without the legacy group key and with `treatment`; requesting the removed category returned 400 Unsupported category; requesting `treatment` returned 18 treatment products. Search confirmed no legacy group references remain in current-products selector/source/API files; remaining hits are unrelated English copy, migration/normalizer option-word filters, or an unrelated local `Select-String` artifact.
+- Notes/risks: Production build has premium report selector hidden unless the premium flag is enabled; selector-specific verification therefore relied on source-level group inspection plus API checks instead of completing the photo upload flow in-browser.
+- Context promotion candidate: NULL

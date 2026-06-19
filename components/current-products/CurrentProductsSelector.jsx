@@ -9,10 +9,9 @@ import {
 const GROUPS = [
   { key: "cleanser", categories: ["cleanser"] },
   { key: "toner_essence", categories: ["toner_essence", "toner_pad", "essence"] },
-  { key: "serum", categories: ["serum", "ampoule"] },
+  { key: "serum", categories: ["serum", "ampoule", "treatment"] },
   { key: "moisturizer", categories: ["moisturizer"] },
-  { key: "sunscreen", categories: ["sunscreen"] },
-  { key: "special", categories: ["special"] }
+  { key: "sunscreen", categories: ["sunscreen"] }
 ];
 
 const COPY = {
@@ -50,7 +49,7 @@ function getGroupLabel(group, locale) {
   }
 
   if (group.key === "serum") {
-    return locale === "en" ? "Serum / ampoule" : "세럼/앰플";
+    return locale === "en" ? "Serum / treatment" : "세럼/기능성";
   }
 
   return getCurrentProductCategoryLabel(group.key, locale);
