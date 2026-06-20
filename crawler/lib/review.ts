@@ -10,11 +10,20 @@ export type ServiceCategory =
   | "cleanser"
   | "toner_essence"
   | "toner_pad"
-  | "essence"
+  | "treatment"
+  | "moisturizer"
+  | "moisturizer_lotion_emulsion"
+  | "moisturizer_gel"
+  | "moisturizer_cream"
+  | "moisturizer_balm"
+  | "sunscreen";
+
+export type ProductForm =
   | "serum"
   | "ampoule"
-  | "moisturizer"
-  | "sunscreen";
+  | "essence"
+  | "booster"
+  | "peeling_solution";
 
 export type ReviewStatus =
   | "new"
@@ -32,6 +41,7 @@ export type ReviewFlag =
   | "peeling_like_name"
   | "powder_wash_like_name"
   | "cleansing_serum_like_name"
+  | "missing_product_form"
   | "generic_name"
   | "short_name"
   | "misc_item"
@@ -48,6 +58,7 @@ export interface MatchableProductRecord {
   skin_types?: string[] | string | null;
   concerns?: string[] | string | null;
   texture?: string | null;
+  product_form?: string | null;
   finish?: string | null;
   irritation_risk?: string | number | null;
   sensitivity_safe?: boolean | null;
@@ -69,6 +80,7 @@ export interface CandidateForReview {
 
 export interface PreparedCandidateReview {
   serviceCategory: ServiceCategory | null;
+  productForm: ProductForm | null;
   canonicalName: string | null;
   canonicalBrand: string | null;
   matchedProductId: string | null;
@@ -100,24 +112,31 @@ type InferredPromotionProduct = {
 
 const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "skincare/toner": "toner_essence",
-  "skincare/serum": "serum",
+  "skincare/serum": "treatment",
   "skincare/cream": "moisturizer",
   "skincare/suncare": "sunscreen",
   "cleansing/cleansing": "cleanser",
 };
 
-const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; regex: RegExp }> = [
+const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; productForm?: ProductForm; regex: RegExp }> = [
   {
     category: "sunscreen",
     regex: /\b(?:sunscreen|sun\s*cream|sun\s*screen|sunblock|uv|sun\s*essence|sun\s*stick|sun\s*pact|sun\s*cushion|tone[\s-]*up\s+sun)\b/i,
   },
   { category: "toner_pad", regex: /\b(?:toner\s+)?pads?\b/i },
-  { category: "ampoule", regex: /\bampoule\b/i },
-  { category: "serum", regex: /\bserum\b/i },
-  { category: "essence", regex: /\bessence\b/i },
+  { category: "treatment", productForm: "ampoule", regex: /\bampoule\b/i },
+  { category: "treatment", productForm: "serum", regex: /\bserum\b/i },
   { category: "moisturizer", regex: /\b(?:cream|lotion|gel\s+cream)\b/i },
   { category: "toner_essence", regex: /\b(?:toner|skin)\b/i },
   { category: "cleanser", regex: /\b(?:cleanser|cleansing|foam|wash)\b/i },
+];
+
+const TREATMENT_PRODUCT_FORM_HINTS: Array<{ productForm: ProductForm; regex: RegExp }> = [
+  { productForm: "ampoule", regex: /\bampoule\b/i },
+  { productForm: "serum", regex: /\bserum\b/i },
+  { productForm: "essence", regex: /\bessence\b/i },
+  { productForm: "booster", regex: /\bbooster\b/i },
+  { productForm: "peeling_solution", regex: /\b(?:peeling\s+solution|peel|aha|bha|pha|acid)\b/i },
 ];
 
 const AUTO_REJECT_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
@@ -213,22 +232,32 @@ const SERVICE_CATEGORY_DEFAULTS: Record<ServiceCategory, { texture: string; fini
     finish: "fresh",
     concerns: ["pores", "oiliness", "acne"],
   },
-  essence: {
-    texture: "watery",
-    finish: "natural",
-    concerns: ["dehydration", "uneven_tone"],
-  },
-  serum: {
-    texture: "gel",
-    finish: "natural",
-    concerns: ["acne", "pores"],
-  },
-  ampoule: {
+  treatment: {
     texture: "gel",
     finish: "natural",
     concerns: ["acne", "pores"],
   },
   moisturizer: {
+    texture: "cream",
+    finish: "dewy",
+    concerns: ["barrier", "dehydration"],
+  },
+  moisturizer_lotion_emulsion: {
+    texture: "lotion",
+    finish: "natural",
+    concerns: ["barrier", "dehydration"],
+  },
+  moisturizer_gel: {
+    texture: "gel",
+    finish: "fresh",
+    concerns: ["dehydration", "redness"],
+  },
+  moisturizer_cream: {
+    texture: "cream",
+    finish: "dewy",
+    concerns: ["barrier", "dehydration"],
+  },
+  moisturizer_balm: {
     texture: "cream",
     finish: "dewy",
     concerns: ["barrier", "dehydration"],
@@ -293,12 +322,12 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
     return "toner_pad";
   }
 
-  if (normalized === "essence") {
-    return "essence";
+  if (["serum", "ampoule", "essence", "treatment"].includes(normalized)) {
+    return "treatment";
   }
 
   if (normalized === "cream") {
-    return "moisturizer";
+    return "moisturizer_cream";
   }
 
   if (normalized === "sun") {
@@ -306,9 +335,17 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
   }
 
   if (
-    ["cleanser", "toner_essence", "toner_pad", "essence", "serum", "ampoule", "moisturizer", "sunscreen"].includes(
-      normalized,
-    )
+    [
+      "cleanser",
+      "toner_essence",
+      "toner_pad",
+      "moisturizer",
+      "moisturizer_lotion_emulsion",
+      "moisturizer_gel",
+      "moisturizer_cream",
+      "moisturizer_balm",
+      "sunscreen",
+    ].includes(normalized)
   ) {
     return normalized as ServiceCategory;
   }
@@ -333,16 +370,40 @@ function inferCategoryFromName(canonicalName: string): ServiceCategory | null {
   return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
 }
 
+function mapProductForm(value: string | null | undefined): ProductForm | null {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (["serum", "ampoule", "essence", "booster", "peeling_solution"].includes(normalized)) {
+    return normalized as ProductForm;
+  }
+
+  return null;
+}
+
+function inferTreatmentProductForm(canonicalName: string): ProductForm | null {
+  const matchedForms = TREATMENT_PRODUCT_FORM_HINTS
+    .filter((rule) => rule.regex.test(canonicalName))
+    .map((rule) => rule.productForm);
+  const uniqueMatches = Array.from(new Set(matchedForms));
+
+  return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+}
+
+function inferProductFormFromNameHint(canonicalName: string): ProductForm | null {
+  const matchedForms = CATEGORY_NAME_HINTS
+    .filter((rule) => rule.productForm && rule.regex.test(canonicalName))
+    .map((rule) => rule.productForm as ProductForm);
+  const uniqueMatches = Array.from(new Set(matchedForms));
+
+  return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+}
+
 function getServiceCategorySlot(category: ServiceCategory | null | undefined): ServiceCategory | null {
   if (!category) {
     return null;
   }
 
-  if (["serum", "ampoule"].includes(category)) {
-    return "serum";
-  }
-
-  if (category === "toner_pad" || category === "essence") {
+  if (category === "toner_pad") {
     return "toner_essence";
   }
 
@@ -556,6 +617,7 @@ function buildPromotionProduct(
 function buildPromotionPayload(
   candidate: CandidateForReview,
   serviceCategory: ServiceCategory | null,
+  productForm: ProductForm | null,
   match: MatchableProductRecord | null,
   reviewFlags: ReviewFlag[],
   matchMethod: string | null,
@@ -567,6 +629,7 @@ function buildPromotionPayload(
       version: "v1",
       prepared_at: new Date().toISOString(),
       service_category: serviceCategory,
+      product_form: productForm,
       match_method: matchMethod,
       match_confidence: matchConfidence,
       review_flags: reviewFlags,
@@ -658,6 +721,7 @@ export function prepareCandidateReview(
   const pathCategory = mapCategoryFromPath(candidate.category_path);
   const inferredNameCategory = inferCategoryFromName(canonicalName);
   const initialServiceCategory = resolveInitialServiceCategory(pathCategory, inferredNameCategory);
+  const nameHintProductForm = inferProductFormFromNameHint(canonicalName);
   const matchResult =
     canonicalName && canonicalBrand
       ? findBestProductMatch(products, {
@@ -671,11 +735,22 @@ export function prepareCandidateReview(
         };
   const exactMatchedCategory = matchResult.kind === "exact" ? mapProductCategory(matchResult.product?.category) : null;
   const serviceCategory = exactMatchedCategory ?? initialServiceCategory;
+  const productForm =
+    serviceCategory === "treatment"
+      ? mapProductForm(matchResult.product?.product_form) ??
+        mapProductForm(matchResult.product?.category) ??
+        nameHintProductForm ??
+        inferTreatmentProductForm(canonicalName)
+      : null;
   const { rejectFlags, needsReviewFlags } = collectScopeFlags(canonicalName);
   const reviewFlagSet = new Set<ReviewFlag>([...rejectFlags, ...needsReviewFlags]);
 
   if (!serviceCategory) {
     reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (serviceCategory === "treatment" && !productForm) {
+    reviewFlagSet.add("missing_product_form");
   }
 
   if (
@@ -746,12 +821,14 @@ export function prepareCandidateReview(
     promotionPayload: buildPromotionPayload(
       candidate,
       serviceCategory,
+      productForm,
       matchResult.product,
       reviewFlags,
       matchMethod,
       matchConfidence,
       promotionProduct,
     ),
+    productForm,
     matchMethod,
     matchConfidence,
     reviewFlags,

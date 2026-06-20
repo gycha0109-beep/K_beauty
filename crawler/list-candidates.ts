@@ -115,6 +115,7 @@ async function run(): Promise<void> {
       id: row.id,
       source_name: row.source_name ?? "",
       service_category: row.service_category ?? "",
+      product_form: row.product_form ?? "",
       brand_name_raw: row.brand_name_raw ?? "",
       product_name_raw: row.product_name_raw ?? "",
       canonical_brand: row.canonical_brand ?? "",

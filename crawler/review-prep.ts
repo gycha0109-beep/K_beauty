@@ -46,7 +46,7 @@ function logPreparedCandidate(
   const prefix = dryRun ? "[dry-run]" : "[review-prep]";
 
   console.log(
-    `${prefix} id=${candidateId} status=${prepared.reviewStatus} category=${formatValue(prepared.serviceCategory)} brand=${formatValue(prepared.canonicalBrand)} name=${formatValue(prepared.canonicalName)} flags=${formatList(prepared.reviewFlags)} match=${formatValue(prepared.matchMethod)} confidence=${formatConfidence(prepared.matchConfidence)} concerns=${formatList(prepared.inferredConcerns)} texture=${formatValue(prepared.inferredTexture)} finish=${formatValue(prepared.inferredFinish)}`,
+    `${prefix} id=${candidateId} status=${prepared.reviewStatus} category=${formatValue(prepared.serviceCategory)} product_form=${formatValue(prepared.productForm)} brand=${formatValue(prepared.canonicalBrand)} name=${formatValue(prepared.canonicalName)} flags=${formatList(prepared.reviewFlags)} match=${formatValue(prepared.matchMethod)} confidence=${formatConfidence(prepared.matchConfidence)} concerns=${formatList(prepared.inferredConcerns)} texture=${formatValue(prepared.inferredTexture)} finish=${formatValue(prepared.inferredFinish)}`,
   );
 }
 
@@ -145,6 +145,7 @@ export async function runReviewPrep(inputOptions: Partial<ReviewPrepOptions> = {
 
     await updateProductCandidateReview(client, candidate.id, {
       service_category: prepared.serviceCategory,
+      product_form: prepared.productForm,
       canonical_name: prepared.canonicalName,
       canonical_brand: prepared.canonicalBrand,
       matched_product_id: prepared.matchedProductId,

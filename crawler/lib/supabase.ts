@@ -7,6 +7,7 @@ import {
 import type {
   CandidateForReview,
   MatchableProductRecord,
+  ProductForm,
   ReviewStatus,
   ServiceCategory,
 } from "./review.js";
@@ -25,6 +26,7 @@ type ProductCandidateColumnSupport = {
   legacyStatus: boolean;
   reviewStatus: boolean;
   updatedAt: boolean;
+  productForm: boolean;
 };
 
 let productCandidateColumnSupportPromise: Promise<ProductCandidateColumnSupport> | null = null;
@@ -71,6 +73,7 @@ export interface ProductCandidateUpsertResult {
 
 export interface ProductCandidateReviewUpdate {
   service_category?: ServiceCategory | null;
+  product_form?: ProductForm | null;
   canonical_name?: string | null;
   canonical_brand?: string | null;
   matched_product_id?: string | null;
@@ -118,6 +121,7 @@ export interface ProductCandidateListRecord {
   id: string;
   source_name: string | null;
   service_category: string | null;
+  product_form?: string | null;
   brand_name_raw: string | null;
   product_name_raw: string | null;
   canonical_brand: string | null;
@@ -301,10 +305,12 @@ async function getProductCandidateColumnSupport(client: SupabaseClient): Promise
       hasTableColumn(client, "product_candidates", "status"),
       hasTableColumn(client, "product_candidates", "review_status"),
       hasTableColumn(client, "product_candidates", "updated_at"),
-    ]).then(([legacyStatus, reviewStatus, updatedAt]) => ({
+      hasTableColumn(client, "product_candidates", "product_form"),
+    ]).then(([legacyStatus, reviewStatus, updatedAt, productForm]) => ({
       legacyStatus,
       reviewStatus,
       updatedAt,
+      productForm,
     }));
   }
 
@@ -563,7 +569,7 @@ export async function getPendingReviewCandidates(
 
 export async function listProductsForMatching(client: SupabaseClient): Promise<MatchableProductRecord[]> {
   const preferredSelect =
-    "id, name, brand, normalized_name, normalized_brand, category, skin_types, concerns, texture, finish, irritation_risk, sensitivity_safe, price_min, price_max, buy_link, image_url";
+    "id, name, brand, normalized_name, normalized_brand, category, product_form, skin_types, concerns, texture, finish, irritation_risk, sensitivity_safe, price_min, price_max, buy_link, image_url";
 
   const { data, error } = await client.from("products").select(preferredSelect).limit(1000);
 
@@ -584,7 +590,7 @@ export async function listProductsForMatching(client: SupabaseClient): Promise<M
   }
 
   const fallbackSelect =
-    "id, name, brand, category, skin_types, concerns, texture, finish, irritation_risk, sensitivity_safe, price_min, price_max, buy_link, image_url";
+    "id, name, brand, category, product_form, skin_types, concerns, texture, finish, irritation_risk, sensitivity_safe, price_min, price_max, buy_link, image_url";
 
   const { data: fallbackData, error: fallbackError } = await client
     .from("products")
@@ -611,6 +617,10 @@ export async function updateProductCandidateReview(
 
   const columnSupport = await getProductCandidateColumnSupport(client);
   const payload: Record<string, unknown> = { ...input };
+
+  if (!columnSupport.productForm) {
+    delete payload.product_form;
+  }
 
   if (columnSupport.updatedAt) {
     payload.updated_at = new Date().toISOString();
@@ -712,12 +722,28 @@ export async function listProductCandidates(
   },
 ): Promise<ProductCandidateListRecord[]> {
   await ensureReviewWorkflowReady(client);
+  const columnSupport = await getProductCandidateColumnSupport(client);
+  const selectColumns = [
+    "id",
+    "source_name",
+    "service_category",
+    ...(columnSupport.productForm ? ["product_form"] : []),
+    "brand_name_raw",
+    "product_name_raw",
+    "canonical_brand",
+    "canonical_name",
+    "review_status",
+    "review_flags",
+    "match_method",
+    "match_confidence",
+    "matched_product_id",
+    "reviewed_by",
+    "reviewed_at",
+  ].join(", ");
 
   const { data, error } = await client
     .from("product_candidates")
-    .select(
-      "id, source_name, service_category, brand_name_raw, product_name_raw, canonical_brand, canonical_name, review_status, review_flags, match_method, match_confidence, matched_product_id, reviewed_by, reviewed_at",
-    )
+    .select(selectColumns)
     .in("review_status", input.statuses)
     .order("reviewed_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
@@ -727,7 +753,7 @@ export async function listProductCandidates(
     throw new Error(`Failed to list product candidates: ${formatSupabaseError(error)}`);
   }
 
-  return (data ?? []) as ProductCandidateListRecord[];
+  return (data ?? []) as unknown as ProductCandidateListRecord[];
 }
 
 export async function listPromotionReportRows(
