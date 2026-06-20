@@ -1,3 +1,2 @@
 # Put one Hwahae external ID per line.
 # These are false duplicates to restore into hwahae_final_new_candidates.json.
-70384

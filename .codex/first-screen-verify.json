@@ -1,0 +1,21 @@
+{
+  "lightChecks": {
+    "hasContent": true,
+    "hasBrand": true,
+    "hasTitle": true,
+    "hasCameraCta": true,
+    "hasGallery": true,
+    "hasSteps": true,
+    "hasTips": true,
+    "overlay": 0
+  },
+  "darkChecks": {
+    "isDark": true,
+    "hasBrand": true,
+    "hasTitle": true,
+    "hasCameraCta": true,
+    "hasGallery": true,
+    "overlay": 0
+  },
+  "consoleErrors": []
+}

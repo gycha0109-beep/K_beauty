@@ -434,7 +434,7 @@ export default function HomePage() {
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
 
-  const showBottomCta = currentStep === "photo";
+  const showBottomCta = currentStep === "photo" && canProceedFromPhoto;
 
   return (
     <main className="ui-page ui-page-shell min-h-screen">

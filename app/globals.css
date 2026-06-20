@@ -4,34 +4,34 @@
 
 html {
   color-scheme: light;
-  --page-bg: #f8eee7;
-  --page-bg-soft: #fff8f3;
-  --card-bg: #fffaf6;
-  --card-bg-muted: #fff3ee;
-  --card-border: #ead2ca;
-  --text-main: #28121b;
-  --text-primary: #4a2834;
-  --text-secondary: #7d5361;
-  --text-faint: #9b7280;
-  --brand-rose: #e76b91;
-  --brand-coral: #ff8066;
-  --brand-deep: #5a2d3c;
+  --page-bg: #fff8fa;
+  --page-bg-soft: #fff8fa;
+  --card-bg: #ffffff;
+  --card-bg-muted: #fff8fa;
+  --card-border: #f0e6ea;
+  --text-main: #111111;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --text-faint: #8a8a8f;
+  --brand-rose: #ff4f8a;
+  --brand-coral: #ff6a3d;
+  --brand-deep: #111111;
 }
 
 html.dark {
   color-scheme: dark;
-  --page-bg: #160d13;
-  --page-bg-soft: #1b1017;
-  --card-bg: #241720;
-  --card-bg-muted: #2b1c26;
-  --card-border: #4a303c;
-  --text-main: #fff8f3;
-  --text-primary: #f3e4df;
-  --text-secondary: #c8aeb8;
-  --text-faint: #9e7f8c;
-  --brand-rose: #ef6387;
-  --brand-coral: #ff8068;
-  --brand-deep: #341f2c;
+  --page-bg: #0b0a0e;
+  --page-bg-soft: #0b0a0e;
+  --card-bg: #17141c;
+  --card-bg-muted: #17141c;
+  --card-border: #2d2932;
+  --text-main: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-faint: #7d7d86;
+  --brand-rose: #ff4f8a;
+  --brand-coral: #ff6a3d;
+  --brand-deep: #ffffff;
 }
 
 * {
@@ -47,9 +47,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(231, 107, 145, 0.12), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(255, 128, 102, 0.1), transparent 36%),
-    linear-gradient(180deg, #fff8f3 0%, #f8eee7 52%, #f1dfd6 100%);
+    radial-gradient(circle at 50% 8%, rgba(255, 79, 138, 0.08), transparent 34%),
+    linear-gradient(180deg, #fff8fa 0%, #fffdfe 100%);
   color: var(--text-main);
   font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
   word-break: keep-all;
@@ -62,9 +61,9 @@ html.dark {
 
 html.dark body {
   background:
-    radial-gradient(circle at top left, rgba(239, 99, 135, 0.16), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(255, 128, 104, 0.12), transparent 36%),
-    linear-gradient(180deg, #1b1017 0%, #160d13 56%, #120a10 100%);
+    radial-gradient(circle at 50% 18%, rgba(255, 79, 138, 0.16), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(255, 106, 61, 0.08), transparent 30%),
+    linear-gradient(180deg, #0b0a0e 0%, #0b0a0e 100%);
   color: var(--text-main);
 }
 
@@ -86,11 +85,11 @@ a {
   }
 
   .ui-page-shell {
-    @apply bg-[linear-gradient(180deg,#fff8f3_0%,#f8eee7_58%,#f1dfd6_100%)] dark:bg-[linear-gradient(180deg,#1b1017_0%,#160d13_58%,#120a10_100%)];
+    @apply bg-[linear-gradient(180deg,#FFF8FA_0%,#FFFDFE_100%)] dark:bg-[linear-gradient(180deg,#0B0A0E_0%,#0B0A0E_100%)];
   }
 
   .ui-card {
-    @apply rounded-[1.6rem] border border-[#ead2ca] bg-[#fffaf6] shadow-[0_20px_60px_rgba(71,34,47,0.1)] dark:border-[#4a303c] dark:bg-[#241720] dark:shadow-[0_24px_70px_rgba(18,10,16,0.32)];
+    @apply rounded-[1.6rem] border border-[#F0E6EA] bg-white shadow-[0_20px_60px_rgba(17,17,17,0.08)] dark:border-[#2D2932] dark:bg-[#17141C] dark:shadow-[0_24px_70px_rgba(0,0,0,0.34)];
   }
 
   .ui-card-muted {
@@ -146,11 +145,11 @@ a {
   }
 
   .ui-button-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] text-white shadow-[0_18px_38px_rgba(231,107,145,0.24)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-35 dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)] dark:text-[#fffaf7] dark:shadow-[0_16px_34px_rgba(239,99,135,0.18)];
+    @apply inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#FF2F6D_0%,#FF6A3D_100%)] text-white shadow-[0_18px_38px_rgba(255,47,109,0.26)] transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-35 dark:text-white dark:shadow-[0_16px_34px_rgba(255,79,138,0.22)];
   }
 
   .ui-button-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-[#ead2ca] bg-white/[0.82] text-[#5a2d3c] transition hover:border-[#dbaea4] hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:border-[#6a4050] dark:hover:bg-[#352430];
+    @apply inline-flex items-center justify-center rounded-full border border-[#F0E6EA] bg-white text-[#111111] transition hover:border-[#FFB4CD] hover:bg-[#FFF8FA] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#2D2932] dark:bg-[#17141C] dark:text-white dark:hover:border-[#FF4F8A] dark:hover:bg-[#201B25];
   }
 
   .ui-button-secondary-soft {

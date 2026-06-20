@@ -40,6 +40,34 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 재사용할 규칙:
 - 규칙 승격 후보:
 
+### 2026-06-20 / Bejewely first screen design guide application
+
+- 브랜치: redesign-bejewely-first-screen
+- 작업 유형: 실행형
+- 라우팅 판단: 첨부 디자인 가이드의 시스템을 기존 첫 화면에 적용하는 Medium UI 작업. API, DB, 저장 데이터 구조, 인증, 결제, 배포 설정은 범위에서 제외.
+- 목표: 첫 화면에서 피부 분석 서비스, 촬영 필요, 맞춤 제품 추천 제공을 3초 안에 이해하도록 제목/얼굴 가이드/CTA/보조 버튼/스텝/촬영 조건의 시각 우선순위를 재정렬.
+- 변경 파일: app/globals.css, app/page.js, components/onboarding/PhotoUploadStep.js, .codex/AI_WORK_LOG.md
+- 보호 구역: .env, 인증/권한/리다이렉트, DB schema/migration/policy, 결제, 개인정보/production data, API response field names, 저장 데이터 구조, 배포 설정, 패키지 대규모 변경은 수정하지 않음.
+- 검증 결과: `npm run build` 성공. `npm run lint`는 프로젝트 ESLint 설정 부재로 Next 대화형 설정 프롬프트가 떠서 중단됨. 로컬 dev 서버 `http://localhost:3001` 200 확인. Playwright 390px 검증에서 라이트/다크 모두 BEJEWELY, 제목, 촬영 CTA, 사진 선택, Step 1-3, 촬영 조건 노출 확인, Next 오류 오버레이 0, console error 0. 스크린샷 `.codex/light-first-screen.png`, `.codex/dark-first-screen.png` 확인.
+- 문제/주의점: Playwright MCP REPL은 다른 Playwright 캐시를 참조해 브라우저 실행에 실패하여 프로젝트 `node` 컨텍스트에서 검증 스크립트를 실행함. `.codex/first-screen-verify.json`은 검증 산출물.
+- 다음 작업: 실제 기기 카메라 권한 플로우는 브라우저 보안 정책/디바이스 권한에 따라 별도 수동 확인 필요.
+- 재사용할 규칙: 첫 화면 CTA는 촬영/사진 선택을 주 행동으로 두고, 다음 단계 CTA는 사진 선택 후에만 노출한다.
+- 규칙 승격 후보: Candidates
+
+### 2026-06-20 / Bejewely first screen brand reinforcement
+
+- 브랜치: redesign-bejewely-first-screen
+- 작업 유형: 실행형
+- 라우팅 판단: 기존 첫 화면 레이아웃과 CTA 우선순위는 유지하고 브랜드 컬러 체감만 높이는 Medium UI 미세 조정. API, DB, 저장 로직, 인증, 결제, 배포 설정은 범위에서 제외.
+- 목표: 가독성 90과 CTA 존재감을 유지하면서 Light Mode의 브랜드성 부족을 보완.
+- 변경 파일: app/globals.css, components/onboarding/PhotoUploadStep.js, .codex/AI_WORK_LOG.md
+- 보호 구역: .env, 인증/권한/리다이렉트, DB schema/migration/policy, 결제, 개인정보/production data, API response field names, 저장 데이터 구조, 배포 설정, 패키지 대규모 변경은 수정하지 않음.
+- 검증 결과: 첫 `npm run build`는 실행 중인 Next dev/build 산출물 충돌로 `.next/server/pages-manifest.json` ENOENT 발생. 프로젝트 Next 프로세스만 종료하고 `.next` 생성물을 정리한 뒤 `npm run build` 성공. `git diff --check -- app/globals.css components/onboarding/PhotoUploadStep.js` 통과. dev 서버는 3001 대신 3125 포트로 기동되어 `http://127.0.0.1:3125` 200 확인. Playwright 390px 검증에서 라이트/다크 모두 브랜드명, 제목, 촬영 CTA, 사진 선택, Step, 촬영 조건 노출 확인, Next 오류 오버레이 0, console error 0. 스크린샷 `.codex/light-first-screen-brand-v2.png`, `.codex/dark-first-screen-brand-v2.png` 확인.
+- 문제/주의점: 다크 전환 시 Light background-image가 남는 문제가 한 차례 확인되어 `ui-page-shell`의 dark 배경도 gradient로 명시해 수정함.
+- 다음 작업: 실제 기기 카메라 권한 플로우는 별도 수동 확인 필요.
+- 재사용할 규칙: Light Mode 브랜드 강화는 배경/링/스텝 라인/브랜드명 강도만 올리고, CTA 크기와 정보 구조는 유지한다.
+- 규칙 승격 후보: Candidates
+
 ### 2026-06-18 / paid full-report release gate and Step5 coming-soon lock
 
 - 브랜치: feature/premium-report-flow-v1

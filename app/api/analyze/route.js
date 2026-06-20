@@ -3,7 +3,11 @@ import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAn
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
 import { getResultSection } from "@/lib/product-category-normalizer";
-import { fetchCurrentProductSnapshotsByIds } from "@/lib/product-source";
+import {
+  PRODUCT_SOURCE_UNAVAILABLE_CODE,
+  fetchCurrentProductSnapshotsByIds,
+  isProductSourceUnavailableError
+} from "@/lib/product-source";
 import {
   createPremiumReportSession,
   getPremiumReportCookieOptions,
@@ -20,6 +24,8 @@ const PREMIUM_OPENAI_MODEL = "gpt-4o";
 const PHOTO_ANALYSIS_MAX_TOKENS = 900;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
 const ANALYZE_RESPONSE_SCHEMA_VERSION = 1;
+const PRODUCT_SOURCE_UNAVAILABLE_MESSAGE =
+  "Recommendation products are temporarily unavailable. Please try again shortly.";
 
 const ANALYZE_COPY = {
   ko: {
@@ -1131,6 +1137,21 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
+    if (isProductSourceUnavailableError(error)) {
+      logAnalyze("product-source:unavailable", {
+        code: error.code,
+        reason: error.reason
+      });
+
+      return NextResponse.json(
+        {
+          error: PRODUCT_SOURCE_UNAVAILABLE_MESSAGE,
+          code: PRODUCT_SOURCE_UNAVAILABLE_CODE
+        },
+        { status: 503 }
+      );
+    }
+
     logAnalyze("request:error", {
       message: error instanceof Error ? error.message : String(error)
     });
