@@ -275,7 +275,7 @@
     "source": "hwahae",
     "external_type": "goods",
     "external_id": "75667",
-    "hwahae_url": "https://www.hwahae.co.kr/goods/75667",
+    "hwahae_url": "https://www.hwahae.co.kr/goods/75675",
     "category": "treatment",
     "inferredCategory": "treatment",
     "product_form": "serum",
@@ -286,13 +286,13 @@
     "product_name": "(1+1) 에이클리어 스팟 포 페이스 세럼 45mL",
     "normalized_brand": "닥터지",
     "normalized_name": "에이클리어스팟포페이스세럼",
-    "price": 23200
+    "price": 29000
   },
   {
     "source": "hwahae",
     "external_type": "goods",
     "external_id": "3104",
-    "hwahae_url": "https://www.hwahae.co.kr/goods/3104",
+    "hwahae_url": "https://www.hwahae.co.kr/goods/62084",
     "category": "treatment",
     "inferredCategory": "treatment",
     "product_form": "ampoule",
@@ -300,10 +300,10 @@
     "concern": "all",
     "rank": 18,
     "brand": "DMCK",
-    "product_name": "클린 아크 앰플 10ml*5ea",
+    "product_name": "클린 아크 앰플 30ml",
     "normalized_brand": "dmck",
     "normalized_name": "클린아크앰플",
-    "price": 44000
+    "price": 43000
   },
   {
     "source": "hwahae",
@@ -334,7 +334,7 @@
     "concern": "all",
     "rank": 20,
     "brand": "바이오더마",
-    "product_name": "세비엄 세럼",
+    "product_name": "세비엄 세럼 30ml",
     "normalized_brand": "바이오더마",
     "normalized_name": "세비엄세럼",
     "price": 48000

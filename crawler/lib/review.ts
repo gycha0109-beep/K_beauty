@@ -112,8 +112,18 @@ type InferredPromotionProduct = {
 
 const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
   "skincare/toner": "toner_essence",
+  "skincare/toner_pad": "toner_pad",
+  "toner_pad": "toner_pad",
   "skincare/serum": "treatment",
   "skincare/cream": "moisturizer",
+  "skincare/moisturizer_lotion_emulsion": "moisturizer_lotion_emulsion",
+  "skincare/moisturizer_gel": "moisturizer_gel",
+  "skincare/moisturizer_cream": "moisturizer_cream",
+  "skincare/moisturizer_balm": "moisturizer_balm",
+  "moisturizer_lotion_emulsion": "moisturizer_lotion_emulsion",
+  "moisturizer_gel": "moisturizer_gel",
+  "moisturizer_cream": "moisturizer_cream",
+  "moisturizer_balm": "moisturizer_balm",
   "skincare/suncare": "sunscreen",
   "cleansing/cleansing": "cleanser",
 };
@@ -407,7 +417,25 @@ function getServiceCategorySlot(category: ServiceCategory | null | undefined): S
     return "toner_essence";
   }
 
+  if (
+    category === "moisturizer_lotion_emulsion" ||
+    category === "moisturizer_gel" ||
+    category === "moisturizer_cream" ||
+    category === "moisturizer_balm"
+  ) {
+    return "moisturizer";
+  }
+
   return category;
+}
+
+function isMoisturizerSubcategory(category: ServiceCategory | null | undefined): boolean {
+  return (
+    category === "moisturizer_lotion_emulsion" ||
+    category === "moisturizer_gel" ||
+    category === "moisturizer_cream" ||
+    category === "moisturizer_balm"
+  );
 }
 
 function isCompatibleServiceCategory(
@@ -425,6 +453,10 @@ function resolveInitialServiceCategory(
   pathCategory: ServiceCategory | null,
   inferredNameCategory: ServiceCategory | null,
 ): ServiceCategory | null {
+  if (isMoisturizerSubcategory(pathCategory) && inferredNameCategory === "moisturizer") {
+    return pathCategory;
+  }
+
   if (pathCategory && inferredNameCategory && isCompatibleServiceCategory(pathCategory, inferredNameCategory)) {
     return inferredNameCategory;
   }
