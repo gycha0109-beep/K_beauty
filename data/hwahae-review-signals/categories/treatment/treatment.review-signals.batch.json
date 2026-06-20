@@ -1,0 +1,1845 @@
+[
+  {
+    "productId": "25e68245-aa63-4440-b4ab-09db91741cce",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "흡수잘되는",
+          "count": 426,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 247,
+          "mapped": []
+        },
+        {
+          "label": "자극없는",
+          "count": 247,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "끈적하지않은",
+          "count": 213,
+          "mapped": []
+        },
+        {
+          "label": "가벼운",
+          "count": 170,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 169,
+          "mapped": []
+        },
+        {
+          "label": "매끄러운",
+          "count": 157,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "흘러내리는",
+          "count": 79,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 22,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "미백효과가없는",
+          "count": 10,
+          "mapped": []
+        },
+        {
+          "label": "가려운",
+          "count": 6,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "주름안없어지는",
+          "count": 5,
+          "mapped": []
+        },
+        {
+          "label": "때처럼나오는",
+          "count": 4,
+          "mapped": []
+        },
+        {
+          "label": "발진생기는",
+          "count": 2,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "피부결좋아지는",
+          "끈적하지않은",
+          "각질제거잘되는",
+          "매끄러운"
+        ],
+        "negative": [
+          "흘러내리는",
+          "미백효과가없는",
+          "주름안없어지는",
+          "때처럼나오는",
+          "발진생기는"
+        ],
+        "all": [
+          "피부결좋아지는",
+          "끈적하지않은",
+          "각질제거잘되는",
+          "매끄러운",
+          "흘러내리는",
+          "미백효과가없는",
+          "주름안없어지는",
+          "때처럼나오는",
+          "발진생기는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 1004,
+      "rating": 4.52,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 22,
+      "risk": {
+        "low": 19,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 11,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 1,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 4,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 11,
+        "barrier": 5,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 2,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "76f755f2-0e46-4143-b145-8e08c7a32590",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "자극없는",
+          "count": 27,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 24,
+          "mapped": []
+        },
+        {
+          "label": "피지없어지는",
+          "count": 22,
+          "mapped": []
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 20,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 17,
+          "mapped": []
+        },
+        {
+          "label": "쫀득한",
+          "count": 16,
+          "mapped": []
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 12,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "끈적한",
+          "count": 16,
+          "mapped": [
+            "sticky",
+            "texture_mismatch"
+          ]
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 5,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "밀림있는",
+          "count": 3,
+          "mapped": []
+        },
+        {
+          "label": "유분있는",
+          "count": 3,
+          "mapped": []
+        },
+        {
+          "label": "잔여물남는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "때처럼나오는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "뒤집어지는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "각질제거잘되는",
+          "피지없어지는",
+          "매끄러운",
+          "쫀득한",
+          "피부결좋아지는"
+        ],
+        "negative": [
+          "밀림있는",
+          "유분있는",
+          "잔여물남는",
+          "때처럼나오는",
+          "뒤집어지는"
+        ],
+        "all": [
+          "각질제거잘되는",
+          "피지없어지는",
+          "매끄러운",
+          "쫀득한",
+          "피부결좋아지는",
+          "밀림있는",
+          "유분있는",
+          "잔여물남는",
+          "때처럼나오는",
+          "뒤집어지는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 116,
+      "rating": 4.43,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 7,
+      "risk": {
+        "low": 6,
+        "medium": 0,
+        "high": 0,
+        "unknown": 1
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 6,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 1,
+          "mapped": [
+            "barrier"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 6,
+        "barrier": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 1,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "a1fa0824-af5a-437d-9acf-6d59e06d9639",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "자극없는",
+          "count": 133,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 124,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "트러블없어지는",
+          "count": 106,
+          "mapped": [
+            "acne_safe"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 97,
+          "mapped": []
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 73,
+          "mapped": []
+        },
+        {
+          "label": "끈적하지않은",
+          "count": 72,
+          "mapped": []
+        },
+        {
+          "label": "매끄러운",
+          "count": 40,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "향이아쉬운",
+          "count": 132,
+          "mapped": []
+        },
+        {
+          "label": "인공향나는",
+          "count": 29,
+          "mapped": []
+        },
+        {
+          "label": "냄새가독한",
+          "count": 21,
+          "mapped": []
+        },
+        {
+          "label": "알콜냄새나는",
+          "count": 11,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 10,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "유분있는",
+          "count": 6,
+          "mapped": []
+        },
+        {
+          "label": "가려운",
+          "count": 5,
+          "mapped": [
+            "irritation_risk"
+          ]
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "각질제거잘되는",
+          "피부결좋아지는",
+          "끈적하지않은",
+          "매끄러운"
+        ],
+        "negative": [
+          "향이아쉬운",
+          "인공향나는",
+          "냄새가독한",
+          "알콜냄새나는",
+          "유분있는"
+        ],
+        "all": [
+          "각질제거잘되는",
+          "피부결좋아지는",
+          "끈적하지않은",
+          "매끄러운",
+          "향이아쉬운",
+          "인공향나는",
+          "냄새가독한",
+          "알콜냄새나는",
+          "유분있는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 572,
+      "rating": 4.52,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 30,
+      "risk": {
+        "low": 25,
+        "medium": 4,
+        "high": 1,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 21,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 3,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 3,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 21,
+        "barrier": 6,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 2
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "bffeb912-7693-465d-ab6f-76f3eb5f0bc8",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "수분있는",
+          "count": 29,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 19,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "쫀득한",
+          "count": 13,
+          "mapped": []
+        },
+        {
+          "label": "잘발리는",
+          "count": 9,
+          "mapped": [
+            "spreadability"
+          ]
+        },
+        {
+          "label": "자극없는",
+          "count": 8,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "가벼운",
+          "count": 7,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 6,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "끈적한",
+          "count": 9,
+          "mapped": [
+            "sticky",
+            "texture_mismatch"
+          ]
+        },
+        {
+          "label": "유분있는",
+          "count": 6,
+          "mapped": []
+        },
+        {
+          "label": "미백효과가없는",
+          "count": 4,
+          "mapped": []
+        },
+        {
+          "label": "답답한",
+          "count": 3,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 3,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "윤기안나는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "잔여물남는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "쫀득한",
+          "매끄러운"
+        ],
+        "negative": [
+          "유분있는",
+          "미백효과가없는",
+          "답답한",
+          "윤기안나는",
+          "잔여물남는"
+        ],
+        "all": [
+          "쫀득한",
+          "매끄러운",
+          "유분있는",
+          "미백효과가없는",
+          "답답한",
+          "윤기안나는",
+          "잔여물남는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 70,
+      "rating": 4.1,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 57,
+      "risk": {
+        "low": 53,
+        "medium": 4,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 44,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 5,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "exfoliation",
+          "count": 2,
+          "mapped": [
+            "pores",
+            "acne"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 44,
+        "barrier": 7,
+        "pores": 2,
+        "acne": 2,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 2,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 5,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 2
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "ae6919e4-eca9-4af3-bc58-7d8a949375f6",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "흡수잘되는",
+          "count": 166,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 91,
+          "mapped": []
+        },
+        {
+          "label": "가벼운",
+          "count": 83,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 74,
+          "mapped": []
+        },
+        {
+          "label": "자극없는",
+          "count": 72,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "끈적하지않은",
+          "count": 56,
+          "mapped": []
+        },
+        {
+          "label": "매끄러운",
+          "count": 39,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "향이아쉬운",
+          "count": 69,
+          "mapped": []
+        },
+        {
+          "label": "따가운",
+          "count": 18,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "흘러내리는",
+          "count": 15,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 12,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "인공향나는",
+          "count": 5,
+          "mapped": []
+        },
+        {
+          "label": "향지속잘되지않는",
+          "count": 4,
+          "mapped": []
+        },
+        {
+          "label": "때처럼나오는",
+          "count": 3,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "피부결좋아지는",
+          "각질제거잘되는",
+          "끈적하지않은",
+          "매끄러운"
+        ],
+        "negative": [
+          "향이아쉬운",
+          "흘러내리는",
+          "인공향나는",
+          "향지속잘되지않는",
+          "때처럼나오는"
+        ],
+        "all": [
+          "피부결좋아지는",
+          "각질제거잘되는",
+          "끈적하지않은",
+          "매끄러운",
+          "향이아쉬운",
+          "흘러내리는",
+          "인공향나는",
+          "향지속잘되지않는",
+          "때처럼나오는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 411,
+      "rating": 4.53,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 29,
+      "risk": {
+        "low": 29,
+        "medium": 0,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 25,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 3,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "soothing/astringent",
+          "count": 1,
+          "mapped": [
+            "redness",
+            "oiliness"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 25,
+        "barrier": 3,
+        "redness": 1,
+        "oiliness": 1,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "c813f9be-b19c-4f8e-a7d5-c0eb91452d44",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "수분있는",
+          "count": 20,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "흡수잘되는",
+          "count": 16,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "자극없는",
+          "count": 14,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 7,
+          "mapped": []
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 7,
+          "mapped": []
+        },
+        {
+          "label": "가벼운",
+          "count": 7,
+          "mapped": [
+            "fresh"
+          ]
+        },
+        {
+          "label": "끈적하지않은",
+          "count": 7,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "보습안되는",
+          "count": 7,
+          "mapped": []
+        },
+        {
+          "label": "미백효과가없는",
+          "count": 2,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 2,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "밀착안되는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "윤기안나는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "탄력안생기는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "주름안없어지는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "매끄러운",
+          "피부결좋아지는",
+          "끈적하지않은"
+        ],
+        "negative": [
+          "보습안되는",
+          "미백효과가없는",
+          "밀착안되는",
+          "윤기안나는",
+          "탄력안생기는",
+          "주름안없어지는"
+        ],
+        "all": [
+          "매끄러운",
+          "피부결좋아지는",
+          "끈적하지않은",
+          "보습안되는",
+          "미백효과가없는",
+          "밀착안되는",
+          "윤기안나는",
+          "탄력안생기는",
+          "주름안없어지는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 55,
+      "rating": 4.51,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 42,
+      "risk": {
+        "low": 38,
+        "medium": 1,
+        "high": 0,
+        "unknown": 3
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 27,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 1,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 4,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 27,
+        "barrier": 5,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "fb1384b3-109f-4b30-ac44-8ef0c8550756",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "자극없는",
+          "count": 4,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 2,
+          "mapped": []
+        },
+        {
+          "label": "피지없어지는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "리치하지않은",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "뒤집어지지않는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "매끄러운",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "따가운",
+          "count": 3,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "뻣뻣한",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 1,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "각질제거잘되는",
+          "피지없어지는",
+          "리치하지않은",
+          "뒤집어지지않는",
+          "매끄러운",
+          "피부결좋아지는"
+        ],
+        "negative": [
+          "뻣뻣한"
+        ],
+        "all": [
+          "각질제거잘되는",
+          "피지없어지는",
+          "리치하지않은",
+          "뒤집어지지않는",
+          "매끄러운",
+          "피부결좋아지는",
+          "뻣뻣한"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 12,
+      "rating": 4.08,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 40,
+      "risk": {
+        "low": 36,
+        "medium": 2,
+        "high": 0,
+        "unknown": 2
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 29,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 3,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 4,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "soothing/astringent",
+          "count": 1,
+          "mapped": [
+            "redness",
+            "oiliness"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 29,
+        "barrier": 7,
+        "redness": 1,
+        "oiliness": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 2,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 5,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 3,
+          "negative": 2
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "자극없는",
+          "count": 17,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 10,
+          "mapped": []
+        },
+        {
+          "label": "트러블없어지는",
+          "count": 9,
+          "mapped": [
+            "acne_safe"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 7,
+          "mapped": []
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 5,
+          "mapped": []
+        },
+        {
+          "label": "화이트헤드없어지는",
+          "count": 2,
+          "mapped": []
+        },
+        {
+          "label": "안색이개선되는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "유분있는",
+          "count": 5,
+          "mapped": []
+        },
+        {
+          "label": "따가운",
+          "count": 4,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 3,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "피지안없어지는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "리치하지않은",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "뒤집어지는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "가려운",
+          "count": 1,
+          "mapped": [
+            "irritation_risk"
+          ]
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "각질제거잘되는",
+          "매끄러운",
+          "피부결좋아지는",
+          "화이트헤드없어지는",
+          "안색이개선되는"
+        ],
+        "negative": [
+          "유분있는",
+          "피지안없어지는",
+          "리치하지않은",
+          "뒤집어지는"
+        ],
+        "all": [
+          "각질제거잘되는",
+          "매끄러운",
+          "피부결좋아지는",
+          "화이트헤드없어지는",
+          "안색이개선되는",
+          "유분있는",
+          "피지안없어지는",
+          "리치하지않은",
+          "뒤집어지는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 39,
+      "rating": 4.54,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 14,
+      "risk": {
+        "low": 12,
+        "medium": 1,
+        "high": 0,
+        "unknown": 1
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 7,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 7,
+        "barrier": 2
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 1,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "e96296f1-0186-4263-b185-c12374178546",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "흡수잘되는",
+          "count": 27,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "수분있는",
+          "count": 18,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "끈적하지않은",
+          "count": 14,
+          "mapped": []
+        },
+        {
+          "label": "잘발리는",
+          "count": 13,
+          "mapped": [
+            "spreadability"
+          ]
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 10,
+          "mapped": []
+        },
+        {
+          "label": "향에만족한",
+          "count": 7,
+          "mapped": []
+        },
+        {
+          "label": "매끄러운",
+          "count": 6,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "유분있는",
+          "count": 3,
+          "mapped": []
+        },
+        {
+          "label": "냄새가독한",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "미끌거리는",
+          "count": 1,
+          "mapped": [
+            "texture_mismatch"
+          ]
+        },
+        {
+          "label": "인공향나는",
+          "count": 1,
+          "mapped": []
+        },
+        {
+          "label": "흘러내리는",
+          "count": 1,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "끈적하지않은",
+          "피부결좋아지는",
+          "향에만족한",
+          "매끄러운"
+        ],
+        "negative": [
+          "유분있는",
+          "냄새가독한",
+          "인공향나는",
+          "흘러내리는"
+        ],
+        "all": [
+          "끈적하지않은",
+          "피부결좋아지는",
+          "향에만족한",
+          "매끄러운",
+          "유분있는",
+          "냄새가독한",
+          "인공향나는",
+          "흘러내리는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 66,
+      "rating": 4.76,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 37,
+      "risk": {
+        "low": 32,
+        "medium": 5,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 20,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 2,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 5,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "whitening",
+          "count": 1,
+          "mapped": [
+            "uneven_tone"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 20,
+        "barrier": 7,
+        "uneven_tone": 1,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 0
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  },
+  {
+    "productId": "96d7f8bc-5b0a-4cde-85eb-b2528eb726f5",
+    "review_signals": {
+      "source": "hwahae_ai_review",
+      "positive": [
+        {
+          "label": "흡수잘되는",
+          "count": 120,
+          "mapped": [
+            "absorption"
+          ]
+        },
+        {
+          "label": "피부결좋아지는",
+          "count": 82,
+          "mapped": []
+        },
+        {
+          "label": "잘발리는",
+          "count": 78,
+          "mapped": [
+            "spreadability"
+          ]
+        },
+        {
+          "label": "자극없는",
+          "count": 73,
+          "mapped": [
+            "sensitive_safe"
+          ]
+        },
+        {
+          "label": "매끄러운",
+          "count": 53,
+          "mapped": []
+        },
+        {
+          "label": "각질제거잘되는",
+          "count": 48,
+          "mapped": []
+        },
+        {
+          "label": "윤기나는",
+          "count": 46,
+          "mapped": []
+        }
+      ],
+      "negative": [
+        {
+          "label": "따가운",
+          "count": 34,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "유분있는",
+          "count": 16,
+          "mapped": []
+        },
+        {
+          "label": "알러지반응오는",
+          "count": 12,
+          "mapped": [
+            "sensitivity_risk"
+          ]
+        },
+        {
+          "label": "가려운",
+          "count": 9,
+          "mapped": [
+            "irritation_risk"
+          ]
+        },
+        {
+          "label": "유수분밸런스가맞지않는",
+          "count": 4,
+          "mapped": [
+            "balance_mismatch"
+          ]
+        },
+        {
+          "label": "주름안없어지는",
+          "count": 3,
+          "mapped": []
+        },
+        {
+          "label": "눈통증있는",
+          "count": 2,
+          "mapped": []
+        }
+      ],
+      "updated_at": "2026-06-20",
+      "unmapped_summary": {
+        "positive": [
+          "피부결좋아지는",
+          "매끄러운",
+          "각질제거잘되는",
+          "윤기나는"
+        ],
+        "negative": [
+          "유분있는",
+          "주름안없어지는",
+          "눈통증있는"
+        ],
+        "all": [
+          "피부결좋아지는",
+          "매끄러운",
+          "각질제거잘되는",
+          "윤기나는",
+          "유분있는",
+          "주름안없어지는",
+          "눈통증있는"
+        ]
+      }
+    },
+    "market_signals": {
+      "source": "hwahae_visible_page",
+      "review_count": 371,
+      "rating": 4.51,
+      "rating_distribution": {},
+      "updated_at": "2026-06-20"
+    },
+    "ingredient_signals": {
+      "source": "hwahae_visible_page",
+      "total_ingredients": 40,
+      "risk": {
+        "low": 37,
+        "medium": 2,
+        "high": 0,
+        "unknown": 1
+      },
+      "functional": [
+        {
+          "label": "skin hydration",
+          "count": 22,
+          "mapped": [
+            "dehydration"
+          ]
+        },
+        {
+          "label": "moisture evaporation blocking",
+          "count": 1,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "skin protection",
+          "count": 5,
+          "mapped": [
+            "barrier"
+          ]
+        },
+        {
+          "label": "soothing/astringent",
+          "count": 2,
+          "mapped": [
+            "redness",
+            "oiliness"
+          ]
+        },
+        {
+          "label": "wrinkle improvement",
+          "count": 1,
+          "mapped": [
+            "wrinkle_improvement"
+          ]
+        }
+      ],
+      "functional_summary": {
+        "dehydration": 22,
+        "barrier": 6,
+        "redness": 2,
+        "oiliness": 2,
+        "wrinkle_improvement": 1
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 2,
+          "negative": 1
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 1
+        }
+      },
+      "updated_at": "2026-06-20"
+    }
+  }
+]

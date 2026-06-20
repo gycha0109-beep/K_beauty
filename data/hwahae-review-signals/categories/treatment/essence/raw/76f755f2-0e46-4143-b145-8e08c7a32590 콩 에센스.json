@@ -1,0 +1,104 @@
+{
+  "productId": "76f755f2-0e46-4143-b145-8e08c7a32590",
+  "review_raw": {
+    "positive": [
+      [
+        "자극없는",
+        27
+      ],
+      [
+        "각질제거잘되는",
+        24
+      ],
+      [
+        "피지없어지는",
+        22
+      ],
+      [
+        "흡수잘되는",
+        20
+      ],
+      [
+        "매끄러운",
+        17
+      ],
+      [
+        "쫀득한",
+        16
+      ],
+      [
+        "피부결좋아지는",
+        12
+      ]
+    ],
+    "negative": [
+      [
+        "끈적한",
+        16
+      ],
+      [
+        "알러지반응오는",
+        5
+      ],
+      [
+        "밀림있는",
+        3
+      ],
+      [
+        "유분있는",
+        3
+      ],
+      [
+        "잔여물남는",
+        1
+      ],
+      [
+        "때처럼나오는",
+        1
+      ],
+      [
+        "뒤집어지는",
+        1
+      ]
+    ]
+  },
+  "market_raw": {
+    "review_count": 116,
+    "rating": 4.43,
+    "rating_distribution": {}
+  },
+  "ingredient_raw": {
+    "total_ingredients": 7,
+    "risk": {
+      "low": 6,
+      "medium": 0,
+      "high": 0,
+      "unknown": 1
+    },
+    "functional": {
+      "skin hydration": 6,
+      "moisture evaporation blocking": 0,
+      "skin protection": 1,
+      "soothing/astringent": 0,
+      "exfoliation": 0,
+      "whitening": 0,
+      "acne relief": 0,
+      "uv protection": 0,
+      "wrinkle improvement": 0
+    },
+    "skin_type": {
+      "oily": {
+        "positive": 0,
+        "negative": 0
+      },
+      "dry": {
+        "positive": 1,
+        "negative": 0
+      },
+      "sensitive": {
+        "positive": 0,
+        "negative": 0
+      }
+    }
+  }
+}

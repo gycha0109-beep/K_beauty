@@ -1,0 +1,186 @@
+{
+  "summary": {
+    "csvPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\products_rows.csv",
+    "category": "treatment",
+    "categoryFolder": "treatment",
+    "outDir": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment",
+    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\console-snippets\\화해 제품 리뷰 추출.js",
+    "mode": "extract",
+    "supabaseStatus": "checked 10/10",
+    "totalRows": 10,
+    "ready": 10,
+    "blocked": 0
+  },
+  "items": [
+    {
+      "id": "25e68245-aa63-4440-b4ab-09db91741cce",
+      "name": "바이옴 베리어 파하 결 앰플",
+      "brand": "유이크",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%EC%9C%A0%EC%9D%B4%ED%81%AC-%EB%B0%94%EC%9D%B4%EC%98%B4-%EB%B2%A0%EB%A6%AC%EC%96%B4-%ED%8C%8C%ED%95%98-%EA%B2%B0-%EC%95%B0%ED%94%8C-30ml/72858?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\ampoule\\raw\\25e68245-aa63-4440-b4ab-09db91741cce 바이옴 베리어 파하 결 앰플.json",
+      "live": {
+        "name": "바이옴 베리어 파하 결 앰플",
+        "category": "treatment",
+        "product_form": "ampoule",
+        "url": "https://www.hwahae.co.kr/goods/%EC%9C%A0%EC%9D%B4%ED%81%AC-%EB%B0%94%EC%9D%B4%EC%98%B4-%EB%B2%A0%EB%A6%AC%EC%96%B4-%ED%8C%8C%ED%95%98-%EA%B2%B0-%EC%95%B0%ED%94%8C-30ml/72858?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "76f755f2-0e46-4143-b145-8e08c7a32590",
+      "name": "콩 에센스",
+      "brand": "믹순",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/products/2096872",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\essence\\raw\\76f755f2-0e46-4143-b145-8e08c7a32590 콩 에센스.json",
+      "live": {
+        "name": "콩 에센스",
+        "category": "treatment",
+        "product_form": "essence",
+        "url": "https://www.hwahae.co.kr/products/2096872"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "a1fa0824-af5a-437d-9acf-6d59e06d9639",
+      "name": "비건 아하파하 앰플",
+      "brand": "유아른",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%EC%9C%A0%EC%95%84%EB%A5%B8-%EB%B9%84%EA%B1%B4-%EC%95%84%ED%95%98%ED%8C%8C%ED%95%98-%EC%95%B0%ED%94%8C-55ml/62237?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\ampoule\\raw\\a1fa0824-af5a-437d-9acf-6d59e06d9639 비건 아하파하 앰플.json",
+      "live": {
+        "name": "비건 아하파하 앰플",
+        "category": "treatment",
+        "product_form": "ampoule",
+        "url": "https://www.hwahae.co.kr/goods/%EC%9C%A0%EC%95%84%EB%A5%B8-%EB%B9%84%EA%B1%B4-%EC%95%84%ED%95%98%ED%8C%8C%ED%95%98-%EC%95%B0%ED%94%8C-55ml/62237?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "bffeb912-7693-465d-ab6f-76f3eb5f0bc8",
+      "name": "애플필 매끈 결 수딩 세럼 플레인",
+      "brand": "성분에디터",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/products/2123370",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\bffeb912-7693-465d-ab6f-76f3eb5f0bc8 애플필 매끈 결 수딩 세럼 플레인.json",
+      "live": {
+        "name": "애플필 매끈 결 수딩 세럼 플레인",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/products/2123370"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "ae6919e4-eca9-4af3-bc58-7d8a949375f6",
+      "name": "갈락토미세스 데일리 부스터 세럼",
+      "brand": "화음",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/products/2099741",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\ae6919e4-eca9-4af3-bc58-7d8a949375f6 갈락토미세스 데일리 부스터 세럼.json",
+      "live": {
+        "name": "갈락토미세스 데일리 부스터 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/products/2099741"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "c813f9be-b19c-4f8e-a7d5-c0eb91452d44",
+      "name": "블레미쉬 세럼",
+      "brand": "파파레서피",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%ED%8C%8C%ED%8C%8C%EB%A0%88%EC%84%9C%ED%94%BC-%EB%B8%94%EB%A0%88%EB%AF%B8%EC%89%AC-%EC%84%B8%EB%9F%BC-150ml/67734?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\c813f9be-b19c-4f8e-a7d5-c0eb91452d44 블레미쉬 세럼.json",
+      "live": {
+        "name": "블레미쉬 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/goods/%ED%8C%8C%ED%8C%8C%EB%A0%88%EC%84%9C%ED%94%BC-%EB%B8%94%EB%A0%88%EB%AF%B8%EC%89%AC-%EC%84%B8%EB%9F%BC-150ml/67734?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "fb1384b3-109f-4b30-ac44-8ef0c8550756",
+      "name": "아줄렌 수더 필 세럼",
+      "brand": "닥터상떼",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%EB%8B%A5%ED%84%B0%EC%83%81%EB%96%BC-%EC%95%84%EC%A4%84%EB%A0%8C-%EC%88%98%EB%8D%94-%ED%95%84-%EC%84%B8%EB%9F%BC-50ml/74811?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\fb1384b3-109f-4b30-ac44-8ef0c8550756 아줄렌 수더 필 세럼.json",
+      "live": {
+        "name": "아줄렌 수더 필 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/goods/%EB%8B%A5%ED%84%B0%EC%83%81%EB%96%BC-%EC%95%84%EC%A4%84%EB%A0%8C-%EC%88%98%EB%8D%94-%ED%95%84-%EC%84%B8%EB%9F%BC-50ml/74811?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "name": "만델릭 애시드 10% + HA 세럼",
+      "brand": "디오디너리",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/products/1820850",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\0b88019a-9eb2-4be9-842d-f1e60e42cf51 만델릭 애시드 10% + HA 세럼.json",
+      "live": {
+        "name": "만델릭 애시드 10% + HA 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/products/1820850"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "e96296f1-0186-4263-b185-c12374178546",
+      "name": "갈락토 씨씨 결 세럼",
+      "brand": "트루스오브뷰티",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%ED%8A%B8%EB%A3%A8%EC%8A%A4%EC%98%A4%EB%B8%8C%EB%B7%B0%ED%8B%B0-%EA%B0%88%EB%9D%BD%ED%86%A0-%EC%94%A8%EC%94%A8-%EA%B2%B0-%EC%84%B8%EB%9F%BC50ml/72030?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\e96296f1-0186-4263-b185-c12374178546 갈락토 씨씨 결 세럼.json",
+      "live": {
+        "name": "갈락토 씨씨 결 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/goods/%ED%8A%B8%EB%A3%A8%EC%8A%A4%EC%98%A4%EB%B8%8C%EB%B7%B0%ED%8B%B0-%EA%B0%88%EB%9D%BD%ED%86%A0-%EC%94%A8%EC%94%A8-%EA%B2%B0-%EC%84%B8%EB%9F%BC50ml/72030?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "96d7f8bc-5b0a-4cde-85eb-b2528eb726f5",
+      "name": "라하 톤앤글로우 소프트닝 세럼",
+      "brand": "하이클",
+      "category": "treatment",
+      "categoryFolder": "treatment",
+      "url": "https://www.hwahae.co.kr/goods/%ED%95%98%EC%9D%B4%ED%81%B4-%EB%9D%BC%ED%95%98-%ED%86%A4%EC%95%A4%EA%B8%80%EB%A1%9C%EC%9A%B0-%EC%86%8C%ED%94%84%ED%8A%B8%EB%8B%9D-%EC%84%B8%EB%9F%BC-30ml/70421?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\treatment\\serum\\raw\\96d7f8bc-5b0a-4cde-85eb-b2528eb726f5 라하 톤앤글로우 소프트닝 세럼.json",
+      "live": {
+        "name": "라하 톤앤글로우 소프트닝 세럼",
+        "category": "treatment",
+        "product_form": "serum",
+        "url": "https://www.hwahae.co.kr/goods/%ED%95%98%EC%9D%B4%ED%81%B4-%EB%9D%BC%ED%95%98-%ED%86%A4%EC%95%A4%EA%B8%80%EB%A1%9C%EC%9A%B0-%EC%86%8C%ED%94%84%ED%8A%B8%EB%8B%9D-%EC%84%B8%EB%9F%BC-30ml/70421?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    }
+  ]
+}
