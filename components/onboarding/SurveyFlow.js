@@ -14,6 +14,7 @@ const FLOW_COPY = {
     multiple: "복수 선택",
     next: "다음",
     back: "이전으로",
+    skipToResult: "결과 보기",
     startAnalyze: "분석 시작",
     needAnswer: "필수 항목을 먼저 선택해주세요.",
     maxSelect: (count) => `최대 ${count}개까지 선택할 수 있어요.`,
@@ -37,6 +38,7 @@ const FLOW_COPY = {
     multiple: "Multiple",
     next: "Next",
     back: "Back",
+    skipToResult: "See result",
     startAnalyze: "Start analysis",
     needAnswer: "Please answer the required question first.",
     maxSelect: (count) => `You can select up to ${count}.`,
@@ -448,6 +450,14 @@ function hasAnswer(question, form) {
   return Boolean(value);
 }
 
+function getRequiredQuestions(questions = []) {
+  return questions.filter((question) => Boolean(question.required));
+}
+
+function areRequiredQuestionsComplete(questions = [], form = {}) {
+  return getRequiredQuestions(questions).every((question) => hasAnswer(question, form));
+}
+
 const QUESTION_HIGHLIGHTS = {
   ko: {
     skinType: "피부 타입",
@@ -668,8 +678,11 @@ function MiniIcon({ type, className = "h-3.5 w-3.5" }) {
   }
 }
 
-function SurveyProgress({ stages, currentStage }) {
+function SurveyProgressHeader({ stages, currentStage, currentQuestionNumber, totalQuestions }) {
   const currentIndex = Math.max(0, stages.findIndex((stage) => stage.key === currentStage));
+  const progressPercent = totalQuestions > 0
+    ? Math.min(100, Math.max(0, (currentQuestionNumber / totalQuestions) * 100))
+    : 0;
 
   return (
     <div className="mx-auto w-full max-w-xl">
@@ -705,11 +718,17 @@ function SurveyProgress({ stages, currentStage }) {
           );
         })}
       </div>
+      <div className="mt-3 h-1 overflow-hidden rounded-full bg-[#ead2ca]/70 dark:bg-white/[0.10]">
+        <div
+          className="h-full rounded-full bg-[linear-gradient(90deg,#e76b91_0%,#ff8066_100%)] transition-[width] duration-300 dark:bg-[linear-gradient(90deg,#ef6387_0%,#ff8068_100%)]"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
     </div>
   );
 }
 
-function OptionButton({ option, selected, onClick, multiple, selectedText, compact }) {
+function SurveyOptionCard({ option, selected, onClick, multiple, selectedText, compact }) {
   const iconKey = option.visualKey || OPTION_ICON_KEYS[option.value] || "question";
   const checkClassName = `option-check-pop flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[linear-gradient(90deg,#df4776_0%,#ff7666_100%)] text-[10px] font-bold text-white shadow-sm ring-1 ring-white/50 transition duration-[180ms] ease-out ${
     selected ? "scale-100 opacity-100" : "scale-[0.82] opacity-0"
@@ -798,7 +817,7 @@ function OptionButton({ option, selected, onClick, multiple, selectedText, compa
   );
 }
 
-function OptionGrid({ question, form, onChange, copy, onMessage }) {
+function SurveyOptionGrid({ question, form, onChange, copy, onMessage }) {
   const value = getAnswerValue(form, question.id);
   const values = Array.isArray(value) ? value : value ? [value] : [];
   const compact = question.type === "multiple" || question.options.length >= 5 || COMPACT_QUESTION_IDS.has(question.id);
@@ -831,7 +850,7 @@ function OptionGrid({ question, form, onChange, copy, onMessage }) {
   return (
     <div className={`grid ${gridClass}`}>
       {question.options.map((option) => (
-        <OptionButton
+        <SurveyOptionCard
           key={`${question.id}-${option.value}`}
           option={option}
           selected={values.includes(option.value)}
@@ -874,7 +893,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
       </div>
 
       <div className="mt-3">
-        <OptionGrid
+        <SurveyOptionGrid
           question={question}
           form={form}
           onChange={onChange}
@@ -886,7 +905,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
   );
 }
 
-function SurveyHintPanel({ question, locale }) {
+function SurveyTipCard({ question, locale }) {
   const { label, text } = getSurveyHintCopy(question, locale);
 
   return (
@@ -908,6 +927,67 @@ function SurveyHintPanel({ question, locale }) {
   );
 }
 
+function SurveyFooterActions({
+  copy,
+  isFinalQuestion,
+  finalCtaEnabled,
+  finalCtaShowsSparkles,
+  finalCtaText,
+  canSkipToResult,
+  onBack,
+  onNext,
+  onSkipToResult
+}) {
+  return (
+    <div className="space-y-2">
+      {canSkipToResult && !isFinalQuestion ? (
+        <button
+          type="button"
+          onClick={onSkipToResult}
+          className="ui-button-tertiary w-full py-1.5 text-center text-xs"
+        >
+          {copy.skipToResult}
+        </button>
+      ) : null}
+
+      <div className={`grid gap-3 ${isFinalQuestion ? "grid-cols-[0.32fr_0.68fr]" : "grid-cols-[0.38fr_0.62fr]"}`}>
+        <button
+          type="button"
+          onClick={onBack}
+          className={`ui-button-secondary px-4 py-3 text-sm font-semibold ${isFinalQuestion ? "opacity-85" : ""}`}
+        >
+          {copy.back}
+        </button>
+        <span className="relative block min-w-0">
+          {finalCtaShowsSparkles ? (
+            <span aria-hidden="true" className="final-cta-sparkles pointer-events-none absolute -inset-x-2 -inset-y-2 z-0 overflow-visible">
+              <span className="final-cta-sparkle final-cta-sparkle-one">✦</span>
+              <span className="final-cta-sparkle final-cta-sparkle-two">✦</span>
+              <span className="final-cta-sparkle final-cta-sparkle-three">✦</span>
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={onNext}
+            className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
+              finalCtaEnabled
+                ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
+                : ""
+            }`}
+          >
+            {finalCtaEnabled ? (
+              <span aria-hidden="true" className="final-cta-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-white/25 blur-sm" />
+            ) : null}
+            <span className="relative inline-flex items-center justify-center">
+              {isFinalQuestion ? finalCtaText : copy.next}
+            </span>
+          </button>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBackToPhoto, onComplete, error }) {
   const copy = FLOW_COPY[locale] || FLOW_COPY.ko;
   const screens = useMemo(() => QUESTION_SCREENS[locale] || QUESTION_SCREENS.ko, [locale]);
@@ -924,6 +1004,11 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   const currentQuestion = questions[questionIndex] || questions[0];
   const totalQuestions = questions.length;
   const currentStageLabel = copy.stages.find((stage) => stage.key === currentQuestion.stage)?.label || currentQuestion.stage;
+  const requiredQuestionsComplete = useMemo(
+    () => areRequiredQuestionsComplete(questions, form),
+    [questions, form]
+  );
+  const canSkipToResult = requiredQuestionsComplete && !currentQuestion.required;
 
   const screenIsValid = currentQuestion.required ? hasAnswer(currentQuestion, form) : true;
   const isFinalQuestion = questionIndex >= questions.length - 1;
@@ -971,6 +1056,16 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
     scrollToTop();
   };
 
+  const handleSkipToResult = () => {
+    if (!requiredQuestionsComplete) {
+      setMessage(copy.needAnswer);
+      return;
+    }
+
+    setMessage("");
+    onComplete();
+  };
+
   return (
     <section className="flex flex-1 flex-col pt-0.5">
       <div className="space-y-2">
@@ -987,7 +1082,12 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           </p>
         </div>
 
-        <SurveyProgress stages={copy.stages} currentStage={currentQuestion.stage} />
+        <SurveyProgressHeader
+          stages={copy.stages}
+          currentStage={currentQuestion.stage}
+          currentQuestionNumber={questionIndex + 1}
+          totalQuestions={totalQuestions}
+        />
 
         <div className="ui-card p-3 sm:p-4">
           <div className="mb-2 flex items-center justify-between gap-3 px-1">
@@ -1011,7 +1111,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           </div>
 
           <div className="mt-2">
-            <SurveyHintPanel question={currentQuestion} locale={locale} />
+            <SurveyTipCard question={currentQuestion} locale={locale} />
           </div>
 
           {message || error ? (
@@ -1031,40 +1131,17 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           </p>
         ) : null}
 
-        <div className={`grid gap-3 ${isFinalQuestion ? "grid-cols-[0.32fr_0.68fr]" : "grid-cols-[0.38fr_0.62fr]"}`}>
-          <button
-            type="button"
-            onClick={handleBack}
-            className={`ui-button-secondary px-4 py-3 text-sm font-semibold ${isFinalQuestion ? "opacity-85" : ""}`}
-          >
-            {copy.back}
-          </button>
-          <span className="relative block min-w-0">
-            {finalCtaShowsSparkles ? (
-              <span aria-hidden="true" className="final-cta-sparkles pointer-events-none absolute -inset-x-2 -inset-y-2 z-0 overflow-visible">
-                <span className="final-cta-sparkle final-cta-sparkle-one">✦</span>
-                <span className="final-cta-sparkle final-cta-sparkle-two">✦</span>
-                <span className="final-cta-sparkle final-cta-sparkle-three">✦</span>
-              </span>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleNext}
-              className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
-                finalCtaEnabled
-                  ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
-                  : ""
-              }`}
-            >
-              {finalCtaEnabled ? (
-                <span aria-hidden="true" className="final-cta-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-white/25 blur-sm" />
-              ) : null}
-              <span className="relative inline-flex items-center justify-center">
-                {isFinalQuestion ? finalCtaText : copy.next}
-              </span>
-            </button>
-          </span>
-        </div>
+        <SurveyFooterActions
+          copy={copy}
+          isFinalQuestion={isFinalQuestion}
+          finalCtaEnabled={finalCtaEnabled}
+          finalCtaShowsSparkles={finalCtaShowsSparkles}
+          finalCtaText={finalCtaText}
+          canSkipToResult={canSkipToResult}
+          onBack={handleBack}
+          onNext={handleNext}
+          onSkipToResult={handleSkipToResult}
+        />
       </div>
 
       <style jsx>{`

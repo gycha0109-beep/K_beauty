@@ -7,9 +7,9 @@ import BottomCTA from "@/components/onboarding/BottomCTA";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
 import SurveyFlow from "@/components/onboarding/SurveyFlow";
+import SurveyCurrentProducts from "@/components/onboarding/SurveyCurrentProducts";
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
-import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
 import {
   INITIAL_FORM,
@@ -20,11 +20,16 @@ import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
+const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
 const STALE_ANALYSIS_SESSION_KEYS = [
   "skinTestShare",
-  "skinTestFaceLabFull"
+  "skinTestFaceLabFull",
+  "skinTestSubmission",
+  "skinTestResult",
+  "pendingSaveReport"
 ];
 const STALE_FULL_REPORT_LOCAL_STORAGE_KEYS = [
+  "fullReportOpenedAt",
   "lastReportUrl",
   "lastViewedAt",
   "lastFullReportTab"
@@ -47,6 +52,14 @@ function clearStaleAnalysisStorage() {
   STALE_FULL_REPORT_LOCAL_STORAGE_KEYS.forEach((key) => {
     localStorage.removeItem(key);
   });
+}
+
+function getAnalyzeErrorMessage(data, copy) {
+  if (data?.code === PRODUCT_SOURCE_UNAVAILABLE_CODE) {
+    return copy.errors.productSourceUnavailable;
+  }
+
+  return data?.error || copy.errors.analyzeFailed;
 }
 
 function normalizeSurveyAnswers(form = {}) {
@@ -223,7 +236,7 @@ export default function HomePage() {
         const nextWriteAccessToken = response.headers.get("x-kbeauty-write-token");
 
         if (!response.ok || !data) {
-          throw new Error(data?.error || copy.errors.analyzeFailed);
+          throw new Error(getAnalyzeErrorMessage(data, copy));
         }
 
         writeWriteAccessToken(nextWriteAccessToken);
@@ -421,7 +434,7 @@ export default function HomePage() {
             error={error}
           />
           {PREMIUM_REPORT_ENABLED ? (
-            <CurrentProductsSelector
+            <SurveyCurrentProducts
               locale={locale}
               value={currentProducts}
               onChange={setCurrentProducts}

@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-06-21 / Hwahae ranking Phase 1 snapshot pipeline
+
+- Branch: redesign-bejewely-first-screen
+- Task type: limited implementation
+- Routing decision: High DB schema/data-flow change with explicit user approval for a forward-only migration. Existing migration files, promotion RPC behavior, products data, auth, payment, policies, and deployment config were not modified.
+- Goal: Implement Phase 1 ranking collection so Hwahae ranking results accumulate through ranking_snapshots -> source_rankings -> product_candidates without direct products writes.
+- Changed files: supabase/migrations/20260621030000_phase1_ranking_snapshot_pipeline.sql, crawler/hwahae.ts, crawler/lib/supabase.ts, crawler/lib/ranking-config.ts, crawler/lib/snapshot.ts, crawler/lib/ranking-ingest.ts, crawler/config/ranking-jobs.json, crawler/test-ranking-ingest.ts, crawler/package.json, crawler/README.md, data/hwahae/README.md, docs/ranking-pipeline.md, .gitignore, .codex/AI_WORK_LOG.md
+- Protected areas: No .env edits, no auth/payment/policy/deployment edits, no production data write, no products insert/update path added, no promotion RPC change, no automatic promotion or automatic product tag finalization.
+- Validation plan: crawler ranking ingest smoke test, crawler typecheck, SQL/code search for products writes in the Phase 1 crawler path, and dry-run command if browser/network dependencies allow it.
+- Notes/risks: Existing source_rankings/product_candidates base table creation migration is not present in the repo, so the Phase 1 migration extends existing deployed tables with if-not-exists DDL. Fallback candidate identity without external_id remains non-unique by design and unresolved multiple matches are reported as pending identity collisions.
+- Context promotion candidate: Candidate rule to keep rankingFilter as source observation metadata, not product concern/tag metadata.
+
 ## 목적
 
 이 문서는 AI 에이전트 작업 이력을 단순 보관하지 않고, 성공한 작업 패턴과 에러·실패·회귀에서 얻은 교훈을 함께 수집해 재사용 가능한 운영 규칙과 상위 문서 승격 후보를 추출하기 위한 로그다.
@@ -66,6 +78,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - 문제/주의점: 다크 전환 시 Light background-image가 남는 문제가 한 차례 확인되어 `ui-page-shell`의 dark 배경도 gradient로 명시해 수정함.
 - 다음 작업: 실제 기기 카메라 권한 플로우는 별도 수동 확인 필요.
 - 재사용할 규칙: Light Mode 브랜드 강화는 배경/링/스텝 라인/브랜드명 강도만 올리고, CTA 크기와 정보 구조는 유지한다.
+- 규칙 승격 후보: Candidates
+
+### 2026-06-21 / survey flow architecture split and optional result path
+
+- 브랜치: redesign-bejewely-first-screen
+- 작업 유형: 실행형
+- 라우팅 판단: 설문 화면의 기존 디자인 톤과 흐름은 유지하고 컴포넌트 경계, required helper, optional result action, current products wrapper를 추가하는 Medium UI/architecture 작업. 첫 화면 PhotoUploadStep, 추천 로직, API 응답, DB, 인증, 결제, 저장 데이터 구조는 범위에서 제외.
+- 목표: 설문 질문 카드/선택지/진행률/팁/푸터 액션을 분리 가능한 컴포넌트 단위로 정리하고, 필수 질문 완료 후 선택 질문에서 결과 보기 흐름을 지원할 수 있게 준비.
+- 변경 파일: components/onboarding/SurveyFlow.js, components/onboarding/SurveyCurrentProducts.jsx, app/page.js, .codex/AI_WORK_LOG.md
+- 보호 구역: .env, 인증/권한/리다이렉트, DB schema/migration/policy, 결제, 개인정보/production data, API response field names, 저장 데이터 구조, 배포 설정, 추천 로직은 수정하지 않음.
+- 검증 결과: `npm run build` 성공. `git diff --check -- components/onboarding/SurveyFlow.js components/onboarding/SurveyCurrentProducts.jsx app/page.js` 통과. dev 서버 `http://localhost:3001` 200 확인. Playwright 390px에서 사진 업로드 -> 설문 진입 -> 필수 질문 3개 선택 -> 선택 질문 진입 확인. 필수 완료 전 `결과 보기` 미노출, 필수 완료 후 선택 질문에서 `결과 보기` 노출 확인. 이전 버튼으로 필수 질문 복귀 확인. progress bar width 증가 확인. Current products 영역 렌더링 확인. Light/Dark screenshot 확인, Next error overlay 0, console error 0.
+- 문제/주의점: 현재 사용 중 제품 API/추천 반영 로직은 건드리지 않고 래퍼 컴포넌트로만 분리함. `preferredTexture`는 현재 추천 normalize 기본값이 있어 이번 작업에서는 required로 승격하지 않음.
+- 다음 작업: 선택 질문 그룹을 실제 유료/프리미엄 설문으로 옮길 때는 `SurveyCurrentProducts` 렌더 위치와 `PREMIUM_REPORT_ENABLED` 정책만 조정하면 됨.
+- 재사용할 규칙: 설문 필수/선택 분리는 질문 데이터의 `required` 플래그와 `areRequiredQuestionsComplete` helper를 기준으로 처리하고, UI 흐름은 `SurveyFooterActions`에서만 분기한다.
 - 규칙 승격 후보: Candidates
 
 ### 2026-06-18 / paid full-report release gate and Step5 coming-soon lock
