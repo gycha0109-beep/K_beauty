@@ -67,6 +67,53 @@ function normalizeOptionGroup(product) {
   return normalizeCurrentProductCategory(product?.category);
 }
 
+function dedupeProducts(products = []) {
+  const seen = new Set();
+  const deduped = [];
+
+  for (const product of products) {
+    const id = String(product?.id || "").trim();
+
+    if (!id || seen.has(id)) {
+      continue;
+    }
+
+    seen.add(id);
+    deduped.push(product);
+  }
+
+  return deduped;
+}
+
+async function fetchCurrentProductOptionsByCategory(category) {
+  const normalizedCategory = normalizeCurrentProductCategory(category);
+
+  if (!normalizedCategory) {
+    return [];
+  }
+
+  const response = await fetch(`/api/current-products/products?category=${encodeURIComponent(normalizedCategory)}`);
+  const data = await response.json().catch(() => null);
+
+  if (response.status === 400) {
+    return [];
+  }
+
+  if (!response.ok || !data?.success || !Array.isArray(data.products)) {
+    throw new Error("load_failed");
+  }
+
+  return data.products;
+}
+
+async function fetchCurrentProductOptionsByGroup(group) {
+  const productsByCategory = await Promise.all(
+    group.categories.map((category) => fetchCurrentProductOptionsByCategory(category))
+  );
+
+  return dedupeProducts(productsByCategory.flat());
+}
+
 function toSelectionList(selectionMap) {
   return Object.values(selectionMap)
     .filter(Boolean)
@@ -109,15 +156,11 @@ export default function CurrentProductsSelector({
       setLoadState("loading");
 
       try {
-        const response = await fetch("/api/current-products/products");
-        const data = await response.json().catch(() => null);
-
-        if (!response.ok || !data?.success || !Array.isArray(data.products)) {
-          throw new Error("load_failed");
-        }
+        const productsByGroup = await Promise.all(GROUPS.map(fetchCurrentProductOptionsByGroup));
+        const nextProducts = dedupeProducts(productsByGroup.flat());
 
         if (!cancelled) {
-          setProducts(data.products);
+          setProducts(nextProducts);
           setLoadState("ready");
         }
       } catch {
