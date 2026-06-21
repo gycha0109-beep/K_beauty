@@ -14,6 +14,7 @@
     "review:prep": "tsx review-prep.ts",
     "reject:candidate": "tsx reject-candidate.ts",
     "promote:approved": "tsx promote-approved.ts",
+    "test:ranking-ingest": "tsx test-ranking-ingest.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

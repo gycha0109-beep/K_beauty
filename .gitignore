@@ -17,6 +17,7 @@ debug.png
 .tmp-*
 *headers*.txt
 *.log
+data/hwahae/ranking-snapshots/
 supabase/.temp/
 
 # Codex local runtime files

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "hwahae-skincare-toner-category-all",
+    "source": "hwahae",
+    "serviceCategory": "toner_essence",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "limit": 20,
+    "enabled": true,
+    "themeId": 5106
+  },
+  {
+    "id": "hwahae-skincare-treatment-category-all",
+    "source": "hwahae",
+    "serviceCategory": "treatment",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "limit": 20,
+    "enabled": true,
+    "themeId": 5126
+  },
+  {
+    "id": "hwahae-skincare-moisturizer-category-all",
+    "source": "hwahae",
+    "serviceCategory": "moisturizer",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "limit": 20,
+    "enabled": true,
+    "themeId": 5138
+  },
+  {
+    "id": "hwahae-skincare-sunscreen-category-all",
+    "source": "hwahae",
+    "serviceCategory": "sunscreen",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "limit": 20,
+    "enabled": true,
+    "themeId": 5297
+  },
+  {
+    "id": "hwahae-cleansing-cleanser-category-all",
+    "source": "hwahae",
+    "serviceCategory": "cleanser",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "limit": 20,
+    "enabled": true,
+    "themeId": 5178
+  },
+  {
+    "id": "hwahae-skincare-treatment-concern-acne-example",
+    "source": "hwahae",
+    "serviceCategory": "treatment",
+    "rankingScope": "concern",
+    "rankingFilter": "acne",
+    "limit": 20,
+    "enabled": false,
+    "themeId": 5126
+  }
+]

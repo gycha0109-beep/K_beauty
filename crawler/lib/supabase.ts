@@ -4,6 +4,13 @@ import {
   normalizeCanonicalBrandName,
   normalizeCanonicalProductName,
 } from "./normalize.js";
+import {
+  buildCandidateObservation,
+  validateRankingSnapshotIngestPayload,
+  type RankingSnapshotIngestPayload,
+} from "./ranking-ingest.js";
+import type { RankingJobConfig } from "./ranking-config.js";
+import type { RankingSnapshotItem, RankingSnapshotPayload } from "./snapshot.js";
 import type {
   CandidateForReview,
   MatchableProductRecord,
@@ -69,6 +76,17 @@ export interface SourceRankingInsertResult {
 export interface ProductCandidateUpsertResult {
   insertedCount: number;
   skippedCount: number;
+}
+
+export interface RankingSnapshotIngestResult {
+  snapshotId: string;
+  snapshotCreated: boolean;
+  sourceRankingsInserted: number;
+  sourceRankingsSkipped: number;
+  candidatesInserted: number;
+  candidatesReobserved: number;
+  pendingIdentityCount: number;
+  productsWritten: 0;
 }
 
 export interface ProductCandidateReviewUpdate {
@@ -444,6 +462,157 @@ export async function insertSourceRankings(
   return {
     insertedCount: rowsToInsert.length,
     skippedCount: rankings.length - rowsToInsert.length,
+  };
+}
+
+function getCandidateCategoryPath(job: RankingJobConfig): string {
+  return job.serviceCategory;
+}
+
+function buildCandidateLookupQuery(
+  client: SupabaseClient,
+  observation: ReturnType<typeof buildCandidateObservation>,
+) {
+  if (observation.externalType && observation.externalId) {
+    return client
+      .from("product_candidates")
+      .select("id, first_seen_at, seen_count")
+      .eq("source_name", observation.sourceName)
+      .eq("external_type", observation.externalType)
+      .eq("external_id", observation.externalId)
+      .limit(2);
+  }
+
+  return client
+    .from("product_candidates")
+    .select("id, first_seen_at, seen_count")
+    .eq("source_name", observation.sourceName)
+    .eq("normalized_brand", observation.normalizedBrand)
+    .eq("normalized_name", observation.normalizedName)
+    .limit(2);
+}
+
+async function observeProductCandidate(
+  client: SupabaseClient,
+  observation: ReturnType<typeof buildCandidateObservation>,
+): Promise<{ candidateId: string | null; action: "inserted" | "reobserved" | "pending_collision" }> {
+  const { data: existingRows, error: lookupError } = await buildCandidateLookupQuery(client, observation);
+
+  if (lookupError) {
+    throw new Error(`Failed to lookup product candidate: ${formatSupabaseError(lookupError)}`);
+  }
+
+  if ((existingRows?.length ?? 0) > 1) {
+    return {
+      candidateId: null,
+      action: "pending_collision",
+    };
+  }
+
+  const existing = existingRows?.[0] as { id: string; seen_count?: number | null } | undefined;
+
+  if (existing?.id) {
+    const { error: updateError } = await client
+      .from("product_candidates")
+      .update({
+        source_url: observation.sourceUrl,
+        last_seen_at: observation.observedAt,
+        seen_count: Math.max(0, Number(existing.seen_count ?? 0)) + 1,
+        latest_price: observation.latestPrice,
+        latest_raw_source: observation.latestRawSource as unknown as Json,
+      })
+      .eq("id", existing.id);
+
+    if (updateError) {
+      throw new Error(`Failed to update product candidate ${existing.id}: ${formatSupabaseError(updateError)}`);
+    }
+
+    return {
+      candidateId: existing.id,
+      action: "reobserved",
+    };
+  }
+
+  const payload: Record<string, unknown> = {
+    source_name: observation.sourceName,
+    category_path: observation.categoryPath,
+    product_name_raw: observation.productNameRaw,
+    brand_name_raw: observation.brandNameRaw,
+    normalized_name: observation.normalizedName,
+    normalized_brand: observation.normalizedBrand,
+    external_type: observation.externalType,
+    external_id: observation.externalId,
+    source_url: observation.sourceUrl,
+    first_seen_at: observation.observedAt,
+    last_seen_at: observation.observedAt,
+    seen_count: 1,
+    latest_price: observation.latestPrice,
+    latest_raw_source: observation.latestRawSource as unknown as Json,
+  };
+  const columnSupport = await getProductCandidateColumnSupport(client);
+
+  if (columnSupport.legacyStatus) {
+    payload.status = "new";
+  }
+
+  if (columnSupport.reviewStatus) {
+    payload.review_status = "new";
+  }
+
+  const { data, error: insertError } = await client
+    .from("product_candidates")
+    .insert(payload)
+    .select("id")
+    .single();
+
+  if (insertError) {
+    throw new Error(`Failed to insert product candidate: ${formatSupabaseError(insertError)}`);
+  }
+
+  return {
+    candidateId: String((data as { id: string }).id),
+    action: "inserted",
+  };
+}
+
+export async function ingestRankingSnapshot(
+  client: SupabaseClient,
+  input: RankingSnapshotIngestPayload,
+): Promise<RankingSnapshotIngestResult> {
+  validateRankingSnapshotIngestPayload(input);
+
+  const { data, error } = await client.rpc("ingest_ranking_snapshot", {
+    p_ingest_key: input.ingestKey,
+    p_snapshot: {
+      snapshotHash: input.snapshotHash,
+      job: input.job,
+      sourceUrl: input.sourceUrl,
+      collectedAt: input.collectedAt,
+      collectorVersion: input.collectorVersion,
+      rawPayload: input.rawPayload,
+      items: input.items,
+    },
+  });
+
+  if (error) {
+    throw new Error(`Failed to ingest ranking snapshot: ${formatSupabaseError(error)}`);
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Failed to ingest ranking snapshot: RPC returned an invalid response.");
+  }
+
+  const result = data as Record<string, unknown>;
+
+  return {
+    snapshotId: String(result.snapshot_id),
+    snapshotCreated: Boolean(result.snapshot_created),
+    sourceRankingsInserted: Number(result.source_rankings_inserted ?? 0),
+    sourceRankingsSkipped: Number(result.source_rankings_skipped ?? 0),
+    candidatesInserted: Number(result.candidates_inserted ?? 0),
+    candidatesReobserved: Number(result.candidates_reobserved ?? 0),
+    pendingIdentityCount: Number(result.pending_identity_count ?? 0),
+    productsWritten: 0,
   };
 }
 

@@ -4,40 +4,30 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { normalizeBrandName, normalizeProductName } from "./lib/normalize.js";
-import { runReviewPrep } from "./review-prep.js";
+import {
+  loadRankingJobs,
+  resolveRankingJobUrl,
+  type RankingJobConfig,
+} from "./lib/ranking-config.js";
+import {
+  saveRankingSnapshotFile,
+  type RankingSnapshotItem,
+  type RankingSnapshotPayload,
+} from "./lib/snapshot.js";
 import {
   createCrawlJob,
   createServiceRoleClient,
-  insertSourceRankings,
+  ingestRankingSnapshot,
   updateCrawlJob,
-  upsertProductCandidates,
-  type ProductCandidateInsert,
-  type SourceRankingInsert,
+  type RankingSnapshotIngestResult,
 } from "./lib/supabase.js";
 
-const SOURCE_NAME = "hwahae";
-const BASE_URL = "https://www.hwahae.com/en/rankings";
 const JSON_LD_SELECTOR = 'script[type="application/ld+json"]';
 const DEFAULT_DELAY_MS = 1500;
 const DEFAULT_NAVIGATION_TIMEOUT_MS = 45000;
 const DEFAULT_RETRIES = 3;
 const DEFAULT_HEADLESS = true;
-
-const CATEGORY_CONFIG = [
-  { key: "skincare/toner", themeId: 5106, categoryPath: "skincare/toner" },
-  { key: "skincare/serum", themeId: 5126, categoryPath: "skincare/serum" },
-  { key: "skincare/cream", themeId: 5138, categoryPath: "skincare/cream" },
-  { key: "skincare/suncare", themeId: 5297, categoryPath: "skincare/suncare" },
-  { key: "cleansing/cleansing", themeId: 5178, categoryPath: "cleansing/cleansing" },
-] as const;
-
-interface RankingCategorySeed {
-  key: string;
-  themeId: number;
-  categoryPath: string;
-  url: string;
-}
+const COLLECTOR_VERSION = "hwahae-ranking-phase1/1";
 
 interface JsonLdProduct {
   name?: string;
@@ -45,26 +35,20 @@ interface JsonLdProduct {
   image?: string;
   brand?: {
     name?: string;
-  };
+  } | string;
   aggregateRating?: {
     ratingValue?: number | string;
     reviewCount?: number | string;
+  };
+  offers?: {
+    price?: number | string;
+    lowPrice?: number | string;
   };
 }
 
 interface JsonLdListItem {
   position?: number | string;
   item?: JsonLdProduct;
-}
-
-interface ExtractedRankingItem {
-  rankPosition: number;
-  productName: string;
-  brandName: string;
-  rating: number | null;
-  reviewCount: number | null;
-  thumbnailUrl: string | null;
-  sourceUrl: string;
 }
 
 interface RuntimeOptions {
@@ -75,13 +59,26 @@ interface RuntimeOptions {
   withReviewPrep: boolean;
   maxPages: number | null;
   themeIds: number[] | null;
+  jobIds: string[] | null;
+  configPath?: string;
+  includeDisabled: boolean;
 }
 
 interface CrawlSummary {
-  categoriesCrawled: number;
-  rowsInserted: number;
+  jobsCrawled: number;
+  snapshotsCreated: number;
+  sourceRankingsInserted: number;
+  sourceRankingsSkipped: number;
   candidatesInserted: number;
+  candidatesReobserved: number;
+  pendingIdentityCount: number;
+  productsWritten: 0;
   errorsCount: number;
+}
+
+interface ExtractedSnapshot {
+  rawJsonLd: unknown[];
+  items: RankingSnapshotItem[];
 }
 
 function loadEnvironment(): void {
@@ -131,6 +128,19 @@ function parseOptionalThemeIds(value: string | undefined): number[] | null {
   return themeIds.length > 0 ? Array.from(new Set(themeIds)) : null;
 }
 
+function parseOptionalStringList(value: string | undefined): string[] | null {
+  if (!value) {
+    return null;
+  }
+
+  const values = value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return values.length > 0 ? Array.from(new Set(values)) : null;
+}
+
 function parseArgs(argv: string[]): RuntimeOptions {
   const optionMap = new Map<string, string | undefined>();
 
@@ -146,11 +156,14 @@ function parseArgs(argv: string[]): RuntimeOptions {
   const themeIds =
     parseOptionalThemeIds(optionMap.get("theme-ids")) ??
     parseOptionalThemeIds(process.env.HWAHAE_THEME_IDS);
-
+  const jobIds =
+    parseOptionalStringList(optionMap.get("job-ids")) ??
+    parseOptionalStringList(process.env.HWAHAE_JOB_IDS);
   const maxPagesArg = optionMap.get("max-pages") ?? process.env.HWAHAE_MAX_PAGES;
   const parsedMaxPages = maxPagesArg ? Number.parseInt(maxPagesArg, 10) : Number.NaN;
   const hasHeadedFlag = optionMap.has("headed");
   const hasDryRunFlag = optionMap.has("dry-run");
+  const configPath = optionMap.get("config") ?? process.env.HWAHAE_RANKING_JOBS_CONFIG;
 
   return {
     delayMs: parseNumberValue(optionMap.get("delay-ms") ?? process.env.HWAHAE_DELAY_MS, DEFAULT_DELAY_MS),
@@ -160,6 +173,9 @@ function parseArgs(argv: string[]): RuntimeOptions {
     withReviewPrep: optionMap.has("with-review-prep"),
     maxPages: Number.isFinite(parsedMaxPages) ? parsedMaxPages : null,
     themeIds,
+    jobIds,
+    configPath,
+    includeDisabled: optionMap.has("include-disabled"),
   };
 }
 
@@ -215,31 +231,93 @@ function coerceNumber(value: number | string | undefined): number | null {
   return null;
 }
 
-function getConfiguredCategorySeeds(options: RuntimeOptions): RankingCategorySeed[] {
-  let seeds = CATEGORY_CONFIG.map((category) => ({
-    key: category.key,
-    themeId: category.themeId,
-    categoryPath: category.categoryPath,
-    url: `${BASE_URL}?english_name=category&theme_id=${category.themeId}`,
-  }));
+function getBrandName(product: JsonLdProduct | undefined): string {
+  const brand = product?.brand;
 
-  if (options.themeIds) {
-    const themeIdSet = new Set(options.themeIds);
-    seeds = seeds.filter((seed) => themeIdSet.has(seed.themeId));
+  if (typeof brand === "string") {
+    return brand.trim();
   }
 
-  if (options.maxPages !== null) {
-    seeds = seeds.slice(0, options.maxPages);
-  }
-
-  return seeds;
+  return brand?.name?.trim() ?? "";
 }
 
-async function extractRankingItemsFromJsonLd(page: Page, rankingPageUrl: string): Promise<ExtractedRankingItem[]> {
+function parseExternalFromUrl(url: string): { externalType: string | null; externalId: string | null } {
+  const match = url.match(/\/(goods|products|product)\/(\d+)/i);
+
+  if (!match) {
+    return {
+      externalType: null,
+      externalId: null,
+    };
+  }
+
+  return {
+    externalType: match[1] === "product" ? "products" : match[1],
+    externalId: match[2],
+  };
+}
+
+function normalizeRawItem(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {
+    value: String(value ?? ""),
+  };
+}
+
+function extractItemProduct(entry: JsonLdListItem & JsonLdProduct): JsonLdProduct | undefined {
+  return entry.item ?? entry;
+}
+
+function parseRankingItems(
+  itemListElement: JsonLdListItem[],
+  rankingPageUrl: string,
+  limit: number,
+): RankingSnapshotItem[] {
+  return itemListElement
+    .map((entry, index) => {
+      const product = extractItemProduct(entry as JsonLdListItem & JsonLdProduct);
+      const rankPosition = coerceNumber(entry.position) ?? index + 1;
+      const productName = product?.name?.trim() ?? "";
+      const brandName = getBrandName(product);
+
+      if (!productName || !brandName) {
+        return null;
+      }
+
+      const sourceUrl = product?.url?.trim() || rankingPageUrl;
+      const external = parseExternalFromUrl(sourceUrl);
+      const price = coerceNumber(product?.offers?.price) ?? coerceNumber(product?.offers?.lowPrice);
+
+      return {
+        rankPosition,
+        productName,
+        brandName,
+        rating: coerceNumber(product?.aggregateRating?.ratingValue),
+        reviewCount: coerceNumber(product?.aggregateRating?.reviewCount),
+        thumbnailUrl: product?.image?.trim() || null,
+        sourceUrl,
+        price,
+        externalType: external.externalType,
+        externalId: external.externalId,
+        rawItem: normalizeRawItem(entry),
+      } satisfies RankingSnapshotItem;
+    })
+    .filter((entry): entry is RankingSnapshotItem => entry !== null)
+    .slice(0, limit);
+}
+
+async function extractRankingSnapshotFromJsonLd(
+  page: Page,
+  rankingPageUrl: string,
+  limit: number,
+): Promise<ExtractedSnapshot> {
   const rawJsonBlocks = await page.locator(JSON_LD_SELECTOR).evaluateAll((elements) =>
     elements
       .map((element) => element.textContent)
-      .filter((value): value is string => Boolean(value))
+      .filter((value): value is string => Boolean(value)),
   );
 
   const parsedBlocks = rawJsonBlocks.flatMap((rawBlock) => {
@@ -265,37 +343,21 @@ async function extractRankingItemsFromJsonLd(page: Page, rankingPageUrl: string)
     throw new Error(`Unable to find ItemList JSON-LD on ${rankingPageUrl}`);
   }
 
-  return itemListBlock.itemListElement
-    .map((entry, index) => {
-      const product = entry.item;
-      const rankPosition = coerceNumber(entry.position) ?? index + 1;
-      const productName = product?.name?.trim() ?? "";
-      const brandName = product?.brand?.name?.trim() ?? "";
-
-      if (!productName || !brandName) {
-        return null;
-      }
-
-      return {
-        rankPosition,
-        productName,
-        brandName,
-        rating: coerceNumber(product?.aggregateRating?.ratingValue),
-        reviewCount: coerceNumber(product?.aggregateRating?.reviewCount),
-        thumbnailUrl: product?.image?.trim() || null,
-        sourceUrl: product?.url?.trim() || rankingPageUrl,
-      } satisfies ExtractedRankingItem;
-    })
-    .filter((entry): entry is ExtractedRankingItem => entry !== null);
+  return {
+    rawJsonLd: parsedBlocks,
+    items: parseRankingItems(itemListBlock.itemListElement, rankingPageUrl, limit),
+  };
 }
 
-async function crawlCategoryPage(
+async function crawlRankingJob(
   page: Page,
-  seed: RankingCategorySeed,
+  job: RankingJobConfig,
   options: RuntimeOptions,
-): Promise<ExtractedRankingItem[]> {
-  await withRetry(`load category ${seed.themeId}`, options.retries, async () => {
-    await page.goto(seed.url, {
+): Promise<{ sourceUrl: string; snapshot: ExtractedSnapshot }> {
+  const sourceUrl = resolveRankingJobUrl(job);
+
+  await withRetry(`load ranking job ${job.id}`, options.retries, async () => {
+    await page.goto(sourceUrl, {
       waitUntil: "domcontentloaded",
       timeout: DEFAULT_NAVIGATION_TIMEOUT_MS,
     });
@@ -307,67 +369,58 @@ async function crawlCategoryPage(
   });
   await sleep(options.delayMs);
 
-  return withRetry(`extract category ${seed.themeId}`, options.retries, async () =>
-    extractRankingItemsFromJsonLd(page, seed.url),
+  const snapshot = await withRetry(`extract ranking job ${job.id}`, options.retries, async () =>
+    extractRankingSnapshotFromJsonLd(page, sourceUrl, job.limit),
   );
+
+  return {
+    sourceUrl,
+    snapshot,
+  };
 }
 
-function buildSourceRankingRows(
-  categoryPath: string,
-  collectedAt: string,
-  items: ExtractedRankingItem[],
-): SourceRankingInsert[] {
-  return items.map((item) => ({
-    source_name: SOURCE_NAME,
-    category_path: categoryPath,
-    rank_position: item.rankPosition,
-    product_name: item.productName,
-    brand_name: item.brandName,
-    rating: item.rating,
-    review_count: item.reviewCount,
-    thumbnail_url: item.thumbnailUrl,
-    source_url: item.sourceUrl,
-    collected_at: collectedAt,
-  }));
-}
-
-function buildProductCandidateRows(
-  categoryPath: string,
-  items: ExtractedRankingItem[],
-): ProductCandidateInsert[] {
-  return items.map((item) => ({
-    source_name: SOURCE_NAME,
-    category_path: categoryPath,
-    product_name_raw: item.productName,
-    brand_name_raw: item.brandName,
-    normalized_name: normalizeProductName(item.productName),
-    normalized_brand: normalizeBrandName(item.brandName),
-    status: "new",
-    review_status: "new",
-  }));
+function mergeIngestResult(summary: CrawlSummary, result: RankingSnapshotIngestResult): void {
+  summary.sourceRankingsInserted += result.sourceRankingsInserted;
+  summary.sourceRankingsSkipped += result.sourceRankingsSkipped;
+  summary.candidatesInserted += result.candidatesInserted;
+  summary.candidatesReobserved += result.candidatesReobserved;
+  summary.pendingIdentityCount += result.pendingIdentityCount;
 }
 
 function printSummary(summary: CrawlSummary, dryRun: boolean): void {
   console.log("");
-  console.log("Crawl summary");
-  console.log(`- categories crawled: ${summary.categoriesCrawled}`);
-  console.log(`- rows inserted${dryRun ? " (would insert)" : ""}: ${summary.rowsInserted}`);
-  console.log(`- candidates inserted${dryRun ? " (would insert)" : ""}: ${summary.candidatesInserted}`);
+  console.log(dryRun ? "Crawl summary (dry-run)" : "Crawl summary");
+  console.log(`- jobs crawled: ${summary.jobsCrawled}`);
+  console.log(`- snapshots created: ${summary.snapshotsCreated}`);
+  console.log(`- source_rankings new rows: ${summary.sourceRankingsInserted}`);
+  console.log(`- source_rankings skipped duplicates: ${summary.sourceRankingsSkipped}`);
+  console.log(`- product_candidates new candidates: ${summary.candidatesInserted}`);
+  console.log(`- product_candidates reobserved: ${summary.candidatesReobserved}`);
+  console.log(`- identity collisions/pending matches: ${summary.pendingIdentityCount}`);
+  console.log(`- products writes: ${summary.productsWritten}`);
   console.log(`- errors count: ${summary.errorsCount}`);
 }
 
 async function run(): Promise<void> {
   loadEnvironment();
 
+  const currentFile = fileURLToPath(import.meta.url);
+  const crawlerDirectory = path.dirname(currentFile);
+  const workspaceDirectory = path.resolve(crawlerDirectory, "..");
   const options = parseArgs(process.argv.slice(2));
   const client = options.dryRun ? null : createServiceRoleClient();
   let browser: Browser | null = null;
   let crawlJobId: number | string | null = null;
   let summaryPrinted = false;
   const summary: CrawlSummary = {
-    categoriesCrawled: 0,
-    rowsInserted: 0,
+    jobsCrawled: 0,
+    snapshotsCreated: 0,
+    sourceRankingsInserted: 0,
+    sourceRankingsSkipped: 0,
     candidatesInserted: 0,
+    candidatesReobserved: 0,
+    pendingIdentityCount: 0,
+    productsWritten: 0,
     errorsCount: 0,
   };
   const errorLogs: string[] = [];
@@ -378,6 +431,22 @@ async function run(): Promise<void> {
       crawlJobId = crawlJob.id;
     }
 
+    const jobs = await loadRankingJobs({
+      configPath: options.configPath,
+      includeDisabled: options.includeDisabled,
+      themeIds: options.themeIds,
+      maxPages: options.maxPages,
+    });
+    const filteredJobs = options.jobIds
+      ? jobs.filter((job) => options.jobIds?.includes(job.id))
+      : jobs;
+
+    if (filteredJobs.length === 0) {
+      console.warn("No ranking jobs matched the current filters.");
+    } else {
+      console.log(`Discovered ${filteredJobs.length} ranking job(s) to crawl.`);
+    }
+
     browser = await chromium.launch({ headless: options.headless });
 
     const page = await browser.newPage({
@@ -386,39 +455,65 @@ async function run(): Promise<void> {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
     });
 
-    const seeds = getConfiguredCategorySeeds(options);
-
-    if (seeds.length === 0) {
-      console.warn("No category pages matched the current filters.");
-    } else {
-      console.log(`Discovered ${seeds.length} category pages to crawl.`);
-    }
-
-    for (const [index, seed] of seeds.entries()) {
-      console.log(`[${index + 1}/${seeds.length}] Crawling ${seed.categoryPath} (${seed.url})`);
+    for (const [index, job] of filteredJobs.entries()) {
+      console.log(
+        `[${index + 1}/${filteredJobs.length}] Crawling ${job.id} (${job.serviceCategory}/${job.rankingScope}/${job.rankingFilter})`,
+      );
 
       try {
-        const items = await crawlCategoryPage(page, seed, options);
+        const { sourceUrl, snapshot } = await crawlRankingJob(page, job, options);
         const collectedAt = new Date().toISOString();
-        const rankingRows = buildSourceRankingRows(seed.categoryPath, collectedAt, items);
-        const candidateRows = buildProductCandidateRows(seed.categoryPath, items);
+        const payload: RankingSnapshotPayload = {
+          job,
+          sourceUrl,
+          collectedAt,
+          collectorVersion: COLLECTOR_VERSION,
+          rawJsonLd: snapshot.rawJsonLd,
+          items: snapshot.items,
+        };
+        const savedSnapshot = await saveRankingSnapshotFile(payload, {
+          workspaceRoot: workspaceDirectory,
+        });
 
-        summary.categoriesCrawled += 1;
+        summary.jobsCrawled += 1;
+        console.log(`- snapshot file: ${path.relative(workspaceDirectory, savedSnapshot.filePath)}`);
+        console.log(`- snapshot hash: ${savedSnapshot.snapshotHash}`);
+        console.log(`- ingest key: ${savedSnapshot.ingestKey}`);
 
         if (client) {
-          const sourceRankingResult = await insertSourceRankings(client, rankingRows);
-          const candidateResult = await upsertProductCandidates(client, candidateRows);
-
-          summary.rowsInserted += sourceRankingResult.insertedCount;
-          summary.candidatesInserted += candidateResult.insertedCount;
+          const ingestResult = await ingestRankingSnapshot(client, {
+            ingestKey: savedSnapshot.ingestKey,
+            snapshotHash: savedSnapshot.snapshotHash,
+            job,
+            sourceUrl,
+            collectedAt,
+            collectorVersion: COLLECTOR_VERSION,
+            rawPayload: savedSnapshot.payload,
+            items: snapshot.items,
+          });
+          if (ingestResult.snapshotCreated) {
+            summary.snapshotsCreated += 1;
+          }
+          mergeIngestResult(summary, ingestResult);
         } else {
-          summary.rowsInserted += rankingRows.length;
-          summary.candidatesInserted += candidateRows.length;
-          console.log(`[dry-run] Prepared ${rankingRows.length} source ranking rows for ${seed.categoryPath}`);
+          const uniqueCandidateKeys = new Set(
+            snapshot.items.map((item) =>
+              item.externalType && item.externalId
+                ? `${job.source}::${item.externalType}::${item.externalId}`
+                : `${job.source}::${item.brandName.toLowerCase()}::${item.productName.toLowerCase()}`,
+            ),
+          );
+
+          summary.snapshotsCreated += 1;
+          summary.sourceRankingsInserted += snapshot.items.length;
+          summary.candidatesInserted += uniqueCandidateKeys.size;
+          console.log(
+            `[dry-run] Prepared snapshot, ${snapshot.items.length} source ranking row(s), and ${uniqueCandidateKeys.size} candidate upsert candidate(s).`,
+          );
         }
       } catch (error) {
         summary.errorsCount += 1;
-        const errorMessage = `[${seed.categoryPath}] ${formatError(error)}`;
+        const errorMessage = `[${job.id}] ${formatError(error)}`;
         errorLogs.push(errorMessage);
         console.error(errorMessage);
       }
@@ -427,41 +522,32 @@ async function run(): Promise<void> {
     if (client && crawlJobId !== null) {
       await updateCrawlJob(client, crawlJobId, {
         status: summary.errorsCount > 0 ? "failed" : "completed",
-        itemCount: summary.rowsInserted,
+        itemCount: summary.sourceRankingsInserted,
         errorLog: errorLogs.join("\n\n"),
       });
+    }
+
+    if (options.withReviewPrep) {
+      console.log("");
+      console.log("[with-review-prep] Skipped. Phase 1 ranking collection does not run review prep or promotion.");
     }
 
     printSummary(summary, options.dryRun);
     summaryPrinted = true;
 
     if (summary.errorsCount > 0) {
-      throw new Error(`Crawler finished with ${summary.errorsCount} category error(s).`);
-    }
-
-    if (options.withReviewPrep) {
-      if (options.dryRun) {
-        console.log("");
-        console.log("[with-review-prep] Skipped automatic review prep because crawl ran in dry-run mode.");
-      } else {
-        console.log("");
-        console.log("[with-review-prep] Starting automatic review prep for pending candidates...");
-        await runReviewPrep({
-          limit: Math.max(100, summary.candidatesInserted),
-          dryRun: false,
-        });
-      }
+      throw new Error(`Crawler finished with ${summary.errorsCount} ranking job error(s).`);
     }
   } catch (error) {
     if (client && crawlJobId !== null) {
       await updateCrawlJob(client, crawlJobId, {
         status: "failed",
-        itemCount: summary.rowsInserted,
+        itemCount: summary.sourceRankingsInserted,
         errorLog: [errorLogs.join("\n\n"), formatError(error)].filter(Boolean).join("\n\n"),
       });
     }
 
-    if (!summaryPrinted && (summary.categoriesCrawled > 0 || summary.errorsCount > 0)) {
+    if (!summaryPrinted && (summary.jobsCrawled > 0 || summary.errorsCount > 0)) {
       printSummary(summary, options.dryRun);
     }
 
