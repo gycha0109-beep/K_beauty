@@ -7,7 +7,6 @@ import BottomCTA from "@/components/onboarding/BottomCTA";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
 import SurveyFlow from "@/components/onboarding/SurveyFlow";
-import SurveyCurrentProducts from "@/components/onboarding/SurveyCurrentProducts";
 import ThemeToggle from "@/components/ThemeToggle";
 import AuthNav from "@/components/auth/AuthNav";
 import { TEST_RESULT_PRESETS, getFaceLabTestPreset, getTestResultPreset } from "@/lib/test-result-presets";
@@ -433,13 +432,6 @@ export default function HomePage() {
             onComplete={() => goToStep("loading")}
             error={error}
           />
-          {PREMIUM_REPORT_ENABLED ? (
-            <SurveyCurrentProducts
-              locale={locale}
-              value={currentProducts}
-              onChange={setCurrentProducts}
-            />
-          ) : null}
         </>
       );
     }
