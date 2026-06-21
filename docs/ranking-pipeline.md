@@ -2,13 +2,14 @@
 
 ## Principles
 
-The Phase 1 ranking pipeline separates source observations from the production catalog.
+The ranking pipeline separates source observations, manual promotion review, and the production catalog.
 
 - A ranking snapshot is observation data.
 - `source_rankings` stores individual observed ranking rows.
 - `product_candidates` is the long-term candidate pool.
+- `candidate_promotion_reviews` is a manual review queue derived from ranking evidence.
 - `products` is the approved production catalog.
-- Phase 1 does not modify `products`.
+- The ranking pipeline does not modify `products`.
 
 ## Data Flow
 
@@ -19,7 +20,8 @@ flowchart LR
   B --> D["snapshot JSON file"]
   C --> E["source_rankings"]
   E --> F["product_candidates"]
-  F -. "manual review and later approval only" .-> G["products"]
+  F --> H["candidate_promotion_reviews"]
+  H -. "manual approval in separate workflow" .-> G["products"]
 ```
 
 ## Ranking Job Config
@@ -30,19 +32,27 @@ Config file:
 crawler/config/ranking-jobs.json
 ```
 
-Phase 1 supports Hwahae ranking pages only. Other source names are not part of this implementation.
+Phase 1/2 supports Hwahae ranking pages only. Other source names are not part of this implementation.
 
-Required fields:
+Required JSON fields:
 
 - `id`
 - `source`
-- `serviceCategory`
-- `rankingScope`
-- `rankingFilter`
+- `source_category_key`
+- `service_category`
+- `source_product_form`
+- `ranking_scope`
+- `ranking_filter`
+- `source_concern_key`
+- `canonical_concerns`
+- `evidence_type`
 - `limit`
 - `enabled`
+- `disabled_reason`
 
-`rankingFilter` identifies the source ranking filter, such as `all` or `acne`. It is not the same thing as product concerns and should not be promoted into product tags automatically.
+`ranking_filter` identifies the source ranking filter, such as `all` or `acne`. It is not the same thing as product concerns and should not be promoted into product tags automatically. Concern context belongs in `source_concern_key` and `canonical_concerns`.
+
+Enabled jobs are limited to verified Hwahae single-page JSON-LD category rankings. Top 50/100 pagination and concern-ranking jobs stay disabled until the actual URL, filter semantics, pagination, and JSON-LD structure are verified.
 
 ## Snapshot Storage
 
@@ -61,6 +71,7 @@ The directory is ignored by git. Files contain:
 - `snapshotHash`
 
 The database stores the same source payload in `ranking_snapshots.raw_payload` so later diff/report jobs can work without touching `products`.
+It also stores collection-time context in `source_category_key`, `source_product_form`, `source_concern_key`, `canonical_concerns`, `evidence_type`, and `requested_limit` so historical analysis does not depend on the current config file.
 `snapshotHash` is a content fingerprint for comparison and audit, not a unique identity. It excludes collection time. Identical payloads from different collection times are valid separate snapshots.
 `ingestKey` is the retry identity for one locally generated snapshot. Re-running the same saved snapshot is idempotent only after the existing remote snapshot is already `ingested`: it reuses the existing snapshot, does not duplicate `source_rankings`, and does not increment candidate `seen_count` again. Reusing the same `ingestKey` with different snapshot metadata is a conflict. Reusing the same `ingestKey` for an existing non-`ingested` snapshot is blocked and requires investigation/recovery. A later collection with the same `snapshotHash` and a distinct `ingestKey` is a new snapshot.
 
@@ -144,14 +155,46 @@ from public.product_candidates
 where external_id is not null;
 ```
 
+## Review Queue
+
+After a full successful unfiltered crawl, the crawler calls `public.refresh_candidate_promotion_reviews(text)`.
+
+The refresh RPC:
+
+- summarizes concern and popularity ranking evidence
+- inserts one review row per candidate at most
+- updates only `queued` and `reviewing` rows
+- never moves `approved`, `rejected`, or `deferred` rows back to queued
+- excludes candidates already present in `products` by normalized brand/name
+- excludes candidates without external identity
+- returns `products_written = 0`
+
+Initial queue criteria are conservative:
+
+- concern Top 15, or
+- repeated same-concern evidence, or
+- at least two different concern evidences
+
+Popularity Top 100 observations add evidence and score, but popularity-only observations do not queue candidates.
+
+Use:
+
+```bash
+cd crawler
+npm run reviews:pending
+```
+
+to list queued/reviewing candidates and their evidence summary.
+
 ## Products Boundary
 
-Phase 1 forbidden actions:
+Forbidden actions:
 
 - direct `products` insert
 - direct `products` update
+- direct `products` delete
 - promotion RPC changes
 - automatic candidate promotion
 - automatic product tag finalization
 
-The existing `promote:approved` and `enrich:products` commands are not part of Phase 1 and can modify `products`; run them only in a separate approved promotion workflow.
+The existing `promote:approved` and `enrich:products` commands are not part of ranking collection and can modify `products`; run them only in a separate approved promotion workflow.

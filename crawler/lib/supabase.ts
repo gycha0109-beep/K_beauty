@@ -89,6 +89,28 @@ export interface RankingSnapshotIngestResult {
   productsWritten: 0;
 }
 
+export interface CandidatePromotionReviewRefreshResult {
+  ruleVersion: string;
+  candidatesExamined: number;
+  reviewsInserted: number;
+  reviewsUpdated: number;
+  protectedReviewsSkipped: number;
+  productsWritten: 0;
+}
+
+export interface PendingPromotionReviewRow {
+  candidate_id: string;
+  brand_name_raw: string | null;
+  product_name_raw: string | null;
+  status: string;
+  priority_score: number;
+  selection_reason: string;
+  evidence_snapshot: Json | Record<string, unknown>;
+  first_queued_at: string | null;
+  last_queued_at: string | null;
+  review_note: string | null;
+}
+
 export interface ProductCandidateReviewUpdate {
   service_category?: ServiceCategory | null;
   product_form?: ProductForm | null;
@@ -614,6 +636,82 @@ export async function ingestRankingSnapshot(
     pendingIdentityCount: Number(result.pending_identity_count ?? 0),
     productsWritten: 0,
   };
+}
+
+export async function refreshCandidatePromotionReviews(
+  client: SupabaseClient,
+  ruleVersion: string,
+): Promise<CandidatePromotionReviewRefreshResult> {
+  const { data, error } = await client.rpc("refresh_candidate_promotion_reviews", {
+    p_rule_version: ruleVersion,
+  });
+
+  if (error) {
+    throw new Error(`Failed to refresh candidate promotion reviews: ${formatSupabaseError(error)}`);
+  }
+
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Failed to refresh candidate promotion reviews: RPC returned an invalid response.");
+  }
+
+  const result = data as Record<string, unknown>;
+
+  return {
+    ruleVersion: String(result.rule_version ?? ruleVersion),
+    candidatesExamined: Number(result.candidates_examined ?? 0),
+    reviewsInserted: Number(result.reviews_inserted ?? 0),
+    reviewsUpdated: Number(result.reviews_updated ?? 0),
+    protectedReviewsSkipped: Number(result.protected_reviews_skipped ?? 0),
+    productsWritten: 0,
+  };
+}
+
+export async function listPendingPromotionReviews(
+  client: SupabaseClient,
+  limit = 50,
+): Promise<PendingPromotionReviewRow[]> {
+  const { data, error } = await client
+    .from("candidate_promotion_reviews")
+    .select(`
+      candidate_id,
+      status,
+      priority_score,
+      selection_reason,
+      evidence_snapshot,
+      first_queued_at,
+      last_queued_at,
+      review_note,
+      product_candidates (
+        brand_name_raw,
+        product_name_raw
+      )
+    `)
+    .in("status", ["queued", "reviewing"])
+    .order("priority_score", { ascending: false })
+    .order("last_queued_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to list pending promotion reviews: ${formatSupabaseError(error)}`);
+  }
+
+  return (data ?? []).map((row) => {
+    const candidate = (row as { product_candidates?: { brand_name_raw?: string | null; product_name_raw?: string | null } | null })
+      .product_candidates;
+
+    return {
+      candidate_id: String((row as { candidate_id: string }).candidate_id),
+      brand_name_raw: candidate?.brand_name_raw ?? null,
+      product_name_raw: candidate?.product_name_raw ?? null,
+      status: String((row as { status: string }).status),
+      priority_score: Number((row as { priority_score: number }).priority_score ?? 0),
+      selection_reason: String((row as { selection_reason: string }).selection_reason ?? ""),
+      evidence_snapshot: (row as { evidence_snapshot: Json | Record<string, unknown> }).evidence_snapshot,
+      first_queued_at: (row as { first_queued_at?: string | null }).first_queued_at ?? null,
+      last_queued_at: (row as { last_queued_at?: string | null }).last_queued_at ?? null,
+      review_note: (row as { review_note?: string | null }).review_note ?? null,
+    };
+  });
 }
 
 function buildCandidateInsertPayload(

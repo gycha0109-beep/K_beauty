@@ -18,7 +18,9 @@ import {
   createCrawlJob,
   createServiceRoleClient,
   ingestRankingSnapshot,
+  refreshCandidatePromotionReviews,
   updateCrawlJob,
+  type CandidatePromotionReviewRefreshResult,
   type RankingSnapshotIngestResult,
 } from "./lib/supabase.js";
 
@@ -28,6 +30,7 @@ const DEFAULT_NAVIGATION_TIMEOUT_MS = 45000;
 const DEFAULT_RETRIES = 3;
 const DEFAULT_HEADLESS = true;
 const COLLECTOR_VERSION = "hwahae-ranking-phase1/1";
+const REVIEW_RULE_VERSION = "ranking-review-v1";
 
 interface JsonLdProduct {
   name?: string;
@@ -73,6 +76,9 @@ interface CrawlSummary {
   candidatesReobserved: number;
   pendingIdentityCount: number;
   productsWritten: 0;
+  reviewsInserted: number;
+  reviewsUpdated: number;
+  reviewsProtectedSkipped: number;
   errorsCount: number;
 }
 
@@ -387,6 +393,22 @@ function mergeIngestResult(summary: CrawlSummary, result: RankingSnapshotIngestR
   summary.pendingIdentityCount += result.pendingIdentityCount;
 }
 
+function mergeReviewRefreshResult(summary: CrawlSummary, result: CandidatePromotionReviewRefreshResult): void {
+  summary.reviewsInserted += result.reviewsInserted;
+  summary.reviewsUpdated += result.reviewsUpdated;
+  summary.reviewsProtectedSkipped += result.protectedReviewsSkipped;
+}
+
+function shouldRefreshPromotionReviews(options: RuntimeOptions): boolean {
+  return (
+    !options.dryRun &&
+    !options.jobIds &&
+    !options.themeIds &&
+    options.maxPages === null &&
+    !options.includeDisabled
+  );
+}
+
 function printSummary(summary: CrawlSummary, dryRun: boolean): void {
   console.log("");
   console.log(dryRun ? "Crawl summary (dry-run)" : "Crawl summary");
@@ -397,6 +419,9 @@ function printSummary(summary: CrawlSummary, dryRun: boolean): void {
   console.log(`- product_candidates new candidates: ${summary.candidatesInserted}`);
   console.log(`- product_candidates reobserved: ${summary.candidatesReobserved}`);
   console.log(`- identity collisions/pending matches: ${summary.pendingIdentityCount}`);
+  console.log(`- candidate_promotion_reviews new rows: ${summary.reviewsInserted}`);
+  console.log(`- candidate_promotion_reviews updated rows: ${summary.reviewsUpdated}`);
+  console.log(`- candidate_promotion_reviews protected skipped: ${summary.reviewsProtectedSkipped}`);
   console.log(`- products writes: ${summary.productsWritten}`);
   console.log(`- errors count: ${summary.errorsCount}`);
 }
@@ -421,6 +446,9 @@ async function run(): Promise<void> {
     candidatesReobserved: 0,
     pendingIdentityCount: 0,
     productsWritten: 0,
+    reviewsInserted: 0,
+    reviewsUpdated: 0,
+    reviewsProtectedSkipped: 0,
     errorsCount: 0,
   };
   const errorLogs: string[] = [];
@@ -530,6 +558,26 @@ async function run(): Promise<void> {
     if (options.withReviewPrep) {
       console.log("");
       console.log("[with-review-prep] Skipped. Phase 1 ranking collection does not run review prep or promotion.");
+    }
+
+    if (summary.errorsCount === 0 && summary.jobsCrawled > 0 && shouldRefreshPromotionReviews(options)) {
+      if (client) {
+        const refreshResult = await refreshCandidatePromotionReviews(client, REVIEW_RULE_VERSION);
+        mergeReviewRefreshResult(summary, refreshResult);
+        console.log("");
+        console.log(
+          `[review-refresh] rule=${refreshResult.ruleVersion}, examined=${refreshResult.candidatesExamined}, inserted=${refreshResult.reviewsInserted}, updated=${refreshResult.reviewsUpdated}, protected=${refreshResult.protectedReviewsSkipped}`,
+        );
+      }
+    } else if (options.dryRun) {
+      console.log("");
+      console.log("[dry-run] Skipped candidate_promotion_reviews refresh.");
+    } else if (options.jobIds || options.themeIds || options.maxPages !== null || options.includeDisabled) {
+      console.log("");
+      console.log("[review-refresh] Skipped because this was a filtered crawl.");
+    } else if (summary.errorsCount > 0) {
+      console.log("");
+      console.log("[review-refresh] Skipped because one or more ranking jobs failed.");
     }
 
     printSummary(summary, options.dryRun);

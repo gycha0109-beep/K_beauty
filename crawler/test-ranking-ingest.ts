@@ -9,17 +9,25 @@ import {
   type RankingSnapshotIngestPayload,
 } from "./lib/ranking-ingest.js";
 import { ingestRankingSnapshot } from "./lib/supabase.js";
+import { refreshCandidatePromotionReviews } from "./lib/supabase.js";
 import type { RankingJobConfig } from "./lib/ranking-config.js";
 import type { RankingSnapshotItem } from "./lib/snapshot.js";
 
 const job: RankingJobConfig = {
   id: "hwahae-skincare-treatment-category-all",
   source: "hwahae",
+  sourceCategoryKey: "serum",
   serviceCategory: "treatment",
+  sourceProductForm: "serum",
   rankingScope: "category_all",
   rankingFilter: "all",
+  sourceConcernKey: null,
+  canonicalConcerns: [],
+  evidenceType: "popularity",
   limit: 20,
+  requestedLimit: 20,
   enabled: true,
+  disabledReason: null,
   themeId: 5126,
 };
 
@@ -298,6 +306,34 @@ await assert.rejects(
 );
 assert.equal(failingRpcCalled, true);
 
+let refreshRpcCalled = false;
+const refreshRpcClient = {
+  rpc(name: string, args: Record<string, unknown>) {
+    refreshRpcCalled = true;
+    assert.equal(name, "refresh_candidate_promotion_reviews");
+    assert.equal(args.p_rule_version, "ranking-review-v1");
+
+    return Promise.resolve({
+      data: {
+        rule_version: "ranking-review-v1",
+        candidates_examined: 2,
+        reviews_inserted: 1,
+        reviews_updated: 1,
+        protected_reviews_skipped: 0,
+        products_written: 0,
+      },
+      error: null,
+    });
+  },
+};
+
+const refreshResult = await refreshCandidatePromotionReviews(refreshRpcClient as never, "ranking-review-v1");
+
+assert.equal(refreshRpcCalled, true);
+assert.equal(refreshResult.reviewsInserted, 1);
+assert.equal(refreshResult.reviewsUpdated, 1);
+assert.equal(refreshResult.productsWritten, 0);
+
 let dryRunRpcCalled = false;
 const dryRunClient = {
   rpc() {
@@ -326,5 +362,22 @@ assert.doesNotMatch(migrationSql, /grant\s+(?:select,\s*)?insert[^;]+to anon/i);
 assert.doesNotMatch(migrationSql, /grant\s+(?:select,\s*)?insert[^;]+to authenticated/i);
 assert.match(migrationSql, /message = 'ranking_ingest_existing_snapshot_not_ingested'/);
 assert.match(migrationSql, /v_existing_snapshot\.status <> 'ingested'/);
+
+const phase2MigrationSql = readFileSync(
+  path.resolve("..", "supabase", "migrations", "20260621155819_phase2_candidate_promotion_review_queue.sql"),
+  "utf8",
+);
+
+assert.match(phase2MigrationSql, /create table if not exists public\.candidate_promotion_reviews/);
+assert.match(phase2MigrationSql, /constraint candidate_promotion_reviews_candidate_id_key unique \(candidate_id\)/);
+assert.match(phase2MigrationSql, /status in \('queued', 'reviewing', 'approved', 'rejected', 'deferred'\)/);
+assert.match(phase2MigrationSql, /where candidate_id = v_row\.candidate_id\s+and status in \('queued', 'reviewing'\)/);
+assert.match(phase2MigrationSql, /on conflict \(candidate_id\) do nothing/);
+assert.match(phase2MigrationSql, /not summary\.product_match_exists/);
+assert.match(phase2MigrationSql, /nullif\(btrim\(coalesce\(summary\.external_id/);
+assert.match(phase2MigrationSql, /'products_written', 0/);
+assert.doesNotMatch(phase2MigrationSql, /insert into public\.products/i);
+assert.doesNotMatch(phase2MigrationSql, /update public\.products/i);
+assert.doesNotMatch(phase2MigrationSql, /delete from public\.products/i);
 
 console.log("ranking ingest contract test passed");

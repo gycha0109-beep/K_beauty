@@ -11,6 +11,7 @@
     "enrich:queue": "tsx enrich-queue.ts",
     "list:candidates": "tsx list-candidates.ts",
     "promote:report": "tsx promote-report.ts",
+    "reviews:pending": "tsx reviews-pending.ts",
     "review:prep": "tsx review-prep.ts",
     "reject:candidate": "tsx reject-candidate.ts",
     "promote:approved": "tsx promote-approved.ts",
