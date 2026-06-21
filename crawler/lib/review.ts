@@ -48,6 +48,38 @@ export type ReviewFlag =
   | "body_item"
   | "near_duplicate_match";
 
+const SERVICE_CATEGORIES = [
+  "cleanser",
+  "toner_essence",
+  "toner_pad",
+  "treatment",
+  "moisturizer",
+  "moisturizer_lotion_emulsion",
+  "moisturizer_gel",
+  "moisturizer_cream",
+  "moisturizer_balm",
+  "sunscreen",
+] as const satisfies readonly ServiceCategory[];
+
+const PRODUCT_FORMS = [
+  "serum",
+  "ampoule",
+  "essence",
+  "booster",
+  "peeling_solution",
+] as const satisfies readonly ProductForm[];
+
+const SERVICE_CATEGORY_SET = new Set<string>(SERVICE_CATEGORIES);
+const PRODUCT_FORM_SET = new Set<string>(PRODUCT_FORMS);
+
+export function isCanonicalServiceCategory(value: string | null | undefined): value is ServiceCategory {
+  return SERVICE_CATEGORY_SET.has(String(value ?? ""));
+}
+
+export function isTreatmentProductForm(value: string | null | undefined): value is ProductForm {
+  return PRODUCT_FORM_SET.has(String(value ?? ""));
+}
+
 export interface MatchableProductRecord {
   id: string;
   name: string;
@@ -76,6 +108,11 @@ export interface CandidateForReview {
   brand_name_raw: string;
   normalized_name: string;
   normalized_brand: string;
+  source_service_category?: string | null;
+  source_category_key?: string | null;
+  source_product_form?: string | null;
+  source_context_conflict?: boolean | null;
+  source_context_status?: "valid" | "missing" | "malformed" | "incomplete" | "invalid_combination" | "conflict" | null;
 }
 
 export interface PreparedCandidateReview {
@@ -110,24 +147,6 @@ type InferredPromotionProduct = {
   image_url: string | null;
 };
 
-const CATEGORY_PATH_MAP: Record<string, ServiceCategory> = {
-  "skincare/toner": "toner_essence",
-  "skincare/toner_pad": "toner_pad",
-  "toner_pad": "toner_pad",
-  "skincare/serum": "treatment",
-  "skincare/cream": "moisturizer",
-  "skincare/moisturizer_lotion_emulsion": "moisturizer_lotion_emulsion",
-  "skincare/moisturizer_gel": "moisturizer_gel",
-  "skincare/moisturizer_cream": "moisturizer_cream",
-  "skincare/moisturizer_balm": "moisturizer_balm",
-  "moisturizer_lotion_emulsion": "moisturizer_lotion_emulsion",
-  "moisturizer_gel": "moisturizer_gel",
-  "moisturizer_cream": "moisturizer_cream",
-  "moisturizer_balm": "moisturizer_balm",
-  "skincare/suncare": "sunscreen",
-  "cleansing/cleansing": "cleanser",
-};
-
 const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; productForm?: ProductForm; regex: RegExp }> = [
   {
     category: "sunscreen",
@@ -139,14 +158,6 @@ const CATEGORY_NAME_HINTS: Array<{ category: ServiceCategory; productForm?: Prod
   { category: "moisturizer", regex: /\b(?:cream|lotion|gel\s+cream)\b/i },
   { category: "toner_essence", regex: /\b(?:toner|skin)\b/i },
   { category: "cleanser", regex: /\b(?:cleanser|cleansing|foam|wash)\b/i },
-];
-
-const TREATMENT_PRODUCT_FORM_HINTS: Array<{ productForm: ProductForm; regex: RegExp }> = [
-  { productForm: "ampoule", regex: /\bampoule\b/i },
-  { productForm: "serum", regex: /\bserum\b/i },
-  { productForm: "essence", regex: /\bessence\b/i },
-  { productForm: "booster", regex: /\bbooster\b/i },
-  { productForm: "peeling_solution", regex: /\b(?:peeling\s+solution|peel|aha|bha|pha|acid)\b/i },
 ];
 
 const AUTO_REJECT_RULES: Array<{ flag: ReviewFlag; regex: RegExp }> = [
@@ -309,12 +320,14 @@ function normalizeAllowedArray(
   );
 }
 
-function mapCategoryFromPath(value: string | null | undefined): ServiceCategory | null {
-  if (!value) {
+function mapCanonicalServiceCategory(value: string | null | undefined): ServiceCategory | null {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (!normalized) {
     return null;
   }
 
-  return CATEGORY_PATH_MAP[value] ?? null;
+  return isCanonicalServiceCategory(normalized) ? normalized : null;
 }
 
 function mapProductCategory(value: string | null | undefined): ServiceCategory | null {
@@ -332,7 +345,7 @@ function mapProductCategory(value: string | null | undefined): ServiceCategory |
     return "toner_pad";
   }
 
-  if (["serum", "ampoule", "essence", "treatment"].includes(normalized)) {
+  if (normalized === "treatment") {
     return "treatment";
   }
 
@@ -383,29 +396,19 @@ function inferCategoryFromName(canonicalName: string): ServiceCategory | null {
 function mapProductForm(value: string | null | undefined): ProductForm | null {
   const normalized = String(value ?? "").trim().toLowerCase();
 
-  if (["serum", "ampoule", "essence", "booster", "peeling_solution"].includes(normalized)) {
-    return normalized as ProductForm;
+  if (isTreatmentProductForm(normalized)) {
+    return normalized;
   }
 
   return null;
 }
 
-function inferTreatmentProductForm(canonicalName: string): ProductForm | null {
-  const matchedForms = TREATMENT_PRODUCT_FORM_HINTS
-    .filter((rule) => rule.regex.test(canonicalName))
-    .map((rule) => rule.productForm);
-  const uniqueMatches = Array.from(new Set(matchedForms));
-
-  return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+function hasTextValue(value: string | null | undefined): boolean {
+  return String(value ?? "").trim().length > 0;
 }
 
-function inferProductFormFromNameHint(canonicalName: string): ProductForm | null {
-  const matchedForms = CATEGORY_NAME_HINTS
-    .filter((rule) => rule.productForm && rule.regex.test(canonicalName))
-    .map((rule) => rule.productForm as ProductForm);
-  const uniqueMatches = Array.from(new Set(matchedForms));
-
-  return uniqueMatches.length === 1 ? uniqueMatches[0] : null;
+function hasEssenceNameToken(rawName: string, canonicalName: string): boolean {
+  return /\bessence\b/i.test(canonicalName) || /에센스/i.test(rawName);
 }
 
 function getServiceCategorySlot(category: ServiceCategory | null | undefined): ServiceCategory | null {
@@ -429,15 +432,6 @@ function getServiceCategorySlot(category: ServiceCategory | null | undefined): S
   return category;
 }
 
-function isMoisturizerSubcategory(category: ServiceCategory | null | undefined): boolean {
-  return (
-    category === "moisturizer_lotion_emulsion" ||
-    category === "moisturizer_gel" ||
-    category === "moisturizer_cream" ||
-    category === "moisturizer_balm"
-  );
-}
-
 function isCompatibleServiceCategory(
   left: ServiceCategory | null | undefined,
   right: ServiceCategory | null | undefined,
@@ -447,21 +441,6 @@ function isCompatibleServiceCategory(
   }
 
   return getServiceCategorySlot(left) === getServiceCategorySlot(right);
-}
-
-function resolveInitialServiceCategory(
-  pathCategory: ServiceCategory | null,
-  inferredNameCategory: ServiceCategory | null,
-): ServiceCategory | null {
-  if (isMoisturizerSubcategory(pathCategory) && inferredNameCategory === "moisturizer") {
-    return pathCategory;
-  }
-
-  if (pathCategory && inferredNameCategory && isCompatibleServiceCategory(pathCategory, inferredNameCategory)) {
-    return inferredNameCategory;
-  }
-
-  return pathCategory ?? inferredNameCategory;
 }
 
 function mapTexture(value: string | null | undefined): string | null {
@@ -662,6 +641,11 @@ function buildPromotionPayload(
       prepared_at: new Date().toISOString(),
       service_category: serviceCategory,
       product_form: productForm,
+      source_service_category: candidate.source_service_category ?? null,
+      source_category_key: candidate.source_category_key ?? null,
+      source_product_form: candidate.source_product_form ?? null,
+      source_context_status: candidate.source_context_status ?? null,
+      source_context_conflict: candidate.source_context_conflict ?? null,
       match_method: matchMethod,
       match_confidence: matchConfidence,
       review_flags: reviewFlags,
@@ -750,10 +734,10 @@ export function prepareCandidateReview(
   const canonicalName = normalizeCanonicalProductName(candidate.product_name_raw);
   const canonicalBrand = normalizeCanonicalBrandName(candidate.brand_name_raw);
   const rawNormalizedBrand = normalizeBrandName(candidate.brand_name_raw);
-  const pathCategory = mapCategoryFromPath(candidate.category_path);
+  const sourceContextStatus = candidate.source_context_status ?? "missing";
+  const sourceCategory = mapCanonicalServiceCategory(candidate.source_service_category);
+  const sourceProductForm = mapProductForm(candidate.source_product_form);
   const inferredNameCategory = inferCategoryFromName(canonicalName);
-  const initialServiceCategory = resolveInitialServiceCategory(pathCategory, inferredNameCategory);
-  const nameHintProductForm = inferProductFormFromNameHint(canonicalName);
   const matchResult =
     canonicalName && canonicalBrand
       ? findBestProductMatch(products, {
@@ -766,31 +750,78 @@ export function prepareCandidateReview(
           confidence: null,
         };
   const exactMatchedCategory = matchResult.kind === "exact" ? mapProductCategory(matchResult.product?.category) : null;
-  const serviceCategory = exactMatchedCategory ?? initialServiceCategory;
-  const productForm =
-    serviceCategory === "treatment"
-      ? mapProductForm(matchResult.product?.product_form) ??
-        mapProductForm(matchResult.product?.category) ??
-        nameHintProductForm ??
-        inferTreatmentProductForm(canonicalName)
-      : null;
+  const exactMatchedProductForm = matchResult.kind === "exact" ? mapProductForm(matchResult.product?.product_form) : null;
+  const hasRawSourceCategory = hasTextValue(candidate.source_service_category);
+  const hasRawSourceProductForm = hasTextValue(candidate.source_product_form);
+  const sourceContextValid =
+    sourceContextStatus === "valid" &&
+    !candidate.source_context_conflict &&
+    Boolean(sourceCategory) &&
+    (sourceCategory === "treatment" ? Boolean(sourceProductForm) : !hasRawSourceProductForm);
+  const serviceCategory = sourceContextValid ? sourceCategory : null;
+  const productForm = sourceContextValid && serviceCategory === "treatment" ? sourceProductForm : null;
   const { rejectFlags, needsReviewFlags } = collectScopeFlags(canonicalName);
   const reviewFlagSet = new Set<ReviewFlag>([...rejectFlags, ...needsReviewFlags]);
 
-  if (!serviceCategory) {
+  if (!sourceContextValid) {
     reviewFlagSet.add("ambiguous_category");
   }
 
-  if (serviceCategory === "treatment" && !productForm) {
+  if (candidate.source_context_conflict || sourceContextStatus === "conflict") {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (hasRawSourceCategory && !sourceCategory) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (hasRawSourceProductForm && !sourceProductForm) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (sourceCategory !== "treatment" && hasRawSourceProductForm) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (sourceCategory === "treatment" && !sourceProductForm) {
     reviewFlagSet.add("missing_product_form");
   }
 
   if (
-    pathCategory &&
-    inferredNameCategory &&
-    !isCompatibleServiceCategory(pathCategory, inferredNameCategory) &&
-    matchResult.kind !== "exact"
+    hasEssenceNameToken(candidate.product_name_raw, canonicalName) &&
+    (!sourceContextValid || (serviceCategory === "treatment" && productForm !== "essence"))
   ) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (
+    sourceContextValid &&
+    inferredNameCategory &&
+    !isCompatibleServiceCategory(serviceCategory, inferredNameCategory)
+  ) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (
+    sourceContextValid &&
+    exactMatchedCategory &&
+    !isCompatibleServiceCategory(serviceCategory, exactMatchedCategory)
+  ) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (
+    sourceContextValid &&
+    serviceCategory === "treatment" &&
+    exactMatchedCategory === "treatment" &&
+    sourceProductForm &&
+    exactMatchedProductForm &&
+    sourceProductForm !== exactMatchedProductForm
+  ) {
+    reviewFlagSet.add("ambiguous_category");
+  }
+
+  if (matchResult.kind === "exact" && !exactMatchedCategory && hasTextValue(matchResult.product?.category)) {
     reviewFlagSet.add("ambiguous_category");
   }
 

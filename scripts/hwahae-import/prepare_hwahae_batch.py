@@ -16,64 +16,33 @@ DEFAULT_DATA_DIR = ROOT_DIR / "data" / "hwahae"
 BUILD_SCRIPT = Path(__file__).resolve().parent / "build_hwahae_import_package.py"
 TREATMENT_CATEGORY = "treatment"
 
+ALLOWED_CATEGORIES = {
+    "cleanser",
+    "toner_essence",
+    "toner_pad",
+    "treatment",
+    "moisturizer",
+    "moisturizer_lotion_emulsion",
+    "moisturizer_gel",
+    "moisturizer_cream",
+    "moisturizer_balm",
+    "sunscreen",
+}
+ALLOWED_TREATMENT_PRODUCT_FORMS = {
+    "serum",
+    "ampoule",
+    "essence",
+    "booster",
+    "peeling_solution",
+}
+LEGACY_AMBIGUOUS_CATEGORY_NAMES = {"serum", "ampoule", "essence"}
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 os.environ.setdefault("PYTHONUTF8", "1")
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
-
-CATEGORY_BY_FILENAME = {
-    "클렌저": "cleanser",
-    "클렌징": "cleanser",
-    "토너": "toner_essence",
-    "토너에센스": "toner_essence",
-    "토너_에센스": "toner_essence",
-    "토너패드": "toner_pad",
-    "토너_패드": "toner_pad",
-    "toner_pad": "toner_pad",
-    "세럼": TREATMENT_CATEGORY,
-    "serum": TREATMENT_CATEGORY,
-    "앰플": TREATMENT_CATEGORY,
-    "ampoule": TREATMENT_CATEGORY,
-    "에센스": TREATMENT_CATEGORY,
-    "essence": TREATMENT_CATEGORY,
-    "treatment": TREATMENT_CATEGORY,
-    "각질": TREATMENT_CATEGORY,
-    "로션": "moisturizer_lotion_emulsion",
-    "에멀전": "moisturizer_lotion_emulsion",
-    "에멀젼": "moisturizer_lotion_emulsion",
-    "밀크": "moisturizer_lotion_emulsion",
-    "플루이드": "moisturizer_lotion_emulsion",
-    "moisturizer_lotion_emulsion": "moisturizer_lotion_emulsion",
-    "젤": "moisturizer_gel",
-    "수딩젤": "moisturizer_gel",
-    "워터젤": "moisturizer_gel",
-    "moisturizer_gel": "moisturizer_gel",
-    "크림": "moisturizer_cream",
-    "수딩크림": "moisturizer_cream",
-    "장벽크림": "moisturizer_cream",
-    "moisturizer_cream": "moisturizer_cream",
-    "밤": "moisturizer_balm",
-    "시카밤": "moisturizer_balm",
-    "멀티밤": "moisturizer_balm",
-    "moisturizer_balm": "moisturizer_balm",
-    "선크림": "sunscreen",
-    "선케어": "sunscreen",
-    "자외선차단제": "sunscreen",
-    "sunscreen": "sunscreen",
-}
-
-PRODUCT_FORM_KEYWORDS = (
-    ("ampoule", ("앰플", "ampoule")),
-    ("essence", ("에센스", "essence")),
-    ("serum", ("세럼", "serum")),
-    ("booster", ("부스터", "booster")),
-    (
-        "peeling_solution",
-        ("필링", "peeling", "peel", "acid", "애시드", "아하", "바하", "파하", "aha", "bha", "pha"),
-    ),
-)
 
 
 def load_dotenv(path):
@@ -102,102 +71,180 @@ def normalize_supabase_url(value):
     return value if value.startswith("http") else f"https://{value}"
 
 
+def normalize_token(value):
+    if value is None:
+        return ""
+    return str(value).strip().lower()
+
+
 def strip_rank_suffix(stem):
     normalized = stem.strip().lower().replace("-", "_").replace(" ", "_")
     normalized = re.sub(r"_?top\d+$", "", normalized)
-    normalized = re.sub(r"_?\d+개$", "", normalized)
+    normalized = re.sub(r"_?\d+개?$", "", normalized)
     return normalized.strip("_")
 
 
-def infer_category(path):
-    key = strip_rank_suffix(path.stem)
-    category = CATEGORY_BY_FILENAME.get(key)
-    if not category:
-        valid = ", ".join(sorted(CATEGORY_BY_FILENAME))
-        raise RuntimeError(
-            f"Cannot infer category from {path.name!r}. Rename it to a known category name. Known names: {valid}"
-        )
-    return category
-
-
-def extract_candidate_name(row):
-    value = row.get("product_name") or row.get("productName") or row.get("name") or ""
-    if value:
-        return str(value)
-
-    item = row.get("item")
-    if isinstance(item, dict):
-        return str(item.get("name") or "")
-
-    return ""
-
-
-def infer_product_form(name):
-    text = str(name or "").lower()
-    for product_form, keywords in PRODUCT_FORM_KEYWORDS:
-        if any(keyword.lower() in text for keyword in keywords):
-            return product_form
-    return "unknown"
-
-
-def read_json_rows(path):
+def read_json_batch(path):
     with path.open("r", encoding="utf-8-sig") as f:
         data = json.load(f)
 
     if isinstance(data, list):
-        return data
+        return data, {}
 
     if isinstance(data, dict):
+        metadata = data.get("batch_metadata") or {}
+        if metadata and not isinstance(metadata, dict):
+            raise ValueError(f"{path}: batch_metadata must be an object.")
+
         for key in ("rows", "data", "products", "candidates", "items", "itemListElement"):
             value = data.get(key)
             if isinstance(value, list):
-                return value
+                return value, metadata
 
         graph = data.get("@graph")
         if isinstance(graph, list):
             for item in graph:
                 if isinstance(item, dict) and isinstance(item.get("itemListElement"), list):
-                    return item["itemListElement"]
+                    return item["itemListElement"], metadata
 
     raise ValueError(f"{path} JSON must be a list or an object containing candidate rows.")
 
 
-def augment_treatment_candidates(rows):
-    augmented = []
+def read_json_rows(path):
+    rows, _metadata = read_json_batch(path)
+    return rows
+
+
+def validate_category_product_form(category, product_form, label):
+    if not category:
+        raise ValueError(f"{label}: canonical_category is required.")
+
+    if category not in ALLOWED_CATEGORIES:
+        raise ValueError(
+            f"{label}: invalid canonical_category {category!r}; expected one of {sorted(ALLOWED_CATEGORIES)}."
+        )
+
+    if category != TREATMENT_CATEGORY:
+        if product_form:
+            raise ValueError(f"{label}: product_form must be null/absent unless canonical_category is 'treatment'.")
+        return
+
+    if not product_form:
+        raise ValueError(f"{label}: treatment canonical_category requires product_form.")
+
+    if product_form not in ALLOWED_TREATMENT_PRODUCT_FORMS:
+        raise ValueError(
+            f"{label}: invalid treatment product_form {product_form!r}; "
+            f"expected one of {sorted(ALLOWED_TREATMENT_PRODUCT_FORMS)}."
+        )
+
+
+def parse_batch_metadata(metadata, path):
+    if not metadata:
+        return None
+
+    category = normalize_token(metadata.get("canonical_category"))
+    product_form = normalize_token(metadata.get("product_form"))
+    validate_category_product_form(category, product_form, f"{path}: batch_metadata")
+    return {"category": category, "product_form": product_form or None}
+
+
+def infer_category_from_filename(path):
+    key = strip_rank_suffix(path.stem)
+
+    if key in LEGACY_AMBIGUOUS_CATEGORY_NAMES:
+        raise RuntimeError(
+            f"{path.name}: raw filename category {key!r} is ambiguous/legacy. "
+            "Add batch_metadata with canonical_category and product_form."
+        )
+
+    if key in ALLOWED_CATEGORIES:
+        return key
+
+    raise RuntimeError(
+        f"Cannot infer canonical category from {path.name!r}. "
+        "Use a canonical category filename or add batch_metadata."
+    )
+
+
+def row_product_form(row, label):
+    snake = normalize_token(row.get("product_form"))
+    camel = normalize_token(row.get("productForm"))
+    if snake and camel and snake != camel:
+        raise ValueError(f"{label}: conflicting product_form and productForm values.")
+    return snake or camel
+
+
+def validate_and_prepare_rows(rows, category, product_form, metadata_present, path):
+    prepared = []
     counts = {}
 
-    for row in rows:
+    for idx, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
             continue
 
-        product_form = infer_product_form(extract_candidate_name(row))
-        counts[product_form] = counts.get(product_form, 0) + 1
-        augmented.append(
+        label = f"{path}: row {idx}"
+        row_category = normalize_token(row.get("category"))
+        row_form = row_product_form(row, label)
+
+        if row_category and row_category != category:
+            raise ValueError(
+                f"{label}: row category {row_category!r} conflicts with file category {category!r}."
+            )
+
+        if metadata_present:
+            if category == TREATMENT_CATEGORY:
+                if row_form and row_form != product_form:
+                    raise ValueError(
+                        f"{label}: row product_form {row_form!r} conflicts with batch_metadata product_form {product_form!r}."
+                    )
+                final_form = product_form
+            else:
+                if row_form:
+                    raise ValueError(f"{label}: non-treatment rows must not contain product_form.")
+                final_form = None
+        else:
+            final_form = row_form or None
+            validate_category_product_form(category, final_form, label)
+
+        counts[final_form or "null"] = counts.get(final_form or "null", 0) + 1
+        prepared.append(
             {
                 **row,
-                "category": TREATMENT_CATEGORY,
-                "inferredCategory": TREATMENT_CATEGORY,
-                "product_form": product_form,
-                "productForm": product_form,
+                "category": category,
+                "inferredCategory": category,
+                "product_form": final_form,
+                "productForm": final_form,
             }
         )
 
-    return augmented, counts
+    return prepared, counts
 
 
 def prepare_candidates_file(job, temp_dir=None):
-    if job["category"] != TREATMENT_CATEGORY:
-        return job["file"], None
+    rows, metadata = read_json_batch(job["file"])
+    parsed_metadata = parse_batch_metadata(metadata, job["file"])
+    metadata_present = parsed_metadata is not None
+    category = parsed_metadata["category"] if metadata_present else job["category"]
+    product_form = parsed_metadata["product_form"] if metadata_present else None
+    prepared, counts = validate_and_prepare_rows(
+        rows,
+        category,
+        product_form,
+        metadata_present,
+        job["file"],
+    )
 
-    rows = read_json_rows(job["file"])
-    augmented, counts = augment_treatment_candidates(rows)
+    needs_prepared_file = metadata_present or category == TREATMENT_CATEGORY
+    if not needs_prepared_file:
+        return job["file"], counts
 
     if temp_dir is None:
         return job["file"], counts
 
     prepared_path = Path(temp_dir) / f"{job['file'].stem}_prepared_candidates.json"
     with prepared_path.open("w", encoding="utf-8") as f:
-        json.dump(augmented, f, ensure_ascii=False, indent=2)
+        json.dump(prepared, f, ensure_ascii=False, indent=2)
 
     return prepared_path, counts
 
@@ -213,13 +260,17 @@ def discover_jobs(data_dir):
     for path in sorted(data_dir.glob("*.json")):
         if path.name.startswith("."):
             continue
-        category = infer_category(path)
+
+        rows, metadata = read_json_batch(path)
+        parsed_metadata = parse_batch_metadata(metadata, path)
+        category = parsed_metadata["category"] if parsed_metadata else infer_category_from_filename(path)
         jobs.append(
             {
                 "file": path,
                 "label": strip_rank_suffix(path.stem),
                 "category": category,
                 "out_dir": data_dir / f"product_out_{strip_rank_suffix(path.stem)}",
+                "row_count": len(rows),
             }
         )
     return jobs

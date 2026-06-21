@@ -18,6 +18,10 @@ import type {
   ReviewStatus,
   ServiceCategory,
 } from "./review.js";
+import {
+  isCanonicalServiceCategory,
+  isTreatmentProductForm,
+} from "./review.js";
 
 const SOURCE_NAME = "hwahae";
 
@@ -155,6 +159,14 @@ export interface ProductCandidateStatusRecord {
   review_status: string | null;
   reviewed_at: string | null;
   reviewed_by: string | null;
+}
+
+interface CandidateSourceContext {
+  source_service_category: string | null;
+  source_category_key: string | null;
+  source_product_form: string | null;
+  source_context_conflict: boolean;
+  source_context_status: "valid" | "missing" | "malformed" | "incomplete" | "invalid_combination" | "conflict";
 }
 
 export interface ProductCandidateListRecord {
@@ -298,6 +310,152 @@ function hasMissingEnrichmentField(product: ProductDetailRecord): boolean {
     isMissingTextValue(product.image_url) ||
     !isFiniteNumber(product.price_min) ||
     !isFiniteNumber(product.price_max)
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getRecordArray(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function normalizeNullableText(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function normalizeSourceContextText(value: unknown): string | null {
+  return normalizeNullableText(value)?.toLowerCase() ?? null;
+}
+
+function collectEvidenceObservations(evidenceSnapshot: unknown): Record<string, unknown>[] {
+  if (!isRecord(evidenceSnapshot)) {
+    return [];
+  }
+
+  const observations: Record<string, unknown>[] = [];
+  for (const concern of getRecordArray(evidenceSnapshot.concerns)) {
+    observations.push(...getRecordArray(concern.observations));
+  }
+
+  if (isRecord(evidenceSnapshot.popularity)) {
+    observations.push(...getRecordArray(evidenceSnapshot.popularity.observations));
+  }
+
+  return observations;
+}
+
+function getUnresolvedSourceContext(
+  sourceContextStatus: CandidateSourceContext["source_context_status"],
+): CandidateSourceContext {
+  return {
+    source_service_category: null,
+    source_category_key: null,
+    source_product_form: null,
+    source_context_conflict: sourceContextStatus === "conflict",
+    source_context_status: sourceContextStatus,
+  };
+}
+
+function isValidSourceContextObservation(observation: {
+  serviceCategory: string | null;
+  sourceProductForm: string | null;
+}): boolean {
+  if (!isCanonicalServiceCategory(observation.serviceCategory)) {
+    return false;
+  }
+
+  if (observation.serviceCategory === "treatment") {
+    return isTreatmentProductForm(observation.sourceProductForm);
+  }
+
+  return observation.sourceProductForm === null;
+}
+
+export function extractCandidateSourceContext(evidenceSnapshot: unknown): CandidateSourceContext {
+  if (!isRecord(evidenceSnapshot)) {
+    return getUnresolvedSourceContext("malformed");
+  }
+
+  const rawObservations = collectEvidenceObservations(evidenceSnapshot);
+
+  if (rawObservations.length === 0) {
+    return getUnresolvedSourceContext("missing");
+  }
+
+  const observations = collectEvidenceObservations(evidenceSnapshot)
+    .map((observation) => ({
+      serviceCategory: normalizeSourceContextText(observation.service_category),
+      sourceCategoryKey: normalizeSourceContextText(observation.source_category_key),
+      sourceProductForm: normalizeSourceContextText(observation.source_product_form),
+      collectedAt: normalizeNullableText(observation.collected_at),
+    }))
+    .filter((observation) => observation.serviceCategory || observation.sourceCategoryKey || observation.sourceProductForm)
+    .sort((left, right) => String(right.collectedAt ?? "").localeCompare(String(left.collectedAt ?? "")));
+
+  if (observations.length === 0) {
+    return getUnresolvedSourceContext("incomplete");
+  }
+
+  const invalidObservation = observations.find((observation) => !isValidSourceContextObservation(observation));
+
+  if (invalidObservation) {
+    return {
+      source_service_category: invalidObservation.serviceCategory,
+      source_category_key: invalidObservation.sourceCategoryKey,
+      source_product_form: invalidObservation.sourceProductForm,
+      source_context_conflict: false,
+      source_context_status: invalidObservation.serviceCategory ? "invalid_combination" : "incomplete",
+    };
+  }
+
+  const latest = observations[0];
+  const contextKeys = new Set(
+    observations.map((observation) =>
+      [
+        observation.serviceCategory ?? "",
+        observation.sourceCategoryKey ?? "",
+        observation.sourceProductForm ?? "",
+      ].join("::"),
+    ),
+  );
+
+  if (contextKeys.size > 1) {
+    return getUnresolvedSourceContext("conflict");
+  }
+
+  return {
+    source_service_category: latest?.serviceCategory ?? null,
+    source_category_key: latest?.sourceCategoryKey ?? null,
+    source_product_form: latest?.sourceProductForm ?? null,
+    source_context_conflict: false,
+    source_context_status: "valid",
+  };
+}
+
+async function loadCandidateSourceContexts(
+  client: SupabaseClient,
+  candidateIds: string[],
+): Promise<Map<string, CandidateSourceContext>> {
+  if (candidateIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await client
+    .from("candidate_ranking_evidence_summary")
+    .select("candidate_id, evidence_snapshot")
+    .in("candidate_id", candidateIds);
+
+  if (error) {
+    throw new Error(`Failed to load candidate ranking evidence context: ${formatSupabaseError(error)}`);
+  }
+
+  return new Map(
+    (data ?? []).map((row) => [
+      String((row as { candidate_id: string }).candidate_id),
+      extractCandidateSourceContext((row as { evidence_snapshot?: Json | Record<string, unknown> | null }).evidence_snapshot),
+    ]),
   );
 }
 
@@ -831,7 +989,16 @@ export async function getPendingReviewCandidates(
     throw new Error(`Failed to load pending review candidates: ${error.message}`);
   }
 
-  return (data ?? []) as CandidateForReview[];
+  const candidates = (data ?? []) as CandidateForReview[];
+  const sourceContextByCandidateId = await loadCandidateSourceContexts(
+    client,
+    candidates.map((candidate) => candidate.id),
+  );
+
+  return candidates.map((candidate) => ({
+    ...candidate,
+    ...(sourceContextByCandidateId.get(candidate.id) ?? getUnresolvedSourceContext("missing")),
+  }));
 }
 
 export async function listProductsForMatching(client: SupabaseClient): Promise<MatchableProductRecord[]> {
