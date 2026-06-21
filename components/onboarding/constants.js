@@ -112,6 +112,7 @@ export const ONBOARDING_COPY = {
       needPhoto: "사진을 먼저 업로드해주세요.",
       completeBasicSurvey: "핵심 질문을 먼저 선택해주세요.",
       analyzeFailed: "결과 생성에 실패했습니다.",
+      productSourceUnavailable: "추천 제품 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
       unexpected: "예상하지 못한 오류가 발생했습니다."
     },
     faceLabUi: {
@@ -283,6 +284,7 @@ export const ONBOARDING_COPY = {
       needPhoto: "Please upload a photo first.",
       completeBasicSurvey: "Please answer the core questions first.",
       analyzeFailed: "Failed to generate the result.",
+      productSourceUnavailable: "We could not load recommendation products. Please try again shortly.",
       unexpected: "Something unexpected went wrong."
     },
     faceLabUi: {
