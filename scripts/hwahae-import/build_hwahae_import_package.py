@@ -38,6 +38,25 @@ GENERIC_WORDS = {
 REQUIRED_PRODUCT_FIELDS = {"id", "brand", "name", "category"}
 REQUIRED_CANDIDATE_FIELDS = {"id", "brand", "product_name", "category"}
 VALID_OVERRIDE_DECISIONS = {"new", "exclude", "duplicate"}
+ALLOWED_PACKAGE_CATEGORIES = {
+    "cleanser",
+    "toner_essence",
+    "toner_pad",
+    "treatment",
+    "moisturizer",
+    "moisturizer_lotion_emulsion",
+    "moisturizer_gel",
+    "moisturizer_cream",
+    "moisturizer_balm",
+    "sunscreen",
+}
+ALLOWED_TREATMENT_PRODUCT_FORMS = {
+    "serum",
+    "ampoule",
+    "essence",
+    "booster",
+    "peeling_solution",
+}
 MOISTURIZER_CATEGORIES = {
     "moisturizer_lotion_emulsion",
     "moisturizer_gel",
@@ -218,6 +237,73 @@ def normalize_candidate_rows(rows, category):
         })
 
     return normalized
+
+
+def normalize_package_token(value):
+    if value is None:
+        return ""
+    return str(value).strip().lower()
+
+
+def get_candidate_product_form(candidate):
+    product_form = normalize_package_token(candidate.get("product_form"))
+    product_form_camel = normalize_package_token(candidate.get("productForm"))
+
+    if product_form and product_form_camel and product_form != product_form_camel:
+        raise ValueError(
+            "candidate {} has conflicting product_form values: product_form={!r}, productForm={!r}".format(
+                candidate.get("id") or candidate.get("external_id") or candidate.get("product_name") or "<unknown>",
+                candidate.get("product_form"),
+                candidate.get("productForm"),
+            )
+        )
+
+    return product_form or product_form_camel
+
+
+def validate_candidate_package_contract(candidate):
+    label = candidate.get("id") or candidate.get("external_id") or candidate.get("product_name") or "<unknown>"
+    category = normalize_package_token(candidate.get("category"))
+    product_form = get_candidate_product_form(candidate)
+
+    if not category:
+        raise ValueError(f"candidate {label}: category is required")
+
+    if category not in ALLOWED_PACKAGE_CATEGORIES:
+        raise ValueError(
+            f"candidate {label}: invalid category {category!r}; expected one of {sorted(ALLOWED_PACKAGE_CATEGORIES)}"
+        )
+
+    if category != "treatment":
+        if product_form:
+            raise ValueError(
+                f"candidate {label}: product_form must be empty unless category is 'treatment', got {product_form!r}"
+            )
+        candidate["category"] = category
+        candidate["product_form"] = None
+        candidate["productForm"] = None
+        return
+
+    if not product_form:
+        raise ValueError(f"candidate {label}: treatment category requires product_form")
+
+    if product_form not in ALLOWED_TREATMENT_PRODUCT_FORMS:
+        raise ValueError(
+            "candidate {}: invalid treatment product_form {!r}; expected one of {}".format(
+                label,
+                product_form,
+                sorted(ALLOWED_TREATMENT_PRODUCT_FORMS),
+            )
+        )
+
+    candidate["category"] = category
+    candidate["product_form"] = product_form
+    candidate["productForm"] = product_form
+
+
+def validate_package_candidates(candidates):
+    for candidate in candidates:
+        validate_candidate_package_contract(candidate)
 
 
 def normalize_product_rows(rows):
@@ -627,6 +713,7 @@ def main():
     validate_headers(products, REQUIRED_PRODUCT_FIELDS, "products")
     validate_headers(candidates, REQUIRED_CANDIDATE_FIELDS, "candidates")
 
+    validate_package_candidates(candidates)
     products = filter_by_category(products, args.category)
     candidates = filter_by_category(candidates, args.category)
 
