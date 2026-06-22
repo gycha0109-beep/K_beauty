@@ -1110,3 +1110,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation: Read-only Supabase anon query found no rows for the legacy group key, `spot`, or `mask`, and found `treatment=18` across 164 products. `npm run build` passed. Local current-products API returned categories without the legacy group key and with `treatment`; requesting the removed category returned 400 Unsupported category; requesting `treatment` returned 18 treatment products. Search confirmed no legacy group references remain in current-products selector/source/API files; remaining hits are unrelated English copy, migration/normalizer option-word filters, or an unrelated local `Select-String` artifact.
 - Notes/risks: Production build has premium report selector hidden unless the premium flag is enabled; selector-specific verification therefore relied on source-level group inspection plus API checks instead of completing the photo upload flow in-browser.
 - Context promotion candidate: NULL
+
+### 2026-06-22 / Hwahae ranking all-jobs and matrix audit
+
+- Branch: main
+- Task type: execution
+- Routing decision: Medium crawler operation change scoped to explicit all-enabled ranking selection, Korean browser context, and config matrix audit. DB schema/migrations, products table writes, promotion/enrich commands, and unrelated app files were out of scope.
+- Goal: Add `npm run crawl -- --all` as an explicit all-enabled job mode, add `npm run jobs:matrix` for 9 category x 9 context audit, and confirm `essence_ampoule_serum` snapshots persist as `service_category=treatment`.
+- Changed files: crawler/hwahae.ts, crawler/jobs-matrix.ts, crawler/package.json, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, DB schema/migration/policy, auth/payment/deploy config, products INSERT/UPDATE/DELETE, promotion/enrich execution, or API response field-name changes.
+- Validation: `npm run test:ranking-ingest` passed; `npm run typecheck` passed; `npm run jobs:matrix` passed with total=81, enabled=5, disabled=76; `npm run crawl -- --all --job-ids=hwahae-skincare-toner-category-all --dry-run` failed closed with the expected conflict error; `npm run crawl -- --all --dry-run --delay-ms=1000` passed for 5 enabled jobs with 160 prepared ranking observations and products writes 0; `npm run crawl -- --all --delay-ms=1000` passed for 5 enabled jobs with 5 snapshots, 160 source_rankings rows, 0 new candidates, 160 reobserved candidates, review refresh inserted 50, products writes 0. Products row count stayed 164 before and after. Latest DB `ranking_snapshots` rows for both essence jobs show `source_category_key=essence_ampoule_serum`, `service_category=treatment`, `source_product_form=null`.
+- Issues/risks: Two intermediate `rg` proof commands failed from PowerShell quoting/regex escaping, then products direct write checks were rerun with fixed-string searches and returned no matches. Crawl still depends on live Hwahae availability and the configured Top 50 gateway behavior.
+- Context promotion candidate: NULL

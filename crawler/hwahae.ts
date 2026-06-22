@@ -95,6 +95,7 @@ interface RuntimeOptions {
   retries: number;
   headless: boolean;
   dryRun: boolean;
+  allJobs: boolean;
   withReviewPrep: boolean;
   maxPages: number | null;
   themeIds: number[] | null;
@@ -206,13 +207,19 @@ function parseArgs(argv: string[]): RuntimeOptions {
   const parsedMaxPages = maxPagesArg ? Number.parseInt(maxPagesArg, 10) : Number.NaN;
   const hasHeadedFlag = optionMap.has("headed");
   const hasDryRunFlag = optionMap.has("dry-run");
+  const allJobs = optionMap.has("all");
   const configPath = optionMap.get("config") ?? process.env.HWAHAE_RANKING_JOBS_CONFIG;
+
+  if (allJobs && jobIds) {
+    throw new Error("Cannot use --all with --job-ids. Use exactly one job selection mode.");
+  }
 
   return {
     delayMs: parseNumberValue(optionMap.get("delay-ms") ?? process.env.HWAHAE_DELAY_MS, DEFAULT_DELAY_MS),
     retries: Math.max(1, parseNumberValue(optionMap.get("retries") ?? process.env.HWAHAE_RETRIES, DEFAULT_RETRIES)),
     headless: hasHeadedFlag ? false : parseBooleanFlag(process.env.HWAHAE_HEADLESS, DEFAULT_HEADLESS),
     dryRun: hasDryRunFlag || parseBooleanFlag(process.env.HWAHAE_DRY_RUN, false),
+    allJobs,
     withReviewPrep: optionMap.has("with-review-prep"),
     maxPages: Number.isFinite(parsedMaxPages) ? parsedMaxPages : null,
     themeIds,
@@ -589,7 +596,10 @@ function printSummary(summary: CrawlSummary, dryRun: boolean): void {
   console.log("");
   console.log(dryRun ? "Crawl summary (dry-run)" : "Crawl summary");
   console.log(`- jobs crawled: ${summary.jobsCrawled}`);
+  console.log(`- jobs succeeded: ${summary.jobsCrawled}`);
+  console.log(`- jobs failed: ${summary.errorsCount}`);
   console.log(`- snapshots created: ${summary.snapshotsCreated}`);
+  console.log(`- ranking observations created: ${summary.sourceRankingsInserted}`);
   console.log(`- source_rankings new rows: ${summary.sourceRankingsInserted}`);
   console.log(`- source_rankings skipped duplicates: ${summary.sourceRankingsSkipped}`);
   console.log(`- product_candidates new candidates: ${summary.candidatesInserted}`);
@@ -637,10 +647,12 @@ async function run(): Promise<void> {
 
     const jobs = await loadRankingJobs({
       configPath: options.configPath,
-      includeDisabled: options.includeDisabled,
+      includeDisabled: options.allJobs ? false : options.includeDisabled,
       themeIds: options.themeIds,
       maxPages: options.maxPages,
     });
+    console.log(`Enabled jobs discovered: ${jobs.filter((job) => job.enabled).length}`);
+
     const filteredJobs = options.jobIds
       ? jobs.filter((job) => options.jobIds?.includes(job.id))
       : jobs;
@@ -656,7 +668,8 @@ async function run(): Promise<void> {
       : await chromium.launch({ headless: options.headless });
 
     const page = await browser.newPage({
-      locale: "en-US",
+      locale: "ko-KR",
+      timezoneId: "Asia/Seoul",
       userAgent:
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
     });
