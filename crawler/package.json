@@ -16,6 +16,7 @@
     "reject:candidate": "tsx reject-candidate.ts",
     "promote:approved": "tsx promote-approved.ts",
     "jobs:matrix": "tsx jobs-matrix.ts",
+    "test:ranking-review-rules": "tsx test-ranking-review-rules.ts",
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
     "typecheck": "tsc --noEmit"
   },

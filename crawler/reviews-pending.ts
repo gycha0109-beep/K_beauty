@@ -48,7 +48,10 @@ function summarizeConcernEvidence(evidence: Record<string, unknown>): string {
 
       return [
         String(concern.concern ?? "unknown"),
-        `count=${Number(concern.observation_count ?? 0)}`,
+        `observations=${Number(concern.observation_count ?? 0)}`,
+        `observed_dates=${Number(concern.distinct_observed_dates ?? 0)}`,
+        `first_date=${String(concern.first_observed_date ?? "-")}`,
+        `last_date=${String(concern.last_observed_date ?? "-")}`,
         `best=${String(concern.best_rank ?? "-")}`,
         `latest=${String(concern.latest_rank ?? "-")}`,
       ].join(" ");
@@ -65,10 +68,31 @@ function summarizePopularityEvidence(evidence: Record<string, unknown>): string 
   }
 
   return [
-    `count=${count}`,
+    `observations=${count}`,
+    `observed_dates=${Number(popularity.distinct_observed_dates ?? 0)}`,
+    `first_date=${String(popularity.first_observed_date ?? "-")}`,
+    `last_date=${String(popularity.last_observed_date ?? "-")}`,
     `best=${String(popularity.best_rank ?? "-")}`,
     `latest=${String(popularity.latest_rank ?? "-")}`,
   ].join(" ");
+}
+
+function summarizeQueueEligibility(evidence: Record<string, unknown>): string {
+  if (typeof evidence.queue_eligible !== "boolean") {
+    return "-";
+  }
+
+  const parts = [`eligible=${String(evidence.queue_eligible)}`];
+
+  if (Array.isArray(evidence.ineligible_reasons) && evidence.ineligible_reasons.length > 0) {
+    parts.push(`reasons=${evidence.ineligible_reasons.map(String).join(", ")}`);
+  }
+
+  if (typeof evidence.rule_version === "string") {
+    parts.push(`rule=${evidence.rule_version}`);
+  }
+
+  return parts.join(" ");
 }
 
 function printReview(review: PendingPromotionReviewRow): void {
@@ -79,6 +103,7 @@ function printReview(review: PendingPromotionReviewRow): void {
   console.log(`  status: ${review.status}`);
   console.log(`  priority: ${review.priority_score}`);
   console.log(`  why queued: ${review.selection_reason || "-"}`);
+  console.log(`  queue eligibility: ${summarizeQueueEligibility(evidence)}`);
   console.log(`  concern evidence: ${summarizeConcernEvidence(evidence)}`);
   console.log(`  popularity evidence: ${summarizePopularityEvidence(evidence)}`);
   console.log(`  first queued: ${formatDate(review.first_queued_at)}`);

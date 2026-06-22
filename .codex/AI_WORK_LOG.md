@@ -1122,3 +1122,17 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation: `npm run test:ranking-ingest` passed; `npm run typecheck` passed; `npm run jobs:matrix` passed with total=81, enabled=5, disabled=76; `npm run crawl -- --all --job-ids=hwahae-skincare-toner-category-all --dry-run` failed closed with the expected conflict error; `npm run crawl -- --all --dry-run --delay-ms=1000` passed for 5 enabled jobs with 160 prepared ranking observations and products writes 0; `npm run crawl -- --all --delay-ms=1000` passed for 5 enabled jobs with 5 snapshots, 160 source_rankings rows, 0 new candidates, 160 reobserved candidates, review refresh inserted 50, products writes 0. Products row count stayed 164 before and after. Latest DB `ranking_snapshots` rows for both essence jobs show `source_category_key=essence_ampoule_serum`, `service_category=treatment`, `source_product_form=null`.
 - Issues/risks: Two intermediate `rg` proof commands failed from PowerShell quoting/regex escaping, then products direct write checks were rerun with fixed-string searches and returned no matches. Crawl still depends on live Hwahae availability and the configured Top 50 gateway behavior.
 - Context promotion candidate: NULL
+
+### 2026-06-22 / review queue same-day rerun diagnosis and migration draft
+
+- Branch: main
+- Task type: diagnostic to limited execution
+- Routing decision: High DB/RPC queue-rule change. User approved local implementation and read-only expected-impact analysis, but not DB migration application, queue refresh, or commit.
+- Goal: Draft a forward-only repair so repeated same-concern evidence requires distinct KST observed dates >= 2, latest concern rank <= 15 drives top-15 evidence, and same-day rerun-only queued/reviewing rows are retained with priority 0 and explicit ineligible evidence.
+- Changed files: supabase/migrations/20260622093000_repair_review_queue_distinct_observed_dates.sql, crawler/test-ranking-review-rules.ts, crawler/reviews-pending.ts, crawler/package.json, .codex/AI_WORK_LOG.md
+- Protected areas: Existing migrations were not edited. No DB migration was applied, no queue refresh was executed, no products INSERT/UPDATE/DELETE was added, and no commit was created.
+- Validation: `npm run test:ranking-review-rules` passed; `npm run typecheck` passed; `git diff --check` passed. Read-only DB simulation predicted 50 queued/reviewing rows remain status-kept, 15 remain eligible by latest Top 15, 35 become priority 0, 0 qualify by distinct-date same-concern persistence, products count before remains 164.
+- Follow-up: After approval, applied the migration to linked Supabase with MCP `apply_migration`, then ran `refresh_candidate_promotion_reviews('ranking-review-v2')`. Result: 50 queued rows retained, 15 remain priority > 0, 35 changed to priority 0 with `currently below queue threshold under ranking-review-v2`, products stayed 164, and RPC returned `products_written=0`.
+- Validation follow-up: `npm run reviews:pending` showed Top 1-15 priority retained and rank 16-50 same-day rerun rows marked ineligible with observations/observed_dates/first_date/last_date. `npm run test:ranking-review-rules`, `npm run test:ranking-ingest`, `npm run typecheck`, and `git diff --check` passed.
+- Issues/risks: Supabase CLI is not installed on this PC, so the forward-only migration file was created manually instead of with `supabase migration new`.
+- Context promotion candidate: Same-day ranking reruns must never count as persistence evidence; persistence requires KST distinct observed dates.
