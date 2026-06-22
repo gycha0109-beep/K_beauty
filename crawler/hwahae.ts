@@ -54,6 +54,42 @@ interface JsonLdListItem {
   item?: JsonLdProduct;
 }
 
+interface HwahaeRankingApiDetail {
+  brand?: {
+    name?: string;
+    alias?: string;
+  };
+  goods?: {
+    id?: number | string;
+    product_id?: number | string;
+    name?: string;
+    price?: number | string;
+    image_url?: string;
+  };
+  product?: {
+    id?: number | string;
+    name?: string;
+    image_url?: string;
+    review_count?: number | string;
+    review_rating?: number | string;
+    price?: number | string;
+  };
+}
+
+interface HwahaeRankingApiResponse {
+  meta?: {
+    pagination?: {
+      total_count?: number;
+      count?: number;
+      page?: number;
+      page_size?: number;
+    };
+  };
+  data?: {
+    details?: HwahaeRankingApiDetail[];
+  };
+}
+
 interface RuntimeOptions {
   delayMs: number;
   retries: number;
@@ -65,6 +101,7 @@ interface RuntimeOptions {
   jobIds: string[] | null;
   configPath?: string;
   includeDisabled: boolean;
+  cdpUrl: string | null;
 }
 
 interface CrawlSummary {
@@ -182,6 +219,7 @@ function parseArgs(argv: string[]): RuntimeOptions {
     jobIds,
     configPath,
     includeDisabled: optionMap.has("include-disabled"),
+    cdpUrl: optionMap.get("cdp-url") ?? process.env.HWAHAE_CDP_URL ?? null,
   };
 }
 
@@ -315,6 +353,57 @@ function parseRankingItems(
     .slice(0, limit);
 }
 
+function buildHwahaeRankingApiUrl(themeId: number, pageNumber: number, pageSize = 20): string {
+  return `https://gateway.hwahae.co.kr/v14/rankings/${themeId}/details?page=${pageNumber}&page_size=${pageSize}`;
+}
+
+function parseRankingItemsFromHwahaeApi(
+  responses: Array<{ page: number; response: HwahaeRankingApiResponse }>,
+  limit: number,
+): RankingSnapshotItem[] {
+  const pageSize = responses[0]?.response.meta?.pagination?.page_size ?? 20;
+
+  return responses
+    .flatMap(({ page, response }) =>
+      (response.data?.details ?? []).map((detail, index): RankingSnapshotItem | null => {
+        const rankPosition = (page - 1) * pageSize + index + 1;
+        const productId = detail.product?.id ?? detail.goods?.product_id;
+        const goodsId = detail.goods?.id;
+        const productName = detail.product?.name?.trim() || detail.goods?.name?.trim() || "";
+        const brandName = detail.brand?.name?.trim() || detail.brand?.alias?.trim() || "";
+        const sourceUrl = goodsId
+          ? `https://www.hwahae.co.kr/goods/${goodsId}`
+          : productId
+            ? `https://www.hwahae.co.kr/products/${productId}`
+            : "https://www.hwahae.co.kr";
+
+        if (!productName || !brandName || !productId) {
+          return null;
+        }
+
+        return {
+          rankPosition,
+          productName,
+          brandName,
+          rating: coerceNumber(detail.product?.review_rating),
+          reviewCount: coerceNumber(detail.product?.review_count),
+          thumbnailUrl: detail.product?.image_url?.trim() || detail.goods?.image_url?.trim() || null,
+          sourceUrl,
+          price: coerceNumber(detail.goods?.price) ?? coerceNumber(detail.product?.price),
+          externalType: "products",
+          externalId: String(productId),
+          rawItem: normalizeRawItem({
+            rankPosition,
+            page,
+            detail,
+          }),
+        } satisfies RankingSnapshotItem;
+      }),
+    )
+    .filter((entry): entry is RankingSnapshotItem => entry !== null)
+    .slice(0, limit);
+}
+
 async function extractRankingSnapshotFromJsonLd(
   page: Page,
   rankingPageUrl: string,
@@ -355,6 +444,83 @@ async function extractRankingSnapshotFromJsonLd(
   };
 }
 
+async function extractRankingSnapshotFromHwahaeGateway(
+  page: Page,
+  job: RankingJobConfig,
+  sourceUrl: string,
+): Promise<ExtractedSnapshot> {
+  if (job.source !== "hwahae" || typeof job.themeId !== "number") {
+    throw new Error(`Ranking job ${job.id} cannot use Hwahae gateway collector without a themeId.`);
+  }
+
+  const pageSize = 20;
+  const requiredPages = Math.ceil(job.requestedLimit / pageSize);
+  const responses: Array<{ page: number; response: HwahaeRankingApiResponse }> = [];
+
+  for (let pageNumber = 1; pageNumber <= requiredPages; pageNumber += 1) {
+    const apiUrl = buildHwahaeRankingApiUrl(job.themeId, pageNumber, pageSize);
+    const apiResponse = await page.request.get(apiUrl, {
+      headers: {
+        accept: "application/json",
+        referer: sourceUrl,
+      },
+    });
+
+    if (!apiResponse.ok()) {
+      throw new Error(`Hwahae ranking API failed: ${apiResponse.status()} ${apiResponse.statusText()}`);
+    }
+
+    const response = (await apiResponse.json()) as HwahaeRankingApiResponse;
+    const pagination = response.meta?.pagination;
+
+    if (pagination?.page !== pageNumber) {
+      throw new Error(`Hwahae ranking API returned page ${pagination?.page ?? "unknown"} for requested page ${pageNumber}.`);
+    }
+
+    responses.push({ page: pageNumber, response });
+  }
+
+  const items = parseRankingItemsFromHwahaeApi(responses, job.limit);
+  const positions = items.map((item) => item.rankPosition);
+  const expectedPositions = Array.from({ length: job.requestedLimit }, (_value, index) => index + 1);
+  const duplicateExternalIds = new Set<string>();
+  const seenExternalIds = new Set<string>();
+
+  for (const item of items) {
+    const key = `${item.externalType ?? ""}:${item.externalId ?? ""}`;
+    if (seenExternalIds.has(key)) {
+      duplicateExternalIds.add(key);
+    }
+    seenExternalIds.add(key);
+  }
+
+  if (items.length < job.requestedLimit) {
+    throw new Error(
+      `Hwahae gateway collector returned ${items.length} item(s), below requested_limit ${job.requestedLimit}.`,
+    );
+  }
+
+  if (positions.join(",") !== expectedPositions.join(",")) {
+    throw new Error(`Hwahae gateway collector returned non-contiguous ranks: ${positions.join(",")}.`);
+  }
+
+  if (duplicateExternalIds.size > 0) {
+    throw new Error(`Hwahae gateway collector returned duplicate product identities: ${Array.from(duplicateExternalIds).join(",")}.`);
+  }
+
+  return {
+    rawJsonLd: [
+      {
+        "@type": "HwahaeRankingGatewaySnapshot",
+        sourceUrl,
+        requestedLimit: job.requestedLimit,
+        apiResponses: responses,
+      },
+    ],
+    items,
+  };
+}
+
 async function crawlRankingJob(
   page: Page,
   job: RankingJobConfig,
@@ -375,9 +541,19 @@ async function crawlRankingJob(
   });
   await sleep(options.delayMs);
 
-  const snapshot = await withRetry(`extract ranking job ${job.id}`, options.retries, async () =>
-    extractRankingSnapshotFromJsonLd(page, sourceUrl, job.limit),
-  );
+  const snapshot = await withRetry(`extract ranking job ${job.id}`, options.retries, async () => {
+    const jsonLdSnapshot = await extractRankingSnapshotFromJsonLd(page, sourceUrl, job.limit);
+
+    if (jsonLdSnapshot.items.length >= job.requestedLimit) {
+      return jsonLdSnapshot;
+    }
+
+    if (job.requestedLimit <= 20) {
+      return jsonLdSnapshot;
+    }
+
+    return extractRankingSnapshotFromHwahaeGateway(page, job, sourceUrl);
+  });
 
   return {
     sourceUrl,
@@ -475,7 +651,9 @@ async function run(): Promise<void> {
       console.log(`Discovered ${filteredJobs.length} ranking job(s) to crawl.`);
     }
 
-    browser = await chromium.launch({ headless: options.headless });
+    browser = options.cdpUrl
+      ? await chromium.connectOverCDP(options.cdpUrl)
+      : await chromium.launch({ headless: options.headless });
 
     const page = await browser.newPage({
       locale: "en-US",
@@ -504,6 +682,7 @@ async function run(): Promise<void> {
         });
 
         summary.jobsCrawled += 1;
+        console.log(`- items collected: ${snapshot.items.length}/${job.requestedLimit}`);
         console.log(`- snapshot file: ${path.relative(workspaceDirectory, savedSnapshot.filePath)}`);
         console.log(`- snapshot hash: ${savedSnapshot.snapshotHash}`);
         console.log(`- ingest key: ${savedSnapshot.ingestKey}`);

@@ -1,5 +1,18 @@
 # AI_WORK_LOG.md
 
+### 2026-06-22 / Hwahae ranking Top 50 gateway collector
+
+- Branch: main
+- Task type: execution / Medium crawler collector change
+- Routing decision: User requested investigation and implementation for extending verified Hwahae ranking collection from JSON-LD Top 20 to Top 50. No DB schema change was needed; existing migrations and products data were not modified.
+- Goal: Reuse the `review_prepare` Chrome/CDP profile approach for investigation, verify Korean Hwahae ranking pagination for essence/ampoule/serum All and Trouble, then enable only those verified Top 50 jobs.
+- Changed files: crawler/hwahae.ts, crawler/config/ranking-jobs.json, .codex/AI_WORK_LOG.md
+- Protected areas: No .env edits, no migration edits, no auth/payment/policy/deployment edits, no products insert/update/delete path added, no promotion/enrich execution.
+- Validation results: Korean `.co.kr` page opened through `npm run review_prepare` Chrome remote debugging profile. Scroll triggered `https://gateway.hwahae.co.kr/v14/rankings/{themeId}/details?page=2..5&page_size=20`. Direct normal browser dry-runs and `--cdp-url=http://127.0.0.1:9222` dry-run collected 50/50 for verified jobs. Top 50 snapshots had contiguous ranks 1-50 and duplicate product count 0. JSON-LD first 20 matched gateway page 1 order by product/goods URL id. `npm run test:ranking-ingest` passed, `npm run typecheck` passed, `npm run crawl -- --dry-run` passed, `git diff --check` passed. products count stayed 164 before/after.
+- Error log: Initial investigation incorrectly used English `/en` page; corrected to Korean `.co.kr` after user feedback because locale can affect DOM/URL/payload. Initial implementation used `page.evaluate(fetch(...))` and dry-run failed with `TypeError: Failed to fetch` from Hwahae browser fetch wrappers; collector was changed to `page.request.get(...)` with referer while still using the browser context.
+- Notes/risks: The Top 50 collector depends on Hwahae gateway `v14/rankings/{themeId}/details` response shape. Existing JSON-LD Top 20 remains fallback for jobs with requested_limit <= 20 or pages where JSON-LD already satisfies the requested limit.
+- Context promotion candidate: For Hwahae rankings, Korean `.co.kr` should be the source of truth for URL/pagination verification unless a task explicitly targets global `/en` pages.
+
 ### 2026-06-22 / Hwahae category concern job matrix
 
 - Branch: main

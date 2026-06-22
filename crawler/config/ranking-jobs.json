@@ -1679,19 +1679,19 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 100,
-    "requested_limit": 100,
-    "enabled": false,
-    "disabled_reason": "Actual Hwahae category/filter URL and first-page JSON-LD Top 20 were verified, but only first-page JSON-LD Top 20 is currently observable; pagination strategy for Top 50/100 is unverified.",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": true,
+    "disabled_reason": null,
     "source_theme_name": "Essences/Ampoules/Serums",
     "source_filter_name": "All",
     "source_category_code": "001:001:003",
     "pagination": {
-      "strategy": "unverified",
-      "observed_json_ld_item_count": 20
+      "strategy": "gateway_details_api",
+      "observed_json_ld_item_count": 100
     },
     "themeId": 4174,
-    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4174"
+    "url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4174"
   },
   {
     "id": "hwahae-essence-ampoule-serum-hydration",
@@ -1872,17 +1872,17 @@
     "evidence_type": "concern_relevance",
     "limit": 50,
     "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Actual Hwahae category/filter URL and first-page JSON-LD Top 20 were verified, but only first-page JSON-LD Top 20 is currently observable; pagination strategy for Top 50/100 is unverified.",
+    "enabled": true,
+    "disabled_reason": null,
     "source_theme_name": "Essences/Ampoules/Serums",
     "source_filter_name": "Blemishes",
     "source_category_code": "001:001:003",
     "pagination": {
-      "strategy": "unverified",
-      "observed_json_ld_item_count": 20
+      "strategy": "gateway_details_api",
+      "observed_json_ld_item_count": 90
     },
     "themeId": 4181,
-    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4181"
+    "url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4181"
   },
   {
     "id": "hwahae-essence-ampoule-serum-exfoliation",
