@@ -1,6 +1,6 @@
 [
   {
-    "id": "hwahae-toner-category-all",
+    "id": "hwahae-skincare-toner-category-all",
     "source": "hwahae",
     "source_category_key": "toner",
     "service_category": "toner_essence",
@@ -10,10 +10,10 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 100,
-    "requested_limit": 100,
-    "enabled": false,
-    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "limit": 20,
+    "requested_limit": 20,
+    "enabled": true,
+    "disabled_reason": null,
     "source_theme_name": "Toner",
     "source_filter_name": "All",
     "source_category_code": "001:001:001",
@@ -21,8 +21,8 @@
       "strategy": "unverified",
       "observed_json_ld_item_count": null
     },
-    "themeId": 4156,
-    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4156"
+    "themeId": 5106,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=5106"
   },
   {
     "id": "hwahae-toner-hydration",
@@ -1438,7 +1438,7 @@
     }
   },
   {
-    "id": "hwahae-sunscreen-category-all",
+    "id": "hwahae-skincare-sunscreen-category-all",
     "source": "hwahae",
     "source_category_key": "sunscreen",
     "service_category": "sunscreen",
@@ -1448,10 +1448,10 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 100,
-    "requested_limit": 100,
-    "enabled": false,
-    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "limit": 20,
+    "requested_limit": 20,
+    "enabled": true,
+    "disabled_reason": null,
     "source_theme_name": "Sunscreen/Sunscreen Lotion",
     "source_filter_name": "All",
     "source_category_code": "001:004:001",
@@ -1459,8 +1459,8 @@
       "strategy": "unverified",
       "observed_json_ld_item_count": null
     },
-    "themeId": 4272,
-    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4272"
+    "themeId": 5297,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=5297"
   },
   {
     "id": "hwahae-sunscreen-hydration",
@@ -1922,10 +1922,10 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 100,
-    "requested_limit": 100,
-    "enabled": false,
-    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "limit": 20,
+    "requested_limit": 20,
+    "enabled": true,
+    "disabled_reason": null,
     "source_theme_name": "Cleansing Foam",
     "source_filter_name": "All",
     "source_category_code": "001:002:001",
@@ -1933,8 +1933,8 @@
       "strategy": "unverified",
       "observed_json_ld_item_count": null
     },
-    "themeId": 4200,
-    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4200"
+    "themeId": 5178,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=5178"
   },
   {
     "id": "hwahae-cleansing-foam-hydration",
