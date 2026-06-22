@@ -757,7 +757,7 @@ export function prepareCandidateReview(
     sourceContextStatus === "valid" &&
     !candidate.source_context_conflict &&
     Boolean(sourceCategory) &&
-    (sourceCategory === "treatment" ? Boolean(sourceProductForm) : !hasRawSourceProductForm);
+    (sourceCategory === "treatment" ? !hasRawSourceProductForm || Boolean(sourceProductForm) : true);
   const serviceCategory = sourceContextValid ? sourceCategory : null;
   const productForm = sourceContextValid && serviceCategory === "treatment" ? sourceProductForm : null;
   const { rejectFlags, needsReviewFlags } = collectScopeFlags(canonicalName);

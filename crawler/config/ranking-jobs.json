@@ -1,6 +1,6 @@
 [
   {
-    "id": "hwahae-skincare-toner-category-all",
+    "id": "hwahae-toner-category-all",
     "source": "hwahae",
     "source_category_key": "toner",
     "service_category": "toner_essence",
@@ -10,14 +10,1435 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 20,
-    "requested_limit": 20,
-    "enabled": true,
-    "disabled_reason": null,
-    "themeId": 5106
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4156,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4156"
   },
   {
-    "id": "hwahae-skincare-sunscreen-category-all",
+    "id": "hwahae-toner-hydration",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4157,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4157"
+  },
+  {
+    "id": "hwahae-toner-soothing",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4158,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4158"
+  },
+  {
+    "id": "hwahae-toner-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4159,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4159"
+  },
+  {
+    "id": "hwahae-toner-pores",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4160,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4160"
+  },
+  {
+    "id": "hwahae-toner-brightening",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4161,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4161"
+  },
+  {
+    "id": "hwahae-toner-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4162,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4162"
+  },
+  {
+    "id": "hwahae-toner-trouble",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4163,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4163"
+  },
+  {
+    "id": "hwahae-toner-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4164,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4164"
+  },
+  {
+    "id": "hwahae-toner-pad-category-all",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4498,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4498"
+  },
+  {
+    "id": "hwahae-toner-pad-hydration",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4499,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4499"
+  },
+  {
+    "id": "hwahae-toner-pad-soothing",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4500,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4500"
+  },
+  {
+    "id": "hwahae-toner-pad-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4501,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4501"
+  },
+  {
+    "id": "hwahae-toner-pad-pores",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4502,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4502"
+  },
+  {
+    "id": "hwahae-toner-pad-brightening",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4503,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4503"
+  },
+  {
+    "id": "hwahae-toner-pad-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4504,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4504"
+  },
+  {
+    "id": "hwahae-toner-pad-trouble",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4505,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4505"
+  },
+  {
+    "id": "hwahae-toner-pad-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "toner_pad",
+    "service_category": "toner_pad",
+    "source_product_form": "toner_pad",
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Toner Pads",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:011",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4506,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4506"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-category-all",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4165,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4165"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-hydration",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4166,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4166"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-soothing",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4167,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4167"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4168,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4168"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-pores",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4169,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4169"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-brightening",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4170,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4170"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4171,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4171"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-trouble",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4172,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4172"
+  },
+  {
+    "id": "hwahae-lotion-emulsion-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "lotion_emulsion",
+    "service_category": "moisturizer_lotion_emulsion",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Emulsions",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:002",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4173,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4173"
+  },
+  {
+    "id": "hwahae-cream-category-all",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4184,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4184"
+  },
+  {
+    "id": "hwahae-cream-hydration",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4185,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4185"
+  },
+  {
+    "id": "hwahae-cream-soothing",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4186,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4186"
+  },
+  {
+    "id": "hwahae-cream-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4187,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4187"
+  },
+  {
+    "id": "hwahae-cream-pores",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4188,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4188"
+  },
+  {
+    "id": "hwahae-cream-brightening",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4189,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4189"
+  },
+  {
+    "id": "hwahae-cream-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4190,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4190"
+  },
+  {
+    "id": "hwahae-cream-trouble",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4191,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4191"
+  },
+  {
+    "id": "hwahae-cream-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "cream",
+    "service_category": "moisturizer_cream",
+    "source_product_form": "cream",
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Face Moisturizers",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:005",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4192,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4192"
+  },
+  {
+    "id": "hwahae-gel-category-all",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4199,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4199"
+  },
+  {
+    "id": "hwahae-gel-hydration",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Hydration themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-soothing",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Soothing themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Moisturizing themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-pores",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Pores themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-brightening",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Brightening themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Anti-Aging themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-trouble",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Blemishes themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-gel-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "gel",
+    "service_category": "moisturizer_gel",
+    "source_product_form": "gel",
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Gel does not currently expose a verified Exfoliation themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Gel",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:010",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-balm-category-all",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4518,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4518"
+  },
+  {
+    "id": "hwahae-balm-hydration",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4519,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4519"
+  },
+  {
+    "id": "hwahae-balm-soothing",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4520,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4520"
+  },
+  {
+    "id": "hwahae-balm-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4521,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4521"
+  },
+  {
+    "id": "hwahae-balm-pores",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Balms/Multi-balms does not currently expose a verified Pores themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-balm-brightening",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4523,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4523"
+  },
+  {
+    "id": "hwahae-balm-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4524,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4524"
+  },
+  {
+    "id": "hwahae-balm-trouble",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4525,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4525"
+  },
+  {
+    "id": "hwahae-balm-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "balm",
+    "service_category": "moisturizer_balm",
+    "source_product_form": "balm",
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Balms/Multi-balms does not currently expose a verified Exfoliation themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Balms/Multi-balms",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:012",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-category-all",
     "source": "hwahae",
     "source_category_key": "sunscreen",
     "service_category": "sunscreen",
@@ -27,11 +1448,468 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 20,
-    "requested_limit": 20,
-    "enabled": true,
-    "disabled_reason": null,
-    "themeId": 5297
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "All",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4272,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4272"
+  },
+  {
+    "id": "hwahae-sunscreen-hydration",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Hydration themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-soothing",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4273,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4273"
+  },
+  {
+    "id": "hwahae-sunscreen-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Moisturizing themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-pores",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Pores themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-brightening",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Brightening themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Anti-Aging themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-sunscreen-trouble",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4274,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4274"
+  },
+  {
+    "id": "hwahae-sunscreen-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "sunscreen",
+    "service_category": "sunscreen",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Hwahae UI category Sunscreen/Sunscreen Lotion does not currently expose a verified Exfoliation themeId in rankingsCategories; job is retained in the fixed matrix but disabled.",
+    "source_theme_name": "Sunscreen/Sunscreen Lotion",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:004:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    }
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-category-all",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 100,
+    "requested_limit": 100,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL and first-page JSON-LD Top 20 were verified, but only first-page JSON-LD Top 20 is currently observable; pagination strategy for Top 50/100 is unverified.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "All",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": 20
+    },
+    "themeId": 4174,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4174"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-hydration",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4175,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4175"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-soothing",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4176,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4176"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4177,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4177"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-pores",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4178,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4178"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-brightening",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4179,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4179"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4180,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4180"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-trouble",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL and first-page JSON-LD Top 20 were verified, but only first-page JSON-LD Top 20 is currently observable; pagination strategy for Top 50/100 is unverified.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": 20
+    },
+    "themeId": 4181,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4181"
+  },
+  {
+    "id": "hwahae-essence-ampoule-serum-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4182,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4182"
   },
   {
     "id": "hwahae-cleansing-foam-category-all",
@@ -44,138 +1922,236 @@
     "source_concern_key": null,
     "canonical_concerns": [],
     "evidence_type": "popularity",
-    "limit": 20,
-    "requested_limit": 20,
-    "enabled": true,
-    "disabled_reason": null,
-    "themeId": 5178
-  },
-  {
-    "id": "hwahae-skincare-toner-pad-category-all",
-    "source": "hwahae",
-    "source_category_key": "toner_pad",
-    "service_category": "toner_pad",
-    "source_product_form": "toner_pad",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
+    "limit": 100,
+    "requested_limit": 100,
     "enabled": false,
-    "disabled_reason": "Hwahae toner pad URL, themeId, pagination, and JSON-LD structure have not been verified."
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "All",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4200,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4200"
   },
   {
-    "id": "hwahae-skincare-cream-category-all",
+    "id": "hwahae-cleansing-foam-hydration",
     "source": "hwahae",
-    "source_category_key": "cream",
-    "service_category": "moisturizer_cream",
-    "source_product_form": "cream",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae cream-specific URL, pagination, and JSON-LD structure have not been verified."
-  },
-  {
-    "id": "hwahae-skincare-gel-category-all",
-    "source": "hwahae",
-    "source_category_key": "gel",
-    "service_category": "moisturizer_gel",
-    "source_product_form": "gel",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae gel-specific URL, pagination, and JSON-LD structure have not been verified."
-  },
-  {
-    "id": "hwahae-skincare-balm-category-all",
-    "source": "hwahae",
-    "source_category_key": "balm",
-    "service_category": "moisturizer_balm",
-    "source_product_form": "balm",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae balm-specific URL, pagination, and JSON-LD structure have not been verified."
-  },
-  {
-    "id": "hwahae-skincare-serum-category-all",
-    "source": "hwahae",
-    "source_category_key": "serum",
-    "service_category": "treatment",
-    "source_product_form": "serum",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae serum-specific URL, pagination, and JSON-LD structure have not been verified; broad treatment theme is not used as a serum proxy."
-  },
-  {
-    "id": "hwahae-skincare-ampoule-category-all",
-    "source": "hwahae",
-    "source_category_key": "ampoule",
-    "service_category": "treatment",
-    "source_product_form": "ampoule",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae ampoule-specific URL, pagination, and JSON-LD structure have not been verified; broad treatment theme is not used as an ampoule proxy."
-  },
-  {
-    "id": "hwahae-skincare-essence-category-all",
-    "source": "hwahae",
-    "source_category_key": "essence",
-    "service_category": "treatment",
-    "source_product_form": "essence",
-    "ranking_scope": "category_all",
-    "ranking_filter": "all",
-    "source_concern_key": null,
-    "canonical_concerns": [],
-    "evidence_type": "popularity",
-    "limit": 50,
-    "requested_limit": 50,
-    "enabled": false,
-    "disabled_reason": "Hwahae essence-specific URL, pagination, and JSON-LD structure have not been verified; broad treatment theme is not used as an essence proxy."
-  },
-  {
-    "id": "hwahae-skincare-toner-concern-acne",
-    "source": "hwahae",
-    "source_category_key": "toner",
-    "service_category": "toner_essence",
-    "source_product_form": null,
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
     "ranking_scope": "concern",
-    "ranking_filter": "acne",
-    "source_concern_key": "acne",
-    "canonical_concerns": ["acne"],
+    "ranking_filter": "hydration",
+    "source_concern_key": "hydration",
+    "canonical_concerns": [
+      "dehydration"
+    ],
     "evidence_type": "concern_relevance",
     "limit": 50,
     "requested_limit": 50,
     "enabled": false,
-    "disabled_reason": "Hwahae concern filter URL, pagination, and JSON-LD structure have not been verified."
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Hydration",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4201,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4201"
+  },
+  {
+    "id": "hwahae-cleansing-foam-soothing",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "soothing",
+    "source_concern_key": "soothing",
+    "canonical_concerns": [
+      "redness",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Soothing",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4202,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4202"
+  },
+  {
+    "id": "hwahae-cleansing-foam-moisturizing",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "moisturizing",
+    "source_concern_key": "moisturizing",
+    "canonical_concerns": [
+      "dehydration",
+      "barrier"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Moisturizing",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4203,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4203"
+  },
+  {
+    "id": "hwahae-cleansing-foam-pores",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "pores",
+    "source_concern_key": "pores",
+    "canonical_concerns": [
+      "pores",
+      "sebum"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Pores",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4204,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4204"
+  },
+  {
+    "id": "hwahae-cleansing-foam-brightening",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "brightening",
+    "source_concern_key": "brightening",
+    "canonical_concerns": [
+      "brightening",
+      "uneven_tone"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Brightening",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4205,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4205"
+  },
+  {
+    "id": "hwahae-cleansing-foam-anti_aging",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "anti_aging",
+    "source_concern_key": "anti_aging",
+    "canonical_concerns": [],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Anti-Aging",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4206,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4206"
+  },
+  {
+    "id": "hwahae-cleansing-foam-trouble",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": [
+      "acne"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4207,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4207"
+  },
+  {
+    "id": "hwahae-cleansing-foam-exfoliation",
+    "source": "hwahae",
+    "source_category_key": "cleansing_foam",
+    "service_category": "cleanser",
+    "source_product_form": "cleansing_foam",
+    "ranking_scope": "concern",
+    "ranking_filter": "exfoliation",
+    "source_concern_key": "exfoliation",
+    "canonical_concerns": [
+      "exfoliation"
+    ],
+    "evidence_type": "concern_relevance",
+    "limit": 50,
+    "requested_limit": 50,
+    "enabled": false,
+    "disabled_reason": "Actual Hwahae category/filter URL, pagination, and JSON-LD structure have not been verified for this job.",
+    "source_theme_name": "Cleansing Foam",
+    "source_filter_name": "Exfoliation",
+    "source_category_code": "001:002:001",
+    "pagination": {
+      "strategy": "unverified",
+      "observed_json_ld_item_count": null
+    },
+    "themeId": 4208,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=4208"
   }
 ]

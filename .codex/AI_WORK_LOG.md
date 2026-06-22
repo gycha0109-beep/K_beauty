@@ -1,5 +1,18 @@
 # AI_WORK_LOG.md
 
+### 2026-06-22 / Hwahae category concern job matrix
+
+- Branch: main
+- Task type: execution / Medium crawler config and validation change
+- Routing decision: User explicitly requested a fixed Hwahae ranking job matrix and validation, with no products writes and no existing migration edits. DB schema/migration changes were not needed.
+- Goal: Replace ad hoc Hwahae ranking jobs with a 9 category x 9 ranking context matrix, preserve essence/ampoule/serum as one source category, and keep jobs disabled unless URL/filter/pagination/parser verification is complete.
+- Changed files: crawler/config/ranking-jobs.json, crawler/lib/supabase.ts, crawler/lib/review.ts, crawler/test-ranking-ingest.ts, .codex/AI_WORK_LOG.md
+- Protected areas: No .env edits, no migration edits, no auth/payment/policy/deployment edits, no production data writes, no products insert/update/delete path added, no promotion/enrich execution.
+- Validation results: `npm run test:ranking-ingest` passed, `npm run typecheck` passed after one test-only null narrowing fix, `git diff --check` passed, `npm run crawl -- --dry-run` passed with products writes 0 and 0 enabled jobs, products count stayed 164 before/after. Playwright checks for essence/ampoule/serum All theme_id 4174 and Blemishes theme_id 4181 returned HTTP 200 twice, page H1/category matched, JSON-LD ItemList had rank positions 1-20 only.
+- Error log: Initial Playwright verification waited for JSON-LD scripts with default visible state and timed out even though locator resolved to 3 script tags; rerun used `state: attached` and passed. Initial products-write rg command had a PowerShell quoting regex parse error; rerun with fixed patterns returned no matches. Initial typecheck failed with `test-ranking-ingest.ts(340,15): 'config.disabledReason' is possibly 'null'`; fixed test assertion with optional chaining.
+- Notes/risks: Hwahae Next data reports pagination metadata but page=2 URL and Next data URL still returned page 1 / first 20, so Top 50/100 pagination remains unverified. Gel, balm, and sunscreen do not expose all requested concern themeIds in the observed rankingsCategories tree, so those matrix jobs are retained disabled with explicit reasons.
+- Context promotion candidate: Ranking jobs may preserve source_product_form as source observation metadata even when service_category already encodes the form; review/enrichment should decide product_form finalization separately from ranking collection.
+
 ### 2026-06-21 / Hwahae ranking Phase 1 snapshot pipeline
 
 - Branch: redesign-bejewely-first-screen

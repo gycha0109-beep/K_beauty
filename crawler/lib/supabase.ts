@@ -367,10 +367,10 @@ function isValidSourceContextObservation(observation: {
   }
 
   if (observation.serviceCategory === "treatment") {
-    return isTreatmentProductForm(observation.sourceProductForm);
+    return observation.sourceProductForm === null || isTreatmentProductForm(observation.sourceProductForm);
   }
 
-  return observation.sourceProductForm === null;
+  return true;
 }
 
 export function extractCandidateSourceContext(evidenceSnapshot: unknown): CandidateSourceContext {

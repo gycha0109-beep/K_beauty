@@ -8,17 +8,21 @@ import {
   type InMemoryRankingIngestStore,
   type RankingSnapshotIngestPayload,
 } from "./lib/ranking-ingest.js";
-import { ingestRankingSnapshot } from "./lib/supabase.js";
-import { refreshCandidatePromotionReviews } from "./lib/supabase.js";
+import { loadRankingJobs } from "./lib/ranking-config.js";
+import {
+  extractCandidateSourceContext,
+  ingestRankingSnapshot,
+  refreshCandidatePromotionReviews,
+} from "./lib/supabase.js";
 import type { RankingJobConfig } from "./lib/ranking-config.js";
 import type { RankingSnapshotItem } from "./lib/snapshot.js";
 
 const job: RankingJobConfig = {
-  id: "hwahae-skincare-treatment-category-all",
+  id: "hwahae-essence-ampoule-serum-category-all",
   source: "hwahae",
-  sourceCategoryKey: "serum",
+  sourceCategoryKey: "essence_ampoule_serum",
   serviceCategory: "treatment",
-  sourceProductForm: "serum",
+  sourceProductForm: null,
   rankingScope: "category_all",
   rankingFilter: "all",
   sourceConcernKey: null,
@@ -28,7 +32,7 @@ const job: RankingJobConfig = {
   requestedLimit: 20,
   enabled: true,
   disabledReason: null,
-  themeId: 5126,
+  themeId: 4174,
 };
 
 function makeItem(overrides: Partial<RankingSnapshotItem> = {}): RankingSnapshotItem {
@@ -256,6 +260,103 @@ for (const legacyCategory of ["serum", "ampoule", "essence", "unknown_category"]
 }
 
 validateRankingSnapshotIngestPayload(makePayload());
+
+const treatmentContext = extractCandidateSourceContext({
+  popularity: {
+    observations: [
+      {
+        service_category: "treatment",
+        source_category_key: "essence_ampoule_serum",
+        source_product_form: null,
+        collected_at: "2026-06-21T00:00:00.000Z",
+      },
+    ],
+  },
+});
+
+assert.equal(treatmentContext.source_context_status, "valid");
+assert.equal(treatmentContext.source_service_category, "treatment");
+assert.equal(treatmentContext.source_category_key, "essence_ampoule_serum");
+assert.equal(treatmentContext.source_product_form, null);
+
+const rankingJobs = await loadRankingJobs({
+  configPath: path.resolve("config", "ranking-jobs.json"),
+  includeDisabled: true,
+});
+const expectedSourceCategories = [
+  "toner",
+  "toner_pad",
+  "lotion_emulsion",
+  "cream",
+  "gel",
+  "balm",
+  "sunscreen",
+  "essence_ampoule_serum",
+  "cleansing_foam",
+];
+const expectedRankingFilters = [
+  "all",
+  "hydration",
+  "soothing",
+  "moisturizing",
+  "pores",
+  "brightening",
+  "anti_aging",
+  "trouble",
+  "exfoliation",
+];
+
+assert.equal(rankingJobs.length, 81);
+assert.deepEqual(
+  Array.from(new Set(rankingJobs.map((config) => config.sourceCategoryKey))).sort(),
+  [...expectedSourceCategories].sort(),
+);
+
+for (const sourceCategory of expectedSourceCategories) {
+  const categoryJobs = rankingJobs.filter((config) => config.sourceCategoryKey === sourceCategory);
+  assert.equal(categoryJobs.length, 9, sourceCategory);
+  assert.deepEqual(
+    categoryJobs.map((config) => config.rankingFilter).sort(),
+    [...expectedRankingFilters].sort(),
+  );
+}
+
+assert.equal(
+  rankingJobs.some((config) => ["serum", "ampoule", "essence"].includes(config.sourceCategoryKey)),
+  false,
+);
+assert.equal(
+  rankingJobs.some((config) => config.sourceCategoryKey === "essence_ampoule_serum"),
+  true,
+);
+assert.equal(
+  rankingJobs.some((config) => config.sourceCategoryKey === "lotion_emulsion"),
+  true,
+);
+
+for (const config of rankingJobs) {
+  if (!config.enabled) {
+    assert.equal(typeof config.disabledReason, "string", config.id);
+    assert.ok(config.disabledReason?.length, config.id);
+  }
+
+  if (config.enabled) {
+    assert.equal(config.disabledReason, null, config.id);
+    assert.ok(config.themeId || config.url, config.id);
+  }
+}
+
+const essenceAllJob = rankingJobs.find((config) => config.id === "hwahae-essence-ampoule-serum-category-all");
+const essenceTroubleJob = rankingJobs.find((config) => config.id === "hwahae-essence-ampoule-serum-trouble");
+
+assert.equal(essenceAllJob?.themeId, 4174);
+assert.equal(essenceAllJob?.serviceCategory, "treatment");
+assert.equal(essenceAllJob?.sourceProductForm, null);
+assert.equal(essenceAllJob?.evidenceType, "popularity");
+assert.equal(essenceTroubleJob?.themeId, 4181);
+assert.equal(essenceTroubleJob?.sourceConcernKey, "trouble");
+assert.deepEqual(essenceTroubleJob?.canonicalConcerns, ["acne"]);
+assert.equal(essenceTroubleJob?.evidenceType, "concern_relevance");
 
 let rpcCalled = false;
 const mockRpcClient = {
