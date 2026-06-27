@@ -559,6 +559,40 @@ function sanitizeRoutineStructure(structure) {
   };
 }
 
+function sanitizeDecisionScoring(scoring) {
+  const concernScores = scoring?.concernScores;
+  if (!concernScores || typeof concernScores !== "object") {
+    return null;
+  }
+
+  const sanitizedScores = Object.fromEntries(
+    Object.entries(concernScores)
+      .map(([axis, value]) => {
+        const total = Number(value?.total);
+
+        if (!axis || !Number.isFinite(total)) {
+          return null;
+        }
+
+        return [
+          axis,
+          {
+            total
+          }
+        ];
+      })
+      .filter(Boolean)
+  );
+
+  if (!Object.keys(sanitizedScores).length) {
+    return null;
+  }
+
+  return {
+    concernScores: sanitizedScores
+  };
+}
+
 function sanitizeRoutineStepForPremium(item) {
   if (!item || typeof item !== "object") {
     return null;
@@ -751,7 +785,8 @@ function buildFreeDecisionPayload(decision) {
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
     photoObservations: decision.photoObservations || null,
-    surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : []
+    surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : [],
+    scoring: sanitizeDecisionScoring(decision.scoring)
   };
 }
 

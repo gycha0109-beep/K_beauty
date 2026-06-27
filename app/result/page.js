@@ -80,6 +80,28 @@ const displayMap = {
   }
 };
 
+const CONCERN_SCORE_AXES = [
+  "barrier",
+  "dehydration",
+  "oiliness",
+  "redness",
+  "acne",
+  "pores",
+  "uneven_tone",
+  "uv"
+];
+
+const CONCERN_SCORE_TIEBREAKER = [
+  "uv",
+  "barrier",
+  "redness",
+  "dehydration",
+  "acne",
+  "pores",
+  "oiliness",
+  "uneven_tone"
+];
+
 const topPickHeadlineMap = {
   ko: {
     uv: "자외선 부담이 커서 가장 먼저 지켜야 할 1순위",
@@ -522,6 +544,86 @@ function getPriorityDisplay(decision = null, form = {}, locale = "ko") {
   }
 
   return label || getConcernDisplay(form, locale);
+}
+
+function normalizeDecisionConcernScores(result = null) {
+  const source = result?.scoring?.concernScores;
+  if (!source || typeof source !== "object") {
+    return [];
+  }
+
+  return CONCERN_SCORE_AXES.map((axis) => {
+    const item = source[axis];
+    const total = Number(item?.total);
+
+    if (!Number.isFinite(total)) {
+      return null;
+    }
+
+    return {
+      axis,
+      score: Math.max(0, total),
+      survey: Number.isFinite(Number(item?.survey)) ? Number(item.survey) : null,
+      photo: Number.isFinite(Number(item?.photo)) ? Number(item.photo) : null,
+      environment: Number.isFinite(Number(item?.environment)) ? Number(item.environment) : null
+    };
+  }).filter(Boolean);
+}
+
+function hasDecisionConcernScores(result = null) {
+  return normalizeDecisionConcernScores(result).length > 0;
+}
+
+function getConcernScoreRank(result = null, excludedAxis = "") {
+  const excluded = String(excludedAxis || "").trim();
+  return normalizeDecisionConcernScores(result)
+    .filter((item) => item.axis && item.axis !== excluded)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      return CONCERN_SCORE_TIEBREAKER.indexOf(left.axis) - CONCERN_SCORE_TIEBREAKER.indexOf(right.axis);
+    });
+}
+
+function getConcernAxisLabel(axis = "", locale = "ko", fallback = "") {
+  const display = getDisplayMap(locale);
+  const fallbackLabel = String(fallback || "").trim();
+  return fallbackLabel || display.mainConcern[axis] || axis;
+}
+
+function getConcernPriorityBody(axis = "", score = 0, locale = "ko") {
+  const label = getConcernAxisLabel(axis, locale);
+  const rounded = Number.isFinite(Number(score)) ? Math.round(Number(score)) : null;
+
+  if (locale === "en") {
+    return rounded === null
+      ? `${label} is included as a supporting care axis.`
+      : `${label} is next in the API concern score order (${rounded}).`;
+  }
+
+  return rounded === null
+    ? `${label} 축을 보조 관리 항목으로 함께 봅니다.`
+    : `API 고민 점수 순서에서 ${label} 축이 다음으로 높게 잡혔습니다. (${rounded})`;
+}
+
+function buildPriorityFromDecision(result = null, form = {}, locale = "ko") {
+  const axis = String(result?.priority?.axis || "").trim();
+  if (!axis) {
+    return null;
+  }
+
+  const score = Number(result?.priority?.score);
+  const label = getConcernAxisLabel(axis, locale, result?.priority?.label);
+  return {
+    rank: 1,
+    axis,
+    score: Number.isFinite(score) ? score : null,
+    title: label || getPriorityDisplay(result, form, locale),
+    body: getConcernPriorityBody(axis, score, locale),
+    source: "api-priority"
+  };
 }
 
 function getOverviewSummary(form = {}, decision = null, locale = "ko") {
@@ -1167,8 +1269,40 @@ function buildFreeResultV2Priorities(axis = "", locale = "ko") {
   return (priorityMap[axis] || fallback).map(([title, body], index) => ({
     rank: index + 1,
     title,
-    body
+    body,
+    axis: index === 0 ? axis : ""
   }));
+}
+
+function buildFreeResultV2DecisionBundlePriorities(result = null, form = {}, locale = "ko") {
+  const hasScores = hasDecisionConcernScores(result);
+  const apiPriority = buildPriorityFromDecision(result, form, locale);
+
+  if (!apiPriority || !hasScores) {
+    return buildFreeResultV2Priorities(apiPriority?.axis || getPrimaryConcernKey(result, form), locale);
+  }
+
+  const secondaryItems = getConcernScoreRank(result, apiPriority.axis)
+    .slice(0, 2)
+    .map((item, index) => ({
+      rank: index + 2,
+      axis: item.axis,
+      score: item.score,
+      title: getConcernAxisLabel(item.axis, locale),
+      body: getConcernPriorityBody(item.axis, item.score, locale),
+      source: "api-concern-score"
+    }));
+
+  const fallbackPriorities = buildFreeResultV2Priorities(apiPriority.axis, locale)
+    .filter((item) => item.axis !== apiPriority.axis)
+    .slice(0, Math.max(0, 2 - secondaryItems.length))
+    .map((item, index) => ({
+      ...item,
+      rank: secondaryItems.length + index + 2,
+      source: "legacy-fallback"
+    }));
+
+  return [apiPriority, ...secondaryItems, ...fallbackPriorities].slice(0, 3);
 }
 
 function buildFreeResultV2DirectionTags(axis = "", form = {}, locale = "ko") {
@@ -1224,7 +1358,7 @@ function getFreeResultV2DirectionLine(form = {}, result = null, locale = "ko") {
 function buildFreeResultV2Diagnosis(form = {}, result = null, matchSummary = null, locale = "ko") {
   const axis = getPrimaryConcernKey(result, form);
   const display = getDisplayMap(locale);
-  const priorities = buildFreeResultV2Priorities(axis, locale);
+  const priorities = buildFreeResultV2DecisionBundlePriorities(result, form, locale);
   const concernLabels = Array.isArray(matchSummary?.concerns) && matchSummary.concerns.length
     ? matchSummary.concerns
     : getConcernDisplay(form, locale).split(" · ").filter(Boolean);
@@ -1233,6 +1367,8 @@ function buildFreeResultV2Diagnosis(form = {}, result = null, matchSummary = nul
   const currentPriorityLabel = getFreeResultV2CurrentPriorityTagValue(form, result, priorities[0]?.title || priorityLabel, locale);
 
   return {
+    concernScores: normalizeDecisionConcernScores(result),
+    usesDecisionBundleScores: hasDecisionConcernScores(result),
     coreLine: getFreeResultV2CorePatternLine(form, result, matchSummary, locale),
     patternLine: "",
     tags: [
