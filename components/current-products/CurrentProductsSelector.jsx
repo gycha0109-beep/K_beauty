@@ -2,15 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  CANONICAL_CURRENT_PRODUCT_CATEGORIES,
   getCurrentProductCategoryLabel,
-  normalizeCurrentProductCategory
+  normalizeCurrentProductCategory,
+  resolveCurrentProductSemantics
 } from "@/lib/current-products";
 
 const GROUPS = [
   { groupId: "cleanser", categoryIntent: "cleanser", categories: ["cleanser"] },
-  { groupId: "toner_essence", categoryIntent: "toner_essence", categories: ["toner_essence", "toner_pad", "essence"] },
-  { groupId: "serum_treatment", categoryIntent: "treatment", categories: ["serum", "ampoule", "treatment"] },
-  { groupId: "moisturizer", categoryIntent: "moisturizer", categories: ["moisturizer"] },
+  { groupId: "toner_essence", categoryIntent: "toner_essence", categories: ["toner_essence", "toner_pad"], legacyCategories: ["essence"] },
+  { groupId: "serum_treatment", categoryIntent: "treatment", categories: ["treatment"], legacyCategories: ["serum", "ampoule"] },
+  {
+    groupId: "moisturizer",
+    categoryIntent: "moisturizer",
+    categories: [
+      "moisturizer",
+      "moisturizer_lotion_emulsion",
+      "moisturizer_gel",
+      "moisturizer_cream",
+      "moisturizer_balm"
+    ]
+  },
   { groupId: "sunscreen", categoryIntent: "sunscreen", categories: ["sunscreen"] }
 ];
 
@@ -64,7 +76,11 @@ function getStatusOptions(copy) {
 }
 
 function normalizeOptionGroup(product) {
-  return normalizeCurrentProductCategory(product?.category);
+  return resolveCurrentProductSemantics(product)?.canonicalCategory || "";
+}
+
+function groupAcceptsSavedCategory(group, category) {
+  return [...group.categories, ...(group.legacyCategories || [])].includes(category);
 }
 
 function dedupeProducts(products = []) {
@@ -86,7 +102,7 @@ function dedupeProducts(products = []) {
 }
 
 async function fetchCurrentProductOptionsByCategory(category) {
-  const normalizedCategory = normalizeCurrentProductCategory(category);
+  const normalizedCategory = CANONICAL_CURRENT_PRODUCT_CATEGORIES.includes(category) ? category : "";
 
   if (!normalizedCategory) {
     return [];
@@ -139,7 +155,7 @@ export default function CurrentProductsSelector({
 
     value.forEach((item) => {
       const category = normalizeCurrentProductCategory(item?.category);
-      const group = GROUPS.find((candidate) => candidate.categories.includes(category));
+      const group = GROUPS.find((candidate) => groupAcceptsSavedCategory(candidate, category));
 
       if (group && item?.status) {
         next[group.groupId] = item;
@@ -219,7 +235,7 @@ export default function CurrentProductsSelector({
 
   const setGroupProduct = (group, productId) => {
     const product = products.find((item) => item.id === productId);
-    const category = normalizeCurrentProductCategory(product?.category) || group.categoryIntent;
+    const category = resolveCurrentProductSemantics(product)?.canonicalCategory || group.categoryIntent;
 
     setSelectionMap((current) => ({
       ...current,

@@ -2,10 +2,11 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import {
-  getReviewSignalCategoryFamily,
   normalizeReviewSignals,
+  resolveReviewSignalCategorySemantics,
 } from "../../lib/review-signals.js";
 
 const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
@@ -157,11 +158,6 @@ function normalizeOptionalText(value) {
   return normalized || null;
 }
 
-function normalizeCategoryFamilyToken(value) {
-  const normalized = normalizeOptionalText(value);
-  return normalized ? normalized.toLowerCase().replace(/\s+/g, "_") : null;
-}
-
 function createCategoryLookupContext() {
   const { supabaseUrl, serviceRoleKey } = getSupabaseReadConfig();
 
@@ -195,7 +191,7 @@ function createCategoryLookupContext() {
   };
 }
 
-async function fetchProductCategory(categoryLookup, productId) {
+async function fetchProductCategoryContext(categoryLookup, productId) {
   if (!categoryLookup?.supabase) {
     return null;
   }
@@ -206,7 +202,7 @@ async function fetchProductCategory(categoryLookup, productId) {
 
   const { data, error } = await categoryLookup.supabase
     .from("products")
-    .select("category")
+    .select("category,product_form")
     .eq("id", productId)
     .maybeSingle();
 
@@ -214,88 +210,91 @@ async function fetchProductCategory(categoryLookup, productId) {
     throw new Error(`Supabase category lookup failed for ${productId}: ${error.message}`);
   }
 
-  const category = normalizeOptionalText(data?.category);
-  categoryLookup.cache.set(productId, category);
-  return category;
+  const context = data
+    ? {
+        category: normalizeOptionalText(data.category),
+        product_form: normalizeOptionalText(data.product_form),
+      }
+    : null;
+  categoryLookup.cache.set(productId, context);
+  return context;
 }
 
 async function resolveReviewCategory(rawItem, categoryLookup) {
   const productId = normalizeOptionalText(rawItem?.productId);
   const rawCategory = normalizeOptionalText(rawItem?.category);
-  const rawCategoryFamily = normalizeCategoryFamilyToken(rawItem?.categoryFamily);
+  const rawProductForm = normalizeOptionalText(rawItem?.product_form ?? rawItem?.productForm);
 
   if (rawCategory) {
+    const semanticStatus = resolveReviewSignalCategorySemantics({
+      category: rawCategory,
+      product_form: rawProductForm,
+    });
+
     return {
       category: rawCategory,
-      categoryFamily: getReviewSignalCategoryFamily(rawCategory),
+      product_form: rawProductForm,
+      categoryFamily: semanticStatus.family,
+      status: semanticStatus.status,
+      skipReason: semanticStatus.status === "valid" ? "" : semanticStatus.reason,
       source: "raw",
-      warning: "",
+      warning: semanticStatus.status === "valid" ? "" : `unresolved raw category/form: ${semanticStatus.reason}`,
     };
   }
 
   if (productId && categoryLookup?.supabase) {
     try {
-      const category = await fetchProductCategory(categoryLookup, productId);
+      const productContext = await fetchProductCategoryContext(categoryLookup, productId);
+      const category = productContext?.category || null;
+      const productForm = productContext?.product_form || null;
 
       if (category) {
+        const semanticStatus = resolveReviewSignalCategorySemantics({
+          category,
+          product_form: productForm,
+        });
+
         return {
           category,
-          categoryFamily: getReviewSignalCategoryFamily(category),
+          product_form: productForm,
+          categoryFamily: semanticStatus.family,
+          status: semanticStatus.status,
+          skipReason: semanticStatus.status === "valid" ? "" : semanticStatus.reason,
           source: "supabase",
-          warning: "",
-        };
-      }
-
-      if (rawCategoryFamily) {
-        return {
-          category: null,
-          categoryFamily: rawCategoryFamily,
-          source: "raw",
-          warning: `products.category is empty for ${productId}; using raw categoryFamily fallback.`,
+          warning: semanticStatus.status === "valid" ? "" : `unresolved products.category/product_form for ${productId}: ${semanticStatus.reason}`,
         };
       }
 
       return {
         category: null,
+        product_form: null,
         categoryFamily: null,
-        source: "missing/common-only",
-        warning: `products.category is empty or missing for ${productId}; using common mapping only.`,
+        status: "unresolved",
+        skipReason: "missing_category",
+        source: "missing/unresolved",
+        warning: `products.category is empty or missing for ${productId}; review signals skipped.`,
       };
     } catch (error) {
-      if (rawCategoryFamily) {
-        return {
-          category: null,
-          categoryFamily: rawCategoryFamily,
-          source: "raw",
-          warning: `${
-            error instanceof Error ? error.message : String(error)
-          } Falling back to raw categoryFamily.`,
-        };
-      }
-
       return {
         category: null,
+        product_form: null,
         categoryFamily: null,
-        source: "missing/common-only",
-        warning: `${error instanceof Error ? error.message : String(error)} Using common mapping only.`,
+        status: "unresolved",
+        skipReason: "lookup_failed",
+        source: "missing/unresolved",
+        warning: `${error instanceof Error ? error.message : String(error)} Review signals skipped.`,
       };
     }
   }
 
-  if (rawCategoryFamily) {
-    return {
-      category: null,
-      categoryFamily: rawCategoryFamily,
-      source: "raw",
-      warning: "",
-    };
-  }
-
   return {
     category: null,
+    product_form: null,
     categoryFamily: null,
-    source: "missing/common-only",
-    warning: "",
+    status: "unresolved",
+    skipReason: "missing_category",
+    source: "missing/unresolved",
+    warning: "Missing category/product_form context; review signals skipped.",
   };
 }
 
@@ -366,6 +365,10 @@ function normalizeReviewRawList(entries) {
 }
 
 function buildReviewSignals(reviewRaw, warnings, options = {}) {
+  if (options.status !== "valid") {
+    return null;
+  }
+
   const positive = normalizeReviewRawList(reviewRaw?.positive);
   const negative = normalizeReviewRawList(reviewRaw?.negative);
 
@@ -377,6 +380,8 @@ function buildReviewSignals(reviewRaw, warnings, options = {}) {
     source: "hwahae_ai_review",
     positive,
     negative,
+    category: options.category,
+    product_form: options.product_form,
     updated_at: getLocalDateString(),
   }, options);
 
@@ -549,7 +554,7 @@ function validateProductId(productId) {
   }
 }
 
-async function buildFixtureItem(rawItem, categoryLookup) {
+export async function buildFixtureItem(rawItem, categoryLookup) {
   const warnings = {
     unmappedReviewLabels: new Set(),
     unmappedFunctionalLabels: new Set(),
@@ -563,8 +568,12 @@ async function buildFixtureItem(rawItem, categoryLookup) {
     productId,
     review_signals: buildReviewSignals(rawItem?.review_raw, warnings, {
       category: categoryResolution.category,
+      product_form: categoryResolution.product_form,
       categoryFamily: categoryResolution.categoryFamily,
+      status: categoryResolution.status,
     }),
+    review_signal_status: categoryResolution.status === "valid" ? "ready" : "skipped",
+    review_signal_skip_reason: categoryResolution.status === "valid" ? null : categoryResolution.skipReason,
     market_signals: buildMarketSignals(rawItem?.market_raw),
     ingredient_signals: buildIngredientSignals(rawItem?.ingredient_raw, warnings),
   };
@@ -609,7 +618,9 @@ async function main() {
       "info",
       `item ${index + 1}: productId=${fixture.productId} resolved category=${
         categoryResolution.category || "-"
-      } resolved categoryFamily=${categoryResolution.categoryFamily || "-"} category source=${
+      } resolved product_form=${categoryResolution.product_form || "-"} resolved categoryFamily=${
+        categoryResolution.categoryFamily || "-"
+      } reviewSignalStatus=${fixture.review_signal_status} category source=${
         categoryResolution.source
       }`
     );
@@ -623,7 +634,9 @@ async function main() {
   await writeOutput(outputPayload, args.out ? String(args.out) : "");
 }
 
-main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}

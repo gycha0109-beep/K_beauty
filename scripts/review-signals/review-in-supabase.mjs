@@ -3,8 +3,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { resolveProductCategorySemantics } from "../../lib/product-category-normalizer.js";
 
 const ROOT_DIR = process.cwd();
 const DATA_DIR = path.join(ROOT_DIR, "data");
@@ -13,7 +15,7 @@ const REVIEW_SIGNAL_DIR = path.join(DATA_DIR, "hwahae-review-signals", "categori
 const CATEGORY_FOLDER_BY_PREFIX = [
   [/^cleanser/, "cleanser"],
   [/^(toner|toner_essence|toner_pad)/, "toner"],
-  [/^(treatment|serum|ampoule|essence)/, "treatment"],
+  [/^treatment/, "treatment"],
   [/^moisturizer_lotion_emulsion/, path.join("moisturizer", "lotion")],
   [/^moisturizer_cream/, path.join("moisturizer", "cream")],
   [/^moisturizer_gel/, path.join("moisturizer", "gel")],
@@ -24,10 +26,8 @@ const CATEGORY_FOLDER_BY_PREFIX = [
 
 const CATEGORY_BY_FILE_TOKEN = [
   [/cleanser/, "cleanser"],
-  [/toner|toner_essence|toner_pad/, "toner"],
-  [/ampoule/, "ampoule"],
-  [/serum/, "serum"],
-  [/essence/, "essence"],
+  [/toner_essence/, "toner_essence"],
+  [/toner_pad/, "toner_pad"],
   [/moisturizer_lotion_emulsion/, "moisturizer_lotion_emulsion"],
   [/moisturizer_cream/, "moisturizer_cream"],
   [/moisturizer_gel/, "moisturizer_gel"],
@@ -35,8 +35,6 @@ const CATEGORY_BY_FILE_TOKEN = [
   [/moisturizer/, "moisturizer"],
   [/sunscreen/, "sunscreen"],
 ];
-
-const TREATMENT_CATEGORY_TOKENS = new Set(["treatment", "serum", "ampoule", "essence"]);
 
 function parseArgs(argv) {
   const args = {};
@@ -143,17 +141,9 @@ function inferCategoryFromFileToken(fileToken) {
   return matched ? matched[1] : "";
 }
 
-function isTreatmentCategory(category) {
-  return TREATMENT_CATEGORY_TOKENS.has(String(category || "").trim().toLowerCase());
-}
-
 function rowMatchesCategory(rowCategory, category) {
   if (!rowCategory) {
     return true;
-  }
-
-  if (category === "treatment") {
-    return isTreatmentCategory(rowCategory);
   }
 
   return rowCategory === category;
@@ -200,7 +190,7 @@ async function findCsv(args) {
   return csvFiles[0].fullPath;
 }
 
-async function loadCsvContext(csvPath, requestedCategory) {
+export async function loadCsvContext(csvPath, requestedCategory, requestedProductForm = "") {
   const csvText = await fs.readFile(csvPath, "utf8");
   const rows = parseCsv(csvText);
 
@@ -218,10 +208,6 @@ async function loadCsvContext(csvPath, requestedCategory) {
     category = categories[0];
   }
 
-  if (!category && categories.length > 1 && categories.every(isTreatmentCategory)) {
-    category = "treatment";
-  }
-
   if (!category) {
     const categoryFromName = inferCategoryFromFileToken(fileToken);
     category = categoryFromName || "";
@@ -229,6 +215,27 @@ async function loadCsvContext(csvPath, requestedCategory) {
 
   if (!category) {
     throw new Error("Cannot infer category. Add a category column with one value or pass --category.");
+  }
+
+  const productForms = [
+    ...new Set(rows.map((row) => String(row.product_form || row.productForm || row.form || "").trim()).filter(Boolean)),
+  ];
+  let productForm = String(requestedProductForm || "").trim();
+
+  if (!productForm && productForms.length === 1) {
+    productForm = productForms[0];
+  }
+
+  const semanticStatus = resolveProductCategorySemantics({
+    category,
+    product_form: productForm || null,
+  });
+
+  if (!semanticStatus.authorizesRecommendationCategory) {
+    throw new Error(
+      `Unresolved category/product_form for review-signal generation: ${semanticStatus.unresolvedReason}. ` +
+        "Use explicit canonical category plus product_form for treatment products.",
+    );
   }
 
   const filteredRows = rows.filter((row) => {
@@ -257,8 +264,9 @@ async function loadCsvContext(csvPath, requestedCategory) {
 
   return {
     rows: filteredRows,
-    category,
-    categoryFolder: inferCategoryFolder(category),
+    category: semanticStatus.canonicalCategory,
+    productForm: semanticStatus.productForm,
+    categoryFolder: inferCategoryFolder(semanticStatus.canonicalCategory),
   };
 }
 
@@ -334,9 +342,19 @@ async function buildRawBatchFromPlan(planPath, rawBatchPath) {
   return rawItems;
 }
 
-async function assertFixtureHasPayloads(fixturePath) {
+export async function assertFixtureHasPayloads(fixturePath) {
   const fixture = await readJson(fixturePath);
   const items = Array.isArray(fixture) ? fixture : [fixture];
+  const skippedReviewSignals = items.filter(
+    (item) => item.review_signal_status === "skipped" || item.review_signal_skip_reason,
+  );
+
+  if (skippedReviewSignals.length > 0) {
+    throw new Error(
+      `Fixture has ${skippedReviewSignals.length}/${items.length} unresolved review-signal item(s). Supabase import stopped.`,
+    );
+  }
+
   const emptyItems = items.filter(
     (item) => !item.review_signals && !item.market_signals && !item.ingredient_signals,
   );
@@ -405,7 +423,11 @@ async function verifySupabaseRows(fixturePath) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const csvPath = await findCsv(args);
-  const { category, categoryFolder } = await loadCsvContext(csvPath, args.category);
+  const { category, productForm, categoryFolder } = await loadCsvContext(
+    csvPath,
+    args.category,
+    args["product-form"] || args.product_form || "",
+  );
   const categoryDir = path.join(REVIEW_SIGNAL_DIR, categoryFolder);
   const baseName = normalizeToken(category);
   const planPath = path.join(categoryDir, `${baseName}.extract-plan.json`);
@@ -427,6 +449,8 @@ async function main() {
     csvPath,
     "--category",
     category,
+    "--product-form",
+    productForm || "",
     "--category-folder",
     categoryFolder,
     "--plan-out",
@@ -498,7 +522,9 @@ async function main() {
   process.stdout.write("\n[review_in_supabase] done\n");
 }
 
-main().catch((error) => {
-  process.stderr.write(`\n[review_in_supabase] ${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  main().catch((error) => {
+    process.stderr.write(`\n[review_in_supabase] ${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}
