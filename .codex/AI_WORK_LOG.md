@@ -1,5 +1,41 @@
 # AI_WORK_LOG.md
 
+### 2026-06-28 / free result Decision Bundle display audit fixes
+
+- Branch: feature/free-result-decision-bundle-alignment
+- Task type: execution / small scoped display and payload fix
+- Routing decision: User requested edits only in the free-result Decision Bundle display scope. Existing recommendation/category semantics changes were explicitly out of scope and were not modified, staged, restored, stashed, reset, or committed.
+- Goal: Make Top 1 priority title prefer API `priority.label`, minimize free API `scoring` payload to `concernScores[axis].total`, and make incomplete AM/PM routine preview data fall back per time period instead of rendering empty cards.
+- Changed files: app/api/analyze/route.js, app/result/page.js, lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
+- Protected areas: No recommendation score formula, Top Pick, supportingProducts, product candidate pool, routineStructure generation, premium report shape, currentProducts, survey, Face Lab, DB/schema, or category/review-signal files were edited.
+- Validation results: `npm run build` passed. `git diff --check` passed. Korean 390px Playwright verification passed with API `priority.label` visible as the Top 1 title, free API `scoring` containing only `concernScores` and per-axis `total`, AM/PM routine preview showing 3 cards each, incomplete AM routineStructure falling back only on the morning side, overflow false, console errors 0, page errors 0.
+- Notes/risks: Per-period routine fallback uses legacy static preview only for the incomplete AM or PM side; valid API-derived side remains intact.
+- Context promotion candidate: NULL
+
+### 2026-06-27 / free result Decision Bundle display alignment
+
+- Branch: feature/free-result-decision-bundle-alignment
+- Task type: execution / Medium result display data-source alignment
+- Routing decision: User requested a scoped free-result display change after a clean main sync and feature branch creation. API generation logic, recommendation scoring, Top Pick, supportingProducts, premium report structure, currentProducts, survey questions, Face Lab, DB, env, auth, payment, deployment config, and `docs/architecture/survey-calculation-audit.md` were out of scope.
+- Goal: Make free-result priority TOP 3, skin radar/status tags, and routine preview prefer the actual `/api/analyze` Decision Bundle source fields: `priority`, `scoring.concernScores`, and `routineStructure`.
+- Changed files: app/api/analyze/route.js, app/result/page.js, components/result/free-v2/FreeResultV2DiagnosisStep.jsx, lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
+- Protected areas: No env, DB schema/migration/policy, auth, payment, production data, deployment config, product DB, recommendation formula, Top Pick/supportingProducts selection, premium report shape, currentProducts, survey copy/options, Face Lab, or routineStructure generation edits. API response pass-through was limited to exposing already-computed `decision.scoring.concernScores` because the requested UI source-of-truth requires that field.
+- Validation results: `npm run build` passed. 390px Playwright verification passed on `/en/result` for 8 API-generated survey combinations with TOP 3 labels matched to API `priority` + sorted `scoring.concernScores`, radar labels present from API scores, AM/PM routine preview matched `routineStructure.am/pm.label` and `strategyLine`, horizontal overflow false, console errors 0, page errors 0. `git diff --check` passed.
+- Notes/risks: Free radar maps API scores into five display axes; sensitivity uses the higher of API redness/acne totals. Legacy saved results without `scoring.concernScores`, `priority`, or `routineStructure` still use existing local/static fallbacks.
+- Context promotion candidate: NULL
+
+### 2026-06-27 / free result routine preview step-card restore
+
+- Branch: feature/free-result-decision-bundle-alignment
+- Task type: execution / Medium free-result UI display fix
+- Routing decision: User requested the browser comment fix first, scoped to the free result routine preview UI. Recommendation engine, score formula, Top Pick, supportingProducts, routineStructure generation, API analyze calculation, premium report shape, currentProducts, survey payload/questions, Face Lab, DB, and broad design changes were out of scope.
+- Goal: Keep API `routineStructure` as the source for AM/PM mode and strategy, but restore 2-3 user-facing routine step cards instead of rendering internal labels such as `아침 전략` as a single card.
+- Changed files: lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
+- Protected areas: No API calculation, routineStructure generation, recommendation, product ranking, premium report, currentProducts, DB, auth, env, deployment, or survey changes.
+- Validation results: `npm run build` passed; `git diff --check` passed. Korean 390px `/test-result` legacy fallback showed morning steps `가볍게 정돈 / 수분 유지 / 자외선 차단` and night steps `순한 세안 / 수분 보충 / 장벽 안정`, overflow false, console/page errors 0. Korean 390px `/result` with a fresh `/api/analyze` result showed API routine modes `fresh_control / pore_texture_care`, morning steps `가볍게 정돈 / 유분 조절 / 답답함 줄이기`, night steps `순하게 정리 / 모공·결 정돈 / 진정 보습`, overflow false, console/page errors 0.
+- Notes/risks: Current public `routineStructure` does not expose detailed step arrays, so the free preview uses explicit step intent/purpose arrays when present and otherwise maps API AM/PM `mode` into short action labels. Insufficient legacy structures fall back to the existing static preview.
+- Context promotion candidate: NULL
+
 ### 2026-06-22 / Hwahae ranking Top 50 gateway collector
 
 - Branch: main

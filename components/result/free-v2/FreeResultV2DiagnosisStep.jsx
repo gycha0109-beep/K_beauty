@@ -348,6 +348,33 @@ function FreeResultV2FaceLabPhotoCarousel({ photoUrl, photoAlt, photoFallback, f
 
 function getFreeResultV2SkinRadarMetrics(data = {}, locale = "ko") {
   const isEnglish = locale === "en";
+  const concernScores = Array.isArray(data?.concernScores) ? data.concernScores : [];
+  const scoreByAxis = new Map(
+    concernScores
+      .map((item) => [String(item?.axis || ""), Number(item?.score)])
+      .filter(([axis, score]) => axis && Number.isFinite(score))
+  );
+  const hasDecisionScores = scoreByAxis.size > 0;
+
+  if (hasDecisionScores) {
+    const getScore = (axes = []) => {
+      const values = axes
+        .map((axis) => scoreByAxis.get(axis))
+        .filter((score) => Number.isFinite(score));
+
+      return values.length ? Math.max(...values) : 0;
+    };
+    const toRadarValue = (score) => Math.max(0, Math.min(100, Math.round(Number(score) || 0)));
+
+    return [
+      { key: "moisture", label: isEnglish ? "Dryness" : "수분 부족", value: toRadarValue(getScore(["dehydration"])) },
+      { key: "oil", label: isEnglish ? "Oil" : "유분감", value: toRadarValue(getScore(["oiliness"])) },
+      { key: "pores", label: isEnglish ? "Pores" : "모공", value: toRadarValue(getScore(["pores"])) },
+      { key: "barrier", label: isEnglish ? "Barrier" : "장벽", value: toRadarValue(getScore(["barrier"])) },
+      { key: "sensitivity", label: isEnglish ? "Sensitive" : "민감", value: toRadarValue(getScore(["redness", "acne"])) }
+    ];
+  }
+
   const summaryText = [
     data?.coreLine,
     ...(Array.isArray(data?.priorities) ? data.priorities.flatMap((priority) => [priority.title, priority.body]) : []),

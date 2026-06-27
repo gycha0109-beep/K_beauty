@@ -5,7 +5,6 @@ import {
   buildSunscreenExplanationContext,
   compareRankedProducts,
   filterSunscreenCandidates,
-  matchesRecommendationCategorySlot,
   normalizeRecommendationAnswers,
   pickTopSunscreen,
   scoreSunscreenProduct,
@@ -17,6 +16,7 @@ import {
   type SunscreenRankedProduct,
   type SunscreenSelectionMeta,
 } from "@/lib/recommendation-scoring";
+import { resolveProductCategorySemantics } from "@/lib/product-category-normalizer";
 
 type RecommendationBundleOptions = {
   includeAlternative?: boolean;
@@ -36,6 +36,32 @@ type DecoratedRecommendationProduct = RankedRecommendationProduct & {
     };
   };
 };
+
+function getStrictTopPickSlot(product: CanonicalRecommendationProduct | null | undefined): string {
+  const semantics = resolveProductCategorySemantics({
+    category: product?.category,
+    product_form: product?.product_form ?? product?.productForm,
+  });
+
+  if (!semantics.authorizesRecommendationCategory) {
+    return "";
+  }
+
+  return semantics.productFamily === "serum_ampoule"
+    ? "serum"
+    : semantics.productFamily || "";
+}
+
+export function matchesStrictTopPickCategory(
+  category: string,
+  product: CanonicalRecommendationProduct | null | undefined,
+): boolean {
+  return getStrictTopPickSlot(product) === category;
+}
+
+function isStrictTopPickEligibleProduct(product: CanonicalRecommendationProduct | null | undefined): boolean {
+  return Boolean(product?.id && product?.name && product?.brand && getStrictTopPickSlot(product));
+}
 
 function buildLabels(product: RankedRecommendationProduct, featured: boolean): string[] {
   const labels: string[] = [];
@@ -152,7 +178,7 @@ function buildRankedProducts(
   products: CanonicalRecommendationProduct[],
 ): RankedRecommendationProduct[] {
   return products
-    .filter((product) => product?.id && product?.name && product?.brand)
+    .filter(isStrictTopPickEligibleProduct)
     .filter((product) => product.is_kbeauty !== false)
     .map((product) => scoreCanonicalProduct(product, answers))
     .sort(compareRankedProducts);
@@ -167,7 +193,7 @@ function getCategoryRunnerUp(
   return (
     rankedProducts.find(
       (product) =>
-        matchesRecommendationCategorySlot(category, product.category) &&
+        matchesStrictTopPickCategory(category, product) &&
         product.id !== winnerId &&
         product.id !== topPickId,
     ) || null
@@ -203,7 +229,7 @@ function buildSunscreenCategoryWinner(
   selectionMeta: SunscreenSelectionMeta | null;
 } | null {
   const availableProducts = products.filter(
-    (product) => product.category === "sunscreen" && !excludedIds.has(product.id),
+    (product) => matchesStrictTopPickCategory("sunscreen", product) && !excludedIds.has(product.id),
   );
 
   if (availableProducts.length === 0) {
@@ -261,7 +287,7 @@ function buildSunscreenCategoryWinner(
 
   const generalCandidates = rankedProducts.filter(
     (product) =>
-      product.category === "sunscreen" &&
+      matchesStrictTopPickCategory("sunscreen", product) &&
       !excludedIds.has(product.id) &&
       !safetyRejectedIds.has(product.id),
   );
@@ -329,7 +355,7 @@ export function buildTopPickBundleFromProducts(
       }
 
       const winner = rankedProducts.find(
-        (product) => matchesRecommendationCategorySlot(category, product.category) && !excludedIds.has(product.id),
+        (product) => matchesStrictTopPickCategory(category, product) && !excludedIds.has(product.id),
       );
 
       if (!winner) {

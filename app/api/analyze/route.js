@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
-import { getResultSection } from "@/lib/product-category-normalizer";
+import { resolveProductCategorySemantics } from "@/lib/product-category-normalizer";
 import {
   PRODUCT_SOURCE_UNAVAILABLE_CODE,
   fetchCurrentProductSnapshotsByIds,
@@ -265,6 +265,7 @@ function buildSelectedProductsContext(decision) {
     name: product.name,
     brand: product.brand,
     category: product.category,
+    product_form: product.product_form || product.productForm || "",
     step: product.step,
     texture: product.texture,
     finish: product.finish,
@@ -279,8 +280,13 @@ function buildSelectedProductsContext(decision) {
   }));
 }
 
-function getPromptCategoryFamily(category = "") {
-  return getResultSection(category) || "";
+function getPromptCategoryFamily(product = {}) {
+  const semantics = resolveProductCategorySemantics({
+    category: product?.category,
+    product_form: product?.product_form ?? product?.productForm
+  });
+
+  return semantics.authorizesRecommendationCategory ? semantics.resultSection || "" : "";
 }
 
 function buildSurveyContextForLlm(formInput = {}) {
@@ -559,6 +565,40 @@ function sanitizeRoutineStructure(structure) {
   };
 }
 
+function sanitizeDecisionScoring(scoring) {
+  const concernScores = scoring?.concernScores;
+  if (!concernScores || typeof concernScores !== "object") {
+    return null;
+  }
+
+  const sanitizedScores = Object.fromEntries(
+    Object.entries(concernScores)
+      .map(([axis, value]) => {
+        const total = Number(value?.total);
+
+        if (!axis || !Number.isFinite(total)) {
+          return null;
+        }
+
+        return [
+          axis,
+          {
+            total
+          }
+        ];
+      })
+      .filter(Boolean)
+  );
+
+  if (!Object.keys(sanitizedScores).length) {
+    return null;
+  }
+
+  return {
+    concernScores: sanitizedScores
+  };
+}
+
 function sanitizeRoutineStepForPremium(item) {
   if (!item || typeof item !== "object") {
     return null;
@@ -751,7 +791,8 @@ function buildFreeDecisionPayload(decision) {
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
     photoObservations: decision.photoObservations || null,
-    surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : []
+    surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : [],
+    scoring: sanitizeDecisionScoring(decision.scoring)
   };
 }
 
@@ -840,11 +881,15 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
   const selectedProducts = buildSelectedProductsContext(decision);
   const surveyContext = buildSurveyContextForLlm(formInput);
   const stepSurveyCues = buildStepSurveyCues(formInput);
-  const selectedProductsWithSurveyCues = selectedProducts.map((product) => ({
-    ...product,
-    categoryFamily: getPromptCategoryFamily(product.category),
-    relevantSurveyCues: stepSurveyCues[getPromptCategoryFamily(product.category)] || {}
-  }));
+  const selectedProductsWithSurveyCues = selectedProducts.map((product) => {
+    const categoryFamily = getPromptCategoryFamily(product);
+
+    return {
+      ...product,
+      categoryFamily,
+      relevantSurveyCues: categoryFamily ? stepSurveyCues[categoryFamily] || {} : {}
+    };
+  });
   const allowedIds = new Set(selectedProducts.map((product) => product.id).filter(Boolean));
   const prompt = buildExplanationPrompt(locale, selectedProductsWithSurveyCues);
   const parsed = await fetchOpenAiJson({

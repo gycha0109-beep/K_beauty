@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { resolveProductCategorySemantics } from "../../lib/product-category-normalizer.js";
 
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DEFAULT_EXTRACTOR_PATH = path.join(
@@ -18,7 +19,7 @@ const PRODUCT_ID_PLACEHOLDER = "USER_MUST_REPLACE_SUPABASE_PRODUCT_ID";
 const CATEGORY_FOLDER_BY_PREFIX = [
   [/^cleanser/, "cleanser"],
   [/^(toner|toner_essence|toner_pad)/, "toner"],
-  [/^(treatment|serum|ampoule|essence)/, "treatment"],
+  [/^treatment/, "treatment"],
   [/^moisturizer_lotion_emulsion/, path.join("moisturizer", "lotion")],
   [/^moisturizer_cream/, path.join("moisturizer", "cream")],
   [/^moisturizer_gel/, path.join("moisturizer", "gel")],
@@ -26,14 +27,6 @@ const CATEGORY_FOLDER_BY_PREFIX = [
   [/^moisturizer/, "moisturizer"],
   [/^sunscreen/, "sunscreen"],
 ];
-
-const TREATMENT_PRODUCT_FORM_BY_KEYWORD = [
-  ["ampoule", ["앰플", "ampoule"]],
-  ["serum", ["세럼", "serum"]],
-  ["essence", ["에센스", "essence"]],
-];
-
-const TREATMENT_CATEGORY_TOKENS = new Set(["treatment", "serum", "ampoule", "essence"]);
 
 function parseArgs(argv) {
   const args = {};
@@ -147,53 +140,51 @@ function inferCategoryFolder(category) {
   return matched ? matched[1] : normalized || "unknown";
 }
 
-function isTreatmentCategory(category) {
-  return TREATMENT_CATEGORY_TOKENS.has(String(category || "").trim().toLowerCase());
-}
-
 function categoriesAreCompatible(rowCategory, requestedCategory) {
   if (!rowCategory || !requestedCategory) {
-    return true;
-  }
-
-  if (isTreatmentCategory(rowCategory) && isTreatmentCategory(requestedCategory)) {
     return true;
   }
 
   return rowCategory === requestedCategory;
 }
 
-function inferTreatmentProductForm(row, category, liveProduct = null) {
-  const values = [
-    liveProduct?.product_form,
-    liveProduct?.productForm,
-    row.product_form,
-    row.productForm,
-    row.form,
-    category,
-    row.category,
-    row.name,
-    row.product_name,
-    row.productName,
-  ];
-  const haystack = values.map((value) => normalizeText(value)).join(" ");
-  const matched = TREATMENT_PRODUCT_FORM_BY_KEYWORD.find(([, keywords]) =>
-    keywords.some((keyword) => haystack.includes(keyword)),
-  );
+function normalizeOptionalText(value) {
+  const normalized = String(value || "").trim();
+  return normalized || null;
+}
 
-  return matched ? matched[0] : "unknown";
+function resolvePlanCategorySemantics(row, options, liveProduct = null) {
+  const rowCategory = normalizeOptionalText(pickFirst(row, ["category"]));
+  const rowProductForm = normalizeOptionalText(pickFirst(row, ["product_form", "productForm", "form"]));
+  const optionCategory = normalizeOptionalText(options.category);
+  const optionProductForm = normalizeOptionalText(options.productForm);
+
+  if (rowCategory || optionCategory) {
+    return resolveProductCategorySemantics({
+      category: rowCategory || optionCategory,
+      product_form: rowProductForm || optionProductForm,
+    });
+  }
+
+  if (liveProduct) {
+    return resolveProductCategorySemantics({
+      category: liveProduct.category,
+      product_form: liveProduct.product_form ?? liveProduct.productForm,
+    });
+  }
+
+  return resolveProductCategorySemantics({
+    category: null,
+    product_form: null,
+  });
 }
 
 function resolveRawOutputDir(row, options) {
-  if (options.categoryFolder !== "treatment") {
+  if (options.categorySemantics?.canonicalCategory !== "treatment") {
     return path.join(options.outDir, "raw");
   }
 
-  return path.join(
-    options.outDir,
-    inferTreatmentProductForm(row, options.category, options.liveProduct),
-    "raw",
-  );
+  return path.join(options.outDir, options.categorySemantics.productForm, "raw");
 }
 
 function sanitizeFileSegment(value) {
@@ -332,16 +323,19 @@ async function fetchLiveProducts(supabase, ids) {
   return liveProducts;
 }
 
-function buildPlanItem(row, options, liveProduct = null) {
+export function buildPlanItem(row, options, liveProduct = null) {
   const id = pickFirst(row, ["id", "productId", "product_id"]);
   const name = pickFirst(row, ["name", "product_name", "productName"]);
   const brand = pickFirst(row, ["brand"]);
   const category = pickFirst(row, ["category"]) || options.category || "";
   const url = ensureHwahaeUrl(row);
-  const categoryFolder = options.categoryFolder || inferCategoryFolder(category || options.category);
+  const categorySemantics = resolvePlanCategorySemantics(row, options, liveProduct);
+  const categoryFolder = categorySemantics.authorizesRecommendationCategory
+    ? inferCategoryFolder(categorySemantics.canonicalCategory)
+    : options.categoryFolder || inferCategoryFolder(category || options.category);
   const outputName = `${id} ${sanitizeFileSegment(name)}.json`;
   const outputPath = path.join(
-    resolveRawOutputDir(row, { ...options, categoryFolder, liveProduct }),
+    resolveRawOutputDir(row, { ...options, categoryFolder, liveProduct, categorySemantics }),
     outputName,
   );
   const liveUrl = liveProduct ? ensureHwahaeUrl(liveProduct) : "";
@@ -368,6 +362,30 @@ function buildPlanItem(row, options, liveProduct = null) {
   if (liveProduct && liveCategory && category && !categoriesAreCompatible(category, liveCategory)) {
     warnings.push(`live category differs: ${liveCategory}`);
   }
+  if (!categorySemantics.authorizesRecommendationCategory) {
+    warnings.push(`unresolved category/product_form: ${categorySemantics.unresolvedReason}`);
+  }
+  if (
+    categorySemantics.authorizesRecommendationCategory &&
+    liveProduct &&
+    liveCategory &&
+    liveProductForm
+  ) {
+    const liveSemantics = resolveProductCategorySemantics({
+      category: liveCategory,
+      product_form: liveProductForm,
+    });
+
+    if (
+      liveSemantics.authorizesRecommendationCategory &&
+      (
+        liveSemantics.canonicalCategory !== categorySemantics.canonicalCategory ||
+        liveSemantics.productForm !== categorySemantics.productForm
+      )
+    ) {
+      warnings.push(`live category/form differs: ${liveCategory}/${liveProductForm}`);
+    }
+  }
   if (liveProduct && liveUrl && url && liveUrl !== url) {
     warnings.push(`live url differs: ${liveUrl}`);
   }
@@ -381,6 +399,10 @@ function buildPlanItem(row, options, liveProduct = null) {
     brand,
     category,
     categoryFolder,
+    canonical_category: categorySemantics.canonicalCategory,
+    product_form: categorySemantics.productForm,
+    category_status: categorySemantics.authorizesRecommendationCategory ? "ready" : "unresolved",
+    category_skip_reason: categorySemantics.authorizesRecommendationCategory ? null : categorySemantics.unresolvedReason,
     url,
     outputPath,
     live: liveProduct
@@ -479,6 +501,7 @@ async function main() {
   await loadEnv();
 
   const category = String(args.category || "").trim();
+  const productForm = String(args["product-form"] || args.product_form || "").trim();
   const categoryFolder = String(args["category-folder"] || inferCategoryFolder(category)).trim();
   const outDir = path.resolve(
     process.cwd(),
@@ -520,6 +543,7 @@ async function main() {
 
   const options = {
     category,
+    productForm,
     categoryFolder,
     outDir,
     extractorPath,
@@ -568,7 +592,9 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
+}

@@ -1,4 +1,7 @@
-import { normalizeProductCategory } from "./product-category-normalizer.js";
+import {
+  normalizeProductCategory,
+  resolveProductCategorySemantics
+} from "./product-category-normalizer.js";
 
 export const CATEGORY_ORDER = [
   "cleanser",
@@ -194,6 +197,8 @@ export type CanonicalRecommendationProduct = {
   name: string;
   brand: string;
   category: string;
+  product_form?: string | null;
+  productForm?: string | null;
   recommendation_tier?: string | null;
   is_mens?: boolean | null;
   skin_types?: string[] | null;
@@ -452,6 +457,32 @@ export function getCategorySlot(category: string | null | undefined): string {
     : normalized.productFamily;
 }
 
+export function getProductCategorySlot(product: CanonicalRecommendationProduct | null | undefined): string {
+  const semantics = resolveProductCategorySemantics({
+    category: product?.category,
+    product_form: product?.product_form ?? product?.productForm
+  });
+
+  if (!semantics.authorizesRecommendationCategory) {
+    return "";
+  }
+
+  return semantics.productFamily === "serum_ampoule"
+    ? "serum"
+    : semantics.productFamily;
+}
+
+export function getProductCategoryPriority(
+  product: CanonicalRecommendationProduct,
+  mainConcern: string | null | undefined,
+): number {
+  if (!mainConcern) {
+    return 0;
+  }
+
+  return CATEGORY_PRIORITY_BY_CONCERN[mainConcern]?.[getProductCategorySlot(product)] ?? 0;
+}
+
 export function matchesRecommendationCategorySlot(
   slot: string,
   category: string | null | undefined,
@@ -635,7 +666,7 @@ function getOutdoorSunscreenBonus(
   answers: NormalizedRecommendationAnswers,
   product: CanonicalRecommendationProduct,
 ): number {
-  if (product.category !== "sunscreen" || !answers.outdoorExposure) {
+  if (getProductCategorySlot(product) !== "sunscreen" || !answers.outdoorExposure) {
     return 0;
   }
 
@@ -938,7 +969,7 @@ export function scoreCanonicalProduct(
     answers.skinType === "not_sure" || includesValue(product.skin_types, answers.skinType)
       ? String(answers.skinType || "combination")
       : null;
-  const categoryPriority = getCategoryPriority(product.category, answers.mainConcern);
+  const categoryPriority = getProductCategoryPriority(product, answers.mainConcern);
   const irritationRisk = String(product.irritation_risk || "medium");
   const sensitivitySafe = Boolean(product.sensitivity_safe);
   const preferredFinishes = getPreferredFinishes(answers);
@@ -1379,7 +1410,7 @@ export function filterSunscreenCandidates(
   const penaltyOnlyCandidates: FilterableSunscreenProduct[] = [];
   const rejected: FilterableSunscreenProduct[] = [];
 
-  for (const product of products.filter((item) => item.category === "sunscreen")) {
+  for (const product of products.filter((item) => getProductCategorySlot(item) === "sunscreen")) {
     const strictHardRejectReasons = getSunscreenHardRejectReasons(product, answers, "strict");
     const strictStrongPenaltyReasons = getSunscreenStrongPenaltyReasons(product, answers, "strict");
     const penaltyOnlyHardRejectReasons = getSunscreenHardRejectReasons(product, answers, "penalty_only");

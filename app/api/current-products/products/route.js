@@ -1,12 +1,26 @@
 import { NextResponse } from "next/server";
-import { CURRENT_PRODUCT_CATEGORIES, normalizeCurrentProductCategory } from "@/lib/current-products";
+import {
+  CANONICAL_CURRENT_PRODUCT_CATEGORIES,
+  isLegacyCurrentProductCategory,
+  normalizeCanonicalCurrentProductCategory
+} from "@/lib/current-products";
 import { fetchCurrentProductOptions } from "@/lib/product-source";
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const requestedCategory = normalizeCurrentProductCategory(searchParams.get("category"));
+  const rawCategory = String(searchParams.get("category") || "").trim();
+  const requestedCategory = normalizeCanonicalCurrentProductCategory(rawCategory);
 
-  if (searchParams.get("category") && !requestedCategory) {
+  if (rawCategory && isLegacyCurrentProductCategory(rawCategory)) {
+    return NextResponse.json({
+      success: true,
+      fields: ["id", "brand", "name", "category", "product_form", "image_url"],
+      categories: CANONICAL_CURRENT_PRODUCT_CATEGORIES,
+      products: []
+    });
+  }
+
+  if (rawCategory && !requestedCategory) {
     return NextResponse.json(
       {
         success: false,
@@ -21,7 +35,7 @@ export async function GET(request) {
   return NextResponse.json({
     success: true,
     fields: ["id", "brand", "name", "category", "product_form", "image_url"],
-    categories: CURRENT_PRODUCT_CATEGORIES,
+    categories: CANONICAL_CURRENT_PRODUCT_CATEGORIES,
     products
   });
 }
