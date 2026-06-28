@@ -737,6 +737,47 @@ function sanitizeCurrentProductVerdictsForPremium(verdicts) {
     .slice(0, 12);
 }
 
+function sanitizeFunctionalDecisionsForPremium(decisions) {
+  const allowedStatuses = new Set(["now", "later", "pause"]);
+
+  if (!Array.isArray(decisions)) {
+    return [];
+  }
+
+  return decisions
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const goalKey = String(item.goalKey || "").trim();
+      const status = String(item.status || "").trim();
+      const title = typeof item.title === "string" ? item.title.trim() : "";
+      const summary = typeof item.summary === "string" ? item.summary.trim() : "";
+
+      if (!goalKey || !allowedStatuses.has(status) || !title || !summary) {
+        return null;
+      }
+
+      return {
+        goalKey,
+        status,
+        title,
+        summary,
+        reasons: Array.isArray(item.reasons)
+          ? item.reasons
+              .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+              .filter(Boolean)
+              .slice(0, 2)
+          : [],
+        nextAction: typeof item.nextAction === "string" && item.nextAction.trim()
+          ? item.nextAction.trim()
+          : null
+      };
+    })
+    .slice(0, 5);
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -754,6 +795,7 @@ function sanitizePremiumReport(report) {
     photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
     currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
+    functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)

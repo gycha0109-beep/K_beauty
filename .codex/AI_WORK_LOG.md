@@ -1220,3 +1220,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation follow-up: `npm run reviews:pending` showed Top 1-15 priority retained and rank 16-50 same-day rerun rows marked ineligible with observations/observed_dates/first_date/last_date. `npm run test:ranking-review-rules`, `npm run test:ranking-ingest`, `npm run typecheck`, and `git diff --check` passed.
 - Issues/risks: Supabase CLI is not installed on this PC, so the forward-only migration file was created manually instead of with `supabase migration new`.
 - Context promotion candidate: Same-day ranking reruns must never count as persistence evidence; persistence requires KST distinct observed dates.
+
+### 2026-06-29 / premium functional decision section
+
+- Branch: feature/premium-functional-decision
+- Task type: limited execution
+- Routing decision: Medium premium report data/UI addition scoped to the paid Skin Match full report functional decision section. Free result, recommendation ranking, Top Pick, supportingProducts, score formula, currentProducts input/slot building, routineStructure generation, payment, Face Lab, DB schema, and product DB were out of scope.
+- Goal: Add paid-report-only `premiumReport.functionalDecisions` so the full report explains which functional skin goals are appropriate now, later, or temporarily paused.
+- Changed files: app/api/analyze/route.js, app/result/full-report/page.js, components/full-report/PremiumFunctionalDecisionSection.jsx, lib/premium-functional-decisions.js, lib/skin-match-decision-engine.js, lib/test-result-fixture.js, docs/architecture/premium-functional-decision-contract-v1.md, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration, storage API schema, product ranking algorithm, score formula, Top Pick/supportingProducts selection, sunscreen scoring, currentProducts input, free result UI, SurveyFlow, payment, or Face Lab changes.
+- Validation: `npm run build` passed; `git diff --check` passed with CRLF warnings only; helper-level cases confirmed barrier without active burden produces now/later but no pause, barrier plus current-product hold can pause texture/exfoliation, and pores with low sensitivity can mark sebum/pore now. 390px `/test-full-report` verified functional section entry, 3 cards with now/later/pause fixture states, no horizontal overflow, next CTA to adjustment/condition guide, no purchase/price text, console/page errors 0. Free `/api/analyze` 200 response did not include `functionalDecisions`, `currentProductVerdicts`, or `premiumReport`.
+- Issues/risks: The exact 390px browser verification used local Playwright because the in-app browser viewport override reported a 500px client width. Saved premium report requery was verified by code path through existing `premium_report_sessions.premium_report` storage and `/api/full-report` spread behavior, not with a live authenticated session.
+- Follow-up: Tightened `sanitizeFunctionalDecisionsForPremium` so `title` and `summary` must be non-empty strings, `nextAction` only keeps a non-empty string or null, and `reasons` keeps only non-empty string entries. No helper, UI, free response, or storage path change.
+- Context promotion candidate: Paid functional goal decisions should remain goal-level, premium-only, and separate from product recommendation or current-product verdict logic.

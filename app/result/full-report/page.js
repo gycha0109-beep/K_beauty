@@ -8,6 +8,7 @@ import ErrorState from "@/components/common/ErrorState";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
+import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
@@ -5296,13 +5297,10 @@ function SkinMatchStepReport({
       key: "product-plan",
       label: labels.product,
       content: (
-        <ProductUsageGuideStep
-          freeResult={freeResult}
-          report={report}
-          alternativeItems={alternativeItems}
-          displayBudgetAlternatives={displayBudgetAlternatives}
-          copy={copy}
+        <PremiumFunctionalDecisionSection
+          decisions={report?.functionalDecisions}
           locale={locale}
+          onNavigate={moveToStepKey}
         />
       )
     }
@@ -5669,6 +5667,9 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
     currentProducts: premiumReport.currentProducts || null,
     currentProductVerdicts: Array.isArray(premiumReport.currentProductVerdicts)
       ? premiumReport.currentProductVerdicts
+      : [],
+    functionalDecisions: Array.isArray(premiumReport.functionalDecisions)
+      ? premiumReport.functionalDecisions
       : []
   };
 
