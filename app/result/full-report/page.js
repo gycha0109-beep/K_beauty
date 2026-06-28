@@ -5666,7 +5666,10 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
     },
     topPickFitGauges: buildProductFitGauges(result?.topPick || null, { locale }),
     routineStructure: premiumReport.routineStructure || result?.routineStructure || null,
-    currentProducts: premiumReport.currentProducts || null
+    currentProducts: premiumReport.currentProducts || null,
+    currentProductVerdicts: Array.isArray(premiumReport.currentProductVerdicts)
+      ? premiumReport.currentProductVerdicts
+      : []
   };
 
   return localizeFullReportForLocale(report, result, locale);

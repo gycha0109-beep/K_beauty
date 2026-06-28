@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CurrentProductSlotNote from "@/components/result/premium/CurrentProductSlotNote";
 import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
+import { getCurrentProductVerdictSlotKey } from "@/lib/current-product-verdicts";
 
 function RoutineConsultProductInline({ product, locale = "ko", copy }) {
   if (!product) {
@@ -48,7 +49,7 @@ function RoutineConsultStatusBadge({ status }) {
   );
 }
 
-function RoutineConsultStepCard({ step, direction = "left", locale = "ko", copy }) {
+function RoutineConsultStepCard({ step, direction = "left", locale = "ko", copy, getCurrentProductVerdict }) {
   const cardRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
   const [isVisible, setIsVisible] = useState(false);
@@ -126,7 +127,11 @@ function RoutineConsultStepCard({ step, direction = "left", locale = "ko", copy 
           </div>
           <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{step.action}</p>
           <RoutineConsultProductInline product={step.product} locale={locale} copy={copy} />
-          <CurrentProductSlotNote items={step.currentProducts} />
+          <CurrentProductSlotNote
+            items={step.currentProducts}
+            getVerdict={getCurrentProductVerdict}
+            locale={locale}
+          />
           <p className="mt-3 rounded-[0.9rem] bg-white/5 px-3 py-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
             <span className="font-semibold text-zinc-900 dark:text-zinc-100">
               {locale === "en" ? "Tip" : "Tip"}
@@ -183,6 +188,22 @@ export default function PremiumRoutineConsultSection({
   const routineTopRef = useRef(null);
   const meta = getMeta(activeMode, locale);
   const currentProductSlots = buildCurrentProductRoutineSlots(report?.currentProducts, locale);
+  const currentProductVerdictMap = new Map(
+    Array.isArray(report?.currentProductVerdicts)
+      ? report.currentProductVerdicts
+          .filter((verdict) => verdict?.slotKey)
+          .map((verdict) => [verdict.slotKey, verdict])
+      : []
+  );
+  const getCurrentProductVerdict = (item) => {
+    if (!item || item.status === "not_using") {
+      return null;
+    }
+
+    return currentProductVerdictMap.get(
+      getCurrentProductVerdictSlotKey(activeMode === "morning" ? "am" : "pm", item.slot, item.category)
+    ) || null;
+  };
   const displaySteps = buildSteps({
     mode: activeMode,
     freeResult,
@@ -249,6 +270,7 @@ export default function PremiumRoutineConsultSection({
               direction={index % 2 === 1 ? "right" : "left"}
               copy={copy}
               locale={locale}
+              getCurrentProductVerdict={getCurrentProductVerdict}
             />
           ))}
         </div>
@@ -263,7 +285,12 @@ export default function PremiumRoutineConsultSection({
                 ? "Check these in the active judgment section rather than adding them to the routine here."
                 : "여기서 루틴을 늘리기보다 별도 기능성 판단에서 확인합니다."}
             </p>
-            <CurrentProductSlotNote items={functionalCurrentProducts} compact />
+            <CurrentProductSlotNote
+              items={functionalCurrentProducts}
+              compact
+              getVerdict={getCurrentProductVerdict}
+              locale={locale}
+            />
           </div>
         ) : null}
 

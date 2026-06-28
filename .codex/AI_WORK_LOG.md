@@ -1,5 +1,29 @@
 # AI_WORK_LOG.md
 
+### 2026-06-28 / premium current products verdicts
+
+- Branch: feature/premium-current-products-verdicts
+- Task type: execution / High premium report data-contract addition
+- Routing decision: User requested a scoped paid full-report feature that adds usage verdicts for current products without changing free result, survey, recommendation ranking, score formula, product DB, currentProducts input, Face Lab, payment, or DB schema.
+- Goal: Add paid-report-only current product verdict data and render small verdict summaries near existing routine consult current product slot notes while preserving currentProducts registration status semantics.
+- Changed files: app/api/analyze/route.js, app/result/full-report/page.js, components/full-report/PremiumRoutineConsultSection.jsx, components/result/premium/CurrentProductSlotNote.jsx, docs/architecture/current-products-verdict-contract-v1.md, lib/current-product-verdicts.js, lib/skin-match-decision-engine.js, lib/test-result-fixture.js, .codex/AI_WORK_LOG.md
+- Protected areas: No Top Pick, supportingProducts, product ranking, score formula, product-source, category semantics, review-signals definitions, sunscreen hard filter/score, currentProducts input or slot-building logic, free result, SurveyFlow, Face Lab, payment, DB/schema, or replacement-product CTA changes.
+- Validation results: `npm run build` passed. `git diff --check` passed. Helper-level fixtures produced `keep`, `adjust`, conservative `hold`, `check_needed` for selected snapshot null, `check_needed` for `not_in_db`, and no verdict for `not_using`. Korean 390px Playwright `/test-full-report` opened the paid report, navigated to routine consult, switched AM/PM, verified sunscreen `not_in_db` remains in the protection step with `check_needed`, cleanser selected shows `adjust`, moisturizer `not_using` keeps the empty slot with no verdict badge, horizontal overflow false, console errors 0, page errors 0.
+- Notes/risks: The verdict engine intentionally uses only premium-report-available current product fields plus survey/priority context. Strong `hold` is conservative; missing DB or snapshot information falls back to `check_needed`. A selected `productSnapshot: null` visible-slot fallback was verified by helper code path because treatment visible-slot rendering still requires existing product form semantics, and that slot-building rule was intentionally left unchanged.
+- Context promotion candidate: NULL
+
+### 2026-06-28 / premium current products verdict safety follow-up
+
+- Branch: feature/premium-current-products-verdicts
+- Task type: execution / focused verdict safety fix
+- Routing decision: User requested only two fixes after read-only audit: remove product name/brand based `hold` triggers and make verdict slot resolution reuse the existing currentProducts semantics without changing slot-building rules.
+- Goal: Restrict `hold` to structured active metadata/signals plus barrier/redness/acne conflict, and avoid orphan verdicts by generating verdicts only for slots resolved by `lib/current-products.js`.
+- Changed files: lib/current-product-verdicts.js, lib/current-products.js, lib/test-result-fixture.js, docs/architecture/current-products-verdict-contract-v1.md, .codex/AI_WORK_LOG.md
+- Protected areas: No app/api/analyze, full-report UI components, skin-match decision engine call site, recommendation scoring, Top Pick, supportingProducts, sunscreen scoring, free result, SurveyFlow, DB/schema, or currentProducts slot-building rule changes.
+- Validation results: `npm run build` passed. `git diff --check` passed. Helper-level checks confirmed product name-only `Retinol Cream` and `AHA Toner` do not produce `hold`; structured `key_ingredients: ["retinol"]` plus barrier priority still produces `hold`; barrier priority without structured active signal produces `adjust`, not `hold`; visible cleanser/moisturizer/sunscreen slot keys match UI slot keys; treatment with missing `product_form` produces no verdict; `not_in_db` and sunscreen `not_in_db` produce `check_needed`; `not_using` and sunscreen `not_using` produce no verdict. Korean 390px Playwright `/test-full-report` verified AM/PM switch, 3 cards per mode, existing sunscreen `check_needed` and cleanser `adjust` displays, moisturizer `not_using` without verdict, overflow false, console errors 0, page errors 0.
+- Notes/risks: Node helper checks use the existing local alias loader because the verdict module imports app aliases. The test fixture keeps the missing-form treatment current product input but no longer has active slot verdicts for it.
+- Context promotion candidate: NULL
+
 ### 2026-06-28 / premium routine section refactor
 
 - Branch: feature/premium-routine-section-refactor

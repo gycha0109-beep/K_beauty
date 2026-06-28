@@ -701,6 +701,42 @@ function sanitizeCurrentProductsReportForPremium(currentProducts) {
   };
 }
 
+function sanitizeCurrentProductVerdictsForPremium(verdicts) {
+  const allowedStatuses = new Set(["keep", "adjust", "hold", "check_needed"]);
+
+  if (!Array.isArray(verdicts)) {
+    return [];
+  }
+
+  return verdicts
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const slotKey = String(item.slotKey || "").trim();
+      const status = String(item.status || "").trim();
+
+      if (!slotKey || !allowedStatuses.has(status)) {
+        return null;
+      }
+
+      return {
+        slotKey,
+        productId: item.productId ? String(item.productId).trim() : null,
+        status,
+        title: String(item.title || "").trim(),
+        summary: String(item.summary || "").trim(),
+        reasons: Array.isArray(item.reasons)
+          ? item.reasons.map((reason) => String(reason || "").trim()).filter(Boolean).slice(0, 3)
+          : [],
+        adjustment: item.adjustment ? String(item.adjustment).trim() : null
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -717,6 +753,7 @@ function sanitizePremiumReport(report) {
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
     currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
+    currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
