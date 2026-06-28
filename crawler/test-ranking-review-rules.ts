@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 type EvidenceType = "concern_relevance" | "popularity";
-type ReviewStatus = "queued" | "reviewing" | "approved" | "rejected" | "deferred";
+type QueuePolicy = "top_15_immediate" | "rank_16_30_persistent" | "rank_31_50_reinforced";
+
+const REVIEW_RULE_VERSION = "ranking-review-v2";
 
 interface ObservationFixture {
   candidateId: string;
@@ -11,31 +15,31 @@ interface ObservationFixture {
   collectedAt: string;
 }
 
-interface ReviewFixture {
-  candidateId: string;
-  status: ReviewStatus;
+interface PolicyResult {
+  queueEligible: boolean;
+  queuePolicy: QueuePolicy | null;
+  selectionReason: string;
+  priorityScore: number;
+  evidenceSnapshot: {
+    rule_version: string;
+    queue_eligible: boolean;
+    queue_policy: QueuePolicy | null;
+    qualification: {
+      reason: QueuePolicy | null;
+      concern: string | null;
+      latest_rank: number | null;
+      distinct_observed_dates: number;
+      reinforcement_reasons: string[];
+    };
+  };
+  productsWritten: 0;
 }
 
 interface ConcernGroup {
   concernKey: string;
-  observationCount: number;
-  distinctObservedDates: number;
-  firstObservedDate: string;
-  lastObservedDate: string;
-  bestRank: number;
   latestRank: number;
-}
-
-interface CandidateSummary {
-  candidateId: string;
-  distinctConcernCount: number;
-  concernTop15Count: number;
-  repeatedConcernCount: number;
-  popularityObservationCount: number;
-  queueEligible: boolean;
-  selectionReason: string;
-  priorityScore: number;
-  productsWritten: 0;
+  latestCollectedAt: string;
+  distinctObservedDates: number;
 }
 
 function getKstDate(isoTimestamp: string): string {
@@ -57,127 +61,267 @@ function latestObservation(left: ObservationFixture, right: ObservationFixture):
   return right.rank < left.rank ? right : left;
 }
 
-function summarizeCandidate(candidateId: string, observations: ObservationFixture[]): CandidateSummary {
-  const candidateObservations = observations.filter((observation) => observation.candidateId === candidateId);
-  const concernObservations = candidateObservations.filter(
-    (observation) => observation.evidenceType === "concern_relevance" && observation.concernKey,
-  );
-  const popularityObservations = candidateObservations.filter((observation) => observation.evidenceType === "popularity");
+function summarizeConcernGroups(candidateId: string, observations: ObservationFixture[]): ConcernGroup[] {
   const concernGroups = new Map<string, ObservationFixture[]>();
 
-  for (const observation of concernObservations) {
-    const concernKey = observation.concernKey ?? "";
-    concernGroups.set(concernKey, [...(concernGroups.get(concernKey) ?? []), observation]);
+  for (const observation of observations) {
+    if (observation.candidateId !== candidateId || observation.evidenceType !== "concern_relevance" || !observation.concernKey) {
+      continue;
+    }
+
+    concernGroups.set(observation.concernKey, [...(concernGroups.get(observation.concernKey) ?? []), observation]);
   }
 
-  const groups: ConcernGroup[] = Array.from(concernGroups.entries()).map(([concernKey, groupObservations]) => {
-    const dates = groupObservations.map((observation) => getKstDate(observation.collectedAt));
+  return Array.from(concernGroups.entries()).map(([concernKey, groupObservations]) => {
     const latest = groupObservations.reduce(latestObservation);
+    const observedDates = groupObservations.map((observation) => getKstDate(observation.collectedAt));
 
     return {
       concernKey,
-      observationCount: groupObservations.length,
-      distinctObservedDates: new Set(dates).size,
-      firstObservedDate: dates.sort()[0],
-      lastObservedDate: dates.sort().at(-1) ?? dates[0],
-      bestRank: Math.min(...groupObservations.map((observation) => observation.rank)),
       latestRank: latest.rank,
+      latestCollectedAt: latest.collectedAt,
+      distinctObservedDates: new Set(observedDates).size,
     };
   });
+}
 
-  const distinctConcernCount = groups.length;
-  const concernTop15Count = groups.filter((group) => group.latestRank <= 15).length;
-  const repeatedConcernCount = groups.filter((group) => group.distinctObservedDates >= 2).length;
-  const popularityObservationCount = popularityObservations.length;
-  const queueEligible = concernTop15Count > 0 || repeatedConcernCount > 0 || distinctConcernCount >= 2;
-  const reasonParts = [
-    concernTop15Count > 0 ? "concern top 15 evidence" : null,
-    repeatedConcernCount > 0 ? "repeated same-concern evidence" : null,
-    distinctConcernCount >= 2 ? "multiple concern evidence" : null,
-    popularityObservationCount > 0 ? "popularity ranking evidence" : null,
-  ].filter((reason): reason is string => Boolean(reason));
+function getLatestPopularityRank(candidateId: string, observations: ObservationFixture[]): number | null {
+  const popularityObservations = observations.filter(
+    (observation) => observation.candidateId === candidateId && observation.evidenceType === "popularity",
+  );
 
+  if (popularityObservations.length === 0) {
+    return null;
+  }
+
+  return popularityObservations.reduce(latestObservation).rank;
+}
+
+function classifyCandidate(candidateId: string, observations: ObservationFixture[]): PolicyResult {
+  const concernGroups = summarizeConcernGroups(candidateId, observations);
+  const latestPopularityRank = getLatestPopularityRank(candidateId, observations);
+  const observedDistinctConcernCount = concernGroups.length;
+
+  const rankedGroups = concernGroups
+    .map((group) => {
+      const reinforcementReasons = [
+        latestPopularityRank !== null && latestPopularityRank <= 30 ? "latest_popularity_rank_lte_30" : null,
+        observedDistinctConcernCount >= 2 ? "two_or_more_distinct_concerns" : null,
+      ].filter((reason): reason is string => Boolean(reason));
+      let queuePolicy: QueuePolicy | null = null;
+
+      if (group.latestRank <= 15) {
+        queuePolicy = "top_15_immediate";
+      } else if (group.latestRank >= 16 && group.latestRank <= 30 && group.distinctObservedDates >= 2) {
+        queuePolicy = "rank_16_30_persistent";
+      } else if (
+        group.latestRank >= 31 &&
+        group.latestRank <= 50 &&
+        group.distinctObservedDates >= 3 &&
+        reinforcementReasons.length > 0
+      ) {
+        queuePolicy = "rank_31_50_reinforced";
+      }
+
+      return {
+        ...group,
+        queuePolicy,
+        reinforcementReasons,
+        basePriority:
+          queuePolicy === "top_15_immediate"
+            ? 100
+            : queuePolicy === "rank_16_30_persistent"
+              ? 70
+              : queuePolicy === "rank_31_50_reinforced"
+                ? 45
+                : 0,
+      };
+    })
+    .filter((group) => group.queuePolicy !== null)
+    .sort((left, right) => right.basePriority - left.basePriority || left.latestRank - right.latestRank);
+
+  const selected = rankedGroups[0];
+  const queuePolicy = selected?.queuePolicy ?? null;
+  const selectionReason =
+    queuePolicy === "top_15_immediate"
+      ? "top_15_immediate: latest concern rank <= 15"
+      : queuePolicy === "rank_16_30_persistent"
+        ? "rank_16_30_persistent: latest concern rank 16-30 on >= 2 KST observed dates"
+        : queuePolicy === "rank_31_50_reinforced"
+          ? "rank_31_50_reinforced: latest concern rank 31-50 on >= 3 KST observed dates with reinforcement"
+          : "currently below queue threshold under ranking-review-v2";
+
+  return {
+    queueEligible: queuePolicy !== null,
+    queuePolicy,
+    selectionReason,
+    priorityScore: selected ? selected.basePriority + Math.max(0, 51 - selected.latestRank) : 0,
+    evidenceSnapshot: {
+      rule_version: REVIEW_RULE_VERSION,
+      queue_eligible: queuePolicy !== null,
+      queue_policy: queuePolicy,
+      qualification: {
+        reason: queuePolicy,
+        concern: selected?.concernKey ?? null,
+        latest_rank: selected?.latestRank ?? null,
+        distinct_observed_dates: selected?.distinctObservedDates ?? 0,
+        reinforcement_reasons: selected?.reinforcementReasons ?? [],
+      },
+    },
+    productsWritten: 0,
+  };
+}
+
+function observation(
+  candidateId: string,
+  rank: number,
+  collectedAt: string,
+  concernKey = "acne",
+): ObservationFixture {
   return {
     candidateId,
-    distinctConcernCount,
-    concernTop15Count,
-    repeatedConcernCount,
-    popularityObservationCount,
-    queueEligible,
-    selectionReason: queueEligible ? reasonParts.join("; ") : "currently below queue threshold under ranking-review-v2",
-    priorityScore: queueEligible ? 1 : 0,
-    productsWritten: 0,
+    concernKey,
+    evidenceType: "concern_relevance",
+    rank,
+    collectedAt,
   };
 }
 
-function refreshReviews(
-  observations: ObservationFixture[],
-  existingReviews: ReviewFixture[],
-): { summaries: CandidateSummary[]; protectedChanged: number; productsWritten: 0 } {
-  const candidateIds = Array.from(
-    new Set([...observations.map((observation) => observation.candidateId), ...existingReviews.map((review) => review.candidateId)]),
-  );
-  const summaries = candidateIds.map((candidateId) => summarizeCandidate(candidateId, observations));
-  const protectedChanged = existingReviews.filter((review) =>
-    ["approved", "rejected", "deferred"].includes(review.status),
-  ).filter((review) => {
-    const summary = summaries.find((entry) => entry.candidateId === review.candidateId);
-    return summary?.queueEligible === false && summary.priorityScore !== 0;
-  }).length;
-
+function popularity(candidateId: string, rank: number, collectedAt: string): ObservationFixture {
   return {
-    summaries,
-    protectedChanged,
-    productsWritten: 0,
+    candidateId,
+    concernKey: null,
+    evidenceType: "popularity",
+    rank,
+    collectedAt,
   };
 }
 
-const sameDayObservations: ObservationFixture[] = [
-  { candidateId: "same-day", concernKey: "acne", evidenceType: "concern_relevance", rank: 20, collectedAt: "2026-06-21T23:00:00.000Z" },
-  { candidateId: "same-day", concernKey: "acne", evidenceType: "concern_relevance", rank: 20, collectedAt: "2026-06-22T01:00:00.000Z" },
-  { candidateId: "same-day", concernKey: "acne", evidenceType: "concern_relevance", rank: 20, collectedAt: "2026-06-22T08:25:00.000Z" },
-];
-const sameDaySummary = summarizeCandidate("same-day", sameDayObservations);
-assert.equal(sameDaySummary.repeatedConcernCount, 0);
-assert.equal(sameDaySummary.queueEligible, false);
+function assertPolicy(
+  label: string,
+  observations: ObservationFixture[],
+  expectedPolicy: QueuePolicy | null,
+): PolicyResult {
+  const result = classifyCandidate(label, observations);
 
-const twoDateSummary = summarizeCandidate("two-date", [
-  { candidateId: "two-date", concernKey: "acne", evidenceType: "concern_relevance", rank: 22, collectedAt: "2026-06-22T08:00:00.000Z" },
-  { candidateId: "two-date", concernKey: "acne", evidenceType: "concern_relevance", rank: 25, collectedAt: "2026-06-29T08:00:00.000Z" },
-]);
-assert.equal(twoDateSummary.repeatedConcernCount, 1);
-assert.equal(twoDateSummary.queueEligible, true);
-assert.match(twoDateSummary.selectionReason, /repeated same-concern evidence/);
+  assert.equal(result.queuePolicy, expectedPolicy, label);
+  assert.equal(result.queueEligible, expectedPolicy !== null, label);
+  assert.equal(result.evidenceSnapshot.rule_version, REVIEW_RULE_VERSION, label);
+  assert.equal(result.productsWritten, 0, label);
 
-const top15Summary = summarizeCandidate("top15", [
-  { candidateId: "top15", concernKey: "acne", evidenceType: "concern_relevance", rank: 8, collectedAt: "2026-06-22T08:00:00.000Z" },
-]);
-assert.equal(top15Summary.queueEligible, true);
-assert.equal(top15Summary.selectionReason, "concern top 15 evidence");
+  return result;
+}
 
-const fallenSummary = summarizeCandidate("fallen", [
-  { candidateId: "fallen", concernKey: "acne", evidenceType: "concern_relevance", rank: 8, collectedAt: "2026-06-22T08:00:00.000Z" },
-  { candidateId: "fallen", concernKey: "acne", evidenceType: "concern_relevance", rank: 30, collectedAt: "2026-06-22T09:00:00.000Z" },
-]);
-assert.equal(fallenSummary.concernTop15Count, 0);
-assert.equal(fallenSummary.queueEligible, false);
+assertPolicy("rank-15-one-date", [observation("rank-15-one-date", 15, "2026-06-20T01:00:00.000Z")], "top_15_immediate");
 
-const outsideTop50Summary = summarizeCandidate("outside", [
-  { candidateId: "outside", concernKey: "acne", evidenceType: "concern_relevance", rank: 30, collectedAt: "2026-06-22T08:00:00.000Z" },
-]);
-assert.equal(outsideTop50Summary.queueEligible, false);
+assertPolicy("rank-16-one-date", [observation("rank-16-one-date", 16, "2026-06-20T01:00:00.000Z")], null);
 
-const popularityOnlySummary = summarizeCandidate("popularity", [
-  { candidateId: "popularity", concernKey: null, evidenceType: "popularity", rank: 1, collectedAt: "2026-06-22T08:00:00.000Z" },
-]);
-assert.equal(popularityOnlySummary.queueEligible, false);
+assertPolicy("rank-16-two-dates", [
+  observation("rank-16-two-dates", 18, "2026-06-20T01:00:00.000Z"),
+  observation("rank-16-two-dates", 16, "2026-06-21T01:00:00.000Z"),
+], "rank_16_30_persistent");
 
-const refreshResult = refreshReviews(sameDayObservations, [
-  { candidateId: "approved", status: "approved" },
-  { candidateId: "rejected", status: "rejected" },
-  { candidateId: "deferred", status: "deferred" },
-]);
-assert.equal(refreshResult.protectedChanged, 0);
-assert.equal(refreshResult.productsWritten, 0);
+assertPolicy("rank-30-two-dates", [
+  observation("rank-30-two-dates", 22, "2026-06-20T01:00:00.000Z"),
+  observation("rank-30-two-dates", 30, "2026-06-21T01:00:00.000Z"),
+], "rank_16_30_persistent");
 
-console.log("ranking review rule test passed");
+assertPolicy("rank-31-two-dates-no-reinforcement", [
+  observation("rank-31-two-dates-no-reinforcement", 31, "2026-06-20T01:00:00.000Z"),
+  observation("rank-31-two-dates-no-reinforcement", 31, "2026-06-21T01:00:00.000Z"),
+], null);
+
+const popularityReinforced = assertPolicy("rank-31-three-dates-popularity-30", [
+  observation("rank-31-three-dates-popularity-30", 31, "2026-06-20T01:00:00.000Z"),
+  observation("rank-31-three-dates-popularity-30", 34, "2026-06-21T01:00:00.000Z"),
+  observation("rank-31-three-dates-popularity-30", 31, "2026-06-22T01:00:00.000Z"),
+  popularity("rank-31-three-dates-popularity-30", 30, "2026-06-22T01:30:00.000Z"),
+], "rank_31_50_reinforced");
+assert.deepEqual(popularityReinforced.evidenceSnapshot.qualification.reinforcement_reasons, ["latest_popularity_rank_lte_30"]);
+
+const concernReinforced = assertPolicy("rank-31-three-dates-two-concerns", [
+  observation("rank-31-three-dates-two-concerns", 31, "2026-06-20T01:00:00.000Z", "acne"),
+  observation("rank-31-three-dates-two-concerns", 31, "2026-06-21T01:00:00.000Z", "acne"),
+  observation("rank-31-three-dates-two-concerns", 31, "2026-06-22T01:00:00.000Z", "acne"),
+  observation("rank-31-three-dates-two-concerns", 75, "2026-06-22T02:00:00.000Z", "pores"),
+], "rank_31_50_reinforced");
+assert.deepEqual(concernReinforced.evidenceSnapshot.qualification.reinforcement_reasons, ["two_or_more_distinct_concerns"]);
+
+assertPolicy("rank-31-three-dates-popularity-31-one-concern", [
+  observation("rank-31-three-dates-popularity-31-one-concern", 31, "2026-06-20T01:00:00.000Z"),
+  observation("rank-31-three-dates-popularity-31-one-concern", 31, "2026-06-21T01:00:00.000Z"),
+  observation("rank-31-three-dates-popularity-31-one-concern", 31, "2026-06-22T01:00:00.000Z"),
+  popularity("rank-31-three-dates-popularity-31-one-concern", 31, "2026-06-22T01:30:00.000Z"),
+], null);
+
+assertPolicy("rank-50-valid-reinforcement", [
+  observation("rank-50-valid-reinforcement", 50, "2026-06-20T01:00:00.000Z"),
+  observation("rank-50-valid-reinforcement", 50, "2026-06-21T01:00:00.000Z"),
+  observation("rank-50-valid-reinforcement", 50, "2026-06-22T01:00:00.000Z"),
+  popularity("rank-50-valid-reinforcement", 30, "2026-06-22T01:30:00.000Z"),
+], "rank_31_50_reinforced");
+
+assertPolicy("rank-51", [
+  observation("rank-51", 31, "2026-06-20T01:00:00.000Z"),
+  observation("rank-51", 31, "2026-06-21T01:00:00.000Z"),
+  observation("rank-51", 51, "2026-06-22T01:00:00.000Z"),
+  observation("rank-51", 80, "2026-06-22T02:00:00.000Z", "pores"),
+  popularity("rank-51", 1, "2026-06-22T01:30:00.000Z"),
+], null);
+
+assertPolicy("three-crawls-one-kst-date", [
+  observation("three-crawls-one-kst-date", 16, "2026-06-21T00:00:00.000Z"),
+  observation("three-crawls-one-kst-date", 16, "2026-06-21T03:00:00.000Z"),
+  observation("three-crawls-one-kst-date", 16, "2026-06-21T10:00:00.000Z"),
+], null);
+
+const popularityOnly = assertPolicy("popularity-only", [
+  popularity("popularity-only", 1, "2026-06-22T01:00:00.000Z"),
+], null);
+assert.equal(popularityOnly.evidenceSnapshot.queue_eligible, false);
+
+const migrationSql = readFileSync(
+  path.resolve("..", "supabase", "migrations", "20260627224615_ranking_review_v2_b_policy.sql"),
+  "utf8",
+);
+const policyConcernsSql = migrationSql.slice(
+  migrationSql.indexOf("policy_concerns as ("),
+  migrationSql.indexOf("policy_choice as ("),
+);
+const lowerRankPolicySql = policyConcernsSql.slice(
+  policyConcernsSql.indexOf("when cg.latest_rank between 31 and 50"),
+  policyConcernsSql.indexOf("end as queue_policy"),
+);
+const distinctConcernReinforcementSql = policyConcernsSql.slice(
+  policyConcernsSql.indexOf("two_or_more_distinct_concerns"),
+  policyConcernsSql.indexOf("end as reinforcement_reasons"),
+);
+
+assert.match(migrationSql, /'ranking-review-v2'/);
+assert.doesNotMatch(migrationSql, new RegExp(`ranking-review-${"v1"}`));
+assert.match(migrationSql, /'top_15_immediate'/);
+assert.match(migrationSql, /'rank_16_30_persistent'/);
+assert.match(migrationSql, /'rank_31_50_reinforced'/);
+assert.match(migrationSql, /at time zone 'Asia\/Seoul'/);
+assert.match(migrationSql, /latest_rank between 16 and 30[\s\S]+distinct_observed_dates >= 2/);
+assert.match(lowerRankPolicySql, /cg\.latest_rank between 31 and 50/);
+assert.match(lowerRankPolicySql, /cg\.distinct_observed_dates >= 3/);
+assert.match(lowerRankPolicySql, /ps\.popularity_latest_rank <= 30/);
+assert.match(lowerRankPolicySql, /coalesce\(cs\.distinct_concern_count, 0\) >= 2/);
+assert.doesNotMatch(lowerRankPolicySql, /latest_rank <= 50[\s\S]+distinct_concern/);
+assert.match(distinctConcernReinforcementSql, /coalesce\(cs\.distinct_concern_count, 0\) >= 2/);
+assert.doesNotMatch(distinctConcernReinforcementSql, /latest_rank <= 50/);
+assert.doesNotMatch(migrationSql, /qualifying_distinct_concern_count/);
+assert.match(migrationSql, /set status = 'deferred'/);
+assert.match(migrationSql, /where candidate_id = v_row\.candidate_id\s+and status in \('queued', 'reviewing'\)/);
+assert.match(migrationSql, /where reviews\.status in \('queued', 'reviewing'\)/);
+assert.match(migrationSql, /on conflict \(candidate_id\) do nothing/);
+assert.match(migrationSql, /not summary\.product_match_exists/);
+assert.match(migrationSql, /nullif\(btrim\(coalesce\(summary\.external_id/);
+assert.match(migrationSql, /'reviews_deferred'/);
+assert.match(migrationSql, /'products_written', 0/);
+assert.doesNotMatch(migrationSql, /^\s*insert into public\.products/im);
+assert.doesNotMatch(migrationSql, /^\s*update public\.products/im);
+assert.doesNotMatch(migrationSql, /^\s*delete from public\.products/im);
+
+console.log("ranking review B policy test passed");

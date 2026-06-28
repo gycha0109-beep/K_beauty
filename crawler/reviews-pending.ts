@@ -101,6 +101,7 @@ function printReview(review: PendingPromotionReviewRow): void {
   console.log(`${review.brand_name_raw ?? "-"} / ${review.product_name_raw ?? "-"}`);
   console.log(`  candidate: ${review.candidate_id}`);
   console.log(`  status: ${review.status}`);
+  console.log(`  rule version: ${review.rule_version ?? "-"}`);
   console.log(`  priority: ${review.priority_score}`);
   console.log(`  why queued: ${review.selection_reason || "-"}`);
   console.log(`  queue eligibility: ${summarizeQueueEligibility(evidence)}`);

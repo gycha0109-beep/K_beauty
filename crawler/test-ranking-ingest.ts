@@ -412,14 +412,15 @@ const refreshRpcClient = {
   rpc(name: string, args: Record<string, unknown>) {
     refreshRpcCalled = true;
     assert.equal(name, "refresh_candidate_promotion_reviews");
-    assert.equal(args.p_rule_version, "ranking-review-v1");
+    assert.equal(args.p_rule_version, "ranking-review-v2");
 
     return Promise.resolve({
       data: {
-        rule_version: "ranking-review-v1",
+        rule_version: "ranking-review-v2",
         candidates_examined: 2,
         reviews_inserted: 1,
         reviews_updated: 1,
+        reviews_deferred: 1,
         protected_reviews_skipped: 0,
         products_written: 0,
       },
@@ -428,11 +429,12 @@ const refreshRpcClient = {
   },
 };
 
-const refreshResult = await refreshCandidatePromotionReviews(refreshRpcClient as never, "ranking-review-v1");
+const refreshResult = await refreshCandidatePromotionReviews(refreshRpcClient as never, "ranking-review-v2");
 
 assert.equal(refreshRpcCalled, true);
 assert.equal(refreshResult.reviewsInserted, 1);
 assert.equal(refreshResult.reviewsUpdated, 1);
+assert.equal(refreshResult.reviewsDeferred, 1);
 assert.equal(refreshResult.productsWritten, 0);
 
 let dryRunRpcCalled = false;

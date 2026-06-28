@@ -98,6 +98,7 @@ export interface CandidatePromotionReviewRefreshResult {
   candidatesExamined: number;
   reviewsInserted: number;
   reviewsUpdated: number;
+  reviewsDeferred: number;
   protectedReviewsSkipped: number;
   productsWritten: 0;
 }
@@ -107,6 +108,7 @@ export interface PendingPromotionReviewRow {
   brand_name_raw: string | null;
   product_name_raw: string | null;
   status: string;
+  rule_version: string | null;
   priority_score: number;
   selection_reason: string;
   evidence_snapshot: Json | Record<string, unknown>;
@@ -819,6 +821,7 @@ export async function refreshCandidatePromotionReviews(
     candidatesExamined: Number(result.candidates_examined ?? 0),
     reviewsInserted: Number(result.reviews_inserted ?? 0),
     reviewsUpdated: Number(result.reviews_updated ?? 0),
+    reviewsDeferred: Number(result.reviews_deferred ?? 0),
     protectedReviewsSkipped: Number(result.protected_reviews_skipped ?? 0),
     productsWritten: 0,
   };
@@ -833,6 +836,7 @@ export async function listPendingPromotionReviews(
     .select(`
       candidate_id,
       status,
+      rule_version,
       priority_score,
       selection_reason,
       evidence_snapshot,
@@ -862,6 +866,7 @@ export async function listPendingPromotionReviews(
       brand_name_raw: candidate?.brand_name_raw ?? null,
       product_name_raw: candidate?.product_name_raw ?? null,
       status: String((row as { status: string }).status),
+      rule_version: (row as { rule_version?: string | null }).rule_version ?? null,
       priority_score: Number((row as { priority_score: number }).priority_score ?? 0),
       selection_reason: String((row as { selection_reason: string }).selection_reason ?? ""),
       evidence_snapshot: (row as { evidence_snapshot: Json | Record<string, unknown> }).evidence_snapshot,

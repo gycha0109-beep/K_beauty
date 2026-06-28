@@ -161,9 +161,17 @@ The service-role crawler is the only intended DB writer for Phase 1 ranking inge
 
 ## Promotion Review Queue
 
-`candidate_promotion_reviews` is a manual review queue. The refresh RPC can insert new `queued` rows and update evidence for `queued` or `reviewing` rows only.
+`candidate_promotion_reviews` is a manual review queue. The refresh RPC uses `ranking-review-v2`, can insert new `queued` rows, and can update evidence for `queued` or `reviewing` rows only.
 
 It never changes `approved`, `rejected`, or `deferred` rows back to queued. It excludes candidates without external identity, candidates matching existing `products` by normalized brand/name, and candidates without concern evidence. Popularity ranking evidence is stored as support, but popularity-only observations do not queue candidates.
+
+`ranking-review-v2` queue entry policy:
+
+- `top_15_immediate`: latest concern rank is 15 or better.
+- `rank_16_30_persistent`: latest concern rank is 16 to 30 and the same canonical concern has at least two KST distinct observed dates.
+- `rank_31_50_reinforced`: latest concern rank is 31 to 50, the same canonical concern has at least three KST distinct observed dates, and either latest popularity rank is 30 or better or the candidate appears across at least two distinct canonical concerns.
+
+Same-day repeated crawls do not count as persistence, concern rank 51 or worse is excluded, and candidates that no longer qualify are deferred out of the active queue on the next refresh.
 
 ## First Safe DB Write
 
