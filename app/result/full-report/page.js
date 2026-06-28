@@ -9,6 +9,7 @@ import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
 import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
+import PremiumConditionResponseSection from "@/components/full-report/PremiumConditionResponseSection";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
@@ -5202,7 +5203,7 @@ function SkinMatchStepReport({
         morning: "Routine Consult",
         evening: "Evening Routine",
         avoid: "Caution",
-        adjustment: "Adjustment Guide",
+        adjustment: "Condition Response",
         product: "Active Check",
         summary: "Final Summary",
         previous: "Previous",
@@ -5215,7 +5216,7 @@ function SkinMatchStepReport({
         morning: "루틴 상담",
         evening: "저녁 실행 루틴",
         avoid: "주의",
-        adjustment: "조정",
+        adjustment: "컨디션 대응",
         product: "기능성 판단",
         summary: "최종 요약",
         previous: "이전",
@@ -5286,10 +5287,10 @@ function SkinMatchStepReport({
       key: "adjustment-guide",
       label: labels.adjustment,
       content: (
-        <AdjustmentGuideStep
-          variants={displayRoutineVariants}
-          avoidItems={displayAvoidCombinations}
+        <PremiumConditionResponseSection
+          responses={report?.conditionResponses}
           locale={locale}
+          onNavigate={moveToStepKey}
         />
       )
     },
@@ -5670,6 +5671,9 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
       : [],
     functionalDecisions: Array.isArray(premiumReport.functionalDecisions)
       ? premiumReport.functionalDecisions
+      : [],
+    conditionResponses: Array.isArray(premiumReport.conditionResponses)
+      ? premiumReport.conditionResponses
       : []
   };
 

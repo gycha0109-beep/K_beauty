@@ -778,6 +778,48 @@ function sanitizeFunctionalDecisionsForPremium(decisions) {
     .slice(0, 5);
 }
 
+function sanitizeConditionResponsesForPremium(responses) {
+  const allowedStatuses = new Set(["maintain", "reduce", "avoid_for_now"]);
+
+  if (!Array.isArray(responses)) {
+    return [];
+  }
+
+  return responses
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const responseKey = String(item.responseKey || "").trim();
+      const status = String(item.status || "").trim();
+      const title = typeof item.title === "string" ? item.title.trim() : "";
+      const summary = typeof item.summary === "string" ? item.summary.trim() : "";
+
+      if (!responseKey || !allowedStatuses.has(status) || !title || !summary) {
+        return null;
+      }
+
+      return {
+        responseKey,
+        status,
+        title,
+        summary,
+        reasons: Array.isArray(item.reasons)
+          ? item.reasons
+              .map((reason) => (typeof reason === "string" ? reason.trim() : ""))
+              .filter(Boolean)
+              .slice(0, 2)
+          : [],
+        action: typeof item.action === "string" && item.action.trim()
+          ? item.action.trim()
+          : null
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -796,6 +838,7 @@ function sanitizePremiumReport(report) {
     currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
+    conditionResponses: sanitizeConditionResponsesForPremium(report.conditionResponses),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
