@@ -1,7 +1,6 @@
 export const INITIAL_FORM = {
   skinType: "",
   sensitivity: "",
-  genderPreference: "unspecified",
   mainConcern: "",
   mainConcerns: [],
   cleansingFrequency: "",
@@ -178,9 +177,7 @@ export const ONBOARDING_COPY = {
       mostDislikedFeel: {
         sticky: "끈적임",
         greasy: "번들거림",
-        heavy: "무거운 느낌",
-        fragranced: "강한 향",
-        pilling: "밀림"
+        heavy: "무거운 느낌"
       },
       cleansingFrequency: {
         once: "하루 1회",
@@ -237,7 +234,6 @@ export const ONBOARDING_COPY = {
       description: "These answers shape the result the most.",
       skinType: "Skin type",
       sensitivity: "Sensitivity",
-      genderPreference: "Gender (optional)",
       mainConcern: "Main concern",
       multiSelectHint: "Multiple selection allowed"
     },
@@ -316,11 +312,6 @@ export const ONBOARDING_COPY = {
         combination: "Combination",
         not_sure: "Not sure"
       },
-      genderPreference: {
-        female: "Female",
-        male: "Male",
-        unspecified: "Prefer not to say"
-      },
       sensitivity: {
         low: "Low",
         medium: "Medium",
@@ -355,9 +346,7 @@ export const ONBOARDING_COPY = {
       mostDislikedFeel: {
         sticky: "Sticky",
         greasy: "Greasy",
-        heavy: "Heavy",
-        fragranced: "Strong fragrance",
-        pilling: "Pilling"
+        heavy: "Heavy"
       },
       cleansingFrequency: {
         once: "Once a day",
@@ -379,12 +368,11 @@ export const ONBOARDING_COPY = {
 export const OPTION_SETS = {
   skinType: ["oily", "dry", "combination", "not_sure"],
   sensitivity: ["low", "medium", "high"],
-  genderPreference: ["female", "male", "unspecified"],
   mainConcern: ["oiliness", "dehydration", "acne", "uneven_tone", "pores", "redness", "barrier"],
   preferredTexture: ["gel", "watery", "lotion", "cream"],
   postWashFeeling: ["tight", "comfortable", "still_oily"],
   afternoonSkinChange: ["more_oily", "more_dry", "red_or_irritated", "mostly_same"],
-  mostDislikedFeel: ["sticky", "greasy", "heavy", "fragranced", "pilling"],
+  mostDislikedFeel: ["sticky", "greasy", "heavy"],
   booleanChoice: ["true", "false"],
   sunscreenConsiderations: ["whiteCastHate", "toneUpWanted", "makeupUse", "eyeSensitive"],
   cleansingFrequency: ["once", "twice", "3_plus"],

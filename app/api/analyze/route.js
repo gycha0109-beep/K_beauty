@@ -293,7 +293,6 @@ function buildSurveyContextForLlm(formInput = {}) {
   return {
     skinType: formInput.skinType,
     sensitivity: formInput.sensitivity,
-    genderPreference: formInput.genderPreference,
     mainConcern: formInput.mainConcern,
     mainConcerns: formInput.mainConcerns || [],
     cleansingFrequency: formInput.cleansingFrequency,
@@ -963,7 +962,6 @@ export async function POST(request) {
     const skinType = formData.get("skinType");
     const sensitivity =
       formData.get("sensitivityLevel") || formData.get("sensitivity");
-    const genderPreference = formData.get("genderPreference");
     const mainConcern = formData.get("mainConcern");
     const mainConcerns = parseJsonArrayField(formData.get("mainConcerns"));
     const cleansingFrequency = formData.get("cleansingFrequency");
@@ -1021,10 +1019,6 @@ export async function POST(request) {
     const formInput = {
       skinType,
       sensitivity,
-      genderPreference:
-        typeof genderPreference === "string" && genderPreference
-          ? genderPreference
-          : "unspecified",
       mainConcern: resolvedMainConcern,
       mainConcerns: mainConcerns.length ? mainConcerns : undefined,
       cleansingFrequency,
