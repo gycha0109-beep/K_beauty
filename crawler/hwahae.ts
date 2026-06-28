@@ -30,7 +30,7 @@ const DEFAULT_NAVIGATION_TIMEOUT_MS = 45000;
 const DEFAULT_RETRIES = 3;
 const DEFAULT_HEADLESS = true;
 const COLLECTOR_VERSION = "hwahae-ranking-phase1/1";
-const REVIEW_RULE_VERSION = "ranking-review-v1";
+const REVIEW_RULE_VERSION = "ranking-review-v2";
 
 interface JsonLdProduct {
   name?: string;
@@ -116,6 +116,7 @@ interface CrawlSummary {
   productsWritten: 0;
   reviewsInserted: number;
   reviewsUpdated: number;
+  reviewsDeferred: number;
   reviewsProtectedSkipped: number;
   errorsCount: number;
 }
@@ -579,6 +580,7 @@ function mergeIngestResult(summary: CrawlSummary, result: RankingSnapshotIngestR
 function mergeReviewRefreshResult(summary: CrawlSummary, result: CandidatePromotionReviewRefreshResult): void {
   summary.reviewsInserted += result.reviewsInserted;
   summary.reviewsUpdated += result.reviewsUpdated;
+  summary.reviewsDeferred += result.reviewsDeferred;
   summary.reviewsProtectedSkipped += result.protectedReviewsSkipped;
 }
 
@@ -607,6 +609,7 @@ function printSummary(summary: CrawlSummary, dryRun: boolean): void {
   console.log(`- identity collisions/pending matches: ${summary.pendingIdentityCount}`);
   console.log(`- candidate_promotion_reviews new rows: ${summary.reviewsInserted}`);
   console.log(`- candidate_promotion_reviews updated rows: ${summary.reviewsUpdated}`);
+  console.log(`- candidate_promotion_reviews deferred rows: ${summary.reviewsDeferred}`);
   console.log(`- candidate_promotion_reviews protected skipped: ${summary.reviewsProtectedSkipped}`);
   console.log(`- products writes: ${summary.productsWritten}`);
   console.log(`- errors count: ${summary.errorsCount}`);
@@ -634,6 +637,7 @@ async function run(): Promise<void> {
     productsWritten: 0,
     reviewsInserted: 0,
     reviewsUpdated: 0,
+    reviewsDeferred: 0,
     reviewsProtectedSkipped: 0,
     errorsCount: 0,
   };
@@ -758,7 +762,7 @@ async function run(): Promise<void> {
         mergeReviewRefreshResult(summary, refreshResult);
         console.log("");
         console.log(
-          `[review-refresh] rule=${refreshResult.ruleVersion}, examined=${refreshResult.candidatesExamined}, inserted=${refreshResult.reviewsInserted}, updated=${refreshResult.reviewsUpdated}, protected=${refreshResult.protectedReviewsSkipped}`,
+          `[review-refresh] rule=${refreshResult.ruleVersion}, examined=${refreshResult.candidatesExamined}, inserted=${refreshResult.reviewsInserted}, updated=${refreshResult.reviewsUpdated}, deferred=${refreshResult.reviewsDeferred}, protected=${refreshResult.protectedReviewsSkipped}`,
         );
       }
     } else if (options.dryRun) {

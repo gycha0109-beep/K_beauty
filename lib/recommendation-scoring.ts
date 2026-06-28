@@ -73,8 +73,6 @@ export const TOP_PICK_SCORING_WEIGHTS = {
   verySensitiveHighRiskPenalty: -4,
   verySensitiveConcernBonus: 2,
   verySensitiveSafeBonus: 2,
-  femaleMensPenalty: -3,
-  maleMensBonus: 1,
 } as const;
 
 const CATEGORY_PRIORITY_BY_CONCERN: Record<string, Record<string, number>> = {
@@ -173,7 +171,6 @@ export type RecommendationAnswers = {
 export type NormalizedRecommendationAnswers = {
   skinType: string | null;
   sensitivity: string | null;
-  genderPreference: "female" | "male" | "unspecified";
   mainConcern: string | null;
   mainConcerns: string[];
   preferredTexture: string | null;
@@ -367,16 +364,6 @@ function getSkinTypeLabel(skinType: string | null | undefined): string {
   return SKIN_TYPE_LABELS[skinType || ""] || skinType || "현재 피부";
 }
 
-function normalizeGenderPreference(
-  value: RecommendationAnswers["genderPreference"],
-): "female" | "male" | "unspecified" {
-  if (value === "female" || value === "male") {
-    return value;
-  }
-
-  return "unspecified";
-}
-
 export function normalizeRecommendationAnswers(
   answers: RecommendationAnswers,
 ): NormalizedRecommendationAnswers {
@@ -390,7 +377,6 @@ export function normalizeRecommendationAnswers(
   return {
     skinType: normalizeString(answers.skinType),
     sensitivity: normalizeString(answers.sensitivityLevel || answers.sensitivity) || "medium",
-    genderPreference: normalizeGenderPreference(answers.genderPreference),
     mainConcern: mainConcerns[0] || null,
     mainConcerns,
     preferredTexture:
@@ -637,25 +623,6 @@ function getRecommendationTierPenalty(product: CanonicalRecommendationProduct): 
   return product.recommendation_tier === "Tier2"
     ? TOP_PICK_SCORING_WEIGHTS.tier2Penalty
     : 0;
-}
-
-function getGenderPreferenceAdjustment(
-  answers: NormalizedRecommendationAnswers,
-  product: CanonicalRecommendationProduct,
-): number {
-  if (product.is_mens !== true) {
-    return 0;
-  }
-
-  if (answers.genderPreference === "female") {
-    return TOP_PICK_SCORING_WEIGHTS.femaleMensPenalty;
-  }
-
-  if (answers.genderPreference === "male") {
-    return TOP_PICK_SCORING_WEIGHTS.maleMensBonus;
-  }
-
-  return 0;
 }
 
 function hasExplicitSunscreenIntent(answers: NormalizedRecommendationAnswers): boolean {
@@ -977,7 +944,7 @@ export function scoreCanonicalProduct(
   const finishMatch = preferredFinishes.includes(normalizeCanonicalFinish(product.finish as string));
   const dislikedFeelPenalty = getDislikedFeelPenalty(product, answers.mostDislikedFeel);
   const recommendationTierPenalty = getRecommendationTierPenalty(product);
-  const genderPreferenceAdjustment = getGenderPreferenceAdjustment(answers, product);
+  const genderPreferenceAdjustment = 0;
   const postCleanseAdjustment = getPostCleanseAdjustment(product, answers);
   const afternoonStateAdjustment = getAfternoonStateAdjustment(
     product,

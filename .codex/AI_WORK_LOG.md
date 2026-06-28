@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-06-28 / survey contract cleanup v1
+
+- Branch: feature/survey-contract-cleanup-v1
+- Task type: execution / Medium survey contract cleanup
+- Routing decision: User requested a scoped cleanup of free Skin Match survey UI, payload, recommendation gender scoring, legacy compatibility, cleansingFrequency contract confirmation, and a new architecture contract doc. Existing crawler/ranking and previous branch changes were present before this task and were left untouched.
+- Goal: Remove 신규 무료 설문의 `fragranced`, 일반 `pilling`, and gender question; stop sending/using `genderPreference` in new free analysis requests; remove gender-based product score adjustment; preserve legacy payload tolerance and sunscreen `makeupUse` + `pilling_risk`; document the survey contract.
+- Changed files: app/api/analyze/route.js, app/page.js, app/result/page.js, components/onboarding/BasicSurveyStep.js, components/onboarding/SurveyFlow.js, components/onboarding/constants.js, docs/architecture/survey-contract-v1.md, lib/recommendation-scoring.ts, lib/skin-match-decision-engine.js, lib/skin-profile-summary.js, .codex/AI_WORK_LOG.md
+- Protected areas: No product-source, product-category-normalizer, review-signals, category semantics, product DB/schema, Face Lab API/calculation, premium report UI, routineStructure generation, or sunscreen hard filter/score changes.
+- Validation results: `npm run build` passed. `git diff --check` passed. Korean 390px Playwright survey flow completed without the gender question, without `fragranced` or general `pilling` options, with no horizontal overflow and console/page errors 0. New free analyze FormData did not include `genderPreference`. `/api/analyze` returned 200 for new no-gender payload and legacy `genderPreference`, `mostDislikedFeel: fragranced`, and `mostDislikedFeel: pilling` payloads. `cleansingFrequency: 3_plus` preserved the existing barrier +3 and dehydration +2 score delta. Function-level scoring check confirmed female/male/unspecified scores are identical and sunscreen `makeupUse` + high `pilling_risk` remains rejected.
+- Notes/risks: `review-signals.js` still has its pre-existing legacy `mostDislikedFeel: pilling` path and was intentionally not edited because the user marked review-signals out of scope.
+- Context promotion candidate: NULL
+
 ### 2026-06-28 / free result Decision Bundle display audit fixes
 
 - Branch: feature/free-result-decision-bundle-alignment

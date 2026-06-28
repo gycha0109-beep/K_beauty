@@ -199,9 +199,7 @@ const QUESTION_SCREENS = {
           options: [
             { value: "sticky", label: "끈적임", description: "피부 위에 남는 느낌" },
             { value: "greasy", label: "번들거림", description: "유분막이 많은 느낌" },
-            { value: "heavy", label: "무거움", description: "답답하게 덮이는 느낌" },
-            { value: "fragranced", label: "강한 향", description: "향이 오래 남는 제품" },
-            { value: "pilling", label: "밀림", description: "메이크업 전후 밀리는 느낌" }
+            { value: "heavy", label: "무거움", description: "답답하게 덮이는 느낌" }
           ]
         }
       ]
@@ -222,19 +220,6 @@ const QUESTION_SCREENS = {
             { value: "toneUpWanted", label: "톤업", description: "맑아 보이는 마무리를 원해요" },
             { value: "makeupUse", label: "메이크업 궁합", description: "베이스가 밀리지 않아야 해요" },
             { value: "eyeSensitive", label: "눈시림 적음", description: "눈 주변 자극이 적어야 해요" }
-          ]
-        },
-        {
-          id: "genderPreference",
-          title: "성별을 선택해주세요",
-          subtitle: "선택하지 않아도 분석은 가능합니다.",
-          type: "single",
-          required: false,
-          allowNone: true,
-          options: [
-            { value: "female", label: "여성", description: "여성 기준 표현을 참고해요" },
-            { value: "male", label: "남성", description: "남성 기준 표현을 참고해요" },
-            { value: "unspecified", label: "선택 안 함", description: "공통 기준으로 정리해요" }
           ]
         }
       ]
@@ -385,9 +370,7 @@ const QUESTION_SCREENS = {
           options: [
             { value: "sticky", label: "Sticky", description: "Stays on top" },
             { value: "greasy", label: "Greasy", description: "Oily film" },
-            { value: "heavy", label: "Heavy", description: "Feels covered" },
-            { value: "fragranced", label: "Strong scent", description: "Lingering fragrance" },
-            { value: "pilling", label: "Pilling", description: "Rolls under makeup" }
+            { value: "heavy", label: "Heavy", description: "Feels covered" }
           ]
         }
       ]
@@ -408,19 +391,6 @@ const QUESTION_SCREENS = {
             { value: "toneUpWanted", label: "Tone-up", description: "A brighter finish" },
             { value: "makeupUse", label: "Makeup fit", description: "Does not pill under base" },
             { value: "eyeSensitive", label: "Low eye sting", description: "Gentler around eyes" }
-          ]
-        },
-        {
-          id: "genderPreference",
-          title: "Choose gender preference",
-          subtitle: "You can skip this.",
-          type: "single",
-          required: false,
-          allowNone: true,
-          options: [
-            { value: "female", label: "Female", description: "Use female-oriented wording" },
-            { value: "male", label: "Male", description: "Use male-oriented wording" },
-            { value: "unspecified", label: "Prefer not to say", description: "Use neutral wording" }
           ]
         }
       ]
@@ -469,8 +439,7 @@ const QUESTION_HIGHLIGHTS = {
     environmentExposure: "환경",
     preferredTexture: "제품 제형",
     mostDislikedFeel: "피하고 싶은 사용감",
-    sunscreenConsiderations: "선크림",
-    genderPreference: "성별"
+    sunscreenConsiderations: "선크림"
   },
   en: {
     skinType: "skin type",
@@ -482,8 +451,7 @@ const QUESTION_HIGHLIGHTS = {
     environmentExposure: "environment",
     preferredTexture: "texture",
     mostDislikedFeel: "avoid",
-    sunscreenConsiderations: "sunscreen",
-    genderPreference: "gender"
+    sunscreenConsiderations: "sunscreen"
   }
 };
 
@@ -525,8 +493,6 @@ const OPTION_ICON_KEYS = {
   sticky: "sparkle",
   greasy: "droplet",
   heavy: "weight",
-  fragranced: "sparkle",
-  pilling: "dots",
   whiteCastHate: "sun-shield",
   toneUpWanted: "sparkle",
   makeupUse: "brush",

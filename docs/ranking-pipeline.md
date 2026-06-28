@@ -157,7 +157,7 @@ where external_id is not null;
 
 ## Review Queue
 
-After a full successful unfiltered crawl, the crawler calls `public.refresh_candidate_promotion_reviews(text)`.
+After a full successful unfiltered crawl, the crawler calls `public.refresh_candidate_promotion_reviews(text)` with `ranking-review-v2`.
 
 The refresh RPC:
 
@@ -169,13 +169,13 @@ The refresh RPC:
 - excludes candidates without external identity
 - returns `products_written = 0`
 
-Initial queue criteria are conservative:
+`ranking-review-v2` queue criteria are conservative and use KST distinct observed dates:
 
-- concern Top 15, or
-- repeated same-concern evidence, or
-- at least two different concern evidences
+- `top_15_immediate`: latest concern rank is 15 or better
+- `rank_16_30_persistent`: latest concern rank is 16 to 30 and the same canonical concern has at least two KST distinct observed dates
+- `rank_31_50_reinforced`: latest concern rank is 31 to 50, the same canonical concern has at least three KST distinct observed dates, and either latest popularity rank is 30 or better or the candidate appears across at least two distinct canonical concerns
 
-Popularity Top 100 observations add evidence and score, but popularity-only observations do not queue candidates.
+Popularity evidence alone never queues a candidate. Same-day repeated crawls do not satisfy persistence, and concern rank 51 or worse is excluded by this policy. Candidates that no longer qualify are moved out of the active `queued`/`reviewing` queue on the next refresh, while `approved`, `rejected`, and `deferred` rows are not moved back to queued automatically.
 
 Use:
 

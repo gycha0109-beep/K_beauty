@@ -70,7 +70,6 @@ function normalizeSurveyAnswers(form = {}) {
 
   return {
     ...form,
-    genderPreference: form.genderPreference || "unspecified",
     mainConcern: form.mainConcern || mainConcerns[0] || "",
     mainConcerns,
     cleansingFrequency: form.cleansingFrequency || OPTIONAL_DEFAULTS.cleansingFrequency,
@@ -218,6 +217,10 @@ export default function HomePage() {
         analyzePayload.append("image", imageFile);
 
         Object.entries(completedForm).forEach(([key, value]) => {
+          if (key === "genderPreference") {
+            return;
+          }
+
           analyzePayload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
         });
         if (PREMIUM_REPORT_ENABLED && currentProducts.length) {

@@ -1828,16 +1828,12 @@ function buildLocalizedSkinProfileSummary(form = {}, locale = "ko") {
         ? {
             sticky: "avoids stickiness",
             greasy: "avoids greasiness",
-            heavy: "avoids heavy feel",
-            fragranced: "avoids strong fragrance",
-            pilling: "avoids pilling"
+            heavy: "avoids heavy feel"
           }
         : {
             sticky: "끈적임 회피",
             greasy: "번들거림 회피",
-            heavy: "무거운 사용감 회피",
-            fragranced: "강한 향 회피",
-            pilling: "밀림 회피"
+            heavy: "무거운 사용감 회피"
           };
     items.push(dislikeMap[form.mostDislikedFeel]);
   }
