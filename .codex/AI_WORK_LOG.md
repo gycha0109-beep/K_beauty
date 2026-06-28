@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-06-28 / premium routine section refactor
+
+- Branch: feature/premium-routine-section-refactor
+- Task type: execution / Medium premium full report structure refactor
+- Routing decision: User requested a scoped structural split of only the paid full report routine consult section. Recommendation engine, currentProducts verdict logic, premium payload shape, saved report flow, free result, survey, Face Lab, DB/schema, and unrelated sections were left untouched.
+- Goal: Move routine consult AM/PM state, step cards, current product slot notes, and CTA rendering out of `app/result/full-report/page.js` into a premium-specific component while keeping the existing UI result and data preparation path.
+- Changed files: app/result/full-report/page.js, components/full-report/PremiumRoutineConsultSection.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No Top Pick, supportingProducts, score formula, product ranking, routineStructure generation, currentProducts slot-building rules, premium report shape, saved-report schema, payment flow, functional judgment, condition response, Face Lab, free result, survey, or DB/schema changes.
+- Validation results: `npm run build` passed. `git diff --check` passed. 390px Playwright full report flow opened `/test-full-report`, entered routine consult, verified AM/PM tab switch, 3 routine cards per mode, no horizontal overflow, console errors 0, page errors 0. Fixture covered `sunscreen not_in_db`, `moisturizer not_using`, `cleanser selected`, and `serum selected` with null `productSnapshot`; rendered text confirmed sunscreen `not_in_db` stays in the protection step as currently using and moisturizer `not_using` renders as an empty moisture finish step.
+- Notes/risks: In-app browser viewport override bottomed out at 520px, so the 390px verification was completed with local Playwright against the same dev server. Direct Node import of `buildCurrentProductRoutineSlots` was blocked by the app `@/` alias outside Next runtime, so `productSnapshot` fallback was checked by code path plus rendered fixture behavior rather than standalone function import.
+- Context promotion candidate: NULL
+
 ### 2026-06-28 / survey contract cleanup v1
 
 - Branch: feature/survey-contract-cleanup-v1
