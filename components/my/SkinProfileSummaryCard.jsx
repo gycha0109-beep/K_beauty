@@ -1,22 +1,47 @@
 import { getMyCopy } from "@/lib/my/i18n";
 
-function renderList(values) {
+function formatDate(value, copy) {
+  if (!value) {
+    return "";
+  }
+
+  try {
+    return new Intl.DateTimeFormat(copy.dateLocale, {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function renderList(values, copy) {
   if (!Array.isArray(values) || values.length === 0) {
     return null;
   }
 
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {values.filter(Boolean).map((value) => (
-        <span key={value} className="ui-chip-compact">
-          {value}
-        </span>
-      ))}
+    <div className="mt-4">
+      <p className="ui-text-faint text-xs font-semibold uppercase">{copy.profile.concerns}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {values.filter(Boolean).map((value) => (
+          <span key={value} className="ui-chip-compact">
+            {value}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-export default function SkinProfileSummaryCard({ profile, copy = getMyCopy("ko") }) {
+export default function SkinProfileSummaryCard({
+  profile,
+  copy = getMyCopy("ko"),
+  analysisDate = null
+}) {
+  const formattedAnalysisDate = formatDate(analysisDate, copy);
+
   return (
     <section className="rounded-[1.25rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a] sm:p-5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
@@ -27,13 +52,13 @@ export default function SkinProfileSummaryCard({ profile, copy = getMyCopy("ko")
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="border-b border-[#ead2ca] pb-3 dark:border-[#4a303c] sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
+        <div className="rounded-[0.9rem] border border-[#ead2ca] bg-white/55 p-3 dark:border-[#4a303c] dark:bg-[#2b1c26]/70">
           <p className="ui-text-faint text-xs font-semibold uppercase">{copy.profile.skinType}</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
             {profile?.skin_type || copy.profile.unknown}
           </p>
         </div>
-        <div className="sm:pl-1">
+        <div className="rounded-[0.9rem] border border-[#ead2ca] bg-white/55 p-3 dark:border-[#4a303c] dark:bg-[#2b1c26]/70">
           <p className="ui-text-faint text-xs font-semibold uppercase">{copy.profile.sensitivity}</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
             {profile?.sensitivity_level || copy.profile.unknown}
@@ -41,14 +66,12 @@ export default function SkinProfileSummaryCard({ profile, copy = getMyCopy("ko")
         </div>
       </div>
 
-      {renderList(profile?.concerns)}
+      {renderList(profile?.concerns, copy)}
 
-      {profile?.skin_summary ? (
-        <p className="ui-text-primary mt-4 text-sm leading-6">{profile.skin_summary}</p>
-      ) : null}
-
-      {profile?.face_summary ? (
-        <p className="ui-text-secondary mt-2 text-sm leading-6">{profile.face_summary}</p>
+      {formattedAnalysisDate ? (
+        <p className="ui-text-secondary mt-4 text-sm leading-6">
+          {copy.profile.analysisDate}: {formattedAnalysisDate}
+        </p>
       ) : null}
     </section>
   );
