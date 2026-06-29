@@ -10,16 +10,17 @@ import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
 import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
 import PremiumConditionResponseSection from "@/components/full-report/PremiumConditionResponseSection";
+import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import PremiumReportLoadingPage from "./loading/page";
 import {
-  buildFaceLabLaunchData,
   formatFaceLabDisplayList,
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
@@ -5593,7 +5594,14 @@ function getRoutineStepCautionText(step = {}, locale = "ko") {
 
 function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
   const premiumReport = result?.premiumReport || {};
-  const faceLabLaunch = buildFaceLabLaunchData(faceLabResult || result?.faceLab || null, locale);
+  const faceLabSummary = buildPremiumFaceLabSummary(
+    faceLabResult || result?.faceLab || premiumReport.faceLab || premiumReport.faceLabSummary || null,
+    {
+      locale,
+      imageUrl: result?.submission?.imagePreviewDataUrl || null,
+      imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지"
+    }
+  );
   const fallbackMorning = (Array.isArray(premiumReport.fullRoutine?.morning) && premiumReport.fullRoutine.morning.length
     ? premiumReport.fullRoutine.morning
     : Array.isArray(result?.morning)
@@ -5650,19 +5658,7 @@ function buildDevelopmentReport(result, faceLabResult, locale = "ko") {
         : Array.isArray(result?.budgetAlternatives)
           ? result.budgetAlternatives.slice(0, 3)
           : []) || [],
-    faceLab: {
-      summary: faceLabLaunch?.paid?.summary || null,
-      faceMood: faceLabLaunch?.paid?.faceMood || null,
-      faceSummary: faceLabLaunch?.paid?.faceSummary || "",
-      hairDirections: faceLabLaunch?.paid?.hairDirections || [],
-      avoidStyles: faceLabLaunch?.paid?.avoidStyles || [],
-      styleKeywords: faceLabLaunch?.paid?.styleKeywords || [],
-      toneDirection: faceLabLaunch?.paid?.toneDirection || "",
-      reasoningLines: faceLabLaunch?.paid?.reasoningLines || [],
-      practicalGuide: faceLabLaunch?.paid?.practicalGuide || null,
-      sections: faceLabLaunch?.paid?.sections || [],
-      steps: faceLabLaunch?.paid?.steps || []
-    },
+    faceLabSummary,
     topPickFitGauges: buildProductFitGauges(result?.topPick || null, { locale }),
     routineStructure: premiumReport.routineStructure || result?.routineStructure || null,
     currentProducts: premiumReport.currentProducts || null,
@@ -6117,55 +6113,14 @@ function FaceLabSectionPanel({ section, locale = "ko" }) {
 }
 
 function FaceLabSection({ report, photoUrl, locale = "ko" }) {
-  const faceLab = report?.faceLab || {};
-  const sections = getFaceLabSections(faceLab, locale);
-  const firstSectionId = sections[0]?.id || "structure";
-  const [activeSection, setActiveSection] = useState(firstSectionId);
-
-  useEffect(() => {
-    if (!sections.length) {
-      return;
-    }
-
-    if (!sections.some((section) => section.id === activeSection)) {
-      setActiveSection(firstSectionId);
-    }
-  }, [activeSection, firstSectionId, sections]);
-
-  if (!sections.length) {
-    return null;
-  }
-
-  const faceMood = getFaceLabMood(faceLab, sections, locale);
-  const activePanel = sections.find((section) => section.id === activeSection) || sections[0];
+  const faceLabSummary = report?.faceLabSummary || buildUnavailablePremiumFaceLab(photoUrl);
 
   return (
-    <section className="space-y-4">
-      <FaceLabPhotoPreview imageUrl={photoUrl} />
-      <FaceMoodCard mood={faceMood} locale={locale} />
-
-      <div className="grid grid-cols-2 gap-2">
-        {sections.map((section) => {
-          const isActive = section.id === activeSection;
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => setActiveSection(section.id)}
-              className={`ui-button-secondary min-h-14 w-full justify-center px-3 py-3 text-center text-sm font-semibold ${
-                isActive
-                  ? "!border-zinc-900 !bg-zinc-900 !text-white dark:!border-zinc-100 dark:!bg-zinc-100 dark:!text-zinc-950"
-                  : ""
-              }`}
-            >
-              <span className="text-current">{section.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <FaceLabSectionPanel section={activePanel} locale={locale} />
-    </section>
+    <PremiumFaceLabSection
+      faceLabSummary={faceLabSummary}
+      photoUrl={photoUrl}
+      locale={locale}
+    />
   );
 }
 
@@ -6273,6 +6228,8 @@ function FullReportPageContent() {
           body: JSON.stringify({
             locale,
             faceLab: parsedFaceLab,
+            imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
+            imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null
           })
         });
@@ -6310,17 +6267,7 @@ function FullReportPageContent() {
           is_top_pick: false,
           meta_json: {
             supporting_count: Array.isArray(localizedData.supportingProducts) ? localizedData.supportingProducts.length : 0,
-            has_face_lab_paid: Boolean(
-              localizedData.faceLab?.faceMood?.primary ||
-              localizedData.faceLab?.sections?.length ||
-              localizedData.faceLab?.steps?.length ||
-              localizedData.faceLab?.faceSummary ||
-                localizedData.faceLab?.hairDirections?.length ||
-                localizedData.faceLab?.avoidStyles?.length ||
-                localizedData.faceLab?.styleKeywords?.length ||
-                localizedData.faceLab?.toneDirection ||
-                localizedData.faceLab?.reasoningLines?.length
-            ),
+            has_face_lab_paid: localizedData.faceLabSummary?.status === "available",
             has_fit_gauges: Boolean(localizedData.topPickFitGauges?.gauges?.length)
           }
         });

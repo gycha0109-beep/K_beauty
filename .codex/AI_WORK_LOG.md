@@ -1,5 +1,29 @@
 # AI_WORK_LOG.md
 
+### 2026-06-29 / premium Face Lab section
+
+- Branch: feature/premium-face-lab-section
+- Task type: execution / Medium premium report companion-section connection
+- Routing decision: User requested a scoped paid full-report Face Lab section and data contract while explicitly excluding `/api/face-reading` algorithm/prompt/input changes, Skin Match survey/result calculation changes, recommendation/product/payment changes, and DB schema migration.
+- Goal: Add a premium-safe Face Lab adapter and full-report section that renders existing image + locale based Face Lab results when available and shows a quiet fallback for missing or legacy premium reports.
+- Changed files: app/api/analyze/route.js, app/api/full-report/route.js, app/result/full-report/page.js, components/full-report/PremiumFaceLabSection.jsx, docs/architecture/premium-face-lab-contract-v1.md, lib/premium-face-lab.js, .codex/AI_WORK_LOG.md
+- Protected areas: No `/api/face-reading` algorithm, prompt, or input contract changes. No Skin Match survey, priority/score generation, recommendation scoring/ranking, Top Pick/supportingProducts, sunscreen scoring, currentProductVerdicts, functionalDecisions, conditionResponses, payment flow, DB schema/migration, image upload flow, or free result UI changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with existing LF-to-CRLF warnings only. Playwright at 390px verified `/en/test-full-report` Face Lab available fixture renders image, title/summary, 4 keywords max, 3 style directions max, no horizontal overflow, no undefined text, no purchase/price/store copy, no banned medical/fortune/personality words, console errors 0, page errors 0. Playwright at 390px verified an `/en/result/full-report` legacy/missing Face Lab fixture shows the quiet unavailable fallback, no broken images, no undefined text, other full-report shell still renders, no horizontal overflow, console errors 0, page errors 0. Free `/api/analyze` POST returned 200 without `premiumReport`, `faceLabSummary`, `faceLab`, or paid-only decision fields in the public JSON.
+- Notes/risks: Saved premium report requery was verified by code path: `premium_report_sessions.premium_report.faceLabSummary` is sanitized when present, old `faceLab` payloads can be adapted, and missing legacy fields fall back to unavailable. Current authenticated E2E save/requery was not run. Initial Playwright scripts failed from local script encoding/selector timing, then were corrected and passed.
+- Context promotion candidate: Paid Face Lab should remain an image + locale companion section and must not consume Skin Match survey, score, priority axis, current products, or recommendation outputs as Face Lab generation input.
+
+### 2026-06-29 / premium Face Lab P2 audit fixes
+
+- Branch: feature/premium-face-lab-section
+- Task type: focused execution / P2 audit follow-up
+- Routing decision: User requested only the two read-only audit P2 fixes: prevent empty raw Face Lab objects from becoming available, and persist newly derived valid `faceLabSummary` into the existing premium report session when authorized.
+- Goal: Require a real display signal before `available`, and merge a sanitized available `faceLabSummary` into `premium_report_sessions.premium_report` without changing Face Lab generation, Skin Match, recommendation, payment, or DB schema.
+- Changed files: lib/premium-face-lab.js, app/api/full-report/route.js, lib/premium-report-session.js, docs/architecture/premium-face-lab-contract-v1.md, .codex/AI_WORK_LOG.md
+- Protected areas: No `/api/face-reading`, app/page.js, SurveyFlow, free result UI, recommendation engine, score formula, DB schema/migration, image upload, Face Lab prompt, currentProductVerdicts, functionalDecisions, conditionResponses, or payment flow changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Adapter-level checks confirmed `{}`, `{ base_data: {} }`, `{ features: {} }`, `{ base_data: {}, features: {} }`, and image-only return `unavailable`; non-empty `base_data.impressionTitle`, keyword, styleDirection, and legacy raw Face Lab text return `available`. 390px Playwright verified `/test-full-report` available and custom unavailable, legacy-missing, and legacy-faceLab cases with no broken images, no overflow, console errors 0, page errors 0. Free `/api/analyze` 200 response did not include `faceLabSummary`, `faceLab`, or `premiumReport`.
+- Notes/risks: Persist behavior was verified by code path, not live authenticated E2E. The update helper reuses the signed premium report cookie, re-verifies the session id, and updates only the merged `premium_report` JSON. Stored available summaries are not overwritten; invalid request Face Lab does not write unavailable over stored data.
+- Context promotion candidate: Persist derived premium Face Lab summaries only after signed premium session verification, and only when the stored summary is missing/unavailable and the derived summary is available.
+
 ### 2026-06-28 / premium current products verdicts
 
 - Branch: feature/premium-current-products-verdicts

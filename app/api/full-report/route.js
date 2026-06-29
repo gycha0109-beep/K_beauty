@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import { getOpenAiEnvDiagnostics } from "@/lib/openai-env-diagnostics";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import {
   getPremiumReportCookieOptions,
   PREMIUM_REPORT_COOKIE,
+  updatePremiumReportSession,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
 
@@ -39,6 +40,52 @@ function getUnauthorizedResponse() {
   );
 }
 
+function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
+  const storedFaceLabSummary = sanitizePremiumFaceLabSummary(storedPremiumReport.faceLabSummary);
+
+  if (storedFaceLabSummary.status === "available") {
+    return {
+      faceLabSummary: storedFaceLabSummary,
+      shouldPersist: false
+    };
+  }
+
+  const requestFaceLabSummary = body?.faceLab
+    ? buildPremiumFaceLabSummary(body.faceLab, {
+        locale,
+        imageUrl: body?.imageUrl || storedFaceLabSummary.imageUrl,
+        imageAlt: body?.imageAlt || storedFaceLabSummary.imageAlt
+      })
+    : null;
+
+  if (requestFaceLabSummary?.status === "available") {
+    return {
+      faceLabSummary: requestFaceLabSummary,
+      shouldPersist: true
+    };
+  }
+
+  const legacyFaceLabSummary = storedPremiumReport.faceLab
+    ? buildPremiumFaceLabSummary(storedPremiumReport.faceLab, {
+        locale,
+        imageUrl: storedFaceLabSummary.imageUrl,
+        imageAlt: storedFaceLabSummary.imageAlt
+      })
+    : null;
+
+  if (legacyFaceLabSummary?.status === "available") {
+    return {
+      faceLabSummary: legacyFaceLabSummary,
+      shouldPersist: true
+    };
+  }
+
+  return {
+    faceLabSummary: storedFaceLabSummary,
+    shouldPersist: false
+  };
+}
+
 export async function POST(request) {
   if (process.env.NODE_ENV !== "production") {
     console.info(
@@ -68,8 +115,23 @@ export async function POST(request) {
   } catch {}
 
   const locale = body?.locale === "en" ? "en" : "ko";
-  const faceLabLaunch = buildFaceLabLaunchData(body?.faceLab || null, locale);
   const storedPremiumReport = premiumSession.payload.premiumReport || {};
+  const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({
+    storedPremiumReport,
+    body,
+    locale
+  });
+
+  if (shouldPersist) {
+    const updateResult = await updatePremiumReportSession(premiumCookie, {
+      ...storedPremiumReport,
+      faceLabSummary
+    });
+
+    if (!updateResult.ok && process.env.NODE_ENV !== "production") {
+      console.warn("[full-report] faceLabSummary session update skipped", updateResult.code);
+    }
+  }
 
   if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {
     console.warn("[full-report] response shape warning", {
@@ -86,19 +148,7 @@ export async function POST(request) {
   const response = NextResponse.json({
     ...storedPremiumReport,
     topPickFitGauges,
-    faceLab: {
-      summary: faceLabLaunch?.paid?.summary || null,
-      faceMood: faceLabLaunch?.paid?.faceMood || null,
-      faceSummary: String(faceLabLaunch?.paid?.faceSummary || "").trim(),
-      hairDirections: Array.isArray(faceLabLaunch?.paid?.hairDirections) ? faceLabLaunch.paid.hairDirections : [],
-      avoidStyles: Array.isArray(faceLabLaunch?.paid?.avoidStyles) ? faceLabLaunch.paid.avoidStyles : [],
-      styleKeywords: Array.isArray(faceLabLaunch?.paid?.styleKeywords) ? faceLabLaunch.paid.styleKeywords : [],
-      toneDirection: String(faceLabLaunch?.paid?.toneDirection || "").trim(),
-      reasoningLines: Array.isArray(faceLabLaunch?.paid?.reasoningLines) ? faceLabLaunch.paid.reasoningLines : [],
-      practicalGuide: faceLabLaunch?.paid?.practicalGuide || null,
-      sections: Array.isArray(faceLabLaunch?.paid?.sections) ? faceLabLaunch.paid.sections : [],
-      steps: Array.isArray(faceLabLaunch?.paid?.steps) ? faceLabLaunch.paid.steps : []
-    },
+    faceLabSummary,
     meta: buildFullReportMeta(locale)
   });
 

@@ -17,6 +17,7 @@ import { appendReviewEvidenceSentence } from "@/lib/review-signals";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
@@ -839,6 +840,7 @@ function sanitizePremiumReport(report) {
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
     conditionResponses: sanitizeConditionResponsesForPremium(report.conditionResponses),
+    faceLabSummary: sanitizePremiumFaceLabSummary(report.faceLabSummary),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
         ? report.fullRoutine.morning.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
