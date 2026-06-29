@@ -16,6 +16,7 @@ results, and premium report sessions.
 8. Paid full reports should, long term, be linked to an `analysis_result_id` or `resultId`.
 9. Starting a new analysis must have a clear cleanup policy for old share cache and full-report metadata.
 10. The long-term goal is to unify all result pages around server-side lookup by `resultId`.
+11. Saved free reports create an `analysis_results` row with a stable `share_id` at save time; `is_public=false` means owner-only access and `is_public=true` means external share access.
 
 ## Storage Roles
 
@@ -37,8 +38,12 @@ results, and premium report sessions.
 ## Current Policy
 
 - Free results are first transported through `sessionStorage` for the immediate post-analysis result page.
-- A free result becomes durable only when it is saved/shared into `analysis_results`.
+- A free result becomes durable when it is saved into `analysis_results`; sharing later only flips the existing row to public.
 - For saved/shared free results, `analysis_results.result_json` is the canonical payload.
+- `/r/{shareId}` is the single report URL. Owners may open their own saved result even when `is_public=false`; external and signed-out viewers require `is_public=true`.
+- `/r/{shareId}` and `/api/results/{shareId}` must use the same owner/public access policy.
+- Publishing an already-saved result must update the existing `analysis_results.is_public` flag and must not create a new `share_id` or duplicate result row.
+- `saved_reports.source_type='share'` and `saved_reports.source_session_id=<share_id>` link My Skin's latest report action to the durable `analysis_results` row without duplicating the share id in another column.
 - Denormalized columns must be treated as derived projections from `result_json`, not as independently authoritative fields.
 - Paid full reports currently use `premium_report_sessions.premium_report` as their temporary canonical source.
 - The premium cookie should be treated as an access/session pointer, not as the paid report source itself.

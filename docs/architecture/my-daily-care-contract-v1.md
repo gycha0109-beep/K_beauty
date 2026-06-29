@@ -72,7 +72,8 @@ My home may show a single-metric preview from recent `daily_checkins`.
 - source: `daily_checkins` in the latest 7-day window
 - allowed metrics: dryness, oiliness, redness, breakout, irritation
 - display: one metric at a time
-- default selection: the highest aggregate value across the latest 7-day window, with ties resolved by irritation, redness, breakout, dryness, then oiliness
+- default selection: the metric with the highest aggregate value across the latest 7-day window, with the fixed metric order used as a tie-breaker
+- interaction: the user can switch between the five metrics in-session with compact tabs
 - implementation: CSS/SVG preview, no chart library required
 
 If fewer than two check-ins exist, My shows a quiet empty state instead of an empty chart.
@@ -81,15 +82,16 @@ If every recent value is zero, the preview keeps the stable redness fallback for
 
 ## Diary Preview
 
-My home may show the latest 2-3 check-ins as diary rows.
+My home may show recent check-ins as a compact calendar preview plus a short recent-entry summary.
 
-Each row can include:
+Each calendar day with a check-in can include:
 
 - date
 - a simple state label
-- up to two highest non-zero check-in values
-- event tags such as makeup or outdoor activity
-- memo preview
+- a compact event tag preview
+- a memo marker when a memo exists
+
+On pointer devices, memo markers may expose the memo through a native hover tooltip. Mobile layouts should not depend on hover-only access.
 
 The state label is only a UI summary:
 

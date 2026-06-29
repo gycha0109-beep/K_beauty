@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
@@ -93,23 +93,29 @@ function getMetricValue(checkin, field) {
   return Number.isFinite(value) ? Math.max(0, Math.min(4, value)) : 0;
 }
 
+function getTrendMetricStats(checkins) {
+  return CHECKIN_METRICS.map((metric) => {
+    return {
+      metric,
+      total: checkins.reduce((sum, checkin) => sum + getMetricValue(checkin, metric.field), 0)
+    };
+  });
+}
+
 function chooseTrendMetric(checkins) {
   if (!checkins.length) {
     return CHECKIN_METRICS.find((metric) => metric.key === "redness") || CHECKIN_METRICS[0];
   }
 
-  const metricTotals = CHECKIN_METRICS.map((metric) => ({
-    metric,
-    total: checkins.reduce((sum, checkin) => sum + getMetricValue(checkin, metric.field), 0)
-  }));
+  const metricStats = getTrendMetricStats(checkins);
 
-  if (metricTotals.every((entry) => entry.total === 0)) {
+  if (metricStats.every((entry) => entry.total === 0)) {
     return CHECKIN_METRICS.find((metric) => metric.key === "redness") || CHECKIN_METRICS[0];
   }
 
-  return metricTotals.reduce((selected, entry) => (
-    entry.total > selected.total ? entry : selected
-  ), metricTotals[0]).metric;
+  return metricStats.reduce((selected, entry) => {
+    return entry.total > selected.total ? entry : selected;
+  }, metricStats[0]).metric;
 }
 
 function buildSparklinePoints(checkins, metric) {
@@ -186,46 +192,18 @@ function getCheckinTags(checkin, copy) {
   };
 }
 
-function LatestSavedReport({ report, copy, locale }) {
-  if (!report) {
-    return (
-      <section className="rounded-[1.1rem] border border-[#ead2ca] bg-white/55 p-4 dark:border-[#3a2630] dark:bg-[#2f202a]/70">
-        <p className="ui-kicker">{copy.savedReport.kicker}</p>
-        <p className="ui-text-secondary mt-2 text-sm">{copy.savedReport.empty}</p>
-        <p className="ui-text-faint mt-1 text-xs">{copy.savedReport.emptyBody}</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-[1.1rem] border border-[#ead2ca] bg-white/55 p-4 dark:border-[#3a2630] dark:bg-[#2f202a]/70">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="ui-kicker">{copy.savedReport.kicker}</p>
-        <div className="flex flex-wrap gap-1.5">
-          <span className="ui-chip-compact">{report.report_type || copy.savedReport.typeFallback}</span>
-          {report.report_version ? (
-            <span className="ui-chip-compact">{report.report_version}</span>
-          ) : null}
-        </div>
-      </div>
-      <p className="ui-text-primary mt-3 truncate text-sm font-semibold">
-        {report.title || copy.savedReport.fallbackTitle}
-      </p>
-      {report.created_at ? (
-        <p className="ui-text-faint mt-1 text-xs">
-          {copy.savedReport.created}: {formatDate(report.created_at, locale)}
-        </p>
-      ) : null}
-    </section>
-  );
-}
-
 function SkinTrendPreview({ checkins, copy, locale }) {
   const recentCheckins = normalizeCheckins(checkins);
-  const metric = chooseTrendMetric(recentCheckins);
+  const defaultMetric = useMemo(() => chooseTrendMetric(recentCheckins), [recentCheckins]);
+  const [selectedMetricKey, setSelectedMetricKey] = useState(defaultMetric.key);
+  const metric = CHECKIN_METRICS.find((item) => item.key === selectedMetricKey) || defaultMetric;
   const points = buildSparklinePoints(recentCheckins, metric);
   const pointString = points.map((point) => `${point.x},${point.y}`).join(" ");
   const hasTrend = points.length >= 2;
+
+  useEffect(() => {
+    setSelectedMetricKey(defaultMetric.key);
+  }, [defaultMetric.key]);
 
   return (
     <section className="rounded-[1.25rem] border border-[#ead2ca] bg-white/65 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26] sm:p-5">
@@ -235,7 +213,26 @@ function SkinTrendPreview({ checkins, copy, locale }) {
           <h2 className="ui-title mt-1 text-xl">{copy.trend.title}</h2>
           <p className="ui-text-secondary mt-1 text-sm leading-6">{copy.trend.body}</p>
         </div>
-        <span className="ui-chip-compact w-fit">{copy.trend.labels[metric.key]}</span>
+        <div className="flex max-w-full flex-wrap gap-1.5">
+          {CHECKIN_METRICS.map((item) => {
+            const isSelected = item.key === metric.key;
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setSelectedMetricKey(item.key)}
+                className={`min-h-8 rounded-full border px-3 text-xs font-semibold transition ${
+                  isSelected
+                    ? "border-[#e76b91] bg-[#ffe8ef] text-[#7c3048] dark:border-[#ef6387] dark:bg-[#4a2533] dark:text-[#ffdce7]"
+                    : "border-[#ead2ca] bg-white/60 text-[#6f4d58] dark:border-[#4a303c] dark:bg-[#301f28] dark:text-[#e8d5d0]"
+                }`}
+              >
+                {copy.trend.labels[item.key]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {hasTrend ? (
@@ -273,8 +270,48 @@ function SkinTrendPreview({ checkins, copy, locale }) {
   );
 }
 
+function getCalendarAnchor(entries) {
+  const latestDate = entries[0]?.checkin_date;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(latestDate || "")) {
+    const [year, month] = latestDate.split("-").map(Number);
+    return { year, month };
+  }
+
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
+function buildDiaryCalendar(entries) {
+  const { year, month } = getCalendarAnchor(entries);
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDate = new Date(year, month, 0).getDate();
+  const leadingEmpty = firstDay.getDay();
+  const entriesByDate = new Map(entries.map((entry) => [entry.checkin_date, entry]));
+  const cells = [];
+
+  for (let index = 0; index < leadingEmpty; index += 1) {
+    cells.push({ key: `empty-${index}`, empty: true });
+  }
+
+  for (let day = 1; day <= lastDate; day += 1) {
+    const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    cells.push({
+      key: dateKey,
+      day,
+      entry: entriesByDate.get(dateKey) || null
+    });
+  }
+
+  return cells;
+}
+
 function SkinDiaryPreview({ checkins, copy, locale }) {
-  const entries = normalizeCheckins(checkins).slice(0, 3);
+  const entries = normalizeCheckins(checkins);
+  const calendarCells = buildDiaryCalendar(entries);
+  const weekLabels = locale === "en"
+    ? ["S", "M", "T", "W", "T", "F", "S"]
+    : ["일", "월", "화", "수", "목", "금", "토"];
 
   return (
     <section className="rounded-[1.25rem] border border-[#ead2ca] bg-white/65 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26] sm:p-5">
@@ -285,8 +322,66 @@ function SkinDiaryPreview({ checkins, copy, locale }) {
       </div>
 
       {entries.length ? (
-        <div className="mt-4 divide-y divide-[#ead2ca] overflow-hidden rounded-[1rem] border border-[#ead2ca] bg-[#fffaf6] dark:divide-[#4a303c] dark:border-[#3a2630] dark:bg-[#2f202a]">
-          {entries.map((entry) => {
+        <div className="mt-4 rounded-[1rem] border border-[#ead2ca] bg-[#fffaf6] p-3 dark:border-[#3a2630] dark:bg-[#2f202a]">
+          <div className="grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold text-[#9b7280] dark:text-[#cdb5bc]">
+            {weekLabels.map((label, index) => (
+              <span key={`${label}-${index}`}>{label}</span>
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-7 gap-1">
+            {calendarCells.map((cell) => {
+              if (cell.empty) {
+                return <div key={cell.key} className="aspect-square" />;
+              }
+
+              const entry = cell.entry;
+              const memo = typeof entry?.memo === "string" ? entry.memo.trim() : "";
+              const tags = entry ? getCheckinTags(entry, copy) : { visible: [], hiddenCount: 0 };
+              const signals = entry ? getTopCheckinSignals(entry, copy) : [];
+              const summary = entry ? getCheckinSummary(entry, copy) : "";
+
+              return (
+                <div
+                  key={cell.key}
+                  title={memo || undefined}
+                  className={`relative min-h-14 rounded-[0.85rem] border p-1.5 text-left ${
+                    entry
+                      ? "border-[#e6b9c7] bg-white text-[#3f2230] dark:border-[#6a4050] dark:bg-[#3a2530] dark:text-[#f7e6e2]"
+                      : "border-transparent bg-transparent text-[#b79ca4] dark:text-[#80656d]"
+                  }`}
+                >
+                  {memo ? (
+                    <span className="absolute right-1 top-0 h-3 w-2 rounded-b-sm bg-[#e76b91]" aria-label={copy.diary.memoMarker} />
+                  ) : null}
+                  <p className="text-xs font-semibold leading-none">{cell.day}</p>
+                  {entry ? (
+                    <div className="mt-1 space-y-1">
+                      <p className="truncate text-[0.62rem] text-[#8a5d69] dark:text-[#d9bcc5]">{summary}</p>
+                      <div className="flex flex-wrap gap-0.5">
+                        {tags.visible.slice(0, 1).map((tag) => (
+                          <span key={tag} className="max-w-full truncate rounded-full border border-[#ead2ca] px-1 text-[0.58rem] text-[#7c3048] dark:border-[#5a3a45] dark:text-[#ffdce7]">
+                            {tag}
+                          </span>
+                        ))}
+                        {tags.hiddenCount || tags.visible.length > 1 ? (
+                          <span className="rounded-full border border-[#ead2ca] px-1 text-[0.58rem] text-[#7c3048] dark:border-[#5a3a45] dark:text-[#ffdce7]">
+                            +{tags.hiddenCount + Math.max(0, tags.visible.length - 1)}
+                          </span>
+                        ) : null}
+                      </div>
+                      {signals[0] ? (
+                        <p className="truncate text-[0.58rem] text-[#9b7280] dark:text-[#cdb5bc]">
+                          {signals[0].label} {signals[0].value}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 divide-y divide-[#ead2ca] overflow-hidden rounded-[0.9rem] border border-[#ead2ca] dark:divide-[#4a303c] dark:border-[#3a2630]">
+            {entries.slice(0, 2).map((entry) => {
             const tags = getCheckinTags(entry, copy);
             const signals = getTopCheckinSignals(entry, copy);
             const memo = typeof entry.memo === "string" ? entry.memo.trim() : "";
@@ -319,7 +414,8 @@ function SkinDiaryPreview({ checkins, copy, locale }) {
                 </div>
               </article>
             );
-          })}
+            })}
+          </div>
         </div>
       ) : (
         <div className="mt-4 rounded-[1rem] border border-dashed border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#4a303c] dark:bg-[#2f202a]">
@@ -378,6 +474,10 @@ function RoutinePendingNotice({ copy }) {
   );
 }
 
+function getReportHref(path) {
+  return typeof path === "string" && path.startsWith("/r/") ? path : null;
+}
+
 export default function MyDashboard({ dashboard, locale = "ko" }) {
   const copy = getMyCopy(locale);
   const [clientDashboard, setClientDashboard] = useState(null);
@@ -424,10 +524,11 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
     todayCheckin,
     recentCheckins,
     todayRoutine,
-    latestSavedReport,
+    latestSharePath,
     hasProfile,
     needsCheckIn
   } = activeDashboard;
+  const latestReportHref = getReportHref(latestSharePath);
 
   return (
     <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">
@@ -440,7 +541,14 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
               {copy.dashboard.body}
             </p>
           </div>
-          <MyDashboardMenu locale={locale} />
+          <div className="flex shrink-0 items-center gap-2">
+            {latestReportHref ? (
+              <Link href={latestReportHref} className="ui-button-secondary min-h-10 px-4 text-sm font-semibold">
+                {copy.savedReport.cta}
+              </Link>
+            ) : null}
+            <MyDashboardMenu locale={locale} />
+          </div>
         </header>
 
         <div className="mt-6 sm:mt-8">
@@ -464,15 +572,11 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
 
               <SkinDiaryPreview checkins={recentCheckins} copy={copy} locale={locale} />
 
-              <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.52fr)]">
-                <SkinProfileSummaryCard
-                  profile={latestSkinProfile}
-                  copy={copy}
-                  analysisDate={latestSavedReport?.created_at || latestSkinProfile?.created_at}
-                  locale={locale}
-                />
-                <LatestSavedReport report={latestSavedReport} copy={copy} locale={locale} />
-              </section>
+              <SkinProfileSummaryCard
+                profile={latestSkinProfile}
+                copy={copy}
+                locale={locale}
+              />
             </div>
           )}
         </div>

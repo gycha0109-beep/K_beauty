@@ -1,21 +1,8 @@
 import { NextResponse } from "next/server";
-import {
-  normalizeStoredAnalysisResult,
-  PUBLIC_ANALYSIS_RESULT_SELECT
-} from "@/lib/analysis-results";
-import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getAnalysisResultForShare } from "@/lib/analysis-result-access";
 
 export async function GET(request, { params }) {
   try {
-    const supabase = createSupabaseAdminClient();
-
-    if (!supabase) {
-      return NextResponse.json(
-        { success: false, error: "Supabase environment variables are missing." },
-        { status: 500 }
-      );
-    }
-
     const shareId = params?.shareId;
 
     if (!shareId) {
@@ -25,24 +12,16 @@ export async function GET(request, { params }) {
       );
     }
 
-    const { data, error } = await supabase
-      .from("analysis_results")
-      .select(PUBLIC_ANALYSIS_RESULT_SELECT)
-      .eq("share_id", shareId)
-      .eq("is_public", true)
-      .single();
+    const result = await getAnalysisResultForShare({ shareId, request });
 
-    if (error || !data) {
+    if (!result) {
       return NextResponse.json(
         { success: false, error: "Result not found." },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      result: normalizeStoredAnalysisResult(data)
-    });
+    return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error("[api/results/:shareId] read failed", error);
 

@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const PENDING_SAVE_REPORT_KEY = "pendingSaveReport";
+const SHARE_SESSION_KEY = "skinTestShare";
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 
 function isPlainObject(value) {
@@ -88,12 +90,41 @@ function showSavedAlert(isEnglish) {
   window.alert(isEnglish ? "You can continue today's routine in My skin." : "My skin에서 오늘 루틴을 이어볼 수 있어요.");
 }
 
-function buildPendingSavePayload({ result, submission, faceLabFull }) {
+function getAbsoluteShareUrl(shareId) {
+  if (typeof window === "undefined") {
+    return getSharePath(shareId);
+  }
+
+  return `${window.location.origin}${getSharePath(shareId)}`;
+}
+
+function rememberPrivateShare({ data, result, submission }) {
+  if (typeof window === "undefined" || !data?.shareId || !result || !submission?.form) {
+    return;
+  }
+
+  const shareId = data.shareId;
+
+  window.sessionStorage.setItem(
+    SHARE_SESSION_KEY,
+    JSON.stringify({
+      shareId,
+      sharePath: data.sharePath || getSharePath(shareId),
+      shareUrl: getAbsoluteShareUrl(shareId),
+      fingerprint: buildResultFingerprint(result, submission),
+      savedWithAuth: true,
+      isPublic: data.publicShared === true
+    })
+  );
+}
+
+function buildPendingSavePayload({ result, submission, faceLabFull, locale }) {
   const freeResult = safeJson(result, {});
   const faceLab = safeJson(faceLabFull || result?.faceLab, {});
 
   return {
     reportType: "free",
+    locale,
     sourceType: "session",
     sourceSessionId: getSourceSessionId(),
     reportVersion: "free-v1",
@@ -233,12 +264,17 @@ export default function SaveReportCTA({
     }
 
     saveReport(pendingPayload)
-      .then(({ unauthorized }) => {
+      .then(({ unauthorized, data }) => {
         if (unauthorized) {
           setMessage(isEnglish ? "Please sign in to save this result." : "로그인 후 결과를 저장할 수 있습니다.");
           return;
         }
 
+        rememberPrivateShare({
+          data,
+          result: pendingPayload.freeResult,
+          submission: pendingPayload.surveySnapshot
+        });
         window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
         setIsSaved(true);
         setMessage("");
@@ -267,7 +303,8 @@ export default function SaveReportCTA({
     const payload = buildPendingSavePayload({
       result,
       submission,
-      faceLabFull
+      faceLabFull,
+      locale
     });
 
     if (!user) {
@@ -293,7 +330,7 @@ export default function SaveReportCTA({
     setMessage("");
 
     try {
-      const { unauthorized } = await saveReport(payload);
+      const { unauthorized, data } = await saveReport(payload);
 
       if (unauthorized) {
         window.sessionStorage.setItem(PENDING_SAVE_REPORT_KEY, JSON.stringify(payload));
@@ -301,6 +338,11 @@ export default function SaveReportCTA({
         return;
       }
 
+      rememberPrivateShare({
+        data,
+        result,
+        submission
+      });
       window.sessionStorage.removeItem(PENDING_SAVE_REPORT_KEY);
       setIsSaved(true);
       onSaved?.();

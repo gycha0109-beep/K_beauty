@@ -5,11 +5,9 @@ import {
   getConcernLabels,
   getShareCopy,
   getShareLocale,
-  getSkinTypeLabel,
-  normalizeStoredAnalysisResult,
-  PUBLIC_ANALYSIS_RESULT_SELECT
+  getSkinTypeLabel
 } from "@/lib/analysis-results";
-import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { getAnalysisResultForShare } from "@/lib/analysis-result-access";
 
 const BRAND_TITLE = "Be jewely";
 const DEFAULT_OG_IMAGE = "/opengraph-image.png";
@@ -20,28 +18,7 @@ async function getResolvedParams(params) {
 }
 
 async function getSharedResult(shareId) {
-  if (!shareId) {
-    return null;
-  }
-
-  const supabase = createSupabaseAdminClient();
-
-  if (!supabase) {
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from("analysis_results")
-    .select(PUBLIC_ANALYSIS_RESULT_SELECT)
-    .eq("share_id", shareId)
-    .eq("is_public", true)
-    .single();
-
-  if (error || !data) {
-    return null;
-  }
-
-  return normalizeStoredAnalysisResult(data);
+  return getAnalysisResultForShare({ shareId });
 }
 
 function compactMetadataText(value, maxLength = 150) {

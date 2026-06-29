@@ -5,6 +5,7 @@ import {
   createShareId,
   getSharePath
 } from "@/lib/analysis-results";
+import { getAnalysisResultOwnerUserId } from "@/lib/analysis-result-access";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
 import {
@@ -82,6 +83,26 @@ async function createAnalysisRequest(supabase, payload) {
   return data.id;
 }
 
+async function publishExistingShare(supabase, { shareId, userId }) {
+  if (!shareId || !userId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("analysis_results")
+    .update({ is_public: true })
+    .eq("share_id", shareId)
+    .eq("user_id", userId)
+    .select("id, share_id, created_at, locale, is_public")
+    .single();
+
+  if (error || !data) {
+    throw error || new Error("share_not_found");
+  }
+
+  return data;
+}
+
 function getUnauthorizedResponse() {
   return NextResponse.json(
     {
@@ -98,16 +119,6 @@ export async function POST(request) {
   try {
     const currentUser = await getRouteSupabaseUser(request);
     const resolvedUserId = currentUser?.id || null;
-
-    if (!currentUser) {
-      const verification = verifyWriteAccessToken(
-        request.headers.get(WRITE_ACCESS_HEADER)
-      );
-
-      if (!verification.ok) {
-        return getUnauthorizedResponse();
-      }
-    }
 
     const rateLimit = consumeRateLimit({
       key: `results:${getRequestClientKey(request)}`,
@@ -156,6 +167,39 @@ export async function POST(request) {
       : null;
     const locale = body?.locale === "en" ? "en" : "ko";
     const share = body?.share === true;
+    const requestedShareId = typeof body?.shareId === "string" ? body.shareId.trim() : "";
+
+    if (share && requestedShareId) {
+      const ownerUserId = resolvedUserId || await getAnalysisResultOwnerUserId(request);
+
+      if (!ownerUserId) {
+        return getUnauthorizedResponse();
+      }
+
+      const published = await publishExistingShare(supabase, {
+        shareId: requestedShareId,
+        userId: ownerUserId
+      });
+
+      return NextResponse.json({
+        success: true,
+        shareId: published.share_id,
+        sharePath: getSharePath(published.share_id),
+        createdAt: published.created_at,
+        locale: published.locale,
+        publicShared: Boolean(published.is_public)
+      });
+    }
+
+    if (!currentUser) {
+      const verification = verifyWriteAccessToken(
+        request.headers.get(WRITE_ACCESS_HEADER)
+      );
+
+      if (!verification.ok) {
+        return getUnauthorizedResponse();
+      }
+    }
 
     if (!result || !submission?.form || typeof submission.form !== "object") {
       return NextResponse.json(

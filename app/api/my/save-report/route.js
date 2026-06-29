@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
+import {
+  buildAnalysisRequestRow,
+  buildAnalysisResultRow,
+  createShareId,
+  getSharePath
+} from "@/lib/analysis-results";
 import { upsertProfileForUser, isSchemaCacheError, serializeSupabaseError } from "@/lib/auth/profile-upsert";
+import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -173,6 +180,74 @@ function buildSavedReportPayload({ userId, skinProfileId, body }) {
   };
 }
 
+function buildAnalysisSubmission(body) {
+  const surveySnapshot = asPlainObject(body.surveySnapshot);
+  const form = asPlainObject(surveySnapshot.form || surveySnapshot);
+
+  return {
+    ...surveySnapshot,
+    form
+  };
+}
+
+async function createPrivateShareResult({ body, userId }) {
+  const freeResult = asPlainObject(body.freeResult);
+  const submission = buildAnalysisSubmission(body);
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    throw new Error("supabase_admin_unavailable");
+  }
+
+  if (!Object.keys(freeResult).length || !Object.keys(submission.form).length) {
+    throw new Error("analysis_result_payload_missing");
+  }
+
+  const requestRow = buildAnalysisRequestRow({
+    submission,
+    userId,
+    supportsUserId: true
+  });
+  const { data: requestRowData, error: requestError } = await supabase
+    .from("analysis_requests")
+    .insert([requestRow])
+    .select("id")
+    .single();
+
+  if (requestError || !requestRowData?.id) {
+    throw requestError || new Error("analysis_request_insert_failed");
+  }
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const shareId = createShareId();
+    const resultRow = buildAnalysisResultRow({
+      result: freeResult,
+      submission,
+      locale: body.locale === "en" ? "en" : "ko",
+      shareId,
+      requestId: requestRowData.id,
+      userId,
+      supportsUserId: true,
+      isPublic: false
+    });
+    const { data, error } = await supabase
+      .from("analysis_results")
+      .insert([resultRow])
+      .select("id, request_id, share_id, created_at, locale")
+      .single();
+
+    if (!error && data?.share_id) {
+      return data;
+    }
+
+    if (!error || error.code !== "23505") {
+      throw error || new Error("analysis_result_insert_failed");
+    }
+  }
+
+  throw new Error("share_id_generation_failed");
+}
+
 function getDbErrorResponse(label, error) {
   const serializedError = serializeSupabaseError(error);
 
@@ -311,14 +386,39 @@ export async function POST(request) {
     return getDbErrorResponse("skin_profile_insert_failed", skinProfileError);
   }
 
+  let privateShareResult = null;
+
+  try {
+    privateShareResult = await createPrivateShareResult({
+      body,
+      userId: user.id
+    });
+  } catch (error) {
+    await restorePreviousActiveProfile({
+      supabase,
+      userId: user.id,
+      skinProfileId: skinProfile.id,
+      previousActiveProfileId
+    });
+
+    return getDbErrorResponse("analysis_result_insert_failed", error);
+  }
+
   const savedReportPayload = buildSavedReportPayload({
     userId: user.id,
     skinProfileId: skinProfile.id,
     body
   });
+  const linkedSavedReportPayload = privateShareResult?.share_id
+    ? {
+        ...savedReportPayload,
+        source_type: "share",
+        source_session_id: privateShareResult.share_id
+      }
+    : savedReportPayload;
   const { data: savedReport, error: savedReportError } = await supabase
     .from("saved_reports")
-    .insert(savedReportPayload)
+    .insert(linkedSavedReportPayload)
     .select("id")
     .single();
 
@@ -330,13 +430,23 @@ export async function POST(request) {
       previousActiveProfileId
     });
 
+    if (privateShareResult?.request_id) {
+      await createSupabaseAdminClient()
+        ?.from("analysis_requests")
+        .delete()
+        .eq("id", privateShareResult.request_id);
+    }
+
     return getDbErrorResponse("saved_report_insert_failed", savedReportError);
   }
 
   return NextResponse.json(
     {
       skinProfileId: skinProfile.id,
-      savedReportId: savedReport.id
+      savedReportId: savedReport.id,
+      shareId: privateShareResult?.share_id || null,
+      sharePath: privateShareResult?.share_id ? getSharePath(privateShareResult.share_id) : null,
+      publicShared: false
     },
     {
       headers: {

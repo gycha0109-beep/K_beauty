@@ -166,7 +166,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
     setStatus("");
   }, [fingerprint, result, submission]);
 
-  async function saveResult({ force = false } = {}) {
+  async function saveResult({ force = false, publish = false } = {}) {
     if (!result || !submission?.form) {
       setStatus(copy.sessionExpired);
       return null;
@@ -178,13 +178,14 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
       const writeAccessToken = readWriteAccessToken();
       const supabaseAccessToken = await getShareAccessToken();
       const token = supabaseAccessToken;
+      const hasExistingShareId = Boolean(shareInfo?.shareId);
 
-      if (!token && !writeAccessToken) {
+      if (!token && !writeAccessToken && !hasExistingShareId) {
         setStatus(copy.sessionExpired);
         return null;
       }
 
-      if (!force && shareInfo?.shareId && (!supabaseAccessToken || shareInfo?.savedWithAuth)) {
+      if (!publish && !force && shareInfo?.shareId && (!supabaseAccessToken || shareInfo?.savedWithAuth)) {
         setStatus(copy.savedMessage);
         return shareInfo;
       }
@@ -208,7 +209,8 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
           locale,
           result,
           submission,
-          share: true
+          share: true,
+          shareId: shareInfo?.shareId || undefined
         })
       });
 
@@ -227,7 +229,8 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
         sharePath: data.sharePath || getSharePath(data.shareId),
         shareUrl: getAbsoluteShareUrl(data.shareId),
         fingerprint,
-        savedWithAuth: Boolean(supabaseAccessToken)
+        savedWithAuth: Boolean(supabaseAccessToken),
+        isPublic: data.publicShared === true || publish
       };
 
       setShareInfo(nextShare);
@@ -244,7 +247,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
   }
 
   async function handleCopy() {
-    const saved = await saveResult();
+    const saved = await saveResult({ publish: true });
 
     if (!saved?.shareUrl) {
       return;
@@ -256,7 +259,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
   }
 
   async function handleShare() {
-    const saved = await saveResult();
+    const saved = await saveResult({ publish: true });
 
     if (!saved?.shareUrl) {
       return;
