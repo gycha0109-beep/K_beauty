@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-06-29 / free analysis loading layout
+
+- Branch: feature/free-analysis-loading-layout
+- Task type: execution / Medium onboarding loading layout fix
+- Routing decision: User requested a scoped loading-only layout adjustment after clean main sync and branch creation. Survey flow, analysis API, result rendering, Face Lab, premium report, My Skin, auth, recommendation logic, score formula, DB, and migrations were out of scope.
+- Goal: Center the free analysis loading card in the header-adjusted viewport, remove the nested card visual from the spinner, and keep spinner, loading title, helper text, and progress dots in one clear waiting panel.
+- Changed files: app/page.js, components/onboarding/LoadingStep.js, .codex/AI_WORK_LOG.md
+- Protected areas: No API route, SurveyFlow, free result, full report, My Skin, auth, recommendation engine, DB/schema, Face Lab, or analysis state/response logic changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Playwright verified the `/en` onboarding flow at 390px and desktop widths: loading card sits near viewport center below the header, spinner/title/body/dots render, nested loading card count is 0, horizontal overflow false, console/page errors 0, and mocked analysis completion navigates to the result page. A real local `/api/analyze` POST returned 200 and preserved the expected free result response shape.
+- Notes/risks: Loading viewport uses `100svh` plus a loading-only flex wrapper so mobile browser chrome changes are less jumpy than fixed margins.
+- Context promotion candidate: NULL
+
 ### 2026-06-29 / premium Face Lab section
 
 - Branch: feature/premium-face-lab-section

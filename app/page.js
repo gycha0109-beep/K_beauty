@@ -293,7 +293,10 @@ export default function HomePage() {
     ? "mx-auto flex w-full max-w-5xl flex-col px-3 pb-5 pt-2 sm:px-6 sm:pt-4 lg:px-8"
     : currentStep === "survey"
       ? "mx-auto flex w-full max-w-lg flex-col px-4 pb-6 pt-4 sm:px-6"
-      : "mx-auto flex w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
+      : "mx-auto flex min-h-[100svh] w-full max-w-md flex-col px-4 pb-6 pt-4 sm:px-6";
+  const stepWrapperClassName = currentStep === "loading"
+    ? "step-enter flex flex-1 flex-col"
+    : "step-enter flex flex-col";
 
   const canProceedFromPhoto = Boolean(imageFile);
 
@@ -445,7 +448,7 @@ export default function HomePage() {
   const showBottomCta = currentStep === "photo" && canProceedFromPhoto;
 
   return (
-    <main className="ui-page ui-page-shell min-h-screen">
+    <main className="ui-page ui-page-shell flex min-h-screen flex-col">
       <div className={pageShellClassName}>
         <div className="flex flex-wrap items-center justify-between gap-2 px-0.5 sm:gap-3 sm:px-0">
           <div className="flex gap-1.5 sm:gap-2">
@@ -502,7 +505,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div key={currentStep} className="step-enter flex flex-col">
+        <div key={currentStep} className={stepWrapperClassName}>
           {renderStep()}
         </div>
       </div>
