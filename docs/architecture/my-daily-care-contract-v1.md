@@ -25,8 +25,20 @@ The check-in API stores:
 - `daily_checkins.memo`
 - daily levels for dryness, oiliness, redness, breakout, and irritation
 - makeup and outdoor context
+- lightweight check-in events in `daily_checkins.context.checkinEvents`
 
-The dashboard reads today's check-in and the latest check-in so a saved memo can be shown as a user record.
+Existing `makeup_today` and `outdoor_today` remain first-class columns. New event tags are stored inside `context.checkinEvents`:
+
+- `newProductUsed`
+- `activeProductUsed`
+- `exfoliationUsed`
+- `moisturizerSkipped`
+- `sleepDeprived`
+- `workoutOrSweat`
+
+These events are observation records only. They are not proof of cause and must not be rendered as causal explanation.
+
+When saving a check-in, existing object-shaped `context` values are merged rather than replaced. Missing keys, null context, arrays, and invalid types normalize to `false` for every event key.
 
 The dashboard also reads check-ins from the latest 7-day window for home previews. The query remains scoped by `user_id`.
 
@@ -60,10 +72,12 @@ My home may show a single-metric preview from recent `daily_checkins`.
 - source: `daily_checkins` in the latest 7-day window
 - allowed metrics: dryness, oiliness, redness, breakout, irritation
 - display: one metric at a time
-- default selection: the highest value in the latest check-in, falling back to redness
+- default selection: the highest aggregate value across the latest 7-day window, with ties resolved by irritation, redness, breakout, dryness, then oiliness
 - implementation: CSS/SVG preview, no chart library required
 
 If fewer than two check-ins exist, My shows a quiet empty state instead of an empty chart.
+
+If every recent value is zero, the preview keeps the stable redness fallback for UI consistency, but it must not describe the metric as a cause, worsening, or diagnosis.
 
 ## Diary Preview
 
@@ -92,6 +106,15 @@ Diary metric display rules:
 - for ties, use irritation, redness, breakout, dryness, then oiliness
 - show at most two metrics
 
+Diary event display rules:
+
+- tag priority: new product, active product, exfoliation, skipped moisturizer, short sleep, workout/sweat, makeup, outdoor
+- show at most three tags on the My home preview
+- if more than three tags exist, show `+N`
+- if there is no event and no memo, do not render an empty tag/memo area
+- `context.checkinEvents` may arrive as object-shaped JSON, null, or a stringified JSON value; all dashboard and form displays must normalize through the shared check-in event helper
+- product replacement history and detailed product event timelines are later work, not this home preview contract
+
 ## Memo Display
 
 Memo is not used for scoring, recommendations, or AI logic. It is displayed inside diary preview rows as the user's own record with a date.
@@ -107,3 +130,5 @@ Existing AM/PM routine steps and routine log save/query behavior stay in place. 
 My may keep a recent analysis baseline and recent report entry point. It should not copy full free result or premium report detail into the home.
 
 The analysis baseline should stay compact: skin type, sensitivity, core concerns, and a real saved/profile date when available. Long skin summaries, photo summaries, recommendation direction, full report history, and detailed report replay belong to separate report surfaces.
+
+Premium report can later interpret accumulated diary records. My must not duplicate premium product verdicts, functional decisions, or long-term adjustment reasoning.

@@ -6,6 +6,10 @@ import MyDashboardMenu from "@/components/my/MyDashboardMenu";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
 import TodayCheckInPrompt from "@/components/my/TodayCheckInPrompt";
 import TodayRoutineCard from "@/components/my/TodayRoutineCard";
+import {
+  CHECKIN_EVENT_TAG_ORDER,
+  getSelectedCheckinEventKeys
+} from "@/lib/my/checkin-events";
 import { getBrowserDateContext } from "@/lib/my/local-date";
 import { getMyCopy } from "@/lib/my/i18n";
 
@@ -64,8 +68,8 @@ function formatShortDate(value, locale = "ko") {
 }
 
 const CHECKIN_METRICS = [
-  { key: "redness", field: "redness_level" },
   { key: "irritation", field: "irritation_level" },
+  { key: "redness", field: "redness_level" },
   { key: "breakout", field: "breakout_level" },
   { key: "dryness", field: "dryness_level" },
   { key: "oiliness", field: "oiliness_level" }
@@ -90,18 +94,22 @@ function getMetricValue(checkin, field) {
 }
 
 function chooseTrendMetric(checkins) {
-  const latest = checkins[0];
-
-  if (!latest) {
-    return CHECKIN_METRICS[0];
+  if (!checkins.length) {
+    return CHECKIN_METRICS.find((metric) => metric.key === "redness") || CHECKIN_METRICS[0];
   }
 
-  return CHECKIN_METRICS.reduce((selected, metric) => {
-    const selectedValue = getMetricValue(latest, selected.field);
-    const metricValue = getMetricValue(latest, metric.field);
+  const metricTotals = CHECKIN_METRICS.map((metric) => ({
+    metric,
+    total: checkins.reduce((sum, checkin) => sum + getMetricValue(checkin, metric.field), 0)
+  }));
 
-    return metricValue > selectedValue ? metric : selected;
-  }, CHECKIN_METRICS[0]);
+  if (metricTotals.every((entry) => entry.total === 0)) {
+    return CHECKIN_METRICS.find((metric) => metric.key === "redness") || CHECKIN_METRICS[0];
+  }
+
+  return metricTotals.reduce((selected, entry) => (
+    entry.total > selected.total ? entry : selected
+  ), metricTotals[0]).metric;
 }
 
 function buildSparklinePoints(checkins, metric) {
@@ -159,17 +167,23 @@ function getTopCheckinSignals(checkin, copy) {
 }
 
 function getCheckinTags(checkin, copy) {
-  const tags = [];
+  const selectedEvents = new Set(getSelectedCheckinEventKeys(checkin?.context));
+  const allTags = CHECKIN_EVENT_TAG_ORDER.map((key) => {
+    if (key === "makeup") {
+      return checkin?.makeup_today ? copy.diary.makeup : null;
+    }
 
-  if (checkin?.makeup_today) {
-    tags.push(copy.diary.makeup);
-  }
+    if (key === "outdoor") {
+      return checkin?.outdoor_today ? copy.diary.outdoor : null;
+    }
 
-  if (checkin?.outdoor_today) {
-    tags.push(copy.diary.outdoor);
-  }
+    return selectedEvents.has(key) ? copy.diary.events[key] : null;
+  }).filter(Boolean);
 
-  return tags;
+  return {
+    visible: allTags.slice(0, 3),
+    hiddenCount: Math.max(0, allTags.length - 3)
+  };
 }
 
 function LatestSavedReport({ report, copy, locale }) {
@@ -289,11 +303,14 @@ function SkinDiaryPreview({ checkins, copy, locale }) {
                   </p>
                 </div>
                 <div className="min-w-0">
-                  {tags.length ? (
+                  {tags.visible.length || tags.hiddenCount ? (
                     <div className="flex flex-wrap gap-1.5">
-                      {tags.map((tag) => (
+                      {tags.visible.map((tag) => (
                         <span key={tag} className="ui-chip-compact">{tag}</span>
                       ))}
+                      {tags.hiddenCount ? (
+                        <span className="ui-chip-compact">+{tags.hiddenCount}</span>
+                      ) : null}
                     </div>
                   ) : null}
                   {memo ? (

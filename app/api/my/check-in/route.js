@@ -5,6 +5,10 @@ import {
   isValidLocalDate
 } from "@/lib/my/local-date";
 import { generateDailyRoutine } from "@/lib/my/routine-generator";
+import {
+  mergeCheckinEventsContext,
+  normalizeCheckinEvents
+} from "@/lib/my/checkin-events";
 
 export const dynamic = "force-dynamic";
 
@@ -114,6 +118,9 @@ function normalizeCheckinPayload(body) {
   }
 
   const memo = typeof body.memo === "string" ? body.memo.trim().slice(0, 1000) : "";
+  const checkinEvents = normalizeCheckinEvents({
+    checkinEvents: body.checkinEvents
+  });
 
   return {
     error: null,
@@ -122,6 +129,7 @@ function normalizeCheckinPayload(body) {
       ...levels,
       makeup_today: body.makeup_today === true,
       outdoor_today: body.outdoor_today === true,
+      checkinEvents,
       memo: memo || null
     }
   };
@@ -177,6 +185,18 @@ export async function POST(request) {
     }
 
     const now = new Date().toISOString();
+    const { data: existingCheckin, error: existingCheckinError } = await supabase
+      .from("daily_checkins")
+      .select("context")
+      .eq("user_id", user.id)
+      .eq("checkin_date", payload.checkinDate)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingCheckinError) {
+      throw new Error(`daily_checkin_existing_read: ${existingCheckinError.message}`);
+    }
+
     // checkin_date/routine_date are the user's calendar date.
     // created_at remains the UTC event timestamp for audit and ordering.
     const checkinRecord = {
@@ -191,9 +211,7 @@ export async function POST(request) {
       makeup_today: payload.makeup_today,
       outdoor_today: payload.outdoor_today,
       memo: payload.memo,
-      context: {
-        source: "my-check-in"
-      },
+      context: mergeCheckinEventsContext(existingCheckin?.context, payload.checkinEvents),
       updated_at: now
     };
 

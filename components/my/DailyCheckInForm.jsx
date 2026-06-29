@@ -4,6 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getBrowserDateContext } from "@/lib/my/local-date";
 import { getMyCopy } from "@/lib/my/i18n";
+import {
+  CHECKIN_EVENT_KEYS,
+  normalizeCheckinEvents
+} from "@/lib/my/checkin-events";
+
+const FIELD_EVENT_KEYS = ["makeup_today", "outdoor_today"];
 
 function RangeField({ field, value, onChange }) {
   return (
@@ -29,7 +35,47 @@ function RangeField({ field, value, onChange }) {
   );
 }
 
-export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
+function EventToggle({ label, checked, onChange }) {
+  return (
+    <label
+      className={`flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm font-semibold transition ${
+        checked
+          ? "border-[#e76b91] bg-[#ffe8ef] text-[#7c3048] dark:border-[#ef6387] dark:bg-[#4a2533] dark:text-[#ffdce7]"
+          : "border-[#ead2ca] bg-white/60 text-[#5b3744] dark:border-[#4a303c] dark:bg-[#301f28] dark:text-[#f3e4df]"
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-3.5 w-3.5 shrink-0 accent-[#e76b91]"
+      />
+      <span className="min-w-0 break-keep text-left leading-5">{label}</span>
+    </label>
+  );
+}
+
+function applyCheckinToForm(current, checkin) {
+  if (!checkin) {
+    return current;
+  }
+
+  return {
+    ...current,
+    checkinDate: checkin.checkin_date || current.checkinDate,
+    dryness_level: Number.isInteger(checkin.dryness_level) ? checkin.dryness_level : current.dryness_level,
+    oiliness_level: Number.isInteger(checkin.oiliness_level) ? checkin.oiliness_level : current.oiliness_level,
+    redness_level: Number.isInteger(checkin.redness_level) ? checkin.redness_level : current.redness_level,
+    breakout_level: Number.isInteger(checkin.breakout_level) ? checkin.breakout_level : current.breakout_level,
+    irritation_level: Number.isInteger(checkin.irritation_level) ? checkin.irritation_level : current.irritation_level,
+    makeup_today: checkin.makeup_today === true,
+    outdoor_today: checkin.outdoor_today === true,
+    checkinEvents: normalizeCheckinEvents(checkin.context),
+    memo: typeof checkin.memo === "string" ? checkin.memo : current.memo
+  };
+}
+
+export default function DailyCheckInForm({ skinProfile, initialCheckin = null, locale = "ko" }) {
   const copy = getMyCopy(locale);
   const router = useRouter();
   const [form, setForm] = useState({
@@ -42,6 +88,7 @@ export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
     irritation_level: 0,
     makeup_today: false,
     outdoor_today: false,
+    checkinEvents: normalizeCheckinEvents(null),
     memo: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,12 +105,18 @@ export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
   useEffect(() => {
     const dateContext = getBrowserDateContext();
 
-    setForm((current) => ({
-      ...current,
-      checkinDate: current.checkinDate || dateContext.localDate,
-      timezone: dateContext.timezone
-    }));
-  }, []);
+    setForm((current) => {
+      const next = {
+        ...current,
+        checkinDate: current.checkinDate || dateContext.localDate,
+        timezone: dateContext.timezone
+      };
+
+      return initialCheckin?.checkin_date === next.checkinDate
+        ? applyCheckinToForm(next, initialCheckin)
+        : next;
+    });
+  }, [initialCheckin]);
 
   function updateField(key, value) {
     setForm((current) => ({
@@ -71,6 +124,43 @@ export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
       [key]: value
     }));
   }
+
+  function updateEvent(key, value) {
+    setForm((current) => ({
+      ...current,
+      checkinEvents: {
+        ...current.checkinEvents,
+        [key]: value
+      }
+    }));
+  }
+
+  function updateCheckinEvent(key, value) {
+    if (FIELD_EVENT_KEYS.includes(key)) {
+      updateField(key, value);
+      return;
+    }
+
+    updateEvent(key, value);
+  }
+
+  const checkinEventOptions = [
+    {
+      key: "makeup_today",
+      label: copy.checkInForm.makeupToday,
+      checked: form.makeup_today
+    },
+    {
+      key: "outdoor_today",
+      label: copy.checkInForm.outdoorToday,
+      checked: form.outdoor_today
+    },
+    ...CHECKIN_EVENT_KEYS.map((key) => ({
+      key,
+      label: copy.checkInForm.events[key],
+      checked: form.checkinEvents[key] === true
+    }))
+  ];
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -144,25 +234,21 @@ export default function DailyCheckInForm({ skinProfile, locale = "ko" }) {
         ))}
       </section>
 
-      <section className="mt-5 grid gap-3 sm:grid-cols-2">
-        <label className="flex min-h-14 items-center gap-3 rounded-[1.1rem] border border-[#ead2ca] bg-white/60 px-4 dark:border-[#4a303c] dark:bg-[#301f28]">
-          <input
-            type="checkbox"
-            checked={form.makeup_today}
-            onChange={(event) => updateField("makeup_today", event.target.checked)}
-            className="h-4 w-4 accent-[#e76b91]"
-          />
-          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.makeupToday}</span>
-        </label>
-        <label className="flex min-h-14 items-center gap-3 rounded-[1.1rem] border border-[#ead2ca] bg-white/60 px-4 dark:border-[#4a303c] dark:bg-[#301f28]">
-          <input
-            type="checkbox"
-            checked={form.outdoor_today}
-            onChange={(event) => updateField("outdoor_today", event.target.checked)}
-            className="h-4 w-4 accent-[#e76b91]"
-          />
-          <span className="ui-text-primary text-sm font-semibold">{copy.checkInForm.outdoorToday}</span>
-        </label>
+      <section className="mt-5">
+        <div>
+          <p className="ui-text-primary text-sm font-semibold">{copy.checkInForm.eventsTitle}</p>
+          <p className="ui-text-secondary mt-1 text-xs leading-5">{copy.checkInForm.eventsBody}</p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {checkinEventOptions.map((eventOption) => (
+            <EventToggle
+              key={eventOption.key}
+              label={eventOption.label}
+              checked={eventOption.checked}
+              onChange={(value) => updateCheckinEvent(eventOption.key, value)}
+            />
+          ))}
+        </div>
       </section>
 
       <section className="mt-5">

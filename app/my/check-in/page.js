@@ -22,6 +22,24 @@ const SKIN_PROFILE_COLUMNS = [
   "created_at"
 ].join(",");
 
+const DAILY_CHECKIN_COLUMNS = [
+  "id",
+  "user_id",
+  "skin_profile_id",
+  "checkin_date",
+  "dryness_level",
+  "oiliness_level",
+  "redness_level",
+  "breakout_level",
+  "irritation_level",
+  "makeup_today",
+  "outdoor_today",
+  "memo",
+  "context",
+  "created_at",
+  "updated_at"
+].join(",");
+
 async function getActiveSkinProfile(supabase, userId) {
   const { data, error } = await supabase
     .from("skin_profiles")
@@ -29,6 +47,23 @@ async function getActiveSkinProfile(supabase, userId) {
     .eq("user_id", userId)
     .eq("is_active", true)
     .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data || null;
+}
+
+async function getLatestCheckin(supabase, userId) {
+  const { data, error } = await supabase
+    .from("daily_checkins")
+    .select(DAILY_CHECKIN_COLUMNS)
+    .eq("user_id", userId)
+    .order("checkin_date", { ascending: false })
+    .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -77,6 +112,8 @@ export async function CheckInPageContent({ locale = "ko" } = {}) {
       return <NoProfileState copy={copy} />;
     }
 
+    const latestCheckin = await getLatestCheckin(supabase, user.id);
+
     return (
       <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">
         <div className="mx-auto w-full max-w-3xl">
@@ -90,7 +127,7 @@ export async function CheckInPageContent({ locale = "ko" } = {}) {
               {copy.checkInPage.header.body}
             </p>
           </header>
-          <DailyCheckInForm skinProfile={skinProfile} locale={locale} />
+          <DailyCheckInForm skinProfile={skinProfile} initialCheckin={latestCheckin} locale={locale} />
         </div>
       </main>
     );
