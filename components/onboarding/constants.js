@@ -9,6 +9,7 @@ export const INITIAL_FORM = {
   afternoonSkinChange: "",
   environmentExposure: [],
   mostDislikedFeel: "",
+  genderPreference: "unspecified",
   whiteCastHate: false,
   toneUpWanted: false,
   makeupUse: false,
@@ -21,7 +22,8 @@ export const OPTIONAL_DEFAULTS = {
   postWashFeeling: "comfortable",
   afternoonSkinChange: "mostly_same",
   environmentExposure: [],
-  mostDislikedFeel: "sticky"
+  mostDislikedFeel: "sticky",
+  genderPreference: "unspecified"
 };
 
 export const ONBOARDING_COPY = {
@@ -376,5 +378,6 @@ export const OPTION_SETS = {
   booleanChoice: ["true", "false"],
   sunscreenConsiderations: ["whiteCastHate", "toneUpWanted", "makeupUse", "eyeSensitive"],
   cleansingFrequency: ["once", "twice", "3_plus"],
-  environmentExposure: ["heat", "humidity", "mask", "kitchen", "outdoor", "aircon"]
+  environmentExposure: ["heat", "humidity", "mask", "kitchen", "outdoor", "aircon"],
+  genderPreference: ["female", "male", "unspecified"]
 };

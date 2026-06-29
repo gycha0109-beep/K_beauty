@@ -171,6 +171,7 @@ export type RecommendationAnswers = {
 export type NormalizedRecommendationAnswers = {
   skinType: string | null;
   sensitivity: string | null;
+  genderPreference: "female" | "male" | "unspecified";
   mainConcern: string | null;
   mainConcerns: string[];
   preferredTexture: string | null;
@@ -323,6 +324,12 @@ function normalizeStringArray(values: unknown): string[] {
   return Array.from(unique);
 }
 
+function normalizeGenderPreference(value: unknown): "female" | "male" | "unspecified" {
+  return value === "female" || value === "male" || value === "unspecified"
+    ? value
+    : "unspecified";
+}
+
 function includesValue(list: unknown, value: string | null | undefined): boolean {
   return Array.isArray(list) && Boolean(value) && list.includes(value);
 }
@@ -377,6 +384,7 @@ export function normalizeRecommendationAnswers(
   return {
     skinType: normalizeString(answers.skinType),
     sensitivity: normalizeString(answers.sensitivityLevel || answers.sensitivity) || "medium",
+    genderPreference: normalizeGenderPreference(answers.genderPreference),
     mainConcern: mainConcerns[0] || null,
     mainConcerns,
     preferredTexture:
@@ -398,6 +406,17 @@ export function normalizeRecommendationAnswers(
     makeupUse: Boolean(answers.makeupUse),
     eyeSensitive: Boolean(answers.eyeSensitive),
   };
+}
+
+export function isProductEligibleForGenderPreference(
+  product: Pick<CanonicalRecommendationProduct, "is_mens"> | null | undefined,
+  answers: RecommendationAnswers | NormalizedRecommendationAnswers,
+): boolean {
+  const genderPreference = "genderPreference" in answers
+    ? normalizeGenderPreference(answers.genderPreference)
+    : "unspecified";
+
+  return !(genderPreference === "female" && product?.is_mens === true);
 }
 
 export function normalizeCanonicalTexture(value: string | null | undefined): string {

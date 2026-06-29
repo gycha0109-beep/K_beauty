@@ -27,6 +27,7 @@ const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
 const ANALYZE_RESPONSE_SCHEMA_VERSION = 1;
 const PRODUCT_SOURCE_UNAVAILABLE_MESSAGE =
   "Recommendation products are temporarily unavailable. Please try again shortly.";
+const GENDER_PREFERENCE_VALUES = new Set(["female", "male", "unspecified"]);
 
 const ANALYZE_COPY = {
   ko: {
@@ -121,6 +122,15 @@ function parseJsonArrayField(value) {
   } catch {
     return [];
   }
+}
+
+function normalizeGenderPreference(value) {
+  if (typeof value !== "string") {
+    return "unspecified";
+  }
+
+  const normalized = value.trim();
+  return GENDER_PREFERENCE_VALUES.has(normalized) ? normalized : "unspecified";
 }
 
 function resolveAnalyzeModel(isPremium = false) {
@@ -1098,6 +1108,7 @@ export async function POST(request) {
     const environmentExposure = parseJsonArrayField(formData.get("environmentExposure"));
     const mostDislikedFeel =
       formData.get("dislikedFeel") || formData.get("mostDislikedFeel");
+    const genderPreference = normalizeGenderPreference(formData.get("genderPreference"));
     const whiteCastHate = parseBooleanField(formData.get("whiteCastHate"));
     const toneUpWanted = parseBooleanField(formData.get("toneUpWanted"));
     const makeupUse = parseBooleanField(formData.get("makeupUse"));
@@ -1151,6 +1162,7 @@ export async function POST(request) {
       afternoonSkinChange,
       environmentExposure,
       mostDislikedFeel,
+      genderPreference,
       whiteCastHate: Boolean(whiteCastHate),
       toneUpWanted: Boolean(toneUpWanted),
       makeupUse: Boolean(makeupUse),

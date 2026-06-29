@@ -36,6 +36,7 @@ const STALE_FULL_REPORT_LOCAL_STORAGE_KEYS = [
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const PREMIUM_REPORT_ENABLED =
   IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
+const GENDER_PREFERENCE_VALUES = new Set(["female", "male", "unspecified"]);
 
 function clearStaleAnalysisStorage() {
   clearWriteAccessToken();
@@ -77,6 +78,9 @@ function normalizeSurveyAnswers(form = {}) {
     postWashFeeling: form.postWashFeeling || OPTIONAL_DEFAULTS.postWashFeeling,
     afternoonSkinChange: form.afternoonSkinChange || OPTIONAL_DEFAULTS.afternoonSkinChange,
     mostDislikedFeel: form.mostDislikedFeel || OPTIONAL_DEFAULTS.mostDislikedFeel,
+    genderPreference: GENDER_PREFERENCE_VALUES.has(form.genderPreference)
+      ? form.genderPreference
+      : OPTIONAL_DEFAULTS.genderPreference,
     whiteCastHate: Boolean(form.whiteCastHate),
     toneUpWanted: Boolean(form.toneUpWanted),
     makeupUse: Boolean(form.makeupUse),
@@ -217,10 +221,6 @@ export default function HomePage() {
         analyzePayload.append("image", imageFile);
 
         Object.entries(completedForm).forEach(([key, value]) => {
-          if (key === "genderPreference") {
-            return;
-          }
-
           analyzePayload.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
         });
         if (PREMIUM_REPORT_ENABLED && currentProducts.length) {

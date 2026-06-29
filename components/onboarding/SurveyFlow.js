@@ -223,6 +223,25 @@ const QUESTION_SCREENS = {
           ]
         }
       ]
+    },
+    {
+      id: "gender-profile",
+      stage: "preference",
+      hint: "제품 후보 기준을 가볍게 확인해요.",
+      questions: [
+        {
+          id: "genderPreference",
+          title: "추천 제품 기준을 선택해 주세요",
+          subtitle: "남성용 표기 제품 포함 여부에만 사용돼요.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "female", label: "여성", description: "남성용 표기 제품은 제외" },
+            { value: "male", label: "남성", description: "남성용 표기 제품도 포함" },
+            { value: "unspecified", label: "선택 안 함", description: "모든 일반 후보 포함" }
+          ]
+        }
+      ]
     }
   ],
   en: [
@@ -392,6 +411,18 @@ const QUESTION_SCREENS = {
             { value: "makeupUse", label: "Makeup fit", description: "Does not pill under base" },
             { value: "eyeSensitive", label: "Low eye sting", description: "Gentler around eyes" }
           ]
+        },
+        {
+          id: "genderPreference",
+          title: "Product profile preference",
+          subtitle: "Only used for whether men-labeled products are eligible.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "female", label: "Female", description: "Exclude men-labeled products" },
+            { value: "male", label: "Male", description: "Include men-labeled products" },
+            { value: "unspecified", label: "No preference", description: "Keep all eligible products" }
+          ]
         }
       ]
     }
@@ -451,7 +482,8 @@ const QUESTION_HIGHLIGHTS = {
     environmentExposure: "environment",
     preferredTexture: "texture",
     mostDislikedFeel: "avoid",
-    sunscreenConsiderations: "sunscreen"
+    sunscreenConsiderations: "sunscreen",
+    genderPreference: "profile"
   }
 };
 
@@ -506,7 +538,8 @@ const COMPACT_QUESTION_IDS = new Set([
   "sensitivity",
   "cleansingFrequency",
   "environmentExposure",
-  "sunscreenConsiderations"
+  "sunscreenConsiderations",
+  "genderPreference"
 ]);
 
 function formatProgressNumber(value) {
