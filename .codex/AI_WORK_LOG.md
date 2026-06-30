@@ -12,6 +12,30 @@
 - Notes/risks: `next lint --file components/onboarding/PhotoUploadStep.js` could not be used because the repo has no ESLint config and Next opened the setup prompt.
 - Context promotion candidate: NULL
 
+### 2026-06-30 / onboarding survey badges and evidence wires
+
+- Branch: main
+- Task type: execution / Medium onboarding/result UI follow-up
+- Routing decision: User requested scoped browser-comment fixes to the initial photo guide, survey badges, and free result evidence photo visualization. API contracts, DB/schema, auth, recommendation scoring, product ranking, Face Lab generation, and existing My Skin changes were out of scope.
+- Goal: Fade the circle guide text in after the intro face image fades out, remove optional/stage badges from survey cards, show only a pink required badge on non-skippable questions, stop deriving photo evidence chips from survey fallback, and replace dotted photo-region circles with wire-style connectors.
+- Changed files: app/result/page.js, components/onboarding/PhotoUploadStep.js, components/onboarding/SurveyFlow.js, components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No API route, DB/schema/migration/policy, auth, env, production data, saved data structure, recommendation engine, product source, Face Lab endpoint, or survey answer contract changes.
+- Validation results: `npm run build` passed. Browser automation confirmed the intro image fades to opacity 0, optional survey screens no longer show `필수`/`선택` badges, and the evidence step renders zero dotted photo-region overlays with wire SVG paths present. The result fixture still contains `T존/볼 수분` photo text because that data is in the fixture/API photo signal payload, not the photo-card hardcoded labels.
+- Notes/risks: Some existing Korean source strings display mojibake in PowerShell; one now-unused Korean fixed callout array remains in the source object because exact patch matching failed, but rendering now uses `photoSignals` through `buildPhotoCalloutItems`.
+- Context promotion candidate: NULL
+
+### 2026-06-30 / failed photo evidence display
+
+- Branch: main
+- Task type: execution / focused result UI fix
+- Routing decision: User requested scoped browser-comment behavior for failed or unclear photo analysis on the free result evidence step. API contracts, photo analysis model prompt, DB/schema, auth, recommendation scoring, product ranking, and survey flow were out of scope.
+- Goal: When photo analysis is limited or failed, do not render wire callouts or long explanatory photo text. Show one line under the photo requesting a clearer photo, and show only `분석 실패` in the photo-signal panel.
+- Changed files: components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No API route, DB/schema/migration/policy, auth, env, production data, saved data structure, recommendation engine, product source, Face Lab endpoint, or survey answer contract changes.
+- Validation results: `npm run build` passed. In-app browser `/result` evidence step verified `죄송합니다. 더 선명한 사진이 필요합니다.` appears under the photo, `분석 실패` appears in the photo signal panel, the long fallback text no longer appears, and wire SVG path count is 0.
+- Notes/risks: Failure detection is UI-level and based on limited/failure photo signal text already produced by the result pipeline; it does not change how photo analysis is generated.
+- Context promotion candidate: NULL
+
 ### 2026-06-29 / free analysis loading layout
 
 - Branch: feature/free-analysis-loading-layout
@@ -1337,3 +1361,16 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Follow-up fix: Unified `/r/{shareId}` and `/api/results/{shareId}` access through a shared analysis-result owner/public helper. `/api/results` publish now resolves the owner from bearer or server cookies for existing `shareId` rows, and ResultShareActions can publish an existing share id without requiring the old analysis write session. E2E verified private owner page/API 200, anonymous private page/API 404, publish keeps the same share id and flips the single row to public, and anonymous public page/API 200.
 - Issues/risks: Exact authenticated 390px measurement is limited by the in-app browser viewport override reporting 520px inner width. Check-in page initial restore uses the latest user check-in and applies it only when it matches the browser-local date after mount.
 - Context promotion candidate: My check-in events are observation tags only and must not become causal claims or premium-style product/functionality judgments in My.
+
+### 2026-06-30 / Survey early result confirmation modal
+
+- Branch: main
+- Task type: execution
+- Routing decision: Medium existing survey-flow UI change scoped to the detailed Skin Match survey footer and confirmation modal. Result generation, free result v2, premium entry, DB/storage shape, API response field names, auth, and payment were out of scope.
+- Goal: Keep the existing detailed survey as the only survey flow, but require a compact confirmation modal before users stop mid-survey and generate a result from the current photo analysis plus answered survey fields.
+- Changed files: components/onboarding/SurveyFlow.js, .codex/AI_WORK_LOG.md
+- Protected areas: No simple/detailed answer split, no resume state, no DB/schema/storage changes, no API field-name changes, no result-page or premium-flow changes.
+- Validation: `git diff --check -- components/onboarding/SurveyFlow.js` passed with CRLF warning only; `npm run build` passed; 390px Playwright flow uploaded `public/test-assets/kakao-test-face.png`, answered required questions, confirmed `지금 결과 보기` opens the modal, ESC closes it, `계속 답변하기` closes it, banned/resume/benefit copy is absent, horizontal overflow is false, and console/page errors are 0. A mocked `/api/analyze` Playwright check confirmed the modal primary button sends the existing multipart fields `image`, `skinType`, `sensitivity`, `mainConcerns`, and `locale`, with no `simpleAnswers` or `detailedAnswers`.
+- Follow-up: Updated the confirmation modal to the requested larger structure with a close button, centered sparkle mark, skip-warning copy, a separated three-row benefit panel, and the existing two bottom actions. Revalidated `git diff --check -- components/onboarding/SurveyFlow.js`, `npm run build`, and a 390px Playwright modal flow for required copy, close button, ESC, secondary close, no horizontal overflow, and console/page errors 0.
+- Issues/risks: Browser automation needed to set both hidden file inputs before the gallery input reflected the selected image in headless Playwright; this was a test-driver quirk, not an app-code change.
+- Context promotion candidate: Early survey result should remain a confirmation action in the existing detailed survey, not a separate simple diagnosis mode or resumable survey concept.

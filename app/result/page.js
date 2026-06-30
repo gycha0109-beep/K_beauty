@@ -1498,12 +1498,6 @@ function buildSurveyEvidenceSignals(form = {}, locale = "ko") {
 
 function buildFreeResultV2PhotoEvidenceSignals(normalized = {}, form = {}, result = null, locale = "ko") {
   const isEnglish = locale === "en";
-  const axis = getPrimaryConcernKey(result, form);
-  const concerns = uniqueItems([
-    axis,
-    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
-    ...(Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [])
-  ]);
   const categorized = [];
   const add = (category, label) => {
     const cleaned = normalizeCopy(label);
@@ -1536,28 +1530,6 @@ function buildFreeResultV2PhotoEvidenceSignals(normalized = {}, form = {}, resul
 
     add("other", buildPhotoObservationSignalTitle(signal));
   });
-
-  const hasOilFlow =
-    form?.skinType === "oily" ||
-    form?.skinType === "combination" ||
-    form?.afternoonSkinChange === "more_oily" ||
-    concerns.some((item) => item === "oiliness" || item === "pores");
-  const hasDehydrationFlow =
-    form?.postWashFeeling === "tight" ||
-    concerns.some((item) => item === "dehydration" || item === "barrier");
-  const hasPoreFlow = concerns.includes("pores");
-
-  if (hasOilFlow) {
-    add("oil", isEnglish ? "T-zone oiliness" : "T존 유분감");
-  }
-
-  if (hasPoreFlow) {
-    add("pores", isEnglish ? "Visible pores" : "모공 가시성");
-  }
-
-  if (hasDehydrationFlow) {
-    add("dry", isEnglish ? "Lower moisture around cheeks" : "볼 주변 수분감 저하");
-  }
 
   const order = { oil: 0, pores: 1, dry: 2, other: 3 };
   return categorized

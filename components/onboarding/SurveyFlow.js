@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const FLOW_COPY = {
   ko: {
@@ -14,7 +14,19 @@ const FLOW_COPY = {
     multiple: "복수 선택",
     next: "다음",
     back: "이전으로",
-    skipToResult: "결과 보기",
+    skipToResult: "지금 결과 보기",
+    skipConfirm: {
+      close: "닫기",
+      title: "남은 답변을 건너뛰시겠어요?",
+      body: "답변을 건너뛰어도 결과를 확인할 수 있어요.\n하지만 더 정확한 추천을 위해서는\n모든 답변을 완료해주시는 것이 좋습니다.",
+      benefits: [
+        { icon: "target", text: "내 환경과 성향에 맞는 제품 추천" },
+        { icon: "clipboard", text: "맞춤 루틴과 관리 팁" },
+        { icon: "sparkle", text: "피부 변화 추이를 더 정확하게 분석 가능" }
+      ],
+      continue: "계속 답변하기",
+      confirm: "지금 결과 보기"
+    },
     startAnalyze: "분석 시작",
     needAnswer: "필수 항목을 먼저 선택해주세요.",
     maxSelect: (count) => `최대 ${count}개까지 선택할 수 있어요.`,
@@ -38,7 +50,19 @@ const FLOW_COPY = {
     multiple: "Multiple",
     next: "Next",
     back: "Back",
-    skipToResult: "See result",
+    skipToResult: "See result now",
+    skipConfirm: {
+      close: "Close",
+      title: "Skip the remaining answers?",
+      body: "You can still check your result if you skip.\nCompleting every answer helps make the recommendations more precise.",
+      benefits: [
+        { icon: "target", text: "Product picks matched to your environment and preferences" },
+        { icon: "clipboard", text: "Personalized routine and care tips" },
+        { icon: "sparkle", text: "More precise skin-change trend analysis" }
+      ],
+      continue: "Keep answering",
+      confirm: "See result now"
+    },
     startAnalyze: "Start analysis",
     needAnswer: "Please answer the required question first.",
     maxSelect: (count) => `You can select up to ${count}.`,
@@ -870,17 +894,14 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
     <article className="ui-card-subtle p-3.5 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="ui-chip-compact text-[10px]">
-              {question.type === "multiple" ? copy.multiple : question.required ? copy.required : copy.optional}
-            </span>
-            {question.maxSelect ? (
-              <span className="ui-chip-compact text-[10px]">
-                {copy.maxSelect(question.maxSelect)}
+          {question.required ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-[#ff7da0]/45 bg-[#ff3f7b]/12 px-2.5 py-0.5 text-[10px] font-bold text-[#e93c72] dark:border-[#ff8da9]/35 dark:bg-[#ff7da0]/10 dark:text-[#ff9fb2]">
+                {copy.required}
               </span>
-            ) : null}
-          </div>
-          <h3 className="ui-title mt-2 text-[1.46rem] leading-[1.12] tracking-[-0.018em] sm:text-[1.6rem]">
+            </div>
+          ) : null}
+          <h3 className={`ui-title text-[1.46rem] leading-[1.12] tracking-[-0.018em] sm:text-[1.6rem] ${question.required ? "mt-2" : ""}`}>
             {renderHighlightedTitle(question.title, highlightText)}
           </h3>
           {question.subtitle ? (
@@ -987,6 +1008,105 @@ function SurveyFooterActions({
   );
 }
 
+function SkipResultConfirmModal({ copy, onCancel, onConfirm }) {
+  const primaryButtonRef = useRef(null);
+  const benefitIconMap = {
+    target: "🎯",
+    clipboard: "📋",
+    sparkle: "🧴"
+  };
+
+  useEffect(() => {
+    primaryButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4 py-6 backdrop-blur-[2px]"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="skip-result-confirm-title"
+        className="relative w-full max-w-[25rem] overflow-hidden rounded-[1.55rem] border border-[#ece4ff] bg-white text-center text-[#241720] shadow-[0_24px_70px_rgba(20,14,28,0.28)]"
+      >
+        <button
+          type="button"
+          aria-label={copy.close}
+          onClick={onCancel}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none text-[#4f4852] transition hover:bg-[#f6f2f8] focus:outline-none focus:ring-2 focus:ring-[#8b79e6]/35"
+        >
+          ×
+        </button>
+
+        <div className="px-5 pb-5 pt-9 sm:px-7">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#dcd2ff] bg-[#f3efff] text-[1.65rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+            ✨
+          </div>
+          <h3 id="skip-result-confirm-title" className="mt-5 text-[1.3rem] font-extrabold leading-tight sm:text-[1.45rem]">
+            {copy.title}
+          </h3>
+          <p className="mx-auto mt-3 max-w-[20rem] whitespace-pre-line text-[0.94rem] font-medium leading-6 text-[#5e5360]">
+            {copy.body}
+          </p>
+        </div>
+
+        <div className="border-y border-[#eee6f7] bg-[#fbf9ff] px-5 py-3.5 sm:px-7">
+          <div className="rounded-2xl border border-[#e1d8f4] bg-white/78 px-4 py-2 text-left shadow-[0_10px_28px_rgba(108,85,217,0.06)]">
+            {copy.benefits.map((benefit, index) => (
+              <div key={benefit.text}>
+                <div className="flex items-center gap-3 py-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f1ecff] text-[1.35rem]" aria-hidden="true">
+                    {benefitIconMap[benefit.icon] || "•"}
+                  </span>
+                  <span className="text-[0.92rem] font-bold leading-5 text-[#332932]">
+                    {benefit.text}
+                  </span>
+                </div>
+                {index < copy.benefits.length - 1 ? (
+                  <div className="border-t border-dashed border-[#ded6ea]" />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 px-5 py-5 sm:px-7">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-2xl border border-[#d9d1dd] bg-white px-3 py-3 text-[0.9rem] font-bold text-[#3b3038] transition hover:bg-[#faf8fb] focus:outline-none focus:ring-2 focus:ring-[#8b79e6]/35"
+          >
+            {copy.continue}
+          </button>
+          <button
+            ref={primaryButtonRef}
+            type="button"
+            onClick={onConfirm}
+            className="rounded-2xl border border-[#6c55d9]/20 bg-[linear-gradient(100deg,#7b61dc_0%,#6c55d9_100%)] px-3 py-3 text-[0.9rem] font-extrabold text-white shadow-[0_12px_26px_rgba(108,85,217,0.30)] transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-[#8b79e6]/40"
+          >
+            {copy.confirm}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBackToPhoto, onComplete, error }) {
   const copy = FLOW_COPY[locale] || FLOW_COPY.ko;
   const screens = useMemo(() => QUESTION_SCREENS[locale] || QUESTION_SCREENS.ko, [locale]);
@@ -1000,9 +1120,9 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   ), [screens]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [message, setMessage] = useState("");
+  const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
   const currentQuestion = questions[questionIndex] || questions[0];
   const totalQuestions = questions.length;
-  const currentStageLabel = copy.stages.find((stage) => stage.key === currentQuestion.stage)?.label || currentQuestion.stage;
   const requiredQuestionsComplete = useMemo(
     () => areRequiredQuestionsComplete(questions, form),
     [questions, form]
@@ -1062,6 +1182,11 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
     }
 
     setMessage("");
+    setSkipConfirmOpen(true);
+  };
+
+  const handleConfirmSkipToResult = () => {
+    setSkipConfirmOpen(false);
     onComplete();
   };
 
@@ -1089,10 +1214,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
         />
 
         <div className="ui-card p-3 sm:p-4">
-          <div className="mb-2 flex items-center justify-between gap-3 px-1">
-            <span className="rounded-full border border-[#ead2ca]/80 bg-white/38 px-2.5 py-0.5 text-[10.5px] font-semibold text-[#6e4050] backdrop-blur dark:border-white/[0.10] dark:bg-white/[0.035] dark:text-[#f4d7df]">
-              {currentStageLabel}
-            </span>
+          <div className="mb-2 flex items-center justify-end gap-3 px-1">
             <p className="ui-text-faint text-[11.5px] font-semibold tabular-nums">
               {formatProgressNumber(questionIndex + 1)} / {formatProgressNumber(totalQuestions)}
             </p>
@@ -1142,6 +1264,14 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           onSkipToResult={handleSkipToResult}
         />
       </div>
+
+      {skipConfirmOpen ? (
+        <SkipResultConfirmModal
+          copy={copy.skipConfirm}
+          onCancel={() => setSkipConfirmOpen(false)}
+          onConfirm={handleConfirmSkipToResult}
+        />
+      ) : null}
 
       <style jsx>{`
         .survey-card-enter {

@@ -408,7 +408,11 @@ export default function PhotoUploadStep({
                   {stageContent()}
                   {!hasPreview && !isCameraOpen ? (
                     <div className="pointer-events-none absolute inset-x-4 top-[18%] z-20 flex justify-center">
-                      <p className="px-3 py-1 text-[11px] font-semibold leading-5 text-[#666666] dark:text-white/85">
+                      <p
+                        className={`px-3 py-1 text-[11px] font-semibold leading-5 text-[#666666] transition-opacity duration-[1800ms] ease-in-out motion-reduce:transition-none dark:text-white/85 ${
+                          showIntroFace ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
                         {t.guide}
                       </p>
                     </div>
