@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
@@ -11,6 +11,7 @@ import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutin
 import PremiumFunctionalDecisionSection from "@/components/full-report/PremiumFunctionalDecisionSection";
 import PremiumConditionResponseSection from "@/components/full-report/PremiumConditionResponseSection";
 import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSection";
+import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
@@ -38,20 +39,42 @@ const SKIN_MATCH_SECTION_ORDER = [
   "avoid-list"
 ];
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
-const PREMIUM_REPORT_ENABLED =
-  IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
-const PREMIUM_REPORT_COMING_SOON_COPY = {
+const PREMIUM_REPORT_ENABLED = true;
+const PREMIUM_REPORT_DISABLED_COPY = {
   ko: {
-    title: "Skin Match 유료 리포트 준비 중입니다",
-    body: "아침·저녁 루틴, 기능성 판단, 컨디션 대응까지 한 번에 볼 수 있는 퍼스널 피부 상담 맵을 정리하고 있어요.",
+    title: "프리미엄 베타 체험은 종료되었습니다",
+    body: "정식 오픈 후 이용할 수 있습니다. 이미 저장한 프리미엄 리포트는 My에서 계속 다시 볼 수 있어요.",
     button: "무료 결과 다시 보기",
     eyebrow: "Premium Report"
   },
   en: {
-    title: "Skin Match paid report is coming soon",
-    body: "We are organizing a personal skin consultation map that brings morning and evening routine, active checks, and condition responses together.",
+    title: "Premium beta access has ended",
+    body: "New premium report creation will reopen at official launch. Your saved premium reports remain available in My.",
     button: "Back to free result",
     eyebrow: "Premium Report"
+  }
+};
+
+const PREMIUM_ENTRY_COPY = {
+  ko: {
+    kicker: "PREMIUM ROUTINE",
+    title: "현재 쓰는 제품을 알려주세요",
+    body: "선택한 값은 프리미엄 리포트 안에서 현재 루틴 판단에만 사용돼요.",
+    continue: "이 결과를 루틴으로 정리하기",
+    skip: "제품 선택 없이 계속하기",
+    officialTitle: "프리미엄 베타 체험은 종료되었습니다",
+    officialBody: "정식 오픈 후 이용할 수 있습니다. 이미 저장한 프리미엄 리포트는 My에서 계속 다시 볼 수 있어요.",
+    back: "무료 결과로 돌아가기"
+  },
+  en: {
+    kicker: "PREMIUM ROUTINE",
+    title: "Add your current products",
+    body: "These choices are used only for current-routine judgment inside the premium report.",
+    continue: "Turn this result into a routine",
+    skip: "Continue without products",
+    officialTitle: "Premium beta access has ended",
+    officialBody: "New premium report creation will reopen at official launch. Your saved premium reports remain available in My.",
+    back: "Back to free result"
   }
 };
 
@@ -673,7 +696,7 @@ function FitSegmentBars({ fitData }) {
 }
 
 function PremiumReportComingSoonGate({ locale = "ko" }) {
-  const copy = PREMIUM_REPORT_COMING_SOON_COPY[locale] || PREMIUM_REPORT_COMING_SOON_COPY.ko;
+  const copy = PREMIUM_REPORT_DISABLED_COPY[locale] || PREMIUM_REPORT_DISABLED_COPY.ko;
 
   return (
     <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
@@ -6124,18 +6147,94 @@ function FaceLabSection({ report, photoUrl, locale = "ko" }) {
   );
 }
 
+function PremiumEntryStep({ locale = "ko", currentProducts, onCurrentProductsChange, onContinue, onSkip }) {
+  const copy = PREMIUM_ENTRY_COPY[locale] || PREMIUM_ENTRY_COPY.ko;
+
+  return (
+    <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
+      <FullReportLightThemeStyles />
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 py-4 sm:px-6 sm:py-6">
+        <div className="flex items-center justify-between gap-3 px-1">
+          <Link href={getResultPath(locale)} className="min-w-0 text-left">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a5260] dark:text-[#c8aeb8]">
+              {copy.kicker}
+            </span>
+            <span className="mt-0.5 block truncate text-sm font-semibold text-[#2b1f26] dark:text-[#fff8f3]">
+              {copy.title}
+            </span>
+          </Link>
+          <AuthNav locale={locale} showSignOut={false} />
+        </div>
+
+        <section className="mt-4 ui-card p-5">
+          <p className="ui-kicker">{copy.kicker}</p>
+          <h1 className="ui-title mt-2 text-2xl leading-tight">{copy.title}</h1>
+          <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
+          <CurrentProductsSelector
+            locale={locale}
+            value={currentProducts}
+            onChange={onCurrentProductsChange}
+          />
+          <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
+            <button
+              type="button"
+              onClick={onContinue}
+              className="ui-button-primary min-h-12 px-5 text-sm font-semibold"
+            >
+              {copy.continue}
+            </button>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="ui-button-secondary min-h-12 px-5 text-sm font-semibold"
+            >
+              {copy.skip}
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function PremiumAccessBlocked({ locale = "ko" }) {
+  const copy = PREMIUM_ENTRY_COPY[locale] || PREMIUM_ENTRY_COPY.ko;
+
+  return (
+    <main className="full-report-light-theme ui-page ui-page-shell min-h-screen">
+      <FullReportLightThemeStyles />
+      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-8 sm:px-6">
+        <section className="ui-card p-6 text-center">
+          <p className="ui-kicker">PREMIUM REPORT</p>
+          <h1 className="ui-title mt-3 text-2xl leading-tight">{copy.officialTitle}</h1>
+          <p className="ui-text-secondary mt-3 text-sm leading-6">{copy.officialBody}</p>
+          <Link href={getResultPath(locale)} className="ui-button-secondary mt-5 inline-flex min-h-11 items-center justify-center px-5 text-sm font-semibold">
+            {copy.back}
+          </Link>
+        </section>
+      </div>
+    </main>
+  );
+}
+
 function FullReportPageContent() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const locale = getLocaleFromPathname(pathname);
   const copy = getCopy(locale);
   const isEnglish = locale === "en";
   const isTestFullReport = pathname.includes("/test-full-report");
+  const savedReportId = searchParams.get("savedReportId");
+  const accessReason = searchParams.get("access");
   const [freeResult, setFreeResult] = useState(null);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
+  const [accessBlocked, setAccessBlocked] = useState(accessReason === "payment_required");
   const [isReady, setIsReady] = useState(false);
   const [isReportOpened, setIsReportOpened] = useState(false);
+  const [currentProducts, setCurrentProducts] = useState([]);
+  const [premiumEntrySubmitted, setPremiumEntrySubmitted] = useState(Boolean(savedReportId));
   const [hasPreviousReportOpen, setHasPreviousReportOpen] = useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -6168,6 +6267,11 @@ function FullReportPageContent() {
 
   useEffect(() => {
     if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!savedReportId && !premiumEntrySubmitted && !isTestFullReport) {
+      setIsReady(true);
       return;
     }
 
@@ -6226,11 +6330,13 @@ function FullReportPageContent() {
             ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {})
           },
           body: JSON.stringify({
+            savedReportId: savedReportId || undefined,
             locale,
             faceLab: parsedFaceLab,
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
-            topPick: parsedResult?.topPick || null
+            topPick: parsedResult?.topPick || null,
+            currentProducts
           })
         });
         const data = await response.json().catch(() => null);
@@ -6242,6 +6348,13 @@ function FullReportPageContent() {
             setReport(null);
             setError(copy.errorBody);
           }
+          return;
+        }
+
+        if (response.status === 402) {
+          setAccessBlocked(true);
+          setReport(null);
+          setError("");
           return;
         }
 
@@ -6286,7 +6399,7 @@ function FullReportPageContent() {
     }
 
     void loadFullReport();
-  }, [copy.errorBody, isTestFullReport, locale]);
+  }, [copy.errorBody, currentProducts, isTestFullReport, locale, premiumEntrySubmitted, savedReportId]);
 
   const openFullReportContent = () => {
     if (typeof window !== "undefined") {
@@ -6303,6 +6416,29 @@ function FullReportPageContent() {
         locale={locale}
         canOpen={false}
         onOpen={openFullReportContent}
+      />
+    );
+  }
+
+  if (accessBlocked) {
+    return <PremiumAccessBlocked locale={locale} />;
+  }
+
+  if (!savedReportId && !premiumEntrySubmitted && !isTestFullReport) {
+    return (
+      <PremiumEntryStep
+        locale={locale}
+        currentProducts={currentProducts}
+        onCurrentProductsChange={setCurrentProducts}
+        onContinue={() => {
+          setIsReady(false);
+          setPremiumEntrySubmitted(true);
+        }}
+        onSkip={() => {
+          setCurrentProducts([]);
+          setIsReady(false);
+          setPremiumEntrySubmitted(true);
+        }}
       />
     );
   }
@@ -6459,5 +6595,9 @@ export default function FullReportPage() {
     return <PremiumReportComingSoonGate locale={locale} />;
   }
 
-  return <FullReportPageContent />;
+  return (
+    <Suspense fallback={<PremiumReportLoadingPage locale={locale} />}>
+      <FullReportPageContent />
+    </Suspense>
+  );
 }

@@ -474,8 +474,20 @@ function RoutinePendingNotice({ copy }) {
   );
 }
 
-function getReportHref(path) {
-  return typeof path === "string" && path.startsWith("/r/") ? path : null;
+function getReportHref(path, locale = "ko") {
+  if (typeof path !== "string") {
+    return null;
+  }
+
+  if (path.startsWith("/r/")) {
+    return path;
+  }
+
+  if (path.startsWith("/result/full-report?")) {
+    return locale === "en" ? `/en${path}` : path;
+  }
+
+  return null;
 }
 
 export default function MyDashboard({ dashboard, locale = "ko" }) {
@@ -528,7 +540,7 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
     hasProfile,
     needsCheckIn
   } = activeDashboard;
-  const latestReportHref = getReportHref(latestSharePath);
+  const latestReportHref = getReportHref(latestSharePath, locale);
 
   return (
     <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">

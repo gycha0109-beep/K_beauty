@@ -1,5 +1,41 @@
 # AI_WORK_LOG.md
 
+### 2026-06-30 / premium beta flow
+
+- Branch: feature/premium-beta-flow
+- Task type: execution / High premium access, private save, and My reopen flow
+- Routing decision: User requested implementation after a read-only audit of free CTA -> premium route -> login/access -> current products -> full-report API -> saved_reports -> My latest reopen, while excluding payment integration, DB migrations, public premium sharing, Face Lab generation, scoring/ranking, My diary/check-in, and protected production data.
+- Goal: Let beta-open account users create a premium report from the free result, choose current products before opening it, save the premium snapshot privately, and reopen the latest premium report from My without requiring creation entitlement for existing reports.
+- Changed files: app/api/full-report/route.js, app/api/premium/access/route.js, app/result/full-report/page.js, app/result/page.js, components/my/MyDashboard.jsx, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, docs/architecture/premium-beta-flow-v1.md, lib/my/dashboard.js, lib/premium-access.js, lib/premium-current-products.js, .codex/AI_WORK_LOG.md
+- Protected areas: No payment provider integration, DB schema/migration, public premium share route, Face Lab algorithm/prompt/input contract, recommendation scoring/ranking, current-products verdict policy, My diary/check-in/trend feature, auth callback policy, or product metadata rewrite.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Local dev smoke on port 3002 verified `/result/full-report` at 390px shows the current-products premium entry with horizontal overflow false, `/result/full-report?access=payment_required` shows the official-open notice, and console/page errors were 0 in the smoke. `/api/premium/access` unauthenticated returned `login_required` with default `beta_open`; a separate dev server with `PREMIUM_RELEASE_MODE=paid_only` returned `login_required` and `paid_only`. Free `/api/analyze` returned 200 without public `premiumReport`, `faceLabSummary`, or `faceLab`.
+- Notes/risks: Premium creation access is server-enforced in `/api/full-report`; saved premium reopen is owner-only through `saved_reports.user_id` and does not call the creation access resolver. Entitlement currently uses trusted Supabase `app_metadata` because no existing paid entitlement table was found. Full account-login E2E save/reopen and paid/admin entitlement E2E were not completed because no non-anonymous test account/session was available in this workspace.
+- Context promotion candidate: Premium creation gating and saved premium reopen permission are separate: release mode blocks new generation only, while owner saved reports remain reopenable.
+
+### 2026-06-30 / premium beta preview copy follow-up
+
+- Branch: feature/premium-beta-flow
+- Task type: execution / Medium premium preview UI state correction
+- Routing decision: User requested a scoped preview UI correction on the existing premium beta branch. Access resolver, premium save, currentProducts verdict logic, payment, DB schema, and stored premium reopen permission were out of scope except for reusing the existing route.
+- Goal: Remove the stale coming-soon/disabled paid-report preview state from the free result and show an active Premium Beta CTA that enters the existing premium route.
+- Changed files: app/result/full-report/page.js, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No payment integration, DB migration, access resolver rewrite, premium save rewrite, currentProducts verdict policy, Face Lab logic, recommendation/scoring, or My saved-report reopen logic changes.
+- Validation results: Initial `npm run build` failed because `useSearchParams()` in `app/result/full-report/page.js` needed a Suspense boundary after the previous branch implementation. Added a Suspense fallback around `FullReportPageContent`; rerun `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Fresh dev server on port 3005 verified actual `/result` after seeding a real result session: step 5 shows `PREMIUM BETA`, active `이 결과를 루틴으로 정리하기`, no `곧 공개 예정` / `준비 중입니다` / `Coming soon`, disabled button count 0, horizontal overflow false, console/page errors 0. CTA click while logged out opens Google OAuth with `next=/result/full-report`; direct `/result/full-report` at 390px shows currentProducts entry, overflow false, console/page errors 0. `/result/full-report?access=payment_required` shows the paid-only beta-ended copy.
+- Notes/risks: Non-anonymous login E2E remains unverified in this workspace, as noted in the parent premium beta flow log.
+- Context promotion candidate: NULL
+
+### 2026-06-30 / local auth redirect origin guard
+
+- Branch: feature/premium-beta-flow
+- Task type: diagnostic execution / auth redirect origin consistency
+- Routing decision: User reported that logged-in local flows were ending on the Vercel deployment origin. The task was scoped to diagnosis and minimum code changes, with Supabase Dashboard, Google OAuth settings, DB migrations, premium access policy, and payment out of scope.
+- Goal: Ensure client-started Google OAuth redirects are built only from the current browser origin so localhost flows do not fall back to `NEXT_PUBLIC_SITE_URL`.
+- Changed files: app/result/page.js, components/auth/LoginButtons.jsx, components/result/SaveReportCTA.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No Supabase URL configuration, Google OAuth configuration, DB schema/migration, premium access resolver, currentProducts, saved report, or API response contract changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Static search now shows client OAuth helpers no longer read `NEXT_PUBLIC_SITE_URL`; only `app/layout.js` uses it for metadata. A direct Supabase OAuth URL generated from local env includes `redirect_to=http://localhost:3001/auth/callback?next=%2Fresult` and does not include the Vercel host. However, actual in-app browser login from `http://localhost:3001/result` still returns to `https://k-beauty-two.vercel.app/?code=...`, which indicates Supabase Auth is rewriting/rejecting the localhost callback outside app code.
+- Notes/risks: Code now removes the `NEXT_PUBLIC_SITE_URL` fallback from client OAuth redirect origin helpers. The remaining localhost-to-Vercel redirect is not fixed by code because the app is already sending `redirect_to=http://localhost:3001/auth/callback`; Supabase must allow that callback URL for local login E2E to complete.
+- Context promotion candidate: NULL
+
 ### 2026-06-29 / free analysis loading layout
 
 - Branch: feature/free-analysis-loading-layout
