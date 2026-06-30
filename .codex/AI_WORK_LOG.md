@@ -1,63 +1,39 @@
 # AI_WORK_LOG.md
 
-### 2026-07-01 / Face Lab structured field contract
+### 2026-06-30 / premium beta flow
 
-- Branch: main
-- Task type: execution / Medium-High Face Lab item-level data contract fix
-- Routing decision: User requested only mood/color/style field-level contracts after the overall Face Lab envelope. Result UI layout, card order, user-facing copy, concrete fallback expression wording, Skin Match logic, DB schema, and existing result evidence UI were out of scope.
-- Goal: Ensure an overall available Face Lab result does not make mood, color, or style available unless that field has direct Vision evidence, and prevent launch fallback keywords from being inserted into structured field values.
-- Changed files: app/api/face-reading/route.js, app/page.js, app/result/page.js, app/result/full-report/page.js, docs/architecture/premium-face-lab-contract-v1.md, lib/face-lab-launch.js, lib/face-lab-result-envelope.js, lib/premium-face-lab.js, lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
-- Protected areas: No DB/schema/migration/policy, auth, env, payment, product/recommendation logic, Skin Match scoring, result step layout, user-facing Face Lab copy redesign, or `components/result/free-v2/FreeResultV2EvidenceStep.jsx` changes.
-- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Node contract checks confirmed fallback-only input produces non-available null values, evidence-backed input preserves value/evidence/source, missing color does not generate peach/coral, missing style does not generate top-volume/controlled-side defaults, missing mood does not generate cat/wolf-like defaults, unavailable envelopes unwrap to null, and legacy flat data is not unwrapped by the strict Vision helper. `git diff --name-only -- components/result/free-v2/FreeResultV2EvidenceStep.jsx` returned no changes.
-- Notes/risks: Existing legacy fallback builder functions remain in `lib/face-lab-launch.js` for older internal paths, but `buildFaceLabLaunchData()` now emits free/premium launch values from `structured` fields only. Real OpenAI E2E was not run; behavior was verified by helper-level fixtures and production build.
-- Context promotion candidate: Face Lab display adapters should prefer `data.structured` item-level status and must not convert unknown legacy flat values or launch fallback values into new available analysis results.
+- Branch: feature/premium-beta-flow
+- Task type: execution / High premium access, private save, and My reopen flow
+- Routing decision: User requested implementation after a read-only audit of free CTA -> premium route -> login/access -> current products -> full-report API -> saved_reports -> My latest reopen, while excluding payment integration, DB migrations, public premium sharing, Face Lab generation, scoring/ranking, My diary/check-in, and protected production data.
+- Goal: Let beta-open account users create a premium report from the free result, choose current products before opening it, save the premium snapshot privately, and reopen the latest premium report from My without requiring creation entitlement for existing reports.
+- Changed files: app/api/full-report/route.js, app/api/premium/access/route.js, app/result/full-report/page.js, app/result/page.js, components/my/MyDashboard.jsx, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, docs/architecture/premium-beta-flow-v1.md, lib/my/dashboard.js, lib/premium-access.js, lib/premium-current-products.js, .codex/AI_WORK_LOG.md
+- Protected areas: No payment provider integration, DB schema/migration, public premium share route, Face Lab algorithm/prompt/input contract, recommendation scoring/ranking, current-products verdict policy, My diary/check-in/trend feature, auth callback policy, or product metadata rewrite.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Local dev smoke on port 3002 verified `/result/full-report` at 390px shows the current-products premium entry with horizontal overflow false, `/result/full-report?access=payment_required` shows the official-open notice, and console/page errors were 0 in the smoke. `/api/premium/access` unauthenticated returned `login_required` with default `beta_open`; a separate dev server with `PREMIUM_RELEASE_MODE=paid_only` returned `login_required` and `paid_only`. Free `/api/analyze` returned 200 without public `premiumReport`, `faceLabSummary`, or `faceLab`.
+- Notes/risks: Premium creation access is server-enforced in `/api/full-report`; saved premium reopen is owner-only through `saved_reports.user_id` and does not call the creation access resolver. Entitlement currently uses trusted Supabase `app_metadata` because no existing paid entitlement table was found. Full account-login E2E save/reopen and paid/admin entitlement E2E were not completed because no non-anonymous test account/session was available in this workspace.
+- Context promotion candidate: Premium creation gating and saved premium reopen permission are separate: release mode blocks new generation only, while owner saved reports remain reopenable.
 
-### 2026-07-01 / Face Lab envelope failure contract
+### 2026-06-30 / premium beta preview copy follow-up
 
-- Branch: main
-- Task type: execution / Medium-High Face Lab API and session data contract fix
-- Routing decision: User explicitly requested implementation of only the overall Face Lab analysis status contract. Per-field mood/color/style contracts, fallback keyword removal, Face Lab UI redesign, Skin Match logic, DB/schema, auth, and existing result evidence UI changes were out of scope.
-- Goal: Prevent Face Lab API failures or mock/default paths from being saved and rendered as normal personal face analysis results.
-- Changed files: app/api/face-reading/route.js, app/page.js, app/result/page.js, app/result/full-report/page.js, lib/result/free-result-v2-static-builders.js, lib/face-lab-result-envelope.js, .codex/AI_WORK_LOG.md
-- Protected areas: No DB/schema/migration/policy, auth, env, recommendation engine, product source, payment, or existing `components/result/free-v2/FreeResultV2EvidenceStep.jsx` changes. API response shape and saved Face Lab session shape were changed only for the user-requested Face Lab envelope contract.
-- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Helper-level Node check confirmed `createFaceLabUnavailable("api_key_missing")` returns `status:"unavailable"`, `source:null`, `data:null`, and unwraps to `null`. Static search found no `mock_fallback`, `buildFaceReadingResponse`, or Face Lab preview pending fallback strings in the updated response/render path. `git diff --name-only -- components/result/free-v2/FreeResultV2EvidenceStep.jsx` returned no changes.
-- Notes/risks: Direct Node import of the free-result builder was blocked by the repo's `@/` alias outside Next runtime, so that check was covered by `next build` and static search. Item-level Face Lab source/confidence contracts and existing keyword fallback generation remain intentionally deferred.
-- Context promotion candidate: Face Lab API failures should produce explicit status envelopes and must not be recovered into mock/default personal analysis results.
-
-### 2026-06-30 / onboarding photo action restore
-
-- Branch: main
-- Task type: execution / Medium onboarding photo-step UI fix
-- Routing decision: User requested browser-comment fixes scoped to the home onboarding photo upload step. Survey questions, analysis API, Face Lab API, recommendation logic, auth, DB/schema, and existing My Skin changes were out of scope.
-- Goal: Restore the initial `Facial_1.png` guide image fade, keep an uploaded photo when the user cancels the change-photo picker, move the photo-step `Next` CTA into the main button slot after upload, and split retake/change-photo into two secondary buttons.
-- Changed files: app/page.js, components/onboarding/PhotoUploadStep.js, public/images/Facial_1.png, .codex/AI_WORK_LOG.md
-- Protected areas: No API route, DB/schema/migration/policy, auth, env, saved data structure, production data, recommendation engine, Face Lab endpoint, or survey contract changes.
-- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Browser automation at 425px verified the uploaded-photo state shows `Next`, `Retake Photo`, and `Choose Different Photo` equivalents in Korean, has no horizontal overflow, canceling the file picker keeps the existing preview, and clicking the moved `Next` reaches the survey step. In-app browser DOM verification confirmed `/images/Facial_1.png` loads in the circle and fades to opacity 0.
-- Notes/risks: `next lint --file components/onboarding/PhotoUploadStep.js` could not be used because the repo has no ESLint config and Next opened the setup prompt.
+- Branch: feature/premium-beta-flow
+- Task type: execution / Medium premium preview UI state correction
+- Routing decision: User requested a scoped preview UI correction on the existing premium beta branch. Access resolver, premium save, currentProducts verdict logic, payment, DB schema, and stored premium reopen permission were out of scope except for reusing the existing route.
+- Goal: Remove the stale coming-soon/disabled paid-report preview state from the free result and show an active Premium Beta CTA that enters the existing premium route.
+- Changed files: app/result/full-report/page.js, components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No payment integration, DB migration, access resolver rewrite, premium save rewrite, currentProducts verdict policy, Face Lab logic, recommendation/scoring, or My saved-report reopen logic changes.
+- Validation results: Initial `npm run build` failed because `useSearchParams()` in `app/result/full-report/page.js` needed a Suspense boundary after the previous branch implementation. Added a Suspense fallback around `FullReportPageContent`; rerun `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Fresh dev server on port 3005 verified actual `/result` after seeding a real result session: step 5 shows `PREMIUM BETA`, active `이 결과를 루틴으로 정리하기`, no `곧 공개 예정` / `준비 중입니다` / `Coming soon`, disabled button count 0, horizontal overflow false, console/page errors 0. CTA click while logged out opens Google OAuth with `next=/result/full-report`; direct `/result/full-report` at 390px shows currentProducts entry, overflow false, console/page errors 0. `/result/full-report?access=payment_required` shows the paid-only beta-ended copy.
+- Notes/risks: Non-anonymous login E2E remains unverified in this workspace, as noted in the parent premium beta flow log.
 - Context promotion candidate: NULL
 
-### 2026-06-30 / onboarding survey badges and evidence wires
+### 2026-06-30 / local auth redirect origin guard
 
-- Branch: main
-- Task type: execution / Medium onboarding/result UI follow-up
-- Routing decision: User requested scoped browser-comment fixes to the initial photo guide, survey badges, and free result evidence photo visualization. API contracts, DB/schema, auth, recommendation scoring, product ranking, Face Lab generation, and existing My Skin changes were out of scope.
-- Goal: Fade the circle guide text in after the intro face image fades out, remove optional/stage badges from survey cards, show only a pink required badge on non-skippable questions, stop deriving photo evidence chips from survey fallback, and replace dotted photo-region circles with wire-style connectors.
-- Changed files: app/result/page.js, components/onboarding/PhotoUploadStep.js, components/onboarding/SurveyFlow.js, components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
-- Protected areas: No API route, DB/schema/migration/policy, auth, env, production data, saved data structure, recommendation engine, product source, Face Lab endpoint, or survey answer contract changes.
-- Validation results: `npm run build` passed. Browser automation confirmed the intro image fades to opacity 0, optional survey screens no longer show `필수`/`선택` badges, and the evidence step renders zero dotted photo-region overlays with wire SVG paths present. The result fixture still contains `T존/볼 수분` photo text because that data is in the fixture/API photo signal payload, not the photo-card hardcoded labels.
-- Notes/risks: Some existing Korean source strings display mojibake in PowerShell; one now-unused Korean fixed callout array remains in the source object because exact patch matching failed, but rendering now uses `photoSignals` through `buildPhotoCalloutItems`.
-- Context promotion candidate: NULL
-
-### 2026-06-30 / failed photo evidence display
-
-- Branch: main
-- Task type: execution / focused result UI fix
-- Routing decision: User requested scoped browser-comment behavior for failed or unclear photo analysis on the free result evidence step. API contracts, photo analysis model prompt, DB/schema, auth, recommendation scoring, product ranking, and survey flow were out of scope.
-- Goal: When photo analysis is limited or failed, do not render wire callouts or long explanatory photo text. Show one line under the photo requesting a clearer photo, and show only `분석 실패` in the photo-signal panel.
-- Changed files: components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
-- Protected areas: No API route, DB/schema/migration/policy, auth, env, production data, saved data structure, recommendation engine, product source, Face Lab endpoint, or survey answer contract changes.
-- Validation results: `npm run build` passed. In-app browser `/result` evidence step verified `죄송합니다. 더 선명한 사진이 필요합니다.` appears under the photo, `분석 실패` appears in the photo signal panel, the long fallback text no longer appears, and wire SVG path count is 0.
-- Notes/risks: Failure detection is UI-level and based on limited/failure photo signal text already produced by the result pipeline; it does not change how photo analysis is generated.
+- Branch: feature/premium-beta-flow
+- Task type: diagnostic execution / auth redirect origin consistency
+- Routing decision: User reported that logged-in local flows were ending on the Vercel deployment origin. The task was scoped to diagnosis and minimum code changes, with Supabase Dashboard, Google OAuth settings, DB migrations, premium access policy, and payment out of scope.
+- Goal: Ensure client-started Google OAuth redirects are built only from the current browser origin so localhost flows do not fall back to `NEXT_PUBLIC_SITE_URL`.
+- Changed files: app/result/page.js, components/auth/LoginButtons.jsx, components/result/SaveReportCTA.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No Supabase URL configuration, Google OAuth configuration, DB schema/migration, premium access resolver, currentProducts, saved report, or API response contract changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Static search now shows client OAuth helpers no longer read `NEXT_PUBLIC_SITE_URL`; only `app/layout.js` uses it for metadata. A direct Supabase OAuth URL generated from local env includes `redirect_to=http://localhost:3001/auth/callback?next=%2Fresult` and does not include the Vercel host. However, actual in-app browser login from `http://localhost:3001/result` still returns to `https://k-beauty-two.vercel.app/?code=...`, which indicates Supabase Auth is rewriting/rejecting the localhost callback outside app code.
+- Notes/risks: Code now removes the `NEXT_PUBLIC_SITE_URL` fallback from client OAuth redirect origin helpers. The remaining localhost-to-Vercel redirect is not fixed by code because the app is already sending `redirect_to=http://localhost:3001/auth/callback`; Supabase must allow that callback URL for local login E2E to complete.
 - Context promotion candidate: NULL
 
 ### 2026-06-29 / free analysis loading layout
@@ -1385,16 +1361,3 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Follow-up fix: Unified `/r/{shareId}` and `/api/results/{shareId}` access through a shared analysis-result owner/public helper. `/api/results` publish now resolves the owner from bearer or server cookies for existing `shareId` rows, and ResultShareActions can publish an existing share id without requiring the old analysis write session. E2E verified private owner page/API 200, anonymous private page/API 404, publish keeps the same share id and flips the single row to public, and anonymous public page/API 200.
 - Issues/risks: Exact authenticated 390px measurement is limited by the in-app browser viewport override reporting 520px inner width. Check-in page initial restore uses the latest user check-in and applies it only when it matches the browser-local date after mount.
 - Context promotion candidate: My check-in events are observation tags only and must not become causal claims or premium-style product/functionality judgments in My.
-
-### 2026-06-30 / Survey early result confirmation modal
-
-- Branch: main
-- Task type: execution
-- Routing decision: Medium existing survey-flow UI change scoped to the detailed Skin Match survey footer and confirmation modal. Result generation, free result v2, premium entry, DB/storage shape, API response field names, auth, and payment were out of scope.
-- Goal: Keep the existing detailed survey as the only survey flow, but require a compact confirmation modal before users stop mid-survey and generate a result from the current photo analysis plus answered survey fields.
-- Changed files: components/onboarding/SurveyFlow.js, .codex/AI_WORK_LOG.md
-- Protected areas: No simple/detailed answer split, no resume state, no DB/schema/storage changes, no API field-name changes, no result-page or premium-flow changes.
-- Validation: `git diff --check -- components/onboarding/SurveyFlow.js` passed with CRLF warning only; `npm run build` passed; 390px Playwright flow uploaded `public/test-assets/kakao-test-face.png`, answered required questions, confirmed `지금 결과 보기` opens the modal, ESC closes it, `계속 답변하기` closes it, banned/resume/benefit copy is absent, horizontal overflow is false, and console/page errors are 0. A mocked `/api/analyze` Playwright check confirmed the modal primary button sends the existing multipart fields `image`, `skinType`, `sensitivity`, `mainConcerns`, and `locale`, with no `simpleAnswers` or `detailedAnswers`.
-- Follow-up: Updated the confirmation modal to the requested larger structure with a close button, centered sparkle mark, skip-warning copy, a separated three-row benefit panel, and the existing two bottom actions. Revalidated `git diff --check -- components/onboarding/SurveyFlow.js`, `npm run build`, and a 390px Playwright modal flow for required copy, close button, ESC, secondary close, no horizontal overflow, and console/page errors 0.
-- Issues/risks: Browser automation needed to set both hidden file inputs before the gallery input reflected the selected image in headless Playwright; this was a test-driver quirk, not an app-code change.
-- Context promotion candidate: Early survey result should remain a confirmation action in the existing detailed survey, not a separate simple diagnosis mode or resumable survey concept.

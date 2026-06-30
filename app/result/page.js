@@ -42,6 +42,7 @@ import {
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import { readWriteAccessToken } from "@/lib/write-access-client";
 const displayMap = {
@@ -393,8 +394,38 @@ const resultCopy = {
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
-const PREMIUM_REPORT_ENABLED =
-  IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
+const PREMIUM_REPORT_ENABLED = true;
+
+function getVisibleUser(user) {
+  if (!user || user.is_anonymous || user.app_metadata?.provider === "anonymous") {
+    return null;
+  }
+
+  return user;
+}
+
+function getAuthCallbackOrigin() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  return "";
+}
+
+async function startPremiumGoogleSignIn(nextPath) {
+  const supabase = createBrowserSupabaseClient();
+  const origin = getAuthCallbackOrigin();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+    }
+  });
+
+  if (error) {
+    throw error;
+  }
+}
 
 async function getResultPageAccessToken() {
   return getBrowserSupabaseAccessToken();
@@ -3033,7 +3064,7 @@ function ResultContent() {
   const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
   const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
   const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
-  const goToFullReport = () => {
+  const goToFullReport = async () => {
     if (!PREMIUM_REPORT_ENABLED) {
       return;
     }
@@ -3048,7 +3079,40 @@ function ResultContent() {
         has_face_lab_preview: Boolean(faceLabProfilePreview)
       }
     });
-    router.push(locale === "en" ? "/en/result/full-report" : "/result/full-report");
+
+    const targetPath = locale === "en" ? "/en/result/full-report" : "/result/full-report";
+
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+      const visibleUser = getVisibleUser(user);
+
+      if (!visibleUser) {
+        await startPremiumGoogleSignIn(targetPath);
+        return;
+      }
+
+      const accessToken = await getBrowserSupabaseAccessToken();
+      const response = await fetch("/api/premium/access", {
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+        },
+        cache: "no-store"
+      });
+      const access = await response.json().catch(() => null);
+
+      if (access?.canCreatePremium) {
+        router.push(targetPath);
+        return;
+      }
+
+      router.push(`${targetPath}?access=${encodeURIComponent(access?.reason || "payment_required")}`);
+    } catch (premiumError) {
+      console.error("[result] premium access check failed", premiumError);
+      router.push(targetPath);
+    }
   };
   const handleTryAgainClick = (event) => {
     if (result && !window.confirm(getResultLeaveMessage(locale))) {
@@ -3114,6 +3178,7 @@ function ResultContent() {
           locale={locale}
           isDevelopment={IS_DEVELOPMENT}
           onDeveloperFullReportClick={IS_DEVELOPMENT ? goToFullReport : null}
+          onPremiumClick={goToFullReport}
         />
       )
     });
