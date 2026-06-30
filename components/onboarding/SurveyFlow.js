@@ -11,7 +11,7 @@ const FLOW_COPY = {
     questionCount: "질문",
     required: "필수",
     optional: "선택",
-    multiple: "복수 선택",
+    multiple: "복수",
     next: "다음",
     back: "이전으로",
     skipToResult: "지금 결과 보기",
@@ -894,14 +894,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
     <article className="ui-card-subtle p-3.5 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          {question.required ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-[#ff7da0]/45 bg-[#ff3f7b]/12 px-2.5 py-0.5 text-[10px] font-bold text-[#e93c72] dark:border-[#ff8da9]/35 dark:bg-[#ff7da0]/10 dark:text-[#ff9fb2]">
-                {copy.required}
-              </span>
-            </div>
-          ) : null}
-          <h3 className={`ui-title text-[1.46rem] leading-[1.12] tracking-[-0.018em] sm:text-[1.6rem] ${question.required ? "mt-2" : ""}`}>
+          <h3 className="ui-title text-[1.46rem] leading-[1.12] tracking-[-0.018em] sm:text-[1.6rem]">
             {renderHighlightedTitle(question.title, highlightText)}
           </h3>
           {question.subtitle ? (
@@ -922,6 +915,29 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
         />
       </div>
     </article>
+  );
+}
+
+function SurveyQuestionBadges({ question, copy }) {
+  const statusLabel = question.required ? copy.required : copy.optional;
+
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+      <span
+        className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold leading-4 ${
+          question.required
+            ? "border-[#ff7da0]/45 bg-[#ff3f7b]/12 text-[#e93c72] dark:border-[#ff8da9]/35 dark:bg-[#ff7da0]/10 dark:text-[#ff9fb2]"
+            : "border-[#ead2ca]/70 bg-white/38 text-[#8d5b6b] dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-[#f4d7df]"
+        }`}
+      >
+        {statusLabel}
+      </span>
+      {question.type === "multiple" ? (
+        <span className="rounded-full border border-[#b8a9ff]/45 bg-[#7b61dc]/12 px-2.5 py-0.5 text-[10px] font-bold leading-4 text-[#7862d8] dark:border-[#b8a9ff]/35 dark:bg-[#b8a9ff]/10 dark:text-[#c8bcff]">
+          {copy.multiple}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -1214,7 +1230,8 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
         />
 
         <div className="ui-card p-3 sm:p-4">
-          <div className="mb-2 flex items-center justify-end gap-3 px-1">
+          <div className="mb-2 flex items-center justify-between gap-3 px-1">
+            <SurveyQuestionBadges question={currentQuestion} copy={copy} />
             <p className="ui-text-faint text-[11.5px] font-semibold tabular-nums">
               {formatProgressNumber(questionIndex + 1)} / {formatProgressNumber(totalQuestions)}
             </p>
