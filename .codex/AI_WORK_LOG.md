@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-06-30 / onboarding photo action restore
+
+- Branch: main
+- Task type: execution / Medium onboarding photo-step UI fix
+- Routing decision: User requested browser-comment fixes scoped to the home onboarding photo upload step. Survey questions, analysis API, Face Lab API, recommendation logic, auth, DB/schema, and existing My Skin changes were out of scope.
+- Goal: Restore the initial `Facial_1.png` guide image fade, keep an uploaded photo when the user cancels the change-photo picker, move the photo-step `Next` CTA into the main button slot after upload, and split retake/change-photo into two secondary buttons.
+- Changed files: app/page.js, components/onboarding/PhotoUploadStep.js, public/images/Facial_1.png, .codex/AI_WORK_LOG.md
+- Protected areas: No API route, DB/schema/migration/policy, auth, env, saved data structure, production data, recommendation engine, Face Lab endpoint, or survey contract changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Browser automation at 425px verified the uploaded-photo state shows `Next`, `Retake Photo`, and `Choose Different Photo` equivalents in Korean, has no horizontal overflow, canceling the file picker keeps the existing preview, and clicking the moved `Next` reaches the survey step. In-app browser DOM verification confirmed `/images/Facial_1.png` loads in the circle and fades to opacity 0.
+- Notes/risks: `next lint --file components/onboarding/PhotoUploadStep.js` could not be used because the repo has no ESLint config and Next opened the setup prompt.
+- Context promotion candidate: NULL
+
 ### 2026-06-29 / free analysis loading layout
 
 - Branch: feature/free-analysis-loading-layout

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import BottomCTA from "@/components/onboarding/BottomCTA";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
 import SurveyFlow from "@/components/onboarding/SurveyFlow";
@@ -335,20 +334,22 @@ export default function HomePage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
     if (!file) {
-      setImageFile(null);
-      setPreviewUrl("");
       setError("");
       return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
 
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setError("");
+
+    if (event.target) {
+      event.target.value = "";
+    }
   };
 
   const clearImage = () => {
@@ -380,19 +381,6 @@ export default function HomePage() {
     }
   };
 
-  const handleBack = () => {
-    if (currentStep === "loading") {
-      return;
-    }
-
-    const currentIndex = STEP_ORDER.indexOf(currentStep);
-    const previousStep = STEP_ORDER[currentIndex - 1];
-
-    if (previousStep) {
-      goToStep(previousStep);
-    }
-  };
-
   const handleSkinPresetPreview = (presetId) => {
     const preset = getTestResultPreset(presetId);
 
@@ -421,6 +409,7 @@ export default function HomePage() {
           imageFile={imageFile}
           previewUrl={previewUrl}
           onImageChange={handleImageChange}
+          onNext={handleNext}
           onClearImage={clearImage}
           error={error}
         />
@@ -444,8 +433,6 @@ export default function HomePage() {
 
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
-
-  const showBottomCta = currentStep === "photo" && canProceedFromPhoto;
 
   return (
     <main className="ui-page ui-page-shell flex min-h-screen flex-col">
@@ -509,22 +496,6 @@ export default function HomePage() {
           {renderStep()}
         </div>
       </div>
-
-      {showBottomCta ? (
-        <BottomCTA
-          primaryLabel={
-            currentStep === "photo"
-              ? copy.cta.next
-              : copy.cta.analyze
-          }
-          onPrimary={handleNext}
-          primaryDisabled={!canProceedFromPhoto}
-          secondaryLabel={null}
-          onSecondary={handleBack}
-          tertiaryLabel={null}
-          onTertiary={null}
-        />
-      ) : null}
 
       <style jsx>{`
         .step-enter {

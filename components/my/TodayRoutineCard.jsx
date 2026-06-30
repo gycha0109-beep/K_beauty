@@ -182,12 +182,6 @@ export default function TodayRoutineCard({ routine, copy = getMyCopy("ko") }) {
           <ActionList title={copy.routine.caution} items={[careSummary.caution]} tone="caution" />
         ) : null}
       </div>
-
-      <div className="mt-5 rounded-[1rem] border border-[#ead2ca] bg-white/55 p-4 dark:border-[#4a303c] dark:bg-[#2f202a]/70">
-        <p className="ui-text-secondary text-sm leading-6">
-          {copy.routine.detailsBody}
-        </p>
-      </div>
     </section>
   );
 }

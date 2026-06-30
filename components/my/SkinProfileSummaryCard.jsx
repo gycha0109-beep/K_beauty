@@ -1,19 +1,11 @@
 import { getMyCopy } from "@/lib/my/i18n";
 
-function formatDate(value, copy) {
+function getMappedLabel(value, labels, fallback) {
   if (!value) {
-    return "";
+    return fallback;
   }
 
-  try {
-    return new Intl.DateTimeFormat(copy.dateLocale, {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    }).format(new Date(value));
-  } catch {
-    return "";
-  }
+  return labels?.[value] || value;
 }
 
 function renderList(values, copy) {
@@ -27,7 +19,7 @@ function renderList(values, copy) {
       <div className="mt-2 flex flex-wrap gap-2">
         {values.filter(Boolean).map((value) => (
           <span key={value} className="ui-chip-compact">
-            {value}
+            {getMappedLabel(value, copy.profile.concernsMap, value)}
           </span>
         ))}
       </div>
@@ -37,11 +29,8 @@ function renderList(values, copy) {
 
 export default function SkinProfileSummaryCard({
   profile,
-  copy = getMyCopy("ko"),
-  analysisDate = null
+  copy = getMyCopy("ko")
 }) {
-  const formattedAnalysisDate = formatDate(analysisDate, copy);
-
   return (
     <section className="rounded-[1.25rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a] sm:p-5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
@@ -55,24 +44,18 @@ export default function SkinProfileSummaryCard({
         <div className="rounded-[0.9rem] border border-[#ead2ca] bg-white/55 p-3 dark:border-[#4a303c] dark:bg-[#2b1c26]/70">
           <p className="ui-text-faint text-xs font-semibold uppercase">{copy.profile.skinType}</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
-            {profile?.skin_type || copy.profile.unknown}
+            {getMappedLabel(profile?.skin_type, copy.profile.skinTypes, copy.profile.unknown)}
           </p>
         </div>
         <div className="rounded-[0.9rem] border border-[#ead2ca] bg-white/55 p-3 dark:border-[#4a303c] dark:bg-[#2b1c26]/70">
           <p className="ui-text-faint text-xs font-semibold uppercase">{copy.profile.sensitivity}</p>
           <p className="ui-text-primary mt-1 text-base font-semibold">
-            {profile?.sensitivity_level || copy.profile.unknown}
+            {getMappedLabel(profile?.sensitivity_level, copy.profile.sensitivities, copy.profile.unknown)}
           </p>
         </div>
       </div>
 
       {renderList(profile?.concerns, copy)}
-
-      {formattedAnalysisDate ? (
-        <p className="ui-text-secondary mt-4 text-sm leading-6">
-          {copy.profile.analysisDate}: {formattedAnalysisDate}
-        </p>
-      ) : null}
     </section>
   );
 }

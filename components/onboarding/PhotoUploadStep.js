@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+const INTRO_FACE_IMAGE_SRC = "/images/Facial_1.png";
+
 const STEP_COPY = {
   ko: {
     brand: "BEJEWELY",
@@ -11,8 +13,9 @@ const STEP_COPY = {
     privacy: "사진은 저장되지 않고 분석에만 사용합니다",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
-    retake: "다시 촬영",
-    change: "사진 변경",
+    retake: "다시 촬영하기",
+    change: "다른 사진 선택",
+    next: "다음",
     capture: "촬영",
     cancel: "취소",
     cameraError: "카메라 접근에 실패했습니다.",
@@ -38,8 +41,9 @@ const STEP_COPY = {
     privacy: "Photos are used only for analysis and are not saved",
     camera: "Use Camera",
     gallery: "Choose Photo",
-    retake: "Retake",
-    change: "Change Photo",
+    retake: "Retake Photo",
+    change: "Choose Different Photo",
+    next: "Next",
     capture: "Capture",
     cancel: "Cancel",
     cameraError: "Camera access failed.",
@@ -207,6 +211,7 @@ export default function PhotoUploadStep({
   locale = "ko",
   previewUrl,
   onImageChange,
+  onNext,
   error
 }) {
   const t = STEP_COPY[locale] || STEP_COPY.ko;
@@ -218,6 +223,17 @@ export default function PhotoUploadStep({
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
   const [cameraError, setCameraError] = useState(null);
+  const [showIntroFace, setShowIntroFace] = useState(true);
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      setShowIntroFace(false);
+    }, 2600);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isCameraOpen || !stream || !videoRef.current) {
@@ -336,12 +352,24 @@ export default function PhotoUploadStep({
       );
     }
 
-    return <FaceSilhouette />;
+    return (
+      <>
+        <FaceSilhouette />
+        <img
+          src={INTRO_FACE_IMAGE_SRC}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 z-10 h-full w-full rounded-full object-cover object-center transition-opacity duration-[1800ms] ease-in-out motion-reduce:transition-none ${
+            showIntroFace ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      </>
+    );
   };
 
-  const primaryLabel = isCameraOpen ? t.capture : hasPreview ? t.retake : t.camera;
-  const secondaryLabel = isCameraOpen ? t.cancel : hasPreview ? t.change : t.gallery;
-  const primaryAction = isCameraOpen ? capturePhoto : openCamera;
+  const primaryLabel = isCameraOpen ? t.capture : hasPreview ? t.next : t.camera;
+  const secondaryLabel = isCameraOpen ? t.cancel : t.gallery;
+  const primaryAction = isCameraOpen ? capturePhoto : hasPreview ? onNext : openCamera;
   const secondaryAction = isCameraOpen ? stopCamera : () => galleryInputRef.current?.click();
 
   return (
@@ -394,17 +422,38 @@ export default function PhotoUploadStep({
                   onClick={primaryAction}
                   className="ui-button-primary min-h-[54px] rounded-[0.9rem] px-5 text-base font-bold sm:min-h-[58px]"
                 >
-                  <CameraIcon />
-                  <span className="ml-2">{primaryLabel}</span>
+                  {hasPreview && !isCameraOpen ? null : <CameraIcon />}
+                  <span className={hasPreview && !isCameraOpen ? "" : "ml-2"}>{primaryLabel}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={secondaryAction}
-                  className="ui-button-secondary-soft min-h-[48px] rounded-[0.9rem] px-5 text-sm font-semibold sm:min-h-[52px]"
-                >
-                  <ImageIcon />
-                  <span className="ml-2">{secondaryLabel}</span>
-                </button>
+                {hasPreview && !isCameraOpen ? (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={openCamera}
+                      className="ui-button-secondary-soft min-h-[48px] rounded-[0.9rem] px-3 text-sm font-semibold sm:min-h-[52px]"
+                    >
+                      <CameraIcon />
+                      <span className="ml-2">{t.retake}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="ui-button-secondary-soft min-h-[48px] rounded-[0.9rem] px-3 text-sm font-semibold sm:min-h-[52px]"
+                    >
+                      <ImageIcon />
+                      <span className="ml-2">{t.change}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={secondaryAction}
+                    className="ui-button-secondary-soft min-h-[48px] rounded-[0.9rem] px-5 text-sm font-semibold sm:min-h-[52px]"
+                  >
+                    <ImageIcon />
+                    <span className="ml-2">{secondaryLabel}</span>
+                  </button>
+                )}
                 <p className="inline-flex items-center justify-center gap-1.5 text-center text-[11px] font-medium text-[#666666] dark:text-[#A1A1AA]">
                   <LockIcon />
                   {t.privacy}
