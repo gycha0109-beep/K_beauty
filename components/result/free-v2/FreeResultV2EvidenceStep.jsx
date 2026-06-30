@@ -30,12 +30,38 @@ function getPhotoAnalysisFailureCopy(locale = "ko") {
   return locale === "en"
     ? {
         photo: "Sorry, a clearer photo is needed.",
-        signal: "Analysis failed"
+        signal: "Analysis failed",
+        title: "Photo analysis was excluded",
+        body: "The photo was blurry or partially covered,\nso we could not confirm enough skin details.\nWe analyzed mainly from your survey answers."
       }
     : {
         photo: "죄송합니다. 더 선명한 사진이 필요합니다.",
-        signal: "분석 실패"
+        signal: "분석 실패",
+        title: "사진 분석은 제외되었어요",
+        body: "사진이 흐리거나 가려져 있어\n피부 특징을 충분히 확인하지 못했습니다.\n설문 답변을 중심으로 분석했습니다."
       };
+}
+
+function FreeResultV2CameraExcludedIcon() {
+  return (
+    <div className="relative mx-auto h-14 w-20 sm:h-16 sm:w-24" aria-hidden="true">
+      <div className="absolute left-1 top-4 h-9 w-16 rounded-xl border border-[#b79ad1]/45 bg-[linear-gradient(145deg,#8a6aa2_0%,#4c365b_62%,#2f243a_100%)] shadow-[inset_0_1px_5px_rgba(255,255,255,0.18),0_10px_18px_rgba(17,7,24,0.28)] sm:h-10 sm:w-20">
+        <div className="absolute left-2.5 -top-2.5 h-3 w-5 rounded-t-md border border-[#b79ad1]/40 bg-[linear-gradient(145deg,#9f81b9,#5f4770)]" />
+        <div className="absolute left-7 -top-3 h-4 w-8 rounded-t-lg border border-[#b79ad1]/40 bg-[linear-gradient(145deg,#9a7bb4,#5c456c)] sm:left-8 sm:w-10" />
+        <div className="absolute right-2.5 top-2 h-2.5 w-4 rounded border border-[#251d2b]/70 bg-[#241b2c]" />
+        <div className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#c7a8d8]/35 bg-[linear-gradient(145deg,#9777aa,#4d375d)] shadow-[inset_0_1px_5px_rgba(255,255,255,0.18)] sm:h-10 sm:w-10">
+          <div className="h-5 w-5 rounded-full border border-[#17111e]/80 bg-[radial-gradient(circle_at_34%_30%,#a99df1_0%,#4a3a67_36%,#171321_74%)] sm:h-6 sm:w-6" />
+        </div>
+      </div>
+      <div className="absolute right-1 top-8 flex h-8 w-8 items-center justify-center rounded-full border border-[#b79ad1]/45 bg-[linear-gradient(145deg,#9171a3,#584164)] shadow-[0_8px_14px_rgba(18,8,27,0.30)] sm:top-9 sm:h-9 sm:w-9">
+        <span className="absolute h-1.5 w-5 rotate-45 rounded-full bg-[#f8edf7]" />
+        <span className="absolute h-1.5 w-5 -rotate-45 rounded-full bg-[#f8edf7]" />
+      </div>
+      <span className="absolute right-2 top-1 h-4 w-1.5 rotate-[14deg] rounded-full bg-[#b79aff] shadow-[0_0_8px_rgba(183,154,255,0.44)]" />
+      <span className="absolute -right-0.5 top-4 h-4 w-1.5 rotate-45 rounded-full bg-[#cbb8ff] shadow-[0_0_8px_rgba(203,184,255,0.44)]" />
+      <span className="absolute -right-2 top-7 h-4 w-1.5 rotate-[84deg] rounded-full bg-[#d6c7ff] shadow-[0_0_8px_rgba(214,199,255,0.38)]" />
+    </div>
+  );
 }
 
 function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = "left", isVisible = true, origin = "left", delay = 0 }) {
@@ -317,9 +343,15 @@ function FreeResultV2EvidenceSignalFace({ source, isActive, locale = "ko" }) {
       aria-hidden={!isActive}
     >
       {source.analysisFailed ? (
-        <p className="text-center text-lg font-extrabold tracking-tight text-[#f3e4df]">
-          {failureCopy.signal}
-        </p>
+        <div className="w-full text-center">
+          <FreeResultV2CameraExcludedIcon />
+          <h3 className="mt-2 text-[1rem] font-extrabold leading-tight tracking-tight text-[#2b1420] dark:text-[#fff8f3] sm:text-[1.08rem]">
+            {failureCopy.title}
+          </h3>
+          <p className="mx-auto mt-1.5 max-w-[18rem] whitespace-pre-line break-keep text-[0.72rem] font-semibold leading-4 text-[#8b6370] dark:text-[#c8aeb8] sm:text-[0.78rem]">
+            {failureCopy.body}
+          </p>
+        </div>
       ) : (
         <FreeResultV2EvidenceSignalGroup title={source.title} signals={source.signals} tone={source.key} />
       )}
