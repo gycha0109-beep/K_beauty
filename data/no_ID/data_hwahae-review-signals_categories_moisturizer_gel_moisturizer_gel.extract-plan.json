@@ -1,0 +1,176 @@
+{
+  "summary": {
+    "csvPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\products_rows.csv",
+    "category": "moisturizer_gel",
+    "categoryFolder": "moisturizer\\gel",
+    "outDir": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel",
+    "extractorPath": "D:\\Ji_hwan\\K_Beauti AI\\scripts\\console-snippets\\화해 제품 리뷰 추출.js",
+    "mode": "extract",
+    "supabaseStatus": "checked 10/10",
+    "totalRows": 10,
+    "ready": 10,
+    "blocked": 0
+  },
+  "items": [
+    {
+      "id": "d0319209-502b-4c85-be54-392600ff6b23",
+      "name": "판테딘 엠디 더마 수딩젤",
+      "brand": "그린핑거",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/products/2107285",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\d0319209-502b-4c85-be54-392600ff6b23 판테딘 엠디 더마 수딩젤.json",
+      "live": {
+        "name": "판테딘 엠디 더마 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/products/2107285"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "af70acaa-24b0-45eb-b82b-3c3b9f6d589f",
+      "name": "파워 10 포뮬라 엘아이 수딩 젤 크림",
+      "brand": "잇츠스킨",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/%EC%9E%87%EC%B8%A0%EC%8A%A4%ED%82%A8-%ED%8C%8C%EC%9B%8C-10-%ED%8F%AC%EB%AE%AC%EB%9D%BC-%EC%97%98%EC%95%84%EC%9D%B4-%EC%88%98%EB%94%A9-%EC%A0%A4-%ED%81%AC%EB%A6%BC-%EB%8C%80%EC%9A%A9%EB%9F%89-75ml/43252?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\af70acaa-24b0-45eb-b82b-3c3b9f6d589f 파워 10 포뮬라 엘아이 수딩 젤 크림.json",
+      "live": {
+        "name": "파워 10 포뮬라 엘아이 수딩 젤 크림",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/%EC%9E%87%EC%B8%A0%EC%8A%A4%ED%82%A8-%ED%8C%8C%EC%9B%8C-10-%ED%8F%AC%EB%AE%AC%EB%9D%BC-%EC%97%98%EC%95%84%EC%9D%B4-%EC%88%98%EB%94%A9-%EC%A0%A4-%ED%81%AC%EB%A6%BC-%EB%8C%80%EC%9A%A9%EB%9F%89-75ml/43252?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "name": "자작나무 수분 수딩젤",
+      "brand": "라운드랩",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-%EC%9E%90%EC%9E%91%EB%82%98%EB%AC%B4-%EC%88%98%EB%B6%84-%EC%88%98%EB%94%A9%EC%A0%A4-150ml/31621?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\24103bd1-c7ba-4cc9-b9b9-8129c6452232 자작나무 수분 수딩젤.json",
+      "live": {
+        "name": "자작나무 수분 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-%EC%9E%90%EC%9E%91%EB%82%98%EB%AC%B4-%EC%88%98%EB%B6%84-%EC%88%98%EB%94%A9%EC%A0%A4-150ml/31621?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "df3ab2f1-a4bf-46f9-aaff-df3665156b37",
+      "name": "알로에시카 수딩젤",
+      "brand": "큐어알파",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/products/2148161",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\df3ab2f1-a4bf-46f9-aaff-df3665156b37 알로에시카 수딩젤.json",
+      "live": {
+        "name": "알로에시카 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/products/2148161"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "name": "알로에 수딩젤",
+      "brand": "브링그린",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/products/2127212",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\173c63a8-a40d-4d1e-acb6-a7944d66ec43 알로에 수딩젤.json",
+      "live": {
+        "name": "알로에 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/products/2127212"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "de9fbe7f-e28b-4a8e-bbf6-536d3aa2a2c4",
+      "name": "알로에 수딩 젤",
+      "brand": "이즈앤트리",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/%EC%9D%B4%EC%A6%88%EC%95%A4%ED%8A%B8%EB%A6%AC-%EC%95%8C%EB%A1%9C%EC%97%90-%EC%88%98%EB%94%A9-%EC%A0%A4-%EC%B4%89%EC%B4%89%ED%95%9C-%ED%83%80%EC%9E%85-150ml-1PLUS1/67112?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\de9fbe7f-e28b-4a8e-bbf6-536d3aa2a2c4 알로에 수딩 젤.json",
+      "live": {
+        "name": "알로에 수딩 젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/%EC%9D%B4%EC%A6%88%EC%95%A4%ED%8A%B8%EB%A6%AC-%EC%95%8C%EB%A1%9C%EC%97%90-%EC%88%98%EB%94%A9-%EC%A0%A4-%EC%B4%89%EC%B4%89%ED%95%9C-%ED%83%80%EC%9E%85-150ml-1PLUS1/67112?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "1eb7b437-b527-44e4-b4c2-5d56dc26d2d3",
+      "name": "알로에 리바이탈라이징 수딩젤",
+      "brand": "이니스프리",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/62611?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\1eb7b437-b527-44e4-b4c2-5d56dc26d2d3 알로에 리바이탈라이징 수딩젤.json",
+      "live": {
+        "name": "알로에 리바이탈라이징 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/62611?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "name": "아쿠아 오아시스 수분 젤크림",
+      "brand": "에스네이처",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/54087?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\5848640c-84ca-4079-9d9e-8f3113159fe1 아쿠아 오아시스 수분 젤크림.json",
+      "live": {
+        "name": "아쿠아 오아시스 수분 젤크림",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/54087?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "c7839904-2245-4a86-922c-4d59cf8df0b3",
+      "name": "수딩 알로에 베라 젤",
+      "brand": "아로마티카",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/products/1996621",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\c7839904-2245-4a86-922c-4d59cf8df0b3 수딩 알로에 베라 젤.json",
+      "live": {
+        "name": "수딩 알로에 베라 젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/products/1996621"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "name": "세라마이드 아토 수딩젤",
+      "brand": "일리윤",
+      "category": "moisturizer_gel",
+      "categoryFolder": "moisturizer\\gel",
+      "url": "https://www.hwahae.co.kr/goods/%EC%9D%BC%EB%A6%AC%EC%9C%A4-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%ED%86%A0-%EC%88%98%EB%94%A9%EC%A0%A4-175ml-2%EC%9E%85/68632?goods_tab=review_ingredients",
+      "outputPath": "D:\\Ji_hwan\\K_Beauti AI\\data\\hwahae-review-signals\\categories\\moisturizer\\gel\\358bb655-d0e8-4bbf-93c0-58eea5b5d7ae 세라마이드 아토 수딩젤.json",
+      "live": {
+        "name": "세라마이드 아토 수딩젤",
+        "category": "moisturizer_gel",
+        "url": "https://www.hwahae.co.kr/goods/%EC%9D%BC%EB%A6%AC%EC%9C%A4-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%ED%86%A0-%EC%88%98%EB%94%A9%EC%A0%A4-175ml-2%EC%9E%85/68632?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    }
+  ]
+}

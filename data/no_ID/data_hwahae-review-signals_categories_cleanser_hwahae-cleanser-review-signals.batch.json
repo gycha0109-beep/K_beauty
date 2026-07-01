@@ -1,0 +1,1442 @@
+{
+  "batch_name": "hwahae_cleanser_review_signals_batch",
+  "category": "cleanser",
+  "generated_at": "2026-05-10T02:00:00+09:00",
+  "source": "hwahae_visible_page_console_extractor",
+  "item_count": 10,
+  "important_policy": {
+    "raw_json_policy": "review_raw, market_raw, ingredient_raw values are preserved. Missing category was normalized to cleanser in this batch wrapper.",
+    "scoring_policy": "Do not use review_count or rating as direct Top Pick score. Use review_count as confidence/display/tie-break only.",
+    "cleanser_policy": "Use review tags mainly to infer cleansing_profile, usage fit, and risk flags. Cleaning-strength complaints are preference signals, not universal defects."
+  },
+  "items": [
+    {
+      "source_file": "0def9373-087e-4998-8ef1-7f4cbdac40e4 약산성 굿모닝 젤 클렌저.json",
+      "summary": {
+        "productId": "0def9373-087e-4998-8ef1-7f4cbdac40e4",
+        "name": "약산성 굿모닝 젤 클렌저",
+        "category": "cleanser",
+        "review_count": 412,
+        "rating": 4.53,
+        "confidence_level": "medium",
+        "estimated_cleansing_profile": "low_ph_moisture",
+        "top_positive_tags": [
+          [
+            "자극없는",
+            163
+          ],
+          [
+            "약산성인",
+            107
+          ],
+          [
+            "거품나는",
+            91
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "세정안되는",
+            60
+          ],
+          [
+            "미끌거리는",
+            35
+          ],
+          [
+            "노폐물제거안되는",
+            19
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "0def9373-087e-4998-8ef1-7f4cbdac40e4",
+        "review_raw": {
+          "positive": [
+            [
+              "자극없는",
+              163
+            ],
+            [
+              "약산성인",
+              107
+            ],
+            [
+              "거품나는",
+              91
+            ],
+            [
+              "보습잘되는",
+              87
+            ],
+            [
+              "2차세안에적합한",
+              67
+            ],
+            [
+              "수분있는",
+              54
+            ],
+            [
+              "가벼운",
+              45
+            ]
+          ],
+          "negative": [
+            [
+              "세정안되는",
+              60
+            ],
+            [
+              "미끌거리는",
+              35
+            ],
+            [
+              "노폐물제거안되는",
+              19
+            ],
+            [
+              "뽀드득거리지않는",
+              15
+            ],
+            [
+              "인공향나는",
+              10
+            ],
+            [
+              "알러지반응오는",
+              8
+            ],
+            [
+              "냄새가독한",
+              6
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 412,
+          "rating": 4.53,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 25,
+          "risk": {
+            "low": 18,
+            "medium": 4,
+            "high": 0,
+            "unknown": 3
+          },
+          "functional": {
+            "skin hydration": 12,
+            "moisture evaporation blocking": 0,
+            "skin protection": 3,
+            "soothing/astringent": 0,
+            "exfoliation": 1,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 1,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 1,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 1,
+              "negative": 2
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "50d8285d-9f90-4437-9427-ecc93e9fa055 다이브인 저분자 히알루론산 클렌징 폼.json",
+      "summary": {
+        "productId": "50d8285d-9f90-4437-9427-ecc93e9fa055",
+        "name": "다이브인 저분자 히알루론산 클렌징 폼",
+        "category": "cleanser",
+        "review_count": 14309,
+        "rating": 4.71,
+        "confidence_level": "very_high",
+        "estimated_cleansing_profile": "low_ph_moisture",
+        "top_positive_tags": [
+          [
+            "보습잘되는",
+            3054
+          ],
+          [
+            "수분있는",
+            2684
+          ],
+          [
+            "약산성인",
+            1491
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "노폐물제거안되는",
+            660
+          ],
+          [
+            "뽀드득거리지않는",
+            495
+          ],
+          [
+            "알러지반응오는",
+            156
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "50d8285d-9f90-4437-9427-ecc93e9fa055",
+        "review_raw": {
+          "positive": [
+            [
+              "보습잘되는",
+              3054
+            ],
+            [
+              "수분있는",
+              2684
+            ],
+            [
+              "약산성인",
+              1491
+            ],
+            [
+              "트러블안생기는",
+              867
+            ],
+            [
+              "2차세안에적합한",
+              781
+            ],
+            [
+              "쫀득한",
+              608
+            ],
+            [
+              "미끌거리지않는",
+              336
+            ]
+          ],
+          "negative": [
+            [
+              "노폐물제거안되는",
+              660
+            ],
+            [
+              "뽀드득거리지않는",
+              495
+            ],
+            [
+              "알러지반응오는",
+              156
+            ],
+            [
+              "거품이풍성하지않은",
+              107
+            ],
+            [
+              "리치한",
+              95
+            ],
+            [
+              "워터프루프안지워지는",
+              78
+            ],
+            [
+              "피지안없어지는",
+              72
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 14309,
+          "rating": 4.71,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 32,
+          "risk": {
+            "low": 31,
+            "medium": 1,
+            "high": 0,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 20,
+            "moisture evaporation blocking": 1,
+            "skin protection": 3,
+            "soothing/astringent": 1,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 2,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 5,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 1,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "635aa0fd-aabb-495e-b68f-42b1135df544 아토베리어365 포밍 클렌저.json",
+      "summary": {
+        "productId": "635aa0fd-aabb-495e-b68f-42b1135df544",
+        "name": "아토베리어365 포밍 클렌저",
+        "category": "cleanser",
+        "review_count": 18,
+        "rating": 5,
+        "confidence_level": "low",
+        "estimated_cleansing_profile": "balanced",
+        "top_positive_tags": [
+          [
+            "자극없는",
+            11
+          ],
+          [
+            "거품나는",
+            7
+          ],
+          [
+            "세정잘되는",
+            6
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "향이아쉬운",
+            1
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "635aa0fd-aabb-495e-b68f-42b1135df544",
+        "review_raw": {
+          "positive": [
+            [
+              "자극없는",
+              11
+            ],
+            [
+              "거품나는",
+              7
+            ],
+            [
+              "세정잘되는",
+              6
+            ],
+            [
+              "수분있는",
+              5
+            ],
+            [
+              "뒤집어지지않는",
+              2
+            ],
+            [
+              "잔여물남지않는",
+              2
+            ],
+            [
+              "화장잘지워지는",
+              2
+            ]
+          ],
+          "negative": [
+            [
+              "향이아쉬운",
+              1
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 18,
+          "rating": 5,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 33,
+          "risk": {
+            "low": 30,
+            "medium": 3,
+            "high": 0,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 15,
+            "moisture evaporation blocking": 2,
+            "skin protection": 4,
+            "soothing/astringent": 1,
+            "exfoliation": 1,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 0,
+              "negative": 1
+            },
+            "dry": {
+              "positive": 4,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 0,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "6d560546-80f1-4ccf-9d2c-34023722d2a7 약산성 레드 블레미쉬 클리어 수딩 폼.json",
+      "summary": {
+        "productId": "6d560546-80f1-4ccf-9d2c-34023722d2a7",
+        "name": "약산성 레드 블레미쉬 클리어 수딩 폼",
+        "category": "cleanser",
+        "review_count": 353,
+        "rating": 4.38,
+        "confidence_level": "medium",
+        "estimated_cleansing_profile": "low_ph_moisture",
+        "top_positive_tags": [
+          [
+            "자극없는",
+            125
+          ],
+          [
+            "약산성인",
+            88
+          ],
+          [
+            "세정잘되는",
+            71
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "거품안나는",
+            53
+          ],
+          [
+            "노폐물제거안되는",
+            22
+          ],
+          [
+            "미끌거리는",
+            17
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "6d560546-80f1-4ccf-9d2c-34023722d2a7",
+        "review_raw": {
+          "positive": [
+            [
+              "자극없는",
+              125
+            ],
+            [
+              "약산성인",
+              88
+            ],
+            [
+              "세정잘되는",
+              71
+            ],
+            [
+              "보습잘되는",
+              62
+            ],
+            [
+              "수분있는",
+              36
+            ],
+            [
+              "트러블없어지는",
+              25
+            ],
+            [
+              "진정되는",
+              15
+            ]
+          ],
+          "negative": [
+            [
+              "거품안나는",
+              53
+            ],
+            [
+              "노폐물제거안되는",
+              22
+            ],
+            [
+              "미끌거리는",
+              17
+            ],
+            [
+              "향이아쉬운",
+              14
+            ],
+            [
+              "거품이풍성하지않은",
+              8
+            ],
+            [
+              "뽀드득거리지않는",
+              7
+            ],
+            [
+              "워터프루프안지워지는",
+              5
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 353,
+          "rating": 4.38,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 43,
+          "risk": {
+            "low": 42,
+            "medium": 0,
+            "high": 1,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 29,
+            "moisture evaporation blocking": 1,
+            "skin protection": 4,
+            "soothing/astringent": 0,
+            "exfoliation": 1,
+            "whitening": 0,
+            "acne relief": 1,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 1,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 5,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 0,
+              "negative": 2
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "9d47de96-3227-494b-a8aa-2a4a3b7959d8 화산송이 모공 바하.json",
+      "summary": {
+        "productId": "9d47de96-3227-494b-a8aa-2a4a3b7959d8",
+        "name": "화산송이 모공 바하",
+        "category": "cleanser",
+        "review_count": 1310,
+        "rating": 4.43,
+        "confidence_level": "high",
+        "estimated_cleansing_profile": "deep_clean",
+        "top_positive_tags": [
+          [
+            "세정잘되는",
+            446
+          ],
+          [
+            "거품나는",
+            338
+          ],
+          [
+            "뽀드득거리는",
+            202
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "보습안되는",
+            249
+          ],
+          [
+            "알러지반응오는",
+            44
+          ],
+          [
+            "따가운",
+            36
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "9d47de96-3227-494b-a8aa-2a4a3b7959d8",
+        "review_raw": {
+          "positive": [
+            [
+              "세정잘되는",
+              446
+            ],
+            [
+              "거품나는",
+              338
+            ],
+            [
+              "뽀드득거리는",
+              202
+            ],
+            [
+              "모공관리되는",
+              132
+            ],
+            [
+              "각질제거잘되는",
+              101
+            ],
+            [
+              "피지없어지는",
+              89
+            ],
+            [
+              "유분없는",
+              84
+            ]
+          ],
+          "negative": [
+            [
+              "보습안되는",
+              249
+            ],
+            [
+              "알러지반응오는",
+              44
+            ],
+            [
+              "따가운",
+              36
+            ],
+            [
+              "뒤집어지는",
+              18
+            ],
+            [
+              "알갱이있는",
+              16
+            ],
+            [
+              "인공향나는",
+              13
+            ],
+            [
+              "가려운",
+              11
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 1310,
+          "rating": 4.43,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 26,
+          "risk": {
+            "low": 21,
+            "medium": 2,
+            "high": 2,
+            "unknown": 1
+          },
+          "functional": {
+            "skin hydration": 9,
+            "moisture evaporation blocking": 1,
+            "skin protection": 4,
+            "soothing/astringent": 0,
+            "exfoliation": 3,
+            "whitening": 0,
+            "acne relief": 1,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 1,
+              "negative": 3
+            },
+            "dry": {
+              "positive": 1,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 0,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "c8f78d00-85b9-4850-b464-e8a0d815b2d8 자작나무 수분 클렌저.json",
+      "summary": {
+        "productId": "c8f78d00-85b9-4850-b464-e8a0d815b2d8",
+        "name": "자작나무 수분 클렌저",
+        "category": "cleanser",
+        "review_count": 1357,
+        "rating": 4.45,
+        "confidence_level": "high",
+        "estimated_cleansing_profile": "low_ph_moisture",
+        "top_positive_tags": [
+          [
+            "자극없는",
+            544
+          ],
+          [
+            "수분있는",
+            416
+          ],
+          [
+            "보습잘되는",
+            337
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "세정안되는",
+            279
+          ],
+          [
+            "거품안나는",
+            255
+          ],
+          [
+            "노폐물제거안되는",
+            76
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "c8f78d00-85b9-4850-b464-e8a0d815b2d8",
+        "review_raw": {
+          "positive": [
+            [
+              "자극없는",
+              544
+            ],
+            [
+              "수분있는",
+              416
+            ],
+            [
+              "보습잘되는",
+              337
+            ],
+            [
+              "약산성인",
+              152
+            ],
+            [
+              "2차세안에적합한",
+              93
+            ],
+            [
+              "트러블안생기는",
+              80
+            ],
+            [
+              "가벼운",
+              60
+            ]
+          ],
+          "negative": [
+            [
+              "세정안되는",
+              279
+            ],
+            [
+              "거품안나는",
+              255
+            ],
+            [
+              "노폐물제거안되는",
+              76
+            ],
+            [
+              "뽀드득거리지않는",
+              70
+            ],
+            [
+              "미끌거리는",
+              46
+            ],
+            [
+              "거품이풍성하지않은",
+              28
+            ],
+            [
+              "잔여물남는",
+              19
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 1357,
+          "rating": 4.45,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 26,
+          "risk": {
+            "low": 25,
+            "medium": 1,
+            "high": 0,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 12,
+            "moisture evaporation blocking": 0,
+            "skin protection": 3,
+            "soothing/astringent": 0,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 0,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 5,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 1,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "cb04b777-9a57-4246-9431-3018638354db 똘러리앙 퓨리파잉 포밍 클렌저.json",
+      "summary": {
+        "productId": "cb04b777-9a57-4246-9431-3018638354db",
+        "name": "똘러리앙 퓨리파잉 포밍 클렌저",
+        "category": "cleanser",
+        "review_count": 346,
+        "rating": 5,
+        "confidence_level": "medium",
+        "estimated_cleansing_profile": "balanced",
+        "top_positive_tags": [
+          [
+            "세정잘되는",
+            95
+          ],
+          [
+            "자극없는",
+            91
+          ],
+          [
+            "거품나는",
+            77
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "알러지반응오는",
+            23
+          ],
+          [
+            "모공관리안되는",
+            7
+          ],
+          [
+            "따가운",
+            5
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "cb04b777-9a57-4246-9431-3018638354db",
+        "review_raw": {
+          "positive": [
+            [
+              "세정잘되는",
+              95
+            ],
+            [
+              "자극없는",
+              91
+            ],
+            [
+              "거품나는",
+              77
+            ],
+            [
+              "보습잘되는",
+              63
+            ],
+            [
+              "뽀드득거리는",
+              47
+            ],
+            [
+              "트러블안생기는",
+              26
+            ],
+            [
+              "뒤집어지지않는",
+              10
+            ]
+          ],
+          "negative": [
+            [
+              "알러지반응오는",
+              23
+            ],
+            [
+              "모공관리안되는",
+              7
+            ],
+            [
+              "따가운",
+              5
+            ],
+            [
+              "가려운",
+              4
+            ],
+            [
+              "눈통증있는",
+              4
+            ],
+            [
+              "거품이풍성하지않은",
+              3
+            ],
+            [
+              "뻣뻣한",
+              2
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 346,
+          "rating": 5,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 10,
+          "risk": {
+            "low": 9,
+            "medium": 1,
+            "high": 0,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 2,
+            "moisture evaporation blocking": 0,
+            "skin protection": 1,
+            "soothing/astringent": 0,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 0,
+              "negative": 3
+            },
+            "dry": {
+              "positive": 1,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 0,
+              "negative": 0
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "cd3b66be-cddc-47e1-906f-a871dea84412_녹두클렌징폼.json",
+      "summary": {
+        "productId": "cd3b66be-cddc-47e1-906f-a871dea84412",
+        "name": "녹두클렌징폼",
+        "category": "cleanser",
+        "review_count": 47935,
+        "rating": 4.63,
+        "confidence_level": "very_high",
+        "estimated_cleansing_profile": "balanced",
+        "top_positive_tags": [
+          [
+            "알갱이있는",
+            4279
+          ],
+          [
+            "트러블안생기는",
+            3576
+          ],
+          [
+            "각질제거잘되는",
+            2149
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "알러지반응오는",
+            956
+          ],
+          [
+            "거품이풍성하지않은",
+            427
+          ],
+          [
+            "리치한",
+            342
+          ]
+        ],
+        "category_was_added_in_batch": false
+      },
+      "data": {
+        "productId": "cd3b66be-cddc-47e1-906f-a871dea84412",
+        "review_raw": {
+          "positive": [
+            [
+              "알갱이있는",
+              4279
+            ],
+            [
+              "트러블안생기는",
+              3576
+            ],
+            [
+              "각질제거잘되는",
+              2149
+            ],
+            [
+              "트러블없어지는",
+              1996
+            ],
+            [
+              "2차세안에적합한",
+              1445
+            ],
+            [
+              "미끌거리지않는",
+              1291
+            ],
+            [
+              "진정되는",
+              845
+            ]
+          ],
+          "negative": [
+            [
+              "알러지반응오는",
+              956
+            ],
+            [
+              "거품이풍성하지않은",
+              427
+            ],
+            [
+              "리치한",
+              342
+            ],
+            [
+              "워터프루프안지워지는",
+              215
+            ],
+            [
+              "가려운",
+              183
+            ],
+            [
+              "잘굳는",
+              98
+            ],
+            [
+              "흘러내리는",
+              78
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 47935,
+          "rating": 4.63,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 37,
+          "risk": {
+            "low": 33,
+            "medium": 2,
+            "high": 0,
+            "unknown": 2
+          },
+          "functional": {
+            "skin hydration": 25,
+            "moisture evaporation blocking": 2,
+            "skin protection": 2,
+            "soothing/astringent": 1,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 2,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 5,
+              "negative": 1
+            },
+            "sensitive": {
+              "positive": 3,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "d7bb44e4-d585-41ca-8a74-04781470d1de 1025 독도 클렌저.json",
+      "summary": {
+        "productId": "d7bb44e4-d585-41ca-8a74-04781470d1de",
+        "name": "1025 독도 클렌저",
+        "category": "cleanser",
+        "review_count": 19014,
+        "rating": 4.36,
+        "confidence_level": "very_high",
+        "estimated_cleansing_profile": "low_ph_moisture",
+        "top_positive_tags": [
+          [
+            "보습잘되는",
+            3924
+          ],
+          [
+            "약산성인",
+            2623
+          ],
+          [
+            "수분있는",
+            1947
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "세정안되는",
+            3236
+          ],
+          [
+            "향이아쉬운",
+            1746
+          ],
+          [
+            "미끌거리는",
+            1411
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "d7bb44e4-d585-41ca-8a74-04781470d1de",
+        "review_raw": {
+          "positive": [
+            [
+              "보습잘되는",
+              3924
+            ],
+            [
+              "약산성인",
+              2623
+            ],
+            [
+              "수분있는",
+              1947
+            ],
+            [
+              "트러블안생기는",
+              1405
+            ],
+            [
+              "트러블없어지는",
+              644
+            ],
+            [
+              "2차세안에적합한",
+              629
+            ],
+            [
+              "가벼운",
+              338
+            ]
+          ],
+          "negative": [
+            [
+              "세정안되는",
+              3236
+            ],
+            [
+              "향이아쉬운",
+              1746
+            ],
+            [
+              "미끌거리는",
+              1411
+            ],
+            [
+              "노폐물제거안되는",
+              1235
+            ],
+            [
+              "뽀드득거리지않는",
+              967
+            ],
+            [
+              "알러지반응오는",
+              480
+            ],
+            [
+              "잔여물남는",
+              353
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 19014,
+          "rating": 4.36,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 38,
+          "risk": {
+            "low": 38,
+            "medium": 0,
+            "high": 0,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 25,
+            "moisture evaporation blocking": 1,
+            "skin protection": 2,
+            "soothing/astringent": 0,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 1,
+              "negative": 0
+            },
+            "dry": {
+              "positive": 4,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 1,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    },
+    {
+      "source_file": "e6c3f88c-6908-401f-83d1-a5164f1dd60a 퍼펙트 휩 페이셜 워시.json",
+      "summary": {
+        "productId": "e6c3f88c-6908-401f-83d1-a5164f1dd60a",
+        "name": "퍼펙트 휩 페이셜 워시",
+        "category": "cleanser",
+        "review_count": 1467,
+        "rating": 4.15,
+        "confidence_level": "high",
+        "estimated_cleansing_profile": "deep_clean",
+        "top_positive_tags": [
+          [
+            "세정잘되는",
+            621
+          ],
+          [
+            "거품나는",
+            586
+          ],
+          [
+            "쫀득한",
+            268
+          ]
+        ],
+        "top_negative_tags": [
+          [
+            "보습안되는",
+            447
+          ],
+          [
+            "자극있는",
+            97
+          ],
+          [
+            "트러블생기는",
+            73
+          ]
+        ],
+        "category_was_added_in_batch": true
+      },
+      "data": {
+        "productId": "e6c3f88c-6908-401f-83d1-a5164f1dd60a",
+        "review_raw": {
+          "positive": [
+            [
+              "세정잘되는",
+              621
+            ],
+            [
+              "거품나는",
+              586
+            ],
+            [
+              "쫀득한",
+              268
+            ],
+            [
+              "뽀드득거리는",
+              236
+            ],
+            [
+              "화장잘지워지는",
+              95
+            ],
+            [
+              "유분없는",
+              91
+            ],
+            [
+              "노폐물제거되는",
+              84
+            ]
+          ],
+          "negative": [
+            [
+              "보습안되는",
+              447
+            ],
+            [
+              "자극있는",
+              97
+            ],
+            [
+              "트러블생기는",
+              73
+            ],
+            [
+              "알러지반응오는",
+              55
+            ],
+            [
+              "수분없는",
+              49
+            ],
+            [
+              "따가운",
+              49
+            ],
+            [
+              "속건조에효과없는",
+              24
+            ]
+          ]
+        },
+        "market_raw": {
+          "review_count": 1467,
+          "rating": 4.15,
+          "rating_distribution": {}
+        },
+        "ingredient_raw": {
+          "total_ingredients": 33,
+          "risk": {
+            "low": 26,
+            "medium": 6,
+            "high": 1,
+            "unknown": 0
+          },
+          "functional": {
+            "skin hydration": 13,
+            "moisture evaporation blocking": 2,
+            "skin protection": 2,
+            "soothing/astringent": 0,
+            "exfoliation": 0,
+            "whitening": 0,
+            "acne relief": 0,
+            "uv protection": 0,
+            "wrinkle improvement": 0
+          },
+          "skin_type": {
+            "oily": {
+              "positive": 0,
+              "negative": 3
+            },
+            "dry": {
+              "positive": 4,
+              "negative": 0
+            },
+            "sensitive": {
+              "positive": 0,
+              "negative": 1
+            }
+          }
+        },
+        "category": "cleanser"
+      }
+    }
+  ]
+}

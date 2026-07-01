@@ -1,0 +1,352 @@
+{
+  "summary": {
+    "csvPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\cleanser_rows.csv",
+    "category": "cleanser",
+    "categoryFolder": "cleanser",
+    "outDir": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser",
+    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\console-snippets\\화해 제품 리뷰 추출.js",
+    "mode": "extract",
+    "supabaseStatus": "checked 16/16",
+    "totalRows": 16,
+    "ready": 16,
+    "blocked": 0
+  },
+  "items": [
+    {
+      "id": "0bced9fe-aa08-4982-bb4a-03fb9ed509c1",
+      "name": "어성초 쿼세티놀 모공 딥 클렌징 폼",
+      "brand": "아누아",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%88%84%EC%95%84-%EC%96%B4%EC%84%B1%EC%B4%88-%EC%BF%BC%EC%84%B8%ED%8B%B0%EB%86%80-%EB%AA%A8%EA%B3%B5-%EB%94%A5-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%8F%BC-150ml/48978?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\0bced9fe-aa08-4982-bb4a-03fb9ed509c1 어성초 쿼세티놀 모공 딥 클렌징 폼.json",
+      "live": {
+        "name": "어성초 쿼세티놀 모공 딥 클렌징 폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%88%84%EC%95%84-%EC%96%B4%EC%84%B1%EC%B4%88-%EC%BF%BC%EC%84%B8%ED%8B%B0%EB%86%80-%EB%AA%A8%EA%B3%B5-%EB%94%A5-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%8F%BC-150ml/48978?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "name": "더마 크림 팩 클렌저 마데카소사이드",
+      "brand": "메디힐",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%9E%90-only%ED%99%94%ED%95%B4-%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80-%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EB%8D%94%EB%B8%94-%EA%B8%B0%ED%9A%8D-120ml-2PLUS5ml-3/75341?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\51d526de-b127-47c4-83f1-64fc1ec4aa10 더마 크림 팩 클렌저 마데카소사이드.json",
+      "live": {
+        "name": "더마 크림 팩 클렌저 마데카소사이드",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%9E%90-only%ED%99%94%ED%95%B4-%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80-%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EB%8D%94%EB%B8%94-%EA%B8%B0%ED%9A%8D-120ml-2PLUS5ml-3/75341?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "d0b4789c-bc0a-46e1-8317-ce498377333e",
+      "name": "다시마 앰플 클렌징폼",
+      "brand": "션리",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%85%98%EB%A6%AC-only%ED%99%94%ED%95%B4-%EB%8B%A4%EC%8B%9C%EB%A7%88-%EC%95%B0%ED%94%8C-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-120ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EB%8B%A4%EC%8B%9C%EB%A7%88-%EB%A7%88%EC%8A%A4%ED%81%AC%ED%8C%A9-5%EB%A7%A4/70162?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\d0b4789c-bc0a-46e1-8317-ce498377333e 다시마 앰플 클렌징폼.json",
+      "live": {
+        "name": "다시마 앰플 클렌징폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%85%98%EB%A6%AC-only%ED%99%94%ED%95%B4-%EB%8B%A4%EC%8B%9C%EB%A7%88-%EC%95%B0%ED%94%8C-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-120ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EB%8B%A4%EC%8B%9C%EB%A7%88-%EB%A7%88%EC%8A%A4%ED%81%AC%ED%8C%A9-5%EB%A7%A4/70162?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "2fddc273-d7ee-4034-a399-3bfd2cfcafd4",
+      "name": "프레시 그린 떡솝 클렌저",
+      "brand": "아렌시아",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%A0%8C%EC%8B%9C%EC%95%84-%ED%94%84%EB%A0%88%EC%8B%9C-%EA%B7%B8%EB%A6%B0-%EB%96%A1%EC%86%9D-%ED%81%B4%EB%A0%8C%EC%A0%80-120g/74059?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\2fddc273-d7ee-4034-a399-3bfd2cfcafd4 프레시 그린 떡솝 클렌저.json",
+      "live": {
+        "name": "프레시 그린 떡솝 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%A0%8C%EC%8B%9C%EC%95%84-%ED%94%84%EB%A0%88%EC%8B%9C-%EA%B7%B8%EB%A6%B0-%EB%96%A1%EC%86%9D-%ED%81%B4%EB%A0%8C%EC%A0%80-120g/74059?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "d4f64d02-6d35-435b-8269-b6ed7cd34bad",
+      "name": "아쿠아 라이스 약산성 클렌징폼",
+      "brand": "에스네이처",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%97%90%EC%8A%A4%EB%84%A4%EC%9D%B4%EC%B2%98-only%ED%99%94%ED%95%B4-%EC%95%84%EC%BF%A0%EC%95%84-%EB%9D%BC%EC%9D%B4%EC%8A%A4-%EC%95%BD%EC%82%B0%EC%84%B1-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-160mlPLUS80mlPLUS%ED%81%B4%EB%A0%8C%EC%A7%95%EC%98%A4%EC%9D%BC-13ml-%EA%B8%B0%ED%9A%8D/48278?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\d4f64d02-6d35-435b-8269-b6ed7cd34bad 아쿠아 라이스 약산성 클렌징폼.json",
+      "live": {
+        "name": "아쿠아 라이스 약산성 클렌징폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%97%90%EC%8A%A4%EB%84%A4%EC%9D%B4%EC%B2%98-only%ED%99%94%ED%95%B4-%EC%95%84%EC%BF%A0%EC%95%84-%EB%9D%BC%EC%9D%B4%EC%8A%A4-%EC%95%BD%EC%82%B0%EC%84%B1-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-160mlPLUS80mlPLUS%ED%81%B4%EB%A0%8C%EC%A7%95%EC%98%A4%EC%9D%BC-13ml-%EA%B8%B0%ED%9A%8D/48278?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "name": "릴리프 하이드레이션 라이트 폼 클렌저",
+      "brand": "YBK",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/YBK-only%ED%99%94%ED%95%B4-%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml-1PLUS1-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D/58874?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc 릴리프 하이드레이션 라이트 폼 클렌저.json",
+      "live": {
+        "name": "릴리프 하이드레이션 라이트 폼 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/YBK-only%ED%99%94%ED%95%B4-%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml-1PLUS1-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D/58874?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "009e0339-fa00-429e-a1c2-2a23eb4707f8",
+      "name": "어린쑥 클렌징 흡착 팩폼",
+      "brand": "한율",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%ED%95%9C%EC%9C%A8-%EC%96%B4%EB%A6%B0%EC%91%A5-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%9D%A1%EC%B0%A9-%ED%8C%A9%ED%8F%BC-120ml/62599?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\009e0339-fa00-429e-a1c2-2a23eb4707f8 어린쑥 클렌징 흡착 팩폼.json",
+      "live": {
+        "name": "어린쑥 클렌징 흡착 팩폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%ED%95%9C%EC%9C%A8-%EC%96%B4%EB%A6%B0%EC%91%A5-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%9D%A1%EC%B0%A9-%ED%8C%A9%ED%8F%BC-120ml/62599?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "15420430-2a68-49e2-ab53-716d9c4ff45e",
+      "name": "햇쌀 데일리 폼 클렌저",
+      "brand": "프리메이",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%ED%94%84%EB%A6%AC%EB%A9%94%EC%9D%B4-only%ED%99%94%ED%95%B4-%ED%96%87%EC%8C%80-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EC%98%AC%EB%A6%AC%EB%B8%8C-%EB%A7%88%EC%8A%A4%ED%81%AC-1%EB%A7%A4-%EC%A6%9D%EC%A0%95/73508?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\15420430-2a68-49e2-ab53-716d9c4ff45e 햇쌀 데일리 폼 클렌저.json",
+      "live": {
+        "name": "햇쌀 데일리 폼 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%ED%94%84%EB%A6%AC%EB%A9%94%EC%9D%B4-only%ED%99%94%ED%95%B4-%ED%96%87%EC%8C%80-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EC%98%AC%EB%A6%AC%EB%B8%8C-%EB%A7%88%EC%8A%A4%ED%81%AC-1%EB%A7%A4-%EC%A6%9D%EC%A0%95/73508?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "0b59cb66-ab03-4a0d-815e-7a94a5c7ae65",
+      "name": "세이프 미 클렌징폼",
+      "brand": "메이크프렘",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EC%9D%B4%ED%81%AC%ED%94%84%EB%A0%98-only%ED%99%94%ED%95%B4-%EC%84%B8%EC%9D%B4%ED%94%84-%EB%AF%B8-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-170ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EB%B0%80%ED%81%AC-21mlPLUS%ED%81%AC%EB%A6%BC-10ml/42891?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\0b59cb66-ab03-4a0d-815e-7a94a5c7ae65 세이프 미 클렌징폼.json",
+      "live": {
+        "name": "세이프 미 클렌징폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EC%9D%B4%ED%81%AC%ED%94%84%EB%A0%98-only%ED%99%94%ED%95%B4-%EC%84%B8%EC%9D%B4%ED%94%84-%EB%AF%B8-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-170ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EB%B0%80%ED%81%AC-21mlPLUS%ED%81%AC%EB%A6%BC-10ml/42891?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "63300ce0-9bb7-4ce5-98d5-5c59ae283cda",
+      "name": "그린 토마토 클레이 팩 클렌저",
+      "brand": "풀리",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%ED%92%80%EB%A6%AC-%EA%B7%B8%EB%A6%B0-%ED%86%A0%EB%A7%88%ED%86%A0-%ED%81%B4%EB%A0%88%EC%9D%B4-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80-120ml/63723?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\63300ce0-9bb7-4ce5-98d5-5c59ae283cda 그린 토마토 클레이 팩 클렌저.json",
+      "live": {
+        "name": "그린 토마토 클레이 팩 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%ED%92%80%EB%A6%AC-%EA%B7%B8%EB%A6%B0-%ED%86%A0%EB%A7%88%ED%86%A0-%ED%81%B4%EB%A0%88%EC%9D%B4-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80-120ml/63723?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "f2a697ce-43d9-4a9a-b110-1f332bc29b50",
+      "name": "딥 클린 폼 클렌저 수분초 히알루론 폼",
+      "brand": "아비브",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%B9%84%EB%B8%8C-%EB%94%A5-%ED%81%B4%EB%A6%B0-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-%EC%88%98%EB%B6%84%EC%B4%88-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%A0-%ED%8F%BC-150ml-2%EA%B0%9C%EC%9E%85/70903?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\f2a697ce-43d9-4a9a-b110-1f332bc29b50 딥 클린 폼 클렌저 수분초 히알루론 폼.json",
+      "live": {
+        "name": "딥 클린 폼 클렌저 수분초 히알루론 폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%95%84%EB%B9%84%EB%B8%8C-%EB%94%A5-%ED%81%B4%EB%A6%B0-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-%EC%88%98%EB%B6%84%EC%B4%88-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%A0-%ED%8F%BC-150ml-2%EA%B0%9C%EC%9E%85/70903?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "3f83bb85-cc53-4aa0-a0f0-e08535288749",
+      "name": "포어 퓨리파잉 살리실산 클렌저",
+      "brand": "주미소",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%A3%BC%EB%AF%B8%EC%86%8C-only%ED%99%94%ED%95%B4-%ED%8F%AC%EC%96%B4-%ED%93%A8%EB%A6%AC%ED%8C%8C%EC%9E%89-%EC%82%B4%EB%A6%AC%EC%8B%A4%EC%82%B0-%ED%81%B4%EB%A0%8C%EC%A0%80-120g-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%ED%8F%BC20gPLUS%EC%98%A4%EC%9D%BC20ml/70013?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\3f83bb85-cc53-4aa0-a0f0-e08535288749 포어 퓨리파잉 살리실산 클렌저.json",
+      "live": {
+        "name": "포어 퓨리파잉 살리실산 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%A3%BC%EB%AF%B8%EC%86%8C-only%ED%99%94%ED%95%B4-%ED%8F%AC%EC%96%B4-%ED%93%A8%EB%A6%AC%ED%8C%8C%EC%9E%89-%EC%82%B4%EB%A6%AC%EC%8B%A4%EC%82%B0-%ED%81%B4%EB%A0%8C%EC%A0%80-120g-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%ED%8F%BC20gPLUS%EC%98%A4%EC%9D%BC20ml/70013?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "5448b8c3-cf87-4561-a699-3baf3dcb3dab",
+      "name": "리커버리 머드 팩투폼 클렌저",
+      "brand": "비알머드",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/28923?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\5448b8c3-cf87-4561-a699-3baf3dcb3dab 리커버리 머드 팩투폼 클렌저.json",
+      "live": {
+        "name": "리커버리 머드 팩투폼 클렌저",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/28923?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "fbe265d2-8457-4c4f-96e2-7a08be0e5073",
+      "name": "밸런스풀 시카 포어 클렌징 폼",
+      "brand": "토리든",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%ED%86%A0%EB%A6%AC%EB%93%A0-%EB%B0%B8%EB%9F%B0%EC%8A%A4%ED%92%80-%EC%8B%9C%EC%B9%B4-%ED%8F%AC%EC%96%B4-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%8F%BC-150ml-2%EA%B0%9C%EB%AC%B6%EC%9D%8C/60458?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\fbe265d2-8457-4c4f-96e2-7a08be0e5073 밸런스풀 시카 포어 클렌징 폼.json",
+      "live": {
+        "name": "밸런스풀 시카 포어 클렌징 폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%ED%86%A0%EB%A6%AC%EB%93%A0-%EB%B0%B8%EB%9F%B0%EC%8A%A4%ED%92%80-%EC%8B%9C%EC%B9%B4-%ED%8F%AC%EC%96%B4-%ED%81%B4%EB%A0%8C%EC%A7%95-%ED%8F%BC-150ml-2%EA%B0%9C%EB%AC%B6%EC%9D%8C/60458?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "8889342d-d9a2-454b-aa27-60d4934b9978",
+      "name": "레드 락토 콜라겐 클리어 폼클렌저 2.0",
+      "brand": "메디필",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%95%84-%EB%A0%88%EB%93%9C-%EB%9D%BD%ED%86%A0-%EC%BD%9C%EB%9D%BC%EA%B2%90-%ED%81%B4%EB%A6%AC%EC%96%B4-%ED%8F%BC%ED%81%B4%EB%A0%8C%EC%A0%80-2-0-120ml/62432?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\8889342d-d9a2-454b-aa27-60d4934b9978 레드 락토 콜라겐 클리어 폼클렌저 2.0.json",
+      "live": {
+        "name": "레드 락토 콜라겐 클리어 폼클렌저 2.0",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%95%84-%EB%A0%88%EB%93%9C-%EB%9D%BD%ED%86%A0-%EC%BD%9C%EB%9D%BC%EA%B2%90-%ED%81%B4%EB%A6%AC%EC%96%B4-%ED%8F%BC%ED%81%B4%EB%A0%8C%EC%A0%80-2-0-120ml/62432?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "b46ca581-7a4e-4cf1-b599-b9fdc026885d",
+      "name": "어린새싹 딥 클렌징폼",
+      "brand": "수이스킨",
+      "category": "cleanser",
+      "categoryFolder": "cleanser",
+      "canonical_category": "cleanser",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%88%98%EC%9D%B4%EC%8A%A4%ED%82%A8-only%ED%99%94%ED%95%B4-%EC%96%B4%EB%A6%B0%EC%83%88%EC%8B%B9-%EB%94%A5-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-%EA%B8%B0%ED%9A%8D%EC%84%B8%ED%8A%B8-150mlPLUS150mlPLUS20ml/61962?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\cleanser\\raw\\b46ca581-7a4e-4cf1-b599-b9fdc026885d 어린새싹 딥 클렌징폼.json",
+      "live": {
+        "name": "어린새싹 딥 클렌징폼",
+        "category": "cleanser",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%88%98%EC%9D%B4%EC%8A%A4%ED%82%A8-only%ED%99%94%ED%95%B4-%EC%96%B4%EB%A6%B0%EC%83%88%EC%8B%B9-%EB%94%A5-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-%EA%B8%B0%ED%9A%8D%EC%84%B8%ED%8A%B8-150mlPLUS150mlPLUS20ml/61962?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    }
+  ]
+}

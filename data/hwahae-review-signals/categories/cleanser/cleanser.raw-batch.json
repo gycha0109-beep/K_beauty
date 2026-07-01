@@ -1,0 +1,1666 @@
+[
+  {
+    "productId": "0bced9fe-aa08-4982-bb4a-03fb9ed509c1",
+    "review_raw": {
+      "positive": [
+        [
+          "세정잘되는",
+          76
+        ],
+        [
+          "보습잘되는",
+          61
+        ],
+        [
+          "트러블없어지는",
+          53
+        ],
+        [
+          "진정되는",
+          27
+        ],
+        [
+          "각질제거잘되는",
+          26
+        ],
+        [
+          "모공관리되는",
+          23
+        ],
+        [
+          "피지없어지는",
+          23
+        ]
+      ],
+      "negative": [
+        [
+          "트러블생기는",
+          13
+        ],
+        [
+          "미끌거리는",
+          11
+        ],
+        [
+          "따가운",
+          8
+        ],
+        [
+          "알러지반응오는",
+          8
+        ],
+        [
+          "잔여물남는",
+          5
+        ],
+        [
+          "흘러내리는",
+          2
+        ],
+        [
+          "워터프루프안지워지는",
+          2
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 299,
+      "rating": 4.54,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 37,
+      "risk": {
+        "low": 33,
+        "medium": 2,
+        "high": 1,
+        "unknown": 1
+      },
+      "functional": {
+        "skin hydration": 24,
+        "moisture evaporation blocking": 0,
+        "skin protection": 2,
+        "soothing/astringent": 1,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+    "review_raw": {
+      "positive": [
+        [
+          "보습잘되는",
+          285
+        ],
+        [
+          "쫀득한",
+          273
+        ],
+        [
+          "노폐물제거되는",
+          210
+        ],
+        [
+          "향에만족한",
+          206
+        ],
+        [
+          "수분있는",
+          184
+        ],
+        [
+          "진정되는",
+          109
+        ],
+        [
+          "편안해지는",
+          92
+        ]
+      ],
+      "negative": [
+        [
+          "따가운",
+          27
+        ],
+        [
+          "끈적한",
+          26
+        ],
+        [
+          "워터프루프안지워지는",
+          24
+        ],
+        [
+          "거품이풍성하지않은",
+          18
+        ],
+        [
+          "블랙헤드안없어지는",
+          14
+        ],
+        [
+          "알러지반응오는",
+          14
+        ],
+        [
+          "답답한",
+          9
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 964,
+      "rating": 4.58,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 48,
+      "risk": {
+        "low": 44,
+        "medium": 4,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 25,
+        "moisture evaporation blocking": 1,
+        "skin protection": 6,
+        "soothing/astringent": 1,
+        "exfoliation": 0,
+        "whitening": 1,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "d0b4789c-bc0a-46e1-8317-ce498377333e",
+    "review_raw": {
+      "positive": [
+        [
+          "쫀득한",
+          2262
+        ],
+        [
+          "수분있는",
+          1538
+        ],
+        [
+          "노폐물제거되는",
+          1420
+        ],
+        [
+          "미끌거리는",
+          977
+        ],
+        [
+          "모공관리되는",
+          614
+        ],
+        [
+          "피지없어지는",
+          465
+        ],
+        [
+          "매끄러운",
+          354
+        ]
+      ],
+      "negative": [
+        [
+          "워터프루프안지워지는",
+          219
+        ],
+        [
+          "인공향나는",
+          145
+        ],
+        [
+          "거품이풍성하지않은",
+          118
+        ],
+        [
+          "끈적한",
+          115
+        ],
+        [
+          "알러지반응오는",
+          64
+        ],
+        [
+          "눈통증있는",
+          40
+        ],
+        [
+          "향지속잘되지않는",
+          13
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 6283,
+      "rating": 4.58,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 35,
+      "risk": {
+        "low": 28,
+        "medium": 3,
+        "high": 2,
+        "unknown": 2
+      },
+      "functional": {
+        "skin hydration": 18,
+        "moisture evaporation blocking": 0,
+        "skin protection": 3,
+        "soothing/astringent": 0,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 3
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 1
+        }
+      }
+    }
+  },
+  {
+    "productId": "2fddc273-d7ee-4034-a399-3bfd2cfcafd4",
+    "review_raw": {
+      "positive": [
+        [
+          "노폐물제거되는",
+          94
+        ],
+        [
+          "쫀득한",
+          74
+        ],
+        [
+          "각질제거잘되는",
+          66
+        ],
+        [
+          "알갱이있는",
+          44
+        ],
+        [
+          "매끄러운",
+          34
+        ],
+        [
+          "피지없어지는",
+          34
+        ],
+        [
+          "피부결좋아지는",
+          33
+        ]
+      ],
+      "negative": [
+        [
+          "따가운",
+          10
+        ],
+        [
+          "알러지반응오는",
+          9
+        ],
+        [
+          "눈통증있는",
+          6
+        ],
+        [
+          "미끌거리는",
+          5
+        ],
+        [
+          "인공향나는",
+          4
+        ],
+        [
+          "워터프루프안지워지는",
+          3
+        ],
+        [
+          "거품이풍성하지않은",
+          3
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 348,
+      "rating": 4.41,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 40,
+      "risk": {
+        "low": 34,
+        "medium": 2,
+        "high": 1,
+        "unknown": 3
+      },
+      "functional": {
+        "skin hydration": 23,
+        "moisture evaporation blocking": 2,
+        "skin protection": 7,
+        "soothing/astringent": 1,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 2,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 2,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 1
+        }
+      }
+    }
+  },
+  {
+    "productId": "d4f64d02-6d35-435b-8269-b6ed7cd34bad",
+    "review_raw": {
+      "positive": [
+        [
+          "자극없는",
+          3662
+        ],
+        [
+          "약산성인",
+          1925
+        ],
+        [
+          "세정잘되는",
+          1734
+        ],
+        [
+          "보습잘되는",
+          1582
+        ],
+        [
+          "수분있는",
+          912
+        ],
+        [
+          "2차세안에적합한",
+          646
+        ],
+        [
+          "트러블안생기는",
+          482
+        ]
+      ],
+      "negative": [
+        [
+          "노폐물제거안되는",
+          345
+        ],
+        [
+          "뽀드득거리지않는",
+          239
+        ],
+        [
+          "거품이풍성하지않은",
+          185
+        ],
+        [
+          "알러지반응오는",
+          84
+        ],
+        [
+          "워터프루프안지워지는",
+          42
+        ],
+        [
+          "피지안없어지는",
+          33
+        ],
+        [
+          "흘러내리는",
+          20
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 7634,
+      "rating": 4.71,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 22,
+      "risk": {
+        "low": 21,
+        "medium": 0,
+        "high": 0,
+        "unknown": 1
+      },
+      "functional": {
+        "skin hydration": 11,
+        "moisture evaporation blocking": 1,
+        "skin protection": 2,
+        "soothing/astringent": 1,
+        "exfoliation": 0,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 1
+        }
+      }
+    }
+  },
+  {
+    "productId": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+    "review_raw": {
+      "positive": [
+        [
+          "보습잘되는",
+          1895
+        ],
+        [
+          "약산성인",
+          1128
+        ],
+        [
+          "수분있는",
+          892
+        ],
+        [
+          "노폐물제거되는",
+          676
+        ],
+        [
+          "트러블안생기는",
+          569
+        ],
+        [
+          "알갱이있는",
+          514
+        ],
+        [
+          "미끌거리지않는",
+          304
+        ]
+      ],
+      "negative": [
+        [
+          "거품이풍성하지않은",
+          229
+        ],
+        [
+          "워터프루프안지워지는",
+          88
+        ],
+        [
+          "알러지반응오는",
+          59
+        ],
+        [
+          "인공향나는",
+          57
+        ],
+        [
+          "답답한",
+          30
+        ],
+        [
+          "잘굳는",
+          14
+        ],
+        [
+          "뻣뻣한",
+          5
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 6114,
+      "rating": 4.68,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 51,
+      "risk": {
+        "low": 43,
+        "medium": 3,
+        "high": 0,
+        "unknown": 5
+      },
+      "functional": {
+        "skin hydration": 40,
+        "moisture evaporation blocking": 3,
+        "skin protection": 3,
+        "soothing/astringent": 0,
+        "exfoliation": 0,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      }
+    }
+  },
+  {
+    "productId": "009e0339-fa00-429e-a1c2-2a23eb4707f8",
+    "review_raw": {
+      "positive": [
+        [
+          "향에만족한",
+          242
+        ],
+        [
+          "쫀득한",
+          216
+        ],
+        [
+          "피지없어지는",
+          190
+        ],
+        [
+          "노폐물제거되는",
+          142
+        ],
+        [
+          "각질제거잘되는",
+          94
+        ],
+        [
+          "모공관리되는",
+          87
+        ],
+        [
+          "블랙헤드없어지는",
+          71
+        ]
+      ],
+      "negative": [
+        [
+          "알러지반응오는",
+          37
+        ],
+        [
+          "따가운",
+          30
+        ],
+        [
+          "트러블생기는",
+          29
+        ],
+        [
+          "흘러내리는",
+          12
+        ],
+        [
+          "눈통증있는",
+          12
+        ],
+        [
+          "끈적한",
+          8
+        ],
+        [
+          "가려운",
+          8
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 934,
+      "rating": 4.37,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 53,
+      "risk": {
+        "low": 46,
+        "medium": 1,
+        "high": 2,
+        "unknown": 4
+      },
+      "functional": {
+        "skin hydration": 32,
+        "moisture evaporation blocking": 1,
+        "skin protection": 3,
+        "soothing/astringent": 0,
+        "exfoliation": 2,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 5,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "15420430-2a68-49e2-ab53-716d9c4ff45e",
+    "review_raw": {
+      "positive": [
+        [
+          "자극없는",
+          434
+        ],
+        [
+          "거품나는",
+          305
+        ],
+        [
+          "보습잘되는",
+          287
+        ],
+        [
+          "수분있는",
+          184
+        ],
+        [
+          "약산성인",
+          162
+        ],
+        [
+          "노폐물제거되는",
+          129
+        ],
+        [
+          "2차세안에적합한",
+          79
+        ]
+      ],
+      "negative": [
+        [
+          "뽀드득거리지않는",
+          68
+        ],
+        [
+          "미끌거리는",
+          42
+        ],
+        [
+          "워터프루프안지워지는",
+          36
+        ],
+        [
+          "거품이풍성하지않은",
+          27
+        ],
+        [
+          "블랙헤드안없어지는",
+          5
+        ],
+        [
+          "가려운",
+          3
+        ],
+        [
+          "인공향나는",
+          3
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 826,
+      "rating": 4.69,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 45,
+      "risk": {
+        "low": 42,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 27,
+        "moisture evaporation blocking": 2,
+        "skin protection": 6,
+        "soothing/astringent": 0,
+        "exfoliation": 0,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "0b59cb66-ab03-4a0d-815e-7a94a5c7ae65",
+    "review_raw": {
+      "positive": [
+        [
+          "보습잘되는",
+          4048
+        ],
+        [
+          "약산성인",
+          4002
+        ],
+        [
+          "수분있는",
+          2069
+        ],
+        [
+          "트러블안생기는",
+          1371
+        ],
+        [
+          "향에만족한",
+          1111
+        ],
+        [
+          "트러블없어지는",
+          795
+        ],
+        [
+          "2차세안에적합한",
+          690
+        ]
+      ],
+      "negative": [
+        [
+          "미끌거리는",
+          1448
+        ],
+        [
+          "노폐물제거안되는",
+          1010
+        ],
+        [
+          "뽀드득거리지않는",
+          936
+        ],
+        [
+          "알러지반응오는",
+          533
+        ],
+        [
+          "잔여물남는",
+          346
+        ],
+        [
+          "인공향나는",
+          180
+        ],
+        [
+          "피지안없어지는",
+          127
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 18110,
+      "rating": 4.39,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 23,
+      "risk": {
+        "low": 20,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 10,
+        "moisture evaporation blocking": 0,
+        "skin protection": 2,
+        "soothing/astringent": 0,
+        "exfoliation": 0,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "63300ce0-9bb7-4ce5-98d5-5c59ae283cda",
+    "review_raw": {
+      "positive": [
+        [
+          "모공관리되는",
+          503
+        ],
+        [
+          "노폐물제거되는",
+          498
+        ],
+        [
+          "피지없어지는",
+          273
+        ],
+        [
+          "각질제거잘되는",
+          227
+        ],
+        [
+          "크리미한",
+          190
+        ],
+        [
+          "편안해지는",
+          166
+        ],
+        [
+          "블랙헤드없어지는",
+          157
+        ]
+      ],
+      "negative": [
+        [
+          "따가운",
+          247
+        ],
+        [
+          "향이아쉬운",
+          232
+        ],
+        [
+          "알러지반응오는",
+          139
+        ],
+        [
+          "트러블생기는",
+          91
+        ],
+        [
+          "잘굳는",
+          47
+        ],
+        [
+          "인공향나는",
+          38
+        ],
+        [
+          "가려운",
+          36
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 2458,
+      "rating": 4.33,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 40,
+      "risk": {
+        "low": 35,
+        "medium": 3,
+        "high": 1,
+        "unknown": 1
+      },
+      "functional": {
+        "skin hydration": 18,
+        "moisture evaporation blocking": 1,
+        "skin protection": 4,
+        "soothing/astringent": 1,
+        "exfoliation": 4,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 1,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 3
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      }
+    }
+  },
+  {
+    "productId": "f2a697ce-43d9-4a9a-b110-1f332bc29b50",
+    "review_raw": {
+      "positive": [
+        [
+          "거품나는",
+          139
+        ],
+        [
+          "보습잘되는",
+          132
+        ],
+        [
+          "세정잘되는",
+          127
+        ],
+        [
+          "자극없는",
+          118
+        ],
+        [
+          "수분있는",
+          73
+        ],
+        [
+          "뽀드득거리는",
+          51
+        ],
+        [
+          "쫀득한",
+          28
+        ]
+      ],
+      "negative": [
+        [
+          "향이아쉬운",
+          14
+        ],
+        [
+          "알러지반응오는",
+          12
+        ],
+        [
+          "인공향나는",
+          3
+        ],
+        [
+          "화이트헤드안없어지는",
+          1
+        ],
+        [
+          "답답한",
+          1
+        ],
+        [
+          "워터프루프안지워지는",
+          1
+        ],
+        [
+          "알갱이있는",
+          1
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 433,
+      "rating": 4.53,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 41,
+      "risk": {
+        "low": 38,
+        "medium": 2,
+        "high": 0,
+        "unknown": 1
+      },
+      "functional": {
+        "skin hydration": 30,
+        "moisture evaporation blocking": 0,
+        "skin protection": 4,
+        "soothing/astringent": 0,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 0
+        }
+      }
+    }
+  },
+  {
+    "productId": "3f83bb85-cc53-4aa0-a0f0-e08535288749",
+    "review_raw": {
+      "positive": [
+        [
+          "세정잘되는",
+          515
+        ],
+        [
+          "약산성인",
+          467
+        ],
+        [
+          "각질제거잘되는",
+          177
+        ],
+        [
+          "노폐물제거되는",
+          157
+        ],
+        [
+          "트러블없어지는",
+          131
+        ],
+        [
+          "미끌거리지않는",
+          114
+        ],
+        [
+          "피지없어지는",
+          100
+        ]
+      ],
+      "negative": [
+        [
+          "거품이풍성하지않은",
+          21
+        ],
+        [
+          "알러지반응오는",
+          17
+        ],
+        [
+          "리치한",
+          11
+        ],
+        [
+          "인공향나는",
+          10
+        ],
+        [
+          "워터프루프안지워지는",
+          9
+        ],
+        [
+          "눈통증있는",
+          3
+        ],
+        [
+          "때처럼나오는",
+          1
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 1842,
+      "rating": 4.71,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 17,
+      "risk": {
+        "low": 15,
+        "medium": 1,
+        "high": 1,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 7,
+        "moisture evaporation blocking": 0,
+        "skin protection": 2,
+        "soothing/astringent": 0,
+        "exfoliation": 3,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 2,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "5448b8c3-cf87-4561-a699-3baf3dcb3dab",
+    "review_raw": {
+      "positive": [
+        [
+          "노폐물제거되는",
+          950
+        ],
+        [
+          "향에만족한",
+          782
+        ],
+        [
+          "수분있는",
+          781
+        ],
+        [
+          "모공관리되는",
+          569
+        ],
+        [
+          "피지없어지는",
+          321
+        ],
+        [
+          "매끄러운",
+          319
+        ],
+        [
+          "리치한",
+          313
+        ]
+      ],
+      "negative": [
+        [
+          "미끌거리는",
+          396
+        ],
+        [
+          "뽀드득거리지않는",
+          270
+        ],
+        [
+          "따가운",
+          252
+        ],
+        [
+          "눈통증있는",
+          146
+        ],
+        [
+          "알러지반응오는",
+          131
+        ],
+        [
+          "거품이풍성하지않은",
+          93
+        ],
+        [
+          "잘굳는",
+          47
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 5412,
+      "rating": 4.53,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 27,
+      "risk": {
+        "low": 22,
+        "medium": 5,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 13,
+        "moisture evaporation blocking": 0,
+        "skin protection": 2,
+        "soothing/astringent": 1,
+        "exfoliation": 0,
+        "whitening": 0,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "fbe265d2-8457-4c4f-96e2-7a08be0e5073",
+    "review_raw": {
+      "positive": [
+        [
+          "거품나는",
+          458
+        ],
+        [
+          "세정잘되는",
+          415
+        ],
+        [
+          "자극없는",
+          399
+        ],
+        [
+          "보습잘되는",
+          317
+        ],
+        [
+          "향에만족한",
+          190
+        ],
+        [
+          "뽀드득거리는",
+          152
+        ],
+        [
+          "노폐물제거되는",
+          133
+        ]
+      ],
+      "negative": [
+        [
+          "따가운",
+          94
+        ],
+        [
+          "눈통증있는",
+          48
+        ],
+        [
+          "알러지반응오는",
+          29
+        ],
+        [
+          "거품이풍성하지않은",
+          28
+        ],
+        [
+          "흘러내리는",
+          7
+        ],
+        [
+          "잘굳는",
+          5
+        ],
+        [
+          "인공향나는",
+          5
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 1561,
+      "rating": 4.63,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 40,
+      "risk": {
+        "low": 35,
+        "medium": 4,
+        "high": 1,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 22,
+        "moisture evaporation blocking": 1,
+        "skin protection": 4,
+        "soothing/astringent": 0,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 2,
+          "negative": 1
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 1,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "8889342d-d9a2-454b-aa27-60d4934b9978",
+    "review_raw": {
+      "positive": [
+        [
+          "세정잘되는",
+          359
+        ],
+        [
+          "보습잘되는",
+          313
+        ],
+        [
+          "뽀드득거리는",
+          203
+        ],
+        [
+          "노폐물제거되는",
+          176
+        ],
+        [
+          "모공관리되는",
+          153
+        ],
+        [
+          "쫀득한",
+          118
+        ],
+        [
+          "크리미한",
+          72
+        ]
+      ],
+      "negative": [
+        [
+          "인공향나는",
+          45
+        ],
+        [
+          "거품이풍성하지않은",
+          31
+        ],
+        [
+          "알러지반응오는",
+          30
+        ],
+        [
+          "눈통증있는",
+          16
+        ],
+        [
+          "따가운",
+          15
+        ],
+        [
+          "알갱이있는",
+          11
+        ],
+        [
+          "가려운",
+          5
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 1145,
+      "rating": 4.44,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 78,
+      "risk": {
+        "low": 74,
+        "medium": 3,
+        "high": 1,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 60,
+        "moisture evaporation blocking": 2,
+        "skin protection": 3,
+        "soothing/astringent": 2,
+        "exfoliation": 1,
+        "whitening": 0,
+        "acne relief": 1,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 1,
+          "negative": 3
+        },
+        "dry": {
+          "positive": 3,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 2
+        }
+      }
+    }
+  },
+  {
+    "productId": "b46ca581-7a4e-4cf1-b599-b9fdc026885d",
+    "review_raw": {
+      "positive": [
+        [
+          "향에만족한",
+          1761
+        ],
+        [
+          "뽀드득거리는",
+          1421
+        ],
+        [
+          "노폐물제거되는",
+          1165
+        ],
+        [
+          "쫀득한",
+          947
+        ],
+        [
+          "크리미한",
+          616
+        ],
+        [
+          "모공관리되는",
+          421
+        ],
+        [
+          "냄새가독하지않은",
+          279
+        ]
+      ],
+      "negative": [
+        [
+          "거품이풍성하지않은",
+          181
+        ],
+        [
+          "워터프루프안지워지는",
+          101
+        ],
+        [
+          "알러지반응오는",
+          99
+        ],
+        [
+          "인공향나는",
+          68
+        ],
+        [
+          "뻣뻣한",
+          28
+        ],
+        [
+          "답답한",
+          7
+        ],
+        [
+          "지속력안좋은",
+          4
+        ]
+      ]
+    },
+    "market_raw": {
+      "review_count": 7615,
+      "rating": 4.63,
+      "rating_distribution": {}
+    },
+    "ingredient_raw": {
+      "total_ingredients": 24,
+      "risk": {
+        "low": 21,
+        "medium": 3,
+        "high": 0,
+        "unknown": 0
+      },
+      "functional": {
+        "skin hydration": 14,
+        "moisture evaporation blocking": 0,
+        "skin protection": 3,
+        "soothing/astringent": 0,
+        "exfoliation": 0,
+        "whitening": 1,
+        "acne relief": 0,
+        "uv protection": 0,
+        "wrinkle improvement": 0
+      },
+      "skin_type": {
+        "oily": {
+          "positive": 0,
+          "negative": 0
+        },
+        "dry": {
+          "positive": 4,
+          "negative": 0
+        },
+        "sensitive": {
+          "positive": 0,
+          "negative": 1
+        }
+      }
+    }
+  }
+]
