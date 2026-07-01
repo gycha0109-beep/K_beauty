@@ -1411,3 +1411,50 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Context promotion candidate: FunctionalPlan and RoutineAudit should remain separate models; dev fixture tabs must stay gated to `/test-full-report` and never mutate saved report/currentProducts data.
 - Review follow-up: Moved the fixture data out of the production full-report component props path and into the `/test-full-report` wrappers, then passed it down only behind `NODE_ENV === "development"` plus `/test-full-report`. The actual full-report path now no longer renders dev scenario tabs or `Dev Fixture` product labels.
 - Review validation follow-up: `npm run build` passed; `git diff --check` passed with CRLF warnings only; `npm run lint` is still blocked by the interactive Next ESLint setup prompt. 390px Playwright confirmed all 9 scenario combinations still differ by plan/audit/CTA, summary sheet opens, no horizontal overflow, and `/result/full-report?access=login_required` has no dev scenario UI.
+
+### 2026-07-01 / premium functional plan DB contract draft
+
+- Branch: codex/functional-plan-section
+- Task type: design
+- Routing decision: High DB/schema design request handled as documentation only. No migration file was created or executed, no products data was changed, and no runtime API/UI code was modified.
+- Goal: Fix the long-term Premium Functional Plan DB and engine contract before implementation, separating `functional_catalog` from `product_functional_map` and separating FunctionalPlan, RoutineAudit, and CandidatePolicy responsibilities.
+- Changed files: docs/architecture/premium-functional-plan-db.md, docs/architecture/README.md, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, auth/payment/deploy config, DB migration application, production data, API response fields, premium report saved payload, currentProducts storage contract, products query implementation, Face Lab, routine consult, or condition response changes.
+- Validation: Current products, premium report session/save flow, product source snapshots, existing functional decision contract, current-product verdict contract, product category/domain maps, and relevant migrations were inspected. `git diff --check` passed.
+- Issues/risks: The SQL is intentionally a draft inside architecture docs only. Product category enum inventory, especially historical `toner_pad` drift, must be verified before any migration is written or applied. Product mapping seed remains deferred until manual review of real product evidence.
+- Context promotion candidate: Premium Functional Plan should use `functional_catalog` for survey-driven functional direction and `product_functional_map` for reviewed product linkage; never use product names, brands, or `products.concerns` alone as active functional evidence.
+- Review follow-up: Tightened the draft before migration work. `product_functional_map.goal_key/approach_key` are now derived by join instead of duplicated in v1, the SQL draft removed the sync trigger and denormalized indexes, RLS/grants now default to server-side `service_role` reads with anon/authenticated revoked, the candidate review query uses `buy_link` instead of assuming `external_url`, `recommended_for_skin_types` now matches the current app skin-type keys, and ADJUST/REPLACE_CANDIDATE minimum evidence is stricter.
+- Review validation follow-up: `git diff --check` passed with CRLF warnings only. No migration file, DB execution, products mutation, API change, or UI change was made.
+- Read-only schema audit follow-up: Queried live Supabase schema only with SELECT/catalog queries. Confirmed `product_category` labels include `toner_pad` and `treatment`; `products.id` is `uuid default gen_random_uuid()`; `products.category` is `product_category`; `buy_link` exists and `external_url` does not; `ingredient_signals`, `review_signals`, and `market_signals` are `jsonb`; `(normalized_brand, normalized_name)` unique index exists; `public.set_updated_at()` exists and powers `products` updated-at trigger; `functional_catalog` and `product_functional_map` do not exist. Local Supabase CLI is not installed, so no separate local DB schema query was run. Updated the architecture doc with live audit results, migration blockers, and a pre-migration checklist. No DB writes, migration files, product changes, API changes, or UI changes were made.
+
+### 2026-07-01 / full report section progress header removal
+
+- Branch: codex/functional-plan-section
+- Task type: execution
+- Routing decision: Low/Medium full-report UI cleanup scoped to the shared SkinMatch step header. Premium report data, API, DB, products, currentProducts, Face Lab, and recommendation logic were out of scope.
+- Goal: Remove the card-style `SKIN MATCH 루틴 리포트 n/5` progress header from all full-report sectors while preserving step navigation and scroll behavior.
+- Changed files: app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB, API, auth, payment, saved payload, product data, or currentProducts changes.
+- Validation: `npm run build` passed. Source search found no remaining `SKIN MATCH ROUTINE REPORT`, `SKIN MATCH 루틴 리포트`, or `stepKicker` render path. In-app browser `/test-full-report` reload confirmed no visible old header text and no matching visible header cards.
+
+### 2026-07-01 / products functional profile resolver
+
+- Branch: codex/functional-plan-section
+- Task type: limited execution
+- Routing decision: Medium pure resolver addition scoped to deriving product functional axes from existing `products.ingredient_signals.functional` and category metadata. Premium Functional Plan UI, currentProducts state contract, DB schema/migration, products data, Hwahae import storage format, API, and candidate recommendation flow were out of scope.
+- Goal: Add `resolveProductFunctionalProfile(product)` for selected DB products/snapshots only, using Hwahae functional labels as evidence without inferring from product names, brands, or `not_in_db` products.
+- Changed files: lib/product-functional-profile.js, scripts/verify-product-functional-profile.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No migration, DB write, API response field, premium report payload, currentProducts mutation, products query, or UI change.
+- Validation: `node scripts/verify-product-functional-profile.mjs` passed; `npm run build` passed; `git diff --check` passed with CRLF warnings only. `npm run lint` is still blocked by the interactive Next ESLint setup prompt.
+- Issues/risks: Node emits the existing package-level module-type warning when importing ES module syntax from `.js` in a standalone `.mjs` verifier. Resolver strength is signal-density/category-adjusted, not efficacy strength; live behavior still needs calibration against more real products before UI connection.
+
+### 2026-07-01 / current product functional findings
+
+- Branch: codex/functional-plan-section
+- Task type: limited execution
+- Routing decision: Medium pure judgment-layer addition scoped to combining existing currentProducts source states with `resolveProductFunctionalProfile(product)`. Premium Functional Plan UI, DB/schema/migration, Supabase queries, Hwahae import format, currentProducts storage states, and candidate recommendation logic were out of scope.
+- Goal: Add `buildCurrentProductFindings({ currentProducts, primaryGoal, functionalDirection })` to return conservative `CurrentProductFinding[]` relations for selected/not_in_db/not_using/unanswered inputs without adding plan states such as START/HOLD/NEXT.
+- Changed files: lib/current-product-findings.js, scripts/verify-current-product-findings.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI connection, DB write, migration, API response field, premium report payload, currentProducts mutation, product query, or Hwahae signal storage change.
+- Validation: `node scripts/verify-current-product-findings.mjs` passed; `node scripts/verify-product-functional-profile.mjs` passed; `npm run build` passed; `git diff --check` passed with CRLF warnings only. `npm run lint` remains blocked by the interactive Next ESLint setup prompt.
+- Issues/risks: Standalone Node verifier emits the existing package module-type warning for ESM `.js` imports. Duplicate-axis logic is intentionally conservative and only marks meaningful selected leave-on/base products with medium+ direct support.

@@ -5224,7 +5224,6 @@ function SkinMatchStepReport({
   const router = useRouter();
   const labels = locale === "en"
     ? {
-        stepKicker: "SKIN MATCH ROUTINE REPORT",
         hub: "Start Today",
         morning: "Routine Consult",
         evening: "Evening Routine",
@@ -5237,7 +5236,6 @@ function SkinMatchStepReport({
         finalCta: "Save my routine"
       }
     : {
-        stepKicker: "SKIN MATCH 루틴 리포트",
         hub: "오늘 시작",
         morning: "루틴 상담",
         evening: "저녁 실행 루틴",
@@ -5344,7 +5342,6 @@ function SkinMatchStepReport({
   const primaryLabel = nextStep ? buildStepAdvanceLabel(nextStep, locale) : labels.finalCta;
   const isHubStep = activeStep?.key === "today-start-hub";
   const isRoutineStep = activeStep?.key === "morning-routine";
-  const hideStepHeader = isHubStep || isRoutineStep;
   const moveToStep = (nextIndex) => {
     const boundedIndex = Math.max(0, Math.min(maxStepIndex, nextIndex));
 
@@ -5409,39 +5406,8 @@ function SkinMatchStepReport({
 
   return (
     <section className="space-y-4">
-      <div ref={skinMatchStepHeaderRef} className={hideStepHeader ? "sr-only" : "ui-card p-5 sm:p-6"}>
-        {hideStepHeader ? (
-          <span>{activeStep.label}</span>
-        ) : (
-          <>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="ui-kicker">{labels.stepKicker}</p>
-                <h2 className="ui-title mt-1.5 text-xl">{activeStep.label}</h2>
-              </div>
-              <span className="ui-chip-compact shrink-0">{currentStepIndex + 1}/{steps.length}</span>
-            </div>
-
-            <div
-              className="mt-3 grid gap-2"
-              style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
-            >
-              {steps.map((step, index) => (
-                <button
-                  key={step.key}
-                  type="button"
-                  onClick={() => moveToStep(index)}
-                  className={`h-2 rounded-full transition ${
-                    index === currentStepIndex
-                      ? "bg-zinc-900 dark:bg-zinc-100"
-                      : "bg-zinc-200 dark:bg-zinc-800"
-                  }`}
-                  aria-label={`${step.label} ${index + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
+      <div ref={skinMatchStepHeaderRef} className="sr-only">
+        <span>{activeStep.label}</span>
       </div>
 
       <motion.div
