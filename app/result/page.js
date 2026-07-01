@@ -37,6 +37,10 @@ import {
   buildFreeResultV2FaceLabPreview,
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
+import {
+  getAvailableFaceLabData,
+  isFaceLabResultEnvelope
+} from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
@@ -3019,8 +3023,11 @@ function ResultContent() {
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const resultForm = submission?.form || {};
   const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
-  const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
-  const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
+  const faceLabDisplayData =
+    getAvailableFaceLabData(faceLabFull) ||
+    (isFaceLabResultEnvelope(result?.faceLab) ? getAvailableFaceLabData(result.faceLab) : null);
+  const faceLabLaunch = faceLabDisplayData ? buildFaceLabLaunchData(faceLabDisplayData, locale) : null;
+  const faceLabProfilePreview = faceLabLaunch ? getFaceLabProfilePreview(faceLabLaunch, locale) : null;
   const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
   const freeResultV2Diagnosis = buildFreeResultV2Diagnosis(resultForm, result, overviewMatchSummary, locale);
   const freeResultV2Evidence = buildFreeResultV2Evidence(resultForm, result, copy, locale);

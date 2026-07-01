@@ -20,6 +20,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { getAvailableFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
@@ -6203,10 +6204,11 @@ function FullReportPageContent() {
       } catch {
         parsedFaceLab = null;
       }
+      const parsedFaceLabData = getAvailableFaceLabData(parsedFaceLab);
 
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
-          ? buildDevelopmentReport(parsedResult, parsedFaceLab, locale)
+          ? buildDevelopmentReport(parsedResult, parsedFaceLabData, locale)
           : null;
 
       if (isTestFullReport && developmentFallbackReport) {
@@ -6227,7 +6229,7 @@ function FullReportPageContent() {
           },
           body: JSON.stringify({
             locale,
-            faceLab: parsedFaceLab,
+            faceLab: parsedFaceLabData,
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null

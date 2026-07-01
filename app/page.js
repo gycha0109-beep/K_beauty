@@ -15,6 +15,11 @@ import {
   OPTIONAL_DEFAULTS
 } from "@/components/onboarding/constants";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import {
+  createFaceLabUnavailable,
+  getAvailableFaceLabData,
+  isFaceLabResultEnvelope
+} from "@/lib/face-lab-result-envelope";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
@@ -131,13 +136,17 @@ async function requestFaceLabResult(file, locale) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data) {
-      return null;
+      return isFaceLabResultEnvelope(data)
+        ? data
+        : createFaceLabUnavailable("unknown");
     }
 
-    return data;
+    return isFaceLabResultEnvelope(data)
+      ? data
+      : createFaceLabUnavailable("vision_response_invalid");
   } catch (error) {
     console.error("[onboarding] face lab request failed", error);
-    return null;
+    return createFaceLabUnavailable("vision_request_failed");
   }
 }
 
@@ -246,8 +255,9 @@ export default function HomePage() {
           imagePreviewDataUrlPromise,
           faceLabPromise
         ]);
-        const faceLabTeaser = faceLabResult
-          ? buildFaceLabLaunchData(faceLabResult, locale).free
+        const faceLabData = getAvailableFaceLabData(faceLabResult);
+        const faceLabTeaser = faceLabData
+          ? buildFaceLabLaunchData(faceLabData, locale).free
           : null;
 
         sessionStorage.setItem(
@@ -261,7 +271,7 @@ export default function HomePage() {
         );
         sessionStorage.setItem(
           "skinTestResult",
-          JSON.stringify(faceLabTeaser ? { ...data, faceLab: faceLabTeaser } : data)
+          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult, faceLabTeaser } : data)
         );
 
         if (faceLabResult) {

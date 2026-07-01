@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import {
+  createFaceLabAvailable,
+  createFaceLabInsufficientEvidence,
+  createFaceLabUnavailable
+} from "@/lib/face-lab-result-envelope";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
-const FACE_READING_RESPONSE_SCHEMA_VERSION = 1;
 
 const COPY = {
   ko: {
@@ -171,15 +175,6 @@ function getCopy(locale = "ko") {
   return COPY[locale] || COPY.ko;
 }
 
-function buildFaceReadingMeta({ source, locale }) {
-  return {
-    schemaVersion: FACE_READING_RESPONSE_SCHEMA_VERSION,
-    source,
-    locale,
-    generatedAt: new Date().toISOString()
-  };
-}
-
 function hasFaceReadingPayloadShape(payload) {
   return Boolean(
     payload &&
@@ -191,17 +186,33 @@ function hasFaceReadingPayloadShape(payload) {
   );
 }
 
-function buildFaceReadingResponse(payload, { source, locale }) {
-  const hasExpectedShape = hasFaceReadingPayloadShape(payload);
-  const body = hasExpectedShape
-    ? payload
-    : buildMockFaceLab(locale);
-  const resolvedSource = hasExpectedShape ? source : "mock_fallback";
+function hasTextValue(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
 
-  return {
-    ...body,
-    meta: buildFaceReadingMeta({ source: resolvedSource, locale })
-  };
+function hasListValue(value) {
+  return Array.isArray(value) && value.some(hasTextValue);
+}
+
+function hasRequiredFaceLabEvidence(payload) {
+  if (!hasFaceReadingPayloadShape(payload)) {
+    return false;
+  }
+
+  const physiognomy = payload.features.physiognomy || {};
+  const hairstyle = payload.features.face_shape_hairstyle || {};
+  const colorTone = payload.features.color_tone_recommendation || {};
+
+  return Boolean(
+    (hasListValue(payload.base_data.landmarks) || hasTextValue(payload.base_data.face_shape)) &&
+      (hasTextValue(physiognomy.headline_result) ||
+        hasTextValue(physiognomy.overall_impression) ||
+        hasListValue(physiognomy.feature_based_interpretation)) &&
+      (hasTextValue(hairstyle.summary) || hasListValue(hairstyle.recommendations)) &&
+      (hasTextValue(colorTone.summary) ||
+        hasListValue(colorTone.palette) ||
+        hasListValue(colorTone.recommendations))
+  );
 }
 
 const KNOWN_PRESENTATION_BY_NAME = {
@@ -707,46 +718,50 @@ export async function POST(request) {
       );
     }
     if (!apiKey) {
-      return NextResponse.json(
-        buildFaceReadingResponse(buildMockFaceLab(locale), {
-          source: "mock_fallback",
-          locale
-        })
-      );
+      return NextResponse.json(createFaceLabUnavailable("api_key_missing"));
     }
 
     const buffer = Buffer.from(await image.arrayBuffer());
     const imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
 
-    const response = await fetch(OPENAI_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1400,
-        temperature: 0,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: createPrompt(locale) },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `${copy.instruction}\n${copy.toneRule}`
-              },
-              {
-                type: "image_url",
-                image_url: { url: imageDataUrl }
-              }
-            ]
-          }
-        ]
-      })
-    });
+    let response;
+
+    try {
+      response = await fetch(OPENAI_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 1400,
+          temperature: 0,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: createPrompt(locale) },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `${copy.instruction}\n${copy.toneRule}`
+                },
+                {
+                  type: "image_url",
+                  image_url: { url: imageDataUrl }
+                }
+              ]
+            }
+          ]
+        })
+      });
+    } catch (fetchError) {
+      console.error("[face-reading] OpenAI request failed", {
+        message: fetchError instanceof Error ? fetchError.message : String(fetchError)
+      });
+      return NextResponse.json(createFaceLabUnavailable("vision_request_failed"));
+    }
 
     const { ok, status, data, rawText } = await readOpenAiResponse(response);
 
@@ -755,12 +770,7 @@ export async function POST(request) {
         status,
         preview: previewDiagnosticText(data?.error?.message || data?.error || rawText)
       });
-      return NextResponse.json(
-        buildFaceReadingResponse(buildMockFaceLab(locale), {
-          source: "mock_fallback",
-          locale
-        })
-      );
+      return NextResponse.json(createFaceLabUnavailable("vision_request_failed"));
     }
 
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
@@ -770,16 +780,27 @@ export async function POST(request) {
         status,
         preview: previewDiagnosticText(rawText)
       });
-      return NextResponse.json(
-        buildFaceReadingResponse(buildMockFaceLab(locale), {
-          source: "mock_fallback",
-          locale
-        })
-      );
+      return NextResponse.json(createFaceLabUnavailable("vision_response_invalid"));
     }
 
     try {
       const parsed = safeParse(rawContent, locale);
+
+      if (!hasFaceReadingPayloadShape(parsed)) {
+        console.warn("[face-reading] response shape insufficient", {
+          hasBaseData: Boolean(parsed?.base_data),
+          hasFeatures: Boolean(parsed?.features)
+        });
+        return NextResponse.json(createFaceLabUnavailable("required_features_missing"));
+      }
+
+      if (!hasRequiredFaceLabEvidence(parsed)) {
+        console.warn("[face-reading] response evidence insufficient");
+        return NextResponse.json(
+          createFaceLabInsufficientEvidence(parsed, "required_features_missing")
+        );
+      }
+
       const normalizedFaceLab = normalizeFaceLab(parsed, locale);
 
       if (process.env.NODE_ENV !== "production" && !hasFaceReadingPayloadShape(normalizedFaceLab)) {
@@ -789,23 +810,13 @@ export async function POST(request) {
         });
       }
 
-      return NextResponse.json(
-        buildFaceReadingResponse(normalizedFaceLab, {
-          source: "openai",
-          locale
-        })
-      );
+      return NextResponse.json(createFaceLabAvailable(normalizedFaceLab));
     } catch (parseError) {
       console.error("[face-reading] parse failed", {
         message: parseError instanceof Error ? parseError.message : String(parseError),
         contentPreview: rawContent.slice(0, 240)
       });
-      return NextResponse.json(
-        buildFaceReadingResponse(buildMockFaceLab(locale), {
-          source: "mock_fallback",
-          locale
-        })
-      );
+      return NextResponse.json(createFaceLabUnavailable("vision_response_invalid"));
     }
   } catch (error) {
     console.error("[face-reading] failed", error);

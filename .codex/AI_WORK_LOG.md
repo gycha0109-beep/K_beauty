@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-01 / Face Lab envelope failure contract
+
+- Branch: main
+- Task type: execution / Medium-High Face Lab API and session data contract fix
+- Routing decision: User explicitly requested implementation of only the overall Face Lab analysis status contract. Per-field mood/color/style contracts, fallback keyword removal, Face Lab UI redesign, Skin Match logic, DB/schema, auth, and existing result evidence UI changes were out of scope.
+- Goal: Prevent Face Lab API failures or mock/default paths from being saved and rendered as normal personal face analysis results.
+- Changed files: app/api/face-reading/route.js, app/page.js, app/result/page.js, app/result/full-report/page.js, lib/result/free-result-v2-static-builders.js, lib/face-lab-result-envelope.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB/schema/migration/policy, auth, env, recommendation engine, product source, payment, or existing `components/result/free-v2/FreeResultV2EvidenceStep.jsx` changes. API response shape and saved Face Lab session shape were changed only for the user-requested Face Lab envelope contract.
+- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Helper-level Node check confirmed `createFaceLabUnavailable("api_key_missing")` returns `status:"unavailable"`, `source:null`, `data:null`, and unwraps to `null`. Static search found no `mock_fallback`, `buildFaceReadingResponse`, or Face Lab preview pending fallback strings in the updated response/render path. `git diff --name-only -- components/result/free-v2/FreeResultV2EvidenceStep.jsx` returned no changes.
+- Notes/risks: Direct Node import of the free-result builder was blocked by the repo's `@/` alias outside Next runtime, so that check was covered by `next build` and static search. Item-level Face Lab source/confidence contracts and existing keyword fallback generation remain intentionally deferred.
+- Context promotion candidate: Face Lab API failures should produce explicit status envelopes and must not be recovered into mock/default personal analysis results.
+
 ### 2026-06-30 / onboarding photo action restore
 
 - Branch: main
