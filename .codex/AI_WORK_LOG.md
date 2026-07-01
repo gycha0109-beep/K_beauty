@@ -1458,3 +1458,14 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Protected areas: No UI connection, DB write, migration, API response field, premium report payload, currentProducts mutation, product query, or Hwahae signal storage change.
 - Validation: `node scripts/verify-current-product-findings.mjs` passed; `node scripts/verify-product-functional-profile.mjs` passed; `npm run build` passed; `git diff --check` passed with CRLF warnings only. `npm run lint` remains blocked by the interactive Next ESLint setup prompt.
 - Issues/risks: Standalone Node verifier emits the existing package module-type warning for ESM `.js` imports. Duplicate-axis logic is intentionally conservative and only marks meaningful selected leave-on/base products with medium+ direct support.
+
+### 2026-07-01 / functional plan current product findings UI connection
+
+- Branch: codex/functional-plan-section
+- Task type: limited execution
+- Routing decision: Medium UI connection scoped to the Premium Functional Plan current product check area. DB/schema/migration, Supabase query behavior, currentProducts storage states, product import format, candidate recommendation engine, and saved report payload were out of scope.
+- Goal: Read `buildCurrentProductFindings()` inside the Functional Plan section so selected/not_in_db/not_using/unanswered current product inputs show conservative read-only relation evidence against the current functional direction.
+- Changed files: components/full-report/PremiumFunctionalDecisionSection.jsx, lib/functional-plan-dev-fixtures.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB write, migration, API response field, products data/query change, currentProducts mutation/state change, Hwahae signal storage change, auth/payment/deploy change, or recommendation engine implementation.
+- Validation: `node scripts/verify-current-product-findings.mjs` passed; `node scripts/verify-product-functional-profile.mjs` passed; `npm run build` passed; `git diff --check` passed with CRLF warnings only. `npm run lint` remains blocked by the interactive Next ESLint setup prompt. Playwright smoke on `/test-full-report` and `/en/test-full-report` confirmed current-product finding fixture output, 390px no horizontal overflow, and `/result/full-report?access=login_required` did not expose dev scenario UI.
+- Issues/risks: Dev fixture currentProducts are preview-only and still do not mutate saved reports/current products. Standalone Node verifier still emits the existing package module-type warning for ESM `.js` imports. The Functional Plan section was rewritten cleanly after a local encoding corruption during recovery; build and browser smoke passed afterward.
