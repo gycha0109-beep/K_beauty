@@ -3957,7 +3957,7 @@ function getSkinMatchHubActions(locale = "ko") {
       },
       {
         id: "functional",
-        title: "Active Check",
+        title: "Functional Plan",
         description: "What to add or wait on",
         target: "product-plan",
         icon: "⌁"
@@ -3989,7 +3989,7 @@ function getSkinMatchHubActions(locale = "ko") {
     },
     {
       id: "functional",
-      title: "기능성 판단",
+      title: "기능성 플랜",
       description: "더할 것과 미룰 것",
       target: "product-plan",
       icon: "⌁"
@@ -5214,6 +5214,8 @@ function SkinMatchStepReport({
   displayBudgetAlternatives = [],
   budgetSectionTitle,
   hubNavigationRequest = 0,
+  enableFunctionalPlanDevScenarios = false,
+  functionalPlanDevScenarios = [],
   onOpenFaceLab
 }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
@@ -5228,7 +5230,7 @@ function SkinMatchStepReport({
         evening: "Evening Routine",
         avoid: "Caution",
         adjustment: "Condition Response",
-        product: "Active Check",
+        product: "Functional Plan",
         summary: "Final Summary",
         previous: "Previous",
         next: "Next",
@@ -5241,7 +5243,7 @@ function SkinMatchStepReport({
         evening: "저녁 실행 루틴",
         avoid: "주의",
         adjustment: "컨디션 대응",
-        product: "기능성 판단",
+        product: "기능성 플랜",
         summary: "최종 요약",
         previous: "이전",
         next: "다음",
@@ -5324,7 +5326,11 @@ function SkinMatchStepReport({
       content: (
         <PremiumFunctionalDecisionSection
           decisions={report?.functionalDecisions}
+          freeResult={freeResult}
+          report={report}
           locale={locale}
+          enableDevScenarios={enableFunctionalPlanDevScenarios}
+          devScenarios={functionalPlanDevScenarios}
           onNavigate={moveToStepKey}
         />
       )
@@ -6217,7 +6223,7 @@ function PremiumAccessBlocked({ locale = "ko" }) {
   );
 }
 
-function FullReportPageContent() {
+function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -6277,11 +6283,13 @@ function FullReportPageContent() {
 
     const storedResult = sessionStorage.getItem("skinTestResult");
     const storedSubmission = sessionStorage.getItem("skinTestSubmission");
+    let parsedSubmission = null;
 
     try {
-      const parsedSubmission = storedSubmission ? JSON.parse(storedSubmission) : null;
+      parsedSubmission = storedSubmission ? JSON.parse(storedSubmission) : null;
       setSubmissionImageUrl(parsedSubmission?.imagePreviewDataUrl || "");
     } catch {
+      parsedSubmission = null;
       setSubmissionImageUrl("");
     }
 
@@ -6569,6 +6577,8 @@ function FullReportPageContent() {
               displayBudgetAlternatives={displayBudgetAlternatives}
               budgetSectionTitle={budgetSectionTitle}
               hubNavigationRequest={hubNavigationRequest}
+              enableFunctionalPlanDevScenarios={IS_DEVELOPMENT && isTestFullReport}
+              functionalPlanDevScenarios={functionalPlanDevScenarios}
               onOpenFaceLab={() => {
                 setActiveTab("face_lab");
                 if (typeof window !== "undefined") {
@@ -6587,7 +6597,7 @@ function FullReportPageContent() {
   );
 }
 
-export default function FullReportPage() {
+export default function FullReportPage({ functionalPlanDevScenarios = [] } = {}) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname);
 
@@ -6597,7 +6607,7 @@ export default function FullReportPage() {
 
   return (
     <Suspense fallback={<PremiumReportLoadingPage locale={locale} />}>
-      <FullReportPageContent />
+      <FullReportPageContent functionalPlanDevScenarios={functionalPlanDevScenarios} />
     </Suspense>
   );
 }

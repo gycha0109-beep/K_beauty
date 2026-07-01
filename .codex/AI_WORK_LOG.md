@@ -1,5 +1,41 @@
 # AI_WORK_LOG.md
 
+### 2026-07-01 / functional plan current-products audit fix
+
+- Branch: codex/functional-plan-section
+- Task type: diagnostic -> execution / Medium data-flow correction
+- Routing decision: User reported that changing selected current products did not materially change the functional plan. The request involved currentProducts selection, premium generation, saved payload, DB product metadata, and section decision logic, so it started as diagnostic. After the break was isolated to snapshot field loss plus category-only matching, the fix was limited to existing snapshot enrichment and component matching logic.
+- Goal: Make selected DB products affect START / OPTIMIZE / CONSOLIDATE decisions only when real structured DB metadata supports the functional goal, and show the product name/category/evidence on screen.
+- Changed files: lib/product-source.js, components/full-report/PremiumFunctionalDecisionSection.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration/policy, auth/permission/redirect policy, payment, production data mutation, new API, or saved report contract replacement. Existing `productSnapshot` was enriched with additional fields from the same `products` row; the current-products option endpoint response shape was not expanded.
+- Validation results: `npm run build` passed. Playwright mobile comparison at 390px against `/result/full-report` used real Supabase product rows: Case A `스트라이덱스 센시티브 패드` with concerns `acne, pores, oiliness` produced OPTIMIZE with `토너 패드 · DB concerns: 모공` and no recommendation block; Case B `스킨1004 마다가스카르 센텔라 앰플` with concerns `redness, barrier` produced START with the insufficient-functional-info fallback and recommendation block; Case C `not_in_db` produced START, no functional inference, and recommendation block. `npm run lint` remains unavailable because this repo has no ESLint config and `next lint` opens an interactive setup prompt.
+- Notes/risks: Existing saved premium reports generated before this fix may still contain old thin `productSnapshot` objects. Those old snapshots will now fail safely to the information-insufficient fallback instead of pretending an active functional connection exists. New premium generation/saves will store enriched `productSnapshot` fields when the product id can be looked up.
+- Context promotion candidate: NULL
+
+### 2026-07-01 / functional plan mobile revision
+
+- Branch: codex/functional-plan-section
+- Task type: execution / Medium premium report UI and decision-model revision
+- Routing decision: User rejected the current functional-plan screen and requested a scoped revision. Existing premium report section props, `/result/full-report` handoff, `/test-full-report` fixture behavior, `freeResult.priority`, `freeResult.scoring.concernScores`, `functionalDecisions`, `report.currentProducts.selections`, selected/not_in_db handling, product candidate sources, and routine consult CTA were checked before editing.
+- Goal: Reduce the functional plan to a short mobile-first report with a clear conclusion, one solution card, one current-product/product-candidate block, and one routine guide while preserving existing premium payload, API, DB, and save contracts.
+- Changed files: components/full-report/PremiumFunctionalDecisionSection.jsx, app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, auth/permission/redirect policy, DB schema/migration/policy, payment, production data, API response field names, saved premium payload shape, product DB data, currentProducts input contract, Face Lab, or recommendation scoring/ranking was changed. `app/result/full-report/page.js` received only a local variable-scope fix for `parsedSubmission` plus existing prop/label wiring already on this branch.
+- Validation results: `npm run build` passed. `npm run lint` could not run because this repo has no ESLint config and `next lint` opens the interactive setup prompt. Playwright mobile verification at 390px against `/result/full-report` with injected premium-session data passed HOLD, START, OPTIMIZE, CONSOLIDATE, and mostly `not_in_db` scenarios. `/test-full-report` default fixture passed a smoke check for the new conclusion block, no `한눈에 요약`, and no selected/not_in_db numeric boxes.
+- Notes/risks: START product cards only use products already present in the report product arrays and max out at 3. `not_in_db` entries remain excluded from functional overlap calculation and are not used for ingredient/function inference. The product action is report-local candidate marking only; it explicitly says the product is not saved to current products. No existing post-report current-product mutation/draft save path was found or added.
+- Context promotion candidate: NULL
+
+### 2026-06-30 / premium functional plan section
+
+- Branch: codex/functional-plan-section
+- Task type: execution / Medium premium report UI and decision-model extension
+- Routing decision: User requested a scoped implementation after structure audit. Existing premium entry, `/api/full-report`, saved premium re-open, currentProducts statuses, product source shape, routine consult, and condition response boundaries were checked first. DB schema/migration, payment, Face Lab, product crawling, external inference, recommendation scoring, API response field renames, and saved payload shape changes were out of scope.
+- Goal: Replace the old goal-list style functional decision section with a `기능성 플랜` section that derives START / OPTIMIZE / CONSOLIDATE / HOLD / NEXT guidance from free-result priority/scoring, saved `functionalDecisions`, `currentProducts`, `currentProductVerdicts`, and actual report product candidates.
+- Changed files: app/result/full-report/page.js, components/full-report/PremiumFunctionalDecisionSection.jsx, components/full-report/PremiumRoutineConsultSection.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No `.env*`, auth/permission/redirect logic, DB schema/migration/policy, payment, production data, API response field names, saved premium payload shape, product DB data, recommendation scoring/ranking, currentProducts input contract, Face Lab, routine consult structure, or condition response logic was changed.
+- Validation results: `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only. Chrome/Playwright smoke against the existing dev server at `http://localhost:3001/test-full-report` opened the premium report, navigated to `기능성 플랜`, and verified the section title, priority card, status label, summary block, no fake saved-success text, mobile and desktop render text, and browser console/page errors 0. `npm run lint` could not complete because `next lint` is deprecated and this repo has no ESLint config, so it entered the interactive "How would you like to configure ESLint?" prompt.
+- Notes/risks: Product cards use only products already present in the premium/free report data (`topPick`, `supportingProducts`, `budgetAlternatives`) and do not query or invent external products. Current-product functional overlap uses only `selected` entries and available structured/category fields; `not_in_db` is excluded from duplicate calculation and shown as limited information. The "루틴 추가 후보로 표시" action is report-local only and explicitly says it is not saved to current products because no existing post-report mutation/draft save path was found.
+- Context promotion candidate: NULL
+
 ### 2026-06-30 / premium beta flow
 
 - Branch: feature/premium-beta-flow
@@ -1361,3 +1397,17 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Follow-up fix: Unified `/r/{shareId}` and `/api/results/{shareId}` access through a shared analysis-result owner/public helper. `/api/results` publish now resolves the owner from bearer or server cookies for existing `shareId` rows, and ResultShareActions can publish an existing share id without requiring the old analysis write session. E2E verified private owner page/API 200, anonymous private page/API 404, publish keeps the same share id and flips the single row to public, and anonymous public page/API 200.
 - Issues/risks: Exact authenticated 390px measurement is limited by the in-app browser viewport override reporting 520px inner width. Check-in page initial restore uses the latest user check-in and applies it only when it matches the browser-local date after mount.
 - Context promotion candidate: My check-in events are observation tags only and must not become causal claims or premium-style product/functionality judgments in My.
+
+### 2026-07-01 / functional plan stage 1 dev preview
+
+- Branch: codex/functional-plan-section
+- Task type: limited execution
+- Routing decision: Medium full-report UI contract and development-only preview fixture change. Premium report storage payload, API, DB schema, products table, currentProducts mutation, real recommendation engine, payment, Face Lab, and condition response redesign were out of scope.
+- Goal: Fix the Functional Plan section screen contract as a short mobile-first report and add development-only scenario tabs for 9 FunctionalPlan + RoutineAudit combinations.
+- Changed files: components/full-report/PremiumFunctionalDecisionSection.jsx, lib/functional-plan-dev-fixtures.js, app/result/full-report/page.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB schema/migration, API response field names, saved premium report payload, products table/query contract, currentProducts save structure, actual routine draft mutation, payment, auth, or Face Lab changes.
+- Validation: `npm run build` passed. `npm run lint` did not run because `next lint` entered the interactive ESLint setup prompt and exited 1. `git diff --check` passed with CRLF warnings only. 390px `/test-full-report` verified the dev banner, all 9 scenario tabs, distinct plan/audit states and CTAs, summary sheet open, no horizontal overflow, and `/result/full-report?access=login_required` did not show dev scenario UI.
+- Issues/risks: Scenario product data is intentionally fixture-only and not a real DB recommendation engine. Existing unrelated branch modifications remain in `components/full-report/PremiumRoutineConsultSection.jsx` and `lib/product-source.js`.
+- Context promotion candidate: FunctionalPlan and RoutineAudit should remain separate models; dev fixture tabs must stay gated to `/test-full-report` and never mutate saved report/currentProducts data.
+- Review follow-up: Moved the fixture data out of the production full-report component props path and into the `/test-full-report` wrappers, then passed it down only behind `NODE_ENV === "development"` plus `/test-full-report`. The actual full-report path now no longer renders dev scenario tabs or `Dev Fixture` product labels.
+- Review validation follow-up: `npm run build` passed; `git diff --check` passed with CRLF warnings only; `npm run lint` is still blocked by the interactive Next ESLint setup prompt. 390px Playwright confirmed all 9 scenario combinations still differ by plan/audit/CTA, summary sheet opens, no horizontal overflow, and `/result/full-report?access=login_required` has no dev scenario UI.
