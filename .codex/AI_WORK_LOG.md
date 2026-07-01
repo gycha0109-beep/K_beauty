@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-01 / Face Lab structured field contract
+
+- Branch: main
+- Task type: execution / Medium-High Face Lab item-level data contract fix
+- Routing decision: User requested only mood/color/style field-level contracts after the overall Face Lab envelope. Result UI layout, card order, user-facing copy, concrete fallback expression wording, Skin Match logic, DB schema, and existing result evidence UI were out of scope.
+- Goal: Ensure an overall available Face Lab result does not make mood, color, or style available unless that field has direct Vision evidence, and prevent launch fallback keywords from being inserted into structured field values.
+- Changed files: app/api/face-reading/route.js, app/page.js, app/result/page.js, app/result/full-report/page.js, docs/architecture/premium-face-lab-contract-v1.md, lib/face-lab-launch.js, lib/face-lab-result-envelope.js, lib/premium-face-lab.js, lib/result/free-result-v2-static-builders.js, .codex/AI_WORK_LOG.md
+- Protected areas: No DB/schema/migration/policy, auth, env, payment, product/recommendation logic, Skin Match scoring, result step layout, user-facing Face Lab copy redesign, or `components/result/free-v2/FreeResultV2EvidenceStep.jsx` changes.
+- Validation results: `npm run build` passed. `git diff --check` passed with CRLF warnings only. Node contract checks confirmed fallback-only input produces non-available null values, evidence-backed input preserves value/evidence/source, missing color does not generate peach/coral, missing style does not generate top-volume/controlled-side defaults, missing mood does not generate cat/wolf-like defaults, unavailable envelopes unwrap to null, and legacy flat data is not unwrapped by the strict Vision helper. `git diff --name-only -- components/result/free-v2/FreeResultV2EvidenceStep.jsx` returned no changes.
+- Notes/risks: Existing legacy fallback builder functions remain in `lib/face-lab-launch.js` for older internal paths, but `buildFaceLabLaunchData()` now emits free/premium launch values from `structured` fields only. Real OpenAI E2E was not run; behavior was verified by helper-level fixtures and production build.
+- Context promotion candidate: Face Lab display adapters should prefer `data.structured` item-level status and must not convert unknown legacy flat values or launch fallback values into new available analysis results.
+
 ### 2026-07-01 / Face Lab envelope failure contract
 
 - Branch: main

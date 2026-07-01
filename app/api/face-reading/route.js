@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
 import {
   createFaceLabAvailable,
   createFaceLabInsufficientEvidence,
@@ -797,11 +798,18 @@ export async function POST(request) {
       if (!hasRequiredFaceLabEvidence(parsed)) {
         console.warn("[face-reading] response evidence insufficient");
         return NextResponse.json(
-          createFaceLabInsufficientEvidence(parsed, "required_features_missing")
+          createFaceLabInsufficientEvidence(
+            {
+              ...parsed,
+              structured: buildFaceLabStructuredData(parsed, locale)
+            },
+            "required_features_missing"
+          )
         );
       }
 
       const normalizedFaceLab = normalizeFaceLab(parsed, locale);
+      const structuredFaceLab = buildFaceLabStructuredData(parsed, locale);
 
       if (process.env.NODE_ENV !== "production" && !hasFaceReadingPayloadShape(normalizedFaceLab)) {
         console.warn("[face-reading] response shape warning", {
@@ -810,7 +818,10 @@ export async function POST(request) {
         });
       }
 
-      return NextResponse.json(createFaceLabAvailable(normalizedFaceLab));
+      return NextResponse.json(createFaceLabAvailable({
+        ...normalizedFaceLab,
+        structured: structuredFaceLab
+      }));
     } catch (parseError) {
       console.error("[face-reading] parse failed", {
         message: parseError instanceof Error ? parseError.message : String(parseError),

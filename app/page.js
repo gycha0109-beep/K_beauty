@@ -17,7 +17,7 @@ import {
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
 import {
   createFaceLabUnavailable,
-  getAvailableFaceLabData,
+  getAvailableVisionFaceLabData,
   isFaceLabResultEnvelope
 } from "@/lib/face-lab-result-envelope";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
@@ -255,10 +255,10 @@ export default function HomePage() {
           imagePreviewDataUrlPromise,
           faceLabPromise
         ]);
-        const faceLabData = getAvailableFaceLabData(faceLabResult);
-        const faceLabTeaser = faceLabData
-          ? buildFaceLabLaunchData(faceLabData, locale).free
-          : null;
+        const faceLabData = getAvailableVisionFaceLabData(faceLabResult);
+        const faceLabLaunch = faceLabData ? buildFaceLabLaunchData(faceLabData, locale) : null;
+        const faceLabTeaser = faceLabLaunch?.free?.teaserLine ? faceLabLaunch.free : null;
+        const faceLabStructured = faceLabLaunch?.structured || faceLabData?.structured || null;
 
         sessionStorage.setItem(
           "skinTestSubmission",
@@ -271,7 +271,7 @@ export default function HomePage() {
         );
         sessionStorage.setItem(
           "skinTestResult",
-          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult, faceLabTeaser } : data)
+          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult, faceLabTeaser, faceLabStructured } : data)
         );
 
         if (faceLabResult) {

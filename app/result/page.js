@@ -38,8 +38,7 @@ import {
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
 import {
-  getAvailableFaceLabData,
-  isFaceLabResultEnvelope
+  getAvailableVisionFaceLabData
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
@@ -1009,7 +1008,7 @@ function getFaceLabProfilePreview(launchData, locale = "ko") {
     5
   );
 
-  if (!primary && !keywords.length) {
+  if (!primary) {
     return null;
   }
 
@@ -3024,8 +3023,8 @@ function ResultContent() {
   const resultForm = submission?.form || {};
   const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
   const faceLabDisplayData =
-    getAvailableFaceLabData(faceLabFull) ||
-    (isFaceLabResultEnvelope(result?.faceLab) ? getAvailableFaceLabData(result.faceLab) : null);
+    getAvailableVisionFaceLabData(faceLabFull) ||
+    getAvailableVisionFaceLabData(result?.faceLab);
   const faceLabLaunch = faceLabDisplayData ? buildFaceLabLaunchData(faceLabDisplayData, locale) : null;
   const faceLabProfilePreview = faceLabLaunch ? getFaceLabProfilePreview(faceLabLaunch, locale) : null;
   const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
