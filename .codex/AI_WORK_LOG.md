@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-02 / functional plan pure decision engines
+
+- Branch: codex/functional-plan-section
+- Task type: limited execution
+- Routing decision: Medium pure-engine extraction requested for Premium Functional Plan. UI connection, DB/schema/migration, Supabase queries, currentProducts storage, recommendation ranking, START/HOLD/NEXT state additions, new functional tables, and Hwahae import pipeline changes were explicitly out of scope.
+- Goal: Add two pure decision layers outside the report component: `buildFunctionalPlanDecision({ freeResult })` for survey/free-result driven functional direction, and `buildFunctionalCandidatePolicy({ decision, findings, candidates })` for read-only candidate display policy.
+- Changed files: lib/functional-plan-decision.js, lib/functional-candidate-policy.js, scripts/verify-functional-plan-decision.mjs, scripts/verify-functional-candidate-policy.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI component, DB migration/schema/policy, Supabase query, currentProducts storage contract, products data, API response field, saved report payload, recommendation ranking, or Hwahae raw/import pipeline was changed.
+- Validation: `node scripts/verify-functional-plan-decision.mjs` passed; `node scripts/verify-functional-candidate-policy.mjs` passed; `npm run build` passed; `git diff --check` passed. Standalone verifier scripts still emit the existing package module-type warning for ESM `.js` imports because `package.json` has no `"type": "module"`.
+- Issues/risks: The new engines are intentionally not connected to `PremiumFunctionalDecisionSection.jsx` yet, so existing component-local legacy functional-plan logic remains until the next integration step.
+- Context promotion candidate: Keep FunctionalPlanDecision skin/free-result only; current product duplicate/support handling belongs in CandidatePolicy, not in a START/HOLD/NEXT-style plan state.
+
 ### 2026-07-01 / saved report functional data audit
 
 - Branch: codex/functional-plan-section
