@@ -41,6 +41,8 @@ const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const PREMIUM_REPORT_ENABLED =
   IS_DEVELOPMENT || process.env.NEXT_PUBLIC_PREMIUM_REPORT_ENABLED === "true";
 const GENDER_PREFERENCE_VALUES = new Set(["female", "male", "unspecified"]);
+const UNKNOWN_FLAG_VALUES = new Set(["yes", "no", "unknown"]);
+const SUNSCREEN_PREFERENCE_STATE_VALUES = new Set(["answered", "skipped", "unknown"]);
 
 function clearStaleAnalysisStorage() {
   clearWriteAccessToken();
@@ -77,6 +79,11 @@ function normalizeSurveyAnswers(form = {}) {
     ...form,
     mainConcern: form.mainConcern || mainConcerns[0] || "",
     mainConcerns,
+    primaryConcern: mainConcerns.includes(form.primaryConcern) ? form.primaryConcern : "",
+    recentSkinChange: UNKNOWN_FLAG_VALUES.has(form.recentSkinChange) ? form.recentSkinChange : "unknown",
+    recentlyChangedProduct: UNKNOWN_FLAG_VALUES.has(form.recentlyChangedProduct)
+      ? form.recentlyChangedProduct
+      : "unknown",
     cleansingFrequency: form.cleansingFrequency || OPTIONAL_DEFAULTS.cleansingFrequency,
     preferredTexture: form.preferredTexture || OPTIONAL_DEFAULTS.preferredTexture,
     postWashFeeling: form.postWashFeeling || OPTIONAL_DEFAULTS.postWashFeeling,
@@ -89,6 +96,9 @@ function normalizeSurveyAnswers(form = {}) {
     toneUpWanted: Boolean(form.toneUpWanted),
     makeupUse: Boolean(form.makeupUse),
     eyeSensitive: Boolean(form.eyeSensitive),
+    sunscreenPreferenceState: SUNSCREEN_PREFERENCE_STATE_VALUES.has(form.sunscreenPreferenceState)
+      ? form.sunscreenPreferenceState
+      : "unknown",
     environmentExposure: Array.isArray(form.environmentExposure)
       ? form.environmentExposure
       : OPTIONAL_DEFAULTS.environmentExposure
@@ -317,7 +327,8 @@ export default function HomePage() {
         return {
           ...prev,
           mainConcern: nextValues[0] || "",
-          mainConcerns: nextValues
+          mainConcerns: nextValues,
+          primaryConcern: nextValues.includes(prev.primaryConcern) ? prev.primaryConcern : ""
         };
       }
 
@@ -329,7 +340,8 @@ export default function HomePage() {
           whiteCastHate: nextValues.includes("whiteCastHate"),
           toneUpWanted: nextValues.includes("toneUpWanted"),
           makeupUse: nextValues.includes("makeupUse"),
-          eyeSensitive: nextValues.includes("eyeSensitive")
+          eyeSensitive: nextValues.includes("eyeSensitive"),
+          sunscreenPreferenceState: "answered"
         };
       }
 
@@ -375,6 +387,20 @@ export default function HomePage() {
   const goToStep = (nextStep) => {
     setError("");
     setCurrentStep(nextStep);
+  };
+
+  const completeSurvey = (options = {}) => {
+    if (options.markSunscreenSkipped) {
+      setForm((prev) => ({
+        ...prev,
+        sunscreenPreferenceState:
+          !prev.sunscreenPreferenceState || prev.sunscreenPreferenceState === "unknown"
+            ? "skipped"
+            : prev.sunscreenPreferenceState
+      }));
+    }
+
+    goToStep("loading");
   };
 
   const handleNext = () => {
@@ -434,7 +460,7 @@ export default function HomePage() {
             form={form}
             onAnswerChange={handleSurveyAnswerChange}
             onBackToPhoto={() => goToStep("photo")}
-            onComplete={() => goToStep("loading")}
+            onComplete={completeSurvey}
             error={error}
           />
         </>

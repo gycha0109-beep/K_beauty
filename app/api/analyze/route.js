@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
+import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
+import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
 import { resolveProductCategorySemantics } from "@/lib/product-category-normalizer";
 import {
@@ -60,6 +62,43 @@ function previewText(value, maxLength = 240) {
 
 function logAnalyze(stage, payload = {}) {
   console.log(`[analyze] ${stage}`, payload);
+}
+
+function logSurveyInputContractParallel(formInput, context = {}) {
+  if (process.env.NODE_ENV !== "development") {
+    return;
+  }
+
+  try {
+    const contract = buildSurveyInputContract(formInput, {
+      source: "api_analyze_parallel"
+    });
+
+    console.info("[analyze] survey-input-contract:parallel", {
+      primaryConcern: contract.goals.primaryConcern,
+      secondaryConcerns: contract.goals.secondaryConcerns,
+      unresolvedPrimaryConcern: contract.goals.unresolvedPrimaryConcern,
+      safety: contract.safety,
+      missingFields: contract.metadata.missingFields,
+      warnings: contract.metadata.warnings
+    });
+
+    const auditResult = appendSurveyInputContractDevAuditEvent(contract, {
+      hasImage: Boolean(context.hasImage)
+    });
+
+    if (!auditResult.ok) {
+      console.warn("[analyze] survey-input-contract:audit-write-failed", {
+        message: previewDiagnosticText(
+          auditResult.error instanceof Error ? auditResult.error.message : String(auditResult.error)
+        )
+      });
+    }
+  } catch (error) {
+    console.warn("[analyze] survey-input-contract:parallel-failed", {
+      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
+    });
+  }
 }
 
 function hasAnalyzeResponseShape(payload) {
@@ -1098,6 +1137,9 @@ export async function POST(request) {
       formData.get("sensitivityLevel") || formData.get("sensitivity");
     const mainConcern = formData.get("mainConcern");
     const mainConcerns = parseJsonArrayField(formData.get("mainConcerns"));
+    const primaryConcern = formData.get("primaryConcern");
+    const recentSkinChange = formData.get("recentSkinChange");
+    const recentlyChangedProduct = formData.get("recentlyChangedProduct");
     const cleansingFrequency = formData.get("cleansingFrequency");
     const preferredTexture =
       formData.get("texturePreference") || formData.get("preferredTexture");
@@ -1113,6 +1155,7 @@ export async function POST(request) {
     const toneUpWanted = parseBooleanField(formData.get("toneUpWanted"));
     const makeupUse = parseBooleanField(formData.get("makeupUse"));
     const eyeSensitive = parseBooleanField(formData.get("eyeSensitive"));
+    const sunscreenPreferenceState = formData.get("sunscreenPreferenceState");
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
     const currentProducts = sanitizeCurrentProducts(formData.get("currentProducts"));
@@ -1156,6 +1199,9 @@ export async function POST(request) {
       sensitivity,
       mainConcern: resolvedMainConcern,
       mainConcerns: mainConcerns.length ? mainConcerns : undefined,
+      primaryConcern,
+      recentSkinChange,
+      recentlyChangedProduct,
       cleansingFrequency,
       preferredTexture,
       postWashFeeling,
@@ -1167,12 +1213,17 @@ export async function POST(request) {
       toneUpWanted: Boolean(toneUpWanted),
       makeupUse: Boolean(makeupUse),
       eyeSensitive: Boolean(eyeSensitive),
+      sunscreenPreferenceState,
       outdoorExposure:
         typeof outdoorExposure === "boolean"
           ? outdoorExposure
           : environmentExposure.includes("outdoor"),
       verySensitivePeriod: Boolean(verySensitivePeriod)
     };
+
+    logSurveyInputContractParallel(formInput, {
+      hasImage: Boolean(image)
+    });
 
     const { apiKey } = resolveOpenAiApiKey();
     const writeAccessToken = createWriteAccessToken();

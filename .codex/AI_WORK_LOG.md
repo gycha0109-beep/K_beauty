@@ -1,5 +1,89 @@
 # AI_WORK_LOG.md
 
+### 2026-07-02 / survey input contract UI supplement v1
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium survey UI and form contract supplement
+- Routing decision: User requested the first UI refactor to address runtime-audit contract gaps: explicit `primaryConcern`, `recentSkinChange`, `recentlyChangedProduct`, and sunscreen answered/skipped metadata. DB/schema/migration, recommendation ranking, Functional Plan UI, premium/currentProducts storage, product recommendation logic, API response exposure, raw dev audit storage, and photo analysis were out of scope.
+- Goal: Add contract-only survey inputs, include them in the form payload and `/api/analyze` normalized form, update `SurveyInputContract` normalization, and extend verifier/audit fixtures while keeping legacy response/storage behavior intact.
+- Changed files: components/onboarding/SurveyFlow.js, components/onboarding/constants.js, app/page.js, app/api/analyze/route.js, lib/survey-input-contract.js, scripts/verify-survey-input-contract.mjs, scripts/audit-survey-input-contract-against-free-result.mjs, docs/architecture/survey-input-contract.md, tmp/survey-input-contract-audit/summary.json, tmp/survey-input-contract-audit/summary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No DB/schema/migration/policy, recommendation ranking engine implementation, Functional Plan UI wiring, premium report storage structure, currentProducts storage structure, product recommendation logic, API response `surveyInputContract` exposure, dev audit raw form/image/gender storage, photo analysis logic, auth/payment/deploy/env, or production data changes.
+- Validation: `node scripts/verify-survey-input-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/audit-survey-input-contract-against-free-result.mjs` passed and rewrote fixture audit summaries. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: New fields are now included in the submitted survey form and session survey snapshot for compatibility with future contract work, but API response and recommendation output remain unchanged. Runtime audit should be rerun next to confirm fallback/ambiguity rates drop in real UI submissions.
+- Context promotion candidate: Keep legacy free-result `mainConcern` compatibility separate from contract `primaryConcern` until ranking is explicitly migrated.
+
+### 2026-07-02 / survey input contract runtime audit sample fill
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: verification / Medium runtime audit sampling
+- Routing decision: User requested development-only E2E/API sampling to fill `SurveyInputContract` runtime audit data through real `/api/analyze` calls, with no UI, API response, storage payload, DB/schema, ranking, Functional Plan, free-result logic, or premium storage changes.
+- Goal: Start the local dev server, use browser automation/Playwright to load localhost, submit 10 distinct multipart `/api/analyze` survey scenarios with the project test image, verify response success, generate runtime audit summaries, and analyze contract/runtime mismatches.
+- Changed files: tmp/survey-input-contract-runtime-audit/events.jsonl, tmp/survey-input-contract-runtime-audit/e2e-run-results.json, tmp/survey-input-contract-runtime-audit/summary.json, tmp/survey-input-contract-runtime-audit/summary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, survey question additions/deletions, API response field names, saved payload structure, DB/schema/migration/policy, recommendation ranking, Functional Plan UI, premium report storage, production runtime file write, raw form storage, image data storage, or gender preference audit storage.
+- Validation: Dev server ran on `http://localhost:3001`. `agent-browser` CLI was unavailable on PATH, so Playwright was used. All 10 `/api/analyze` calls returned 200. Runtime audit `events.jsonl` contains 10 events. `node scripts/summarize-survey-input-contract-runtime-audit.mjs` passed and wrote summary JSON/MD. API responses contained no `surveyInputContract`, `contract`, or `debugContract` fields. `git diff --check` passed with LF-to-CRLF warnings only.
+- Findings: `unresolvedPrimaryConcern` was 10/10 because `/api/analyze` still passes no explicit `primaryConcern` into the contract and falls back to `mainConcerns[0]`. Warnings were `primaryConcern_missing_fallback_used` 10/10 and `sunscreen_boolean_false_ambiguous` 10/10. Missing fields were `recentSkinChange` 10/10 and `recentlyChangedProduct` 10/10. Primary concern and existing priority diverged in `pores_oil_outdoor_whitecast` and `acne_redness_sensitive`, both due to scoring/safety signals overriding the first selected concern.
+- Context promotion candidate: Before wiring the contract into ranking, add an explicit primary concern/goal input and answered-state metadata for sunscreen booleans; keep safety risks separate from user-stated concerns because scoring can legitimately promote redness/barrier/UV/oiliness beyond selected concerns.
+
+### 2026-07-02 / survey input contract dev runtime audit collector
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium development-only API audit collector
+- Routing decision: User requested a scoped development-only collector for `SurveyInputContract` summaries generated inside `/api/analyze`. UI changes, survey question changes, API response changes, saved payload changes, DB/schema work, ranking integration, Functional Plan UI wiring, free-result logic changes, premium storage changes, and production file writes were explicitly out of scope.
+- Goal: Append sanitized contract summary events to `tmp/survey-input-contract-runtime-audit/events.jsonl` during development, provide a local summary script, and keep production as no-op.
+- Changed files: app/api/analyze/route.js, lib/survey-input-contract-dev-audit.js, scripts/verify-survey-input-contract.mjs, scripts/summarize-survey-input-contract-runtime-audit.mjs, docs/architecture/survey-input-contract.md, tmp/survey-input-contract-runtime-audit/summary.json, tmp/survey-input-contract-runtime-audit/summary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, survey question additions/deletions, API response field names, stored payload structure, DB/schema/migration/policy, recommendation ranking, Functional Plan UI, premium report storage, auth/payment/deploy/env, production data, raw form storage, image data storage, or gender preference audit storage.
+- Validation: `node scripts/verify-survey-input-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/audit-survey-input-contract-against-free-result.mjs` passed and rewrote the fixture audit summaries. `node scripts/summarize-survey-input-contract-runtime-audit.mjs` passed with zero runtime events and wrote summary JSON/MD. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: Runtime audit summaries remain local tmp artifacts only. The summary report is empty until real development `/api/analyze` requests append events. Existing route logs outside the new collector were not changed.
+- Context promotion candidate: Development audit collectors for survey contracts must store sanitized summary-only JSONL, no raw form/image/profile data, and must no-op in production.
+
+### 2026-07-02 / survey input contract api analyze parallel generation
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium API-internal survey contract audit hook
+- Routing decision: User requested a runtime validation-only step inside `/api/analyze` that builds `SurveyInputContract` from the normalized form without UI changes, survey question changes, API response changes, saved payload changes, DB/schema work, ranking integration, Functional Plan UI wiring, free-result logic changes, or premium storage changes.
+- Goal: Generate `SurveyInputContract` beside the existing free analysis path for development-only audit logging, while preserving the existing `freeResult`, premium session report, cookies, headers, and response JSON shape.
+- Changed files: app/api/analyze/route.js, scripts/verify-survey-input-contract.mjs, docs/architecture/survey-input-contract.md, .codex/AI_WORK_LOG.md
+- Protected areas: No API response field names, stored payload structure, DB/schema/migration/policy, UI, survey questions, recommendation ranking, Functional Plan UI, premium report storage, auth/payment/deploy/env, or production data were changed.
+- Validation: `node scripts/verify-survey-input-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/audit-survey-input-contract-against-free-result.mjs` passed and rewrote the tmp audit summaries. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: The audit hook intentionally runs only when `NODE_ENV === "development"` and logs a summary rather than the raw contract. Production does not create or log this dev-only contract. Existing `/api/analyze` logs outside this hook were not changed.
+- Context promotion candidate: Runtime contract validation should stay summary-only and response/storage-neutral until a separate task explicitly wires the contract into ranking or premium policy.
+
+### 2026-07-02 / survey input contract parallel audit
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: verification / Medium survey contract parallel audit
+- Routing decision: User requested a validation-only step that generates `SurveyInputContract` from local fixture forms and audits it against existing free-result priority/scoring expectations without UI wiring, ranking integration, API response changes, saved payload changes, or DB/schema work.
+- Goal: Add a local audit script that compares current form fixtures, `buildSurveyInputContract(form)`, legacy-style freeResult priority/scoring, contract primary/secondary concerns, safety risks, warnings, and missing fields.
+- Changed files: scripts/audit-survey-input-contract-against-free-result.mjs, tmp/survey-input-contract-audit/summary.json, tmp/survey-input-contract-audit/summary.md, lib/survey-input-contract.js, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, survey question additions/deletions, API response or request payload shape, stored payload structure, DB/schema/migration/policy, ranking implementation, Functional Plan UI connection, premium save structure, external API call, image analysis call, or Supabase write.
+- Validation: `node scripts/verify-survey-input-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/audit-survey-input-contract-against-free-result.mjs` passed and wrote summary JSON/MD. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only, including ignored tmp summaries via forced intent-to-add.
+- Issues/risks: The audit did not import the live free-result engine because that path is tied to app alias/product-source imports; instead it uses a local survey/environment scoring mirror copied from `lib/skin-match-decision-engine.js` rules with photo score fixed at zero. The dry/dehydration fixture shows barrier as a high secondary score not present in contract concerns, which is expected from skinType/post-wash weighting and should be considered when later mapping safety/supporting goals.
+- Context promotion candidate: Before runtime integration, compare contract goals against both priority axis and high secondary concern scores; high safety/supporting axes can be absent from explicit concerns and still matter.
+
+### 2026-07-02 / survey input contract adapter
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium pure survey contract adapter
+- Routing decision: User requested only a pure current-form-to-`SurveyInputContract` adapter plus Node verification script. UI changes, survey question changes, `app/page.js`, `SurveyFlow`, API payload changes, DB/schema/migration changes, recommendation ranking, Functional Plan UI wiring, premium saved payload changes, and package config changes were out of scope.
+- Goal: Add `buildSurveyInputContract(form, options)` that normalizes current survey fields into `skinState`, `goals`, `safety`, `behavior`, `preferences`, `sunscreen`, `profile`, and `metadata` without connecting it to runtime flows.
+- Changed files: lib/survey-input-contract.js, scripts/verify-survey-input-contract.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response/request shape, stored payload structure, DB/schema/migration/policy, ranking engine behavior, Functional Plan UI, premium report storage, auth/payment/deploy/env, or package changes.
+- Validation: `node scripts/verify-survey-input-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning for ESM `.js` imports. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: The adapter can only warn about current optional default ambiguity; it cannot know whether default-looking optional values were skipped or explicitly selected until the UI supplies answered/skipped metadata.
+- Context promotion candidate: Keep `genderPreference` profile/eligibility-only and keep sunscreen false booleans marked ambiguous until the survey captures explicit answered state.
+
+### 2026-07-02 / survey input contract audit
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: design / Medium survey input contract audit
+- Routing decision: User requested a pre-UI-refactor investigation and contract draft only. UI changes, DB/schema/migration changes, ranking implementation, Functional Plan UI wiring, saved payload shape changes, and question add/delete implementation were out of scope.
+- Goal: Audit the current 11-question survey field/value inventory, free/premium payload flow, scoring/priority generation, sunscreen and gender field handling, photo/no-photo behavior, and currentProducts premium entry linkage; propose a future `SurveyInputContract` split into skinState, goals, safety, behavior, preferences, sunscreen, profile, and metadata.
+- Changed files: docs/architecture/survey-input-contract.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, DB/schema/migration/policy, storage payload structure, recommendation ranking, current-products policy, premium UI connection, auth/payment/deploy/env, or package changes.
+- Validation: `git diff --check` passed with LF-to-CRLF warnings only. Build was not run because this is a documentation-only change.
+- Issues/risks: Current optional survey defaults erase skipped/unknown state; current free result does not expose `answers`, so premium current-products verdicts entered after free analysis lose full survey context; no-photo analysis is not currently implemented.
+- Context promotion candidate: Survey contracts should preserve skipped/unknown state separately from legacy defaults before feeding ranking, functional decisions, or premium current-product policy.
+
 ### 2026-06-30 / premium beta flow
 
 - Branch: feature/premium-beta-flow

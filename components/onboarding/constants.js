@@ -3,6 +3,9 @@ export const INITIAL_FORM = {
   sensitivity: "",
   mainConcern: "",
   mainConcerns: [],
+  primaryConcern: "",
+  recentSkinChange: "unknown",
+  recentlyChangedProduct: "unknown",
   cleansingFrequency: "",
   preferredTexture: "",
   postWashFeeling: "",
@@ -13,7 +16,8 @@ export const INITIAL_FORM = {
   whiteCastHate: false,
   toneUpWanted: false,
   makeupUse: false,
-  eyeSensitive: false
+  eyeSensitive: false,
+  sunscreenPreferenceState: "unknown"
 };
 
 export const OPTIONAL_DEFAULTS = {
@@ -371,12 +375,16 @@ export const OPTION_SETS = {
   skinType: ["oily", "dry", "combination", "not_sure"],
   sensitivity: ["low", "medium", "high"],
   mainConcern: ["oiliness", "dehydration", "acne", "uneven_tone", "pores", "redness", "barrier"],
+  primaryConcern: ["oiliness", "dehydration", "acne", "uneven_tone", "pores", "redness", "barrier"],
+  recentSkinChange: ["yes", "no", "unknown"],
+  recentlyChangedProduct: ["yes", "no", "unknown"],
   preferredTexture: ["gel", "watery", "lotion", "cream"],
   postWashFeeling: ["tight", "comfortable", "still_oily"],
   afternoonSkinChange: ["more_oily", "more_dry", "red_or_irritated", "mostly_same"],
   mostDislikedFeel: ["sticky", "greasy", "heavy"],
   booleanChoice: ["true", "false"],
   sunscreenConsiderations: ["whiteCastHate", "toneUpWanted", "makeupUse", "eyeSensitive"],
+  sunscreenPreferenceState: ["answered", "skipped", "unknown"],
   cleansingFrequency: ["once", "twice", "3_plus"],
   environmentExposure: ["heat", "humidity", "mask", "kitchen", "outdoor", "aircon"],
   genderPreference: ["female", "male", "unspecified"]
