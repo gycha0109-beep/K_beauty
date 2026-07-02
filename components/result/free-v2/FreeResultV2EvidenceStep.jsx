@@ -8,6 +8,62 @@ import {
   FreeResultV2StepFrame
 } from "@/components/result/free-v2/FreeResultV2Primitives";
 
+function isPhotoAnalysisLimited(photoSignals = []) {
+  const signals = Array.isArray(photoSignals)
+    ? photoSignals.map((signal) => String(signal || "").trim()).filter(Boolean)
+    : [];
+  const joined = signals.join(" ").toLowerCase();
+
+  return (
+    !signals.length ||
+    joined.includes("photo cues were limited") ||
+    joined.includes("limited photo") ||
+    joined.includes("사진 신호는 제한") ||
+    joined.includes("사진 상태") ||
+    joined.includes("확정하기 어려") ||
+    joined.includes("선명한 사진") ||
+    joined.includes("분석 실패")
+  );
+}
+
+function getPhotoAnalysisFailureCopy(locale = "ko") {
+  return locale === "en"
+    ? {
+        photo: "Sorry, a clearer photo is needed.",
+        signal: "Analysis failed",
+        title: "Photo analysis was excluded",
+        body: "The photo was blurry or partially covered,\nso we could not confirm enough skin details.\nWe analyzed mainly from your survey answers."
+      }
+    : {
+        photo: "죄송합니다. 더 선명한 사진이 필요합니다.",
+        signal: "분석 실패",
+        title: "사진 분석은 제외되었어요",
+        body: "사진이 흐리거나 가려져 있어\n피부 특징을 충분히 확인하지 못했습니다.\n설문 답변을 중심으로 분석했습니다."
+      };
+}
+
+function FreeResultV2CameraExcludedIcon() {
+  return (
+    <div className="relative mx-auto h-14 w-20 sm:h-16 sm:w-24" aria-hidden="true">
+      <div className="absolute left-1 top-4 h-9 w-16 rounded-xl border border-[#b79ad1]/45 bg-[linear-gradient(145deg,#8a6aa2_0%,#4c365b_62%,#2f243a_100%)] shadow-[inset_0_1px_5px_rgba(255,255,255,0.18),0_10px_18px_rgba(17,7,24,0.28)] sm:h-10 sm:w-20">
+        <div className="absolute left-2.5 -top-2.5 h-3 w-5 rounded-t-md border border-[#b79ad1]/40 bg-[linear-gradient(145deg,#9f81b9,#5f4770)]" />
+        <div className="absolute left-7 -top-3 h-4 w-8 rounded-t-lg border border-[#b79ad1]/40 bg-[linear-gradient(145deg,#9a7bb4,#5c456c)] sm:left-8 sm:w-10" />
+        <div className="absolute right-2.5 top-2 h-2.5 w-4 rounded border border-[#251d2b]/70 bg-[#241b2c]" />
+        <div className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#c7a8d8]/35 bg-[linear-gradient(145deg,#9777aa,#4d375d)] shadow-[inset_0_1px_5px_rgba(255,255,255,0.18)] sm:h-10 sm:w-10">
+          <div className="h-5 w-5 rounded-full border border-[#17111e]/80 bg-[radial-gradient(circle_at_34%_30%,#a99df1_0%,#4a3a67_36%,#171321_74%)] sm:h-6 sm:w-6" />
+        </div>
+      </div>
+      <div className="absolute right-1 top-8 flex h-8 w-8 items-center justify-center rounded-full border border-[#b79ad1]/45 bg-[linear-gradient(145deg,#9171a3,#584164)] shadow-[0_8px_14px_rgba(18,8,27,0.30)] sm:top-9 sm:h-9 sm:w-9">
+        <span className="absolute h-1.5 w-5 rotate-45 rounded-full bg-[#f8edf7]" />
+        <span className="absolute h-1.5 w-5 -rotate-45 rounded-full bg-[#f8edf7]" />
+      </div>
+      <span className="absolute right-2 top-1 h-4 w-1.5 rotate-[14deg] rounded-full bg-[#b79aff] shadow-[0_0_8px_rgba(183,154,255,0.44)]" />
+      <span className="absolute -right-0.5 top-4 h-4 w-1.5 rotate-45 rounded-full bg-[#cbb8ff] shadow-[0_0_8px_rgba(203,184,255,0.44)]" />
+      <span className="absolute -right-2 top-7 h-4 w-1.5 rotate-[84deg] rounded-full bg-[#d6c7ff] shadow-[0_0_8px_rgba(214,199,255,0.38)]" />
+    </div>
+  );
+}
+
 function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = "left", isVisible = true, origin = "left", delay = 0 }) {
   const colorClass = tone === "blue"
     ? "border-[#9fb4ff]/60 bg-[#eef3ff]/90 text-[#465f9a] dark:border-[#9fb4ff]/40 dark:bg-[#2c2d45]/60 dark:text-[#d8e0ff]"
@@ -37,18 +93,59 @@ function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = 
   );
 }
 
-function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, locale = "ko" }) {
+function buildPhotoCalloutItems(photoSignals = [], locale = "ko") {
+  const fallback = locale === "en" ? "Photo cues were limited" : "사진 신호는 제한적으로 확인됨";
+  const signals = Array.isArray(photoSignals)
+    ? photoSignals.map((signal) => String(signal || "").trim()).filter(Boolean)
+    : [];
+  const displaySignals = signals.length ? signals : [fallback];
+
+  return displaySignals.slice(0, 3).map((signal, index) => ({
+    key: `${signal}-${index}`,
+    title: signal,
+    body: getFreeResultV2EvidenceSignalNote(signal, "photo"),
+    tone: index === 0 ? "blue" : "pink",
+    origin: index === 0 ? "left" : "right",
+    delay: 0.06 + index * 0.08
+  }));
+}
+
+function FreeResultV2PhotoWireOverlay({ isVisible }) {
+  return (
+    <motion.svg
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      viewBox="0 0 100 125"
+      fill="none"
+      initial={false}
+      animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.34, ease: "easeOut" }}
+      aria-hidden={!isVisible}
+    >
+      <path d="M50 24 C46 31 45 39 48 47" stroke="#ff9aa8" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
+      <path d="M31 77 C38 70 45 67 53 69" stroke="#9fb4ff" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
+      <path d="M69 62 C63 59 58 58 53 61" stroke="#ffb199" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
+      <path d="M50 24 L62 17" stroke="#ff9aa8" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
+      <path d="M31 77 L18 85" stroke="#9fb4ff" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
+      <path d="M69 62 L82 55" stroke="#ffb199" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
+      <circle cx="50" cy="24" r="1.5" fill="#ff9aa8" opacity="0.92" />
+      <circle cx="31" cy="77" r="1.5" fill="#9fb4ff" opacity="0.92" />
+      <circle cx="69" cy="62" r="1.5" fill="#ffb199" opacity="0.92" />
+    </motion.svg>
+  );
+}
+
+function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSignals = [], locale = "ko" }) {
   const isEnglish = locale === "en";
   const [isCalloutsOpen, setIsCalloutsOpen] = useState(false);
   const storageKey = "bejewely:free-result-v2:evidence-photo-callouts-open";
+  const calloutItems = buildPhotoCalloutItems(photoSignals, locale);
+  const isLimited = isPhotoAnalysisLimited(photoSignals);
+  const failureCopy = getPhotoAnalysisFailureCopy(locale);
   const callouts = isEnglish
     ? {
         badge: "AI analysis view",
         reveal: "Tap to reveal",
-        revealLabel: "Reveal photo analysis cues",
-        oil: ["T-zone oiliness", "Forehead and nose shine"],
-        pores: ["Visible pores", "Pore texture around cheeks"],
-        dry: ["Lower moisture", "Cheek area looks dry"]
+        revealLabel: "Reveal photo analysis cues"
       }
     : {
         badge: "AI 분석 뷰",
@@ -90,16 +187,34 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, locale = 
         <span className="absolute left-0 top-0 z-20 rounded-full border border-[#e8c8d0] bg-white/80 px-3 py-1.5 text-[11px] font-semibold text-[#321724] backdrop-blur-sm dark:border-[#5a3a48] dark:bg-[#2a1b24]/75 dark:text-[#f3e4df]">
           {callouts.badge}
         </span>
+        {isLimited ? (
+          <div className="flex min-h-[16rem] items-center justify-center pt-8">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-[13rem] overflow-hidden rounded-[1.6rem] border border-[#ead2cf] bg-white/68 dark:border-[#5a3a48] dark:bg-[#2a1b24]">
+              {photoUrl ? (
+                <img src={photoUrl} alt={photoAlt} className="h-full w-full object-cover object-center" />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{fallback}</div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(36,23,32,0),rgba(36,23,32,0.82))] px-3 pb-3 pt-8 text-center">
+                <p className="text-[12px] font-semibold leading-5 text-white">
+                  {failureCopy.photo}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="grid min-h-[16rem] grid-cols-[minmax(3.6rem,0.8fr)_minmax(7.4rem,1.7fr)_minmax(3.6rem,0.8fr)] items-center gap-2 pt-8">
           <div className="flex h-full items-center justify-end">
-            <FreeResultV2EvidencePhotoCallout
-              title={callouts.dry[0]}
-              body={callouts.dry[1]}
-              tone="blue"
-              isVisible={isCalloutsOpen}
-              origin="left"
-              delay={isCalloutsOpen ? 0.06 : 0}
-            />
+            {calloutItems[0] ? (
+              <FreeResultV2EvidencePhotoCallout
+                title={calloutItems[0].title}
+                body={calloutItems[0].body}
+                tone={calloutItems[0].tone}
+                isVisible={isCalloutsOpen}
+                origin={calloutItems[0].origin}
+                delay={isCalloutsOpen ? calloutItems[0].delay : 0}
+              />
+            ) : null}
           </div>
           <button
             type="button"
@@ -113,23 +228,7 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, locale = 
             ) : (
               <div className="flex h-full items-center justify-center px-4 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{fallback}</div>
             )}
-            <motion.div
-              className="pointer-events-none absolute inset-0"
-              initial={false}
-              animate={isCalloutsOpen ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.94 }}
-              transition={{
-                type: "spring",
-                stiffness: 430,
-                damping: 24,
-                mass: 0.8,
-                delay: isCalloutsOpen ? 0.02 : 0
-              }}
-              aria-hidden={!isCalloutsOpen}
-            >
-              <span className="absolute left-[42%] top-[12%] flex h-[22%] w-[25%] items-center justify-center rounded-[48%] border border-dashed border-[#ff9aa8]/82 bg-[#ff9aa8]/10 text-[12px] font-semibold text-[#ffd9de] shadow-[0_0_18px_rgba(255,154,168,0.28)]">T</span>
-              <span className="absolute left-[24%] top-[52%] h-[17%] w-[21%] rounded-full border border-dashed border-[#9fb4ff]/76 bg-[#9fb4ff]/12 shadow-[0_0_18px_rgba(159,180,255,0.24)]" />
-              <span className="absolute right-[18%] top-[41%] h-[16%] w-[18%] rounded-full border border-dashed border-[#ff9a8a]/76 bg-[#ff9a8a]/12 shadow-[0_0_18px_rgba(255,154,168,0.24)]" />
-            </motion.div>
+            <FreeResultV2PhotoWireOverlay isVisible={isCalloutsOpen} />
             <AnimatePresence>
               {!isCalloutsOpen ? (
                 <motion.div
@@ -151,24 +250,20 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, locale = 
             </AnimatePresence>
           </button>
           <div className="flex h-full flex-col justify-center gap-8">
-            <FreeResultV2EvidencePhotoCallout
-              title={callouts.oil[0]}
-              body={callouts.oil[1]}
-              align="right"
-              isVisible={isCalloutsOpen}
-              origin="right"
-              delay={isCalloutsOpen ? 0.14 : 0}
-            />
-            <FreeResultV2EvidencePhotoCallout
-              title={callouts.pores[0]}
-              body={callouts.pores[1]}
-              align="right"
-              isVisible={isCalloutsOpen}
-              origin="right"
-              delay={isCalloutsOpen ? 0.22 : 0}
-            />
+            {calloutItems.slice(1).map((item) => (
+              <FreeResultV2EvidencePhotoCallout
+                key={item.key}
+                title={item.title}
+                body={item.body}
+                align="right"
+                isVisible={isCalloutsOpen}
+                origin={item.origin}
+                delay={isCalloutsOpen ? item.delay : 0}
+              />
+            ))}
           </div>
         </div>
+        )}
       </div>
     </FreeResultV2Card>
   );
@@ -235,17 +330,31 @@ function getFreeResultV2EvidenceSignalNote(signal = "", tone = "photo") {
   return /[ㄱ-ㅎ가-힣]/.test(text) ? "사진에서 확인된 신호" : "Visible cue in the photo";
 }
 
-function FreeResultV2EvidenceSignalFace({ source, isActive }) {
+function FreeResultV2EvidenceSignalFace({ source, isActive, locale = "ko" }) {
+  const failureCopy = getPhotoAnalysisFailureCopy(locale);
+
   return (
     <div
-      className={`col-start-1 row-start-1 min-w-0 rounded-[1.35rem] border border-[#ead9d6] bg-white/28 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66 ${isActive ? "" : "pointer-events-none"}`}
+      className={`col-start-1 row-start-1 min-w-0 rounded-[1.35rem] border border-[#ead9d6] bg-white/28 p-4 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66 ${source.analysisFailed ? "flex min-h-[11rem] items-center justify-center" : ""} ${isActive ? "" : "pointer-events-none"}`}
       style={{
         backfaceVisibility: "hidden",
         transform: source.key === "survey" ? "rotateY(180deg)" : "rotateY(0deg)"
       }}
       aria-hidden={!isActive}
     >
-      <FreeResultV2EvidenceSignalGroup title={source.title} signals={source.signals} tone={source.key} />
+      {source.analysisFailed ? (
+        <div className="w-full text-center">
+          <FreeResultV2CameraExcludedIcon />
+          <h3 className="mt-2 text-[1rem] font-extrabold leading-tight tracking-tight text-[#2b1420] dark:text-[#fff8f3] sm:text-[1.08rem]">
+            {failureCopy.title}
+          </h3>
+          <p className="mx-auto mt-1.5 max-w-[18rem] whitespace-pre-line break-keep text-[0.72rem] font-semibold leading-4 text-[#8b6370] dark:text-[#c8aeb8] sm:text-[0.78rem]">
+            {failureCopy.body}
+          </p>
+        </div>
+      ) : (
+        <FreeResultV2EvidenceSignalGroup title={source.title} signals={source.signals} tone={source.key} />
+      )}
     </div>
   );
 }
@@ -253,12 +362,14 @@ function FreeResultV2EvidenceSignalFace({ source, isActive }) {
 function FreeResultV2EvidenceSignalsCard({ photoSignals = [], surveySignals = [], locale = "ko" }) {
   const isEnglish = locale === "en";
   const [activeSource, setActiveSource] = useState("photo");
+  const photoAnalysisLimited = isPhotoAnalysisLimited(photoSignals);
   const sources = [
     {
       key: "photo",
       tabLabel: isEnglish ? "Photo" : "사진 신호",
       title: isEnglish ? "Photo cues" : "사진에서 보인 신호",
-      signals: photoSignals
+      signals: photoSignals,
+      analysisFailed: photoAnalysisLimited
     },
     {
       key: "survey",
@@ -332,6 +443,7 @@ function FreeResultV2EvidenceSignalsCard({ photoSignals = [], surveySignals = []
               key={source.key}
               source={source}
               isActive={source.key === activeSourceData.key}
+              locale={locale}
             />
           ))}
         </motion.div>
@@ -375,6 +487,7 @@ export default function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt,
         photoUrl={photoUrl}
         photoAlt={photoAlt}
         fallback={photoFallback}
+        photoSignals={evidence.photoSignals}
         locale={locale}
       />
 

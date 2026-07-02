@@ -22,6 +22,63 @@ Face Lab input stays limited to:
 
 No Skin Match survey field, skin score, priority axis, currentProducts field, product recommendation, or routine result is added to `/api/face-reading`.
 
+## Transport Envelope And Field Contract
+
+`/api/face-reading` returns a transport envelope before any free or premium display adapter consumes the result:
+
+```js
+{
+  status: "available" | "insufficient_evidence" | "unavailable",
+  source: "vision" | null,
+  failureReason: string | null,
+  analyzedAt: string | null,
+  data: object | null
+}
+```
+
+When `status` is `available` or `insufficient_evidence`, `data.structured` may include item-level evidence contracts:
+
+```js
+{
+  mood: {
+    status: "available" | "insufficient_evidence" | "unavailable",
+    source: "vision" | "derived_from_vision" | null,
+    confidence: number | null,
+    evidence: string[],
+    unavailableReason: string | null,
+    value: {
+      primary: string,
+      traits: string[],
+      animalType: string | null
+    } | null
+  },
+  color: {
+    status: "available" | "insufficient_evidence" | "unavailable",
+    source: "vision" | "derived_from_vision" | null,
+    confidence: number | null,
+    evidence: string[],
+    unavailableReason: string | null,
+    value: {
+      palette: string[],
+      directions: string[]
+    } | null
+  },
+  style: {
+    status: "available" | "insufficient_evidence" | "unavailable",
+    source: "vision" | "derived_from_vision" | null,
+    confidence: number | null,
+    evidence: string[],
+    unavailableReason: string | null,
+    value: {
+      hairDirections: string[],
+      stylingDirections: string[]
+    } | null
+  }
+}
+```
+
+Field values are available only when `evidence` contains actual Vision response paths and text. Default launch fallback values, including default mood labels, palette keywords, and style keywords, must not be inserted into `structured.*.value`.
+
 ## Premium Role
 
 In the paid full report, Face Lab is display-only companion content:
@@ -57,6 +114,8 @@ The premium-safe display shape is:
 ```
 
 `lib/premium-face-lab.js` adapts an existing Face Lab result into this shape. It does not call the model, does not generate a Face Lab result, and does not read Skin Match survey, score, or priority fields.
+
+For new Face Lab payloads that include `data.structured`, the adapter must prefer structured `available` fields. It must not convert unknown legacy flat values or launch fallback values into a new available structured result.
 
 `available` requires at least one real analysis display signal:
 

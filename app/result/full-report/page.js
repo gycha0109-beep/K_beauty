@@ -21,6 +21,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
+import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
@@ -572,7 +573,7 @@ function trackEvent(eventName, data = {}) {
       headers,
       body: JSON.stringify(payload),
       keepalive: true
-    }).catch(() => {});
+    }).catch(() => { });
   })();
 }
 
@@ -679,11 +680,10 @@ function FitSegmentBars({ fitData }) {
                 {Array.from({ length: 5 }).map((_, segmentIndex) => (
                   <span
                     key={`${gauge.key}-segment-${segmentIndex}`}
-                    className={`h-1.5 flex-1 rounded-full transition ${
-                      segmentIndex < filled
-                        ? "bg-zinc-900 dark:bg-zinc-100"
-                        : "bg-zinc-200 dark:bg-zinc-700"
-                    }`}
+                    className={`h-1.5 flex-1 rounded-full transition ${segmentIndex < filled
+                      ? "bg-zinc-900 dark:bg-zinc-100"
+                      : "bg-zinc-200 dark:bg-zinc-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -911,21 +911,21 @@ function getTreatmentFormStepLabel(product = {}, locale = "ko") {
   const form = String(product?.product_form || product?.productForm || "").trim().toLowerCase();
   const labels = locale === "en"
     ? {
-        serum: "Serum",
-        ampoule: "Ampoule",
-        essence: "Essence",
-        booster: "Booster",
-        peeling_solution: "Peeling Solution",
-        unknown: "Treatment"
-      }
+      serum: "Serum",
+      ampoule: "Ampoule",
+      essence: "Essence",
+      booster: "Booster",
+      peeling_solution: "Peeling Solution",
+      unknown: "Treatment"
+    }
     : {
-        serum: "세럼",
-        ampoule: "앰플",
-        essence: "에센스",
-        booster: "부스터",
-        peeling_solution: "필링 솔루션",
-        unknown: "트리트먼트"
-      };
+      serum: "세럼",
+      ampoule: "앰플",
+      essence: "에센스",
+      booster: "부스터",
+      peeling_solution: "필링 솔루션",
+      unknown: "트리트먼트"
+    };
 
   return labels[form] || "";
 }
@@ -938,21 +938,21 @@ function getReportStepLabel(product = {}, locale = "ko") {
   const rawStep = String(product?.step || "").trim();
   const labels = locale === "en"
     ? {
-        cleanser: "Cleanser",
-        toner_pad: "Toner Pad",
-        toner_essence: "Toner / Essence",
-        serum_ampoule: "Serum",
-        moisturizer: "Moisturizer",
-        sunscreen: "Sunscreen"
-      }
+      cleanser: "Cleanser",
+      toner_pad: "Toner Pad",
+      toner_essence: "Toner / Essence",
+      serum_ampoule: "Serum",
+      moisturizer: "Moisturizer",
+      sunscreen: "Sunscreen"
+    }
     : {
-        cleanser: "클렌저",
-        toner_pad: "토너패드",
-        toner_essence: "토너/에센스",
-        serum_ampoule: "세럼/앰플",
-        moisturizer: "보습제",
-        sunscreen: "선크림"
-      };
+      cleanser: "클렌저",
+      toner_pad: "토너패드",
+      toner_essence: "토너/에센스",
+      serum_ampoule: "세럼/앰플",
+      moisturizer: "보습제",
+      sunscreen: "선크림"
+    };
 
   if (displayKey === "serum_ampoule") {
     const formLabel = getTreatmentFormStepLabel(product, locale);
@@ -979,25 +979,25 @@ function getReportPriorityLabel(result = {}, locale = "ko") {
   const axis = getReportPriorityAxis(result);
   const labels = locale === "en"
     ? {
-        uv: "UV pressure",
-        oiliness: "oiliness",
-        pores: "pores",
-        dehydration: "dehydration",
-        acne: "breakouts",
-        uneven_tone: "uneven tone",
-        redness: "redness",
-        barrier: "barrier support"
-      }
+      uv: "UV pressure",
+      oiliness: "oiliness",
+      pores: "pores",
+      dehydration: "dehydration",
+      acne: "breakouts",
+      uneven_tone: "uneven tone",
+      redness: "redness",
+      barrier: "barrier support"
+    }
     : {
-        uv: "자외선",
-        oiliness: "유분",
-        pores: "모공",
-        dehydration: "건조",
-        acne: "트러블",
-        uneven_tone: "톤 불균일",
-        redness: "붉은기",
-        barrier: "장벽"
-      };
+      uv: "자외선",
+      oiliness: "유분",
+      pores: "모공",
+      dehydration: "건조",
+      acne: "트러블",
+      uneven_tone: "톤 불균일",
+      redness: "붉은기",
+      barrier: "장벽"
+    };
 
   return labels[axis] || labels.dehydration;
 }
@@ -1427,12 +1427,12 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
   const labels = TOP_PICK_REASON_LABELS[locale] || TOP_PICK_REASON_LABELS.ko;
   const explicitBlocks = Array.isArray(report?.topPickReasonBlocks)
     ? report.topPickReasonBlocks
-        .map((block) => ({
-          key: block?.key || "custom",
-          label: labels[block?.key] || compactLocalizedText(block?.label, locale) || compactLocalizedText(block?.key, locale),
-          body: compactLocalizedText(block?.body, locale)
-        }))
-        .filter((block) => block.body && (locale !== "en" || !hasKoreanText(block.body)))
+      .map((block) => ({
+        key: block?.key || "custom",
+        label: labels[block?.key] || compactLocalizedText(block?.label, locale) || compactLocalizedText(block?.key, locale),
+        body: compactLocalizedText(block?.body, locale)
+      }))
+      .filter((block) => block.body && (locale !== "en" || !hasKoreanText(block.body)))
     : [];
 
   if (explicitBlocks.length) {
@@ -1503,21 +1503,21 @@ function buildTopPickReasonBlocks({ report = {}, result = {}, product = {}, loca
 function getTopPickOperationLabels(locale = "ko") {
   return locale === "en"
     ? {
-        kicker: "Primary product manual",
-        fit: "Primary-use fit",
-        role: "Role in the routine",
-        reasons: "Why it fits",
-        caution: "Watch point",
-        action: "Start today"
-      }
+      kicker: "Primary product manual",
+      fit: "Primary-use fit",
+      role: "Role in the routine",
+      reasons: "Why it fits",
+      caution: "Watch point",
+      action: "Start today"
+    }
     : {
-        kicker: "1순위 제품 운용법",
-        fit: "1순위 운용 적합도",
-        role: "역할 요약",
-        reasons: "잘 맞는 이유",
-        caution: "주의할 점",
-        action: "오늘부터 쓰는 법"
-      };
+      kicker: "1순위 제품 운용법",
+      fit: "1순위 운용 적합도",
+      role: "역할 요약",
+      reasons: "잘 맞는 이유",
+      caution: "주의할 점",
+      action: "오늘부터 쓰는 법"
+    };
 }
 
 function getNumericTopPickScore(product = {}, report = {}) {
@@ -1840,23 +1840,23 @@ function buildTopPickReasonChecklist(product = {}, result = {}, reasonBlocks = [
   const hasReview = Boolean(buildReviewSignalText(product, locale));
   const items = locale === "en"
     ? [
-        `${concernCopy.reaction} and product role align`,
-        getTopPickCategoryReason(product, locale),
-        hasEvidence
-          ? "Photo and survey read are used only as supporting context"
-          : hasReview
-            ? "Review signals are checked as a light support signal"
-            : "Easy to keep other steps simple"
-      ]
+      `${concernCopy.reaction} and product role align`,
+      getTopPickCategoryReason(product, locale),
+      hasEvidence
+        ? "Photo and survey read are used only as supporting context"
+        : hasReview
+          ? "Review signals are checked as a light support signal"
+          : "Easy to keep other steps simple"
+    ]
     : [
-        `${concernCopy.reaction}과 역할이 맞음`,
-        getTopPickCategoryReason(product, locale),
-        hasEvidence
-          ? "사진·설문 흐름을 보조 근거로 확인"
-          : hasReview
-            ? "리뷰 반응을 보조 근거로 확인"
-            : "다른 단계와 겹침을 줄이기 쉬움"
-      ];
+      `${concernCopy.reaction}과 역할이 맞음`,
+      getTopPickCategoryReason(product, locale),
+      hasEvidence
+        ? "사진·설문 흐름을 보조 근거로 확인"
+        : hasReview
+          ? "리뷰 반응을 보조 근거로 확인"
+          : "다른 단계와 겹침을 줄이기 쉬움"
+    ];
 
   return uniqueDisplayTexts(items).slice(0, 3);
 }
@@ -2240,9 +2240,9 @@ function localizeRoutineStepsForEnglish(steps = [], fallbackItems = [], slot = "
   const source = Array.isArray(steps) && steps.length
     ? steps
     : (Array.isArray(fallbackItems) ? fallbackItems : []).map((item, index) => ({
-        order: index + 1,
-        instruction: String(item || "").trim()
-      }));
+      order: index + 1,
+      instruction: String(item || "").trim()
+    }));
 
   return source.map((step, index) => ({
     ...step,
@@ -2259,9 +2259,9 @@ function localizeRoutineStepsForKorean(steps = [], fallbackItems = [], slot = "m
   const source = Array.isArray(steps) && steps.length
     ? steps
     : (Array.isArray(fallbackItems) ? fallbackItems : []).map((item, index) => ({
-        order: index + 1,
-        instruction: String(item || "").trim()
-      }));
+      order: index + 1,
+      instruction: String(item || "").trim()
+    }));
 
   return source.map((step, index) => ({
     ...step,
@@ -2908,11 +2908,11 @@ function buildAlternativeCarouselItems(freeResult, report) {
     freeResult?.alternative || null,
     ...(Array.isArray(report?.budgetAlternatives)
       ? report.budgetAlternatives.map((item) => ({
-          ...item,
-          category: "budget",
-          comparison_reason: item.summary || "",
-          reason: item.summary || ""
-        }))
+        ...item,
+        category: "budget",
+        comparison_reason: item.summary || "",
+        reason: item.summary || ""
+      }))
       : [])
   ].filter(Boolean);
 
@@ -3067,27 +3067,27 @@ function getSituationPresetKey(variant = {}) {
 function getSituationPrescriptionLabels(locale = "ko") {
   return locale === "en"
     ? {
-        today: "Today",
-        reduce: "Reduce",
-        keep: "Keep",
-        keepDecision: "Keep",
-        reduceDecision: "Reduce",
-        add: "Add",
-        usage: "How to use",
-        avoid: "Avoid",
-        commonAvoid: "Common watch-outs"
-      }
+      today: "Today",
+      reduce: "Reduce",
+      keep: "Keep",
+      keepDecision: "Keep",
+      reduceDecision: "Reduce",
+      add: "Add",
+      usage: "How to use",
+      avoid: "Avoid",
+      commonAvoid: "Common watch-outs"
+    }
     : {
-        today: "오늘의 방향",
-        reduce: "줄이기",
-        keep: "유지하기",
-        keepDecision: "남길 것",
-        reduceDecision: "줄일 것",
-        add: "더하기",
-        usage: "사용법",
-        avoid: "피하기",
-        commonAvoid: "공통 주의"
-      };
+      today: "오늘의 방향",
+      reduce: "줄이기",
+      keep: "유지하기",
+      keepDecision: "남길 것",
+      reduceDecision: "줄일 것",
+      add: "더하기",
+      usage: "사용법",
+      avoid: "피하기",
+      commonAvoid: "공통 주의"
+    };
 }
 
 function getSituationPrescriptionFallback(key = "default", locale = "ko") {
@@ -3243,9 +3243,8 @@ function SituationDecisionCard({ label, items = [], guide, tone = "default" }) {
 
   return (
     <div className={`rounded-[1rem] border px-3 py-3 ${toneClass}`}>
-      <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${
-        tone === "reduce" ? "text-amber-700 dark:text-amber-200" : "text-sky-700 dark:text-sky-200"
-      }`}>
+      <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${tone === "reduce" ? "text-amber-700 dark:text-amber-200" : "text-sky-700 dark:text-sky-200"
+        }`}>
         {label}
       </p>
       {displayItems.length ? (
@@ -3362,21 +3361,21 @@ function FullReportSavedCard({ locale = "ko" }) {
   const [status, setStatus] = useState("idle");
   const copy = locale === "en"
     ? {
-        kicker: "SAVED REPORT",
-        title: "Report saved",
-        body: "The full report itself stays on the server. This browser only keeps a shortcut to reopen it.",
-        button: "Copy report link",
-        copied: "Link copied.",
-        failed: "Could not copy automatically. Please copy the address from the browser."
-      }
+      kicker: "SAVED REPORT",
+      title: "Report saved",
+      body: "The full report itself stays on the server. This browser only keeps a shortcut to reopen it.",
+      button: "Copy report link",
+      copied: "Link copied.",
+      failed: "Could not copy automatically. Please copy the address from the browser."
+    }
     : {
-        kicker: "REPORT SAVED",
-        title: "리포트 저장됨",
-        body: "리포트 본문은 서버에 저장됩니다. 이 브라우저에는 다시 열기용 링크와 최근 열람 시간만 남깁니다.",
-        button: "리포트 링크 복사",
-        copied: "링크를 복사했습니다.",
-        failed: "자동 복사가 제한되었습니다. 브라우저 주소를 직접 복사해 주세요."
-      };
+      kicker: "REPORT SAVED",
+      title: "리포트 저장됨",
+      body: "리포트 본문은 서버에 저장됩니다. 이 브라우저에는 다시 열기용 링크와 최근 열람 시간만 남깁니다.",
+      button: "리포트 링크 복사",
+      copied: "링크를 복사했습니다.",
+      failed: "자동 복사가 제한되었습니다. 브라우저 주소를 직접 복사해 주세요."
+    };
 
   const handleCopy = async () => {
     setStatus("idle");
@@ -3398,11 +3397,10 @@ function FullReportSavedCard({ locale = "ko" }) {
           <p className="ui-text-secondary mt-2 text-sm leading-6">{copy.body}</p>
           {status !== "idle" ? (
             <p
-              className={`mt-2 text-xs font-semibold ${
-                status === "copied"
-                  ? "text-emerald-600 dark:text-emerald-300"
-                  : "text-amber-600 dark:text-amber-300"
-              }`}
+              className={`mt-2 text-xs font-semibold ${status === "copied"
+                ? "text-emerald-600 dark:text-emerald-300"
+                : "text-amber-600 dark:text-amber-300"
+                }`}
             >
               {status === "copied" ? copy.copied : copy.failed}
             </p>
@@ -3427,37 +3425,37 @@ function FullReportFeedbackCard({ locale = "ko", productId = null }) {
 
   const copy = locale === "en"
     ? {
-        title: "Was this result helpful?",
-        helpful: "Helpful",
-        notHelpful: "Could be better",
-        thanks: "Thanks. We will use this to improve future recommendations.",
-        reasonTitle: "What felt off?",
-        otherPlaceholder: "Leave a short note",
-        submit: "Submit",
-        reasons: [
-          { value: "product_mismatch", label: "Product fit feels off" },
-          { value: "repetitive_text", label: "Explanations feel repetitive" },
-          { value: "face_lab_unclear", label: "Face Lab feels unclear" },
-          { value: "not_enough_detail", label: "Report feels too thin" },
-          { value: "other", label: "Other" }
-        ]
-      }
+      title: "Was this result helpful?",
+      helpful: "Helpful",
+      notHelpful: "Could be better",
+      thanks: "Thanks. We will use this to improve future recommendations.",
+      reasonTitle: "What felt off?",
+      otherPlaceholder: "Leave a short note",
+      submit: "Submit",
+      reasons: [
+        { value: "product_mismatch", label: "Product fit feels off" },
+        { value: "repetitive_text", label: "Explanations feel repetitive" },
+        { value: "face_lab_unclear", label: "Face Lab feels unclear" },
+        { value: "not_enough_detail", label: "Report feels too thin" },
+        { value: "other", label: "Other" }
+      ]
+    }
     : {
-        title: "결과가 도움이 되었나요?",
-        helpful: "도움 됨",
-        notHelpful: "아쉬움 있음",
-        thanks: "감사합니다. 더 나은 추천에 반영할게요.",
-        reasonTitle: "어떤 점이 아쉬웠나요?",
-        otherPlaceholder: "짧게 남겨주세요",
-        submit: "보내기",
-        reasons: [
-          { value: "product_mismatch", label: "추천 제품이 안 맞아요" },
-          { value: "repetitive_text", label: "설명이 반복돼요" },
-          { value: "face_lab_unclear", label: "Face Lab이 애매해요" },
-          { value: "not_enough_detail", label: "내용이 부족해요" },
-          { value: "other", label: "기타" }
-        ]
-      };
+      title: "결과가 도움이 되었나요?",
+      helpful: "도움 됨",
+      notHelpful: "아쉬움 있음",
+      thanks: "감사합니다. 더 나은 추천에 반영할게요.",
+      reasonTitle: "어떤 점이 아쉬웠나요?",
+      otherPlaceholder: "짧게 남겨주세요",
+      submit: "보내기",
+      reasons: [
+        { value: "product_mismatch", label: "추천 제품이 안 맞아요" },
+        { value: "repetitive_text", label: "설명이 반복돼요" },
+        { value: "face_lab_unclear", label: "Face Lab이 애매해요" },
+        { value: "not_enough_detail", label: "내용이 부족해요" },
+        { value: "other", label: "기타" }
+      ]
+    };
 
   useEffect(() => {
     const nextStorageKey = getFullReportFeedbackStorageKey(productId);
@@ -4014,15 +4012,15 @@ function getSkinMatchHubActions(locale = "ko") {
 function getDailyRoutineGuideIntro(locale = "ko") {
   return locale === "en"
     ? {
-        kicker: "DAILY ROUTINE GUIDE",
-        title: "Keep morning light and evening less burdensome.",
-        body: "Morning is for a thin finish that works with sunscreen. Evening is for reducing friction and keeping the routine readable."
-      }
+      kicker: "DAILY ROUTINE GUIDE",
+      title: "Keep morning light and evening less burdensome.",
+      body: "Morning is for a thin finish that works with sunscreen. Evening is for reducing friction and keeping the routine readable."
+    }
     : {
-        kicker: "하루 루틴 가이드",
-        title: "아침은 밀리지 않게 가볍게, 저녁은 부담이 덜하게 정리합니다.",
-        body: "제품을 더 많이 바르는 페이지가 아니라, 어느 순서로 얼마나 가볍게 쓸지 정리하는 기준입니다."
-      };
+      kicker: "하루 루틴 가이드",
+      title: "아침은 밀리지 않게 가볍게, 저녁은 부담이 덜하게 정리합니다.",
+      body: "제품을 더 많이 바르는 페이지가 아니라, 어느 순서로 얼마나 가볍게 쓸지 정리하는 기준입니다."
+    };
 }
 
 function getRoutineGuideSteps(mode = "morning", freeResult = {}, steps = [], locale = "ko") {
@@ -4266,11 +4264,10 @@ function ProductUsageCard({ product, result, copy, locale = "ko", isPrimary = fa
   const purchaseLink = getPurchaseLinkInfo(product, copy, locale);
 
   return (
-    <article className={`rounded-[1.15rem] border p-4 ${
-      isPrimary
-        ? "border-[#d99a8e]/60 bg-[#efb09f]/10"
-        : "border-white/10 bg-white/5"
-    }`}>
+    <article className={`rounded-[1.15rem] border p-4 ${isPrimary
+      ? "border-[#d99a8e]/60 bg-[#efb09f]/10"
+      : "border-white/10 bg-white/5"
+      }`}>
       <div className="flex items-start gap-3">
         <ProductThumb product={product} copy={copy} sizeClass="h-20 w-16" />
         <div className="min-w-0 flex-1">
@@ -4448,15 +4445,15 @@ function RoutineSummaryStep({ freeResult, morningSteps = [], nightSteps = [], co
   const isEnglish = locale === "en";
   const summaryGroups = isEnglish
     ? [
-        { title: "Do today", items: ["Use the core product thinly", "Finish AM with sunscreen", "Keep PM simple"] },
-        { title: "Reduce", items: ["New active stacking", "Strong cleansing and rubbing", "Heavy AM finish"] },
-        { title: "Watch", items: ["Stinging", "Dryness", "Breakouts or pilling"] }
-      ]
+      { title: "Do today", items: ["Use the core product thinly", "Finish AM with sunscreen", "Keep PM simple"] },
+      { title: "Reduce", items: ["New active stacking", "Strong cleansing and rubbing", "Heavy AM finish"] },
+      { title: "Watch", items: ["Stinging", "Dryness", "Breakouts or pilling"] }
+    ]
     : [
-        { title: "오늘 할 것", items: ["핵심 제품은 얇게 사용", "아침은 선크림까지 마무리", "저녁은 단순하게 정리"] },
-        { title: "줄일 것", items: ["새 기능성 중복", "강한 세안과 마찰", "무거운 아침 마무리"] },
-        { title: "조심할 것", items: ["따가움", "건조감", "트러블 또는 밀림"] }
-      ];
+      { title: "오늘 할 것", items: ["핵심 제품은 얇게 사용", "아침은 선크림까지 마무리", "저녁은 단순하게 정리"] },
+      { title: "줄일 것", items: ["새 기능성 중복", "강한 세안과 마찰", "무거운 아침 마무리"] },
+      { title: "조심할 것", items: ["따가움", "건조감", "트러블 또는 밀림"] }
+    ];
   const safetyText = isEnglish
     ? "This report is a skincare reference guide based on your inputs and product characteristics. If you have a skin disease, severe irritation, or persistent breakouts, professional consultation is needed."
     : "본 리포트는 입력한 정보와 제품 특성을 바탕으로 한 스킨케어 참고 가이드입니다. 피부질환, 심한 자극, 지속적인 트러블이 있다면 전문가 상담이 필요합니다.";
@@ -4630,124 +4627,124 @@ function getRoutineConsultTemplates(mode = "morning", locale = "ko") {
   if (locale === "en") {
     return isMorning
       ? [
-          {
-            order: 1,
-            slot: "prep",
-            title: "Light reset",
-            status: "Keep",
-            action: "Keep hydration from breaking by resetting lightly.",
-            adjustment: "If it feels tight, press it in instead of wiping.",
-            roles: ["toner_essence", "serum_ampoule"]
-          },
-          {
-            order: 2,
-            slot: "hydrate",
-            title: "Moisture support",
-            status: "As needed",
-            action: "Keep this layer thin so the next step does not pill.",
-            adjustment: "If makeup pills, reduce this amount first.",
-            roles: ["serum_ampoule", "moisturizer"]
-          },
-          {
-            order: 3,
-            slot: "protect",
-            title: "Protection finish",
-            status: "Fixed",
-            action: "Finish the morning with sunscreen.",
-            adjustment: "Let the previous step settle, then spread it thinly.",
-            roles: ["sunscreen"]
-          }
-        ]
-      : [
-          {
-            order: 1,
-            slot: "cleanse",
-            title: "Cleanse",
-            status: "Keep",
-            action: "Gently remove residue instead of chasing a stripped finish.",
-            adjustment: "If tightness is strong, lower cleansing intensity.",
-            roles: ["cleanser"]
-          },
-          {
-            order: 2,
-            slot: "prep",
-            title: "Texture reset",
-            status: "Skippable",
-            action: "Lightly reset after cleansing so moisture can follow.",
-            adjustment: "If it stings or feels tight, skip this step.",
-            roles: ["toner_essence", "serum_ampoule"]
-          },
-          {
-            order: 3,
-            slot: "moisturize",
-            title: "Moisture finish",
-            status: "Fixed",
-            action: "If it stings or feels tight, leave only comfortable moisture.",
-            adjustment: "On dry days, reinforce only this step with a small amount.",
-            roles: ["moisturizer"]
-          }
-        ];
-  }
-
-  return isMorning
-    ? [
         {
           order: 1,
           slot: "prep",
-          title: "가벼운 정리",
-          status: "유지",
-          action: "수분감이 끊기지 않게 가볍게 정리합니다.",
-          adjustment: "당김이 있으면 닦아내기보다 흡수시키는 방식으로 씁니다.",
+          title: "Light reset",
+          status: "Keep",
+          action: "Keep hydration from breaking by resetting lightly.",
+          adjustment: "If it feels tight, press it in instead of wiping.",
           roles: ["toner_essence", "serum_ampoule"]
         },
         {
           order: 2,
           slot: "hydrate",
-          title: "수분 보완",
-          status: "필요 시",
-          action: "다음 단계가 밀리지 않게 얇게 둡니다.",
-          adjustment: "화장이 밀리면 이 단계의 양을 먼저 줄입니다.",
+          title: "Moisture support",
+          status: "As needed",
+          action: "Keep this layer thin so the next step does not pill.",
+          adjustment: "If makeup pills, reduce this amount first.",
           roles: ["serum_ampoule", "moisturizer"]
         },
         {
           order: 3,
           slot: "protect",
-          title: "보호 마무리",
-          status: "고정",
-          action: "아침 마지막은 선크림으로 마무리합니다.",
-          adjustment: "직전 단계가 충분히 흡수된 뒤 얇게 펴 바릅니다.",
+          title: "Protection finish",
+          status: "Fixed",
+          action: "Finish the morning with sunscreen.",
+          adjustment: "Let the previous step settle, then spread it thinly.",
           roles: ["sunscreen"]
         }
       ]
-    : [
+      : [
         {
           order: 1,
           slot: "cleanse",
-          title: "세안",
-          status: "유지",
-          action: "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.",
-          adjustment: "당김이 심하면 세안 강도를 낮추는 쪽으로 봅니다.",
+          title: "Cleanse",
+          status: "Keep",
+          action: "Gently remove residue instead of chasing a stripped finish.",
+          adjustment: "If tightness is strong, lower cleansing intensity.",
           roles: ["cleanser"]
         },
         {
           order: 2,
           slot: "prep",
-          title: "결 정리",
-          status: "생략 가능",
-          action: "세안 후 보습이 이어지도록 가볍게 정돈합니다.",
-          adjustment: "따가움이나 당김이 있으면 이 단계는 쉬어갑니다.",
+          title: "Texture reset",
+          status: "Skippable",
+          action: "Lightly reset after cleansing so moisture can follow.",
+          adjustment: "If it stings or feels tight, skip this step.",
           roles: ["toner_essence", "serum_ampoule"]
         },
         {
           order: 3,
           slot: "moisturize",
-          title: "보습 마무리",
-          status: "고정",
-          action: "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
-          adjustment: "건조한 날은 이 단계만 소량 보강합니다.",
+          title: "Moisture finish",
+          status: "Fixed",
+          action: "If it stings or feels tight, leave only comfortable moisture.",
+          adjustment: "On dry days, reinforce only this step with a small amount.",
           roles: ["moisturizer"]
         }
       ];
+  }
+
+  return isMorning
+    ? [
+      {
+        order: 1,
+        slot: "prep",
+        title: "가벼운 정리",
+        status: "유지",
+        action: "수분감이 끊기지 않게 가볍게 정리합니다.",
+        adjustment: "당김이 있으면 닦아내기보다 흡수시키는 방식으로 씁니다.",
+        roles: ["toner_essence", "serum_ampoule"]
+      },
+      {
+        order: 2,
+        slot: "hydrate",
+        title: "수분 보완",
+        status: "필요 시",
+        action: "다음 단계가 밀리지 않게 얇게 둡니다.",
+        adjustment: "화장이 밀리면 이 단계의 양을 먼저 줄입니다.",
+        roles: ["serum_ampoule", "moisturizer"]
+      },
+      {
+        order: 3,
+        slot: "protect",
+        title: "보호 마무리",
+        status: "고정",
+        action: "아침 마지막은 선크림으로 마무리합니다.",
+        adjustment: "직전 단계가 충분히 흡수된 뒤 얇게 펴 바릅니다.",
+        roles: ["sunscreen"]
+      }
+    ]
+    : [
+      {
+        order: 1,
+        slot: "cleanse",
+        title: "세안",
+        status: "유지",
+        action: "뽀득하게 벗기기보다 잔여감만 부드럽게 정리합니다.",
+        adjustment: "당김이 심하면 세안 강도를 낮추는 쪽으로 봅니다.",
+        roles: ["cleanser"]
+      },
+      {
+        order: 2,
+        slot: "prep",
+        title: "결 정리",
+        status: "생략 가능",
+        action: "세안 후 보습이 이어지도록 가볍게 정돈합니다.",
+        adjustment: "따가움이나 당김이 있으면 이 단계는 쉬어갑니다.",
+        roles: ["toner_essence", "serum_ampoule"]
+      },
+      {
+        order: 3,
+        slot: "moisturize",
+        title: "보습 마무리",
+        status: "고정",
+        action: "따가움이나 당김이 있으면 편한 보습만 남깁니다.",
+        adjustment: "건조한 날은 이 단계만 소량 보강합니다.",
+        roles: ["moisturizer"]
+      }
+    ];
 }
 
 function getRoutineProductKey(product) {
@@ -4896,11 +4893,10 @@ function AvoidListStep({ avoidItems = [], locale = "ko" }) {
         {cards.map((card) => (
           <div
             key={card.label}
-            className={`rounded-[1rem] border px-3 py-3 ${
-              card.priority
-                ? "border-amber-300/40 bg-amber-500/15 sm:col-span-2"
-                : "border-amber-300/20 bg-amber-500/10"
-            }`}
+            className={`rounded-[1rem] border px-3 py-3 ${card.priority
+              ? "border-amber-300/40 bg-amber-500/15 sm:col-span-2"
+              : "border-amber-300/20 bg-amber-500/10"
+              }`}
           >
             <p className={`${card.priority ? "text-[12px]" : "text-[11px]"} font-semibold text-amber-700 dark:text-amber-200`}>
               {card.label}
@@ -4991,17 +4987,17 @@ function getAdjustmentSymptomPlans(locale = "ko") {
 function getAdjustmentSafetyItems(locale = "ko") {
   return locale === "en"
     ? [
-        "Add new products one at a time.",
-        "If it stings, lower irritation burden before actives.",
-        "If breakouts appear, pause the most recently added product first.",
-        "If dryness is severe, adjust cleansing intensity and moisture finish first."
-      ]
+      "Add new products one at a time.",
+      "If it stings, lower irritation burden before actives.",
+      "If breakouts appear, pause the most recently added product first.",
+      "If dryness is severe, adjust cleansing intensity and moisture finish first."
+    ]
     : [
-        "새 제품은 하나씩만 추가합니다.",
-        "따가움이 있으면 기능성보다 부담을 낮추는 기준을 먼저 봅니다.",
-        "트러블이 올라오면 최근 추가한 제품부터 멈춥니다.",
-        "건조함이 심하면 세안 강도와 마무리 보습부터 조정합니다."
-      ];
+      "새 제품은 하나씩만 추가합니다.",
+      "따가움이 있으면 기능성보다 부담을 낮추는 기준을 먼저 봅니다.",
+      "트러블이 올라오면 최근 추가한 제품부터 멈춥니다.",
+      "건조함이 심하면 세안 강도와 마무리 보습부터 조정합니다."
+    ];
 }
 
 function AdjustmentGuideStep({ variants = [], avoidItems = [], locale = "ko" }) {
@@ -5224,29 +5220,29 @@ function SkinMatchStepReport({
   const router = useRouter();
   const labels = locale === "en"
     ? {
-        hub: "Start Today",
-        morning: "Routine Consult",
-        evening: "Evening Routine",
-        avoid: "Caution",
-        adjustment: "Condition Response",
-        product: "Functional Plan",
-        summary: "Final Summary",
-        previous: "Previous",
-        next: "Next",
-        finalCta: "Save my routine"
-      }
+      hub: "Start Today",
+      morning: "Routine Consult",
+      evening: "Evening Routine",
+      avoid: "Caution",
+      adjustment: "Condition Response",
+      product: "Functional Plan",
+      summary: "Final Summary",
+      previous: "Previous",
+      next: "Next",
+      finalCta: "Save my routine"
+    }
     : {
-        hub: "오늘 시작",
-        morning: "루틴 상담",
-        evening: "저녁 실행 루틴",
-        avoid: "주의",
-        adjustment: "컨디션 대응",
-        product: "기능성 플랜",
-        summary: "최종 요약",
-        previous: "이전",
-        next: "다음",
-        finalCta: "내 루틴 저장하기"
-      };
+      hub: "오늘 시작",
+      morning: "루틴 상담",
+      evening: "저녁 실행 루틴",
+      avoid: "주의",
+      adjustment: "컨디션 대응",
+      product: "기능성 플랜",
+      summary: "최종 요약",
+      previous: "이전",
+      next: "다음",
+      finalCta: "내 루틴 저장하기"
+    };
   function moveToStepKey(stepKey) {
     if (stepKey === "face-lab") {
       onOpenFaceLab?.();
@@ -5371,7 +5367,7 @@ function SkinMatchStepReport({
             top: targetTop,
             behavior: "smooth"
           });
-      });
+        });
       });
     }
   };
@@ -5465,17 +5461,17 @@ function SkinMatchStepReport({
 function normalizeRoutineDisplaySteps(stepItems = [], fallbackItems = [], locale = "ko") {
   const objectSteps = Array.isArray(stepItems)
     ? stepItems
-        .filter((item) => item && typeof item === "object")
-        .map((item, index) => ({
-          order: Number.isFinite(Number(item.order)) ? Number(item.order) : index + 1,
-          stepName: String(item.stepName || "").trim(),
-          productRole: getRoutineProductRoleDisplay(item, locale),
-          product: item.product || null,
-          instruction: String(item.instruction || "").trim(),
-          frequency: String(item.frequency || "").trim(),
-          caution: String(item.caution || "").trim()
-        }))
-        .filter((item) => item.stepName || item.instruction || item.product)
+      .filter((item) => item && typeof item === "object")
+      .map((item, index) => ({
+        order: Number.isFinite(Number(item.order)) ? Number(item.order) : index + 1,
+        stepName: String(item.stepName || "").trim(),
+        productRole: getRoutineProductRoleDisplay(item, locale),
+        product: item.product || null,
+        instruction: String(item.instruction || "").trim(),
+        frequency: String(item.frequency || "").trim(),
+        caution: String(item.caution || "").trim()
+      }))
+      .filter((item) => item.stepName || item.instruction || item.product)
     : [];
 
   if (objectSteps.length) {
@@ -5821,10 +5817,10 @@ function sanitizeFaceLabSectionForDisplay(section, locale = "ko") {
     keywords: compactFaceLabReportList(section.keywords, locale, 10),
     cards: Array.isArray(section.cards)
       ? section.cards.map((card) => ({
-          ...card,
-          label: cleanFaceLabText(card?.label, locale),
-          body: cleanFaceLabText(card?.body, locale)
-        })).filter((card) => card.label || card.body)
+        ...card,
+        label: cleanFaceLabText(card?.label, locale),
+        body: cleanFaceLabText(card?.body, locale)
+      })).filter((card) => card.label || card.body)
       : []
   };
 }
@@ -5866,10 +5862,10 @@ function buildSectionsFromLegacySteps(steps, locale = "ko") {
         ? moodContent
         : keywords.length
           ? [
-              locale === "en"
-                ? `This mood is best supported by ${keywords.slice(0, 4).join(", ")}.`
-                : `이 무드는 ${keywords.slice(0, 4).join(", ")} 같은 방향으로 안정적으로 살아납니다.`
-            ]
+            locale === "en"
+              ? `This mood is best supported by ${keywords.slice(0, 4).join(", ")}.`
+              : `이 무드는 ${keywords.slice(0, 4).join(", ")} 같은 방향으로 안정적으로 살아납니다.`
+          ]
           : [],
       keywords
     };
@@ -6281,10 +6277,11 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       } catch {
         parsedFaceLab = null;
       }
+      const parsedFaceLabData = getAvailableVisionFaceLabData(parsedFaceLab);
 
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
-          ? buildDevelopmentReport(parsedResult, parsedFaceLab, locale)
+          ? buildDevelopmentReport(parsedResult, parsedFaceLabData, locale)
           : null;
 
       if (isTestFullReport && developmentFallbackReport) {
@@ -6306,7 +6303,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,
             locale,
-            faceLab: parsedFaceLab,
+            faceLab: parsedFaceLabData,
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null,
@@ -6454,11 +6451,11 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   );
   const displayRoutineVariants = Array.isArray(report.routineVariants)
     ? report.routineVariants
-        .map((variant) => ({
-          ...variant,
-          items: uniqueDisplayTexts(variant?.items || [])
-        }))
-        .filter((variant) => variant.items.length)
+      .map((variant) => ({
+        ...variant,
+        items: uniqueDisplayTexts(variant?.items || [])
+      }))
+      .filter((variant) => variant.items.length)
     : [];
   const displayAvoidCombinations = uniqueDisplayTexts(report.avoidCombinations || []);
   const displayBudgetAlternatives = buildDisplayBudgetAlternatives(report.budgetAlternatives || [], freeResult, locale);

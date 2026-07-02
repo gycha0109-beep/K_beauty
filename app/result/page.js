@@ -37,6 +37,9 @@ import {
   buildFreeResultV2FaceLabPreview,
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
+import {
+  getAvailableVisionFaceLabData
+} from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
@@ -1036,7 +1039,7 @@ function getFaceLabProfilePreview(launchData, locale = "ko") {
     5
   );
 
-  if (!primary && !keywords.length) {
+  if (!primary) {
     return null;
   }
 
@@ -1529,12 +1532,6 @@ function buildSurveyEvidenceSignals(form = {}, locale = "ko") {
 
 function buildFreeResultV2PhotoEvidenceSignals(normalized = {}, form = {}, result = null, locale = "ko") {
   const isEnglish = locale === "en";
-  const axis = getPrimaryConcernKey(result, form);
-  const concerns = uniqueItems([
-    axis,
-    ...(Array.isArray(form?.mainConcerns) ? form.mainConcerns : []),
-    ...(Array.isArray(form?.secondaryConcerns) ? form.secondaryConcerns : [])
-  ]);
   const categorized = [];
   const add = (category, label) => {
     const cleaned = normalizeCopy(label);
@@ -1567,28 +1564,6 @@ function buildFreeResultV2PhotoEvidenceSignals(normalized = {}, form = {}, resul
 
     add("other", buildPhotoObservationSignalTitle(signal));
   });
-
-  const hasOilFlow =
-    form?.skinType === "oily" ||
-    form?.skinType === "combination" ||
-    form?.afternoonSkinChange === "more_oily" ||
-    concerns.some((item) => item === "oiliness" || item === "pores");
-  const hasDehydrationFlow =
-    form?.postWashFeeling === "tight" ||
-    concerns.some((item) => item === "dehydration" || item === "barrier");
-  const hasPoreFlow = concerns.includes("pores");
-
-  if (hasOilFlow) {
-    add("oil", isEnglish ? "T-zone oiliness" : "T존 유분감");
-  }
-
-  if (hasPoreFlow) {
-    add("pores", isEnglish ? "Visible pores" : "모공 가시성");
-  }
-
-  if (hasDehydrationFlow) {
-    add("dry", isEnglish ? "Lower moisture around cheeks" : "볼 주변 수분감 저하");
-  }
 
   const order = { oil: 0, pores: 1, dry: 2, other: 3 };
   return categorized
@@ -3078,8 +3053,11 @@ function ResultContent() {
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const resultForm = submission?.form || {};
   const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
-  const faceLabLaunch = buildFaceLabLaunchData(faceLabFull || result?.faceLab, locale);
-  const faceLabProfilePreview = getFaceLabProfilePreview(faceLabLaunch, locale);
+  const faceLabDisplayData =
+    getAvailableVisionFaceLabData(faceLabFull) ||
+    getAvailableVisionFaceLabData(result?.faceLab);
+  const faceLabLaunch = faceLabDisplayData ? buildFaceLabLaunchData(faceLabDisplayData, locale) : null;
+  const faceLabProfilePreview = faceLabLaunch ? getFaceLabProfilePreview(faceLabLaunch, locale) : null;
   const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
   const freeResultV2Diagnosis = buildFreeResultV2Diagnosis(resultForm, result, overviewMatchSummary, locale);
   const freeResultV2Evidence = buildFreeResultV2Evidence(resultForm, result, copy, locale);

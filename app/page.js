@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import BottomCTA from "@/components/onboarding/BottomCTA";
 import PhotoUploadStep from "@/components/onboarding/PhotoUploadStep";
 import LoadingStep from "@/components/onboarding/LoadingStep";
 import SurveyFlow from "@/components/onboarding/SurveyFlow";
@@ -16,6 +15,11 @@ import {
   OPTIONAL_DEFAULTS
 } from "@/components/onboarding/constants";
 import { buildFaceLabLaunchData } from "@/lib/face-lab-launch";
+import {
+  createFaceLabUnavailable,
+  getAvailableVisionFaceLabData,
+  isFaceLabResultEnvelope
+} from "@/lib/face-lab-result-envelope";
 import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
@@ -132,13 +136,17 @@ async function requestFaceLabResult(file, locale) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok || !data) {
-      return null;
+      return isFaceLabResultEnvelope(data)
+        ? data
+        : createFaceLabUnavailable("unknown");
     }
 
-    return data;
+    return isFaceLabResultEnvelope(data)
+      ? data
+      : createFaceLabUnavailable("vision_response_invalid");
   } catch (error) {
     console.error("[onboarding] face lab request failed", error);
-    return null;
+    return createFaceLabUnavailable("vision_request_failed");
   }
 }
 
@@ -247,9 +255,10 @@ export default function HomePage() {
           imagePreviewDataUrlPromise,
           faceLabPromise
         ]);
-        const faceLabTeaser = faceLabResult
-          ? buildFaceLabLaunchData(faceLabResult, locale).free
-          : null;
+        const faceLabData = getAvailableVisionFaceLabData(faceLabResult);
+        const faceLabLaunch = faceLabData ? buildFaceLabLaunchData(faceLabData, locale) : null;
+        const faceLabTeaser = faceLabLaunch?.free?.teaserLine ? faceLabLaunch.free : null;
+        const faceLabStructured = faceLabLaunch?.structured || faceLabData?.structured || null;
 
         sessionStorage.setItem(
           "skinTestSubmission",
@@ -262,7 +271,7 @@ export default function HomePage() {
         );
         sessionStorage.setItem(
           "skinTestResult",
-          JSON.stringify(faceLabTeaser ? { ...data, faceLab: faceLabTeaser } : data)
+          JSON.stringify(faceLabResult ? { ...data, faceLab: faceLabResult, faceLabTeaser, faceLabStructured } : data)
         );
 
         if (faceLabResult) {
@@ -335,20 +344,22 @@ export default function HomePage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
 
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
     if (!file) {
-      setImageFile(null);
-      setPreviewUrl("");
       setError("");
       return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
 
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setError("");
+
+    if (event.target) {
+      event.target.value = "";
+    }
   };
 
   const clearImage = () => {
@@ -380,19 +391,6 @@ export default function HomePage() {
     }
   };
 
-  const handleBack = () => {
-    if (currentStep === "loading") {
-      return;
-    }
-
-    const currentIndex = STEP_ORDER.indexOf(currentStep);
-    const previousStep = STEP_ORDER[currentIndex - 1];
-
-    if (previousStep) {
-      goToStep(previousStep);
-    }
-  };
-
   const handleSkinPresetPreview = (presetId) => {
     const preset = getTestResultPreset(presetId);
 
@@ -421,6 +419,7 @@ export default function HomePage() {
           imageFile={imageFile}
           previewUrl={previewUrl}
           onImageChange={handleImageChange}
+          onNext={handleNext}
           onClearImage={clearImage}
           error={error}
         />
@@ -444,8 +443,6 @@ export default function HomePage() {
 
     return <LoadingStep copy={copy} isSubmitting={isSubmitting} />;
   };
-
-  const showBottomCta = currentStep === "photo" && canProceedFromPhoto;
 
   return (
     <main className="ui-page ui-page-shell flex min-h-screen flex-col">
@@ -509,22 +506,6 @@ export default function HomePage() {
           {renderStep()}
         </div>
       </div>
-
-      {showBottomCta ? (
-        <BottomCTA
-          primaryLabel={
-            currentStep === "photo"
-              ? copy.cta.next
-              : copy.cta.analyze
-          }
-          onPrimary={handleNext}
-          primaryDisabled={!canProceedFromPhoto}
-          secondaryLabel={null}
-          onSecondary={handleBack}
-          tertiaryLabel={null}
-          onTertiary={null}
-        />
-      ) : null}
 
       <style jsx>{`
         .step-enter {
