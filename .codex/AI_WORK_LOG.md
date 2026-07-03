@@ -1,5 +1,29 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / recent instability guard matrix phase 10
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium policy validation matrix
+- Routing decision: User requested complete shadow-candidate-source reuse plus synthetic safety-context validation for `resolveRecentInstabilityGuardPolicy()`. Runtime evaluator hard-filter changes, score/weight changes, existing recommendation changes, UI/API/DB/Supabase changes, CandidatePolicy runtime wiring, Functional Plan UI, product data edits, fixture deletion/mutation, user-facing exposure, and policy-application conclusions were out of scope.
+- Goal: Validate recent-instability guard policy behavior across 10 complete product-row shadow captures, 12 synthetic policy contexts, and product safety/category/functional profile buckets; generate review docs and tmp matrix outputs.
+- Changed files: scripts/run-recent-instability-guard-matrix.mjs, scripts/verify-recent-instability-guard-matrix.mjs, docs/reviews/recent-instability-guard-matrix-20260703.md, scripts/replay-functional-shadow-captures.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking runtime evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, Functional Plan UI, product data, topPick/supporting/budget payloads, or user-facing ranking exposure changes.
+- Validation: `node scripts/run-recent-instability-guard-matrix.mjs` generated ignored tmp JSON/MD plus a tracked review doc. `node scripts/verify-recent-instability-guard-matrix.mjs` passed. Required recent-instability policy, safety case, packet, divergence, replay, summary, shadow/candidate/ranking/goal/survey verifier scripts passed. `npm run build` and `git diff --check` passed with expected LF-to-CRLF warnings only.
+- Findings: Matrix used 10 complete captures and excluded 10 final-results-only captures. Unique products: 164; total matrix evaluations: 19680. Safety metadata profiles: safe_low_risk 118, safe_medium_risk 2, unsafe_high_risk 1, mixed_or_uncertain 43, metadata_incomplete 0. `unsafe_high_risk` hard-block rate was 1.0, `safe_low_risk` collapsed-exposure rate was 1.0, `safe_low_risk` hard-block rate was 0, and baseline no-guard rate was 1.0. Policy validation status: `policy_behavior_consistent`.
+- Context promotion candidate: Even with policy behavior consistency, synthetic matrix validation is not runtime approval; CandidatePolicy/evaluator connection needs a separate approved task and additional high-confidence coverage for metadata-incomplete and underrepresented product profiles.
+
+### 2026-07-03 / recent instability guard policy phase 9
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium policy helper and documentation
+- Routing decision: User requested a targeted policy review for `recent_instability + stabilize_first` broad blocking. Existing hard-filter runtime changes, functional evaluator changes, ranking score/weight changes, UI/API/DB/Supabase changes, existing recommendation output changes, CandidatePolicy runtime wiring, Functional Plan UI, product data edits, shadow capture structure changes, user-facing exposure, packet mutation, and automatic policy application were out of scope.
+- Goal: Define a pure policy helper and architecture note that separate hard-block candidates from broad-block relaxation candidates using product-level safety metadata.
+- Changed files: lib/recent-instability-guard-policy.js, scripts/verify-recent-instability-guard-policy.mjs, docs/architecture/recent-instability-guard-policy.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, score/weight, CandidatePolicy runtime, Functional Plan UI, product data, or shadow fixture contract changes.
+- Validation: `node scripts/verify-recent-instability-guard-policy.mjs` passed. Required existing safety case, packet, divergence, replay, summary, shadow/candidate/ranking/goal/survey verifier scripts passed. `npm run build` and `git diff --check` passed; Node emitted the existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: The policy keeps hard-block candidacy for high sensitivity plus high irritation or explicit non-sensitive-safe metadata. Recent instability with low/medium irritation and `sensitivity_safe === true` is classified as a future collapsed-exposure candidate, not a hard block. Missing metadata is classified as `insufficient_data` with metadata review, not product unsuitability.
+- Context promotion candidate: `recent_instability` broad-block changes should not be applied until a separate CandidatePolicy/evaluator task chooses soft penalty vs collapsed exposure and validates additional high-confidence samples.
+
 ### 2026-07-03 / functional safety case analysis phase 8
 
 - Branch: codex/survey-input-contract-refactor
