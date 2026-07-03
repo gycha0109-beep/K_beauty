@@ -198,6 +198,87 @@ Priority generation:
 - Priority is the highest total axis after tie-breaker order: `uv`, `barrier`, `redness`, `dehydration`, `acne`, `pores`, `oiliness`, `uneven_tone`.
 - `oiliness` can be overridden toward barrier/redness/dehydration when skin type or sensitivity guardrails make oiliness unsafe as the lead axis.
 
+## `primaryConcern` vs `priority.axis` Role Separation
+
+`primaryConcern` and `priority.axis` are both valid, but they answer different questions:
+
+- `primaryConcern`: the user's explicit answer to "what do you want to solve first?"
+- `priority.axis`: the current free-result/scoring judgment about the skin-state axis that most needs attention after survey, environment, and photo evidence are combined.
+- `safety`: caution signals such as `sensitivityRisk`, `drynessRisk`, `rednessRisk`, `recentSkinChange`, and `recentlyChangedProduct`.
+
+The runtime audit after the first UI supplement found `primaryConcern` / `priority.axis` mismatch in 3 of 10 sampled submissions. This is expected. It should be recorded as `tension`, not treated as a bug or hard conflict. Example: a user may choose `pores` as the first goal while scoring detects `oiliness` as the stronger current condition; or a user may choose `acne` while redness/high sensitivity should shape the first routine warning.
+
+Tension definition:
+
+```js
+hasTension = Boolean(primaryConcern && priority.axis && primaryConcern !== priority.axis)
+```
+
+Tension policy:
+
+- `priority.axis` must not overwrite `primaryConcern`.
+- `primaryConcern` must not bypass `safety`.
+- The ranking goal starts from `primaryConcern` when present.
+- The safety/routine goal starts from `priority.axis` when present, backed by `safety` risk values.
+- If either side is missing, the available side may be used as a fallback with an explicit warning or audit note.
+
+Ranking use principles:
+
+- Candidate goal axis should use `SurveyInputContract.goals.primaryConcern` first.
+- `secondaryConcerns` can expand alternatives or tie-break adjacent candidates, but must not silently replace the explicit primary goal.
+- `priority.axis` and `scoring.concernScores` can be used as guardrails, tie-breakers, or explanation context, not as the default replacement for the user's requested goal.
+- High safety risk may hide, collapse, delay, or narrow candidates for the requested goal, but the policy should say that the requested goal is being guarded rather than rewritten.
+
+Routine and safety use principles:
+
+- Routine warnings, `recommendationSuppressed`, "stabilize first" messages, and frequency/caution copy should consider both `priority.axis` and `safety`.
+- If `priority.axis` is `redness`, `barrier`, or `dehydration`, routine copy should prefer caution/stabilization language even when the requested ranking goal is `acne`, `pores`, `oiliness`, or `uneven_tone`.
+- `recentSkinChange: "yes"` or `recentlyChangedProduct: "yes"` should make the safety layer more conservative because recent instability can explain why the selected goal should be approached slowly.
+- Unknown safety values should not be converted into high risk, but copy and policy should avoid confident claims that the user is stable.
+
+CandidatePolicy connection principles:
+
+- CandidatePolicy should receive both `rankingGoal` and `safetyGoal`.
+- `rankingGoal` controls which functional candidate family is considered first.
+- `safetyGoal` and `recommendationGuard` control visibility: `visible`, `limited`, `collapsed`, or `hidden`.
+- A `stabilize_first` guard can collapse or hide aggressive candidates while preserving the requested concern for later expansion.
+- Existing current-product findings can still suppress or collapse recommendations, but should state the policy reason separately from the requested goal.
+
+Copy generation principles:
+
+- Lead with the user's requested goal when candidates are shown: "pores-focused options" should come from `primaryConcern: "pores"`, not from scoring.
+- Add a separate caution sentence when tension exists: "Current skin-state signals suggest managing oil/redness/barrier stress first."
+- Do not say the user selected a priority that came only from scoring.
+- Do not say scoring detected a concern from skipped/unknown values unless that concern is supported by survey, environment, or photo evidence.
+- When safety hides or collapses candidates, copy should explain the guardrail without implying the user's goal was wrong.
+
+Phase 1 policy helper draft:
+
+```js
+resolveFunctionalGoalPolicy({
+  surveyContract,
+  freeResultPriority,
+  safety
+})
+```
+
+Returns:
+
+```js
+{
+  requestedConcern,      // explicit primaryConcern
+  detectedPriority,      // freeResult.priority.axis
+  hasTension,
+  tensionType,
+  rankingGoal,           // primaryConcern first, priority fallback
+  safetyGoal,            // priority first, primary fallback
+  copyStrategy,
+  recommendationGuard    // "normal" or "stabilize_first"
+}
+```
+
+Future `FunctionalPlanDecision` should receive `SurveyInputContract.goals`, `SurveyInputContract.safety`, `freeResult.priority`, and optionally top `scoring.concernScores` totals. Ranking Engine Phase 1 should receive `primaryConcern`, `secondaryConcerns`, `safety`, `behavior`, `preferences`, `sunscreen`, `priority.axis`, and the top public concern scores. It should not require raw form fields.
+
 ## Current Sunscreen Field Storage
 
 The UI field `sunscreenConsiderations` is a grouped multiple-choice control, but it is stored and submitted as separate booleans:

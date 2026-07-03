@@ -1,5 +1,41 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional candidate audit phase 2
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium pure candidate-set audit layer
+- Routing decision: User requested Ranking Engine Phase 2 as an audit-only array layer over `evaluateFunctionalRankingCandidate()`. UI changes, API response changes, DB/schema/migration work, Supabase queries, existing recommendation replacement, topPick/supporting/budget payload changes, Functional Plan UI wiring, premium/currentProducts storage changes, product data edits, photo analysis changes, and user-facing exposure were out of scope.
+- Goal: Add `buildFunctionalCandidateAudit()` to evaluate product arrays, separate ranked/blocked/insufficient/skipped candidates, provide deterministic sorting and summary distributions, add verifier coverage, and document the audit-only contract.
+- Changed files: lib/functional-candidate-audit.js, scripts/verify-functional-candidate-audit.mjs, scripts/run-functional-candidate-audit.mjs, docs/architecture/functional-candidate-audit.md, tmp/functional-candidate-audit/summary.json, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, product data, existing recommendation scoring replacement, existing free result payload, Functional Plan UI, premium report storage, currentProducts storage, photo analysis, auth/payment/deploy/env, or production data changes.
+- Validation: `node scripts/verify-functional-candidate-audit.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/run-functional-candidate-audit.mjs` passed and wrote a local tmp summary. `node scripts/verify-functional-ranking-contract.mjs` passed with the existing warning. `node scripts/verify-functional-goal-policy.mjs` passed with the existing warning. `node scripts/verify-survey-input-contract.mjs` passed with the existing warning. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: The audit layer returns limited ranked candidates but keeps full ranked/truncation counts in summary. Category-filtered products are counted as skipped, not blocked. The module is intentionally not imported by `/api/analyze`, the existing recommendation engine, or UI.
+- Context promotion candidate: Candidate-set audit should remain shadow/audit-only until a later adapter compares it against existing candidate sources and free-result product choices without overwriting them.
+
+### 2026-07-03 / functional ranking contract phase 1
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: design / Medium pure Ranking Engine Phase 1 contract
+- Routing decision: User requested a ranking input/output contract and explainable `scoreBreakdown` pure evaluator before any runtime candidate ranking. UI changes, API response changes, DB/schema/migration work, Supabase queries, product data edits, existing recommendation replacement, Functional Plan UI wiring, currentProducts/premium storage changes, and photo analysis changes were out of scope.
+- Goal: Add `evaluateFunctionalRankingCandidate()` for one product snapshot, define pass/blocked/insufficient-data policy, keep `rankingGoal` user-intent based while safety guards remain separate, and verify score breakdown/confidence behavior with local fixtures.
+- Changed files: lib/functional-ranking-contract.js, scripts/verify-functional-ranking-contract.mjs, docs/architecture/functional-ranking-contract.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, product data, existing topPick/supporting/budget logic, Functional Plan UI, currentProducts or premium save structure, photo analysis, auth/payment/deploy/env, or production data changes.
+- Validation: `node scripts/verify-functional-ranking-contract.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/verify-functional-goal-policy.mjs` passed with the existing warning. `node scripts/verify-survey-input-contract.mjs` passed with the existing warning. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: Phase 1 only evaluates a single product. It does not sort arrays or replace actual recommendations. The documented score weights use `functionalFit: 30` instead of the initial 35 proposal so all breakdown max values sum to exactly 100 while preserving a 5-point review signal bucket.
+- Context promotion candidate: Ranking should evaluate candidates with `rankingGoal` from explicit user goal, but safety hard filters/penalties and visibility guards must stay controlled by `safetyGoal`, `recommendationGuard`, and structured safety metadata.
+
+### 2026-07-03 / functional goal policy separation draft
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: design / Medium pre-ranking policy separation
+- Routing decision: User requested policy design and documentation before Ranking Engine Phase 1. UI changes, API response changes, saved payload changes, DB/schema/migration work, ranking implementation, Functional Plan UI wiring, product recommendation logic, and photo analysis changes were out of scope.
+- Goal: Define how explicit `primaryConcern` and existing `freeResult.priority.axis` coexist when they differ, document tension handling, and add an unconnected pure helper/verifier for future ranking and safety policy.
+- Changed files: docs/architecture/survey-input-contract.md, lib/functional-goal-policy.js, scripts/verify-functional-goal-policy.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, recommendation ranking runtime, Functional Plan UI, product recommendation logic, photo analysis, auth/payment/deploy/env, or production data changes.
+- Validation: `node scripts/verify-functional-goal-policy.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/verify-survey-input-contract.mjs` passed with the existing warning. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: The helper is intentionally not wired into `/api/analyze`, Functional Plan, CandidatePolicy, or ranking. Future integration must keep `primaryConcern` as ranking intent while allowing `priority.axis` and safety to guard visibility/copy.
+- Context promotion candidate: Treat `primaryConcern !== priority.axis` as tension, not conflict; ranking starts from user intent, while safety/routine copy starts from detected priority and risk.
+
 ### 2026-07-02 / survey input contract UI supplement v1
 
 - Branch: codex/survey-input-contract-refactor
