@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional guard exposure policy phase 11
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium responsibility design and pure policy helper
+- Routing decision: User requested a design-only bridge from recent-instability guard states to future CandidatePolicy exposure behavior. Runtime evaluator changes, existing CandidatePolicy behavior changes, route/API changes, existing recommendation changes, ranking score/weight changes, hard-filter changes, UI/DB/Supabase/product changes, shadow fixture changes, user-facing exposure, and topPick/supporting/budget changes were out of scope.
+- Goal: Add a pure `resolveFunctionalGuardExposurePolicy()` helper, verifier, and architecture documentation defining how guard decisions map to primary/contextual/collapsed/hidden/insufficient-evidence exposure states for future CandidatePolicy integration.
+- Changed files: lib/functional-guard-exposure-policy.js, scripts/verify-functional-guard-exposure-policy.mjs, docs/architecture/functional-guard-exposure-policy.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking runtime evaluator behavior, hard-filter/score/weight, existing `functional-candidate-policy.js` runtime behavior, Functional Plan UI, product data, or user-facing ranking exposure changes.
+- Validation: `node scripts/verify-functional-guard-exposure-policy.mjs` passed. Required recent-instability matrix/policy, safety case, packet, divergence, replay, summary, shadow/candidate/ranking/goal/survey verifier scripts passed. `npm run build` and `git diff --check` passed with expected LF-to-CRLF warnings only.
+- Findings: `hard_block_candidate` and evaluator `blocked` map to `hidden_candidate`; `collapsed_exposure_candidate` maps to future `collapsed_candidate`; `allow_with_context` maps to contextual primary exposure; `no_guard` maps to normal primary exposure; `insufficient_data` maps to `insufficient_evidence_candidate` without hiding. Current-product findings add context only and do not reverse safety exposure.
+- Context promotion candidate: Collapsed exposure is a future CandidatePolicy exposure state, not a score adjustment or runtime UI state. Wiring it requires a separate approved implementation task.
+
 ### 2026-07-03 / recent instability guard matrix phase 10
 
 - Branch: codex/survey-input-contract-refactor
