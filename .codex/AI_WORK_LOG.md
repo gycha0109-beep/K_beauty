@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional shadow capture runtime sample
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: verification / Medium dev-only runtime shadow capture sampling
+- Routing decision: User requested actual development `/api/analyze` runtime validation and sample capture collection for Ranking Engine Phase 4. UI changes, API response changes, DB/schema/migration work, existing recommendation changes, new ranking exposure, Functional Plan wiring, product data edits, production execution, raw form/image/PII storage, and policy changes from divergence were out of scope.
+- Goal: Run dev server with `FUNCTIONAL_SHADOW_CAPTURE=1`, submit 10 real multipart `/api/analyze` cases with the test image and new survey fields, verify response isolation, confirm sanitized capture fixture generation, replay captures, aggregate divergence signals, and run the required verifier/build/diff checks.
+- Changed files: .codex/AI_WORK_LOG.md only. Runtime capture fixtures and replay/aggregate summaries were written under ignored `tmp/functional-shadow-captures/`.
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, existing recommendation engine, topPick/supporting/budget payloads, Functional Plan UI, premium/currentProducts storage, photo analysis, product data, production runtime, raw form/image/base64/file/session/email/cookie/user-agent storage, product name/brand/purchase URL capture, or committed tmp fixtures.
+- Validation: Dev server ran on `http://localhost:3001` with `NODE_ENV=development` and `FUNCTIONAL_SHADOW_CAPTURE=1`. All 10 `/api/analyze` requests returned 200 and generated one capture each. No response contained `surveyInputContract`, `contract`, `debugContract`, `shadow`, `capture`, or `functionalAudit`. Fixture key and forbidden-token checks passed. Replay processed 10 captures with 0 failed/skipped. Aggregate summary passed. All required verifier scripts passed with existing Node MODULE_TYPELESS_PACKAGE_JSON warnings. `npm run build` passed.
+- Findings: Candidate source completeness was `final_results_only` for 10/10 captures, so comparison confidence was low for 10/10. Replay observed topPick mismatch 7, existing selected but insufficient data 23, existing selected ranked lower 4, existing selected but blocked 2, and candidate source incomplete 10. These are observations only; low confidence means they should not drive policy changes yet.
+- Context promotion candidate: Next work should strengthen read-only candidate source handoff before ranking policy tuning, because final-results-only captures cannot support full candidate-set comparison.
+
 ### 2026-07-03 / functional shadow capture phase 4
 
 - Branch: codex/survey-input-contract-refactor
