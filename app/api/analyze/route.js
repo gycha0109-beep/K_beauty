@@ -121,7 +121,8 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
       surveyContract,
       freeResult: publicDecision,
       goalPolicy,
-      existingRecommendationResult: decision
+      existingRecommendationResult: decision,
+      candidateSource: decision?.diagnostics?.candidateSource
     });
 
     if (!captureResult.captured) {
@@ -1259,6 +1260,8 @@ export async function POST(request) {
     logSurveyInputContractParallel(formInput, {
       hasImage: Boolean(image)
     });
+    const functionalShadowCaptureEnabled =
+      process.env.NODE_ENV === "development" && process.env.FUNCTIONAL_SHADOW_CAPTURE === "1";
 
     const { apiKey } = resolveOpenAiApiKey();
     const writeAccessToken = createWriteAccessToken();
@@ -1322,7 +1325,8 @@ export async function POST(request) {
       locale,
       photoAnalysis,
       currentProducts,
-      currentProductSnapshots
+      currentProductSnapshots,
+      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled
     });
 
     let explanationNotice = "";

@@ -97,6 +97,15 @@ const comparisonConfidenceDistribution = {
   medium: replay?.comparisonConfidenceDistribution?.medium || 0,
   low: replay?.comparisonConfidenceDistribution?.low || 0
 };
+const candidateSourceCompletenessDistribution = {
+  ...(replay?.candidateSourceCompletenessDistribution || {})
+};
+const candidateSourceStageDistribution = {
+  ...(replay?.candidateSourceStageDistribution || {})
+};
+const candidateIdentityModeDistribution = {
+  ...(replay?.candidateIdentityModeDistribution || {})
+};
 const divergenceTypeDistribution = { ...(replay?.divergenceTypeDistribution || {}) };
 const blockedReasonDistribution = {};
 const categoryComparison = {
@@ -133,6 +142,9 @@ const summary = {
   totalCaptures: replay?.totalCaptureCount || 0,
   validComparisons: replay?.replayedCount || 0,
   comparisonConfidenceDistribution,
+  candidateSourceCompletenessDistribution,
+  candidateSourceStageDistribution,
+  candidateIdentityModeDistribution,
   topPickMatchRate: replay?.topPickMatchRate || 0,
   averageOverlapRate: replay?.averageOverlapRate || 0,
   divergenceTypeDistribution,

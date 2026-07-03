@@ -83,6 +83,9 @@ const results = [];
 const failed = [];
 const skipped = [];
 const comparisonConfidenceDistribution = { high: 0, medium: 0, low: 0 };
+const candidateSourceCompletenessDistribution = {};
+const candidateSourceStageDistribution = {};
+const candidateIdentityModeDistribution = {};
 const divergenceTypeDistribution = {};
 let overlapTotal = 0;
 let topPickComparableCount = 0;
@@ -106,8 +109,14 @@ for (const filePath of files) {
       functionalAudit
     });
     const confidence = comparison.comparisonSummary.comparisonConfidence;
+    const sourceCompleteness = fixture.candidateSource?.completeness || "unknown";
+    const sourceStage = fixture.candidateSource?.sourceStage || "unknown";
+    const identityMode = fixture.candidateSource?.candidateIdentityMode || "unknown";
 
     increment(comparisonConfidenceDistribution, confidence);
+    increment(candidateSourceCompletenessDistribution, sourceCompleteness);
+    increment(candidateSourceStageDistribution, sourceStage);
+    increment(candidateIdentityModeDistribution, identityMode);
     comparison.divergences.forEach((item) => increment(divergenceTypeDistribution, item.type));
     overlapTotal += comparison.comparisonSummary.overlapRate;
 
@@ -158,6 +167,9 @@ const summary = {
   failedCount: failed.length,
   skippedCount: skipped.length,
   comparisonConfidenceDistribution,
+  candidateSourceCompletenessDistribution,
+  candidateSourceStageDistribution,
+  candidateIdentityModeDistribution,
   topPickMatchRate: topPickComparableCount ? round(topPickMatchCount / topPickComparableCount) : 0,
   averageOverlapRate: results.length ? round(overlapTotal / results.length) : 0,
   existingSelectedButBlockedCount,
@@ -181,6 +193,9 @@ console.log(JSON.stringify({
   failedCount: summary.failedCount,
   skippedCount: summary.skippedCount,
   comparisonConfidenceDistribution: summary.comparisonConfidenceDistribution,
+  candidateSourceCompletenessDistribution: summary.candidateSourceCompletenessDistribution,
+  candidateSourceStageDistribution: summary.candidateSourceStageDistribution,
+  candidateIdentityModeDistribution: summary.candidateIdentityModeDistribution,
   topPickMatchRate: summary.topPickMatchRate,
   averageOverlapRate: summary.averageOverlapRate,
   existingSelectedButBlockedCount,

@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / existing candidate source boundary phase 5
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / High read-only recommendation candidate source boundary
+- Routing decision: User requested a source boundary so dev-only shadow capture can store the existing free-result engine's real candidate pool instead of final results only. UI changes, API response changes, DB/schema/migration work, Supabase queries, existing score/filter/sort changes, topPick/supporting/budget payload changes, new ranking exposure, Functional Plan wiring, storage changes, product data edits, photo analysis changes, production capture, fuzzy matching, new product fetches, raw form/image/PII storage, and policy changes were out of scope.
+- Goal: Expose the existing engine's already-computed `scoredProducts` as an opt-in `post_score_candidate_pool` diagnostic, preserve existing runtime behavior when disabled, pass that source into dev shadow capture, extend fixture/replay metadata, verify old fixture compatibility, and run actual dev 10-case capture again.
+- Changed files: app/api/analyze/route.js, lib/skin-match-decision-engine.js, lib/existing-recommendation-candidate-source.js, lib/functional-shadow-capture.js, lib/functional-shadow-adapter.js, lib/functional-shadow-comparison.js, scripts/verify-existing-recommendation-candidate-source.mjs, scripts/replay-functional-shadow-captures.mjs, scripts/summarize-functional-shadow-captures.mjs, docs/architecture/existing-recommendation-candidate-source.md, docs/architecture/functional-shadow-capture.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation scoring/filter/sort behavior, topPick/supporting/budget payload, Functional Plan UI, premium/currentProducts storage, photo analysis, product data, production runtime capture, raw form/image/base64/file/session/email/cookie/user-agent storage, product name/brand/purchase URL capture, or committed tmp fixture changes.
+- Validation: `node scripts/verify-existing-recommendation-candidate-source.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. Existing shadow/candidate/ranking/goal/survey verifier scripts passed with the same warning pattern. Actual dev runtime ran 10 `/api/analyze` requests with `FUNCTIONAL_SHADOW_CAPTURE=1`; all returned 200, no response leaked shadow/capture/diagnostic fields, and each wrote one fixture. New fixtures were 10/10 `complete`, `post_score_candidate_pool`, `product_row`, sourceCount 164, with no forbidden data tokens found. Replay over old+new fixtures processed 20 captures with 0 failed/skipped and high/medium/low confidence 10/0/10. `npm run build` passed.
+- Findings: The boundary successfully changed new runtime captures from `final_results_only` to `complete`. New high-confidence sample divergences were topPick mismatch 8, existing selected ranked lower 18, existing selected but blocked 3, and functional top candidate missing from existing 20. These are observations only and not policy changes.
+- Context promotion candidate: Future ranking policy review should use high/medium-confidence captures from the `post_score_candidate_pool`; low-confidence final-result-only captures should remain background evidence only.
+
 ### 2026-07-03 / functional shadow capture runtime sample
 
 - Branch: codex/survey-input-contract-refactor

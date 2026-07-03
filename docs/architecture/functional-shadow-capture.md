@@ -66,6 +66,8 @@ Top-level shape:
 
 `candidateSource` stores sanitized product snapshots only when a candidate source is available. Otherwise it records final selected products or unavailability.
 
+Phase 5 adds a read-only existing candidate source boundary. When development capture is enabled, `/api/analyze` can pass the existing engine's `post_score_candidate_pool` into the capture helper so fixtures can record `complete` product-row candidate sources instead of only final selected results.
+
 ## Data Never Stored
 
 Capture must not store:
@@ -90,6 +92,12 @@ Capture must not store:
 - `unavailable`: no usable product source is available.
 
 Low-completeness captures should not drive strong ranking policy changes.
+
+The fixture also records:
+
+- `sourceStage`: where the source came from, such as `post_score_candidate_pool`
+- `sourceNotes`: stable notes describing source limits
+- `candidateIdentityMode`: whether products are full rows, IDs only, mixed, or unavailable
 
 ## Replay
 
