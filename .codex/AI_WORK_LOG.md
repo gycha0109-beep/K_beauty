@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional candidate exposure audit phase 12
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow-only exposure grouping
+- Routing decision: User requested a shadow-only bridge from functional candidate audit results to future CandidatePolicy exposure groups. Route/API changes, existing CandidatePolicy runtime behavior changes, existing recommendation changes, ranking score/weight changes, hard-filter changes, UI/DB/Supabase/product changes, capture fixture mutation, user-facing ranking exposure, and topPick/supporting/budget changes were out of scope.
+- Goal: Add a pure `buildFunctionalCandidateExposureAudit()` helper, verifier, complete-capture runner, and architecture documentation that group candidates into primary/contextual/collapsed/hidden/insufficient-evidence exposure buckets without changing runtime behavior.
+- Changed files: lib/functional-candidate-exposure-audit.js, scripts/verify-functional-candidate-exposure-audit.mjs, scripts/run-functional-candidate-exposure-audit.mjs, docs/architecture/functional-candidate-exposure-audit.md, scripts/replay-functional-shadow-captures.mjs, scripts/run-recent-instability-guard-matrix.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking runtime evaluator behavior, hard-filter/score/weight, existing `functional-candidate-policy.js` runtime behavior, Functional Plan UI, product data, or user-facing ranking exposure changes.
+- Validation: Phase 12 verifier and complete-capture runner passed. Existing guard exposure, recent-instability matrix/policy, safety case, packet, divergence, shadow/candidate/ranking/goal/survey verifier scripts passed. `npm run build` and `git diff --check` passed.
+- Findings: Complete capture runner used 10 complete product-row captures, excluded 10 final-results-only captures, and evaluated 1640 product rows. Exposure groups: primary 656, contextual 371, collapsed 428, hidden 185, insufficient evidence 0. Collapsed candidates remain a future CandidatePolicy exposure group, not a score or hard-filter change.
+- Context promotion candidate: Candidate exposure grouping is shadow-only. Runtime CandidatePolicy integration, collapsed group UI, or evaluator changes require a separate approved task after reviewing group distribution and safety behavior.
+
 ### 2026-07-03 / functional guard exposure policy phase 11
 
 - Branch: codex/survey-input-contract-refactor
