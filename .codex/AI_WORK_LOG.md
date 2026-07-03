@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional shadow audit phase 3
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow comparison audit
+- Routing decision: User requested an audit-only shadow adapter and comparison layer for existing recommendation snapshots versus functional candidate audit output. UI changes, API response changes, DB/schema/migration work, Supabase query changes, existing recommendation replacement, topPick/supporting/budget payload changes, Functional Plan UI wiring, premium/currentProducts storage changes, product data edits, photo analysis changes, user-facing exposure, and production auto execution were out of scope.
+- Goal: Add read-only existing recommendation snapshot extraction, candidate source resolution, functional shadow comparison, verifier coverage, local fixture runner, tmp summary output, and architecture documentation.
+- Changed files: lib/functional-shadow-adapter.js, lib/functional-shadow-comparison.js, scripts/verify-functional-shadow-comparison.mjs, scripts/run-functional-shadow-audit.mjs, docs/architecture/functional-shadow-audit.md, tmp/functional-shadow-audit/summary.json, tmp/functional-shadow-audit/summary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, recommendation-scoring replacement, existing free result changes, topPick/supporting/budget payload changes, Functional Plan UI, premium/currentProducts storage, product data, photo analysis, auth/payment/deploy/env, production data, raw form/image/PII tmp storage, or production auto-run changes.
+- Validation: `node scripts/verify-functional-shadow-comparison.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/run-functional-shadow-audit.mjs` passed and wrote local tmp summary JSON/MD. `node scripts/verify-functional-candidate-audit.mjs` passed with the existing warning. `node scripts/verify-functional-ranking-contract.mjs` passed with the existing warning. `node scripts/verify-functional-goal-policy.mjs` passed with the existing warning. `node scripts/verify-survey-input-contract.mjs` passed with the existing warning. `npm run build` passed. `git diff --check` passed with LF-to-CRLF warnings only.
+- Issues/risks: Shadow comparison confidence depends on candidate source completeness. If only final selected products are available, the comparison intentionally reports low confidence and a candidate-source-incomplete divergence.
+- Context promotion candidate: Existing-vs-functional ranking comparison must remain product-ID based, read-only, and audit-only until a later dev-only shadow mode accumulates real fixture comparisons.
+
 ### 2026-07-03 / functional candidate audit phase 2
 
 - Branch: codex/survey-input-contract-refactor
