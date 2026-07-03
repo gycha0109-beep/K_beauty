@@ -2,6 +2,8 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildFunctionalCandidateAudit } from "../lib/functional-candidate-audit.js";
 import { compareFunctionalShadowResults } from "../lib/functional-shadow-comparison.js";
+import { evaluateFunctionalRankingCandidate } from "../lib/functional-ranking-contract.js";
+import { resolveProductFunctionalProfile } from "../lib/product-functional-profile.js";
 
 const CAPTURE_DIR = process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
   path.join(process.cwd(), "tmp", "functional-shadow-captures");
@@ -22,7 +24,14 @@ async function listCaptureFiles() {
       .filter((entry) => entry.isFile())
       .map((entry) => entry.name)
       .filter((name) => name.endsWith(".json"))
-      .filter((name) => !["replay-summary.json", "aggregate-summary.json", "summary.json"].includes(name))
+      .filter((name) => ![
+        "replay-summary.json",
+        "aggregate-summary.json",
+        "summary.json",
+        "divergence-policy-review.json",
+        "safety-review-packet.json",
+        "safety-review-analysis.json"
+      ].includes(name))
       .sort()
       .map((name) => path.join(CAPTURE_DIR, name));
   } catch {
@@ -55,6 +64,136 @@ function buildAuditForFixture(fixture) {
       maxRankedCandidates: 20
     }
   });
+}
+
+function buildScoreBreakdownSummary(scoreBreakdown = {}) {
+  const axes = [
+    "functionalFit",
+    "skinFit",
+    "safetyFit",
+    "preferenceFit",
+    "routineFit",
+    "evidenceQuality",
+    "reviewSignal"
+  ];
+
+  return {
+    ...Object.fromEntries(
+      axes.map((axis) => [
+        axis,
+        {
+          score: Number.isFinite(Number(scoreBreakdown?.[axis]?.score))
+            ? Number(scoreBreakdown[axis].score)
+            : 0,
+          max: Number.isFinite(Number(scoreBreakdown?.[axis]?.max))
+            ? Number(scoreBreakdown[axis].max)
+            : 0
+        }
+      ])
+    ),
+    penalties: {
+      score: Number.isFinite(Number(scoreBreakdown?.penalties?.score))
+        ? Number(scoreBreakdown.penalties.score)
+        : 0
+    },
+    totalBeforePenalty: Number.isFinite(Number(scoreBreakdown?.totalBeforePenalty))
+      ? Number(scoreBreakdown.totalBeforePenalty)
+      : 0,
+    totalAfterPenalty: Number.isFinite(Number(scoreBreakdown?.totalAfterPenalty))
+      ? Number(scoreBreakdown.totalAfterPenalty)
+      : 0
+  };
+}
+
+function productById(products = []) {
+  return products.reduce((lookup, product) => {
+    const id = String(product?.id || product?.productId || product?.product_id || "").trim();
+
+    if (id) {
+      lookup[id] = product;
+    }
+
+    return lookup;
+  }, {});
+}
+
+function existingMembership(existingSnapshot = {}, productId) {
+  return {
+    source: existingSnapshot.productSourceById?.[productId]?.[0]?.source || null,
+    existingResultMembership: existingSnapshot.productSourceById?.[productId] || [],
+    existingTopPick: existingSnapshot.topPick?.productId === productId,
+    existingSupporting: (existingSnapshot.supportingProducts || []).some((item) => item.productId === productId),
+    existingBudgetAlternative: (existingSnapshot.budgetAlternatives || []).some((item) => item.productId === productId)
+  };
+}
+
+function buildSafetyReviewContext({ fixture, functionalAudit, comparison }) {
+  const products = Array.isArray(fixture?.candidateSource?.products) ? fixture.candidateSource.products : [];
+  const productLookup = productById(products);
+  const surveyContract = {
+    skinState: fixture?.survey?.skinState || {},
+    goals: fixture?.survey?.goals || {},
+    safety: fixture?.survey?.safety || {},
+    behavior: fixture?.survey?.behavior || {},
+    preferences: fixture?.survey?.preferences || {},
+    sunscreen: fixture?.survey?.sunscreen || {}
+  };
+  const goalPolicy = fixture?.goalPolicy || {};
+  const rankingContext = functionalAudit?.summary?.rankingContext || {};
+  const contexts = {};
+
+  (comparison?.divergences || [])
+    .filter((item) => item?.type === "existing_selected_but_blocked" && item.productId)
+    .forEach((divergence) => {
+      const product = productLookup[divergence.productId] || {};
+      const productProfile = resolveProductFunctionalProfile(product);
+      const evaluation = evaluateFunctionalRankingCandidate({
+        product,
+        surveyContract,
+        goalPolicy,
+        productProfile
+      });
+
+      contexts[divergence.productId] = {
+        userContext: {
+          rankingGoal: rankingContext.rankingGoal || goalPolicy.rankingGoal || null,
+          safetyGoal: rankingContext.safetyGoal || goalPolicy.safetyGoal || null,
+          recommendationGuard: rankingContext.recommendationGuard || goalPolicy.recommendationGuard || null,
+          hasTension: Boolean(rankingContext.hasTension || goalPolicy.hasTension),
+          sensitivityRisk: surveyContract.safety?.sensitivityRisk || null,
+          drynessRisk: surveyContract.safety?.drynessRisk || null,
+          rednessRisk: surveyContract.safety?.rednessRisk || null,
+          recentSkinChange: surveyContract.safety?.recentSkinChange || null,
+          recentlyChangedProduct: surveyContract.safety?.recentlyChangedProduct || null,
+          sunscreenSourceCompleteness: surveyContract.sunscreen?.sourceCompleteness || null
+        },
+        productContext: {
+          categoryRole: productProfile.categoryRole || "unknown",
+          functionalAxes: productProfile.functionalAxes || [],
+          cautionTags: productProfile.cautionTags || [],
+          irritationRisk: product.irritation_risk || null,
+          sensitivitySafe: typeof product.sensitivity_safe === "boolean" ? product.sensitivity_safe : null,
+          texture: product.texture || null,
+          finish: product.finish || null,
+          evidenceQuality: evaluation.scoreBreakdown?.evidenceQuality
+            ? {
+                score: evaluation.scoreBreakdown.evidenceQuality.score,
+                max: evaluation.scoreBreakdown.evidenceQuality.max
+              }
+            : null,
+          profileEvaluable: Boolean(productProfile.evaluable)
+        },
+        filterDecision: {
+          hardFilterReasons: evaluation.hardFilterReasons || divergence.reasons || [],
+          evaluatorReasons: evaluation.reasons || [],
+          evaluatorPenalties: evaluation.penalties || [],
+          scoreBreakdownSummary: buildScoreBreakdownSummary(evaluation.scoreBreakdown)
+        },
+        existingRecommendationContext: existingMembership(fixture.existingRecommendationSnapshot || {}, divergence.productId)
+      };
+    });
+
+  return contexts;
 }
 
 function renderMarkdown(summary) {
@@ -130,11 +269,25 @@ for (const filePath of files) {
     existingSelectedButBlockedCount += comparison.candidateStatusComparison.existingSelectedButBlocked.length;
     existingSelectedButInsufficientDataCount += comparison.candidateStatusComparison.existingSelectedButInsufficientData.length;
     functionalTopCandidateMissingCount += comparison.candidateStatusComparison.functionalTopCandidatesNotInExisting.length;
+    const safetyReviewContextByProductId = buildSafetyReviewContext({
+      fixture,
+      functionalAudit,
+      comparison
+    });
     results.push({
       captureId: fixture.captureId || null,
       capturedAt: fixture.capturedAt || null,
       fileName: path.basename(filePath),
       candidateSourceCompleteness: fixture.candidateSource?.completeness || "unknown",
+      candidateSourceStage: fixture.candidateSource?.sourceStage || "unknown",
+      candidateIdentityMode: fixture.candidateSource?.candidateIdentityMode || "unknown",
+      rankingContext: functionalAudit?.summary?.rankingContext || {
+        rankingGoal: fixture?.goalPolicy?.rankingGoal || null,
+        safetyGoal: fixture?.goalPolicy?.safetyGoal || null,
+        recommendationGuard: fixture?.goalPolicy?.recommendationGuard || null,
+        hasTension: Boolean(fixture?.goalPolicy?.hasTension)
+      },
+      safetyReviewContextByProductId,
       comparison
     });
   } catch (error) {
