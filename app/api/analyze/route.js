@@ -3,6 +3,7 @@ import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAn
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
+import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
 import { resolveProductCategorySemantics } from "@/lib/product-category-normalizer";
 import {
@@ -96,6 +97,40 @@ function logSurveyInputContractParallel(formInput, context = {}) {
     }
   } catch (error) {
     console.warn("[analyze] survey-input-contract:parallel-failed", {
+      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
+    });
+  }
+}
+
+async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, decision }) {
+  if (process.env.NODE_ENV !== "development" || process.env.FUNCTIONAL_SHADOW_CAPTURE !== "1") {
+    return;
+  }
+
+  try {
+    const { captureFunctionalShadowFixture } = await import("@/lib/functional-shadow-capture");
+    const surveyContract = buildSurveyInputContract(formInput, {
+      source: "api_analyze_shadow_capture"
+    });
+    const goalPolicy = resolveFunctionalGoalPolicy({
+      surveyContract,
+      freeResultPriority: publicDecision?.priority,
+      safety: surveyContract.safety
+    });
+    const captureResult = await captureFunctionalShadowFixture({
+      surveyContract,
+      freeResult: publicDecision,
+      goalPolicy,
+      existingRecommendationResult: decision
+    });
+
+    if (!captureResult.captured) {
+      console.warn("[analyze] functional-shadow-capture:skipped", {
+        reason: captureResult.reason || "unknown"
+      });
+    }
+  } catch (error) {
+    console.warn("[analyze] functional-shadow-capture:failed", {
       message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
     });
   }
@@ -1360,6 +1395,12 @@ export async function POST(request) {
     if (writeAccessToken) {
       response.headers.set(WRITE_ACCESS_HEADER, writeAccessToken);
     }
+
+    await captureFunctionalShadowIfEnabled({
+      formInput,
+      publicDecision,
+      decision
+    });
 
     return response;
   } catch (error) {

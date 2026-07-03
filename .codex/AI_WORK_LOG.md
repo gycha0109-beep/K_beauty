@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-03 / functional shadow capture phase 4
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / High dev-only API shadow capture with protected response/storage boundaries
+- Routing decision: User requested opt-in development capture and offline replay for existing free-result recommendations versus functional ranking audit. UI changes, API response changes, DB/schema/migration work, existing recommendation replacement, topPick/supporting/budget payload changes, production capture, raw form/image/PII storage, and user-facing exposure were out of scope.
+- Goal: Add a dev-only `FUNCTIONAL_SHADOW_CAPTURE=1` capture gate, sanitize real `/api/analyze` shadow fixtures, replay captures through the functional candidate audit and shadow comparison, aggregate divergence signals, verify no-op/PII/replay behavior, and document the capture contract.
+- Changed files: app/api/analyze/route.js, lib/functional-shadow-capture.js, scripts/verify-functional-shadow-capture.mjs, scripts/replay-functional-shadow-captures.mjs, scripts/summarize-functional-shadow-captures.mjs, docs/architecture/functional-shadow-capture.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, existing recommendation engine replacement, free-result product output changes, topPick/supporting/budget payload changes, Functional Plan UI, premium/currentProducts storage, photo analysis, auth/payment/deploy/env files, production data, raw form/image/base64/file/session/email/cookie/user-agent storage, product name/brand/purchase URL capture, or production tmp writes.
+- Validation: `node scripts/verify-functional-shadow-capture.mjs` passed with the existing Node MODULE_TYPELESS_PACKAGE_JSON warning. `node scripts/verify-functional-shadow-comparison.mjs` passed with the existing warning. `node scripts/verify-functional-candidate-audit.mjs` passed with the existing warning. `node scripts/verify-functional-ranking-contract.mjs` passed with the existing warning. `node scripts/verify-functional-goal-policy.mjs` passed with the existing warning. `node scripts/verify-survey-input-contract.mjs` passed with the existing warning. `FUNCTIONAL_SHADOW_CAPTURE_DIR=tmp/functional-shadow-capture-verify node scripts/replay-functional-shadow-captures.mjs` and summarizer passed, producing ignored tmp replay/aggregate summaries. `npm run build` passed.
+- Issues/risks: `/api/analyze` capture is opt-in and dev-only, and uses a dynamic import so production avoids capture module loading unless the gate is true. Candidate source completeness still controls comparison confidence; final-results-only captures remain low confidence and should not drive replacement decisions.
+- Context promotion candidate: Shadow captures must remain sanitized, opt-in, and replay-only until enough high/medium-confidence fixtures show repeated divergence; response and stored payload changes require a separate approved phase.
+
 ### 2026-07-03 / functional shadow audit phase 3
 
 - Branch: codex/survey-input-contract-refactor
