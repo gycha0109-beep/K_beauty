@@ -1663,3 +1663,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Review result: high-confidence review scope is 0 captures, safe_low_risk hidden count is 0, collapsed count is 0, and integration readiness is `insufficient_evidence`.
 - Notes/risks: The readiness logic supports hidden/collapsed/reason analysis when Phase 12 audit output contains sanitized `candidateReviews`, but the current checkout cannot answer the requested "50 safe_low_risk hidden" question without the missing capture artifacts.
 - Context promotion candidate: Functional exposure readiness must stay shadow-only; even a ready status should lead to shadow CandidatePolicy integration, not runtime/UI/API wiring.
+
+### 2026-07-05 / SEC-02 analysis data RLS grant verification
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / limited documentation and verification
+- Goal: Verify Supabase RLS, grants, policies, functions, and Storage metadata for analysis data assets without production/local DB writes or policy changes.
+- Code 변경 여부: No runtime feature code changed. Added SEC-02 verification documentation and a static verification script only.
+- Remote metadata 검증 가능 여부: Possible. Checked connected Supabase metadata only; no user/report/image rows or secrets were read.
+- Results: confirmed 0, likely 0, deployment verification 3.
+- Migration 작성 여부: Not written. Connected metadata showed `analysis_requests`, `analysis_results`, and `premium_report_sessions` RLS enabled with service-role-only grants, My data owner policies present, and no current Storage bucket target.
+- Validation: `node scripts/verify-analysis-rls-contract.mjs` passed; related route/helper JS `node --check` passed; `git diff --check` passed with CRLF conversion warning only; `npm run build` passed.
+- Follow-up: Verify SEC-01 guard migration deployment state and service-role-only RPC grants before production rollout.
