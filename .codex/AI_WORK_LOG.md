@@ -1,5 +1,29 @@
 # AI_WORK_LOG.md
 
+### 2026-07-05 / OWASP security audit
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / High security audit with protected-area constraints and no code changes.
+- Routing decision: Repository-wide OWASP audit requested with explicit no-code-change, no migration, no env/auth/API contract changes, no destructive commands, no external attack testing. Scope stayed limited to read-only static review, dependency audit, report generation, remediation backlog, and this work-log entry.
+- Goal: Produce a Korean OWASP Top 10:2025, ASVS 5.0, and OWASP API Security Top 10:2023 audit for Next.js, Supabase/Auth/RLS assumptions, upload/AI analysis, premium access, sharing, My/check-in, product links, crawler/import, deployment configuration, and dependencies.
+- Changed files: docs/security/owasp-audit-20260705.md, docs/security/owasp-remediation-backlog-20260705.md, .codex/AI_WORK_LOG.md
+- Code changes: None. No DB migration, package update, env/auth policy, API response, deployment setting, Supabase write, or external service setting was changed.
+- Result summary: Critical 0, High 3, Medium 6, Low 3, Info 1. Deployment-environment verification checklist items: 13.
+- Validation: `git branch --show-current`, `git status --short`, route/file inventory via `rg`, `.env.local` key-name-only inventory, `npm ls next @supabase/supabase-js @supabase/ssr react react-dom --depth=0`, `npm audit --omit=dev --json`, and static pattern scans were performed. `npm run lint` was not completed because `next lint` opened an interactive ESLint configuration prompt.
+- Next recommended work: First address SEC-01 by adding durable quota/rate limiting before public AI provider calls, then verify analysis table RLS/grants before applying production-facing changes.
+
+### 2026-07-05 / test result browser comments UI fixes
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium UI behavior and layout fixes, explicitly approved on the current branch after branch-purpose mismatch was reported.
+- Routing decision: User requested direct browser-comment fixes for `/test-result` and the in-app browser was on `/test-full-report`. Scope stayed limited to result header behavior, free-result priority accordion default state, and photo evidence callout layout/wires. No API, DB, auth, stored payload, recommendation, product, migration, environment, or deployment changes.
+- Goal: Open only the first care-priority row by default, remove unintended navigation from the small top result/full-report header text, and make photo evidence wires connect toward the visible callout text boxes without mobile overflow.
+- Changed files: app/result/page.js, app/result/full-report/page.js, components/result/free-v2/FreeResultV2DiagnosisStep.jsx, components/result/free-v2/FreeResultV2EvidenceStep.jsx, .codex/AI_WORK_LOG.md
+- Protected areas: No protected-area edits. Auth display components and menu actions were left intact; only the header text wrapper was changed from link to non-link.
+- Validation: `npm run build` passed. `git diff --check` passed with existing LF-to-CRLF warnings only. In-app browser verification on `http://localhost:3001/test-result` confirmed the header is not a link, priority row 1 is `aria-expanded=true`, rows 2 and 3 are `false`, and the evidence wire overlay is visible after revealing photo signals. Mobile viewport verification confirmed the right callout text boxes fit inside the viewport after the grid/photo width adjustment. `http://localhost:3001/test-full-report` header text was also confirmed non-link.
+- Findings: The original photo evidence grid could overflow on mobile because the center image column forced side callouts outside the viewport. The mobile-specific grid and image max-width adjustment keeps the callouts inside while preserving larger-screen sizing.
+- Context promotion candidate: None.
+
 ### 2026-07-03 / functional candidate exposure audit phase 12
 
 - Branch: codex/survey-input-contract-refactor

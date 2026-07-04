@@ -3212,18 +3212,14 @@ function ResultContent() {
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-8 pt-4 sm:px-6 sm:pt-6">
         <div className="space-y-4 sm:space-y-5">
           <div className="flex items-center justify-between gap-3 px-1">
-            <Link
-              href={homePath}
-              onClick={handleTryAgainClick}
-              className="min-w-0 text-left"
-            >
+            <div className="min-w-0 text-left">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7e5261] dark:text-[#c8aeb8]">
                 AI Beauty Platform
               </span>
               <span className="mt-0.5 block truncate text-sm font-semibold text-[#26101a] dark:text-[#fff8f3]">
                 {isEnglish ? "Skin result" : "피부 결과"}
               </span>
-            </Link>
+            </div>
 
             <div className="flex shrink-0 items-center gap-2">
               <AuthNav locale={locale} showSignOut={false} />

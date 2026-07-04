@@ -110,9 +110,6 @@ export function SkinMatchHubQuickCard({ action, onNavigate, locale = "ko" }) {
           {action.description}
         </span>
       </span>
-      <span className={`mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#f7e8df] text-sm text-[#9f5b50] transition group-hover:bg-[#e87662] group-hover:text-white dark:bg-[#332027] dark:text-[#f0b7a7] dark:group-hover:bg-[#d97966] ${layout.arrow === "end" ? "self-end" : "self-start"}`}>
-        &rarr;
-      </span>
     </button>
   );
 }

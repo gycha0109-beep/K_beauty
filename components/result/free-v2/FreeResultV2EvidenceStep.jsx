@@ -72,7 +72,7 @@ function FreeResultV2EvidencePhotoCallout({ title, body, tone = "pink", align = 
 
   return (
     <motion.div
-      className={`max-w-[6.75rem] ${align === "right" ? "text-left" : "text-right"}`}
+      className={`max-w-[5.4rem] sm:max-w-[6.75rem] ${align === "right" ? "text-left" : "text-right"}`}
       initial={false}
       animate={isVisible ? { opacity: 1, x: 0, y: 0, scale: 1, rotate: 0 } : { opacity: 0, x: hiddenX, y: 8, scale: 0.86, rotate: origin === "left" ? 4 : -4 }}
       transition={{
@@ -113,23 +113,23 @@ function buildPhotoCalloutItems(photoSignals = [], locale = "ko") {
 function FreeResultV2PhotoWireOverlay({ isVisible }) {
   return (
     <motion.svg
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      viewBox="0 0 100 125"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full"
+      viewBox="0 0 100 100"
       fill="none"
       initial={false}
       animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.34, ease: "easeOut" }}
       aria-hidden={!isVisible}
     >
-      <path d="M50 24 C46 31 45 39 48 47" stroke="#ff9aa8" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
-      <path d="M31 77 C38 70 45 67 53 69" stroke="#9fb4ff" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
-      <path d="M69 62 C63 59 58 58 53 61" stroke="#ffb199" strokeWidth="0.9" strokeLinecap="round" opacity="0.9" />
-      <path d="M50 24 L62 17" stroke="#ff9aa8" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
-      <path d="M31 77 L18 85" stroke="#9fb4ff" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
-      <path d="M69 62 L82 55" stroke="#ffb199" strokeWidth="0.55" strokeLinecap="round" opacity="0.65" />
-      <circle cx="50" cy="24" r="1.5" fill="#ff9aa8" opacity="0.92" />
-      <circle cx="31" cy="77" r="1.5" fill="#9fb4ff" opacity="0.92" />
-      <circle cx="69" cy="62" r="1.5" fill="#ffb199" opacity="0.92" />
+      <path d="M46 25 C39 25 32 24 24 23" stroke="#9fb4ff" strokeWidth="0.7" strokeLinecap="round" opacity="0.82" />
+      <path d="M42 58 C35 56 29 55 22 55" stroke="#ff9aa8" strokeWidth="0.7" strokeLinecap="round" opacity="0.82" />
+      <path d="M58 47 C66 45 73 42 82 39" stroke="#ffb199" strokeWidth="0.7" strokeLinecap="round" opacity="0.82" />
+      <circle cx="46" cy="25" r="1.15" fill="#9fb4ff" opacity="0.9" />
+      <circle cx="42" cy="58" r="1.15" fill="#ff9aa8" opacity="0.9" />
+      <circle cx="58" cy="47" r="1.15" fill="#ffb199" opacity="0.9" />
+      <circle cx="24" cy="23" r="1" fill="#9fb4ff" opacity="0.7" />
+      <circle cx="22" cy="55" r="1" fill="#ff9aa8" opacity="0.7" />
+      <circle cx="82" cy="39" r="1" fill="#ffb199" opacity="0.7" />
     </motion.svg>
   );
 }
@@ -203,8 +203,9 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSign
             </div>
           </div>
         ) : (
-        <div className="grid min-h-[16rem] grid-cols-[minmax(3.6rem,0.8fr)_minmax(7.4rem,1.7fr)_minmax(3.6rem,0.8fr)] items-center gap-2 pt-8">
-          <div className="flex h-full items-center justify-end">
+        <div className="relative grid min-h-[16rem] grid-cols-[minmax(4.7rem,1fr)_minmax(9rem,10.75rem)_minmax(4.7rem,1fr)] items-center gap-1.5 pt-8 sm:grid-cols-[minmax(3.6rem,0.8fr)_minmax(7.4rem,1.7fr)_minmax(3.6rem,0.8fr)] sm:gap-2">
+          <FreeResultV2PhotoWireOverlay isVisible={isCalloutsOpen} />
+          <div className="relative z-10 flex h-full items-center justify-end">
             {calloutItems[0] ? (
               <FreeResultV2EvidencePhotoCallout
                 title={calloutItems[0].title}
@@ -219,7 +220,7 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSign
           <button
             type="button"
             onClick={revealCallouts}
-            className="relative mx-auto block aspect-[4/5] w-full max-w-[13rem] overflow-hidden rounded-[1.6rem] border border-[#ead2cf] bg-white/68 p-0 text-left outline-none transition hover:border-[#ff9aa8]/52 focus-visible:ring-2 focus-visible:ring-[#ff9aa8]/70 dark:border-[#5a3a48] dark:bg-[#2a1b24]"
+            className="relative z-10 mx-auto block aspect-[4/5] w-full max-w-[10.75rem] overflow-hidden rounded-[1.6rem] border border-[#ead2cf] bg-white/68 p-0 text-left outline-none transition hover:border-[#ff9aa8]/52 focus-visible:ring-2 focus-visible:ring-[#ff9aa8]/70 dark:border-[#5a3a48] dark:bg-[#2a1b24] sm:max-w-[13rem]"
             aria-label={callouts.revealLabel}
             aria-expanded={isCalloutsOpen}
           >
@@ -228,7 +229,6 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSign
             ) : (
               <div className="flex h-full items-center justify-center px-4 text-center text-xs leading-5 text-[#7a5360] dark:text-[#c8aeb8]">{fallback}</div>
             )}
-            <FreeResultV2PhotoWireOverlay isVisible={isCalloutsOpen} />
             <AnimatePresence>
               {!isCalloutsOpen ? (
                 <motion.div
@@ -249,7 +249,7 @@ function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSign
               ) : null}
             </AnimatePresence>
           </button>
-          <div className="flex h-full flex-col justify-center gap-8">
+          <div className="relative z-10 flex h-full flex-col justify-center gap-8">
             {calloutItems.slice(1).map((item) => (
               <FreeResultV2EvidencePhotoCallout
                 key={item.key}

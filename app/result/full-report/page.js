@@ -6471,14 +6471,14 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-4 pb-36 pt-4 sm:px-6 sm:pt-6 md:max-w-[980px] xl:max-w-[1120px]">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 px-1">
-            <Link href={getResultPath(locale)} className="min-w-0 text-left">
+            <div className="min-w-0 text-left">
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a5260] dark:text-[#c8aeb8]">
                 FULL REPORT
               </span>
               <span className="mt-0.5 block truncate text-sm font-semibold text-[#2b1f26] dark:text-[#fff8f3]">
                 {isEnglish ? "Full report" : "\ud480 \ub9ac\ud3ec\ud2b8"}
               </span>
-            </Link>
+            </div>
 
             <div className="flex shrink-0 items-center gap-2">
               <AuthNav locale={locale} showSignOut={false} />
