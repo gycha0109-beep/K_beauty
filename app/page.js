@@ -24,6 +24,16 @@ import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access
 
 const STEP_ORDER = ["photo", "survey", "loading"];
 const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
+const IDEMPOTENCY_HEADER = "Idempotency-Key";
+const ANALYSIS_GUARD_ERROR_CODES = new Set([
+  "analysis_rate_limited",
+  "analysis_request_in_progress",
+  "analysis_idempotency_conflict",
+  "analysis_request_already_completed",
+  "analysis_request_failed",
+  "analysis_guard_unavailable",
+  "invalid_idempotency_key"
+]);
 const STALE_ANALYSIS_SESSION_KEYS = [
   "skinTestShare",
   "skinTestFaceLabFull",
@@ -61,6 +71,10 @@ function clearStaleAnalysisStorage() {
 }
 
 function getAnalyzeErrorMessage(data, copy) {
+  if (ANALYSIS_GUARD_ERROR_CODES.has(data?.error) && typeof data?.message === "string") {
+    return data.message;
+  }
+
   if (data?.code === PRODUCT_SOURCE_UNAVAILABLE_CODE) {
     return copy.errors.productSourceUnavailable;
   }
@@ -132,7 +146,21 @@ function fileToDataUrl(file) {
   });
 }
 
-async function requestFaceLabResult(file, locale) {
+function createClientIdempotencyKey() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+async function requestFaceLabResult(file, locale, idempotencyKey) {
   const payload = new FormData();
   payload.append("image", file);
   payload.append("locale", locale);
@@ -140,6 +168,7 @@ async function requestFaceLabResult(file, locale) {
   try {
     const response = await fetch("/api/face-reading", {
       method: "POST",
+      headers: idempotencyKey ? { [IDEMPOTENCY_HEADER]: idempotencyKey } : undefined,
       body: payload
     });
 
@@ -148,7 +177,7 @@ async function requestFaceLabResult(file, locale) {
     if (!response.ok || !data) {
       return isFaceLabResultEnvelope(data)
         ? data
-        : createFaceLabUnavailable("unknown");
+        : createFaceLabUnavailable(data?.error || "unknown");
     }
 
     return isFaceLabResultEnvelope(data)
@@ -234,6 +263,8 @@ export default function HomePage() {
       try {
         setIsSubmitting(true);
         clearStaleAnalysisStorage();
+        const analyzeIdempotencyKey = createClientIdempotencyKey();
+        const faceLabIdempotencyKey = createClientIdempotencyKey();
 
         const analyzePayload = new FormData();
         analyzePayload.append("image", imageFile);
@@ -246,9 +277,12 @@ export default function HomePage() {
         }
         analyzePayload.append("locale", locale);
 
-        const faceLabPromise = requestFaceLabResult(imageFile, locale);
+        const faceLabPromise = requestFaceLabResult(imageFile, locale, faceLabIdempotencyKey);
         const response = await fetch("/api/analyze", {
           method: "POST",
+          headers: {
+            [IDEMPOTENCY_HEADER]: analyzeIdempotencyKey
+          },
           body: analyzePayload
         });
 

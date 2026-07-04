@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-05 / SEC-01 analysis request guard
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / High public AI endpoint security fix with Supabase migration written but not applied.
+- Routing decision: User explicitly requested SEC-01 only. Scope stayed limited to `/api/analyze`, `/api/face-reading`, client idempotency headers, guard helper, guard migration, verification script, security docs, and this work-log entry. Premium entitlement, anonymous write-token binding, existing analysis table RLS/grants, dependency updates, payment, and production service calls were out of scope.
+- Target endpoints: `/api/analyze`, `/api/face-reading`
+- Changed files: app/api/analyze/route.js, app/api/face-reading/route.js, app/page.js, lib/security/analysis-request-guard-core.js, lib/security/analysis-request-guard.js, supabase/migrations/20260704221747_sec_01_analysis_request_guard.sql, scripts/verify-analysis-request-guard.mjs, docs/security/sec-01-analysis-request-guard-20260705.md, .codex/AI_WORK_LOG.md
+- Quota policy: `/api/analyze` user 5/hour and 15/day, anonymous 2/hour and 4/day, IP 5/hour and 10/day. `/api/face-reading` user 3/hour and 8/day, anonymous 1/hour and 2/day, IP 3/hour and 5/day.
+- Fail-closed: `ANALYSIS_REQUEST_GUARD_SECRET`, service-role Supabase client, idempotency RPC, or rate-limit RPC failure returns safe 503 before OpenAI/provider calls.
+- Validation: `node scripts/verify-analysis-request-guard.mjs` passed with a Node module-type warning only; `node --check` passed for the new guard files, touched routes, page, and verifier; `git diff --check` passed with CRLF warnings only; `npm run build` passed. No Supabase migration apply, DB write, production API call, or OpenAI live call was performed.
+- Follow-up security work: SEC-02 analysis table RLS/grant deployment verification, SEC-03 Next.js dependency update, SEC-04 premium release mode fail-open 보정, SEC-05 anonymous write token resource binding/replay 방지.
+
 ### 2026-07-05 / OWASP security audit
 
 - Branch: codex/survey-input-contract-refactor

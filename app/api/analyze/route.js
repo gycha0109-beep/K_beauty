@@ -17,6 +17,14 @@ import {
   PREMIUM_REPORT_COOKIE
 } from "@/lib/premium-report-session";
 import { appendReviewEvidenceSentence } from "@/lib/review-signals";
+import {
+  applyAnalysisGuardCookies,
+  completeAnalysisRequestGuard,
+  createAnalysisGuardResponse,
+  failAnalysisRequestGuard,
+  guardAnalysisRequest
+} from "@/lib/security/analysis-request-guard";
+import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-guard-core";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
@@ -1164,6 +1172,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
 
 export async function POST(request) {
   let responseLocale = "ko";
+  let analysisGuard = null;
 
   try {
     const formData = await request.formData();
@@ -1256,6 +1265,24 @@ export async function POST(request) {
           : environmentExposure.includes("outdoor"),
       verySensitivePeriod: Boolean(verySensitivePeriod)
     };
+
+    analysisGuard = await guardAnalysisRequest({
+      request,
+      endpoint: "analyze",
+      fingerprintInput: {
+        locale,
+        form: formInput,
+        currentProducts: currentProducts.map((item) => ({
+          productId: item.productId || "",
+          status: item.status || ""
+        })),
+        image: getUploadFingerprintDescriptor(image)
+      }
+    });
+
+    if (!analysisGuard.ok) {
+      return createAnalysisGuardResponse(analysisGuard, locale);
+    }
 
     logSurveyInputContractParallel(formInput, {
       hasImage: Boolean(image)
@@ -1400,6 +1427,14 @@ export async function POST(request) {
       response.headers.set(WRITE_ACCESS_HEADER, writeAccessToken);
     }
 
+    const guardCompletion = await completeAnalysisRequestGuard(analysisGuard);
+
+    if (!guardCompletion.ok) {
+      logAnalyze("analysis-guard:complete-failed");
+    }
+
+    applyAnalysisGuardCookies(response, analysisGuard);
+
     await captureFunctionalShadowIfEnabled({
       formInput,
       publicDecision,
@@ -1408,30 +1443,38 @@ export async function POST(request) {
 
     return response;
   } catch (error) {
+    if (analysisGuard?.ok) {
+      const guardFailure = await failAnalysisRequestGuard(analysisGuard);
+
+      if (!guardFailure.ok) {
+        logAnalyze("analysis-guard:fail-failed");
+      }
+    }
+
     if (isProductSourceUnavailableError(error)) {
       logAnalyze("product-source:unavailable", {
         code: error.code,
         reason: error.reason
       });
 
-      return NextResponse.json(
+      return applyAnalysisGuardCookies(NextResponse.json(
         {
           error: PRODUCT_SOURCE_UNAVAILABLE_MESSAGE,
           code: PRODUCT_SOURCE_UNAVAILABLE_CODE
         },
         { status: 503 }
-      );
+      ), analysisGuard);
     }
 
     logAnalyze("request:error", {
       message: error instanceof Error ? error.message : String(error)
     });
 
-    return NextResponse.json(
+    return applyAnalysisGuardCookies(NextResponse.json(
       {
         error: getAnalyzeCopy(responseLocale).serverError
       },
       { status: 500 }
-    );
+    ), analysisGuard);
   }
 }
