@@ -14,7 +14,8 @@ const NON_CAPTURE_JSON = new Set([
   "safety-review-packet.json",
   "safety-review-analysis.json",
   "recent-instability-guard-matrix.json",
-  "candidate-exposure-audit.json"
+  "candidate-exposure-audit.json",
+  "exposure-readiness-review.json"
 ]);
 
 function increment(map, key, amount = 1) {
@@ -47,14 +48,139 @@ function sortGrouped(input = {}) {
   );
 }
 
+function normalizeText(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function reasonToKey(reason) {
+  const normalized = normalizeText(reason);
+
+  if (normalized.includes("high sensitivity") && normalized.includes("irritation")) {
+    return "sensitivity_high_irritation_conflict";
+  }
+
+  if (normalized.includes("stabilize-first")) {
+    return "stabilize_first_active_limited";
+  }
+
+  if (normalized.includes("recent instability")) {
+    return "recent_instability_active_limited";
+  }
+
+  if (normalized.includes("eye sensitivity")) {
+    return "sunscreen_eye_sting_conflict";
+  }
+
+  if (normalized.includes("white-cast")) {
+    return "sunscreen_white_cast_conflict";
+  }
+
+  if (normalized.includes("makeup use")) {
+    return "sunscreen_pilling_conflict";
+  }
+
+  if (normalized.includes("missing")) {
+    return "product_required_field_missing";
+  }
+
+  if (normalized.includes("too sparse") || normalized.includes("not sufficient")) {
+    return "structured_data_insufficient";
+  }
+
+  return normalized
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80) || "unknown_reason";
+}
+
+function safetyMetadataProfileFromItem(item) {
+  const context = item?.recentInstabilityGuardPolicy?.policyContext || {};
+
+  if (context.productSafetyMetadataComplete === false) return "metadata_incomplete";
+  if (context.sensitivitySafe === true && context.irritationRisk === "low") return "safe_low_risk";
+  if (context.sensitivitySafe === true && context.irritationRisk === "medium") return "safe_medium_risk";
+  if (context.sensitivitySafe === false && context.irritationRisk === "high") return "unsafe_high_risk";
+  return "mixed_or_uncertain";
+}
+
+function functionalProfileFromItem(item) {
+  const context = item?.recentInstabilityGuardPolicy?.policyContext || {};
+  const active = context.activeAxisPresent === true;
+  const stabilizing = context.stabilizingAxisPresent === true;
+
+  if (active && stabilizing) return "mixed";
+  if (active) return "active_leaning";
+  if (stabilizing) return "stabilizing_leaning";
+  return "unknown";
+}
+
+function summarizeExposureItem(item) {
+  const evaluatorReasons = Array.isArray(item?.evaluation?.hardFilterReasons)
+    ? item.evaluation.hardFilterReasons.map(reasonToKey).sort()
+    : [];
+  const guardReasons = Array.isArray(item?.recentInstabilityGuardPolicy?.reasons)
+    ? [...item.recentInstabilityGuardPolicy.reasons].sort()
+    : [];
+  const exposureReasons = Array.isArray(item?.exposurePolicy?.reasons)
+    ? [...item.exposurePolicy.reasons].sort()
+    : [];
+  const guardContext = item?.recentInstabilityGuardPolicy?.policyContext || {};
+  const exposureContext = item?.exposurePolicy?.policyContext || {};
+
+  return {
+    productId: item?.productId || null,
+    category: item?.category || "unknown",
+    exposureStatus: item?.exposurePolicy?.exposureStatus || "unknown",
+    safetyMetadataProfile: safetyMetadataProfileFromItem(item),
+    functionalProfile: functionalProfileFromItem(item),
+    candidateConfidence: item?.evaluation?.confidence || "unknown",
+    evaluatorHardFilterStatus: item?.evaluation?.hardFilterStatus || null,
+    evaluatorHardFilterReasons: evaluatorReasons,
+    recentInstabilityGuardDecision: item?.recentInstabilityGuardPolicy?.decision || null,
+    recentInstabilityGuardLevel: item?.recentInstabilityGuardPolicy?.guardLevel || null,
+    recentInstabilityGuardReasons: guardReasons,
+    exposurePolicyReasons: exposureReasons,
+    blockedBy: {
+      evaluator: item?.evaluation?.hardFilterStatus === "blocked",
+      guardHardBlock: item?.recentInstabilityGuardPolicy?.decision === "hard_block_candidate"
+    },
+    safetyContext: {
+      highSensitivity: guardContext.highSensitivity === true,
+      recentInstability: guardContext.recentInstability === true
+    },
+    currentProductRelation: exposureContext.currentProductRelation || null,
+    currentProductSourceState: exposureContext.currentProductSourceState || null
+  };
+}
+
+function candidateReviewsFromAudit(audit) {
+  return [
+    ...(audit.primaryCandidates || []),
+    ...(audit.contextualCandidates || []),
+    ...(audit.collapsedCandidates || []),
+    ...(audit.hiddenCandidates || []),
+    ...(audit.insufficientEvidenceCandidates || [])
+  ]
+    .map(summarizeExposureItem)
+    .sort((left, right) => {
+      const statusDelta = String(left.exposureStatus).localeCompare(String(right.exposureStatus));
+      if (statusDelta) return statusDelta;
+      return String(left.productId || "").localeCompare(String(right.productId || ""));
+    });
+}
+
 async function listCaptureFiles() {
-  const entries = await readdir(CAPTURE_DIR, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .filter((name) => name.endsWith(".json") && !NON_CAPTURE_JSON.has(name))
-    .sort()
-    .map((name) => path.join(CAPTURE_DIR, name));
+  try {
+    const entries = await readdir(CAPTURE_DIR, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => name.endsWith(".json") && !NON_CAPTURE_JSON.has(name))
+      .sort()
+      .map((name) => path.join(CAPTURE_DIR, name));
+  } catch {
+    return [];
+  }
 }
 
 function surveyContractFromFixture(fixture) {
@@ -192,7 +318,10 @@ for (const filePath of files) {
     },
     exposureStatusDistribution: audit.summary.exposureStatusDistribution,
     categoryDistribution: audit.summary.categoryDistribution,
-    safetyMetadataProfileDistribution: audit.summary.safetyMetadataProfileDistribution
+    safetyMetadataProfileDistribution: audit.summary.safetyMetadataProfileDistribution,
+    functionalProfileDistribution: audit.summary.functionalProfileDistribution,
+    currentProductRelationDistribution: audit.summary.currentProductRelationDistribution,
+    candidateReviews: candidateReviewsFromAudit(audit)
   });
 }
 

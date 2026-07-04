@@ -32,7 +32,8 @@ async function listCaptureFiles() {
         "safety-review-packet.json",
         "safety-review-analysis.json",
         "recent-instability-guard-matrix.json",
-        "candidate-exposure-audit.json"
+        "candidate-exposure-audit.json",
+        "exposure-readiness-review.json"
       ].includes(name))
       .sort()
       .map((name) => path.join(CAPTURE_DIR, name));
