@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-06 / evaluator hard block boundary review phase 15
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow policy review helper and report
+- Routing decision: User requested analysis of `safe_low_risk` hidden candidates blocked by evaluator `recent_instability_active_limited`. Runtime evaluator changes, hard-filter/score/weight changes, CandidatePolicy runtime changes, route/API/UI/DB/Supabase changes, product edits, capture fixture source mutation, and existing recommendation output changes were out of scope.
+- Goal: Add a pure `reviewFunctionalEvaluatorHardBlocks()` helper, runner, verifier, and review document to classify whether the current evaluator hard-block boundary looks appropriate, overbroad, metadata-limited, or under-evidenced.
+- Changed files: lib/functional-evaluator-hard-block-review.js, scripts/review-functional-evaluator-hard-blocks.mjs, scripts/verify-functional-evaluator-hard-block-review.mjs, docs/reviews/functional-evaluator-hard-block-review-20260703.md, lib/functional-candidate-exposure-audit.js, scripts/run-functional-candidate-exposure-audit.mjs, scripts/replay-functional-shadow-captures.mjs, scripts/run-recent-instability-guard-matrix.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking runtime evaluator behavior, hard-filter/score/weight, existing `functional-candidate-policy.js` runtime behavior, Functional Plan UI, product data, topPick/supporting/budget, or raw capture fixture source changes.
+- Validation: `node scripts/review-functional-evaluator-hard-blocks.mjs`, `node scripts/verify-functional-evaluator-hard-block-review.mjs`, exposure audit/readiness scripts, shadow/matrix/safety/ranking/goal/survey verifier scripts, `npm run build`, and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Target reviewed cases: 50. `recent_instability_active_limited` rate: 1.0. All target cases are evaluator-only hard blocks with no guard hard-block overlap. Category distribution: moisturizer 17, essence 9, toner_pad 8, sunscreen 7, cleanser 5, treatment 4. Functional profile: mixed 50. Safety context: both high sensitivity and recent instability 50. Product metadata is favorable in the target slice: irritation risk low 50, sensitivity safe true 50, profile evaluable true 50. Assessment: `possible_evaluator_overblocking`.
+- Context promotion candidate: Do not change the evaluator yet. Open a targeted evaluator hard-block boundary policy task before any runtime hard-filter adjustment.
+
 ### 2026-07-06 / candidate-level exposure evidence artifact phase 14
 
 - Branch: codex/survey-input-contract-refactor

@@ -44,7 +44,9 @@ const NON_CAPTURE_JSON = new Set([
   "safety-review-packet.json",
   "safety-review-analysis.json",
   "recent-instability-guard-matrix.json",
-  "candidate-exposure-audit.json"
+  "candidate-exposure-audit.json",
+  "exposure-readiness-review.json",
+  "evaluator-hard-block-review.json"
 ]);
 
 export function buildRecentInstabilityGuardMatrixContexts() {

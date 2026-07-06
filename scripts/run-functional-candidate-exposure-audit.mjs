@@ -6,6 +6,7 @@ const CAPTURE_DIR = process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
   path.join(process.cwd(), "tmp", "functional-shadow-captures");
 const JSON_OUTPUT = path.join(CAPTURE_DIR, "candidate-exposure-audit.json");
 const MD_OUTPUT = path.join(CAPTURE_DIR, "candidate-exposure-audit.md");
+const REPLAY_SUMMARY_PATH = path.join(CAPTURE_DIR, "replay-summary.json");
 const NON_CAPTURE_JSON = new Set([
   "replay-summary.json",
   "aggregate-summary.json",
@@ -15,7 +16,8 @@ const NON_CAPTURE_JSON = new Set([
   "safety-review-analysis.json",
   "recent-instability-guard-matrix.json",
   "candidate-exposure-audit.json",
-  "exposure-readiness-review.json"
+  "exposure-readiness-review.json",
+  "evaluator-hard-block-review.json"
 ]);
 
 function increment(map, key, amount = 1) {
@@ -136,6 +138,26 @@ async function listCaptureFiles() {
   }
 }
 
+async function readJsonIfPresent(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function comparisonConfidenceByCaptureId(replaySummary = {}) {
+  const lookup = new Map();
+
+  for (const result of Array.isArray(replaySummary?.results) ? replaySummary.results : []) {
+    if (result?.captureId) {
+      lookup.set(result.captureId, result?.comparison?.comparisonSummary?.comparisonConfidence || "unknown");
+    }
+  }
+
+  return lookup;
+}
+
 function surveyContractFromFixture(fixture) {
   return {
     skinState: fixture?.survey?.skinState || {},
@@ -190,6 +212,8 @@ function renderMarkdown(summary) {
 }
 
 const files = await listCaptureFiles();
+const replaySummary = await readJsonIfPresent(REPLAY_SUMMARY_PATH);
+const confidenceByCaptureId = comparisonConfidenceByCaptureId(replaySummary);
 const fixtureAudits = [];
 const excludedFixtures = [];
 const aggregate = {
@@ -275,6 +299,7 @@ for (const filePath of files) {
   const candidateReviewRows = candidateReviewsFromAudit(audit);
   fixtureAudits.push({
     captureId: fixture.captureId || null,
+    comparisonConfidence: confidenceByCaptureId.get(fixture.captureId) || "unknown",
     sourceStage: candidateSource.sourceStage || "unknown",
     sourceCount: candidateSource.sourceCount || products.length,
     rankingContext: audit.summary.rankingContext,
