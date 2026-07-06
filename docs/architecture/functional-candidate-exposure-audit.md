@@ -59,6 +59,7 @@ No DB query, Supabase call, UI transformation, or recommendation replacement occ
   collapsedCandidates,
   hiddenCandidates,
   insufficientEvidenceCandidates,
+  candidateReviewRows,
   summary
 }
 ```
@@ -71,6 +72,30 @@ Each candidate item contains:
 - `evaluation`
 - `recentInstabilityGuardPolicy`
 - `exposurePolicy`
+
+`candidateReviewRows` is the sanitized candidate-level evidence artifact used by readiness review. Each row contains only audit-safe fields:
+
+- `productId`
+- `category`
+- `exposureStatus`
+- `visibilityPriority`
+- `userMessageType`
+- `evaluationStatus`
+- `hardFilterStatus`
+- `hardFilterReasons`
+- `guardDecision`
+- `guardLevel`
+- `guardReasons`
+- `implementationHint`
+- `confidence`
+- `safetyMetadataProfile`
+- `functionalProfile`
+- `rankingGoal`
+- `safetyGoal`
+- `recommendationGuard`
+- `currentProductRelation`
+
+Rows are sorted deterministically by exposure status, category, and product id. Product name, brand, purchase URL, raw review text, raw form, image data, and PII are not included.
 
 ## Exposure Groups
 
@@ -132,6 +157,16 @@ It excludes final-results-only fixtures and writes ignored local outputs:
 
 - `tmp/functional-shadow-captures/candidate-exposure-audit.json`
 - `tmp/functional-shadow-captures/candidate-exposure-audit.md`
+
+The JSON artifact includes fixture-level `candidateReviewRows` and aggregate reason distributions:
+
+- `candidateReviewRowCount`
+- `hiddenReasonDistribution`
+- `collapsedReasonDistribution`
+- `hiddenBySafetyMetadataProfile`
+- `collapsedBySafetyMetadataProfile`
+
+These fields let `review-functional-exposure-readiness.mjs` separate evaluator hard blocks from guard hard-block candidates and explain `safe_low_risk` hidden cases without reading raw product rows.
 
 ## Group Distribution Interpretation
 

@@ -11,8 +11,26 @@ function candidate(overrides = {}) {
     productId: overrides.productId || "candidate-a",
     category: overrides.category || "treatment",
     exposureStatus: overrides.exposureStatus || "hidden_candidate",
+    visibilityPriority: overrides.visibilityPriority || "hidden",
+    userMessageType: overrides.userMessageType || "hard_safety_guard_notice",
+    evaluationStatus: overrides.evaluationStatus || "blocked",
+    hardFilterStatus: overrides.hardFilterStatus || overrides.evaluatorHardFilterStatus || "blocked",
+    hardFilterReasons: overrides.hardFilterReasons || overrides.evaluatorHardFilterReasons || ["recent_instability_active_limited"],
+    guardDecision: overrides.guardDecision || overrides.recentInstabilityGuardDecision || "collapsed_exposure_candidate",
+    guardLevel: overrides.guardLevel || overrides.recentInstabilityGuardLevel || "low",
+    guardReasons: overrides.guardReasons || overrides.recentInstabilityGuardReasons || [
+      "active_functional_axis",
+      "recent_instability_detected",
+      "sensitivity_safe_true",
+      "low_irritation_risk"
+    ],
+    implementationHint: overrides.implementationHint || "future_collapsed_exposure",
+    confidence: overrides.confidence || "high",
     safetyMetadataProfile: overrides.safetyMetadataProfile || "safe_low_risk",
     functionalProfile: overrides.functionalProfile || "mixed",
+    rankingGoal: overrides.rankingGoal || "acne",
+    safetyGoal: overrides.safetyGoal || "redness",
+    recommendationGuard: overrides.recommendationGuard || "stabilize_first",
     candidateConfidence: "high",
     evaluatorHardFilterStatus: overrides.evaluatorHardFilterStatus || "blocked",
     evaluatorHardFilterReasons: overrides.evaluatorHardFilterReasons || ["recent_instability_active_limited"],
@@ -32,10 +50,11 @@ function candidate(overrides = {}) {
   };
 }
 
-function fixture({ captureId, confidence = "high", candidateReviews = [] }) {
+function fixture({ captureId, confidence = "high", candidateReviewRows = [], candidateReviews }) {
+  const rows = candidateReviews || candidateReviewRows;
   const counts = { primary: 0, contextual: 0, collapsed: 0, hidden: 0, insufficientEvidence: 0 };
 
-  for (const item of candidateReviews) {
+  for (const item of rows) {
     if (item.exposureStatus === "primary_candidate") counts.primary += 1;
     if (item.exposureStatus === "contextual_candidate") counts.contextual += 1;
     if (item.exposureStatus === "collapsed_candidate") counts.collapsed += 1;
@@ -47,17 +66,17 @@ function fixture({ captureId, confidence = "high", candidateReviews = [] }) {
     captureId,
     comparisonConfidence: confidence,
     sourceStage: "post_score",
-    sourceCount: candidateReviews.length,
+    sourceCount: rows.length,
     rankingContext: { rankingGoal: "acne", safetyGoal: "redness", recommendationGuard: "stabilize_first" },
     counts,
-    candidateReviews
+    ...(candidateReviews ? { candidateReviews } : { candidateReviewRows: rows })
   };
 }
 
 function sampleData() {
   const highA = fixture({
     captureId: "capture-high-a",
-    candidateReviews: [
+    candidateReviewRows: [
       candidate({ productId: "hidden-safe-a", category: "treatment", functionalProfile: "mixed" }),
       candidate({
         productId: "collapsed-safe-a",
@@ -85,7 +104,7 @@ function sampleData() {
   });
   const highB = fixture({
     captureId: "capture-high-b",
-    candidateReviews: [
+    candidateReviewRows: [
       candidate({
         productId: "hidden-safe-b",
         category: "toner_pad",
@@ -123,7 +142,7 @@ function sampleData() {
   const low = fixture({
     captureId: "capture-low",
     confidence: "low",
-    candidateReviews: [
+    candidateReviewRows: [
       candidate({
         productId: "low-confidence-hidden",
         category: "serum",
@@ -175,16 +194,23 @@ runCase("safe_low_risk hidden reason breakdown is exact", () => {
   assert.equal(review.hiddenReasonReview.safeLowRiskHiddenReasonDistribution.recent_instability_active_limited, 2);
   assert.equal(review.hiddenReasonReview.safeLowRiskHiddenByCategory.treatment, 1);
   assert.equal(review.hiddenReasonReview.safeLowRiskHiddenByCategory.toner_pad, 1);
+  assert.equal(review.hiddenReasonReview.safeLowRiskHiddenByRankingGoal.acne, 2);
+  assert.equal(review.hiddenReasonReview.safeLowRiskHiddenBySafetyGoal.redness, 2);
+  assert.equal(review.hiddenReasonReview.safeLowRiskHiddenByRecommendationGuard.stabilize_first, 2);
 });
 
 runCase("evaluator blocked and guard hard block are separated", () => {
   assert.equal(review.hiddenReasonReview.hiddenBlockedSourceDistribution.evaluator_blocked, 2);
   assert.equal(review.hiddenReasonReview.hiddenBlockedSourceDistribution.guard_hard_block_candidate, 1);
+  assert.equal(review.hiddenReasonReview.safeLowRiskHiddenBlockedSourceDistribution.evaluator_blocked, 2);
+  assert.equal(review.hiddenReasonReview.safeLowRiskHiddenBlockedSourceDistribution.guard_hard_block_candidate, undefined);
 });
 
 runCase("collapsed and hidden do not overlap", () => {
   assert.equal(review.collapsedReview.collapsedCount, 2);
   assert.equal(review.collapsedReview.collapsedHiddenOverlapCount, 0);
+  assert.equal(review.collapsedReview.collapsedGuardDecisionDistribution.collapsed_exposure_candidate, 2);
+  assert.equal(review.collapsedReview.collapsedImplementationHintDistribution.future_collapsed_exposure, 2);
 });
 
 runCase("duplicate and supports_goal context does not flip collapsed to hidden", () => {
@@ -211,6 +237,21 @@ runCase("sample shortage cannot be ready", () => {
   });
 
   assert.equal(scarce.integrationReadiness.status, "insufficient_evidence");
+});
+
+runCase("legacy candidateReviews artifact remains supported with limitation-free review rows", () => {
+  const legacyFixture = fixture({
+    captureId: "legacy-high",
+    candidateReviews: [candidate({ productId: "legacy-hidden" })]
+  });
+  const legacy = reviewFunctionalExposureReadiness({
+    exposureAudit: { auditVersion: "legacy", fixtureAudits: [legacyFixture] },
+    replaySummary: { results: [] },
+    options: { includedConfidence: ["high"], minimumCaptureCount: 1, minimumGroupCount: 1 }
+  });
+
+  assert.equal(legacy.aggregate.reviewedCandidateCount, 1);
+  assert.equal(legacy.limitations.includes("candidate_review_rows_missing_run_exposure_audit_with_candidate_reviews"), false);
 });
 
 runCase("output excludes raw form, image, PII, product name, brand, URL, and review text", () => {

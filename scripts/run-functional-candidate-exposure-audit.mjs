@@ -93,80 +93,33 @@ function reasonToKey(reason) {
     .slice(0, 80) || "unknown_reason";
 }
 
-function safetyMetadataProfileFromItem(item) {
-  const context = item?.recentInstabilityGuardPolicy?.policyContext || {};
-
-  if (context.productSafetyMetadataComplete === false) return "metadata_incomplete";
-  if (context.sensitivitySafe === true && context.irritationRisk === "low") return "safe_low_risk";
-  if (context.sensitivitySafe === true && context.irritationRisk === "medium") return "safe_medium_risk";
-  if (context.sensitivitySafe === false && context.irritationRisk === "high") return "unsafe_high_risk";
-  return "mixed_or_uncertain";
-}
-
-function functionalProfileFromItem(item) {
-  const context = item?.recentInstabilityGuardPolicy?.policyContext || {};
-  const active = context.activeAxisPresent === true;
-  const stabilizing = context.stabilizingAxisPresent === true;
-
-  if (active && stabilizing) return "mixed";
-  if (active) return "active_leaning";
-  if (stabilizing) return "stabilizing_leaning";
-  return "unknown";
-}
-
-function summarizeExposureItem(item) {
-  const evaluatorReasons = Array.isArray(item?.evaluation?.hardFilterReasons)
-    ? item.evaluation.hardFilterReasons.map(reasonToKey).sort()
-    : [];
-  const guardReasons = Array.isArray(item?.recentInstabilityGuardPolicy?.reasons)
-    ? [...item.recentInstabilityGuardPolicy.reasons].sort()
-    : [];
-  const exposureReasons = Array.isArray(item?.exposurePolicy?.reasons)
-    ? [...item.exposurePolicy.reasons].sort()
-    : [];
-  const guardContext = item?.recentInstabilityGuardPolicy?.policyContext || {};
-  const exposureContext = item?.exposurePolicy?.policyContext || {};
-
-  return {
-    productId: item?.productId || null,
-    category: item?.category || "unknown",
-    exposureStatus: item?.exposurePolicy?.exposureStatus || "unknown",
-    safetyMetadataProfile: safetyMetadataProfileFromItem(item),
-    functionalProfile: functionalProfileFromItem(item),
-    candidateConfidence: item?.evaluation?.confidence || "unknown",
-    evaluatorHardFilterStatus: item?.evaluation?.hardFilterStatus || null,
-    evaluatorHardFilterReasons: evaluatorReasons,
-    recentInstabilityGuardDecision: item?.recentInstabilityGuardPolicy?.decision || null,
-    recentInstabilityGuardLevel: item?.recentInstabilityGuardPolicy?.guardLevel || null,
-    recentInstabilityGuardReasons: guardReasons,
-    exposurePolicyReasons: exposureReasons,
-    blockedBy: {
-      evaluator: item?.evaluation?.hardFilterStatus === "blocked",
-      guardHardBlock: item?.recentInstabilityGuardPolicy?.decision === "hard_block_candidate"
-    },
-    safetyContext: {
-      highSensitivity: guardContext.highSensitivity === true,
-      recentInstability: guardContext.recentInstability === true
-    },
-    currentProductRelation: exposureContext.currentProductRelation || null,
-    currentProductSourceState: exposureContext.currentProductSourceState || null
-  };
-}
-
 function candidateReviewsFromAudit(audit) {
-  return [
-    ...(audit.primaryCandidates || []),
-    ...(audit.contextualCandidates || []),
-    ...(audit.collapsedCandidates || []),
-    ...(audit.hiddenCandidates || []),
-    ...(audit.insufficientEvidenceCandidates || [])
-  ]
-    .map(summarizeExposureItem)
-    .sort((left, right) => {
-      const statusDelta = String(left.exposureStatus).localeCompare(String(right.exposureStatus));
-      if (statusDelta) return statusDelta;
-      return String(left.productId || "").localeCompare(String(right.productId || ""));
-    });
+  return Array.isArray(audit?.candidateReviewRows) ? audit.candidateReviewRows : [];
+}
+
+function addReasons(target, reasons = [], amount = 1) {
+  for (const reason of Array.isArray(reasons) ? reasons : []) {
+    increment(target, reason, amount);
+  }
+}
+
+function addReviewRowsToAggregate(aggregate, rows = []) {
+  for (const row of rows) {
+    aggregate.candidateReviewRowCount += 1;
+
+    if (row.exposureStatus === "hidden_candidate") {
+      addReasons(aggregate.hiddenReasonDistribution, row.hardFilterReasons);
+      addReasons(aggregate.hiddenReasonDistribution, row.guardReasons);
+      addReasons(aggregate.hiddenReasonDistribution, row.exposureReasons);
+      increment(aggregate.hiddenBySafetyMetadataProfile, row.safetyMetadataProfile);
+    }
+
+    if (row.exposureStatus === "collapsed_candidate") {
+      addReasons(aggregate.collapsedReasonDistribution, row.guardReasons);
+      addReasons(aggregate.collapsedReasonDistribution, row.exposureReasons);
+      increment(aggregate.collapsedBySafetyMetadataProfile, row.safetyMetadataProfile);
+    }
+  }
 }
 
 async function listCaptureFiles() {
@@ -210,6 +163,7 @@ function renderMarkdown(summary) {
     `- complete captures: ${summary.completeCaptureCount}`,
     `- excluded fixtures: ${summary.excludedFixtureCount}`,
     `- total evaluated product rows: ${summary.totalEvaluatedProductRows}`,
+    `- candidate review rows: ${summary.candidateReviewRowCount}`,
     `- primary/contextual/collapsed/hidden/insufficient: ${summary.totalPrimaryCount}/${summary.totalContextualCount}/${summary.totalCollapsedCount}/${summary.totalHiddenCount}/${summary.totalInsufficientEvidenceCount}`,
     "",
     ...renderDistribution("Exposure Status Distribution", summary.exposureStatusDistribution),
@@ -217,6 +171,14 @@ function renderMarkdown(summary) {
     ...renderDistribution("Category Distribution", summary.categoryDistribution),
     "",
     ...renderDistribution("Safety Metadata Profile Distribution", summary.safetyMetadataProfileDistribution),
+    "",
+    ...renderDistribution("Hidden Reason Distribution", summary.hiddenReasonDistribution),
+    "",
+    ...renderDistribution("Collapsed Reason Distribution", summary.collapsedReasonDistribution),
+    "",
+    ...renderDistribution("Hidden By Safety Metadata Profile", summary.hiddenBySafetyMetadataProfile),
+    "",
+    ...renderDistribution("Collapsed By Safety Metadata Profile", summary.collapsedBySafetyMetadataProfile),
     "",
     ...renderDistribution("Functional Profile Distribution", summary.functionalProfileDistribution),
     "",
@@ -240,6 +202,11 @@ const aggregate = {
   totalCollapsedCount: 0,
   totalHiddenCount: 0,
   totalInsufficientEvidenceCount: 0,
+  candidateReviewRowCount: 0,
+  hiddenReasonDistribution: {},
+  collapsedReasonDistribution: {},
+  hiddenBySafetyMetadataProfile: {},
+  collapsedBySafetyMetadataProfile: {},
   exposureStatusDistribution: {},
   userMessageTypeDistribution: {},
   guardLevelDistribution: {},
@@ -304,6 +271,8 @@ for (const filePath of files) {
   mergeGroupedDistribution(aggregate.functionalProfileDistribution, audit.summary.functionalProfileDistribution);
   mergeGroupedDistribution(aggregate.safetyMetadataProfileDistribution, audit.summary.safetyMetadataProfileDistribution);
   mergeGroupedDistribution(aggregate.currentProductRelationDistribution, audit.summary.currentProductRelationDistribution);
+  addReviewRowsToAggregate(aggregate, audit.candidateReviewRows);
+  const candidateReviewRows = candidateReviewsFromAudit(audit);
   fixtureAudits.push({
     captureId: fixture.captureId || null,
     sourceStage: candidateSource.sourceStage || "unknown",
@@ -321,12 +290,17 @@ for (const filePath of files) {
     safetyMetadataProfileDistribution: audit.summary.safetyMetadataProfileDistribution,
     functionalProfileDistribution: audit.summary.functionalProfileDistribution,
     currentProductRelationDistribution: audit.summary.currentProductRelationDistribution,
-    candidateReviews: candidateReviewsFromAudit(audit)
+    candidateReviewRows,
+    candidateReviews: candidateReviewRows
   });
 }
 
 aggregate.excludedFixtureCount = excludedFixtures.length;
 aggregate.excludedFixturesByReason = sortObject(aggregate.excludedFixturesByReason);
+aggregate.hiddenReasonDistribution = sortObject(aggregate.hiddenReasonDistribution);
+aggregate.collapsedReasonDistribution = sortObject(aggregate.collapsedReasonDistribution);
+aggregate.hiddenBySafetyMetadataProfile = sortObject(aggregate.hiddenBySafetyMetadataProfile);
+aggregate.collapsedBySafetyMetadataProfile = sortObject(aggregate.collapsedBySafetyMetadataProfile);
 aggregate.exposureStatusDistribution = sortObject(aggregate.exposureStatusDistribution);
 aggregate.userMessageTypeDistribution = sortObject(aggregate.userMessageTypeDistribution);
 aggregate.guardLevelDistribution = sortObject(aggregate.guardLevelDistribution);
@@ -354,6 +328,7 @@ console.log(JSON.stringify({
   completeCaptureCount: aggregate.completeCaptureCount,
   excludedFixtureCount: aggregate.excludedFixtureCount,
   totalEvaluatedProductRows: aggregate.totalEvaluatedProductRows,
+  candidateReviewRowCount: aggregate.candidateReviewRowCount,
   primary: aggregate.totalPrimaryCount,
   contextual: aggregate.totalContextualCount,
   collapsed: aggregate.totalCollapsedCount,
@@ -362,6 +337,10 @@ console.log(JSON.stringify({
   exposureStatusDistribution: aggregate.exposureStatusDistribution,
   categoryDistribution: aggregate.categoryDistribution,
   safetyMetadataProfileDistribution: aggregate.safetyMetadataProfileDistribution,
+  hiddenReasonDistribution: aggregate.hiddenReasonDistribution,
+  collapsedReasonDistribution: aggregate.collapsedReasonDistribution,
+  hiddenBySafetyMetadataProfile: aggregate.hiddenBySafetyMetadataProfile,
+  collapsedBySafetyMetadataProfile: aggregate.collapsedBySafetyMetadataProfile,
   currentProductRelationDistribution: aggregate.currentProductRelationDistribution,
   policyNotes: aggregate.policyNotes
 }, null, 2));

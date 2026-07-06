@@ -1,5 +1,16 @@
 # AI_WORK_LOG.md
 
+### 2026-07-06 / candidate-level exposure evidence artifact phase 14
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow artifact evidence enrichment
+- Routing decision: User requested candidate-level review rows for exposure audit artifacts so readiness review can analyze safe-low-risk hidden and collapsed reason breakdowns. Route/API changes, existing recommendation changes, runtime CandidatePolicy changes, functional evaluator hard-filter/score/weight changes, UI/DB/Supabase/product edits, capture fixture mutation, and user-facing ranking exposure were out of scope.
+- Goal: Add sanitized `candidateReviewRows` to `buildFunctionalCandidateExposureAudit()`, persist them in `candidate-exposure-audit.json`, and update readiness review to consume candidate-level reason evidence.
+- Changed files: lib/functional-candidate-exposure-audit.js, scripts/run-functional-candidate-exposure-audit.mjs, lib/functional-exposure-readiness-review.js, scripts/review-functional-exposure-readiness.mjs, scripts/verify-functional-candidate-exposure-audit.mjs, scripts/verify-functional-exposure-readiness-review.mjs, docs/architecture/functional-candidate-exposure-audit.md, .codex/AI_WORK_LOG.md
+- Protected areas: No UI, API response field names, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking runtime evaluator behavior, hard-filter/score/weight, existing `functional-candidate-policy.js` runtime behavior, Functional Plan UI, product data, or capture fixture source mutation.
+- Validation: `node scripts/run-functional-candidate-exposure-audit.mjs`, `node scripts/review-functional-exposure-readiness.mjs`, exposure audit/readiness verifier scripts, existing shadow/matrix/safety/ranking/goal/survey verifier scripts, `npm run build`, and `git diff --check` passed. Node emitted the existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Context promotion candidate: Candidate-level exposure evidence is shadow artifact data only. Runtime CandidatePolicy integration still requires separate approval and must not infer product quality from hidden or insufficient-evidence buckets.
+
 ### 2026-07-05 / SEC-01 analysis request guard
 
 - Branch: codex/survey-input-contract-refactor

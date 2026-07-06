@@ -66,6 +66,11 @@ runCase("primary candidate is included when eligible with no guard", () => {
 
   assert.equal(output.primaryCandidates.length, 1);
   assert.equal(output.primaryCandidates[0].exposurePolicy.exposureStatus, "primary_candidate");
+  assert.equal(output.candidateReviewRows.length, output.summary.evaluatedCount);
+  assert.equal(output.candidateReviewRows[0].productId, "primary");
+  assert.equal(output.candidateReviewRows[0].exposureStatus, "primary_candidate");
+  assert.equal(output.candidateReviewRows[0].visibilityPriority, "high");
+  assert.equal(output.candidateReviewRows[0].hardFilterStatus, "pass");
 });
 
 runCase("contextual candidate keeps caution message", () => {
@@ -87,6 +92,9 @@ runCase("safe low-risk recent-instability candidate is collapsed, not primary or
   assert.equal(output.collapsedCandidates.length, 1);
   assert.equal(output.primaryCandidates.length, 0);
   assert.equal(output.hiddenCandidates.length, 0);
+  assert.equal(output.candidateReviewRows[0].guardDecision, "collapsed_exposure_candidate");
+  assert.equal(output.candidateReviewRows[0].implementationHint, "future_collapsed_exposure");
+  assert.ok(output.candidateReviewRows[0].guardReasons.includes("recent_instability_detected"));
 });
 
 runCase("blocked or hard-block candidate is hidden and not collapsed", () => {
@@ -102,6 +110,9 @@ runCase("blocked or hard-block candidate is hidden and not collapsed", () => {
 
   assert.equal(output.hiddenCandidates.length, 1);
   assert.equal(output.collapsedCandidates.length, 0);
+  assert.equal(output.candidateReviewRows[0].exposureStatus, "hidden_candidate");
+  assert.equal(output.candidateReviewRows[0].hardFilterStatus, "blocked");
+  assert.ok(output.candidateReviewRows[0].hardFilterReasons.length > 0);
 });
 
 runCase("insufficient evidence is not hidden", () => {
@@ -117,6 +128,8 @@ runCase("insufficient evidence is not hidden", () => {
 
   assert.equal(output.insufficientEvidenceCandidates.length, 1);
   assert.equal(output.hiddenCandidates.length, 0);
+  assert.equal(output.candidateReviewRows[0].exposureStatus, "insufficient_evidence_candidate");
+  assert.notEqual(output.candidateReviewRows[0].exposureStatus, "hidden_candidate");
 });
 
 runCase("evaluator hard block wins over collapsed policy candidate", () => {
@@ -199,6 +212,13 @@ runCase("complete fixture runner targets complete captures and excludes final-on
   assert.ok(stdout.includes("functional-candidate-exposure-audit summary"));
   assert.ok(stdout.includes("\"completeCaptureCount\": 10"));
   assert.ok(stdout.includes("\"excludedFixtureCount\": 10"));
+  assert.ok(stdout.includes("\"candidateReviewRowCount\": 1640"));
+  const artifact = JSON.parse(readFileSync("tmp/functional-shadow-captures/candidate-exposure-audit.json", "utf8"));
+  assert.equal(artifact.aggregate.candidateReviewRowCount, artifact.aggregate.totalEvaluatedProductRows);
+  assert.ok(Array.isArray(artifact.fixtureAudits[0].candidateReviewRows));
+  assert.equal(artifact.fixtureAudits[0].candidateReviewRows.length, 164);
+  assert.ok(artifact.aggregate.hiddenReasonDistribution.candidate_evaluator_blocked >= 1);
+  assert.ok(artifact.aggregate.collapsedReasonDistribution.guard_policy_collapsed_exposure_candidate >= 1);
 });
 
 runCase("helper and runner are not wired into route, evaluator, existing CandidatePolicy, or UI", () => {
