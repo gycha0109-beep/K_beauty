@@ -1,5 +1,41 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / Phase 25 pure engine replay with read-only product source
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit diagnostic / Medium pure engine replay evidence expansion
+- Routing decision: User requested rerunning Phase 22 pure engine replay using the Phase 24 read-only Supabase product source. Runtime changes, `/api/analyze` invocation, evaluator hard-filter/score/weight changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, synthetic products, and actual capture mixing were out of scope.
+- Goal: Safely load `.env.local` without printing values, use `getRecommendationProducts()` as the read-only scorer-compatible product source, and rerun the four Phase 19 target scenarios as `pure_engine_replay` evidence only.
+- Changed files: scripts/run-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-replay-readonly-source.mjs, docs/reviews/evaluator-boundary-pure-engine-readonly-replay-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The runner does not call `/api/analyze`.
+- Validation: `node scripts/run-pure-engine-target-scenario-replay.mjs`, `node scripts/verify-pure-engine-target-scenario-replay.mjs`, and `node scripts/verify-pure-engine-replay-readonly-source.mjs` passed. The replay artifact records `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, `envValuesPrinted=false`, `productSource=getRecommendationProducts_read_only`, and `syntheticProductsUsed=false`. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: Read-only source loaded 164 product rows and 164 scorer-compatible rows. All four target scenarios succeeded with 164 candidate rows each, 656 total candidate rows, and 258 boundary-applicable rows. `safeLowRiskHidden` was observed with 150 rows, all `downgrade_to_collapsed_candidate`; `serumCategory` was observed with 168 rows and 66 boundary-applicable rows; `activeLeaningOnly`, `metadataIncomplete`, and `strongCaution` remained not observed. `highRiskCollapsedCount` stayed 0.
+- Context promotion candidate: Phase 25 replay evidence can inform the next boundary review, but it remains pure replay evidence and must not be counted as actual complete/product_row capture evidence. Runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
+### 2026-07-09 / Phase 24 product source config trace and read-only availability
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / Medium product source missing_config trace
+- Routing decision: User requested diagnosis of why Phase 23 `getRecommendationProducts()` returned `missing_config`, plus read-only availability checking. Runtime changes, `/api/analyze` invocation, evaluator changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, synthetic products, and Phase 25 replay execution were out of scope.
+- Goal: Trace the product source config path, identify required env key names without printing values, compare route vs direct script product loading, and verify whether current checkout can load read-only scorer-compatible product rows.
+- Changed files: scripts/trace-product-source-config.mjs, scripts/verify-product-source-config-trace.mjs, docs/reviews/product-source-config-trace-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, or recommendation output change. The Phase 24 runner does not call `/api/analyze`.
+- Validation: `node scripts/trace-product-source-config.mjs` passed and wrote trace artifacts with `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticProductsUsed=false`. `node scripts/verify-product-source-config-trace.mjs` passed after narrowing a false-positive secret-leak verifier pattern that matched the allowed key name `SUPABASE_SERVICE_ROLE_KEY`. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: `getSupabaseConfig()` needs one URL key (`SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`) and one anon key (`SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`). Product read-only source does not require service role. `.env.local` contains `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` key names, but direct Node Phase 23 did not load `.env.local`, causing `phase23_direct_node_process_env_missing_product_source_config`. Loading `.env.local` values without printing them made the read-only source available: 164 rows read, 164 scorer-compatible, service role not required.
+- Context promotion candidate: Phase 25 can rerun pure engine replay using the existing read-only `getRecommendationProducts()` source if the direct Node runner safely loads the URL/anon key env file without printing values. Continue to keep replay evidence separate from actual `/api/analyze` captures.
+
+### 2026-07-09 / Phase 23 read-only scorer-compatible product source extraction
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / Medium read-only product source boundary inspection
+- Routing decision: User requested investigation of the legacy decision engine scorer product-row contract and whether an existing read-only product source can provide scorer-compatible rows. Runtime changes, `/api/analyze` invocation, evaluator changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, synthetic products, and mixing actual capture with replay evidence were out of scope.
+- Goal: Identify current scorer-compatible product row requirements and add a no-write verifier for `getRecommendationProducts()` source extraction.
+- Changed files: scripts/inspect-read-only-scorer-compatible-product-source.mjs, scripts/verify-read-only-scorer-compatible-product-source.mjs, docs/reviews/read-only-scorer-compatible-product-source-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, or recommendation output change. The Phase 23 runner does not call `/api/analyze`.
+- Validation: `node scripts/inspect-read-only-scorer-compatible-product-source.mjs` passed and wrote a diagnostic artifact with `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticProductsUsed=false`. `node scripts/verify-read-only-scorer-compatible-product-source.mjs` passed and confirmed runtime files do not reference the inspection script. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: The scorer-compatible minimum is `id`, `name`, `brand`, and an authorized recommendation category resolved by `getProductCategorySlot`; `product_form` participates in serum/moisturizer subcategory authorization when present. Current local read-only source extraction returned `product_source_unavailable:missing_config`, so actual scorer-compatible rows were not obtained in this checkout and target scenario replay with extracted rows was skipped.
+- Context promotion candidate: Phase 23 should remain a source-availability gate. Do not treat source-unavailable or zero-row read-only extraction as functional policy evidence; rerun in an environment where `getRecommendationProducts()` can read product rows before expanding pure engine replay coverage.
+
 ### 2026-07-09 / evaluator boundary actual coverage collection phase 18
 
 - Branch: codex/survey-input-contract-refactor

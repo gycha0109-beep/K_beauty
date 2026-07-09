@@ -71,8 +71,14 @@ function assertReplayContract(artifact) {
   assert.equal(artifact.routeInvoked, false, "routeInvoked should be false");
   assert.equal(artifact.supabaseWriteExecuted, false, "supabaseWriteExecuted should be false");
   assert.equal(artifact.runtimeMutation, false, "runtimeMutation should be false");
+  assert.equal(artifact.envValuesPrinted, false, "env values should not be printed");
+  assert.equal(artifact.productSource, "getRecommendationProducts_read_only", "read-only product source should be used");
+  assert(Number.isInteger(artifact.productRowsLoaded), "productRowsLoaded should be recorded");
+  assert(Number.isInteger(artifact.scorerCompatibleRows), "scorerCompatibleRows should be recorded");
   assert.equal(artifact.productSourceSummary?.syntheticProductsUsed, false, "synthetic products should not be used");
   assert.equal(artifact.productSourceSummary?.routeInvoked, false, "product source summary should not claim route invocation");
+  assert.equal(artifact.productSourceSummary?.replayFallbackProductCount, 0, "sanitized capture fallback rows should not be mixed into Phase 25 replay");
+  assert.equal(artifact.productSourceSummary?.source, "getRecommendationProducts_read_only", "product source summary should identify read-only source");
 
   const scenarioIds = new Set((artifact.scenarioResults || []).map((scenario) => scenario.scenarioId));
   for (const scenarioId of REQUIRED_SCENARIOS) {
@@ -88,6 +94,10 @@ function assertReplayContract(artifact) {
 
   for (const scenario of artifact.scenarioResults) {
     assert(["succeeded", "failed"].includes(scenario.status), `invalid scenario status: ${scenario.status}`);
+    assert(Number.isInteger(scenario.productRowsLoaded), "scenario should record productRowsLoaded");
+    assert(Number.isInteger(scenario.scorerCompatibleRows), "scenario should record scorerCompatibleRows");
+    assert(Number.isInteger(scenario.candidateRows), "scenario should record candidateRows");
+    assert(Number.isInteger(scenario.boundaryApplicableRows), "scenario should record boundaryApplicableRows");
     if (scenario.status === "failed") {
       assert(scenario.failureReason, "failed scenario should have a failureReason");
     }
