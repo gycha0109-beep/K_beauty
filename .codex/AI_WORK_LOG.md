@@ -1651,6 +1651,18 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Synthetic fixtures were not treated as actual evidence. A future run requires an approved isolated dev DB/write path or an approved no-write dev route/guard bypass.
 - Context promotion candidate: Dev-only actual capture execution must not silently mutate guard/session stores when a task forbids DB/Supabase mutation; skipped capture with a precise reason is preferable to fabricating evidence.
 
+### 2026-07-09 / Phase 21 analyze no-write capture boundary design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / architecture documentation
+- Routing decision: Medium static boundary investigation scoped to `/api/analyze` no-write capture design. Runtime route behavior, evaluator logic, hard filters, ranking scores, CandidatePolicy runtime, UI/API response, DB/Supabase schema, product data, existing fixture originals, and existing recommendation outputs were out of scope.
+- Goal: Explain why Phase 20 stopped at `capture_run_not_executed_db_mutating_guard_path`, identify pure analysis/recommendation boundaries versus DB/session mutation boundaries, and compare future no-write capture options.
+- Changed files: scripts/inspect-analyze-no-write-boundary.mjs, scripts/verify-analyze-no-write-boundary.mjs, docs/architecture/analyze-no-write-capture-boundary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No `/api/analyze` runtime change, evaluator change, CandidatePolicy connection, UI/API response change, DB/Supabase change, product data change, capture fixture edit, actual API request, or Supabase remote write was performed.
+- Validation: `node scripts/inspect-analyze-no-write-boundary.mjs`, `node scripts/verify-analyze-no-write-boundary.mjs`, Phase 20 dev target verifier, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Static inspection found analysis guard RPC mutations before recommendation generation and premium report store insert/prune before the current shadow capture call. Recommended next step is a script-only pure engine replay runner before considering a route-level no-write mode.
+- Context promotion candidate: Future target capture work should prefer script-only pure engine replay for no-write evidence expansion unless exact route parity is explicitly required and a route-level no-write or isolated dev DB path is approved.
+
 ### 2026-06-22 / Hwahae ranking all-jobs and matrix audit
 
 - Branch: main
