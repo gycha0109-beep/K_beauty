@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / evaluator boundary coverage gap validation phase 17
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium synthetic policy coverage validation
+- Routing decision: User requested synthetic fixture validation for Phase 16 coverage gaps. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Validate `resolveEvaluatorRecentInstabilityBoundaryPolicy()` against synthetic active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata cases before any future runtime integration discussion.
+- Changed files: scripts/verify-evaluator-boundary-coverage-gaps.mjs, docs/reviews/evaluator-boundary-coverage-gaps-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: `node scripts/verify-evaluator-boundary-coverage-gaps.mjs` passed. Existing Phase 16 boundary verifier/runner, evaluator hard-block review, exposure audit/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Synthetic active-leaning-only safe metadata routes to `downgrade_to_collapsed_candidate`; active-leaning unsafe metadata and strong caution metadata preserve hard block; metadata gaps route to `requires_metadata_review`; serum category alone does not preserve hard block. This is synthetic policy coverage, not real runtime/user/product distribution evidence.
+- Context promotion candidate: Runtime evaluator/CandidatePolicy integration still needs separate approval plus actual high-confidence complete-capture coverage for active-leaning-only, metadata-incomplete, serum, and strong-caution cases.
+
 ### 2026-07-09 / evaluator recent-instability boundary shadow policy phase 16
 
 - Branch: codex/survey-input-contract-refactor
