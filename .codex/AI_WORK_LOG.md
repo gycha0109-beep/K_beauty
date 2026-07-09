@@ -1638,6 +1638,19 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Synthetic fixtures were not treated as actual evidence. The current complete/product_row captures expose 1,640 candidate rows but none of the four missing gap classes. Dev capture execution was not performed by the planner and remains a separate opt-in action with existing `/api/analyze` runtime dependencies.
 - Context promotion candidate: Targeted actual capture planning must distinguish actual complete capture evidence from synthetic policy coverage; missing gap observation is a product/candidate distribution limitation, not a policy approval.
 
+### 2026-07-09 / Phase 20 dev-only target scenario capture attempt
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / guarded runtime capture attempt
+- Routing decision: Medium dev-only capture runner and review artifact work. Runtime evaluator logic, CandidatePolicy runtime, API route, UI/API response, DB/Supabase schema, product data, existing fixture originals, and existing recommendation outputs were out of scope.
+- Goal: Attempt Phase 19 target scenarios through the existing dev-only `/api/analyze` capture path, then re-check actual coverage gaps.
+- Changed files: scripts/run-dev-target-scenario-captures.mjs, scripts/verify-dev-target-scenario-captures.mjs, docs/reviews/evaluator-boundary-dev-target-captures-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, hard filter, score, CandidatePolicy runtime, UI/API response, DB/Supabase schema, product data, or capture fixture originals were modified.
+- Result: Actual API execution was skipped with `capture_run_not_executed_db_mutating_guard_path` because the route path invokes analysis guard RPCs and premium report session store writes/prunes. New complete/product_row captures: 0. Actual coverage remains 10 complete captures, 1,640 candidate rows, 86 boundary-applicable rows, and the four Phase 18 gaps still unobserved. `safe_low_risk hidden` remains 50/50 `downgrade_to_collapsed_candidate`; high-risk collapsed count remains 0.
+- Validation: `node scripts/run-dev-target-scenario-captures.mjs`, `node scripts/verify-dev-target-scenario-captures.mjs`, Phase 19 planner/verifier, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Synthetic fixtures were not treated as actual evidence. A future run requires an approved isolated dev DB/write path or an approved no-write dev route/guard bypass.
+- Context promotion candidate: Dev-only actual capture execution must not silently mutate guard/session stores when a task forbids DB/Supabase mutation; skipped capture with a precise reason is preferable to fabricating evidence.
+
 ### 2026-06-22 / Hwahae ranking all-jobs and matrix audit
 
 - Branch: main
