@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / Phase 27 evaluator pass plus collapsed hint integration design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium integration contract and what-if review
+- Routing decision: User requested design-only evaluator pass plus collapsed hint integration and what-if shadow calculation after Phase 26 readiness. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Add a pure collapsed hint contract helper, compare integration options, and calculate actual vs pure replay what-if effects without connecting runtime paths.
+- Changed files: lib/evaluator-boundary-collapsed-hint-contract.js, scripts/run-evaluator-boundary-integration-whatif.mjs, scripts/verify-evaluator-boundary-integration-design.mjs, docs/architecture/evaluator-boundary-collapsed-hint-integration.md, docs/reviews/evaluator-boundary-integration-whatif-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The what-if runner did not call `/api/analyze`.
+- Validation: `node scripts/run-evaluator-boundary-integration-whatif.mjs` and `node scripts/verify-evaluator-boundary-integration-design.mjs` passed. The what-if artifact records `evidenceType=integration_whatif_shadow`, `runtimeConnected=false`, `routeInvoked=false`, `supabaseWriteExecuted=false`, and `runtimeMutation=false`.
+- Findings: Recommended option is Option B, evaluator pass plus collapsed hint. Actual what-if moves 52 rows from hidden to collapsed, including 50/50 safe-low-risk hidden rows, with 0 high-risk collapsed hints. Pure replay what-if moves 156 rows from hidden to collapsed, including 150/150 safe-low-risk hidden rows and 39 serum-family collapsed hints, with 0 high-risk collapsed hints. Actual capture, pure replay, and synthetic coverage evidence remain separated.
+- Context promotion candidate: Phase 28 may design CandidatePolicy hint receiver or expand shadow coverage, but runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
 ### 2026-07-09 / Phase 26 boundary replay readiness review
 
 - Branch: codex/survey-input-contract-refactor
