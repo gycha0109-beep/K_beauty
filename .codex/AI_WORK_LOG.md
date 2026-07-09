@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / Phase 29 runtime integration acceptance criteria
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium acceptance criteria and gate checklist
+- Routing decision: User requested design-only runtime integration acceptance criteria after Phase 16-28 boundary, collapsed hint, and CandidatePolicy receiver evidence. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Read Phase 26-28 artifacts, keep actual capture, pure replay, and synthetic coverage evidence separate, and freeze gate criteria for when a future runtime integration plan may be considered.
+- Changed files: scripts/review-runtime-integration-acceptance-criteria.mjs, scripts/verify-runtime-integration-acceptance-criteria.mjs, docs/architecture/runtime-integration-acceptance-criteria.md, docs/reviews/runtime-integration-acceptance-review-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The acceptance review did not call `/api/analyze`.
+- Validation: `node scripts/review-runtime-integration-acceptance-criteria.mjs` and `node scripts/verify-runtime-integration-acceptance-criteria.mjs` passed. Required Phase 28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Acceptance status is `ready_for_runtime_integration_plan`, meaning Phase 30 may design a runtime integration plan or shadow runtime dry-run only. Gate A/B/C/D/H passed; Gate E/F/G are conditional required contract tests because metadata-incomplete, strong-caution, and active-only remain unobserved in actual and pure replay evidence. High-risk collapsed hint and receiver counts remain 0, low-risk consistency remains actual 50/50 and pure replay 150/150, and evidence types remain separated.
+- Context promotion candidate: Phase 30 may proceed only as runtime integration plan design or shadow runtime dry-run design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after required contract tests and dry-run gates are defined.
+
 ### 2026-07-09 / Phase 28 CandidatePolicy hint receiver design
 
 - Branch: codex/survey-input-contract-refactor
