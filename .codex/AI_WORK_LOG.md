@@ -1626,6 +1626,18 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Production build has premium report selector hidden unless the premium flag is enabled; selector-specific verification therefore relied on source-level group inspection plus API checks instead of completing the photo upload flow in-browser.
 - Context promotion candidate: NULL
 
+### 2026-07-09 / Phase 19 evaluator boundary target capture plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / shadow audit planning
+- Routing decision: Medium audit artifact and documentation work scoped to target actual capture planning for evaluator boundary coverage gaps. Runtime evaluator logic, CandidatePolicy runtime, API route, UI/API response, DB/Supabase, product data, existing capture fixtures, and existing recommendation outputs were out of scope.
+- Goal: Identify whether active-only, metadata-incomplete, serum category, and strong caution metadata gaps can be observed from current complete/product_row captures, and produce SurveyInputContract-compatible target scenarios for future dev-only actual capture.
+- Changed files: scripts/plan-evaluator-boundary-target-captures.mjs, scripts/verify-evaluator-boundary-target-capture-plan.mjs, docs/reviews/evaluator-boundary-target-capture-plan-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, hard filter, score, CandidatePolicy runtime, UI/API response, DB/Supabase, product data, or capture fixture originals were modified.
+- Validation: `node scripts/plan-evaluator-boundary-target-captures.mjs`, `node scripts/verify-evaluator-boundary-target-capture-plan.mjs`, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Synthetic fixtures were not treated as actual evidence. The current complete/product_row captures expose 1,640 candidate rows but none of the four missing gap classes. Dev capture execution was not performed by the planner and remains a separate opt-in action with existing `/api/analyze` runtime dependencies.
+- Context promotion candidate: Targeted actual capture planning must distinguish actual complete capture evidence from synthetic policy coverage; missing gap observation is a product/candidate distribution limitation, not a policy approval.
+
 ### 2026-06-22 / Hwahae ranking all-jobs and matrix audit
 
 - Branch: main
