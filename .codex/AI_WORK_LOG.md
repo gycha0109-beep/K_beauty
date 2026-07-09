@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / Phase 26 boundary replay readiness review
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit diagnostic / Medium readiness review
+- Routing decision: User requested a read-only readiness review across Phase 16-25 evidence for the `recent_instability_active_limited` boundary. Runtime changes, evaluator pass implementation, collapsed hint implementation, CandidatePolicy wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, and synthetic product creation were out of scope.
+- Goal: Separate actual complete/product_row capture evidence, pure engine replay evidence, and synthetic policy coverage, then decide whether the boundary can move to design-only Phase 27 work.
+- Changed files: scripts/review-evaluator-boundary-readiness.mjs, scripts/verify-evaluator-boundary-readiness-review.mjs, docs/reviews/evaluator-boundary-readiness-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/review-evaluator-boundary-readiness.mjs` and `node scripts/verify-evaluator-boundary-readiness-review.mjs` passed. The readiness artifact records actual capture and pure replay evidence separately, keeps synthetic coverage out of actual evidence, and reports `routeInvoked=false`, `supabaseWriteExecuted=false`, and `runtimeMutation=false`.
+- Findings: Readiness status is `ready_for_boundary_integration_design`. Actual evidence has 10 complete/product_row captures, 1,640 candidate rows, 86 boundary-applicable rows, 50 safe-low-risk hidden rows, 50/50 collapsed, and 0 high-risk collapsed rows. Pure replay evidence has `evidenceType=pure_engine_replay`, 164 product rows, 164 scorer-compatible rows, 656 candidate rows, 258 boundary-applicable rows, 150 safe-low-risk hidden rows, 150/150 collapsed, and 0 high-risk collapsed rows. Serum-family rows were observed in pure replay; active-leaning-only, metadata-incomplete, and strong-caution rows remain unobserved in actual and pure replay evidence.
+- Context promotion candidate: Phase 27 may proceed only as design/what-if shadow work for evaluator pass plus collapsed hint and CandidatePolicy hint contract. Runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
 ### 2026-07-09 / Phase 25 pure engine replay with read-only product source
 
 - Branch: codex/survey-input-contract-refactor
