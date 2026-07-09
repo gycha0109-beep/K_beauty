@@ -1772,6 +1772,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: The readiness logic supports hidden/collapsed/reason analysis when Phase 12 audit output contains sanitized `candidateReviews`, but the current checkout cannot answer the requested "50 safe_low_risk hidden" question without the missing capture artifacts.
 - Context promotion candidate: Functional exposure readiness must stay shadow-only; even a ready status should lead to shadow CandidatePolicy integration, not runtime/UI/API wiring.
 
+### 2026-07-09 / Phase 22 pure engine target scenario replay
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / shadow audit artifact
+- Routing decision: Medium audit-only runner addition scoped to route-outside pure engine replay. `/api/analyze`, evaluator hard filters, ranking score/weight, CandidatePolicy runtime, UI/API response, DB/Supabase, product data, existing capture fixture originals, and existing topPick/supporting/budget outputs were out of scope.
+- Goal: Attempt Phase 19 target scenarios through a no-write pure engine path and keep the evidence separate from actual `/api/analyze` complete/product_row captures.
+- Changed files: scripts/node-next-alias-loader.mjs, scripts/run-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-target-scenario-replay.mjs, docs/reviews/evaluator-boundary-pure-engine-target-replay-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, CandidatePolicy runtime, UI/API response, DB/Supabase, product source data, or capture fixture original changes. The runner did not call `/api/analyze` and reports `supabaseWriteExecuted: false`.
+- Result: The pure engine runner attempted all 4 target scenarios, but succeeded 0 and failed 4 with `candidate_source_empty_after_pure_engine_replay`. The live product source path returned `Recommendation products are temporarily unavailable`; fallback complete-capture product rows were sanitized and not sufficient for the legacy decision engine field filter, so total replay candidate rows remained 0.
+- Evidence separation: Output is `evidenceType: pure_engine_replay`, `routeInvoked: false`, `runtimeMutation: false`, and must not be counted as actual complete/product_row capture evidence.
+- Validation: `node scripts/run-pure-engine-target-scenario-replay.mjs`, `node scripts/verify-pure-engine-target-scenario-replay.mjs`, analyze boundary, target plan, actual coverage, boundary shadow/policy, exposure audit/readiness, recent-instability, shadow comparison/audit, ranking, goal, and survey verifiers passed; `npm run build` passed; `git diff --check` passed.
+- Issues/risks: Node direct ESM execution emitted non-fatal `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings. The replay did not expand active-only, metadata-incomplete, serum, or strong-caution evidence because no candidate rows were produced.
+- Context promotion candidate: Pure engine replay evidence should stay separate from actual `/api/analyze` captures unless a read-only product source with full scorer-compatible rows is provided.
+
 ### 2026-07-05 / SEC-02 analysis data RLS grant verification
 
 - Branch: codex/survey-input-contract-refactor
