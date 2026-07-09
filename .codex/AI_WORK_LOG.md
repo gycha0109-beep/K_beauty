@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / Phase 28 CandidatePolicy hint receiver design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium CandidatePolicy receiver contract and what-if review
+- Routing decision: User requested design-only CandidatePolicy hint receiver work after Phase 27 evaluator pass plus collapsed hint design. Runtime CandidatePolicy wiring, evaluator runtime changes, score/weight/hard-filter changes, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Add a pure CandidatePolicy hint receiver contract, apply it to the Phase 27 integration what-if artifact, and document how future CandidatePolicy logic should interpret `collapsed_candidate_hint`, `hidden_candidate_hint`, and `insufficient_evidence_hint`.
+- Changed files: lib/candidate-policy-hint-receiver-contract.js, scripts/run-candidate-policy-hint-receiver-whatif.mjs, scripts/verify-candidate-policy-hint-receiver-design.mjs, docs/architecture/candidate-policy-hint-receiver.md, docs/reviews/candidate-policy-hint-receiver-whatif-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The what-if runner did not call `/api/analyze`.
+- Validation: `node scripts/run-candidate-policy-hint-receiver-whatif.mjs`, `node scripts/verify-candidate-policy-hint-receiver-design.mjs`, Phase 27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` passed. `git diff --check` only reported existing LF-to-CRLF warnings for two review docs.
+- Findings: Actual receiver what-if accepts 52/52 collapsed hints, preserves 33 hidden hints, moves hidden -52 and collapsed +52, and has 0 high-risk collapsed receiver violations. Pure replay receiver what-if accepts 156/156 collapsed hints, preserves 99 hidden hints, moves hidden -156 and collapsed +156, accepts 39 serum-family collapsed hints, and has 0 high-risk collapsed receiver violations. Actual capture, pure replay, and synthetic coverage evidence remain separated.
+- Context promotion candidate: Phase 29 may design shadow-only receiver test coverage or runtime integration acceptance criteria. CandidatePolicy/evaluator runtime connection still requires a separate approved task.
+
 ### 2026-07-09 / Phase 27 evaluator pass plus collapsed hint integration design
 
 - Branch: codex/survey-input-contract-refactor
