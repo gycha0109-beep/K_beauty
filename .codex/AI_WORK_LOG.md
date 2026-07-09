@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / evaluator boundary actual coverage collection phase 18
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium actual capture coverage collection
+- Routing decision: User requested actual complete/product-row capture coverage collection for Phase 16-17 evaluator boundary gaps. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Collect whether active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata gap cases are present in current actual complete capture evidence, while keeping synthetic fixture validation separate from actual capture evidence.
+- Changed files: scripts/collect-evaluator-boundary-actual-coverage.mjs, scripts/verify-evaluator-boundary-actual-coverage.mjs, docs/reviews/evaluator-boundary-actual-coverage-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: `node scripts/collect-evaluator-boundary-actual-coverage.mjs` and `node scripts/verify-evaluator-boundary-actual-coverage.mjs` passed. Existing Phase 16-17 boundary, evaluator hard-block, exposure/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Current actual complete/product-row captures used 10 fixtures, 1,640 high-confidence candidate rows, and 86 boundary-applicable rows. Active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata gap cases were not observed in current actual captures. The safe-low-risk hidden target slice was reconfirmed at 50 rows, all `downgrade_to_collapsed_candidate`. High-risk collapsed count remained 0.
+- Context promotion candidate: Not-observed gaps should be treated as current product/capture distribution limitations. Evaluator pass plus collapsed hint remains a separate approved task after actual high-confidence coverage is expanded.
+
 ### 2026-07-09 / evaluator boundary coverage gap validation phase 17
 
 - Branch: codex/survey-input-contract-refactor
