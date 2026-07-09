@@ -1,5 +1,29 @@
 # AI_WORK_LOG.md
 
+### 2026-07-09 / evaluator recent-instability boundary shadow policy phase 16
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow-only evaluator boundary policy
+- Routing decision: User requested a pure boundary policy and shadow reclassification audit for evaluator `recent_instability_active_limited` hard blocks. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Add `resolveEvaluatorRecentInstabilityBoundaryPolicy()` plus a local shadow runner/verifier to classify existing recent-instability evaluator hard blocks as `preserve_hard_block`, `downgrade_to_collapsed_candidate`, `requires_metadata_review`, or `not_applicable`.
+- Changed files: lib/evaluator-recent-instability-boundary-policy.js, scripts/run-evaluator-recent-instability-boundary-shadow.mjs, scripts/verify-evaluator-recent-instability-boundary-policy.mjs, docs/architecture/evaluator-recent-instability-boundary-policy.md, docs/reviews/evaluator-recent-instability-boundary-shadow-20260703.md, scripts/run-functional-candidate-exposure-audit.mjs, scripts/run-recent-instability-guard-matrix.mjs, scripts/replay-functional-shadow-captures.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: Boundary runner and verifier passed. Existing evaluator hard-block review, exposure audit/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Reviewed 86 high-confidence evaluator `recent_instability_active_limited` hard-block rows. Shadow decisions: preserve hard block 33, downgrade to collapsed 52, metadata review 0, not applicable 1. The safe-low-risk hidden target slice was 50/50 downgraded to collapsed candidate and 0/50 preserved. High-risk/unsafe rows were not downgraded to collapsed.
+- Context promotion candidate: The boundary is deterministic enough for a future evaluator/CandidatePolicy policy task, but runtime changes still require separate approval and more coverage for active-leaning-only, metadata-incomplete, serum, and strong-caution comparison samples.
+
+### 2026-07-09 / premium engine architecture documentation
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: design / documentation-only architecture boundary
+- Routing decision: User requested Premium Engine Architecture documentation only. Runtime code changes, evaluator/hard-filter/score/weight changes, CandidatePolicy runtime wiring, UI/API response changes, DB/schema/migration/Supabase changes, existing recommendation output changes, Face Lab implementation, Condition engine implementation, and Routine engine implementation were out of scope.
+- Goal: Define `SkinMatchPremiumCore` as the shared premium judgment layer and fix responsibility boundaries for Routine, Functional, Condition, and Face Lab engines before returning to Phase 16.
+- Changed files: docs/architecture/premium-engine-architecture.md, .codex/AI_WORK_LOG.md
+- Protected areas: No runtime code, UI, API response fields, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, topPick/supporting/budget payload, evaluator behavior, CandidatePolicy runtime, product data, or Face Lab/Condition/Routine implementation changes.
+- Validation: `npm run build` passed. `git diff --check` passed.
+- Findings: The architecture now treats functional ranking, guard, exposure, candidate audit, shadow capture, and divergence review modules as parts of the future `SkinMatchPremiumCore` judgment/audit layer rather than an independent premium sector. Face Lab is explicitly separate and may consume only `skinStyleSignals` from the core.
+- Resume point: Return to Phase 16, `Evaluator Recent-Instability Hard Block Boundary Shadow Policy`, to shadow-validate `preserve_hard_block` vs `downgrade_to_collapsed_candidate` for low-risk / sensitivity-safe mixed-profile candidates blocked by `recent_instability_active_limited`.
+
 ### 2026-07-06 / evaluator hard block boundary review phase 15
 
 - Branch: codex/survey-input-contract-refactor
