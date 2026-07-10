@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 33 disabled-by-default shadow dry-run implementation plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium implementation plan artifact
+- Routing decision: User requested a disabled-by-default shadow dry-run implementation plan after Phase 32 safety verifier skeletons. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a read-only implementation plan review script, verifier, architecture doc, and review doc for future dry-run flag/snapshot/artifact/verifier/kill-switch planning.
+- Changed files: scripts/review-shadow-dry-run-implementation-plan.mjs, scripts/verify-shadow-dry-run-implementation-plan.mjs, docs/architecture/shadow-dry-run-implementation-plan.md, docs/reviews/shadow-dry-run-implementation-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The plan did not call `/api/analyze`.
+- Validation: `node scripts/review-shadow-dry-run-implementation-plan.mjs`, `node scripts/verify-shadow-dry-run-implementation-plan.mjs`, required Phase 32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The recommended insertion point is a route-outside pure helper with a dev-only local artifact writer, behind `SHADOW_RUNTIME_BOUNDARY_DRY_RUN` or equivalent disabled-by-default flag. The plan requires baseline response shape, baseline recommendation, shadow boundary hint, shadow receiver, and comparison snapshots; local tmp-only artifact writing; verifier chain enforcement; and immediate blocked status on high-risk, metadata incomplete, strong caution, response diff, recommendation diff, DB write, or forbidden artifact field violations.
+- Context promotion candidate: Phase 34 may proceed only as dry-run snapshot contract helper design, future flag contract documentation, snapshot-schema-backed verifier refinement, or static route insertion guard review. Runtime evaluator/CandidatePolicy connection and `/api/analyze` route changes still require a separate approved task.
+
 ### 2026-07-10 / Phase 32 shadow safety verifier skeletons
 
 - Branch: codex/survey-input-contract-refactor
