@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 34 dry-run snapshot contract helper and static route insertion guard
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium pure helper and static guard review
+- Routing decision: User requested a dry-run snapshot contract helper and static route insertion guard review after Phase 33. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a runtime-disconnected snapshot contract helper, verify sanitized snapshot behavior, statically review future route insertion points, and document guardrails for a future `route_outside_helper_dev_only_artifact_writer` approach.
+- Changed files: lib/shadow-dry-run-snapshot-contract.js, scripts/review-shadow-route-insertion-static-guard.mjs, scripts/verify-shadow-dry-run-snapshot-contract.mjs, scripts/verify-shadow-route-insertion-static-guard.mjs, docs/architecture/shadow-dry-run-snapshot-contract.md, docs/reviews/shadow-route-insertion-static-guard-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-dry-run-snapshot-contract.mjs`, `node scripts/review-shadow-route-insertion-static-guard.mjs`, `node scripts/verify-shadow-route-insertion-static-guard.mjs`, required Phase 33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The snapshot helper builds sanitized baseline response shape, baseline recommendation, shadow boundary hint, shadow receiver, and comparison snapshots without full API body, product display fields, raw form, image/base64, PII, or env/secret values. Static review again recommends `route_outside_helper_dev_only_artifact_writer`, with required guardrails to keep helper output out of response, recommendation, persistence, and CandidatePolicy/evaluator runtime paths.
+- Context promotion candidate: Phase 35 may proceed only as disabled-by-default dry-run helper implementation skeleton, snapshot-contract-backed verifier refinement, or final pre-runtime integration checklist. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
 ### 2026-07-10 / Phase 33 disabled-by-default shadow dry-run implementation plan
 
 - Branch: codex/survey-input-contract-refactor
