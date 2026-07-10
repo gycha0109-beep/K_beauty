@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 32 shadow safety verifier skeletons
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium verifier skeleton contracts
+- Routing decision: User requested no-response-change, no-recommendation-change, and no-DB-write verifier skeletons after Phase 31 schema and required contract tests. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add three safety verifier skeletons, an integrated verifier, and docs while keeping synthetic skeleton samples separate from actual response, recommendation, and DB evidence.
+- Changed files: scripts/verify-shadow-no-response-change-skeleton.mjs, scripts/verify-shadow-no-recommendation-change-skeleton.mjs, scripts/verify-shadow-no-db-write-skeleton.mjs, scripts/verify-shadow-safety-verifier-skeletons.mjs, docs/architecture/shadow-safety-verifier-skeletons.md, docs/reviews/shadow-safety-verifier-skeletons-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The skeletons did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-no-response-change-skeleton.mjs`, `node scripts/verify-shadow-no-recommendation-change-skeleton.mjs`, `node scripts/verify-shadow-no-db-write-skeleton.mjs`, `node scripts/verify-shadow-safety-verifier-skeletons.mjs`, required Phase 31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` are recorded in the turn completion report.
+- Findings: The response skeleton rejects API response body dumps and forbidden artifact fields. The recommendation skeleton treats topPick/supportingProducts/budgetAlternatives identity or order changes as failures. The DB-write skeleton requires all write counters to remain zero and keeps guard/session mutation tracking separate from shadow dry-run mutation. All skeleton artifacts record `runtimeConnected=false`, `routeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticTreatedAsActualEvidence=false`.
+- Context promotion candidate: Phase 33 may proceed only as disabled-by-default shadow dry-run implementation planning or dry-run snapshot contract design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those snapshot contracts and verifiers exist.
+
 ### 2026-07-10 / Phase 31 required contract test skeleton and dry-run artifact schema
 
 - Branch: codex/survey-input-contract-refactor
