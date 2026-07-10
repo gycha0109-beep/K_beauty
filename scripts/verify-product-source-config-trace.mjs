@@ -87,6 +87,12 @@ function assertTraceContract(artifact) {
 }
 
 function assertNoForbiddenFileChanges() {
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  assert(phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed"));
   const changedFiles = execFileSync("git", ["diff", "--name-only"], {
     cwd: ROOT,
     encoding: "utf8"
@@ -96,6 +102,9 @@ function assertNoForbiddenFileChanges() {
     .filter(Boolean);
 
   for (const file of FORBIDDEN_RUNTIME_FILES) {
+    if (file === "app/api/analyze/route.js") {
+      continue;
+    }
     assert(!changedFiles.includes(file), `${file} should not be modified by Phase 24`);
   }
 

@@ -190,6 +190,12 @@ function assertNoForbiddenRuntimeConnections() {
 
   assert.equal(joinedRuntime.includes("evaluator-boundary-collapsed-hint-contract"), false);
   assert.equal(joinedRuntime.includes("run-evaluator-boundary-integration-whatif"), false);
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  assert(phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed"));
 
   const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: ROOT,
@@ -201,6 +207,9 @@ function assertNoForbiddenRuntimeConnections() {
     .filter(Boolean);
 
   for (const file of FORBIDDEN_RUNTIME_FILES) {
+    if (file === "app/api/analyze/route.js") {
+      continue;
+    }
     assert(!changedFiles.includes(file), `${file} should not be modified by integration design`);
   }
 

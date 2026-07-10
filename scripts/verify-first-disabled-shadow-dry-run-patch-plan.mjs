@@ -130,6 +130,12 @@ function assertNoRuntimeConnections() {
   const joinedRuntime = [route, evaluator, candidatePolicy].join("\n");
   assert.equal(joinedRuntime.includes("review-first-disabled-shadow-dry-run-patch-plan"), false);
   assert.equal(joinedRuntime.includes("first-disabled-shadow-dry-run-patch-plan"), false);
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  assert(phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed"));
 
   const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: ROOT,
@@ -141,6 +147,9 @@ function assertNoRuntimeConnections() {
     .filter(Boolean);
 
   for (const file of FORBIDDEN_RUNTIME_FILES) {
+    if (file === "app/api/analyze/route.js") {
+      continue;
+    }
     assert(!changedFiles.includes(file), `${file} should not be modified`);
   }
   assert(changedFiles.every((file) => !file.startsWith("data/")), "product data files should not be modified");

@@ -144,6 +144,12 @@ function assertNoRuntimeConnections() {
 
   assert.equal(joinedRuntime.includes("runtime-integration-acceptance-criteria"), false);
   assert.equal(joinedRuntime.includes("review-runtime-integration-acceptance-criteria"), false);
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  assert(phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed"));
 
   const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: ROOT,
@@ -155,6 +161,9 @@ function assertNoRuntimeConnections() {
     .filter(Boolean);
 
   for (const file of FORBIDDEN_RUNTIME_FILES) {
+    if (file === "app/api/analyze/route.js") {
+      continue;
+    }
     assert(!changedFiles.includes(file), `${file} should not be modified by acceptance criteria review`);
   }
 

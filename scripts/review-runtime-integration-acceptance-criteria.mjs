@@ -29,6 +29,12 @@ async function readJson(filePath) {
 }
 
 function hasNoForbiddenRuntimeChanges() {
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  const phase39RoutePatchGuarded = phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed");
   const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: ROOT,
     encoding: "utf8"
@@ -39,14 +45,20 @@ function hasNoForbiddenRuntimeChanges() {
     .filter(Boolean);
 
   return {
-    passed: FORBIDDEN_RUNTIME_FILES.every((file) => !changedFiles.includes(file)) &&
+    passed: FORBIDDEN_RUNTIME_FILES.every((file) =>
+      file === "app/api/analyze/route.js"
+        ? phase39RoutePatchGuarded
+        : !changedFiles.includes(file)
+    ) &&
       changedFiles.every((file) => !file.startsWith("data/")) &&
       changedFiles.every((file) => !file.startsWith("supabase/")),
     forbiddenChangedFiles: changedFiles.filter((file) =>
-      FORBIDDEN_RUNTIME_FILES.includes(file) ||
+      (FORBIDDEN_RUNTIME_FILES.includes(file) &&
+        !(file === "app/api/analyze/route.js" && phase39RoutePatchGuarded)) ||
       file.startsWith("data/") ||
       file.startsWith("supabase/")
-    )
+    ),
+    phase39RoutePatchGuarded
   };
 }
 
@@ -258,12 +270,13 @@ const runtimeIsolationGate = gate(
     runtimeFileCheck.passed
     ? "pass"
     : "fail",
-  "Review artifacts must remain runtime-disconnected and protected runtime files must stay unchanged.",
+  "Review artifacts remain runtime-disconnected; the Phase 39 route patch is allowed only when its static guard passes.",
   {
     routeInvoked: false,
     supabaseWriteExecuted: false,
     runtimeMutation: false,
-    forbiddenChangedFiles: runtimeFileCheck.forbiddenChangedFiles
+    forbiddenChangedFiles: runtimeFileCheck.forbiddenChangedFiles,
+    phase39RoutePatchGuarded: runtimeFileCheck.phase39RoutePatchGuarded
   }
 );
 

@@ -1,5 +1,20 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 39 first disabled shadow dry-run minimal patch
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited implementation + shadow/audit
+- Routing decision: High-risk API route touch with explicit user approval, strictly limited to a disabled-by-default development-only shadow call site and a local artifact writer. Evaluator/CandidatePolicy runtime behavior, API response shape, recommendation outputs, DB/Supabase, product data, capture fixtures, UI, and production activation remained out of scope.
+- Goal: Apply the Phase 38 minimal patch plan so the existing response and recommendation can be read through sanitized snapshots only when `NODE_ENV` is development and the explicit Phase 39 flag is enabled.
+- Changed files: app/api/analyze/route.js, lib/shadow-boundary-dry-run-artifact-writer.js, scripts/verify-shadow-dry-run-route-static-guard.mjs, scripts/verify-first-disabled-shadow-dry-run-minimal-patch.mjs, docs/reviews/first-disabled-shadow-dry-run-minimal-patch-20260709.md, .codex/AI_WORK_LOG.md, and related Phase 24-38 verifier guard compatibility scripts.
+- Runtime isolation: The flag defaults off and the route returns before dynamic imports unless both development mode and the explicit flag are present. The helper result is not merged into the public response, recommendation result, premium session payload, guard payload, or DB/store payload.
+- Artifact safety: The writer is limited to local `tmp/shadow-boundary-dry-run/`, validates the existing artifact schema and forbidden-field rules before writing, has no Supabase/DB/Storage mutation client, and returns a non-blocking safe summary on write failure.
+- Evidence separation: Phase 39 used static checks and sanitized contract samples only. `/api/analyze` was not invoked, no actual response/recommendation evidence was created, and no Supabase write was executed.
+- Validation: `node scripts/verify-shadow-dry-run-route-static-guard.mjs` and `node scripts/verify-first-disabled-shadow-dry-run-minimal-patch.mjs` passed before the full required verifier/build/diff suite. Final suite results are recorded in the turn completion report.
+- Error log: The first full regression run failed in eight Phase 31-38 verifiers, and the Phase 24-29 follow-up run exposed the same stale assumption in six more checks: those historical verifiers treated any uncommitted `app/api/analyze/route.js` change as forbidden. Phase 39 explicitly authorizes one guarded route change, so the affected review/verifier checks were minimally updated to permit that file only after `verify-shadow-dry-run-route-static-guard.mjs` passes. Evaluator, CandidatePolicy, UI/data, product data, and Supabase protections remain unchanged.
+- Findings: Response mutation, recommendation mutation, and DB/Supabase write patterns were not detected. A forbidden-field sample was rejected before write, development flag-off and production samples were disabled, and a simulated filesystem failure returned `artifact_write_failed_non_blocking` without throwing.
+- Context promotion candidate: Keep Phase 39 wiring development-only and default-off. Phase 40 should require separate approval for any actual local route dry-run; evaluator/CandidatePolicy runtime connection, public response changes, recommendation changes, DB writes, and production activation remain prohibited.
+
 ### 2026-07-10 / Phase 38 first disabled shadow dry-run implementation patch plan
 
 - Branch: codex/survey-input-contract-refactor

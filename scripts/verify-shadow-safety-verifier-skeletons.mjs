@@ -96,6 +96,12 @@ function stripVolatile(value) {
 }
 
 function runtimeFileCheck() {
+  const phase39Guard = execFileSync(process.execPath, ["scripts/verify-shadow-dry-run-route-static-guard.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+  assert(phase39Guard.includes("verify-shadow-dry-run-route-static-guard passed"));
   const status = execFileSync("git", ["status", "--short", "--untracked-files=all"], {
     cwd: ROOT,
     encoding: "utf8"
@@ -106,7 +112,7 @@ function runtimeFileCheck() {
     .filter(Boolean);
 
   const forbiddenChangedFiles = changedFiles.filter((file) =>
-    FORBIDDEN_RUNTIME_FILES.includes(file) ||
+    (FORBIDDEN_RUNTIME_FILES.includes(file) && file !== "app/api/analyze/route.js") ||
     file.startsWith("data/") ||
     file.startsWith("supabase/")
   );
