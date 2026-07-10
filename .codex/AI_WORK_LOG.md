@@ -1,5 +1,18 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 41 isolated local flag-on shadow dry-run
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution + shadow verification
+- Routing decision: Execute `/api/analyze` only if non-production isolation, disposability/cleanup, safe repo fixtures, identical-input replay, and existing-vs-shadow mutation delta instrumentation are all verified. Otherwise fail closed without a request.
+- Goal: Compare flag-off and development flag-on route behavior in an isolated environment, while keeping evaluator/CandidatePolicy runtime, API response, recommendation outputs, DB schema, product data, and production activation unchanged.
+- Changed files: scripts/run-first-isolated-shadow-route-check.mjs, scripts/verify-first-isolated-shadow-route-check.mjs, docs/reviews/first-isolated-shadow-route-check-20260710.md, .codex/AI_WORK_LOG.md
+- Environment result: The configured Supabase endpoint is remote rather than loopback, with no explicit non-production marker, local Supabase config, disposable cleanup contract, safe repo image/payload fixture, or existing-vs-shadow mutation delta instrumentation verified. No env or secret values were printed.
+- Route execution: Not run. Status and skip reason are `isolated_route_run_not_executed_environment_unverified`.
+- Evidence handling: Flag-off/flag-on snapshots, artifact deltas, response/recommendation comparisons, existing route mutation count, shadow-added mutation delta, and safety violation counts remain null rather than being inferred from Phase 40 helper evidence.
+- Runtime isolation: `/api/analyze`, helper/writer, evaluator, CandidatePolicy, response payload, recommendation outputs, DB/Supabase schema, and product data were not modified. No Supabase write was executed.
+- Context promotion candidate: A future isolated route run requires an explicitly disposable non-production Supabase, cleanup/rollback contract, safe tracked fixtures, and separate baseline/flag-on mutation delta instrumentation before any request is sent.
+
 ### 2026-07-10 / Phase 40 flag invariance and verifier integrity preflight
 
 - Branch: codex/survey-input-contract-refactor
