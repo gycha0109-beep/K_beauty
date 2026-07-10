@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 30 shadow runtime dry-run design and required contract test plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium dry-run plan and contract test checklist
+- Routing decision: User requested design-only shadow runtime dry-run planning after Phase 29 returned `ready_for_runtime_integration_plan`. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Read Phase 29 acceptance and Phase 27-28 what-if artifacts, define disabled-by-default dry-run gates, baseline-vs-shadow comparison requirements, kill conditions, required contract tests, and Phase 31 allowed/prohibited scope.
+- Changed files: scripts/review-shadow-runtime-dry-run-plan.mjs, scripts/verify-shadow-runtime-dry-run-plan.mjs, docs/architecture/shadow-runtime-dry-run-design.md, docs/architecture/evaluator-boundary-required-contract-tests.md, docs/reviews/shadow-runtime-dry-run-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/review-shadow-runtime-dry-run-plan.mjs`, `node scripts/verify-shadow-runtime-dry-run-plan.mjs`, required Phase 29/28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` passed. `git diff --check` is recorded in the turn completion report.
+- Findings: The dry-run plan is disabled by default, requires an explicit future flag, records only sanitized observations, keeps baseline and shadow sections separate, and blocks expansion on high-risk/sensitivity-unsafe/strong-caution/metadata-incomplete collapsed receiver counts, response shape changes, recommendation result changes, DB writes, production flag failures, or forbidden artifact fields. Required contract tests now include metadata incomplete, strong caution, active-only, high-risk/sensitivity unsafe, serum category, evidence separation, API response shape, recommendation result, DB write, and artifact sanitization tests.
+- Context promotion candidate: Phase 31 may proceed only as contract test skeleton/pure helper unit test design or dry-run schema/verifier design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those gates are implemented and pass.
+
 ### 2026-07-09 / Phase 29 runtime integration acceptance criteria
 
 - Branch: codex/survey-input-contract-refactor
