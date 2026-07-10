@@ -2044,3 +2044,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Migration 작성 여부: Not written. Connected metadata showed `analysis_requests`, `analysis_results`, and `premium_report_sessions` RLS enabled with service-role-only grants, My data owner policies present, and no current Storage bucket target.
 - Validation: `node scripts/verify-analysis-rls-contract.mjs` passed; related route/helper JS `node --check` passed; `git diff --check` passed with CRLF conversion warning only; `npm run build` passed.
 - Follow-up: Verify SEC-01 guard migration deployment state and service-role-only RPC grants before production rollout.
+
+### 2026-07-10 / Phase 43 isolated shadow route controlled-run harness
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution environment setup / shadow invariance diagnosis
+- Routing decision: High-risk fail-closed harness work. Production runtime, evaluator, CandidatePolicy, response, UI, schema/migration, and product data changes were prohibited.
+- Goal: Reproduce a disposable local route environment, isolate the external provider, observe baseline versus flag-on mutation deltas, and run the controlled comparison only if every safety gate passed.
+- Changed files: scripts/lib/shadow-route-mutation-observer.mjs, scripts/lib/shadow-route-provider-isolation.mjs, scripts/setup-isolated-shadow-route-environment.mjs, scripts/teardown-isolated-shadow-route-environment.mjs, scripts/run-isolated-shadow-route-comparison.mjs, scripts/verify-isolated-shadow-route-comparison.mjs, docs/runbooks/isolated-shadow-route-execution-20260710.md, docs/reviews/isolated-shadow-route-controlled-run-20260710.md, .codex/AI_WORK_LOG.md
+- Environment result: Supabase CLI and Docker were available, but local config/seed were absent and the 23 migrations alter `public.products` without creating it. A fresh local schema was therefore not reproducible.
+- Provider result: No production provider call was made. Development key resolution can fall back to `.env.local`, and no approved test adapter exists, so process env clearing cannot guarantee provider-call count zero.
+- Mutation observer: Enumerated analysis guard RPCs, premium session delete/insert, Storage, and local filesystem surfaces. Observer coverage remained incomplete and no mutation delta was measured.
+- Execution result: Current `hosted_unknown` target was not used. No local stack or database command was started, no `/api/analyze` request was sent, no Supabase write occurred, and measured comparison fields remain null. Final status: `blocked_local_schema_not_reproducible`.
+- Corrections: An initial migration search used a Windows-incompatible wildcard, the first setup call passed a directory where the target assertion expected an env-file path, and Node process lookup initially missed the PowerShell-installed Supabase CLI. The search path, assertion call, and cross-platform command lookup were corrected before final validation; none of these attempts invoked the route, provider, or database.
+- Cleanup: No isolated resources were created. The no-resource teardown completed successfully; full DB/Storage cleanup verification remains pending a reproducible local environment.
+- Runtime scope: Evaluator and CandidatePolicy remain disconnected. API response, recommendation output, UI, DB schema/migrations, product data, route runtime, and shadow runtime helpers were not modified.
+- Next condition: Obtain approval for a reproducible local base schema/config and a default-off test-only external-provider isolation seam, then install the ephemeral mutation observer before any route request.
+- Context promotion candidate: Controlled route evidence must remain fail-closed when a fresh local schema, provider isolation, complete mutation observation, or cleanup proof is missing; unmeasured deltas must remain null rather than zero.
