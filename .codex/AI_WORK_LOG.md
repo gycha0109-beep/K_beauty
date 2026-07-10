@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 42 isolated route run readiness pack
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited preparation + test fixture + runbook
+- Routing decision: Prepare a fail-closed non-production assertion, tracked synthetic fixtures, mutation-delta contract, and Phase 43 runbook without sending `/api/analyze` or touching runtime policy, response, recommendation, UI, DB schema, or product data.
+- Goal: Resolve Phase 41 preparation gaps without assuming the current hosted Supabase target is safe for a route request.
+- Changed files: scripts/assert-non-production-supabase-target.mjs, scripts/prepare-isolated-shadow-route-readiness.mjs, scripts/verify-isolated-shadow-route-readiness.mjs, test/fixtures/analyze/analyze-payload.fixture.json, test/fixtures/analyze/test-face-placeholder.png, test/fixtures/analyze/README.md, docs/runbooks/isolated-shadow-route-runbook-20260710.md, docs/reviews/isolated-shadow-route-readiness-20260710.md, .codex/AI_WORK_LOG.md
+- Route execution: Not run. The readiness pack performs no `/api/analyze` request or Supabase access/write.
+- Target safety: The current hosted target remains fail-closed unless it is local loopback or explicitly marked as both disposable and non-production. No env/secret values are printed.
+- Mutation contract: Existing route guard/session/premium writes are baseline observations. Only the separately observed shadow-added Supabase mutation delta must be 0; Phase 42 documents this but does not implement the live observer harness.
+- Runtime isolation: Evaluator/CandidatePolicy, API response, recommendation outputs, UI, DB schema, and product data were not changed. Phase 43 may attempt route execution only after an approved disposable target, cleanup contract, and mutation observer are available.
+
 ### 2026-07-10 / Phase 41 isolated local flag-on shadow dry-run
 
 - Branch: codex/survey-input-contract-refactor

@@ -1,0 +1,30 @@
+{
+  "fixtureVersion": "phase42-analyze-route-v1",
+  "transport": "multipart/form-data",
+  "imageFixturePath": "test/fixtures/analyze/test-face-placeholder.png",
+  "formFields": {
+    "skinType": "combination",
+    "sensitivity": "medium",
+    "mainConcern": "redness",
+    "mainConcerns": "[\"redness\"]",
+    "primaryConcern": "redness",
+    "recentSkinChange": "no",
+    "recentlyChangedProduct": "no",
+    "cleansingFrequency": "twice",
+    "preferredTexture": "lotion",
+    "postWashFeeling": "comfortable",
+    "afternoonSkinChange": "mostly_same",
+    "environmentExposure": "[]",
+    "mostDislikedFeel": "sticky",
+    "genderPreference": "unspecified",
+    "whiteCastHate": "false",
+    "toneUpWanted": "false",
+    "makeupUse": "false",
+    "eyeSensitive": "false",
+    "sunscreenPreferenceState": "skipped",
+    "outdoorExposure": "false",
+    "verySensitivePeriod": "false",
+    "currentProducts": "[]",
+    "locale": "en"
+  }
+}
