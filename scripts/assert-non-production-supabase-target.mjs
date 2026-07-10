@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 const ROOT = process.cwd();
 const ENV_PATH = path.join(ROOT, ".env.local");
 const NON_PRODUCTION_VALUES = new Set(["dev", "development", "test", "testing", "local", "preview"]);
+export const LOCAL_SHADOW_TEST_WORKDIR = "supabase/local-shadow-test";
 
 export function loadEnvForTargetAssertion(envPath = ENV_PATH) {
   return existsSync(envPath) ? dotenv.parse(readFileSync(envPath)) : {};
@@ -82,6 +83,30 @@ export function assertNonProductionSupabaseTarget({ env = {}, root = ROOT } = {}
     safeToRunRoute: false,
     targetType: "hosted_unknown",
     reasonCode: "hosted_target_without_disposable_nonproduction_allowlist",
+    secretsPrinted: false,
+    productionBlocked: true
+  };
+}
+
+export function assertLocalShadowTestWorkdir({ root = ROOT } = {}) {
+  const workdir = path.resolve(root, LOCAL_SHADOW_TEST_WORKDIR);
+  const rootPath = path.resolve(root);
+  const configPath = path.join(workdir, "config.toml");
+  const migrationPath = path.join(workdir, "migrations", "00000000000000_local_shadow_bootstrap.sql");
+  const seedPath = path.join(workdir, "seed.sql");
+  const insideRoot = workdir.startsWith(`${rootPath}${path.sep}`);
+  const configSource = existsSync(configPath) ? readFileSync(configPath, "utf8") : "";
+  const safeProjectId = /project_id\s*=\s*"local-shadow-test"/.test(configSource);
+
+  return {
+    checked: true,
+    safeToRunLocalDatabaseCommands: insideRoot && safeProjectId && existsSync(migrationPath) && existsSync(seedPath),
+    targetType: insideRoot && safeProjectId ? "loopback_disposable_local_shadow_test" : "local_shadow_test_unconfigured",
+    reasonCode:
+      insideRoot && safeProjectId && existsSync(migrationPath) && existsSync(seedPath)
+        ? "local_shadow_test_workdir_verified"
+        : "local_shadow_test_workdir_incomplete",
+    workdir: LOCAL_SHADOW_TEST_WORKDIR,
     secretsPrinted: false,
     productionBlocked: true
   };

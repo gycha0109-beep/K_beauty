@@ -28,6 +28,7 @@ import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
@@ -1361,7 +1362,10 @@ export async function POST(request) {
     const functionalShadowCaptureEnabled =
       process.env.NODE_ENV === "development" && process.env.FUNCTIONAL_SHADOW_CAPTURE === "1";
 
-    const { apiKey } = resolveOpenAiApiKey();
+    const localShadowProviderStub = resolveLocalShadowProviderStub();
+    const { apiKey } = localShadowProviderStub.enabled
+      ? { apiKey: "" }
+      : resolveOpenAiApiKey();
     const writeAccessToken = createWriteAccessToken();
 
     let imageDataUrl = null;
@@ -1382,11 +1386,18 @@ export async function POST(request) {
     if (process.env.NODE_ENV !== "production") {
       logAnalyze(
         "openai-env:diagnostic",
-        getOpenAiEnvDiagnostics({
-          route: "analyze",
-          routeUsesOpenAi: true,
-          routeUsesOpenRouter: false
-        })
+        localShadowProviderStub.enabled
+          ? {
+              route: "analyze",
+              routeUsesOpenAi: false,
+              routeUsesOpenRouter: false,
+              providerIsolation: localShadowProviderStub.reasonCode
+            }
+          : getOpenAiEnvDiagnostics({
+              route: "analyze",
+              routeUsesOpenAi: true,
+              routeUsesOpenRouter: false
+            })
       );
     }
 

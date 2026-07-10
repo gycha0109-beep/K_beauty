@@ -2125,3 +2125,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Scope boundary: no domain document/directory, file move/delete, feature code, package, runtime, Supabase, Docker, provider, DB, or hosted operation.
 - Validation: role metadata, canonical links, resource policy/backfill, structure, scope boundary, sensitive-value patterns, and `git diff --check` are recorded in the completion report.
 - Next candidate: review legacy product/workflow assertions against current source only when a bounded related task requires it.
+
+### 2026-07-11 / Phase 44 local shadow runtime reproducibility and provider isolation
+
+- Model / reasoning: Terra / high.
+- Local bootstrap: added test-only `supabase/local-shadow-test/` config, synthetic seed, route dependency tables/RPCs, and ephemeral normalized audit triggers; production migrations were not changed.
+- Provider isolation: added a default-off development loopback/disposable stub seam before the OpenAI env resolver so `.env.local` fallback and external fetch are bypassed when enabled.
+- Harness: setup/teardown and comparison verifiers now recognize a prepared local preflight without invoking `/api/analyze`.
+- Verification result: static target, syntax, provider seam, bootstrap markers, and fail-closed setup passed; Docker CLI/daemon is unavailable, so no local stack, DB command, observer installation, seed replay, cleanup replay, route request, provider call, or hosted target access occurred.
+- Final blocker: `blocked_local_bootstrap_contract_gap` due unavailable Docker runtime; fresh local reproducibility remains unverified.

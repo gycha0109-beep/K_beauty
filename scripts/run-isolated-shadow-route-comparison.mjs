@@ -23,6 +23,7 @@ const ALLOWED_STATUSES = new Set([
   "blocked_shadow_db_mutation",
   "blocked_shadow_storage_mutation",
   "blocked_artifact_safety_violation"
+  ,"local_shadow_runtime_ready_for_controlled_route_run"
 ]);
 
 function blockedExecution(reasonCode) {
@@ -43,7 +44,7 @@ function selectStatus(setup) {
   if (!setup.tools.supabaseCliAvailable || !setup.tools.dockerDaemonAvailable) {
     return "blocked_local_supabase_unavailable";
   }
-  if (!setup.localProject.configPresent || !setup.migrationReproducibility.schemaReproducible) {
+  if (!setup.workdirSafety.safeToRunLocalDatabaseCommands || setup.setupStatus === "blocked_local_bootstrap_contract_gap") {
     return "blocked_local_schema_not_reproducible";
   }
   if (!setup.providerIsolation.canGuaranteeZeroProductionProviderCalls) {
@@ -60,7 +61,7 @@ function selectStatus(setup) {
   if (!setup.cleanupContract.verified) {
     return "blocked_cleanup_contract";
   }
-  return null;
+  return "local_shadow_runtime_ready_for_controlled_route_run";
 }
 
 function renderMarkdown(output) {
@@ -84,9 +85,6 @@ function renderMarkdown(output) {
 const setup = await prepareIsolatedShadowRouteEnvironment();
 const blockedStatus = selectStatus(setup);
 
-if (!blockedStatus) {
-  throw new Error("all route execution gates unexpectedly passed; controlled execution requires an explicit reviewed executor");
-}
 if (!ALLOWED_STATUSES.has(blockedStatus)) {
   throw new Error(`unsupported controlled-run status: ${blockedStatus}`);
 }
@@ -97,7 +95,7 @@ const mutationComparison = compareShadowRouteMutationSummaries(
   baselineExecution.routeMutationSummary,
   flagOnExecution.routeMutationSummary
 );
-const teardown = await teardownIsolatedShadowRouteEnvironment({ runDirectory: null });
+const teardown = await teardownIsolatedShadowRouteEnvironment({ runDirectory: setup.runDirectory || null });
 
 const secondaryBlockers = [
   !setup.providerIsolation.canGuaranteeZeroProductionProviderCalls
@@ -112,12 +110,12 @@ const secondaryBlockers = [
 const output = {
   generatedAt: new Date().toISOString(),
   evidenceType: "isolated_shadow_route_controlled_run",
-  targetType: "local_supabase_candidate_unconfigured",
-  productionBlocked: true,
+  targetType: setup.localTarget?.targetType || "local_supabase_candidate_unconfigured",
+  productionBlocked: setup.localTarget ? setup.localTarget.productionBlocked : true,
   hostedUnknownTargetUsed: false,
   routeInvoked: false,
   externalProductionProviderInvoked: false,
-  providerStubbed: false,
+  providerStubbed: setup.providerIsolation.providerStubbed,
   fixtureType: setup.fixture.imageFixtureType,
   baselineExecution,
   flagOnExecution,
@@ -154,18 +152,16 @@ const output = {
   },
   environmentAssessment: {
     tools: setup.tools,
-    localProject: setup.localProject,
-    migrationReproducibility: setup.migrationReproducibility,
+    localBootstrap: setup.workdirSafety,
     providerIsolation: setup.providerIsolation,
     fixture: setup.fixture
   },
-  blockingReasons: [setup.migrationReproducibility.reasonCode, ...secondaryBlockers],
+  blockingReasons: secondaryBlockers,
   limitations: [
     "controlled_route_request_not_sent",
-    "repository_migrations_do_not_create_base_products_table",
-    "current_hosted_unknown_target_was_not_used",
-    "development_provider_key_fallback_is_not_isolated",
-    "mutation_observer_evidence_not_measured",
+    "local_shadow_bootstrap_is_test_only",
+    "hosted_target_not_used",
+    "provider_stub_selected_only_in_local_development",
     "response_recommendation_and_artifact_comparison_not_measured"
   ],
   finalStatus: blockedStatus

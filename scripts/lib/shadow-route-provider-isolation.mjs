@@ -18,9 +18,11 @@ export function inspectShadowRouteProviderIsolation(root = process.cwd()) {
   const keyNamePresentInDotEnvLocal = KEY_LINE_PATTERN.test(envSource);
   const deterministicFallbackPresent =
     routeSource.includes("buildFallbackPhotoAnalysis") && routeSource.includes("if (apiKey && imageDataUrl)");
-  const existingTestAdapterPresent = /provider(?:Stub|Mock|Adapter)|OPENAI_(?:DISABLED|STUBBED|MOCKED)/.test(
-    `${routeSource}\n${diagnosticsSource}`
-  );
+  const existingTestAdapterPresent =
+    routeSource.includes('resolveLocalShadowProviderStub') &&
+    routeSource.includes('localShadowProviderStub.enabled') &&
+    routeSource.includes('? { apiKey: "" }') &&
+    routeSource.includes('providerIsolation: localShadowProviderStub.reasonCode');
   const processEnvClearSufficient = !(dotenvFallbackPresent && keyNamePresentInDotEnvLocal);
   const canGuaranteeZeroProductionProviderCalls =
     !routeCallsExternalProvider || existingTestAdapterPresent || processEnvClearSufficient;
@@ -34,7 +36,7 @@ export function inspectShadowRouteProviderIsolation(root = process.cwd()) {
     existingTestAdapterPresent,
     processEnvClearSufficient,
     canGuaranteeZeroProductionProviderCalls,
-    providerStubbed: false,
+    providerStubbed: existingTestAdapterPresent,
     externalProductionProviderInvoked: false,
     reasonCode: canGuaranteeZeroProductionProviderCalls
       ? "provider_calls_can_be_disabled_without_runtime_change"

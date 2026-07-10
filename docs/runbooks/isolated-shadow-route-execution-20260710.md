@@ -16,6 +16,13 @@ The current checkout is not executable as a fresh local environment:
 
 The current hosted target remains classified as `hosted_unknown` and must not be used.
 
+### Phase 44 preparation update
+
+- `supabase/local-shadow-test/` now contains a test-only disposable bootstrap and synthetic seed; production migrations remain unchanged.
+- The local provider seam is default-off and activates only for development, explicit local test flags, and a loopback disposable target.
+- The bootstrap uses a test-only audit schema/trigger for normalized local mutation events and separates the route's local filesystem artifacts from DB observation.
+- This checkout cannot yet prove fresh setup or cleanup because the Docker CLI/daemon is unavailable. No local stack, route request, provider call, or hosted target was used.
+
 ## Required Repairs Before Execution
 
 1. Provide an approved, repository-owned local Supabase config.
