@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 35 disabled-by-default shadow boundary dry-run helper skeleton
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium route-disconnected helper skeleton
+- Routing decision: User requested a disabled-by-default shadow boundary dry-run helper skeleton after Phase 34 snapshot contract and static route insertion guard. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a route-disconnected helper skeleton that validates snapshot inputs, returns sanitized artifact payloads, summarizes kill conditions, and remains disabled by default without writing artifacts.
+- Changed files: lib/shadow-boundary-dry-run-helper.js, scripts/verify-shadow-boundary-dry-run-helper.mjs, scripts/review-shadow-boundary-dry-run-helper-skeleton.mjs, docs/architecture/shadow-boundary-dry-run-helper.md, docs/reviews/shadow-boundary-dry-run-helper-skeleton-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The helper and review did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-boundary-dry-run-helper.mjs`, `node scripts/review-shadow-boundary-dry-run-helper-skeleton.mjs`, required Phase 34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The helper defaults to disabled, returns enabled only for explicit non-production future flag samples, validates Phase 34 snapshots, returns sanitized payloads without writing artifacts, and marks blocked kill conditions for recommendation changes, high-risk collapsed receiver counts, metadata-incomplete collapsed receiver counts, and DB writes. Helper output stays route-disconnected and schema-compatible when adapted to the Phase 31 schema-test evidence type.
+- Context promotion candidate: Phase 36 may proceed only as final pre-runtime integration checklist, artifact writer skeleton design, or snapshot-contract-backed verifier refinement. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
 ### 2026-07-10 / Phase 34 dry-run snapshot contract helper and static route insertion guard
 
 - Branch: codex/survey-input-contract-refactor
