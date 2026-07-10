@@ -1,5 +1,19 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 40 flag invariance and verifier integrity preflight
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited verification + shadow/audit
+- Routing decision: Verify Phase 39 flag-off/flag-on helper invariance and static verifier integrity without changing the route, writer, evaluator, CandidatePolicy, API response, recommendation outputs, UI, DB/Supabase, product data, or production configuration.
+- Goal: Prove disabled flag cases create no artifact or helper/writer attempt, prove isolated development flag-on helper/writer behavior preserves response/recommendation inputs and adds zero DB mutation calls, and test the static guard against intentionally corrupted in-memory source variants.
+- Changed files: scripts/review-shadow-flag-invariance-preflight.mjs, scripts/verify-shadow-flag-invariance-preflight.mjs, scripts/verify-shadow-verifier-integrity.mjs, scripts/verify-shadow-dry-run-route-static-guard.mjs, docs/reviews/shadow-flag-invariance-preflight-20260710.md, .codex/AI_WORK_LOG.md
+- Flag invariance: Missing env, `0`, `false`, empty, production `1`, and non-exact development `true` samples were disabled with zero artifact delta. Only development plus exact `1` enabled the isolated writer sample.
+- Mutation boundary: The existing route guard/session mutation path was not executed. Phase 40 measured the shadow-added mutation delta for the isolated helper/writer path as 0 and did not claim total route writes are 0.
+- Verifier integrity: The route static guard was hardened into an importable pure source validator. Ten in-memory negative controls covering production/flag guards, import placement, response/recommendation/store mutation, Supabase mutation calls, output path escape, forbidden fields, and error propagation were all rejected without modifying source files.
+- Actual route execution: Not run. Skip reason is `actual_route_execution_not_run_unsafe_or_unverified_environment` because disposable non-production DB isolation, mutation-delta instrumentation, safe fixture, and rollback were not verified.
+- Result: `preflightStatus=ready_for_isolated_local_flag_on_run`; this is not a completed flag-on route run and does not approve evaluator/CandidatePolicy runtime connection.
+- Context promotion candidate: A future Phase 41 local route run should require explicit evidence of disposable non-production DB isolation, baseline/flag-on mutation delta measurement, safe fixtures, and cleanup/rollback before any request is sent.
+
 ### 2026-07-10 / Phase 39 first disabled shadow dry-run minimal patch
 
 - Branch: codex/survey-input-contract-refactor
