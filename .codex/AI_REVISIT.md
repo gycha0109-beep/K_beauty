@@ -1,5 +1,11 @@
 # revisit.md
 
+> Role: tool/workflow-specific reference
+> Default read: no
+> Canonical authority: no; actual app code, auth/config, schema, and verifier evidence take precedence.
+> Read when: revisit, `/my`, saved-report, or related recovery work needs historical product/workflow context.
+> Canonical references: `AI_ROUTER.md`, `AI_EXECUTION_RULES.md`, `SECURITY_BOUNDARIES.md`
+
 ## Merge 원칙
 
 main 브랜치는 최신 UI source of truth로 유지한다.

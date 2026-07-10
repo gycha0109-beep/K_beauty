@@ -24,9 +24,10 @@ Do not load every `.codex`, architecture, review, Phase, or runbook document at 
 | Audit log | `AI_WORK_LOG.md` and an existing resource-usage log | read only as a relevant recent/known entry |
 | Tool config/artifacts | `hooks.json`, `hooks/`, environments, screenshots, local logs, profiles, temporary output | not AI context unless the task explicitly needs it |
 
-[AI_CONTEXT.md](AI_CONTEXT.md) is a conditional current-context reference, not a mandatory startup read.
+[AI_CONTEXT.md](AI_CONTEXT.md) is a conditional current-context reference only when the router selects a non-empty relevant section.
 [AI_EXECUTION_RULES.md](AI_EXECUTION_RULES.md), [AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md), and [SECURITY_BOUNDARIES.md](SECURITY_BOUNDARIES.md) are conditional L1 execution, verification, and security references.
-[PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md) remains the detailed Git/workstation reference.
+[PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md) is a detailed sync/continuity reference, read only when that workflow is needed.
+[AI_REVISIT.md](AI_REVISIT.md) is a revisit/workflow-specific reference, read only for related recovery or continuity work.
 
 ## Conditional routing principles
 
@@ -50,8 +51,8 @@ Runtime, production, database, provider, payment, and security approval remains 
 
 Use `AI_WORK_LOG.md` for concise Medium-or-higher task outcomes or problems.
 Read only a recent or named relevant entry when continuity is needed.
-Use an existing resource-usage log only for observed values; do not estimate tokens, credits, or account balance.
-If no resource-usage log exists, this entry layer does not require one to be created.
+Append resource evidence only when the user provides a value or the environment directly observes one; otherwise do not create an entry.
+Do not estimate tokens, credits, account balance, or usage percentages, and resource-log updates are not a completion condition.
 
 ## Domain documents
 

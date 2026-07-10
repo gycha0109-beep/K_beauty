@@ -43,3 +43,4 @@ Do not transfer full chat history, all Phase records, or whole documentation dir
 
 Completion reporting must state the task type, routing/security decision, changed files, verification, unperformed checks and reason, reference issues, and remaining risk.
 For Medium-or-higher work or a problem, append a concise entry to `AI_WORK_LOG.md`.
+Resource logging is optional evidence: append only an observed user-provided or environment-observed value, and do not make it a completion condition.

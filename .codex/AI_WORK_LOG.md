@@ -2113,3 +2113,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation: canonical paths, links, structure, entry counts, audit exclusion, scope boundary, sensitive-value patterns, and `git diff --check` are recorded in the completion report.
 - Work-log structure: added the missing `Entries` level so the existing audit headings are structurally valid.
 - Next candidate: only after approval, reconcile remaining detailed L1 source documents without expanding into domain or archive work.
+
+### 2026-07-11 / Phase X+3 legacy Codex context reconciliation and resource log friction reduction
+
+- Model / reasoning: Terra / high.
+- Legacy roles: `AI_CONTEXT.md` is a conditional reference; `PROJECT_SYNC_RULES.md` is a detailed supporting rule; `AI_REVISIT.md` is a tool/workflow-specific reference.
+- Default reads: all three legacy documents are excluded from mandatory startup reads and do not replace canonical L1 or actual source evidence.
+- L0/L1 links: README and router now route each legacy file only for its applicable continuity/recovery context.
+- Resource policy: resource log entries are optional observed evidence, not a per-task completion condition or `not_observable` placeholder requirement.
+- Phase X+2 correction: kept the append-only Phase entry and added a concise correction recording 8% from `user_observed`.
+- Scope boundary: no domain document/directory, file move/delete, feature code, package, runtime, Supabase, Docker, provider, DB, or hosted operation.
+- Validation: role metadata, canonical links, resource policy/backfill, structure, scope boundary, sensitive-value patterns, and `git diff --check` are recorded in the completion report.
+- Next candidate: review legacy product/workflow assertions against current source only when a bounded related task requires it.

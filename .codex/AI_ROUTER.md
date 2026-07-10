@@ -38,16 +38,18 @@ Read only when selected by the delta:
 
 | Need | Conditional reference |
 | --- | --- |
-| current cross-task context | [AI_CONTEXT.md](AI_CONTEXT.md), only the relevant section |
+| current cross-task context | [AI_CONTEXT.md](AI_CONTEXT.md), only a non-empty relevant section |
 | execution scope, Git/change control, handoff, or reporting | [AI_EXECUTION_RULES.md](AI_EXECUTION_RULES.md), only the relevant section |
-| Git/workstation/data synchronization | [PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md), only the needed section |
+| Git/workstation/data synchronization or continuity recovery | [PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md), only the needed section |
 | verification meaning | [AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md), only the task-type section |
 | continuity, prior failure, or resource observation | the latest relevant slice of `AI_WORK_LOG.md` or `AI_RESOURCE_USAGE_LOG.md`, never the full history |
 | protected-surface decision with `Y` delta | [SECURITY_BOUNDARIES.md](SECURITY_BOUNDARIES.md), relevant `AGENTS.md` protected-area rules, and current code/schema/config/verifier |
 | detailed design/contract/runbook | the named source reference, not its whole directory |
+| revisit or `/my` workflow recovery | [AI_REVISIT.md](AI_REVISIT.md), only the relevant section |
 | existing domain summary | only if a relevant approved domain document exists |
 
 Do not default-read audit logs, dated Phase/review/runbook material, screenshots, local logs, profiles, temporary artifacts, or unrelated domains.
+Legacy references do not replace canonical L1 rules or actual code/config/verifier evidence.
 
 ## Security and verification routing
 
@@ -107,6 +109,7 @@ Report `Reference Maintenance Issue`; do not repair unrelated documents or begin
 
 Phase, review, runbook, and work-log records are audit evidence, not default current context.
 Read only a named or latest relevant slice when continuity or evidence requires it.
+Resource-log entries are optional evidence: read or append only when an observed value is relevant, never as a per-task placeholder.
 
 ## Investigation and handoff limits
 

@@ -1,5 +1,11 @@
 # PROJECT_SYNC_RULES
 
+> Role: detailed supporting rule
+> Default read: no
+> Canonical authority: no; actual Git state/remote and L0/L1 rules take precedence.
+> Read when: project continuity, workstation synchronization, local-data handling, or Git recovery needs it.
+> Canonical references: `AI_ROUTER.md`, `AI_EXECUTION_RULES.md`
+
 이 문서는 비주얼리 프로젝트의 **집 PC / 학원 PC / 브랜치 / 로컬 데이터 / Codex 문서 동기화 기준**이다.
 
 목표는 다음과 같다.

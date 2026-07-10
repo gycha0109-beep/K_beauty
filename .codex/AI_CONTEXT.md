@@ -1,5 +1,11 @@
 # AI_CONTEXT.md
 
+> Role: conditional reference
+> Default read: no
+> Canonical authority: no; actual code/config/verifier and L0/L1 rules take precedence.
+> Read when: the router selects a non-empty relevant Active, Bridge, Candidate, or Deactivated item.
+> Canonical references: `README.md`, `AI_ROUTER.md`, `AI_EXECUTION_RULES.md`
+
 ## 목적
 
 이 문서는 현재 작업에 반영할 기준과 보류·폐기된 맥락을 분리해, AI 에이전트가 필요한 컨텍스트만 참조하도록 관리한다.
