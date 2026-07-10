@@ -1,5 +1,288 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 41 isolated local flag-on shadow dry-run
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution + shadow verification
+- Routing decision: Execute `/api/analyze` only if non-production isolation, disposability/cleanup, safe repo fixtures, identical-input replay, and existing-vs-shadow mutation delta instrumentation are all verified. Otherwise fail closed without a request.
+- Goal: Compare flag-off and development flag-on route behavior in an isolated environment, while keeping evaluator/CandidatePolicy runtime, API response, recommendation outputs, DB schema, product data, and production activation unchanged.
+- Changed files: scripts/run-first-isolated-shadow-route-check.mjs, scripts/verify-first-isolated-shadow-route-check.mjs, docs/reviews/first-isolated-shadow-route-check-20260710.md, .codex/AI_WORK_LOG.md
+- Environment result: The configured Supabase endpoint is remote rather than loopback, with no explicit non-production marker, local Supabase config, disposable cleanup contract, safe repo image/payload fixture, or existing-vs-shadow mutation delta instrumentation verified. No env or secret values were printed.
+- Route execution: Not run. Status and skip reason are `isolated_route_run_not_executed_environment_unverified`.
+- Evidence handling: Flag-off/flag-on snapshots, artifact deltas, response/recommendation comparisons, existing route mutation count, shadow-added mutation delta, and safety violation counts remain null rather than being inferred from Phase 40 helper evidence.
+- Runtime isolation: `/api/analyze`, helper/writer, evaluator, CandidatePolicy, response payload, recommendation outputs, DB/Supabase schema, and product data were not modified. No Supabase write was executed.
+- Context promotion candidate: A future isolated route run requires an explicitly disposable non-production Supabase, cleanup/rollback contract, safe tracked fixtures, and separate baseline/flag-on mutation delta instrumentation before any request is sent.
+
+### 2026-07-10 / Phase 40 flag invariance and verifier integrity preflight
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited verification + shadow/audit
+- Routing decision: Verify Phase 39 flag-off/flag-on helper invariance and static verifier integrity without changing the route, writer, evaluator, CandidatePolicy, API response, recommendation outputs, UI, DB/Supabase, product data, or production configuration.
+- Goal: Prove disabled flag cases create no artifact or helper/writer attempt, prove isolated development flag-on helper/writer behavior preserves response/recommendation inputs and adds zero DB mutation calls, and test the static guard against intentionally corrupted in-memory source variants.
+- Changed files: scripts/review-shadow-flag-invariance-preflight.mjs, scripts/verify-shadow-flag-invariance-preflight.mjs, scripts/verify-shadow-verifier-integrity.mjs, scripts/verify-shadow-dry-run-route-static-guard.mjs, docs/reviews/shadow-flag-invariance-preflight-20260710.md, .codex/AI_WORK_LOG.md
+- Flag invariance: Missing env, `0`, `false`, empty, production `1`, and non-exact development `true` samples were disabled with zero artifact delta. Only development plus exact `1` enabled the isolated writer sample.
+- Mutation boundary: The existing route guard/session mutation path was not executed. Phase 40 measured the shadow-added mutation delta for the isolated helper/writer path as 0 and did not claim total route writes are 0.
+- Verifier integrity: The route static guard was hardened into an importable pure source validator. Ten in-memory negative controls covering production/flag guards, import placement, response/recommendation/store mutation, Supabase mutation calls, output path escape, forbidden fields, and error propagation were all rejected without modifying source files.
+- Actual route execution: Not run. Skip reason is `actual_route_execution_not_run_unsafe_or_unverified_environment` because disposable non-production DB isolation, mutation-delta instrumentation, safe fixture, and rollback were not verified.
+- Result: `preflightStatus=ready_for_isolated_local_flag_on_run`; this is not a completed flag-on route run and does not approve evaluator/CandidatePolicy runtime connection.
+- Context promotion candidate: A future Phase 41 local route run should require explicit evidence of disposable non-production DB isolation, baseline/flag-on mutation delta measurement, safe fixtures, and cleanup/rollback before any request is sent.
+
+### 2026-07-10 / Phase 39 first disabled shadow dry-run minimal patch
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited implementation + shadow/audit
+- Routing decision: High-risk API route touch with explicit user approval, strictly limited to a disabled-by-default development-only shadow call site and a local artifact writer. Evaluator/CandidatePolicy runtime behavior, API response shape, recommendation outputs, DB/Supabase, product data, capture fixtures, UI, and production activation remained out of scope.
+- Goal: Apply the Phase 38 minimal patch plan so the existing response and recommendation can be read through sanitized snapshots only when `NODE_ENV` is development and the explicit Phase 39 flag is enabled.
+- Changed files: app/api/analyze/route.js, lib/shadow-boundary-dry-run-artifact-writer.js, scripts/verify-shadow-dry-run-route-static-guard.mjs, scripts/verify-first-disabled-shadow-dry-run-minimal-patch.mjs, docs/reviews/first-disabled-shadow-dry-run-minimal-patch-20260709.md, .codex/AI_WORK_LOG.md, and related Phase 24-38 verifier guard compatibility scripts.
+- Runtime isolation: The flag defaults off and the route returns before dynamic imports unless both development mode and the explicit flag are present. The helper result is not merged into the public response, recommendation result, premium session payload, guard payload, or DB/store payload.
+- Artifact safety: The writer is limited to local `tmp/shadow-boundary-dry-run/`, validates the existing artifact schema and forbidden-field rules before writing, has no Supabase/DB/Storage mutation client, and returns a non-blocking safe summary on write failure.
+- Evidence separation: Phase 39 used static checks and sanitized contract samples only. `/api/analyze` was not invoked, no actual response/recommendation evidence was created, and no Supabase write was executed.
+- Validation: `node scripts/verify-shadow-dry-run-route-static-guard.mjs` and `node scripts/verify-first-disabled-shadow-dry-run-minimal-patch.mjs` passed before the full required verifier/build/diff suite. Final suite results are recorded in the turn completion report.
+- Error log: The first full regression run failed in eight Phase 31-38 verifiers, and the Phase 24-29 follow-up run exposed the same stale assumption in six more checks: those historical verifiers treated any uncommitted `app/api/analyze/route.js` change as forbidden. Phase 39 explicitly authorizes one guarded route change, so the affected review/verifier checks were minimally updated to permit that file only after `verify-shadow-dry-run-route-static-guard.mjs` passes. Evaluator, CandidatePolicy, UI/data, product data, and Supabase protections remain unchanged.
+- Findings: Response mutation, recommendation mutation, and DB/Supabase write patterns were not detected. A forbidden-field sample was rejected before write, development flag-off and production samples were disabled, and a simulated filesystem failure returned `artifact_write_failed_non_blocking` without throwing.
+- Context promotion candidate: Keep Phase 39 wiring development-only and default-off. Phase 40 should require separate approval for any actual local route dry-run; evaluator/CandidatePolicy runtime connection, public response changes, recommendation changes, DB writes, and production activation remain prohibited.
+
+### 2026-07-10 / Phase 38 first disabled shadow dry-run implementation patch plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium future patch plan
+- Routing decision: User requested a first disabled shadow dry-run implementation patch plan after Phase 37. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 33-37 dry-run, checklist, helper, snapshot, and static guard artifacts, then freeze the minimal future patch scope, feature flag contract, route insertion blueprint, snapshot sequence, artifact writer plan, verifier chain, kill criteria, and rollback plan before any Phase 39 patch.
+- Changed files: scripts/review-first-disabled-shadow-dry-run-patch-plan.mjs, scripts/verify-first-disabled-shadow-dry-run-patch-plan.mjs, docs/architecture/first-disabled-shadow-dry-run-patch-plan.md, docs/reviews/first-disabled-shadow-dry-run-patch-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The patch plan did not call `/api/analyze`.
+- Validation: `node scripts/review-first-disabled-shadow-dry-run-patch-plan.mjs`, `node scripts/verify-first-disabled-shadow-dry-run-patch-plan.mjs`, required Phase 37/36/35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Phase 38 fixed the future patch scope only. The recommended future insertion remains `route_outside_helper_dev_only_artifact_writer`; the preferred future flag is `DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN`; future artifact writing must be dev-only, local `tmp` only, schema-validated, forbidden-field-scanned, and non-blocking. Runtime connection remains unapproved.
+- Context promotion candidate: Phase 39 may proceed only with separate approval as a first disabled shadow dry-run minimal patch. Evaluator/CandidatePolicy runtime connection, API response changes, recommendation result changes, DB/Supabase changes, and production activation remain prohibited.
+
+### 2026-07-10 / Phase 37 first disabled shadow dry-run plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium preflight and runbook plan
+- Routing decision: User requested a first disabled shadow dry-run plan after Phase 36. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 30-36 checklist, dry-run, verifier, snapshot, route guard, and helper artifacts, then freeze the preflight checklist, first dry-run runbook, snapshot requirements, kill criteria, and rollback plan before any first disabled shadow dry-run implementation patch plan.
+- Changed files: scripts/review-first-disabled-shadow-dry-run-plan.mjs, scripts/verify-first-disabled-shadow-dry-run-plan.mjs, docs/architecture/first-disabled-shadow-dry-run-plan.md, docs/reviews/first-disabled-shadow-dry-run-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The plan did not call `/api/analyze`.
+- Error log: Initial `node scripts/review-first-disabled-shadow-dry-run-plan.mjs` execution failed with `ReferenceError: documentsPresent is not defined` because the local variable was named `docsPresent`. Fixed the script to emit `documentsPresent: docsPresent` in `sourceReadiness`.
+- Validation: `node scripts/review-first-disabled-shadow-dry-run-plan.mjs`, `node scripts/verify-first-disabled-shadow-dry-run-plan.mjs`, required Phase 36/35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Phase 37 fixed preflight, runbook, snapshot, kill, and rollback criteria only. Runtime connection remains unapproved. Phase 38 may proceed only as a first disabled shadow dry-run implementation patch plan, minimal route insertion proposal, artifact writer skeleton proposal, flag guard implementation plan, or dry-run snapshot verifier refinement.
+- Context promotion candidate: Phase 38 should remain plan/proposal only unless a separate approved task explicitly allows a route patch. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require separate approval.
+
+### 2026-07-10 / Phase 36 final pre-runtime integration checklist
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium final checklist artifact
+- Routing decision: User requested a final pre-runtime integration checklist after Phase 35. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 26-35 readiness, contract, verifier, route guard, and helper artifacts, then freeze final conditions before a first disabled shadow dry-run plan can be written.
+- Changed files: scripts/review-final-pre-runtime-integration-checklist.mjs, scripts/verify-final-pre-runtime-integration-checklist.mjs, docs/architecture/final-pre-runtime-integration-checklist.md, docs/reviews/final-pre-runtime-integration-checklist-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The checklist did not call `/api/analyze`.
+- Validation: `node scripts/review-final-pre-runtime-integration-checklist.mjs`, `node scripts/verify-final-pre-runtime-integration-checklist.mjs`, required Phase 35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Checklist status is `ready_for_first_disabled_shadow_dry_run_plan`, meaning Phase 37 may write a first disabled shadow dry-run plan only. Policy readiness, contract readiness, safety verifier readiness, route isolation readiness, and artifact safety readiness are all satisfied in current artifacts. Runtime connection remains unapproved.
+- Context promotion candidate: Phase 37 may proceed only as first disabled shadow dry-run plan, disabled shadow dry-run preflight plan, or route-disconnected artifact writer skeleton design. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
+### 2026-07-10 / Phase 35 disabled-by-default shadow boundary dry-run helper skeleton
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium route-disconnected helper skeleton
+- Routing decision: User requested a disabled-by-default shadow boundary dry-run helper skeleton after Phase 34 snapshot contract and static route insertion guard. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a route-disconnected helper skeleton that validates snapshot inputs, returns sanitized artifact payloads, summarizes kill conditions, and remains disabled by default without writing artifacts.
+- Changed files: lib/shadow-boundary-dry-run-helper.js, scripts/verify-shadow-boundary-dry-run-helper.mjs, scripts/review-shadow-boundary-dry-run-helper-skeleton.mjs, docs/architecture/shadow-boundary-dry-run-helper.md, docs/reviews/shadow-boundary-dry-run-helper-skeleton-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The helper and review did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-boundary-dry-run-helper.mjs`, `node scripts/review-shadow-boundary-dry-run-helper-skeleton.mjs`, required Phase 34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The helper defaults to disabled, returns enabled only for explicit non-production future flag samples, validates Phase 34 snapshots, returns sanitized payloads without writing artifacts, and marks blocked kill conditions for recommendation changes, high-risk collapsed receiver counts, metadata-incomplete collapsed receiver counts, and DB writes. Helper output stays route-disconnected and schema-compatible when adapted to the Phase 31 schema-test evidence type.
+- Context promotion candidate: Phase 36 may proceed only as final pre-runtime integration checklist, artifact writer skeleton design, or snapshot-contract-backed verifier refinement. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
+### 2026-07-10 / Phase 34 dry-run snapshot contract helper and static route insertion guard
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium pure helper and static guard review
+- Routing decision: User requested a dry-run snapshot contract helper and static route insertion guard review after Phase 33. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a runtime-disconnected snapshot contract helper, verify sanitized snapshot behavior, statically review future route insertion points, and document guardrails for a future `route_outside_helper_dev_only_artifact_writer` approach.
+- Changed files: lib/shadow-dry-run-snapshot-contract.js, scripts/review-shadow-route-insertion-static-guard.mjs, scripts/verify-shadow-dry-run-snapshot-contract.mjs, scripts/verify-shadow-route-insertion-static-guard.mjs, docs/architecture/shadow-dry-run-snapshot-contract.md, docs/reviews/shadow-route-insertion-static-guard-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-dry-run-snapshot-contract.mjs`, `node scripts/review-shadow-route-insertion-static-guard.mjs`, `node scripts/verify-shadow-route-insertion-static-guard.mjs`, required Phase 33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The snapshot helper builds sanitized baseline response shape, baseline recommendation, shadow boundary hint, shadow receiver, and comparison snapshots without full API body, product display fields, raw form, image/base64, PII, or env/secret values. Static review again recommends `route_outside_helper_dev_only_artifact_writer`, with required guardrails to keep helper output out of response, recommendation, persistence, and CandidatePolicy/evaluator runtime paths.
+- Context promotion candidate: Phase 35 may proceed only as disabled-by-default dry-run helper implementation skeleton, snapshot-contract-backed verifier refinement, or final pre-runtime integration checklist. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
+### 2026-07-10 / Phase 33 disabled-by-default shadow dry-run implementation plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium implementation plan artifact
+- Routing decision: User requested a disabled-by-default shadow dry-run implementation plan after Phase 32 safety verifier skeletons. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a read-only implementation plan review script, verifier, architecture doc, and review doc for future dry-run flag/snapshot/artifact/verifier/kill-switch planning.
+- Changed files: scripts/review-shadow-dry-run-implementation-plan.mjs, scripts/verify-shadow-dry-run-implementation-plan.mjs, docs/architecture/shadow-dry-run-implementation-plan.md, docs/reviews/shadow-dry-run-implementation-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The plan did not call `/api/analyze`.
+- Validation: `node scripts/review-shadow-dry-run-implementation-plan.mjs`, `node scripts/verify-shadow-dry-run-implementation-plan.mjs`, required Phase 32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: The recommended insertion point is a route-outside pure helper with a dev-only local artifact writer, behind `SHADOW_RUNTIME_BOUNDARY_DRY_RUN` or equivalent disabled-by-default flag. The plan requires baseline response shape, baseline recommendation, shadow boundary hint, shadow receiver, and comparison snapshots; local tmp-only artifact writing; verifier chain enforcement; and immediate blocked status on high-risk, metadata incomplete, strong caution, response diff, recommendation diff, DB write, or forbidden artifact field violations.
+- Context promotion candidate: Phase 34 may proceed only as dry-run snapshot contract helper design, future flag contract documentation, snapshot-schema-backed verifier refinement, or static route insertion guard review. Runtime evaluator/CandidatePolicy connection and `/api/analyze` route changes still require a separate approved task.
+
+### 2026-07-10 / Phase 32 shadow safety verifier skeletons
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium verifier skeleton contracts
+- Routing decision: User requested no-response-change, no-recommendation-change, and no-DB-write verifier skeletons after Phase 31 schema and required contract tests. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add three safety verifier skeletons, an integrated verifier, and docs while keeping synthetic skeleton samples separate from actual response, recommendation, and DB evidence.
+- Changed files: scripts/verify-shadow-no-response-change-skeleton.mjs, scripts/verify-shadow-no-recommendation-change-skeleton.mjs, scripts/verify-shadow-no-db-write-skeleton.mjs, scripts/verify-shadow-safety-verifier-skeletons.mjs, docs/architecture/shadow-safety-verifier-skeletons.md, docs/reviews/shadow-safety-verifier-skeletons-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The skeletons did not call `/api/analyze`.
+- Validation: `node scripts/verify-shadow-no-response-change-skeleton.mjs`, `node scripts/verify-shadow-no-recommendation-change-skeleton.mjs`, `node scripts/verify-shadow-no-db-write-skeleton.mjs`, `node scripts/verify-shadow-safety-verifier-skeletons.mjs`, required Phase 31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` are recorded in the turn completion report.
+- Findings: The response skeleton rejects API response body dumps and forbidden artifact fields. The recommendation skeleton treats topPick/supportingProducts/budgetAlternatives identity or order changes as failures. The DB-write skeleton requires all write counters to remain zero and keeps guard/session mutation tracking separate from shadow dry-run mutation. All skeleton artifacts record `runtimeConnected=false`, `routeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticTreatedAsActualEvidence=false`.
+- Context promotion candidate: Phase 33 may proceed only as disabled-by-default shadow dry-run implementation planning or dry-run snapshot contract design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those snapshot contracts and verifiers exist.
+
+### 2026-07-10 / Phase 31 required contract test skeleton and dry-run artifact schema
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium pure helper schema and contract test skeleton
+- Routing decision: User requested runtime-disconnected required contract test skeletons and a dry-run artifact schema after Phase 30. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic fixtures recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a pure shadow dry-run artifact schema helper, required contract test skeleton runner, verifiers, and docs while keeping synthetic contract cases separate from actual evidence.
+- Changed files: lib/shadow-runtime-dry-run-artifact-schema.js, scripts/run-evaluator-boundary-required-contract-tests.mjs, scripts/verify-evaluator-boundary-required-contract-tests.mjs, scripts/verify-shadow-runtime-dry-run-artifact-schema.mjs, docs/architecture/shadow-runtime-dry-run-artifact-schema.md, docs/reviews/evaluator-boundary-required-contract-tests-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The runner did not call `/api/analyze`.
+- Validation: `node scripts/run-evaluator-boundary-required-contract-tests.mjs`, `node scripts/verify-evaluator-boundary-required-contract-tests.mjs`, `node scripts/verify-shadow-runtime-dry-run-artifact-schema.mjs`, required Phase 30/29/28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` passed. `git diff --check` is recorded in the turn completion report.
+- Findings: All 10 required contract test skeletons passed with `syntheticContractCasesUsed=true` and `syntheticTreatedAsActualEvidence=false`. The schema helper requires baseline/shadow separation, evidence separation, no API response body dump, no recommendation result changes, no DB writes, no high-risk or metadata-incomplete collapsed receiver counts, and forbidden artifact field rejection.
+- Context promotion candidate: Phase 32 may proceed only as no-response-change, no-recommendation-change, or no-DB-write verifier skeleton/design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those verifier gates exist and pass.
+
+### 2026-07-10 / Phase 30 shadow runtime dry-run design and required contract test plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium dry-run plan and contract test checklist
+- Routing decision: User requested design-only shadow runtime dry-run planning after Phase 29 returned `ready_for_runtime_integration_plan`. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Read Phase 29 acceptance and Phase 27-28 what-if artifacts, define disabled-by-default dry-run gates, baseline-vs-shadow comparison requirements, kill conditions, required contract tests, and Phase 31 allowed/prohibited scope.
+- Changed files: scripts/review-shadow-runtime-dry-run-plan.mjs, scripts/verify-shadow-runtime-dry-run-plan.mjs, docs/architecture/shadow-runtime-dry-run-design.md, docs/architecture/evaluator-boundary-required-contract-tests.md, docs/reviews/shadow-runtime-dry-run-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/review-shadow-runtime-dry-run-plan.mjs`, `node scripts/verify-shadow-runtime-dry-run-plan.mjs`, required Phase 29/28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` passed. `git diff --check` is recorded in the turn completion report.
+- Findings: The dry-run plan is disabled by default, requires an explicit future flag, records only sanitized observations, keeps baseline and shadow sections separate, and blocks expansion on high-risk/sensitivity-unsafe/strong-caution/metadata-incomplete collapsed receiver counts, response shape changes, recommendation result changes, DB writes, production flag failures, or forbidden artifact fields. Required contract tests now include metadata incomplete, strong caution, active-only, high-risk/sensitivity unsafe, serum category, evidence separation, API response shape, recommendation result, DB write, and artifact sanitization tests.
+- Context promotion candidate: Phase 31 may proceed only as contract test skeleton/pure helper unit test design or dry-run schema/verifier design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those gates are implemented and pass.
+
+### 2026-07-09 / Phase 29 runtime integration acceptance criteria
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium acceptance criteria and gate checklist
+- Routing decision: User requested design-only runtime integration acceptance criteria after Phase 16-28 boundary, collapsed hint, and CandidatePolicy receiver evidence. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Read Phase 26-28 artifacts, keep actual capture, pure replay, and synthetic coverage evidence separate, and freeze gate criteria for when a future runtime integration plan may be considered.
+- Changed files: scripts/review-runtime-integration-acceptance-criteria.mjs, scripts/verify-runtime-integration-acceptance-criteria.mjs, docs/architecture/runtime-integration-acceptance-criteria.md, docs/reviews/runtime-integration-acceptance-review-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The acceptance review did not call `/api/analyze`.
+- Validation: `node scripts/review-runtime-integration-acceptance-criteria.mjs` and `node scripts/verify-runtime-integration-acceptance-criteria.mjs` passed. Required Phase 28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Acceptance status is `ready_for_runtime_integration_plan`, meaning Phase 30 may design a runtime integration plan or shadow runtime dry-run only. Gate A/B/C/D/H passed; Gate E/F/G are conditional required contract tests because metadata-incomplete, strong-caution, and active-only remain unobserved in actual and pure replay evidence. High-risk collapsed hint and receiver counts remain 0, low-risk consistency remains actual 50/50 and pure replay 150/150, and evidence types remain separated.
+- Context promotion candidate: Phase 30 may proceed only as runtime integration plan design or shadow runtime dry-run design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after required contract tests and dry-run gates are defined.
+
+### 2026-07-09 / Phase 28 CandidatePolicy hint receiver design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium CandidatePolicy receiver contract and what-if review
+- Routing decision: User requested design-only CandidatePolicy hint receiver work after Phase 27 evaluator pass plus collapsed hint design. Runtime CandidatePolicy wiring, evaluator runtime changes, score/weight/hard-filter changes, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Add a pure CandidatePolicy hint receiver contract, apply it to the Phase 27 integration what-if artifact, and document how future CandidatePolicy logic should interpret `collapsed_candidate_hint`, `hidden_candidate_hint`, and `insufficient_evidence_hint`.
+- Changed files: lib/candidate-policy-hint-receiver-contract.js, scripts/run-candidate-policy-hint-receiver-whatif.mjs, scripts/verify-candidate-policy-hint-receiver-design.mjs, docs/architecture/candidate-policy-hint-receiver.md, docs/reviews/candidate-policy-hint-receiver-whatif-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The what-if runner did not call `/api/analyze`.
+- Validation: `node scripts/run-candidate-policy-hint-receiver-whatif.mjs`, `node scripts/verify-candidate-policy-hint-receiver-design.mjs`, Phase 27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` passed. `git diff --check` only reported existing LF-to-CRLF warnings for two review docs.
+- Findings: Actual receiver what-if accepts 52/52 collapsed hints, preserves 33 hidden hints, moves hidden -52 and collapsed +52, and has 0 high-risk collapsed receiver violations. Pure replay receiver what-if accepts 156/156 collapsed hints, preserves 99 hidden hints, moves hidden -156 and collapsed +156, accepts 39 serum-family collapsed hints, and has 0 high-risk collapsed receiver violations. Actual capture, pure replay, and synthetic coverage evidence remain separated.
+- Context promotion candidate: Phase 29 may design shadow-only receiver test coverage or runtime integration acceptance criteria. CandidatePolicy/evaluator runtime connection still requires a separate approved task.
+
+### 2026-07-09 / Phase 27 evaluator pass plus collapsed hint integration design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium integration contract and what-if review
+- Routing decision: User requested design-only evaluator pass plus collapsed hint integration and what-if shadow calculation after Phase 26 readiness. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, and recommendation output changes were out of scope.
+- Goal: Add a pure collapsed hint contract helper, compare integration options, and calculate actual vs pure replay what-if effects without connecting runtime paths.
+- Changed files: lib/evaluator-boundary-collapsed-hint-contract.js, scripts/run-evaluator-boundary-integration-whatif.mjs, scripts/verify-evaluator-boundary-integration-design.mjs, docs/architecture/evaluator-boundary-collapsed-hint-integration.md, docs/reviews/evaluator-boundary-integration-whatif-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The what-if runner did not call `/api/analyze`.
+- Validation: `node scripts/run-evaluator-boundary-integration-whatif.mjs` and `node scripts/verify-evaluator-boundary-integration-design.mjs` passed. The what-if artifact records `evidenceType=integration_whatif_shadow`, `runtimeConnected=false`, `routeInvoked=false`, `supabaseWriteExecuted=false`, and `runtimeMutation=false`.
+- Findings: Recommended option is Option B, evaluator pass plus collapsed hint. Actual what-if moves 52 rows from hidden to collapsed, including 50/50 safe-low-risk hidden rows, with 0 high-risk collapsed hints. Pure replay what-if moves 156 rows from hidden to collapsed, including 150/150 safe-low-risk hidden rows and 39 serum-family collapsed hints, with 0 high-risk collapsed hints. Actual capture, pure replay, and synthetic coverage evidence remain separated.
+- Context promotion candidate: Phase 28 may design CandidatePolicy hint receiver or expand shadow coverage, but runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
+### 2026-07-09 / Phase 26 boundary replay readiness review
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit diagnostic / Medium readiness review
+- Routing decision: User requested a read-only readiness review across Phase 16-25 evidence for the `recent_instability_active_limited` boundary. Runtime changes, evaluator pass implementation, collapsed hint implementation, CandidatePolicy wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, and synthetic product creation were out of scope.
+- Goal: Separate actual complete/product_row capture evidence, pure engine replay evidence, and synthetic policy coverage, then decide whether the boundary can move to design-only Phase 27 work.
+- Changed files: scripts/review-evaluator-boundary-readiness.mjs, scripts/verify-evaluator-boundary-readiness-review.mjs, docs/reviews/evaluator-boundary-readiness-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The review did not call `/api/analyze`.
+- Validation: `node scripts/review-evaluator-boundary-readiness.mjs` and `node scripts/verify-evaluator-boundary-readiness-review.mjs` passed. The readiness artifact records actual capture and pure replay evidence separately, keeps synthetic coverage out of actual evidence, and reports `routeInvoked=false`, `supabaseWriteExecuted=false`, and `runtimeMutation=false`.
+- Findings: Readiness status is `ready_for_boundary_integration_design`. Actual evidence has 10 complete/product_row captures, 1,640 candidate rows, 86 boundary-applicable rows, 50 safe-low-risk hidden rows, 50/50 collapsed, and 0 high-risk collapsed rows. Pure replay evidence has `evidenceType=pure_engine_replay`, 164 product rows, 164 scorer-compatible rows, 656 candidate rows, 258 boundary-applicable rows, 150 safe-low-risk hidden rows, 150/150 collapsed, and 0 high-risk collapsed rows. Serum-family rows were observed in pure replay; active-leaning-only, metadata-incomplete, and strong-caution rows remain unobserved in actual and pure replay evidence.
+- Context promotion candidate: Phase 27 may proceed only as design/what-if shadow work for evaluator pass plus collapsed hint and CandidatePolicy hint contract. Runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
+### 2026-07-09 / Phase 25 pure engine replay with read-only product source
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit diagnostic / Medium pure engine replay evidence expansion
+- Routing decision: User requested rerunning Phase 22 pure engine replay using the Phase 24 read-only Supabase product source. Runtime changes, `/api/analyze` invocation, evaluator hard-filter/score/weight changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, synthetic products, and actual capture mixing were out of scope.
+- Goal: Safely load `.env.local` without printing values, use `getRecommendationProducts()` as the read-only scorer-compatible product source, and rerun the four Phase 19 target scenarios as `pure_engine_replay` evidence only.
+- Changed files: scripts/run-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-replay-readonly-source.mjs, docs/reviews/evaluator-boundary-pure-engine-readonly-replay-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The runner does not call `/api/analyze`.
+- Validation: `node scripts/run-pure-engine-target-scenario-replay.mjs`, `node scripts/verify-pure-engine-target-scenario-replay.mjs`, and `node scripts/verify-pure-engine-replay-readonly-source.mjs` passed. The replay artifact records `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, `envValuesPrinted=false`, `productSource=getRecommendationProducts_read_only`, and `syntheticProductsUsed=false`. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: Read-only source loaded 164 product rows and 164 scorer-compatible rows. All four target scenarios succeeded with 164 candidate rows each, 656 total candidate rows, and 258 boundary-applicable rows. `safeLowRiskHidden` was observed with 150 rows, all `downgrade_to_collapsed_candidate`; `serumCategory` was observed with 168 rows and 66 boundary-applicable rows; `activeLeaningOnly`, `metadataIncomplete`, and `strongCaution` remained not observed. `highRiskCollapsedCount` stayed 0.
+- Context promotion candidate: Phase 25 replay evidence can inform the next boundary review, but it remains pure replay evidence and must not be counted as actual complete/product_row capture evidence. Runtime evaluator/CandidatePolicy integration still requires a separate approved task.
+
+### 2026-07-09 / Phase 24 product source config trace and read-only availability
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / Medium product source missing_config trace
+- Routing decision: User requested diagnosis of why Phase 23 `getRecommendationProducts()` returned `missing_config`, plus read-only availability checking. Runtime changes, `/api/analyze` invocation, evaluator changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, capture fixture source edits, synthetic products, and Phase 25 replay execution were out of scope.
+- Goal: Trace the product source config path, identify required env key names without printing values, compare route vs direct script product loading, and verify whether current checkout can load read-only scorer-compatible product rows.
+- Changed files: scripts/trace-product-source-config.mjs, scripts/verify-product-source-config-trace.mjs, docs/reviews/product-source-config-trace-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, or recommendation output change. The Phase 24 runner does not call `/api/analyze`.
+- Validation: `node scripts/trace-product-source-config.mjs` passed and wrote trace artifacts with `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticProductsUsed=false`. `node scripts/verify-product-source-config-trace.mjs` passed after narrowing a false-positive secret-leak verifier pattern that matched the allowed key name `SUPABASE_SERVICE_ROLE_KEY`. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: `getSupabaseConfig()` needs one URL key (`SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`) and one anon key (`SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`). Product read-only source does not require service role. `.env.local` contains `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` key names, but direct Node Phase 23 did not load `.env.local`, causing `phase23_direct_node_process_env_missing_product_source_config`. Loading `.env.local` values without printing them made the read-only source available: 164 rows read, 164 scorer-compatible, service role not required.
+- Context promotion candidate: Phase 25 can rerun pure engine replay using the existing read-only `getRecommendationProducts()` source if the direct Node runner safely loads the URL/anon key env file without printing values. Continue to keep replay evidence separate from actual `/api/analyze` captures.
+
+### 2026-07-09 / Phase 23 read-only scorer-compatible product source extraction
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / Medium read-only product source boundary inspection
+- Routing decision: User requested investigation of the legacy decision engine scorer product-row contract and whether an existing read-only product source can provide scorer-compatible rows. Runtime changes, `/api/analyze` invocation, evaluator changes, CandidatePolicy wiring, UI/API response changes, DB/Supabase writes, product data edits, synthetic products, and mixing actual capture with replay evidence were out of scope.
+- Goal: Identify current scorer-compatible product row requirements and add a no-write verifier for `getRecommendationProducts()` source extraction.
+- Changed files: scripts/inspect-read-only-scorer-compatible-product-source.mjs, scripts/verify-read-only-scorer-compatible-product-source.mjs, docs/reviews/read-only-scorer-compatible-product-source-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, or recommendation output change. The Phase 23 runner does not call `/api/analyze`.
+- Validation: `node scripts/inspect-read-only-scorer-compatible-product-source.mjs` passed and wrote a diagnostic artifact with `routeInvoked=false`, `apiAnalyzeInvoked=false`, `supabaseWriteExecuted=false`, `runtimeMutation=false`, and `syntheticProductsUsed=false`. `node scripts/verify-read-only-scorer-compatible-product-source.mjs` passed and confirmed runtime files do not reference the inspection script. Node emitted existing direct-ESM `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings.
+- Findings: The scorer-compatible minimum is `id`, `name`, `brand`, and an authorized recommendation category resolved by `getProductCategorySlot`; `product_form` participates in serum/moisturizer subcategory authorization when present. Current local read-only source extraction returned `product_source_unavailable:missing_config`, so actual scorer-compatible rows were not obtained in this checkout and target scenario replay with extracted rows was skipped.
+- Context promotion candidate: Phase 23 should remain a source-availability gate. Do not treat source-unavailable or zero-row read-only extraction as functional policy evidence; rerun in an environment where `getRecommendationProducts()` can read product rows before expanding pure engine replay coverage.
+
+### 2026-07-09 / evaluator boundary actual coverage collection phase 18
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium actual capture coverage collection
+- Routing decision: User requested actual complete/product-row capture coverage collection for Phase 16-17 evaluator boundary gaps. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Collect whether active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata gap cases are present in current actual complete capture evidence, while keeping synthetic fixture validation separate from actual capture evidence.
+- Changed files: scripts/collect-evaluator-boundary-actual-coverage.mjs, scripts/verify-evaluator-boundary-actual-coverage.mjs, docs/reviews/evaluator-boundary-actual-coverage-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: `node scripts/collect-evaluator-boundary-actual-coverage.mjs` and `node scripts/verify-evaluator-boundary-actual-coverage.mjs` passed. Existing Phase 16-17 boundary, evaluator hard-block, exposure/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Current actual complete/product-row captures used 10 fixtures, 1,640 high-confidence candidate rows, and 86 boundary-applicable rows. Active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata gap cases were not observed in current actual captures. The safe-low-risk hidden target slice was reconfirmed at 50 rows, all `downgrade_to_collapsed_candidate`. High-risk collapsed count remained 0.
+- Context promotion candidate: Not-observed gaps should be treated as current product/capture distribution limitations. Evaluator pass plus collapsed hint remains a separate approved task after actual high-confidence coverage is expanded.
+
+### 2026-07-09 / evaluator boundary coverage gap validation phase 17
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium synthetic policy coverage validation
+- Routing decision: User requested synthetic fixture validation for Phase 16 coverage gaps. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Validate `resolveEvaluatorRecentInstabilityBoundaryPolicy()` against synthetic active-leaning-only, metadata-incomplete, serum category, and strong-caution metadata cases before any future runtime integration discussion.
+- Changed files: scripts/verify-evaluator-boundary-coverage-gaps.mjs, docs/reviews/evaluator-boundary-coverage-gaps-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: `node scripts/verify-evaluator-boundary-coverage-gaps.mjs` passed. Existing Phase 16 boundary verifier/runner, evaluator hard-block review, exposure audit/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Synthetic active-leaning-only safe metadata routes to `downgrade_to_collapsed_candidate`; active-leaning unsafe metadata and strong caution metadata preserve hard block; metadata gaps route to `requires_metadata_review`; serum category alone does not preserve hard block. This is synthetic policy coverage, not real runtime/user/product distribution evidence.
+- Context promotion candidate: Runtime evaluator/CandidatePolicy integration still needs separate approval plus actual high-confidence complete-capture coverage for active-leaning-only, metadata-incomplete, serum, and strong-caution cases.
+
+### 2026-07-09 / evaluator recent-instability boundary shadow policy phase 16
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: execution / Medium shadow-only evaluator boundary policy
+- Routing decision: User requested a pure boundary policy and shadow reclassification audit for evaluator `recent_instability_active_limited` hard blocks. Runtime evaluator logic, hard-filter/score/weight changes, CandidatePolicy runtime wiring, route/API/UI/DB/Supabase changes, existing recommendation output, topPick/supporting/budget payloads, capture fixture source edits, and product data changes were out of scope.
+- Goal: Add `resolveEvaluatorRecentInstabilityBoundaryPolicy()` plus a local shadow runner/verifier to classify existing recent-instability evaluator hard blocks as `preserve_hard_block`, `downgrade_to_collapsed_candidate`, `requires_metadata_review`, or `not_applicable`.
+- Changed files: lib/evaluator-recent-instability-boundary-policy.js, scripts/run-evaluator-recent-instability-boundary-shadow.mjs, scripts/verify-evaluator-recent-instability-boundary-policy.mjs, docs/architecture/evaluator-recent-instability-boundary-policy.md, docs/reviews/evaluator-recent-instability-boundary-shadow-20260703.md, scripts/run-functional-candidate-exposure-audit.mjs, scripts/run-recent-instability-guard-matrix.mjs, scripts/replay-functional-shadow-captures.mjs, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, stored payload, DB/schema/migration/policy, Supabase query, existing recommendation engine, functional-ranking evaluator behavior, hard-filter/score/weight, CandidatePolicy runtime, UI, product data, capture fixture source, or user-facing recommendation changes.
+- Validation: Boundary runner and verifier passed. Existing evaluator hard-block review, exposure audit/readiness, recent-instability matrix/policy, guard exposure, shadow comparison/capture, candidate audit, ranking, goal, and survey verifier scripts passed. `npm run build` and `git diff --check` passed. Node emitted existing MODULE_TYPELESS_PACKAGE_JSON warnings for ES-module-style files.
+- Findings: Reviewed 86 high-confidence evaluator `recent_instability_active_limited` hard-block rows. Shadow decisions: preserve hard block 33, downgrade to collapsed 52, metadata review 0, not applicable 1. The safe-low-risk hidden target slice was 50/50 downgraded to collapsed candidate and 0/50 preserved. High-risk/unsafe rows were not downgraded to collapsed.
+- Context promotion candidate: The boundary is deterministic enough for a future evaluator/CandidatePolicy policy task, but runtime changes still require separate approval and more coverage for active-leaning-only, metadata-incomplete, serum, and strong-caution comparison samples.
+
+### 2026-07-09 / premium engine architecture documentation
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: design / documentation-only architecture boundary
+- Routing decision: User requested Premium Engine Architecture documentation only. Runtime code changes, evaluator/hard-filter/score/weight changes, CandidatePolicy runtime wiring, UI/API response changes, DB/schema/migration/Supabase changes, existing recommendation output changes, Face Lab implementation, Condition engine implementation, and Routine engine implementation were out of scope.
+- Goal: Define `SkinMatchPremiumCore` as the shared premium judgment layer and fix responsibility boundaries for Routine, Functional, Condition, and Face Lab engines before returning to Phase 16.
+- Changed files: docs/architecture/premium-engine-architecture.md, .codex/AI_WORK_LOG.md
+- Protected areas: No runtime code, UI, API response fields, stored payload structure, DB/schema/migration/policy, Supabase query, existing recommendation engine, topPick/supporting/budget payload, evaluator behavior, CandidatePolicy runtime, product data, or Face Lab/Condition/Routine implementation changes.
+- Validation: `npm run build` passed. `git diff --check` passed.
+- Findings: The architecture now treats functional ranking, guard, exposure, candidate audit, shadow capture, and divergence review modules as parts of the future `SkinMatchPremiumCore` judgment/audit layer rather than an independent premium sector. Face Lab is explicitly separate and may consume only `skinStyleSignals` from the core.
+- Resume point: Return to Phase 16, `Evaluator Recent-Instability Hard Block Boundary Shadow Policy`, to shadow-validate `preserve_hard_block` vs `downgrade_to_collapsed_candidate` for low-risk / sensitivity-safe mixed-profile candidates blocked by `recent_instability_active_limited`.
+
 ### 2026-07-06 / evaluator hard block boundary review phase 15
 
 - Branch: codex/survey-input-contract-refactor
@@ -1578,6 +1861,43 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Notes/risks: Production build has premium report selector hidden unless the premium flag is enabled; selector-specific verification therefore relied on source-level group inspection plus API checks instead of completing the photo upload flow in-browser.
 - Context promotion candidate: NULL
 
+### 2026-07-09 / Phase 19 evaluator boundary target capture plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / shadow audit planning
+- Routing decision: Medium audit artifact and documentation work scoped to target actual capture planning for evaluator boundary coverage gaps. Runtime evaluator logic, CandidatePolicy runtime, API route, UI/API response, DB/Supabase, product data, existing capture fixtures, and existing recommendation outputs were out of scope.
+- Goal: Identify whether active-only, metadata-incomplete, serum category, and strong caution metadata gaps can be observed from current complete/product_row captures, and produce SurveyInputContract-compatible target scenarios for future dev-only actual capture.
+- Changed files: scripts/plan-evaluator-boundary-target-captures.mjs, scripts/verify-evaluator-boundary-target-capture-plan.mjs, docs/reviews/evaluator-boundary-target-capture-plan-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, hard filter, score, CandidatePolicy runtime, UI/API response, DB/Supabase, product data, or capture fixture originals were modified.
+- Validation: `node scripts/plan-evaluator-boundary-target-captures.mjs`, `node scripts/verify-evaluator-boundary-target-capture-plan.mjs`, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Synthetic fixtures were not treated as actual evidence. The current complete/product_row captures expose 1,640 candidate rows but none of the four missing gap classes. Dev capture execution was not performed by the planner and remains a separate opt-in action with existing `/api/analyze` runtime dependencies.
+- Context promotion candidate: Targeted actual capture planning must distinguish actual complete capture evidence from synthetic policy coverage; missing gap observation is a product/candidate distribution limitation, not a policy approval.
+
+### 2026-07-09 / Phase 20 dev-only target scenario capture attempt
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / guarded runtime capture attempt
+- Routing decision: Medium dev-only capture runner and review artifact work. Runtime evaluator logic, CandidatePolicy runtime, API route, UI/API response, DB/Supabase schema, product data, existing fixture originals, and existing recommendation outputs were out of scope.
+- Goal: Attempt Phase 19 target scenarios through the existing dev-only `/api/analyze` capture path, then re-check actual coverage gaps.
+- Changed files: scripts/run-dev-target-scenario-captures.mjs, scripts/verify-dev-target-scenario-captures.mjs, docs/reviews/evaluator-boundary-dev-target-captures-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, hard filter, score, CandidatePolicy runtime, UI/API response, DB/Supabase schema, product data, or capture fixture originals were modified.
+- Result: Actual API execution was skipped with `capture_run_not_executed_db_mutating_guard_path` because the route path invokes analysis guard RPCs and premium report session store writes/prunes. New complete/product_row captures: 0. Actual coverage remains 10 complete captures, 1,640 candidate rows, 86 boundary-applicable rows, and the four Phase 18 gaps still unobserved. `safe_low_risk hidden` remains 50/50 `downgrade_to_collapsed_candidate`; high-risk collapsed count remains 0.
+- Validation: `node scripts/run-dev-target-scenario-captures.mjs`, `node scripts/verify-dev-target-scenario-captures.mjs`, Phase 19 planner/verifier, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Synthetic fixtures were not treated as actual evidence. A future run requires an approved isolated dev DB/write path or an approved no-write dev route/guard bypass.
+- Context promotion candidate: Dev-only actual capture execution must not silently mutate guard/session stores when a task forbids DB/Supabase mutation; skipped capture with a precise reason is preferable to fabricating evidence.
+
+### 2026-07-09 / Phase 21 analyze no-write capture boundary design
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: diagnostic / architecture documentation
+- Routing decision: Medium static boundary investigation scoped to `/api/analyze` no-write capture design. Runtime route behavior, evaluator logic, hard filters, ranking scores, CandidatePolicy runtime, UI/API response, DB/Supabase schema, product data, existing fixture originals, and existing recommendation outputs were out of scope.
+- Goal: Explain why Phase 20 stopped at `capture_run_not_executed_db_mutating_guard_path`, identify pure analysis/recommendation boundaries versus DB/session mutation boundaries, and compare future no-write capture options.
+- Changed files: scripts/inspect-analyze-no-write-boundary.mjs, scripts/verify-analyze-no-write-boundary.mjs, docs/architecture/analyze-no-write-capture-boundary.md, .codex/AI_WORK_LOG.md
+- Protected areas: No `/api/analyze` runtime change, evaluator change, CandidatePolicy connection, UI/API response change, DB/Supabase change, product data change, capture fixture edit, actual API request, or Supabase remote write was performed.
+- Validation: `node scripts/inspect-analyze-no-write-boundary.mjs`, `node scripts/verify-analyze-no-write-boundary.mjs`, Phase 20 dev target verifier, actual coverage collector/verifier, evaluator boundary shadow/policy/coverage verifiers, functional exposure audit/readiness review/verifiers, recent-instability/guard/shadow/ranking/goal/survey verifiers, `npm run build`, and `git diff --check` passed. `git diff --check` reported CRLF normalization warnings only.
+- Notes/risks: Static inspection found analysis guard RPC mutations before recommendation generation and premium report store insert/prune before the current shadow capture call. Recommended next step is a script-only pure engine replay runner before considering a route-level no-write mode.
+- Context promotion candidate: Future target capture work should prefer script-only pure engine replay for no-write evidence expansion unless exact route parity is explicitly required and a route-level no-write or isolated dev DB path is approved.
+
 ### 2026-06-22 / Hwahae ranking all-jobs and matrix audit
 
 - Branch: main
@@ -1686,6 +2006,20 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Review result: high-confidence review scope is 0 captures, safe_low_risk hidden count is 0, collapsed count is 0, and integration readiness is `insufficient_evidence`.
 - Notes/risks: The readiness logic supports hidden/collapsed/reason analysis when Phase 12 audit output contains sanitized `candidateReviews`, but the current checkout cannot answer the requested "50 safe_low_risk hidden" question without the missing capture artifacts.
 - Context promotion candidate: Functional exposure readiness must stay shadow-only; even a ready status should lead to shadow CandidatePolicy integration, not runtime/UI/API wiring.
+
+### 2026-07-09 / Phase 22 pure engine target scenario replay
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: limited execution / shadow audit artifact
+- Routing decision: Medium audit-only runner addition scoped to route-outside pure engine replay. `/api/analyze`, evaluator hard filters, ranking score/weight, CandidatePolicy runtime, UI/API response, DB/Supabase, product data, existing capture fixture originals, and existing topPick/supporting/budget outputs were out of scope.
+- Goal: Attempt Phase 19 target scenarios through a no-write pure engine path and keep the evidence separate from actual `/api/analyze` complete/product_row captures.
+- Changed files: scripts/node-next-alias-loader.mjs, scripts/run-pure-engine-target-scenario-replay.mjs, scripts/verify-pure-engine-target-scenario-replay.mjs, docs/reviews/evaluator-boundary-pure-engine-target-replay-20260703.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route, evaluator, CandidatePolicy runtime, UI/API response, DB/Supabase, product source data, or capture fixture original changes. The runner did not call `/api/analyze` and reports `supabaseWriteExecuted: false`.
+- Result: The pure engine runner attempted all 4 target scenarios, but succeeded 0 and failed 4 with `candidate_source_empty_after_pure_engine_replay`. The live product source path returned `Recommendation products are temporarily unavailable`; fallback complete-capture product rows were sanitized and not sufficient for the legacy decision engine field filter, so total replay candidate rows remained 0.
+- Evidence separation: Output is `evidenceType: pure_engine_replay`, `routeInvoked: false`, `runtimeMutation: false`, and must not be counted as actual complete/product_row capture evidence.
+- Validation: `node scripts/run-pure-engine-target-scenario-replay.mjs`, `node scripts/verify-pure-engine-target-scenario-replay.mjs`, analyze boundary, target plan, actual coverage, boundary shadow/policy, exposure audit/readiness, recent-instability, shadow comparison/audit, ranking, goal, and survey verifiers passed; `npm run build` passed; `git diff --check` passed.
+- Issues/risks: Node direct ESM execution emitted non-fatal `--experimental-loader` and `MODULE_TYPELESS_PACKAGE_JSON` warnings. The replay did not expand active-only, metadata-incomplete, serum, or strong-caution evidence because no candidate rows were produced.
+- Context promotion candidate: Pure engine replay evidence should stay separate from actual `/api/analyze` captures unless a read-only product source with full scorer-compatible rows is provided.
 
 ### 2026-07-05 / SEC-02 analysis data RLS grant verification
 

@@ -145,6 +145,77 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
   }
 }
 
+async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN !== "1"
+  ) {
+    return;
+  }
+
+  try {
+    const [snapshotContract, dryRunHelper, artifactWriter] = await Promise.all([
+      import("@/lib/shadow-dry-run-snapshot-contract"),
+      import("@/lib/shadow-boundary-dry-run-helper"),
+      import("@/lib/shadow-boundary-dry-run-artifact-writer")
+    ]);
+    const baselineResponseShapeSnapshot = snapshotContract.buildBaselineResponseShapeSnapshot(responsePayload);
+    const baselineRecommendationSnapshot = snapshotContract.buildBaselineRecommendationSnapshot(recommendationResult);
+    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot([]);
+    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot([]);
+    const comparisonSnapshot = snapshotContract.buildShadowComparisonSnapshot({
+      baselineResponseShapeSnapshot,
+      baselineRecommendationSnapshot,
+      shadowBoundaryHintSnapshot,
+      shadowReceiverSnapshot,
+      dbWriteCount: 0,
+      forbiddenFieldDetected: false
+    });
+    const artifact = dryRunHelper.buildShadowBoundaryDryRunArtifact({
+      baselineResponseShapeSnapshot,
+      baselineRecommendationSnapshot,
+      shadowBoundaryHintSnapshot,
+      shadowReceiverSnapshot,
+      comparisonSnapshot,
+      dryRunContext: {
+        evidenceType: "shadow_boundary_dry_run_helper_skeleton",
+        dryRunOnly: true,
+        runtimeConnected: false,
+        routeInvoked: false,
+        supabaseWriteExecuted: false,
+        runtimeMutation: false
+      }
+    });
+
+    if (artifact.valid === false || artifact.artifactSchemaCompatibleWhenEvidenceTypeAdapted !== true) {
+      return;
+    }
+
+    await artifactWriter.writeShadowBoundaryDryRunArtifact({
+      artifact: {
+        ...artifact,
+        routeInvoked: true,
+        evidenceSeparation: {
+          actualEvidenceBucket: "not_used_by_phase39_wiring",
+          pureReplayEvidenceBucket: "not_used_by_phase39_wiring_pure_replay",
+          syntheticCoverageBucket: "not_used_by_phase39_wiring_synthetic",
+          syntheticTreatedAsActualEvidence: false
+        },
+        limitations: [
+          "phase39_wiring_only_boundary_runtime_not_connected",
+          "evaluator_runtime_not_connected",
+          "candidate_policy_runtime_not_connected",
+          "api_response_not_modified",
+          "recommendation_result_not_modified",
+          "supabase_write_not_executed"
+        ]
+      }
+    });
+  } catch {
+    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
+  }
+}
+
 function hasAnalyzeResponseShape(payload) {
   return Boolean(
     payload &&
@@ -1405,7 +1476,7 @@ export async function POST(request) {
       premiumReport: premiumSessionReport,
       locale
     });
-    const response = NextResponse.json({
+    const responsePayload = {
       ...publicDecision,
       meta: buildAnalyzeMeta({
         locale,
@@ -1413,7 +1484,8 @@ export async function POST(request) {
         explanationNotice,
         apiKey
       })
-    });
+    };
+    const response = NextResponse.json(responsePayload);
 
     if (premiumSessionToken) {
       response.cookies.set(
@@ -1439,6 +1511,15 @@ export async function POST(request) {
       formInput,
       publicDecision,
       decision
+    });
+
+    await runShadowBoundaryDryRunIfEnabled({
+      responsePayload,
+      recommendationResult: {
+        topPick: publicDecision.topPick,
+        supportingProducts: premiumReport?.supportingProducts,
+        budgetAlternatives: premiumReport?.budgetAlternatives
+      }
     });
 
     return response;

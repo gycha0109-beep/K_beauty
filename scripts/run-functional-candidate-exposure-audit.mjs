@@ -17,7 +17,8 @@ const NON_CAPTURE_JSON = new Set([
   "recent-instability-guard-matrix.json",
   "candidate-exposure-audit.json",
   "exposure-readiness-review.json",
-  "evaluator-hard-block-review.json"
+  "evaluator-hard-block-review.json",
+  "evaluator-recent-instability-boundary-shadow.json"
 ]);
 
 function increment(map, key, amount = 1) {
