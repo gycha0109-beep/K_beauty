@@ -1,5 +1,7 @@
 # AI_WORK_LOG.md
 
+## Entries
+
 ### 2026-07-10 / Phase 42 isolated route run readiness pack
 
 - Branch: codex/survey-input-contract-refactor
@@ -2087,7 +2089,7 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 
 ### 2026-07-11 / Phase X+1 minimal Codex context entry implementation
 
-- Model / reasoning: Terra / Max.
+- Model / reasoning: Terra / high.
 - Task type: bounded documentation implementation.
 - L0 entry: Added `.codex/README.md`; `AGENTS.md` now directs startup to the README and canonical `AI_ROUTER.md`.
 - Canonical router: Reused and updated `.codex/AI_ROUTER.md`; no `CONTEXT_ROUTER.md` was created.
@@ -2099,3 +2101,15 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Resource usage: `AI_RESOURCE_USAGE_LOG.md` remains absent and was not created; no unobserved usage was estimated.
 - Validation: static path, heading, fence, duplicate-heading, whitespace, scope-boundary, and `git diff --check` results are recorded in the completion report.
 - Next candidate: after user approval, consolidate only the needed L1 execution/verification/security rule surfaces without creating domain documents.
+
+### 2026-07-11 / Phase X+2 minimal Codex L1 rules and resource usage log
+
+- Model / reasoning: Terra / high.
+- Canonical L1: added `AI_EXECUTION_RULES.md` and `SECURITY_BOUNDARIES.md`; reused and minimally extended `AI_REVIEW_CHECKLIST.md` as canonical verification rules.
+- Router/README: linked all three L1 surfaces conditionally; work/resource logs remain audit-only, not default reads.
+- Existing-rule reuse: `AGENTS.md`, `PROJECT_SYNC_RULES.md`, `AI_CONTEXT.md`, hooks/config, and detailed verifier/scripts remain referenced rather than copied.
+- Resource log: added append-only `AI_RESOURCE_USAGE_LOG.md` and backfilled user-observed Phase X/X+1 values; Phase X+2 usage is `not_observable`.
+- Scope boundary: no domain document/directory, file move/delete, feature code, package, runtime, Supabase, Docker, provider, DB, or hosted operation.
+- Validation: canonical paths, links, structure, entry counts, audit exclusion, scope boundary, sensitive-value patterns, and `git diff --check` are recorded in the completion report.
+- Work-log structure: added the missing `Entries` level so the existing audit headings are structurally valid.
+- Next candidate: only after approval, reconcile remaining detailed L1 source documents without expanding into domain or archive work.

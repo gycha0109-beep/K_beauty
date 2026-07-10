@@ -1,5 +1,17 @@
 # AI_REVIEW_CHECKLIST.md
 
+## Verification routing and command source
+
+This is the canonical conditional L1 verification-rules surface.
+Read only the section that matches the task type and changed risk surface.
+
+- Terra includes simple mechanical verification in ordinary implementation work.
+- Select focused static, unit, build, diff, or runtime checks in proportion to the requested change and authority.
+- Resolve current commands from `package.json` and the relevant `scripts/` path; do not treat old Phase prose as a command registry.
+- Do not rerun every historical Phase verifier by default.
+- For route, production, provider, DB, payment, or security judgment, use current contract/safety evidence and recommend Sol only when high-cost risk judgment is needed.
+- Do not weaken expected results, bypass a failed check, or report an unverified item as PASS.
+
 ## 공통 검증
 
 - 프로젝트의 기본 빌드/테스트/실행 명령이 통과했는가

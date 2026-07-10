@@ -25,7 +25,7 @@ Do not load every `.codex`, architecture, review, Phase, or runbook document at 
 | Tool config/artifacts | `hooks.json`, `hooks/`, environments, screenshots, local logs, profiles, temporary output | not AI context unless the task explicitly needs it |
 
 [AI_CONTEXT.md](AI_CONTEXT.md) is a conditional current-context reference, not a mandatory startup read.
-[AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md) is a conditional verification reference.
+[AI_EXECUTION_RULES.md](AI_EXECUTION_RULES.md), [AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md), and [SECURITY_BOUNDARIES.md](SECURITY_BOUNDARIES.md) are conditional L1 execution, verification, and security references.
 [PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md) remains the detailed Git/workstation reference.
 
 ## Conditional routing principles
@@ -34,7 +34,7 @@ The router first identifies the requested delta and task type.
 It then asks whether DB, Auth, RLS, Storage, Provider, Payment, Secret, or Production is directly or indirectly affected.
 Ambiguity is `Y`; a `Y` result adds only the relevant protection and verification reads.
 
-The full work log and a resource-usage log are audit records, not default context.
+The full work log and [AI_RESOURCE_USAGE_LOG.md](AI_RESOURCE_USAGE_LOG.md) are audit records, not default context.
 Old Phase, review, and runbook material is evidence only and is not default context either.
 
 ## Protection boundary

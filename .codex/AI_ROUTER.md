@@ -39,10 +39,11 @@ Read only when selected by the delta:
 | Need | Conditional reference |
 | --- | --- |
 | current cross-task context | [AI_CONTEXT.md](AI_CONTEXT.md), only the relevant section |
+| execution scope, Git/change control, handoff, or reporting | [AI_EXECUTION_RULES.md](AI_EXECUTION_RULES.md), only the relevant section |
 | Git/workstation/data synchronization | [PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md), only the needed section |
 | verification meaning | [AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md), only the task-type section |
-| continuity or prior failure | the latest relevant slice of `AI_WORK_LOG.md`, never the full history |
-| protected-surface decision | relevant `AGENTS.md` protected-area rules plus current code/schema/config/verifier and only necessary detailed source material |
+| continuity, prior failure, or resource observation | the latest relevant slice of `AI_WORK_LOG.md` or `AI_RESOURCE_USAGE_LOG.md`, never the full history |
+| protected-surface decision with `Y` delta | [SECURITY_BOUNDARIES.md](SECURITY_BOUNDARIES.md), relevant `AGENTS.md` protected-area rules, and current code/schema/config/verifier |
 | detailed design/contract/runbook | the named source reference, not its whole directory |
 | existing domain summary | only if a relevant approved domain document exists |
 
@@ -51,7 +52,7 @@ Do not default-read audit logs, dated Phase/review/runbook material, screenshots
 ## Security and verification routing
 
 For a `Y` security delta, apply the relevant `AGENTS.md` Protected Areas section first.
-Then read only the source material needed for the affected boundary; this repository has no separate approved security-boundaries entry document yet.
+Then read only the matching [SECURITY_BOUNDARIES.md](SECURITY_BOUNDARIES.md) section and source material needed for the affected boundary.
 Do not load unrelated security history or a full security corpus merely because one protected category is involved.
 
 For an `N` security delta, state the basis in the completion report and do not load unnecessary security detail.
