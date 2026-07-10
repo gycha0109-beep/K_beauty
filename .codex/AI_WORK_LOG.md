@@ -1,5 +1,18 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 37 first disabled shadow dry-run plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium preflight and runbook plan
+- Routing decision: User requested a first disabled shadow dry-run plan after Phase 36. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 30-36 checklist, dry-run, verifier, snapshot, route guard, and helper artifacts, then freeze the preflight checklist, first dry-run runbook, snapshot requirements, kill criteria, and rollback plan before any first disabled shadow dry-run implementation patch plan.
+- Changed files: scripts/review-first-disabled-shadow-dry-run-plan.mjs, scripts/verify-first-disabled-shadow-dry-run-plan.mjs, docs/architecture/first-disabled-shadow-dry-run-plan.md, docs/reviews/first-disabled-shadow-dry-run-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The plan did not call `/api/analyze`.
+- Error log: Initial `node scripts/review-first-disabled-shadow-dry-run-plan.mjs` execution failed with `ReferenceError: documentsPresent is not defined` because the local variable was named `docsPresent`. Fixed the script to emit `documentsPresent: docsPresent` in `sourceReadiness`.
+- Validation: `node scripts/review-first-disabled-shadow-dry-run-plan.mjs`, `node scripts/verify-first-disabled-shadow-dry-run-plan.mjs`, required Phase 36/35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Phase 37 fixed preflight, runbook, snapshot, kill, and rollback criteria only. Runtime connection remains unapproved. Phase 38 may proceed only as a first disabled shadow dry-run implementation patch plan, minimal route insertion proposal, artifact writer skeleton proposal, flag guard implementation plan, or dry-run snapshot verifier refinement.
+- Context promotion candidate: Phase 38 should remain plan/proposal only unless a separate approved task explicitly allows a route patch. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require separate approval.
+
 ### 2026-07-10 / Phase 36 final pre-runtime integration checklist
 
 - Branch: codex/survey-input-contract-refactor
