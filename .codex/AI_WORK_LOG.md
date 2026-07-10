@@ -2061,3 +2061,26 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Runtime scope: Evaluator and CandidatePolicy remain disconnected. API response, recommendation output, UI, DB schema/migrations, product data, route runtime, and shadow runtime helpers were not modified.
 - Next condition: Obtain approval for a reproducible local base schema/config and a default-off test-only external-provider isolation seam, then install the ephemeral mutation observer before any route request.
 - Context promotion candidate: Controlled route evidence must remain fail-closed when a fresh local schema, provider isolation, complete mutation observation, or cleanup proof is missing; unmeasured deltas must remain null rather than zero.
+
+### 2026-07-11 / Phase X AI Context Architecture and documentation hierarchy audit
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: read-only repository diagnosis + documentation plan
+- Routing decision: Apply the user-confirmed AI Context Architecture to the existing `.codex/`, `docs/`, runbook, review, and verifier structure without changing features, protected runtime surfaces, or current operating files.
+- Existing `.codex` investigated: Yes; router, context, review checklist, revisit guidance, work log, sync rules, hooks/config role, and artifact/log mixing were reviewed.
+- L0-L5 hierarchy plan: Yes.
+- Domain lazy creation design: Yes; no individual domain document was created.
+- Domain user approval requirement: Yes; eligibility permits a proposal only and first creation requires explicit approval.
+- Loose document coupling: Yes; domains are optional, references are non-blocking, and no fixed domain enum is proposed.
+- Entry-point principle: `.codex` is the AI operating-context home, not a source of truth; actual code, schema, config, and verifier output take precedence.
+- Conditional loading: SECURITY_BOUNDARIES and VERIFY_RULES are routed by task delta and relevant section; full reads are reserved for cross-cutting or high-risk ambiguity.
+- Broken-reference fallback: Yes; bounded path/sibling check, then code/schema/config/verifier evidence and a separate Reference Maintenance Issue.
+- Model handoff reduction: Yes; handoff contains L0 entry, delta, decisions, scope, security routing, verifier set, and open uncertainty only.
+- Read-only command output controls: Yes; depth-first, scoped, count/heading/path summaries, capped output, and stop-on-parser-error rules are included.
+- `.codex` role separation: Yes; L0-L2 operating context, L4 work/resource audit logs, and tool configuration are distinguished inside `.codex`.
+- Baseline measured: Yes; `docs/` 90 files/18,375 lines, core `.codex` Markdown 6 files/2,660 lines, 63 verifier files/12,147 lines.
+- Changed files: docs/architecture/ai-context-architecture-and-document-hierarchy-plan.md, .codex/AI_WORK_LOG.md
+- Actual move/delete/archive: None.
+- Actual `.codex` restructure implementation: Not performed.
+- Feature/runtime code changes: None.
+- Next phase: bounded implementation of the approved `.codex` operating-document restructure.
