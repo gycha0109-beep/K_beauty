@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 31 required contract test skeleton and dry-run artifact schema
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium pure helper schema and contract test skeleton
+- Routing decision: User requested runtime-disconnected required contract test skeletons and a dry-run artifact schema after Phase 30. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic fixtures recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Add a pure shadow dry-run artifact schema helper, required contract test skeleton runner, verifiers, and docs while keeping synthetic contract cases separate from actual evidence.
+- Changed files: lib/shadow-runtime-dry-run-artifact-schema.js, scripts/run-evaluator-boundary-required-contract-tests.mjs, scripts/verify-evaluator-boundary-required-contract-tests.mjs, scripts/verify-shadow-runtime-dry-run-artifact-schema.mjs, docs/architecture/shadow-runtime-dry-run-artifact-schema.md, docs/reviews/evaluator-boundary-required-contract-tests-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The runner did not call `/api/analyze`.
+- Validation: `node scripts/run-evaluator-boundary-required-contract-tests.mjs`, `node scripts/verify-evaluator-boundary-required-contract-tests.mjs`, `node scripts/verify-shadow-runtime-dry-run-artifact-schema.mjs`, required Phase 30/29/28/27/26/25/actual coverage/boundary shadow/exposure/shadow/ranking/goal/survey verifier set, and `npm run build` passed. `git diff --check` is recorded in the turn completion report.
+- Findings: All 10 required contract test skeletons passed with `syntheticContractCasesUsed=true` and `syntheticTreatedAsActualEvidence=false`. The schema helper requires baseline/shadow separation, evidence separation, no API response body dump, no recommendation result changes, no DB writes, no high-risk or metadata-incomplete collapsed receiver counts, and forbidden artifact field rejection.
+- Context promotion candidate: Phase 32 may proceed only as no-response-change, no-recommendation-change, or no-DB-write verifier skeleton/design. Runtime evaluator/CandidatePolicy connection still requires a separate approved task after those verifier gates exist and pass.
+
 ### 2026-07-10 / Phase 30 shadow runtime dry-run design and required contract test plan
 
 - Branch: codex/survey-input-contract-refactor
