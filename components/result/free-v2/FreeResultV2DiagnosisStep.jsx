@@ -773,8 +773,8 @@ function FreeResultV2SkinRadarCard({ data, locale = "ko" }) {
 
 function FreeResultV2PriorityListCard({ priorities = [], locale = "ko" }) {
   const isEnglish = locale === "en";
-  const [openRank, setOpenRank] = useState(null);
   const displayPriorities = Array.isArray(priorities) ? priorities.slice(0, 3) : [];
+  const [openRank, setOpenRank] = useState(displayPriorities[0]?.rank ?? null);
 
   if (!displayPriorities.length) {
     return null;

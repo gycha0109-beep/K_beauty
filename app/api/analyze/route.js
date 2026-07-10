@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
+import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
+import { buildSurveyInputContract } from "@/lib/survey-input-contract";
+import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
 import { resolveProductCategorySemantics } from "@/lib/product-category-normalizer";
 import {
@@ -14,6 +17,14 @@ import {
   PREMIUM_REPORT_COOKIE
 } from "@/lib/premium-report-session";
 import { appendReviewEvidenceSentence } from "@/lib/review-signals";
+import {
+  applyAnalysisGuardCookies,
+  completeAnalysisRequestGuard,
+  createAnalysisGuardResponse,
+  failAnalysisRequestGuard,
+  guardAnalysisRequest
+} from "@/lib/security/analysis-request-guard";
+import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-guard-core";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
@@ -60,6 +71,149 @@ function previewText(value, maxLength = 240) {
 
 function logAnalyze(stage, payload = {}) {
   console.log(`[analyze] ${stage}`, payload);
+}
+
+function logSurveyInputContractParallel(formInput, context = {}) {
+  if (process.env.NODE_ENV !== "development") {
+    return;
+  }
+
+  try {
+    const contract = buildSurveyInputContract(formInput, {
+      source: "api_analyze_parallel"
+    });
+
+    console.info("[analyze] survey-input-contract:parallel", {
+      primaryConcern: contract.goals.primaryConcern,
+      secondaryConcerns: contract.goals.secondaryConcerns,
+      unresolvedPrimaryConcern: contract.goals.unresolvedPrimaryConcern,
+      safety: contract.safety,
+      missingFields: contract.metadata.missingFields,
+      warnings: contract.metadata.warnings
+    });
+
+    const auditResult = appendSurveyInputContractDevAuditEvent(contract, {
+      hasImage: Boolean(context.hasImage)
+    });
+
+    if (!auditResult.ok) {
+      console.warn("[analyze] survey-input-contract:audit-write-failed", {
+        message: previewDiagnosticText(
+          auditResult.error instanceof Error ? auditResult.error.message : String(auditResult.error)
+        )
+      });
+    }
+  } catch (error) {
+    console.warn("[analyze] survey-input-contract:parallel-failed", {
+      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
+    });
+  }
+}
+
+async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, decision }) {
+  if (process.env.NODE_ENV !== "development" || process.env.FUNCTIONAL_SHADOW_CAPTURE !== "1") {
+    return;
+  }
+
+  try {
+    const { captureFunctionalShadowFixture } = await import("@/lib/functional-shadow-capture");
+    const surveyContract = buildSurveyInputContract(formInput, {
+      source: "api_analyze_shadow_capture"
+    });
+    const goalPolicy = resolveFunctionalGoalPolicy({
+      surveyContract,
+      freeResultPriority: publicDecision?.priority,
+      safety: surveyContract.safety
+    });
+    const captureResult = await captureFunctionalShadowFixture({
+      surveyContract,
+      freeResult: publicDecision,
+      goalPolicy,
+      existingRecommendationResult: decision,
+      candidateSource: decision?.diagnostics?.candidateSource
+    });
+
+    if (!captureResult.captured) {
+      console.warn("[analyze] functional-shadow-capture:skipped", {
+        reason: captureResult.reason || "unknown"
+      });
+    }
+  } catch (error) {
+    console.warn("[analyze] functional-shadow-capture:failed", {
+      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
+    });
+  }
+}
+
+async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN !== "1"
+  ) {
+    return;
+  }
+
+  try {
+    const [snapshotContract, dryRunHelper, artifactWriter] = await Promise.all([
+      import("@/lib/shadow-dry-run-snapshot-contract"),
+      import("@/lib/shadow-boundary-dry-run-helper"),
+      import("@/lib/shadow-boundary-dry-run-artifact-writer")
+    ]);
+    const baselineResponseShapeSnapshot = snapshotContract.buildBaselineResponseShapeSnapshot(responsePayload);
+    const baselineRecommendationSnapshot = snapshotContract.buildBaselineRecommendationSnapshot(recommendationResult);
+    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot([]);
+    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot([]);
+    const comparisonSnapshot = snapshotContract.buildShadowComparisonSnapshot({
+      baselineResponseShapeSnapshot,
+      baselineRecommendationSnapshot,
+      shadowBoundaryHintSnapshot,
+      shadowReceiverSnapshot,
+      dbWriteCount: 0,
+      forbiddenFieldDetected: false
+    });
+    const artifact = dryRunHelper.buildShadowBoundaryDryRunArtifact({
+      baselineResponseShapeSnapshot,
+      baselineRecommendationSnapshot,
+      shadowBoundaryHintSnapshot,
+      shadowReceiverSnapshot,
+      comparisonSnapshot,
+      dryRunContext: {
+        evidenceType: "shadow_boundary_dry_run_helper_skeleton",
+        dryRunOnly: true,
+        runtimeConnected: false,
+        routeInvoked: false,
+        supabaseWriteExecuted: false,
+        runtimeMutation: false
+      }
+    });
+
+    if (artifact.valid === false || artifact.artifactSchemaCompatibleWhenEvidenceTypeAdapted !== true) {
+      return;
+    }
+
+    await artifactWriter.writeShadowBoundaryDryRunArtifact({
+      artifact: {
+        ...artifact,
+        routeInvoked: true,
+        evidenceSeparation: {
+          actualEvidenceBucket: "not_used_by_phase39_wiring",
+          pureReplayEvidenceBucket: "not_used_by_phase39_wiring_pure_replay",
+          syntheticCoverageBucket: "not_used_by_phase39_wiring_synthetic",
+          syntheticTreatedAsActualEvidence: false
+        },
+        limitations: [
+          "phase39_wiring_only_boundary_runtime_not_connected",
+          "evaluator_runtime_not_connected",
+          "candidate_policy_runtime_not_connected",
+          "api_response_not_modified",
+          "recommendation_result_not_modified",
+          "supabase_write_not_executed"
+        ]
+      }
+    });
+  } catch {
+    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
+  }
 }
 
 function hasAnalyzeResponseShape(payload) {
@@ -1089,6 +1243,7 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
 
 export async function POST(request) {
   let responseLocale = "ko";
+  let analysisGuard = null;
 
   try {
     const formData = await request.formData();
@@ -1098,6 +1253,9 @@ export async function POST(request) {
       formData.get("sensitivityLevel") || formData.get("sensitivity");
     const mainConcern = formData.get("mainConcern");
     const mainConcerns = parseJsonArrayField(formData.get("mainConcerns"));
+    const primaryConcern = formData.get("primaryConcern");
+    const recentSkinChange = formData.get("recentSkinChange");
+    const recentlyChangedProduct = formData.get("recentlyChangedProduct");
     const cleansingFrequency = formData.get("cleansingFrequency");
     const preferredTexture =
       formData.get("texturePreference") || formData.get("preferredTexture");
@@ -1113,6 +1271,7 @@ export async function POST(request) {
     const toneUpWanted = parseBooleanField(formData.get("toneUpWanted"));
     const makeupUse = parseBooleanField(formData.get("makeupUse"));
     const eyeSensitive = parseBooleanField(formData.get("eyeSensitive"));
+    const sunscreenPreferenceState = formData.get("sunscreenPreferenceState");
     const outdoorExposure = parseBooleanField(formData.get("outdoorExposure"));
     const verySensitivePeriod = parseBooleanField(formData.get("verySensitivePeriod"));
     const currentProducts = sanitizeCurrentProducts(formData.get("currentProducts"));
@@ -1156,6 +1315,9 @@ export async function POST(request) {
       sensitivity,
       mainConcern: resolvedMainConcern,
       mainConcerns: mainConcerns.length ? mainConcerns : undefined,
+      primaryConcern,
+      recentSkinChange,
+      recentlyChangedProduct,
       cleansingFrequency,
       preferredTexture,
       postWashFeeling,
@@ -1167,12 +1329,37 @@ export async function POST(request) {
       toneUpWanted: Boolean(toneUpWanted),
       makeupUse: Boolean(makeupUse),
       eyeSensitive: Boolean(eyeSensitive),
+      sunscreenPreferenceState,
       outdoorExposure:
         typeof outdoorExposure === "boolean"
           ? outdoorExposure
           : environmentExposure.includes("outdoor"),
       verySensitivePeriod: Boolean(verySensitivePeriod)
     };
+
+    analysisGuard = await guardAnalysisRequest({
+      request,
+      endpoint: "analyze",
+      fingerprintInput: {
+        locale,
+        form: formInput,
+        currentProducts: currentProducts.map((item) => ({
+          productId: item.productId || "",
+          status: item.status || ""
+        })),
+        image: getUploadFingerprintDescriptor(image)
+      }
+    });
+
+    if (!analysisGuard.ok) {
+      return createAnalysisGuardResponse(analysisGuard, locale);
+    }
+
+    logSurveyInputContractParallel(formInput, {
+      hasImage: Boolean(image)
+    });
+    const functionalShadowCaptureEnabled =
+      process.env.NODE_ENV === "development" && process.env.FUNCTIONAL_SHADOW_CAPTURE === "1";
 
     const { apiKey } = resolveOpenAiApiKey();
     const writeAccessToken = createWriteAccessToken();
@@ -1236,7 +1423,8 @@ export async function POST(request) {
       locale,
       photoAnalysis,
       currentProducts,
-      currentProductSnapshots
+      currentProductSnapshots,
+      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled
     });
 
     let explanationNotice = "";
@@ -1288,7 +1476,7 @@ export async function POST(request) {
       premiumReport: premiumSessionReport,
       locale
     });
-    const response = NextResponse.json({
+    const responsePayload = {
       ...publicDecision,
       meta: buildAnalyzeMeta({
         locale,
@@ -1296,7 +1484,8 @@ export async function POST(request) {
         explanationNotice,
         apiKey
       })
-    });
+    };
+    const response = NextResponse.json(responsePayload);
 
     if (premiumSessionToken) {
       response.cookies.set(
@@ -1310,32 +1499,63 @@ export async function POST(request) {
       response.headers.set(WRITE_ACCESS_HEADER, writeAccessToken);
     }
 
+    const guardCompletion = await completeAnalysisRequestGuard(analysisGuard);
+
+    if (!guardCompletion.ok) {
+      logAnalyze("analysis-guard:complete-failed");
+    }
+
+    applyAnalysisGuardCookies(response, analysisGuard);
+
+    await captureFunctionalShadowIfEnabled({
+      formInput,
+      publicDecision,
+      decision
+    });
+
+    await runShadowBoundaryDryRunIfEnabled({
+      responsePayload,
+      recommendationResult: {
+        topPick: publicDecision.topPick,
+        supportingProducts: premiumReport?.supportingProducts,
+        budgetAlternatives: premiumReport?.budgetAlternatives
+      }
+    });
+
     return response;
   } catch (error) {
+    if (analysisGuard?.ok) {
+      const guardFailure = await failAnalysisRequestGuard(analysisGuard);
+
+      if (!guardFailure.ok) {
+        logAnalyze("analysis-guard:fail-failed");
+      }
+    }
+
     if (isProductSourceUnavailableError(error)) {
       logAnalyze("product-source:unavailable", {
         code: error.code,
         reason: error.reason
       });
 
-      return NextResponse.json(
+      return applyAnalysisGuardCookies(NextResponse.json(
         {
           error: PRODUCT_SOURCE_UNAVAILABLE_MESSAGE,
           code: PRODUCT_SOURCE_UNAVAILABLE_CODE
         },
         { status: 503 }
-      );
+      ), analysisGuard);
     }
 
     logAnalyze("request:error", {
       message: error instanceof Error ? error.message : String(error)
     });
 
-    return NextResponse.json(
+    return applyAnalysisGuardCookies(NextResponse.json(
       {
         error: getAnalyzeCopy(responseLocale).serverError
       },
       { status: 500 }
-    );
+    ), analysisGuard);
   }
 }

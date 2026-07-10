@@ -13,6 +13,7 @@ them into broad design documents.
 | `domain-map.md` | Canonical domain concepts, compatibility aliases, and removed concepts. |
 | `contracts.md` | API, DB, and UI payload contracts that must stay compatible. |
 | `decisions.md` | Short decision records for non-obvious product or architecture choices. |
+| `premium-functional-plan-db.md` | Draft DB and engine contract for Premium Functional Plan functional catalog and product mapping. |
 
 Planned but not created yet:
 

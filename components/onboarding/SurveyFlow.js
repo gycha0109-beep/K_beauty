@@ -136,6 +136,47 @@ const QUESTION_SCREENS = {
       ]
     },
     {
+      id: "skin-priority",
+      stage: "skin",
+      hint: "선택한 고민 중 지금 가장 먼저 볼 기준을 정리합니다.",
+      questions: [
+        {
+          id: "primaryConcern",
+          title: "이번에 가장 먼저 해결하고 싶은 고민은 무엇인가요?",
+          subtitle: "선택한 고민 중 하나를 골라주시면 추천 기준이 더 정확해집니다.",
+          type: "single",
+          required: true,
+          optionSource: "mainConcerns",
+          emptyState: "먼저 피부 고민을 하나 이상 선택해 주세요.",
+          options: []
+        },
+        {
+          id: "recentSkinChange",
+          title: "최근 2주 사이 피부가 갑자기 예민해지거나 뒤집어진 적이 있나요?",
+          subtitle: "갑작스러운 변화는 추천 강도를 더 보수적으로 잡는 데 사용합니다.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "yes", label: "예", description: "최근에 갑자기 불안정해졌어요" },
+            { value: "no", label: "아니오", description: "최근 변화는 크지 않아요" },
+            { value: "unknown", label: "잘 모르겠음", description: "판단하기 어려워요" }
+          ]
+        },
+        {
+          id: "recentlyChangedProduct",
+          title: "최근 2주 사이 새 화장품을 사용하거나 루틴을 바꿨나요?",
+          subtitle: "새 제품이나 루틴 변경은 민감 반응 가능성을 판단하는 보조 신호입니다.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "yes", label: "예", description: "새 제품이나 순서 변경이 있었어요" },
+            { value: "no", label: "아니오", description: "최근 루틴은 그대로예요" },
+            { value: "unknown", label: "잘 모르겠음", description: "정확히 기억나지 않아요" }
+          ]
+        }
+      ]
+    },
+    {
       id: "daily-feel",
       stage: "lifestyle",
       hint: "수분 밸런스와 오후 변화 패턴을 함께 확인 중이에요.",
@@ -326,6 +367,47 @@ const QUESTION_SCREENS = {
       ]
     },
     {
+      id: "skin-priority",
+      stage: "skin",
+      hint: "Clarifying the lead concern and recent safety context.",
+      questions: [
+        {
+          id: "primaryConcern",
+          title: "What do you want to improve first?",
+          subtitle: "Choose one of your selected concerns so the recommendation has a clearer lead.",
+          type: "single",
+          required: true,
+          optionSource: "mainConcerns",
+          emptyState: "Select at least one skin concern first.",
+          options: []
+        },
+        {
+          id: "recentSkinChange",
+          title: "Has your skin suddenly become reactive or unstable in the last 2 weeks?",
+          subtitle: "Recent changes help us keep the routine more conservative.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "yes", label: "Yes", description: "It became unstable recently" },
+            { value: "no", label: "No", description: "No major recent change" },
+            { value: "unknown", label: "Not sure", description: "Hard to tell" }
+          ]
+        },
+        {
+          id: "recentlyChangedProduct",
+          title: "Did you start a new product or change your routine in the last 2 weeks?",
+          subtitle: "New products or routine changes can affect sensitivity risk.",
+          type: "single",
+          required: false,
+          options: [
+            { value: "yes", label: "Yes", description: "I changed product or routine" },
+            { value: "no", label: "No", description: "My routine stayed the same" },
+            { value: "unknown", label: "Not sure", description: "I do not remember clearly" }
+          ]
+        }
+      ]
+    },
+    {
       id: "daily-feel",
       stage: "lifestyle",
       hint: "Reading hydration balance and afternoon change.",
@@ -465,8 +547,34 @@ function getAnswerValue(form, id) {
   return form[id] || "";
 }
 
+function getConcernOptions(locale) {
+  const screens = QUESTION_SCREENS[locale] || QUESTION_SCREENS.en;
+
+  return screens
+    .find((screen) => screen.id === "skin-concerns")
+    ?.questions.find((question) => question.id === "mainConcerns")
+    ?.options || [];
+}
+
+function getQuestionOptions(question, form, locale) {
+  if (question.optionSource !== "mainConcerns") {
+    return question.options || [];
+  }
+
+  const selectedConcerns = Array.isArray(form?.mainConcerns) ? form.mainConcerns : [];
+  const concernOptions = getConcernOptions(locale);
+
+  return selectedConcerns
+    .map((value) => concernOptions.find((option) => option.value === value))
+    .filter(Boolean);
+}
+
 function hasAnswer(question, form) {
   const value = getAnswerValue(form, question.id);
+
+  if (question.id === "primaryConcern" && (!Array.isArray(form?.mainConcerns) || form.mainConcerns.length === 0)) {
+    return true;
+  }
 
   if (Array.isArray(value)) {
     return value.length > 0;
@@ -500,6 +608,9 @@ const QUESTION_HIGHLIGHTS = {
     skinType: "skin type",
     sensitivity: "reactive",
     mainConcerns: "skin concerns",
+    primaryConcern: "improve first",
+    recentSkinChange: "last 2 weeks",
+    recentlyChangedProduct: "new product",
     postWashFeeling: "right after cleansing",
     afternoonSkinChange: "afternoon",
     cleansingFrequency: "cleanse",
@@ -553,6 +664,9 @@ const OPTION_ICON_KEYS = {
   toneUpWanted: "sparkle",
   makeupUse: "brush",
   eyeSensitive: "eye",
+  yes: "level-high",
+  no: "balance",
+  unknown: "question",
   female: "profile",
   male: "profile",
   unspecified: "question"
@@ -560,6 +674,9 @@ const OPTION_ICON_KEYS = {
 
 const COMPACT_QUESTION_IDS = new Set([
   "sensitivity",
+  "primaryConcern",
+  "recentSkinChange",
+  "recentlyChangedProduct",
   "cleansingFrequency",
   "environmentExposure",
   "sunscreenConsiderations",
@@ -840,13 +957,14 @@ function SurveyOptionCard({ option, selected, onClick, multiple, selectedText, c
   );
 }
 
-function SurveyOptionGrid({ question, form, onChange, copy, onMessage }) {
+function SurveyOptionGrid({ question, form, onChange, copy, onMessage, locale }) {
   const value = getAnswerValue(form, question.id);
   const values = Array.isArray(value) ? value : value ? [value] : [];
-  const compact = question.type === "multiple" || question.options.length >= 5 || COMPACT_QUESTION_IDS.has(question.id);
+  const options = getQuestionOptions(question, form, locale);
+  const compact = question.type === "multiple" || options.length >= 5 || COMPACT_QUESTION_IDS.has(question.id);
   const gridClass = compact
     ? "grid-cols-1 gap-2 sm:grid-cols-2"
-    : question.options.length <= 3
+    : options.length <= 3
       ? "grid-cols-1 gap-2.5"
       : "grid-cols-2 gap-2.5";
 
@@ -870,9 +988,17 @@ function SurveyOptionGrid({ question, form, onChange, copy, onMessage }) {
     onChange(question.id, optionValue);
   };
 
+  if (!options.length) {
+    return (
+      <div className="rounded-[1rem] border border-[#ead2ca]/70 bg-[#fffaf6]/70 px-3.5 py-3 text-[13px] font-semibold leading-5 text-[#8d5b6b] dark:border-white/[0.10] dark:bg-white/[0.04] dark:text-[#f4d7df]">
+        {question.emptyState || copy.needAnswer}
+      </div>
+    );
+  }
+
   return (
     <div className={`grid ${gridClass}`}>
-      {question.options.map((option) => (
+      {options.map((option) => (
         <SurveyOptionCard
           key={`${question.id}-${option.value}`}
           option={option}
@@ -912,6 +1038,7 @@ function SurveyQuestionCard({ question, form, onChange, copy, onMessage, locale 
           onChange={onChange}
           copy={copy}
           onMessage={onMessage}
+          locale={locale}
         />
       </div>
     </article>
@@ -1201,9 +1328,21 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
     setSkipConfirmOpen(true);
   };
 
+  const shouldMarkSunscreenSkipped = () => {
+    const sunscreenIndex = questions.findIndex((question) => question.id === "sunscreenConsiderations");
+
+    return (
+      sunscreenIndex >= 0 &&
+      questionIndex <= sunscreenIndex &&
+      (!form.sunscreenPreferenceState || form.sunscreenPreferenceState === "unknown")
+    );
+  };
+
   const handleConfirmSkipToResult = () => {
     setSkipConfirmOpen(false);
-    onComplete();
+    onComplete({
+      markSunscreenSkipped: shouldMarkSunscreenSkipped()
+    });
   };
 
   return (

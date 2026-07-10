@@ -282,8 +282,8 @@ export default function PremiumRoutineConsultSection({
             </p>
             <p className="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">
               {locale === "en"
-                ? "Check these in the active judgment section rather than adding them to the routine here."
-                : "여기서 루틴을 늘리기보다 별도 기능성 판단에서 확인합니다."}
+                ? "Check these in the functional plan rather than adding them to the routine here."
+                : "여기서 루틴을 늘리기보다 별도 기능성 플랜에서 확인합니다."}
             </p>
             <CurrentProductSlotNote
               items={functionalCurrentProducts}
@@ -308,7 +308,7 @@ export default function PremiumRoutineConsultSection({
         >
           {isMorning
             ? locale === "en" ? "See evening routine" : "저녁 루틴 보기"
-            : locale === "en" ? "See active check" : "기능성 판단 보기"}
+            : locale === "en" ? "See functional plan" : "기능성 플랜 보기"}
         </button>
       </div>
     </section>

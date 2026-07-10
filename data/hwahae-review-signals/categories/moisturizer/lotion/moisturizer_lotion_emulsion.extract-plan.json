@@ -1,0 +1,352 @@
+{
+  "summary": {
+    "csvPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\moisturizer_lotion_emulsion_rows.csv",
+    "category": "moisturizer_lotion_emulsion",
+    "categoryFolder": "moisturizer\\lotion",
+    "outDir": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion",
+    "extractorPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\scripts\\console-snippets\\화해 제품 리뷰 추출.js",
+    "mode": "extract",
+    "supabaseStatus": "checked 16/16",
+    "totalRows": 16,
+    "ready": 16,
+    "blocked": 0
+  },
+  "items": [
+    {
+      "id": "d4e752ca-81bb-49bf-b74d-03d388830f47",
+      "name": "서양송악 순수 로션",
+      "brand": "퓨어솜",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%ED%93%A8%EC%96%B4%EC%86%9C-%EC%84%9C%EC%96%91%EC%86%A1%EC%95%85-%EC%88%9C%EC%88%98-%EB%A1%9C%EC%85%98-450ml/71802?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\d4e752ca-81bb-49bf-b74d-03d388830f47 서양송악 순수 로션.json",
+      "live": {
+        "name": "서양송악 순수 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%ED%93%A8%EC%96%B4%EC%86%9C-%EC%84%9C%EC%96%91%EC%86%A1%EC%95%85-%EC%88%9C%EC%88%98-%EB%A1%9C%EC%85%98-450ml/71802?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "e8d1bb9d-1a8b-430b-a79d-79d16b18ce5e",
+      "name": "울트라 페이셜 모이스처라이징 로션",
+      "brand": "시드물",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%8B%9C%EB%93%9C%EB%AC%BC-%EC%9A%B8%ED%8A%B8%EB%9D%BC-%ED%8E%98%EC%9D%B4%EC%85%9C-%EB%AA%A8%EC%9D%B4%EC%8A%A4%EC%B2%98%EB%9D%BC%EC%9D%B4%EC%A7%95-%EB%A1%9C%EC%85%98-80g/6129?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\e8d1bb9d-1a8b-430b-a79d-79d16b18ce5e 울트라 페이셜 모이스처라이징 로션.json",
+      "live": {
+        "name": "울트라 페이셜 모이스처라이징 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%8B%9C%EB%93%9C%EB%AC%BC-%EC%9A%B8%ED%8A%B8%EB%9D%BC-%ED%8E%98%EC%9D%B4%EC%85%9C-%EB%AA%A8%EC%9D%B4%EC%8A%A4%EC%B2%98%EB%9D%BC%EC%9D%B4%EC%A7%95-%EB%A1%9C%EC%85%98-80g/6129?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "ffbaebea-2515-4c5f-8403-cd9a56830ae4",
+      "name": "세라엠디 리페어 로션",
+      "brand": "더마비",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EB%8D%94%EB%A7%88%EB%B9%84-%EC%84%B8%EB%9D%BC%EC%97%A0%EB%94%94-%EB%A6%AC%ED%8E%98%EC%96%B4-%EB%A1%9C%EC%85%98-400ml-2%EA%B0%9C-PLUS-%EB%9E%9C%EB%8D%A4-%EB%B0%94%EB%94%94%EB%A1%9C%EC%85%98-20ml-2%EA%B0%9C/73272?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\ffbaebea-2515-4c5f-8403-cd9a56830ae4 세라엠디 리페어 로션.json",
+      "live": {
+        "name": "세라엠디 리페어 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EB%8D%94%EB%A7%88%EB%B9%84-%EC%84%B8%EB%9D%BC%EC%97%A0%EB%94%94-%EB%A6%AC%ED%8E%98%EC%96%B4-%EB%A1%9C%EC%85%98-400ml-2%EA%B0%9C-PLUS-%EB%9E%9C%EB%8D%A4-%EB%B0%94%EB%94%94%EB%A1%9C%EC%85%98-20ml-2%EA%B0%9C/73272?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "93d11022-2b8c-4a72-a3a1-9f69655b9e91",
+      "name": "스킨 베리어 카밍 로션 EX",
+      "brand": "온그리디언츠",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%98%A8%EA%B7%B8%EB%A6%AC%EB%94%94%EC%96%B8%EC%B8%A0-%ED%88%AC%EB%AA%85%EB%8F%842%EB%B0%B0-%EC%8A%A4%ED%82%A8-%EB%B2%A0%EB%A6%AC%EC%96%B4-%EC%B9%B4%EB%B0%8D-%EB%A1%9C%EC%85%98-EX-220ml/62643?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\93d11022-2b8c-4a72-a3a1-9f69655b9e91 스킨 베리어 카밍 로션 EX.json",
+      "live": {
+        "name": "스킨 베리어 카밍 로션 EX",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%98%A8%EA%B7%B8%EB%A6%AC%EB%94%94%EC%96%B8%EC%B8%A0-%ED%88%AC%EB%AA%85%EB%8F%842%EB%B0%B0-%EC%8A%A4%ED%82%A8-%EB%B2%A0%EB%A6%AC%EC%96%B4-%EC%B9%B4%EB%B0%8D-%EB%A1%9C%EC%85%98-EX-220ml/62643?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "47a8a197-40d4-41df-b1ed-7f85eb458a3d",
+      "name": "탄탄 모공 펩타노산™ 단백질 로션",
+      "brand": "스킨웨이비",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%8A%A4%ED%82%A8%EC%9B%A8%EC%9D%B4%EB%B9%84-%ED%83%84%ED%83%84-%EB%AA%A8%EA%B3%B5-%ED%8E%A9%ED%83%80%EB%85%B8%EC%82%B0-%EB%8B%A8%EB%B0%B1%EC%A7%88-%EB%A1%9C%EC%85%98-120ml/72564?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\47a8a197-40d4-41df-b1ed-7f85eb458a3d 탄탄 모공 펩타노산TM 단백질 로션.json",
+      "live": {
+        "name": "탄탄 모공 펩타노산™ 단백질 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%8A%A4%ED%82%A8%EC%9B%A8%EC%9D%B4%EB%B9%84-%ED%83%84%ED%83%84-%EB%AA%A8%EA%B3%B5-%ED%8E%A9%ED%83%80%EB%85%B8%EC%82%B0-%EB%8B%A8%EB%B0%B1%EC%A7%88-%EB%A1%9C%EC%85%98-120ml/72564?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "name": "더 심플 데일리 로션",
+      "brand": "싸이닉",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml-3%EA%B0%9C/78501?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\deaacf29-585c-4e1b-a7c3-73a243e69c2e 더 심플 데일리 로션.json",
+      "live": {
+        "name": "더 심플 데일리 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%8B%B8%EC%9D%B4%EB%8B%89-%EB%8D%94-%EC%8B%AC%ED%94%8C-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%EB%A1%9C%EC%85%98-300ml-3%EA%B0%9C/78501?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "3f12f933-9525-4ee1-80c5-257daf40d902",
+      "name": "수딩 젤 로션",
+      "brand": "아토팜",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%95%84%ED%86%A0%ED%8C%9C-%EC%88%98%EB%94%A9-%EC%A0%A4-%EB%A1%9C%EC%85%98-160mlPLUS160ml/74198?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\3f12f933-9525-4ee1-80c5-257daf40d902 수딩 젤 로션.json",
+      "live": {
+        "name": "수딩 젤 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%95%84%ED%86%A0%ED%8C%9C-%EC%88%98%EB%94%A9-%EC%A0%A4-%EB%A1%9C%EC%85%98-160mlPLUS160ml/74198?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "e4f25cfc-293d-47f8-8eea-70e4b0ec1c7b",
+      "name": "블루빈 B5-PDRN 마일드 로션",
+      "brand": "브링그린",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/products/2158011",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\e4f25cfc-293d-47f8-8eea-70e4b0ec1c7b 블루빈 B5-PDRN 마일드 로션.json",
+      "live": {
+        "name": "블루빈 B5-PDRN 마일드 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/products/2158011"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "9a98cc54-6238-4ed6-91d0-200f5203f46c",
+      "name": "모이스쳐 라이징 로션",
+      "brand": "세타필",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/products/1980180",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\9a98cc54-6238-4ed6-91d0-200f5203f46c 모이스쳐 라이징 로션.json",
+      "live": {
+        "name": "모이스쳐 라이징 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/products/1980180"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "name": "MLE 로션",
+      "brand": "아토팜",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%95%84%ED%86%A0%ED%8C%9C-MLE-%EB%A1%9C%EC%85%98-300mlPLUS300ml/74200?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\bd98f785-15c8-4800-af64-d39c3ad873a0 MLE 로션.json",
+      "live": {
+        "name": "MLE 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%95%84%ED%86%A0%ED%8C%9C-MLE-%EB%A1%9C%EC%85%98-300mlPLUS300ml/74200?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "ae72c231-3629-4272-8c16-9ca4372e3985",
+      "name": "판테놀 베리어 에멀전",
+      "brand": "코스노리",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EC%BD%94%EC%8A%A4%EB%85%B8%EB%A6%AC-only%ED%99%94%ED%95%B4-%ED%8C%90%ED%85%8C%EB%86%80-%EB%B2%A0%EB%A6%AC%EC%96%B4-%EC%97%90%EB%A9%80%EC%A0%84-150ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%ED%8C%90%ED%85%8C%EB%86%80-%EC%95%B0%ED%94%8C-30ml-%EC%A6%9D%EC%A0%95/77109?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\ae72c231-3629-4272-8c16-9ca4372e3985 판테놀 베리어 에멀전.json",
+      "live": {
+        "name": "판테놀 베리어 에멀전",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EC%BD%94%EC%8A%A4%EB%85%B8%EB%A6%AC-only%ED%99%94%ED%95%B4-%ED%8C%90%ED%85%8C%EB%86%80-%EB%B2%A0%EB%A6%AC%EC%96%B4-%EC%97%90%EB%A9%80%EC%A0%84-150ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%ED%8C%90%ED%85%8C%EB%86%80-%EC%95%B0%ED%94%8C-30ml-%EC%A6%9D%EC%A0%95/77109?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "7a58897d-bc51-47e8-ba8d-60322b5f8f3d",
+      "name": "수딩 로션",
+      "brand": "제로이드",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/products/1818570",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\7a58897d-bc51-47e8-ba8d-60322b5f8f3d 수딩 로션.json",
+      "live": {
+        "name": "수딩 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/products/1818570"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "name": "소나무 진정 시카 로션",
+      "brand": "라운드랩",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-only%ED%99%94%ED%95%B4-%EC%86%8C%EB%82%98%EB%AC%B4-%EC%A7%84%EC%A0%95-%EC%8B%9C%EC%B9%B4-%EB%A1%9C%EC%85%98-250ml-%EA%B8%B0%ED%9A%8D-PLUS%EC%95%B0%ED%94%8C15mlPLUS%EB%A7%88%EC%8A%A4%ED%81%AC1%EB%A7%A4/75403?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\1f20944c-5a86-4748-8daf-7d57259ea6c0 소나무 진정 시카 로션.json",
+      "live": {
+        "name": "소나무 진정 시카 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-only%ED%99%94%ED%95%B4-%EC%86%8C%EB%82%98%EB%AC%B4-%EC%A7%84%EC%A0%95-%EC%8B%9C%EC%B9%B4-%EB%A1%9C%EC%85%98-250ml-%EA%B8%B0%ED%9A%8D-PLUS%EC%95%B0%ED%94%8C15mlPLUS%EB%A7%88%EC%8A%A4%ED%81%AC1%EB%A7%A4/75403?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "5116d78d-0118-42b1-acc8-1ee384624725",
+      "name": "세라마이드 릴리프 하이드레이션 에멀젼",
+      "brand": "YBK",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/goods/YBK-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EC%97%90%EB%A9%80%EC%A0%BC-120ml/33374?goods_tab=review_ingredients",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\5116d78d-0118-42b1-acc8-1ee384624725 세라마이드 릴리프 하이드레이션 에멀젼.json",
+      "live": {
+        "name": "세라마이드 릴리프 하이드레이션 에멀젼",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/goods/YBK-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EC%97%90%EB%A9%80%EC%A0%BC-120ml/33374?goods_tab=review_ingredients"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "615c6866-b1ea-48d3-adbe-fbe1831dc6f1",
+      "name": "갈락토미세스 더마로션",
+      "brand": "레스케미",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/products/2178508",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\615c6866-b1ea-48d3-adbe-fbe1831dc6f1 갈락토미세스 더마로션.json",
+      "live": {
+        "name": "갈락토미세스 더마로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/products/2178508"
+      },
+      "ready": true,
+      "warnings": []
+    },
+    {
+      "id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "name": "5중 세라마이드 로션",
+      "brand": "러베",
+      "category": "moisturizer_lotion_emulsion",
+      "categoryFolder": "moisturizer\\lotion",
+      "canonical_category": "moisturizer_lotion_emulsion",
+      "product_form": null,
+      "category_status": "ready",
+      "category_skip_reason": null,
+      "url": "https://www.hwahae.co.kr/products/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EB%A1%9C%EC%85%98/2179529",
+      "outputPath": "C:\\Users\\hun\\Documents\\K-beauty AI\\data\\hwahae-review-signals\\categories\\moisturizer\\lotion\\raw\\97deb2cc-2fae-4dbb-8253-03170e197002 5중 세라마이드 로션.json",
+      "live": {
+        "name": "5중 세라마이드 로션",
+        "category": "moisturizer_lotion_emulsion",
+        "product_form": "",
+        "url": "https://www.hwahae.co.kr/products/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EB%A1%9C%EC%85%98/2179529"
+      },
+      "ready": true,
+      "warnings": []
+    }
+  ]
+}

@@ -449,13 +449,15 @@ async function main() {
     csvPath,
     "--category",
     category,
-    "--product-form",
-    productForm || "",
     "--category-folder",
     categoryFolder,
     "--plan-out",
     planPath,
   ];
+
+  if (productForm) {
+    prepareArgs.push("--product-form", productForm);
+  }
 
   if (!planOnly) {
     prepareArgs.push("--extract");
