@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 36 final pre-runtime integration checklist
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium final checklist artifact
+- Routing decision: User requested a final pre-runtime integration checklist after Phase 35. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 26-35 readiness, contract, verifier, route guard, and helper artifacts, then freeze final conditions before a first disabled shadow dry-run plan can be written.
+- Changed files: scripts/review-final-pre-runtime-integration-checklist.mjs, scripts/verify-final-pre-runtime-integration-checklist.mjs, docs/architecture/final-pre-runtime-integration-checklist.md, docs/reviews/final-pre-runtime-integration-checklist-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The checklist did not call `/api/analyze`.
+- Validation: `node scripts/review-final-pre-runtime-integration-checklist.mjs`, `node scripts/verify-final-pre-runtime-integration-checklist.mjs`, required Phase 35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Checklist status is `ready_for_first_disabled_shadow_dry_run_plan`, meaning Phase 37 may write a first disabled shadow dry-run plan only. Policy readiness, contract readiness, safety verifier readiness, route isolation readiness, and artifact safety readiness are all satisfied in current artifacts. Runtime connection remains unapproved.
+- Context promotion candidate: Phase 37 may proceed only as first disabled shadow dry-run plan, disabled shadow dry-run preflight plan, or route-disconnected artifact writer skeleton design. `/api/analyze` route changes and evaluator/CandidatePolicy runtime connection still require a separate approved task.
+
 ### 2026-07-10 / Phase 35 disabled-by-default shadow boundary dry-run helper skeleton
 
 - Branch: codex/survey-input-contract-refactor
