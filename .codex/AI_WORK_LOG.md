@@ -1,5 +1,17 @@
 # AI_WORK_LOG.md
 
+### 2026-07-10 / Phase 38 first disabled shadow dry-run implementation patch plan
+
+- Branch: codex/survey-input-contract-refactor
+- Task type: shadow/audit design / Medium future patch plan
+- Routing decision: User requested a first disabled shadow dry-run implementation patch plan after Phase 37. Runtime evaluator changes, CandidatePolicy runtime wiring, `/api/analyze` route changes or invocation, UI/API response changes, DB/Supabase writes or schema changes, product data edits, capture fixture source edits, synthetic samples recorded as actual evidence, and recommendation output changes were out of scope.
+- Goal: Read Phase 33-37 dry-run, checklist, helper, snapshot, and static guard artifacts, then freeze the minimal future patch scope, feature flag contract, route insertion blueprint, snapshot sequence, artifact writer plan, verifier chain, kill criteria, and rollback plan before any Phase 39 patch.
+- Changed files: scripts/review-first-disabled-shadow-dry-run-patch-plan.mjs, scripts/verify-first-disabled-shadow-dry-run-patch-plan.mjs, docs/architecture/first-disabled-shadow-dry-run-patch-plan.md, docs/reviews/first-disabled-shadow-dry-run-patch-plan-20260709.md, .codex/AI_WORK_LOG.md
+- Protected areas: No route/API response field, evaluator hard-filter/score/weight, CandidatePolicy runtime, UI, DB/schema/migration/policy, Supabase write, product data, actual capture fixture, topPick/supportingProducts/budgetAlternatives runtime, or recommendation output change. The patch plan did not call `/api/analyze`.
+- Validation: `node scripts/review-first-disabled-shadow-dry-run-patch-plan.mjs`, `node scripts/verify-first-disabled-shadow-dry-run-patch-plan.mjs`, required Phase 37/36/35/34/33/32/31/30/29/28/27/26/25/exposure/shadow/ranking/goal/survey verifier set, `npm run build`, and `git diff --check` are recorded in the turn completion report.
+- Findings: Phase 38 fixed the future patch scope only. The recommended future insertion remains `route_outside_helper_dev_only_artifact_writer`; the preferred future flag is `DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN`; future artifact writing must be dev-only, local `tmp` only, schema-validated, forbidden-field-scanned, and non-blocking. Runtime connection remains unapproved.
+- Context promotion candidate: Phase 39 may proceed only with separate approval as a first disabled shadow dry-run minimal patch. Evaluator/CandidatePolicy runtime connection, API response changes, recommendation result changes, DB/Supabase changes, and production activation remain prohibited.
+
 ### 2026-07-10 / Phase 37 first disabled shadow dry-run plan
 
 - Branch: codex/survey-input-contract-refactor
