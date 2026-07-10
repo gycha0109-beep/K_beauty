@@ -1,138 +1,122 @@
-# AI_ROUTER.md
+# AI Router
 
-## 목적
+## Purpose and precedence
 
-AI 에이전트가 작업 요청을 받았을 때 작업 방식을 분류하기 위한 공용 기준서다.
+This is the canonical `.codex` router.
+Read it after [AGENTS.md](../AGENTS.md) and [.codex README](README.md).
+It chooses what to read; it does not replace the actual code, schema, config, package command, or verifier result.
 
-작업 전 요청을 다음 중 하나로 분류한다.
+When evidence conflicts, prefer the executable/current source and report the mismatch.
+Do not store a long-term branch purpose or Phase history here.
 
-- 실행형
-- 진단형
-- 설계형
-- 리뷰형
-- 복구형
+## Start with the delta
 
----
+1. State the requested change, diagnosis, review, or recovery and explicit non-targets.
+2. Classify it as execution, diagnosis, design, review, or recovery.
+3. Answer `Y` or `N` for DB, Auth, RLS, Storage, Provider, Payment, Secret, and Production impact or execution.
+4. Treat direct impact, indirect impact, and uncertainty as `Y`.
+5. Select only the necessary operating rules, source material, and verification scope.
 
-## 라우팅 우선순위
+Routing priority:
 
-조건이 충돌하면 아래 순서를 따른다.
+1. Protected or critical impact: do not modify until the relevant boundary is understood and authority is explicit.
+2. Build/runtime failure, regression, or uncontrolled scope: recovery.
+3. Unknown cause, data flow, or impact: diagnosis.
+4. New capability, cross-layer contract, or structural change: design before implementation.
+5. Existing change/result inspection: review.
+6. Bounded, understood change: execution.
 
-1. Critical / Protected Areas 관련이면 임의 수정하지 않고 보고한다.
-2. 빌드 실패, 실행 실패, 회귀, 잘못된 수정은 복구형으로 처리한다.
-3. 원인, 영향 범위, 데이터 흐름, 상태 흐름이 불명확하면 진단형으로 처리한다.
-4. 신규 기능, 구조 변경, 데이터 모델 변경, 주요 플로우 변경은 설계형으로 처리한다.
-5. 변경된 코드, 문서, 결과물 검토 요청은 리뷰형으로 처리한다.
-6. 범위와 대상이 명확한 소규모 수정은 실행형으로 처리한다.
+## Minimum and conditional reads
 
----
+Always read:
 
-## 실행형
+- [AGENTS.md](../AGENTS.md)
+- [.codex README](README.md)
+- this router
 
-범위와 대상이 명확한 소규모 작업은 바로 수정한다.
+Read only when selected by the delta:
 
-- 수정 파일이나 영역이 명확해야 한다.
-- 변경 범위가 작고 독립적이어야 한다.
-- 문구, 스타일, 설정값, 단순 조건 변경에 적합하다.
-- 단일 모듈, 함수, 컴포넌트, 문서 중심 작업에 적합하다.
-- 원인이 이미 파악된 버그 수정에 적합하다.
-- 요청과 직접 관련된 파일만 수정한다.
-- 보호 구역은 건드리지 않는다.
-- 범위가 커지면 진단형으로 전환한다.
-- 변경 파일과 검증 결과를 보고한다.
+| Need | Conditional reference |
+| --- | --- |
+| current cross-task context | [AI_CONTEXT.md](AI_CONTEXT.md), only the relevant section |
+| Git/workstation/data synchronization | [PROJECT_SYNC_RULES.md](PROJECT_SYNC_RULES.md), only the needed section |
+| verification meaning | [AI_REVIEW_CHECKLIST.md](AI_REVIEW_CHECKLIST.md), only the task-type section |
+| continuity or prior failure | the latest relevant slice of `AI_WORK_LOG.md`, never the full history |
+| protected-surface decision | relevant `AGENTS.md` protected-area rules plus current code/schema/config/verifier and only necessary detailed source material |
+| detailed design/contract/runbook | the named source reference, not its whole directory |
+| existing domain summary | only if a relevant approved domain document exists |
 
----
+Do not default-read audit logs, dated Phase/review/runbook material, screenshots, local logs, profiles, temporary artifacts, or unrelated domains.
 
-## 진단형
+## Security and verification routing
 
-원인이나 영향 범위가 불명확하면 먼저 수정하지 않고 분석한다.
+For a `Y` security delta, apply the relevant `AGENTS.md` Protected Areas section first.
+Then read only the source material needed for the affected boundary; this repository has no separate approved security-boundaries entry document yet.
+Do not load unrelated security history or a full security corpus merely because one protected category is involved.
 
-- 원인 파일이 불명확할 때 사용한다.
-- 여러 파일, 모듈, 화면, 상태값이 연결된 경우에 사용한다.
-- 저장, 조회, 인증, 권한, API, 외부 서비스, 환경 변수, 빌드 설정이 관련되면 우선 진단한다.
-- 간헐적 오류나 이전 수정의 부작용이면 우선 진단한다.
-- 증상만 있고 원인이 분명하지 않으면 우선 진단한다.
-- 먼저 코드를 수정하지 않는다.
-- 관련 파일과 흐름을 파악한다.
-- 원인 후보와 최소 수정안을 보고한다.
-- 수정이 필요하면 실행형 또는 설계형으로 분리한다.
+For an `N` security delta, state the basis in the completion report and do not load unnecessary security detail.
 
----
+If a required security boundary cannot be established from the bounded current evidence, stop before protected execution and report the uncertainty.
+Do not create a replacement security policy in this router; recommend a focused follow-up or Sol judgment when the failure cost requires it.
 
-## 설계형
+Select verification by task type:
 
-구조 변경이 필요한 작업은 코드 수정 전에 설계한다.
+- documentation/rules: headings, paths, references, scope, and diff checks;
+- bounded implementation: relevant static check or focused test, then proportionate build/test only when allowed;
+- diagnosis/review: evidence appropriate to the question, without implementing a fix unless authorized;
+- API/DB/Auth/Provider/Payment: current contract and safety verifiers, with runtime execution only under explicit safe authority.
 
-- 신규 기능 추가에 사용한다.
-- 기존 플로우 재설계에 사용한다.
-- 데이터 구조, 타입, 인터페이스 변경에 사용한다.
-- 여러 계층에 걸친 변경이 필요할 때 사용한다.
-- 공통 로직 분리, 정책, 권한, 상태 구조, 외부 연동 구조 변경에 사용한다.
-- 바로 구현하지 않는다.
-- 현재 구조와 목표 구조를 요약한다.
-- 변경 단계를 작게 나눈다.
-- 영향 범위, 보호 구역, 검증 기준을 제시한다.
+Resolve the actual command from current `package.json` or the relevant `scripts/` path before running it.
+Do not treat a documented command as authoritative when it disagrees with the executable script.
 
----
+## Source selection and scope control
 
-## 리뷰형
+Use the smallest source that can answer the task:
 
-이미 변경된 코드, 문서, 결과물은 먼저 수정하지 않고 검토한다.
+- current code, schema, config, package script, or verifier for executable facts;
+- a named contract or runbook for detailed intended behavior;
+- a review, Phase record, or work-log slice only for evidence/history;
+- a domain summary only when it exists and the task needs its current-state context.
 
-- 검토, 리뷰, 문제점 확인 요청에 사용한다.
-- diff, 로그, 결과물 확인 단계에 사용한다.
-- 구조, UX, 성능, 안정성, 유지보수성이 불안할 때 사용한다.
-- 요청 범위 초과나 보호 구역 침범 여부를 점검한다.
-- 먼저 수정하지 않는다.
-- 문제, 리스크, 누락, 과수정 여부를 우선 확인한다.
-- 수정이 필요하면 실행형 또는 설계형으로 분리한다.
+Do not promote an old document's conclusion into current fact without verification.
+Do not copy long source text into L0 documents or complete reports.
+If the necessary evidence is outside the approved scope, report the boundary and request direction rather than widening the task.
 
----
+## Task-type behavior
 
-## 복구형
+| Type | First action | Completion boundary |
+| --- | --- | --- |
+| execution | modify only the bounded requested files | report changed files and verification |
+| diagnosis | inspect narrow evidence before modification | report cause candidates and minimum next step |
+| design | describe current/target structure and risk | do not implement without scope approval |
+| review | inspect diff/result before modification | report findings, omissions, and risk |
+| recovery | contain failure and inspect last relevant change | propose the smallest recovery path |
 
-실패나 회귀가 발생하면 새 기능보다 복구를 우선한다.
+If an execution task grows beyond its known cause or file boundary, switch to diagnosis.
+If any task produces a build/runtime regression or loses scope control, switch to recovery.
 
-- 빌드 또는 실행 실패에 사용한다.
-- 정상 기능 회귀에 사용한다.
-- 핵심 플로우가 깨졌을 때 사용한다.
-- 잘못된 파일을 수정했을 때 사용한다.
-- 수정 범위가 통제되지 않을 때 사용한다.
-- 새 기능 구현을 중단한다.
-- 직전 변경 사항과 실패 지점을 확인한다.
-- 되돌릴 후보와 최소 수정 후보를 나눈다.
-- 광범위한 리팩토링을 하지 않는다.
+## Domains, references, and history
 
----
+An existing relevant domain document may be read as a current-state summary.
+If it is absent, continue with bounded source evidence; do not fail the task and do not create `.codex/domains/` or a domain document without explicit user approval.
 
-## 유형 전환
+Links are references, not hard dependencies.
+For a broken reference, check the named path and one bounded parent/sibling scope, then prefer code/schema/config/verifier evidence.
+Report `Reference Maintenance Issue`; do not repair unrelated documents or begin a repository-wide search.
 
-- 실행형 → 진단형: 원인 파일이 늘어나거나 흐름 파악이 필요해진 경우
-- 진단형 → 실행형: 원인이 좁혀지고 수정 범위가 작아진 경우
-- 진단형 → 설계형: 구조 문제로 확인된 경우
-- 모든 유형 → 복구형: 빌드 실패, 회귀, 범위 통제 실패가 발생한 경우
+Phase, review, runbook, and work-log records are audit evidence, not default current context.
+Read only a named or latest relevant slice when continuity or evidence requires it.
 
----
+## Investigation and handoff limits
 
-## 공통 금지
+Start with depth 1-2 structure and narrow to an explicit directory before searching.
+Use scoped `rg`, filenames, counts, headings, and selected sections; avoid global `grep`, `find`, or large `cat` output.
+If a command produces repeated parser/output errors, stop and correct the command instead of widening the search.
 
-- 요청 범위를 벗어난 대규모 리팩토링 금지
-- 기존 변경사항 임의 되돌리기 금지
-- 보호 구역 승인 없는 수정 금지
-- 검증하지 않은 내용을 성공으로 보고 금지
-- 원인을 모르는 상태에서 계속 수정 금지
-- 폐기된 방향 되살리기 금지
+Sol, Terra, and Luna handoffs contain only L0 entry, task/model role, delta, confirmed decisions, allowed/forbidden scope, security routing, verification set, and open uncertainty.
+Do not transfer full chat history, all Phase records, or whole architecture/review directories.
 
----
+## Completion report
 
-## 공통 보고
-
-작업 완료 또는 중단 시 간결하게 보고한다.
-
-- 작업 유형
-- 라우팅 판단
-- 확인/변경 파일
-- 검증 결과
-- 남은 리스크
-
-Medium 이상 작업 또는 문제가 발생한 작업은 `AI_WORK_LOG.md` 형식에 따라 기록한다.
+Report task type, delta/security decision, files read or changed, verification, unperformed checks with reason, Reference Maintenance Issues, and remaining risk.
+For Medium-or-higher work or a problem, append a concise entry to `AI_WORK_LOG.md`.

@@ -4,6 +4,9 @@
 
 작업 전 요청을 다음 유형 중 하나로 분류한다.
 
+AI 작업 시작 시 `.codex/README.md`를 읽고, 이어서 canonical router인
+`.codex/AI_ROUTER.md`로 이번 작업에 필요한 문서만 선택한다.
+
 - 실행형
 - 진단형
 - 설계형
@@ -62,7 +65,7 @@
 
 ## 5. Context
 
-필요 시 `.codex/AI_CONTEXT.md`를 확인한다.
+필요 시 router가 `.codex/AI_CONTEXT.md`를 조건부로 선택할 수 있다.
 
 - Active: 현재 작업에 반영할 최신 기준
 - Bridge: 참고 기준
@@ -80,11 +83,12 @@ Deactivated 내용을 현재 기준으로 되살리지 않는다.
 기본 참조:
 
 - `AGENTS.md`
+- `.codex/README.md`
 - `.codex/AI_ROUTER.md`
-- `.codex/AI_CONTEXT.md`
 
 조건부 참조:
 
+- 현재 기준이 실제로 필요한 경우: `.codex/AI_CONTEXT.md`
 - 검증 필요: `.codex/AI_REVIEW_CHECKLIST.md`
 - Medium 이상 작업 또는 문제 발생: `.codex/AI_WORK_LOG.md`
 

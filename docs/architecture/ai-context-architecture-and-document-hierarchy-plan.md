@@ -5,7 +5,7 @@
 - Status: implementation-ready diagnosis; no `.codex/` restructure implementation in this phase.
 - Final state: `ready_for_agent_context_restructure`.
 - Branch inspected: `codex/survey-input-contract-refactor`.
-- Execution profile: the requested Terra Max operating path; Sol escalation was evaluated and is not required.
+- Execution profile: Sol with high reasoning (user-reported for Phase X); no separate escalation was required.
 - Task classification: diagnosis plus limited documentation execution.
 - Security delta: N. This task only inventories and classifies repository documents.
 - Security delta rationale: no DB, Auth, RLS, Storage, Provider, Payment, Secret, Production, route, or hosted operation was changed or executed.

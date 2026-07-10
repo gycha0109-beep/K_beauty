@@ -2084,3 +2084,18 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Actual `.codex` restructure implementation: Not performed.
 - Feature/runtime code changes: None.
 - Next phase: bounded implementation of the approved `.codex` operating-document restructure.
+
+### 2026-07-11 / Phase X+1 minimal Codex context entry implementation
+
+- Model / reasoning: Terra / Max.
+- Task type: bounded documentation implementation.
+- L0 entry: Added `.codex/README.md`; `AGENTS.md` now directs startup to the README and canonical `AI_ROUTER.md`.
+- Canonical router: Reused and updated `.codex/AI_ROUTER.md`; no `CONTEXT_ROUTER.md` was created.
+- Conditional routing: The router classifies the delta, applies `Y` for direct, indirect, or ambiguous DB/Auth/RLS/Storage/Provider/Payment/Secret/Production impact, and loads only relevant protection and verification evidence.
+- Existing-rule reuse: `AI_CONTEXT.md`, `AI_REVIEW_CHECKLIST.md`, `PROJECT_SYNC_RULES.md`, `AI_WORK_LOG.md`, and hooks/config remain conditional or detailed references; their content was not copied into L0.
+- Domain handling: No `.codex/domains/` directory or domain document was created.
+- Previous-record correction: The Phase X design document now records the user-reported actual execution profile as Sol with high reasoning.
+- Scope boundary: No existing file moved/deleted, no feature code changed, and no route, runtime, Supabase, Docker, provider, DB, or production operation was run.
+- Resource usage: `AI_RESOURCE_USAGE_LOG.md` remains absent and was not created; no unobserved usage was estimated.
+- Validation: static path, heading, fence, duplicate-heading, whitespace, scope-boundary, and `git diff --check` results are recorded in the completion report.
+- Next candidate: after user approval, consolidate only the needed L1 execution/verification/security rule surfaces without creating domain documents.
