@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-07-11 / SEC-03 Next.js dependency remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: execution / production dependency security remediation.
+- Scope: `package.json`, `package-lock.json`, SEC-03 documentation, and this work-log entry only. No API, DB, migration, auth, environment, or application-code change.
+- Changed packages: `next` lockfile `15.5.14` to exact manifest and lockfile `15.5.18`; nested `next > postcss` override to `8.5.10`.
+- Production audit: before High 1 and Moderate 1 (total 2); after `npm audit --omit=dev --json` total 0.
+- Build: `npm run build` passed on Next.js 15.5.18. `npm run lint` was not configured for non-interactive use and opened the existing ESLint setup prompt; no ESLint configuration was created. No test/typecheck script exists.
+- Code changes: None. Only dependency manifest/lockfile and security documentation changed.
+- Follow-up security work: SEC-02 analysis table RLS/grant deployment verification.
+
 ### 2026-07-10 / Phase 42 isolated route run readiness pack
 
 - Branch: codex/survey-input-contract-refactor
