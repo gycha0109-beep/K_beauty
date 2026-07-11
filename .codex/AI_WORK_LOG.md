@@ -2,6 +2,18 @@
 
 ## Entries
 
+### 2026-07-11 / Supabase predecessor baseline safe schema dump intake
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: diagnosis/design only using the supplied 108,250-byte TEMP public schema-only dump and repository files; no Supabase, Docker, PostgreSQL, remote, build, or test command was run.
+- Dump safety: `SAFE_SCHEMA_DUMP`; top-level COPY/INSERT, setval, stdin data blocks, data sections, and credential/connection/JWT patterns were absent. Five indented INSERT statements were PL/pgSQL function-body code, not row data.
+- Actual DDL: exact current columns, constraints, indexes, FKs, RLS, policy, grants, triggers, enums, and direct dependencies were extracted for products, product_candidates, source_rankings, and recommendation_logs without copying the raw dump.
+- Classification: source_rankings is a required predecessor table because the tracked ranking migration only alters it. Recommendation logs current DDL is the exact pre-SEC-05 state because SEC-05 remains local-only. Tracked normalized/signal/product-form/ranking/grant-use components remain excluded from baseline.
+- Gate: `BLOCKED_BY_SCHEMA_UNCERTAINTY` remains. Noncanonical early migrations are absent from linked history, IF NOT EXISTS branches cannot be reconstructed, and products pre-conversion types plus untracked replay dependencies still lack t0 provenance.
+- Changes: documentation/work-log only; no code, migration, schema, config, package, test, or DB change.
+- Raw dump lifecycle: component evidence and review were completed, then the supplied TEMP dump was deleted; no raw dump copy was created in the repository.
+- Next work: locate archived/manual initial schema evidence for product enum/core table/untracked product columns before creating any baseline SQL.
+
 ### 2026-07-11 / Supabase remote schema metadata acquisition and predecessor baseline design
 
 - Branch: `codex/survey-input-contract-refactor`

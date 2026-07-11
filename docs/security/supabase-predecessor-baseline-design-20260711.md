@@ -367,3 +367,361 @@ Password를 command argument나 문서에 노출하지 말고, raw dump는 OS TE
 Linked migration history 비교 19개 row는 확보했다. 이 중 17개는 local/remote 정렬, SEC-01과 SEC-05 두 개는 local-only였지만 actual schema body는 확보하지 못했다. Repository chronology로 네 predecessor table의 존재 필요성과 tracked migration이 추가한 components는 구분했으나, exact predecessor DDL과 security metadata는 복원할 수 없다.
 
 Current schema를 baseline으로 복사하지 않았고, baseline SQL도 생성하지 않았다. Row data와 credential은 조회·기록하지 않았으며 remote write는 없었다. 내부 재검토 종료 조건은 **C: 외부 schema metadata 없이는 해결할 수 없는 uncertainty만 남음**이다.
+
+## Safe Schema Dump 재수집 결과
+
+기존 실패 이력은 유지한다. 후속으로 `C:\Users\hun\AppData\Local\Temp\kbeauty-public-schema-only-20260711.sql`에서 108,250-byte public schema-only dump를 제공받았고, 이번 단계에서는 이 저장 파일과 repository만 읽었다. Supabase, Docker, PostgreSQL, remote endpoint에는 다시 접근하지 않았다.
+
+Dump에는 네 대상 table의 current `CREATE TABLE`과 분리된 PK/FK/index/RLS/policy/grant/trigger DDL이 모두 존재했다. SEC-01과 SEC-05 object는 dump에 없으며, 이전 linked history에서 두 migration이 local-only였던 결과와 일치한다.
+
+## Dump 안전성 확정
+
+**`SAFE_SCHEMA_DUMP`**
+
+| 검사 | 결과 |
+|---|---|
+| 파일 | 존재, 108,250 bytes, repository 밖 TEMP, read 가능 |
+| 행 시작 `COPY` | 0 |
+| 행 시작 `INSERT INTO` | 0 |
+| `COPY ... FROM stdin` | 0 |
+| `pg_catalog.setval` | 0 |
+| data-only section marker | 0 |
+| 들여쓰기된 `INSERT INTO` | 5; 모두 PL/pgSQL 함수 body 내부 |
+| credential/connection/JWT pattern | 0 |
+| `service_role` | PostgreSQL role 및 GRANT identifier만 존재 |
+
+Row data와 credential은 발견되지 않았다. Raw dump 전체나 function body 전체를 repository 문서로 복사하지 않았다.
+
+Component 단위 근거 반영과 내부 재검토를 마친 뒤 지정된 TEMP dump를 삭제했고, 같은 경로가 더 이상 존재하지 않음을 확인했다. Repository에는 raw dump 사본을 만들지 않았다.
+
+## Actual Current DDL Inventory
+
+다음 inventory는 dump의 current state다. Predecessor state와 동일하다고 간주하지 않는다. 네 table 모두 explicit identity/generated/collation/sequence column은 없고 UUID PK default는 `gen_random_uuid()`다. Dump에는 FORCE RLS 문이 없다.
+
+### `public.products`
+
+| # | Column | Exact current definition |
+|---:|---|---|
+| 1 | `id` | `uuid DEFAULT gen_random_uuid() NOT NULL` |
+| 2 | `name` | `text NULL` |
+| 3 | `brand` | `text NULL` |
+| 4 | `category` | `public.product_category NOT NULL` |
+| 5 | `price_min` | `integer NULL` |
+| 6 | `price_max` | `integer NULL` |
+| 7 | `buy_link` | `text NULL` |
+| 8 | `image_url` | `text NULL` |
+| 9 | `created_at` | `timestamptz DEFAULT now() NULL` |
+| 10 | `skin_types` | `text[] NOT NULL` |
+| 11 | `concerns` | `text[] NOT NULL` |
+| 12 | `texture` | `public.product_texture NOT NULL` |
+| 13 | `finish` | `public.product_finish NOT NULL` |
+| 14 | `irritation_risk` | `text NOT NULL` |
+| 15 | `sensitivity_safe` | `boolean NOT NULL` |
+| 16 | `normalized_name` | `text NOT NULL` |
+| 17 | `normalized_brand` | `text NOT NULL` |
+| 18 | `updated_at` | `timestamptz DEFAULT now() NOT NULL` |
+| 19 | `is_mens` | `boolean DEFAULT false NOT NULL` |
+| 20 | `recommendation_tier` | `text NULL` |
+| 21 | `size_ml` | `numeric NULL` |
+| 22 | `unit_price_per_10ml` | `numeric NULL` |
+| 23 | `cleansing_profile` | `text NULL` |
+| 24 | `uv_filter_type` | `text NULL` |
+| 25 | `spf_value` | `text NULL` |
+| 26 | `uva_label` | `text NULL` |
+| 27 | `water_resistant_minutes` | `integer NULL` |
+| 28 | `white_cast` | `text NULL` |
+| 29 | `eye_sting` | `text NULL` |
+| 30 | `pilling_risk` | `text NULL` |
+| 31 | `tone_up` | `boolean NULL` |
+| 32 | `review_signals` | `jsonb DEFAULT '{}'::jsonb NULL` |
+| 33 | `hwahae_url` | `text NULL` |
+| 34 | `market_signals` | `jsonb DEFAULT '{}'::jsonb NULL` |
+| 35 | `ingredient_signals` | `jsonb DEFAULT '{}'::jsonb NULL` |
+| 36 | `external_source` | `text NULL` |
+| 37 | `external_type` | `text NULL` |
+| 38 | `external_id` | `text NULL` |
+| 39 | `source_url` | `text NULL` |
+| 40 | `balm_functional_tags` | `text[] NULL` |
+| 41 | `balm_usage_scope` | `text NULL` |
+| 42 | `balm_type` | `text NULL` |
+| 43 | `is_primary_moisturizer` | `boolean NULL` |
+| 44 | `balm_caution_tags` | `text[] NULL` |
+| 45 | `balm_research_confidence` | `text NULL` |
+| 46 | `product_form` | `public.product_form NULL` |
+
+Current constraints/index/security:
+
+- PK: `products_pkey (id)`; not deferrable, initially immediate.
+- Checks: cleansing profile; concerns allowed; eye sting; irritation risk; pilling risk; skin types allowed; UV filter type; white cast.
+- Unique indexes: `products_external_unique (external_source, external_type, external_id)` with all-three-non-null predicate; `products_normalized_brand_name_key (normalized_brand, normalized_name)`.
+- Trigger: `trg_products_updated_at` before update -> `public.set_updated_at()`.
+- Comment: `products.product_form` treatment sub-form 설명; tracked 20260613 provenance.
+- RLS enabled, FORCE RLS absent.
+- Policy: `Public can read products`, SELECT, roles `authenticated`,`anon`, `USING (true)`.
+- Grants: service_role ALL; anon/authenticated SELECT.
+
+### `public.product_candidates`
+
+| # | Column | Exact current definition |
+|---:|---|---|
+| 1 | `id` | `uuid DEFAULT gen_random_uuid() NOT NULL` |
+| 2 | `source_name` | `text NOT NULL` |
+| 3 | `category_path` | `text NULL` |
+| 4 | `product_name_raw` | `text NOT NULL` |
+| 5 | `brand_name_raw` | `text NULL` |
+| 6 | `normalized_name` | `text NULL` |
+| 7 | `normalized_brand` | `text NULL` |
+| 8 | `matched_product_id` | `uuid NULL` |
+| 9 | `status` | `text DEFAULT 'new'::text NOT NULL` |
+| 10 | `created_at` | `timestamptz DEFAULT now() NOT NULL` |
+| 11 | `updated_at` | `timestamptz DEFAULT now() NOT NULL` |
+| 12 | `service_category` | `public.product_category NULL` |
+| 13 | `canonical_name` | `text NULL` |
+| 14 | `canonical_brand` | `text NULL` |
+| 15 | `duplicate_of_product_id` | `uuid NULL` |
+| 16 | `review_status` | `public.product_review_status DEFAULT 'new'::public.product_review_status NOT NULL` |
+| 17 | `review_notes` | `text NULL` |
+| 18 | `reviewed_at` | `timestamptz NULL` |
+| 19 | `reviewed_by` | `text NULL` |
+| 20 | `promotion_payload` | `jsonb NULL` |
+| 21 | `match_method` | `text NULL` |
+| 22 | `match_confidence` | `numeric NULL` |
+| 23 | `review_flags` | `text[] NULL` |
+| 24 | `promotion_version` | `text DEFAULT 'v1'::text NULL` |
+| 25 | `product_form` | `public.product_form NULL` |
+| 26 | `external_type` | `text NULL` |
+| 27 | `external_id` | `text NULL` |
+| 28 | `source_url` | `text NULL` |
+| 29 | `first_seen_at` | `timestamptz DEFAULT now() NULL` |
+| 30 | `last_seen_at` | `timestamptz DEFAULT now() NULL` |
+| 31 | `seen_count` | `integer DEFAULT 0 NOT NULL` |
+| 32 | `latest_price` | `numeric NULL` |
+| 33 | `latest_raw_source` | `jsonb NULL` |
+
+- PK: `product_candidates_pkey (id)`.
+- Checks: `status IN ('new','matched','ignored')`; `seen_count >= 0`.
+- FKs: duplicate ID -> products, NO ACTION; matched ID -> products, ON DELETE SET NULL.
+- Indexes: normalized brand/name; review status+created desc; service category+review status; partial unique source/external identity; source+normalized identity.
+- Trigger: `trg_product_candidates_updated_at` -> `public.set_updated_at()`.
+- Comments: `product_form`, `external_id`, source-normalized-name index 설명; 모두 해당 tracked product-form/ranking component에 종속.
+- RLS enabled, FORCE RLS absent, no policy in dump; service_role ALL only.
+
+### `public.source_rankings`
+
+| # | Column | Exact current definition |
+|---:|---|---|
+| 1 | `id` | `uuid DEFAULT gen_random_uuid() NOT NULL` |
+| 2 | `source_name` | `text NOT NULL` |
+| 3 | `category_path` | `text NOT NULL` |
+| 4 | `rank_position` | `integer NOT NULL` |
+| 5 | `product_name` | `text NOT NULL` |
+| 6 | `brand_name` | `text NULL` |
+| 7 | `rating` | `numeric(3,2) NULL` |
+| 8 | `review_count` | `integer NULL` |
+| 9 | `thumbnail_url` | `text NULL` |
+| 10 | `source_url` | `text NULL` |
+| 11 | `collected_at` | `timestamptz DEFAULT now() NOT NULL` |
+| 12 | `snapshot_id` | `uuid NULL` |
+| 13 | `candidate_id` | `uuid NULL` |
+| 14 | `raw_item` | `jsonb NULL` |
+
+- PK: `source_rankings_pkey (id)`.
+- FKs: candidate -> product_candidates, snapshot -> ranking_snapshots; default NO ACTION.
+- Indexes: candidate; snapshot; partial unique snapshot/candidate; partial unique snapshot/rank position.
+- RLS enabled, FORCE RLS absent, no policy; service_role ALL only.
+
+### `public.recommendation_logs`
+
+| # | Column | Exact current definition |
+|---:|---|---|
+| 1 | `id` | `uuid DEFAULT gen_random_uuid() NOT NULL` |
+| 2 | `event_name` | `text NOT NULL` |
+| 3 | `timestamp` | `timestamptz DEFAULT now() NOT NULL` |
+| 4 | `product_id` | `text NULL` |
+| 5 | `is_top_pick` | `boolean DEFAULT false NOT NULL` |
+| 6 | `question_id` | `text NULL` |
+| 7 | `answer` | `text NULL` |
+| 8 | `session_id` | `text NULL` |
+| 9 | `feature_name` | `text NULL` |
+| 10 | `result_type` | `text NULL` |
+| 11 | `meta_json` | `jsonb DEFAULT '{}'::jsonb NULL` |
+| 12 | `user_id` | `uuid NULL` |
+
+- PK: `recommendation_logs_pkey (id)`.
+- FK: user -> `auth.users(id)`, ON DELETE SET NULL, ON UPDATE NO ACTION.
+- Indexes: event name; product ID; timestamp DESC; user ID+timestamp DESC.
+- RLS enabled, FORCE RLS absent, no policy; service_role ALL only.
+- SEC-05 grant-use column/FK/unique index는 current dump에 없다.
+
+## Products Component Provenance
+
+| Component | First tracked operation | Classification | Predecessor/baseline decision |
+|---|---|---|---|
+| table, id, name, brand, price, buy/image, created_at, sensitivity | first migration reads/writes | BASELINE_REQUIRED | current exact definition을 후보 predecessor로 사용 |
+| category/texture/finish | 20260410 type conversion | MODIFIED_BY_TRACKED_MIGRATION | predecessor exact type가 current dump에서 복원되지 않음 |
+| skin_types/concerns | 20260410 `USING map_*(column::text)` | MODIFIED_BY_TRACKED_MIGRATION | current array는 post-state; predecessor representation 불확실 |
+| irritation_risk | 20260410 text conversion/check | MODIFIED_BY_TRACKED_MIGRATION | predecessor exact type 불확실 |
+| normalized fields, updated_at | 20260410 ADD IF NOT EXISTS/backfill | CREATED_BY_TRACKED_MIGRATION 또는 preexisting | minimal baseline 제외; historical provenance 불확실 |
+| normalized unique, irritation/skin/concern checks | 20260410 drop/create/index | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| three signal columns | 20260430 ADD | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| product_form | 20260613 ADD | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| is_mens/tier/size/hwahae/external/source fields | 20260526 DML requires, ADD migration 없음 | REMOTE_UNTRACKED_CURRENT_STATE | full replay에는 선행 필요; t0 시점 불확실 |
+| products_external_unique | tracked CREATE/use 없음 | REMOTE_UNTRACKED_CURRENT_STATE | current exact index지만 t0 baseline 근거 없음 |
+| cleansing/sunscreen/balm fields/checks | tracked SQL 참조 없음 | REMOTE_UNTRACKED_CURRENT_STATE | t0 baseline 제외 후보; 별도 provenance 필요 |
+| RLS/policy/grants, update trigger | tracked products DDL 없음 | REMOTE_UNTRACKED_CURRENT_STATE | current exact state 확인, t0 시점 불확실 |
+
+Current concerns check는 10개 값을 허용하지만 20260410 tracked expression은 7개만 허용하므로 tracked 이후 별도 변경된 remote-untracked state다.
+
+## Product Candidates Component Provenance
+
+| Component | Classification | Predecessor state |
+|---|---|---|
+| table, base identity/raw/status/timestamps | BASELINE_REQUIRED | current base definitions 후보 |
+| PK, status check | BASELINE_REQUIRED 또는 REMOTE_UNTRACKED_CURRENT_STATE | tracked 생성 없음; baseline 포함 후보 |
+| service/canonical/match/review/promotion columns | CREATED_BY_TRACKED_MIGRATION 또는 preexisting | ADD IF NOT EXISTS로 historical exactness 불확실; minimal baseline 제외 |
+| product_form | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| external/seen/source/latest columns와 check/index | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| matched FK ON DELETE SET NULL | REMOTE_UNTRACKED_CURRENT_STATE | 20260410 tracked FK는 NO ACTION이므로 별도 변경 |
+| RLS/service_role ALL/update trigger | REMOTE_UNTRACKED_CURRENT_STATE | current exact state 확인, t0 시점 불확실 |
+
+## Source Rankings Component Provenance
+
+`20260621030000_phase1_ranking_snapshot_pipeline.sql`은 table을 생성하지 않고 기존 `source_rankings`에 세 column과 indexes/FKs를 추가한다. 따라서 table 자체는 baseline 포함 대상이다.
+
+| Component | Classification | Predecessor state |
+|---|---|---|
+| first 11 columns | BASELINE_REQUIRED | current exact definitions |
+| PK | BASELINE_REQUIRED | `source_rankings_pkey (id)` |
+| snapshot_id/candidate_id/raw_item | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| linkage indexes/FKs | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+| RLS/service_role ALL | REMOTE_UNTRACKED_CURRENT_STATE | tracked RLS enable 없음; t0 provenance 불확실 |
+
+## Recommendation Logs Component Provenance
+
+SEC-05는 local-only이고 current dump에는 grant-use linkage가 없다. 따라서 dump는 exact **SEC-05 이전 current state**다.
+
+| Component | Classification | Predecessor state |
+|---|---|---|
+| 12 columns | BASELINE_REQUIRED for full replay | current exact definitions |
+| PK/auth FK/four indexes | BASELINE_REQUIRED 또는 REMOTE_UNTRACKED_CURRENT_STATE | tracked CREATE 없음; baseline 포함 후보 |
+| RLS/service_role ALL/no policy | BASELINE_REQUIRED 또는 REMOTE_UNTRACKED_CURRENT_STATE | exact pre-SEC-05 current state |
+| anonymous grant-use linkage | CREATED_BY_TRACKED_MIGRATION | baseline 제외 |
+
+## Direct Dependency Inventory
+
+| Dependency | Current DDL | Provenance/baseline decision |
+|---|---|---|
+| product_category | 13-value enum | tracked moisturizer four values와 treatment 제외 후에도 toner_pad/ampoule/essence untracked |
+| product_texture | watery/gel/lotion/cream | 20260410 conditional create; predecessor column type 불확실 |
+| product_finish | fresh/natural/dewy/soft_matte | 20260410 conditional create; predecessor column type 불확실 |
+| product_review_status | six values | 20260410 create candidate; baseline 제외 |
+| product_form | six values | 20260613 create; baseline 제외 |
+| gen_random_uuid()/now() | UUID/timestamp defaults | explicit sequence 없음; dump에 extension DDL 없음 |
+| public.set_updated_at() | PL/pgSQL, search_path `pg_catalog, public`, NEW.updated_at=now(); anon/authenticated/service_role EXECUTE ALL | products/candidates trigger dependency, tracked provenance 없음 |
+| auth.users | recommendation user FK | Supabase managed; baseline에서 auth table 생성 금지 |
+| ranking_snapshots | source snapshot FK | tracked migration이 생성; baseline 제외 |
+| product_candidate_evidence_summary / promote_product_candidate | candidates/products/source direct dependency | 20260410 tracked view/function; baseline 제외 |
+| candidate_ranking_evidence_summary / ingest_ranking_snapshot | candidates/source/ranking direct dependency | 20260621 이후 tracked view/function; baseline 제외 |
+
+네 대상 table을 명시적으로 추가한 publication DDL은 dump에서 발견되지 않았다. Explicit sequence/domain/exclusion constraint도 없다.
+
+Current enum 역적용으로 얻는 `product_category` predecessor 후보 값은 `cleanser`, `toner_essence`, `toner_pad`, `serum`, `ampoule`, `essence`, `moisturizer`, `sunscreen`이다. 네 moisturizer 세부값은 20260524, `treatment`는 20260613이 추가한다. 다만 enum과 products.category가 20260410 직전에 이미 enum이었는지 text였는지는 dump만으로 확정할 수 없다.
+
+## Migration Chronology 역적용
+
+| Migration | Reverse result | Remaining ambiguity |
+|---|---|---|
+| 20260410 | normalized/type/check/review/functions 제거 | IF NOT EXISTS preexistence, old products types |
+| 20260430 | signal columns 제거 | 없음 |
+| 20260524 | moisturizer enum additions 제거 | DML row state 제외 |
+| 20260526 | rows 제외 | required untracked columns/index 생성 시점 |
+| 20260613 | treatment/product_form 제거 | untracked enum three values provenance |
+| 20260620 | candidate product_form/promotion replacement 제거 | 없음 |
+| 20260621 | candidate/source linkage components 제거 | predecessor RLS/ALL grant provenance |
+| 20260621-27 | ranking/review views/functions/queue 제거 | 없음 |
+| 20260704/11 | dump에 없음, baseline 제외 | local-only |
+
+비표준 filename 5개가 linked history에 없으므로 current dump만으로 각 IF NOT EXISTS branch가 create했는지 skip했는지 역증명할 수 없다.
+
+## Exact Predecessor Schema
+
+Actual current DDL은 exact하게 확보했지만 20260410 직전 historical schema는 다음 최소 contract까지만 확정된다.
+
+1. `products`, `product_candidates`, `source_rankings`는 20260410 전 존재한다.
+2. `recommendation_logs`는 SEC-05 전에 존재하며 full replay에서 선행 제공돼야 한다.
+3. 네 table의 UUID PK/default와 base columns가 필요하다.
+4. Source snapshot/candidate/raw linkage는 20260621이 추가한다.
+5. Recommendation grant-use linkage는 SEC-05가 추가한다.
+6. Tracked normalized/signal/product-form/review/ranking components는 baseline에 선행 포함하지 않는다.
+
+Exact historical state를 막는 항목은 products conversion 이전 types, IF NOT EXISTS 대상의 preexistence, untracked enum/20260526 dependencies, current-only fields/security/trigger의 최초 시점이다. 따라서 exact timestamp-0 SQL은 아직 확정되지 않았다.
+
+## Baseline 포함 대상
+
+- four predecessor tables와 required base columns/UUID PK defaults
+- product category predecessor enum의 untracked 필수값, 단 old column type 결정 필요
+- 20260526 replay가 요구하는 untracked product columns, 단 역사적 위치 결정 필요
+- recommendation logs PK/auth FK/four indexes/RLS/service-role ACL
+- source/candidate/products predecessor RLS/ACL은 provenance 결정 후 포함
+
+`source_rankings`는 **포함** 대상이다.
+
+## Baseline 제외 대상
+
+- 20260410 normalized/review/promotion components
+- 20260430 signal fields
+- tracked moisturizer/treatment enum additions와 product_form
+- candidate/source ranking linkage components
+- ranking snapshots/review queue/views/RPC
+- SEC-01/SEC-05 objects/linkage
+- shadow bootstrap, row data
+- provenance 없는 cleansing/sunscreen/balm fields/checks는 timestamp-0 baseline에서 보류
+
+## Current-State Baseline 충돌
+
+| Collision | Severity | 이유 |
+|---|---|---|
+| current products 복사 | High | tracked normalized/signal/product_form/type/check 선행 생성 |
+| current candidates 복사 | High | tracked review/promotion/product-form/ranking 선행 생성 |
+| current source rankings 복사 | High | 20260621 linkage/FK/index 선행 생성 |
+| current category enum 복사 | High | tracked moisturizer/treatment values 선행 반영 |
+| current functions/views 복사 | High | replacement chronology와 privileges 왜곡 |
+| current RLS/grants 전체 복사 | Medium | predecessor/tracked security 경계 상실 |
+| SEC-01/SEC-05 포함 | High | dump에는 없지만 repository HEAD를 합치면 local-only migration 중복 |
+| current-only fields 무조건 t0 포함 | Medium | historical provenance 없는 false-positive replay |
+
+## 남은 Uncertainty
+
+1. 20260410 변환 이전 products six-column type/value representation
+2. noncanonical migration 5개의 실제 실행 방식과 IF NOT EXISTS branch
+3. product category toner_pad/ampoule/essence 최초 DDL
+4. 20260526 필수 untracked columns 최초 DDL
+5. current-only cleansing/sunscreen/balm provenance
+6. products/candidates trigger, set_updated_at, RLS/ACL의 t0 존재 여부
+7. candidate matched FK SET NULL 변경 provenance
+8. broad default privileges가 current ACL에 미친 영향
+
+1-4는 migration replay 정확성에 직접 영향을 준다.
+
+## Updated Implementation Gate
+
+**`BLOCKED_BY_SCHEMA_UNCERTAINTY` 유지**
+
+- `SAFE_SCHEMA_DUMP`와 네 table current exact DDL 확보는 완료됐다.
+- Source rankings 포함 여부와 recommendation logs pre-SEC-05 state는 확정됐다.
+- 그러나 products predecessor type과 untracked replay dependency의 t0 provenance가 확정되지 않았다.
+- 비표준 migration이 history에 없어 reverse create/skip branch를 결정할 수 없다.
+- Baseline SQL에 추측이 필요하므로 READY/PARTIALLY_READY 조건을 충족하지 않는다.
+
+## 권장 다음 작업
+
+Baseline migration 작성이 아니라 **비표준 초기 SQL provenance 수집**을 먼저 수행한다.
+
+1. 20260410 이전 schema source 또는 archived initial SQL 확보
+2. Manual SQL 기록에서 product enum/core table/untracked product fields 생성 DDL 확인
+3. Current dump와 대조해 IF NOT EXISTS branch와 old types 확정
+4. 그 후 Gate 재판정 및 별도 baseline migration 작업
+
+내부 재검토 종료 조건은 **C: dump와 repository만으로 해소할 수 없는 uncertainty만 남음**이다.
+
+종료 처리에서 지정된 TEMP raw dump 삭제와 repository 내 raw dump 부재를 확인했다.
