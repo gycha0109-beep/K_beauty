@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-07-11 / Supabase Local baseline and shadow bootstrap no-change diagnosis
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: diagnosis-only; repository files and read-only Git state were inspected without DB, Docker, hosted target, migration, runtime, or network execution.
+- Code/migration changes: None. Only `docs/security/supabase-local-baseline-diagnosis-20260711.md` and this work-log entry were added.
+- Direct cause: the first production migration, `20260410_safe_review_and_promotion_layer.sql`, first touches `public.products` with `ALTER TABLE` at line 270, while no production migration creates that table. The same chain also assumes pre-existing `product_candidates`, `source_rankings`, and later `recommendation_logs`.
+- Shadow bootstrap verdict: `SHADOW_TEST_STUB_ONLY`. Its own comments, isolated config/synthetic seed, text-based products schema, missing production objects/constraints, and simplified guard RPCs prove that it is a route-harness stub rather than a reusable baseline.
+- Recommended next work: under separate approval, collect schema-only read-only metadata for the missing predecessor tables, then design a real timestamp-0 baseline and a separately labelled SEC-05 isolated local test project.
+- Not executed: Supabase start/reset/test/link, migration apply, Docker, PostgreSQL/psql, remote metadata/data access, build/test, provider/API calls, dependency changes, and Git mutation commands.
+
 ### 2026-07-11 / SEC-05 V01-V04 commit-blocking remediation
 
 - Branch: `codex/survey-input-contract-refactor`
