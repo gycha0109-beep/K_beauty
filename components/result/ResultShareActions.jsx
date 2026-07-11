@@ -3,8 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import ResultShareCard from "@/components/result/ResultShareCard";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
-import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
-import { readWriteAccessToken } from "@/lib/write-access-client";
+import { getBrowserPermanentSupabaseAccessToken } from "@/lib/supabase/browser-client";
+import {
+  clearAnonymousWriteGrantState,
+  clearResultWriteAccessToken,
+  createAnonymousResultPersistencePayload,
+  readAnonymousWriteGrantState
+} from "@/lib/write-access-client";
 
 const SHARE_SESSION_KEY = "skinTestShare";
 
@@ -79,7 +84,7 @@ function writeSavedShare(payload) {
 }
 
 async function getShareAccessToken() {
-  return getBrowserSupabaseAccessToken();
+  return getBrowserPermanentSupabaseAccessToken();
 }
 
 async function tryWriteClipboardText(text) {
@@ -175,17 +180,31 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
     try {
       setIsSaving(true);
       setStatus("");
-      const writeAccessToken = readWriteAccessToken();
       const supabaseAccessToken = await getShareAccessToken();
       const token = supabaseAccessToken;
+      const anonymousWriteGrant = readAnonymousWriteGrantState();
+      const resultWriteAccessToken = token ? null : anonymousWriteGrant.resultToken;
+      const analysisRunId = token ? null : anonymousWriteGrant.analysisRunId;
+      const resultPayload = resultWriteAccessToken
+        ? createAnonymousResultPersistencePayload(result)
+        : result;
       const hasExistingShareId = Boolean(shareInfo?.shareId);
 
-      if (!token && !writeAccessToken && !hasExistingShareId) {
+      if (!resultPayload || (!token && (!resultWriteAccessToken || !analysisRunId) && !hasExistingShareId)) {
         setStatus(copy.sessionExpired);
         return null;
       }
 
-      if (!publish && !force && shareInfo?.shareId && (!supabaseAccessToken || shareInfo?.savedWithAuth)) {
+      if (token) {
+        clearAnonymousWriteGrantState();
+      }
+
+      if (
+        !force &&
+        shareInfo?.shareId &&
+        (!supabaseAccessToken || shareInfo?.savedWithAuth) &&
+        (!publish || shareInfo?.isPublic)
+      ) {
         setStatus(copy.savedMessage);
         return shareInfo;
       }
@@ -194,8 +213,8 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
         "Content-Type": "application/json"
       };
 
-      if (writeAccessToken) {
-        headers["x-kbeauty-write-token"] = writeAccessToken;
+      if (resultWriteAccessToken) {
+        headers["x-kbeauty-result-write-token"] = resultWriteAccessToken;
       }
 
       if (token) {
@@ -207,16 +226,28 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
         headers,
         body: JSON.stringify({
           locale,
-          result,
+          result: resultPayload,
           submission,
           share: true,
-          shareId: shareInfo?.shareId || undefined
+          shareId: shareInfo?.shareId || undefined,
+          analysisRunId: analysisRunId || undefined
         })
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data?.shareId) {
+        if ([
+          "anonymous_write_token_required",
+          "anonymous_write_token_invalid",
+          "anonymous_write_token_expired",
+          "anonymous_write_token_scope_mismatch",
+          "anonymous_write_principal_mismatch",
+          "anonymous_write_resource_mismatch"
+        ].includes(data?.error)) {
+          clearResultWriteAccessToken();
+        }
+
         const responseError = response.status === 401
           ? copy.sessionExpired
           : data?.error || copy.saveError;
@@ -235,6 +266,9 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
 
       setShareInfo(nextShare);
       writeSavedShare(nextShare);
+      if (resultWriteAccessToken) {
+        clearResultWriteAccessToken();
+      }
       setStatus(copy.savedMessage);
       return nextShare;
     } catch (error) {

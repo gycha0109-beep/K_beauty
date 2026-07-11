@@ -207,7 +207,7 @@ assertIncludes(publicResultApi, "getAnalysisResultForShare({ shareId, request })
 
 const resultsRoute = read("app/api/results/route.js");
 [
-  "verifyWriteAccessToken",
+  "verifyAnonymousWriteGrantForRequest",
   "createSupabaseAdminClient",
   '.from("analysis_requests")',
   '.from("analysis_results")',

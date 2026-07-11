@@ -20,7 +20,10 @@ import {
   getAvailableVisionFaceLabData,
   isFaceLabResultEnvelope
 } from "@/lib/face-lab-result-envelope";
-import { clearWriteAccessToken, writeWriteAccessToken } from "@/lib/write-access-client";
+import {
+  clearAnonymousWriteGrantState,
+  writeAnonymousWriteGrantState
+} from "@/lib/write-access-client";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
 const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
@@ -55,7 +58,7 @@ const UNKNOWN_FLAG_VALUES = new Set(["yes", "no", "unknown"]);
 const SUNSCREEN_PREFERENCE_STATE_VALUES = new Set(["answered", "skipped", "unknown"]);
 
 function clearStaleAnalysisStorage() {
-  clearWriteAccessToken();
+  clearAnonymousWriteGrantState();
 
   if (typeof window === "undefined") {
     return;
@@ -287,13 +290,18 @@ export default function HomePage() {
         });
 
         const data = await response.json().catch(() => null);
-        const nextWriteAccessToken = response.headers.get("x-kbeauty-write-token");
+        const nextResultWriteAccessToken = response.headers.get("x-kbeauty-result-write-token");
+        const nextTrackWriteAccessToken = response.headers.get("x-kbeauty-track-write-token");
 
         if (!response.ok || !data) {
           throw new Error(getAnalyzeErrorMessage(data, copy));
         }
 
-        writeWriteAccessToken(nextWriteAccessToken);
+        writeAnonymousWriteGrantState({
+          resultToken: nextResultWriteAccessToken,
+          trackToken: nextTrackWriteAccessToken,
+          analysisRunId: data.analysisRunId || null
+        });
 
         const [imagePreviewDataUrl, faceLabResult] = await Promise.all([
           imagePreviewDataUrlPromise,

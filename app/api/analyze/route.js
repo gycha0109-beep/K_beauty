@@ -29,8 +29,13 @@ import {
   guardAnalysisRequest
 } from "@/lib/security/analysis-request-guard";
 import { getUploadFingerprintDescriptor } from "@/lib/security/analysis-request-guard-core";
+import {
+  ANONYMOUS_RESULT_WRITE_HEADER,
+  ANONYMOUS_TRACK_WRITE_HEADER,
+  issueAnonymousWriteGrants
+} from "@/lib/security/anonymous-write-grant";
+import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonymous-write-grant-core";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
-import { createWriteAccessToken, WRITE_ACCESS_HEADER } from "@/lib/write-access";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
@@ -1370,8 +1375,6 @@ export async function POST(request) {
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
-    const writeAccessToken = createWriteAccessToken();
-
     let imageDataUrl = null;
 
     if (typeof image.arrayBuffer === "function") {
@@ -1470,6 +1473,32 @@ export async function POST(request) {
     decision = appendTopPickReviewEvidence(decision, locale);
 
     const publicDecision = buildFreeDecisionPayload(decision);
+    const anonymousPersistenceResult = analysisGuard.principal.scope === "anonymous"
+      ? canonicalizeAnonymousResultForPersistence(publicDecision)
+      : null;
+
+    const anonymousWriteGrant = analysisGuard.principal.scope === "anonymous"
+      && anonymousPersistenceResult
+        ? await issueAnonymousWriteGrants({
+          supabase: analysisGuard.supabase,
+          anonymousPayload: analysisGuard.principal.anonymousPayload,
+          result: anonymousPersistenceResult,
+          form: formInput,
+          locale
+        })
+      : null;
+
+    if (analysisGuard.principal.scope === "anonymous" && !anonymousWriteGrant?.ok) {
+      await failAnalysisRequestGuard(analysisGuard);
+
+      return applyAnalysisGuardCookies(NextResponse.json(
+        {
+          error: "anonymous_write_grant_unavailable",
+          message: "We cannot prepare the analysis save session right now. Please try again shortly."
+        },
+        { status: 503 }
+      ), analysisGuard);
+    }
 
     if (process.env.NODE_ENV !== "production" && !hasAnalyzeResponseShape(publicDecision)) {
       logAnalyze("response:shape-warning", {
@@ -1501,7 +1530,12 @@ export async function POST(request) {
         photoNotice,
         explanationNotice,
         apiKey
-      })
+      }),
+      ...(anonymousWriteGrant?.ok
+        ? {
+            analysisRunId: anonymousWriteGrant.analysisRunId
+          }
+        : {})
     };
     const response = NextResponse.json(responsePayload);
 
@@ -1513,8 +1547,9 @@ export async function POST(request) {
       );
     }
 
-    if (writeAccessToken) {
-      response.headers.set(WRITE_ACCESS_HEADER, writeAccessToken);
+    if (anonymousWriteGrant?.ok) {
+      response.headers.set(ANONYMOUS_RESULT_WRITE_HEADER, anonymousWriteGrant.resultToken);
+      response.headers.set(ANONYMOUS_TRACK_WRITE_HEADER, anonymousWriteGrant.trackToken);
     }
 
     const guardCompletion = await completeAnalysisRequestGuard(analysisGuard);

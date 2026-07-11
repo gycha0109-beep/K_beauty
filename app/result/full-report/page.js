@@ -24,8 +24,15 @@ import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
-import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
-import { readWriteAccessToken } from "@/lib/write-access-client";
+import {
+  getBrowserPermanentSupabaseAccessToken,
+  getBrowserSupabaseAccessToken
+} from "@/lib/supabase/browser-client";
+import {
+  clearAnonymousWriteGrantState,
+  clearTrackWriteAccessToken,
+  readAnonymousWriteGrantState
+} from "@/lib/write-access-client";
 
 const TRACKING_SESSION_KEY = "skinTestTrackingSessionId";
 const LAST_REPORT_URL_KEY = "lastReportUrl";
@@ -534,9 +541,11 @@ async function getFullReportAccessToken() {
   return getBrowserSupabaseAccessToken();
 }
 
-function trackEvent(eventName, data = {}) {
-  const writeAccessToken = readWriteAccessToken();
+async function getFullReportTrackingAccessToken() {
+  return getBrowserPermanentSupabaseAccessToken();
+}
 
+function trackEvent(eventName, data = {}) {
   void (async () => {
     const payload = {
       event_name: eventName,
@@ -550,18 +559,25 @@ function trackEvent(eventName, data = {}) {
       answer: data.answer ?? null,
       meta_json: data.meta_json ?? null
     };
-    const supabaseAccessToken = await getFullReportAccessToken();
+    const supabaseAccessToken = await getFullReportTrackingAccessToken();
+    const anonymousWriteGrant = readAnonymousWriteGrantState();
+    const trackWriteAccessToken = supabaseAccessToken ? null : anonymousWriteGrant.trackToken;
+    const analysisRunId = supabaseAccessToken ? null : anonymousWriteGrant.analysisRunId;
 
-    if (!supabaseAccessToken && !writeAccessToken) {
+    if (!supabaseAccessToken && (!trackWriteAccessToken || !analysisRunId)) {
       return;
+    }
+
+    if (supabaseAccessToken) {
+      clearAnonymousWriteGrantState();
     }
 
     const headers = {
       "Content-Type": "application/json"
     };
 
-    if (writeAccessToken) {
-      headers["x-kbeauty-write-token"] = writeAccessToken;
+    if (trackWriteAccessToken) {
+      headers["x-kbeauty-track-write-token"] = trackWriteAccessToken;
     }
 
     if (supabaseAccessToken) {
@@ -571,8 +587,28 @@ function trackEvent(eventName, data = {}) {
     return fetch("/api/track", {
       method: "POST",
       headers,
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        ...payload,
+        ...(analysisRunId ? { analysisRunId } : {})
+      }),
       keepalive: true
+    }).then(async (response) => {
+      if (response.ok || response.status >= 500) {
+        return;
+      }
+
+      const details = await response.json().catch(() => null);
+
+      if ([
+        "anonymous_write_token_required",
+        "anonymous_write_token_invalid",
+        "anonymous_write_token_expired",
+        "anonymous_write_token_scope_mismatch",
+        "anonymous_write_principal_mismatch",
+        "anonymous_write_resource_mismatch"
+      ].includes(details?.error)) {
+        clearTrackWriteAccessToken();
+      }
     }).catch(() => { });
   })();
 }

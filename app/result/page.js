@@ -43,8 +43,15 @@ import {
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
-import { getBrowserSupabaseAccessToken } from "@/lib/supabase/browser-client";
-import { readWriteAccessToken } from "@/lib/write-access-client";
+import {
+  getBrowserPermanentSupabaseAccessToken,
+  getBrowserSupabaseAccessToken
+} from "@/lib/supabase/browser-client";
+import {
+  clearAnonymousWriteGrantState,
+  clearTrackWriteAccessToken,
+  readAnonymousWriteGrantState
+} from "@/lib/write-access-client";
 const displayMap = {
   ko: {
     skinType: {
@@ -428,7 +435,7 @@ async function startPremiumGoogleSignIn(nextPath) {
 }
 
 async function getResultPageAccessToken() {
-  return getBrowserSupabaseAccessToken();
+  return getBrowserPermanentSupabaseAccessToken();
 }
 
 function getOrCreateTrackingSessionId() {
@@ -448,8 +455,6 @@ function getOrCreateTrackingSessionId() {
 }
 
 function trackEvent(eventName, data = {}) {
-  const writeAccessToken = readWriteAccessToken();
-
   void (async () => {
     const payload = {
       event_name: eventName,
@@ -465,17 +470,24 @@ function trackEvent(eventName, data = {}) {
     };
     const supabaseAccessToken = await getResultPageAccessToken();
     const token = supabaseAccessToken;
+    const anonymousWriteGrant = readAnonymousWriteGrantState();
+    const trackWriteAccessToken = token ? null : anonymousWriteGrant.trackToken;
+    const analysisRunId = token ? null : anonymousWriteGrant.analysisRunId;
 
-    if (!token && !writeAccessToken) {
+    if (!token && (!trackWriteAccessToken || !analysisRunId)) {
       return;
+    }
+
+    if (token) {
+      clearAnonymousWriteGrantState();
     }
 
     const headers = {
       "Content-Type": "application/json"
     };
 
-    if (writeAccessToken) {
-      headers["x-kbeauty-write-token"] = writeAccessToken;
+    if (trackWriteAccessToken) {
+      headers["x-kbeauty-track-write-token"] = trackWriteAccessToken;
     }
 
     if (token) {
@@ -485,7 +497,10 @@ function trackEvent(eventName, data = {}) {
     return fetch("/api/track", {
       method: "POST",
       headers,
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        ...payload,
+        ...(analysisRunId ? { analysisRunId } : {})
+      }),
       keepalive: true
     })
       .then(async (response) => {
@@ -496,15 +511,25 @@ function trackEvent(eventName, data = {}) {
             details = await response.json();
           } catch {}
 
+          if ([
+            "anonymous_write_token_required",
+            "anonymous_write_token_invalid",
+            "anonymous_write_token_expired",
+            "anonymous_write_token_scope_mismatch",
+            "anonymous_write_principal_mismatch",
+            "anonymous_write_resource_mismatch"
+          ].includes(details?.error)) {
+            clearTrackWriteAccessToken();
+          }
+
           console.error("[trackEvent] request failed", {
             status: response.status,
-            details,
-            payload
+            error: details?.error || "unknown"
           });
         }
       })
       .catch((requestError) => {
-        console.error("[trackEvent] request error", requestError, payload);
+        console.error("[trackEvent] request error", requestError);
       });
   })();
 }

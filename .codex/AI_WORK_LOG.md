@@ -2,6 +2,40 @@
 
 ## Entries
 
+### 2026-07-11 / SEC-05 V01-V04 commit-blocking remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: execution / minimal anonymous write grant hardening after precision verification.
+- Scope: permanent-vs-anonymous browser auth helper, anonymous result transport split, canonical persistence fingerprint, result no-reclaim/use-ID linkage in the existing SEC-05 migration, verifier, remediation documentation, and this work log.
+- V01/V02: anonymous Supabase sessions no longer clear grants; `analysisRunId` remains transport-only and is not an anonymous stored result field.
+- V03: analyze and results share one canonical anonymous result persistence helper. Meta, Face Lab, transport fields, image name, and unknown top-level fields are not stored through anonymous result writes.
+- V04: result claims never re-claim after first use. `analysis_results.anonymous_write_grant_use_id` is nullable and unique; replay recovery uses that ID rather than `analysis_requests.session_id`.
+- V05: not changed; cleanup lease/grace remains a separate Low-risk follow-up.
+- Validation: SEC-05 verifier, analysis RLS verifier, JS/MJS syntax checks, synthetic fingerprint checks, build, and diff checks are required before completion. No migration apply, Supabase write, provider call, or production access is authorized.
+- Next work: run disposable local DB concurrency/privilege tests and staging anonymous/account smoke tests before deployment.
+
+### 2026-07-11 / SEC-05 v2 anonymous write grant precision verification
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: review / verification-only for SEC-05 v2 token, principal, route/client, migration/RPC, and verifier contracts.
+- Code changes: None. Only `docs/security/sec-05-anonymous-write-grant-v2-verification-20260711.md` and this work-log entry were added.
+- Verdict: `FIX_REQUIRED`. Findings: Critical 0, High 0, Medium 4, Low 1, Info 2.
+- Commit blockers: Supabase anonymous Auth tokens are misclassified as account tokens in client callers; `analysisRunId` conflicts with the anonymous result allowlist; supplemental/nested result data can bypass the result fingerprint; result lease retries lack stale-worker fencing and a unique grant-use linkage.
+- Validation: SEC-05 v2 verifier, analysis RLS verifier, 14 JS/MJS `node --check` checks, `npm run build`, synthetic fingerprint/shape checks, and `git diff --check` passed. Direct `node --check` for JSX was unsupported by Node and the JSX file compiled in the successful Next.js build.
+- Local DB: Not run. `supabase status --output json` could not connect to a Docker engine, so migration apply, RPC concurrency, privilege metadata, and recommendation log schema integration remain unverified.
+- Next work: fix the four Medium findings without expanding into premium/saved-report/check-in permissions, then run disposable local Postgres concurrency tests and staging anonymous/account smoke tests.
+
+### 2026-07-11 / SEC-05 v2 anonymous write grant and atomic replay defense
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: execution / anonymous result and tracking write authorization hardening.
+- Changed scope: v2 write-grant core/helper, SEC-01 signed-cookie read-only principal resolver, `/api/analyze`, `/api/results`, `/api/track`, their client callers, anonymous grant migration, static verifiers, SEC-05 implementation document, and this work log.
+- v1 removal: legacy `x-kbeauty-write-token` is no longer issued or accepted. Browser storage removes its legacy key without a compatibility period.
+- Grant contract: `/api/analyze` creates paired `result:create` and `track:create` v2 grants bound to analysis run ID and a write-secret-derived anonymous principal hash. Result writes are single-use; tracking permits 24 distinct event fingerprints.
+- Fail-closed: missing `ANONYMOUS_WRITE_GRANT_SECRET`, grant RPC failure, principal/resource/operation mismatch, or unavailable service-role guard blocks anonymous persistence before service-role result/log writes. Grant issuance failure returns 503 without tokens.
+- Validation: `node scripts/verify-anonymous-write-grant-v2.mjs`, `node scripts/verify-analysis-rls-contract.mjs`, server JS/MJS `node --check`, and `npm run build` passed. The new verifier emitted only the existing Node module-type warning. `supabase status --output json` could not inspect local containers because the Docker daemon was unavailable, so no local RPC integration test ran. No migration apply, local/remote Supabase write, production API call, or OpenAI call was performed.
+- Follow-up security work: apply the reviewed migration and verify production Supabase RPC/RLS/grant metadata plus cleanup scheduling; sessionStorage bearer-token exposure remains a documented Low risk.
+
 ### 2026-07-11 / SEC-05 anonymous write token diagnosis
 
 - Branch: `codex/survey-input-contract-refactor`
