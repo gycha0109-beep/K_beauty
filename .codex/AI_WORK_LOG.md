@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-07-11 / SEC-05 anonymous write token diagnosis
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: diagnostic / anonymous write token resource binding and replay review.
+- Code changes: None. Only `docs/security/sec-05-anonymous-write-token-diagnosis-20260705.md` and this work-log entry were added/updated.
+- Issuance/verification paths: `POST /api/analyze` issues `x-kbeauty-write-token`; `POST /api/results` and `POST /api/track` verify the same default `analysis-write` scope before service-role writes for unauthenticated callers.
+- Findings: confirmed 5, likely 0, needs-deployment-verification 3. Highest severity: High.
+- Recommendation: bind a versioned token to a server-created analysis-run grant and SEC-01 anonymous principal, then use a separate durable jti/operation consumption table with atomic claim/complete/fail, bounded retention, and fail-closed service-role RPCs. Reuse SEC-01 patterns, not its idempotency records or secret.
+- Validation: relevant file inventory and static `rg` searches completed; `git diff --check` and final `git status --short` are recorded with the task result. No token issuance/replay, Supabase read/write, migration apply, external API call, or production access was performed.
+- Next work: implement SEC-05 resource-bound anonymous write grants and atomic replay defense after choosing the v1 token rollout policy.
+
 ### 2026-07-11 / SEC-04 Premium release mode fail-closed
 
 - Branch: `codex/survey-input-contract-refactor`
