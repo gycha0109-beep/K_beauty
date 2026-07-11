@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-07-11 / Supabase remote schema metadata acquisition and predecessor baseline design
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: security diagnosis/design only; no baseline migration or application/schema change.
+- Remote reads: linked public schema dump dry-run succeeded. Linked migration history returned 19 comparison rows: 17 local/remote-aligned versions, with SEC-01 and SEC-05 local-only and no remote-only version. The actual schema-only dump failed before content generation because the local pg_dump container environment was unavailable.
+- Data/security: no row query or row export, no remote write, no secret/project host/ref output, and no raw dump was committed. The zero-byte TEMP dump and its directory were deleted.
+- Predecessor result: repository chronology proves that products, product_candidates, source_rankings, and recommendation_logs require predecessor definitions, but exact current/initial types, constraints, indexes, RLS, policies, grants, and dependencies were not acquired.
+- Gate: `BLOCKED_BY_SCHEMA_UNCERTAINTY`; linked authentication worked, so this is not an auth-configuration finding.
+- Next work: rerun the same public schema-only linked dump on a safe workstation with Docker/pg_dump available, extract only the four tables and direct dependencies, then update the predecessor matrix before creating any baseline SQL.
+
 ### 2026-07-11 / Supabase Local baseline and shadow bootstrap no-change diagnosis
 
 - Branch: `codex/survey-input-contract-refactor`
