@@ -12,19 +12,20 @@ Payment provider integration, DB migrations, public premium sharing, Face Lab ge
 
 Server-side premium creation access uses two axes:
 
-- release mode: `beta_open | paid_only`
+- release mode: `coming_soon | beta_open | paid_only`
 - entitlement: `none | paid | admin_override`
 
-`PREMIUM_RELEASE_MODE` is the server release-mode source. Unknown or missing values default to `beta_open`.
+`PREMIUM_RELEASE_MODE` is the server release-mode source. It must be explicitly set to an allowed value. Missing, empty, or unknown values are treated as configuration-invalid and resolve to the closed `coming_soon` state; they never default to `beta_open`.
 
 Rules:
 
-- `admin_override`: always allowed
+- `coming_soon` or configuration-invalid: creation and premium session preparation are blocked
 - `beta_open`: signed-in non-anonymous users are allowed
 - `paid_only`: only `paid` or `admin_override` users are allowed
+- `admin_override`: allowed only when the release mode itself is open
 - otherwise: creation is blocked
 
-The resolver lives in `lib/premium-access.js`. Frontend checks are advisory only; `/api/full-report` rechecks access before creating or updating a premium session report.
+The resolver lives in `lib/premium-access.js`. Frontend checks are advisory only; `/api/full-report` rechecks access before creating or updating a premium session report. `/api/analyze` also skips premium-session creation when the release mode is closed or invalid; a valid `beta_open` analysis keeps the existing pre-login session preparation flow.
 
 ## Entitlement Source
 

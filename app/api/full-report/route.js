@@ -59,6 +59,17 @@ function getPaymentRequiredResponse(access) {
   );
 }
 
+function getPremiumUnavailableResponse() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "premium_unavailable",
+      reason: "premium_unavailable"
+    },
+    { status: 403 }
+  );
+}
+
 function getBearerToken(request) {
   const authorizationHeader = request.headers.get("authorization");
 
@@ -280,6 +291,10 @@ export async function POST(request) {
   }
 
   if (!access.canCreatePremium) {
+    if (access.reason === "premium_unavailable") {
+      return getPremiumUnavailableResponse();
+    }
+
     return access.reason === "payment_required" ? getPaymentRequiredResponse(access) : getUnauthorizedResponse();
   }
 

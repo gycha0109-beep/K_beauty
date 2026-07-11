@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-07-11 / SEC-04 Premium release mode fail-closed
+
+- Branch: `codex/survey-input-contract-refactor`
+- Task type: execution / premium access configuration security fix.
+- Changed files: `lib/premium-access.js`, premium access/session routes and client display boundaries, premium flow/security docs, verification script, and this work-log entry.
+- Previous behavior: missing, empty, and unknown `PREMIUM_RELEASE_MODE` values fell back to `beta_open`.
+- New behavior: explicit `coming_soon`, missing, empty, and unknown values return `premium_unavailable`; premium creation and closed-mode session writes are blocked. Explicit `beta_open` and `paid_only` retain their existing policy semantics.
+- Validation: `node scripts/verify-premium-release-mode.mjs`, `node --check` for modified server JS and verifier, `npm run build`, and `git diff --check` passed. The verifier emitted only the sanitized one-time invalid-mode log. No migration, Supabase write, production request, payment action, or external API call was performed.
+- Follow-up security work: SEC-05 anonymous write token resource binding/replay 방지.
+
 ### 2026-07-11 / SEC-03 Next.js dependency remediation
 
 - Branch: `codex/survey-input-contract-refactor`

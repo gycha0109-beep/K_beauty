@@ -2823,6 +2823,7 @@ function ResultContent() {
   const [showSavedNudgeLabel, setShowSavedNudgeLabel] = useState(false);
   const [savedNudgeBounce, setSavedNudgeBounce] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
+  const [premiumAvailability, setPremiumAvailability] = useState("checking");
   const resultProgressRef = useRef(null);
   const didMountProgressScrollRef = useRef(false);
   const savedNudgeShownRef = useRef(false);
@@ -2879,6 +2880,37 @@ function ResultContent() {
     }
 
     setIsReady(true);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPremiumAvailability() {
+      try {
+        const accessToken = await getBrowserSupabaseAccessToken();
+        const response = await fetch("/api/premium/access", {
+          headers: {
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+          },
+          cache: "no-store"
+        });
+        const access = await response.json().catch(() => null);
+
+        if (active) {
+          setPremiumAvailability(access?.reason === "premium_unavailable" ? "unavailable" : "available");
+        }
+      } catch {
+        if (active) {
+          setPremiumAvailability("unavailable");
+        }
+      }
+    }
+
+    void loadPremiumAvailability();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -3064,8 +3096,12 @@ function ResultContent() {
   const freeResultV2TopPick = buildFreeResultV2TopPick(result?.topPick, resultForm, result, locale);
   const freeResultV2RoutinePreview = buildFreeResultV2RoutinePreview(result, locale);
   const freeResultV2FaceLabPreview = buildFreeResultV2FaceLabPreview(faceLabProfilePreview, locale);
+  const premiumReportEnabled = PREMIUM_REPORT_ENABLED && premiumAvailability === "available";
   const goToFullReport = async () => {
-    if (!PREMIUM_REPORT_ENABLED) {
+    const targetPath = locale === "en" ? "/en/result/full-report" : "/result/full-report";
+
+    if (!premiumReportEnabled) {
+      router.push(`${targetPath}?access=premium_unavailable`);
       return;
     }
 
@@ -3079,8 +3115,6 @@ function ResultContent() {
         has_face_lab_preview: Boolean(faceLabProfilePreview)
       }
     });
-
-    const targetPath = locale === "en" ? "/en/result/full-report" : "/result/full-report";
 
     try {
       const supabase = createBrowserSupabaseClient();
@@ -3174,7 +3208,8 @@ function ResultContent() {
       content: (
         <FreeResultV2PremiumPreviewStep
           copy={copy}
-          premiumReportEnabled={PREMIUM_REPORT_ENABLED}
+          premiumReportEnabled={premiumReportEnabled}
+          premiumAvailability={premiumAvailability}
           locale={locale}
           isDevelopment={IS_DEVELOPMENT}
           onDeveloperFullReportClick={IS_DEVELOPMENT ? goToFullReport : null}

@@ -39,13 +39,38 @@ function FreeResultV2PremiumPreviewLead({ title, body }) {
 
 function ResultPreviewMaskCard({
   betaCopy,
+  locale = "ko",
   premiumReportEnabled = false,
+  premiumAvailability = "checking",
   isDevelopment = false,
   onDeveloperFullReportClick = null,
   onPremiumClick = null
 }) {
-  const showDeveloperEntry = isDevelopment && premiumReportEnabled && onDeveloperFullReportClick;
-  const canOpenPremium = premiumReportEnabled && onPremiumClick;
+  const premiumUnavailable = premiumAvailability === "unavailable";
+  const premiumChecking = premiumAvailability === "checking";
+  const unavailableCopy =
+    locale === "en"
+      ? {
+          title: "Premium report is currently unavailable",
+          body: "Premium reports are not available right now.",
+          button: "Premium report unavailable",
+          checking: "Checking availability..."
+        }
+      : {
+          title: "현재 프리미엄 리포트를 이용할 수 없습니다",
+          body: "현재는 프리미엄 리포트를 이용할 수 없습니다.",
+          button: "현재 이용할 수 없습니다",
+          checking: "이용 가능 여부 확인 중..."
+        };
+  const displayTitle = premiumUnavailable ? unavailableCopy.title : betaCopy.title;
+  const displayBody = premiumUnavailable ? unavailableCopy.body : betaCopy.body;
+  const buttonLabel = premiumUnavailable
+    ? unavailableCopy.button
+    : premiumChecking
+      ? unavailableCopy.checking
+      : betaCopy.button;
+  const showDeveloperEntry = isDevelopment && !premiumUnavailable && premiumReportEnabled && onDeveloperFullReportClick;
+  const canOpenPremium = premiumReportEnabled && !premiumChecking && !premiumUnavailable && onPremiumClick;
 
   return (
     <section className="overflow-hidden rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[linear-gradient(145deg,#fff4ef_0%,#f6ece8_52%,#ffe1e5_100%)] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
@@ -55,11 +80,11 @@ function ResultPreviewMaskCard({
             ✦
           </div>
           <span className="mt-4 inline-flex rounded-full border border-[rgba(120,70,70,0.18)] bg-[#fff8f3] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6a3344] dark:border-[#704557] dark:bg-[#301f28] dark:text-[#f2c879]">
-            PREMIUM BETA
+            {premiumUnavailable ? "PREMIUM UNAVAILABLE" : "PREMIUM BETA"}
           </span>
-          <p className="mt-3 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{betaCopy.title}</p>
+          <p className="mt-3 text-lg font-semibold tracking-tight text-[#28121b] dark:text-[#fff8f3]">{displayTitle}</p>
           <p className="mt-2 text-sm leading-6 text-[#7a5360] dark:text-[#c8aeb8]">
-            {betaCopy.body}
+            {displayBody}
           </p>
         </div>
 
@@ -81,8 +106,8 @@ function ResultPreviewMaskCard({
               i
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{betaCopy.button}</p>
-              <p className="mt-1.5 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{betaCopy.body}</p>
+              <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{buttonLabel}</p>
+              <p className="mt-1.5 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{displayBody}</p>
             </div>
           </div>
           <button
@@ -93,7 +118,7 @@ function ResultPreviewMaskCard({
               canOpenPremium ? "" : "cursor-not-allowed opacity-80"
             }`}
           >
-            {betaCopy.button}
+            {buttonLabel}
           </button>
         </div>
 
@@ -122,6 +147,7 @@ function ResultPreviewMaskCard({
 export default function FreeResultV2PremiumPreviewStep({
   copy,
   premiumReportEnabled = false,
+  premiumAvailability = "checking",
   locale = "ko",
   isDevelopment = false,
   onDeveloperFullReportClick = null,
@@ -138,7 +164,9 @@ export default function FreeResultV2PremiumPreviewStep({
 
       <ResultPreviewMaskCard
         betaCopy={betaCopy}
+        locale={locale}
         premiumReportEnabled={premiumReportEnabled}
+        premiumAvailability={premiumAvailability}
         isDevelopment={isDevelopment}
         onDeveloperFullReportClick={onDeveloperFullReportClick}
         onPremiumClick={onPremiumClick}

@@ -6198,7 +6198,9 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   const [freeResult, setFreeResult] = useState(null);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
-  const [accessBlocked, setAccessBlocked] = useState(accessReason === "payment_required");
+  const [accessBlocked, setAccessBlocked] = useState(
+    accessReason === "payment_required" || accessReason === "premium_unavailable"
+  );
   const [isReady, setIsReady] = useState(false);
   const [isReportOpened, setIsReportOpened] = useState(false);
   const [currentProducts, setCurrentProducts] = useState([]);
@@ -6322,7 +6324,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           return;
         }
 
-        if (response.status === 402) {
+        if (response.status === 402 || (response.status === 403 && data?.error === "premium_unavailable")) {
           setAccessBlocked(true);
           setReport(null);
           setError("");

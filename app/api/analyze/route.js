@@ -16,6 +16,10 @@ import {
   getPremiumReportCookieOptions,
   PREMIUM_REPORT_COOKIE
 } from "@/lib/premium-report-session";
+import {
+  canPreparePremiumReportSession,
+  resolvePremiumAccessForRequest
+} from "@/lib/premium-access";
 import { appendReviewEvidenceSentence } from "@/lib/review-signals";
 import {
   applyAnalysisGuardCookies,
@@ -1483,10 +1487,13 @@ export async function POST(request) {
           freeResult: publicDecision
         }
       : null;
-    const premiumSessionToken = await createPremiumReportSession({
-      premiumReport: premiumSessionReport,
-      locale
-    });
+    const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
+    const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
+      ? await createPremiumReportSession({
+          premiumReport: premiumSessionReport,
+          locale
+        })
+      : null;
     const responsePayload = {
       ...publicDecision,
       meta: buildAnalyzeMeta({
