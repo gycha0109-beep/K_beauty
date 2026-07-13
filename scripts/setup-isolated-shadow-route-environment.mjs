@@ -16,6 +16,66 @@ const TMP_DIR = path.join(ROOT, "tmp");
 const RUN_DIRECTORY = path.join(TMP_DIR, "isolated-shadow-route-runs", "phase44-local-shadow");
 const OUTPUT_PATH = path.join(TMP_DIR, "isolated-shadow-route-environment-setup.json");
 const WORKDIR = path.join(ROOT, LOCAL_SHADOW_TEST_WORKDIR);
+const EXPECTED_SYNTHETIC_PRODUCT_COUNT = 5;
+const SEED_SUMMARY_MARKER = "LOCAL_SHADOW_SEED_SUMMARY";
+const OBSERVER_SUMMARY_MARKER = "LOCAL_SHADOW_OBSERVER_SUMMARY";
+
+function sanitizeDiagnosticText(value) {
+  const sanitized = String(value || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/(postgres(?:ql)?:\/\/)[^@\s]+@/gi, "$1[redacted]@")
+    .replace(/\b(?:postgres(?:ql)?|https?):\/\/[^\s"']+/gi, "[redacted-url]")
+    .replace(/\beyJ[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){2}\b/g, "[redacted-jwt]")
+    .replace(/\bsb_(?:secret|publishable)_[A-Za-z0-9_-]+\b/gi, "[redacted-supabase-key]")
+    .replace(/\bsk-[A-Za-z0-9_-]+\b/g, "[redacted-provider-key]")
+    .replace(
+      /((?:ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|SECRET_KEY|PUBLISHABLE_KEY|S3_PROTOCOL_ACCESS_KEY_SECRET)\s*["']?\s*[:=]\s*["']?)[^"'\s,}]+/gi,
+      "$1[redacted]"
+    )
+    .trim();
+
+  return sanitized ? sanitized.slice(0, 2000) : null;
+}
+
+function summarizeCommand(result) {
+  return {
+    exitCode: Number.isInteger(result?.status) ? result.status : null,
+    timedOut: result?.error?.code === "ETIMEDOUT",
+    sanitizedStderr: sanitizeDiagnosticText(result?.stderr)
+  };
+}
+
+function parseSeedSummary(output) {
+  const normalized = String(output || "").replace(/\r\n?/g, "\n");
+  const match = normalized.match(
+    new RegExp(`${SEED_SUMMARY_MARKER}\\|(\\d+)\\|([0-9a-f]{32}|none)`, "i")
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    productCount: Number.parseInt(match[1], 10),
+    seedDigest: match[2].toLowerCase() === "none" ? null : match[2].toLowerCase()
+  };
+}
+
+function parseObserverSummary(output) {
+  const normalized = String(output || "").replace(/\r\n?/g, "\n");
+  const match = normalized.match(
+    new RegExp(`${OBSERVER_SUMMARY_MARKER}\\|(\\d+)\\|(\\d+)`, "i")
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    matchingInsertEventCount: Number.parseInt(match[1], 10),
+    totalEventCount: Number.parseInt(match[2], 10)
+  };
+}
 
 function resolveWindowsSupabaseScript() {
   const located = spawnSync(
@@ -63,11 +123,22 @@ function stopLocalStack() {
 
 function runLocalQuery(sql) {
   const result = run("supabase", ["--workdir", WORKDIR, "db", "query", "--local", sql], 600_000);
-  return { ok: result.status === 0, output: String(result.stdout || ""), error: String(result.stderr || "") };
+  return {
+    ok: result.status === 0,
+    output: String(result.stdout || ""),
+    command: summarizeCommand(result)
+  };
 }
 
 function seedDigest() {
-  return runLocalQuery("select count(*)::int as product_count, md5(string_agg(id, ',' order by id)) as seed_digest from public.products;");
+  return runLocalQuery(`
+    select format(
+      '${SEED_SUMMARY_MARKER}|%s|%s',
+      count(*)::int,
+      coalesce(md5(string_agg(id, ',' order by id)), 'none')
+    ) as seed_summary
+    from public.products;
+  `);
 }
 
 export async function prepareIsolatedShadowRouteEnvironment() {
@@ -91,53 +162,169 @@ export async function prepareIsolatedShadowRouteEnvironment() {
     providerIsolation,
     fixture: { fixtureReadyForDeterministicProviderFallback: fixtureReady, syntheticOnly: true },
     localTarget: null,
-    seed: { resetTwice: false, deterministic: false, productCountVerified: false },
+    seed: {
+      expectedProductCount: EXPECTED_SYNTHETIC_PRODUCT_COUNT,
+      resetTwice: false,
+      productCountVerified: false,
+      digestVerified: false,
+      deterministic: false,
+      first: null,
+      second: null
+    },
     mutationObserver: buildShadowRouteMutationObserverPlan({ localDatabaseReady: false }),
     cleanupContract: { verified: false, idempotentCleanupRequired: true },
+    commands: {},
+    predicates: {},
     runDirectory: null,
     setupStatus: "blocked_local_bootstrap_contract_gap",
+    reasonCode: "setup_not_started",
     secretsPrinted: false,
     envValuesPrinted: false
   };
+  let canContinue = true;
+  let startAttempted = false;
+  let firstResetSucceeded = false;
+  let secondResetSucceeded = false;
 
-  if (!workdirSafety.safeToRunLocalDatabaseCommands || !tools.supabaseCliAvailable || !tools.dockerDaemonAvailable) {
-    output.setupStatus = !tools.supabaseCliAvailable || !tools.dockerDaemonAvailable
-      ? "blocked_local_supabase_unavailable"
-      : "blocked_local_bootstrap_contract_gap";
-  } else if (!providerIsolation.canGuaranteeZeroProductionProviderCalls || !fixtureReady) {
-    output.setupStatus = !providerIsolation.canGuaranteeZeroProductionProviderCalls
-      ? "blocked_provider_isolation_contract"
-      : "blocked_local_bootstrap_contract_gap";
-  } else {
+  const block = (setupStatus, reasonCode) => {
+    output.setupStatus = setupStatus;
+    output.reasonCode = reasonCode;
+    canContinue = false;
+  };
+
+  if (!workdirSafety.safeToRunLocalDatabaseCommands) {
+    block("blocked_local_bootstrap_contract_gap", "blocked_local_workdir_safety");
+  } else if (!tools.supabaseCliAvailable) {
+    block("blocked_local_supabase_unavailable", "blocked_supabase_cli_unavailable");
+  } else if (!tools.dockerDaemonAvailable) {
+    block("blocked_local_supabase_unavailable", "blocked_docker_daemon_unavailable");
+  } else if (!providerIsolation.canGuaranteeZeroProductionProviderCalls) {
+    block("blocked_provider_isolation_contract", "blocked_provider_isolation_contract");
+  } else if (!fixtureReady) {
+    block("blocked_local_bootstrap_contract_gap", "blocked_fixture_contract");
+  }
+
+  if (canContinue) {
+    startAttempted = true;
     const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,inbucket,analytics,vector"], 600_000);
+    output.commands.start = summarizeCommand(start);
     if (start.status !== 0) {
-      output.setupStatus = "blocked_local_bootstrap_contract_gap";
-    } else {
-      const status = run("supabase", ["--workdir", WORKDIR, "status", "--output", "env"], 600_000);
-      output.localTarget = assertNonProductionSupabaseTarget({
-        env: { NEXT_PUBLIC_SUPABASE_URL: resolveLocalApiUrl() },
-        root: ROOT
-      });
-      if (status.status !== 0 || !output.localTarget.safeToRunRoute) {
-        output.setupStatus = "blocked_local_bootstrap_contract_gap";
-      } else {
-        const firstReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
-        const firstSeed = seedDigest();
-        const secondReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
-        const secondSeed = seedDigest();
-        const observerProbeCleanupRow = runLocalQuery(`
+      block("blocked_local_bootstrap_contract_gap", "blocked_local_stack_start");
+    }
+  }
+
+  if (canContinue) {
+    const status = run("supabase", ["--workdir", WORKDIR, "status", "--output", "env"], 600_000);
+    output.commands.status = summarizeCommand(status);
+    output.localTarget = assertNonProductionSupabaseTarget({
+      env: { NEXT_PUBLIC_SUPABASE_URL: resolveLocalApiUrl() },
+      root: ROOT
+    });
+    if (status.status !== 0) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_local_stack_status");
+    } else if (!output.localTarget.safeToRunRoute) {
+      block("blocked_local_bootstrap_contract_gap", `blocked_local_target_${output.localTarget.reasonCode}`);
+    }
+  }
+
+  let firstSeedSummary = null;
+  let secondSeedSummary = null;
+
+  if (canContinue) {
+    output.databaseCommandExecuted = true;
+    const firstReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
+    output.commands.firstReset = summarizeCommand(firstReset);
+    firstResetSucceeded = firstReset.status === 0;
+    if (firstReset.status !== 0) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_first_local_reset");
+    }
+  }
+
+  if (canContinue) {
+    const firstSeed = seedDigest();
+    output.commands.firstSeedQuery = firstSeed.command;
+    firstSeedSummary = firstSeed.ok ? parseSeedSummary(firstSeed.output) : null;
+    if (!firstSeed.ok) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_first_seed_query");
+    } else if (!firstSeedSummary) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_first_seed_summary_parse");
+    }
+  }
+
+  if (canContinue) {
+    const secondReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
+    output.commands.secondReset = summarizeCommand(secondReset);
+    secondResetSucceeded = secondReset.status === 0;
+    if (secondReset.status !== 0) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_second_local_reset");
+    }
+  }
+
+  if (canContinue) {
+    const secondSeed = seedDigest();
+    output.commands.secondSeedQuery = secondSeed.command;
+    secondSeedSummary = secondSeed.ok ? parseSeedSummary(secondSeed.output) : null;
+    if (!secondSeed.ok) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_second_seed_query");
+    } else if (!secondSeedSummary) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_second_seed_summary_parse");
+    }
+  }
+
+  if (firstSeedSummary || secondSeedSummary) {
+    const resetTwice = firstResetSucceeded && secondResetSucceeded;
+    const productCountVerified =
+      firstSeedSummary?.productCount === EXPECTED_SYNTHETIC_PRODUCT_COUNT &&
+      secondSeedSummary?.productCount === EXPECTED_SYNTHETIC_PRODUCT_COUNT;
+    const digestVerified = Boolean(firstSeedSummary?.seedDigest && secondSeedSummary?.seedDigest);
+    const deterministic = digestVerified && firstSeedSummary.seedDigest === secondSeedSummary.seedDigest;
+
+    output.seed = {
+      expectedProductCount: EXPECTED_SYNTHETIC_PRODUCT_COUNT,
+      resetTwice,
+      productCountVerified,
+      digestVerified,
+      deterministic,
+      first: firstSeedSummary
+        ? { productCount: firstSeedSummary.productCount }
+        : null,
+      second: secondSeedSummary
+        ? { productCount: secondSeedSummary.productCount }
+        : null
+    };
+
+    if (canContinue && !productCountVerified) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_seed_product_count_mismatch");
+    } else if (canContinue && !digestVerified) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_seed_digest_missing");
+    } else if (canContinue && !deterministic) {
+      block("blocked_local_bootstrap_contract_gap", "blocked_seed_digest_mismatch");
+    }
+  }
+
+  let observerSummary = null;
+  if (canContinue) {
+    const observerQueries = [
+      {
+        evidenceKey: "observerCleanupRowQuery",
+        reasonCode: "blocked_observer_cleanup_row_query",
+        sql: `
           delete from public.analysis_request_rate_windows
           where scope = 'local'
             and subject_hash = 'normalized'
             and endpoint = 'analyze'
             and window_key = 'phase44';
-        `);
-
-        const observerProbeCleanupEvents = runLocalQuery(`
-          delete from shadow_audit.mutation_events;
-        `);
-
-        const observerProbeMutation = runLocalQuery(`
+        `
+      },
+      {
+        evidenceKey: "observerCleanupEventsQuery",
+        reasonCode: "blocked_observer_cleanup_events_query",
+        sql: "delete from shadow_audit.mutation_events;"
+      },
+      {
+        evidenceKey: "observerMutationQuery",
+        reasonCode: "blocked_observer_mutation_query",
+        sql: `
           insert into public.analysis_request_rate_windows (
             scope,
             subject_hash,
@@ -157,44 +344,72 @@ export async function prepareIsolatedShadowRouteEnvironment() {
             1,
             1
           );
-        `);
-
-        const observerProbeRead = runLocalQuery(`
-          select surface_id, operation, count(*)::int as event_count
-          from shadow_audit.mutation_events
-          group by surface_id, operation
-          order by surface_id, operation;
-        `);
-        const deterministic = firstSeed.ok && secondSeed.ok && firstSeed.output === secondSeed.output && /product_count/.test(firstSeed.output);
-        const observerInstalled =
-        observerProbeCleanupRow.ok &&
-        observerProbeCleanupEvents.ok &&
-        observerProbeMutation.ok &&
-        observerProbeRead.ok &&
-        /analysis_guard_rate_limit_rpc/.test(observerProbeRead.output) &&
-        /INSERT/.test(observerProbeRead.output);
-        output.databaseCommandExecuted = true;
-        output.seed = { resetTwice: firstReset.status === 0 && secondReset.status === 0, deterministic, productCountVerified: deterministic };
-        output.mutationObserver = {
-          ...buildShadowRouteMutationObserverPlan({ localDatabaseReady: true }),
-          observerInstalled,
-          mutationObserverCoverage: observerInstalled ? "complete" : "incomplete",
-          unobservedMutationSurface: observerInstalled ? ["supabase_storage_mutation_none_found_in_route_call_graph"] : ["database_observer_installation"]
-        };
-        if (output.seed.resetTwice && deterministic && observerInstalled) {
-          await mkdir(RUN_DIRECTORY, { recursive: true });
-          await writeFile(path.join(RUN_DIRECTORY, ".phase43-isolated-run"), "phase44-local-shadow\n", "utf8");
-          output.runDirectory = RUN_DIRECTORY;
-          output.cleanupContract = { verified: true, idempotentCleanupRequired: true, localStorageCleanupRequired: true };
-          output.setupStatus = "local_shadow_runtime_ready_for_controlled_route_run";
-        } else {
-          output.setupStatus = !observerInstalled ? "blocked_mutation_observer_incomplete" : "blocked_local_bootstrap_contract_gap";
-        }
+        `
+      },
+      {
+        evidenceKey: "observerReadQuery",
+        reasonCode: "blocked_observer_read_query",
+        sql: `
+          select format(
+            '${OBSERVER_SUMMARY_MARKER}|%s|%s',
+            count(*) filter (
+              where surface_id = 'analysis_guard_rate_limit_rpc'
+                and upper(operation) = 'INSERT'
+            ),
+            count(*)
+          ) as observer_summary
+          from shadow_audit.mutation_events;
+        `
       }
-      if (output.setupStatus !== "local_shadow_runtime_ready_for_controlled_route_run") {
-        stopLocalStack();
+    ];
+
+    for (const query of observerQueries) {
+      const result = runLocalQuery(query.sql);
+      output.commands[query.evidenceKey] = result.command;
+      if (!result.ok) {
+        block("blocked_mutation_observer_incomplete", query.reasonCode);
+        break;
+      }
+      if (query.evidenceKey === "observerReadQuery") {
+        observerSummary = parseObserverSummary(result.output);
       }
     }
+  }
+
+  if (canContinue) {
+    const observerInstalled = observerSummary?.matchingInsertEventCount === 1;
+    output.mutationObserver = {
+      ...buildShadowRouteMutationObserverPlan({ localDatabaseReady: true }),
+      observerInstalled,
+      observerSummary: observerSummary
+        ? {
+            matchingInsertEventCount: observerSummary.matchingInsertEventCount,
+            totalEventCount: observerSummary.totalEventCount
+          }
+        : null,
+      mutationObserverCoverage: observerInstalled ? "complete" : "incomplete",
+      unobservedMutationSurface: observerInstalled
+        ? ["supabase_storage_mutation_none_found_in_route_call_graph"]
+        : ["database_observer_installation"]
+    };
+
+    if (!observerSummary) {
+      block("blocked_mutation_observer_incomplete", "blocked_observer_summary_parse");
+    } else if (!observerInstalled) {
+      block("blocked_mutation_observer_incomplete", "blocked_observer_insert_event_count");
+    }
+  }
+
+  if (canContinue) {
+    await mkdir(RUN_DIRECTORY, { recursive: true });
+    await writeFile(path.join(RUN_DIRECTORY, ".phase43-isolated-run"), "phase44-local-shadow\n", "utf8");
+    output.runDirectory = RUN_DIRECTORY;
+    output.cleanupContract = { verified: true, idempotentCleanupRequired: true, localStorageCleanupRequired: true };
+    output.setupStatus = "local_shadow_runtime_ready_for_controlled_route_run";
+    output.reasonCode = "local_shadow_runtime_ready";
+  } else if (startAttempted) {
+    const cleanup = stopLocalStack();
+    output.commands.failureCleanup = summarizeCommand(cleanup);
   }
 
   await mkdir(TMP_DIR, { recursive: true });
@@ -204,5 +419,5 @@ export async function prepareIsolatedShadowRouteEnvironment() {
 
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
   const output = await prepareIsolatedShadowRouteEnvironment();
-  console.log(JSON.stringify({ setupStatus: output.setupStatus, routeInvoked: false, databaseCommandExecuted: output.databaseCommandExecuted, secretsPrinted: false }, null, 2));
+  console.log(JSON.stringify({ setupStatus: output.setupStatus, reasonCode: output.reasonCode, routeInvoked: false, databaseCommandExecuted: output.databaseCommandExecuted, secretsPrinted: false }, null, 2));
 }

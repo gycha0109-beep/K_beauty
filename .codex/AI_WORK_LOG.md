@@ -2232,3 +2232,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Harness: setup/teardown and comparison verifiers now recognize a prepared local preflight without invoking `/api/analyze`.
 - Verification result: static target, syntax, provider seam, bootstrap markers, and fail-closed setup passed; Docker CLI/daemon is unavailable, so no local stack, DB command, observer installation, seed replay, cleanup replay, route request, provider call, or hosted target access occurred.
 - Final blocker: `blocked_local_bootstrap_contract_gap` due unavailable Docker runtime; fresh local reproducibility remains unverified.
+
+### 2026-07-13 / Local shadow setup diagnostics hardening
+
+- Replaced full Supabase CLI stdout equality with parsed seed count and digest summaries; count verification and deterministic digest verification are independent predicates.
+- Added stage-specific setup reason codes, per-command exit/timeout/sanitized-stderr evidence, and structured observer summary parsing.
+- Hardened provider seam checks against line-ending and indentation changes while preserving local-only and hosted/production fail-closed gates.
+- Teardown can resolve the safe run directory from setup evidence when no explicit directory is supplied.
+- Validation was static only: no Supabase, Docker, setup, teardown, RPC, route, verifier, or build command was executed.

@@ -18,11 +18,15 @@ export function inspectShadowRouteProviderIsolation(root = process.cwd()) {
   const keyNamePresentInDotEnvLocal = KEY_LINE_PATTERN.test(envSource);
   const deterministicFallbackPresent =
     routeSource.includes("buildFallbackPhotoAnalysis") && routeSource.includes("if (apiKey && imageDataUrl)");
+  const stubResolverIndex = routeSource.search(/\bresolveLocalShadowProviderStub\s*\(/);
+  const providerKeyResolverIndex = routeSource.search(/\bresolveOpenAiApiKey\s*\(/);
   const existingTestAdapterPresent =
-    routeSource.includes('resolveLocalShadowProviderStub') &&
-    routeSource.includes('localShadowProviderStub.enabled') &&
-    routeSource.includes('? { apiKey: "" }') &&
-    routeSource.includes('providerIsolation: localShadowProviderStub.reasonCode');
+    stubResolverIndex >= 0 &&
+    providerKeyResolverIndex > stubResolverIndex &&
+    /\blocalShadowProviderStub\s*\.\s*enabled\s*\?\s*\{\s*apiKey\s*:\s*(?:""|'')\s*\}\s*:\s*resolveOpenAiApiKey\s*\(\s*\)/s.test(
+      routeSource
+    ) &&
+    /\bproviderIsolation\s*:\s*localShadowProviderStub\s*\.\s*reasonCode/.test(routeSource);
   const processEnvClearSufficient = !(dotenvFallbackPresent && keyNamePresentInDotEnvLocal);
   const canGuaranteeZeroProductionProviderCalls =
     !routeCallsExternalProvider || existingTestAdapterPresent || processEnvClearSufficient;
