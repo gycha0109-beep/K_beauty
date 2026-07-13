@@ -20,7 +20,7 @@ assert.equal(resolveLocalShadowProviderStub({ env: { ...enabledEnv, NEXT_PUBLIC_
 assert.equal(resolveLocalShadowProviderStub({ env: enabledEnv }).enabled, true);
 assert.equal(assertLocalShadowTestWorkdir({ root: ROOT }).safeToRunLocalDatabaseCommands, true);
 
-const routeSource = readFileSync("app/api/analyze/route.js", "utf8");
+const routeSource = readFileSync("app/api/analyze/route.js", "utf8").replace(/\r\n?/g, "\n");
 assert(routeSource.includes("resolveLocalShadowProviderStub"));
 assert(routeSource.indexOf("localShadowProviderStub.enabled") < routeSource.indexOf("resolveOpenAiApiKey()"));
 assert(routeSource.includes('localShadowProviderStub.enabled\n      ? { apiKey: "" }'));

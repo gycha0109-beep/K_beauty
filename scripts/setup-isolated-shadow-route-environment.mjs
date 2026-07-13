@@ -27,12 +27,12 @@ function resolveWindowsSupabaseScript() {
   return located.status === 0 && scriptPath.toLowerCase().endsWith(".ps1") ? scriptPath : null;
 }
 
-function run(command, args) {
+function run(command, args, timeout = 180_000) {
   const options = {
     cwd: ROOT,
     encoding: "utf8",
     windowsHide: true,
-    timeout: 180_000
+    timeout: timeout
   };
   if (command === "supabase" && process.platform === "win32") {
     const scriptPath = resolveWindowsSupabaseScript();
@@ -46,7 +46,7 @@ function run(command, args) {
 
 function commandAvailable(command) {
   const locator = process.platform === "win32" ? "where.exe" : "which";
-  return run(locator, [command]).status === 0;
+  return run(locator, [command], 600_000).status === 0;
 }
 
 function resolveLocalApiUrl() {
@@ -58,11 +58,11 @@ function resolveLocalApiUrl() {
 }
 
 function stopLocalStack() {
-  return run("supabase", ["--workdir", WORKDIR, "stop", "--no-backup", "--yes"]);
+  return run("supabase", ["--workdir", WORKDIR, "stop", "--no-backup", "--yes"], 600_000);
 }
 
 function runLocalQuery(sql) {
-  const result = run("supabase", ["--workdir", WORKDIR, "db", "query", "--local", sql]);
+  const result = run("supabase", ["--workdir", WORKDIR, "db", "query", "--local", sql], 600_000);
   return { ok: result.status === 0, output: String(result.stdout || ""), error: String(result.stderr || "") };
 }
 
@@ -74,7 +74,7 @@ export async function prepareIsolatedShadowRouteEnvironment() {
   const workdirSafety = assertLocalShadowTestWorkdir({ root: ROOT });
   const tools = {
     supabaseCliAvailable: commandAvailable("supabase"),
-    dockerDaemonAvailable: commandAvailable("docker") && run("docker", ["version", "--format", "{{.Server.Version}}"]).status === 0
+    dockerDaemonAvailable: commandAvailable("docker") && run("docker", ["version", "--format", "{{.Server.Version}}"], 600_000).status === 0
   };
   const providerIsolation = inspectShadowRouteProviderIsolation(ROOT);
   const fixtureReady = existsSync(path.join(ROOT, "test", "fixtures", "analyze", "analyze-payload.fixture.json")) &&
@@ -109,11 +109,11 @@ export async function prepareIsolatedShadowRouteEnvironment() {
       ? "blocked_provider_isolation_contract"
       : "blocked_local_bootstrap_contract_gap";
   } else {
-    const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,inbucket,analytics,vector"]);
+    const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,inbucket,analytics,vector"], 600_000);
     if (start.status !== 0) {
       output.setupStatus = "blocked_local_bootstrap_contract_gap";
     } else {
-      const status = run("supabase", ["--workdir", WORKDIR, "status", "--output", "env"]);
+      const status = run("supabase", ["--workdir", WORKDIR, "status", "--output", "env"], 600_000);
       output.localTarget = assertNonProductionSupabaseTarget({
         env: { NEXT_PUBLIC_SUPABASE_URL: resolveLocalApiUrl() },
         root: ROOT
@@ -121,13 +121,58 @@ export async function prepareIsolatedShadowRouteEnvironment() {
       if (status.status !== 0 || !output.localTarget.safeToRunRoute) {
         output.setupStatus = "blocked_local_bootstrap_contract_gap";
       } else {
-        const firstReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"]);
+        const firstReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
         const firstSeed = seedDigest();
-        const secondReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"]);
+        const secondReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"], 600_000);
         const secondSeed = seedDigest();
-        const observerProbe = runLocalQuery("insert into public.analysis_request_rate_windows (scope, subject_hash, endpoint, window_key, window_started_at, window_reset_at, request_limit, request_count) values ('local', 'normalized', 'analyze', 'phase44', now(), now() + interval '1 hour', 1, 1) on conflict do nothing; select surface_id, operation, count(*)::int as event_count from shadow_audit.mutation_events group by surface_id, operation;");
+        const observerProbeCleanupRow = runLocalQuery(`
+          delete from public.analysis_request_rate_windows
+          where scope = 'local'
+            and subject_hash = 'normalized'
+            and endpoint = 'analyze'
+            and window_key = 'phase44';
+        `);
+
+        const observerProbeCleanupEvents = runLocalQuery(`
+          delete from shadow_audit.mutation_events;
+        `);
+
+        const observerProbeMutation = runLocalQuery(`
+          insert into public.analysis_request_rate_windows (
+            scope,
+            subject_hash,
+            endpoint,
+            window_key,
+            window_started_at,
+            window_reset_at,
+            request_limit,
+            request_count
+          ) values (
+            'local',
+            'normalized',
+            'analyze',
+            'phase44',
+            now(),
+            now() + interval '1 hour',
+            1,
+            1
+          );
+        `);
+
+        const observerProbeRead = runLocalQuery(`
+          select surface_id, operation, count(*)::int as event_count
+          from shadow_audit.mutation_events
+          group by surface_id, operation
+          order by surface_id, operation;
+        `);
         const deterministic = firstSeed.ok && secondSeed.ok && firstSeed.output === secondSeed.output && /product_count/.test(firstSeed.output);
-        const observerInstalled = observerProbe.ok && /analysis_guard_rate_limit_rpc/.test(observerProbe.output) && /INSERT/.test(observerProbe.output);
+        const observerInstalled =
+        observerProbeCleanupRow.ok &&
+        observerProbeCleanupEvents.ok &&
+        observerProbeMutation.ok &&
+        observerProbeRead.ok &&
+        /analysis_guard_rate_limit_rpc/.test(observerProbeRead.output) &&
+        /INSERT/.test(observerProbeRead.output);
         output.databaseCommandExecuted = true;
         output.seed = { resetTwice: firstReset.status === 0 && secondReset.status === 0, deterministic, productCountVerified: deterministic };
         output.mutationObserver = {
