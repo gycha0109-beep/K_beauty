@@ -225,7 +225,7 @@ export async function prepareIsolatedShadowRouteEnvironment() {
 
   if (canContinue) {
     startAttempted = true;
-    const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,inbucket,analytics,vector"], 600_000);
+    const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,mailpit,logflare,vector"], 600_000);
     output.commands.start = summarizeCommand(start);
     if (start.status !== 0) {
       block("blocked_local_bootstrap_contract_gap", "blocked_local_stack_start");

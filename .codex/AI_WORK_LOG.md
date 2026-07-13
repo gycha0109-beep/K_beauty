@@ -2252,5 +2252,12 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 
 - Added a dev-only local recommendation snapshot for both comparison conditions under the verified setup run directory. It stores only product IDs and array order for top-pick, supporting, and budget groups.
 - Capture requires the existing local provider stub, local/disposable marker, loopback target, UUID comparison ID, and an allowlisted flag condition. Writes are exclusive and non-blocking to the route.
+
+### 2026-07-13 / Phase 46.1 disabled-by-default policy shadow execution
+
+- Added an engine-owned evaluator -> boundary collapsed hint -> CandidatePolicy receiver shadow path for the existing scored candidates. The route only applies the development/local gates and writes sanitized local evidence after normal response construction.
+- Policy shadow execution requires both `DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN=1` and `DEV_ONLY_BOUNDARY_POLICY_SHADOW=1`, plus the existing local provider-stub, disposable-marker, and loopback protections. Disabled paths neither evaluate nor dynamically load the policy shadow helper.
+- The local policy artifact records candidate IDs, decision codes, safe aggregate counts, and independent safety violations only. It never changes CandidatePolicy exposure, recommendations, response payloads, DB/Storage, evaluator runtime, or CandidatePolicy runtime.
+- This phase was statically reviewed only. No Supabase, Docker, setup, route, comparison runner, verifier, build, or hosted command was executed.
 - The controlled comparison runner uses those snapshots instead of treating absent public response groups as empty arrays; the verifier checks the sanitized schema, file counts, run identity, expected path, and residual-file observation captured before teardown.
 - No Supabase, Docker, setup, teardown, route, verifier, build, hosted, or provider command was executed for this implementation.

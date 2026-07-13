@@ -43,7 +43,7 @@ Work Log의 `규칙 승격 후보` 중 3회 이상 반복되거나, 사고 방�
 
 현재 작업에 반드시 반영할 최신 기준.
 
-- The controlled local shadow route comparison is implemented but not yet executed. It is limited to a loopback disposable target and requires the local provider stub for both flag states. A dev-only, local-run-directory recommendation snapshot records only top-pick, supporting, and budget product IDs in order; it does not change the public response.
+- The controlled local shadow route comparison passed on a loopback disposable target with the local provider stub. The Phase 46.1 evaluator-to-hint-to-receiver policy shadow path is implemented but not yet executed. It requires development, the existing dry-run flag, a separate policy-shadow flag, and the local provider-stub/local-marker/loopback gates; it records sanitized candidate IDs, decision codes, and aggregate safety counts only, without changing the public response or recommendations.
 
 ---
 

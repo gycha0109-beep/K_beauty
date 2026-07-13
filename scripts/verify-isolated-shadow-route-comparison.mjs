@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { validateLocalShadowRecommendationEvidence } from "../lib/shadow-boundary-dry-run-artifact-writer.js";
+import {
+  validateLocalShadowPolicyEvidence,
+  validateLocalShadowRecommendationEvidence
+} from "../lib/shadow-boundary-dry-run-artifact-writer.js";
 import { validateShadowDryRunSnapshot } from "../lib/shadow-dry-run-snapshot-contract.js";
 
 const ROOT = process.cwd();
 const OUTPUT_PATH = path.join(ROOT, "tmp", "isolated-shadow-route-comparison.json");
-const ROUTE_RUNS_ROOT = path.join(ROOT, "tmp", "isolated-shadow-route-runs");
+const DURABLE_EVIDENCE_ROOT = path.join(ROOT, "tmp", "isolated-shadow-route-comparison-evidence");
 const FORBIDDEN_FIELDS = new Set([
   "name", "brand", "purchaseurl", "url", "buylink", "price", "pricemin", "pricemax", "pricerange",
   "review", "reviewtext", "form", "rawform", "image", "imageurl", "base64", "pii", "secret", "token", "apikey", "responsebody"
@@ -94,22 +97,72 @@ function assertRecommendationEvidence(flagOff, flagOn) {
   assert.equal(validateLocalShadowRecommendationEvidence(off, { comparisonRunId: off.comparisonRunId, condition: "off" }).valid, true);
   assert.equal(validateLocalShadowRecommendationEvidence(on, { comparisonRunId: off.comparisonRunId, condition: "on" }).valid, true);
 
-  for (const [metadata, expectedFileCount] of [
-    [flagOff.recommendationEvidenceMetadata, 1],
-    [flagOn.recommendationEvidenceMetadata, 2]
+  for (const metadata of [
+    flagOff.recommendationEvidenceMetadata,
+    flagOn.recommendationEvidenceMetadata
   ]) {
     assert(metadata && typeof metadata === "object", "recommendation evidence metadata is missing");
     const directory = path.resolve(ROOT, metadata.directory);
-    assert(isWithinDirectory(directory, ROUTE_RUNS_ROOT), "recommendation evidence path escapes local run root");
-    assert(directory.endsWith(path.join("route-comparison", off.comparisonRunId)));
-    assert.equal(metadata.expectedFileCount, expectedFileCount);
-    assert.equal(metadata.observedFileCount, expectedFileCount);
+    assert(isWithinDirectory(directory, DURABLE_EVIDENCE_ROOT), "recommendation evidence path escapes durable root");
+    assert.equal(path.basename(directory), "recommendations");
+    assert.equal(metadata.expectedFileCount, 2);
+    assert.equal(metadata.observedFileCount, 2);
+    assert.deepEqual(metadata.expectedDirectories, []);
+    assert.deepEqual(metadata.observedDirectories, []);
     assert.deepEqual(metadata.residualFiles, []);
+    assert.deepEqual(metadata.residualDirectories, []);
+
+    const entries = readdirSync(directory, { withFileTypes: true });
+    assert.deepEqual(entries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort(),
+      ["recommendation-flag-off.json", "recommendation-flag-on.json"]);
+    assert.deepEqual(entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), []);
+    assert(entries.every((entry) => entry.isFile() || entry.isDirectory()), "comparison root contains an unsupported entry type");
   }
 
   return off.topPickId !== on.topPickId ||
     !sameOrdered(off.supportingProductIdsInOrder, on.supportingProductIdsInOrder) ||
     !sameOrdered(off.budgetAlternativeIdsInOrder, on.budgetAlternativeIdsInOrder);
+}
+
+function assertPolicyEvidence(flagOff, flagOn) {
+  assert.equal(flagOff.policyEvidence, null, "flag-off must not emit policy shadow evidence");
+  assert.equal(flagOff.policyEvidenceMetadata, null, "flag-off must not emit policy shadow metadata");
+  assert(flagOn.policyEvidence, "flag-on policy shadow evidence is missing");
+  assert.equal(validateLocalShadowPolicyEvidence(flagOn.policyEvidence, {
+    comparisonRunId: flagOn.recommendationEvidence.comparisonRunId
+  }).valid, true);
+  assert.equal(flagOn.policyEvidence.runtimeConnected, false);
+  assert(Number.isInteger(flagOn.policyEvidence.candidateCount));
+  const comparisonDirectory = path.resolve(ROOT, flagOn.recommendationEvidenceMetadata.directory, "..");
+  const policyDirectory = path.resolve(ROOT, flagOn.policyEvidenceMetadata?.directory || "");
+  assert(isWithinDirectory(policyDirectory, comparisonDirectory), "policy evidence path escapes durable comparison root");
+  assert.equal(path.basename(policyDirectory), "policy");
+  assert.deepEqual(readdirSync(policyDirectory, { withFileTypes: true }).map((entry) => entry.name).sort(), ["policy-flag-on.json"]);
+  assert.deepEqual(flagOn.policyEvidenceMetadata?.residualFiles, []);
+  assert(Object.values(flagOn.policyEvidence.violationCounts).every((count) => Number(count || 0) === 0));
+}
+
+function assertDurableEvidence(output) {
+  const durable = output.durableEvidence;
+  assert(durable && typeof durable === "object", "durable comparison evidence is missing");
+  assert.equal(durable.comparisonRunId, output.flagOff.recommendationEvidence.comparisonRunId);
+  const directory = path.resolve(ROOT, durable.directory);
+  assert(isWithinDirectory(directory, DURABLE_EVIDENCE_ROOT), "durable comparison directory escapes durable root");
+  assert.equal(path.resolve(ROOT, durable.recommendationDirectory), path.join(directory, "recommendations"));
+  assert.equal(path.resolve(ROOT, durable.policyDirectory), path.join(directory, "policy"));
+  const rootEntries = readdirSync(directory, { withFileTypes: true });
+  assert.deepEqual(rootEntries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort(), []);
+  assert.deepEqual(rootEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["policy", "recommendations"]);
+  assert(rootEntries.every((entry) => entry.isFile() || entry.isDirectory()), "durable comparison root contains an unsupported entry type");
+  assert.deepEqual(durable.files, [
+    "recommendations/recommendation-flag-off.json",
+    "recommendations/recommendation-flag-on.json",
+    "policy/policy-flag-on.json"
+  ]);
+  const readDurable = (relativePath) => JSON.parse(readFileSync(path.join(directory, relativePath), "utf8"));
+  assert.deepEqual(readDurable(durable.files[0]), output.flagOff.recommendationEvidence);
+  assert.deepEqual(readDurable(durable.files[1]), output.flagOn.recommendationEvidence);
+  assert.deepEqual(readDurable(durable.files[2]), output.flagOn.policyEvidence);
 }
 
 assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing");
@@ -134,13 +187,16 @@ for (const condition of [output.flagOff, output.flagOn]) {
 assertHttpFailureConsistency(output);
 
 if (output.flagOff.completed && output.flagOn.completed) {
+  assertDurableEvidence(output);
   const expectedResponseChange = responseShapeChanged(output.flagOff, output.flagOn);
   const expectedRecommendationChange = assertRecommendationEvidence(output.flagOff, output.flagOn);
+  assertPolicyEvidence(output.flagOff, output.flagOn);
   assert.equal(output.responseShapeChanged, expectedResponseChange);
   assert.equal(output.recommendationChanged, expectedRecommendationChange);
   assert.equal(output.mutationComparison.responseShapeChanged, expectedResponseChange);
   assert.equal(output.mutationComparison.recommendationChanged, expectedRecommendationChange);
   assert.equal(output.mutationComparison.completeRecommendationComparison, true);
+  assert.equal(output.mutationComparison.policyViolationDetected, false);
 }
 
 if (output.verdict === "controlled_shadow_route_comparison_passed") {
@@ -152,6 +208,7 @@ if (output.verdict === "controlled_shadow_route_comparison_passed") {
   assert.equal(output.recommendationChanged, false);
   assert.equal(output.mutationObserverCoverage.complete, true);
   assert.equal(output.cleanup.succeeded, true);
+  assertPolicyEvidence(output.flagOff, output.flagOn);
   assert(output.mutationComparison.databaseMutationClassification.every((event) => event.classification !== "unexpected_mutation"));
   assert(output.mutationComparison.tableMutationClassification.every((event) => event.classification !== "unexpected_mutation"));
   assert.notEqual(output.mutationComparison.storageMutationClassification.classification, "unexpected_mutation");

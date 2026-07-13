@@ -2,7 +2,10 @@ import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { buildBaselineResponseShapeSnapshot } from "../../lib/shadow-dry-run-snapshot-contract.js";
-import { validateLocalShadowRecommendationEvidence } from "../../lib/shadow-boundary-dry-run-artifact-writer.js";
+import {
+  validateLocalShadowPolicyEvidence,
+  validateLocalShadowRecommendationEvidence
+} from "../../lib/shadow-boundary-dry-run-artifact-writer.js";
 
 const ROUTE_RUNS_SUBDIRECTORY = ["tmp", "isolated-shadow-route-runs"];
 const EXPECTED_AUDIT_SURFACES = new Set([
@@ -146,6 +149,7 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
   const expectedNames = condition === "off"
     ? ["recommendation-flag-off.json"]
     : ["recommendation-flag-off.json", "recommendation-flag-on.json"];
+  const expectedDirectories = condition === "on" ? ["policy"] : [];
   const expectedName = `recommendation-flag-${condition}.json`;
   if (!directory || !existsSync(directory)) {
     return { ok: false, reasonCode: "recommendation_evidence_directory_missing" };
@@ -153,7 +157,13 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
 
   const entries = await readdir(directory, { withFileTypes: true });
   const names = entries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort();
-  if (entries.some((entry) => !entry.isFile()) || !sameOrderedValues(names, expectedNames)) {
+  const directories = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  if (
+    entries.some((entry) => !entry.isFile() && !entry.isDirectory()) ||
+    !sameOrderedValues(names, expectedNames) ||
+    !sameOrderedValues(directories, expectedDirectories) ||
+    (condition === "on" && !isWithinDirectory(path.join(directory, "policy"), directory))
+  ) {
     return { ok: false, reasonCode: "recommendation_evidence_residual_or_unexpected_file" };
   }
 
@@ -169,11 +179,51 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
         directory: path.relative(root, directory).replace(/\\/g, "/"),
         expectedFileCount: expectedNames.length,
         observedFileCount: names.length,
-        residualFiles: []
+        expectedDirectories,
+        observedDirectories: directories,
+        residualFiles: [],
+        residualDirectories: []
       }
     };
   } catch {
     return { ok: false, reasonCode: "recommendation_evidence_read_failed" };
+  }
+}
+
+export async function readComparisonPolicyEvidence({ root, runDirectory, comparisonRunId }) {
+  const directory = comparisonDirectory({ root, runDirectory, comparisonRunId });
+  const policyDirectory = directory ? path.join(directory, "policy") : null;
+  const filePath = policyDirectory ? path.join(policyDirectory, "policy-flag-on.json") : null;
+  if (!policyDirectory || !existsSync(policyDirectory) || !existsSync(filePath)) {
+    return { ok: false, reasonCode: "policy_evidence_missing" };
+  }
+
+  try {
+    const entries = await readdir(policyDirectory, { withFileTypes: true });
+    if (
+      !isWithinDirectory(policyDirectory, directory) ||
+      entries.length !== 1 ||
+      !entries[0].isFile() ||
+      entries[0].name !== "policy-flag-on.json"
+    ) {
+      return { ok: false, reasonCode: "policy_evidence_residual_or_unexpected_file" };
+    }
+    const evidence = JSON.parse(await readFile(filePath, "utf8"));
+    if (!validateLocalShadowPolicyEvidence(evidence, { comparisonRunId }).valid) {
+      return { ok: false, reasonCode: "policy_evidence_contract_invalid" };
+    }
+    return {
+      ok: true,
+      evidence,
+      metadata: {
+        directory: path.relative(root, policyDirectory).replace(/\\/g, "/"),
+        expectedFileCount: 1,
+        observedFileCount: 1,
+        residualFiles: []
+      }
+    };
+  } catch {
+    return { ok: false, reasonCode: "policy_evidence_read_failed" };
   }
 }
 
@@ -183,6 +233,8 @@ export function createConditionEvidence({
   responseContract = null,
   recommendationEvidence = null,
   recommendationEvidenceMetadata = null,
+  policyEvidence = null,
+  policyEvidenceMetadata = null,
   beforeSnapshot = null,
   afterSnapshot = null,
   reasonCode = null
@@ -193,6 +245,8 @@ export function createConditionEvidence({
     responseContract,
     recommendationEvidence,
     recommendationEvidenceMetadata,
+    policyEvidence,
+    policyEvidenceMetadata,
     databaseBeforeSnapshot: beforeSnapshot?.databaseCounts || null,
     databaseAfterSnapshot: afterSnapshot?.databaseCounts || null,
     storageBeforeCount: beforeSnapshot?.storageObjectCount ?? null,
@@ -228,6 +282,8 @@ export function compareRouteExecutions(flagOff, flagOn) {
   };
   const hasUnexpectedDatabaseMutation = [...databaseMutationClassification, ...tableMutationClassification]
     .some((event) => event.classification === "unexpected_mutation");
+  const policyViolationCounts = flagOn.policyEvidence?.violationCounts || null;
+  const policyViolationDetected = Object.values(policyViolationCounts || {}).some((count) => Number(count || 0) > 0);
 
   return {
     responseShapeChanged: !responseContractsMatch(flagOff.responseContract, flagOn.responseContract) || flagOff.httpStatus !== flagOn.httpStatus,
@@ -240,6 +296,8 @@ export function compareRouteExecutions(flagOff, flagOn) {
     storageMutationClassification,
     shadowAddedDbMutationDelta: hasUnexpectedDatabaseMutation ? null : 0,
     shadowAddedStorageMutationDelta: storageMutationClassification.classification === "unexpected_mutation" ? null : 0,
-    completeRecommendationComparison
+    completeRecommendationComparison,
+    policyViolationCounts,
+    policyViolationDetected
   };
 }
