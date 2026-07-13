@@ -2,6 +2,153 @@
 
 ## Entries
 
+### 2026-07-13 / SEC-05 TAP PANIC fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the pgTAP suite detector in `run.ps1` so explicit line-start `PANIC:` output cannot coexist with an accepted passing TAP stream. README, the canonical isolated-harness security note, and this work log were updated. Production migration, pgTAP SQL, concurrency producer, final oracle, invoke helper, runtime code, remote systems, retained evidence, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Parser contract: explicit row-start `ERROR:`, `FATAL:`, and `PANIC:` markers, with optional leading whitespace and the existing `psql:` wrapper, fail the suite. Ordinary passing TAP descriptions containing `PANIC` or `PANIC:` do not. Failure summaries still prioritize the earliest actual `not ok`, then bailout, explicit PostgreSQL error output, and sanitized fallback.
+- Validation: PowerShell parsing passed. Panic-N01/N02 failed closed with validation exit 1 and a sanitized panic cause; Panic-P01/P02 passed. Existing ERROR/FATAL, not-ok priority, SQLSTATE-description, bailout, plan mismatch, duplicate/missing TAP number, and exit/TAP-conflict regressions passed. Two clean isolated runs passed migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, T01-T14, C01-C05, C03/C04 `8/1/7/0/0` with rows `0 -> 1`, cleanup, final oracle, direct evidence revalidation, and credential scans. Project-scoped TEMP, containers, volumes, raw/intermediate artifacts, and synthetic TEMP had zero residue.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, production migration change, credential exposure, retained-evidence mutation/deletion, staging, or commit.
+- Final status: `FULL_PASS` for this isolated SEC-05 remediation only. Full historical migration replay, application-route verification, remote verification, and commit approval remain out of scope.
+- Next work: Sol independent commit gate; do not commit before that review.
+
+### 2026-07-13 / SEC-05 final evidence type-coercion fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only `verify-test-evidence.ps1` final-evidence type validation, plus matching isolated-harness documentation and this work log. Production migration, pgTAP tests, concurrency producer, runner, bootstrap/config, invoke helper, runtime code, retained evidence, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Oracle contract: ordinary suite, V05, cleanup, and consumed run-level fields now require property presence, non-null values, and exact JSON-derived string/boolean/integer/array/object types before their value checks. `OverallStatus` is exact `RUNNING` during oracle invocation or retained `PASS`; suite/V05 status is exact `PASS`; lifecycle flags are booleans; assertion/scenario collections are arrays; and `CleanupStatus` is exact string `PASS` with integer zero residue. This rejects boolean `true` as `PASS`, truthy string `"false"`, numeric strings, scalar-for-array substitutions, nulls, missing properties, and floating-point counts.
+- Validation: PowerShell parser passed. P01/P02 passed. N01-N16, T01-T28, cleanup failure, missing worker, malformed aggregate, timeout, and ordinary-failure evidence all returned non-zero without `TEST_ORACLE=FULLY_OBSERVED`. Runner timeout/ordinary-failure regression and a real short child-process worker-timeout probe passed. Two clean isolated runs passed source/staged hash checks, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 `8/1/7/0/0`, cleanup, final oracle, strict retained-evidence revalidation, and credential-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, retained-evidence mutation/deletion, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 final concurrency-oracle contradiction fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the finalized structured-concurrency evidence consumer. Production migration, pgTAP tests, concurrency producer, bootstrap/config, invoke helper, runtime code, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Oracle contract: it now requires `OverallStatus = PASS`, boolean `HasTimeout = false`, empty-array `TimeoutScenarioIds`, and the exact C01-C05/T11/T12 scenario set. C01/C02/C05 require existing worker transport counts and claimed, denial, use, and state metrics; C03/C04 retain strict worker-detail validation. Missing, duplicate, unknown, null, incorrectly typed, or contradictory evidence fails rather than being normalized.
+- Validation: PowerShell parser and protected hash gates passed. TEMP-only P01 passed; N01-N16, cleanup failure, missing worker, malformed aggregate, timeout, and ordinary-failure regressions all failed closed as expected. Two clean isolated runs passed source/staged migration hash, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 `8/1/7/0/0`, cleanup, final oracle, and secret scans. Finalized evidence retained `OverallStatus=PASS`, `HasTimeout=false`, `TimeoutScenarioIds=[]`, expected C01/C02/C05 metrics, and zero residue.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 worker timeout, V05 use precondition, and canonical-contract remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the Sol-confirmed worker-timeout propagation gap, V05 captured-use vacuous-pass gap, and canonical documentation mismatch. Production migration, R01-R23 test, bootstrap, config, invoke helper, runtime code, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Timeout contract: a worker or worker-group timeout is now classified as `TIMEOUT`, retains `WORKER_TIMEOUT` sanitized worker evidence, records a top-level timeout signal, marks later DB-dependent concurrency scenarios `NOT_RUN`, and is recognized by `run.ps1` before cleanup and the final oracle. Ordinary assertion failures still continue-and-aggregate.
+- V05/documentation: V05 now requires exactly one captured grant-use before cleanup and absence of both that use and its grant afterward in the existing plan-13 assertion. Canonical documentation now states R01-R23, V05 grant/use deletion, worker evidence retention, timeout propagation, and cleanup-after oracle; prior R01-R17 records are marked historical.
+- Validation: PowerShell parser checks passed. A TEMP-only short-lived child-process regression produced `TIMEOUT`, `TimedOut=true`, `WORKER_TIMEOUT`, later scenario `NOT_RUN`, and outer-runner timeout recognition; an ordinary synthetic concurrency failure remained `FAIL` while later scenario evidence remained observable; synthetic timeout evidence caused the final oracle to fail. Two clean isolated runs passed no-BOM config, staged-source hash, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 worker `8/1/7/0/0`, cleanup, final oracle, and secret-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 complete/fail NULL binding, final oracle, worker evidence, and timeout gate remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected the Sol-confirmed complete/fail NULL binding bypass, strengthened Result and V05 pgTAP coverage, retained sanitized concurrency aggregates, moved the actual oracle after cleanup, and made DB-dependent timeouts stop later DB suites while preserving cleanup and final evidence validation.
+- Production migration: `complete_anonymous_write_grant` and `fail_anonymous_write_grant` now reject malformed mandatory identifiers with SQLSTATE `22023` and `anonymous_write_grant_claim_invalid`; stored principal/resource/operation comparisons use `IS DISTINCT FROM`. Signature, return type, state machine, lease/expiry, RLS/ACL, constraints, indexes, and cleanup contract are unchanged. Current migration SHA-256: `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Tests: Result plan is `23`; R15 checks exact SQLSTATE/message and R18-R23 verify complete/fail NULL principal, resource fields, and operation fail closed with no state transition. Track remains plan `13`; V05 verifies both the expired grant and linked use are deleted.
+- Evidence/oracle: C03/C04 retain sanitized worker classifications and aggregate counts only; final evidence verifies eight workers, one winner, seven no-ops, zero invalid/timed-out/non-zero workers, and linked rows `0 -> 1`. The final oracle runs after cleanup and requires zero isolated residue plus complete suite/scenario evidence. Raw worker stdout/stderr, SQL, URLs, keys, and credentials are not retained.
+- Validation: PowerShell parser checks passed. Synthetic final-oracle evidence passed its valid case and rejected cleanup failure, missing worker evidence, malformed aggregate, and timeout cases. A first runtime attempt exposed a V05 record-shape omission and cleaned up with zero isolated residue; after the in-scope runner fix, two clean local runs passed migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, cleanup, final oracle, and secret-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: rerun the independent Sol security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 V05 sequencing, Track summary, and concurrency accounting remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the V05 pgTAP evaluation order, runner pgTAP failure-summary selection, and C03/C04 local-worker result accounting. Production migration, RPC contract, runtime code, bootstrap, config, oracle, and other template tests remained unchanged.
+- V05: cleanup now executes before the grant-deletion assertion. The forensic result showed the previous one-statement assertion was false even though cleanup removed the fixture grant/use; timestamps, plan 13, assertion count, and expected deletion outcome remain unchanged.
+- Summary: pgTAP failures now report the earliest actual `not ok` assertion before bailout/explicit PostgreSQL errors/fallback. A passing `ok` line mentioning SQLSTATE no longer becomes the causal error.
+- Concurrency: C03/C04 now classify worker output line by line and require one UUID plus `INSERT 0 1` winner, seven `INSERT 0 0` no-ops, zero invalid workers, empty worker stderr, zero starting linked rows, and the existing final database invariants. C01/C02/C05 continue to validate their original state results and reject failed worker transport.
+- Validation: PowerShell parser checks passed; synthetic Track summary regression passed; `git diff --check` passed. Two clean isolated runs passed migration apply, Structure 15/15, Privilege/RLS 23/23, R01-R17, Track/V05 13/13, concurrency C01-C05 plus T11/T12, actual oracle, and cleanup. Sanitized evidence had no sensitive patterns; project-scoped container, volume, TEMP, raw-log, and raw-dump residue was zero.
+- Final status: `FULL_PASS` for the isolated SEC-05 database harness. No remote access/write, production migration apply, or runtime application change occurred. Commit remains deferred to independent review and commit gate.
+
+### 2026-07-12 / SEC-05 claim NULL guard and post-migration aggregation remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: added explicit NULL rejection only to the existing mandatory-input guard for `claim_anonymous_write_grant`; preserved its signature, SQLSTATE `22023`, message, state machine, ACL/RLS, and all test SQL/template helpers.
+- Runner: post-migration suite failures now aggregate after independently attempting Structure, Privilege/RLS, Result, Track/V05, concurrency, and the actual oracle. Start/reset/migration/hash/timeout/cleanup remain fail-fast. TAP evidence now parses all actual `ok N` and `not ok N` records and derives scenario status from observed assertion numbers.
+- Static validation: PowerShell parser passed; a synthetic `ok 1`/`not ok 2`/`ok 3` TAP check preserved the post-failure PASS for scenario 3; template/bootstrap/helper hashes remained unchanged; `git diff --check` passed.
+- Local execution: first diagnostic run was `EXECUTION_ENVIRONMENT_FAILURE`. The no-BOM config check passed, but Docker Desktop's Linux engine pipe was unavailable before local Supabase start. All suites, V05, concurrency, and the oracle are `NOT_RUN`; second clean run was not attempted.
+- Cleanup: isolated TEMP workdir and raw logs were removed. Docker stop/residue inspection could not be completed while the daemon was unavailable, so cleanup remains failed rather than assumed.
+- Data/security: no remote access, remote write, production/staging DB change, production migration apply, runtime application change, or credential exposure.
+- Next work: restore Docker availability, run the isolated harness once to gather all post-migration suite evidence, and run a second clean execution only if the first is FULL_PASS.
+
+### 2026-07-12 / SEC-05 V05 fixture and suite evidence persistence remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: changed only the isolated Track V05 fixture timestamps, runner suite-by-suite sanitized evidence persistence, and the evidence verifier's structured-suite input. Production migration/runtime, cleanup contract, bootstrap, config, 001/002/003 tests, concurrency helper, and user-owned `.codex/*.png` / `docs/domain/` changes were not touched.
+- V05 fixture: the expired in-progress grant now uses `issued_at = now() - interval '2 hours'` and `expires_at = now() - interval '1 hour'`, preserving `issued_at < expires_at < now()` and the original cleanup target. The 003/004 time-fixture inventory found no other direct expiry-order violation.
+- Evidence persistence: each suite writes immediate sanitized status with start/completion, exit code, planned/observed/pass/fail assertions, scenario IDs, ordered pass/fail/not-run scenario IDs when pgTAP reports a numbered failure, and sanitized first error. Run-level and cleanup status are persisted outside the raw TEMP workdir; raw logs, staged files, containers, and volumes are still removed. The verifier consumes the structured suite summary plus concurrency evidence.
+- First local rerun: start and migration apply passed; source/staged production migration hash matched `6793093152A863BB08193FADDDE90E81B097E675EAEF35B74AFB5E7B47E05423`. Structure passed 15/15 and privilege/RLS passed 23/23. Result state machine reached R15: R01-R14 are retained as completed/pass, R15 failed with `not ok 15 - R15 malformed identifier fails closed with the contract SQLSTATE`, and R16-R17 are retained as not run. Track, concurrency, V05, and oracle did not run. Cleanup passed with zero isolated TEMP/container/volume residue.
+- New defect: R15 expects `claim_anonymous_write_grant(NULL, ...)` to raise SQLSTATE `22023`, while the production nullable regex guard may not enter its exception branch for NULL. This contract/test mismatch is outside the V05/evidence scope and was not modified.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`. Overall: `FAIL_NEW_DEFECT`; no security PASS is claimed for unexecuted groups.
+- Next work: independently decide and test the production RPC NULL-input fail-closed SQLSTATE contract before another two-clean-run harness execution and commit gate.
+
+### 2026-07-12 / SEC-05 data-modifying CTE returning remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: 003/004 CTE inventory found only referenced DML CTEs in R13 and T10. Existing R13 request/first/request CTEs and T10 first insert already return `id`; R13 second insert already returned `1`; added only `RETURNING 1` to T10 second insert.
+- Contract: INSERT targets, columns, values, conflict predicates, assertions, scenario IDs, and plans remain unchanged (R13 17, T10 13). R10/T13 CTEs are SELECT pipelines and R16/V05 updates are outside CTEs, so no additional RETURNING was added.
+- First local rerun: no-BOM config, start, source/staged migration hash, and migration apply passed; execution moved beyond R13 and T10. pgTAP then stopped at V05 because its fixture sets `expires_at` before `issued_at`, violating `anonymous_write_grants_expiry_order` before cleanup characterization.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. No final PASS is claimed for suite evidence, concurrency, V05, or oracle.
+- Result: `FAIL_NEW_DEFECT`. Production migration/runtime, runner, bootstrap, config, helper scripts, and V05 fixture were not changed. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately construct the V05 expired fixture without violating expiry ordering, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 R13 CTE returning remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: added only `RETURNING 1` to R13 `second_insert` in `003_sec05_result_state_machine.sql`. Insert target/columns/values/conflict predicate, unique-linkage assertion, and plan 17 are unchanged.
+- Static contract: R13 has exactly one `RETURNING 1`; its first-insert count-one/second-insert count-zero assertion remains intact. Production migration hash, runner, bootstrap, 001/002/004 tests, config, and helper script hashes are unchanged.
+- First local rerun: start and migration apply passed, and execution moved past R13. pgTAP then stopped at `004_sec05_track_state_machine.sql:97-102` because T10 `second_insert` has the same missing-RETURNING CTE defect.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. No final PASS is claimed for structure, privilege/RLS, R01-R17, T01-T14, C01-C05, V05, or oracle.
+- Result: `FAIL_NEW_DEFECT`. No remote access/write, production migration change, runtime change, or T10 test change occurred. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately add the required T10 CTE `RETURNING` without weakening its unique-linkage assertion, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 pgTAP PUBLIC execute assertion remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: replaced only the invalid PUBLIC pseudo-role inquiry in `002_sec05_privileges_rls.sql`. The new assertion inspects the exact claim RPC ACL with `aclexplode(COALESCE(proacl, acldefault('f', proowner)))`, `grantee = 0`, `privilege_type = 'EXECUTE'`, and `regprocedure`; plan remains 23 and anon/authenticated/service_role assertions are unchanged.
+- Static contract: no `has_function_privilege('PUBLIC'...)`, `pg_has_role('PUBLIC'...)`, or `SET ROLE PUBLIC` remains in the test; the catalog predicates and exact overload signature are present.
+- First local rerun: start and migration apply passed; source/staged migration hash gate passed. The PUBLIC assertion no longer caused a SQL error. pgTAP then stopped at `003_sec05_result_state_machine.sql:136-141`: `second_insert` is read as a CTE without a `RETURNING` clause.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. Structure, privilege/RLS final result, R01-R17, T01-T14, C01-C05, V05, and oracle are not claimed as passed.
+- Result: `FAIL_NEW_DEFECT`. Production migration/runtime, runner, bootstrap, other tests, package files, remote systems, and scenario contracts were unchanged. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately add the required R13 CTE `RETURNING` clause without weakening the unique-linkage assertion, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 production migration reserved alias remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: changed only the unquoted reserved `grant` aliases in `20260711032649_sec_05_anonymous_write_grants.sql`; the two recordset aliases and cleanup join alias now use `grant_row`. SQL `GRANT` statements, RPC signatures, state machine, binding, checks, indexes, RLS, grants/revokes, exception SQLSTATEs, and cleanup contract were unchanged.
+- Static contract: legacy alias occurrences 0; `grant_row` occurrences 4; SQL `GRANT` statements 7. Corrected production migration SHA-256: `6793093152A863BB08193FADDDE90E81B097E675EAEF35B74AFB5E7B47E05423`.
+- First local run: local start and migration apply passed; staged-source hash gate passed. pgTAP then failed at `002_sec05_privileges_rls.sql:19` because `has_function_privilege('PUBLIC', ...)` treats PostgreSQL's PUBLIC pseudo-role as a nonexistent concrete role.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`. Structure lacks retained individual PASS evidence; privilege/RLS is `FAIL`; R01-R17, T01-T14, C01-C05, V05, and oracle are `NOT_RUN`.
+- Result: `FAIL_NEW_DEFECT`. The template test, bootstrap, runner, other migrations, runtime code, package files, remote systems, and security scenario contracts were not changed. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately correct the PostgreSQL-valid PUBLIC execute-denial assertion, then rerun two clean isolated harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 isolated harness BOM and error-evidence remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only isolated runner UTF-8 rendering and external-command evidence capture, then attempted local execution. Production migration/runtime code, bootstrap, test SQL, helper scripts, and SEC-05 scenario contracts were unchanged; no remote access or write occurred.
+- BOM root cause: Windows PowerShell 5.1 `Set-Content -Encoding UTF8` added `EF BB BF` to rendered `config.toml`, which Supabase CLI 2.82.0 rejected. The runner now uses `UTF8Encoding($false)` plus byte-level validation; observed first bytes were `70 72 6F` with no BOM.
+- Error evidence: stdout/stderr, actual exit code, timing, timeout, and redacted first causal error are captured separately. Cleanup failures no longer replace the original command failure. The earlier profile-prerequisite classification is corrected as inaccurate.
+- First run: `FAIL`. The local CLI reached migration application, then the unchanged SEC-05 migration failed with SQLSTATE `42601` at the reserved `grant` alias in `jsonb_to_recordset(...) as grant(...)`. Source and staged SHA-256 matched: `342044B4E0DDD0B116E8C122CF7322CA37C8DA96E6C9037CC7A7F1CDEBD4DC94`.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`.
+- Test oracle: structure, privilege/RLS, R01-R17, T01-T14, C01-C05, V05, and completeness checks are `NOT_RUN`; no security PASS is claimed.
+- Cleanup: isolated TEMP, container, and volume residue counts were zero. User-owned `.codex/*.png` deletions and `docs/domain/` remained untouched.
+- Overall: `FAIL`. Next work is a separately authorized minimal production migration syntax correction followed by two clean isolated runs and independent commit-gate review.
+
+### 2026-07-11 / SEC-05 isolated local database harness
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: isolated local harness implementation only. Production migrations, runtime code, root Supabase config, remote projects, row data, and credentials were not changed or accessed.
+- Bootstrap: pre-SEC-05 `recommendation_logs` direct contract only; staged source migrations are the unchanged 20260424 analysis schema migration and SEC-05 migration. SEC-01 is not a direct SEC-05 SQL dependency.
+- Coverage: pgTAP structure/ACL/RLS/result/track/V05 suites plus separate C01-C05 multi-connection worker harness and evidence-completeness gate.
+- Local execution: `NOT_RUN_SUPABASE_CLI_PROFILE_UNAVAILABLE`. Docker was available, but Supabase CLI 2.82.0 exited before local container creation because its local profile prerequisite was absent. Two isolated TEMP start attempts cleaned up without container/volume residue.
+- Result: no security PASS is claimed; pgTAP, concurrency, and V05 runtime results remain `NOT_RUN`.
+- Next work: restore the existing local CLI profile outside this repository, run the harness twice, then perform the requested independent verification/commit-gate review.
+
 ### 2026-07-11 / Supabase predecessor baseline safe schema dump intake
 
 - Branch: `codex/survey-input-contract-refactor`
