@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -17,8 +17,31 @@ const RUN_DIRECTORY = path.join(TMP_DIR, "isolated-shadow-route-runs", "phase44-
 const OUTPUT_PATH = path.join(TMP_DIR, "isolated-shadow-route-environment-setup.json");
 const WORKDIR = path.join(ROOT, LOCAL_SHADOW_TEST_WORKDIR);
 
+function resolveWindowsSupabaseScript() {
+  const located = spawnSync(
+    "powershell.exe",
+    ["-NoProfile", "-NonInteractive", "-Command", "(Get-Command supabase -ErrorAction Stop).Source"],
+    { cwd: ROOT, encoding: "utf8", windowsHide: true, timeout: 30_000 }
+  );
+  const scriptPath = String(located.stdout || "").trim();
+  return located.status === 0 && scriptPath.toLowerCase().endsWith(".ps1") ? scriptPath : null;
+}
+
 function run(command, args) {
-  return spawnSync(command, args, { cwd: ROOT, encoding: "utf8", windowsHide: true, timeout: 180_000 });
+  const options = {
+    cwd: ROOT,
+    encoding: "utf8",
+    windowsHide: true,
+    timeout: 180_000
+  };
+  if (command === "supabase" && process.platform === "win32") {
+    const scriptPath = resolveWindowsSupabaseScript();
+    if (!scriptPath) {
+      return { status: null, stdout: "", stderr: "", error: new Error("supabase_powershell_script_unavailable") };
+    }
+    return spawnSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-File", scriptPath, ...args], options);
+  }
+  return spawnSync(command, args, options);
 }
 
 function commandAvailable(command) {
@@ -26,16 +49,20 @@ function commandAvailable(command) {
   return run(locator, [command]).status === 0;
 }
 
-function parseEnv(text) {
-  return String(text || "").split(/\r?\n/).reduce((env, line) => {
-    const index = line.indexOf("=");
-    if (index > 0) env[line.slice(0, index)] = line.slice(index + 1);
-    return env;
-  }, {});
+function resolveLocalApiUrl() {
+  const configPath = path.join(WORKDIR, "supabase", "config.toml");
+  const config = existsSync(configPath) ? readFileSync(configPath, "utf8") : "";
+  const apiBlock = config.match(/\[api\]([\s\S]*?)(?=\n\[|$)/);
+  const port = apiBlock?.[1]?.match(/^\s*port\s*=\s*(\d+)\s*$/m)?.[1];
+  return port ? `http://127.0.0.1:${port}` : "";
+}
+
+function stopLocalStack() {
+  return run("supabase", ["--workdir", WORKDIR, "stop", "--no-backup", "--yes"]);
 }
 
 function runLocalQuery(sql) {
-  const result = run("supabase", ["db", "query", sql, "--local", "--workdir", WORKDIR, "--output", "json", "--yes"]);
+  const result = run("supabase", ["--workdir", WORKDIR, "db", "query", "--local", sql]);
   return { ok: result.status === 0, output: String(result.stdout || ""), error: String(result.stderr || "") };
 }
 
@@ -82,22 +109,21 @@ export async function prepareIsolatedShadowRouteEnvironment() {
       ? "blocked_provider_isolation_contract"
       : "blocked_local_bootstrap_contract_gap";
   } else {
-    const start = run("supabase", ["start", "--workdir", WORKDIR, "--yes", "-x", "studio,imgproxy,mailpit,logflare,vector"]);
+    const start = run("supabase", ["--workdir", WORKDIR, "start", "--yes", "-x", "studio,imgproxy,inbucket,analytics,vector"]);
     if (start.status !== 0) {
       output.setupStatus = "blocked_local_bootstrap_contract_gap";
     } else {
-      const status = run("supabase", ["status", "--workdir", WORKDIR, "--output", "env"]);
-      const localEnv = parseEnv(status.stdout);
+      const status = run("supabase", ["--workdir", WORKDIR, "status", "--output", "env"]);
       output.localTarget = assertNonProductionSupabaseTarget({
-        env: { NEXT_PUBLIC_SUPABASE_URL: localEnv.API_URL || "" },
+        env: { NEXT_PUBLIC_SUPABASE_URL: resolveLocalApiUrl() },
         root: ROOT
       });
-      if (!output.localTarget.safeToRunRoute) {
+      if (status.status !== 0 || !output.localTarget.safeToRunRoute) {
         output.setupStatus = "blocked_local_bootstrap_contract_gap";
       } else {
-        const firstReset = run("supabase", ["db", "reset", "--workdir", WORKDIR, "--local", "--yes"]);
+        const firstReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"]);
         const firstSeed = seedDigest();
-        const secondReset = run("supabase", ["db", "reset", "--workdir", WORKDIR, "--local", "--yes"]);
+        const secondReset = run("supabase", ["--workdir", WORKDIR, "db", "reset", "--local", "--yes"]);
         const secondSeed = seedDigest();
         const observerProbe = runLocalQuery("insert into public.analysis_request_rate_windows (scope, subject_hash, endpoint, window_key, window_started_at, window_reset_at, request_limit, request_count) values ('local', 'normalized', 'analyze', 'phase44', now(), now() + interval '1 hour', 1, 1) on conflict do nothing; select surface_id, operation, count(*)::int as event_count from shadow_audit.mutation_events group by surface_id, operation;");
         const deterministic = firstSeed.ok && secondSeed.ok && firstSeed.output === secondSeed.output && /product_count/.test(firstSeed.output);
@@ -119,6 +145,9 @@ export async function prepareIsolatedShadowRouteEnvironment() {
         } else {
           output.setupStatus = !observerInstalled ? "blocked_mutation_observer_incomplete" : "blocked_local_bootstrap_contract_gap";
         }
+      }
+      if (output.setupStatus !== "local_shadow_runtime_ready_for_controlled_route_run") {
+        stopLocalStack();
       }
     }
   }

@@ -91,9 +91,10 @@ export function assertNonProductionSupabaseTarget({ env = {}, root = ROOT } = {}
 export function assertLocalShadowTestWorkdir({ root = ROOT } = {}) {
   const workdir = path.resolve(root, LOCAL_SHADOW_TEST_WORKDIR);
   const rootPath = path.resolve(root);
-  const configPath = path.join(workdir, "config.toml");
-  const migrationPath = path.join(workdir, "migrations", "00000000000000_local_shadow_bootstrap.sql");
-  const seedPath = path.join(workdir, "seed.sql");
+  const projectDirectory = path.join(workdir, "supabase");
+  const configPath = path.join(projectDirectory, "config.toml");
+  const migrationPath = path.join(projectDirectory, "migrations", "00000000000000_local_shadow_bootstrap.sql");
+  const seedPath = path.join(projectDirectory, "seed.sql");
   const insideRoot = workdir.startsWith(`${rootPath}${path.sep}`);
   const configSource = existsSync(configPath) ? readFileSync(configPath, "utf8") : "";
   const safeProjectId = /project_id\s*=\s*"local-shadow-test"/.test(configSource);
