@@ -2240,3 +2240,17 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Hardened provider seam checks against line-ending and indentation changes while preserving local-only and hosted/production fail-closed gates.
 - Teardown can resolve the safe run directory from setup evidence when no explicit directory is supplied.
 - Validation was static only: no Supabase, Docker, setup, teardown, RPC, route, verifier, or build command was executed.
+
+### 2026-07-13 / Phase 45 controlled local route comparison implementation
+
+- Replaced the preparation-only comparison placeholder with a fail-closed runner for one flag-off and one flag-on route invocation against the disposable loopback stack.
+- Both conditions require the existing local provider stub; the shadow flag is the only intended runtime difference. Evidence retains response shape and recommendation identifiers only, plus normalized DB/Storage/audit counts.
+- The runner resets between conditions, uses setup evidence for teardown, validates flag-on local artifacts, and fails closed when the public response cannot expose supporting/budget recommendation groups.
+- No runtime command was executed while implementing the runner. Hosted targets, external providers, evaluator runtime, CandidatePolicy runtime, route response shape, migrations, and product data remain outside scope.
+
+### 2026-07-13 / Phase 45 local recommendation evidence surface
+
+- Added a dev-only local recommendation snapshot for both comparison conditions under the verified setup run directory. It stores only product IDs and array order for top-pick, supporting, and budget groups.
+- Capture requires the existing local provider stub, local/disposable marker, loopback target, UUID comparison ID, and an allowlisted flag condition. Writes are exclusive and non-blocking to the route.
+- The controlled comparison runner uses those snapshots instead of treating absent public response groups as empty arrays; the verifier checks the sanitized schema, file counts, run identity, expected path, and residual-file observation captured before teardown.
+- No Supabase, Docker, setup, teardown, route, verifier, build, hosted, or provider command was executed for this implementation.

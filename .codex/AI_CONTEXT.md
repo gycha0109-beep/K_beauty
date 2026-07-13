@@ -43,7 +43,7 @@ Work Log의 `규칙 승격 후보` 중 3회 이상 반복되거나, 사고 방�
 
 현재 작업에 반드시 반영할 최신 기준.
 
--
+- The controlled local shadow route comparison is implemented but not yet executed. It is limited to a loopback disposable target and requires the local provider stub for both flag states. A dev-only, local-run-directory recommendation snapshot records only top-pick, supporting, and budget product IDs in order; it does not change the public response.
 
 ---
 

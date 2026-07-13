@@ -19,6 +19,7 @@ const WORKDIR = path.join(ROOT, LOCAL_SHADOW_TEST_WORKDIR);
 const EXPECTED_SYNTHETIC_PRODUCT_COUNT = 5;
 const SEED_SUMMARY_MARKER = "LOCAL_SHADOW_SEED_SUMMARY";
 const OBSERVER_SUMMARY_MARKER = "LOCAL_SHADOW_OBSERVER_SUMMARY";
+const LOCAL_DB_CONTAINER = "supabase_db_local-shadow-test";
 
 function sanitizeDiagnosticText(value) {
   const sanitized = String(value || "")
@@ -29,12 +30,12 @@ function sanitizeDiagnosticText(value) {
     .replace(/\bsb_(?:secret|publishable)_[A-Za-z0-9_-]+\b/gi, "[redacted-supabase-key]")
     .replace(/\bsk-[A-Za-z0-9_-]+\b/g, "[redacted-provider-key]")
     .replace(
-      /((?:ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|SECRET_KEY|PUBLISHABLE_KEY|S3_PROTOCOL_ACCESS_KEY_SECRET)\s*["']?\s*[:=]\s*["']?)[^"'\s,}]+/gi,
+      /(([A-Z0-9_]*(?:KEY|SECRET|TOKEN)[A-Z0-9_]*)\s*["']?\s*[:=]\s*["']?)[^"'\s,}]+/gi,
       "$1[redacted]"
     )
     .trim();
 
-  return sanitized ? sanitized.slice(0, 2000) : null;
+  return sanitized ? sanitized.slice(-2000) : null;
 }
 
 function summarizeCommand(result) {
@@ -43,6 +44,14 @@ function summarizeCommand(result) {
     timedOut: result?.error?.code === "ETIMEDOUT",
     sanitizedStderr: sanitizeDiagnosticText(result?.stderr)
   };
+}
+
+function summarizeLastError(value) {
+  const lines = String(sanitizeDiagnosticText(value) || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return lines.slice(-8).join("\n") || null;
 }
 
 function parseSeedSummary(output) {
@@ -130,6 +139,15 @@ function runLocalQuery(sql) {
   };
 }
 
+function captureResetFailureDiagnostics(phase) {
+  const logs = run("docker", ["logs", "--tail", "80", LOCAL_DB_CONTAINER], 30_000);
+  return {
+    phase,
+    containerLogCommand: summarizeCommand(logs),
+    lastCoreError: summarizeLastError(`${logs.stdout || ""}\n${logs.stderr || ""}`)
+  };
+}
+
 function seedDigest() {
   return runLocalQuery(`
     select format(
@@ -175,6 +193,7 @@ export async function prepareIsolatedShadowRouteEnvironment() {
     cleanupContract: { verified: false, idempotentCleanupRequired: true },
     commands: {},
     predicates: {},
+    resetFailureDiagnostics: null,
     runDirectory: null,
     setupStatus: "blocked_local_bootstrap_contract_gap",
     reasonCode: "setup_not_started",
@@ -236,6 +255,7 @@ export async function prepareIsolatedShadowRouteEnvironment() {
     output.commands.firstReset = summarizeCommand(firstReset);
     firstResetSucceeded = firstReset.status === 0;
     if (firstReset.status !== 0) {
+      output.resetFailureDiagnostics = captureResetFailureDiagnostics("first");
       block("blocked_local_bootstrap_contract_gap", "blocked_first_local_reset");
     }
   }
@@ -256,6 +276,7 @@ export async function prepareIsolatedShadowRouteEnvironment() {
     output.commands.secondReset = summarizeCommand(secondReset);
     secondResetSucceeded = secondReset.status === 0;
     if (secondReset.status !== 0) {
+      output.resetFailureDiagnostics = captureResetFailureDiagnostics("second");
       block("blocked_local_bootstrap_contract_gap", "blocked_second_local_reset");
     }
   }

@@ -226,6 +226,29 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
   }
 }
 
+async function captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1" ||
+    !resolveLocalShadowProviderStub().enabled
+  ) {
+    return;
+  }
+
+  try {
+    const { writeLocalShadowRecommendationEvidence } = await import("@/lib/shadow-boundary-dry-run-artifact-writer");
+    const result = await writeLocalShadowRecommendationEvidence({ recommendationResult });
+
+    if (!result.written) {
+      console.warn("[analyze] local-shadow-recommendation-evidence:skipped", {
+        reason: result.skipReason || "unknown"
+      });
+    }
+  } catch {
+    console.warn("[analyze] local-shadow-recommendation-evidence:non-blocking-failure");
+  }
+}
+
 function hasAnalyzeResponseShape(payload) {
   return Boolean(
     payload &&
@@ -1566,14 +1589,14 @@ export async function POST(request) {
       decision
     });
 
-    await runShadowBoundaryDryRunIfEnabled({
-      responsePayload,
-      recommendationResult: {
-        topPick: publicDecision.topPick,
-        supportingProducts: premiumReport?.supportingProducts,
-        budgetAlternatives: premiumReport?.budgetAlternatives
-      }
-    });
+    const recommendationResult = {
+      topPick: publicDecision.topPick,
+      supportingProducts: premiumReport?.supportingProducts,
+      budgetAlternatives: premiumReport?.budgetAlternatives
+    };
+
+    await captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult });
+    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult });
 
     return response;
   } catch (error) {
