@@ -93,7 +93,7 @@ begin
 
   for v_item in
     select *
-    from jsonb_to_recordset(p_grants) as grant(
+    from jsonb_to_recordset(p_grants) as grant_row(
       jti_hash text,
       version integer,
       purpose text,
@@ -150,7 +150,7 @@ begin
 
   for v_item in
     select *
-    from jsonb_to_recordset(p_grants) as grant(
+    from jsonb_to_recordset(p_grants) as grant_row(
       jti_hash text,
       version integer,
       purpose text,
