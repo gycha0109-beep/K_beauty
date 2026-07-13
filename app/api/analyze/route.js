@@ -155,7 +155,7 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
   }
 }
 
-async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult }) {
+async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision }) {
   if (
     process.env.NODE_ENV !== "development" ||
     process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN !== "1"
@@ -171,8 +171,9 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
     ]);
     const baselineResponseShapeSnapshot = snapshotContract.buildBaselineResponseShapeSnapshot(responsePayload);
     const baselineRecommendationSnapshot = snapshotContract.buildBaselineRecommendationSnapshot(recommendationResult);
-    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot([]);
-    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot([]);
+    const policyShadow = decision?.diagnostics?.evaluatorBoundaryPolicyShadow || null;
+    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot(policyShadow || []);
+    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot(policyShadow || []);
     const comparisonSnapshot = snapshotContract.buildShadowComparisonSnapshot({
       baselineResponseShapeSnapshot,
       baselineRecommendationSnapshot,
@@ -201,7 +202,7 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
       return;
     }
 
-    await artifactWriter.writeShadowBoundaryDryRunArtifact({
+    const artifactForWrite = {
       artifact: {
         ...artifact,
         routeInvoked: true,
@@ -212,15 +213,22 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
           syntheticTreatedAsActualEvidence: false
         },
         limitations: [
-          "phase39_wiring_only_boundary_runtime_not_connected",
-          "evaluator_runtime_not_connected",
-          "candidate_policy_runtime_not_connected",
+          policyShadow ? "phase46_policy_shadow_execution" : "phase39_wiring_only_boundary_runtime_not_connected",
+          policyShadow ? "evaluator_policy_shadow_only" : "evaluator_runtime_not_connected",
+          policyShadow ? "candidate_policy_receiver_shadow_only" : "candidate_policy_runtime_not_connected",
           "api_response_not_modified",
           "recommendation_result_not_modified",
           "supabase_write_not_executed"
         ]
       }
-    });
+    };
+    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);
+    if (policyShadow) {
+      await artifactWriter.writeLocalShadowPolicyEvidence({
+        artifact: artifactForWrite.artifact,
+        policyShadow
+      });
+    }
   } catch {
     console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
   }
@@ -1395,6 +1403,11 @@ export async function POST(request) {
       process.env.NODE_ENV === "development" && process.env.FUNCTIONAL_SHADOW_CAPTURE === "1";
 
     const localShadowProviderStub = resolveLocalShadowProviderStub();
+    const evaluatorBoundaryPolicyShadowEnabled =
+      process.env.NODE_ENV === "development" &&
+      process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN === "1" &&
+      process.env.DEV_ONLY_BOUNDARY_POLICY_SHADOW === "1" &&
+      localShadowProviderStub.enabled;
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
@@ -1465,7 +1478,8 @@ export async function POST(request) {
       photoAnalysis,
       currentProducts,
       currentProductSnapshots,
-      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled
+      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled,
+      includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
 
     let explanationNotice = "";
@@ -1596,7 +1610,7 @@ export async function POST(request) {
     };
 
     await captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult });
-    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult });
+    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });
 
     return response;
   } catch (error) {
