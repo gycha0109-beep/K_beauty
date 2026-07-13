@@ -198,12 +198,35 @@ const shareHelper = read("lib/analysis-result-access.js");
   "createSupabaseAdminClient",
   '.from("analysis_results")',
   '.eq("share_id", shareId)',
-  "if (!data.is_public)",
-  "currentUser.id !== data.user_id"
+  "ANALYSIS_RESULT_READ_SELECT",
+  "resolveAnalysisResultReadAudience(data)",
+  "serializePublicAnalysisResult(data)",
+  "serializeOwnerAnalysisResult(data)"
 ].forEach((pattern) => assertIncludes(shareHelper, pattern, "share access helper"));
+assertNotIncludes(
+  shareHelper,
+  "normalizeStoredAnalysisResult",
+  "share access helper"
+);
+
+const analysisResults = read("lib/analysis-results.js");
+[
+  "export const ANALYSIS_RESULT_READ_SELECT",
+  "export function serializePublicAnalysisResult",
+  "export function serializeOwnerAnalysisResult",
+  "export function resolveAnalysisResultReadAudience",
+  "function projectPublicProduct",
+  "function projectRoutineStructure"
+].forEach((pattern) => assertIncludes(analysisResults, pattern, "analysis result read boundary"));
 
 const publicResultApi = read("app/api/results/[shareId]/route.js");
 assertIncludes(publicResultApi, "getAnalysisResultForShare({ shareId, request })", "public result API");
+assertIncludes(publicResultApi, 'error: "Failed to load result."', "public result API");
+assertNotIncludes(
+  publicResultApi,
+  "error instanceof Error ? error.message",
+  "public result API"
+);
 
 const resultsRoute = read("app/api/results/route.js");
 [

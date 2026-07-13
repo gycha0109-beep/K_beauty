@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-07-13 / Public Result Read Boundary hardening
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: application-layer shared-result read boundary only. `lib/analysis-results.js`, `lib/analysis-result-access.js`, `/api/results/[shareId]`, the analysis RLS static verifier, a dedicated DTO verifier, the existing Playwright public-share assertion, a dedicated security note, and this log were changed. Save/publish routes, migrations, RLS/grants, Supabase client construction, remote systems, providers, retained SEC-05 evidence, and user-owned files were not touched.
+- Contract: service-role server reads remain in place. Public rows always return the public DTO. Private rows require an exact authenticated owner ID and return the owner DTO. Public DTOs include only share presentation fields; owner DTOs add only `isPublic`. Internal row/owner IDs, image paths, timestamps, source/provider metadata, raw JSON, scoring/decision metadata, and unknown nested fields are dropped. API 500 responses now use a generic message.
+- Validation: the dedicated response-boundary verifier passed exact public/owner keys, nested key allowlists, malicious-key removal, legacy/null fail-closed behavior, and the public/private access matrix. JS syntax checks, `node scripts/verify-analysis-rls-contract.mjs`, and Playwright test discovery passed. The provider-backed live Playwright flow was not executed because remote/provider calls are outside this task.
+- Data/security: no linked/remote access, migration apply, DB write, provider call, credential exposure, staging, commit, or push. Existing OWASP audit `SEC-06` was not renamed or reused.
+- Next work: run the focused local non-production integration matrix only with approved Supabase/provider test authority, then submit this boundary for independent review.
+
 ### 2026-07-13 / SEC-05 TAP PANIC fail-closed remediation
 
 - Branch: `codex/survey-input-contract-refactor`

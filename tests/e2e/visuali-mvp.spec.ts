@@ -44,18 +44,32 @@ async function uploadFixtureImage(page: Page) {
 
 async function goToSurvey(page: Page) {
   await page.getByRole("button", { name: /^Next$/ }).click();
-  await expect(page.getByText("your skin context")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Tell us your skin context" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Which skin type feels closest to you?" })
+  ).toBeVisible();
 }
 
 async function answerRequiredSurvey(page: Page) {
   await page.getByRole("button", { name: "Oily" }).click();
   await page.getByRole("button", { name: /^Next$/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Does your skin become reactive easily?" })
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Normal" }).click();
   await page.getByRole("button", { name: /^Next$/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "What skin concerns matter most now?" })
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Breakouts" }).click();
   await page.getByRole("button", { name: /^Next$/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "What do you want to improve first?" })
+  ).toBeVisible();
 }
 
 async function submitSurveyWithDefaults(page: Page) {
@@ -73,6 +87,15 @@ async function submitSurveyWithDefaults(page: Page) {
   }
 
   await page.getByRole("button", { name: /^Start analysis$/ }).click();
+}
+
+async function assertHomeEntry(page: Page) {
+  await expect(
+    page.getByRole("heading", { name: "Find products matched to your skin" })
+  ).toBeVisible();
+  await expect(
+    page.getByText("We combine photo signals with your survey answers.")
+  ).toBeVisible();
 }
 
 async function seedStaleClientState(page: Page) {
@@ -117,8 +140,7 @@ test.describe("Visuali MVP E2E draft", () => {
   }) => {
     await page.goto("/en");
 
-    await expect(page.getByText("K-BEAUTY FINDER")).toBeVisible();
-    await expect(page.getByText("one photo and a few questions", { exact: false })).toBeVisible();
+    await assertHomeEntry(page);
 
     await uploadFixtureImage(page);
     await goToSurvey(page);
@@ -129,9 +151,6 @@ test.describe("Visuali MVP E2E draft", () => {
     ).toBeVisible();
 
     await answerRequiredSurvey(page);
-    await expect(
-      page.getByText("How does your skin feel right after cleansing?")
-    ).toBeVisible();
   });
 
   test("analysis, share save, shared link, stale cache cleanup, and full report entry @live", async ({
@@ -223,6 +242,44 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(sharedResultPayload.success).toBe(true);
     expect(sharedResultPayload.result?.shareId).toBe(savePayload.shareId);
     expect(sharedResultPayload.result?.schemaVersion).toBe(1);
+    expect(Object.keys(sharedResultPayload.result || {}).sort()).toEqual([
+      "categoryPicks",
+      "locale",
+      "mainConcerns",
+      "routineAm",
+      "routinePm",
+      "routineStructure",
+      "schemaVersion",
+      "shareId",
+      "skinType",
+      "summary",
+      "topPick"
+    ]);
+    expect(sharedResultPayload.result).not.toHaveProperty("id");
+    expect(sharedResultPayload.result).not.toHaveProperty("userId");
+    expect(sharedResultPayload.result).not.toHaveProperty("imageUrl");
+    expect(sharedResultPayload.result).not.toHaveProperty("source");
+    expect(sharedResultPayload.result).not.toHaveProperty("generatedAt");
+    expect(sharedResultPayload.result).not.toHaveProperty("createdAt");
+    expect(sharedResultPayload.result).not.toHaveProperty("recommendedProducts");
+    expect(sharedResultPayload.result).not.toHaveProperty("alternative");
+    expect(sharedResultPayload.result).not.toHaveProperty("morning");
+    expect(sharedResultPayload.result).not.toHaveProperty("night");
+    expect(Object.keys(sharedResultPayload.result?.topPick || {}).sort()).toEqual([
+      "brand",
+      "id",
+      "name",
+      "reason",
+      "step"
+    ]);
+    for (const product of sharedResultPayload.result?.categoryPicks || []) {
+      expect(Object.keys(product).sort()).toEqual([
+        "brand",
+        "id",
+        "name",
+        "step"
+      ]);
+    }
 
     const sharePage = await context.newPage();
     await sharePage.goto(new URL(savePayload.sharePath, page.url()).toString());
@@ -252,7 +309,7 @@ test.describe("Visuali MVP E2E draft", () => {
     );
 
     await page.goto("/en");
-    await expect(page.getByText("K-BEAUTY FINDER")).toBeVisible();
+    await assertHomeEntry(page);
     expect(new URL(page.url()).hostname).not.toMatch(/^(127\.0\.0\.1|localhost)$/i);
   });
 

@@ -28,7 +28,7 @@ export async function GET(request, { params }) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to load result."
+        error: "Failed to load result."
       },
       { status: 500 }
     );
