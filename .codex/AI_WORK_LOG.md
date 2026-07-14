@@ -2276,3 +2276,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Shadow policy artifacts remain under `policy/`; actual runtime artifacts use a distinct evidence type, schema, directory, and durable-copy path.
 - The comparison runner enables the runtime flag only for flag-on, distinguishes policy-driven recommendation deltas from unexpected deltas, and the verifier independently validates durable raw runtime evidence and receiver-to-exposure mappings.
 - This phase is static only. No Supabase, Docker, setup, teardown, route, comparison runner, verifier, build, hosted, or provider command was executed.
+
+### 2026-07-14 / Phase 46.3a production rollout observability contract
+
+- Added a default-off production canary control contract with `DISABLE` precedence and an explicit deployment-canary scope requirement for production enablement.
+- Added non-blocking aggregate runtime telemetry for enabled/executed/connected state, candidate counts, unexpected receiver/exposure count, five safety counts, runtime error/latency aggregates, and kill-switch suppression evidence. Product and user details, request/response bodies, URLs, and credentials are rejected by an allowlisted schema.
+- Added a synthetic baseline/canary stop contract covering safety violations, unexpected receiver/recommendation/DB/Storage deltas, response-schema changes, forbidden fields, SLO regression, and execution after disablement.
+- Updated current state to the observed Phase 46.2 local PASS. No production flag, hosted environment, route, runner, verifier, build, Supabase, Docker, DB, Storage, or provider command was executed.
