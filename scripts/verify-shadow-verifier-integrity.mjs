@@ -13,16 +13,21 @@ function replaceRequired(source, search, replacement, id) {
   return source.replace(search, replacement);
 }
 
+function replacePatternRequired(source, pattern, replacement, id) {
+  assert(pattern.test(source), `${id} mutation target should exist`);
+  return source.replace(pattern, replacement);
+}
+
 function control(id, expectedViolation, mutate) {
   return { id, expectedViolation, mutate };
 }
 
 const NEGATIVE_CONTROLS = [
   control("production_guard_removed", "missing_development_guard", ({ routeSource, writerSource }) => ({
-    routeSource: replaceRequired(
+    routeSource: replacePatternRequired(
       routeSource,
-      '    process.env.NODE_ENV !== "development" ||\n',
-      "",
+      /(async function runShadowBoundaryDryRunIfEnabled\(\{ responsePayload, recommendationResult, decision \}\) \{\r?\n  if \(\r?\n)    process\.env\.NODE_ENV !== "development" \|\|\r?\n/,
+      "$1",
       "production_guard_removed"
     ),
     writerSource
@@ -37,14 +42,36 @@ const NEGATIVE_CONTROLS = [
     writerSource
   })),
   control("dynamic_import_outside_guard", "dynamic_import_outside_guard", ({ routeSource, writerSource }) => ({
-    routeSource: `import("@/lib/shadow-boundary-dry-run-artifact-writer");\n${routeSource}`,
+    routeSource: replacePatternRequired(
+      routeSource,
+      /(async function runShadowBoundaryDryRunIfEnabled\(\{ responsePayload, recommendationResult, decision \}\) \{\r?\n)/,
+      '$1  await import("@/lib/shadow-boundary-dry-run-artifact-writer");\n',
+      "dynamic_import_outside_guard"
+    ),
     writerSource
   })),
+  control("route_insertion_moved_before_response", "unsafe_route_insertion_order", ({ routeSource, writerSource }) => {
+    const withoutCall = replacePatternRequired(
+      routeSource,
+      /^    await runShadowBoundaryDryRunIfEnabled\(\{ responsePayload, recommendationResult, decision \}\);\r?\n/m,
+      "",
+      "route_insertion_moved_before_response_remove"
+    );
+    return {
+      routeSource: replacePatternRequired(
+        withoutCall,
+        /^    const response = NextResponse\.json\(responsePayload\);\r?$/m,
+        "    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });\n    const response = NextResponse.json(responsePayload);",
+        "route_insertion_moved_before_response_insert"
+      ),
+      writerSource
+    };
+  }),
   control("shadow_result_merged_into_response", "shadow_merged_into_response", ({ routeSource, writerSource }) => ({
     routeSource: replaceRequired(
       routeSource,
-      "    await artifactWriter.writeShadowBoundaryDryRunArtifact({",
-      "    responsePayload.shadowDryRun = artifact;\n    await artifactWriter.writeShadowBoundaryDryRunArtifact({",
+      "    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);",
+      "    responsePayload.shadowDryRun = artifact;\n    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);",
       "shadow_result_merged_into_response"
     ),
     writerSource
@@ -52,8 +79,8 @@ const NEGATIVE_CONTROLS = [
   control("recommendation_result_mutated", "recommendation_output_mutation_detected", ({ routeSource, writerSource }) => ({
     routeSource: replaceRequired(
       routeSource,
-      "    await artifactWriter.writeShadowBoundaryDryRunArtifact({",
-      "    recommendationResult.topPick = null;\n    await artifactWriter.writeShadowBoundaryDryRunArtifact({",
+      "    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);",
+      "    recommendationResult.topPick = null;\n    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);",
       "recommendation_result_mutated"
     ),
     writerSource
@@ -69,10 +96,10 @@ const NEGATIVE_CONTROLS = [
   })),
   control("writer_supabase_mutation_added", "writer_db_or_supabase_mutation_detected", ({ routeSource, writerSource }) => ({
     routeSource,
-    writerSource: replaceRequired(
+    writerSource: replacePatternRequired(
       writerSource,
-      "  try {\n    await fileSystem.mkdir",
-      '  try {\n    await supabase.from("shadow_audit").insert({});\n    await fileSystem.mkdir',
+      /(  try \{\r?\n)(    await fileSystem\.mkdir)/,
+      '$1    await supabase.from("shadow_audit").insert({});\n$2',
       "writer_supabase_mutation_added"
     )
   })),
@@ -137,7 +164,7 @@ const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve
 if (isMain) {
   const result = runShadowVerifierIntegrityChecks();
   assert.equal(result.baselineAccepted, true, `baseline should pass: ${result.baselineViolations.join(", ")}`);
-  assert.equal(result.totalCount, 10);
+  assert.equal(result.totalCount, 11);
   assert.equal(result.detectedCount, result.totalCount, JSON.stringify(result.negativeControlResults, null, 2));
   assert.equal(result.sourceFilesMutated, false);
   console.log("verify-shadow-verifier-integrity passed");

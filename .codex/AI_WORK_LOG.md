@@ -2316,3 +2316,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Secret checks require canonical base64url values representing at least 32 bytes, distinct guard/grant values, and no reuse of the legacy write token, Supabase service-role, or OpenAI secrets. Secret values, lengths, hashes, prefixes, and suffixes are never returned or logged.
 - Production, `main`, other branches, and missing probe flags return 404 without logging. The probe does not call providers, Supabase, DB, Storage, RPC, or public API routes and does not change deployment environment variables.
 - Initial focused verification falsely treated the required `SUPABASE_SERVICE_ROLE_KEY` comparison name as a Supabase call. The verifier was narrowed to actual import/client/call patterns before rerunning; the readiness contract itself was unchanged.
+
+### 2026-07-14 / Shadow route static verifier maintenance
+
+- Corrected stale route static checks that assumed one global artifact-writer import and an obsolete premium-session assignment shape. Current imports must now occur exactly within the three recognized development/local guarded helpers, and insertion boundaries are validated in their current response, guard-completion, recommendation-evidence, and return order.
+- Expanded verifier integrity controls to reject an import placed before its guard and a dry-run call moved before response construction. Existing controls were updated to current call shapes and made line-ending independent where needed.
+- Runtime code, route behavior, flags, probes, response contracts, and environment-variable contracts were unchanged. Required contract, CandidatePolicy receiver, observability, Preview probe, and kill-switch focused checks passed.
+- During verification, two negative-control mutation targets were found stale or CRLF-sensitive. Only the synthetic mutation builders were corrected; baseline safety checks were not relaxed.
