@@ -2323,3 +2323,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Expanded verifier integrity controls to reject an import placed before its guard and a dry-run call moved before response construction. Existing controls were updated to current call shapes and made line-ending independent where needed.
 - Runtime code, route behavior, flags, probes, response contracts, and environment-variable contracts were unchanged. Required contract, CandidatePolicy receiver, observability, Preview probe, and kill-switch focused checks passed.
 - During verification, two negative-control mutation targets were found stale or CRLF-sensitive. Only the synthetic mutation builders were corrected; baseline safety checks were not relaxed.
+
+### 2026-07-14 / Run-scoped synthetic canary evidence
+
+- Preserved the legacy synthetic canary evidence and exclusive-create collision behavior while requiring a safe explicit run ID for every fresh probe and propagation verification.
+- Fresh evidence now writes under `tmp/evaluator-boundary-policy-synthetic-canary-runs/<runId>/` with `wx`; traversal, absolute paths, whitespace, control characters, and non-allowlisted run IDs are rejected.
+- A sandbox negative-control confirmed that reusing the same run ID still fails with `EEXIST`. The fresh run completed once with the existing aggregate fixture, passed propagation and related policy verifiers, and did not reference or overwrite the legacy evidence.

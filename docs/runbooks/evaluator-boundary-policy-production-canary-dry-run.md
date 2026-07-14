@@ -9,8 +9,8 @@ This runbook is a dry-run contract. It does not deploy, change Vercel environmen
 
 Required verification order:
 
-1. `node scripts/run-evaluator-boundary-policy-synthetic-canary-probe.mjs test/fixtures/analyze/candidate-policy-synthetic-canary-probe.fixture.json`
-2. `node scripts/verify-evaluator-boundary-policy-kill-switch-propagation.mjs`
+1. `node scripts/run-evaluator-boundary-policy-synthetic-canary-probe.mjs test/fixtures/analyze/candidate-policy-synthetic-canary-probe.fixture.json --run-id <unique-safe-run-id>`
+2. `node scripts/verify-evaluator-boundary-policy-kill-switch-propagation.mjs --run-id <same-unique-safe-run-id>`
 3. `node scripts/verify-evaluator-boundary-policy-production-observability.mjs`
 
 Stop for any nonzero safety or unexpected receiver/exposure count, response-schema change, unexpected recommendation or DB/Storage delta, forbidden telemetry field, SLO breach, kill-switch propagation failure, or unconfirmed canary isolation.

@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -6,8 +6,7 @@ import {
   evaluateEvaluatorBoundaryPolicyCanaryGate,
   evaluateEvaluatorBoundaryPolicyKillSwitchPropagation
 } from "../lib/evaluator-boundary-policy-runtime-observability.js";
-
-const OUTPUT_PATH = path.join(process.cwd(), "tmp", "evaluator-boundary-policy-synthetic-canary-probe.json");
+import { writeSyntheticCanaryEvidenceExclusive } from "./lib/evaluator-boundary-policy-synthetic-canary-evidence.mjs";
 
 function probeSummary(result) {
   return {
@@ -106,13 +105,15 @@ export function buildEvaluatorBoundaryPolicySyntheticCanaryEvidence(input = {}) 
 }
 
 async function main() {
-  const inputPath = process.argv[2];
+  const [inputPath, runIdFlag, runId, ...unexpectedArguments] = process.argv.slice(2);
   if (!inputPath) throw new Error("aggregate_probe_input_path_required");
+  if (runIdFlag !== "--run-id" || !runId || unexpectedArguments.length > 0) {
+    throw new Error("synthetic_canary_run_id_required");
+  }
   const input = JSON.parse(await readFile(path.resolve(inputPath), "utf8"));
   const evidence = buildEvaluatorBoundaryPolicySyntheticCanaryEvidence(input);
-  await mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
-  await writeFile(OUTPUT_PATH, `${JSON.stringify(evidence, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
-  console.log(JSON.stringify({ verdict: evidence.verdict, stopRequired: evidence.stopRequired }));
+  const evidencePath = await writeSyntheticCanaryEvidenceExclusive({ runId, evidence });
+  console.log(JSON.stringify({ verdict: evidence.verdict, stopRequired: evidence.stopRequired, evidencePath }));
 }
 
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
