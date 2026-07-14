@@ -2295,3 +2295,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added a sanitized Vercel/GitHub deployment-plan generator and short canary runbook. The plan covers default-off baseline, Preview validation, separately approved `main` production deployment, DISABLE-first rollback, and prior known-good deployment fallback.
 - The plan reuses the synthetic probe, kill-switch propagation verifier, and production-observability verifier. It makes no API calls and cannot deploy, edit environment variables, change traffic, or activate production runtime.
 - Weighted traffic splitting and the concrete deployment-level canary isolation mechanism remain unconfirmed; the plan treats them as a stop condition rather than assuming a rollout percentage or adapter behavior.
+
+### 2026-07-14 / CandidatePolicy Preview kill-switch probe
+
+- Added a Preview-only internal GET probe for the `codex/local-shadow-runtime-validation` branch. It requires an explicit probe flag and otherwise returns 404 without emitting telemetry.
+- The probe reuses the aggregate CandidatePolicy runtime observability contract to report enable/disable/scope state and emits the same sanitized telemetry to `[candidate-policy-runtime]` without executing evaluator, CandidatePolicy, provider, Supabase, DB, or Storage code.
+- Production and `main` Preview deployments remain fail-closed. The public `/api/analyze` route, recommendation output, deployment settings, and environment values were not changed.
+- Focused probe and production-observability contract checks passed. `npm run build` was attempted once but produced no output before the 124-second command timeout, so build completion remains unverified and was not retried.
