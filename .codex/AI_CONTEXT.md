@@ -45,6 +45,7 @@ Work Log의 `규칙 승격 후보` 중 3회 이상 반복되거나, 사고 방�
 
 - The controlled local comparison passed on a loopback disposable target with the local provider stub. Flag-off and flag-on each invoked `/api/analyze` once; the flag-on evaluator-to-hint-to-receiver runtime executed and connected, all five safety violation counts and unexpected receiver count were zero, the public response shape was unchanged, unexpected recommendation and DB/Storage deltas were absent, and cleanup succeeded.
 - CandidatePolicy runtime remains default-off. `DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` overrides enablement. Production enablement additionally requires an explicitly identified deployment-level canary scope; aggregate telemetry contains only runtime state, candidate counts, violation counts, error/latency aggregates, and stop reasons. Production activation and hosted environment changes remain unapproved.
+- Synthetic production-canary readiness uses an aggregate-only baseline/canary probe contract. It compares schema and recommendation signatures without persisting recommendation details, classifies DB/Storage deltas and SLO changes, and requires a bounded kill-switch propagation observation where enabled/executed/connected are all false. It is not connected to a deployment tool or user traffic.
 
 ---
 

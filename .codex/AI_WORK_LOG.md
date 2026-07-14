@@ -2283,3 +2283,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added non-blocking aggregate runtime telemetry for enabled/executed/connected state, candidate counts, unexpected receiver/exposure count, five safety counts, runtime error/latency aggregates, and kill-switch suppression evidence. Product and user details, request/response bodies, URLs, and credentials are rejected by an allowlisted schema.
 - Added a synthetic baseline/canary stop contract covering safety violations, unexpected receiver/recommendation/DB/Storage deltas, response-schema changes, forbidden fields, SLO regression, and execution after disablement.
 - Updated current state to the observed Phase 46.2 local PASS. No production flag, hosted environment, route, runner, verifier, build, Supabase, Docker, DB, Storage, or provider command was executed.
+
+### 2026-07-14 / Phase 46.3b synthetic canary and kill-switch propagation contract
+
+- Added an aggregate-input synthetic baseline/canary probe runner contract. It compares response-schema and recommendation signatures, DB/Storage mutation counts, error rates, P95 latency, runtime telemetry, and the shared synthetic fixture identity without storing response or recommendation details.
+- Added bounded kill-switch propagation evidence and a verifier contract requiring a post-disable request with enabled/executed/connected all false before the timeout. Canary stop reasons produce an explicit rollback verdict.
+- The contract is not connected to deployment tooling, hosted environment changes, production traffic, route execution, Supabase, Docker, DB, Storage, or provider calls. No runner, verifier, build, or hosted command was executed.

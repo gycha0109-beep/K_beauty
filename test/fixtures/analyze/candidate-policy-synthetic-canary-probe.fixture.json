@@ -1,0 +1,93 @@
+{
+  "baseline": {
+    "fixtureContractId": "candidate-policy-synthetic-v1",
+    "requestCount": 1,
+    "errorCount": 0,
+    "p95LatencyMs": 8,
+    "responseSchemaSignature": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+    "recommendationSignature": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "databaseMutationCount": 0,
+    "storageMutationCount": 0,
+    "runtimeTelemetry": {
+      "evidenceType": "candidate_policy_runtime_aggregate",
+      "schemaVersion": "2026-07-14.phase46.3a",
+      "canaryScope": "deployment_canary",
+      "runtimeEnabled": false,
+      "runtimeExecuted": false,
+      "runtimeConnected": false,
+      "inputCandidateCount": 3,
+      "visibleCandidateCount": 3,
+      "unexpectedReceiverExposureCount": 0,
+      "safetyViolationCounts": {
+        "highRiskCollapsed": 0,
+        "sensitivityUnsafeAccepted": 0,
+        "metadataIncompleteAccepted": 0,
+        "strongCautionAccepted": 0,
+        "activeOnlyViolation": 0
+      },
+      "runtimeExecutionCount": 0,
+      "runtimeErrorCount": 0,
+      "runtimeLatencyMsTotal": 0,
+      "runtimeLatencyMsMax": 0,
+      "killSwitchRequested": false,
+      "killSwitchSuppressedExecution": false,
+      "scopeValidationFailed": false,
+      "disabledExecutionViolationCount": 0,
+      "stopRequired": false,
+      "stopReasons": []
+    }
+  },
+  "canary": {
+    "fixtureContractId": "candidate-policy-synthetic-v1",
+    "requestCount": 1,
+    "errorCount": 0,
+    "p95LatencyMs": 9,
+    "responseSchemaSignature": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+    "recommendationSignature": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+    "databaseMutationCount": 0,
+    "storageMutationCount": 0,
+    "runtimeTelemetry": {
+      "evidenceType": "candidate_policy_runtime_aggregate",
+      "schemaVersion": "2026-07-14.phase46.3a",
+      "canaryScope": "deployment_canary",
+      "runtimeEnabled": true,
+      "runtimeExecuted": true,
+      "runtimeConnected": true,
+      "inputCandidateCount": 3,
+      "visibleCandidateCount": 3,
+      "unexpectedReceiverExposureCount": 0,
+      "safetyViolationCounts": {
+        "highRiskCollapsed": 0,
+        "sensitivityUnsafeAccepted": 0,
+        "metadataIncompleteAccepted": 0,
+        "strongCautionAccepted": 0,
+        "activeOnlyViolation": 0
+      },
+      "runtimeExecutionCount": 1,
+      "runtimeErrorCount": 0,
+      "runtimeLatencyMsTotal": 9,
+      "runtimeLatencyMsMax": 9,
+      "killSwitchRequested": false,
+      "killSwitchSuppressedExecution": false,
+      "scopeValidationFailed": false,
+      "disabledExecutionViolationCount": 0,
+      "stopRequired": false,
+      "stopReasons": []
+    }
+  },
+  "slo": {
+    "maxErrorRateIncrease": 0,
+    "maxP95LatencyIncreaseMs": 10
+  },
+  "killSwitchPropagation": {
+    "timeoutMs": 30000,
+    "observations": [
+      {
+        "elapsedMs": 1000,
+        "runtimeEnabled": false,
+        "runtimeExecuted": false,
+        "runtimeConnected": false
+      }
+    ]
+  }
+}
