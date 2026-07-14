@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
-import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { getOpenAiEnvDiagnostics, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
+import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 import {
   applyAnalysisGuardCookies,
   completeAnalysisRequestGuard,
@@ -770,6 +771,7 @@ export async function POST(request) {
     const buffer = Buffer.from(await image.arrayBuffer());
     const imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
 
+    const providerStartedAt = Date.now();
     let response;
 
     try {
@@ -802,9 +804,15 @@ export async function POST(request) {
           ]
         })
       });
-    } catch (fetchError) {
-      console.error("[face-reading] OpenAI request failed", {
-        message: fetchError instanceof Error ? fetchError.message : String(fetchError)
+    } catch {
+      logProviderRuntimeEvent({
+        stage: "face-reading",
+        status: null,
+        ok: false,
+        provider: "openai",
+        model: MODEL,
+        durationMs: Date.now() - providerStartedAt,
+        errorCategory: "request_failed"
       });
       return failGuardedResponse(
         NextResponse.json(createFaceLabUnavailable("vision_request_failed")),
@@ -812,12 +820,17 @@ export async function POST(request) {
       );
     }
 
-    const { ok, status, data, rawText } = await readOpenAiResponse(response);
+    const { ok, status, data } = await readOpenAiResponse(response);
 
     if (!ok) {
-      console.error("[face-reading] OpenAI failed", {
+      logProviderRuntimeEvent({
+        stage: "face-reading",
         status,
-        preview: previewDiagnosticText(data?.error?.message || data?.error || rawText)
+        ok: false,
+        provider: "openai",
+        model: MODEL,
+        durationMs: Date.now() - providerStartedAt,
+        errorCategory: "http_error"
       });
       return failGuardedResponse(
         NextResponse.json(createFaceLabUnavailable("vision_request_failed")),
@@ -828,9 +841,14 @@ export async function POST(request) {
     const rawContent = extractTextContent(data?.choices?.[0]?.message?.content);
 
     if (!rawContent) {
-      console.error("[face-reading] Empty model content", {
+      logProviderRuntimeEvent({
+        stage: "face-reading",
         status,
-        preview: previewDiagnosticText(rawText)
+        ok: false,
+        provider: "openai",
+        model: MODEL,
+        durationMs: Date.now() - providerStartedAt,
+        errorCategory: "empty_response"
       });
       return failGuardedResponse(
         NextResponse.json(createFaceLabUnavailable("vision_response_invalid")),
@@ -840,6 +858,15 @@ export async function POST(request) {
 
     try {
       const parsed = safeParse(rawContent, locale);
+
+      logProviderRuntimeEvent({
+        stage: "face-reading",
+        status,
+        ok: true,
+        provider: "openai",
+        model: MODEL,
+        durationMs: Date.now() - providerStartedAt
+      });
 
       if (!hasFaceReadingPayloadShape(parsed)) {
         console.warn("[face-reading] response shape insufficient", {
@@ -885,10 +912,15 @@ export async function POST(request) {
         })),
         analysisGuard
       );
-    } catch (parseError) {
-      console.error("[face-reading] parse failed", {
-        message: parseError instanceof Error ? parseError.message : String(parseError),
-        contentPreview: rawContent.slice(0, 240)
+    } catch {
+      logProviderRuntimeEvent({
+        stage: "face-reading",
+        status,
+        ok: false,
+        provider: "openai",
+        model: MODEL,
+        durationMs: Date.now() - providerStartedAt,
+        errorCategory: "invalid_response"
       });
       return failGuardedResponse(
         NextResponse.json(createFaceLabUnavailable("vision_response_invalid")),
@@ -900,7 +932,11 @@ export async function POST(request) {
       await failAnalysisRequestGuard(analysisGuard);
     }
 
-    console.error("[face-reading] failed", error);
+    console.error("[face-reading] request failed", {
+      stage: "face-reading",
+      ok: false,
+      errorCategory: "route_processing_failed"
+    });
     return applyAnalysisGuardCookies(NextResponse.json(
       { error: getCopy(responseLocale).serverError },
       { status: 500 }

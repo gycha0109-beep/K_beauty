@@ -43,7 +43,11 @@ Work Log의 `규칙 승격 후보` 중 3회 이상 반복되거나, 사고 방�
 
 현재 작업에 반드시 반영할 최신 기준.
 
--
+- The controlled local comparison passed on a loopback disposable target with the local provider stub. Flag-off and flag-on each invoked `/api/analyze` once; the flag-on evaluator-to-hint-to-receiver runtime executed and connected, all five safety violation counts and unexpected receiver count were zero, the public response shape was unchanged, unexpected recommendation and DB/Storage deltas were absent, and cleanup succeeded.
+- CandidatePolicy runtime remains default-off. `DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` overrides enablement. Production enablement additionally requires an explicitly identified deployment-level canary scope; aggregate telemetry contains only runtime state, candidate counts, violation counts, error/latency aggregates, and stop reasons. Production activation and hosted environment changes remain unapproved.
+- Synthetic production-canary readiness uses an aggregate-only baseline/canary probe contract. It compares schema and recommendation signatures without persisting recommendation details, classifies DB/Storage deltas and SLO changes, and requires a bounded kill-switch propagation observation where enabled/executed/connected are all false. It is not connected to a deployment tool or user traffic.
+- Canonical deployment contract: Vercel with GitHub integration; `main` branch push is the primary Production Deployment path and other branch pushes create Preview Deployments for validation. Manual Preview-to-Production promotion is optional and exceptional, not the current standard procedure, and requires separate approval. Runtime environment variables are managed in Vercel environment scopes. Rollback first applies `DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1`; deployment rollback returns to the previous known-good Vercel deployment in principle, while the exact command, permissions, and automation remain unconfirmed. Project/team identifiers, tokens, secrets, and actual deployment or environment changes are not recorded or performed.
+- Phase 46.3c adds a sanitized Vercel/GitHub dry-run plan only. It sequences baseline, Preview canary, separately approved `main` production path, disable, and rollback; it requires the synthetic probe, kill-switch propagation verifier, and production-observability verifier. Weighted traffic split and the concrete canary-isolation mechanism remain unconfirmed, so the plan forbids assuming either one.
 
 ---
 

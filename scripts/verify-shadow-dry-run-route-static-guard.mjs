@@ -13,6 +13,37 @@ const REQUIRED_DYNAMIC_IMPORTS = [
   "@/lib/shadow-boundary-dry-run-artifact-writer"
 ];
 
+function sourceRange(source, startNeedle, endNeedle) {
+  const start = source.indexOf(startNeedle);
+  const end = source.indexOf(endNeedle, start);
+  return start >= 0 && end > start ? { start, end, source: source.slice(start, end) } : null;
+}
+
+function guardedImportRange(range, requiredGuards) {
+  if (!range) return null;
+  const tryIndex = range.source.indexOf("try {");
+  const guardSource = tryIndex >= 0 ? range.source.slice(0, tryIndex) : "";
+  if (
+    tryIndex < 0 ||
+    !guardSource.includes("return;") ||
+    requiredGuards.some((guard) => !guardSource.includes(guard))
+  ) {
+    return null;
+  }
+
+  return {
+    start: range.start + tryIndex,
+    end: range.end
+  };
+}
+
+function indexesAreExactlyWithin(indexes, ranges) {
+  return (
+    indexes.length === ranges.length &&
+    ranges.every((range) => range && indexes.some((index) => index > range.start && index < range.end))
+  );
+}
+
 function occurrenceIndexes(source, needle) {
   const indexes = [];
   let offset = 0;
@@ -31,15 +62,28 @@ function addViolation(violations, code) {
 
 export function validateShadowDryRunRouteSources({ routeSource = "", writerSource = "" } = {}) {
   const violations = [];
-  const functionStart = routeSource.indexOf("async function runShadowBoundaryDryRunIfEnabled");
-  const functionEnd = routeSource.indexOf("function hasAnalyzeResponseShape", functionStart);
+  const shadowHelper = sourceRange(
+    routeSource,
+    "async function runShadowBoundaryDryRunIfEnabled",
+    "async function captureLocalShadowRecommendationEvidenceIfEnabled"
+  );
+  const recommendationEvidenceHelper = sourceRange(
+    routeSource,
+    "async function captureLocalShadowRecommendationEvidenceIfEnabled",
+    "async function captureLocalActualRuntimeEvidenceIfEnabled"
+  );
+  const actualRuntimeEvidenceHelper = sourceRange(
+    routeSource,
+    "async function captureLocalActualRuntimeEvidenceIfEnabled",
+    "function hasAnalyzeResponseShape"
+  );
 
-  if (functionStart < 0 || functionEnd <= functionStart) {
+  if (!shadowHelper) {
     addViolation(violations, "missing_shadow_dry_run_route_helper");
     return { valid: false, violations };
   }
 
-  const routeHelper = routeSource.slice(functionStart, functionEnd);
+  const routeHelper = shadowHelper.source;
   const guardEnd = routeHelper.indexOf("try {");
   const guardBlock = guardEnd >= 0 ? routeHelper.slice(0, guardEnd) : "";
   if (!guardBlock.includes('process.env.NODE_ENV !== "development"')) {
@@ -52,26 +96,62 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
     addViolation(violations, "missing_guard_return_before_dynamic_import");
   }
 
-  for (const modulePath of REQUIRED_DYNAMIC_IMPORTS) {
-    const importNeedle = `import("${modulePath}")`;
-    const indexes = occurrenceIndexes(routeSource, importNeedle);
-    const expectedMinimumIndex = functionStart + Math.max(guardEnd, 0);
-    const insideGuardedHelper = indexes.length === 1 && indexes[0] > expectedMinimumIndex && indexes[0] < functionEnd;
-    if (!insideGuardedHelper) {
-      addViolation(violations, "dynamic_import_outside_guard");
-    }
-  }
+  const shadowImportRange = guardedImportRange(shadowHelper, [
+    'process.env.NODE_ENV !== "development"',
+    'process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN !== "1"'
+  ]);
+  const recommendationImportRange = guardedImportRange(recommendationEvidenceHelper, [
+    'process.env.NODE_ENV !== "development"',
+    'process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1"',
+    "!resolveLocalShadowProviderStub().enabled"
+  ]);
+  const actualRuntimeImportRange = guardedImportRange(actualRuntimeEvidenceHelper, [
+    'process.env.NODE_ENV !== "development"',
+    'process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1"',
+    "!resolveLocalShadowProviderStub().enabled"
+  ]);
 
-  const persistenceIndex = routeSource.lastIndexOf("const premiumSessionToken = await createPremiumReportSession");
+  for (const modulePath of REQUIRED_DYNAMIC_IMPORTS.slice(0, 2)) {
+    const indexes = occurrenceIndexes(routeSource, `import("${modulePath}")`);
+    if (!indexesAreExactlyWithin(indexes, [shadowImportRange])) addViolation(violations, "dynamic_import_outside_guard");
+  }
+  const writerImportIndexes = occurrenceIndexes(
+    routeSource,
+    'import("@/lib/shadow-boundary-dry-run-artifact-writer")'
+  );
+  if (
+    !indexesAreExactlyWithin(writerImportIndexes, [
+      shadowImportRange,
+      recommendationImportRange,
+      actualRuntimeImportRange
+    ])
+  ) addViolation(violations, "dynamic_import_outside_guard");
+
+  const persistenceIndex = routeSource.search(/\bconst\s+premiumSessionToken\s*=/);
+  const responsePayloadIndex = routeSource.search(/\bconst\s+responsePayload\s*=\s*\{/);
   const responseIndex = routeSource.lastIndexOf("const response = NextResponse.json(responsePayload)");
+  const guardCompletionIndex = routeSource.lastIndexOf("await completeAnalysisRequestGuard");
   const captureIndex = routeSource.lastIndexOf("await captureFunctionalShadowIfEnabled");
+  const recommendationIndex = routeSource.lastIndexOf("const recommendationResult = {");
+  const recommendationCaptureIndex = routeSource.lastIndexOf("await captureLocalShadowRecommendationEvidenceIfEnabled");
+  const actualRuntimeCaptureIndex = routeSource.lastIndexOf("await captureLocalActualRuntimeEvidenceIfEnabled");
   const callSiteIndex = routeSource.lastIndexOf("await runShadowBoundaryDryRunIfEnabled");
   const returnIndex = routeSource.lastIndexOf("return response;");
-  if (persistenceIndex < 0 || responseIndex < 0 || captureIndex < 0 || callSiteIndex < 0 || returnIndex < 0) {
+  const insertionBoundaries = [
+    persistenceIndex,
+    responsePayloadIndex,
+    responseIndex,
+    guardCompletionIndex,
+    captureIndex,
+    recommendationIndex,
+    recommendationCaptureIndex,
+    actualRuntimeCaptureIndex,
+    callSiteIndex,
+    returnIndex
+  ];
+  if (insertionBoundaries.some((index) => index < 0)) {
     addViolation(violations, "missing_expected_route_insertion_boundaries");
-  } else if (
-    !(persistenceIndex < callSiteIndex && responseIndex < callSiteIndex && captureIndex < callSiteIndex && callSiteIndex < returnIndex)
-  ) {
+  } else if (!insertionBoundaries.every((index, position) => position === 0 || insertionBoundaries[position - 1] < index)) {
     addViolation(violations, "unsafe_route_insertion_order");
   }
 
@@ -81,8 +161,8 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
     responsePayloadStart >= 0 && responsePayloadEnd > responsePayloadStart
       ? routeSource.slice(responsePayloadStart, responsePayloadEnd)
       : "";
-  const routeTail = callSiteIndex >= 0 && returnIndex > callSiteIndex
-    ? routeSource.slice(callSiteIndex, returnIndex)
+  const routeTail = recommendationIndex >= 0 && returnIndex > recommendationIndex
+    ? routeSource.slice(recommendationIndex, returnIndex)
     : "";
 
   if (

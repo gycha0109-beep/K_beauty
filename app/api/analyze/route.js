@@ -39,6 +39,7 @@ import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
@@ -73,10 +74,6 @@ const ANALYZE_COPY = {
 
 function getAnalyzeCopy(locale = "ko") {
   return ANALYZE_COPY[locale] || ANALYZE_COPY.ko;
-}
-
-function previewText(value, maxLength = 240) {
-  return previewDiagnosticText(value, maxLength);
 }
 
 function logAnalyze(stage, payload = {}) {
@@ -155,7 +152,7 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
   }
 }
 
-async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult }) {
+async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision }) {
   if (
     process.env.NODE_ENV !== "development" ||
     process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN !== "1"
@@ -171,8 +168,9 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
     ]);
     const baselineResponseShapeSnapshot = snapshotContract.buildBaselineResponseShapeSnapshot(responsePayload);
     const baselineRecommendationSnapshot = snapshotContract.buildBaselineRecommendationSnapshot(recommendationResult);
-    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot([]);
-    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot([]);
+    const policyShadow = decision?.diagnostics?.evaluatorBoundaryPolicyShadow || null;
+    const shadowBoundaryHintSnapshot = snapshotContract.buildShadowBoundaryHintSnapshot(policyShadow || []);
+    const shadowReceiverSnapshot = snapshotContract.buildShadowReceiverSnapshot(policyShadow || []);
     const comparisonSnapshot = snapshotContract.buildShadowComparisonSnapshot({
       baselineResponseShapeSnapshot,
       baselineRecommendationSnapshot,
@@ -201,7 +199,7 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
       return;
     }
 
-    await artifactWriter.writeShadowBoundaryDryRunArtifact({
+    const artifactForWrite = {
       artifact: {
         ...artifact,
         routeInvoked: true,
@@ -212,17 +210,68 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
           syntheticTreatedAsActualEvidence: false
         },
         limitations: [
-          "phase39_wiring_only_boundary_runtime_not_connected",
-          "evaluator_runtime_not_connected",
-          "candidate_policy_runtime_not_connected",
+          policyShadow ? "phase46_policy_shadow_execution" : "phase39_wiring_only_boundary_runtime_not_connected",
+          policyShadow ? "evaluator_policy_shadow_only" : "evaluator_runtime_not_connected",
+          policyShadow ? "candidate_policy_receiver_shadow_only" : "candidate_policy_runtime_not_connected",
           "api_response_not_modified",
           "recommendation_result_not_modified",
           "supabase_write_not_executed"
         ]
       }
-    });
+    };
+    await artifactWriter.writeShadowBoundaryDryRunArtifact(artifactForWrite);
+    if (policyShadow) {
+      await artifactWriter.writeLocalShadowPolicyEvidence({
+        artifact: artifactForWrite.artifact,
+        policyShadow
+      });
+    }
   } catch {
     console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
+  }
+}
+
+async function captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1" ||
+    !resolveLocalShadowProviderStub().enabled
+  ) {
+    return;
+  }
+
+  try {
+    const { writeLocalShadowRecommendationEvidence } = await import("@/lib/shadow-boundary-dry-run-artifact-writer");
+    const result = await writeLocalShadowRecommendationEvidence({ recommendationResult });
+
+    if (!result.written) {
+      console.warn("[analyze] local-shadow-recommendation-evidence:skipped", {
+        reason: result.skipReason || "unknown"
+      });
+    }
+  } catch {
+    console.warn("[analyze] local-shadow-recommendation-evidence:non-blocking-failure");
+  }
+}
+
+async function captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1" ||
+    !resolveLocalShadowProviderStub().enabled
+  ) {
+    return;
+  }
+
+  try {
+    const { writeLocalActualRuntimeEvidence } = await import("@/lib/shadow-boundary-dry-run-artifact-writer");
+    await writeLocalActualRuntimeEvidence({
+      policyRuntime: decision?.diagnostics?.evaluatorBoundaryPolicyRuntime || null,
+      candidateSource: decision?.diagnostics?.candidateSource || null,
+      recommendationResult
+    });
+  } catch {
+    console.warn("[analyze] local-actual-runtime-evidence:non-blocking-failure");
   }
 }
 
@@ -1094,39 +1143,84 @@ function buildFreeDecisionPayload(decision) {
 }
 
 async function fetchOpenAiJson({ apiKey, body, stage }) {
-  const response = await fetch(OPENAI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
+  const startedAt = Date.now();
+  let response;
+
+  try {
+    response = await fetch(OPENAI_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+  } catch {
+    logProviderRuntimeEvent({
+      stage,
+      status: null,
+      ok: false,
+      provider: "openai",
+      model: body?.model,
+      durationMs: Date.now() - startedAt,
+      errorCategory: "request_failed"
+    });
+    throw new Error("Provider request failed.");
+  }
 
   const payload = await readOpenAiResponse(response);
 
-  logAnalyze(stage, {
-    status: payload.status,
-    ok: payload.ok,
-    preview: previewText(payload.data?.error?.message || payload.data?.error || payload.rawText)
-  });
-
   if (!payload.ok) {
-    throw new Error(
-      payload.data?.error?.message ||
-      payload.data?.error ||
-      payload.rawText ||
-      `OpenAI failed (${payload.status}).`
-    );
+    logProviderRuntimeEvent({
+      stage,
+      status: payload.status,
+      ok: false,
+      provider: "openai",
+      model: body?.model,
+      durationMs: Date.now() - startedAt,
+      errorCategory: "http_error"
+    });
+    throw new Error(`Provider request failed (${payload.status}).`);
   }
 
   const content = extractTextContent(payload.data?.choices?.[0]?.message?.content);
 
   if (!content) {
+    logProviderRuntimeEvent({
+      stage,
+      status: payload.status,
+      ok: false,
+      provider: "openai",
+      model: body?.model,
+      durationMs: Date.now() - startedAt,
+      errorCategory: "empty_response"
+    });
     throw new Error("OpenAI returned empty content.");
   }
 
-  return safeParse(content);
+  try {
+    const parsed = safeParse(content);
+    logProviderRuntimeEvent({
+      stage,
+      status: payload.status,
+      ok: true,
+      provider: "openai",
+      model: body?.model,
+      durationMs: Date.now() - startedAt
+    });
+    return parsed;
+  } catch {
+    logProviderRuntimeEvent({
+      stage,
+      status: payload.status,
+      ok: false,
+      provider: "openai",
+      model: body?.model,
+      durationMs: Date.now() - startedAt,
+      errorCategory: "invalid_response"
+    });
+    throw new Error("Provider returned invalid response.");
+  }
 }
 
 async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model, formInput }) {
@@ -1372,6 +1466,15 @@ export async function POST(request) {
       process.env.NODE_ENV === "development" && process.env.FUNCTIONAL_SHADOW_CAPTURE === "1";
 
     const localShadowProviderStub = resolveLocalShadowProviderStub();
+    const evaluatorBoundaryPolicyShadowEnabled =
+      process.env.NODE_ENV === "development" &&
+      process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN === "1" &&
+      process.env.DEV_ONLY_BOUNDARY_POLICY_SHADOW === "1" &&
+      localShadowProviderStub.enabled;
+    const localActualRuntimeEvidenceEnabled =
+      process.env.NODE_ENV === "development" &&
+      process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE === "1" &&
+      localShadowProviderStub.enabled;
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
@@ -1382,14 +1485,6 @@ export async function POST(request) {
       imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
     }
 
-    logAnalyze("request:prepared", {
-      hasApiKey: Boolean(apiKey),
-      isPremium,
-      locale,
-      model,
-      mainConcern: formInput.mainConcern,
-      skinType: formInput.skinType
-    });
     if (process.env.NODE_ENV !== "production") {
       logAnalyze(
         "openai-env:diagnostic",
@@ -1424,7 +1519,8 @@ export async function POST(request) {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
         photoNotice = copy.photoFallbackNotice;
         logAnalyze("photo-evidence:fallback", {
-          message: previewDiagnosticText(photoError instanceof Error ? photoError.message : String(photoError))
+          ok: false,
+          errorCategory: "fallback_used"
         });
       }
     } else {
@@ -1442,7 +1538,8 @@ export async function POST(request) {
       photoAnalysis,
       currentProducts,
       currentProductSnapshots,
-      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled
+      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
+      includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
 
     let explanationNotice = "";
@@ -1463,7 +1560,8 @@ export async function POST(request) {
       } catch (explanationError) {
         explanationNotice = copy.explanationFallbackNotice;
         logAnalyze("product-explanations:fallback", {
-          message: previewDiagnosticText(explanationError instanceof Error ? explanationError.message : String(explanationError))
+          ok: false,
+          errorCategory: "fallback_used"
         });
       }
     } else {
@@ -1566,14 +1664,15 @@ export async function POST(request) {
       decision
     });
 
-    await runShadowBoundaryDryRunIfEnabled({
-      responsePayload,
-      recommendationResult: {
-        topPick: publicDecision.topPick,
-        supportingProducts: premiumReport?.supportingProducts,
-        budgetAlternatives: premiumReport?.budgetAlternatives
-      }
-    });
+    const recommendationResult = {
+      topPick: publicDecision.topPick,
+      supportingProducts: premiumReport?.supportingProducts,
+      budgetAlternatives: premiumReport?.budgetAlternatives
+    };
+
+    await captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult });
+    await captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommendationResult });
+    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });
 
     return response;
   } catch (error) {
@@ -1600,9 +1699,7 @@ export async function POST(request) {
       ), analysisGuard);
     }
 
-    logAnalyze("request:error", {
-      message: error instanceof Error ? error.message : String(error)
-    });
+    logAnalyze("request:error", { ok: false, errorCategory: "route_processing_failed" });
 
     return applyAnalysisGuardCookies(NextResponse.json(
       {

@@ -2388,3 +2388,106 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Harness: setup/teardown and comparison verifiers now recognize a prepared local preflight without invoking `/api/analyze`.
 - Verification result: static target, syntax, provider seam, bootstrap markers, and fail-closed setup passed; Docker CLI/daemon is unavailable, so no local stack, DB command, observer installation, seed replay, cleanup replay, route request, provider call, or hosted target access occurred.
 - Final blocker: `blocked_local_bootstrap_contract_gap` due unavailable Docker runtime; fresh local reproducibility remains unverified.
+
+### 2026-07-13 / Local shadow setup diagnostics hardening
+
+- Replaced full Supabase CLI stdout equality with parsed seed count and digest summaries; count verification and deterministic digest verification are independent predicates.
+- Added stage-specific setup reason codes, per-command exit/timeout/sanitized-stderr evidence, and structured observer summary parsing.
+- Hardened provider seam checks against line-ending and indentation changes while preserving local-only and hosted/production fail-closed gates.
+- Teardown can resolve the safe run directory from setup evidence when no explicit directory is supplied.
+- Validation was static only: no Supabase, Docker, setup, teardown, RPC, route, verifier, or build command was executed.
+
+### 2026-07-13 / Phase 45 controlled local route comparison implementation
+
+- Replaced the preparation-only comparison placeholder with a fail-closed runner for one flag-off and one flag-on route invocation against the disposable loopback stack.
+- Both conditions require the existing local provider stub; the shadow flag is the only intended runtime difference. Evidence retains response shape and recommendation identifiers only, plus normalized DB/Storage/audit counts.
+- The runner resets between conditions, uses setup evidence for teardown, validates flag-on local artifacts, and fails closed when the public response cannot expose supporting/budget recommendation groups.
+- No runtime command was executed while implementing the runner. Hosted targets, external providers, evaluator runtime, CandidatePolicy runtime, route response shape, migrations, and product data remain outside scope.
+
+### 2026-07-13 / Phase 45 local recommendation evidence surface
+
+- Added a dev-only local recommendation snapshot for both comparison conditions under the verified setup run directory. It stores only product IDs and array order for top-pick, supporting, and budget groups.
+- Capture requires the existing local provider stub, local/disposable marker, loopback target, UUID comparison ID, and an allowlisted flag condition. Writes are exclusive and non-blocking to the route.
+
+### 2026-07-13 / Phase 46.1 disabled-by-default policy shadow execution
+
+- Added an engine-owned evaluator -> boundary collapsed hint -> CandidatePolicy receiver shadow path for the existing scored candidates. The route only applies the development/local gates and writes sanitized local evidence after normal response construction.
+- Policy shadow execution requires both `DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN=1` and `DEV_ONLY_BOUNDARY_POLICY_SHADOW=1`, plus the existing local provider-stub, disposable-marker, and loopback protections. Disabled paths neither evaluate nor dynamically load the policy shadow helper.
+- The local policy artifact records candidate IDs, decision codes, safe aggregate counts, and independent safety violations only. It never changes CandidatePolicy exposure, recommendations, response payloads, DB/Storage, evaluator runtime, or CandidatePolicy runtime.
+- This phase was statically reviewed only. No Supabase, Docker, setup, route, comparison runner, verifier, build, or hosted command was executed.
+- The controlled comparison runner uses those snapshots instead of treating absent public response groups as empty arrays; the verifier checks the sanitized schema, file counts, run identity, expected path, and residual-file observation captured before teardown.
+- No Supabase, Docker, setup, teardown, route, verifier, build, hosted, or provider command was executed for this implementation.
+
+### 2026-07-14 / Phase 46.2 default-off CandidatePolicy runtime exposure integration
+
+- Added an engine-owned, default-off evaluator-to-collapsed-hint-to-receiver runtime path before top-pick, supporting-product, and budget-alternative selection.
+- `ENABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` is required; `DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` is the independent immediate kill switch. The disabled path does not dynamically import or execute policy modules.
+- Runtime diagnostics remain separate from Phase 46.1 shadow diagnostics. They record candidate IDs, receiver decisions, exposure groups, aggregate counts, and rejection reason codes only.
+- Receiver-approved non-unchanged outcomes are removed from the visible candidate pool. Unknown receiver output and invariant violations fail closed; no response schema, DB, Storage, migration, route decision logic, evaluator scoring, or CandidatePolicy scoring was changed.
+- This phase is static only. No Supabase, Docker, setup, teardown, route, comparison runner, verifier, build, hosted, or provider command was executed.
+
+### 2026-07-14 / Phase 46.2 actual CandidatePolicy runtime evidence
+
+- Added isolated local comparison artifacts under `route-comparison/<comparisonRunId>/runtime/` for both flag states. They contain candidate IDs, receiver decision codes, exclusion reasons, aggregate safety counts, and recommendation ID/order snapshots only.
+- Shadow policy artifacts remain under `policy/`; actual runtime artifacts use a distinct evidence type, schema, directory, and durable-copy path.
+- The comparison runner enables the runtime flag only for flag-on, distinguishes policy-driven recommendation deltas from unexpected deltas, and the verifier independently validates durable raw runtime evidence and receiver-to-exposure mappings.
+- This phase is static only. No Supabase, Docker, setup, teardown, route, comparison runner, verifier, build, hosted, or provider command was executed.
+
+### 2026-07-14 / Phase 46.3a production rollout observability contract
+
+- Added a default-off production canary control contract with `DISABLE` precedence and an explicit deployment-canary scope requirement for production enablement.
+- Added non-blocking aggregate runtime telemetry for enabled/executed/connected state, candidate counts, unexpected receiver/exposure count, five safety counts, runtime error/latency aggregates, and kill-switch suppression evidence. Product and user details, request/response bodies, URLs, and credentials are rejected by an allowlisted schema.
+- Added a synthetic baseline/canary stop contract covering safety violations, unexpected receiver/recommendation/DB/Storage deltas, response-schema changes, forbidden fields, SLO regression, and execution after disablement.
+- Updated current state to the observed Phase 46.2 local PASS. No production flag, hosted environment, route, runner, verifier, build, Supabase, Docker, DB, Storage, or provider command was executed.
+
+### 2026-07-14 / Phase 46.3b synthetic canary and kill-switch propagation contract
+
+- Added an aggregate-input synthetic baseline/canary probe runner contract. It compares response-schema and recommendation signatures, DB/Storage mutation counts, error rates, P95 latency, runtime telemetry, and the shared synthetic fixture identity without storing response or recommendation details.
+- Added bounded kill-switch propagation evidence and a verifier contract requiring a post-disable request with enabled/executed/connected all false before the timeout. Canary stop reasons produce an explicit rollback verdict.
+- The contract is not connected to deployment tooling, hosted environment changes, production traffic, route execution, Supabase, Docker, DB, Storage, or provider calls. No runner, verifier, build, or hosted command was executed.
+
+### 2026-07-14 / Phase 46.3c production deployment dry-run contract
+
+- Added a sanitized Vercel/GitHub deployment-plan generator and short canary runbook. The plan covers default-off baseline, Preview validation, separately approved `main` production deployment, DISABLE-first rollback, and prior known-good deployment fallback.
+- The plan reuses the synthetic probe, kill-switch propagation verifier, and production-observability verifier. It makes no API calls and cannot deploy, edit environment variables, change traffic, or activate production runtime.
+- Weighted traffic splitting and the concrete deployment-level canary isolation mechanism remain unconfirmed; the plan treats them as a stop condition rather than assuming a rollout percentage or adapter behavior.
+
+### 2026-07-14 / CandidatePolicy Preview kill-switch probe
+
+- Added a Preview-only internal GET probe for the `codex/local-shadow-runtime-validation` branch. It requires an explicit probe flag and otherwise returns 404 without emitting telemetry.
+- The probe reuses the aggregate CandidatePolicy runtime observability contract to report enable/disable/scope state and emits the same sanitized telemetry to `[candidate-policy-runtime]` without executing evaluator, CandidatePolicy, provider, Supabase, DB, or Storage code.
+- Production and `main` Preview deployments remain fail-closed. The public `/api/analyze` route, recommendation output, deployment settings, and environment values were not changed.
+- Focused probe and production-observability contract checks passed. `npm run build` was attempted once but produced no output before the 124-second command timeout, so build completion remains unverified and was not retried.
+
+### 2026-07-14 / CandidatePolicy Preview runtime execution probe
+
+- Added a Preview-only internal GET probe that dynamically executes the actual evaluator boundary policy runtime against the existing synthetic contract candidate shape and emits aggregate telemetry only.
+- The probe requires the validation branch, explicit probe and runtime flags, deployment-canary scope and marker, and no active DISABLE switch. Every other environment returns 404 before runtime import or telemetry emission.
+- No `/api/analyze`, provider, Supabase, DB, Storage, public response, deployment setting, or production runtime path was changed or invoked.
+- Focused probe and production-observability contract tests, JavaScript syntax checks, and `npm run build` passed.
+
+### 2026-07-14 / Production environment Preview readiness probe
+
+- Added a Preview-only internal readiness probe for the validation branch. It reports only boolean contract checks and stop-reason field names for the analysis guard secret, anonymous grant secret, and explicit `beta_open` premium mode.
+- Secret checks require canonical base64url values representing at least 32 bytes, distinct guard/grant values, and no reuse of the legacy write token, Supabase service-role, or OpenAI secrets. Secret values, lengths, hashes, prefixes, and suffixes are never returned or logged.
+- Production, `main`, other branches, and missing probe flags return 404 without logging. The probe does not call providers, Supabase, DB, Storage, RPC, or public API routes and does not change deployment environment variables.
+- Initial focused verification falsely treated the required `SUPABASE_SERVICE_ROLE_KEY` comparison name as a Supabase call. The verifier was narrowed to actual import/client/call patterns before rerunning; the readiness contract itself was unchanged.
+
+### 2026-07-14 / Shadow route static verifier maintenance
+
+- Corrected stale route static checks that assumed one global artifact-writer import and an obsolete premium-session assignment shape. Current imports must now occur exactly within the three recognized development/local guarded helpers, and insertion boundaries are validated in their current response, guard-completion, recommendation-evidence, and return order.
+- Expanded verifier integrity controls to reject an import placed before its guard and a dry-run call moved before response construction. Existing controls were updated to current call shapes and made line-ending independent where needed.
+- Runtime code, route behavior, flags, probes, response contracts, and environment-variable contracts were unchanged. Required contract, CandidatePolicy receiver, observability, Preview probe, and kill-switch focused checks passed.
+- During verification, two negative-control mutation targets were found stale or CRLF-sensitive. Only the synthetic mutation builders were corrected; baseline safety checks were not relaxed.
+
+### 2026-07-14 / Run-scoped synthetic canary evidence
+
+- Preserved the legacy synthetic canary evidence and exclusive-create collision behavior while requiring a safe explicit run ID for every fresh probe and propagation verification.
+- Fresh evidence now writes under `tmp/evaluator-boundary-policy-synthetic-canary-runs/<runId>/` with `wx`; traversal, absolute paths, whitespace, control characters, and non-allowlisted run IDs are rejected.
+- A sandbox negative-control confirmed that reusing the same run ID still fails with `EEXIST`. The fresh run completed once with the existing aggregate fixture, passed propagation and related policy verifiers, and did not reference or overwrite the legacy evidence.
+
+### 2026-07-14 / Production provider log sanitization
+
+- Replaced `/api/analyze` and `/api/face-reading` provider response previews, content snippets, and raw caught errors with a shared allowlisted aggregate event: stage, HTTP status, ok, provider/model, duration, and fixed error category only.
+- Provider responses remain in memory only for existing parsing and fallback behavior; no public response, provider request, DB, Storage, or deployment behavior changed.
+- Added a negative-control verifier that drops attempted preview, raw response, prompt, and credential fields from the provider log event and rejects direct preview/content logging in both routes.
