@@ -16,7 +16,7 @@
 
 ## Phase 46.3c Reference
 
-Canary 계획은 다음 순서를 따른다: Preview Deployment에서 synthetic probe와 aggregate observability를 확인하고, 승인된 범위에서만 Production 승격을 검토한다. kill switch 전파가 확인되지 않거나 safety/response/recommendation/DB/Storage 조건이 깨지면 승격을 중단하고 이전 정상 deployment로 rollback한다.
+Canary 계획은 Preview Deployment에서 synthetic probe와 aggregate observability를 확인한 뒤, 별도 승인된 범위에서만 `main` push 기반 Production Deployment를 검토한다. weighted traffic split은 미확정이므로 가정하지 않는다. kill switch 전파가 확인되지 않거나 safety/response/recommendation/DB/Storage 조건이 깨지면 배포 진행을 중단하고 이전 정상 deployment로 rollback한다. 실행 가능한 dry-run 단계는 [production canary runbook](../runbooks/evaluator-boundary-policy-production-canary-dry-run.md)에 고정한다.
 
 이 문서는 배포 계획을 명문화할 뿐이며, 실제 배포나 환경변수 변경을 수행하지 않는다.
 

@@ -2289,3 +2289,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Added an aggregate-input synthetic baseline/canary probe runner contract. It compares response-schema and recommendation signatures, DB/Storage mutation counts, error rates, P95 latency, runtime telemetry, and the shared synthetic fixture identity without storing response or recommendation details.
 - Added bounded kill-switch propagation evidence and a verifier contract requiring a post-disable request with enabled/executed/connected all false before the timeout. Canary stop reasons produce an explicit rollback verdict.
 - The contract is not connected to deployment tooling, hosted environment changes, production traffic, route execution, Supabase, Docker, DB, Storage, or provider calls. No runner, verifier, build, or hosted command was executed.
+
+### 2026-07-14 / Phase 46.3c production deployment dry-run contract
+
+- Added a sanitized Vercel/GitHub deployment-plan generator and short canary runbook. The plan covers default-off baseline, Preview validation, separately approved `main` production deployment, DISABLE-first rollback, and prior known-good deployment fallback.
+- The plan reuses the synthetic probe, kill-switch propagation verifier, and production-observability verifier. It makes no API calls and cannot deploy, edit environment variables, change traffic, or activate production runtime.
+- Weighted traffic splitting and the concrete deployment-level canary isolation mechanism remain unconfirmed; the plan treats them as a stop condition rather than assuming a rollout percentage or adapter behavior.
