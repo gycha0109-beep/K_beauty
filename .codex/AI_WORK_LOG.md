@@ -2302,3 +2302,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - The probe reuses the aggregate CandidatePolicy runtime observability contract to report enable/disable/scope state and emits the same sanitized telemetry to `[candidate-policy-runtime]` without executing evaluator, CandidatePolicy, provider, Supabase, DB, or Storage code.
 - Production and `main` Preview deployments remain fail-closed. The public `/api/analyze` route, recommendation output, deployment settings, and environment values were not changed.
 - Focused probe and production-observability contract checks passed. `npm run build` was attempted once but produced no output before the 124-second command timeout, so build completion remains unverified and was not retried.
+
+### 2026-07-14 / CandidatePolicy Preview runtime execution probe
+
+- Added a Preview-only internal GET probe that dynamically executes the actual evaluator boundary policy runtime against the existing synthetic contract candidate shape and emits aggregate telemetry only.
+- The probe requires the validation branch, explicit probe and runtime flags, deployment-canary scope and marker, and no active DISABLE switch. Every other environment returns 404 before runtime import or telemetry emission.
+- No `/api/analyze`, provider, Supabase, DB, Storage, public response, deployment setting, or production runtime path was changed or invoked.
+- Focused probe and production-observability contract tests, JavaScript syntax checks, and `npm run build` passed.
