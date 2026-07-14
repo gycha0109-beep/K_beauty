@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-07-14 / SEC-06 saved_reports premium write boundary implementation
+
+- Branch: `feature/premium-beta-flow`
+- Scope: closed the client-origin premium saved-report write path through the free-only save route, authoritative premium persistence in the full-report server path, a saved_reports RLS/column-privilege migration, static verifiers, and an isolated local role matrix. No production route, migration, policy, verifier, or test was changed outside the approved SEC-06 implementation and harness scope.
+- Boundary: authenticated users can create only their own permanent free share rows and update only the title of existing free rows. Premium rows are persisted only from the verified `premium_report_sessions` DB payload through the server-only admin client. Owner read/delete compatibility for existing free and premium rows remains intact.
+- Harness correction: R26/R29/R30/R33/R34 use top-level data-modifying CTEs with transaction-local affected-row capture. All 23 expected denials now require exact SQLSTATE `42501`, NULL expected message, and their prior descriptions. The runner executes psql with normalized TAP output and rejects a missing/duplicate plan, missing/duplicate assertion number, `not ok`, bailout, PostgreSQL ERROR/FATAL/PANIC output, or non-zero psql exit.
+- Validation: source/staged migration SHA equality and local reset passed; migration SHA-256 is `EEC0F0FD2773EB9157D95C99D539746EA574544D11E98B84C970431BAC5403DC`. The isolated role matrix passed `56/56`; cleanup left zero project-scoped containers, volumes, TEMP workdirs, and relevant processes. Saved-report boundary, analysis RLS, and premium release verifiers, related JS syntax, PowerShell parsing, build, diff check, and credential-pattern scan passed.
+- Data/security: no linked/remote access, hosted migration apply, provider call, credential exposure, commit, or push. Signing-secret fallback, premium session user/resource binding, session single-use/concurrent replay, and historical forged premium-row identification remain excluded residual findings.
+- Final status: `FULL_PASS` for SEC-06 implementation and isolated local verification. Hosted migration/RLS verification and an independent commit gate remain required before commit.
+- Next work: Sol independent SEC-06 commit gate; do not commit before that review.
+
 ### 2026-07-13 / Public Result Read Boundary hardening
 
 - Branch: `codex/survey-input-contract-refactor`

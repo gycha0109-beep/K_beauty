@@ -14,6 +14,7 @@ import {
   updatePremiumReportSession,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
+import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
 
 const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
@@ -67,6 +68,16 @@ function getPremiumUnavailableResponse() {
       reason: "premium_unavailable"
     },
     { status: 403 }
+  );
+}
+
+function getPremiumPersistenceFailedResponse(code = "premium_save_failed") {
+  return NextResponse.json(
+    {
+      success: false,
+      error: code
+    },
+    { status: 503 }
   );
 }
 
@@ -146,12 +157,19 @@ async function loadSavedPremiumReport({ supabase, userId, savedReportId }) {
     .maybeSingle();
 }
 
-async function persistPremiumSavedReport({ supabase, user, sessionId, premiumReport, locale }) {
-  if (!supabase || !isAccountUser(user) || !sessionId || !premiumReport || typeof premiumReport !== "object") {
+async function persistPremiumSavedReport({ adminSupabase, user, sessionId, authoritativePremiumReport, locale }) {
+  if (
+    !adminSupabase ||
+    !isAccountUser(user) ||
+    !sessionId ||
+    !authoritativePremiumReport ||
+    typeof authoritativePremiumReport !== "object" ||
+    Array.isArray(authoritativePremiumReport)
+  ) {
     return { ok: false, code: "persist_not_available" };
   }
 
-  const existing = await supabase
+  const existing = await adminSupabase
     .from("saved_reports")
     .select("id")
     .eq("user_id", user.id)
@@ -174,13 +192,13 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     source_session_id: sessionId,
     title: locale === "en" ? "Premium routine report" : "프리미엄 루틴 리포트",
     report_version: "premium-v1",
-    premium_report: premiumReport,
+    premium_report: authoritativePremiumReport,
     free_result: null,
-    face_lab: premiumReport.faceLabSummary || premiumReport.faceLab || null
+    face_lab: authoritativePremiumReport.faceLabSummary || authoritativePremiumReport.faceLab || null
   };
 
   if (existing.data?.id) {
-    const { error } = await supabase
+    const { data, error } = await adminSupabase
       .from("saved_reports")
       .update({
         premium_report: payload.premium_report,
@@ -189,17 +207,22 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
         report_version: payload.report_version
       })
       .eq("id", existing.data.id)
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .eq("report_type", "premium")
+      .eq("source_type", "premium_report_session")
+      .eq("source_session_id", sessionId)
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
+    if (error || !data?.id) {
       console.error("[full-report] saved premium update failed", serializeSupabaseError(error));
       return { ok: false, code: "update_failed" };
     }
 
-    return { ok: true, savedReportId: existing.data.id };
+    return { ok: true, savedReportId: data.id };
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from("saved_reports")
     .insert(payload)
     .select("id")
@@ -324,15 +347,21 @@ export async function POST(request) {
     ...storedPremiumReport,
     faceLabSummary
   };
+  let authoritativePremiumReport = premiumSession.payload.premiumReport;
 
   if (shouldPersist || currentProductsResult.changed) {
     const updateResult = await updatePremiumReportSession(premiumCookie, {
       ...responsePremiumReport
     });
 
-    if (!updateResult.ok && process.env.NODE_ENV !== "production") {
-      console.warn("[full-report] premium session update skipped", updateResult.code);
+    if (!updateResult.ok || !updateResult.payload?.premiumReport) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[full-report] premium session update failed", updateResult.code);
+      }
+      return getPremiumPersistenceFailedResponse("premium_session_update_failed");
     }
+
+    authoritativePremiumReport = updateResult.payload.premiumReport;
   }
 
   if (userSupabase && isAccountUser(user)) {
@@ -344,13 +373,18 @@ export async function POST(request) {
       console.warn("[full-report] profile upsert before premium save skipped", error?.message || error);
     });
 
-    await persistPremiumSavedReport({
-      supabase: userSupabase,
+    const adminSupabase = createSupabaseAdminClient();
+    const persistResult = await persistPremiumSavedReport({
+      adminSupabase,
       user,
       sessionId: premiumSession.payload.sessionId,
-      premiumReport: responsePremiumReport,
+      authoritativePremiumReport,
       locale
     });
+
+    if (!persistResult.ok) {
+      return getPremiumPersistenceFailedResponse();
+    }
   }
 
   if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {

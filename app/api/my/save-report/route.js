@@ -11,8 +11,21 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const REPORT_TYPES = new Set(["free", "premium"]);
-const SOURCE_TYPES = new Set(["session", "premium_report_session", "share", "manual"]);
+const FREE_REPORT_TYPE = "free";
+const FREE_REPORT_VERSION = "free-v1";
+const ALLOWED_SAVE_REPORT_KEYS = new Set([
+  "reportType",
+  "locale",
+  "sourceType",
+  "sourceSessionId",
+  "reportVersion",
+  "title",
+  "freeResult",
+  "faceLab",
+  "surveySnapshot",
+  "photoAnalysis",
+  "photo_analysis"
+]);
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -20,6 +33,47 @@ function isPlainObject(value) {
 
 function asPlainObject(value) {
   return isPlainObject(value) ? value : {};
+}
+
+function hasOwn(source, key) {
+  return Object.prototype.hasOwnProperty.call(source, key);
+}
+
+function getFreeSaveValidationError(body) {
+  const unknownKey = Object.keys(body).find((key) => !ALLOWED_SAVE_REPORT_KEYS.has(key));
+
+  if (unknownKey) {
+    return "unsupported_save_report_field";
+  }
+
+  if (body.reportType !== FREE_REPORT_TYPE) {
+    return "invalid_report_type";
+  }
+
+  if (!isPlainObject(body.freeResult) || Object.keys(body.freeResult).length === 0) {
+    return "invalid_free_result";
+  }
+
+  if (hasOwn(body.freeResult, "premiumReport") || hasOwn(body.freeResult, "premium_report")) {
+    return "premium_payload_not_allowed";
+  }
+
+  if (body.sourceType !== undefined && body.sourceType !== "session") {
+    return "invalid_source_type";
+  }
+
+  if (
+    body.sourceSessionId !== undefined &&
+    (typeof body.sourceSessionId !== "string" || body.sourceSessionId.trim().length === 0)
+  ) {
+    return "invalid_source_session_id";
+  }
+
+  if (body.reportVersion !== undefined && body.reportVersion !== FREE_REPORT_VERSION) {
+    return "invalid_report_version";
+  }
+
+  return null;
 }
 
 function getPath(source, path) {
@@ -160,22 +214,20 @@ function buildSkinProfilePayload({ userId, body }) {
   };
 }
 
-function buildSavedReportPayload({ userId, skinProfileId, body }) {
+function buildSavedReportPayload({ userId, skinProfileId, shareId, body }) {
   const freeResult = asPlainObject(body.freeResult);
   const faceLab = asPlainObject(body.faceLab);
-  const reportType = REPORT_TYPES.has(body.reportType) ? body.reportType : "free";
-  const sourceType = SOURCE_TYPES.has(body.sourceType) ? body.sourceType : "session";
 
   return {
     user_id: userId,
     skin_profile_id: skinProfileId,
-    report_type: reportType,
-    source_type: sourceType,
-    source_session_id: pickString(body.sourceSessionId, body.source_session_id),
+    report_type: FREE_REPORT_TYPE,
+    source_type: "share",
+    source_session_id: shareId,
     title: pickString(body.title, freeResult.title, "Free skin report"),
-    report_version: pickString(body.reportVersion, body.report_version, "free-v1"),
-    free_result: reportType === "free" ? freeResult : null,
-    premium_report: reportType === "premium" ? (body.premiumReport ?? freeResult.premiumReport ?? null) : null,
+    report_version: FREE_REPORT_VERSION,
+    free_result: freeResult,
+    premium_report: null,
     face_lab: Object.keys(faceLab).length ? faceLab : null
   };
 }
@@ -324,6 +376,12 @@ export async function POST(request) {
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
   }
 
+  const validationError = getFreeSaveValidationError(body);
+
+  if (validationError) {
+    return NextResponse.json({ error: validationError }, { status: 400 });
+  }
+
   const profileResult = await upsertProfileForUser({
     supabase,
     user,
@@ -407,18 +465,12 @@ export async function POST(request) {
   const savedReportPayload = buildSavedReportPayload({
     userId: user.id,
     skinProfileId: skinProfile.id,
+    shareId: privateShareResult.share_id,
     body
   });
-  const linkedSavedReportPayload = privateShareResult?.share_id
-    ? {
-        ...savedReportPayload,
-        source_type: "share",
-        source_session_id: privateShareResult.share_id
-      }
-    : savedReportPayload;
   const { data: savedReport, error: savedReportError } = await supabase
     .from("saved_reports")
-    .insert(linkedSavedReportPayload)
+    .insert(savedReportPayload)
     .select("id")
     .single();
 

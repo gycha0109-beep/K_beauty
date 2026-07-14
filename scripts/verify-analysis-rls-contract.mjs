@@ -142,6 +142,31 @@ const anonymousRestriction = read(anonymousRestrictionPath);
   "Users can read own routine logs"
 ].forEach((pattern) => assertIncludes(anonymousRestriction, pattern, "anonymous restriction migration"));
 
+const savedReportBoundaryPath = findMigration("sec_06_saved_reports_premium_write_boundary");
+assert(savedReportBoundaryPath, "SEC-06 saved report boundary migration should exist");
+const savedReportBoundary = read(savedReportBoundaryPath);
+
+[
+  'drop policy if exists "Users can insert own saved reports" on public.saved_reports',
+  'drop policy if exists "Users can update own saved reports" on public.saved_reports',
+  'create policy "Users can insert own free saved reports"',
+  'create policy "Users can update own free saved report titles"',
+  "report_type = 'free'",
+  "premium_report is null",
+  "jsonb_typeof(free_result) = 'object'",
+  "not (free_result ? 'premiumReport')",
+  "not (free_result ? 'premium_report')",
+  "source_type = 'share'",
+  "revoke all on table public.saved_reports from authenticated",
+  "grant select, insert, delete on table public.saved_reports to authenticated",
+  "grant update (title) on table public.saved_reports to authenticated",
+  "grant select, insert, update, delete on table public.saved_reports to service_role"
+].forEach((pattern) => assertIncludes(savedReportBoundary, pattern, "SEC-06 saved report boundary"));
+
+deploymentVerification.push(
+  "SEC-06 saved_reports write-boundary migration exists in the repository; verify the target environment has applied it before relying on free-only authenticated writes."
+);
+
 const premiumSessionMigrationPath = findMigration("create_premium_report_sessions");
 assert(premiumSessionMigrationPath, "premium report session migration should exist");
 const premiumSessionMigration = read(premiumSessionMigrationPath);
@@ -242,11 +267,18 @@ const resultsRoute = read("app/api/results/route.js");
 const saveReportRoute = read("app/api/my/save-report/route.js");
 [
   "!isAccountUser(user)",
+  "getFreeSaveValidationError(body)",
+  "body.reportType !== FREE_REPORT_TYPE",
+  'hasOwn(body.freeResult, "premiumReport")',
+  'hasOwn(body.freeResult, "premium_report")',
   "userId: user.id",
   '.from("skin_profiles")',
   '.from("saved_reports")',
   "createPrivateShareResult",
-  "isPublic: false"
+  "isPublic: false",
+  'source_type: "share"',
+  "source_session_id: shareId",
+  "premium_report: null"
 ].forEach((pattern) => assertIncludes(saveReportRoute, pattern, "my save report route"));
 
 const fullReportRoute = read("app/api/full-report/route.js");
@@ -255,7 +287,11 @@ const fullReportRoute = read("app/api/full-report/route.js");
   '.eq("id", savedReportId)',
   '.eq("user_id", userId)',
   '.eq("report_type", "premium")',
-  "isAccountUser(user)"
+  "isAccountUser(user)",
+  "createSupabaseAdminClient",
+  "authoritativePremiumReport",
+  "adminSupabase",
+  "if (!persistResult.ok)"
 ].forEach((pattern) => assertIncludes(fullReportRoute, pattern, "full report route"));
 
 const checkInRoute = read("app/api/my/check-in/route.js");
