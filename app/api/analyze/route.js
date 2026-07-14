@@ -257,6 +257,27 @@ async function captureLocalShadowRecommendationEvidenceIfEnabled({ recommendatio
   }
 }
 
+async function captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommendationResult }) {
+  if (
+    process.env.NODE_ENV !== "development" ||
+    process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE !== "1" ||
+    !resolveLocalShadowProviderStub().enabled
+  ) {
+    return;
+  }
+
+  try {
+    const { writeLocalActualRuntimeEvidence } = await import("@/lib/shadow-boundary-dry-run-artifact-writer");
+    await writeLocalActualRuntimeEvidence({
+      policyRuntime: decision?.diagnostics?.evaluatorBoundaryPolicyRuntime || null,
+      candidateSource: decision?.diagnostics?.candidateSource || null,
+      recommendationResult
+    });
+  } catch {
+    console.warn("[analyze] local-actual-runtime-evidence:non-blocking-failure");
+  }
+}
+
 function hasAnalyzeResponseShape(payload) {
   return Boolean(
     payload &&
@@ -1408,6 +1429,10 @@ export async function POST(request) {
       process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN === "1" &&
       process.env.DEV_ONLY_BOUNDARY_POLICY_SHADOW === "1" &&
       localShadowProviderStub.enabled;
+    const localActualRuntimeEvidenceEnabled =
+      process.env.NODE_ENV === "development" &&
+      process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE === "1" &&
+      localShadowProviderStub.enabled;
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
@@ -1478,7 +1503,7 @@ export async function POST(request) {
       photoAnalysis,
       currentProducts,
       currentProductSnapshots,
-      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled,
+      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
       includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
 
@@ -1610,6 +1635,7 @@ export async function POST(request) {
     };
 
     await captureLocalShadowRecommendationEvidenceIfEnabled({ recommendationResult });
+    await captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommendationResult });
     await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });
 
     return response;

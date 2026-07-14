@@ -8,6 +8,7 @@ import {
   buildRouteResponseContract,
   compareRouteExecutions,
   createConditionEvidence,
+  readComparisonActualRuntimeEvidence,
   readComparisonPolicyEvidence,
   readComparisonRecommendationEvidence
 } from "./lib/isolated-shadow-route-evidence.mjs";
@@ -58,6 +59,8 @@ async function executeCondition({ fixture, runtime, shadowEnabled, runDirectory,
       ...runtime.env,
       DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN: shadowEnabled ? "1" : "",
       DEV_ONLY_BOUNDARY_POLICY_SHADOW: shadowEnabled ? "1" : "",
+      ENABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME: shadowEnabled ? "1" : "",
+      DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME: "",
       LOCAL_SHADOW_RECOMMENDATION_EVIDENCE: "1",
       LOCAL_SHADOW_RUN_DIRECTORY: runDirectory,
       LOCAL_SHADOW_COMPARISON_RUN_ID: comparisonRunId
@@ -104,6 +107,10 @@ async function executeCondition({ fixture, runtime, shadowEnabled, runDirectory,
   if (!policy.ok) {
     return createConditionEvidence({ routeInvocationCount: 1, httpStatus: route.httpStatus, reasonCode: policy.reasonCode });
   }
+  const actualRuntime = await readComparisonActualRuntimeEvidence({ root: ROOT, runDirectory, comparisonRunId, condition });
+  if (!actualRuntime.ok) {
+    return createConditionEvidence({ routeInvocationCount: 1, httpStatus: route.httpStatus, reasonCode: actualRuntime.reasonCode });
+  }
   return createConditionEvidence({
     routeInvocationCount: 1,
     httpStatus: route.httpStatus,
@@ -112,6 +119,8 @@ async function executeCondition({ fixture, runtime, shadowEnabled, runDirectory,
     recommendationEvidenceMetadata: recommendation.metadata,
     policyEvidence: policy.evidence,
     policyEvidenceMetadata: policy.metadata,
+    actualRuntimeEvidence: actualRuntime.evidence,
+    actualRuntimeEvidenceMetadata: actualRuntime.metadata,
     beforeSnapshot: before.value,
     afterSnapshot: after.value
   });
@@ -126,6 +135,7 @@ async function persistDurableComparisonEvidence({ comparisonRunId, flagOff, flag
   const directory = path.resolve(DURABLE_EVIDENCE_ROOT, comparisonRunId);
   const recommendationDirectory = path.join(directory, "recommendations");
   const policyDirectory = path.join(directory, "policy");
+  const runtimeDirectory = path.join(directory, "runtime");
   if (!isWithinDirectory(directory, DURABLE_EVIDENCE_ROOT)) {
     return { ok: false, reasonCode: "durable_comparison_evidence_path_rejected" };
   }
@@ -133,7 +143,9 @@ async function persistDurableComparisonEvidence({ comparisonRunId, flagOff, flag
   const files = [
     [path.join(recommendationDirectory, "recommendation-flag-off.json"), flagOff.recommendationEvidence],
     [path.join(recommendationDirectory, "recommendation-flag-on.json"), flagOn.recommendationEvidence],
-    [path.join(policyDirectory, "policy-flag-on.json"), flagOn.policyEvidence]
+    [path.join(policyDirectory, "policy-flag-on.json"), flagOn.policyEvidence],
+    [path.join(runtimeDirectory, "runtime-flag-off.json"), flagOff.actualRuntimeEvidence],
+    [path.join(runtimeDirectory, "runtime-flag-on.json"), flagOn.actualRuntimeEvidence]
   ];
   if (files.some(([, evidence]) => !evidence || typeof evidence !== "object")) {
     return { ok: false, reasonCode: "durable_comparison_evidence_missing" };
@@ -142,7 +154,8 @@ async function persistDurableComparisonEvidence({ comparisonRunId, flagOff, flag
   try {
     await Promise.all([
       mkdir(recommendationDirectory, { recursive: true }),
-      mkdir(policyDirectory, { recursive: true })
+      mkdir(policyDirectory, { recursive: true }),
+      mkdir(runtimeDirectory, { recursive: true })
     ]);
     await Promise.all(files.map(([filePath, evidence]) => writeFile(
       filePath,
@@ -161,10 +174,13 @@ async function persistDurableComparisonEvidence({ comparisonRunId, flagOff, flag
       directory: relativeDirectory(directory),
       recommendationDirectory: relativeDirectory(recommendationDirectory),
       policyDirectory: relativeDirectory(policyDirectory),
+      runtimeDirectory: relativeDirectory(runtimeDirectory),
       files: [
         "recommendations/recommendation-flag-off.json",
         "recommendations/recommendation-flag-on.json",
-        "policy/policy-flag-on.json"
+        "policy/policy-flag-on.json",
+        "runtime/runtime-flag-off.json",
+        "runtime/runtime-flag-on.json"
       ]
     },
     recommendationMetadata: {
@@ -180,6 +196,12 @@ async function persistDurableComparisonEvidence({ comparisonRunId, flagOff, flag
       directory: relativeDirectory(policyDirectory),
       expectedFileCount: 1,
       observedFileCount: 1,
+      residualFiles: []
+    },
+    runtimeMetadata: {
+      directory: relativeDirectory(runtimeDirectory),
+      expectedFileCount: 2,
+      observedFileCount: 2,
       residualFiles: []
     }
   };
@@ -197,8 +219,9 @@ function verdictFor({ setupReady, blocker, flagOff, flagOn, comparison, observer
   if (!flagOn.completed) return "blocked_flag_on_route_execution";
   if (!flagOff.providerEvidence.providerStubbed || !flagOn.providerEvidence.providerStubbed) return "blocked_external_provider_isolation";
   if (comparison.responseShapeChanged) return "blocked_response_contract_divergence";
-  if (comparison.recommendationChanged) return "blocked_evidence_incomplete";
+  if (comparison.unexpectedRecommendationDelta) return "blocked_evidence_incomplete";
   if (!flagOn.policyEvidence || comparison.policyViolationDetected) return "blocked_evidence_incomplete";
+  if (!flagOff.actualRuntimeEvidence || !flagOn.actualRuntimeEvidence) return "blocked_evidence_incomplete";
   if (comparison.databaseMutationClassification.some((event) => event.classification === "unexpected_mutation") || comparison.tableMutationClassification.some((event) => event.classification === "unexpected_mutation")) return "blocked_unexpected_database_mutation";
   if (comparison.storageMutationClassification.classification === "unexpected_mutation") return "blocked_unexpected_storage_mutation";
   if (!observerComplete || !comparison.completeRecommendationComparison) return "blocked_evidence_incomplete";
@@ -293,6 +316,9 @@ export async function runIsolatedShadowRouteComparison() {
     }
 
     output.mutationComparison = compareRouteExecutions(output.flagOff, output.flagOn);
+    output.runtimeConnected = output.flagOn.actualRuntimeEvidence?.runtimeConnected === true;
+    output.evaluatorConnected = output.flagOn.actualRuntimeEvidence?.runtimeExecuted === true;
+    output.candidatePolicyConnected = output.flagOn.actualRuntimeEvidence?.runtimeExecuted === true;
     output.responseShapeChanged = output.mutationComparison.responseShapeChanged;
     output.recommendationChanged = output.mutationComparison.recommendationChanged;
     return output;
@@ -310,6 +336,8 @@ export async function runIsolatedShadowRouteComparison() {
         output.flagOff.recommendationEvidenceMetadata = durableEvidence.recommendationMetadata;
         output.flagOn.recommendationEvidenceMetadata = durableEvidence.recommendationMetadata;
         output.flagOn.policyEvidenceMetadata = durableEvidence.policyMetadata;
+        output.flagOff.actualRuntimeEvidenceMetadata = durableEvidence.runtimeMetadata;
+        output.flagOn.actualRuntimeEvidenceMetadata = durableEvidence.runtimeMetadata;
       }
     }
     const teardown = await teardownIsolatedShadowRouteEnvironment({ runDirectory: setup.runDirectory || null });

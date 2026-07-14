@@ -2261,3 +2261,18 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - This phase was statically reviewed only. No Supabase, Docker, setup, route, comparison runner, verifier, build, or hosted command was executed.
 - The controlled comparison runner uses those snapshots instead of treating absent public response groups as empty arrays; the verifier checks the sanitized schema, file counts, run identity, expected path, and residual-file observation captured before teardown.
 - No Supabase, Docker, setup, teardown, route, verifier, build, hosted, or provider command was executed for this implementation.
+
+### 2026-07-14 / Phase 46.2 default-off CandidatePolicy runtime exposure integration
+
+- Added an engine-owned, default-off evaluator-to-collapsed-hint-to-receiver runtime path before top-pick, supporting-product, and budget-alternative selection.
+- `ENABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` is required; `DISABLE_EVALUATOR_BOUNDARY_CANDIDATE_POLICY_RUNTIME=1` is the independent immediate kill switch. The disabled path does not dynamically import or execute policy modules.
+- Runtime diagnostics remain separate from Phase 46.1 shadow diagnostics. They record candidate IDs, receiver decisions, exposure groups, aggregate counts, and rejection reason codes only.
+- Receiver-approved non-unchanged outcomes are removed from the visible candidate pool. Unknown receiver output and invariant violations fail closed; no response schema, DB, Storage, migration, route decision logic, evaluator scoring, or CandidatePolicy scoring was changed.
+- This phase is static only. No Supabase, Docker, setup, teardown, route, comparison runner, verifier, build, hosted, or provider command was executed.
+
+### 2026-07-14 / Phase 46.2 actual CandidatePolicy runtime evidence
+
+- Added isolated local comparison artifacts under `route-comparison/<comparisonRunId>/runtime/` for both flag states. They contain candidate IDs, receiver decision codes, exclusion reasons, aggregate safety counts, and recommendation ID/order snapshots only.
+- Shadow policy artifacts remain under `policy/`; actual runtime artifacts use a distinct evidence type, schema, directory, and durable-copy path.
+- The comparison runner enables the runtime flag only for flag-on, distinguishes policy-driven recommendation deltas from unexpected deltas, and the verifier independently validates durable raw runtime evidence and receiver-to-exposure mappings.
+- This phase is static only. No Supabase, Docker, setup, teardown, route, comparison runner, verifier, build, hosted, or provider command was executed.

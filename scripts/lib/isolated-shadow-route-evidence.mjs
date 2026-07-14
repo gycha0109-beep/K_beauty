@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { buildBaselineResponseShapeSnapshot } from "../../lib/shadow-dry-run-snapshot-contract.js";
 import {
+  validateLocalActualRuntimeEvidence,
   validateLocalShadowPolicyEvidence,
   validateLocalShadowRecommendationEvidence
 } from "../../lib/shadow-boundary-dry-run-artifact-writer.js";
@@ -149,7 +150,7 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
   const expectedNames = condition === "off"
     ? ["recommendation-flag-off.json"]
     : ["recommendation-flag-off.json", "recommendation-flag-on.json"];
-  const expectedDirectories = condition === "on" ? ["policy"] : [];
+  const expectedDirectories = condition === "on" ? ["policy", "runtime"] : ["runtime"];
   const expectedName = `recommendation-flag-${condition}.json`;
   if (!directory || !existsSync(directory)) {
     return { ok: false, reasonCode: "recommendation_evidence_directory_missing" };
@@ -162,6 +163,7 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
     entries.some((entry) => !entry.isFile() && !entry.isDirectory()) ||
     !sameOrderedValues(names, expectedNames) ||
     !sameOrderedValues(directories, expectedDirectories) ||
+    !isWithinDirectory(path.join(directory, "runtime"), directory) ||
     (condition === "on" && !isWithinDirectory(path.join(directory, "policy"), directory))
   ) {
     return { ok: false, reasonCode: "recommendation_evidence_residual_or_unexpected_file" };
@@ -187,6 +189,42 @@ export async function readComparisonRecommendationEvidence({ root, runDirectory,
     };
   } catch {
     return { ok: false, reasonCode: "recommendation_evidence_read_failed" };
+  }
+}
+
+export async function readComparisonActualRuntimeEvidence({ root, runDirectory, comparisonRunId, condition }) {
+  const directory = comparisonDirectory({ root, runDirectory, comparisonRunId });
+  const runtimeDirectory = directory ? path.join(directory, "runtime") : null;
+  const expectedNames = condition === "on"
+    ? ["runtime-flag-off.json", "runtime-flag-on.json"]
+    : ["runtime-flag-off.json"];
+  const filePath = runtimeDirectory ? path.join(runtimeDirectory, `runtime-flag-${condition}.json`) : null;
+  if (!runtimeDirectory || !filePath || !existsSync(filePath)) return { ok: false, reasonCode: "actual_runtime_evidence_missing" };
+
+  try {
+    const entries = await readdir(runtimeDirectory, { withFileTypes: true });
+    const names = entries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort();
+    if (
+      !isWithinDirectory(runtimeDirectory, directory) ||
+      !sameOrderedValues(names, expectedNames) ||
+      entries.some((entry) => !entry.isFile())
+    ) return { ok: false, reasonCode: "actual_runtime_evidence_residual_or_unexpected_file" };
+    const evidence = JSON.parse(await readFile(filePath, "utf8"));
+    if (!validateLocalActualRuntimeEvidence(evidence, { comparisonRunId, condition }).valid) {
+      return { ok: false, reasonCode: "actual_runtime_evidence_contract_invalid" };
+    }
+    return {
+      ok: true,
+      evidence,
+      metadata: {
+        directory: path.relative(root, runtimeDirectory).replace(/\\/g, "/"),
+        expectedFileCount: expectedNames.length,
+        observedFileCount: names.length,
+        residualFiles: []
+      }
+    };
+  } catch {
+    return { ok: false, reasonCode: "actual_runtime_evidence_read_failed" };
   }
 }
 
@@ -235,6 +273,8 @@ export function createConditionEvidence({
   recommendationEvidenceMetadata = null,
   policyEvidence = null,
   policyEvidenceMetadata = null,
+  actualRuntimeEvidence = null,
+  actualRuntimeEvidenceMetadata = null,
   beforeSnapshot = null,
   afterSnapshot = null,
   reasonCode = null
@@ -247,6 +287,8 @@ export function createConditionEvidence({
     recommendationEvidenceMetadata,
     policyEvidence,
     policyEvidenceMetadata,
+    actualRuntimeEvidence,
+    actualRuntimeEvidenceMetadata,
     databaseBeforeSnapshot: beforeSnapshot?.databaseCounts || null,
     databaseAfterSnapshot: afterSnapshot?.databaseCounts || null,
     storageBeforeCount: beforeSnapshot?.storageObjectCount ?? null,
@@ -283,7 +325,33 @@ export function compareRouteExecutions(flagOff, flagOn) {
   const hasUnexpectedDatabaseMutation = [...databaseMutationClassification, ...tableMutationClassification]
     .some((event) => event.classification === "unexpected_mutation");
   const policyViolationCounts = flagOn.policyEvidence?.violationCounts || null;
-  const policyViolationDetected = Object.values(policyViolationCounts || {}).some((count) => Number(count || 0) > 0);
+  const actualRuntime = flagOn.actualRuntimeEvidence;
+  const policyViolationDetected =
+    Number(actualRuntime?.unexpectedReceiverCount || 0) > 0 ||
+    Object.values(actualRuntime?.safetyViolationCounts || policyViolationCounts || {})
+      .some((count) => Number(count || 0) > 0);
+  const excludedIds = new Set(
+    Object.values(actualRuntime?.excludedCandidates || {}).flat().map((row) => row.productId)
+  );
+  const visibleIds = new Set(actualRuntime?.visibleCandidateIdsInOrder || []);
+  const changedIdsArePolicyDriven = (before = [], after = []) =>
+    before.filter((id) => !after.includes(id)).every((id) => excludedIds.has(id)) &&
+    after.every((id) => visibleIds.has(id));
+  const expectedRecommendationDelta = Boolean(
+    actualRuntime?.runtimeExecuted &&
+    changedIdsArePolicyDriven(
+      [flagOff.recommendationEvidence?.topPickId].filter(Boolean),
+      [flagOn.recommendationEvidence?.topPickId].filter(Boolean)
+    ) &&
+    changedIdsArePolicyDriven(
+      flagOff.recommendationEvidence?.supportingProductIdsInOrder || [],
+      flagOn.recommendationEvidence?.supportingProductIdsInOrder || []
+    ) &&
+    changedIdsArePolicyDriven(
+      flagOff.recommendationEvidence?.budgetAlternativeIdsInOrder || [],
+      flagOn.recommendationEvidence?.budgetAlternativeIdsInOrder || []
+    )
+  );
 
   return {
     responseShapeChanged: !responseContractsMatch(flagOff.responseContract, flagOn.responseContract) || flagOff.httpStatus !== flagOn.httpStatus,
@@ -297,6 +365,8 @@ export function compareRouteExecutions(flagOff, flagOn) {
     shadowAddedDbMutationDelta: hasUnexpectedDatabaseMutation ? null : 0,
     shadowAddedStorageMutationDelta: storageMutationClassification.classification === "unexpected_mutation" ? null : 0,
     completeRecommendationComparison,
+    expectedRecommendationDelta,
+    unexpectedRecommendationDelta: Boolean(topPickChanged || supportingProductsChanged || budgetAlternativesChanged) && !expectedRecommendationDelta,
     policyViolationCounts,
     policyViolationDetected
   };

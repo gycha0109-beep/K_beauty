@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import {
+  validateLocalActualRuntimeEvidence,
   validateLocalShadowPolicyEvidence,
   validateLocalShadowRecommendationEvidence
 } from "../lib/shadow-boundary-dry-run-artifact-writer.js";
@@ -142,6 +143,57 @@ function assertPolicyEvidence(flagOff, flagOn) {
   assert(Object.values(flagOn.policyEvidence.violationCounts).every((count) => Number(count || 0) === 0));
 }
 
+function assertActualRuntimeEvidence(flagOff, flagOn) {
+  const off = flagOff.actualRuntimeEvidence;
+  const on = flagOn.actualRuntimeEvidence;
+  assert(off && on, "actual runtime evidence is missing");
+  assert.equal(validateLocalActualRuntimeEvidence(off, { comparisonRunId: off.comparisonRunId, condition: "off" }).valid, true);
+  assert.equal(validateLocalActualRuntimeEvidence(on, { comparisonRunId: off.comparisonRunId, condition: "on" }).valid, true);
+  assert.equal(off.runtimeEnabled, false);
+  assert.equal(off.runtimeExecuted, false);
+  assert.equal(off.runtimeConnected, false);
+  assert.equal(on.runtimeEnabled, true);
+  assert.equal(on.runtimeExecuted, true);
+  assert.equal(on.runtimeConnected, true);
+  assert.equal(on.unexpectedReceiverCount, 0);
+  assert.deepEqual(off.visibleCandidateIdsInOrder, off.inputCandidateIdsInOrder);
+  assert.deepEqual(on.recommendation, {
+    topPickId: flagOn.recommendationEvidence.topPickId,
+    supportingProductIdsInOrder: flagOn.recommendationEvidence.supportingProductIdsInOrder,
+    budgetAlternativeIdsInOrder: flagOn.recommendationEvidence.budgetAlternativeIdsInOrder
+  });
+  for (const rows of Object.values(on.excludedCandidates)) {
+    for (const row of rows) {
+      assert.equal(
+        new Map([
+          ["accept_collapsed_candidate_hint", "collapsed_candidate"],
+          ["preserve_hidden_candidate", "hidden_candidate"],
+          ["route_to_insufficient_evidence", "insufficient_evidence_candidate"]
+        ]).get(row.receiverDecision),
+        Object.entries(on.excludedCandidates).find(([, candidates]) => candidates.includes(row))?.[0]
+      );
+    }
+  }
+  assert(Object.values(on.safetyViolationCounts).every((count) => Number(count || 0) === 0));
+}
+
+function assertRuntimeRecommendationDelta(output) {
+  const excludedIds = new Set(
+    Object.values(output.flagOn.actualRuntimeEvidence.excludedCandidates).flat().map((row) => row.productId)
+  );
+  const visibleIds = new Set(output.flagOn.actualRuntimeEvidence.visibleCandidateIdsInOrder);
+  const isPolicyDriven = (before, after) =>
+    before.filter((id) => !after.includes(id)).every((id) => excludedIds.has(id)) &&
+    after.every((id) => visibleIds.has(id));
+  const off = output.flagOff.recommendationEvidence;
+  const on = output.flagOn.recommendationEvidence;
+  const expected = isPolicyDriven([off.topPickId].filter(Boolean), [on.topPickId].filter(Boolean)) &&
+    isPolicyDriven(off.supportingProductIdsInOrder, on.supportingProductIdsInOrder) &&
+    isPolicyDriven(off.budgetAlternativeIdsInOrder, on.budgetAlternativeIdsInOrder);
+  assert.equal(output.mutationComparison.expectedRecommendationDelta, expected);
+  assert.equal(output.mutationComparison.unexpectedRecommendationDelta, output.recommendationChanged && !expected);
+}
+
 function assertDurableEvidence(output) {
   const durable = output.durableEvidence;
   assert(durable && typeof durable === "object", "durable comparison evidence is missing");
@@ -150,19 +202,24 @@ function assertDurableEvidence(output) {
   assert(isWithinDirectory(directory, DURABLE_EVIDENCE_ROOT), "durable comparison directory escapes durable root");
   assert.equal(path.resolve(ROOT, durable.recommendationDirectory), path.join(directory, "recommendations"));
   assert.equal(path.resolve(ROOT, durable.policyDirectory), path.join(directory, "policy"));
+  assert.equal(path.resolve(ROOT, durable.runtimeDirectory), path.join(directory, "runtime"));
   const rootEntries = readdirSync(directory, { withFileTypes: true });
   assert.deepEqual(rootEntries.filter((entry) => entry.isFile()).map((entry) => entry.name).sort(), []);
-  assert.deepEqual(rootEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["policy", "recommendations"]);
+  assert.deepEqual(rootEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(), ["policy", "recommendations", "runtime"]);
   assert(rootEntries.every((entry) => entry.isFile() || entry.isDirectory()), "durable comparison root contains an unsupported entry type");
   assert.deepEqual(durable.files, [
     "recommendations/recommendation-flag-off.json",
     "recommendations/recommendation-flag-on.json",
-    "policy/policy-flag-on.json"
+    "policy/policy-flag-on.json",
+    "runtime/runtime-flag-off.json",
+    "runtime/runtime-flag-on.json"
   ]);
   const readDurable = (relativePath) => JSON.parse(readFileSync(path.join(directory, relativePath), "utf8"));
   assert.deepEqual(readDurable(durable.files[0]), output.flagOff.recommendationEvidence);
   assert.deepEqual(readDurable(durable.files[1]), output.flagOn.recommendationEvidence);
   assert.deepEqual(readDurable(durable.files[2]), output.flagOn.policyEvidence);
+  assert.deepEqual(readDurable(durable.files[3]), output.flagOff.actualRuntimeEvidence);
+  assert.deepEqual(readDurable(durable.files[4]), output.flagOn.actualRuntimeEvidence);
 }
 
 assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing");
@@ -172,9 +229,6 @@ assert(ALLOWED_VERDICTS.has(output.verdict));
 assert.equal(output.secretsPrinted, false);
 assert.equal(output.hostedSupabaseAccessCount, 0);
 assert.equal(output.externalProviderInvocationCount, 0);
-assert.equal(output.runtimeConnected, false);
-assert.equal(output.evaluatorConnected, false);
-assert.equal(output.candidatePolicyConnected, false);
 assert(output.cleanup && typeof output.cleanup.succeeded === "boolean");
 assert(output.mutationObserverCoverage && typeof output.mutationObserverCoverage.complete === "boolean");
 assertNoForbiddenEvidence(output);
@@ -191,6 +245,8 @@ if (output.flagOff.completed && output.flagOn.completed) {
   const expectedResponseChange = responseShapeChanged(output.flagOff, output.flagOn);
   const expectedRecommendationChange = assertRecommendationEvidence(output.flagOff, output.flagOn);
   assertPolicyEvidence(output.flagOff, output.flagOn);
+  assertActualRuntimeEvidence(output.flagOff, output.flagOn);
+  assertRuntimeRecommendationDelta(output);
   assert.equal(output.responseShapeChanged, expectedResponseChange);
   assert.equal(output.recommendationChanged, expectedRecommendationChange);
   assert.equal(output.mutationComparison.responseShapeChanged, expectedResponseChange);
@@ -205,10 +261,15 @@ if (output.verdict === "controlled_shadow_route_comparison_passed") {
   assert.equal(output.flagOff.providerEvidence.providerStubbed, true);
   assert.equal(output.flagOn.providerEvidence.providerStubbed, true);
   assert.equal(output.responseShapeChanged, false);
-  assert.equal(output.recommendationChanged, false);
   assert.equal(output.mutationObserverCoverage.complete, true);
   assert.equal(output.cleanup.succeeded, true);
+  assert.equal(output.runtimeConnected, true);
+  assert.equal(output.evaluatorConnected, true);
+  assert.equal(output.candidatePolicyConnected, true);
   assertPolicyEvidence(output.flagOff, output.flagOn);
+  assertActualRuntimeEvidence(output.flagOff, output.flagOn);
+  assertRuntimeRecommendationDelta(output);
+  assert.equal(output.mutationComparison.unexpectedRecommendationDelta, false);
   assert(output.mutationComparison.databaseMutationClassification.every((event) => event.classification !== "unexpected_mutation"));
   assert(output.mutationComparison.tableMutationClassification.every((event) => event.classification !== "unexpected_mutation"));
   assert.notEqual(output.mutationComparison.storageMutationClassification.classification, "unexpected_mutation");
