@@ -2329,3 +2329,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Preserved the legacy synthetic canary evidence and exclusive-create collision behavior while requiring a safe explicit run ID for every fresh probe and propagation verification.
 - Fresh evidence now writes under `tmp/evaluator-boundary-policy-synthetic-canary-runs/<runId>/` with `wx`; traversal, absolute paths, whitespace, control characters, and non-allowlisted run IDs are rejected.
 - A sandbox negative-control confirmed that reusing the same run ID still fails with `EEXIST`. The fresh run completed once with the existing aggregate fixture, passed propagation and related policy verifiers, and did not reference or overwrite the legacy evidence.
+
+### 2026-07-14 / Production provider log sanitization
+
+- Replaced `/api/analyze` and `/api/face-reading` provider response previews, content snippets, and raw caught errors with a shared allowlisted aggregate event: stage, HTTP status, ok, provider/model, duration, and fixed error category only.
+- Provider responses remain in memory only for existing parsing and fallback behavior; no public response, provider request, DB, Storage, or deployment behavior changed.
+- Added a negative-control verifier that drops attempted preview, raw response, prompt, and credential fields from the provider log event and rejects direct preview/content logging in both routes.
