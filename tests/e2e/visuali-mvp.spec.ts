@@ -2,6 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "playwright/test";
 
+const PRODUCT_PURCHASE_LINK_MODULE_PATH = path.join(process.cwd(), "lib", "product-purchase-link.js");
+
 const FIXTURE_IMAGE_PATH = path.join(
   process.cwd(),
   "public",
@@ -135,6 +137,18 @@ async function advanceToFullReport(page: Page) {
 }
 
 test.describe("Visuali MVP E2E draft", () => {
+  test("purchase-link client boundary imports the shared resolver @smoke", async () => {
+    const freeResultPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "page.js"), "utf8");
+    const fullReportPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "full-report", "page.js"), "utf8");
+    const resolver = fs.readFileSync(PRODUCT_PURCHASE_LINK_MODULE_PATH, "utf8");
+
+    expect(resolver).toContain("resolveProductPurchaseLink");
+    expect(freeResultPage).toContain('from "@/lib/product-purchase-link"');
+    expect(fullReportPage).toContain('from "@/lib/product-purchase-link"');
+    expect(freeResultPage).toContain('rel="noopener noreferrer"');
+    expect(fullReportPage).toContain('rel="noopener noreferrer"');
+  });
+
   test("home entry, photo upload, and required survey navigation @smoke", async ({
     page
   }) => {

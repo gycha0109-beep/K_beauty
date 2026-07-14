@@ -41,6 +41,7 @@ import {
   getAvailableVisionFaceLabData
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
+import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import {
@@ -2519,34 +2520,19 @@ function getPriceLabel(priceRange, locale = "ko") {
   return `${copy.priceBand} ${displayRange}`;
 }
 
-function isExactOliveYoungProductLink(buyLink) {
-  if (!buyLink || typeof buyLink !== "string" || !buyLink.startsWith("http")) {
-    return false;
-  }
-
-  if (buyLink.includes("example.com")) {
-    return false;
-  }
-
-  return /oliveyoung\.co\.kr\/.*getGoodsDetail/i.test(buyLink);
-}
-
 function getPurchaseLinkInfo(product, locale = "ko") {
   const copy = getResultCopy(locale);
-  if (isExactOliveYoungProductLink(product?.buy_link)) {
-    return {
-      href: product.buy_link,
-      label: copy.buyNow,
-      isFallback: false
-    };
-  }
-
-  const query = encodeURIComponent(`${product?.brand || ""} ${product?.name || ""} ${locale === "en" ? "buy" : "구매"}`);
-
+  const link = resolveProductPurchaseLink({
+    buyLink: product?.buy_link,
+    brand: product?.brand,
+    name: product?.name
+  });
   return {
-    href: `https://search.shopping.naver.com/search/all?query=${query}`,
-    label: copy.findStore,
-    isFallback: true
+    ...link,
+    label: link.kind === "fallback"
+      ? (locale === "en" ? "Compare prices" : "네이버쇼핑에서 검색")
+      : copy.buyNow,
+    isFallback: link.kind === "fallback"
   };
 }
 
@@ -3748,9 +3734,9 @@ function ProductDecisionCard({
 
               <div className="mt-5 border-t border-[#ead9d6] pt-4 dark:border-[#4a303c]">
                 <a
-                  href={purchaseLink.href}
+                  href={purchaseLink.href || undefined}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   onClick={(event) => {
                     event.stopPropagation();
                     trackEvent("click_buy_link", {
@@ -3893,9 +3879,9 @@ function ProductDecisionCard({
               </button>
             ) : null}
             <a
-              href={purchaseLink.href}
+              href={purchaseLink.href || undefined}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onClick={(event) => {
                 event.stopPropagation();
                 trackEvent("click_buy_link", {
@@ -3974,9 +3960,9 @@ function ProductDecisionCard({
 
                 <div className="mt-5">
                   <a
-                    href={purchaseLink.href}
+                    href={purchaseLink.href || undefined}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     onClick={(event) => {
                       event.stopPropagation();
                       trackEvent("click_buy_link", {

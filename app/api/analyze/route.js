@@ -39,6 +39,12 @@ import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import {
+  getTrustedDirectPurchaseUrl,
+  projectProductPurchaseLink,
+  sanitizeAnalyzeResultPurchaseLinks,
+  sanitizePremiumReportPurchaseLinks
+} from "@/lib/product-purchase-link";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
@@ -650,20 +656,22 @@ function sanitizeProductForPremium(product) {
     return null;
   }
 
+  const safeProduct = projectProductPurchaseLink(product) || {};
+
   return {
-    id: product.id || "",
-    name: product.name || "",
-    brand: product.brand || "",
-    category: product.category || "",
-    step: product.step || "",
-    texture: product.texture || "",
-    finish: product.finish || "",
-    use_time: product.use_time || "",
-    price_range: product.price_range || "",
-    buy_link: product.buy_link || "",
-    image_url: product.image_url || "",
-    reason: product.reason || "",
-    comparison_reason: product.comparison_reason || ""
+    id: safeProduct.id || "",
+    name: safeProduct.name || "",
+    brand: safeProduct.brand || "",
+    category: safeProduct.category || "",
+    step: safeProduct.step || "",
+    texture: safeProduct.texture || "",
+    finish: safeProduct.finish || "",
+    use_time: safeProduct.use_time || "",
+    price_range: safeProduct.price_range || "",
+    buy_link: safeProduct.buy_link || "",
+    image_url: safeProduct.image_url || "",
+    reason: safeProduct.reason || "",
+    comparison_reason: safeProduct.comparison_reason || ""
   };
 }
 
@@ -704,7 +712,7 @@ function stripRawSignalBlobs(product) {
   delete nextProduct.review_signals;
   delete nextProduct.market_signals;
   delete nextProduct.ingredient_signals;
-  return nextProduct;
+  return projectProductPurchaseLink(nextProduct);
 }
 
 function appendTopPickReviewEvidence(decision, locale = "ko") {
@@ -1113,7 +1121,11 @@ function sanitizePremiumReport(report) {
               price_range: item?.price_range || "",
               price_min: Number.isFinite(Number(item?.price_min)) ? Number(item.price_min) : null,
               price_max: Number.isFinite(Number(item?.price_max)) ? Number(item.price_max) : null,
-              buy_link: item?.buy_link || "",
+              buy_link: getTrustedDirectPurchaseUrl({
+                buyLink: item?.buy_link,
+                brand: item?.brand,
+                name: item?.name
+              }),
               image_url: item?.image_url || "",
               summary: item?.summary || ""
             }))
@@ -1609,10 +1621,10 @@ export async function POST(request) {
 
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
     const premiumSessionReport = premiumReport
-      ? {
+      ? sanitizePremiumReportPurchaseLinks({
           ...premiumReport,
           freeResult: publicDecision
-        }
+        })
       : null;
     const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
     const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
@@ -1621,7 +1633,7 @@ export async function POST(request) {
           locale
         })
       : null;
-    const responsePayload = {
+    const responsePayload = sanitizeAnalyzeResultPurchaseLinks({
       ...publicDecision,
       meta: buildAnalyzeMeta({
         locale,
@@ -1634,7 +1646,7 @@ export async function POST(request) {
             analysisRunId: anonymousWriteGrant.analysisRunId
           }
         : {})
-    };
+    });
     const response = NextResponse.json(responsePayload);
 
     if (premiumSessionToken) {

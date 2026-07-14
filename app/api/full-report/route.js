@@ -14,6 +14,7 @@ import {
   updatePremiumReportSession,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
+import { sanitizePremiumReportPurchaseLinks } from "@/lib/product-purchase-link";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
 
@@ -299,7 +300,7 @@ export async function POST(request) {
       return getUnauthorizedResponse();
     }
 
-    const savedPremiumReport = savedReport.premium_report || {};
+    const savedPremiumReport = sanitizePremiumReportPurchaseLinks(savedReport.premium_report || {});
     const savedFreeResult =
       savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
         ? savedPremiumReport.freeResult
@@ -394,13 +395,14 @@ export async function POST(request) {
     });
   }
 
+  const clientPremiumReport = sanitizePremiumReportPurchaseLinks(responsePremiumReport);
   const storedFreeResult =
-    responsePremiumReport?.freeResult && typeof responsePremiumReport.freeResult === "object"
-      ? responsePremiumReport.freeResult
+    clientPremiumReport?.freeResult && typeof clientPremiumReport.freeResult === "object"
+      ? clientPremiumReport.freeResult
       : null;
   const topPickFitGauges = buildProductFitGauges(body?.topPick || storedFreeResult?.topPick || null, { locale });
   const response = NextResponse.json({
-    ...responsePremiumReport,
+    ...clientPremiumReport,
     topPickFitGauges,
     meta: buildFullReportMeta(locale)
   });

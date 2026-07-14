@@ -2502,3 +2502,25 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Replaced `/api/analyze` and `/api/face-reading` provider response previews, content snippets, and raw caught errors with a shared allowlisted aggregate event: stage, HTTP status, ok, provider/model, duration, and fixed error category only.
 - Provider responses remain in memory only for existing parsing and fallback behavior; no public response, provider request, DB, Storage, or deployment behavior changed.
 - Added a negative-control verifier that drops attempted preview, raw response, prompt, and credential fields from the provider log event and rejects direct preview/content logging in both routes.
+
+### 2026-07-14 / SEC-07 product purchase-link safety boundary
+
+- Added a pure resolver that allowlists exact HTTPS product hosts and paths, rejects unsafe or lookalike direct URLs, and returns a deterministic Naver Shopping fallback or `none` without retaining a raw input URL field.
+- The resolver is now the read boundary for product source normalization, free analysis output, full-report output including known legacy product nodes, and free/full result-page anchors. Existing product data, migrations, crawler writers, and hosted targets were not changed.
+- The direct registry covers verified Olive Young and Hwahae product paths plus brand-bound official stores for Anua, Beauty of Joseon, SKIN1004, Purito, Aestura, Dr.G, and Round Lab. Unapproved third-party hosts fall back.
+- Added a static attack-matrix verifier and a Playwright client-boundary smoke assertion. Result anchors use `noopener noreferrer`; public shared-result DTOs continue to omit purchase URLs.
+- Required verification: SEC-07 verifier, existing public result-boundary verifier, syntax checks, Playwright discovery/smoke, build, diff/credential checks, and artifact cleanup. Remote Supabase, seller requests, providers, commit, and push remain out of scope. Link liveness and ingestion validation remain follow-up work; an independent commit gate is still required.
+
+### 2026-07-14 / SEC-07 nested and legacy purchase-URL fail-closed correction
+
+- Scope: replaced shallow product/report URL projection with one shared recursive response serializer. It removes the fixed purchase-URL alias denylist at every object/array depth and reintroduces only resolver-owned canonical links at explicit product-node paths for analyze and premium/full-report payloads. Unknown metadata, report-root, routine-step, legacy, and dangerous prototype keys cannot retain or promote a purchase URL.
+- Safety: plain JSON objects and arrays are bounded by depth and size; cycles, non-plain objects, and excessive branches fail closed. Text that merely contains a URL is preserved. No registry, UI anchor, DB, migration, crawler, hosted Supabase, seller request, provider, commit, or push change occurred.
+- Validation: the strengthened verifier directly exercised the shared analyzer/premium projections with nested aliases, safe unknown URLs, malformed legacy roots, prototype keys, cyclic/over-depth/oversized payloads, and direct/fallback/none product cases. SEC-07, public result-boundary, and analysis RLS verifiers, JavaScript syntax checks, Playwright discovery, targeted and full smoke, production build, diff check, credential-pattern scan, and artifact/process cleanup passed.
+- Final status: `FULL_PASS` for this SEC-07 correction. An independent commit gate remains required before commit.
+
+### 2026-07-15 / SEC-07 verifier case-omission fail-closed correction
+
+- Scope: added a frozen 42-ID SEC-07 verifier manifest, fixed expected count, machine-readable per-case results, and exact catalog/observed-set checks. Product resolver, serializer, routes, UI, registry, database, migration, crawler, and dependencies were not changed.
+- Safety: the verifier now rejects missing, duplicate, unknown, unobserved, failed, or count-mismatched cases before emitting `SEC07_PRODUCT_LINK_BOUNDARY=PASS`.
+- Validation: syntax and original verifier passed with 42/42 recorded cases. OS TEMP controls for removed userinfo execution, duplicate userinfo execution, unknown execution ID, excluded defined case, expected-count mismatch, and removed nested/legacy execution each returned non-zero without the PASS marker; TEMP residue was removed. The public result-boundary verifier was rerun after this correction. Smoke and build are deferred to the next independent commit gate because product code did not change.
+- Notes/risks: remote Supabase, provider, seller, commit, and push access remain out of scope. An independent commit gate is still required before commit.
