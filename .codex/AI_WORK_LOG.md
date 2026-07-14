@@ -2309,3 +2309,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - The probe requires the validation branch, explicit probe and runtime flags, deployment-canary scope and marker, and no active DISABLE switch. Every other environment returns 404 before runtime import or telemetry emission.
 - No `/api/analyze`, provider, Supabase, DB, Storage, public response, deployment setting, or production runtime path was changed or invoked.
 - Focused probe and production-observability contract tests, JavaScript syntax checks, and `npm run build` passed.
+
+### 2026-07-14 / Production environment Preview readiness probe
+
+- Added a Preview-only internal readiness probe for the validation branch. It reports only boolean contract checks and stop-reason field names for the analysis guard secret, anonymous grant secret, and explicit `beta_open` premium mode.
+- Secret checks require canonical base64url values representing at least 32 bytes, distinct guard/grant values, and no reuse of the legacy write token, Supabase service-role, or OpenAI secrets. Secret values, lengths, hashes, prefixes, and suffixes are never returned or logged.
+- Production, `main`, other branches, and missing probe flags return 404 without logging. The probe does not call providers, Supabase, DB, Storage, RPC, or public API routes and does not change deployment environment variables.
+- Initial focused verification falsely treated the required `SUPABASE_SERVICE_ROLE_KEY` comparison name as a Supabase call. The verifier was narrowed to actual import/client/call patterns before rerunning; the readiness contract itself was unchanged.
