@@ -510,8 +510,8 @@ begin
   select count(*)
   into v_uses_deleted
   from public.anonymous_write_grant_uses as grant_use
-  join public.anonymous_write_grants as grant on grant.id = grant_use.grant_id
-  where grant.expires_at < p_before;
+  join public.anonymous_write_grants as grant_row on grant_row.id = grant_use.grant_id
+  where grant_row.expires_at < p_before;
 
   delete from public.anonymous_write_grants
   where expires_at < p_before;
