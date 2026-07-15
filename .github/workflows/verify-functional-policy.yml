@@ -1,0 +1,50 @@
+name: Verify functional policy
+
+on:
+  push:
+    branches:
+      - agent/verify-functional-policy-ci
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify functional policy single source
+        run: node scripts/verify-functional-policy-single-source.mjs
+
+      - name: Verify premium decision state
+        run: node scripts/verify-premium-decision-state.mjs
+
+      - name: Verify functional plan adapter
+        run: node scripts/verify-functional-plan-decision.mjs
+
+      - name: Verify current product findings
+        run: node scripts/verify-current-product-findings.mjs
+
+      - name: Verify premium report reentry
+        run: node scripts/verify-premium-report-reentry-contract.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check
