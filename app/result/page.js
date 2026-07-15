@@ -2852,6 +2852,9 @@ function ResultContent() {
   const [savedNudgeBounce, setSavedNudgeBounce] = useState(false);
   const [currentResultStep, setCurrentResultStep] = useState(0);
   const [premiumAvailability, setPremiumAvailability] = useState("checking");
+  const [premiumSavedReportId, setPremiumSavedReportId] = useState(null);
+  const [premiumSavedReportStatus, setPremiumSavedReportStatus] = useState("checking");
+  const [isPremiumSessionRotationPending, setIsPremiumSessionRotationPending] = useState(false);
   const resultProgressRef = useRef(null);
   const didMountProgressScrollRef = useRef(false);
   const savedNudgeShownRef = useRef(false);
@@ -2909,6 +2912,58 @@ function ResultContent() {
 
     setIsReady(true);
   }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCurrentSessionSavedReport() {
+      if (!isReady || !result) {
+        return;
+      }
+
+      setPremiumSavedReportId(null);
+      setPremiumSavedReportStatus("checking");
+
+      try {
+        const accessToken = await getResultPageAccessToken();
+
+        if (!accessToken) {
+          if (active) {
+            setPremiumSavedReportId(null);
+            setPremiumSavedReportStatus("ready");
+          }
+          return;
+        }
+
+        const response = await fetch("/api/full-report/session", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          },
+          cache: "no-store"
+        });
+        const data = await response.json().catch(() => null);
+        const savedReportId = response.ok && data?.hasSavedReport && typeof data?.savedReportId === "string"
+          ? data.savedReportId
+          : null;
+
+        if (active) {
+          setPremiumSavedReportId(savedReportId);
+          setPremiumSavedReportStatus("ready");
+        }
+      } catch {
+        if (active) {
+          setPremiumSavedReportId(null);
+          setPremiumSavedReportStatus("ready");
+        }
+      }
+    }
+
+    void loadCurrentSessionSavedReport();
+
+    return () => {
+      active = false;
+    };
+  }, [isReady, result]);
 
   useEffect(() => {
     let active = true;
@@ -3176,6 +3231,46 @@ function ResultContent() {
       router.push(targetPath);
     }
   };
+  const openSavedFullReport = () => {
+    if (!premiumSavedReportId) {
+      return;
+    }
+
+    const targetPath = locale === "en" ? "/en/result/full-report" : "/result/full-report";
+    router.push(`${targetPath}?savedReportId=${encodeURIComponent(premiumSavedReportId)}`);
+  };
+  const startNewFullReport = async () => {
+    if (isPremiumSessionRotationPending || !premiumSavedReportId) {
+      return;
+    }
+
+    setIsPremiumSessionRotationPending(true);
+
+    try {
+      const accessToken = await getResultPageAccessToken();
+
+      if (!accessToken) {
+        return;
+      }
+
+      const response = await fetch("/api/full-report/session", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || data?.rotated !== true) {
+        return;
+      }
+
+      const targetPath = locale === "en" ? "/en/result/full-report" : "/result/full-report";
+      router.push(targetPath);
+    } finally {
+      setIsPremiumSessionRotationPending(false);
+    }
+  };
   const handleTryAgainClick = (event) => {
     if (result && !window.confirm(getResultLeaveMessage(locale))) {
       event.preventDefault();
@@ -3238,10 +3333,15 @@ function ResultContent() {
           copy={copy}
           premiumReportEnabled={premiumReportEnabled}
           premiumAvailability={premiumAvailability}
+          savedReportId={premiumSavedReportId}
+          isSavedReportChecking={premiumSavedReportStatus === "checking"}
+          isSessionRotationPending={isPremiumSessionRotationPending}
           locale={locale}
           isDevelopment={IS_DEVELOPMENT}
           onDeveloperFullReportClick={IS_DEVELOPMENT ? goToFullReport : null}
           onPremiumClick={goToFullReport}
+          onSavedReportClick={openSavedFullReport}
+          onNewPremiumClick={startNewFullReport}
         />
       )
     });
