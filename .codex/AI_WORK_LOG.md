@@ -2347,3 +2347,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Unperformed: real Google OAuth, hosted canonical/alias navigation, production cookies, premium-session database lookup, and `/api/full-report` 200 were not executed because they require hosted credentials/state and production access. These remain deployment smoke checks.
 - Git boundary: the existing provider log-sanitization hotfix remains the separate parent commit. This full-report change is uncommitted and unpushed on `fix/production-full-report-401`.
 - Context promotion candidate: when production OAuth and tab-scoped result state coexist with multiple deployment origins, normalize the document origin before creating analysis, PKCE, cookie, or sessionStorage state; propose this for `AI_CONTEXT.md` Candidates only if it should become a cross-task rule.
+
+### 2026-07-15 / Face Lab keyword summary semantic dedupe and placeholder suppression
+
+- Task type: bounded Medium-risk execution. DB, Auth, RLS, Storage, Provider, Payment, Secret, and Production impact/execution were `N`; no protected surface was changed.
+- Root cause: the free result preview merged already display-formatted Face Lab arrays with string-only dedupe, while the carousel supplied mood/tone/style fallback copy whenever a group was empty. Item availability also accepted `available` structured fields without requiring a Vision source and non-empty evidence.
+- Minimal fix: the launch adapter now admits only `available` `vision`/`derived_from_vision` fields with evidence and object values, normalizes the observed `부드러움`/`부드러운`/`부드럽게` variants to canonical `softness`, and omits placeholder/default/mock/pending/fallback labels. The free preview limits validated keywords to 0–3 and the carousel renders only groups with a real value.
+- Verification: `node scripts/verify-face-lab-keyword-summary.mjs`, `npm run build`, and `git diff --check` passed. The required placeholder-pattern search found only the new verifier fixture; `FreeResultV2EvidenceStep.jsx` has no diff.
+- Reference Maintenance Issue: the requested `docs/domain/facelab/face-lab-archetype-styling-contract-v1.md` and its `docs/domain` parent are absent; the named premium contract was read successfully.

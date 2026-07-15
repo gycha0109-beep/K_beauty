@@ -30,7 +30,7 @@ import AuthNav from "@/components/auth/AuthNav";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import {
   buildFaceLabLaunchData,
-  formatFaceLabDisplayList,
+  formatFaceLabKeywordList,
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import {
@@ -1054,17 +1054,20 @@ function buildRoutineDirectionCards(result, locale = "ko") {
 
 function getFaceLabProfilePreview(launchData, locale = "ko") {
   const paid = launchData?.paid || {};
-  const primary = formatFaceLabDisplayText(paid.faceMood?.primary || "", locale);
-  const keywords = formatFaceLabDisplayList(
+  const rawPrimary = paid.faceMood?.primary || "";
+  const primary =
+    formatFaceLabKeywordList([rawPrimary], locale, 1)[0] ||
+    formatFaceLabDisplayText(rawPrimary, locale);
+  const keywords = formatFaceLabKeywordList(
     [
       ...(Array.isArray(paid.styleKeywords) ? paid.styleKeywords : []),
       ...(Array.isArray(paid.faceMood?.keywords) ? paid.faceMood.keywords : [])
     ],
     locale,
-    5
-  );
+    4
+  ).filter((keyword) => keyword !== primary).slice(0, 3);
 
-  if (!primary) {
+  if (!primary && !keywords.length) {
     return null;
   }
 

@@ -75,17 +75,6 @@ function getFreeResultV2FaceLabMoodGroups(faceLabPreview = null, locale = "ko") 
   }
 
   const isEnglish = locale === "en";
-  const fallbacks = isEnglish
-    ? {
-        mood: "Face mood in analysis",
-        tone: "Natural color match",
-        style: "Clean style direction"
-      }
-    : {
-        mood: "분석 중인 얼굴 분위기",
-        tone: "자연스러운 컬러 매치",
-        style: "정돈된 스타일 방향"
-      };
   const primary = String(faceLabPreview.primary || "").trim();
   const keywords = uniqueItems([
     ...(Array.isArray(faceLabPreview.keywords) ? faceLabPreview.keywords : [])
@@ -99,22 +88,28 @@ function getFreeResultV2FaceLabMoodGroups(faceLabPreview = null, locale = "ko") 
     .slice(0, 3);
 
   return [
-    {
-      key: "mood",
-      label: isEnglish ? "Representative mood" : "대표 무드",
-      value: primary || fallbacks.mood
-    },
-    {
-      key: "tone",
-      label: isEnglish ? "Best-fit color" : "잘 맞는 컬러",
-      value: colorKeywords.join(" · ") || fallbacks.tone
-    },
-    {
-      key: "style",
-      label: isEnglish ? "Style direction" : "스타일 방향",
-      value: styleKeywords.join(" · ") || fallbacks.style
-    }
-  ];
+    primary
+      ? {
+          key: "mood",
+          label: isEnglish ? "Representative mood" : "대표 무드",
+          value: primary
+        }
+      : null,
+    colorKeywords.length
+      ? {
+          key: "tone",
+          label: isEnglish ? "Best-fit color" : "잘 맞는 컬러",
+          value: colorKeywords.join(" · ")
+        }
+      : null,
+    styleKeywords.length
+      ? {
+          key: "style",
+          label: isEnglish ? "Style direction" : "스타일 방향",
+          value: styleKeywords.join(" · ")
+        }
+      : null
+  ].filter(Boolean);
 }
 
 function FreeResultV2FaceLabPhotoCarousel({ photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
