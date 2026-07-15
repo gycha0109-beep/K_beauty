@@ -37,11 +37,20 @@ function hasFullReportPayloadShape(report) {
   );
 }
 
-function getUnauthorizedResponse() {
+const FULL_REPORT_UNAUTHORIZED_REASONS = new Set([
+  "login_required",
+  "premium_session_missing_or_expired"
+]);
+
+function getUnauthorizedResponse(reason) {
+  const safeReason = FULL_REPORT_UNAUTHORIZED_REASONS.has(reason)
+    ? reason
+    : "login_required";
+
   return NextResponse.json(
     {
       success: false,
-      error: "The full-report session is missing or expired. Please run the analysis again."
+      error: safeReason
     },
     { status: 401 }
   );
@@ -260,7 +269,7 @@ export async function POST(request) {
 
   if (body?.savedReportId) {
     if (!isAccountUser(user) || !userSupabase) {
-      return getUnauthorizedResponse();
+      return getUnauthorizedResponse("login_required");
     }
 
     const { data: savedReport, error } = await loadSavedPremiumReport({
@@ -273,7 +282,7 @@ export async function POST(request) {
       if (error) {
         console.error("[full-report] saved premium read failed", serializeSupabaseError(error));
       }
-      return getUnauthorizedResponse();
+      return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
 
     const savedPremiumReport = savedReport.premium_report || {};
@@ -295,7 +304,9 @@ export async function POST(request) {
       return getPremiumUnavailableResponse();
     }
 
-    return access.reason === "payment_required" ? getPaymentRequiredResponse(access) : getUnauthorizedResponse();
+    return access.reason === "payment_required"
+      ? getPaymentRequiredResponse(access)
+      : getUnauthorizedResponse("login_required");
   }
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
@@ -305,7 +316,7 @@ export async function POST(request) {
     if (process.env.NODE_ENV !== "production") {
       console.warn("[full-report] premium session rejected", premiumSession.code);
     }
-    return getUnauthorizedResponse();
+    return getUnauthorizedResponse("premium_session_missing_or_expired");
   }
 
   let storedPremiumReport = premiumSession.payload.premiumReport || {};
