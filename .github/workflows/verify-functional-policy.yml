@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/verify-functional-policy-ci
+  pull_request:
+    branches:
+      - agent/functional-policy-single-source
 
 permissions:
   contents: read
