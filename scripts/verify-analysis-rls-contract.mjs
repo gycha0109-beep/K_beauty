@@ -198,6 +198,24 @@ if (guardMigrationPath) {
   deploymentVerification.push("SEC-01 guard migration is not present in this checkout.");
 }
 
+const resultReadGuardMigrationPath = findMigration("sec_09_result_read_rate_limit");
+assert(resultReadGuardMigrationPath, "SEC-09 result-read corrective migration should exist");
+const resultReadGuardMigration = read(resultReadGuardMigrationPath);
+[
+  "analysis_request_rate_windows_endpoint_check",
+  "'analyze', 'face-reading', 'result-read'",
+  "alter table public.analysis_request_rate_windows enable row level security",
+  "revoke all on table public.analysis_request_rate_windows from public, anon, authenticated",
+  "grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role",
+  "security invoker",
+  "set search_path = public",
+  "revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated",
+  "grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role"
+].forEach((pattern) => assertIncludes(resultReadGuardMigration, pattern, "SEC-09 result-read migration"));
+deploymentVerification.push(
+  "SEC-09 result-read migration exists in the repository; apply it before deploying the guarded public read route."
+);
+
 const allMigrationSql = listFiles("supabase/migrations", (path) => path.endsWith(".sql"))
   .map((path) => read(path))
   .join("\n");
@@ -245,8 +263,11 @@ const analysisResults = read("lib/analysis-results.js");
 ].forEach((pattern) => assertIncludes(analysisResults, pattern, "analysis result read boundary"));
 
 const publicResultApi = read("app/api/results/[shareId]/route.js");
-assertIncludes(publicResultApi, "getAnalysisResultForShare({ shareId, request })", "public result API");
-assertIncludes(publicResultApi, 'error: "Failed to load result."', "public result API");
+assertIncludes(publicResultApi, "guardPublicResultRead", "public result API");
+assertIncludes(publicResultApi, "readAnalysisResultForShare", "public result API");
+assertIncludes(publicResultApi, "executePublicResultReadAccessCore", "public result API");
+const publicResultReadCore = read("lib/security/public-result-read-guard-core.js");
+assertIncludes(publicResultReadCore, 'error: "Failed to load result."', "public result API boundary");
 assertNotIncludes(
   publicResultApi,
   "error instanceof Error ? error.message",

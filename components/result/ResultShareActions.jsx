@@ -351,6 +351,43 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
     }
   }
 
+  async function handleUnpublish() {
+    if (!shareInfo?.shareId || !shareInfo?.savedWithAuth || !shareInfo?.isPublic) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const token = await getShareAccessToken();
+      if (!token) {
+        setStatus(copy.sessionExpired);
+        return;
+      }
+
+      const response = await fetch(`/api/results/${encodeURIComponent(shareInfo.shareId)}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ isPublic: false })
+      });
+
+      if (!response.ok) {
+        throw new Error("unpublish_failed");
+      }
+
+      const nextShare = { ...shareInfo, isPublic: false };
+      setShareInfo(nextShare);
+      writeSavedShare(nextShare);
+      setStatus(locale === "en" ? "Sharing stopped." : "Sharing has been stopped.");
+    } catch {
+      setStatus(copy.saveError);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   const isHeaderVariant = variant === "header";
   const isCompactVariant = variant === "compact";
   const containerClassName = isCompactVariant
@@ -385,7 +422,16 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
       icon: "image",
       onClick: handleDownloadImage,
       disabled: isDownloading
-    }
+    },
+    ...(shareInfo?.savedWithAuth && shareInfo?.isPublic
+      ? [{
+          key: "unpublish",
+          label: locale === "en" ? "Stop sharing" : "Stop sharing",
+          icon: "copy",
+          onClick: handleUnpublish,
+          disabled: isSaving
+        }]
+      : [])
   ];
 
   return (

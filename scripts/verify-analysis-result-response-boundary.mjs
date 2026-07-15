@@ -266,8 +266,12 @@ const accessHelper = read("lib/analysis-result-access.js");
 assert(!accessHelper.includes("normalizeStoredAnalysisResult"), "access helper must not return the legacy broad normalizer");
 
 const publicRoute = read("app/api/results/[shareId]/route.js");
-assert(publicRoute.includes('error: "Failed to load result."'), "public API must use a generic 500 response");
+const publicReadCore = read("lib/security/public-result-read-guard-core.js");
+assert(publicReadCore.includes('error: "Failed to load result."'), "public API boundary must use a generic 500 response");
 assert(!publicRoute.includes("error instanceof Error ? error.message"), "public API must not return internal error messages");
+assert(publicRoute.includes("executePublicResultReadAccessCore"), "public API must use the guarded access boundary");
+assert(publicRoute.includes("readAnalysisResultForShare"), "public API must use the strict access helper");
+assert(publicRoute.includes("PUBLIC_RESULT_READ_HEADERS"), "public API must apply no-store headers");
 
 console.log(JSON.stringify({
   status: "passed",

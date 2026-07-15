@@ -111,6 +111,12 @@ Migration: `supabase/migrations/20260704221747_sec_01_analysis_request_guard.sql
 | --- | --- |
 | `ANALYSIS_REQUEST_GUARD_SECRET` | anonymous cookie signature, principal hash, IP hash, idempotency key hash, request fingerprint hash |
 
+## SEC-09 additive `result-read` endpoint
+
+`supabase/migrations/20260715000000_sec_09_result_read_rate_limit.sql` additively extends the existing durable rate-window endpoint allowlist with `result-read`. The table key, RPC signature, deterministic locking, all-or-nothing increment behavior, RLS, `SECURITY INVOKER`, `search_path = public`, cleanup RPC, and `service_role`-only execute contract remain unchanged for `analyze` and `face-reading`.
+
+Deployment is migration-first: an old application remains compatible with the new database; a new application against an old database fails closed with the public-read guard unavailable response. The corrective migration SHA-256 is `3FF38B6E7DAD556908E7B9310502F968E86496614EBA47551DBF6C24507E795E`. Hosted migration and target verification are outside this local result.
+
 규칙:
 
 - production 필수

@@ -22,6 +22,7 @@ import {
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
 import { consumeRateLimit, getRequestClientKey } from "@/lib/write-access";
+import { parsePublicResultShareId } from "@/lib/security/public-result-read-guard-core";
 
 const SAVE_RESULTS_LIMIT = 10;
 const SAVE_RESULTS_WINDOW_MS = 10 * 60 * 1000;
@@ -296,7 +297,7 @@ export async function POST(request) {
       : null;
     const locale = body?.locale === "en" ? "en" : "ko";
     const share = body?.share === true;
-    const requestedShareId = typeof body?.shareId === "string" ? body.shareId.trim() : "";
+    const requestedShareId = typeof body?.shareId === "string" ? body.shareId : "";
     const currentUser = await getRouteSupabaseUser(request);
     const accountUser = isAccountUser(currentUser);
 
@@ -334,6 +335,10 @@ export async function POST(request) {
     }
 
     if (share && requestedShareId) {
+      const parsedShareId = parsePublicResultShareId(requestedShareId);
+      if (parsedShareId.kind === "invalid") {
+        return NextResponse.json({ success: false, error: "Invalid share id." }, { status: 400 });
+      }
       const ownerUserId = accountUser ? currentUser.id : await getAnalysisResultOwnerUserId(request);
 
       if (!ownerUserId) {
@@ -341,7 +346,7 @@ export async function POST(request) {
       }
 
       const published = await publishExistingShare(supabase, {
-        shareId: requestedShareId,
+        shareId: parsedShareId.canonical,
         userId: ownerUserId
       });
 

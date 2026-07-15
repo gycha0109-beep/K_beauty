@@ -142,6 +142,10 @@ function read(path) {
   return readFileSync(resolve(root, path), "utf8");
 }
 
+function readSourceText(path) {
+  return read(path).replace(/\r\n?/g, "\n");
+}
+
 async function loadResolver() {
   const source = read("lib/product-purchase-link.js");
   return import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
@@ -483,14 +487,17 @@ runCase("legacy_array_payload", () => {
 });
 
 runCase("response_wiring", () => {
-  const productSource = read("lib/product-source.js");
-  const analyzeRoute = read("app/api/analyze/route.js");
-  const fullReportRoute = read("app/api/full-report/route.js");
-  const freePage = read("app/result/page.js");
-  const fullPage = read("app/result/full-report/page.js");
-  const publicResultBoundary = read("lib/analysis-results.js");
+  const productSource = readSourceText("lib/product-source.js");
+  const analyzeRoute = readSourceText("app/api/analyze/route.js");
+  const fullReportRoute = readSourceText("app/api/full-report/route.js");
+  const freePage = readSourceText("app/result/page.js");
+  const fullPage = readSourceText("app/result/full-report/page.js");
+  const publicResultBoundary = readSourceText("lib/analysis-results.js");
 
-  assert(productSource.includes('getTrustedDirectPurchaseUrl({\n      buyLink: product.buy_link,'), "product source must project direct links through the resolver");
+  assert(
+    /getTrustedDirectPurchaseUrl\(\{\s*buyLink:\s*product\.buy_link,/.test(productSource),
+    "product source must project direct links through the resolver"
+  );
   assert(analyzeRoute.includes("sanitizeAnalyzeResultPurchaseLinks({"), "analysis response must apply the final recursive purchase-link boundary");
   assert(analyzeRoute.includes("sanitizePremiumReportPurchaseLinks({"), "premium session payload must apply the shared recursive purchase-link boundary");
   assert(fullReportRoute.includes("sanitizePremiumReportPurchaseLinks(savedReport.premium_report || {})") && fullReportRoute.includes("sanitizePremiumReportPurchaseLinks(responsePremiumReport)"), "full-report must apply the shared recursive purchase-link boundary to saved and session payloads");

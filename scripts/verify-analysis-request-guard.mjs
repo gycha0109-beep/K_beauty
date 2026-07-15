@@ -124,6 +124,17 @@ const migration = read("supabase/migrations/20260704221747_sec_01_analysis_reque
   assertNotIncludes(migration, pattern, "migration")
 );
 
+const resultReadMigration = read("supabase/migrations/20260715000000_sec_09_result_read_rate_limit.sql");
+[
+  "analysis_request_rate_windows_endpoint_check",
+  "'analyze', 'face-reading', 'result-read'",
+  "security invoker",
+  "for update",
+  "revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated",
+  "grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role"
+].forEach((pattern) => assertIncludes(resultReadMigration, pattern, "SEC-09 additive rate migration"));
+assertNotIncludes(resultReadMigration, "analysis_request_idempotency", "SEC-09 additive rate migration");
+
 const guard = read("lib/security/analysis-request-guard.js");
 assertIncludes(guard, "analysis_guard_unavailable", "guard fail closed code");
 assertIncludes(guard, "if (!secret)", "guard secret check");

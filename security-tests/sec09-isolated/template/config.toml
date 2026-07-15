@@ -1,0 +1,15 @@
+project_id = "__SEC09_ISOLATED_PROJECT_ID__"
+
+[api]
+port = 56631
+
+[db]
+port = 56632
+shadow_port = 56630
+major_version = 15
+
+[studio]
+port = 56633
+
+[inbucket]
+port = 56634

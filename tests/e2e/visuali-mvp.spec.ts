@@ -13,6 +13,12 @@ const FIXTURE_IMAGE_PATH = path.join(
 const LOCAL_ENV_PATH = path.join(process.cwd(), ".env.local");
 const RESULT_TIMEOUT_MS = 180000;
 const REMOTE_BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "";
+const SHARED_RESULT_SMOKE_IDS = {
+  public: "CQkJCQkJCQkJCQkJCQkJCQ",
+  notFound: "AgICAgICAgICAgICAgICAg",
+  rateLimited: "AwMDAwMDAwMDAwMDAwMDAw",
+  unavailable: "BAQEBAQEBAQEBAQEBAQEBA"
+};
 const REMOTE_TARGET =
   Boolean(REMOTE_BASE_URL) &&
   !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/i.test(REMOTE_BASE_URL);
@@ -136,6 +142,28 @@ async function advanceToFullReport(page: Page) {
   }
 }
 
+function createSharedResultFixture() {
+  return {
+    shareId: SHARED_RESULT_SMOKE_IDS.public,
+    schemaVersion: 1,
+    locale: "en",
+    skinType: "dry",
+    mainConcerns: ["redness"],
+    summary: "server-only-result-payload",
+    routineAm: ["Gentle cleanse"],
+    routinePm: ["Moisturize"],
+    topPick: {
+      id: "fixture-top-pick",
+      name: "Fixture Cream",
+      brand: "Fixture Brand",
+      step: "Moisturizer",
+      reason: "fixture reason"
+    },
+    categoryPicks: [],
+    routineStructure: null
+  };
+}
+
 test.describe("Visuali MVP E2E draft", () => {
   test("purchase-link client boundary imports the shared resolver @smoke", async () => {
     const freeResultPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "page.js"), "utf8");
@@ -147,6 +175,110 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(fullReportPage).toContain('from "@/lib/product-purchase-link"');
     expect(freeResultPage).toContain('rel="noopener noreferrer"');
     expect(fullReportPage).toContain('rel="noopener noreferrer"');
+  });
+
+  test("shared result loader has one read boundary and generic failure states @smoke", async ({ page }) => {
+    let isPublic = true;
+    let publicGetCount = 0;
+    let rateLimitedGetCount = 0;
+    let patchPayload: unknown = null;
+    let releaseInitialRead: (() => void) | undefined;
+    const initialRead = new Promise<void>((resolve) => {
+      releaseInitialRead = resolve;
+    });
+    let holdInitialRead = true;
+
+    await page.route("**/api/results/*", async (route) => {
+      const request = route.request();
+      const shareId = new URL(request.url()).pathname.split("/").at(-1);
+
+      if (request.method() === "PATCH") {
+        patchPayload = request.postDataJSON();
+        isPublic = false;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ success: true, unpublished: true })
+        });
+        return;
+      }
+
+      if (shareId === SHARED_RESULT_SMOKE_IDS.public) {
+        publicGetCount += 1;
+        if (holdInitialRead) {
+          await initialRead;
+          holdInitialRead = false;
+        }
+        await route.fulfill({
+          status: isPublic ? 200 : 404,
+          contentType: "application/json",
+          body: JSON.stringify(
+            isPublic
+              ? { success: true, result: createSharedResultFixture() }
+              : { success: false, error: "Result not found." }
+          )
+        });
+        return;
+      }
+
+      if (shareId === SHARED_RESULT_SMOKE_IDS.rateLimited) {
+        rateLimitedGetCount += 1;
+        await route.fulfill({
+          status: 429,
+          contentType: "application/json",
+          body: JSON.stringify({ success: false, error: "result_read_rate_limited" })
+        });
+        return;
+      }
+
+      if (shareId === SHARED_RESULT_SMOKE_IDS.unavailable) {
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({ success: false, error: "result_read_guard_unavailable" })
+        });
+        return;
+      }
+
+      await route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ success: false, error: "Result not found." })
+      });
+    });
+
+    await page.goto(`/r/${SHARED_RESULT_SMOKE_IDS.public}`, { waitUntil: "domcontentloaded" });
+    expect(await page.content()).not.toContain("server-only-result-payload");
+    releaseInitialRead?.();
+    await expect(page.getByText("Shared Result")).toBeVisible();
+    await expect(page.getByText("server-only-result-payload")).toBeVisible();
+    await page.waitForTimeout(250);
+    expect(publicGetCount).toBe(1);
+
+    const unpublishResponse = await page.evaluate(async (shareId) => {
+      const response = await fetch(`/api/results/${encodeURIComponent(shareId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: false })
+      });
+      return { status: response.status, body: await response.json() };
+    }, SHARED_RESULT_SMOKE_IDS.public);
+    expect(unpublishResponse).toEqual({ status: 200, body: { success: true, unpublished: true } });
+    expect(patchPayload).toEqual({ isPublic: false });
+
+    await page.goto(`/r/${SHARED_RESULT_SMOKE_IDS.public}`);
+    await expect(page.getByRole("heading", { name: "Result not found" })).toBeVisible();
+
+    await page.goto(`/r/${SHARED_RESULT_SMOKE_IDS.notFound}`);
+    await expect(page.getByRole("heading", { name: "Result not found" })).toBeVisible();
+
+    await page.goto(`/r/${SHARED_RESULT_SMOKE_IDS.rateLimited}`);
+    await expect(page.getByRole("heading", { name: "Too many requests" })).toBeVisible();
+    await page.waitForTimeout(250);
+    expect(rateLimitedGetCount).toBe(1);
+
+    await page.goto(`/r/${SHARED_RESULT_SMOKE_IDS.unavailable}`);
+    await expect(page.getByRole("heading", { name: "Temporarily unavailable" })).toBeVisible();
   });
 
   test("photo upload rejects unsupported files before preview @smoke", async ({ page }) => {
