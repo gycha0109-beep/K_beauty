@@ -14,6 +14,7 @@ import PremiumFaceLabSection from "@/components/full-report/PremiumFaceLabSectio
 import CurrentProductsSelector from "@/components/current-products/CurrentProductsSelector";
 import CurrentProductsSummaryCard from "@/components/result/premium/CurrentProductsSummaryCard";
 import AuthNav from "@/components/auth/AuthNav";
+import LoginButtons from "@/components/auth/LoginButtons";
 import AppHamburgerMenu from "@/components/navigation/AppHamburgerMenu";
 import PremiumReportLoadingPage from "./loading/page";
 import {
@@ -48,6 +49,36 @@ const SKIN_MATCH_SECTION_ORDER = [
 ];
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 const PREMIUM_REPORT_ENABLED = true;
+const FULL_REPORT_AUTH_FAILURE_COPY = {
+  ko: {
+    login_required: {
+      title: "로그인이 다시 필요해요",
+      body: "무료 분석 결과는 그대로 유지됩니다. 로그인한 뒤 풀리포트를 다시 불러올게요.",
+      action: "Google로 로그인",
+      back: "무료 결과로 돌아가기"
+    },
+    premium_session_missing_or_expired: {
+      title: "풀리포트를 다시 준비해 주세요",
+      body: "무료 결과로 돌아가 풀리포트 준비를 다시 시작해 주세요. 보안을 위해 만료되거나 다른 주소에서 만든 세션은 재사용하지 않습니다.",
+      action: "무료 결과에서 다시 준비하기",
+      back: "새 분석 시작하기"
+    }
+  },
+  en: {
+    login_required: {
+      title: "Please sign in again",
+      body: "Your free analysis stays in this tab. After sign-in, we will load the full report again.",
+      action: "Continue with Google",
+      back: "Back to free result"
+    },
+    premium_session_missing_or_expired: {
+      title: "Prepare the full report again",
+      body: "Return to the free result and start the full-report step again. Expired sessions and sessions created on another origin are not reused.",
+      action: "Prepare from free result",
+      back: "Start a new analysis"
+    }
+  }
+};
 const PREMIUM_REPORT_DISABLED_COPY = {
   ko: {
     title: "프리미엄 베타 체험은 종료되었습니다",
@@ -6234,6 +6265,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
   const [freeResult, setFreeResult] = useState(null);
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
+  const [authorizationFailure, setAuthorizationFailure] = useState("");
   const [accessBlocked, setAccessBlocked] = useState(
     accessReason === "payment_required" || accessReason === "premium_unavailable"
   );
@@ -6355,7 +6387,12 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             setReport(developmentFallbackReport);
           } else {
             setReport(null);
-            setError(copy.errorBody);
+            setError("");
+            setAuthorizationFailure(
+              data?.error === "login_required"
+                ? "login_required"
+                : "premium_session_missing_or_expired"
+            );
           }
           return;
         }
@@ -6380,6 +6417,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         }
 
         setFreeResult(baseResult);
+        setAuthorizationFailure("");
         const localizedData = localizeFullReportForLocale(data, baseResult, locale);
         setReport(localizedData);
         trackEvent("view_full_report", {
@@ -6431,6 +6469,46 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
 
   if (accessBlocked) {
     return <PremiumAccessBlocked locale={locale} />;
+  }
+
+  if (authorizationFailure === "login_required") {
+    const authCopy = FULL_REPORT_AUTH_FAILURE_COPY[locale].login_required;
+    const authReturnPath = savedReportId
+      ? `${pathname}?savedReportId=${encodeURIComponent(savedReportId)}`
+      : pathname || (locale === "en" ? "/en/result/full-report" : "/result/full-report");
+
+    return (
+      <ErrorState
+        title={authCopy.title}
+        description={authCopy.body}
+        primaryActionLabel=""
+        primaryActionHref=""
+        primaryActionContent={(
+          <LoginButtons
+            label={authCopy.action}
+            locale={locale}
+            next={authReturnPath}
+          />
+        )}
+        secondaryActionLabel={authCopy.back}
+        secondaryActionHref={getResultPath(locale)}
+      />
+    );
+  }
+
+  if (authorizationFailure === "premium_session_missing_or_expired") {
+    const sessionCopy = FULL_REPORT_AUTH_FAILURE_COPY[locale].premium_session_missing_or_expired;
+
+    return (
+      <ErrorState
+        title={sessionCopy.title}
+        description={sessionCopy.body}
+        primaryActionLabel={sessionCopy.action}
+        primaryActionHref={getResultPath(locale)}
+        secondaryActionLabel={sessionCopy.back}
+        secondaryActionHref={getHomePath(locale)}
+      />
+    );
   }
 
   if (!savedReportId && !premiumEntrySubmitted && !isTestFullReport) {

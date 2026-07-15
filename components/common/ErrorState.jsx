@@ -76,6 +76,7 @@ export default function ErrorState({
   description,
   primaryActionLabel,
   primaryActionHref,
+  primaryActionContent,
   secondaryActionLabel,
   secondaryActionHref
 }) {
@@ -116,7 +117,7 @@ export default function ErrorState({
         </p>
 
         <div className="mt-8 flex flex-col gap-2.5">
-          <ActionLink href={primaryHref} label={primaryLabel} />
+          {primaryActionContent || <ActionLink href={primaryHref} label={primaryLabel} />}
           <ActionLink href={secondaryHref} label={secondaryLabel} tone="secondary" />
         </div>
       </section>
