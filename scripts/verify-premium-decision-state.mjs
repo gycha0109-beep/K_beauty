@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { buildPremiumConditionResponses } from "../lib/premium-condition-responses.js";
 import {
   buildPremiumDecisionState,
@@ -144,6 +145,33 @@ const changed = rebuildPremiumDecisionState(
 assert.notEqual(changed.decisionBundle.contextHash, rebuiltAgain.decisionBundle.contextHash);
 assert.equal(changed.decisionBundle.contextRevision, rebuiltAgain.decisionBundle.contextRevision + 1);
 
+const previousSurvey = rebuildPremiumDecisionState(
+  baseReport({
+    freeResult: {
+      ...baseReport().freeResult,
+      answers: { recentSkinChange: "no" }
+    }
+  }),
+  { locale: "ko", source: "verify_survey_revision" }
+);
+const changedSurvey = rebuildPremiumDecisionState(
+  {
+    ...previousSurvey,
+    freeResult: {
+      ...previousSurvey.freeResult,
+      answers: { recentSkinChange: "yes" }
+    }
+  },
+  { locale: "ko", source: "verify_survey_revision_change" }
+);
+assert.equal(changedSurvey.decisionBundle.context.survey.answers.recentSkinChange, "yes");
+assert.equal(changedSurvey.decisionBundle.context.safetyState.recentSkinChange, "yes");
+assert.notEqual(changedSurvey.decisionBundle.contextHash, previousSurvey.decisionBundle.contextHash);
+assert.equal(
+  changedSurvey.decisionBundle.contextRevision,
+  previousSurvey.decisionBundle.contextRevision + 1
+);
+
 const rotated = buildRotatedPremiumReportPayload(rebuiltOnce);
 assert.ok(rotated);
 assert.equal(rotated.currentProducts, null);
@@ -169,5 +197,15 @@ const withSibling = buildPremiumConditionResponses({
   functionalDecisions: [{ goalKey: "texture_exfoliation", status: "pause" }]
 });
 assert.deepEqual(withSibling, withoutSibling, "condition policy must ignore functional final output");
+
+const fullReportRoute = readFileSync(
+  new URL("../app/api/full-report/route.js", import.meta.url),
+  "utf8"
+);
+assert.match(
+  fullReportRoute,
+  /const currentProductVerdicts = buildPremiumCurrentProductVerdicts\(currentProducts, report, locale\);/,
+  "empty current-product submissions must still rebuild the premium decision state"
+);
 
 console.log("verify-premium-decision-state: ok");

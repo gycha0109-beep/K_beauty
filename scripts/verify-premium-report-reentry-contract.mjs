@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const read = (path) => readFileSync(resolve(root, path), "utf8");
 
-const reentrySource = read("lib/premium-report-reentry.js");
-const reentryModule = await import(`data:text/javascript;base64,${Buffer.from(reentrySource, "utf8").toString("base64")}`);
+const reentryModule = await import(
+  pathToFileURL(resolve(root, "lib/premium-report-reentry.js")).href
+);
 const sessionRoute = read("app/api/full-report/session/route.js");
 const resultPage = read("app/result/page.js");
 const previewStep = read("components/result/free-v2/FreeResultV2PremiumPreviewStep.jsx");
