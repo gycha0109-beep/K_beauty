@@ -35,7 +35,12 @@ import {
   issueAnonymousWriteGrants
 } from "@/lib/security/anonymous-write-grant";
 import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonymous-write-grant-core";
-import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
+import {
+  formatUploadSize,
+  validateImageRequestContentLength,
+  validateImageUpload
+} from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
@@ -1362,6 +1367,21 @@ export async function POST(request) {
   let analysisGuard = null;
 
   try {
+    const contentLengthValidation = validateImageRequestContentLength(request);
+
+    if (!contentLengthValidation.ok) {
+      const copy = getAnalyzeCopy(responseLocale);
+      return NextResponse.json(
+        {
+          error:
+            contentLengthValidation.code === "too_large"
+              ? copy.imageTooLarge
+              : copy.invalidImageType
+        },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const image = formData.get("image");
     const skinType = formData.get("skinType");
@@ -1490,12 +1510,23 @@ export async function POST(request) {
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
-    let imageDataUrl = null;
+    const buffer = Buffer.from(await image.arrayBuffer());
+    const canonicalImage = await canonicalizeImageFile(image, buffer);
 
-    if (typeof image.arrayBuffer === "function") {
-      const buffer = Buffer.from(await image.arrayBuffer());
-      imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
+    if (!canonicalImage.ok) {
+      const guardFailure = await failAnalysisRequestGuard(analysisGuard);
+
+      if (!guardFailure.ok) {
+        logAnalyze("analysis-guard:fail-failed");
+      }
+
+      return applyAnalysisGuardCookies(
+        NextResponse.json({ error: copy.invalidImageType }, { status: 400 }),
+        analysisGuard
+      );
     }
+
+    const canonicalDataUrl = canonicalImage.dataUrl;
 
     if (process.env.NODE_ENV !== "production") {
       logAnalyze(
@@ -1518,11 +1549,11 @@ export async function POST(request) {
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
     let photoNotice = "";
 
-    if (apiKey && imageDataUrl) {
+    if (apiKey && canonicalDataUrl) {
       try {
         photoAnalysis = await extractPhotoAnalysis({
           apiKey,
-          imageDataUrl,
+          imageDataUrl: canonicalDataUrl,
           locale,
           model,
           formInput

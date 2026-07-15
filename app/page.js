@@ -24,6 +24,7 @@ import {
   clearAnonymousWriteGrantState,
   writeAnonymousWriteGrantState
 } from "@/lib/write-access-client";
+import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
 const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
@@ -400,6 +401,31 @@ export default function HomePage() {
 
     if (!file) {
       setError("");
+      return;
+    }
+
+    const validation = validateImageUpload(file);
+
+    if (!validation.ok) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      setImageFile(null);
+      setPreviewUrl("");
+      setError(
+        validation.code === "too_large"
+          ? locale === "en"
+            ? `Images must be ${formatUploadSize()} or smaller.`
+            : `이미지는 ${formatUploadSize()} 이하여야 합니다.`
+          : locale === "en"
+            ? "Choose a non-empty JPEG, PNG, or WebP image."
+            : "비어 있지 않은 JPEG, PNG 또는 WebP 이미지를 선택해 주세요."
+      );
+
+      if (event.target) {
+        event.target.value = "";
+      }
       return;
     }
 

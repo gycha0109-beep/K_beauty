@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
+import {
+  formatUploadSize,
+  validateImageRequestContentLength,
+  validateImageUpload
+} from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
@@ -718,6 +723,16 @@ export async function POST(request) {
   let analysisGuard = null;
 
   try {
+    const contentLengthValidation = validateImageRequestContentLength(request);
+
+    if (!contentLengthValidation.ok) {
+      const copy = getCopy(responseLocale);
+      const errorMessage = contentLengthValidation.code === "too_large"
+        ? copy.imageTooLarge
+        : copy.invalidImageType;
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
+    }
+
     const formData = await request.formData();
     const image = formData.get("image");
     const locale = formData.get("locale") === "en" ? "en" : "ko";
@@ -750,6 +765,17 @@ export async function POST(request) {
       return createAnalysisGuardResponse(analysisGuard, locale);
     }
 
+    const buffer = Buffer.from(await image.arrayBuffer());
+    const canonicalImage = await canonicalizeImageFile(image, buffer);
+
+    if (!canonicalImage.ok) {
+      return failGuardedResponse(
+        NextResponse.json({ error: copy.invalidImageType }, { status: 400 }),
+        analysisGuard
+      );
+    }
+
+    const canonicalDataUrl = canonicalImage.dataUrl;
     const { apiKey } = resolveOpenAiApiKey();
     if (process.env.NODE_ENV !== "production") {
       console.info(
@@ -767,9 +793,6 @@ export async function POST(request) {
         analysisGuard
       );
     }
-
-    const buffer = Buffer.from(await image.arrayBuffer());
-    const imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
 
     const providerStartedAt = Date.now();
     let response;
@@ -797,7 +820,7 @@ export async function POST(request) {
                 },
                 {
                   type: "image_url",
-                  image_url: { url: imageDataUrl }
+                  image_url: { url: canonicalDataUrl }
                 }
               ]
             }

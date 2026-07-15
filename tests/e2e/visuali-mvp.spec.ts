@@ -149,6 +149,26 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(fullReportPage).toContain('rel="noopener noreferrer"');
   });
 
+  test("photo upload rejects unsupported files before preview @smoke", async ({ page }) => {
+    await page.goto("/en");
+
+    const uploadInput = page.locator('input[type="file"]').last();
+    await expect(uploadInput).toHaveAttribute(
+      "accept",
+      "image/jpeg,image/png,image/webp"
+    );
+    await uploadInput.setInputFiles({
+      name: "not-an-image.jpg",
+      mimeType: "text/plain",
+      buffer: Buffer.from("not an image", "utf8")
+    });
+
+    await expect(
+      page.getByText("Choose a non-empty JPEG, PNG, or WebP image.")
+    ).toBeVisible();
+    await expect(page.getByAltText("Preview of the uploaded face photo")).toHaveCount(0);
+  });
+
   test("home entry, photo upload, and required survey navigation @smoke", async ({
     page
   }) => {

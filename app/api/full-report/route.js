@@ -9,6 +9,10 @@ import {
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import {
+  canonicalizeOptionalImageDataUrl,
+  validateFullReportImageAliases
+} from "@/lib/server/image-upload-boundary";
+import {
   getPremiumReportCookieOptions,
   PREMIUM_REPORT_COOKIE,
   updatePremiumReportSession,
@@ -102,7 +106,7 @@ function getBearerToken(request) {
   return scheme?.toLowerCase() === "bearer" && token ? token.trim() : null;
 }
 
-function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
+function resolveFaceLabSummary({ storedPremiumReport, body, locale, canonicalImageUrl }) {
   const storedFaceLabSummary = sanitizePremiumFaceLabSummary(storedPremiumReport.faceLabSummary);
 
   if (storedFaceLabSummary.status === "available") {
@@ -115,7 +119,7 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
   const requestFaceLabSummary = body?.faceLab
     ? buildPremiumFaceLabSummary(body.faceLab, {
         locale,
-        imageUrl: body?.imageUrl || storedFaceLabSummary.imageUrl,
+        imageUrl: canonicalImageUrl || storedFaceLabSummary.imageUrl,
         imageAlt: body?.imageAlt || storedFaceLabSummary.imageAlt
       })
     : null;
@@ -287,6 +291,12 @@ export async function POST(request) {
     body = await request.json();
   } catch {}
 
+  const imageAliasValidation = validateFullReportImageAliases(body);
+
+  if (!imageAliasValidation.ok) {
+    return NextResponse.json({ error: "invalid_image" }, { status: 400 });
+  }
+
   const locale = body?.locale === "en" ? "en" : "ko";
   const userSupabase = await getUserSupabaseClient(request);
   const { user, access } = await resolvePremiumAccessForRequest(request);
@@ -294,6 +304,12 @@ export async function POST(request) {
   if (body?.savedReportId) {
     if (!isAccountUser(user) || !userSupabase) {
       return getUnauthorizedResponse("login_required");
+    }
+
+    const savedReportImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
+
+    if (!savedReportImage.ok) {
+      return NextResponse.json({ error: "invalid_image" }, { status: 400 });
     }
 
     const { data: savedReport, error } = await loadSavedPremiumReport({
@@ -343,6 +359,14 @@ export async function POST(request) {
     return getUnauthorizedResponse("premium_session_missing_or_expired");
   }
 
+  const canonicalImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
+
+  if (!canonicalImage.ok) {
+    return NextResponse.json({ error: "invalid_image" }, { status: 400 });
+  }
+
+  const canonicalImageUrl = canonicalImage.absent ? null : canonicalImage.dataUrl;
+
   let storedPremiumReport = premiumSession.payload.premiumReport || {};
   const currentProductsResult = await applyCurrentProductsToReport({
     report: storedPremiumReport,
@@ -353,7 +377,8 @@ export async function POST(request) {
   const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({
     storedPremiumReport,
     body,
-    locale
+    locale,
+    canonicalImageUrl
   });
   const responsePremiumReport = {
     ...storedPremiumReport,

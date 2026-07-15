@@ -10,7 +10,7 @@ const STEP_COPY = {
     highlight: "제품을 찾아드려요",
     hint: "사진 신호와 설문 답변을 함께 분석합니다.",
     guide: "얼굴을 원 안에 맞춰주세요",
-    privacy: "사진은 저장되지 않고 분석에만 사용합니다",
+    privacy: "JPEG, PNG, WebP · 최대 8MB · 사진은 저장되지 않고 분석에만 사용합니다",
     camera: "지금 촬영하기",
     gallery: "사진에서 선택",
     retake: "다시 촬영하기",
@@ -38,7 +38,7 @@ const STEP_COPY = {
     highlight: "matched to your skin",
     hint: "We combine photo signals with your survey answers.",
     guide: "Place your face inside the circle",
-    privacy: "Photos are used only for analysis and are not saved",
+    privacy: "JPEG, PNG, WebP · up to 8MB · used only for analysis and not saved",
     camera: "Use Camera",
     gallery: "Choose Photo",
     retake: "Retake Photo",
@@ -474,7 +474,7 @@ export default function PhotoUploadStep({
         <input
           ref={cameraInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           capture="user"
           className="hidden"
           onChange={onImageChange}
@@ -482,7 +482,7 @@ export default function PhotoUploadStep({
         <input
           ref={galleryInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           className="hidden"
           onChange={onImageChange}
         />

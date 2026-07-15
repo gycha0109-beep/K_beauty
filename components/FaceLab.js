@@ -264,7 +264,7 @@ function FaceLabComposerCard({ locale = "ko", previewUrl, onImageChange }) {
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         capture="user"
         className="hidden"
         onChange={onImageChange}
@@ -272,7 +272,7 @@ function FaceLabComposerCard({ locale = "ko", previewUrl, onImageChange }) {
       <input
         ref={galleryInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={onImageChange}
       />
