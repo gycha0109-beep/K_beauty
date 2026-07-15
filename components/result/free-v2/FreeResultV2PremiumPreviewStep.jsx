@@ -21,6 +21,21 @@ const PREMIUM_REPORT_BETA_COPY = {
   }
 };
 
+const PREMIUM_REPORT_REENTRY_COPY = {
+  ko: {
+    title: "완성된 Skin Match 플랜이 있어요",
+    body: "방금 만든 풀리포트를 다시 보거나, 현재 제품 기준으로 새로 만들 수 있어요.",
+    open: "풀리포트 다시 보기",
+    create: "새 풀리포트 만들기"
+  },
+  en: {
+    title: "Your Skin Match plan is ready",
+    body: "Reopen the full report you just made, or create a new one with your current products.",
+    open: "View full report",
+    create: "Create a new full report"
+  }
+};
+
 function FreeResultV2PremiumPreviewLead({ title, body }) {
   return (
     <section className="rounded-[2rem] border border-[#ead9d6] bg-transparent p-1 dark:border-[#4a303c]">
@@ -42,10 +57,17 @@ function ResultPreviewMaskCard({
   locale = "ko",
   premiumReportEnabled = false,
   premiumAvailability = "checking",
+  savedReportId = null,
+  isSavedReportChecking = false,
+  isSessionRotationPending = false,
   isDevelopment = false,
   onDeveloperFullReportClick = null,
-  onPremiumClick = null
+  onPremiumClick = null,
+  onSavedReportClick = null,
+  onNewPremiumClick = null
 }) {
+  const hasSavedReport = typeof savedReportId === "string" && savedReportId.trim();
+  const reentryCopy = PREMIUM_REPORT_REENTRY_COPY[locale] || PREMIUM_REPORT_REENTRY_COPY.ko;
   const premiumUnavailable = premiumAvailability === "unavailable";
   const premiumChecking = premiumAvailability === "checking";
   const unavailableCopy =
@@ -62,15 +84,36 @@ function ResultPreviewMaskCard({
           button: "현재 이용할 수 없습니다",
           checking: "이용 가능 여부 확인 중..."
         };
-  const displayTitle = premiumUnavailable ? unavailableCopy.title : betaCopy.title;
-  const displayBody = premiumUnavailable ? unavailableCopy.body : betaCopy.body;
-  const buttonLabel = premiumUnavailable
-    ? unavailableCopy.button
-    : premiumChecking
-      ? unavailableCopy.checking
+  const displayTitle = hasSavedReport
+    ? reentryCopy.title
+    : premiumUnavailable
+      ? unavailableCopy.title
       : betaCopy.button;
+  const displayBody = hasSavedReport
+    ? reentryCopy.body
+    : premiumUnavailable
+      ? unavailableCopy.body
+      : betaCopy.body;
+  const primaryButtonLabel = hasSavedReport
+    ? reentryCopy.open
+    : premiumUnavailable
+      ? unavailableCopy.button
+      : premiumChecking || isSavedReportChecking
+        ? unavailableCopy.checking
+        : betaCopy.button;
   const showDeveloperEntry = isDevelopment && !premiumUnavailable && premiumReportEnabled && onDeveloperFullReportClick;
-  const canOpenPremium = premiumReportEnabled && !premiumChecking && !premiumUnavailable && onPremiumClick;
+  const canOpenSavedReport = Boolean(hasSavedReport && !isSessionRotationPending && onSavedReportClick);
+  const canCreateNewReport = Boolean(
+    hasSavedReport &&
+      premiumReportEnabled &&
+      !premiumChecking &&
+      !premiumUnavailable &&
+      !isSessionRotationPending &&
+      onNewPremiumClick
+  );
+  const canOpenPremium = hasSavedReport
+    ? canOpenSavedReport
+    : premiumReportEnabled && !premiumChecking && !premiumUnavailable && !isSavedReportChecking && onPremiumClick;
 
   return (
     <section className="overflow-hidden rounded-[2rem] border border-[rgba(120,70,70,0.14)] bg-[linear-gradient(145deg,#fff4ef_0%,#f6ece8_52%,#ffe1e5_100%)] p-5 text-[#28121b] shadow-[0_24px_70px_rgba(79,36,50,0.13)] dark:border-[#704557] dark:bg-[linear-gradient(135deg,#341f2c_0%,#2a1823_58%,#241720_100%)] dark:text-[#fff8f3] dark:shadow-[0_28px_80px_rgba(18,10,16,0.34)]">
@@ -106,20 +149,32 @@ function ResultPreviewMaskCard({
               i
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{buttonLabel}</p>
+              <p className="text-sm font-semibold text-[#28121b] dark:text-[#fff8f3]">{displayTitle}</p>
               <p className="mt-1.5 text-xs leading-5 text-[#6f4a56] dark:text-[#c8aeb8]">{displayBody}</p>
             </div>
           </div>
           <button
             type="button"
             disabled={!canOpenPremium}
-            onClick={canOpenPremium ? onPremiumClick : undefined}
+            onClick={canOpenPremium ? (hasSavedReport ? onSavedReportClick : onPremiumClick) : undefined}
             className={`ui-button-primary min-h-14 w-full bg-[linear-gradient(90deg,#e96b93_0%,#ff8769_100%)] px-5 text-sm font-semibold !text-white shadow-[0_16px_34px_rgba(232,96,116,0.20)] ${
               canOpenPremium ? "" : "cursor-not-allowed opacity-80"
             }`}
           >
-            {buttonLabel}
+            {primaryButtonLabel}
           </button>
+          {hasSavedReport ? (
+            <button
+              type="button"
+              disabled={!canCreateNewReport}
+              onClick={canCreateNewReport ? onNewPremiumClick : undefined}
+              className={`ui-button-secondary min-h-12 w-full border border-[#ddbfb5] bg-white/70 px-5 text-sm font-semibold text-[#4a2b34] transition hover:bg-[#fff4f1] dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#f4d7df] dark:hover:bg-[#352430] ${
+                canCreateNewReport ? "" : "cursor-not-allowed opacity-70"
+              }`}
+            >
+              {reentryCopy.create}
+            </button>
+          ) : null}
         </div>
 
         {showDeveloperEntry ? (
@@ -148,10 +203,15 @@ export default function FreeResultV2PremiumPreviewStep({
   copy,
   premiumReportEnabled = false,
   premiumAvailability = "checking",
+  savedReportId = null,
+  isSavedReportChecking = false,
+  isSessionRotationPending = false,
   locale = "ko",
   isDevelopment = false,
   onDeveloperFullReportClick = null,
-  onPremiumClick = null
+  onPremiumClick = null,
+  onSavedReportClick = null,
+  onNewPremiumClick = null
 }) {
   const betaCopy = PREMIUM_REPORT_BETA_COPY[locale] || PREMIUM_REPORT_BETA_COPY.ko;
 
@@ -167,9 +227,14 @@ export default function FreeResultV2PremiumPreviewStep({
         locale={locale}
         premiumReportEnabled={premiumReportEnabled}
         premiumAvailability={premiumAvailability}
+        savedReportId={savedReportId}
+        isSavedReportChecking={isSavedReportChecking}
+        isSessionRotationPending={isSessionRotationPending}
         isDevelopment={isDevelopment}
         onDeveloperFullReportClick={onDeveloperFullReportClick}
         onPremiumClick={onPremiumClick}
+        onSavedReportClick={onSavedReportClick}
+        onNewPremiumClick={onNewPremiumClick}
       />
     </section>
   );
