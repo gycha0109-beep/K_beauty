@@ -3,6 +3,12 @@ import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
 import {
+  buildFaceLabObservationAnalysis,
+  createFaceLabObservationPromptContract,
+  createFaceLabObservationPromptRules
+} from "@/lib/face-lab-observation-contract";
+import { createFaceLabLegacyInsufficientPayload } from "@/lib/face-lab-route-shadow";
+import {
   createImageAnalysisEligibilityPromptContract,
   createImageAnalysisEligibilityRules,
   normalizeImageAnalysisEligibility
@@ -629,6 +635,7 @@ function safeParse(content, locale = "ko") {
 
 function createPrompt(locale = "ko") {
   const copy = getCopy(locale);
+  const observationContract = createFaceLabObservationPromptContract();
 
   return `
 You are generating a Face Lab result.
@@ -641,6 +648,7 @@ ${copy.systemLanguage}
 Use this exact JSON shape:
 {
   ${createImageAnalysisEligibilityPromptContract()},
+  "observation_analysis": ${JSON.stringify(observationContract, null, 2)},
   "base_data": {
     "landmarks": ["visible feature 1", "visible feature 2", "visible feature 3", "visible feature 4"],
     "face_shape": "short face-shape label",
@@ -696,6 +704,8 @@ Rules:
 - Hairstyle recommendations should use structure -> visual effect -> recommendation.
 - Feature-based lines should follow observation -> visual effect -> impression outcome.
 ${createImageAnalysisEligibilityRules()}
+${createFaceLabObservationPromptRules()}
+- eligibility and observation_analysis keys, enum values, and evidence must remain in English even when base_data and features use the requested locale.
 - ${copy.toneRule}
 `.trim();
 }
@@ -790,7 +800,7 @@ export async function POST(request) {
         },
         body: JSON.stringify({
           model: MODEL,
-          max_tokens: 1400,
+          max_tokens: 3000,
           temperature: 0,
           response_format: { type: "json_object" },
           messages: [
@@ -889,6 +899,26 @@ export async function POST(request) {
           : failGuardedResponse(response, analysisGuard);
       }
 
+      const analysis = buildFaceLabObservationAnalysis(
+        parsed?.observation_analysis,
+        {
+          eligibility,
+          provider: "openai",
+          model: MODEL
+        }
+      );
+
+      if (process.env.NODE_ENV !== "production") {
+        console.info("[face-reading] observation-analysis", {
+          status: analysis.status,
+          failureReason: analysis.failureReason,
+          availableFieldCount: analysis.coverage.availableFieldCount,
+          totalCoreFieldCount: analysis.coverage.totalCoreFieldCount,
+          availableGroups: analysis.coverage.availableGroups,
+          warnings: analysis.warnings
+        });
+      }
+
       if (!hasFaceReadingPayloadShape(parsed)) {
         console.warn("[face-reading] response shape insufficient", {
           hasBaseData: Boolean(parsed?.base_data),
@@ -905,10 +935,11 @@ export async function POST(request) {
         return completeGuardedResponse(
           NextResponse.json(
             createFaceLabInsufficientEvidence(
-              {
-                ...parsed,
-                structured: buildFaceLabStructuredData(parsed, locale)
-              },
+              createFaceLabLegacyInsufficientPayload(
+                parsed,
+                locale,
+                analysis
+              ),
               "required_features_missing",
               { eligibility }
             )
@@ -930,7 +961,8 @@ export async function POST(request) {
       return completeGuardedResponse(
         NextResponse.json(createFaceLabAvailable({
           ...normalizedFaceLab,
-          structured: structuredFaceLab
+          structured: structuredFaceLab,
+          analysis
         }, { eligibility })),
         analysisGuard
       );
