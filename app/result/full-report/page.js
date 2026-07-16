@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
+import SafeProductImage from "@/components/common/SafeProductImage";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
@@ -787,17 +788,18 @@ function PremiumReportComingSoonGate({ locale = "ko" }) {
 }
 
 function ProductThumb({ product, copy, sizeClass = "h-28 w-24" }) {
-  if (product?.image_url) {
-    return (
-      <div className={`${sizeClass} overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70`}>
-        <img src={product.image_url} alt={product.name || "Product"} className="h-full w-full object-cover" />
-      </div>
-    );
-  }
-
   return (
-    <div className={`${sizeClass} flex items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-zinc-900/50 px-3 text-center text-[11px] text-zinc-400`}>
-      {copy.noImage}
+    <div className={`${sizeClass} overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70`}>
+      <SafeProductImage
+        product={product}
+        alt={product?.name || "Product"}
+        className="h-full w-full object-cover"
+        fallback={(
+          <div className="flex h-full w-full items-center justify-center border-dashed bg-zinc-900/50 px-3 text-center text-[11px] text-zinc-400">
+            {copy.noImage}
+          </div>
+        )}
+      />
     </div>
   );
 }

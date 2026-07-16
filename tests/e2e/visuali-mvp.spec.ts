@@ -3,6 +3,8 @@ import path from "node:path";
 import { expect, test, type Page } from "playwright/test";
 
 const PRODUCT_PURCHASE_LINK_MODULE_PATH = path.join(process.cwd(), "lib", "product-purchase-link.js");
+const APPROVED_PRODUCT_IMAGE_URL =
+  "https://img.hwahae.co.kr/products/12345/12345_20260715123456.jpg";
 
 const FIXTURE_IMAGE_PATH = path.join(
   process.cwd(),
@@ -164,6 +166,44 @@ function createSharedResultFixture() {
   };
 }
 
+async function seedProductImageResult(page: Page, imageUrl: string) {
+  await page.evaluate((nextImageUrl) => {
+    sessionStorage.setItem(
+      "skinTestResult",
+      JSON.stringify({
+        summary: "Image origin fixture",
+        priority: { axis: "barrier", label: "Barrier" },
+        topPick: {
+          id: "image-origin-product",
+          name: "Image Origin Product",
+          brand: "Fixture Brand",
+          category: "treatment",
+          step: "serum_ampoule",
+          image_url: nextImageUrl,
+          reason: "Fixture reason"
+        },
+        alternative: null,
+        categoryPicks: [],
+        altPicks: [],
+        morning: ["Cleanse", "Moisturize"],
+        night: ["Cleanse", "Repair"],
+        warnings: [],
+        photoEvidence: [],
+        surveyEvidence: []
+      })
+    );
+    sessionStorage.setItem(
+      "skinTestSubmission",
+      JSON.stringify({ locale: "en", form: { skinType: "oily", mainConcerns: ["pores"] } })
+    );
+  }, imageUrl);
+}
+
+async function advanceToProductImageStep(page: Page) {
+  await page.getByRole("button", { name: "See why" }).click();
+  await page.getByRole("button", { name: "See recommendation guide" }).click();
+}
+
 test.describe("Visuali MVP E2E draft", () => {
   test("purchase-link client boundary imports the shared resolver @smoke", async () => {
     const freeResultPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "page.js"), "utf8");
@@ -175,6 +215,71 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(fullReportPage).toContain('from "@/lib/product-purchase-link"');
     expect(freeResultPage).toContain('rel="noopener noreferrer"');
     expect(fullReportPage).toContain('rel="noopener noreferrer"');
+  });
+
+  test("product image origin boundary is fail-closed at runtime @sec10-image-origin @smoke", async ({ page }) => {
+    let approvedRequestCount = 0;
+    let rejectedRequestCount = 0;
+    let approvedMode: "success" | "error" = "success";
+
+    await page.route("**/api/premium/access", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ reason: "premium_unavailable" }) });
+    });
+    await page.route("**/api/full-report/session", async (route) => {
+      await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "login_required" }) });
+    });
+    await page.route("**/api/track", async (route) => {
+      await route.fulfill({ status: 204, body: "" });
+    });
+    await page.route("https://img.hwahae.co.kr/**", async (route) => {
+      approvedRequestCount += 1;
+
+      if (approvedMode === "error") {
+        await route.fulfill({ status: 404, body: "" });
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: fs.readFileSync(FIXTURE_IMAGE_PATH)
+      });
+    });
+    await page.route("https://manyo.us/**", async (route) => {
+      rejectedRequestCount += 1;
+      await route.abort();
+    });
+
+    await page.goto("/en");
+    await seedProductImageResult(page, APPROVED_PRODUCT_IMAGE_URL);
+    await page.goto("/en/result");
+    await advanceToProductImageStep(page);
+
+    const approvedImage = page.locator('[data-product-image-state="approved"]').first();
+    await expect(approvedImage).toBeVisible();
+    await expect(approvedImage).toHaveAttribute("src", APPROVED_PRODUCT_IMAGE_URL);
+    await expect(approvedImage).toHaveAttribute("referrerpolicy", "no-referrer");
+    expect(approvedRequestCount).toBe(1);
+
+    await seedProductImageResult(page, "https://manyo.us/cdn/product.png");
+    await page.reload();
+    await advanceToProductImageStep(page);
+    await expect(page.locator('[data-product-image-state="placeholder"]').first()).toBeVisible();
+    expect(rejectedRequestCount).toBe(0);
+
+    await seedProductImageResult(page, "javascript:alert(1)");
+    await page.reload();
+    await advanceToProductImageStep(page);
+    await expect(page.locator('[data-product-image-state="placeholder"]').first()).toBeVisible();
+    expect(rejectedRequestCount).toBe(0);
+
+    approvedMode = "error";
+    await seedProductImageResult(page, APPROVED_PRODUCT_IMAGE_URL);
+    await page.reload();
+    await advanceToProductImageStep(page);
+    await expect(page.locator('[data-product-image-state="placeholder"]').first()).toBeVisible();
+    await page.waitForTimeout(250);
+    expect(approvedRequestCount).toBe(2);
   });
 
   test("shared result loader has one read boundary and generic failure states @smoke", async ({ page }) => {

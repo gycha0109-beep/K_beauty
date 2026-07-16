@@ -77,7 +77,12 @@ function assertNoForbiddenKeys(value, path = "result") {
 }
 
 async function loadAnalysisResultsModule() {
-  const source = read("lib/analysis-results.js");
+  const imagePolicySource = read("lib/security/image-source-policy.js");
+  const imagePolicyUrl = `data:text/javascript;base64,${Buffer.from(imagePolicySource).toString("base64")}`;
+  const source = read("lib/analysis-results.js").replace(
+    'from "./security/image-source-policy.js"',
+    `from "${imagePolicyUrl}"`
+  );
   const moduleUrl = `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 
   return import(moduleUrl);

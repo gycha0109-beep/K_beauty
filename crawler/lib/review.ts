@@ -1,4 +1,5 @@
 import { findBestProductMatch } from "./match.js";
+import { resolveSafeProductImage } from "../../lib/security/image-source-policy.js";
 import {
   normalizeBrandName,
   normalizeCanonicalBrandName,
@@ -621,7 +622,7 @@ function buildPromotionProduct(
     price_min: match?.price_min ?? null,
     price_max: match?.price_max ?? null,
     buy_link: match?.buy_link ?? null,
-    image_url: match?.image_url ?? null,
+    image_url: resolveSafeProductImage(match?.image_url),
   };
 }
 

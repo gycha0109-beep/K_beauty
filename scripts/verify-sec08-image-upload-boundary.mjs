@@ -342,7 +342,8 @@ defineCase("P12_FULL_REPORT_PERSISTENCE_BOUNDARY", async () => {
   const canonical = await canonicalizeOptionalImageDataUrl(dataUrl);
   assert.equal(canonical.ok, true);
   assert(source.includes("canonicalImageUrl || storedFaceLabSummary.imageUrl"));
-  assert(source.includes("authoritativePremiumReport = updateResult.payload.premiumReport"));
+  assert(source.includes("authoritativePremiumReport = sanitizePremiumReportForBoundary("));
+  assert(source.includes("updateResult.payload.premiumReport"));
   assert.equal(source.includes("imageUrl: body?.imageUrl ||"), false);
 });
 

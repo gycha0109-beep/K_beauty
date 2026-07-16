@@ -5,6 +5,7 @@ import { Fragment, Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
+import SafeProductImage from "@/components/common/SafeProductImage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
@@ -2783,15 +2784,11 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated =
     : "flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-zinc-200 bg-white/70 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500";
   return (
     <div className={`${surfaceClass} overflow-hidden rounded-[1.1rem] ${height}`}>
-      {product?.image_url ? (
-        <div className="flex h-full w-full items-center justify-center p-2">
-          <img
-            src={product.image_url}
-            alt={getImageFallbackLabel(product)}
-            className="h-full w-full object-contain"
-          />
-        </div>
-      ) : (
+      <SafeProductImage
+        product={product}
+        alt={getImageFallbackLabel(product)}
+        className="h-full w-full object-contain p-2"
+        fallback={(
         <div className={emptyClass}>
           <div className="flex flex-col items-center">
             <div className={iconClass}>
@@ -2804,7 +2801,8 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated =
             <p className="mt-0.5 text-[9px] text-zinc-500 dark:text-zinc-500">{copy.imagePreparing}</p>
           </div>
         </div>
-      )}
+        )}
+      />
     </div>
   );
 }

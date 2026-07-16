@@ -500,7 +500,16 @@ runCase("response_wiring", () => {
   );
   assert(analyzeRoute.includes("sanitizeAnalyzeResultPurchaseLinks({"), "analysis response must apply the final recursive purchase-link boundary");
   assert(analyzeRoute.includes("sanitizePremiumReportPurchaseLinks({"), "premium session payload must apply the shared recursive purchase-link boundary");
-  assert(fullReportRoute.includes("sanitizePremiumReportPurchaseLinks(savedReport.premium_report || {})") && fullReportRoute.includes("sanitizePremiumReportPurchaseLinks(responsePremiumReport)"), "full-report must apply the shared recursive purchase-link boundary to saved and session payloads");
+  const fullReportBoundaryStart = fullReportRoute.indexOf("function sanitizePremiumReportForBoundary(report)");
+  const fullReportBoundaryEnd = fullReportRoute.indexOf("function buildFullReportMeta", fullReportBoundaryStart);
+  const fullReportBoundary = fullReportRoute.slice(fullReportBoundaryStart, fullReportBoundaryEnd);
+  assert(
+    fullReportBoundaryStart >= 0 &&
+      fullReportBoundary.includes("sanitizePremiumReportPurchaseLinks(report || {})") &&
+      fullReportRoute.includes("sanitizePremiumReportForBoundary(savedReport.premium_report)") &&
+      fullReportRoute.includes("sanitizePremiumReportForBoundary(responsePremiumReport)"),
+    "full-report must apply the shared recursive purchase-link boundary to saved and session payloads"
+  );
   assert(!freePage.includes("isExactOliveYoungProductLink") && !fullPage.includes("isExactOliveYoungProductLink"), "result pages must not keep duplicate substring validators");
   assert(freePage.includes('rel="noopener noreferrer"') && fullPage.includes('rel="noopener noreferrer"'), "purchase anchors must protect new windows");
   assert(!/buy_link\s*:\s*product\.buy_link/.test(analyzeRoute), "analysis route must not serialize raw product buy_link");

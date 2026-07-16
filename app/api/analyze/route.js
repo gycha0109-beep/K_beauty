@@ -35,6 +35,11 @@ import {
   issueAnonymousWriteGrants
 } from "@/lib/security/anonymous-write-grant";
 import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonymous-write-grant-core";
+import {
+  projectProductImage,
+  sanitizeAnalyzeResultProductImages,
+  sanitizePremiumReportProductImages
+} from "@/lib/security/image-source-policy";
 import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
 import {
   formatUploadSize,
@@ -661,7 +666,7 @@ function sanitizeProductForPremium(product) {
     return null;
   }
 
-  const safeProduct = projectProductPurchaseLink(product) || {};
+  const safeProduct = projectProductImage(projectProductPurchaseLink(product)) || {};
 
   return {
     id: safeProduct.id || "",
@@ -674,7 +679,7 @@ function sanitizeProductForPremium(product) {
     use_time: safeProduct.use_time || "",
     price_range: safeProduct.price_range || "",
     buy_link: safeProduct.buy_link || "",
-    image_url: safeProduct.image_url || "",
+    ...(safeProduct.image_url ? { image_url: safeProduct.image_url } : {}),
     reason: safeProduct.reason || "",
     comparison_reason: safeProduct.comparison_reason || ""
   };
@@ -717,7 +722,7 @@ function stripRawSignalBlobs(product) {
   delete nextProduct.review_signals;
   delete nextProduct.market_signals;
   delete nextProduct.ingredient_signals;
-  return projectProductPurchaseLink(nextProduct);
+  return projectProductImage(projectProductPurchaseLink(nextProduct));
 }
 
 function appendTopPickReviewEvidence(decision, locale = "ko") {
@@ -1652,10 +1657,12 @@ export async function POST(request) {
 
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
     const premiumSessionReport = premiumReport
-      ? sanitizePremiumReportPurchaseLinks({
-          ...premiumReport,
-          freeResult: publicDecision
-        })
+      ? sanitizePremiumReportProductImages(
+          sanitizePremiumReportPurchaseLinks({
+            ...premiumReport,
+            freeResult: publicDecision
+          })
+        )
       : null;
     const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
     const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
@@ -1664,20 +1671,22 @@ export async function POST(request) {
           locale
         })
       : null;
-    const responsePayload = sanitizeAnalyzeResultPurchaseLinks({
-      ...publicDecision,
-      meta: buildAnalyzeMeta({
-        locale,
-        photoNotice,
-        explanationNotice,
-        apiKey
-      }),
-      ...(anonymousWriteGrant?.ok
-        ? {
-            analysisRunId: anonymousWriteGrant.analysisRunId
-          }
-        : {})
-    });
+    const responsePayload = sanitizeAnalyzeResultProductImages(
+      sanitizeAnalyzeResultPurchaseLinks({
+        ...publicDecision,
+        meta: buildAnalyzeMeta({
+          locale,
+          photoNotice,
+          explanationNotice,
+          apiKey
+        }),
+        ...(anonymousWriteGrant?.ok
+          ? {
+              analysisRunId: anonymousWriteGrant.analysisRunId
+            }
+          : {})
+      })
+    );
     const response = NextResponse.json(responsePayload);
 
     if (premiumSessionToken) {

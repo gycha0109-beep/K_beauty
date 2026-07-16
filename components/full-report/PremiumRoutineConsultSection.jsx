@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import CurrentProductSlotNote from "@/components/result/premium/CurrentProductSlotNote";
+import SafeProductImage from "@/components/common/SafeProductImage";
 import { buildCurrentProductRoutineSlots } from "@/lib/current-products";
 import { getCurrentProductVerdictSlotKey } from "@/lib/current-product-verdicts";
 
@@ -17,13 +18,14 @@ function RoutineConsultProductInline({ product, locale = "ko", copy }) {
 
   return (
     <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-[0.95rem] border border-white/10 bg-white/[0.035] p-3">
-      {product.image_url ? (
-        <div className="h-12 w-10 overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70">
-          <img src={product.image_url} alt={product.name || "Product"} className="h-full w-full object-cover" />
-        </div>
-      ) : (
-        <div className="mt-1 h-9 w-8 rounded-[0.7rem] border border-white/10 bg-white/5" aria-hidden="true" />
-      )}
+      <div className="h-12 w-10 overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70">
+        <SafeProductImage
+          product={product}
+          alt={product.name || "Product"}
+          className="h-full w-full object-cover"
+          fallback={<div className="h-full w-full bg-white/5" aria-hidden="true" />}
+        />
+      </div>
       <div className="min-w-0">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
           {locale === "en" ? "RECOMMENDED FOR THIS STEP" : "이 단계 추천 제품"}

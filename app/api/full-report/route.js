@@ -19,10 +19,17 @@ import {
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
 import { sanitizePremiumReportPurchaseLinks } from "@/lib/product-purchase-link";
+import { sanitizePremiumReportProductImages } from "@/lib/security/image-source-policy";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
 
 const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
+
+function sanitizePremiumReportForBoundary(report) {
+  return sanitizePremiumReportProductImages(
+    sanitizePremiumReportPurchaseLinks(report || {})
+  );
+}
 
 function buildFullReportMeta(locale, source = "premium-session") {
   return {
@@ -325,7 +332,7 @@ export async function POST(request) {
       return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
 
-    const savedPremiumReport = sanitizePremiumReportPurchaseLinks(savedReport.premium_report || {});
+    const savedPremiumReport = sanitizePremiumReportForBoundary(savedReport.premium_report);
     const savedFreeResult =
       savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
         ? savedPremiumReport.freeResult
@@ -367,7 +374,7 @@ export async function POST(request) {
 
   const canonicalImageUrl = canonicalImage.absent ? null : canonicalImage.dataUrl;
 
-  let storedPremiumReport = premiumSession.payload.premiumReport || {};
+  let storedPremiumReport = sanitizePremiumReportForBoundary(premiumSession.payload.premiumReport);
   const currentProductsResult = await applyCurrentProductsToReport({
     report: storedPremiumReport,
     body,
@@ -380,11 +387,11 @@ export async function POST(request) {
     locale,
     canonicalImageUrl
   });
-  const responsePremiumReport = {
+  const responsePremiumReport = sanitizePremiumReportForBoundary({
     ...storedPremiumReport,
     faceLabSummary
-  };
-  let authoritativePremiumReport = premiumSession.payload.premiumReport;
+  });
+  let authoritativePremiumReport = responsePremiumReport;
 
   if (shouldPersist || currentProductsResult.changed) {
     const updateResult = await updatePremiumReportSession(premiumCookie, {
@@ -398,7 +405,9 @@ export async function POST(request) {
       return getPremiumPersistenceFailedResponse("premium_session_update_failed");
     }
 
-    authoritativePremiumReport = updateResult.payload.premiumReport;
+    authoritativePremiumReport = sanitizePremiumReportForBoundary(
+      updateResult.payload.premiumReport
+    );
   }
 
   if (userSupabase && isAccountUser(user)) {
@@ -431,7 +440,7 @@ export async function POST(request) {
     });
   }
 
-  const clientPremiumReport = sanitizePremiumReportPurchaseLinks(responsePremiumReport);
+  const clientPremiumReport = sanitizePremiumReportForBoundary(responsePremiumReport);
   const storedFreeResult =
     clientPremiumReport?.freeResult && typeof clientPremiumReport.freeResult === "object"
       ? clientPremiumReport.freeResult
