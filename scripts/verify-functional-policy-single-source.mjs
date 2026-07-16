@@ -79,7 +79,7 @@ const sensitiveState = buildPremiumDecisionState(sensitiveActiveReport, {
   locale: "ko",
   source: "verify_functional_policy_single_source"
 });
-assert.equal(sensitiveState.decisionBundle.version, "premium-decision-bundle-v2");
+assert.equal(sensitiveState.decisionBundle.version, "premium-decision-bundle-v3");
 assert.equal(sensitiveState.functionalPolicy.planMode, "HOLD");
 assert.equal(sensitiveState.functionalPolicy.allowedIntensity, "hold");
 assert.equal(sensitiveState.functionalPlan.planMode, "HOLD");
@@ -96,6 +96,7 @@ assert.deepEqual(
   sensitiveState.decisionBundle.currentProductFindings,
   sensitiveState.currentProductFindings
 );
+assert.equal(sensitiveState.decisionBundle.routinePolicy.version, "routine-policy-v1");
 
 const unknownState = buildPremiumDecisionState({
   freeResult: freeResult("pores", { pores: 24, redness: 8, barrier: 6 }),
@@ -107,6 +108,7 @@ const unknownState = buildPremiumDecisionState({
 assert.equal(unknownState.functionalPolicy.planMode, "START");
 assert.equal(unknownState.functionalRoutineAudit.status, "UNKNOWN");
 assert.equal(unknownState.currentProductFindings.findings[0].sourceState, "not_in_db");
+assert.equal(unknownState.routinePolicy.productActions[0].action, "check_needed");
 
 const canonicalDisplay = resolvePremiumFunctionalDisplayModel({
   report: sensitiveState,
