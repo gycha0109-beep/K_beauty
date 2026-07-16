@@ -1,0 +1,261 @@
+ized = [...new Set(locales.map((locale) => String(locale || "").trim()))];
+  if (normalized.some((locale) => !ALLOWED_LOCALES.has(locale))) {
+    throw new Error("locales may contain only ko and en");
+  }
+  return normalized;
+}
+
+export function buildHostedEvaluationCases(
+  manifest,
+  {
+    plan = "smoke",
+    locales,
+    repetitions = 1,
+    maxCalls = 20
+  } = {}
+) {
+  if (!ALLOWED_PLANS.has(plan)) {
+    throw new Error("plan must be smoke, stability, or full");
+  }
+  if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 10) {
+    throw new Error("repetitions must be an integer from 1 to 10");
+  }
+  if (!Number.isInteger(maxCalls) || maxCalls < 1 || maxCalls > 500) {
+    throw new Error("maxCalls must be an integer from 1 to 500");
+  }
+  const selectedLocales = normalizeLocales(locales);
+  const selectedFixtures = manifest.fixtures.filter((fixture) => {
+    if (plan === "full") {
+      return true;
+    }
+    return fixture.plans.includes(plan);
+  });
+  if (!selectedFixtures.length) {
+    throw new Error(`no fixtures selected for plan ${plan}`);
+  }
+
+  const cases = [];
+  for (const fixture of selectedFixtures) {
+    for (const locale of selectedLocales) {
+      for (let repetition = 1; repetition <= repetitions; repetition += 1) {
+        cases.push({
+          caseId: `${fixture.fixtureId}:${locale}:${repetition}`,
+          fixtureId: fixture.fixtureId,
+          subjectId: fixture.subjectId,
+          comparisonGroup: fixture.comparisonGroup,
+          variantRole: fixture.variantRole,
+          conditionTags: fixture.conditionTags,
+          expectedEligibility: fixture.expectedEligibility,
+          expectedDegradation: fixture.expectedDegradation,
+          imagePath: fixture.imagePath,
+          locale,
+          repetition
+        });
+      }
+    }
+  }
+  if (cases.length > maxCalls) {
+    throw new Error(`planned call count ${cases.length} exceeds maxCalls ${maxCalls}`);
+  }
+  return {
+    plan,
+    locales: selectedLocales,
+    repetitions,
+    maxCalls,
+    plannedCalls: cases.length,
+    cases
+  };
+}
+
+function hasForbiddenPayload(value, seen = new WeakSet()) {
+  if (typeof value === "string") {
+    return /^data:image\//i.test(value.trim()) || /;base64,/i.test(value);
+  }
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  if (seen.has(value)) {
+    return false;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    return value.some((item) => hasForbiddenPayload(item, seen));
+  }
+  return Object.entries(value).some(([key, item]) =>
+    FORBIDDEN_IMAGE_KEYS.has(normalizeKey(key)) || hasForbiddenPayload(item, seen)
+  );
+}
+
+function pickQualityValue(value) {
+  if (!isObject(value)) {
+    return null;
+  }
+  return {
+    faceVisibility: value.faceVisibility || null,
+    faceScale: value.faceScale || null,
+    pose: isObject(value.pose) ? { ...value.pose } : null,
+    occlusion: isObject(value.occlusion) ? { ...value.occlusion } : null,
+    sharpness: value.sharpness || null,
+    exposure: value.exposure || null,
+    lightingUniformity: value.lightingUniformity || null,
+    whiteBalance: value.whiteBalance || null,
+    filterOrEditing: value.filterOrEditing || null,
+    makeupCoverage: value.makeupCoverage || null,
+    structureSuitability: value.structureSuitability || null,
+    colorSuitability: value.colorSuitability || null
+  };
+}
+
+function projectObservationFields(observations) {
+  if (!isObject(observations)) {
+    return null;
+  }
+  return Object.fromEntries(
+    Object.entries(observations).map(([groupName, group]) => [
+      groupName,
+      isObject(group)
+        ? Object.fromEntries(Object.entries(group).map(([fieldName, field]) => [
+            fieldName,
+            isObject(field)
+              ? {
+                  status: FIELD_STATUSES.has(field.status) ? field.status : null,
+                  value: Array.isArray(field.value)
+                    ? [...field.value]
+                    : field.value ?? null,
+                  confidence: typeof field.confidence === "number"
+                    ? field.confidence
+                    : null,
+                  unavailableReason: typeof field.unavailableReason === "string"
+                    ? field.unavailableReason
+                    : null
+                }
+              : null
+          ]))
+        : null
+    ])
+  );
+}
+
+export function auditHostedEvaluationResponse(responsePayload) {
+  const serialized = JSON.stringify(responsePayload ?? null);
+  const topLevelUnknownKeys = isObject(responsePayload)
+    ? Object.keys(responsePayload).filter((key) => !ALLOWED_RESPONSE_TOP_LEVEL_KEYS.has(key))
+    : [];
+  const dataUnknownKeys = isObject(responsePayload?.data)
+    ? Object.keys(responsePayload.data).filter((key) => !ALLOWED_DATA_KEYS.has(key))
+    : [];
+  return {
+    rawObservationKeyFound: serialized.includes('"observation_analysis"'),
+    imagePayloadFound: hasForbiddenPayload(responsePayload),
+    unknownProviderKeyFound: topLevelUnknownKeys.length > 0 || dataUnknownKeys.length > 0,
+    topLevelUnknownKeys,
+    dataUnknownKeys
+  };
+}
+
+export function projectHostedEvaluationRecord({
+  runId,
+  caseDefinition,
+  httpStatus,
+  durationMs,
+  responsePayload,
+  requestError = null
+}) {
+  const privacyAudit = auditHostedEvaluationResponse(responsePayload);
+  const eligibility = isObject(responsePayload?.eligibility)
+    ? responsePayload.eligibility
+    : null;
+  const analysis = isObject(responsePayload?.data?.analysis)
+    ? responsePayload.data.analysis
+    : null;
+  const quality = isObject(analysis?.quality) ? analysis.quality : null;
+  const record = {
+    schemaVersion: RECORD_SCHEMA_VERSION,
+    runId,
+    caseId: caseDefinition.caseId,
+    fixtureId: caseDefinition.fixtureId,
+    subjectId: caseDefinition.subjectId,
+    comparisonGroup: caseDefinition.comparisonGroup,
+    variantRole: caseDefinition.variantRole,
+    conditionTags: [...caseDefinition.conditionTags],
+    expectedEligibility: caseDefinition.expectedEligibility,
+    expectedDegradation: caseDefinition.expectedDegradation,
+    locale: caseDefinition.locale,
+    repetition: caseDefinition.repetition,
+    httpStatus: Number.isInteger(httpStatus) ? httpStatus : null,
+    durationMs: Number.isFinite(durationMs) ? Math.max(0, Math.round(durationMs)) : null,
+    requestError: typeof requestError === "string" && requestError ? requestError.slice(0, 120) : null,
+    envelopeStatus: typeof responsePayload?.status === "string" ? responsePayload.status : null,
+    failureReason: typeof responsePayload?.failureReason === "string"
+      ? responsePayload.failureReason
+      : null,
+    eligibility: eligibility
+      ? {
+          status: eligibility.status || null,
+          imageType: eligibility.imageType || null,
+          humanFaceCount: Number.isInteger(eligibility.humanFaceCount)
+            ? eligibility.humanFaceCount
+            : null,
+          faceLabEligible: eligibility.faceLabEligible === true,
+          faceLabFailureReason: eligibility.faceLabFailureReason || null
+        }
+      : null,
+    analysis: analysis
+      ? {
+          schemaVersion: analysis.schemaVersion || null,
+          status: ANALYSIS_STATUSES.has(analysis.status) ? analysis.status : null,
+          failureReason: analysis.failureReason || null,
+          quality: quality
+            ? {
+                status: quality.status || null,
+                confidence: typeof quality.confidence === "number"
+                  ? quality.confidence
+                  : null,
+                unavailableReason: quality.unavailableReason || null,
+                value: pickQualityValue(quality.value)
+              }
+            : null,
+          observations: projectObservationFields(analysis.observations),
+          coverage: isObject(analysis.coverage) ? { ...analysis.coverage } : null,
+          warnings: Array.isArray(analysis.warnings)
+            ? analysis.warnings.filter((item) => typeof item === "string")
+            : [],
+          sourceImagePersisted: analysis?.privacy?.sourceImagePersisted === true
+        }
+      : null,
+    privacyAudit
+  };
+  if (hasForbiddenPayload(record)) {
+    throw new Error("projected evaluation record contains forbidden image payload");
+  }
+  return record;
+}
+
+export function getCompletedHostedEvaluationCaseIds(records) {
+  return new Set(
+    (Array.isArray(records) ? records : [])
+      .map((record) => record?.caseId)
+      .filter((value) => typeof value === "string" && value)
+  );
+}
+
+export function getPendingHostedEvaluationCases(cases, records) {
+  const completed = getCompletedHostedEvaluationCaseIds(records);
+  return cases.filter((item) => !completed.has(item.caseId));
+}
+
+export function jaccardSimilarity(left, right) {
+  const leftSet = new Set(Array.isArray(left) ? left : []);
+  const rightSet = new Set(Array.isArray(right) ? right : []);
+  const union = new Set([...leftSet, ...rightSet]);
+  if (!union.size) {
+    return 1;
+  }
+  let intersection = 0;
+  for (const item of leftSet) {
+    if (rightSet.has(item)) {
+      intersection += 1;
+    }
+  }
+  return intersection / union.size;
+}
