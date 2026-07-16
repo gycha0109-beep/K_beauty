@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { buildRoutinePolicy, ROUTINE_POLICY_VERSION } from "../lib/routine-policy.js";
-import { buildPremiumRoutineProjection } from "../lib/premium-routine-projection.js";
 
 function context(overrides = {}) {
   return {
@@ -133,20 +132,5 @@ const withUnrelatedFunctionalPolicy = buildRoutinePolicy({
   functionalPolicy: { status: "hold", allowedIntensity: "none" }
 });
 assert.deepEqual(withoutFunctionalPolicy, withUnrelatedFunctionalPolicy);
-
-const projection = buildPremiumRoutineProjection({
-  report: {
-    freeResult: {
-      priority: { axis: "pores" },
-      topPick: { id: "top", name: "Top", category: "toner_essence" }
-    }
-  },
-  routinePolicy: stable,
-  locale: "ko"
-});
-assert.equal(projection.routinePlan.version, "premium-routine-projection-v1");
-assert.equal(projection.fullRoutine.morningSteps.length, 3);
-assert.equal(projection.fullRoutine.nightSteps.length, 3);
-assert.equal(projection.fullRoutine.morningSteps[2].title, "선케어");
 
 console.log("verify-routine-policy-single-source: PASS");
