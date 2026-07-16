@@ -159,7 +159,7 @@ const decisionState = buildPremiumDecisionState({
     }
   }
 }, { locale: "ko", source: "verify_condition_policy" });
-assert.equal(decisionState.decisionBundle.version, "premium-decision-bundle-v4");
+assert.equal(decisionState.decisionBundle.version, "premium-decision-bundle-v5");
 assert.equal(decisionState.conditionPolicy.version, "condition-policy-v1");
 assert.equal(decisionState.conditionPlan.version, "premium-condition-projection-v1");
 assert.deepEqual(decisionState.decisionBundle.conditionResponses, decisionState.conditionResponses);
