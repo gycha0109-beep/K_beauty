@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "face-lab-hosted-eval-manifest-v1",
+  "datasetId": "local-calibration-001",
+  "fixtures": [
+    {
+      "fixtureId": "subject-a-frontal-clear",
+      "subjectId": "subject-a",
+      "imagePath": "private/face-lab-fixtures/subject-a/frontal-clear.jpg",
+      "consentConfirmed": true,
+      "expectedEligibility": "eligible",
+      "comparisonGroup": "subject-a-structure",
+      "variantRole": "baseline",
+      "conditionTags": ["frontal", "clear", "even_light", "no_occlusion"],
+      "expectedDegradation": "none",
+      "plans": ["smoke", "stability", "full"]
+    },
+    {
+      "fixtureId": "subject-a-lower-face-occluded",
+      "subjectId": "subject-a",
+      "imagePath": "private/face-lab-fixtures/subject-a/lower-face-occluded.jpg",
+      "consentConfirmed": true,
+      "expectedEligibility": "eligible",
+      "comparisonGroup": "subject-a-structure",
+      "variantRole": "variant",
+      "conditionTags": ["frontal", "lower_face_occlusion"],
+      "expectedDegradation": "lower_face_occlusion",
+      "plans": ["smoke", "stability", "full"]
+    },
+    {
+      "fixtureId": "control-product",
+      "subjectId": "control-product",
+      "imagePath": "private/face-lab-fixtures/controls/product.png",
+      "consentConfirmed": true,
+      "expectedEligibility": "ineligible",
+      "comparisonGroup": "eligibility-controls",
+      "variantRole": "control",
+      "conditionTags": ["product"],
+      "expectedDegradation": "eligibility_block",
+      "plans": ["smoke", "full"]
+    }
+  ]
+}
