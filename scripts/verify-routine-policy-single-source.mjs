@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { buildRoutinePolicy, ROUTINE_POLICY_VERSION } from "../lib/routine-policy.js";
 
 function context(overrides = {}) {
@@ -132,5 +133,21 @@ const withUnrelatedFunctionalPolicy = buildRoutinePolicy({
   functionalPolicy: { status: "hold", allowedIntensity: "none" }
 });
 assert.deepEqual(withoutFunctionalPolicy, withUnrelatedFunctionalPolicy);
+
+const componentSource = readFileSync(
+  new URL("../components/full-report/PremiumRoutineConsultSection.jsx", import.meta.url),
+  "utf8"
+);
+assert.match(componentSource, /report\?\.routinePlan \|\| report\?\.decisionBundle\?\.routinePlan/);
+assert.match(componentSource, /canonicalSteps \|\| buildSteps/);
+assert.match(componentSource, /data-routine-source=/);
+
+const sharedContextSource = readFileSync(
+  new URL("../lib/shared-skin-decision-context.js", import.meta.url),
+  "utf8"
+);
+assert.ok(!/routineStructure:\s*report\?\.routineStructure/.test(sharedContextSource));
+assert.ok(!/routineState:\s*\{/.test(sharedContextSource));
+assert.match(sharedContextSource, /shared-skin-decision-context-v2/);
 
 console.log("verify-routine-policy-single-source: PASS");
