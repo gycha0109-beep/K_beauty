@@ -21,53 +21,36 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Patch shared condition signals
-        run: python scripts/apply_condition_policy_integration.py
-      - name: Patch analyze canonicalization
-        run: python scripts/patch_condition_analyze_integration.py
-      - name: Patch condition UI
-        run: python scripts/patch_condition_ui_integration.py
-      - name: Patch legacy projection compatibility
-        run: python scripts/patch_condition_legacy_projection.py
-      - name: Patch verification contracts
-        run: python scripts/patch_condition_verifiers.py
+      - name: Apply condition integration patches
+        run: |
+          python scripts/apply_condition_policy_integration.py
+          python scripts/patch_condition_analyze_integration.py
+          python scripts/patch_condition_ui_integration.py
+          python scripts/patch_condition_legacy_projection.py
+          python scripts/patch_condition_reentry.py
+          python scripts/patch_condition_verifiers.py
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Verify condition policy
-        run: node scripts/verify-condition-policy-single-source.mjs
-      - name: Verify routine policy
-        run: node scripts/verify-routine-policy-single-source.mjs
-      - name: Verify functional policy
-        run: node scripts/verify-functional-policy-single-source.mjs
-      - name: Verify premium decision state
+      - run: npm ci
+      - name: Verify policy stack and reentry
         run: |
-          if ! node scripts/verify-premium-decision-state.mjs > condition-verifier-error.txt 2>&1; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -f condition-verifier-error.txt
-            git commit -m "chore: capture condition verifier failure"
-            git push origin HEAD:agent/condition-policy-single-source
-            exit 1
-          fi
-          rm -f condition-verifier-error.txt
-      - name: Verify premium report reentry
-        run: node scripts/verify-premium-report-reentry.mjs
-      - name: Verify architecture
-        run: npm run architecture:guard
-      - name: Verify production build
-        run: npm run build
-      - name: Verify diff
-        run: git diff --check
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-premium-report-reentry.mjs
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
       - name: Commit integration and remove one-time tooling
         run: |
           rm scripts/apply_condition_policy_integration.py
           rm scripts/patch_condition_analyze_integration.py
           rm scripts/patch_condition_ui_integration.py
           rm scripts/patch_condition_legacy_projection.py
+          rm scripts/patch_condition_reentry.py
           rm scripts/patch_condition_verifiers.py
           rm .github/workflows/apply-condition-integration.yml
           rm -f condition-verifier-error.txt
