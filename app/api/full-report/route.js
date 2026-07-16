@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { getOpenAiEnvDiagnostics } from "@/lib/openai-env-diagnostics";
 import { upsertProfileForUser, serializeSupabaseError } from "@/lib/auth/profile-upsert";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
-import { resolvePremiumAccessForRequest, isAccountUser } from "@/lib/premium-access";
+import { isAccountUser } from "@/lib/premium-access";
 import {
   buildPremiumCurrentProductsSnapshot,
-  buildPremiumCurrentProductVerdicts
+  enrichPremiumReportWithCurrentProducts
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import {
@@ -14,16 +14,31 @@ import {
   updatePremiumReportSession,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
-import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
+import { resolvePremiumRouteContext } from "@/lib/premium-route-context";
+import {
+  buildPremiumReportSnapshot,
+  classifyPremiumSnapshotReplay
+} from "@/lib/premium-report-snapshot";
 
-const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
+const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 2;
 
-function buildFullReportMeta(locale, source = "premium-session") {
+function buildFullReportMeta(locale, source = "premium-session", persistence = null, snapshot = null) {
   return {
     schemaVersion: FULL_REPORT_RESPONSE_SCHEMA_VERSION,
     source,
     locale,
-    generatedAt: new Date().toISOString()
+    generatedAt: new Date().toISOString(),
+    ...(persistence ? { persistence } : {}),
+    ...(snapshot
+      ? {
+          snapshot: {
+            immutable: true,
+            fingerprint: snapshot.fingerprint,
+            contextHash: snapshot.contextHash,
+            contextRevision: snapshot.contextRevision
+          }
+        }
+      : {})
   };
 }
 
@@ -46,14 +61,7 @@ function getUnauthorizedResponse(reason) {
   const safeReason = FULL_REPORT_UNAUTHORIZED_REASONS.has(reason)
     ? reason
     : "login_required";
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: safeReason
-    },
-    { status: 401 }
-  );
+  return NextResponse.json({ success: false, error: safeReason }, { status: 401 });
 }
 
 function getPaymentRequiredResponse(access) {
@@ -70,34 +78,29 @@ function getPaymentRequiredResponse(access) {
 
 function getPremiumUnavailableResponse() {
   return NextResponse.json(
-    {
-      success: false,
-      error: "premium_unavailable",
-      reason: "premium_unavailable"
-    },
+    { success: false, error: "premium_unavailable", reason: "premium_unavailable" },
     { status: 403 }
   );
 }
 
-function getBearerToken(request) {
-  const authorizationHeader = request.headers.get("authorization");
+function getSnapshotConflictResponse() {
+  return NextResponse.json(
+    { success: false, error: "premium_snapshot_finalized" },
+    { status: 409 }
+  );
+}
 
-  if (!authorizationHeader) {
-    return null;
-  }
-
-  const [scheme, token] = authorizationHeader.split(" ");
-  return scheme?.toLowerCase() === "bearer" && token ? token.trim() : null;
+function getStorageUnavailableResponse() {
+  return NextResponse.json(
+    { success: false, error: "premium_save_unavailable" },
+    { status: 503 }
+  );
 }
 
 function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
   const storedFaceLabSummary = sanitizePremiumFaceLabSummary(storedPremiumReport.faceLabSummary);
-
   if (storedFaceLabSummary.status === "available") {
-    return {
-      faceLabSummary: storedFaceLabSummary,
-      shouldPersist: false
-    };
+    return { faceLabSummary: storedFaceLabSummary, shouldPersist: false };
   }
 
   const requestFaceLabSummary = body?.faceLab
@@ -109,10 +112,7 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
     : null;
 
   if (requestFaceLabSummary?.status === "available") {
-    return {
-      faceLabSummary: requestFaceLabSummary,
-      shouldPersist: true
-    };
+    return { faceLabSummary: requestFaceLabSummary, shouldPersist: true };
   }
 
   const legacyFaceLabSummary = storedPremiumReport.faceLab
@@ -124,21 +124,10 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
     : null;
 
   if (legacyFaceLabSummary?.status === "available") {
-    return {
-      faceLabSummary: legacyFaceLabSummary,
-      shouldPersist: true
-    };
+    return { faceLabSummary: legacyFaceLabSummary, shouldPersist: true };
   }
 
-  return {
-    faceLabSummary: storedFaceLabSummary,
-    shouldPersist: false
-  };
-}
-
-async function getUserSupabaseClient(request) {
-  const accessToken = getBearerToken(request);
-  return accessToken ? createRouteSupabaseAuthClient(accessToken) : null;
+  return { faceLabSummary: storedFaceLabSummary, shouldPersist: false };
 }
 
 async function loadSavedPremiumReport({ supabase, userId, savedReportId }) {
@@ -162,7 +151,7 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
 
   const existing = await supabase
     .from("saved_reports")
-    .select("id")
+    .select("id, premium_report")
     .eq("user_id", user.id)
     .eq("report_type", "premium")
     .eq("source_type", "premium_report_session")
@@ -176,37 +165,27 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     return { ok: false, code: "lookup_failed" };
   }
 
+  const snapshot = buildPremiumReportSnapshot(premiumReport);
+  if (!snapshot) return { ok: false, code: "invalid_snapshot" };
+
+  if (existing.data?.id) {
+    const replay = classifyPremiumSnapshotReplay(existing.data.premium_report, premiumReport);
+    return replay.status === "existing"
+      ? { ok: true, code: "existing", savedReportId: existing.data.id, snapshot }
+      : { ok: false, code: "snapshot_conflict", savedReportId: existing.data.id, snapshot };
+  }
+
   const payload = {
     user_id: user.id,
     report_type: "premium",
     source_type: "premium_report_session",
     source_session_id: sessionId,
     title: locale === "en" ? "Premium routine report" : "프리미엄 루틴 리포트",
-    report_version: "premium-v1",
+    report_version: snapshot.reportVersion || "premium-v1",
     premium_report: premiumReport,
     free_result: null,
     face_lab: premiumReport.faceLabSummary || premiumReport.faceLab || null
   };
-
-  if (existing.data?.id) {
-    const { error } = await supabase
-      .from("saved_reports")
-      .update({
-        premium_report: payload.premium_report,
-        face_lab: payload.face_lab,
-        title: payload.title,
-        report_version: payload.report_version
-      })
-      .eq("id", existing.data.id)
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.error("[full-report] saved premium update failed", serializeSupabaseError(error));
-      return { ok: false, code: "update_failed" };
-    }
-
-    return { ok: true, savedReportId: existing.data.id };
-  }
 
   const { data, error } = await supabase
     .from("saved_reports")
@@ -215,30 +194,40 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     .single();
 
   if (error) {
+    const retry = await supabase
+      .from("saved_reports")
+      .select("id, premium_report")
+      .eq("user_id", user.id)
+      .eq("report_type", "premium")
+      .eq("source_type", "premium_report_session")
+      .eq("source_session_id", sessionId)
+      .maybeSingle();
+
+    if (!retry.error && retry.data?.id) {
+      const replay = classifyPremiumSnapshotReplay(retry.data.premium_report, premiumReport);
+      if (replay.status === "existing") {
+        return { ok: true, code: "existing", savedReportId: retry.data.id, snapshot };
+      }
+      if (replay.status === "conflict") {
+        return { ok: false, code: "snapshot_conflict", savedReportId: retry.data.id, snapshot };
+      }
+    }
+
     console.error("[full-report] saved premium insert failed", serializeSupabaseError(error));
     return { ok: false, code: "insert_failed" };
   }
 
-  return { ok: true, savedReportId: data?.id || null };
+  return { ok: true, code: "saved", savedReportId: data?.id || null, snapshot };
 }
 
 async function applyCurrentProductsToReport({ report, body, locale }) {
   if (!Array.isArray(body?.currentProducts)) {
-    return {
-      premiumReport: report,
-      changed: false
-    };
+    return { premiumReport: report, changed: false };
   }
 
   const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
-  const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
-
   return {
-    premiumReport: {
-      ...report,
-      currentProducts,
-      currentProductVerdicts
-    },
+    premiumReport: enrichPremiumReportWithCurrentProducts(report, currentProducts, locale),
     changed: true
   };
 }
@@ -247,23 +236,22 @@ export async function POST(request) {
   if (process.env.NODE_ENV !== "production") {
     console.info(
       "[full-report] openai-env:diagnostic",
-      getOpenAiEnvDiagnostics({
-        route: "full-report",
-        routeUsesOpenAi: false,
-        routeUsesOpenRouter: false
-      })
+      getOpenAiEnvDiagnostics({ route: "full-report", routeUsesOpenAi: false, routeUsesOpenRouter: false })
     );
   }
 
   let body = null;
-
   try {
     body = await request.json();
   } catch {}
 
   const locale = body?.locale === "en" ? "en" : "ko";
-  const userSupabase = await getUserSupabaseClient(request);
-  const { user, access } = await resolvePremiumAccessForRequest(request);
+  const context = await resolvePremiumRouteContext(request);
+  const { user, access, supabase: userSupabase } = context;
+
+  if (isAccountUser(user) && !userSupabase) {
+    return getStorageUnavailableResponse();
+  }
 
   if (body?.savedReportId) {
     if (!isAccountUser(user) || !userSupabase) {
@@ -277,9 +265,7 @@ export async function POST(request) {
     });
 
     if (error || !savedReport?.premium_report) {
-      if (error) {
-        console.error("[full-report] saved premium read failed", serializeSupabaseError(error));
-      }
+      if (error) console.error("[full-report] saved premium read failed", serializeSupabaseError(error));
       return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
 
@@ -288,20 +274,20 @@ export async function POST(request) {
       savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
         ? savedPremiumReport.freeResult
         : null;
-    const topPickFitGauges = buildProductFitGauges(body?.topPick || savedFreeResult?.topPick || null, { locale });
+    const topPickFitGauges = buildProductFitGauges(savedFreeResult?.topPick || null, { locale });
 
     return NextResponse.json({
       ...savedPremiumReport,
       topPickFitGauges,
-      meta: buildFullReportMeta(locale, "saved-report")
+      meta: buildFullReportMeta(locale, "saved-report", {
+        status: "existing",
+        savedReportId: savedReport.id
+      }, buildPremiumReportSnapshot(savedPremiumReport))
     });
   }
 
   if (!access.canCreatePremium) {
-    if (access.reason === "premium_unavailable") {
-      return getPremiumUnavailableResponse();
-    }
-
+    if (access.reason === "premium_unavailable") return getPremiumUnavailableResponse();
     return access.reason === "payment_required"
       ? getPaymentRequiredResponse(access)
       : getUnauthorizedResponse("login_required");
@@ -309,7 +295,6 @@ export async function POST(request) {
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
   const premiumSession = await verifyPremiumReportSession(premiumCookie);
-
   if (!premiumSession.ok || !premiumSession.payload?.premiumReport) {
     if (process.env.NODE_ENV !== "production") {
       console.warn("[full-report] premium session rejected", premiumSession.code);
@@ -318,48 +303,39 @@ export async function POST(request) {
   }
 
   let storedPremiumReport = premiumSession.payload.premiumReport || {};
-  const currentProductsResult = await applyCurrentProductsToReport({
-    report: storedPremiumReport,
-    body,
-    locale
-  });
+  const currentProductsResult = await applyCurrentProductsToReport({ report: storedPremiumReport, body, locale });
   storedPremiumReport = currentProductsResult.premiumReport;
-  const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({
-    storedPremiumReport,
-    body,
-    locale
-  });
-  const responsePremiumReport = {
-    ...storedPremiumReport,
-    faceLabSummary
-  };
+  const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({ storedPremiumReport, body, locale });
+  const responsePremiumReport = { ...storedPremiumReport, faceLabSummary };
 
   if (shouldPersist || currentProductsResult.changed) {
-    const updateResult = await updatePremiumReportSession(premiumCookie, {
-      ...responsePremiumReport
-    });
-
-    if (!updateResult.ok && process.env.NODE_ENV !== "production") {
-      console.warn("[full-report] premium session update skipped", updateResult.code);
-    }
+    const updateResult = await updatePremiumReportSession(premiumCookie, responsePremiumReport);
+    if (!updateResult.ok) return getStorageUnavailableResponse();
   }
 
-  if (userSupabase && isAccountUser(user)) {
-    await upsertProfileForUser({
-      supabase: userSupabase,
-      user,
-      preferAdmin: true
-    }).catch((error) => {
+  let persistence = null;
+  let snapshot = buildPremiumReportSnapshot(responsePremiumReport);
+  if (isAccountUser(user)) {
+    await upsertProfileForUser({ supabase: userSupabase, user, preferAdmin: true }).catch((error) => {
       console.warn("[full-report] profile upsert before premium save skipped", error?.message || error);
     });
 
-    await persistPremiumSavedReport({
+    const saveResult = await persistPremiumSavedReport({
       supabase: userSupabase,
       user,
       sessionId: premiumSession.payload.sessionId,
       premiumReport: responsePremiumReport,
       locale
     });
+
+    if (!saveResult.ok) {
+      return saveResult.code === "snapshot_conflict"
+        ? getSnapshotConflictResponse()
+        : getStorageUnavailableResponse();
+    }
+
+    persistence = { status: saveResult.code, savedReportId: saveResult.savedReportId };
+    snapshot = saveResult.snapshot;
   }
 
   if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {
@@ -373,11 +349,11 @@ export async function POST(request) {
     responsePremiumReport?.freeResult && typeof responsePremiumReport.freeResult === "object"
       ? responsePremiumReport.freeResult
       : null;
-  const topPickFitGauges = buildProductFitGauges(body?.topPick || storedFreeResult?.topPick || null, { locale });
+  const topPickFitGauges = buildProductFitGauges(storedFreeResult?.topPick || null, { locale });
   const response = NextResponse.json({
     ...responsePremiumReport,
     topPickFitGauges,
-    meta: buildFullReportMeta(locale)
+    meta: buildFullReportMeta(locale, "premium-session", persistence, snapshot)
   });
 
   response.cookies.set(
