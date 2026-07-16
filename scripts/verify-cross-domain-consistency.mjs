@@ -137,11 +137,54 @@ const unknown = buildCrossDomainConsistency({
 assert.ok(unknown.violations.some((item) => item.ruleId === "CONSISTENCY_UNKNOWN_PRODUCT_STOP"));
 assert.ok(unknown.violations.some((item) => item.ruleId === "CONSISTENCY_UNKNOWN_PRODUCT_CONFIDENCE"));
 
+const genericStabilizationHold = buildCrossDomainConsistency({
+  ...normalInput,
+  routinePolicy: baseRoutine({
+    productActions: [{
+      slotKey: "pm.treatment",
+      productId: "known",
+      action: "hold",
+      reasonCodes: ["stabilize_first_active_hold"]
+    }]
+  })
+});
+assert.ok(
+  !genericStabilizationHold.violations.some((item) => item.ruleId === "CONSISTENCY_PRODUCT_BLAME_WITHOUT_REACTION_EVIDENCE"),
+  "a generic stabilization hold must not be misclassified as product causation"
+);
+
 const noReaction = buildCrossDomainConsistency({
   ...normalInput,
-  routinePolicy: baseRoutine({ productActions: [{ slotKey: "pm.treatment", productId: "known", action: "hold" }] })
+  routinePolicy: baseRoutine({
+    productActions: [{
+      slotKey: "pm.treatment",
+      productId: "known",
+      action: "hold",
+      reasonCodes: ["suspected_product_reaction"]
+    }]
+  })
 });
 assert.ok(noReaction.violations.some((item) => item.ruleId === "CONSISTENCY_PRODUCT_BLAME_WITHOUT_REACTION_EVIDENCE"));
+
+const unknownWithoutId = buildCrossDomainConsistency({
+  ...normalInput,
+  sharedContext: baseContext({
+    productExposureState: {
+      rows: [{ sourceState: "not_in_db", productId: null, routineSlots: ["pm.treatment"], evaluable: false }],
+      unknownProductCount: 1,
+      duplicateActiveAxes: []
+    }
+  }),
+  routinePolicy: baseRoutine({
+    productActions: [{ slotKey: "pm.treatment", productId: "known", action: "hold" }],
+    confidence: "medium"
+  }),
+  conditionPolicy: baseCondition({ confidence: "medium" })
+});
+assert.ok(
+  !unknownWithoutId.violations.some((item) => item.ruleId === "CONSISTENCY_UNKNOWN_PRODUCT_STOP"),
+  "a slot-shared known product action must not be assigned to an unidentified unknown product"
+);
 
 const functionalProjection = buildPremiumFunctionalProjection({
   report: { topPick: { id: "p1", name: "Candidate" }, budgetAlternatives: [{ id: "p2", name: "Budget" }] },

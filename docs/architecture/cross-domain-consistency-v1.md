@@ -23,7 +23,7 @@ Decision Bundle v5 stores `rawPolicies`, `consistency`, and `effectivePolicySour
 
 ## Fail-closed fallback
 
-The fallback blocks new active expansion, sets active frequency to zero, keeps cleansing/hydration/barrier support/sun protection, forbids unknown-product replacement, and preserves actual condition signals without inventing product causation.
+The fallback blocks new active expansion, sets active frequency to zero, keeps cleansing/hydration/barrier support/sun protection, forbids unknown-product replacement, and preserves actual condition signals without inventing product causation. A known active product may receive a generic stabilization hold without being labeled as the cause of a reaction; product-specific causation requires explicit reaction evidence.
 
 ## Projection boundaries
 
