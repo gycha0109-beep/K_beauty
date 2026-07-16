@@ -13,7 +13,7 @@
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "face-lab:eval": "node scripts/run-face-lab-hosted-evaluation.mjs",
     "face-lab:eval:report": "node scripts/report-face-lab-hosted-evaluation.mjs",
-    "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs",
+    "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs && node scripts/verify-face-lab-hosted-evaluation-review.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "lint": "next lint"
   },
