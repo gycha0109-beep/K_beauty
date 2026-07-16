@@ -38,17 +38,7 @@ jobs:
       - run: node scripts/verify-routine-policy-single-source.mjs
       - run: node scripts/verify-functional-policy-single-source.mjs
       - run: node scripts/verify-premium-decision-state.mjs
-      - name: Verify premium report reentry
-        run: |
-          if ! node scripts/verify-premium-report-reentry.mjs > condition-reentry-error.txt 2>&1; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -f condition-reentry-error.txt
-            git commit -m "chore: capture condition reentry failure"
-            git push origin HEAD:agent/condition-policy-single-source
-            exit 1
-          fi
-          rm -f condition-reentry-error.txt
+      - run: node scripts/verify-premium-report-reentry-contract.mjs
       - run: npm run architecture:guard
       - run: npm run build
       - run: git diff --check
