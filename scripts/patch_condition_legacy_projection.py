@@ -17,17 +17,15 @@ new = '''function mergeLegacyFallback(report, responses, conditionPolicy) {
   const legacy = Array.isArray(report?.conditionResponses) ? report.conditionResponses : [];
   if (!legacy.length) return responses;
 
+  if (conditionPolicy?.conditionSignalState?.completeness !== "minimal") {
+    return responses;
+  }
+
   const legacySnapshot = legacy
     .filter((item) => item?.responseKey)
     .map((item) => ({ ...item, source: "legacy_snapshot", legacyCarryover: true }));
-  if (conditionPolicy?.conditionSignalState?.completeness === "minimal") {
-    const legacyKeys = new Set(legacySnapshot.map((item) => item.responseKey));
-    return [...legacySnapshot, ...responses.filter((item) => !legacyKeys.has(item.responseKey))];
-  }
-
-  const canonicalKeys = new Set(responses.map((item) => item.responseKey));
-  const carryover = legacySnapshot.filter((item) => !canonicalKeys.has(item.responseKey));
-  return [...responses, ...carryover];
+  const legacyKeys = new Set(legacySnapshot.map((item) => item.responseKey));
+  return [...legacySnapshot, ...responses.filter((item) => !legacyKeys.has(item.responseKey))];
 }
 '''
 if s.count(old) != 1:
