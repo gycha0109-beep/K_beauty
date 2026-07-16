@@ -1,6 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import {
+  hardenHostedEvaluationRecord,
+  hardenHostedEvaluationReport,
+  hardenHostedEvaluationSummary
+} from "../lib/face-lab-hosted-evaluation-review.js";
 
 function loadCore() {
   const source = readFileSync("lib/face-lab-hosted-evaluation.js", "utf8")
@@ -38,6 +43,11 @@ function getMimeType(filePath) {
   if (extension === ".png") return "image/png";
   if (extension === ".webp") return "image/webp";
   return "image/jpeg";
+}
+
+function getUploadFilename(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+  return `fixture-image${extension || ".jpg"}`;
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -104,7 +114,11 @@ for (const item of pendingCases) {
     const bytes = readFileSync(item.imagePath);
     const formData = new FormData();
     formData.append("locale", item.locale);
-    formData.append("image", new Blob([bytes], { type: getMimeType(item.imagePath) }), "fixture-image");
+    formData.append(
+      "image",
+      new Blob([bytes], { type: getMimeType(item.imagePath) }),
+      getUploadFilename(item.imagePath)
+    );
     const response = await fetch(`${baseUrl}/api/face-reading`, {
       method: "POST",
       body: formData,
@@ -116,21 +130,31 @@ for (const item of pendingCases) {
   } catch (error) {
     requestError = error instanceof Error ? error.name : "request_failed";
   }
-  const record = core.projectHostedEvaluationRecord({
-    runId,
-    caseDefinition: item,
-    httpStatus,
-    durationMs: Date.now() - startedAt,
-    responsePayload: payload,
-    requestError
-  });
+  const record = hardenHostedEvaluationRecord(
+    core.projectHostedEvaluationRecord({
+      runId,
+      caseDefinition: item,
+      httpStatus,
+      durationMs: Date.now() - startedAt,
+      responsePayload: payload,
+      requestError
+    }),
+    payload
+  );
   appendFileSync(recordsPath, `${JSON.stringify(record)}\n`, "utf8");
   console.log(`[face-lab-eval] ${item.caseId} -> ${record.envelopeStatus || requestError || "invalid"}`);
 }
 
 const records = readJsonLines(recordsPath);
-const summary = core.summarizeHostedEvaluation(records, runManifest);
+const summary = hardenHostedEvaluationSummary(
+  records,
+  core.summarizeHostedEvaluation(records, runManifest)
+);
+const report = hardenHostedEvaluationReport(
+  core.renderHostedEvaluationReport(summary),
+  summary
+);
 writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
-writeFileSync(reportPath, core.renderHostedEvaluationReport(summary), "utf8");
+writeFileSync(reportPath, report, "utf8");
 console.log(`[face-lab-eval] complete hardInvariantFailures=${summary.hardInvariantFailures}`);
 console.log(`[face-lab-eval] summary=${path.relative(repoRoot, summaryPath).replace(/\\/g, "/")}`);
