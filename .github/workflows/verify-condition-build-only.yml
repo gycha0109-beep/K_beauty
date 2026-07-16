@@ -1,0 +1,20 @@
+name: Verify Condition Build Only
+
+on:
+  pull_request:
+    branches:
+      - agent/routine-policy-single-source
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    if: github.head_ref == 'agent/verify-condition-build-only-f0045d8'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
