@@ -1,0 +1,157 @@
+name: Review Face Lab hosted evaluation harness
+
+on:
+  push:
+    branches:
+      - codex/survey-input-contract-refactor
+    paths:
+      - .github/workflows/face-lab-eval-review-fix-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  review-and-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/survey-input-contract-refactor
+          fetch-depth: 0
+      - name: Apply reviewed metric fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('lib/face-lab-hosted-evaluation.js')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_once(old, new, label):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, found {count}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              '  const quality = isObject(analysis?.quality) ? analysis.quality : null;\n  const record = {',
+              '  const quality = isObject(analysis?.quality) ? analysis.quality : null;\n'
+              '  const canonicalContractInvalid = Boolean(analysis && (\n'
+              '    analysis.schemaVersion !== "face-lab-observation-v1" ||\n'
+              '    !ANALYSIS_STATUSES.has(analysis.status) ||\n'
+              '    !isObject(analysis.quality) ||\n'
+              '    !isObject(analysis.observations) ||\n'
+              '    !isObject(analysis.coverage) ||\n'
+              '    analysis?.privacy?.sourceImagePersisted !== false\n'
+              '  ));\n'
+              '  const record = {',
+              'canonical contract audit'
+          )
+          replace_once(
+              '    privacyAudit\n  };',
+              '    privacyAudit: {\n'
+              '      ...privacyAudit,\n'
+              '      canonicalContractInvalid\n'
+              '    }\n'
+              '  };',
+              'record privacy audit'
+          )
+          replace_once(
+              '  let ineligibleCanonicalViolations = 0;\n  let baselineUsable = 0;',
+              '  let ineligibleCanonicalViolations = 0;\n'
+              '  let canonicalContractFailures = 0;\n'
+              '  let eligibilityMismatches = 0;\n'
+              '  let baselineUsable = 0;',
+              'summary counters'
+          )
+          replace_once(
+              '    if (record.privacyAudit?.rawObservationKeyFound || record.privacyAudit?.imagePayloadFound || record.privacyAudit?.unknownProviderKeyFound || record.analysis?.sourceImagePersisted) {\n      privacyFailures += 1;\n    }\n    if (record.requestError || !record.httpStatus || record.httpStatus >= 500) requestFailures += 1;\n    if (record.expectedEligibility === "ineligible" && record.analysis) ineligibleCanonicalViolations += 1;',
+              '    if (record.privacyAudit?.rawObservationKeyFound || record.privacyAudit?.imagePayloadFound || record.privacyAudit?.unknownProviderKeyFound || record.analysis?.sourceImagePersisted) {\n'
+              '      privacyFailures += 1;\n'
+              '    }\n'
+              '    if (record.privacyAudit?.canonicalContractInvalid) canonicalContractFailures += 1;\n'
+              '    if (record.requestError || !record.httpStatus || record.httpStatus < 200 || record.httpStatus >= 300) requestFailures += 1;\n'
+              '    if (record.expectedEligibility === "ineligible" && record.analysis) ineligibleCanonicalViolations += 1;\n'
+              '    const observedEligibility = record.eligibility\n'
+              '      ? (record.eligibility.faceLabEligible ? "eligible" : "ineligible")\n'
+              '      : null;\n'
+              '    if (observedEligibility !== record.expectedEligibility) eligibilityMismatches += 1;',
+              'summary classification'
+          )
+          replace_once(
+              '  const hardInvariantFailures = privacyFailures + requestFailures + ineligibleCanonicalViolations;',
+              '  const hardInvariantFailures = privacyFailures + requestFailures + ineligibleCanonicalViolations + canonicalContractFailures;',
+              'hard invariant total'
+          )
+          replace_once(
+              '  if (baselineTotal && baselineUsable / baselineTotal < 0.8) issues.push({ severity: "P1", code: "baseline_usability_below_80_percent" });',
+              '  if (eligibilityMismatches) issues.push({ severity: "P1", code: "eligibility_mismatch", count: eligibilityMismatches });\n'
+              '  if (baselineTotal && baselineUsable / baselineTotal < 0.8) issues.push({ severity: "P1", code: "baseline_usability_below_80_percent" });',
+              'eligibility issue'
+          )
+          replace_once(
+              '    ineligibleCanonicalViolations,\n    baseline: {',
+              '    ineligibleCanonicalViolations,\n'
+              '    canonicalContractFailures,\n'
+              '    eligibilityMismatches,\n'
+              '    baseline: {',
+              'summary output'
+          )
+          replace_once(
+              '    `- Ineligible canonical violations: ${summary.ineligibleCanonicalViolations}`,\n    `- Total hard invariant failures: ${summary.hardInvariantFailures}`,',
+              '    `- Ineligible canonical violations: ${summary.ineligibleCanonicalViolations}`,\n'
+              '    `- Canonical contract failures: ${summary.canonicalContractFailures}`,\n'
+              '    `- Eligibility mismatches: ${summary.eligibilityMismatches}`,\n'
+              '    `- Total hard invariant failures: ${summary.hardInvariantFailures}`,',
+              'report metrics'
+          )
+          path.write_text(text, encoding='utf-8')
+
+          verify_path = Path('scripts/verify-face-lab-hosted-evaluation-harness.mjs')
+          verify = verify_path.read_text(encoding='utf-8')
+          old = 'assert.equal(record.privacyAudit.rawObservationKeyFound, false);\n'
+          new = old + 'assert.equal(record.privacyAudit.canonicalContractInvalid, false);\n'
+          if verify.count(old) != 1:
+              raise SystemExit('verifier canonical assertion anchor mismatch')
+          verify = verify.replace(old, new, 1)
+          old = 'assert.equal(contaminated.privacyAudit.unknownProviderKeyFound, true);\n'
+          new = old + '''\nconst malformedCanonical = core.projectHostedEvaluationRecord({
+  runId: "run-1",
+  caseDefinition,
+  httpStatus: 200,
+  durationMs: 1,
+  responsePayload: {
+    status: "available",
+    source: "vision",
+    eligibility: { faceLabEligible: true },
+    data: { analysis: { ...analysis, schemaVersion: "wrong-version" } }
+  }
+});
+assert.equal(malformedCanonical.privacyAudit.canonicalContractInvalid, true);
+'''
+          if verify.count(old) != 1:
+              raise SystemExit('verifier malformed anchor mismatch')
+          verify = verify.replace(old, new, 1)
+          verify_path.write_text(verify, encoding='utf-8')
+          PY
+      - name: Verify harness and regressions
+        run: |
+          node --check lib/face-lab-hosted-evaluation.js
+          node --check scripts/run-face-lab-hosted-evaluation.mjs
+          node --check scripts/report-face-lab-hosted-evaluation.mjs
+          node scripts/verify-face-lab-hosted-evaluation-harness.mjs
+          node scripts/verify-face-lab-observation-contract.mjs
+          node scripts/verify-face-lab-route-shadow-integration.mjs
+          node scripts/verify-image-analysis-eligibility.mjs
+          node scripts/verify-face-lab-keyword-summary.mjs
+          node scripts/verify-face-lab-failure-and-legacy-contract.mjs
+          npm run build
+          npm run architecture:guard
+          git diff --check
+      - name: Commit reviewed fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/face-lab-hosted-evaluation.js scripts/verify-face-lab-hosted-evaluation-harness.mjs
+          git commit -m "fix: harden Face Lab evaluation metrics"
+          git push origin HEAD:codex/survey-input-contract-refactor
