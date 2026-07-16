@@ -1,0 +1,48 @@
+name: Verify product data sufficiency audit
+
+on:
+  push:
+    branches:
+      - agent/verify-product-data-sufficiency-final
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/verify-product-data-sufficiency-audit.mjs
+      - run: node scripts/verify-product-category-normalizer.mjs
+      - run: node scripts/verify-product-functional-profile.mjs
+      - run: node scripts/verify-current-product-findings.mjs
+      - name: CLI smoke test
+        run: |
+          tmp_dir="$(mktemp -d)"
+          node scripts/audit-product-data-sufficiency.mjs \
+            --input scripts/fixtures/product-data-sufficiency/mixed-audit-dataset.json \
+            --output "$tmp_dir/output"
+          test -f "$tmp_dir/output/summary.json"
+          test -f "$tmp_dir/output/product-data-sufficiency-report.md"
+          test -f "$tmp_dir/output/gaps.csv"
+          if node scripts/audit-product-data-sufficiency.mjs \
+            --input scripts/fixtures/product-data-sufficiency/mixed-audit-dataset.json \
+            --output "$tmp_dir/output"; then
+            echo "overwrite protection failed"
+            exit 1
+          fi
+          node scripts/audit-product-data-sufficiency.mjs \
+            --input scripts/fixtures/product-data-sufficiency/mixed-audit-dataset.json \
+            --output "$tmp_dir/output" \
+            --force
+          rm -rf "$tmp_dir"
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
