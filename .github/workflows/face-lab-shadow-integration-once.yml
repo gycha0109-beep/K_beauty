@@ -19,7 +19,7 @@ jobs:
           ref: codex/survey-input-contract-refactor
           fetch-depth: 0
 
-      - name: Apply reviewed route patch
+      - name: Resolve prompt language contract
         shell: bash
         run: |
           python - <<'PY'
@@ -28,97 +28,22 @@ jobs:
           path = Path('app/api/face-reading/route.js')
           text = path.read_text(encoding='utf-8')
 
-          def replace_once(old, new, label):
-              global text
+          replacements = [
+              (
+                  'systemLanguage: "Output must be entirely in Korean.",',
+                  'systemLanguage: "Write base_data and features in Korean. Keep eligibility and observation_analysis keys, enum values, and evidence in English.",'
+              ),
+              (
+                  'systemLanguage: "Output must be entirely in English.",',
+                  'systemLanguage: "Write base_data and features in English. Keep eligibility and observation_analysis keys, enum values, and evidence in English.",'
+              )
+          ]
+
+          for old, new in replacements:
               count = text.count(old)
               if count != 1:
-                  raise SystemExit(f'{label}: expected 1 match, found {count}')
+                  raise SystemExit(f'expected 1 match for {old!r}, found {count}')
               text = text.replace(old, new, 1)
-
-          replace_once(
-              'import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";\n',
-              'import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";\n'
-              'import {\n'
-              '  buildFaceLabObservationAnalysis,\n'
-              '  createFaceLabObservationPromptContract,\n'
-              '  createFaceLabObservationPromptRules\n'
-              '} from "@/lib/face-lab-observation-contract";\n'
-              'import { createFaceLabLegacyInsufficientPayload } from "@/lib/face-lab-route-shadow";\n',
-              'observation imports'
-          )
-
-          replace_once(
-              '  const copy = getCopy(locale);\n\n  return `',
-              '  const copy = getCopy(locale);\n'
-              '  const observationContract = createFaceLabObservationPromptContract();\n\n'
-              '  return `',
-              'prompt contract declaration'
-          )
-
-          replace_once(
-              '  ${createImageAnalysisEligibilityPromptContract()},\n  "base_data": {',
-              '  ${createImageAnalysisEligibilityPromptContract()},\n'
-              '  "observation_analysis": ${JSON.stringify(observationContract, null, 2)},\n'
-              '  "base_data": {',
-              'prompt shape insertion'
-          )
-
-          replace_once(
-              '${createImageAnalysisEligibilityRules()}\n- ${copy.toneRule}',
-              '${createImageAnalysisEligibilityRules()}\n'
-              '${createFaceLabObservationPromptRules()}\n'
-              '- eligibility and observation_analysis keys, enum values, and evidence must remain in English even when base_data and features use the requested locale.\n'
-              '- ${copy.toneRule}',
-              'prompt rules insertion'
-          )
-
-          replace_once(
-              '          max_tokens: 1400,',
-              '          max_tokens: 3000,',
-              'token budget'
-          )
-
-          replace_once(
-              '      if (!hasFaceReadingPayloadShape(parsed)) {',
-              '      const analysis = buildFaceLabObservationAnalysis(\n'
-              '        parsed?.observation_analysis,\n'
-              '        {\n'
-              '          eligibility,\n'
-              '          provider: "openai",\n'
-              '          model: MODEL\n'
-              '        }\n'
-              '      );\n\n'
-              '      if (process.env.NODE_ENV !== "production") {\n'
-              '        console.info("[face-reading] observation-analysis", {\n'
-              '          status: analysis.status,\n'
-              '          failureReason: analysis.failureReason,\n'
-              '          availableFieldCount: analysis.coverage.availableFieldCount,\n'
-              '          totalCoreFieldCount: analysis.coverage.totalCoreFieldCount,\n'
-              '          availableGroups: analysis.coverage.availableGroups,\n'
-              '          warnings: analysis.warnings\n'
-              '        });\n'
-              '      }\n\n'
-              '      if (!hasFaceReadingPayloadShape(parsed)) {',
-              'analysis construction'
-          )
-
-          replace_once(
-              '              {\n                ...parsed,\n                structured: buildFaceLabStructuredData(parsed, locale)\n              },',
-              '              createFaceLabLegacyInsufficientPayload(\n'
-              '                parsed,\n'
-              '                locale,\n'
-              '                analysis\n'
-              '              ),',
-              'insufficient projection'
-          )
-
-          replace_once(
-              '          ...normalizedFaceLab,\n          structured: structuredFaceLab',
-              '          ...normalizedFaceLab,\n'
-              '          structured: structuredFaceLab,\n'
-              '          analysis',
-              'available projection'
-          )
 
           path.write_text(text, encoding='utf-8')
           PY
@@ -126,11 +51,11 @@ jobs:
           node --check app/api/face-reading/route.js
           git diff --check
 
-      - name: Commit route integration
+      - name: Commit prompt correction
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/api/face-reading/route.js
-          git commit -m "feat: integrate Face Lab shadow observations"
+          git commit -m "fix: align Face Lab prompt language contract"
           git push origin HEAD:codex/survey-input-contract-refactor
