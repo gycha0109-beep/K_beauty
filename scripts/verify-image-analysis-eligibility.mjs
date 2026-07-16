@@ -1,5 +1,9 @@
 import { readFileSync } from "node:fs";
 
+function stripImports(source) {
+  return source.replace(/^import[\s\S]*?;\r?\n/gm, "");
+}
+
 function stripExports(source) {
   return source
     .replace(/export const /g, "const ")
@@ -7,24 +11,27 @@ function stripExports(source) {
 }
 
 function loadEligibilityExports() {
-  const source = stripExports(readFileSync("lib/image-analysis-eligibility.js", "utf8"));
+  const source = stripExports(
+    stripImports(readFileSync("lib/image-analysis-eligibility.js", "utf8"))
+  );
   return Function(`${source}\nreturn { createInvalidImageAnalysisEligibility, normalizeImageAnalysisEligibility };`)();
 }
 
 function loadPhotoEvidenceExports() {
-  const helperSource = stripExports(readFileSync("lib/image-analysis-eligibility.js", "utf8"));
+  const helperSource = stripExports(
+    stripImports(readFileSync("lib/image-analysis-eligibility.js", "utf8"))
+  );
   const photoSource = stripExports(
-    readFileSync("lib/photo-evidence.js", "utf8").replace(
-      /^import \{[\s\S]*?\} from "@\/lib\/image-analysis-eligibility";\r?\n\r?\n/,
-      ""
-    )
+    stripImports(readFileSync("lib/photo-evidence.js", "utf8"))
   );
 
   return Function(`${helperSource}\n${photoSource}\nreturn { buildFallbackPhotoAnalysis, normalizePhotoAnalysis };`)();
 }
 
 function loadFaceLabEnvelopeExports() {
-  const source = stripExports(readFileSync("lib/face-lab-result-envelope.js", "utf8"));
+  const source = stripExports(
+    stripImports(readFileSync("lib/face-lab-result-envelope.js", "utf8"))
+  );
   return Function(`${source}\nreturn { createFaceLabAvailable, getAvailableVisionFaceLabData };`)();
 }
 
