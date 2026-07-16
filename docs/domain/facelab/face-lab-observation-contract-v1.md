@@ -103,6 +103,12 @@ For a legacy insufficient result, the response is reconstructed through an allow
 
 Current `base_data`, `features`, and `structured.mood/color/style` remain legacy display inputs only. They are not canonical observations and must not be used by the future archetype engine. `presentation_hint`, embedding descriptors, tendency text, celebrity matching, and generated style recommendations are excluded from the canonical contract.
 
+## Hosted evaluation boundary
+
+The local harness defined in `face-lab-hosted-evaluation-v1.md` can now execute consented private fixtures against the hosted local route and produce sanitized stability and privacy metrics. The harness does not store source images, raw provider JSON, evidence text, or absolute paths.
+
+This implementation provides the evaluation mechanism only. Actual real-photo calibration results remain unavailable until the operator performs a local smoke or stability run and supplies sanitized `summary.json` and `report.md`.
+
 ## Current implementation boundary
 
 Implemented:
@@ -114,11 +120,13 @@ Implemented:
 - strict envelope accessor for `data.analysis`
 - one-call `/api/face-reading` shadow integration
 - safe allowlisted projection for legacy insufficient responses
-- focused verifier
+- local hosted-evaluation manifest validator, runner, resume support, privacy audit, metrics, and report generation
+- focused static verifiers
 
 Still deferred:
 
+- executing the first consented real-photo hosted calibration
+- changing observation enums or thresholds from hosted evidence
 - switching free or Premium displays to canonical data
 - archetype scoring and styling engines
-- hosted real-photo fixture calibration
 - removing the legacy provider payload
