@@ -1,0 +1,28 @@
+name: Verify premium browser journey pack
+
+on:
+  pull_request:
+    branches:
+      - agent/premium-browser-journey-verification
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node --check scripts/verify-premium-browser-journey.mjs
+      - run: node scripts/verify-premium-route-storage-reentry.mjs
+      - run: node scripts/verify-premium-report-reentry-contract.mjs
+      - run: node scripts/verify-premium-integrated-evaluation.mjs
+      - run: node scripts/verify-premium-decision-state.mjs
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
