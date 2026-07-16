@@ -1,0 +1,35 @@
+name: Assemble Face Lab hosted evaluation harness
+
+on:
+  push:
+    branches:
+      - codex/survey-input-contract-refactor
+    paths:
+      - .github/workflows/face-lab-eval-assemble-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/survey-input-contract-refactor
+          fetch-depth: 0
+      - name: Assemble core library
+        run: |
+          cat .github/tmp/face-lab-hosted-evaluation/lib.part01 \
+              .github/tmp/face-lab-hosted-evaluation/lib.part02 \
+              .github/tmp/face-lab-hosted-evaluation/lib.part03 \
+              > lib/face-lab-hosted-evaluation.js
+          node --check lib/face-lab-hosted-evaluation.js
+          git diff --check
+      - name: Commit assembled library
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/face-lab-hosted-evaluation.js
+          git commit -m "feat: add Face Lab hosted evaluation core"
+          git push origin HEAD:codex/survey-input-contract-refactor
