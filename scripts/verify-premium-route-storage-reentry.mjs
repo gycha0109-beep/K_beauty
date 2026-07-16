@@ -37,6 +37,8 @@ assert.equal(first.version, "premium-report-snapshot-v1");
 assert.equal(first.reportVersion, "premium-v2");
 assert.equal(first.decisionBundleVersion, "premium-decision-bundle-v5");
 assert.equal(first.locale, "ko");
+assert.equal(snapshotModule.resolvePremiumReportLocale({}, "en"), "ko", "request locale must not alter a saved report without stored locale");
+assert.equal(snapshotModule.resolvePremiumReportLocale({ locale: "en" }, "ko"), "en", "stored locale must remain authoritative");
 assert.equal(first.fingerprint, second.fingerprint, "transient timestamps must not alter the snapshot fingerprint");
 assert.notEqual(first.fingerprint, changed.fingerprint, "meaningful product changes must alter the snapshot fingerprint");
 assert.equal(snapshotModule.classifyPremiumSnapshotReplay(baseReport, sameSemanticReport).status, "existing");
@@ -77,18 +79,9 @@ assert.equal(bearerPrincipal.user, bearerUser);
 assert.equal(bearerPrincipal.supabase, bearerClient);
 
 const savedReport = { id: "saved-1", premium_report: baseReport };
-assert.equal(
-  finalizationModule.classifyFinalizedPremiumSession(null, baseReport).status,
-  "open"
-);
-assert.equal(
-  finalizationModule.classifyFinalizedPremiumSession(savedReport, sameSemanticReport).status,
-  "existing"
-);
-assert.equal(
-  finalizationModule.classifyFinalizedPremiumSession(savedReport, changedReport).status,
-  "conflict"
-);
+assert.equal(finalizationModule.classifyFinalizedPremiumSession(null, baseReport).status, "open");
+assert.equal(finalizationModule.classifyFinalizedPremiumSession(savedReport, sameSemanticReport).status, "existing");
+assert.equal(finalizationModule.classifyFinalizedPremiumSession(savedReport, changedReport).status, "conflict");
 
 const fullRoute = read("app/api/full-report/route.js");
 const sessionRoute = read("app/api/full-report/session/route.js");
