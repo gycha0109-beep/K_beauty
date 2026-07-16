@@ -13,11 +13,15 @@ function loadFunctions(path, names, dependencies = {}) {
   )(...dependencyNames.map((name) => dependencies[name]));
 }
 
-const structuredStub = () => ({
-  mood: { status: "insufficient_evidence" },
-  color: { status: "insufficient_evidence" },
-  style: { status: "insufficient_evidence" }
-});
+let structuredInput = null;
+const structuredStub = (value) => {
+  structuredInput = value;
+  return {
+    mood: { status: "insufficient_evidence" },
+    color: { status: "insufficient_evidence" },
+    style: { status: "insufficient_evidence" }
+  };
+};
 
 const { createFaceLabLegacyInsufficientPayload } = loadFunctions(
   "lib/face-lab-route-shadow.js",
@@ -93,6 +97,8 @@ assert.equal("eligibility" in projected, false);
 assert.equal("unknown_provider_key" in projected, false);
 assert.equal(JSON.stringify(projected).includes("data:image/"), false);
 assert.equal(JSON.stringify(projected).includes("rawProviderOnly"), false);
+assert.equal(JSON.stringify(structuredInput).includes("rawProviderOnly"), false);
+assert.equal(JSON.stringify(structuredInput).includes("data:image/"), false);
 
 const contaminatedProviderPayload = structuredClone(providerPayload);
 contaminatedProviderPayload.base_data.landmarks = [
@@ -105,6 +111,8 @@ const sanitized = createFaceLabLegacyInsufficientPayload(
   analysis
 );
 assert.deepEqual(sanitized.base_data.landmarks, ["visible eyes"]);
+assert.deepEqual(structuredInput.base_data.landmarks, ["visible eyes"]);
+assert.equal(JSON.stringify(structuredInput).includes("data:image/"), false);
 
 const routeSource = readFileSync("app/api/face-reading/route.js", "utf8");
 assert.ok(routeSource.includes("createFaceLabObservationPromptContract"));
