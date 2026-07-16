@@ -30,9 +30,19 @@ function readJsonLines(filePath) {
     .map((line) => JSON.parse(line));
 }
 
+function resolveRunDir(value) {
+  const root = path.resolve("tmp", "face-lab-hosted-evaluation");
+  const resolved = path.resolve(value);
+  const relative = path.relative(root, resolved);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error("--run-dir must stay inside tmp/face-lab-hosted-evaluation/");
+  }
+  return resolved;
+}
+
 const args = parseArgs(process.argv.slice(2));
 if (!args["run-dir"]) throw new Error("--run-dir is required");
-const runDir = path.resolve(args["run-dir"]);
+const runDir = resolveRunDir(args["run-dir"]);
 const manifestPath = path.join(runDir, "run-manifest.json");
 const recordsPath = path.join(runDir, "records.jsonl");
 if (!existsSync(manifestPath) || !existsSync(recordsPath)) {
@@ -51,4 +61,4 @@ const report = hardenHostedEvaluationReport(
 );
 writeFileSync(path.join(runDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 writeFileSync(path.join(runDir, "report.md"), report, "utf8");
-console.log(`Face Lab hosted evaluation report regenerated: ${runDir}`);
+console.log(`Face Lab hosted evaluation report regenerated: ${path.relative(process.cwd(), runDir).replace(/\\/g, "/")}`);
