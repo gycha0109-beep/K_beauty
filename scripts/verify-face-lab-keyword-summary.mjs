@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs";
 
+function stripImports(source) {
+  return source.replace(/^import[\s\S]*?;\r?\n/gm, "");
+}
+
 function loadExports(path, names) {
-  const source = readFileSync(path, "utf8").replace(/export function /g, "function ");
+  const source = stripImports(readFileSync(path, "utf8"))
+    .replace(/export function /g, "function ");
   return Function(`${source}\nreturn { ${names.join(", ")} };`)();
 }
 
