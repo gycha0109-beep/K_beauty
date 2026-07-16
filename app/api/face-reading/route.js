@@ -38,7 +38,7 @@ const COPY = {
     imageTooLarge: `이미지 용량은 ${formatUploadSize()} 이하만 업로드할 수 있습니다.`,
     parseError: "Face Lab 응답을 해석하지 못했습니다.",
     serverError: "Face Lab 처리 중 오류가 발생했습니다.",
-    systemLanguage: "Output must be entirely in Korean.",
+    systemLanguage: "Write base_data and features in Korean. Keep eligibility and observation_analysis keys, enum values, and evidence in English.",
     instruction:
       "업로드된 얼굴 사진을 기준으로 Face Lab 결과를 작성해 주세요. 부분 가림, 과한 보정, 강한 스타일링이 있으면 그 한계를 짧게 반영하세요.",
     toneRule: "감성적인 칭찬보다 구조와 인상 흐름 중심으로 써 주세요.",
@@ -117,7 +117,7 @@ const COPY = {
     imageTooLarge: `Images must be ${formatUploadSize()} or smaller.`,
     parseError: "Could not parse the Face Lab response.",
     serverError: "Something went wrong while generating Face Lab.",
-    systemLanguage: "Output must be entirely in English.",
+    systemLanguage: "Write base_data and features in English. Keep eligibility and observation_analysis keys, enum values, and evidence in English.",
     instruction:
       "Create a Face Lab result from the uploaded face photo. If the face is partly occluded, heavily edited, or strongly styled, briefly acknowledge that limit.",
     toneRule: "Write with structure and impression logic, not flattering copy.",
