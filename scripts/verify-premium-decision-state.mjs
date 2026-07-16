@@ -47,11 +47,14 @@ const emptyState = buildPremiumDecisionState(
   baseReport({ currentProducts: null, currentProductVerdicts: [] }),
   { locale: "ko", source: "verify_empty" }
 );
-assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v2");
+assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v3");
 assert.equal(emptyState.decisionBundle.contextRevision, 1);
 assert.equal(emptyState.decisionBundle.context.productExposureState.activeExposurePresent, false);
 assert.equal(emptyState.functionalPolicy.version, "functional-policy-v1");
 assert.equal(emptyState.functionalPlan.policyVersion, "functional-policy-v1");
+assert.equal(emptyState.routinePolicy.version, "routine-policy-v1");
+assert.equal(emptyState.routinePlan.version, "premium-routine-projection-v1");
+assert.equal(emptyState.routinePolicy.invariants.sunscreenRequiredInMorning, true);
 assert.equal(emptyState.functionalRoutineAudit.status, "NO_ROUTINE_DATA");
 assert.equal(functionalStatus(emptyState, "texture_exfoliation"), "later");
 assert.equal(conditionStatus(emptyState, "active_load"), "reduce");
@@ -107,6 +110,8 @@ assert.deepEqual(activeState.decisionBundle.context.productExposureState.rows[0]
 assert.equal(activeState.decisionBundle.context.safetyState.activeBurden, true);
 assert.equal(activeState.functionalPolicy.planMode, "HOLD");
 assert.equal(activeState.functionalPlan.planMode, "HOLD");
+assert.equal(activeState.routinePolicy.weeklySchedule.activeDaysMax, 0);
+assert.equal(activeState.routineProductActions[0].action, "hold");
 assert.equal(activeState.functionalRoutineAudit.status, "OPTIMIZE");
 assert.equal(functionalStatus(activeState, "texture_exfoliation"), "pause");
 assert.equal(conditionStatus(activeState, "active_load"), "avoid_for_now");
@@ -124,6 +129,8 @@ const unknownState = buildPremiumDecisionState(
 
 assert.equal(unknownState.decisionBundle.context.productExposureState.unknownProductCount, 1);
 assert.equal(unknownState.decisionBundle.context.productExposureState.activeExposurePresent, false);
+assert.equal(unknownState.routinePolicy.status, "partial");
+assert.equal(unknownState.routineProductActions[0].action, "check_needed");
 assert.equal(unknownState.functionalRoutineAudit.status, "UNKNOWN");
 assert.notEqual(conditionStatus(unknownState, "active_load"), "avoid_for_now");
 
