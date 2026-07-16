@@ -24,8 +24,17 @@ function buildConditionSignalState(surveyAnswers = {}) {
   const breakoutIncrease = yesNoUnknown(surveyAnswers.breakoutIncrease || surveyAnswers.recentBreakoutIncrease);
   const flakingIncrease = yesNoUnknown(surveyAnswers.flakingIncrease || surveyAnswers.recentFlakingIncrease);
   const productReaction = yesNoUnknown(surveyAnswers.productReaction || surveyAnswers.recentProductReaction);
-  const knownCount = [afternoon, postWash, breakoutIncrease, flakingIncrease, productReaction]
-    .filter((value) => value && value !== "unknown").length;
+  const recentSkinChange = yesNoUnknown(surveyAnswers.recentSkinChange);
+  const recentProductChange = yesNoUnknown(surveyAnswers.recentlyChangedProduct);
+  const knownCount = [
+    afternoon,
+    postWash,
+    breakoutIncrease,
+    flakingIncrease,
+    productReaction,
+    recentSkinChange,
+    recentProductChange
+  ].filter((value) => value && value !== "unknown").length;
 
   return {
     rednessOrIrritation: afternoon === "red_or_irritated" ? "yes" : afternoon ? "no" : "unknown",
@@ -34,8 +43,8 @@ function buildConditionSignalState(surveyAnswers = {}) {
     breakoutIncrease,
     flakingIncrease,
     productReaction,
-    recentSkinChange: yesNoUnknown(surveyAnswers.recentSkinChange),
-    recentProductChange: yesNoUnknown(surveyAnswers.recentlyChangedProduct),
+    recentSkinChange,
+    recentProductChange,
     completeness: knownCount >= 4 ? "complete" : knownCount ? "partial" : "minimal"
   };
 }
