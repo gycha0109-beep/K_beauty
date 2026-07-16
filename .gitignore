@@ -20,6 +20,10 @@ debug.png
 data/hwahae/ranking-snapshots/
 supabase/.temp/
 
+# Local Face Lab evaluation fixtures and outputs
+private/face-lab-fixtures/
+tmp/face-lab-hosted-evaluation/
+
 # Codex local runtime files
 .codex/environments/
 .codex/review-chrome-profile/
