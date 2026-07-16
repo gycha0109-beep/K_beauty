@@ -43,6 +43,7 @@ const sessionRoute = read("app/api/full-report/session/route.js");
 const routeContext = read("lib/premium-route-context.js");
 const currentProducts = read("lib/premium-current-products.js");
 const reentry = read("lib/premium-report-reentry.js");
+const migration = read("supabase/migrations/20260717031000_premium_saved_report_snapshot_immutability.sql");
 
 for (const fragment of [
   "resolvePremiumRouteContext(request)",
@@ -51,8 +52,8 @@ for (const fragment of [
   'error: "premium_snapshot_finalized"',
   'error: "premium_save_unavailable"',
   '.select("id, premium_report")',
-  '.insert(payload)',
-  'savedFreeResult?.topPick || null',
+  ".insert(payload)",
+  "savedFreeResult?.topPick || null",
   'status: "existing"'
 ]) {
   assert.ok(fullRoute.includes(fragment), `full-report route is missing ${fragment}`);
@@ -110,6 +111,18 @@ for (const fragment of [
   'source: "premium_report_session_rotation"'
 ]) {
   assert.ok(reentry.includes(fragment), `rotation payload is missing ${fragment}`);
+}
+
+for (const fragment of [
+  "create unique index if not exists saved_reports_premium_session_owner_uidx",
+  "on public.saved_reports (user_id, report_type, source_type, source_session_id)",
+  "where report_type = 'premium'",
+  "and source_type = 'premium_report_session'",
+  'drop policy if exists "Users can update own saved reports"',
+  'create policy "Users can update own mutable saved reports"',
+  "source_type is distinct from 'premium_report_session'"
+]) {
+  assert.ok(migration.includes(fragment), `premium snapshot migration is missing ${fragment}`);
 }
 
 console.log("premium route/storage/reentry verification passed");
