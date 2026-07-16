@@ -20,15 +20,20 @@ function json(body, status = 200) {
 
 async function getCurrentSessionContext(request) {
   const routeContext = await resolvePremiumRouteContext(request);
-  if (!isAccountUser(routeContext.user) || !routeContext.supabase) return null;
+  if (routeContext.authError === "principal_conflict") {
+    return { error: "principal_conflict" };
+  }
+  if (!isAccountUser(routeContext.user) || !routeContext.supabase) {
+    return { error: "current_session_missing" };
+  }
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
   const premiumSession = await verifyPremiumReportSession(premiumCookie);
   if (!premiumSession.ok || !premiumSession.payload?.sessionId || !premiumSession.payload?.premiumReport) {
-    return null;
+    return { error: "current_session_missing" };
   }
 
-  return { ...routeContext, premiumCookie, premiumSession };
+  return { ...routeContext, premiumCookie, premiumSession, error: null };
 }
 
 async function findSavedReportForCurrentSession({ supabase, userId, sessionId }) {
@@ -50,7 +55,7 @@ async function findSavedReportForCurrentSession({ supabase, userId, sessionId })
 export async function GET(request) {
   try {
     const context = await getCurrentSessionContext(request);
-    if (!context) return json({ hasSavedReport: false });
+    if (context.error) return json({ hasSavedReport: false });
 
     const savedReportId = await findSavedReportForCurrentSession({
       supabase: context.supabase,
@@ -67,7 +72,12 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const context = await getCurrentSessionContext(request);
-    if (!context) return json({ rotated: false, reason: "current_session_missing" }, 401);
+    if (context.error === "principal_conflict") {
+      return json({ rotated: false, reason: "principal_conflict" }, 401);
+    }
+    if (context.error) {
+      return json({ rotated: false, reason: "current_session_missing" }, 401);
+    }
     if (!context.access.canCreatePremium) {
       return json({ rotated: false, reason: "premium_creation_not_allowed" }, 403);
     }
