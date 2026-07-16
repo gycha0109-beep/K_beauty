@@ -1,24 +1,52 @@
 import { NextResponse } from "next/server";
 import { getCanonicalProductionRedirectUrl } from "@/lib/canonical-site-origin";
+import securityHeaderPolicy from "@/lib/security/security-headers";
 import { updateSession } from "@/lib/supabase/middleware";
 
-function isDocumentNavigation(request) {
-  if (request.method !== "GET" && request.method !== "HEAD") {
-    return false;
-  }
+const {
+  applyDocumentSecurityHeaders,
+  createDocumentSecurityContext,
+  isDocumentRequest
+} = securityHeaderPolicy;
 
-  const destination = request.headers.get("sec-fetch-dest");
-  const accept = request.headers.get("accept") || "";
-  return destination === "document" || accept.includes("text/html");
+function createSecurityPolicyUnavailableResponse() {
+  return NextResponse.json(
+    { success: false, error: "security_policy_unavailable" },
+    { status: 503 }
+  );
 }
 
 export async function middleware(request) {
-  if (isDocumentNavigation(request)) {
+  if (isDocumentRequest(request)) {
+    let securityContext;
+
+    try {
+      securityContext = createDocumentSecurityContext({
+        requestHeaders: request.headers,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        isDevelopment: process.env.NODE_ENV === "development",
+        requestUrl: request.url
+      });
+    } catch {
+      return createSecurityPolicyUnavailableResponse();
+    }
+
     const canonicalUrl = getCanonicalProductionRedirectUrl(request.url);
 
     if (canonicalUrl) {
-      return NextResponse.redirect(canonicalUrl, 307);
+      return applyDocumentSecurityHeaders(
+        NextResponse.redirect(canonicalUrl, 307),
+        securityContext.contentSecurityPolicy
+      );
     }
+
+    const response = await updateSession(request, {
+      requestHeaders: securityContext.requestHeaders
+    });
+    return applyDocumentSecurityHeaders(
+      response,
+      securityContext.contentSecurityPolicy
+    );
   }
 
   return updateSession(request);

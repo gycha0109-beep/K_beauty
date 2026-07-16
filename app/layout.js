@@ -1,5 +1,9 @@
 import "./globals.css";
+import { headers } from "next/headers";
 import AnonymousAuthBootstrap from "@/components/auth/AnonymousAuthBootstrap";
+import securityHeaderPolicy from "@/lib/security/security-headers";
+
+const { isValidCspNonce, NONCE_HEADER_NAME } = securityHeaderPolicy;
 
 const brandTitle = "Be jewely";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://k-beauty-two.vercel.app";
@@ -56,11 +60,20 @@ export const metadata = {
   }
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const requestHeaders = await headers();
+  const requestNonce = requestHeaders.get(NONCE_HEADER_NAME);
+  const nonce = isValidCspNonce(requestNonce) ? requestNonce : null;
+
   return (
     <html lang="ko" className="scheme-light" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {nonce ? (
+          <script
+            nonce={nonce}
+            dangerouslySetInnerHTML={{ __html: themeInitScript }}
+          />
+        ) : null}
       </head>
       <body className="ui-page">
         <AnonymousAuthBootstrap />

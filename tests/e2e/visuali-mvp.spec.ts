@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { expect, test, type Page } from "playwright/test";
+import { expect, test, type BrowserContext, type Page } from "playwright/test";
 
 const PRODUCT_PURCHASE_LINK_MODULE_PATH = path.join(process.cwd(), "lib", "product-purchase-link.js");
 const APPROVED_PRODUCT_IMAGE_URL =
@@ -144,6 +144,47 @@ async function advanceToFullReport(page: Page) {
   }
 }
 
+function readPublicSupabaseOrigin() {
+  if (!fs.existsSync(LOCAL_ENV_PATH)) {
+    return null;
+  }
+
+  const envText = fs.readFileSync(LOCAL_ENV_PATH, "utf8");
+  const match = /^NEXT_PUBLIC_SUPABASE_URL=(.+)$/m.exec(envText);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return new URL(match[1].trim().replace(/^['"]|['"]$/g, "")).origin;
+  } catch {
+    return null;
+  }
+}
+
+function getCspNonce(csp: string | null) {
+  return /(?:^|;\s*)script-src\s+[^;]*'nonce-([^']+)'/.exec(csp || "")?.[1] || null;
+}
+
+async function interceptLocalSupabaseRequests(context: BrowserContext) {
+  const supabaseOrigin = readPublicSupabaseOrigin();
+
+  if (!supabaseOrigin) {
+    return null;
+  }
+
+  await context.route(`${supabaseOrigin}/**`, async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "local_test_intercept" })
+    });
+  });
+
+  return supabaseOrigin;
+}
+
 function createSharedResultFixture() {
   return {
     shareId: SHARED_RESULT_SMOKE_IDS.public,
@@ -205,6 +246,117 @@ async function advanceToProductImageStep(page: Page) {
 }
 
 test.describe("Visuali MVP E2E draft", () => {
+  test("nonce CSP and global HTTP headers hold in local production @sec10-security-headers", async ({ page, context, request }) => {
+    const supabaseOrigin = readPublicSupabaseOrigin();
+    expect(supabaseOrigin).toBeTruthy();
+
+    const cspViolations: string[] = [];
+    const hydrationErrors: string[] = [];
+
+    page.on("console", (message) => {
+      const text = message.text();
+
+      if (/content security policy|refused to (?:load|execute|apply|connect)/i.test(text)) {
+        cspViolations.push(text);
+      }
+
+      if (/hydration|did not match|server rendered html/i.test(text)) {
+        hydrationErrors.push(text);
+      }
+    });
+    await page.addInitScript(() => {
+      document.addEventListener("securitypolicyviolation", (event) => {
+        console.error(`securitypolicyviolation:${event.violatedDirective}`);
+      });
+    });
+    await interceptLocalSupabaseRequests(context);
+
+    const nonceSet = new Set<string>();
+
+    for (let index = 0; index < 3; index += 1) {
+      const response = await request.get("/", {
+        headers: { accept: "text/html", "sec-fetch-dest": "document" }
+      });
+      const nonce = getCspNonce(response.headers()["content-security-policy"] || null);
+      expect(nonce).toMatch(/^[A-Za-z0-9+/]{22}==$/);
+      nonceSet.add(nonce || "");
+    }
+
+    expect(nonceSet.size).toBe(3);
+
+    await page.setExtraHTTPHeaders({ "x-nonce": "AAAAAAAAAAAAAAAAAAAAAA==" });
+    const rootResponse = await page.goto("/en", { waitUntil: "domcontentloaded" });
+    expect(rootResponse).not.toBeNull();
+
+    const headers = rootResponse!.headers();
+    const csp = headers["content-security-policy"];
+    const nonce = getCspNonce(csp);
+    const directives = new Map(
+      csp.split(";").filter(Boolean).map((segment) => {
+        const [name, ...values] = segment.trim().split(/\s+/);
+        return [name, values];
+      })
+    );
+
+    expect(nonce).toMatch(/^[A-Za-z0-9+/]{22}==$/);
+    expect(nonce).not.toBe("AAAAAAAAAAAAAAAAAAAAAA==");
+    expect(headers["x-nonce"]).toBeUndefined();
+    expect(headers["x-content-type-options"]).toBe("nosniff");
+    expect(headers["x-frame-options"]).toBe("DENY");
+    expect(headers["referrer-policy"]).toBe("no-referrer");
+    expect(headers["cross-origin-opener-policy"]).toBe("same-origin");
+    expect(headers["origin-agent-cluster"]).toBe("?1");
+    expect(headers["permissions-policy"]).toContain("camera=(self)");
+    expect(headers["permissions-policy"]).toContain("clipboard-write=(self)");
+    expect(directives.get("frame-ancestors")).toEqual(["'none'"]);
+    expect(directives.get("img-src")).toEqual([
+      "'self'",
+      "data:",
+      "blob:",
+      "https://img.hwahae.co.kr"
+    ]);
+    expect(directives.get("script-src")).not.toContain("'unsafe-inline'");
+    expect(directives.get("script-src")).not.toContain("'unsafe-eval'");
+    expect(directives.get("connect-src")).toEqual(["'self'", supabaseOrigin]);
+
+    const executableScripts = await page.locator("script").evaluateAll((scripts) =>
+      scripts
+        .filter((script) => script.src || script.textContent?.trim())
+        .map((script) => script.nonce)
+    );
+    expect(executableScripts.length).toBeGreaterThan(1);
+    expect(new Set(executableScripts)).toEqual(new Set([nonce]));
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toMatch(/^(light|dark)$/);
+
+    const notFound = await request.get("/definitely-missing-sec10", {
+      headers: { accept: "text/html", "sec-fetch-dest": "document" }
+    });
+    expect(notFound.status()).toBe(404);
+    expect(notFound.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+
+    const redirect = await request.get("/auth/callback", {
+      headers: { accept: "text/html", "sec-fetch-dest": "document" },
+      maxRedirects: 0
+    });
+    expect(redirect.status()).toBe(307);
+    expect(redirect.headers()["location"]).toContain("auth_error=missing_code");
+    expect(redirect.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+
+    const apiError = await request.get("/api/analyze");
+    expect(apiError.status()).toBe(405);
+    expect(apiError.headers()["x-content-type-options"]).toBe("nosniff");
+    expect(apiError.headers()["content-security-policy"]).toBeUndefined();
+
+    const staticAsset = await request.get("/icon.png");
+    expect(staticAsset.status()).toBe(200);
+    expect(staticAsset.headers()["x-content-type-options"]).toBe("nosniff");
+    expect(staticAsset.headers()["content-security-policy"]).toBeUndefined();
+
+    await page.waitForTimeout(250);
+    expect(cspViolations).toEqual([]);
+    expect(hydrationErrors).toEqual([]);
+  });
+
   test("purchase-link client boundary imports the shared resolver @smoke", async () => {
     const freeResultPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "page.js"), "utf8");
     const fullReportPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "full-report", "page.js"), "utf8");
@@ -217,11 +369,12 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(fullReportPage).toContain('rel="noopener noreferrer"');
   });
 
-  test("product image origin boundary is fail-closed at runtime @sec10-image-origin @smoke", async ({ page }) => {
+  test("product image origin boundary is fail-closed at runtime @sec10-image-origin @smoke", async ({ page, context }) => {
     let approvedRequestCount = 0;
     let rejectedRequestCount = 0;
     let approvedMode: "success" | "error" = "success";
 
+    await interceptLocalSupabaseRequests(context);
     await page.route("**/api/premium/access", async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ reason: "premium_unavailable" }) });
     });
@@ -282,7 +435,7 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(approvedRequestCount).toBe(2);
   });
 
-  test("shared result loader has one read boundary and generic failure states @smoke", async ({ page }) => {
+  test("shared result loader has one read boundary and generic failure states @smoke", async ({ page, context }) => {
     let isPublic = true;
     let publicGetCount = 0;
     let rateLimitedGetCount = 0;
@@ -293,6 +446,7 @@ test.describe("Visuali MVP E2E draft", () => {
     });
     let holdInitialRead = true;
 
+    await interceptLocalSupabaseRequests(context);
     await page.route("**/api/results/*", async (route) => {
       const request = route.request();
       const shareId = new URL(request.url()).pathname.split("/").at(-1);
@@ -386,7 +540,8 @@ test.describe("Visuali MVP E2E draft", () => {
     await expect(page.getByRole("heading", { name: "Temporarily unavailable" })).toBeVisible();
   });
 
-  test("photo upload rejects unsupported files before preview @smoke", async ({ page }) => {
+  test("photo upload rejects unsupported files before preview @smoke", async ({ page, context }) => {
+    await interceptLocalSupabaseRequests(context);
     await page.goto("/en");
 
     const uploadInput = page.locator('input[type="file"]').last();
@@ -407,8 +562,10 @@ test.describe("Visuali MVP E2E draft", () => {
   });
 
   test("home entry, photo upload, and required survey navigation @smoke", async ({
-    page
+    page,
+    context
   }) => {
+    await interceptLocalSupabaseRequests(context);
     await page.goto("/en");
 
     await assertHomeEntry(page);
