@@ -1,16 +1,18 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const read = (path) => readFileSync(resolve(root, path), "utf8");
+const importModule = (path) => import(pathToFileURL(resolve(root, path)).href);
 
-const snapshotModule = await import(
-  pathToFileURL(resolve(root, "lib/premium-report-snapshot.js")).href
-);
+const snapshotModule = await importModule("lib/premium-report-snapshot.js");
+const principalModule = await importModule("lib/premium-route-principal.js");
+const finalizationModule = await importModule("lib/premium-finalization.js");
 
 const baseReport = {
+  locale: "ko",
   freeResult: { topPick: { id: "p1" } },
   decisionBundle: {
     version: "premium-decision-bundle-v5",
@@ -32,18 +34,70 @@ const first = snapshotModule.buildPremiumReportSnapshot(baseReport);
 const second = snapshotModule.buildPremiumReportSnapshot(sameSemanticReport);
 const changed = snapshotModule.buildPremiumReportSnapshot(changedReport);
 assert.equal(first.version, "premium-report-snapshot-v1");
+assert.equal(first.reportVersion, "premium-v2");
+assert.equal(first.decisionBundleVersion, "premium-decision-bundle-v5");
+assert.equal(first.locale, "ko");
 assert.equal(first.fingerprint, second.fingerprint, "transient timestamps must not alter the snapshot fingerprint");
 assert.notEqual(first.fingerprint, changed.fingerprint, "meaningful product changes must alter the snapshot fingerprint");
 assert.equal(snapshotModule.classifyPremiumSnapshotReplay(baseReport, sameSemanticReport).status, "existing");
 assert.equal(snapshotModule.classifyPremiumSnapshotReplay(baseReport, changedReport).status, "conflict");
 assert.deepEqual(baseReport.currentProducts.selections, [{ productId: "p1", status: "selected" }]);
 
+const cookieUser = { id: "cookie-user" };
+const bearerUser = { id: "bearer-user" };
+const cookieClient = { name: "cookie-client" };
+const bearerClient = { name: "bearer-client" };
+const conflictPrincipal = principalModule.selectPremiumRoutePrincipal({
+  cookieUser,
+  cookieClient,
+  bearerUser,
+  bearerClient
+});
+assert.equal(conflictPrincipal.authError, "principal_conflict");
+assert.equal(conflictPrincipal.principalAligned, false);
+assert.equal(conflictPrincipal.user, null);
+assert.equal(conflictPrincipal.supabase, null);
+
+const alignedPrincipal = principalModule.selectPremiumRoutePrincipal({
+  cookieUser,
+  cookieClient,
+  bearerUser: { id: cookieUser.id },
+  bearerClient
+});
+assert.equal(alignedPrincipal.authSource, "cookie");
+assert.equal(alignedPrincipal.user, cookieUser);
+assert.equal(alignedPrincipal.supabase, cookieClient);
+
+const bearerPrincipal = principalModule.selectPremiumRoutePrincipal({
+  bearerUser,
+  bearerClient
+});
+assert.equal(bearerPrincipal.authSource, "bearer");
+assert.equal(bearerPrincipal.user, bearerUser);
+assert.equal(bearerPrincipal.supabase, bearerClient);
+
+const savedReport = { id: "saved-1", premium_report: baseReport };
+assert.equal(
+  finalizationModule.classifyFinalizedPremiumSession(null, baseReport).status,
+  "open"
+);
+assert.equal(
+  finalizationModule.classifyFinalizedPremiumSession(savedReport, sameSemanticReport).status,
+  "existing"
+);
+assert.equal(
+  finalizationModule.classifyFinalizedPremiumSession(savedReport, changedReport).status,
+  "conflict"
+);
+
 const fullRoute = read("app/api/full-report/route.js");
 const sessionRoute = read("app/api/full-report/session/route.js");
 const routeContext = read("lib/premium-route-context.js");
+const routePrincipal = read("lib/premium-route-principal.js");
 const currentProducts = read("lib/premium-current-products.js");
 const reentry = read("lib/premium-report-reentry.js");
-const migration = read("supabase/migrations/20260717031000_premium_saved_report_snapshot_immutability.sql");
+const migrationPath = "supabase/migrations/20260717031925_premium_saved_report_snapshot_immutability.sql";
+const migration = read(migrationPath);
 
 for (const fragment of [
   "resolvePremiumRouteContext(request)",
@@ -51,8 +105,10 @@ for (const fragment of [
   "buildPremiumReportSnapshot",
   'error: "premium_snapshot_finalized"',
   'error: "premium_save_unavailable"',
-  '.select("id, premium_report")',
-  ".insert(payload)",
+  '"premium_principal_conflict"',
+  "loadSavedPremiumReportForSession",
+  "finalizedSavedReport",
+  "report_version: snapshot.reportVersion",
   "savedFreeResult?.topPick || null",
   'status: "existing"'
 ]) {
@@ -61,21 +117,26 @@ for (const fragment of [
 assert.ok(!fullRoute.includes(".update({"), "saved premium snapshots must not be updated");
 assert.ok(!fullRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved reentry must ignore request topPick");
 assert.ok(
-  fullRoute.indexOf("if (body?.savedReportId)") <
-    fullRoute.indexOf("const currentProductsResult = await applyCurrentProductsToReport"),
-  "saved reentry must precede mutable enrichment"
+  fullRoute.indexOf("const finalizedLookup = await loadSavedPremiumReportForSession") <
+    fullRoute.indexOf("updatePremiumReportSession(premiumCookie, responsePremiumReport)"),
+  "finalized snapshot lookup must happen before any mutable session update"
+);
+assert.ok(
+  fullRoute.indexOf("if (finalizedSavedReport?.premium_report)") <
+    fullRoute.indexOf("updatePremiumReportSession(premiumCookie, responsePremiumReport)"),
+  "finalized sessions must return before mutable session persistence"
 );
 
 for (const fragment of [
-  "createServerSupabaseClient()",
-  "createRouteSupabaseAuthClient(bearerToken)",
-  'authSource: "cookie"',
-  'authSource: "bearer"',
-  "cookieUser?.id === user.id",
-  "bearerUser?.id === user.id"
+  "const cookieUser = await resolveClientUser(cookieClient)",
+  "const bearerUser = await resolveClientUser(bearerClient)",
+  "selectPremiumRoutePrincipal",
+  "resolvePremiumAccessForUser(principal.user)"
 ]) {
   assert.ok(routeContext.includes(fragment), `route context is missing ${fragment}`);
 }
+assert.ok(!routeContext.includes("resolvePremiumAccessForRequest"), "route context must not preselect a bearer principal");
+assert.ok(routePrincipal.includes('authError: "principal_conflict"'), "principal conflicts must fail closed");
 
 assert.ok(currentProducts.includes("rebuildPremiumDecisionState("), "current-product enrichment must use the canonical rebuild entrypoint");
 assert.ok(!currentProducts.includes("Object.assign("), "current-product enrichment must not mutate the report through Object.assign");
@@ -83,6 +144,7 @@ assert.ok(!currentProducts.includes("report.currentProducts ="), "current-produc
 assert.ok(!currentProducts.includes("applyPremiumDecisionState"), "route enrichment must not hide mutation behind applyPremiumDecisionState");
 
 for (const fragment of [
+  'reason: "principal_conflict"',
   'reason: "current_session_missing"',
   'reason: "premium_creation_not_allowed"',
   'reason: "saved_snapshot_not_found"',
@@ -124,5 +186,10 @@ for (const fragment of [
 ]) {
   assert.ok(migration.includes(fragment), `premium snapshot migration is missing ${fragment}`);
 }
+assert.ok(existsSync(resolve(root, migrationPath)), "the repository migration must match the applied database version");
+assert.ok(
+  !existsSync(resolve(root, "supabase/migrations/20260717031000_premium_saved_report_snapshot_immutability.sql")),
+  "the mismatched migration version must not remain in the repository"
+);
 
 console.log("premium route/storage/reentry verification passed");
