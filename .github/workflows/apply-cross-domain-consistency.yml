@@ -21,7 +21,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply integration patch
-        run: python scripts/apply-cross-domain-consistency.py
+        run: |
+          python scripts/apply-cross-domain-consistency.py
+          python scripts/fix-cross-domain-verifiers.py
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -39,6 +41,7 @@ jobs:
       - name: Commit implementation and remove one-time tooling
         run: |
           rm scripts/apply-cross-domain-consistency.py
+          rm scripts/fix-cross-domain-verifiers.py
           rm .github/workflows/apply-cross-domain-consistency.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
