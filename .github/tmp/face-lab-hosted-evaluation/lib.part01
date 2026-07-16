@@ -1,0 +1,277 @@
+const MANIFEST_SCHEMA_VERSION = "face-lab-hosted-eval-manifest-v1";
+const RUN_SCHEMA_VERSION = "face-lab-hosted-eval-run-v1";
+const RECORD_SCHEMA_VERSION = "face-lab-hosted-eval-record-v1";
+const SUMMARY_SCHEMA_VERSION = "face-lab-hosted-eval-summary-v1";
+
+const ALLOWED_ELIGIBILITY = new Set(["eligible", "ineligible"]);
+const ALLOWED_VARIANT_ROLES = new Set(["baseline", "variant", "control"]);
+const ALLOWED_DEGRADATIONS = new Set([
+  "none",
+  "color_only",
+  "forehead_occlusion",
+  "eye_occlusion",
+  "lower_face_occlusion",
+  "profile_angle",
+  "global_quality",
+  "eligibility_block"
+]);
+const ALLOWED_PLANS = new Set(["smoke", "stability", "full"]);
+const ALLOWED_LOCALES = new Set(["ko", "en"]);
+const ANALYSIS_STATUSES = new Set([
+  "available",
+  "partial",
+  "insufficient_evidence",
+  "unavailable"
+]);
+const FIELD_STATUSES = new Set([
+  "available",
+  "insufficient_evidence",
+  "unavailable"
+]);
+const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const FORBIDDEN_METADATA_KEYS = new Set([
+  "age",
+  "birthdate",
+  "dateofbirth",
+  "dob",
+  "minor",
+  "isminor",
+  "underage",
+  "gender",
+  "sex",
+  "race",
+  "ethnicity",
+  "nationality",
+  "religion",
+  "health",
+  "diagnosis",
+  "disease",
+  "name",
+  "fullname",
+  "email",
+  "phone",
+  "address"
+]);
+const FORBIDDEN_IMAGE_KEYS = new Set([
+  "image",
+  "imageurl",
+  "imagealt",
+  "imagepreview",
+  "imagepreviewdataurl",
+  "imagedataurl",
+  "base64",
+  "buffer",
+  "facecrop",
+  "crop"
+]);
+const ALLOWED_RESPONSE_TOP_LEVEL_KEYS = new Set([
+  "status",
+  "source",
+  "failureReason",
+  "analyzedAt",
+  "data",
+  "eligibility",
+  "error",
+  "code",
+  "retryAfter"
+]);
+const ALLOWED_DATA_KEYS = new Set([
+  "analysis",
+  "base_data",
+  "features",
+  "structured"
+]);
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeKey(value) {
+  return String(value || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function cleanId(value, label) {
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string`);
+  }
+  const cleaned = value.trim();
+  if (!/^[a-z0-9][a-z0-9._-]{0,79}$/i.test(cleaned)) {
+    throw new Error(`${label} must use 1-80 safe identifier characters`);
+  }
+  return cleaned;
+}
+
+function cleanStringList(value, label, { min = 0, max = 32 } = {}) {
+  if (!Array.isArray(value)) {
+    throw new Error(`${label} must be an array`);
+  }
+  const cleaned = [...new Set(value.map((item) => {
+    if (typeof item !== "string") {
+      throw new Error(`${label} entries must be strings`);
+    }
+    return item.trim();
+  }).filter(Boolean))];
+  if (cleaned.length < min || cleaned.length > max) {
+    throw new Error(`${label} must contain ${min}-${max} values`);
+  }
+  return cleaned;
+}
+
+function assertNoForbiddenMetadata(value, label = "manifest", seen = new WeakSet()) {
+  if (!value || typeof value !== "object") {
+    return;
+  }
+  if (seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertNoForbiddenMetadata(item, `${label}[${index}]`, seen));
+    return;
+  }
+  for (const [key, item] of Object.entries(value)) {
+    if (FORBIDDEN_METADATA_KEYS.has(normalizeKey(key))) {
+      throw new Error(`${label} contains forbidden personal metadata key: ${key}`);
+    }
+    assertNoForbiddenMetadata(item, `${label}.${key}`, seen);
+  }
+}
+
+function isWindowsAbsolutePath(value) {
+  return /^[a-z]:[\\/]/i.test(value) || /^\\\\/.test(value);
+}
+
+function toPortablePath(value) {
+  return String(value || "").replace(/\\/g, "/");
+}
+
+export function validateHostedEvaluationImagePath(
+  imagePath,
+  { repoRoot = process.cwd(), pathApi } = {}
+) {
+  const path = pathApi;
+  if (!path) {
+    throw new Error("pathApi is required");
+  }
+  if (typeof imagePath !== "string" || !imagePath.trim()) {
+    throw new Error("imagePath must be a non-empty string");
+  }
+  const raw = imagePath.trim();
+  if (path.isAbsolute(raw) || isWindowsAbsolutePath(raw)) {
+    throw new Error("imagePath must be repository-relative");
+  }
+  const portable = toPortablePath(raw).replace(/^\.\//, "");
+  if (!portable.startsWith("private/face-lab-fixtures/")) {
+    throw new Error("imagePath must stay under private/face-lab-fixtures/");
+  }
+  const resolvedRoot = path.resolve(repoRoot);
+  const fixtureRoot = path.resolve(resolvedRoot, "private/face-lab-fixtures");
+  const resolved = path.resolve(resolvedRoot, portable);
+  const relative = path.relative(fixtureRoot, resolved);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error("imagePath must point to a file inside private/face-lab-fixtures/");
+  }
+  const extension = path.extname(resolved).toLowerCase();
+  if (!IMAGE_EXTENSIONS.has(extension)) {
+    throw new Error("imagePath must use JPEG, PNG, or WEBP");
+  }
+  return {
+    absolutePath: resolved,
+    portablePath: portable
+  };
+}
+
+export function validateHostedEvaluationManifest(
+  manifest,
+  {
+    repoRoot = process.cwd(),
+    pathApi,
+    fileExists = () => true,
+    requireImageFiles = true
+  } = {}
+) {
+  if (!isObject(manifest)) {
+    throw new Error("manifest must be an object");
+  }
+  assertNoForbiddenMetadata(manifest);
+  if (manifest.schemaVersion !== MANIFEST_SCHEMA_VERSION) {
+    throw new Error(`manifest schemaVersion must be ${MANIFEST_SCHEMA_VERSION}`);
+  }
+  const datasetId = cleanId(manifest.datasetId, "datasetId");
+  if (!Array.isArray(manifest.fixtures) || !manifest.fixtures.length) {
+    throw new Error("manifest.fixtures must be a non-empty array");
+  }
+
+  const fixtureIds = new Set();
+  const fixtures = manifest.fixtures.map((fixture, index) => {
+    const label = `fixtures[${index}]`;
+    if (!isObject(fixture)) {
+      throw new Error(`${label} must be an object`);
+    }
+    if (fixture.consentConfirmed !== true) {
+      throw new Error(`${label}.consentConfirmed must be true`);
+    }
+    const fixtureId = cleanId(fixture.fixtureId, `${label}.fixtureId`);
+    if (fixtureIds.has(fixtureId)) {
+      throw new Error(`duplicate fixtureId: ${fixtureId}`);
+    }
+    fixtureIds.add(fixtureId);
+    const subjectId = cleanId(fixture.subjectId, `${label}.subjectId`);
+    if (!ALLOWED_ELIGIBILITY.has(fixture.expectedEligibility)) {
+      throw new Error(`${label}.expectedEligibility is invalid`);
+    }
+    const comparisonGroup = cleanId(
+      fixture.comparisonGroup,
+      `${label}.comparisonGroup`
+    );
+    if (!ALLOWED_VARIANT_ROLES.has(fixture.variantRole)) {
+      throw new Error(`${label}.variantRole is invalid`);
+    }
+    const conditionTags = cleanStringList(
+      fixture.conditionTags,
+      `${label}.conditionTags`,
+      { min: 1, max: 16 }
+    );
+    if (!ALLOWED_DEGRADATIONS.has(fixture.expectedDegradation)) {
+      throw new Error(`${label}.expectedDegradation is invalid`);
+    }
+    const plans = fixture.plans === undefined
+      ? ["full"]
+      : cleanStringList(fixture.plans, `${label}.plans`, { min: 1, max: 3 });
+    if (plans.some((plan) => !ALLOWED_PLANS.has(plan))) {
+      throw new Error(`${label}.plans contains an invalid plan`);
+    }
+    const resolvedImage = validateHostedEvaluationImagePath(fixture.imagePath, {
+      repoRoot,
+      pathApi
+    });
+    if (requireImageFiles && !fileExists(resolvedImage.absolutePath)) {
+      throw new Error(`${label}.imagePath does not exist`);
+    }
+
+    return {
+      fixtureId,
+      subjectId,
+      imagePath: resolvedImage.absolutePath,
+      expectedEligibility: fixture.expectedEligibility,
+      comparisonGroup,
+      variantRole: fixture.variantRole,
+      conditionTags,
+      expectedDegradation: fixture.expectedDegradation,
+      plans
+    };
+  });
+
+  return {
+    schemaVersion: MANIFEST_SCHEMA_VERSION,
+    datasetId,
+    fixtures
+  };
+}
+
+function normalizeLocales(value) {
+  const locales = value === undefined ? ["ko", "en"] : value;
+  if (!Array.isArray(locales) || !locales.length) {
+    throw new Error("locales must be a non-empty array");
+  }
+  const normal
