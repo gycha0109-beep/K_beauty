@@ -11,6 +11,9 @@
     "hwahae:override": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
     "review_prepare": "node scripts/review-signals/review-prepare.mjs",
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
+    "face-lab:eval": "node scripts/run-face-lab-hosted-evaluation.mjs",
+    "face-lab:eval:report": "node scripts/report-face-lab-hosted-evaluation.mjs",
+    "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "lint": "next lint"
   },
