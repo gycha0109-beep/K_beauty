@@ -1,0 +1,47 @@
+name: Verify premium integrated evaluation validation
+
+on:
+  pull_request:
+    branches:
+      - agent/premium-integrated-evaluation-pack
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Capture integrated evaluation diagnostics
+        run: |
+          set +e
+          node scripts/verify-premium-integrated-evaluation.mjs > validation.log 2>&1
+          echo "$?" > validation-status.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: premium-integrated-evaluation-diagnostics
+          path: |
+            validation.log
+            validation-status.txt
+      - name: Enforce integrated evaluation result
+        run: test "$(cat validation-status.txt)" = "0"
+      - run: node scripts/verify-product-data-sufficiency-audit.mjs
+      - run: node scripts/verify-product-category-normalizer.mjs
+      - run: node scripts/verify-product-functional-profile.mjs
+      - run: node scripts/verify-current-product-findings.mjs
+      - run: node scripts/verify-premium-decision-state.mjs
+      - run: node scripts/verify-cross-domain-consistency.mjs
+      - run: node scripts/verify-functional-policy-single-source.mjs
+      - run: node scripts/verify-routine-policy-single-source.mjs
+      - run: node scripts/verify-condition-policy-single-source.mjs
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
