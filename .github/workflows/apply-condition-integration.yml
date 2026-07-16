@@ -21,25 +21,30 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply integration patches
-        run: |
-          python scripts/apply_condition_policy_integration.py
-          python scripts/patch_condition_analyze_integration.py
-          python scripts/patch_condition_ui_integration.py
-          python scripts/patch_condition_verifiers.py
+      - name: Patch shared condition signals
+        run: python scripts/apply_condition_policy_integration.py
+      - name: Patch analyze canonicalization
+        run: python scripts/patch_condition_analyze_integration.py
+      - name: Patch condition UI
+        run: python scripts/patch_condition_ui_integration.py
+      - name: Patch verification contracts
+        run: python scripts/patch_condition_verifiers.py
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify policy stack and reentry
-        run: |
-          node scripts/verify-condition-policy-single-source.mjs
-          node scripts/verify-routine-policy-single-source.mjs
-          node scripts/verify-functional-policy-single-source.mjs
-          node scripts/verify-premium-decision-state.mjs
-          node scripts/verify-premium-report-reentry.mjs
+      - name: Verify condition policy
+        run: node scripts/verify-condition-policy-single-source.mjs
+      - name: Verify routine policy
+        run: node scripts/verify-routine-policy-single-source.mjs
+      - name: Verify functional policy
+        run: node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify premium decision state
+        run: node scripts/verify-premium-decision-state.mjs
+      - name: Verify premium report reentry
+        run: node scripts/verify-premium-report-reentry.mjs
       - name: Verify architecture
         run: npm run architecture:guard
       - name: Verify production build
