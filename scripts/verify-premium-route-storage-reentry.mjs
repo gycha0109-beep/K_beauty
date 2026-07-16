@@ -90,8 +90,16 @@ for (const fragment of [
 ]) {
   assert.ok(sessionRoute.includes(fragment), `session route is missing ${fragment}`);
 }
-assert.ok(!sessionRoute.includes("sessionId:"), "session route must not expose session IDs");
-assert.ok(!sessionRoute.includes("premiumSessionToken:"), "session route must not expose premium tokens");
+for (const forbiddenResponseFragment of [
+  "{ rotated: true, sessionId",
+  "{ rotated: true, premiumSessionToken",
+  "{ rotated: true, accessToken",
+  "{ rotated: false, sessionId",
+  "{ rotated: false, premiumSessionToken",
+  "{ rotated: false, accessToken"
+]) {
+  assert.ok(!sessionRoute.includes(forbiddenResponseFragment), `session route exposes sensitive response data: ${forbiddenResponseFragment}`);
+}
 assert.ok(!sessionRoute.includes(".update("), "session rotation must not update saved reports");
 assert.ok(!sessionRoute.includes(".delete("), "session rotation must not delete saved reports");
 
