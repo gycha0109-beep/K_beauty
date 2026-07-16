@@ -59,7 +59,11 @@ for (const fragment of [
 }
 assert.ok(!fullRoute.includes(".update({"), "saved premium snapshots must not be updated");
 assert.ok(!fullRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved reentry must ignore request topPick");
-assert.ok(fullRoute.indexOf("if (body?.savedReportId)") < fullRoute.indexOf("applyCurrentProductsToReport"), "saved reentry must precede mutable enrichment");
+assert.ok(
+  fullRoute.indexOf("if (body?.savedReportId)") <
+    fullRoute.indexOf("const currentProductsResult = await applyCurrentProductsToReport"),
+  "saved reentry must precede mutable enrichment"
+);
 
 for (const fragment of [
   "createServerSupabaseClient()",
