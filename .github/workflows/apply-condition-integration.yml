@@ -1,0 +1,60 @@
+name: Apply Condition Integration
+
+on:
+  pull_request:
+    branches:
+      - agent/routine-policy-single-source
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'agent/condition-policy-single-source'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/condition-policy-single-source
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply integration patches
+        run: |
+          python scripts/apply_condition_policy_integration.py
+          python scripts/patch_condition_analyze_integration.py
+          python scripts/patch_condition_ui_integration.py
+          python scripts/patch_condition_verifiers.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify policy stack and reentry
+        run: |
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-premium-report-reentry.mjs
+      - name: Verify architecture
+        run: npm run architecture:guard
+      - name: Verify production build
+        run: npm run build
+      - name: Verify diff
+        run: git diff --check
+      - name: Commit integration and remove one-time tooling
+        run: |
+          rm scripts/apply_condition_policy_integration.py
+          rm scripts/patch_condition_analyze_integration.py
+          rm scripts/patch_condition_ui_integration.py
+          rm scripts/patch_condition_verifiers.py
+          rm .github/workflows/apply-condition-integration.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: complete condition policy integration"
+          git push origin HEAD:agent/condition-policy-single-source
