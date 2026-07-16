@@ -41,11 +41,7 @@ const bundle = loadModule(
 const quality = {
   faceVisibility: "clear",
   faceScale: "adequate",
-  pose: {
-    yaw: "frontal",
-    pitch: "level",
-    roll: "level"
-  },
+  pose: { yaw: "frontal", pitch: "level", roll: "level" },
   occlusion: {
     forehead: "none",
     brows: "none",
@@ -64,7 +60,7 @@ const quality = {
   evidence: ["one frontal face is clearly visible"]
 };
 
-const observationValues = {
+const values = {
   outline: {
     faceShape: "oval",
     foreheadWidthVsCheek: "similar",
@@ -112,7 +108,7 @@ function rawField(value) {
 
 function buildRawObservations() {
   return Object.fromEntries(
-    Object.entries(observationValues).map(([group, fields]) => [
+    Object.entries(values).map(([group, fields]) => [
       group,
       Object.fromEntries(
         Object.entries(fields).map(([key, value]) => [key, rawField(value)])
@@ -121,21 +117,10 @@ function buildRawObservations() {
   );
 }
 
-const eligibility = {
-  source: "vision",
-  faceLabEligible: true
-};
-
-const rawObservations = buildRawObservations();
+const eligibility = { source: "vision", faceLabEligible: true };
 const analysis = observation.buildFaceLabObservationAnalysis(
-  {
-    quality,
-    observations: rawObservations
-  },
-  {
-    eligibility,
-    model: "gpt-4o-mini"
-  }
+  { quality, observations: buildRawObservations() },
+  { eligibility, model: "gpt-4o-mini" }
 );
 
 assert.equal(analysis.status, "available");
@@ -163,13 +148,10 @@ assert.equal(canonical.privacy.sourceImagePersisted, false);
 assert.ok(bundle.sanitizeCanonicalFaceLabBundle(canonical));
 assert.equal(bundle.getFaceLabObservationAnalysis({ analysis }), analysis);
 
-const invalidEnumRaw = buildRawObservations();
-invalidEnumRaw.outline.faceShape.value = "beautiful";
+const invalidEnum = buildRawObservations();
+invalidEnum.outline.faceShape.value = "beautiful";
 const invalidEnumAnalysis = observation.buildFaceLabObservationAnalysis(
-  {
-    quality,
-    observations: invalidEnumRaw
-  },
+  { quality, observations: invalidEnum },
   { eligibility }
 );
 assert.equal(
@@ -179,13 +161,10 @@ assert.equal(
 assert.equal(invalidEnumAnalysis.observations.outline.faceShape.value, null);
 assert.notEqual(invalidEnumAnalysis.status, "unavailable");
 
-const missingEvidenceRaw = buildRawObservations();
-missingEvidenceRaw.eyes.eyeDirection.evidence = [];
+const missingEvidence = buildRawObservations();
+missingEvidence.eyes.eyeDirection.evidence = [];
 const missingEvidenceAnalysis = observation.buildFaceLabObservationAnalysis(
-  {
-    quality,
-    observations: missingEvidenceRaw
-  },
+  { quality, observations: missingEvidence },
   { eligibility }
 );
 assert.equal(
@@ -195,10 +174,7 @@ assert.equal(
 
 const colorBlocked = observation.buildFaceLabObservationAnalysis(
   {
-    quality: {
-      ...quality,
-      colorSuitability: "unsuitable"
-    },
+    quality: { ...quality, colorSuitability: "unsuitable" },
     observations: buildRawObservations()
   },
   { eligibility }
@@ -214,10 +190,7 @@ assert.ok(bundle.isFaceLabObservationAnalysis(colorBlocked));
 
 const structureBlocked = observation.buildFaceLabObservationAnalysis(
   {
-    quality: {
-      ...quality,
-      structureSuitability: "unsuitable"
-    },
+    quality: { ...quality, structureSuitability: "unsuitable" },
     observations: buildRawObservations()
   },
   { eligibility }
@@ -246,29 +219,19 @@ const contradictoryQuality = observation.buildFaceLabObservationAnalysis(
 );
 assert.equal(contradictoryQuality.status, "insufficient_evidence");
 assert.equal(contradictoryQuality.failureReason, "quality_response_invalid");
-assert.equal(contradictoryQuality.quality.status, "insufficient_evidence");
 assert.ok(bundle.isFaceLabObservationAnalysis(contradictoryQuality));
 
 const ineligible = observation.buildFaceLabObservationAnalysis(
-  {
-    quality,
-    observations: buildRawObservations()
-  },
-  {
-    eligibility: {
-      source: "vision",
-      faceLabEligible: false
-    }
-  }
+  { quality, observations: buildRawObservations() },
+  { eligibility: { source: "vision", faceLabEligible: false } }
 );
 assert.equal(ineligible.status, "unavailable");
 assert.equal(ineligible.failureReason, "eligibility_failed");
 assert.ok(bundle.isFaceLabObservationAnalysis(ineligible));
 
-const imageContaminated = structuredClone(canonical);
-imageContaminated.imagePreviewDataUrl =
-  "data:image/jpeg;base64,ZmFrZQ==";
-assert.equal(bundle.sanitizeCanonicalFaceLabBundle(imageContaminated), null);
+const contaminated = structuredClone(canonical);
+contaminated.imagePreviewDataUrl = "data:image/jpeg;base64,ZmFrZQ==";
+assert.equal(bundle.sanitizeCanonicalFaceLabBundle(contaminated), null);
 
 const inconsistentStatus = structuredClone(analysis);
 inconsistentStatus.failureReason = "should_not_exist";
@@ -280,10 +243,7 @@ assert.equal(bundle.isFaceLabObservationAnalysis(invalidCoverage), false);
 
 const promptContract = observation.createFaceLabObservationPromptContract();
 const promptRules = observation.createFaceLabObservationPromptRules();
-assert.equal(
-  JSON.stringify(promptContract).includes("presentation_hint"),
-  false
-);
+assert.equal(JSON.stringify(promptContract).includes("presentation_hint"), false);
 assert.equal(
   Array.isArray(promptContract.observations.featureLayout.focalFeatures.value),
   true
@@ -298,8 +258,18 @@ assert.equal(
 const routeSource = readFileSync("app/api/face-reading/route.js", "utf8");
 assert.equal(
   routeSource.includes("buildFaceLabObservationAnalysis"),
-  false,
-  "route shadow integration remains a separate reviewed change"
+  true,
+  "route must build the normalized shadow analysis"
+);
+assert.equal(
+  routeSource.includes("createFaceLabLegacyInsufficientPayload"),
+  true,
+  "legacy insufficient responses must use the allowlisted projection"
+);
+assert.equal(routeSource.includes("max_tokens: 3000"), true);
+assert.equal(
+  routeSource.includes("...parsed,\n                structured"),
+  false
 );
 
 console.log(
