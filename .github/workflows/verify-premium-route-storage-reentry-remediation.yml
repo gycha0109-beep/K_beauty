@@ -1,0 +1,31 @@
+name: Verify premium route storage reentry remediation
+
+on:
+  pull_request:
+    branches:
+      - agent/premium-route-storage-reentry-verification
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node scripts/verify-premium-route-storage-reentry.mjs
+      - run: node scripts/verify-premium-report-reentry-contract.mjs
+      - run: node scripts/verify-premium-integrated-evaluation.mjs
+      - run: node scripts/verify-premium-decision-state.mjs
+      - run: node scripts/verify-cross-domain-consistency.mjs
+      - run: node scripts/verify-functional-policy-single-source.mjs
+      - run: node scripts/verify-routine-policy-single-source.mjs
+      - run: node scripts/verify-condition-policy-single-source.mjs
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
