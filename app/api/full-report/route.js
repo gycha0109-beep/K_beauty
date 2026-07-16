@@ -17,7 +17,8 @@ import {
 import { resolvePremiumRouteContext } from "@/lib/premium-route-context";
 import {
   buildPremiumReportSnapshot,
-  classifyPremiumSnapshotReplay
+  classifyPremiumSnapshotReplay,
+  resolvePremiumReportLocale
 } from "@/lib/premium-report-snapshot";
 
 const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 2;
@@ -54,7 +55,8 @@ function hasFullReportPayloadShape(report) {
 
 const FULL_REPORT_UNAUTHORIZED_REASONS = new Set([
   "login_required",
-  "premium_session_missing_or_expired"
+  "premium_session_missing_or_expired",
+  "premium_principal_conflict"
 ]);
 
 function getUnauthorizedResponse(reason) {
@@ -137,11 +139,51 @@ async function loadSavedPremiumReport({ supabase, userId, savedReportId }) {
 
   return supabase
     .from("saved_reports")
-    .select("id, report_type, premium_report, free_result, face_lab, created_at")
+    .select("id, report_type, report_version, premium_report, free_result, face_lab, created_at")
     .eq("id", savedReportId)
     .eq("user_id", userId)
     .eq("report_type", "premium")
     .maybeSingle();
+}
+
+async function loadSavedPremiumReportForSession({ supabase, userId, sessionId }) {
+  if (!supabase || !userId || !sessionId) {
+    return { data: null, error: new Error("saved_report_session_lookup_unavailable") };
+  }
+
+  return supabase
+    .from("saved_reports")
+    .select("id, report_version, premium_report, created_at")
+    .eq("user_id", userId)
+    .eq("report_type", "premium")
+    .eq("source_type", "premium_report_session")
+    .eq("source_session_id", sessionId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+}
+
+function buildSavedPremiumReportResponse(savedReport, fallbackLocale = "ko") {
+  const savedPremiumReport = savedReport?.premium_report || {};
+  const savedLocale = resolvePremiumReportLocale(savedPremiumReport, fallbackLocale);
+  const savedFreeResult =
+    savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
+      ? savedPremiumReport.freeResult
+      : null;
+  const topPickFitGauges = buildProductFitGauges(savedFreeResult?.topPick || null, {
+    locale: savedLocale
+  });
+
+  return NextResponse.json({
+    ...savedPremiumReport,
+    topPickFitGauges,
+    meta: buildFullReportMeta(
+      savedLocale,
+      "saved-report",
+      { status: "existing", savedReportId: savedReport.id },
+      buildPremiumReportSnapshot(savedPremiumReport)
+    )
+  });
 }
 
 async function persistPremiumSavedReport({ supabase, user, sessionId, premiumReport, locale }) {
@@ -149,16 +191,11 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     return { ok: false, code: "persist_not_available" };
   }
 
-  const existing = await supabase
-    .from("saved_reports")
-    .select("id, premium_report")
-    .eq("user_id", user.id)
-    .eq("report_type", "premium")
-    .eq("source_type", "premium_report_session")
-    .eq("source_session_id", sessionId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const existing = await loadSavedPremiumReportForSession({
+    supabase,
+    userId: user.id,
+    sessionId
+  });
 
   if (existing.error) {
     console.error("[full-report] saved premium lookup failed", serializeSupabaseError(existing.error));
@@ -181,7 +218,7 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     source_type: "premium_report_session",
     source_session_id: sessionId,
     title: locale === "en" ? "Premium routine report" : "프리미엄 루틴 리포트",
-    report_version: snapshot.reportVersion || "premium-v1",
+    report_version: snapshot.reportVersion,
     premium_report: premiumReport,
     free_result: null,
     face_lab: premiumReport.faceLabSummary || premiumReport.faceLab || null
@@ -194,14 +231,11 @@ async function persistPremiumSavedReport({ supabase, user, sessionId, premiumRep
     .single();
 
   if (error) {
-    const retry = await supabase
-      .from("saved_reports")
-      .select("id, premium_report")
-      .eq("user_id", user.id)
-      .eq("report_type", "premium")
-      .eq("source_type", "premium_report_session")
-      .eq("source_session_id", sessionId)
-      .maybeSingle();
+    const retry = await loadSavedPremiumReportForSession({
+      supabase,
+      userId: user.id,
+      sessionId
+    });
 
     if (!retry.error && retry.data?.id) {
       const replay = classifyPremiumSnapshotReplay(retry.data.premium_report, premiumReport);
@@ -245,9 +279,13 @@ export async function POST(request) {
     body = await request.json();
   } catch {}
 
-  const locale = body?.locale === "en" ? "en" : "ko";
+  const requestedLocale = body?.locale === "en" ? "en" : "ko";
   const context = await resolvePremiumRouteContext(request);
   const { user, access, supabase: userSupabase } = context;
+
+  if (context.authError === "principal_conflict") {
+    return getUnauthorizedResponse("premium_principal_conflict");
+  }
 
   if (isAccountUser(user) && !userSupabase) {
     return getStorageUnavailableResponse();
@@ -269,21 +307,7 @@ export async function POST(request) {
       return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
 
-    const savedPremiumReport = savedReport.premium_report || {};
-    const savedFreeResult =
-      savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
-        ? savedPremiumReport.freeResult
-        : null;
-    const topPickFitGauges = buildProductFitGauges(savedFreeResult?.topPick || null, { locale });
-
-    return NextResponse.json({
-      ...savedPremiumReport,
-      topPickFitGauges,
-      meta: buildFullReportMeta(locale, "saved-report", {
-        status: "existing",
-        savedReportId: savedReport.id
-      }, buildPremiumReportSnapshot(savedPremiumReport))
-    });
+    return buildSavedPremiumReportResponse(savedReport, requestedLocale);
   }
 
   if (!access.canCreatePremium) {
@@ -302,13 +326,41 @@ export async function POST(request) {
     return getUnauthorizedResponse("premium_session_missing_or_expired");
   }
 
+  let finalizedSavedReport = null;
+  if (isAccountUser(user)) {
+    const finalizedLookup = await loadSavedPremiumReportForSession({
+      supabase: userSupabase,
+      userId: user.id,
+      sessionId: premiumSession.payload.sessionId
+    });
+    if (finalizedLookup.error) {
+      console.error("[full-report] finalized premium lookup failed", serializeSupabaseError(finalizedLookup.error));
+      return getStorageUnavailableResponse();
+    }
+    finalizedSavedReport = finalizedLookup.data || null;
+  }
+
+  const locale = finalizedSavedReport?.premium_report
+    ? resolvePremiumReportLocale(finalizedSavedReport.premium_report, requestedLocale)
+    : requestedLocale;
+
   let storedPremiumReport = premiumSession.payload.premiumReport || {};
   const currentProductsResult = await applyCurrentProductsToReport({ report: storedPremiumReport, body, locale });
   storedPremiumReport = currentProductsResult.premiumReport;
   const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({ storedPremiumReport, body, locale });
-  const responsePremiumReport = { ...storedPremiumReport, faceLabSummary };
+  const responsePremiumReport = { ...storedPremiumReport, faceLabSummary, locale };
 
-  if (shouldPersist || currentProductsResult.changed) {
+  if (finalizedSavedReport?.premium_report) {
+    const replay = classifyPremiumSnapshotReplay(
+      finalizedSavedReport.premium_report,
+      responsePremiumReport
+    );
+    return replay.status === "existing"
+      ? buildSavedPremiumReportResponse(finalizedSavedReport, locale)
+      : getSnapshotConflictResponse();
+  }
+
+  if (shouldPersist || currentProductsResult.changed || storedPremiumReport.locale !== locale) {
     const updateResult = await updatePremiumReportSession(premiumCookie, responsePremiumReport);
     if (!updateResult.ok) return getStorageUnavailableResponse();
   }
