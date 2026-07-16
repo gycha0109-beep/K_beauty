@@ -50,18 +50,44 @@ function getUploadFilename(filePath) {
   return `fixture-image${extension || ".jpg"}`;
 }
 
+function resolveLocalBaseUrl(value) {
+  const parsed = new URL(String(value || "http://localhost:3001"));
+  const hostname = parsed.hostname.toLowerCase();
+  const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+  if (parsed.protocol !== "http:" || !localHosts.has(hostname)) {
+    throw new Error("--base-url must use HTTP on localhost, 127.0.0.1, or ::1");
+  }
+  if (parsed.username || parsed.password || parsed.pathname !== "/" || parsed.search || parsed.hash) {
+    throw new Error("--base-url must contain only the local origin");
+  }
+  return parsed.origin;
+}
+
+function resolveEvaluationRunDir(repoRoot, value, runId) {
+  const evaluationRoot = path.resolve(repoRoot, "tmp", "face-lab-hosted-evaluation");
+  const resolved = path.resolve(
+    repoRoot,
+    value || path.join("tmp", "face-lab-hosted-evaluation", runId)
+  );
+  const relative = path.relative(evaluationRoot, resolved);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error("--run-dir must stay inside tmp/face-lab-hosted-evaluation/");
+  }
+  return resolved;
+}
+
 const args = parseArgs(process.argv.slice(2));
 if (!args.manifest) {
   throw new Error("--manifest is required");
 }
+const repoRoot = process.cwd();
 const plan = args.plan || "smoke";
 const repetitions = Number(args.repetitions || 1);
 const maxCalls = Number(args["max-calls"] || 20);
-const baseUrl = String(args["base-url"] || "http://localhost:3001").replace(/\/$/, "");
+const baseUrl = resolveLocalBaseUrl(args["base-url"]);
 const locales = args.locales ? String(args.locales).split(",").map((item) => item.trim()) : undefined;
 const runId = args["run-id"] || `face-lab-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}`;
-const runDir = path.resolve(args["run-dir"] || path.join("tmp", "face-lab-hosted-evaluation", runId));
-const repoRoot = process.cwd();
+const runDir = resolveEvaluationRunDir(repoRoot, args["run-dir"], runId);
 const core = loadCore();
 const manifest = core.validateHostedEvaluationManifest(readJson(path.resolve(args.manifest)), {
   repoRoot,
