@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   hardenHostedEvaluationRecord,
   hardenHostedEvaluationReport,
@@ -64,5 +65,12 @@ const report = hardenHostedEvaluationReport(
 );
 assert.equal(report.includes("Canonical contract failures: 1"), true);
 assert.equal(report.includes("Eligibility mismatches: 1"), true);
+
+const runnerSource = readFileSync("scripts/run-face-lab-hosted-evaluation.mjs", "utf8");
+const reporterSource = readFileSync("scripts/report-face-lab-hosted-evaluation.mjs", "utf8");
+assert.equal(runnerSource.includes("--base-url must use HTTP on localhost"), true);
+assert.equal(runnerSource.includes("tmp/face-lab-hosted-evaluation/"), true);
+assert.equal(runnerSource.includes("parsed.username || parsed.password"), true);
+assert.equal(reporterSource.includes("--run-dir must stay inside tmp/face-lab-hosted-evaluation/"), true);
 
 console.log("Face Lab hosted evaluation review metrics checks passed.");
