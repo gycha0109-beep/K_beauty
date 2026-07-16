@@ -2,11 +2,13 @@
 
 ## Status
 
-This contract defines the canonical, locale-neutral observation boundary used before archetype and styling decisions. It does not replace the current Face Lab display payload yet.
+This contract defines the canonical, locale-neutral observation boundary used before archetype and styling decisions. `/api/face-reading` now collects this contract in shadow mode while preserving the current legacy display payload.
 
 ## Responsibility
 
-Vision may return only image quality and visible facial-structure observations. It must not return archetypes, animal types, affinity scores, personality, physiognomy, celebrity similarity, hair, makeup, color palettes, clothing, or final look recommendations.
+Vision may return only image quality and visible facial-structure observations inside `observation_analysis`. It must not return archetypes, animal types, affinity scores, personality, physiognomy, celebrity similarity, hair, makeup, color palettes, clothing, or final look recommendations in that canonical section.
+
+The same provider call may still return the existing `base_data` and `features` fields during the transition period. Those fields remain legacy display inputs only.
 
 ## Canonical analysis
 
@@ -72,26 +74,51 @@ Core group minimums are:
 
 All five core groups meeting their minimum yields `available`; three or four yields `partial`; fewer yields `insufficient_evidence`. Archetype scoring will apply separate type-specific thresholds later.
 
+## Route shadow integration
+
+The route uses one Vision request. The provider response contains:
+
+```text
+eligibility
+observation_analysis
+base_data
+features
+```
+
+The server normalizes only `observation_analysis` into `data.analysis`. Raw `observation_analysis`, unknown provider keys, image payloads, and provider metadata are not returned to the client.
+
+The legacy envelope status remains authoritative during shadow mode:
+
+- canonical success does not promote a legacy failure
+- canonical insufficiency does not downgrade a legacy success
+- eligibility failure returns `data: null` and skips canonical construction
+
+For a legacy insufficient result, the response is reconstructed through an allowlisted projection instead of spreading the provider payload.
+
+## Locale boundary
+
+`eligibility` and `observation_analysis` use English keys, enum tokens, and short English evidence for every locale. Only the legacy `base_data` and `features` display text follows the requested Korean or English locale.
+
 ## Legacy boundary
 
 Current `base_data`, `features`, and `structured.mood/color/style` remain legacy display inputs only. They are not canonical observations and must not be used by the future archetype engine. `presentation_hint`, embedding descriptors, tendency text, celebrity matching, and generated style recommendations are excluded from the canonical contract.
 
 ## Current implementation boundary
 
-Implemented now:
+Implemented:
 
 - pure observation prompt contract and rules
 - quality and field normalizers
 - deterministic confidence and coverage
 - canonical bundle validator and image-payload rejection
-- envelope accessor for a future `data.analysis`
+- strict envelope accessor for `data.analysis`
+- one-call `/api/face-reading` shadow integration
+- safe allowlisted projection for legacy insufficient responses
 - focused verifier
 
-Deferred intentionally:
+Still deferred:
 
-- adding `data.analysis` to `/api/face-reading`
-- changing the current provider prompt
-- switching free or Premium displays
+- switching free or Premium displays to canonical data
 - archetype scoring and styling engines
-
-The route integration must be a separate reviewed change because the current provider response still serves production display adapters.
+- hosted real-photo fixture calibration
+- removing the legacy provider payload
