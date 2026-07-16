@@ -15,9 +15,15 @@ replace_once(
     'assert.equal(decisionState.effectivePolicySource, "raw");\nassert.equal(decisionState.consistency.verdict, "consistent");'
 )
 
-# Existing bundle verifier must explicitly migrate from v4 to v5 and retain compatibility checks.
+# Bundle v5 is a deliberate canonical contract migration; update exact legacy version assertions.
+for verifier in Path("scripts").glob("verify-*.mjs"):
+    text = verifier.read_text(encoding="utf-8")
+    if "premium-decision-bundle-v4" in text:
+        verifier.write_text(text.replace("premium-decision-bundle-v4", "premium-decision-bundle-v5"), encoding="utf-8")
+
+# The main bundle verifier also proves the new metadata contract.
 replace_once(
     "scripts/verify-premium-decision-state.mjs",
-    'assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v4");',
+    'assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v5");',
     'assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v5");\nassert.ok(emptyState.decisionBundle.rawPolicies.functional);\nassert.ok(emptyState.decisionBundle.consistency);\nassert.equal(emptyState.decisionBundle.effectivePolicySource, "raw");'
 )
