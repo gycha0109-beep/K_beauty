@@ -34,13 +34,16 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
-      - name: Verify policy stack and reentry
-        run: |
-          node scripts/verify-condition-policy-single-source.mjs
-          node scripts/verify-routine-policy-single-source.mjs
-          node scripts/verify-functional-policy-single-source.mjs
-          node scripts/verify-premium-decision-state.mjs
-          node scripts/verify-premium-report-reentry.mjs
+      - name: Verify condition policy
+        run: node scripts/verify-condition-policy-single-source.mjs
+      - name: Verify routine policy
+        run: node scripts/verify-routine-policy-single-source.mjs
+      - name: Verify functional policy
+        run: node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify premium decision state
+        run: node scripts/verify-premium-decision-state.mjs
+      - name: Verify premium report reentry
+        run: node scripts/verify-premium-report-reentry.mjs
       - run: npm run architecture:guard
       - run: npm run build
       - run: git diff --check
