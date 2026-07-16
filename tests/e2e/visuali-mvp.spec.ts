@@ -2,9 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type BrowserContext, type Page } from "playwright/test";
 
-const PRODUCT_PURCHASE_LINK_MODULE_PATH = path.join(process.cwd(), "lib", "product-purchase-link.js");
 const APPROVED_PRODUCT_IMAGE_URL =
   "https://img.hwahae.co.kr/products/12345/12345_20260715123456.jpg";
+const PURCHASE_ANCHOR_FIXTURE_URL = "https://www.hwahae.co.kr/products/2094548";
+const PURCHASE_ANCHOR_SELECTOR = [
+  `a[href="${PURCHASE_ANCHOR_FIXTURE_URL}"]`,
+  'a[href^="https://search.shopping.naver.com/"]'
+].join(",");
 
 const FIXTURE_IMAGE_PATH = path.join(
   process.cwd(),
@@ -167,7 +171,10 @@ function getCspNonce(csp: string | null) {
   return /(?:^|;\s*)script-src\s+[^;]*'nonce-([^']+)'/.exec(csp || "")?.[1] || null;
 }
 
-async function interceptLocalSupabaseRequests(context: BrowserContext) {
+async function interceptLocalSupabaseRequests(
+  context: BrowserContext,
+  observeHeaders?: (headers: Record<string, string>) => void
+) {
   const supabaseOrigin = readPublicSupabaseOrigin();
 
   if (!supabaseOrigin) {
@@ -175,6 +182,7 @@ async function interceptLocalSupabaseRequests(context: BrowserContext) {
   }
 
   await context.route(`${supabaseOrigin}/**`, async (route) => {
+    observeHeaders?.(await route.request().allHeaders());
     await route.fulfill({
       status: 401,
       contentType: "application/json",
@@ -183,6 +191,48 @@ async function interceptLocalSupabaseRequests(context: BrowserContext) {
   });
 
   return supabaseOrigin;
+}
+
+function createSyntheticBrowserSession(supabaseOrigin: string) {
+  const now = Math.floor(Date.now() / 1000);
+  const user = {
+    id: "00000000-0000-4000-8000-000000000011",
+    aud: "authenticated",
+    role: "authenticated",
+    email: "sec11@example.invalid",
+    app_metadata: { provider: "google" },
+    user_metadata: { name: "SEC Eleven" },
+    created_at: new Date(0).toISOString()
+  };
+  const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  const accessToken = `${encode({ alg: "HS256", typ: "JWT" })}.${encode({
+    sub: user.id,
+    aud: user.aud,
+    role: user.role,
+    email: user.email,
+    exp: now + 3600,
+    iat: now
+  })}.synthetic-signature`;
+  const projectRef = new URL(supabaseOrigin).hostname.split(".")[0];
+
+  return {
+    cookieName: `sb-${projectRef}-auth-token`,
+    cookieValue: `base64-${encode({
+      access_token: accessToken,
+      refresh_token: "synthetic-refresh-token",
+      expires_in: 3600,
+      expires_at: now + 3600,
+      token_type: "bearer",
+      user
+    })}`,
+    user
+  };
+}
+
+function expectNoStoreHeaders(headers: Record<string, string>) {
+  expect(headers["cache-control"]).toBe("private, no-store, max-age=0");
+  expect(headers["cdn-cache-control"]).toBe("no-store");
+  expect(headers["vercel-cdn-cache-control"]).toBe("no-store");
 }
 
 function createSharedResultFixture() {
@@ -252,6 +302,7 @@ test.describe("Visuali MVP E2E draft", () => {
 
     const cspViolations: string[] = [];
     const hydrationErrors: string[] = [];
+    const supabaseReferrers: Array<string | undefined> = [];
 
     page.on("console", (message) => {
       const text = message.text();
@@ -269,7 +320,9 @@ test.describe("Visuali MVP E2E draft", () => {
         console.error(`securitypolicyviolation:${event.violatedDirective}`);
       });
     });
-    await interceptLocalSupabaseRequests(context);
+    await interceptLocalSupabaseRequests(context, (headers) => {
+      supabaseReferrers.push(headers.referer);
+    });
 
     const nonceSet = new Set<string>();
 
@@ -303,7 +356,7 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(headers["x-nonce"]).toBeUndefined();
     expect(headers["x-content-type-options"]).toBe("nosniff");
     expect(headers["x-frame-options"]).toBe("DENY");
-    expect(headers["referrer-policy"]).toBe("no-referrer");
+    expect(headers["referrer-policy"]).toBe("same-origin");
     expect(headers["cross-origin-opener-policy"]).toBe("same-origin");
     expect(headers["origin-agent-cluster"]).toBe("?1");
     expect(headers["permissions-policy"]).toContain("camera=(self)");
@@ -327,6 +380,16 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(executableScripts.length).toBeGreaterThan(1);
     expect(new Set(executableScripts)).toEqual(new Set([nonce]));
     expect(await page.evaluate(() => document.documentElement.dataset.theme)).toMatch(/^(light|dark)$/);
+
+    await page.evaluate(async (origin) => {
+      try {
+        await fetch(`${origin}/auth/v1/user`);
+      } catch {
+        // The intercepted response intentionally has no CORS grant.
+      }
+    }, supabaseOrigin);
+    expect(supabaseReferrers.length).toBeGreaterThan(0);
+    expect(supabaseReferrers.every((value) => value === undefined)).toBe(true);
 
     const notFound = await request.get("/definitely-missing-sec10", {
       headers: { accept: "text/html", "sec-fetch-dest": "document" }
@@ -357,22 +420,102 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(hydrationErrors).toEqual([]);
   });
 
-  test("purchase-link client boundary imports the shared resolver @smoke", async () => {
-    const freeResultPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "page.js"), "utf8");
-    const fullReportPage = fs.readFileSync(path.join(process.cwd(), "app", "result", "full-report", "page.js"), "utf8");
-    const resolver = fs.readFileSync(PRODUCT_PURCHASE_LINK_MODULE_PATH, "utf8");
+  test("active result routes expose no runtime purchase anchors @sec07-purchase-anchors @smoke", async ({ page, context }) => {
+    const cspViolations: string[] = [];
+    const hydrationErrors: string[] = [];
+    let outboundPurchaseRequestCount = 0;
 
-    expect(resolver).toContain("resolveProductPurchaseLink");
-    expect(freeResultPage).toContain('from "@/lib/product-purchase-link"');
-    expect(fullReportPage).toContain('from "@/lib/product-purchase-link"');
-    expect(freeResultPage).toContain('rel="noopener noreferrer"');
-    expect(fullReportPage).toContain('rel="noopener noreferrer"');
+    page.on("console", (message) => {
+      const text = message.text();
+      if (/content security policy|refused to (?:load|execute|apply|connect)/i.test(text)) cspViolations.push(text);
+      if (/hydration|did not match|server rendered html/i.test(text)) hydrationErrors.push(text);
+    });
+    await interceptLocalSupabaseRequests(context);
+    await context.route("https://www.hwahae.co.kr/**", async (route) => {
+      outboundPurchaseRequestCount += 1;
+      await route.abort();
+    });
+    await context.route("https://search.shopping.naver.com/**", async (route) => {
+      outboundPurchaseRequestCount += 1;
+      await route.abort();
+    });
+
+    await page.goto("/en");
+    await seedProductImageResult(page, APPROVED_PRODUCT_IMAGE_URL);
+    await page.evaluate((buyLink) => {
+      const stored = sessionStorage.getItem("skinTestResult");
+      const result = stored ? JSON.parse(stored) : null;
+      if (!result?.topPick) throw new Error("purchase anchor fixture result missing");
+      result.topPick.buy_link = buyLink;
+      result.categoryPicks = [{ ...result.topPick, id: "purchase-category", name: "Category Product" }];
+      result.alternative = { ...result.topPick, id: "purchase-alternative", name: "Alternative Product" };
+      sessionStorage.setItem("skinTestResult", JSON.stringify(result));
+      localStorage.setItem("fullReportOpenedAt", new Date(0).toISOString());
+    }, PURCHASE_ANCHOR_FIXTURE_URL);
+
+    await page.goto("/en/result");
+    await advanceToProductImageStep(page);
+    await expect(page.getByRole("heading", { name: "Recommendation & Use Guide" })).toBeVisible();
+    await expect(page.locator(PURCHASE_ANCHOR_SELECTOR)).toHaveCount(0);
+    expect(outboundPurchaseRequestCount).toBe(0);
+
+    await page.route("**/api/full-report", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          freeResult: null,
+          topPickDetailedReason: "Fixture full report reason",
+          supportingProducts: [
+            {
+              role: "support",
+              product: {
+                id: "purchase-supporting",
+                name: "Supporting Product",
+                brand: "Fixture Brand",
+                buy_link: PURCHASE_ANCHOR_FIXTURE_URL
+              }
+            }
+          ],
+          fullRoutine: {
+            morning: ["Cleanse", "Protect"],
+            night: ["Cleanse", "Repair"],
+            morningSteps: [],
+            nightSteps: []
+          },
+          routineVariants: [],
+          avoidCombinations: [],
+          budgetAlternatives: [
+            {
+              id: "purchase-budget",
+              name: "Budget Product",
+              brand: "Fixture Brand",
+              buy_link: PURCHASE_ANCHOR_FIXTURE_URL
+            }
+          ],
+          functionalDecisions: [],
+          conditionResponses: []
+        })
+      });
+    });
+
+    await page.goto("/en/result/full-report");
+    await page.getByRole("button", { name: "Continue without products" }).click();
+    await expect(page.getByText("FULL REPORT").first()).toBeVisible();
+    await expect(page.locator(PURCHASE_ANCHOR_SELECTOR)).toHaveCount(0);
+    await expect(page.locator('a[href="/api/auth/signout"]')).toHaveCount(0);
+    expect(outboundPurchaseRequestCount).toBe(0);
+
+    await page.waitForTimeout(250);
+    expect(cspViolations).toEqual([]);
+    expect(hydrationErrors).toEqual([]);
   });
 
   test("product image origin boundary is fail-closed at runtime @sec10-image-origin @smoke", async ({ page, context }) => {
     let approvedRequestCount = 0;
     let rejectedRequestCount = 0;
     let approvedMode: "success" | "error" = "success";
+    const approvedImageReferrers: Array<string | undefined> = [];
 
     await interceptLocalSupabaseRequests(context);
     await page.route("**/api/premium/access", async (route) => {
@@ -386,6 +529,7 @@ test.describe("Visuali MVP E2E draft", () => {
     });
     await page.route("https://img.hwahae.co.kr/**", async (route) => {
       approvedRequestCount += 1;
+      approvedImageReferrers.push((await route.request().allHeaders()).referer);
 
       if (approvedMode === "error") {
         await route.fulfill({ status: 404, body: "" });
@@ -413,6 +557,7 @@ test.describe("Visuali MVP E2E draft", () => {
     await expect(approvedImage).toHaveAttribute("src", APPROVED_PRODUCT_IMAGE_URL);
     await expect(approvedImage).toHaveAttribute("referrerpolicy", "no-referrer");
     expect(approvedRequestCount).toBe(1);
+    expect(approvedImageReferrers).toEqual([undefined]);
 
     await seedProductImageResult(page, "https://manyo.us/cdn/product.png");
     await page.reload();
@@ -433,6 +578,155 @@ test.describe("Visuali MVP E2E draft", () => {
     await expect(page.locator('[data-product-image-state="placeholder"]').first()).toBeVisible();
     await page.waitForTimeout(250);
     expect(approvedRequestCount).toBe(2);
+    expect(approvedImageReferrers).toEqual([undefined, undefined]);
+  });
+
+  test("POST-only signout preserves native browser origin and rejects unsafe transports @sec11-signout @smoke", async ({ page, context, request, browser }) => {
+    const supabaseOrigin = readPublicSupabaseOrigin();
+    expect(supabaseOrigin).toBeTruthy();
+    const session = createSyntheticBrowserSession(supabaseOrigin!);
+    const cspViolations: string[] = [];
+    const hydrationErrors: string[] = [];
+
+    page.on("console", (message) => {
+      const text = message.text();
+      if (/content security policy|refused to (?:load|execute|apply|connect)/i.test(text)) cspViolations.push(text);
+      if (/hydration|did not match|server rendered html/i.test(text)) hydrationErrors.push(text);
+    });
+    await page.addInitScript(({ cookieName, cookieValue }) => {
+      document.cookie = `${cookieName}=${cookieValue}; Path=/; SameSite=Lax`;
+    }, session);
+    await context.route(`${supabaseOrigin}/**`, async (route) => {
+      if (new URL(route.request().url()).pathname === "/auth/v1/user") {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(session.user) });
+        return;
+      }
+      await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "local_test_intercept" }) });
+    });
+
+    const getResponse = await request.get("/api/auth/signout", { maxRedirects: 0 });
+    const headResponse = await request.head("/api/auth/signout", { maxRedirects: 0 });
+    const optionsResponse = await request.fetch("/api/auth/signout", { method: "OPTIONS", maxRedirects: 0 });
+
+    expect(getResponse.status()).toBe(405);
+    expect(headResponse.status()).toBe(405);
+    expect(await headResponse.body()).toHaveLength(0);
+    expect(optionsResponse.status()).toBe(204);
+    for (const response of [getResponse, headResponse, optionsResponse]) {
+      expect(response.headers()["allow"]).toBe("POST, OPTIONS");
+      expectNoStoreHeaders(response.headers());
+      expect(response.headers()["set-cookie"]).toBeUndefined();
+      expect(response.headers()["access-control-allow-origin"]).toBeUndefined();
+      expect(response.headers()["access-control-allow-credentials"]).toBeUndefined();
+      expect(response.headers()["referrer-policy"]).toBe("same-origin");
+      expect(response.headers()["x-content-type-options"]).toBe("nosniff");
+    }
+
+    const invalidPosts = [
+      { origin: "https://foreign.example", "sec-fetch-site": "cross-site" },
+      { "sec-fetch-site": "same-origin" },
+      { origin: "null", "sec-fetch-site": "same-origin" },
+      { referer: "http://127.0.0.1/", "sec-fetch-site": "same-origin" },
+      { origin: "http://127.0.0.1:3001", "sec-fetch-site": "same-site" }
+    ];
+    for (const headers of invalidPosts) {
+      const response = await request.post("/api/auth/signout", { headers, maxRedirects: 0 });
+      expect(response.status()).toBe(403);
+      expect(await response.json()).toEqual({ error: "invalid_request_origin" });
+      expectNoStoreHeaders(response.headers());
+      expect(response.headers()["set-cookie"]).toBeUndefined();
+      expect(response.headers()["location"]).toBeUndefined();
+    }
+
+    const rootResponse = await page.goto("/en", { waitUntil: "domcontentloaded" });
+    expect(rootResponse?.headers()["referrer-policy"]).toBe("same-origin");
+    const signOutForm = page.locator('form[method="post"][action="/api/auth/signout"]');
+    await expect(signOutForm).toHaveCount(1);
+    await expect(signOutForm.locator('button[type="submit"]')).toBeVisible();
+    await expect(page.locator('a[href="/api/auth/signout"]')).toHaveCount(0);
+    await expect(page.locator('[data-auth-avatar-state="initials"]')).toBeVisible();
+    await expect(page.getByRole("link", { name: "My" })).toBeVisible();
+
+    let signOutHeaders: Record<string, string> | null = null;
+    const redirectedRootMethods: string[] = [];
+    let watchRedirect = false;
+    page.on("request", (browserRequest) => {
+      if (watchRedirect && new URL(browserRequest.url()).pathname === "/") {
+        redirectedRootMethods.push(browserRequest.method());
+      }
+    });
+    await page.route("**/api/auth/signout", async (route) => {
+      signOutHeaders = await route.request().allHeaders();
+      expect(route.request().method()).toBe("POST");
+      await route.fulfill({ status: 303, headers: { location: "/" }, body: "" });
+    });
+
+    await page.evaluate((cookieName) => {
+      document.cookie = `${cookieName}=; Path=/; Max-Age=0; SameSite=Lax`;
+    }, session.cookieName);
+    watchRedirect = true;
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === "/"),
+      signOutForm.locator('button[type="submit"]').press("Enter")
+    ]);
+
+    const localOrigin = new URL(page.url()).origin;
+    expect(signOutHeaders).not.toBeNull();
+    expect(signOutHeaders!.origin).toBe(localOrigin);
+    expect(signOutHeaders!.origin).not.toBe("null");
+    if (signOutHeaders!["sec-fetch-site"]) {
+      expect(signOutHeaders!["sec-fetch-site"]).toBe("same-origin");
+    }
+    expect(redirectedRootMethods).toContain("GET");
+    expect(redirectedRootMethods).not.toContain("POST");
+
+    const noReferrerContext = await browser.newContext({ baseURL: new URL(page.url()).origin });
+    const noReferrerPage = await noReferrerContext.newPage();
+    await noReferrerContext.route("**/sec11-no-referrer-fixture", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        headers: { "Referrer-Policy": "no-referrer" },
+        body: '<!doctype html><form method="post" action="/api/auth/signout"><button type="submit">Sign out</button></form>'
+      });
+    });
+    await noReferrerPage.goto("/sec11-no-referrer-fixture");
+    const noReferrerResponsePromise = noReferrerPage.waitForResponse((response) =>
+      new URL(response.url()).pathname === "/api/auth/signout"
+    );
+    await noReferrerPage.getByRole("button", { name: "Sign out" }).click();
+    const noReferrerResponse = await noReferrerResponsePromise;
+    const noReferrerHeaders = await noReferrerResponse.request().allHeaders();
+    expect(noReferrerHeaders.origin).toBe("null");
+    expect(noReferrerResponse.status()).toBe(403);
+    await noReferrerContext.close();
+
+    const purchaseContext = await browser.newContext({ baseURL: localOrigin });
+    const purchasePage = await purchaseContext.newPage();
+    let purchaseHeaders: Record<string, string> | null = null;
+    await purchaseContext.route("**/sec11-purchase-referrer-fixture", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        headers: { "Referrer-Policy": "same-origin" },
+        body: '<!doctype html><a href="https://search.shopping.naver.com/search/all?query=fixture" target="_blank" rel="noopener noreferrer">Buy</a>'
+      });
+    });
+    await purchaseContext.route("https://search.shopping.naver.com/**", async (route) => {
+      purchaseHeaders = await route.request().allHeaders();
+      await route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>intercepted</title>" });
+    });
+    await purchasePage.goto("/sec11-purchase-referrer-fixture");
+    const purchasePopupPromise = purchaseContext.waitForEvent("page");
+    await purchasePage.getByRole("link", { name: "Buy" }).click();
+    const purchasePopup = await purchasePopupPromise;
+    await purchasePopup.waitForLoadState("domcontentloaded");
+    expect(purchaseHeaders?.referer).toBeUndefined();
+    await purchaseContext.close();
+
+    await page.waitForTimeout(250);
+    expect(cspViolations).toEqual([]);
+    expect(hydrationErrors).toEqual([]);
   });
 
   test("shared result loader has one read boundary and generic failure states @smoke", async ({ page, context }) => {

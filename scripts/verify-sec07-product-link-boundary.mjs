@@ -1,5 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  readPurchaseAnchorSources,
+  verifyPurchaseAnchorContract
+} from "./lib/purchase-anchor-contract.mjs";
 
 const root = process.cwd();
 const checkedFiles = [];
@@ -144,6 +148,20 @@ function read(path) {
 
 function readSourceText(path) {
   return read(path).replace(/\r\n?/g, "\n");
+}
+
+function assertPurchaseAnchorMutationRejected({ label, sourceRoot, mutate }) {
+  const sources = readPurchaseAnchorSources({ root: sourceRoot });
+  const sourceOverrides = mutate({ ...sources });
+  let rejected = false;
+
+  try {
+    verifyPurchaseAnchorContract({ root: sourceRoot, sourceOverrides });
+  } catch {
+    rejected = true;
+  }
+
+  assert(rejected, `purchase anchor weakening was accepted: ${label}`);
 }
 
 async function loadResolver() {
@@ -493,6 +511,10 @@ runCase("response_wiring", () => {
   const freePage = readSourceText("app/result/page.js");
   const fullPage = readSourceText("app/result/full-report/page.js");
   const publicResultBoundary = readSourceText("lib/analysis-results.js");
+  const purchaseAnchorSourceRoot = process.env.SEC_PURCHASE_ANCHOR_SOURCE_ROOT
+    ? resolve(process.env.SEC_PURCHASE_ANCHOR_SOURCE_ROOT)
+    : root;
+  const purchaseAnchorContract = verifyPurchaseAnchorContract({ root: purchaseAnchorSourceRoot });
 
   assert(
     /getTrustedDirectPurchaseUrl\(\{\s*buyLink:\s*product\.buy_link,/.test(productSource),
@@ -511,7 +533,79 @@ runCase("response_wiring", () => {
     "full-report must apply the shared recursive purchase-link boundary to saved and session payloads"
   );
   assert(!freePage.includes("isExactOliveYoungProductLink") && !fullPage.includes("isExactOliveYoungProductLink"), "result pages must not keep duplicate substring validators");
-  assert(freePage.includes('rel="noopener noreferrer"') && fullPage.includes('rel="noopener noreferrer"'), "purchase anchors must protect new windows");
+  assert(
+    purchaseAnchorContract.expectedSourceCount === 7 &&
+      purchaseAnchorContract.discoveredSourceCount === 7 &&
+      purchaseAnchorContract.verifiedSourceCount === 7,
+    "purchase source anchor exact-set must remain 7/7/7"
+  );
+  assert(
+    purchaseAnchorContract.reachableCount === 0 && purchaseAnchorContract.unreachableCount === 7,
+    "purchase anchor reachability partition must remain 0/7"
+  );
+  assertPurchaseAnchorMutationRejected({
+    label: "noreferrer removal",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+        'rel="noopener noreferrer"',
+        'rel="noopener"'
+      );
+      return sources;
+    }
+  });
+  assertPurchaseAnchorMutationRejected({
+    label: "unregistered source anchor",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      sources["app/result/page.js"] += `\nfunction UnregisteredPurchaseAnchor() {\n  const purchaseLink = getPurchaseLinkInfo({}, "en");\n  return <a href={purchaseLink.href || undefined} target="_blank" rel="noopener noreferrer">Buy</a>;\n}\n`;
+      return sources;
+    }
+  });
+  assertPurchaseAnchorMutationRejected({
+    label: "missing source anchor",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      const descriptor = purchaseAnchorContract.anchors[0];
+      sources[descriptor.file] =
+        sources[descriptor.file].slice(0, descriptor.sourceStart) +
+        sources[descriptor.file].slice(descriptor.sourceEnd);
+      return sources;
+    }
+  });
+  assertPurchaseAnchorMutationRejected({
+    label: "raw buy_link binding",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+        "href={purchaseLink.href || undefined}",
+        "href={product.buy_link}"
+      );
+      return sources;
+    }
+  });
+  assertPurchaseAnchorMutationRejected({
+    label: "resolver provenance removal",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+        "const purchaseLink = getPurchaseLinkInfo(",
+        "const purchaseLink = getUntrustedPurchaseLinkInfo("
+      );
+      return sources;
+    }
+  });
+  assertPurchaseAnchorMutationRejected({
+    label: "runtime reachability change",
+    sourceRoot: purchaseAnchorSourceRoot,
+    mutate(sources) {
+      sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+        "  const resultSteps = [];",
+        "  const sec07ReachabilityMutation = <CategoryCarousel products={[]} form={{}} />;\n  const resultSteps = [];"
+      );
+      return sources;
+    }
+  });
   assert(!/buy_link\s*:\s*product\.buy_link/.test(analyzeRoute), "analysis route must not serialize raw product buy_link");
   assert(!/buy_link\s*:\s*item\?\.buy_link/.test(analyzeRoute), "premium alternatives must not serialize raw buy_link");
   const publicProductProjectionStart = publicResultBoundary.indexOf("function projectPublicProduct");

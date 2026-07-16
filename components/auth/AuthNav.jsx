@@ -119,12 +119,14 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
         </Link>
       ) : null}
       {showSignOut ? (
-        <a
-          href="/api/auth/signout"
-          className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
-        >
-          {copy.signOut}
-        </a>
+        <form method="post" action="/api/auth/signout">
+          <button
+            type="submit"
+            className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
+          >
+            {copy.signOut}
+          </button>
+        </form>
       ) : null}
     </div>
   );

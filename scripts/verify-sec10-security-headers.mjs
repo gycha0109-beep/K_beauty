@@ -2,13 +2,17 @@ import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import {
+  readPurchaseAnchorSources,
+  verifyPurchaseAnchorContract
+} from "./lib/purchase-anchor-contract.mjs";
 
 export const EXPECTED_REQUIRED_CASE_COUNT = 60;
 export const REQUIRED_CASE_IDS = Object.freeze([
   "C01_GLOBAL_HEADER_SOURCE_COVERAGE",
   "C02_NOSNIFF",
   "C03_FRAME_DENY",
-  "C04_REFERRER_NO_REFERRER",
+  "C04_REFERRER_SAME_ORIGIN",
   "C05_CAMERA_SELF",
   "C06_CLIPBOARD_WRITE_SELF",
   "C07_UNUSED_PERMISSIONS_BLOCKED",
@@ -105,6 +109,20 @@ function assert(condition, message) {
   }
 }
 
+function assertPurchaseAnchorMutationRejected({ label, sourceRoot, mutate }) {
+  const sources = readPurchaseAnchorSources({ root: sourceRoot });
+  const sourceOverrides = mutate({ ...sources });
+  let rejected = false;
+
+  try {
+    verifyPurchaseAnchorContract({ root: sourceRoot, sourceOverrides });
+  } catch {
+    rejected = true;
+  }
+
+  assert(rejected, `purchase anchor weakening was accepted: ${label}`);
+}
+
 function assertExactSet(actualValues, expectedValues, label) {
   const actual = [...new Set(actualValues)].sort();
   const expected = [...new Set(expectedValues)].sort();
@@ -179,7 +197,80 @@ const catalog = Object.freeze([
   } },
   { id: "C02_NOSNIFF", run() { assert(GLOBAL_HEADERS.get("x-content-type-options") === "nosniff", "nosniff missing"); } },
   { id: "C03_FRAME_DENY", run() { assert(GLOBAL_HEADERS.get("x-frame-options") === "DENY", "X-Frame-Options must be DENY"); } },
-  { id: "C04_REFERRER_NO_REFERRER", run() { assert(GLOBAL_HEADERS.get("referrer-policy") === "no-referrer", "referrer policy mismatch"); } },
+  { id: "C04_REFERRER_SAME_ORIGIN", run() {
+    assert(GLOBAL_HEADERS.get("referrer-policy") === "same-origin", "referrer policy must allow only same-origin referrers");
+    assert(
+      !["no-referrer", "origin", "strict-origin", "origin-when-cross-origin", "strict-origin-when-cross-origin", "unsafe-url", "no-referrer-when-downgrade"].includes(GLOBAL_HEADERS.get("referrer-policy")),
+      "cross-origin referrer policy was accepted"
+    );
+    assert(read("components/common/SafeProductImage.jsx").includes('referrerPolicy="no-referrer"'), "external product images must suppress referrers");
+    const sourceRoot = process.env.SEC_PURCHASE_ANCHOR_SOURCE_ROOT
+      ? resolve(process.env.SEC_PURCHASE_ANCHOR_SOURCE_ROOT)
+      : root;
+    const purchaseAnchorContract = verifyPurchaseAnchorContract({ root: sourceRoot });
+    assert(
+      purchaseAnchorContract.expectedSourceCount === 7 &&
+        purchaseAnchorContract.discoveredSourceCount === 7 &&
+        purchaseAnchorContract.verifiedSourceCount === 7,
+      "purchase source anchor exact-set must remain 7/7/7"
+    );
+    assert(
+      purchaseAnchorContract.reachableCount === 0 && purchaseAnchorContract.unreachableCount === 7,
+      "purchase anchor reachability partition must remain 0/7"
+    );
+    assertPurchaseAnchorMutationRejected({
+      label: "noreferrer removal",
+      sourceRoot,
+      mutate(sources) {
+        sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+          'rel="noopener noreferrer"',
+          'rel="noopener"'
+        );
+        return sources;
+      }
+    });
+    assertPurchaseAnchorMutationRejected({
+      label: "unregistered source anchor",
+      sourceRoot,
+      mutate(sources) {
+        sources["app/result/page.js"] += `\nfunction UnregisteredPurchaseAnchor() {\n  const purchaseLink = getPurchaseLinkInfo({}, "en");\n  return <a href={purchaseLink.href || undefined} target="_blank" rel="noopener noreferrer">Buy</a>;\n}\n`;
+        return sources;
+      }
+    });
+    assertPurchaseAnchorMutationRejected({
+      label: "missing source anchor",
+      sourceRoot,
+      mutate(sources) {
+        const descriptor = purchaseAnchorContract.anchors[0];
+        sources[descriptor.file] =
+          sources[descriptor.file].slice(0, descriptor.sourceStart) +
+          sources[descriptor.file].slice(descriptor.sourceEnd);
+        return sources;
+      }
+    });
+    assertPurchaseAnchorMutationRejected({
+      label: "raw buy_link binding",
+      sourceRoot,
+      mutate(sources) {
+        sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+          "href={purchaseLink.href || undefined}",
+          "href={product.buy_link}"
+        );
+        return sources;
+      }
+    });
+    assertPurchaseAnchorMutationRejected({
+      label: "runtime reachability change",
+      sourceRoot,
+      mutate(sources) {
+        sources["app/result/page.js"] = sources["app/result/page.js"].replace(
+          "  const resultSteps = [];",
+          "  const sec10ReachabilityMutation = <CategoryCarousel products={[]} form={{}} />;\n  const resultSteps = [];"
+        );
+        return sources;
+      }
+    });
+  } },
   { id: "C05_CAMERA_SELF", run() { assert(policy.PERMISSIONS_POLICY.includes("camera=(self)"), "camera self permission missing"); } },
   { id: "C06_CLIPBOARD_WRITE_SELF", run() { assert(policy.PERMISSIONS_POLICY.includes("clipboard-write=(self)"), "clipboard-write self permission missing"); } },
   { id: "C07_UNUSED_PERMISSIONS_BLOCKED", run() {
@@ -301,7 +392,7 @@ const catalog = Object.freeze([
     );
   } },
   { id: "R08_API_COMMON_HEADERS", run() { assert(GLOBAL_HEADERS.get("x-content-type-options") === "nosniff" && GLOBAL_HEADERS.get("permissions-policy") === policy.PERMISSIONS_POLICY, "API common headers missing"); } },
-  { id: "R09_STATIC_COMMON_HEADERS", run() { assert(GLOBAL_HEADERS.get("referrer-policy") === "no-referrer" && GLOBAL_HEADERS.get("cross-origin-opener-policy") === "same-origin", "static common headers missing"); } },
+  { id: "R09_STATIC_COMMON_HEADERS", run() { assert(GLOBAL_HEADERS.get("referrer-policy") === "same-origin" && GLOBAL_HEADERS.get("cross-origin-opener-policy") === "same-origin", "static common headers missing"); } },
   { id: "R10_API_STATIC_DOCUMENT_CSP_EXCLUDED", run() {
     assert(!policy.isDocumentRequest(documentRequest("/api/analyze")), "API classified as document");
     assert(!policy.isDocumentRequest(documentRequest("/_next/static/chunk.js")), "Next static classified as document");
