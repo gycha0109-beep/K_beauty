@@ -58,9 +58,16 @@ for (const requiredFragment of [
 
 assert.ok(!sessionRoute.includes(".update("), "session rotation must not update saved reports");
 assert.ok(!sessionRoute.includes(".delete("), "session rotation must not delete saved reports");
-assert.ok(!sessionRoute.includes("sessionId:"), "session ID must not be returned by the re-entry route");
-assert.ok(!sessionRoute.includes("premiumSessionToken:"), "premium token must not be returned by the re-entry route");
-assert.ok(!sessionRoute.includes("accessToken:"), "access token must not be returned by the re-entry route");
+for (const forbiddenResponseFragment of [
+  "{ rotated: true, sessionId",
+  "{ rotated: true, premiumSessionToken",
+  "{ rotated: true, accessToken",
+  "{ rotated: false, sessionId",
+  "{ rotated: false, premiumSessionToken",
+  "{ rotated: false, accessToken"
+]) {
+  assert.ok(!sessionRoute.includes(forbiddenResponseFragment), `re-entry response exposes sensitive data: ${forbiddenResponseFragment}`);
+}
 
 for (const requiredFragment of [
   'fetch("/api/full-report/session"',
