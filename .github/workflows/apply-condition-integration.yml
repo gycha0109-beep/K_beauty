@@ -44,7 +44,16 @@ jobs:
       - name: Verify functional policy
         run: node scripts/verify-functional-policy-single-source.mjs
       - name: Verify premium decision state
-        run: node scripts/verify-premium-decision-state.mjs
+        run: |
+          if ! node scripts/verify-premium-decision-state.mjs > condition-verifier-error.log 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add condition-verifier-error.log
+            git commit -m "chore: capture condition verifier failure"
+            git push origin HEAD:agent/condition-policy-single-source
+            exit 1
+          fi
+          rm -f condition-verifier-error.log
       - name: Verify premium report reentry
         run: node scripts/verify-premium-report-reentry.mjs
       - name: Verify architecture
@@ -61,6 +70,7 @@ jobs:
           rm scripts/patch_condition_legacy_projection.py
           rm scripts/patch_condition_verifiers.py
           rm .github/workflows/apply-condition-integration.yml
+          rm -f condition-verifier-error.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
