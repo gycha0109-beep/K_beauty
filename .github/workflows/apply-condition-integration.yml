@@ -27,6 +27,8 @@ jobs:
         run: python scripts/patch_condition_analyze_integration.py
       - name: Patch condition UI
         run: python scripts/patch_condition_ui_integration.py
+      - name: Patch legacy projection compatibility
+        run: python scripts/patch_condition_legacy_projection.py
       - name: Patch verification contracts
         run: python scripts/patch_condition_verifiers.py
       - uses: actions/setup-node@v4
@@ -56,6 +58,7 @@ jobs:
           rm scripts/apply_condition_policy_integration.py
           rm scripts/patch_condition_analyze_integration.py
           rm scripts/patch_condition_ui_integration.py
+          rm scripts/patch_condition_legacy_projection.py
           rm scripts/patch_condition_verifiers.py
           rm .github/workflows/apply-condition-integration.yml
           git config user.name "github-actions[bot]"
