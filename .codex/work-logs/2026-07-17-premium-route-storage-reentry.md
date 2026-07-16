@@ -5,16 +5,20 @@
 - Risk: security-sensitive route, authentication, session, persistence, RLS, and uniqueness boundary.
 - Implemented deterministic Premium snapshot fingerprints and replay classification.
 - Replaced hidden current-product report mutation with a pure canonical decision rebuild.
-- Added cookie-first, bearer-fallback user/client principal alignment.
+- Added independent cookie and bearer identity resolution with cookie preference for aligned identities and fail-closed rejection for different simultaneous principals.
 - Changed saved Premium persistence from update-or-insert to immutable insert, same-fingerprint replay, and conflicting-replay rejection.
-- Saved-report reopening ignores request `topPick` and derives gauges from the stored snapshot.
-- Session rotation returns explicit safe reason codes and does not expose tokens or session IDs.
-- Added focused route/storage/reentry verification and updated the existing reentry and decision-state contract verifiers.
+- Moved finalized-session lookup and replay classification before every mutable session write.
+- Saved-report reopening ignores request `topPick` and derives gauges and locale from the stored snapshot.
+- Persisted snapshot locale inside new Premium report documents.
+- Separated `saved_reports.report_version` (`premium-v2`), snapshot contract version, and Decision Bundle version.
+- Session rotation returns explicit safe reason codes, surfaces principal conflict safely, and does not expose tokens or session IDs.
+- Added executable principal-selection and finalized-session replay tests in addition to route/storage ordering assertions.
 - Read-only target schema inspection found no duplicate Premium session tuples and no unique ownership index.
 - Applied `premium_saved_report_snapshot_immutability` to the connected Supabase project.
 - Added partial unique index `saved_reports_premium_session_owner_uidx` for Premium session ownership tuples.
 - Replaced the broad authenticated UPDATE policy with `Users can update own mutable saved reports`, excluding `premium_report_session` snapshots.
 - Post-migration metadata confirmed the intended index and RLS policy definitions.
 - Controlled duplicate-insert verification produced `unique_violation`; the synthetic verification row was deleted in the same procedure.
+- Aligned the repository migration filename with the applied Supabase migration version `20260717031925` and removed the mismatched `20260717031000` file.
 - Supabase security advisor found no new `saved_reports` finding. Existing unrelated project-level INFO/WARN findings remain outside this change.
 - Remaining gates: exact-head repository validation, browser flow, Hosted Preview, and production user-journey execution.
