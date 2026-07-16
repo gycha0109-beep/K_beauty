@@ -93,13 +93,6 @@ function getBearerToken(request) {
 function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
   const storedFaceLabSummary = sanitizePremiumFaceLabSummary(storedPremiumReport.faceLabSummary);
 
-  if (storedFaceLabSummary.status === "available") {
-    return {
-      faceLabSummary: storedFaceLabSummary,
-      shouldPersist: false
-    };
-  }
-
   const requestFaceLabSummary = body?.faceLab
     ? buildPremiumFaceLabSummary(body.faceLab, {
         locale,
@@ -111,6 +104,7 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
   if (requestFaceLabSummary?.status === "available") {
     return {
       faceLabSummary: requestFaceLabSummary,
+      faceLabSource: body.faceLab,
       shouldPersist: true
     };
   }
@@ -126,12 +120,22 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale }) {
   if (legacyFaceLabSummary?.status === "available") {
     return {
       faceLabSummary: legacyFaceLabSummary,
+      faceLabSource: storedPremiumReport.faceLab,
       shouldPersist: true
     };
   }
 
   return {
-    faceLabSummary: storedFaceLabSummary,
+    faceLabSummary: {
+      ...storedFaceLabSummary,
+      status: "unavailable",
+      impressionTitle: null,
+      impressionSummary: null,
+      keywords: [],
+      styleDirections: [],
+      caution: null
+    },
+    faceLabSource: null,
     shouldPersist: false
   };
 }
@@ -326,7 +330,7 @@ export async function POST(request) {
     locale
   });
   storedPremiumReport = currentProductsResult.premiumReport;
-  const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({
+  const { faceLabSummary, faceLabSource, shouldPersist } = resolveFaceLabSummary({
     storedPremiumReport,
     body,
     locale
@@ -335,6 +339,12 @@ export async function POST(request) {
     ...storedPremiumReport,
     faceLabSummary
   };
+
+  if (faceLabSource) {
+    responsePremiumReport.faceLab = faceLabSource;
+  } else {
+    delete responsePremiumReport.faceLab;
+  }
 
   if (shouldPersist || currentProductsResult.changed) {
     const updateResult = await updatePremiumReportSession(premiumCookie, {

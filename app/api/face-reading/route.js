@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
+import {
+  createImageAnalysisEligibilityPromptContract,
+  createImageAnalysisEligibilityRules,
+  normalizeImageAnalysisEligibility
+} from "@/lib/image-analysis-eligibility";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 import {
   applyAnalysisGuardCookies,
@@ -635,6 +640,7 @@ ${copy.systemLanguage}
 
 Use this exact JSON shape:
 {
+  ${createImageAnalysisEligibilityPromptContract()},
   "base_data": {
     "landmarks": ["visible feature 1", "visible feature 2", "visible feature 3", "visible feature 4"],
     "face_shape": "short face-shape label",
@@ -689,6 +695,7 @@ Rules:
 - Do not write lines such as "얼굴의 구조가 조화롭게 배치되어 있습니다", "구조적으로 유사한 유명 인상입니다", or "부드럽고 친근한 인상을 줍니다".
 - Hairstyle recommendations should use structure -> visual effect -> recommendation.
 - Feature-based lines should follow observation -> visual effect -> impression outcome.
+${createImageAnalysisEligibilityRules()}
 - ${copy.toneRule}
 `.trim();
 }
@@ -858,6 +865,7 @@ export async function POST(request) {
 
     try {
       const parsed = safeParse(rawContent, locale);
+      const eligibility = normalizeImageAnalysisEligibility(parsed?.eligibility);
 
       logProviderRuntimeEvent({
         stage: "face-reading",
@@ -868,13 +876,26 @@ export async function POST(request) {
         durationMs: Date.now() - providerStartedAt
       });
 
+      if (!eligibility.faceLabEligible) {
+        const response = NextResponse.json(
+          createFaceLabUnavailable(
+            eligibility.faceLabFailureReason || "eligibility_response_invalid",
+            { eligibility }
+          )
+        );
+
+        return eligibility.source === "vision"
+          ? completeGuardedResponse(response, analysisGuard)
+          : failGuardedResponse(response, analysisGuard);
+      }
+
       if (!hasFaceReadingPayloadShape(parsed)) {
         console.warn("[face-reading] response shape insufficient", {
           hasBaseData: Boolean(parsed?.base_data),
           hasFeatures: Boolean(parsed?.features)
         });
         return failGuardedResponse(
-          NextResponse.json(createFaceLabUnavailable("required_features_missing")),
+          NextResponse.json(createFaceLabUnavailable("required_features_missing", { eligibility })),
           analysisGuard
         );
       }
@@ -888,7 +909,8 @@ export async function POST(request) {
                 ...parsed,
                 structured: buildFaceLabStructuredData(parsed, locale)
               },
-              "required_features_missing"
+              "required_features_missing",
+              { eligibility }
             )
           ),
           analysisGuard
@@ -909,7 +931,7 @@ export async function POST(request) {
         NextResponse.json(createFaceLabAvailable({
           ...normalizedFaceLab,
           structured: structuredFaceLab
-        })),
+        }, { eligibility })),
         analysisGuard
       );
     } catch {

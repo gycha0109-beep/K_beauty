@@ -79,6 +79,20 @@ When `status` is `available` or `insufficient_evidence`, `data.structured` may i
 
 Field values are available only when `evidence` contains actual Vision response paths and text. Default launch fallback values, including default mood labels, palette keywords, and style keywords, must not be inserted into `structured.*.value`.
 
+## Image Eligibility Hard Gate
+
+The existing `/api/face-reading` Vision call must classify image eligibility before Face Lab fields are accepted. The normalized eligibility object preserves `status`, `source`, `imageType`, `humanFaceCount`, independent `faceLabEligible` and `skinAnalysisEligible` booleans, failure reasons, confidence, and visible evidence.
+
+- Face Lab requires exactly one photorealistic human face and `faceLabEligible === true`.
+- Product, animal, document, landscape, illustration, animation, avatar, and 3D-character images are ineligible.
+- Multiple faces are ineligible.
+- Face Lab may remain eligible while skin analysis is ineligible when facial structure is visible but skin detail is obscured, filtered, poorly lit, or too low quality.
+- Missing, malformed, inconsistent, or evidence-free eligibility responses fail closed as `eligibility_response_invalid`.
+- When Face Lab eligibility is false, the route returns an unavailable envelope and does not normalize model-provided mood, color, hair, makeup, or style values.
+- `getAvailableVisionFaceLabData()` rejects a new envelope whose explicit eligibility does not allow Face Lab. Legacy envelopes without the field remain readable under the existing envelope rules.
+
+Both existing Vision routes evaluate the same shared eligibility schema independently. No additional preflight request is added; the shared helper owns only prompt contract and deterministic validation.
+
 ## Premium Role
 
 In the paid full report, Face Lab is display-only companion content:

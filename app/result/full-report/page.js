@@ -1315,7 +1315,16 @@ function getReportPhotoSignalArea(area, locale = "ko") {
   return hasKoreanText(text) ? "visible area" : text;
 }
 
+function hasEligibleSkinPhotoAnalysis(result = {}) {
+  const eligibility = result?.imageEligibility || result?.premiumReport?.imageEligibility || null;
+  return eligibility?.skinAnalysisEligible === true;
+}
+
 function buildReportPhotoSummary(result = {}, locale = "ko") {
+  if (!hasEligibleSkinPhotoAnalysis(result)) {
+    return "";
+  }
+
   const rawSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
   const signals = Array.isArray(result?.photoObservations?.signals)
     ? result.photoObservations.signals
@@ -1346,14 +1355,17 @@ function buildReportPhotoSummary(result = {}, locale = "ko") {
 }
 
 function buildTopPickEvidenceText(result = {}, locale = "ko") {
+  const hasEligiblePhotoAnalysis = hasEligibleSkinPhotoAnalysis(result);
   const photoSummary = buildReportPhotoSummary(result, locale);
-  const signals = Array.isArray(result?.photoObservations?.signals)
+  const signals = hasEligiblePhotoAnalysis && Array.isArray(result?.photoObservations?.signals)
     ? result.photoObservations.signals
-    : Array.isArray(result?.premiumReport?.photoObservations?.signals)
+    : hasEligiblePhotoAnalysis && Array.isArray(result?.premiumReport?.photoObservations?.signals)
       ? result.premiumReport.photoObservations.signals
       : [];
   const firstSignal = signals.find((signal) => getReportPhotoSignalLabel(signal, locale) || getReportPhotoSignalArea(signal?.area, locale));
-  const alignment = result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null;
+  const alignment = hasEligiblePhotoAnalysis
+    ? result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null
+    : null;
   const hasMixedPhotoSurvey = ["mixed", "conflict"].includes(String(alignment?.status || ""));
 
   if (photoSummary && !/제한|limited/i.test(photoSummary)) {
@@ -1377,7 +1389,7 @@ function buildTopPickEvidenceText(result = {}, locale = "ko") {
 
   const evidenceSources = [
     ...(Array.isArray(result?.surveyEvidence) ? result.surveyEvidence : []),
-    ...(Array.isArray(result?.photoEvidence) ? result.photoEvidence : []),
+    ...(hasEligiblePhotoAnalysis && Array.isArray(result?.photoEvidence) ? result.photoEvidence : []),
     ...(Array.isArray(result?.evidenceLines) ? result.evidenceLines : [])
   ];
   const evidenceLines = uniqueDisplayTexts(evidenceSources.map((item) => compactLocalizedText(item, locale))).filter((item) => locale !== "en" || !hasKoreanText(item));
@@ -1394,11 +1406,19 @@ function buildTopPickEvidenceText(result = {}, locale = "ko") {
 
   const concern = getReportPriorityLabel(result, locale);
   return locale === "en"
-    ? `The photo and survey inputs point toward ${concern}, so the report keeps the routine anchored to that priority.`
-    : `사진과 설문에서 ${concern} 흐름이 우선으로 잡혀, 루틴의 기준도 이 방향에 맞췄습니다.`;
+    ? hasEligiblePhotoAnalysis
+      ? `The photo and survey inputs point toward ${concern}, so the report keeps the routine anchored to that priority.`
+      : `The survey inputs point toward ${concern}, so the report keeps the routine anchored to that priority.`
+    : hasEligiblePhotoAnalysis
+      ? `사진과 설문에서 ${concern} 흐름이 우선으로 잡혀, 루틴의 기준도 이 방향에 맞췄습니다.`
+      : `설문에서 ${concern} 흐름이 우선으로 잡혀, 루틴의 기준도 이 방향에 맞췄습니다.`;
 }
 
 function buildFullReportHeaderBody(copy, result = {}, locale = "ko") {
+  if (!hasEligibleSkinPhotoAnalysis(result)) {
+    return copy.body;
+  }
+
   const photoSummary = compactLocalizedText(result?.photoObservations?.summary || result?.premiumReport?.photoObservations?.summary, locale);
   const alignment = result?.photoObservations?.surveyAlignment || result?.premiumReport?.photoObservations?.surveyAlignment || null;
 
@@ -6348,10 +6368,11 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         parsedFaceLab = null;
       }
       const parsedFaceLabData = getAvailableVisionFaceLabData(parsedFaceLab);
+      const parsedFaceLabEnvelope = parsedFaceLabData ? parsedFaceLab : null;
 
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
-          ? buildDevelopmentReport(parsedResult, parsedFaceLabData, locale)
+          ? buildDevelopmentReport(parsedResult, parsedFaceLabEnvelope, locale)
           : null;
 
       if (isTestFullReport && developmentFallbackReport) {
@@ -6373,7 +6394,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,
             locale,
-            faceLab: parsedFaceLabData,
+            faceLab: parsedFaceLabEnvelope,
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null,

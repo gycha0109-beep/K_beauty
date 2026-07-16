@@ -97,7 +97,9 @@ There is no current no-photo analysis path.
 - The photo step requires `imageFile` before moving to survey.
 - `/api/analyze` requires `image` and validates it.
 - `image_url` stored in `analysis_requests` / `analysis_results` is currently `null`; the browser stores an image preview in `sessionStorage.skinTestSubmission.imagePreviewDataUrl`, and `SaveReportCTA` removes that preview from the saved `surveySnapshot`.
-- If photo evidence cannot be generated because the API key is missing or photo analysis fails, the route uses fallback photo evidence and adds `meta.notice`; this is not the same as user-driven photo skip.
+- If photo analysis cannot run because the API key is missing or the provider fails, the route uses a fail-closed photo state with zero photo weights, no synthetic photo evidence, and a `meta.notice`; this is not the same as user-driven photo skip.
+- The existing Skin Match Vision call now returns a structured `imageEligibility`. Photo weights, evidence, and observations are accepted only when `skinAnalysisEligible === true` for exactly one photorealistic human face.
+- Product, animal, document, landscape, illustration, animation, avatar, 3D-character, multiple-face, malformed eligibility, and insufficient skin-detail cases keep survey analysis active but exclude all model-provided photo signals.
 
 Current accuracy/precision guidance for skipping:
 
@@ -123,6 +125,7 @@ Current accuracy/precision guidance for skipping:
   warnings,
   photoEvidence,
   photoObservations,
+  imageEligibility,
   surveyEvidence,
   scoring,
   meta

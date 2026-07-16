@@ -728,7 +728,14 @@ function FreeResultV2SkinRadarSummary({ data, locale = "ko", size = "compact", s
   );
 }
 
-function FreeResultV2DiagnosisSummaryCard({ photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
+function FreeResultV2DiagnosisSummaryCard({
+  photoUrl,
+  photoAlt,
+  photoFallback,
+  faceLabPreview = null,
+  faceLabDisplayStatus = "unavailable",
+  locale = "ko"
+}) {
   const hasFaceLab = Boolean(faceLabPreview);
 
   if (hasFaceLab) {
@@ -740,6 +747,25 @@ function FreeResultV2DiagnosisSummaryCard({ photoUrl, photoAlt, photoFallback, f
         faceLabPreview={faceLabPreview}
         locale={locale}
       />
+    );
+  }
+
+  if (faceLabDisplayStatus === "photo_ineligible") {
+    return (
+      <FreeResultV2Card className="p-4 sm:p-5">
+        <div className="flex justify-center">
+          <FreeResultV2PhotoFrame
+            photoUrl={photoUrl}
+            photoAlt={photoAlt}
+            fallback={photoFallback}
+            locale={locale}
+            className="max-w-[14.2rem] min-h-[212px] sm:max-w-[16.2rem] sm:min-h-[243px]"
+          />
+        </div>
+        <p className="mt-4 text-center text-sm font-semibold leading-6 text-[#7a5360] dark:text-[#e8cbd5]">
+          {locale === "en" ? "Photo recognition failed." : "사진 인식에 실패했습니다"}
+        </p>
+      </FreeResultV2Card>
     );
   }
 
@@ -849,7 +875,15 @@ function FreeResultV2PriorityListCard({ priorities = [], locale = "ko" }) {
   );
 }
 
-export default function FreeResultV2DiagnosisStep({ data, photoUrl, photoAlt, photoFallback, faceLabPreview = null, locale = "ko" }) {
+export default function FreeResultV2DiagnosisStep({
+  data,
+  photoUrl,
+  photoAlt,
+  photoFallback,
+  faceLabPreview = null,
+  faceLabDisplayStatus = "unavailable",
+  locale = "ko"
+}) {
   const isEnglish = locale === "en";
 
   return (
@@ -861,6 +895,7 @@ export default function FreeResultV2DiagnosisStep({ data, photoUrl, photoAlt, ph
         photoAlt={photoAlt}
         photoFallback={photoFallback}
         faceLabPreview={faceLabPreview}
+        faceLabDisplayStatus={faceLabDisplayStatus}
         locale={locale}
       />
       <FreeResultV2SkinRadarCard data={data} locale={locale} />

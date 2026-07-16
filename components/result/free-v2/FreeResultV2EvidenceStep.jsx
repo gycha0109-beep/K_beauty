@@ -8,7 +8,11 @@ import {
   FreeResultV2StepFrame
 } from "@/components/result/free-v2/FreeResultV2Primitives";
 
-function isPhotoAnalysisLimited(photoSignals = []) {
+function isPhotoAnalysisLimited(photoSignals = [], imageEligibility = null) {
+  if (imageEligibility && typeof imageEligibility === "object") {
+    return imageEligibility.skinAnalysisEligible !== true;
+  }
+
   const signals = Array.isArray(photoSignals)
     ? photoSignals.map((signal) => String(signal || "").trim()).filter(Boolean)
     : [];
@@ -26,7 +30,28 @@ function isPhotoAnalysisLimited(photoSignals = []) {
   );
 }
 
-function getPhotoAnalysisFailureCopy(locale = "ko") {
+function getPhotoAnalysisFailureCopy(locale = "ko", imageEligibility = null) {
+  const isNonHumanImage = imageEligibility && (
+    imageEligibility.imageType !== "photorealistic_human" ||
+    ["face_not_detected", "non_photorealistic_face", "multiple_faces"].includes(imageEligibility.skinFailureReason)
+  );
+
+  if (isNonHumanImage) {
+    return locale === "en"
+      ? {
+          photo: "A photo with one real human face is needed.",
+          signal: "Analysis excluded",
+          title: "Photo analysis was excluded",
+          body: "We could not confirm one real human face,\nso no skin cues were generated.\nWe analyzed only from your survey answers."
+        }
+      : {
+          photo: "한 명의 실제 얼굴 사진이 필요합니다.",
+          signal: "분석 제외",
+          title: "사진 분석은 제외되었어요",
+          body: "한 명의 실제 사람 얼굴을 확인할 수 없어\n피부 신호를 생성하지 않았습니다.\n설문 답변만으로 분석했습니다."
+        };
+  }
+
   return locale === "en"
     ? {
         photo: "Sorry, a clearer photo is needed.",
@@ -134,13 +159,13 @@ function FreeResultV2PhotoWireOverlay({ isVisible }) {
   );
 }
 
-function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSignals = [], locale = "ko" }) {
+function FreeResultV2EvidencePhotoCard({ photoUrl, photoAlt, fallback, photoSignals = [], imageEligibility = null, locale = "ko" }) {
   const isEnglish = locale === "en";
   const [isCalloutsOpen, setIsCalloutsOpen] = useState(false);
   const storageKey = "bejewely:free-result-v2:evidence-photo-callouts-open";
   const calloutItems = buildPhotoCalloutItems(photoSignals, locale);
-  const isLimited = isPhotoAnalysisLimited(photoSignals);
-  const failureCopy = getPhotoAnalysisFailureCopy(locale);
+  const isLimited = isPhotoAnalysisLimited(photoSignals, imageEligibility);
+  const failureCopy = getPhotoAnalysisFailureCopy(locale, imageEligibility);
   const callouts = isEnglish
     ? {
         badge: "AI analysis view",
@@ -331,7 +356,7 @@ function getFreeResultV2EvidenceSignalNote(signal = "", tone = "photo") {
 }
 
 function FreeResultV2EvidenceSignalFace({ source, isActive, locale = "ko" }) {
-  const failureCopy = getPhotoAnalysisFailureCopy(locale);
+  const failureCopy = getPhotoAnalysisFailureCopy(locale, source.imageEligibility);
 
   return (
     <div
@@ -359,16 +384,17 @@ function FreeResultV2EvidenceSignalFace({ source, isActive, locale = "ko" }) {
   );
 }
 
-function FreeResultV2EvidenceSignalsCard({ photoSignals = [], surveySignals = [], locale = "ko" }) {
+function FreeResultV2EvidenceSignalsCard({ photoSignals = [], surveySignals = [], imageEligibility = null, locale = "ko" }) {
   const isEnglish = locale === "en";
   const [activeSource, setActiveSource] = useState("photo");
-  const photoAnalysisLimited = isPhotoAnalysisLimited(photoSignals);
+  const photoAnalysisLimited = isPhotoAnalysisLimited(photoSignals, imageEligibility);
   const sources = [
     {
       key: "photo",
       tabLabel: isEnglish ? "Photo" : "사진 신호",
       title: isEnglish ? "Photo cues" : "사진에서 보인 신호",
       signals: photoSignals,
+      imageEligibility,
       analysisFailed: photoAnalysisLimited
     },
     {
@@ -476,24 +502,29 @@ function FreeResultV2EvidenceBridge({ locale = "ko" }) {
 
 export default function FreeResultV2EvidenceStep({ evidence, photoUrl, photoAlt, photoFallback, locale = "ko" }) {
   const isEnglish = locale === "en";
+  const hasEligiblePhotoAnalysis = evidence?.imageEligibility?.skinAnalysisEligible === true;
 
   return (
     <FreeResultV2StepFrame
       eyebrow={isEnglish ? "Diagnosis evidence" : "진단 근거"}
       title={isEnglish ? "Why this diagnosis?" : "왜 이렇게 판단했을까?"}
-      body={isEnglish ? "We used photo analysis and survey answers together." : "사진 분석과 설문 답변을 함께 참고했습니다."}
+      body={hasEligiblePhotoAnalysis
+        ? (isEnglish ? "We used photo analysis and survey answers together." : "사진 분석과 설문 답변을 함께 참고했습니다.")
+        : (isEnglish ? "The photo analysis was excluded, so we used the survey answers." : "사진 분석은 제외하고 설문 답변을 기준으로 판단했습니다.")}
     >
       <FreeResultV2EvidencePhotoCard
         photoUrl={photoUrl}
         photoAlt={photoAlt}
         fallback={photoFallback}
         photoSignals={evidence.photoSignals}
+        imageEligibility={evidence.imageEligibility}
         locale={locale}
       />
 
       <FreeResultV2EvidenceSignalsCard
         photoSignals={evidence.photoSignals}
         surveySignals={evidence.surveySignals}
+        imageEligibility={evidence.imageEligibility}
         locale={locale}
       />
 

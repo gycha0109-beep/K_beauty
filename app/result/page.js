@@ -38,7 +38,8 @@ import {
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
 import {
-  getAvailableVisionFaceLabData
+  getAvailableVisionFaceLabData,
+  getFaceLabDisplayStatus
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { getResultSection } from "@/lib/product-category-normalizer";
@@ -1618,6 +1619,13 @@ function buildFreeResultV2Interpretation(form = {}, result = null, photoSignals 
   const hasDehydrationFlow =
     form?.postWashFeeling === "tight" ||
     concernHints.some((item) => item === "dehydration" || item === "barrier");
+  const hasEligiblePhotoAnalysis = result?.imageEligibility?.skinAnalysisEligible === true;
+
+  if (!hasEligiblePhotoAnalysis) {
+    return locale === "en"
+      ? `The photo analysis was excluded, so the survey answers keep ${priorityLabel.toLowerCase()} as the first decision axis.`
+      : `사진 분석은 제외하고 설문 답변을 기준으로 ${priorityLabel} 흐름을 우선 판단했습니다.`;
+  }
 
   if (locale === "en") {
     if (form?.skinType === "combination" && hasOilFlow && hasDehydrationFlow) {
@@ -1639,16 +1647,15 @@ function buildFreeResultV2Interpretation(form = {}, result = null, photoSignals 
 }
 
 function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko") {
+  const imageEligibility = result?.imageEligibility || null;
+  const hasEligiblePhotoAnalysis = imageEligibility?.skinAnalysisEligible === true;
   const normalized = normalizePhotoObservationsForDisplay(result?.photoObservations, copy, locale);
-  const photoSignals = buildFreeResultV2PhotoEvidenceSignals(normalized, form, result, locale);
+  const photoSignals = hasEligiblePhotoAnalysis
+    ? buildFreeResultV2PhotoEvidenceSignals(normalized, form, result, locale)
+    : [];
 
-  if (!photoSignals.length && normalized.summary && !normalized.isFallback) {
+  if (hasEligiblePhotoAnalysis && !photoSignals.length && normalized.summary && !normalized.isFallback) {
     photoSignals.push(normalized.summary);
-  }
-
-  // TODO: replace this display fallback once photo analysis always returns structured visible signals.
-  if (!photoSignals.length) {
-    photoSignals.push(locale === "en" ? "photo cues were limited" : "사진 신호는 제한적으로 확인됨");
   }
 
   const surveySignals = buildSurveyEvidenceSignals(form, locale);
@@ -1656,6 +1663,7 @@ function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko"
   return {
     photoSignals,
     surveySignals,
+    imageEligibility,
     interpretation: buildFreeResultV2Interpretation(form, result, photoSignals, surveySignals, locale)
   };
 }
@@ -3168,9 +3176,15 @@ function ResultContent() {
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const resultForm = submission?.form || {};
   const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
-  const faceLabDisplayData =
-    getAvailableVisionFaceLabData(faceLabFull) ||
-    getAvailableVisionFaceLabData(result?.faceLab);
+  const faceLabSources = [faceLabFull, result?.faceLab].filter(Boolean);
+  const faceLabDisplayData = faceLabSources
+    .map(getAvailableVisionFaceLabData)
+    .find(Boolean) || null;
+  const faceLabDisplayStatus = faceLabDisplayData
+    ? "available"
+    : faceLabSources.some((source) => getFaceLabDisplayStatus(source) === "photo_ineligible")
+      ? "photo_ineligible"
+      : "unavailable";
   const faceLabLaunch = faceLabDisplayData ? buildFaceLabLaunchData(faceLabDisplayData, locale) : null;
   const faceLabProfilePreview = faceLabLaunch ? getFaceLabProfilePreview(faceLabLaunch, locale) : null;
   const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
@@ -3289,6 +3303,7 @@ function ResultContent() {
           photoAlt={resultPhotoAlt}
           photoFallback={copy.resultPhotoFallback}
           faceLabPreview={freeResultV2FaceLabPreview}
+          faceLabDisplayStatus={faceLabDisplayStatus}
           locale={locale}
         />
       )

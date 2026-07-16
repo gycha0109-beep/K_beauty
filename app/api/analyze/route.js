@@ -40,6 +40,7 @@ import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } f
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
+import { normalizeImageAnalysisEligibility } from "@/lib/image-analysis-eligibility";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
@@ -1059,6 +1060,7 @@ function sanitizePremiumReport(report) {
       : [],
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
+    imageEligibility: normalizeImageAnalysisEligibility(report.imageEligibility),
     currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
@@ -1137,6 +1139,7 @@ function buildFreeDecisionPayload(decision) {
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
     photoObservations: decision.photoObservations || null,
+    imageEligibility: normalizeImageAnalysisEligibility(decision.imageEligibility),
     surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : [],
     scoring: sanitizeDecisionScoring(decision.scoring)
   };
