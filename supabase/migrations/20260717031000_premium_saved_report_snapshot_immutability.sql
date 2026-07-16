@@ -6,4 +6,17 @@ where report_type = 'premium'
 
 drop policy if exists "Users can update own saved reports" on public.saved_reports;
 
-create
+create policy "Users can update own mutable saved reports"
+on public.saved_reports
+for update
+to authenticated
+using (
+  auth.uid() = user_id
+  and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
+  and source_type is distinct from 'premium_report_session'
+)
+with check (
+  auth.uid() = user_id
+  and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
+  and source_type is distinct from 'premium_report_session'
+);
