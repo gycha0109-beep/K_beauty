@@ -165,6 +165,27 @@ assert.equal(decisionState.conditionPlan.version, "premium-condition-projection-
 assert.deepEqual(decisionState.decisionBundle.conditionResponses, decisionState.conditionResponses);
 assert.equal(decisionState.decisionBundle.dependencies.functionalPolicyResult, false);
 assert.equal(decisionState.decisionBundle.dependencies.routinePolicyResult, false);
+assert.equal(decisionState.decisionBundle.context.version, "shared-skin-decision-context-v3");
+assert.equal(decisionState.decisionBundle.context.conditionSignalState.rednessOrIrritation, "yes");
+assert.equal(decisionState.conditionPlan.source, "canonical");
+
+const analyzeSource = readFileSync(new URL("../app/api/analyze/route.js", import.meta.url), "utf8");
+assert.match(analyzeSource, /rebuildPremiumDecisionState\(premiumDecisionSource/);
+assert.match(analyzeSource, /source: "api_analyze_initial_session"/);
+for (const artifact of ["conditionPolicy", "conditionPlan", "decisionBundle"]) {
+  assert.match(analyzeSource, new RegExp(`${artifact}: sanitizeCanonicalDecisionArtifact`));
+}
+
+const conditionComponentSource = readFileSync(
+  new URL("../components/full-report/PremiumConditionResponseSection.jsx", import.meta.url),
+  "utf8"
+);
+assert.match(conditionComponentSource, /Array\.isArray\(conditionPlan\?\.responses\)/);
+assert.match(conditionComponentSource, /data-condition-source=\{source\}/);
+assert.match(conditionComponentSource, /canonicalResponses \|\|/);
+
+const fullReportPageSource = readFileSync(new URL("../app/result/full-report/page.js", import.meta.url), "utf8");
+assert.match(fullReportPageSource, /conditionPlan=\{report\?\.conditionPlan \|\| report\?\.decisionBundle\?\.conditionPlan\}/);
 
 const decisionSource = readFileSync(new URL("../lib/premium-decision-state.js", import.meta.url), "utf8");
 assert.ok(!decisionSource.includes("buildPremiumConditionResponses"));

@@ -5375,6 +5375,7 @@ function SkinMatchStepReport({
       label: labels.adjustment,
       content: (
         <PremiumConditionResponseSection
+          conditionPlan={report?.conditionPlan || report?.decisionBundle?.conditionPlan}
           responses={report?.conditionResponses}
           locale={locale}
           onNavigate={moveToStepKey}

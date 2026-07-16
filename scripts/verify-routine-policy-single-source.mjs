@@ -148,6 +148,6 @@ const sharedContextSource = readFileSync(
 );
 assert.ok(!/routineStructure:\s*report\?\.routineStructure/.test(sharedContextSource));
 assert.ok(!/routineState:\s*\{/.test(sharedContextSource));
-assert.match(sharedContextSource, /shared-skin-decision-context-v2/);
+assert.match(sharedContextSource, /shared-skin-decision-context-v3/);
 
 console.log("verify-routine-policy-single-source: PASS");
