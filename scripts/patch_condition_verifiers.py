@@ -18,7 +18,7 @@ patch("scripts/verify-routine-policy-single-source.mjs", [
 
 patch("scripts/verify-premium-decision-state.mjs", [
     ('"premium-decision-bundle-v3"', '"premium-decision-bundle-v4"'),
-    ('assert.equal(conditionStatus(emptyState, "active_load"), "reduce");', 'assert.equal(conditionStatus(emptyState, "active_load"), "maintain");')
+    ('assert.equal(conditionStatus(emptyState, "active_load"), "reduce");', 'assert.equal(conditionStatus(emptyState, "active_load"), null);')
 ])
 
 patch("scripts/verify-functional-policy-single-source.mjs", [
