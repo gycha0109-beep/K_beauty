@@ -16,11 +16,14 @@ patch("scripts/verify-routine-policy-single-source.mjs", [
     ('/shared-skin-decision-context-v2/', '/shared-skin-decision-context-v3/')
 ])
 
-for verifier in [
-    "scripts/verify-premium-decision-state.mjs",
-    "scripts/verify-functional-policy-single-source.mjs"
-]:
-    patch(verifier, [('"premium-decision-bundle-v3"', '"premium-decision-bundle-v4"')])
+patch("scripts/verify-premium-decision-state.mjs", [
+    ('"premium-decision-bundle-v3"', '"premium-decision-bundle-v4"'),
+    ('assert.equal(conditionStatus(emptyState, "active_load"), "reduce");', 'assert.equal(conditionStatus(emptyState, "active_load"), "maintain");')
+])
+
+patch("scripts/verify-functional-policy-single-source.mjs", [
+    ('"premium-decision-bundle-v3"', '"premium-decision-bundle-v4"')
+])
 
 p = ROOT / "scripts/verify-condition-policy-single-source.mjs"
 s = p.read_text(encoding="utf-8")
