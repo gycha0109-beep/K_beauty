@@ -1,0 +1,32 @@
+name: Verify premium hosted preview pack
+on:
+  pull_request:
+    branches:
+      - agent/premium-hosted-preview-verification
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --check scripts/premium-hosted-preview-core.mjs
+      - run: node --check scripts/capture-premium-hosted-preview-google-login.mjs
+      - run: node --check scripts/verify-premium-hosted-preview-preflight.mjs
+      - run: node --check scripts/verify-premium-hosted-preview-ui-journey.mjs
+      - run: node --check scripts/verify-premium-hosted-preview-error-boundaries.mjs
+      - run: node --check scripts/verify-premium-hosted-preview-db-evidence.mjs
+      - run: node --check scripts/verify-premium-hosted-preview-gate.mjs
+      - run: node --check scripts/cleanup-premium-hosted-preview-run.mjs
+      - run: npm run verify:premium-hosted-preview-contract
+      - run: npm run verify:premium-browser-journey-contract
+      - run: node scripts/verify-premium-route-storage-reentry.mjs
+      - run: node scripts/verify-premium-report-reentry-contract.mjs
+      - run: node scripts/verify-premium-integrated-evaluation.mjs
+      - run: node scripts/verify-premium-decision-state.mjs
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
