@@ -116,8 +116,9 @@ try {
   const localeComparison = compareLocaleSemantics(ko, en);
   requireCondition(localeComparison.passed, HOSTED_FAILURE_CATEGORIES.LOCALE, "locale-parity", "locale_semantic_mismatch");
 
+  const allowedProductLanes = ["selected-product", "not-in-db", "selected-plus-not-in-db", "duplicate-axis"];
   for (const productCase of manifest.currentProductCases) {
-    requireCondition(["selected-product", "not-in-db", "selected-plus-not-in-db"].includes(productCase.laneName), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "unknown_product_lane");
+    requireCondition(allowedProductLanes.includes(productCase.laneName), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "unknown_product_lane");
     await lane(productCase.laneName, "important", () => runUiCase(productCase.fixture, productCase.laneName));
   }
   await lane("photo-fallback", "important", () => runUiCase(manifest.photoFallbackCase, "photo-fallback"));
