@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 import { dirname, resolve } from "node:path";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { HOSTED_FAILURE_CATEGORIES, loadHostedManifest, parseHostedConfig } from "./premium-hosted-preview-core.mjs";
 import { requireCondition } from "./premium-browser-journey-core.mjs";
 
@@ -13,6 +13,7 @@ const callbackPath = manifest.routes?.authCallbackPrefix || "/auth/callback";
 const signInSelector = manifest.selectors?.googleSignIn;
 requireCondition(signInSelector, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "google-login", "google_signin_selector_missing");
 requireCondition(account.storageStatePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "google-login", "storage_state_output_missing");
+requireCondition(account.loginEvidencePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "google-login", "login_evidence_output_missing");
 
 const browser = await chromium.launch({ headless: false });
 const context = await browser.newContext();
@@ -24,10 +25,21 @@ try {
   if (page.url().includes(callbackPath)) {
     await page.waitForURL((url) => url.origin === config.baseUrl.origin && url.pathname === (account.expectedAfterLoginPath || "/my"), { timeout: 60000 });
   }
-  requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, "google-login", "unexpected_oauth_origin");
+  const finalUrl = new URL(page.url());
+  requireCondition(finalUrl.origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, "google-login", "unexpected_oauth_origin");
   await mkdir(dirname(resolve(account.storageStatePath)), { recursive: true });
+  await mkdir(dirname(resolve(account.loginEvidencePath)), { recursive: true });
   await context.storageState({ path: account.storageStatePath });
-  console.log(JSON.stringify({ status: "passed", account: accountKey, finalPath: new URL(page.url()).pathname }, null, 2));
+  const evidence = {
+    status: "passed",
+    account: accountKey,
+    targetHost: config.baseUrl.hostname,
+    deploymentSha: config.deploymentSha,
+    finalPath: finalUrl.pathname,
+    capturedAt: new Date().toISOString()
+  };
+  await writeFile(resolve(account.loginEvidencePath), `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
+  console.log(JSON.stringify(evidence, null, 2));
 } finally {
   await browser.close();
 }
