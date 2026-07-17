@@ -15,10 +15,13 @@
     "verify:premium-browser-journey": "node scripts/verify-premium-browser-journey.mjs",
     "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
     "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",
+    "capture:premium-hosted-preview-login": "node scripts/capture-premium-hosted-preview-google-login.mjs",
     "verify:premium-hosted-preview-contract": "node scripts/verify-premium-hosted-preview-contract.mjs",
     "verify:premium-hosted-preview-preflight": "node scripts/verify-premium-hosted-preview-preflight.mjs",
     "verify:premium-hosted-preview-ui": "node scripts/verify-premium-hosted-preview-ui-journey.mjs",
+    "verify:premium-hosted-preview-errors": "node scripts/verify-premium-hosted-preview-error-boundaries.mjs",
     "verify:premium-hosted-preview-db": "node scripts/verify-premium-hosted-preview-db-evidence.mjs",
+    "verify:premium-hosted-preview-gate": "node scripts/verify-premium-hosted-preview-gate.mjs",
     "cleanup:premium-hosted-preview": "node scripts/cleanup-premium-hosted-preview-run.mjs",
     "lint": "next lint"
   },
