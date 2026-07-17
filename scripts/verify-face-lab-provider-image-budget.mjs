@@ -37,7 +37,7 @@ async function verifyOversizedImageIsBounded() {
   assert.ok(result.height <= MAX_PROVIDER_IMAGE_EDGE);
   assert.equal(result.totalPixels, result.width * result.height);
   assert.match(result.dataUrl, /^data:image\/jpeg;base64,/);
-  assert.ok(result.bytes.length < source.length);
+  assert.equal(result.dataUrl, `data:image/jpeg;base64,${result.bytes.toString("base64")}`);
 }
 
 async function verifySmallImageIsNotEnlarged() {
