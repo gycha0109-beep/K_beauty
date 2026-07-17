@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build",
+    "build": "npm run verify:face-lab-provider-budget && next build",
     "start": "next start -p 3001",
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
