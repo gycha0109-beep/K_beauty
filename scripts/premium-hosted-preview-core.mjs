@@ -30,6 +30,7 @@ export const REQUIRED_HOSTED_LANES = Object.freeze([
   "selected-product",
   "not-in-db",
   "selected-plus-not-in-db",
+  "duplicate-axis",
   "photo-fallback",
   "persistence",
   "finalized-conflict",
@@ -76,7 +77,7 @@ export async function loadHostedManifest(path) {
   requireCondition(manifest.accountB?.expectedUserIdHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_b_hash_missing");
   requireCondition(manifest.fixtures?.normalPhoto && manifest.fixtures?.fallbackPhoto, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "photo_fixtures_missing");
   requireCondition(manifest.uiCases?.ko && manifest.uiCases?.en, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "locale_ui_cases_missing");
-  requireCondition(Array.isArray(manifest.currentProductCases) && manifest.currentProductCases.length >= 3, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "current_product_cases_incomplete");
+  requireCondition(Array.isArray(manifest.currentProductCases) && manifest.currentProductCases.length >= 4, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "current_product_cases_incomplete");
   return manifest;
 }
 
