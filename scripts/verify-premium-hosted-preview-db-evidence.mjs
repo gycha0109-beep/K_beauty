@@ -4,6 +4,7 @@ import {
   fetchPremiumSessionRows,
   fetchSavedReportById,
   countDuplicateSourceTuples,
+  hashIdentifier,
   requireCondition
 } from "./premium-browser-journey-core.mjs";
 import { HOSTED_FAILURE_CATEGORIES, loadHostedManifest, parseHostedConfig } from "./premium-hosted-preview-core.mjs";
@@ -28,21 +29,21 @@ for (const id of savedIds) {
   requireCondition(row.report_version === snapshot.reportVersion, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "report_version_mismatch");
   rows.push({
     savedReportId: row.id,
-    ownerMatches: row.user_id === manifest.accountA.userId,
+    ownerMatches: hashIdentifier(row.user_id) === manifest.accountA.expectedUserIdHash,
     reportType: row.report_type,
     reportVersion: row.report_version,
     snapshotVersion: snapshot.version,
     decisionBundleVersion: snapshot.decisionBundleVersion,
     fingerprint: snapshot.fingerprint,
     sourceType: row.source_type,
-    sourceSessionId: row.source_session_id,
+    sourceSessionHash: row.source_session_id ? hashIdentifier(row.source_session_id) : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   });
 }
 requireCondition(rows.every((row) => row.ownerMatches), HOSTED_FAILURE_CATEGORIES.AUTH, "db-evidence", "saved_report_owner_mismatch");
-requireCondition(new Set(rows.map((row) => row.sourceSessionId)).size === rows.length, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "source_session_not_independent");
+requireCondition(new Set(rows.map((row) => row.sourceSessionHash)).size === rows.length, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "source_session_not_independent");
 const allSessionRows = await fetchPremiumSessionRows(dbConfig);
 requireCondition(countDuplicateSourceTuples(allSessionRows) === 0, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "duplicate_source_tuple_detected");
 
-console.log(JSON.stringify({ status: "passed", rows: rows.map(({ sourceSessionId, ...row }) => row), duplicateTupleCount: 0 }, null, 2));
+console.log(JSON.stringify({ status: "passed", rows, duplicateTupleCount: 0 }, null, 2));
