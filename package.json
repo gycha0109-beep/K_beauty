@@ -13,6 +13,8 @@
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "verify:premium-browser-journey": "node scripts/verify-premium-browser-journey.mjs",
+    "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
+    "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",
     "lint": "next lint"
   },
   "dependencies": {
