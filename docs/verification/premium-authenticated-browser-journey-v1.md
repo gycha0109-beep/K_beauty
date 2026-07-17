@@ -1,84 +1,127 @@
-# Premium Authenticated Browser Journey Verification v1
+# Premium Authenticated Runtime Journey Verification v1
 
 ## Purpose
 
-This gate validates the deployed Premium lifecycle through an actual Chromium browser context instead of source inspection alone.
+This gate validates the deployed Premium lifecycle through Chromium. Its scope is the integration boundary around the deterministic engine: authentication, Premium-session creation, immutable persistence, saved-report reentry, finalized-snapshot rejection, rotation, and a second independent save.
 
-The journey covers:
+It does not change engine behavior, database schema, RLS, payment, provider, UI, or deployment configuration.
 
-1. authenticated `/api/analyze` execution and Premium session-cookie creation
-2. first `/api/full-report` save
-3. identical retry returning the same immutable saved report
-4. saved-report reopening with request tampering ignored
-5. saved locale remaining authoritative
-6. optional finalized-snapshot conflict verification
-7. current-session saved-report discovery
-8. safe session rotation
-9. new session producing a different saved report
+## Mandatory coverage
 
-## Execution boundary
+Both Korean and English journeys execute the following sequence:
 
-The verifier is intentionally not part of ordinary CI because it requires:
+1. Reject an unauthenticated Premium request.
+2. Open the explicitly selected deployment.
+3. Run authenticated `/api/analyze`.
+4. Verify the Premium cookie contract.
+5. Verify the current session is unsaved before the first save.
+6. Save the first `/api/full-report` result.
+7. Compare the response fingerprint with the RLS-readable database row.
+8. Verify report, snapshot, and Decision Bundle version separation.
+9. Retry the identical request and receive the same immutable report.
+10. Reopen the saved report with opposite locale and Top Pick tampering.
+11. Submit a mandatory meaningful conflict fixture and receive HTTP 409.
+12. Verify the database row and `updated_at` remain unchanged.
+13. Verify current-session saved-report discovery.
+14. Optionally verify mismatched Cookie and Bearer users fail closed.
+15. Rotate the Premium session without exposing identifiers.
+16. Save a second report under a distinct source-session tuple.
+17. Verify the first report remains unchanged.
+18. Verify duplicate Premium source-session tuples are zero.
+19. Write redacted evidence artifacts.
 
-- a deployed URL
-- a dedicated permanent test-account access token
-- Premium creation permission for that account
-- live Supabase route and session storage
-- a Chromium installation
+## Fail-closed preconditions
 
-It must run only against an explicitly selected Preview or production-like environment. It must not reuse a personal account token.
+Execution stops before the journey unless all mandatory preconditions hold:
 
-## Required variables
+- HTTPS root URL with no credentials, query, or fragment
+- explicit environment classification
+- exact expected host
+- exact expected and deployed 40-character Git SHA values
+- dedicated permanent Premium test account confirmation
+- expected SHA-256 user ID hash
+- cookie-backed Playwright storage state
+- matching account access credential
+- public Supabase endpoint configuration for RLS reads
+- non-personal JPEG, PNG, or WEBP fixture up to 8 MB
+- mandatory KO/EN conflict request fixture
+
+Production additionally requires the exact confirmation value documented in the script. Preview protection may use a bypass credential supplied only through the execution environment.
+
+## Required environment variable names
 
 ```text
 PREMIUM_E2E_BASE_URL
+PREMIUM_E2E_ENVIRONMENT
+PREMIUM_E2E_EXPECTED_HOST
+PREMIUM_E2E_EXPECTED_SHA
+PREMIUM_E2E_DEPLOYMENT_SHA
 PREMIUM_E2E_ACCESS_TOKEN
+PREMIUM_E2E_EXPECTED_USER_ID_HASH
+PREMIUM_E2E_SUPABASE_URL
+PREMIUM_E2E_SUPABASE_ANON_KEY
+PREMIUM_E2E_STORAGE_STATE_PATH
+PREMIUM_E2E_IMAGE_PATH
+PREMIUM_E2E_CONFLICT_BODY_PATH
+PREMIUM_E2E_DEDICATED_ACCOUNT_CONFIRMATION
 ```
 
-Optional variables:
+Optional second-account conflict coverage uses:
 
 ```text
-PREMIUM_E2E_LOCALE=ko|en
-PREMIUM_E2E_HEADLESS=0|1
-PREMIUM_E2E_CONFLICT_BODY_JSON={...}
+PREMIUM_E2E_CONFLICT_ACCESS_TOKEN
+PREMIUM_E2E_EXPECTED_CONFLICT_USER_ID_HASH
 ```
 
-`PREMIUM_E2E_CONFLICT_BODY_JSON` must contain a request body that changes stable Premium report content. When omitted, the conflict step is reported as not checked; all other steps remain mandatory.
+## Fixture contracts
 
-## Command
+The storage-state file must contain Supabase auth cookies for the dedicated test account. A stale Premium-report cookie is cleared before each locale journey.
+
+The conflict-body file may contain one shared request object or separate `ko` and `en` objects. It must cause a meaningful snapshot difference for the selected deployment. Control and credential fields are rejected.
+
+## Commands
 
 ```bash
 npx playwright install chromium
+npm run verify:premium-browser-journey-contract
 npm run verify:premium-browser-journey
 ```
 
-## Assertions
+## Evidence artifacts
 
-The verifier fails unless all mandatory assertions hold:
+Each run creates a run-specific directory containing:
 
-- analyze returns HTTP 200
-- exactly one `kbeauty_premium_report` cookie is present
-- first full report returns a saved-report ID
-- identical retry returns `existing` and the same ID
-- saved reopen uses `source = saved-report`
-- opposite request locale cannot change the saved locale
-- request `topPick` is ignored during saved reopen
-- current-session lookup returns the saved ID
-- rotation returns `rotated = true` and `new_session_created`
-- rotation JSON contains no session ID or token fields
-- rotation replaces the Premium session cookie
-- the new session creates a different saved-report ID
+```text
+run-manifest.json
+browser-steps.json
+response-contracts.json
+persistence-evidence.json
+invariant-verdict.json
+summary.md
+```
 
-When conflict input is provided:
+Artifacts contain target metadata, hashed account and session identifiers, response contracts, saved-report IDs, fingerprints, version metadata, timestamps, and verdicts. They exclude credentials, cookies, authorization headers, email addresses, raw photos, and full report bodies. A secret scan is mandatory.
 
-- changed finalized content returns HTTP 409
-- the error is `premium_snapshot_finalized`
-- a subsequent identical retry still resolves to the original saved-report ID
+## Failure taxonomy
 
-## Data handling
+```text
+PRECONDITION_FAILURE
+AUTH_BOUNDARY_FAILURE
+SESSION_FAILURE
+PERSISTENCE_FAILURE
+IMMUTABILITY_FAILURE
+REENTRY_FAILURE
+LOCALE_AUTHORITY_FAILURE
+INFRASTRUCTURE_FAILURE
+HARNESS_FAILURE
+```
 
-The journey creates saved reports for the dedicated test account. The verifier performs no automatic deletion because deletion would weaken the immutable-history evidence and introduces an additional destructive permission path. Test-account data retention and cleanup must be handled as an explicit separate operation.
+Infrastructure and harness failures are not classified as product defects.
+
+## Cleanup
+
+The verifier does not delete data during evidence collection. Cleanup is a separate explicit command scoped to the exact saved-report IDs recorded by the run and the same hashed test account. Before deletion it checks target host, account ownership, UUID shape, Premium report type, and Premium-session source type. It records the result in `cleanup-result.json`.
 
 ## Promotion rule
 
-Preview validation is a prerequisite for Hosted Preview acceptance. Production execution remains a separate explicit gate and must not be inferred from Preview success.
+Repository verification proves that the harness compiles and its pure contracts hold. Hosted Preview execution remains a separate gate requiring an explicitly selected deployment and dedicated test credentials. Production execution requires separate explicit approval and cannot be inferred from Preview success.
