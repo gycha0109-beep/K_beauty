@@ -34,81 +34,94 @@ async function newAccountContext(account) {
   return browser.newContext({ storageState: account.storageStatePath });
 }
 
-async function verifySignedIn(page, expectedPath) {
-  await page.goto(`${config.baseUrl.origin}${expectedPath}`, { waitUntil: "domcontentloaded" });
-  requireCondition(page.url().startsWith(config.baseUrl.origin), HOSTED_FAILURE_CATEGORIES.OAUTH, "google-login", "unexpected_oauth_origin");
-  if (selectors.signedInMarker) await page.locator(selectors.signedInMarker).waitFor({ state: "visible" });
-  return { finalPath: new URL(page.url()).pathname };
+async function applyAction(page, action, laneName) {
+  const locator = page.locator(action.selector);
+  if (action.type === "fill") await locator.fill(String(action.value ?? ""));
+  else if (action.type === "click") await locator.click();
+  else if (action.type === "check") await locator.check();
+  else if (action.type === "select") await locator.selectOption(action.value);
+  else if (action.type === "upload") await locator.setInputFiles(action.path);
+  else if (action.type === "wait") await locator.waitFor({ state: action.state || "visible" });
+  else throw new JourneyFailure(HOSTED_FAILURE_CATEGORIES.HARNESS, laneName, "unsupported_ui_action");
 }
 
-await lane("google-login", "critical", async () => {
-  const context = await newAccountContext(manifest.accountA);
-  try {
-    const page = await context.newPage();
-    const ko = await verifySignedIn(page, manifest.routes?.koMy || "/my");
-    await page.reload({ waitUntil: "domcontentloaded" });
-    if (selectors.signedInMarker) await page.locator(selectors.signedInMarker).waitFor({ state: "visible" });
-    return { persistedAfterReload: true, finalPath: ko.finalPath };
-  } finally {
-    await context.close();
-  }
-});
-
-await lane("premium-entry", "critical", async () => {
-  const context = await newAccountContext(manifest.accountA);
-  try {
-    const page = await context.newPage();
-    await page.goto(`${config.baseUrl.origin}${manifest.routes?.premiumEntry || "/premium"}`, { waitUntil: "domcontentloaded" });
-    if (selectors.premiumEntryMarker) await page.locator(selectors.premiumEntryMarker).waitFor({ state: "visible" });
-    return { path: new URL(page.url()).pathname };
-  } finally {
-    await context.close();
-  }
-});
-
-async function runLocale(locale) {
-  const fixture = JSON.parse(await readFile(manifest.uiCases?.[locale], "utf8"));
-  const context = await newAccountContext(manifest.accountA);
+async function runUiCase(casePath, laneName, account = manifest.accountA) {
+  requireCondition(casePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, laneName, "ui_case_missing");
+  const fixture = JSON.parse(await readFile(casePath, "utf8"));
+  const context = await newAccountContext(account);
   try {
     const page = await context.newPage();
     await page.goto(`${config.baseUrl.origin}${fixture.startPath}`, { waitUntil: "domcontentloaded" });
-    for (const action of fixture.actions || []) {
-      const locator = page.locator(action.selector);
-      if (action.type === "fill") await locator.fill(String(action.value ?? ""));
-      else if (action.type === "click") await locator.click();
-      else if (action.type === "check") await locator.check();
-      else if (action.type === "select") await locator.selectOption(action.value);
-      else if (action.type === "upload") await locator.setInputFiles(action.path);
-      else if (action.type === "wait") await locator.waitFor({ state: action.state || "visible" });
-      else throw new JourneyFailure(HOSTED_FAILURE_CATEGORIES.HARNESS, `${locale}-normal`, "unsupported_ui_action");
-    }
+    requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, laneName, "unexpected_ui_origin");
+    for (const action of fixture.actions || []) await applyAction(page, action, laneName);
     await page.locator(fixture.resultMarker).waitFor({ state: "visible", timeout: fixture.timeoutMs || 120000 });
-    return await page.evaluate((map) => {
-      const text = (selector) => document.querySelector(selector)?.textContent?.trim() || null;
-      const attr = (selector, name) => document.querySelector(selector)?.getAttribute(name) || null;
+    const evidence = await page.evaluate((map) => {
+      const text = (selector) => selector ? document.querySelector(selector)?.textContent?.trim() || null : null;
+      const attr = (selector, name) => selector ? document.querySelector(selector)?.getAttribute(name) || null : null;
       return {
         functionalStatus: text(map.functionalStatus),
         routineStatus: text(map.routineStatus),
         conditionStatus: text(map.conditionStatus),
         consistencyVerdict: text(map.consistencyVerdict),
         topPickId: attr(map.topPick, "data-product-id"),
-        snapshotFingerprint: attr(map.snapshot, "data-snapshot-fingerprint")
+        snapshotFingerprint: attr(map.snapshot, "data-snapshot-fingerprint"),
+        source: text(map.source),
+        noticeCode: attr(map.notice, "data-notice-code"),
+        currentProductStatus: attr(map.currentProduct, "data-current-product-status"),
+        confidence: attr(map.confidence, "data-confidence")
       };
-    }, fixture.projectionSelectors);
+    }, fixture.projectionSelectors || {});
+    for (const field of fixture.requiredEvidence || []) {
+      requireCondition(evidence[field] != null && evidence[field] !== "", HOSTED_FAILURE_CATEGORIES.UI_PROJECTION, laneName, `missing_projection_${field}`);
+    }
+    for (const [field, expected] of Object.entries(fixture.expected || {})) {
+      requireCondition(evidence[field] === expected, laneName === "photo-fallback" ? HOSTED_FAILURE_CATEGORIES.PHOTO_FALLBACK : HOSTED_FAILURE_CATEGORIES.UI_PROJECTION, laneName, `unexpected_${field}`);
+    }
+    return evidence;
   } finally {
     await context.close();
   }
 }
 
-const ko = await lane("ko-normal", "important", () => runLocale("ko"));
-const en = await lane("en-normal", "important", () => runLocale("en"));
-const localeComparison = compareLocaleSemantics(ko, en);
-requireCondition(localeComparison.passed, HOSTED_FAILURE_CATEGORIES.LOCALE, "locale-parity", "locale_semantic_mismatch");
+try {
+  await lane("google-login", "critical", async () => {
+    const context = await newAccountContext(manifest.accountA);
+    try {
+      const page = await context.newPage();
+      await page.goto(`${config.baseUrl.origin}${manifest.accountA.expectedAfterLoginPath || manifest.routes?.koMy || "/my"}`, { waitUntil: "domcontentloaded" });
+      requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, "google-login", "unexpected_oauth_origin");
+      if (selectors.signedInMarker) await page.locator(selectors.signedInMarker).waitFor({ state: "visible" });
+      await page.reload({ waitUntil: "domcontentloaded" });
+      if (selectors.signedInMarker) await page.locator(selectors.signedInMarker).waitFor({ state: "visible" });
+      return { persistedAfterReload: true, finalPath: new URL(page.url()).pathname };
+    } finally {
+      await context.close();
+    }
+  });
 
-for (const productCase of manifest.currentProductCases) {
-  await lane(productCase.laneName, "important", async () => ({ fixture: productCase.fixture, expected: productCase.expected }));
+  await lane("premium-entry", "critical", async () => {
+    const context = await newAccountContext(manifest.accountA);
+    try {
+      const page = await context.newPage();
+      await page.goto(`${config.baseUrl.origin}${manifest.routes?.premiumEntry || "/premium"}`, { waitUntil: "domcontentloaded" });
+      if (selectors.premiumEntryMarker) await page.locator(selectors.premiumEntryMarker).waitFor({ state: "visible" });
+      return { path: new URL(page.url()).pathname };
+    } finally {
+      await context.close();
+    }
+  });
+
+  const ko = await lane("ko-normal", "important", () => runUiCase(manifest.uiCases.ko, "ko-normal"));
+  const en = await lane("en-normal", "important", () => runUiCase(manifest.uiCases.en, "en-normal"));
+  const localeComparison = compareLocaleSemantics(ko, en);
+  requireCondition(localeComparison.passed, HOSTED_FAILURE_CATEGORIES.LOCALE, "locale-parity", "locale_semantic_mismatch");
+
+  for (const productCase of manifest.currentProductCases) {
+    requireCondition(["selected-product", "not-in-db", "selected-plus-not-in-db"].includes(productCase.laneName), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "unknown_product_lane");
+    await lane(productCase.laneName, "important", () => runUiCase(productCase.fixture, productCase.laneName));
+  }
+  await lane("photo-fallback", "important", () => runUiCase(manifest.photoFallbackCase, "photo-fallback"));
+  console.log(JSON.stringify({ status: "passed", lanes }, null, 2));
+} finally {
+  await browser.close();
 }
-await lane("photo-fallback", "important", async () => ({ fixture: manifest.fixtures.fallbackPhoto, expected: manifest.photoFallbackExpected || "survey-authoritative" }));
-
-console.log(JSON.stringify({ status: "passed", lanes }, null, 2));
-await browser.close();
