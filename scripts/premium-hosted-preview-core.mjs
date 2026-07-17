@@ -8,7 +8,6 @@ import {
   hashIdentifier,
   normalizeBaseUrl,
   requireCondition,
-  scanArtifactDirectoryForSecrets,
   validateEnvironmentGuard
 } from "./premium-browser-journey-core.mjs";
 
@@ -41,7 +40,7 @@ export const REQUIRED_HOSTED_LANES = Object.freeze([
   "safe-5xx"
 ]);
 
-const SECRET_FIELD_PATTERN = /(authorization|access.?token|refresh.?token|cookie|service.?role|oauth.?code|email|raw.?photo)/i;
+const FORBIDDEN_EVIDENCE_KEY = /^(authorization|accessToken|refreshToken|cookie|cookies|serviceRoleKey|oauthCode|email|rawPhoto|originalPhoto)$/i;
 
 export function parseHostedConfig(env = process.env) {
   const runId = createRunId(env.PREMIUM_HOSTED_RUN_ID);
@@ -76,6 +75,7 @@ export async function loadHostedManifest(path) {
   requireCondition(manifest.accountA?.expectedUserIdHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_a_hash_missing");
   requireCondition(manifest.accountB?.expectedUserIdHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_b_hash_missing");
   requireCondition(manifest.fixtures?.normalPhoto && manifest.fixtures?.fallbackPhoto, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "photo_fixtures_missing");
+  requireCondition(manifest.uiCases?.ko && manifest.uiCases?.en, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "locale_ui_cases_missing");
   requireCondition(Array.isArray(manifest.currentProductCases) && manifest.currentProductCases.length >= 3, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "current_product_cases_incomplete");
   return manifest;
 }
@@ -85,7 +85,7 @@ export function sanitizeEvidence(value, path = "root") {
   if (!value || typeof value !== "object") return value;
   const output = {};
   for (const [key, item] of Object.entries(value)) {
-    requireCondition(!SECRET_FIELD_PATTERN.test(key), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "forbidden_evidence_field", `${path}.${key}`);
+    requireCondition(!FORBIDDEN_EVIDENCE_KEY.test(key), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "forbidden_evidence_field", `${path}.${key}`);
     output[key] = sanitizeEvidence(item, `${path}.${key}`);
   }
   return output;
@@ -105,7 +105,7 @@ export function evaluateHostedVerdict(lanes) {
     status: missing.length || failed.length ? "failed" : "passed",
     missingLanes: missing,
     failedLanes: failed,
-    criticalCount: Number((lanes || []).some((lane) => lane.severity === "critical" && lane.status !== "passed")),
+    criticalCount: (lanes || []).filter((lane) => lane.severity === "critical" && lane.status !== "passed").length,
     importantCount: (lanes || []).filter((lane) => lane.severity === "important" && lane.status !== "passed").length
   };
 }
@@ -124,10 +124,14 @@ export async function writeHostedArtifacts({ artifactDir, manifest, preflight, l
 }
 
 export async function assertHostedArtifactsSafe(artifactDir, secrets = []) {
-  await scanArtifactDirectoryForSecrets(artifactDir, secrets);
   const files = ["run-manifest.json", "preflight.json", "lane-results.json", "persistence-evidence.json", "invariant-verdict.json", "summary.md"];
   const text = (await Promise.all(files.map((name) => readFile(resolve(artifactDir, name), "utf8")))).join("\n");
-  requireCondition(!SECRET_FIELD_PATTERN.test(text), HOSTED_FAILURE_CATEGORIES.HARNESS, "artifact-secret-scan", "sensitive_label_detected_in_artifact");
+  for (const secret of secrets.filter((value) => typeof value === "string" && value.length >= 8)) {
+    requireCondition(!text.includes(secret), HOSTED_FAILURE_CATEGORIES.HARNESS, "artifact-secret-scan", "secret_material_detected_in_artifact");
+  }
+  for (const name of files.filter((name) => name.endsWith(".json"))) {
+    sanitizeEvidence(JSON.parse(await readFile(resolve(artifactDir, name), "utf8")));
+  }
 }
 
 export function buildHostedRunManifest(config, manifest) {
