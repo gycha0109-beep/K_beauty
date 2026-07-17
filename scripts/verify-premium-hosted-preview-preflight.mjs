@@ -9,10 +9,14 @@ const manifest = await loadHostedManifest(config.manifestPath);
 for (const [name, path] of Object.entries(manifest.fixtures || {})) {
   requireCondition(existsSync(path), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "preflight", `fixture_missing_${name}`);
 }
-for (const account of [manifest.accountA, manifest.accountB]) {
+for (const [accountKey, account] of [["accountA", manifest.accountA], ["accountB", manifest.accountB]]) {
   requireCondition(account.storageStatePath && existsSync(account.storageStatePath), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "preflight", "storage_state_missing");
+  requireCondition(account.loginEvidencePath && existsSync(account.loginEvidencePath), HOSTED_FAILURE_CATEGORIES.OAUTH, "preflight", "google_login_evidence_missing");
   const state = JSON.parse(await readFile(account.storageStatePath, "utf8"));
   requireCondition(Array.isArray(state.cookies) && state.cookies.some((cookie) => String(cookie.name || "").includes("auth-token")), HOSTED_FAILURE_CATEGORIES.OAUTH, "preflight", "google_session_cookie_missing");
+  const evidence = JSON.parse(await readFile(account.loginEvidencePath, "utf8"));
+  requireCondition(evidence.status === "passed" && evidence.account === accountKey, HOSTED_FAILURE_CATEGORIES.OAUTH, "preflight", "google_login_evidence_invalid");
+  requireCondition(evidence.targetHost === config.baseUrl.hostname && evidence.deploymentSha === config.deploymentSha, HOSTED_FAILURE_CATEGORIES.OAUTH, "preflight", "google_login_evidence_target_mismatch");
 }
 
 const response = await fetch(config.baseUrl.origin, { redirect: "manual" }).catch(() => null);
@@ -26,6 +30,7 @@ const output = {
     previewReachable: true,
     fixtureCount: Object.keys(manifest.fixtures || {}).length,
     accountStorageStates: 2,
+    googleLoginEvidence: 2,
     productCaseCount: manifest.currentProductCases.length
   }
 };
