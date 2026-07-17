@@ -2,21 +2,11 @@ import assert from "node:assert/strict";
 import sharp from "sharp";
 import {
   MAX_PROVIDER_IMAGE_EDGE,
-  canonicalizeImageFile
-} from "../lib/server/image-upload-boundary.js";
+  resizeImageForProvider
+} from "../lib/provider-image-budget.js";
 
-function createFile(bytes, type = "image/jpeg") {
-  return {
-    type,
-    size: bytes.length,
-    async arrayBuffer() {
-      return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-    }
-  };
-}
-
-async function createJpeg(width, height) {
-  return sharp({
+async function createCanonicalImage(width, height) {
+  const bytes = await sharp({
     create: {
       width,
       height,
@@ -24,11 +14,22 @@ async function createJpeg(width, height) {
       background: { r: 128, g: 128, b: 128 }
     }
   }).jpeg({ quality: 90 }).toBuffer();
+
+  return {
+    ok: true,
+    bytes,
+    mimeType: "image/jpeg",
+    format: "jpeg",
+    width,
+    height,
+    totalPixels: width * height,
+    dataUrl: `data:image/jpeg;base64,${bytes.toString("base64")}`
+  };
 }
 
 async function verifyOversizedImageIsBounded() {
-  const source = await createJpeg(2048, 1536);
-  const result = await canonicalizeImageFile(createFile(source), source);
+  const source = await createCanonicalImage(2048, 1536);
+  const result = await resizeImageForProvider(source);
 
   assert.equal(result.ok, true);
   assert.equal(result.width, MAX_PROVIDER_IMAGE_EDGE);
@@ -41,14 +42,12 @@ async function verifyOversizedImageIsBounded() {
 }
 
 async function verifySmallImageIsNotEnlarged() {
-  const source = await createJpeg(640, 480);
-  const result = await canonicalizeImageFile(createFile(source), source);
+  const source = await createCanonicalImage(640, 480);
+  const result = await resizeImageForProvider(source);
 
-  assert.equal(result.ok, true);
+  assert.equal(result, source);
   assert.equal(result.width, 640);
   assert.equal(result.height, 480);
-  assert.ok(result.width <= MAX_PROVIDER_IMAGE_EDGE);
-  assert.ok(result.height <= MAX_PROVIDER_IMAGE_EDGE);
 }
 
 assert.equal(MAX_PROVIDER_IMAGE_EDGE, 1024);
