@@ -1,24 +1,79 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
 import {
-  hardenHostedEvaluationRecord,
-  hardenHostedEvaluationReport,
-  hardenHostedEvaluationSummary
-} from "../lib/face-lab-hosted-evaluation-review.js";
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync
+} from "node:fs";
+import path from "node:path";
+import { createHash, randomUUID } from "node:crypto";
+import {
+  acquireRunLock,
+  executeFaceLabEvaluationRequest,
+  parseSafeInteger,
+  readValidatedImageFile,
+  resolveFaceLabEvaluationEndpoint,
+  sanitizeCaseId
+} from "../lib/face-lab-hosted-evaluation-transport.mjs";
+
+function fatalReasonCode(error) {
+  const message = String(error?.message || "");
+  if (message.includes("manifest exceeds")) return "manifest_size_exceeded";
+  if (message.includes("run lock already exists")) return "run_lock_exists";
+  if (message.includes("records.jsonl integrity")) return "records_integrity_invalid";
+  if (message.includes("--confirm RUN")) return "confirmation_required";
+  if (message.includes("--base-url")) return "base_url_invalid";
+  if (message.includes("image")) return "fixture_image_invalid";
+  if (message.includes("run manifest")) return "run_manifest_invalid";
+  return "execution_failed";
+}
+
+let fatalHandled = false;
+function handleFatal(error) {
+  if (fatalHandled) return;
+  fatalHandled = true;
+  console.error(`[face-lab-eval] failed=${fatalReasonCode(error)}`);
+  process.exitCode = 1;
+}
+process.on("uncaughtException", handleFatal);
+process.on("unhandledRejection", handleFatal);
+
+const DEFAULTS = Object.freeze({
+  delayMs: 1500,
+  timeoutMs: 120000,
+  maxCalls: 20,
+  maxRetriesPerCase: 1,
+  maxRetryWaitMs: 120000,
+  maxImageBytes: 15 * 1024 * 1024,
+  maxResponseBytes: 2 * 1024 * 1024,
+  maxManifestBytes: 1024 * 1024,
+  maxRecordsRowBytes: 256 * 1024
+});
+const HARD_MAX = Object.freeze({
+  delayMs: 120000,
+  timeoutMs: 10 * 60 * 1000,
+  maxCalls: 500,
+  maxAttempts: 1000,
+  maxRetriesPerCase: 3,
+  maxRetryWaitMs: 10 * 60 * 1000,
+  maxImageBytes: 50 * 1024 * 1024,
+  maxResponseBytes: 8 * 1024 * 1024
+});
 
 function loadCore() {
   const source = readFileSync("lib/face-lab-hosted-evaluation.js", "utf8")
     .replace(/export const /g, "const ")
     .replace(/export function /g, "function ");
-  return Function(`${source}\nreturn { validateHostedEvaluationManifest, buildHostedEvaluationCases, projectHostedEvaluationRecord, getPendingHostedEvaluationCases, createHostedEvaluationRunManifest, summarizeHostedEvaluation, renderHostedEvaluationReport };`)();
+  return Function(`${source}\nreturn { validateHostedEvaluationManifest, buildHostedEvaluationCases, projectHostedEvaluationRecord, createNotAttemptedHostedEvaluationRecord, parseHostedEvaluationJsonLines, getPendingHostedEvaluationCases, getNextHostedEvaluationAttemptSequence, createHostedEvaluationRunManifest, summarizeHostedEvaluation, renderHostedEvaluationReport };`)();
 }
 
 function parseArgs(argv) {
   const output = {};
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
-    if (!token.startsWith("--")) continue;
+    if (!token.startsWith("--")) throw new Error(`unexpected positional argument: ${token}`);
     const key = token.slice(2);
     const next = argv[index + 1];
     output[key] = next && !next.startsWith("--") ? argv[++index] : true;
@@ -26,49 +81,39 @@ function parseArgs(argv) {
   return output;
 }
 
-function readJson(filePath) {
-  return JSON.parse(readFileSync(filePath, "utf8"));
+function parseBooleanFlag(value, label) {
+  if (value === undefined) return false;
+  if (value === true) return true;
+  throw new Error(`${label} does not accept a value`);
 }
 
-function readJsonLines(filePath) {
-  if (!existsSync(filePath)) return [];
-  return readFileSync(filePath, "utf8")
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .map((line) => JSON.parse(line));
+function readBoundedText(filePath, maxBytes, label) {
+  const size = statSync(filePath).size;
+  if (size > maxBytes) throw new Error(`${label} exceeds ${maxBytes} bytes`);
+  return readFileSync(filePath, "utf8");
 }
 
-function getMimeType(filePath) {
-  const extension = path.extname(filePath).toLowerCase();
-  if (extension === ".png") return "image/png";
-  if (extension === ".webp") return "image/webp";
-  return "image/jpeg";
+function fingerprintFile(filePath) {
+  return createHash("sha256").update(readFileSync(filePath)).digest("hex");
 }
 
-function getUploadFilename(filePath) {
-  const extension = path.extname(filePath).toLowerCase();
-  return `fixture-image${extension || ".jpg"}`;
+function writeTextAtomic(filePath, content) {
+  const tempPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  writeFileSync(tempPath, content, "utf8");
+  renameSync(tempPath, filePath);
 }
 
-function resolveLocalBaseUrl(value) {
-  const parsed = new URL(String(value || "http://localhost:3001"));
-  const hostname = parsed.hostname.toLowerCase();
-  const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
-  if (parsed.protocol !== "http:" || !localHosts.has(hostname)) {
-    throw new Error("--base-url must use HTTP on localhost, 127.0.0.1, or ::1");
+function appendJsonLine(filePath, value, maxRowBytes) {
+  const line = `${JSON.stringify(value)}\n`;
+  if (Buffer.byteLength(line, "utf8") > maxRowBytes) {
+    throw new Error("records JSONL row exceeds max row size");
   }
-  if (parsed.username || parsed.password || parsed.pathname !== "/" || parsed.search || parsed.hash) {
-    throw new Error("--base-url must contain only the local origin");
-  }
-  return parsed.origin;
+  appendFileSync(filePath, line, "utf8");
 }
 
 function resolveEvaluationRunDir(repoRoot, value, runId) {
   const evaluationRoot = path.resolve(repoRoot, "tmp", "face-lab-hosted-evaluation");
-  const resolved = path.resolve(
-    repoRoot,
-    value || path.join("tmp", "face-lab-hosted-evaluation", runId)
-  );
+  const resolved = path.resolve(repoRoot, value || path.join("tmp", "face-lab-hosted-evaluation", runId));
   const relative = path.relative(evaluationRoot, resolved);
   if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error("--run-dir must stay inside tmp/face-lab-hosted-evaluation/");
@@ -76,111 +121,199 @@ function resolveEvaluationRunDir(repoRoot, value, runId) {
   return resolved;
 }
 
-const args = parseArgs(process.argv.slice(2));
-if (!args.manifest) {
-  throw new Error("--manifest is required");
+function getUploadFilename(mimeType) {
+  if (mimeType === "image/png") return "fixture-image.png";
+  if (mimeType === "image/webp") return "fixture-image.webp";
+  return "fixture-image.jpg";
 }
+
+function readRunRecords(core, recordsPath, maxRowBytes) {
+  if (!existsSync(recordsPath)) {
+    return { records: [], integrity: { valid: true, errors: [], lastRecordSequence: 0, endsWithNewline: true } };
+  }
+  return core.parseHostedEvaluationJsonLines(readFileSync(recordsPath, "utf8"), {
+    maxRowBytes,
+    allowLegacy: true
+  });
+}
+
+function buildOutputs(core, recordsResult, runManifest) {
+  const summary = core.summarizeHostedEvaluation(recordsResult.records, runManifest, recordsResult.integrity);
+  return {
+    summary,
+    report: core.renderHostedEvaluationReport(summary)
+  };
+}
+
+function assertExistingRunManifest(existing, expected) {
+  for (const key of ["runId", "datasetId", "plan", "plannedCalls"]) {
+    if (existing?.[key] !== expected?.[key]) throw new Error(`existing run manifest ${key} does not match requested run`);
+  }
+}
+
+const args = parseArgs(process.argv.slice(2));
+if (!args.manifest) throw new Error("--manifest is required");
 const repoRoot = process.cwd();
-const plan = args.plan || "smoke";
-const repetitions = Number(args.repetitions || 1);
-const maxCalls = Number(args["max-calls"] || 20);
-const baseUrl = resolveLocalBaseUrl(args["base-url"]);
-const locales = args.locales ? String(args.locales).split(",").map((item) => item.trim()) : undefined;
-const runId = args["run-id"] || `face-lab-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}`;
-const runDir = resolveEvaluationRunDir(repoRoot, args["run-dir"], runId);
 const core = loadCore();
-const manifest = core.validateHostedEvaluationManifest(readJson(path.resolve(args.manifest)), {
+const plan = args.plan || "smoke";
+const repetitions = parseSafeInteger(args.repetitions ?? 1, "--repetitions", { min: 1, max: 10 });
+const maxCalls = parseSafeInteger(args["max-calls"] ?? DEFAULTS.maxCalls, "--max-calls", { min: 1, max: HARD_MAX.maxCalls });
+const maxAttempts = parseSafeInteger(args["max-attempts"] ?? Math.min(HARD_MAX.maxAttempts, maxCalls * 2), "--max-attempts", { min: 1, max: HARD_MAX.maxAttempts });
+const maxRetriesPerCase = parseSafeInteger(args["max-retries-per-case"] ?? DEFAULTS.maxRetriesPerCase, "--max-retries-per-case", { min: 0, max: HARD_MAX.maxRetriesPerCase });
+const maxRetryWaitMs = parseSafeInteger(args["max-retry-wait-ms"] ?? DEFAULTS.maxRetryWaitMs, "--max-retry-wait-ms", { min: 0, max: HARD_MAX.maxRetryWaitMs });
+const delayMs = parseSafeInteger(args["delay-ms"] ?? DEFAULTS.delayMs, "--delay-ms", { min: 0, max: HARD_MAX.delayMs });
+const timeoutMs = parseSafeInteger(args["timeout-ms"] ?? DEFAULTS.timeoutMs, "--timeout-ms", { min: 1000, max: HARD_MAX.timeoutMs });
+const maxImageBytes = parseSafeInteger(args["max-image-bytes"] ?? DEFAULTS.maxImageBytes, "--max-image-bytes", { min: 1024, max: HARD_MAX.maxImageBytes });
+const maxResponseBytes = parseSafeInteger(args["max-response-bytes"] ?? DEFAULTS.maxResponseBytes, "--max-response-bytes", { min: 1024, max: HARD_MAX.maxResponseBytes });
+const retry429WithoutHint = parseBooleanFlag(args["retry-429-without-hint"], "--retry-429-without-hint");
+const retryAmbiguousFailures = parseBooleanFlag(args["retry-ambiguous-failures"], "--retry-ambiguous-failures");
+const recoverStaleLock = parseBooleanFlag(args["recover-stale-lock"], "--recover-stale-lock");
+const locales = args.locales ? String(args.locales).split(",").map((item) => item.trim()) : undefined;
+const { baseUrl, endpoint, origin } = resolveFaceLabEvaluationEndpoint(args["base-url"] || "http://localhost:3001");
+let runId = args["run-id"] || `face-lab-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}`;
+const runDir = resolveEvaluationRunDir(repoRoot, args["run-dir"], runId);
+const preexistingRunManifestPath = path.join(runDir, "run-manifest.json");
+let preexistingRunManifest = null;
+if (args["run-dir"] && existsSync(preexistingRunManifestPath)) {
+  preexistingRunManifest = JSON.parse(readBoundedText(preexistingRunManifestPath, DEFAULTS.maxManifestBytes, "run manifest"));
+  if (!args["run-id"] && typeof preexistingRunManifest.runId === "string") runId = preexistingRunManifest.runId;
+}
+const manifestPath = path.resolve(String(args.manifest));
+const manifestText = readBoundedText(manifestPath, DEFAULTS.maxManifestBytes, "manifest");
+const manifest = core.validateHostedEvaluationManifest(JSON.parse(manifestText), {
   repoRoot,
   pathApi: path,
-  fileExists: existsSync,
+  fsApi: { existsSync, realpathSync: (await import("node:fs")).realpathSync, statSync },
   requireImageFiles: true
 });
-const planResult = core.buildHostedEvaluationCases(manifest, {
-  plan,
-  locales,
-  repetitions,
-  maxCalls
-});
+const planResult = core.buildHostedEvaluationCases(manifest, { plan, locales, repetitions, maxCalls });
 
 console.log(`[face-lab-eval] dataset=${manifest.datasetId} plan=${plan}`);
-console.log(`[face-lab-eval] planned calls=${planResult.plannedCalls} max=${maxCalls}`);
+console.log(`[face-lab-eval] planned-cases=${planResult.plannedCalls} max-calls=${maxCalls} max-attempts=${maxAttempts}`);
 console.log(`[face-lab-eval] output=${path.relative(repoRoot, runDir).replace(/\\/g, "/")}`);
-if (args.confirm !== "RUN") {
-  throw new Error("Review the planned call count, then rerun with --confirm RUN");
-}
+if (args.confirm !== "RUN") throw new Error("Review the planned call count, then rerun with --confirm RUN");
 
 mkdirSync(runDir, { recursive: true });
-const runManifestPath = path.join(runDir, "run-manifest.json");
-const recordsPath = path.join(runDir, "records.jsonl");
-const summaryPath = path.join(runDir, "summary.json");
-const reportPath = path.join(runDir, "report.md");
-const runManifest = core.createHostedEvaluationRunManifest({
-  runId,
-  datasetId: manifest.datasetId,
-  plan,
-  locales: planResult.locales,
-  repetitions,
-  maxCalls,
-  plannedCalls: planResult.plannedCalls,
-  baseUrl
-});
-if (!existsSync(runManifestPath)) {
-  writeFileSync(runManifestPath, `${JSON.stringify(runManifest, null, 2)}\n`, "utf8");
-}
-const existingRecords = readJsonLines(recordsPath);
-const pendingCases = core.getPendingHostedEvaluationCases(planResult.cases, existingRecords);
-console.log(`[face-lab-eval] completed=${existingRecords.length} pending=${pendingCases.length}`);
-
-for (const item of pendingCases) {
-  const startedAt = Date.now();
-  let httpStatus = null;
-  let payload = null;
-  let requestError = null;
-  try {
-    const bytes = readFileSync(item.imagePath);
-    const formData = new FormData();
-    formData.append("locale", item.locale);
-    formData.append(
-      "image",
-      new Blob([bytes], { type: getMimeType(item.imagePath) }),
-      getUploadFilename(item.imagePath)
-    );
-    const response = await fetch(`${baseUrl}/api/face-reading`, {
-      method: "POST",
-      body: formData,
-      signal: AbortSignal.timeout(Number(args["timeout-ms"] || 120000))
-    });
-    httpStatus = response.status;
-    const text = await response.text();
-    payload = text ? JSON.parse(text) : null;
-  } catch (error) {
-    requestError = error instanceof Error ? error.name : "request_failed";
+const lock = acquireRunLock(runDir, { recoverStaleLock });
+try {
+  const runManifestPath = path.join(runDir, "run-manifest.json");
+  const recordsPath = path.join(runDir, "records.jsonl");
+  const summaryPath = path.join(runDir, "summary.json");
+  const reportPath = path.join(runDir, "report.md");
+  const requestedRunManifest = core.createHostedEvaluationRunManifest({
+    runId,
+    datasetId: manifest.datasetId,
+    plan,
+    locales: planResult.locales,
+    repetitions,
+    maxCalls,
+    maxAttempts,
+    plannedCalls: planResult.plannedCalls,
+    baseUrl
+  });
+  let runManifest = requestedRunManifest;
+  if (existsSync(runManifestPath)) {
+    runManifest = preexistingRunManifest || JSON.parse(readBoundedText(runManifestPath, DEFAULTS.maxManifestBytes, "run manifest"));
+    assertExistingRunManifest(runManifest, requestedRunManifest);
+  } else {
+    writeTextAtomic(runManifestPath, `${JSON.stringify(requestedRunManifest, null, 2)}\n`);
   }
-  const record = hardenHostedEvaluationRecord(
-    core.projectHostedEvaluationRecord({
-      runId,
-      caseDefinition: item,
-      httpStatus,
-      durationMs: Date.now() - startedAt,
-      responsePayload: payload,
-      requestError
-    }),
-    payload
-  );
-  appendFileSync(recordsPath, `${JSON.stringify(record)}\n`, "utf8");
-  console.log(`[face-lab-eval] ${item.caseId} -> ${record.envelopeStatus || requestError || "invalid"}`);
-}
 
-const records = readJsonLines(recordsPath);
-const summary = hardenHostedEvaluationSummary(
-  records,
-  core.summarizeHostedEvaluation(records, runManifest)
-);
-const report = hardenHostedEvaluationReport(
-  core.renderHostedEvaluationReport(summary),
-  summary
-);
-writeFileSync(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
-writeFileSync(reportPath, report, "utf8");
-console.log(`[face-lab-eval] complete hardInvariantFailures=${summary.hardInvariantFailures}`);
-console.log(`[face-lab-eval] summary=${path.relative(repoRoot, summaryPath).replace(/\\/g, "/")}`);
+  let recordsResult = readRunRecords(core, recordsPath, DEFAULTS.maxRecordsRowBytes);
+  if (!recordsResult.integrity.valid) {
+    const outputs = buildOutputs(core, recordsResult, runManifest);
+    writeTextAtomic(summaryPath, `${JSON.stringify(outputs.summary, null, 2)}\n`);
+    writeTextAtomic(reportPath, outputs.report);
+    throw new Error("records.jsonl integrity is invalid; no requests were attempted");
+  }
+
+  const pendingCases = core.getPendingHostedEvaluationCases(planResult.cases, recordsResult.records);
+  const existingAttemptCount = recordsResult.records.reduce((sum, record) => sum + (record?.transport?.attemptCount || 0), 0);
+  let attemptBudgetUsed = existingAttemptCount;
+  let nextRecordSequence = recordsResult.integrity.lastRecordSequence + 1;
+  let circuitOpen = false;
+  console.log(`[face-lab-eval] final-records=${planResult.plannedCalls - pendingCases.length} pending=${pendingCases.length}`);
+
+  for (let index = 0; index < pendingCases.length; index += 1) {
+    const item = pendingCases[index];
+    const attemptSequence = core.getNextHostedEvaluationAttemptSequence(item.caseId, recordsResult.records);
+    let record;
+    if (circuitOpen) {
+      record = core.createNotAttemptedHostedEvaluationRecord({
+        runId,
+        caseDefinition: item,
+        recordSequence: nextRecordSequence,
+        attemptSequence,
+        reasonCode: "rate_limit_circuit_open"
+      });
+    } else if (attemptBudgetUsed >= maxAttempts) {
+      record = core.createNotAttemptedHostedEvaluationRecord({
+        runId,
+        caseDefinition: item,
+        recordSequence: nextRecordSequence,
+        attemptSequence,
+        reasonCode: "max_attempts_reached"
+      });
+    } else {
+      const image = readValidatedImageFile(item.imagePath, {
+        declaredMime: item.declaredMime,
+        maxImageBytes
+      });
+      const remainingAttempts = maxAttempts - attemptBudgetUsed;
+      const result = await executeFaceLabEvaluationRequest({
+        endpoint,
+        expectedOrigin: origin,
+        timeoutMs,
+        maxResponseBytes,
+        maxAttemptsRemaining: Math.min(remainingAttempts, maxRetriesPerCase + 1),
+        maxRetriesPerCase,
+        maxRetryWaitMs,
+        retry429WithoutHint,
+        retryAmbiguousFailures,
+        formDataFactory: () => {
+          const formData = new FormData();
+          formData.append("locale", item.locale);
+          formData.append("image", new Blob([image.bytes], { type: image.mimeType }), getUploadFilename(image.mimeType));
+          return formData;
+        }
+      });
+      attemptBudgetUsed += result.transport.attemptCount;
+      record = core.projectHostedEvaluationRecord({
+        runId,
+        caseDefinition: item,
+        recordSequence: nextRecordSequence,
+        attemptSequence,
+        isFinal: true,
+        transport: result.transport,
+        responsePayload: result.payload
+      });
+      if (record.transport.status === "rate_limited") circuitOpen = true;
+    }
+
+    appendJsonLine(recordsPath, record, DEFAULTS.maxRecordsRowBytes);
+    recordsResult.records.push(record);
+    recordsResult.integrity.lastRecordSequence = nextRecordSequence;
+    nextRecordSequence += 1;
+    console.log(`[face-lab-eval] ${sanitizeCaseId(item.caseId)} -> ${record.transport.status}`);
+    if (!circuitOpen && record.transport.status !== "not_attempted" && delayMs > 0 && index < pendingCases.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  const beforeStat = existsSync(recordsPath) ? statSync(recordsPath) : null;
+  const beforeHash = beforeStat ? fingerprintFile(recordsPath) : null;
+  recordsResult = readRunRecords(core, recordsPath, DEFAULTS.maxRecordsRowBytes);
+  const afterStat = existsSync(recordsPath) ? statSync(recordsPath) : null;
+  const afterHash = afterStat ? fingerprintFile(recordsPath) : null;
+  if (beforeStat && afterStat && (beforeStat.size !== afterStat.size || beforeStat.mtimeMs !== afterStat.mtimeMs || beforeHash !== afterHash)) {
+    recordsResult.integrity.valid = false;
+    recordsResult.integrity.errors.push({ code: "records_changed_during_summary", lineNumber: null });
+  }
+  const outputs = buildOutputs(core, recordsResult, runManifest);
+  writeTextAtomic(summaryPath, `${JSON.stringify(outputs.summary, null, 2)}\n`);
+  writeTextAtomic(reportPath, outputs.report);
+  console.log(`[face-lab-eval] gate=${outputs.summary.gateStatus} evaluation-complete=${outputs.summary.evaluationComplete}`);
+  console.log(`[face-lab-eval] summary=${path.relative(repoRoot, summaryPath).replace(/\\/g, "/")}`);
+} finally {
+  lock.release();
+}
