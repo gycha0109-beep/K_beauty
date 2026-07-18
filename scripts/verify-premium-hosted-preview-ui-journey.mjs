@@ -18,6 +18,7 @@ const manifest = await loadHostedManifest(config.manifestPath);
 const attestation = await loadDeploymentAttestation(config, manifest);
 const fixtureRoot = await realpath(resolve(manifest.fixtureRoot));
 const headless = process.env.PREMIUM_HOSTED_HEADLESS !== "0";
+const previewBypassToken = String(process.env.PREMIUM_HOSTED_PREVIEW_BYPASS_TOKEN || "").trim();
 const browser = await chromium.launch({ headless });
 const lanes = [];
 const uploadExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -43,6 +44,17 @@ function isAllowedBootstrapCookie(cookie) {
   return name.includes("auth-token") || allowedProtectionCookies.has(name);
 }
 
+async function primePreviewProtection(context) {
+  const headers = previewBypassToken
+    ? {
+        "x-vercel-protection-bypass": previewBypassToken,
+        "x-vercel-set-bypass-cookie": "true"
+      }
+    : {};
+  const response = await context.request.get(config.baseUrl.origin, { headers, maxRedirects: 0 });
+  requireCondition(response.status() < 400, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "browser-context", "preview_protection_access_not_granted");
+}
+
 async function newAccountContext(account) {
   const storageStatePath = assertPathInside(
     config.securePaths.credentialsDir,
@@ -53,10 +65,12 @@ async function newAccountContext(account) {
   const cookies = Array.isArray(stored.cookies) ? stored.cookies.filter(isAllowedBootstrapCookie) : [];
   requireCondition(cookies.some((cookie) => String(cookie.name || "").includes("auth-token")), HOSTED_FAILURE_CATEGORIES.AUTH_EVIDENCE, "browser-context", "auth_cookie_missing_from_derived_state");
   requireCondition(!cookies.some((cookie) => String(cookie.name || "").includes("premium_report")), HOSTED_FAILURE_CATEGORIES.HARNESS, "browser-context", "premium_cookie_leaked_into_derived_state");
-  return browser.newContext({
+  const context = await browser.newContext({
     storageState: { cookies, origins: [] },
     serviceWorkers: "block"
   });
+  await primePreviewProtection(context);
+  return context;
 }
 
 function locatorForMarker(page, marker) {
