@@ -7,6 +7,10 @@ import {
   verifySignedAnonymousCookie
 } from "@/lib/security/analysis-request-guard-core";
 import { createResultReadSubjectHash } from "@/lib/security/public-result-read-guard-core";
+import {
+  canonicalizeAnonymousResultForPersistence,
+  canonicalizeAnonymousSurveyForPersistence
+} from "@/lib/security/anonymous-write-grant-core";
 import { ANONYMOUS_RESULT_WRITE_HEADER } from "@/lib/security/anonymous-write-grant";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +18,6 @@ export const maxDuration = 300;
 
 const PROBE_NONCE = "sec02-594a3936-20260718";
 const EXPECTED_BRANCH = "feature/premium-beta-flow";
-const ANALYZE_IP = "198.51.100.77";
-const RESULT_READ_IP = "203.0.113.77";
 const TINY_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAZUlEQVR4nO3PQQ3AIADAQMC/CEQgBzETweOypKegnffs8WdLB7xqQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQPsAzvcCsCwgxscAAAAASUVORK5CYII=",
   "base64"
@@ -56,12 +58,12 @@ function makeForm(overrides = {}) {
   return { body, values };
 }
 
-function makeAnalyzeRequest({ key, cookie = "", overrides = {} }) {
+function makeAnalyzeRequest({ key, cookie = "", overrides = {}, analyzeIp }) {
   const form = makeForm(overrides);
   const headers = new Headers({
     "Idempotency-Key": key,
-    "x-forwarded-for": ANALYZE_IP,
-    "x-real-ip": ANALYZE_IP
+    "x-forwarded-for": analyzeIp,
+    "x-real-ip": analyzeIp
   });
   if (cookie) headers.set("cookie", cookie);
   return {
@@ -115,12 +117,16 @@ export async function GET(request) {
   process.env.OPENAI_API_KEY = "";
 
   try {
+    const runToken = randomUUID().replaceAll("-", "");
+    const analyzeIp = `2001:db8:${runToken.slice(0, 4)}:${runToken.slice(4, 8)}::1`;
+    const resultReadIp = `2001:db8:${runToken.slice(8, 12)}:${runToken.slice(12, 16)}::2`;
+
     const analyzePost = (await import("@/app/api/analyze/route")).POST;
     const resultsPost = (await import("@/app/api/results/route")).POST;
     const resultReadGet = (await import("@/app/api/results/[shareId]/route")).GET;
 
     const key1 = `sec02-${randomUUID()}`;
-    const firstInput = makeAnalyzeRequest({ key: key1 });
+    const firstInput = makeAnalyzeRequest({ key: key1, analyzeIp });
     const firstResponse = await analyzePost(firstInput.request);
     const firstBody = await json(firstResponse);
     const cookie = extractCookie(firstResponse);
@@ -131,7 +137,6 @@ export async function GET(request) {
         && Boolean(resultToken)
         && Boolean(cookie),
       status: firstResponse.status,
-      error: firstBody?.error || null,
       grantIssued: Boolean(resultToken),
       cookieIssued: Boolean(cookie)
     };
@@ -148,12 +153,12 @@ export async function GET(request) {
     });
     const analyzeIpHash = createPrincipalHash({
       scope: "ip",
-      value: ANALYZE_IP,
+      value: analyzeIp,
       secret: guardSecret
     });
     evidence.subjectHashes.push(analyzePrincipalHash, analyzeIpHash);
 
-    const duplicateResponse = await analyzePost(makeAnalyzeRequest({ key: key1, cookie }).request);
+    const duplicateResponse = await analyzePost(makeAnalyzeRequest({ key: key1, cookie, analyzeIp }).request);
     const duplicateBody = await json(duplicateResponse);
     checks.idempotentDuplicate = check(
       duplicateResponse.status,
@@ -165,7 +170,8 @@ export async function GET(request) {
     const conflictResponse = await analyzePost(makeAnalyzeRequest({
       key: key1,
       cookie,
-      overrides: { mainConcern: "dryness", mainConcerns: JSON.stringify(["dryness"]) }
+      overrides: { mainConcern: "dryness", mainConcerns: JSON.stringify(["dryness"]) },
+      analyzeIp
     }).request);
     const conflictBody = await json(conflictResponse);
     checks.idempotencyConflict = check(
@@ -177,19 +183,20 @@ export async function GET(request) {
 
     const secondResponse = await analyzePost(makeAnalyzeRequest({
       key: `sec02-${randomUUID()}`,
-      cookie
+      cookie,
+      analyzeIp
     }).request);
     const secondBody = await json(secondResponse);
     checks.secondAllowedAnalyze = {
       passed: secondResponse.status === 200 && Boolean(secondBody?.analysisRunId),
-      status: secondResponse.status,
-      error: secondBody?.error || null
+      status: secondResponse.status
     };
     if (secondBody?.analysisRunId) evidence.analysisRunIds.push(secondBody.analysisRunId);
 
     const limitedResponse = await analyzePost(makeAnalyzeRequest({
       key: `sec02-${randomUUID()}`,
-      cookie
+      cookie,
+      analyzeIp
     }).request);
     const limitedBody = await json(limitedResponse);
     checks.analyzeRateLimit = check(
@@ -199,18 +206,42 @@ export async function GET(request) {
       "analysis_rate_limited"
     );
 
+    const { analysisRunId, meta, ...rawResult } = firstBody;
+    void meta;
+    const resultForSave = canonicalizeAnonymousResultForPersistence(rawResult);
+    const surveyForSave = canonicalizeAnonymousSurveyForPersistence({
+      skinType: "combination",
+      sensitivity: "medium",
+      mainConcern: "acne",
+      mainConcerns: ["acne"],
+      cleansingFrequency: "twice_daily",
+      preferredTexture: "lightweight",
+      postWashFeeling: "tight",
+      afternoonSkinChange: "oily",
+      environmentExposure: ["outdoor"],
+      mostDislikedFeel: "sticky",
+      genderPreference: "unspecified",
+      whiteCastHate: true,
+      toneUpWanted: false,
+      makeupUse: false,
+      eyeSensitive: true,
+      sunscreenPreferenceState: "",
+      outdoorExposure: true,
+      verySensitivePeriod: false
+    });
+    if (!resultForSave) throw new Error("anonymous_result_canonicalization_failed");
     const savePayload = {
-      result: firstBody,
-      submission: { form: firstInput.values },
+      result: resultForSave,
+      submission: { form: surveyForSave },
       locale: "ko",
       share: true,
-      analysisRunId: firstBody.analysisRunId
+      analysisRunId
     };
     const saveHeaders = new Headers({
       "content-type": "application/json",
       cookie,
       [ANONYMOUS_RESULT_WRITE_HEADER]: resultToken,
-      "x-forwarded-for": ANALYZE_IP
+      "x-forwarded-for": analyzeIp
     });
     const saveRequest = (payload) => new Request("https://sec02.invalid/api/results", {
       method: "POST",
@@ -222,8 +253,7 @@ export async function GET(request) {
     const saveBody = await json(saveResponse);
     checks.anonymousGrantUse = {
       passed: saveResponse.status === 200 && Boolean(saveBody?.shareId),
-      status: saveResponse.status,
-      error: saveBody?.error || null
+      status: saveResponse.status
     };
     if (!checks.anonymousGrantUse.passed) throw new Error("anonymous_grant_use_failed");
     evidence.shareId = saveBody.shareId;
@@ -240,7 +270,7 @@ export async function GET(request) {
 
     const forgedResponse = await resultsPost(saveRequest({
       ...savePayload,
-      result: { ...firstBody, summary: `${firstBody.summary || ""} forged` }
+      result: { ...resultForSave, summary: `${resultForSave.summary || ""} forged` }
     }));
     const forgedBody = await json(forgedResponse);
     checks.anonymousGrantForgeryBlocked = {
@@ -255,7 +285,7 @@ export async function GET(request) {
       "result-read:anonymous",
       verifiedCookie.payload
     );
-    const resultReadIpHash = createResultReadSubjectHash(guardSecret, "ip", RESULT_READ_IP);
+    const resultReadIpHash = createResultReadSubjectHash(guardSecret, "ip", resultReadIp);
     const repeatHash = createResultReadSubjectHash(
       guardSecret,
       "repeat",
@@ -267,7 +297,7 @@ export async function GET(request) {
     for (let index = 0; index < 13; index += 1) {
       const readResponse = await resultReadGet(
         new Request(`https://sec02.invalid/api/results/${saveBody.shareId}`, {
-          headers: { cookie, "x-vercel-forwarded-for": RESULT_READ_IP }
+          headers: { cookie, "x-vercel-forwarded-for": resultReadIp }
         }),
         { params: { shareId: saveBody.shareId } }
       );
