@@ -2,6 +2,7 @@ import { readFile, rm } from "node:fs/promises";
 import {
   deleteSavedReportById,
   fetchAuthUser,
+  fetchSavedReportById,
   hashIdentifier,
   requireCondition
 } from "./premium-browser-journey-core.mjs";
@@ -12,7 +13,10 @@ import {
   parseHostedConfig,
   validateSupabasePublicConfig
 } from "./premium-hosted-preview-core-v2.mjs";
-import { assertPathInside } from "./premium-hosted-preview-security.mjs";
+import {
+  assertPathInside,
+  hashFileSha256
+} from "./premium-hosted-preview-security.mjs";
 
 const config = parseHostedConfig();
 const manifest = await loadHostedManifest(config.manifestPath);
@@ -25,20 +29,48 @@ requireCondition(
   "cleanup_not_confirmed"
 );
 
-const evidencePathInput = String(process.env.PREMIUM_HOSTED_CLEANUP_EVIDENCE_PATH || "").trim();
-requireCondition(evidencePathInput, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_evidence_missing");
-const evidencePath = assertPathInside(config.securePaths.artifactsDir, evidencePathInput, "cleanup_evidence_outside_artifact_root");
-const evidence = JSON.parse(await readFile(evidencePath, "utf8"));
+const manifestPathInput = String(process.env.PREMIUM_HOSTED_CLEANUP_MANIFEST_PATH || "").trim();
+const expectedManifestHash = String(process.env.PREMIUM_HOSTED_CLEANUP_MANIFEST_SHA256 || "").trim().toLowerCase();
+requireCondition(manifestPathInput, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_manifest_missing");
+requireCondition(/^[0-9a-f]{64}$/.test(expectedManifestHash), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_manifest_hash_missing_or_invalid");
+const cleanupManifestPath = assertPathInside(
+  config.securePaths.credentialsDir,
+  manifestPathInput,
+  "cleanup_manifest_outside_secure_root"
+);
+const actualManifestHash = await hashFileSha256(cleanupManifestPath);
+requireCondition(actualManifestHash === expectedManifestHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_manifest_hash_mismatch");
+const cleanupManifest = JSON.parse(await readFile(cleanupManifestPath, "utf8"));
+
+const now = Date.now();
+const createdAt = Date.parse(cleanupManifest?.createdAt || "");
+const expiresAt = Date.parse(cleanupManifest?.expiresAt || "");
 requireCondition(
-  evidence.status === "passed" &&
-    evidence.deploymentId === attestation.vercelDeploymentId &&
-    evidence.deploymentSha === attestation.prHeadSha,
+  cleanupManifest?.schemaVersion === "premium-hosted-cleanup-manifest-v1" &&
+    cleanupManifest?.runId === config.runId &&
+    cleanupManifest?.prNumber === config.prNumber &&
+    cleanupManifest?.deploymentId === attestation.vercelDeploymentId &&
+    cleanupManifest?.deploymentSha === attestation.prHeadSha &&
+    cleanupManifest?.ownerUserIdHash === manifest.accountA.expectedUserIdHash,
   HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION,
   "cleanup",
-  "cleanup_evidence_deployment_mismatch"
+  "cleanup_manifest_binding_mismatch"
 );
-const rows = Array.isArray(evidence.rows) ? evidence.rows : [];
-const ids = rows.map((row) => row?.savedReportId).filter(Boolean);
+requireCondition(
+  Number.isFinite(createdAt) &&
+    Number.isFinite(expiresAt) &&
+    createdAt <= now + 60_000 &&
+    expiresAt > now &&
+    expiresAt > createdAt &&
+    expiresAt - createdAt <= 60 * 60 * 1000,
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "cleanup",
+  "cleanup_manifest_expired_or_invalid"
+);
+
+const ids = Array.isArray(cleanupManifest.savedReportIds)
+  ? cleanupManifest.savedReportIds.map((value) => String(value || "").trim()).filter(Boolean)
+  : [];
 requireCondition(
   ids.length > 0 && ids.length <= 20 && new Set(ids).size === ids.length,
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
@@ -46,10 +78,10 @@ requireCondition(
   "cleanup_scope_invalid"
 );
 requireCondition(
-  rows.every((row) => row.ownerMatches === true && row.sourceType === "premium_report_session" && row.sourceSessionHash),
+  ids.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)),
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
   "cleanup",
-  "cleanup_evidence_row_invalid"
+  "cleanup_saved_report_id_invalid"
 );
 
 const supabaseUrl = String(process.env.PREMIUM_HOSTED_SUPABASE_URL || "").trim();
@@ -66,7 +98,20 @@ requireCondition(
   "cleanup_account_mismatch"
 );
 
-const deleted = [];
+for (const id of ids) {
+  const row = await fetchSavedReportById(dbConfig, id);
+  requireCondition(
+    row?.id === id &&
+      hashIdentifier(row.user_id) === manifest.accountA.expectedUserIdHash &&
+      row.report_type === "premium" &&
+      row.source_type === "premium_report_session",
+    HOSTED_FAILURE_CATEGORIES.PERSISTENCE,
+    "cleanup",
+    "cleanup_row_binding_invalid"
+  );
+}
+
+let deletedCount = 0;
 for (const id of ids) {
   const result = await deleteSavedReportById(dbConfig, id);
   requireCondition(
@@ -75,12 +120,13 @@ for (const id of ids) {
     "cleanup",
     "cleanup_delete_failed"
   );
-  deleted.push(id);
+  deletedCount += 1;
 }
 await rm(config.securePaths.credentialsDir, { recursive: true, force: true });
 console.log(JSON.stringify({
   status: "passed",
   deploymentId: attestation.vercelDeploymentId,
-  deletedCount: deleted.length,
+  deletedCount,
+  cleanupManifestHash: actualManifestHash,
   credentialsRemoved: true
 }, null, 2));
