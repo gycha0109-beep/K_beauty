@@ -4,6 +4,7 @@
   "supabaseProjectRef": "replace_with_preview_project_ref",
   "catalogHash": "replace_with_64_char_sha256_catalog_hash",
   "fixtureRoot": "<secure-root>/fixtures",
+  "browserConflictBodyPath": "<secure-root>/fixtures/cases/browser-conflict-body.json",
   "accountA": {
     "expectedUserIdHash": "replace_with_64_char_sha256_user_hash_a",
     "storageStatePath": "<secure-root>/credentials/account-a-storage-state.json",
