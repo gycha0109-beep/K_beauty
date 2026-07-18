@@ -16,6 +16,14 @@ function requireValue(value, code) {
   return normalized;
 }
 
+function requirePositiveInteger(value, code) {
+  const raw = requireValue(value, code);
+  if (!/^\d+$/.test(raw)) throw new Error(code);
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) throw new Error(code);
+  return parsed;
+}
+
 async function fetchJson(url, token, code) {
   const response = await fetch(url, {
     redirect: "manual",
@@ -31,7 +39,7 @@ async function fetchJson(url, token, code) {
 
 const repository = "gycha0109-beep/K_beauty";
 const [owner, repo] = repository.split("/");
-const prNumber = Number(process.env.PREMIUM_HOSTED_PR_NUMBER || 38);
+const prNumber = requirePositiveInteger(process.env.PREMIUM_HOSTED_PR_NUMBER, "premium_hosted_pr_number_missing_or_invalid");
 const githubDeploymentId = requireValue(process.env.PREMIUM_HOSTED_GITHUB_DEPLOYMENT_ID, "github_deployment_id_missing");
 const vercelDeploymentId = requireValue(process.env.PREMIUM_HOSTED_VERCEL_DEPLOYMENT_ID, "vercel_deployment_id_missing");
 const vercelProjectId = requireValue(process.env.PREMIUM_HOSTED_VERCEL_PROJECT_ID, "vercel_project_id_missing");
