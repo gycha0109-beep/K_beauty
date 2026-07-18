@@ -163,7 +163,10 @@ function assertWhatIfContract(output) {
   assert.equal(output.routeInvoked, false);
   assert.equal(output.supabaseWriteExecuted, false);
   assert.equal(output.runtimeMutation, false);
-  assert.equal(output.actualReceiverSummary.evidenceLabel, "actual_complete_product_row_capture");
+  assert.ok([
+    "actual_complete_product_row_capture",
+    "actual_capture_coverage_unavailable"
+  ].includes(output.actualReceiverSummary.evidenceLabel));
   assert.equal(output.pureReplayReceiverSummary.evidenceLabel, "pure_engine_replay");
   assert.equal(output.safetyRegressionCheck.highRiskCollapsedReceiverCountActual, 0);
   assert.equal(output.safetyRegressionCheck.highRiskCollapsedReceiverCountPureReplay, 0);

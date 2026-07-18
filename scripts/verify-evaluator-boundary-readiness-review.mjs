@@ -98,7 +98,15 @@ function assertNoForbiddenFileChanges() {
 }
 
 function assertEvidenceSeparation(output) {
-  assert.equal(output.actualEvidenceSummary.evidenceType, "actual_complete_product_row_capture");
+  assert.ok([
+    "actual_complete_product_row_capture",
+    "actual_capture_coverage_unavailable"
+  ].includes(output.actualEvidenceSummary.evidenceType));
+  if (output.actualEvidenceSummary.evidenceType === "actual_capture_coverage_unavailable") {
+    assert.equal(output.actualEvidenceSummary.actualEvidenceAvailable, false);
+    assert.equal(output.actualEvidenceSummary.completeProductRowCaptures, 0);
+    assert.equal(output.readinessStatus, "blocked_by_source_unavailability");
+  }
   assert.equal(output.pureReplayEvidenceSummary.evidenceType, "pure_engine_replay");
   assert.equal(output.syntheticCoverageSummary.evidenceType, "synthetic_policy_coverage");
   assert.equal(output.syntheticCoverageSummary.actualEvidence, false);

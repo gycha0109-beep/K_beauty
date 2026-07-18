@@ -85,8 +85,12 @@ async function scanCaptureFiles() {
   try {
     entries = await readdir(CAPTURE_DIR, { withFileTypes: true });
   } catch {
-    throw new Error("actual capture artifact missing: tmp/functional-shadow-captures does not exist");
+    summary.captureDirectoryPresent = false;
+    summary.excludedFixtureCounts = {};
+    return summary;
   }
+
+  summary.captureDirectoryPresent = true;
 
   const jsonFiles = entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
@@ -280,7 +284,9 @@ function renderMarkdown(output) {
   return [
     "# Evaluator Boundary Actual Coverage",
     "",
-    "This is actual complete-capture coverage collection. It is not runtime policy approval and does not change evaluator, CandidatePolicy, UI, API, DB, Supabase, product data, capture fixtures, or existing recommendations.",
+    output.actualEvidenceAvailable
+      ? "This is actual complete-capture coverage collection. It is not runtime policy approval and does not change evaluator, CandidatePolicy, UI, API, DB, Supabase, product data, capture fixtures, or existing recommendations."
+      : "No actual complete product-row capture is available in this clean checkout. The artifact records that absence fail-closed and does not claim actual coverage or runtime policy approval.",
     "",
     "## Capture Summary",
     `- total JSON files scanned: ${output.captureSummary.totalFilesScanned}`,
@@ -309,9 +315,7 @@ function renderMarkdown(output) {
 await ensureExposureAudit();
 
 const captureSummary = await scanCaptureFiles();
-if (captureSummary.completeProductRowFixturesUsed === 0) {
-  throw new Error("actual capture artifact missing: no complete/product_row fixtures found");
-}
+const actualEvidenceAvailable = captureSummary.completeProductRowFixturesUsed > 0;
 
 const candidateExposureAudit = await readJsonIfPresent(EXPOSURE_AUDIT_PATH);
 const fixtureAudits = Array.isArray(candidateExposureAudit?.fixtureAudits)
@@ -385,6 +389,10 @@ for (const key of Object.keys(gapCoverage)) {
 
 const output = {
   generatedAt: new Date().toISOString(),
+  evidenceType: actualEvidenceAvailable
+    ? "actual_complete_product_row_capture"
+    : "actual_capture_coverage_unavailable",
+  actualEvidenceAvailable,
   captureSummary,
   candidateSummary: {
     totalCandidateRows: highConfidenceRows.length,
@@ -397,7 +405,10 @@ const output = {
     highRiskCollapsedCount,
     passed: highRiskCollapsedCount === 0
   },
-  limitations: buildLimitations(gapCoverage),
+  limitations: [
+    ...buildLimitations(gapCoverage),
+    ...(actualEvidenceAvailable ? [] : ["actual_complete_product_row_capture_not_available_in_clean_checkout"])
+  ].sort(),
   runtimeMutation: false
 };
 
@@ -407,6 +418,8 @@ await writeFile(MD_OUTPUT, renderMarkdown(output), "utf8");
 
 console.log("evaluator-boundary-actual-coverage summary");
 console.log(JSON.stringify({
+  evidenceType: output.evidenceType,
+  actualEvidenceAvailable: output.actualEvidenceAvailable,
   completeProductRowFixturesUsed: output.captureSummary.completeProductRowFixturesUsed,
   totalCandidateRows: output.candidateSummary.totalCandidateRows,
   boundaryApplicableRows: output.candidateSummary.boundaryApplicableRows,

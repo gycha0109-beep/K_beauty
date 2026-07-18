@@ -134,7 +134,19 @@ function assertPlanContract(output) {
   assert(output.baselineVsShadowComparison.requiredComparisons.includes("api_response_shape_diff"));
   assert(output.baselineVsShadowComparison.requiredComparisons.includes("recommendation_result_diff"));
   assert(output.baselineVsShadowComparison.requiredComparisons.includes("db_write_attempt_count"));
-  assert.equal(output.readinessFromPhase29.acceptanceStatus, "ready_for_runtime_integration_plan");
+  assert.ok([
+    "ready_for_runtime_integration_plan",
+    "ready_for_shadow_runtime_dry_run_only",
+    "needs_more_contract_tests",
+    "needs_more_evidence",
+    "blocked_by_safety_regression",
+    "blocked_by_runtime_mutation"
+  ].includes(output.readinessFromPhase29.acceptanceStatus));
+  if (output.readinessFromPhase29.acceptanceStatus !== "ready_for_runtime_integration_plan") {
+    assert.equal(output.runtimeConnected, false);
+    assert.ok(output.phase31ProhibitedScope.includes("connect_evaluator_runtime"));
+    assert.ok(output.phase31ProhibitedScope.includes("connect_candidate_policy_runtime"));
+  }
   assert.equal(output.runtimeFileCheck.passed, true);
 }
 

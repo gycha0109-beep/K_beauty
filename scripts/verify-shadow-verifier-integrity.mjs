@@ -60,8 +60,8 @@ const NEGATIVE_CONTROLS = [
     return {
       routeSource: replacePatternRequired(
         withoutCall,
-        /^    const response = NextResponse\.json\(responsePayload\);\r?$/m,
-        "    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });\n    const response = NextResponse.json(responsePayload);",
+        /^    const response = sensitiveJsonResponse\(responsePayload\);\r?$/m,
+        "    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });\n    const response = sensitiveJsonResponse(responsePayload);",
         "route_insertion_moved_before_response_insert"
       ),
       writerSource
@@ -124,7 +124,7 @@ const NEGATIVE_CONTROLS = [
   control("writer_failure_propagates_to_route", "route_failure_can_propagate", ({ routeSource, writerSource }) => ({
     routeSource: replaceRequired(
       routeSource,
-      '    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");',
+      '    logAnalyze("shadow-boundary-dry-run:non-blocking-failure");',
       '    throw new Error("shadow dry-run writer failure");',
       "writer_failure_propagates_to_route"
     ),

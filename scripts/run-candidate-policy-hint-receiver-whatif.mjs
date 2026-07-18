@@ -204,7 +204,10 @@ function renderMarkdown(output) {
 
 const integrationWhatIf = await readJson(INTEGRATION_WHATIF_PATH);
 const readiness = await readJson(READINESS_PATH);
-const actualReceiverSummary = buildReceiverSummary(integrationWhatIf.actualWhatIfSummary, "actual_complete_product_row_capture");
+const actualReceiverSummary = buildReceiverSummary(
+  integrationWhatIf.actualWhatIfSummary,
+  integrationWhatIf.actualWhatIfSummary?.evidenceLabel || "actual_capture_coverage_unavailable"
+);
 const pureReplayReceiverSummary = buildReceiverSummary(integrationWhatIf.pureReplayWhatIfSummary, "pure_engine_replay");
 
 const output = {

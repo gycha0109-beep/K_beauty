@@ -147,9 +147,20 @@ function verifyFullReportRoute(source) {
   );
   assertBefore(
     postSource,
-    "authoritativePremiumReport = updateResult.payload.premiumReport",
+    "authoritativePremiumReport = sanitizePremiumReportForBoundary(",
     "persistPremiumSavedReport({",
     "premium persistence authority"
+  );
+  assertBefore(
+    postSource,
+    "updateResult.payload.premiumReport",
+    "persistPremiumSavedReport({",
+    "premium persistence verified session payload"
+  );
+  assertNotIncludes(
+    postSource,
+    "authoritativePremiumReport = updateResult.payload.premiumReport",
+    "premium persistence sanitizer boundary"
   );
   assertNotIncludes(source, "supabase: userSupabase,\n      user,\n      sessionId", "premium persistence client boundary");
   assertNotIncludes(source, "premiumReport: responsePremiumReport", "premium persistence payload source");
@@ -219,7 +230,11 @@ const negativeControls = [
   () => verifyMigration(migration.replace("grant update (title)", "grant update")),
   () => verifySaveRoute(saveRoute.replace("premium_report: null", "premium_report: body.premiumReport")),
   () => verifyPremiumSession(premiumSession.replace('.gt("expires_at", now)', "")),
-  () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase"))
+  () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase")),
+  () => verifyFullReportRoute(fullReportRoute.replace(
+    "authoritativePremiumReport = sanitizePremiumReportForBoundary(\n      updateResult.payload.premiumReport\n    )",
+    "authoritativePremiumReport = updateResult.payload.premiumReport"
+  ))
 ];
 
 for (const [index, run] of negativeControls.entries()) {

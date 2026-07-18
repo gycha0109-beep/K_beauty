@@ -1,6 +1,7 @@
-import { pathToFileURL } from "node:url";
+import { pathToFileURL, fileURLToPath } from "node:url";
 import path from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { transform } from "next/dist/build/swc/index.js";
 
 const ROOT = process.cwd();
 
@@ -26,4 +27,35 @@ export async function resolve(specifier, context, defaultResolve) {
   }
 
   return defaultResolve(specifier, context, defaultResolve);
+}
+
+export async function load(url, context, defaultLoad) {
+  if (!url.endsWith(".ts")) {
+    return defaultLoad(url, context, defaultLoad);
+  }
+
+  const filename = fileURLToPath(url);
+  const source = readFileSync(filename, "utf8");
+  const result = await transform(source, {
+    filename,
+    sourceMaps: false,
+    jsc: {
+      parser: {
+        syntax: "typescript",
+        tsx: false,
+        decorators: false,
+        dynamicImport: true
+      },
+      target: "es2022"
+    },
+    module: {
+      type: "es6"
+    }
+  });
+
+  return {
+    format: "module",
+    source: result.code,
+    shortCircuit: true
+  };
 }

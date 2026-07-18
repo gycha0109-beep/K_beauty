@@ -97,10 +97,10 @@ function assertContract(output) {
   assert.equal(output.recommendationMutationDetected, false);
   assert.equal(output.artifactWriterLocalOnly, true);
   assert.equal(output.verifierIntegrity.passed, true);
-  assert.equal(output.verifierIntegrity.detectedCount, 10);
-  assert.equal(output.verifierIntegrity.totalCount, 10);
+  assert.equal(output.verifierIntegrity.detectedCount, 11);
+  assert.equal(output.verifierIntegrity.totalCount, 11);
   assert.equal(output.verifierIntegrity.sourceFilesMutated, false);
-  assert.equal(output.negativeControlResults.length, 10);
+  assert.equal(output.negativeControlResults.length, 11);
   assert(output.negativeControlResults.every((item) => item.detected && item.verifierRejected));
 
   assert.equal(output.actualRouteExecution.executed, false);

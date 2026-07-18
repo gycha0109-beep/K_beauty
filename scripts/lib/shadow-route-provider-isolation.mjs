@@ -23,10 +23,13 @@ export function inspectShadowRouteProviderIsolation(root = process.cwd()) {
   const existingTestAdapterPresent =
     stubResolverIndex >= 0 &&
     providerKeyResolverIndex > stubResolverIndex &&
+    /\bconst\s+localShadowProviderStub\s*=\s*resolveLocalShadowProviderStub\s*\(\s*\)/.test(routeSource) &&
     /\blocalShadowProviderStub\s*\.\s*enabled\s*\?\s*\{\s*apiKey\s*:\s*(?:""|'')\s*\}\s*:\s*resolveOpenAiApiKey\s*\(\s*\)/s.test(
       routeSource
     ) &&
-    /\bproviderIsolation\s*:\s*localShadowProviderStub\s*\.\s*reasonCode/.test(routeSource);
+    /process\.env\.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE\s*===\s*"1"[\s\S]{0,160}localShadowProviderStub\.enabled/.test(
+      routeSource
+    );
   const processEnvClearSufficient = !(dotenvFallbackPresent && keyNamePresentInDotEnvLocal);
   const canGuaranteeZeroProductionProviderCalls =
     !routeCallsExternalProvider || existingTestAdapterPresent || processEnvClearSufficient;

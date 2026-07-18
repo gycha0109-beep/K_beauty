@@ -403,7 +403,10 @@ const actualAudit = await readJson(ACTUAL_AUDIT_PATH);
 const actualCoverage = await readJson(ACTUAL_COVERAGE_PATH);
 const pureReplay = await readJson(PURE_REPLAY_PATH);
 const readiness = await readJson(READINESS_PATH);
-const actualWhatIfSummary = applyWhatIf(flattenActualRows(actualAudit), "actual_complete_product_row_capture");
+const actualWhatIfSummary = applyWhatIf(
+  flattenActualRows(actualAudit),
+  actualAudit.evidenceType || "actual_capture_coverage_unavailable"
+);
 const pureReplayWhatIfSummary = applyWhatIf(flattenPureReplayRows(pureReplay), "pure_engine_replay");
 const options = integrationOptions();
 
