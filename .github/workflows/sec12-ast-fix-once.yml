@@ -1,0 +1,22 @@
+name: SEC-12 AST verifier repair
+
+on:
+  push:
+    branches:
+      - feature/premium-beta-flow
+    paths:
+      - .github/workflows/sec12-ast-fix-once.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sec12-ast-fix-once
+  cancel-in-progress: false
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout target branch
