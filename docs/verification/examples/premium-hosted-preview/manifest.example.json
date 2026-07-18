@@ -48,24 +48,29 @@
     "login": "/",
     "authCallbackPrefix": "/auth/callback",
     "koMy": "/my",
-    "enMy": "/en/my",
-    "premiumEntry": "/premium"
+    "enMy": "/en/my"
   },
   "googleSignInMarker": {
     "role": "button",
-    "name": "replace_with_exact_accessible_google_signin_name"
+    "name": "Google로 로그인"
   },
   "signedInMarker": {
-    "kind": "text",
-    "name": "replace_with_exact_stable_signed_in_text"
-  },
-  "premiumEntryMarker": {
     "kind": "heading",
-    "name": "replace_with_exact_premium_entry_heading"
+    "name": "My Skin"
+  },
+  "premiumEntryMarkers": {
+    "ko": {
+      "kind": "heading",
+      "name": "현재 쓰는 제품을 알려주세요"
+    },
+    "en": {
+      "kind": "heading",
+      "name": "Add your current products"
+    }
   },
   "faultCase": {
     "attestationPath": "<secure-root>/credentials/fault-preview-attestation.json",
-    "prNumber": 0,
+    "prNumber": 1,
     "expectedSha": "replace_with_fault_preview_40_char_sha",
     "vercelProjectId": "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA",
     "path": "/api/full-report",
