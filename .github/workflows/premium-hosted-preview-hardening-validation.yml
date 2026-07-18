@@ -1,7 +1,7 @@
 name: Premium Hosted Preview Harness Hardening Validation
 
 on:
-  push:
+  pull_request:
     branches:
       - validation/premium-hosted-preview-harness-hardening-cafd11
 
