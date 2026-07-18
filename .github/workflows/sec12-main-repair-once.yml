@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - .github/workflows/sec12-main-repair-once.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/sec12-main-trigger
 
 permissions:
   contents: write
