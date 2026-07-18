@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-07-19 / Unified Vision minimal Provider smoke
+
+- Branch: `design/unified-vision-observation-pipeline`
+- Task type: High execution / Provider smoke with a hard two-image-attempt budget.
+- Scope: PR #50 static gates, private fixture metadata review, isolated local runtime preparation, one Lane B Provider attempt, failure documentation, and PR status update. No runtime code, API contract, migration, production deployment, remote Supabase access, fixture copy, image artifact, raw Provider payload, or credential change was retained.
+- Static validation: isolated `npm ci`, `npm run verify:unified-vision-pipeline`, `npm run face-lab:eval:verify`, `npm run architecture:guard`, `npm run build`, and `git diff --check` passed. The default checkout `npm ci` first failed on a locked Next SWC binary; the isolated worktree install passed.
+- Runtime: Lane A was not run because local Supabase bootstrap failed on missing prerequisite relation `public.products`; configured non-local Supabase was intentionally not used. Lane B made exactly one image-bearing OpenAI attempt with `subject-a-lower-face-occluded` and received HTTP 401, classified as `authentication_failed`; no retry or second fixture call occurred.
+- Budget/privacy: one unique image transmitted, one image-bearing attempt, zero retries. No key, header, image, base64, full path, raw response, raw evidence, or identifying payload was retained. Temporary route, server, token, and logs were removed.
+- Final status: `FAIL`. PR #50 must remain unmerged and return to Draft until a valid non-production Provider credential and isolated Lane A database bootstrap are available for a new bounded smoke.
+- Detailed record: `docs/domain/facelab/unified-vision-provider-smoke-20260719.md`.
+
 ### 2026-07-13 / Public Result Read Boundary hardening
 
 - Branch: `codex/survey-input-contract-refactor`
