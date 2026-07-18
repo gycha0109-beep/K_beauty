@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { assertSafeProductImageForWriter } from "../../lib/security/image-source-policy.js";
 
 import {
   normalizeCanonicalBrandName,
@@ -1381,6 +1382,12 @@ export async function updateProductDetailsIfMissing(
   productId: string,
   input: ProductDetailUpdateInput,
 ): Promise<ProductDetailUpdateResult> {
+  const requestedImageUrl = "image_url" in input
+    ? normalizeOptionalTextValue(input.image_url)
+    : undefined;
+  const safeImageUrl = requestedImageUrl == null
+    ? requestedImageUrl
+    : assertSafeProductImageForWriter(requestedImageUrl);
   const before = await getProductDetailRecord(client, productId);
   const updatePayload: Record<string, unknown> = {};
   const appliedFields: string[] = [];
@@ -1400,14 +1407,12 @@ export async function updateProductDetailsIfMissing(
   }
 
   if ("image_url" in input) {
-    const nextValue = normalizeOptionalTextValue(input.image_url);
-
-    if (!nextValue) {
+    if (!safeImageUrl) {
       skippedFields.push("image_url(no_input)");
     } else if (!isMissingTextValue(before.image_url)) {
       skippedFields.push("image_url(existing)");
     } else {
-      updatePayload.image_url = nextValue;
+      updatePayload.image_url = safeImageUrl;
       appliedFields.push("image_url");
     }
   }

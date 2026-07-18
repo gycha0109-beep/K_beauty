@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import {
@@ -222,7 +223,14 @@ function assertDurableEvidence(output) {
   assert.deepEqual(readDurable(durable.files[4]), output.flagOn.actualRuntimeEvidence);
 }
 
-assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing");
+if (!existsSync(OUTPUT_PATH)) {
+  execFileSync(process.execPath, ["scripts/run-isolated-shadow-route-comparison.mjs"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: process.env
+  });
+}
+assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing after producer execution");
 const output = JSON.parse(readFileSync(OUTPUT_PATH, "utf8"));
 assert.equal(output.evidenceType, "isolated_shadow_route_controlled_run");
 assert(ALLOWED_VERDICTS.has(output.verdict));

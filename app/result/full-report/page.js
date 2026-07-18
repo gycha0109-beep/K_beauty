@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
+import SafeProductImage from "@/components/common/SafeProductImage";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import TodayStartPlanStep from "@/components/full-report/TodayStartPlanStep";
 import PremiumRoutineConsultSection from "@/components/full-report/PremiumRoutineConsultSection";
@@ -25,6 +26,8 @@ import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
+import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 import {
   getBrowserPermanentSupabaseAccessToken,
   getBrowserSupabaseAccessToken
@@ -662,24 +665,19 @@ function renderList(items = []) {
   );
 }
 
-function isExactOliveYoungProductLink(link) {
-  return typeof link === "string" && /oliveyoung\.co\.kr/i.test(link);
-}
-
 function getPurchaseLinkInfo(product, copy, locale = "ko") {
-  if (isExactOliveYoungProductLink(product?.buy_link)) {
-    return {
-      href: product.buy_link,
-      label: copy.buyNow,
-      isFallback: false
-    };
-  }
+  const link = resolveProductPurchaseLink({
+    buyLink: product?.buy_link,
+    brand: product?.brand,
+    name: product?.name
+  });
 
-  const query = encodeURIComponent(`${product?.brand || ""} ${product?.name || ""} ${locale === "en" ? "buy" : "구매"}`);
   return {
-    href: `https://search.shopping.naver.com/search/all?query=${query}`,
-    label: copy.buyNow,
-    isFallback: true
+    ...link,
+    label: link.kind === "fallback"
+      ? (locale === "en" ? "Compare prices" : "네이버쇼핑에서 검색")
+      : copy.buyNow,
+    isFallback: link.kind === "fallback"
   };
 }
 
@@ -791,17 +789,18 @@ function PremiumReportComingSoonGate({ locale = "ko" }) {
 }
 
 function ProductThumb({ product, copy, sizeClass = "h-28 w-24" }) {
-  if (product?.image_url) {
-    return (
-      <div className={`${sizeClass} overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70`}>
-        <img src={product.image_url} alt={product.name || "Product"} className="h-full w-full object-cover" />
-      </div>
-    );
-  }
-
   return (
-    <div className={`${sizeClass} flex items-center justify-center rounded-[1.25rem] border border-dashed border-white/10 bg-zinc-900/50 px-3 text-center text-[11px] text-zinc-400`}>
-      {copy.noImage}
+    <div className={`${sizeClass} overflow-hidden rounded-[1.25rem] border border-white/10 bg-zinc-900/70`}>
+      <SafeProductImage
+        product={product}
+        alt={product?.name || "Product"}
+        className="h-full w-full object-cover"
+        fallback={(
+          <div className="flex h-full w-full items-center justify-center border-dashed bg-zinc-900/50 px-3 text-center text-[11px] text-zinc-400">
+            {copy.noImage}
+          </div>
+        )}
+      />
     </div>
   );
 }
@@ -2819,9 +2818,9 @@ function TopPickHeroCard({ product, report, copy, locale, result }) {
           <ProductThumb product={product} copy={copy} sizeClass="h-28 w-24 sm:h-32 sm:w-28" />
           <FitSegmentBars fitData={report.topPickFitGauges} />
           <a
-            href={purchaseLink.href}
+            href={purchaseLink.href || undefined}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onClick={() =>
               trackEvent("click_buy_link", {
                 product_id: product.id || null,
@@ -2919,9 +2918,9 @@ function SupportingProductCard({ item: itemProp, product: productProp, copy, loc
           ) : null}
 
           <a
-            href={purchaseLink.href}
+            href={purchaseLink.href || undefined}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onClick={() =>
               trackEvent("click_buy_link", {
                 product_id: product.id || null,
@@ -3744,9 +3743,9 @@ function BudgetAlternativeCard({ item, copy, locale = "ko" }) {
             <p className="mt-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">{item.summary}</p>
           ) : null}
           <a
-            href={purchaseLink.href}
+            href={purchaseLink.href || undefined}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             onClick={() =>
               trackEvent("click_buy_link", {
                 product_id: item.id || null,
@@ -4364,9 +4363,9 @@ function ProductUsageCard({ product, result, copy, locale = "ko", isPrimary = fa
       </div>
 
       <a
-        href={purchaseLink.href}
+        href={purchaseLink.href || undefined}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         onClick={() =>
           trackEvent("click_buy_link", {
             product_id: product.id || null,
@@ -6405,7 +6404,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         }
 
         if (!response.ok || !data) {
-          throw new Error(data?.error || copy.errorBody);
+          throw new Error(copy.errorBody);
         }
 
         const baseResult =
@@ -6431,12 +6430,24 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             has_fit_gauges: Boolean(localizedData.topPickFitGauges?.gauges?.length)
           }
         });
-      } catch (requestError) {
+      } catch {
         if (process.env.NODE_ENV !== "production") {
-          console.warn("[full-report] using fallback report", requestError);
+          writeSafeLog("warn", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true
+          });
           setReport(developmentFallbackReport);
         } else {
-          console.error("[full-report] failed to load report", requestError);
+          writeSafeLog("error", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true
+          });
           setReport(null);
           setError(copy.errorBody);
         }

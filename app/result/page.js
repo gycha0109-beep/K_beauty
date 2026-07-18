@@ -5,6 +5,7 @@ import { Fragment, Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ErrorState from "@/components/common/ErrorState";
+import SafeProductImage from "@/components/common/SafeProductImage";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ResultBottomCTA from "@/components/result/ResultBottomCTA";
 import ResultProgressDots from "@/components/result/ResultProgressDots";
@@ -41,6 +42,8 @@ import {
   getAvailableVisionFaceLabData
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
+import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import {
@@ -522,14 +525,24 @@ function trackEvent(eventName, data = {}) {
             clearTrackWriteAccessToken();
           }
 
-          console.error("[trackEvent] request failed", {
-            status: response.status,
-            error: details?.error || "unknown"
+          writeSafeLog("warn", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true,
+            status: response.status
           });
         }
       })
-      .catch((requestError) => {
-        console.error("[trackEvent] request error", requestError);
+      .catch(() => {
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "network_unavailable",
+          operation: "client",
+          dependency: "application",
+          retryable: true
+        });
       });
   })();
 }
@@ -2522,34 +2535,19 @@ function getPriceLabel(priceRange, locale = "ko") {
   return `${copy.priceBand} ${displayRange}`;
 }
 
-function isExactOliveYoungProductLink(buyLink) {
-  if (!buyLink || typeof buyLink !== "string" || !buyLink.startsWith("http")) {
-    return false;
-  }
-
-  if (buyLink.includes("example.com")) {
-    return false;
-  }
-
-  return /oliveyoung\.co\.kr\/.*getGoodsDetail/i.test(buyLink);
-}
-
 function getPurchaseLinkInfo(product, locale = "ko") {
   const copy = getResultCopy(locale);
-  if (isExactOliveYoungProductLink(product?.buy_link)) {
-    return {
-      href: product.buy_link,
-      label: copy.buyNow,
-      isFallback: false
-    };
-  }
-
-  const query = encodeURIComponent(`${product?.brand || ""} ${product?.name || ""} ${locale === "en" ? "buy" : "구매"}`);
-
+  const link = resolveProductPurchaseLink({
+    buyLink: product?.buy_link,
+    brand: product?.brand,
+    name: product?.name
+  });
   return {
-    href: `https://search.shopping.naver.com/search/all?query=${query}`,
-    label: copy.findStore,
-    isFallback: true
+    ...link,
+    label: link.kind === "fallback"
+      ? (locale === "en" ? "Compare prices" : "네이버쇼핑에서 검색")
+      : copy.buyNow,
+    isFallback: link.kind === "fallback"
   };
 }
 
@@ -2797,15 +2795,11 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated =
     : "flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-zinc-200 bg-white/70 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/80 dark:text-zinc-500";
   return (
     <div className={`${surfaceClass} overflow-hidden rounded-[1.1rem] ${height}`}>
-      {product?.image_url ? (
-        <div className="flex h-full w-full items-center justify-center p-2">
-          <img
-            src={product.image_url}
-            alt={getImageFallbackLabel(product)}
-            className="h-full w-full object-contain"
-          />
-        </div>
-      ) : (
+      <SafeProductImage
+        product={product}
+        alt={getImageFallbackLabel(product)}
+        className="h-full w-full object-contain p-2"
+        fallback={(
         <div className={emptyClass}>
           <div className="flex flex-col items-center">
             <div className={iconClass}>
@@ -2818,7 +2812,8 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated =
             <p className="mt-0.5 text-[9px] text-zinc-500 dark:text-zinc-500">{copy.imagePreparing}</p>
           </div>
         </div>
-      )}
+        )}
+      />
     </div>
   );
 }
@@ -3226,8 +3221,14 @@ function ResultContent() {
       }
 
       router.push(`${targetPath}?access=${encodeURIComponent(access?.reason || "payment_required")}`);
-    } catch (premiumError) {
-      console.error("[result] premium access check failed", premiumError);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "network_unavailable",
+        operation: "client",
+        dependency: "application",
+        retryable: true
+      });
       router.push(targetPath);
     }
   };
@@ -3851,9 +3852,9 @@ function ProductDecisionCard({
 
               <div className="mt-5 border-t border-[#ead9d6] pt-4 dark:border-[#4a303c]">
                 <a
-                  href={purchaseLink.href}
+                  href={purchaseLink.href || undefined}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   onClick={(event) => {
                     event.stopPropagation();
                     trackEvent("click_buy_link", {
@@ -3996,9 +3997,9 @@ function ProductDecisionCard({
               </button>
             ) : null}
             <a
-              href={purchaseLink.href}
+              href={purchaseLink.href || undefined}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onClick={(event) => {
                 event.stopPropagation();
                 trackEvent("click_buy_link", {
@@ -4077,9 +4078,9 @@ function ProductDecisionCard({
 
                 <div className="mt-5">
                   <a
-                    href={purchaseLink.href}
+                    href={purchaseLink.href || undefined}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     onClick={(event) => {
                       event.stopPropagation();
                       trackEvent("click_buy_link", {

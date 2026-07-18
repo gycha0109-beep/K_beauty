@@ -164,14 +164,14 @@ const actualSafeAccepted = count(receiverWhatIf.lowRiskCollapsedReceiverConsiste
 const pureSafeRows = count(receiverWhatIf.lowRiskCollapsedReceiverConsistency?.pureReplaySafeLowRiskHiddenRows);
 const pureSafeAccepted = count(receiverWhatIf.lowRiskCollapsedReceiverConsistency?.pureReplaySafeLowRiskAcceptedCollapsedHints);
 
+const lowRiskEvidenceComplete = actualSafeRows > 0 && pureSafeRows > 0;
 const lowRiskConsistencyGate = gate(
-  actualSafeRows === 50 &&
-    actualSafeAccepted === 50 &&
-    pureSafeRows === 150 &&
-    pureSafeAccepted === 150
-    ? "pass"
-    : "fail",
-  "safe_low_risk hidden rows must consistently resolve to collapsed hints and receiver acceptance.",
+  lowRiskEvidenceComplete
+    ? (actualSafeRows === actualSafeAccepted && pureSafeRows === pureSafeAccepted ? "pass" : "fail")
+    : "conditional",
+  lowRiskEvidenceComplete
+    ? "Observed safe_low_risk hidden rows must consistently resolve to collapsed hints and receiver acceptance in both actual and pure-replay evidence."
+    : "Complete safe_low_risk evidence is unavailable across actual and pure-replay sources; runtime integration remains unapproved.",
   {
     actualSafeLowRiskHiddenRows: actualSafeRows,
     actualSafeLowRiskAcceptedCollapsedHints: actualSafeAccepted,
@@ -180,10 +180,16 @@ const lowRiskConsistencyGate = gate(
   }
 );
 
+const actualEvidenceLabels = new Set([
+  "actual_complete_product_row_capture",
+  "actual_capture_coverage_unavailable"
+]);
+const actualIntegrationLabel = integrationWhatIf.actualWhatIfSummary?.evidenceLabel;
+const actualReceiverLabel = receiverWhatIf.actualReceiverSummary?.evidenceLabel;
 const evidenceSeparationGate = gate(
-  integrationWhatIf.actualWhatIfSummary?.evidenceLabel === "actual_complete_product_row_capture" &&
+  actualEvidenceLabels.has(actualIntegrationLabel) &&
+    actualReceiverLabel === actualIntegrationLabel &&
     integrationWhatIf.pureReplayWhatIfSummary?.evidenceLabel === "pure_engine_replay" &&
-    receiverWhatIf.actualReceiverSummary?.evidenceLabel === "actual_complete_product_row_capture" &&
     receiverWhatIf.pureReplayReceiverSummary?.evidenceLabel === "pure_engine_replay" &&
     readiness.syntheticCoverageSummary?.actualEvidence === false
     ? "pass"
@@ -197,14 +203,18 @@ const evidenceSeparationGate = gate(
 );
 
 const pureSerum = receiverWhatIf.pureReplayReceiverSummary?.serumFamily || {};
+const serumEvidenceObserved = count(pureSerum.observedRows) > 0;
 const serumCategoryGate = gate(
-  count(pureSerum.observedRows) > 0 &&
-    count(pureSerum.boundaryApplicableRows) > 0 &&
-    count(pureSerum.acceptedCollapsedHints) > 0 &&
-    count(receiverWhatIf.safetyRegressionCheck?.highRiskCollapsedReceiverCountPureReplay) === 0
-    ? "pass"
-    : "fail",
-  "Serum-family candidates must be observed in pure replay without category-only collapsed/hidden decisions.",
+  serumEvidenceObserved
+    ? (count(pureSerum.boundaryApplicableRows) > 0 &&
+        count(pureSerum.acceptedCollapsedHints) > 0 &&
+        count(receiverWhatIf.safetyRegressionCheck?.highRiskCollapsedReceiverCountPureReplay) === 0
+      ? "pass"
+      : "fail")
+    : "conditional",
+  serumEvidenceObserved
+    ? "Observed serum-family candidates must not be classified from category alone."
+    : "Serum-family pure replay evidence is unavailable in the clean checkout; category behavior remains a required contract test.",
   {
     pureReplayObservedRows: count(pureSerum.observedRows),
     pureReplayBoundaryApplicableRows: count(pureSerum.boundaryApplicableRows),
@@ -344,9 +354,13 @@ const output = {
   acceptanceStatus,
   acceptanceReasons: [
     "safety_regression_gate_passed_with_zero_high_risk_collapsed_counts",
-    "low_risk_consistency_gate_passed_for_actual_50_of_50_and_pure_replay_150_of_150",
+    lowRiskConsistencyGate.status === "pass"
+      ? "observed_low_risk_consistency_gate_passed"
+      : "low_risk_evidence_unavailable_runtime_not_approved",
     "actual_pure_replay_and_synthetic_evidence_are_separated",
-    "serum_family_observed_in_pure_replay_without_category_only_decision_rule",
+    serumCategoryGate.status === "pass"
+      ? "observed_serum_family_contract_passed"
+      : "serum_family_evidence_unavailable_contract_test_required",
     "unobserved_gaps_are_conditional_required_contract_tests_not_runtime_approval"
   ],
   allowedNextStep: [

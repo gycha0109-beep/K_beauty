@@ -85,13 +85,19 @@ function assertAcceptanceContract(output) {
   }
 
   assert.equal(output.gateResults.gateA_safetyRegression.status, "pass");
-  assert.equal(output.gateResults.gateB_lowRiskConsistency.status, "pass");
+  assert.ok(["pass", "conditional"].includes(output.gateResults.gateB_lowRiskConsistency.status));
   assert.equal(output.gateResults.gateC_evidenceSeparation.status, "pass");
-  assert.equal(output.gateResults.gateD_serumCategory.status, "pass");
+  assert.ok(["pass", "conditional"].includes(output.gateResults.gateD_serumCategory.status));
   assert.equal(output.gateResults.gateE_metadataIncomplete.status, "conditional");
   assert.equal(output.gateResults.gateF_strongCaution.status, "conditional");
   assert.equal(output.gateResults.gateG_activeOnly.status, "conditional");
   assert.equal(output.gateResults.gateH_runtimeIsolation.status, "pass");
+
+  if (output.gateResults.gateB_lowRiskConsistency.status === "conditional" ||
+      output.gateResults.gateD_serumCategory.status === "conditional") {
+    assert.equal(READY_STATUSES.has(output.acceptanceStatus), false);
+    assert.equal(output.acceptanceStatus, "needs_more_evidence");
+  }
 
   assert.equal(output.evidenceSeparationGate.details.syntheticCoverageRecordedAsActual, false);
   assert.equal(output.gateResults.gateE_metadataIncomplete.details.requiredContractTest, "metadata_incomplete_routes_to_insufficient_evidence");

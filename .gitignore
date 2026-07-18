@@ -19,6 +19,7 @@ debug.png
 *.log
 data/hwahae/ranking-snapshots/
 supabase/.temp/
+private
 
 # Codex local runtime files
 .codex/environments/

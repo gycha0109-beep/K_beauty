@@ -34,16 +34,29 @@ runCase("collector executes and output JSON exists", () => {
   assert.equal(existsSync(OUTPUT_PATH), true);
 });
 
-runCase("complete product-row fixtures are used and unsupported artifacts are excluded", () => {
+runCase("actual evidence presence or absence is represented explicitly", () => {
   assert.ok(output.captureSummary.totalFilesScanned >= output.captureSummary.completeProductRowFixturesUsed);
-  assert.ok(output.captureSummary.completeProductRowFixturesUsed > 0);
-  assert.ok((output.captureSummary.excludedFixtureCounts.final_results_only || 0) > 0);
-  assert.ok((output.captureSummary.excludedFixtureCounts.analysis_or_summary_artifact || 0) > 0);
+  assert.equal(typeof output.actualEvidenceAvailable, "boolean");
+  if (output.actualEvidenceAvailable) {
+    assert.equal(output.evidenceType, "actual_complete_product_row_capture");
+    assert.ok(output.captureSummary.completeProductRowFixturesUsed > 0);
+  } else {
+    assert.equal(output.evidenceType, "actual_capture_coverage_unavailable");
+    assert.equal(output.captureSummary.completeProductRowFixturesUsed, 0);
+    assert.ok(output.limitations.includes("actual_complete_product_row_capture_not_available_in_clean_checkout"));
+  }
 });
 
 runCase("candidate and boundary counts are internally consistent", () => {
-  assert.ok(output.candidateSummary.totalCandidateRows > 0);
-  assert.ok(output.candidateSummary.boundaryApplicableRows > 0);
+  assert.ok(output.candidateSummary.totalCandidateRows >= 0);
+  assert.ok(output.candidateSummary.boundaryApplicableRows >= 0);
+  if (output.actualEvidenceAvailable) {
+    assert.ok(output.candidateSummary.totalCandidateRows > 0);
+    assert.ok(output.candidateSummary.boundaryApplicableRows > 0);
+  } else {
+    assert.equal(output.candidateSummary.totalCandidateRows, 0);
+    assert.equal(output.candidateSummary.boundaryApplicableRows, 0);
+  }
   assert.equal(output.candidateSummary.boundaryApplicableRows, output.candidateSummary.reviewedRows);
   const decisionTotal = Object.values(output.decisionSummary).reduce((sum, value) => sum + value, 0);
   assert.equal(decisionTotal, output.candidateSummary.boundaryApplicableRows);

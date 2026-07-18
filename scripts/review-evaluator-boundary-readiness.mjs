@@ -63,7 +63,8 @@ function summarizeActualEvidence(actual) {
   const safeLowRisk = actual.gapCoverage?.safeLowRiskHidden || {};
 
   return {
-    evidenceType: "actual_complete_product_row_capture",
+    evidenceType: actual.evidenceType || "actual_capture_coverage_unavailable",
+    actualEvidenceAvailable: actual.actualEvidenceAvailable === true,
     completeProductRowCaptures: Number(actual.captureSummary?.completeProductRowFixturesUsed || 0),
     totalCandidateRows: Number(actual.candidateSummary?.totalCandidateRows || 0),
     boundaryApplicableRows: Number(actual.candidateSummary?.boundaryApplicableRows || 0),
@@ -343,7 +344,7 @@ function renderMarkdown(output) {
 const actual = await readJson(ACTUAL_PATH);
 const pureReplay = await readJson(PURE_REPLAY_PATH);
 const evidenceSources = [
-  { path: "tmp/evaluator-boundary-actual-coverage.json", evidenceType: "actual_complete_product_row_capture", present: true },
+  { path: "tmp/evaluator-boundary-actual-coverage.json", evidenceType: actual.evidenceType || "actual_capture_coverage_unavailable", present: true },
   { path: "tmp/evaluator-boundary-pure-engine-target-replay.json", evidenceType: "pure_engine_replay", present: true },
   ...(await Promise.all(DOC_SOURCES.map((source) => inspectSource(source, source.includes("coverage-gaps") ? "synthetic_policy_coverage" : "supporting_phase_document"))))
 ];

@@ -217,7 +217,13 @@ declare
   v_now timestamptz := now();
   v_lease_until timestamptz := now() + interval '5 minutes';
 begin
-  if p_jti_hash !~ '^[0-9a-f]{64}$'
+  if p_jti_hash is null
+     or p_principal_hash is null
+     or p_resource_type is null
+     or p_resource_id is null
+     or p_operation is null
+     or p_request_fingerprint_hash is null
+     or p_jti_hash !~ '^[0-9a-f]{64}$'
      or p_principal_hash !~ '^[0-9a-f]{64}$'
      or p_resource_type <> 'analysis-run'
      or p_resource_id !~ '^[A-Za-z0-9_-]{24,128}$'
@@ -382,6 +388,21 @@ declare
   v_grant public.anonymous_write_grants%rowtype;
   v_use public.anonymous_write_grant_uses%rowtype;
 begin
+  if p_jti_hash is null
+     or p_principal_hash is null
+     or p_resource_type is null
+     or p_resource_id is null
+     or p_operation is null
+     or p_request_fingerprint_hash is null
+     or p_jti_hash !~ '^[0-9a-f]{64}$'
+     or p_principal_hash !~ '^[0-9a-f]{64}$'
+     or p_resource_type <> 'analysis-run'
+     or p_resource_id !~ '^[A-Za-z0-9_-]{24,128}$'
+     or p_operation not in ('result:create', 'track:create')
+     or p_request_fingerprint_hash !~ '^[0-9a-f]{64}$' then
+    raise exception using errcode = '22023', message = 'anonymous_write_grant_claim_invalid';
+  end if;
+
   select *
   into v_grant
   from public.anonymous_write_grants
@@ -389,10 +410,10 @@ begin
   for update;
 
   if not found
-     or v_grant.principal_hash <> p_principal_hash
-     or v_grant.resource_type <> p_resource_type
-     or v_grant.resource_id <> p_resource_id
-     or v_grant.operation <> p_operation then
+     or v_grant.principal_hash is distinct from p_principal_hash
+     or v_grant.resource_type is distinct from p_resource_type
+     or v_grant.resource_id is distinct from p_resource_id
+     or v_grant.operation is distinct from p_operation then
     return jsonb_build_object('updated', false);
   end if;
 
@@ -448,6 +469,21 @@ declare
   v_grant public.anonymous_write_grants%rowtype;
   v_use public.anonymous_write_grant_uses%rowtype;
 begin
+  if p_jti_hash is null
+     or p_principal_hash is null
+     or p_resource_type is null
+     or p_resource_id is null
+     or p_operation is null
+     or p_request_fingerprint_hash is null
+     or p_jti_hash !~ '^[0-9a-f]{64}$'
+     or p_principal_hash !~ '^[0-9a-f]{64}$'
+     or p_resource_type <> 'analysis-run'
+     or p_resource_id !~ '^[A-Za-z0-9_-]{24,128}$'
+     or p_operation not in ('result:create', 'track:create')
+     or p_request_fingerprint_hash !~ '^[0-9a-f]{64}$' then
+    raise exception using errcode = '22023', message = 'anonymous_write_grant_claim_invalid';
+  end if;
+
   select *
   into v_grant
   from public.anonymous_write_grants
@@ -455,10 +491,10 @@ begin
   for update;
 
   if not found
-     or v_grant.principal_hash <> p_principal_hash
-     or v_grant.resource_type <> p_resource_type
-     or v_grant.resource_id <> p_resource_id
-     or v_grant.operation <> p_operation then
+     or v_grant.principal_hash is distinct from p_principal_hash
+     or v_grant.resource_type is distinct from p_resource_type
+     or v_grant.resource_id is distinct from p_resource_id
+     or v_grant.operation is distinct from p_operation then
     return jsonb_build_object('updated', false);
   end if;
 

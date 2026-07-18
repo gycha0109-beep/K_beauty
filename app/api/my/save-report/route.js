@@ -5,14 +5,38 @@ import {
   createShareId,
   getSharePath
 } from "@/lib/analysis-results";
-import { upsertProfileForUser, isSchemaCacheError, serializeSupabaseError } from "@/lib/auth/profile-upsert";
+import { upsertProfileForUser, isSchemaCacheError } from "@/lib/auth/profile-upsert";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
 
 export const dynamic = "force-dynamic";
 
-const REPORT_TYPES = new Set(["free", "premium"]);
-const SOURCE_TYPES = new Set(["session", "premium_report_session", "share", "manual"]);
+const FREE_REPORT_TYPE = "free";
+const FREE_REPORT_VERSION = "free-v1";
+const ALLOWED_SAVE_REPORT_KEYS = new Set([
+  "reportType",
+  "locale",
+  "sourceType",
+  "sourceSessionId",
+  "reportVersion",
+  "title",
+  "freeResult",
+  "faceLab",
+  "surveySnapshot",
+  "photoAnalysis",
+  "photo_analysis"
+]);
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -20,6 +44,47 @@ function isPlainObject(value) {
 
 function asPlainObject(value) {
   return isPlainObject(value) ? value : {};
+}
+
+function hasOwn(source, key) {
+  return Object.prototype.hasOwnProperty.call(source, key);
+}
+
+function getFreeSaveValidationError(body) {
+  const unknownKey = Object.keys(body).find((key) => !ALLOWED_SAVE_REPORT_KEYS.has(key));
+
+  if (unknownKey) {
+    return "unsupported_save_report_field";
+  }
+
+  if (body.reportType !== FREE_REPORT_TYPE) {
+    return "invalid_report_type";
+  }
+
+  if (!isPlainObject(body.freeResult) || Object.keys(body.freeResult).length === 0) {
+    return "invalid_free_result";
+  }
+
+  if (hasOwn(body.freeResult, "premiumReport") || hasOwn(body.freeResult, "premium_report")) {
+    return "premium_payload_not_allowed";
+  }
+
+  if (body.sourceType !== undefined && body.sourceType !== "session") {
+    return "invalid_source_type";
+  }
+
+  if (
+    body.sourceSessionId !== undefined &&
+    (typeof body.sourceSessionId !== "string" || body.sourceSessionId.trim().length === 0)
+  ) {
+    return "invalid_source_session_id";
+  }
+
+  if (body.reportVersion !== undefined && body.reportVersion !== FREE_REPORT_VERSION) {
+    return "invalid_report_version";
+  }
+
+  return null;
 }
 
 function getPath(source, path) {
@@ -160,22 +225,20 @@ function buildSkinProfilePayload({ userId, body }) {
   };
 }
 
-function buildSavedReportPayload({ userId, skinProfileId, body }) {
+function buildSavedReportPayload({ userId, skinProfileId, shareId, body }) {
   const freeResult = asPlainObject(body.freeResult);
   const faceLab = asPlainObject(body.faceLab);
-  const reportType = REPORT_TYPES.has(body.reportType) ? body.reportType : "free";
-  const sourceType = SOURCE_TYPES.has(body.sourceType) ? body.sourceType : "session";
 
   return {
     user_id: userId,
     skin_profile_id: skinProfileId,
-    report_type: reportType,
-    source_type: sourceType,
-    source_session_id: pickString(body.sourceSessionId, body.source_session_id),
+    report_type: FREE_REPORT_TYPE,
+    source_type: "share",
+    source_session_id: shareId,
     title: pickString(body.title, freeResult.title, "Free skin report"),
-    report_version: pickString(body.reportVersion, body.report_version, "free-v1"),
-    free_result: reportType === "free" ? freeResult : null,
-    premium_report: reportType === "premium" ? (body.premiumReport ?? freeResult.premiumReport ?? null) : null,
+    report_version: FREE_REPORT_VERSION,
+    free_result: freeResult,
+    premium_report: null,
     face_lab: Object.keys(faceLab).length ? faceLab : null
   };
 }
@@ -249,19 +312,22 @@ async function createPrivateShareResult({ body, userId }) {
 }
 
 function getDbErrorResponse(label, error) {
-  const serializedError = serializeSupabaseError(error);
-
-  console.error(`[my/save-report] ${label}`, {
-    error: serializedError
+  void label;
+  writeSafeLog("error", {
+    event: "save_report_failed",
+    category: isSchemaCacheError(error) ? "schema_unavailable" : "database_unavailable",
+    operation: "save_report",
+    dependency: "supabase",
+    retryable: true
   });
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
-      error: isSchemaCacheError(error) ? "revisit_schema_unavailable" : label,
-      message: error?.message || "save_report_failed",
-      code: error?.code || null
+      error: "save_report_unavailable",
+      message: "The report cannot be saved right now.",
+      code: "save_report_unavailable"
     },
-    { status: isSchemaCacheError(error) ? 503 : 500 }
+    { status: 503, headers: { "Retry-After": "60" } }
   );
 }
 
@@ -277,9 +343,12 @@ async function restorePreviousActiveProfile({ supabase, userId, skinProfileId, p
     .eq("user_id", userId);
 
   if (deleteResult.error) {
-    console.error("[my/save-report] skin profile cleanup failed", {
-      error: serializeSupabaseError(deleteResult.error),
-      skinProfileId
+    writeSafeLog("warn", {
+      event: "save_report_failed",
+      category: "database_unavailable",
+      operation: "save_report",
+      dependency: "supabase",
+      retryable: true
     });
   }
 
@@ -294,9 +363,12 @@ async function restorePreviousActiveProfile({ supabase, userId, skinProfileId, p
     .eq("user_id", userId);
 
   if (restoreResult.error) {
-    console.error("[my/save-report] previous active profile restore failed", {
-      error: serializeSupabaseError(restoreResult.error),
-      previousActiveProfileId
+    writeSafeLog("warn", {
+      event: "save_report_failed",
+      category: "database_unavailable",
+      operation: "save_report",
+      dependency: "supabase",
+      retryable: true
     });
   }
 }
@@ -309,7 +381,7 @@ export async function POST(request) {
   } = await supabase.auth.getUser();
 
   if (userError || !isAccountUser(user)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -317,11 +389,17 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_json" }, { status: 400 });
   }
 
   if (!isPlainObject(body)) {
-    return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_payload" }, { status: 400 });
+  }
+
+  const validationError = getFreeSaveValidationError(body);
+
+  if (validationError) {
+    return sensitiveJsonResponse({ error: validationError }, { status: 400 });
   }
 
   const profileResult = await upsertProfileForUser({
@@ -331,20 +409,23 @@ export async function POST(request) {
   });
 
   if (profileResult.error) {
-    console.error("[my/save-report] profile upsert failed", {
-      error: serializeSupabaseError(profileResult.error),
-      method: profileResult.method,
-      payload: profileResult.payload,
-      attempts: profileResult.attempts
+    writeSafeLog("error", {
+      event: "profile_sync_failed",
+      category: isSchemaCacheError(profileResult.error)
+        ? "schema_unavailable"
+        : "database_unavailable",
+      operation: "profile_sync",
+      dependency: "supabase",
+      retryable: true
     });
 
     if (!isSchemaCacheError(profileResult.error)) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
-          error: "profile_upsert_failed",
-          message: profileResult.error.message || "profile_upsert_failed"
+          error: "save_report_unavailable",
+          message: "The report cannot be saved right now."
         },
-        { status: 500 }
+        { status: 503, headers: { "Retry-After": "60" } }
       );
     }
   }
@@ -407,18 +488,12 @@ export async function POST(request) {
   const savedReportPayload = buildSavedReportPayload({
     userId: user.id,
     skinProfileId: skinProfile.id,
+    shareId: privateShareResult.share_id,
     body
   });
-  const linkedSavedReportPayload = privateShareResult?.share_id
-    ? {
-        ...savedReportPayload,
-        source_type: "share",
-        source_session_id: privateShareResult.share_id
-      }
-    : savedReportPayload;
   const { data: savedReport, error: savedReportError } = await supabase
     .from("saved_reports")
-    .insert(linkedSavedReportPayload)
+    .insert(savedReportPayload)
     .select("id")
     .single();
 
@@ -440,7 +515,7 @@ export async function POST(request) {
     return getDbErrorResponse("saved_report_insert_failed", savedReportError);
   }
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       skinProfileId: skinProfile.id,
       savedReportId: savedReport.id,
@@ -448,10 +523,6 @@ export async function POST(request) {
       sharePath: privateShareResult?.share_id ? getSharePath(privateShareResult.share_id) : null,
       publicShared: false
     },
-    {
-      headers: {
-        "Cache-Control": "no-store"
-      }
-    }
+    {}
   );
 }

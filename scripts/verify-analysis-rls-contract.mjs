@@ -142,6 +142,31 @@ const anonymousRestriction = read(anonymousRestrictionPath);
   "Users can read own routine logs"
 ].forEach((pattern) => assertIncludes(anonymousRestriction, pattern, "anonymous restriction migration"));
 
+const savedReportBoundaryPath = findMigration("sec_06_saved_reports_premium_write_boundary");
+assert(savedReportBoundaryPath, "SEC-06 saved report boundary migration should exist");
+const savedReportBoundary = read(savedReportBoundaryPath);
+
+[
+  'drop policy if exists "Users can insert own saved reports" on public.saved_reports',
+  'drop policy if exists "Users can update own saved reports" on public.saved_reports',
+  'create policy "Users can insert own free saved reports"',
+  'create policy "Users can update own free saved report titles"',
+  "report_type = 'free'",
+  "premium_report is null",
+  "jsonb_typeof(free_result) = 'object'",
+  "not (free_result ? 'premiumReport')",
+  "not (free_result ? 'premium_report')",
+  "source_type = 'share'",
+  "revoke all on table public.saved_reports from authenticated",
+  "grant select, insert, delete on table public.saved_reports to authenticated",
+  "grant update (title) on table public.saved_reports to authenticated",
+  "grant select, insert, update, delete on table public.saved_reports to service_role"
+].forEach((pattern) => assertIncludes(savedReportBoundary, pattern, "SEC-06 saved report boundary"));
+
+deploymentVerification.push(
+  "SEC-06 saved_reports write-boundary migration exists in the repository; verify the target environment has applied it before relying on free-only authenticated writes."
+);
+
 const premiumSessionMigrationPath = findMigration("create_premium_report_sessions");
 assert(premiumSessionMigrationPath, "premium report session migration should exist");
 const premiumSessionMigration = read(premiumSessionMigrationPath);
@@ -173,6 +198,24 @@ if (guardMigrationPath) {
   deploymentVerification.push("SEC-01 guard migration is not present in this checkout.");
 }
 
+const resultReadGuardMigrationPath = findMigration("sec_09_result_read_rate_limit");
+assert(resultReadGuardMigrationPath, "SEC-09 result-read corrective migration should exist");
+const resultReadGuardMigration = read(resultReadGuardMigrationPath);
+[
+  "analysis_request_rate_windows_endpoint_check",
+  "'analyze', 'face-reading', 'result-read'",
+  "alter table public.analysis_request_rate_windows enable row level security",
+  "revoke all on table public.analysis_request_rate_windows from public, anon, authenticated",
+  "grant select, insert, update, delete on table public.analysis_request_rate_windows to service_role",
+  "security invoker",
+  "set search_path = public",
+  "revoke all on function public.consume_analysis_rate_limits(jsonb) from public, anon, authenticated",
+  "grant execute on function public.consume_analysis_rate_limits(jsonb) to service_role"
+].forEach((pattern) => assertIncludes(resultReadGuardMigration, pattern, "SEC-09 result-read migration"));
+deploymentVerification.push(
+  "SEC-09 result-read migration exists in the repository; apply it before deploying the guarded public read route."
+);
+
 const allMigrationSql = listFiles("supabase/migrations", (path) => path.endsWith(".sql"))
   .map((path) => read(path))
   .join("\n");
@@ -198,12 +241,38 @@ const shareHelper = read("lib/analysis-result-access.js");
   "createSupabaseAdminClient",
   '.from("analysis_results")',
   '.eq("share_id", shareId)',
-  "if (!data.is_public)",
-  "currentUser.id !== data.user_id"
+  "ANALYSIS_RESULT_READ_SELECT",
+  "resolveAnalysisResultReadAudience(data)",
+  "serializePublicAnalysisResult(data)",
+  "serializeOwnerAnalysisResult(data)"
 ].forEach((pattern) => assertIncludes(shareHelper, pattern, "share access helper"));
+assertNotIncludes(
+  shareHelper,
+  "normalizeStoredAnalysisResult",
+  "share access helper"
+);
+
+const analysisResults = read("lib/analysis-results.js");
+[
+  "export const ANALYSIS_RESULT_READ_SELECT",
+  "export function serializePublicAnalysisResult",
+  "export function serializeOwnerAnalysisResult",
+  "export function resolveAnalysisResultReadAudience",
+  "function projectPublicProduct",
+  "function projectRoutineStructure"
+].forEach((pattern) => assertIncludes(analysisResults, pattern, "analysis result read boundary"));
 
 const publicResultApi = read("app/api/results/[shareId]/route.js");
-assertIncludes(publicResultApi, "getAnalysisResultForShare({ shareId, request })", "public result API");
+assertIncludes(publicResultApi, "guardPublicResultRead", "public result API");
+assertIncludes(publicResultApi, "readAnalysisResultForShare", "public result API");
+assertIncludes(publicResultApi, "executePublicResultReadAccessCore", "public result API");
+const publicResultReadCore = read("lib/security/public-result-read-guard-core.js");
+assertIncludes(publicResultReadCore, 'error: "Failed to load result."', "public result API boundary");
+assertNotIncludes(
+  publicResultApi,
+  "error instanceof Error ? error.message",
+  "public result API"
+);
 
 const resultsRoute = read("app/api/results/route.js");
 [
@@ -219,11 +288,18 @@ const resultsRoute = read("app/api/results/route.js");
 const saveReportRoute = read("app/api/my/save-report/route.js");
 [
   "!isAccountUser(user)",
+  "getFreeSaveValidationError(body)",
+  "body.reportType !== FREE_REPORT_TYPE",
+  'hasOwn(body.freeResult, "premiumReport")',
+  'hasOwn(body.freeResult, "premium_report")',
   "userId: user.id",
   '.from("skin_profiles")',
   '.from("saved_reports")',
   "createPrivateShareResult",
-  "isPublic: false"
+  "isPublic: false",
+  'source_type: "share"',
+  "source_session_id: shareId",
+  "premium_report: null"
 ].forEach((pattern) => assertIncludes(saveReportRoute, pattern, "my save report route"));
 
 const fullReportRoute = read("app/api/full-report/route.js");
@@ -232,7 +308,11 @@ const fullReportRoute = read("app/api/full-report/route.js");
   '.eq("id", savedReportId)',
   '.eq("user_id", userId)',
   '.eq("report_type", "premium")',
-  "isAccountUser(user)"
+  "isAccountUser(user)",
+  "createSupabaseAdminClient",
+  "authoritativePremiumReport",
+  "adminSupabase",
+  "if (!persistResult.ok)"
 ].forEach((pattern) => assertIncludes(fullReportRoute, pattern, "full report route"));
 
 const checkInRoute = read("app/api/my/check-in/route.js");

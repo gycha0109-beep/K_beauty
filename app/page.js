@@ -24,6 +24,8 @@ import {
   clearAnonymousWriteGrantState,
   writeAnonymousWriteGrantState
 } from "@/lib/write-access-client";
+import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
 const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
@@ -74,15 +76,15 @@ function clearStaleAnalysisStorage() {
 }
 
 function getAnalyzeErrorMessage(data, copy) {
-  if (ANALYSIS_GUARD_ERROR_CODES.has(data?.error) && typeof data?.message === "string") {
-    return data.message;
+  if (ANALYSIS_GUARD_ERROR_CODES.has(data?.error)) {
+    return copy.errors.analyzeFailed;
   }
 
   if (data?.code === PRODUCT_SOURCE_UNAVAILABLE_CODE) {
     return copy.errors.productSourceUnavailable;
   }
 
-  return data?.error || copy.errors.analyzeFailed;
+  return copy.errors.analyzeFailed;
 }
 
 function normalizeSurveyAnswers(form = {}) {
@@ -180,14 +182,20 @@ async function requestFaceLabResult(file, locale, idempotencyKey) {
     if (!response.ok || !data) {
       return isFaceLabResultEnvelope(data)
         ? data
-        : createFaceLabUnavailable(data?.error || "unknown");
+        : createFaceLabUnavailable("vision_request_failed");
     }
 
     return isFaceLabResultEnvelope(data)
       ? data
       : createFaceLabUnavailable("vision_response_invalid");
-  } catch (error) {
-    console.error("[onboarding] face lab request failed", error);
+  } catch {
+    writeSafeLog("warn", {
+      event: "client_operation_failed",
+      category: "network_unavailable",
+      operation: "client",
+      dependency: "application",
+      retryable: true
+    });
     return createFaceLabUnavailable("vision_request_failed");
   }
 }
@@ -338,9 +346,15 @@ export default function HomePage() {
         }
 
         router.push(locale === "en" ? "/en/result" : "/result");
-      } catch (submitError) {
-        console.error("[onboarding] analyze failed", submitError);
-        setError(submitError.message || copy.errors.unexpected);
+      } catch {
+        writeSafeLog("error", {
+          event: "client_operation_failed",
+          category: "network_unavailable",
+          operation: "client",
+          dependency: "application",
+          retryable: true
+        });
+        setError(copy.errors.unexpected);
         setCurrentStep("survey");
       } finally {
         setIsSubmitting(false);
@@ -400,6 +414,31 @@ export default function HomePage() {
 
     if (!file) {
       setError("");
+      return;
+    }
+
+    const validation = validateImageUpload(file);
+
+    if (!validation.ok) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      setImageFile(null);
+      setPreviewUrl("");
+      setError(
+        validation.code === "too_large"
+          ? locale === "en"
+            ? `Images must be ${formatUploadSize()} or smaller.`
+            : `이미지는 ${formatUploadSize()} 이하여야 합니다.`
+          : locale === "en"
+            ? "Choose a non-empty JPEG, PNG, or WebP image."
+            : "비어 있지 않은 JPEG, PNG 또는 WebP 이미지를 선택해 주세요."
+      );
+
+      if (event.target) {
+        event.target.value = "";
+      }
       return;
     }
 

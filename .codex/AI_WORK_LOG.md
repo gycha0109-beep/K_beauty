@@ -2,6 +2,173 @@
 
 ## Entries
 
+### 2026-07-14 / SEC-06 saved_reports premium write boundary implementation
+
+- Branch: `feature/premium-beta-flow`
+- Scope: closed the client-origin premium saved-report write path through the free-only save route, authoritative premium persistence in the full-report server path, a saved_reports RLS/column-privilege migration, static verifiers, and an isolated local role matrix. No production route, migration, policy, verifier, or test was changed outside the approved SEC-06 implementation and harness scope.
+- Boundary: authenticated users can create only their own permanent free share rows and update only the title of existing free rows. Premium rows are persisted only from the verified `premium_report_sessions` DB payload through the server-only admin client. Owner read/delete compatibility for existing free and premium rows remains intact.
+- Harness correction: R26/R29/R30/R33/R34 use top-level data-modifying CTEs with transaction-local affected-row capture. All 23 expected denials now require exact SQLSTATE `42501`, NULL expected message, and their prior descriptions. The runner executes psql with normalized TAP output and rejects a missing/duplicate plan, missing/duplicate assertion number, `not ok`, bailout, PostgreSQL ERROR/FATAL/PANIC output, or non-zero psql exit.
+- Validation: source/staged migration SHA equality and local reset passed; migration SHA-256 is `EEC0F0FD2773EB9157D95C99D539746EA574544D11E98B84C970431BAC5403DC`. The isolated role matrix passed `56/56`; cleanup left zero project-scoped containers, volumes, TEMP workdirs, and relevant processes. Saved-report boundary, analysis RLS, and premium release verifiers, related JS syntax, PowerShell parsing, build, diff check, and credential-pattern scan passed.
+- Data/security: no linked/remote access, hosted migration apply, provider call, credential exposure, commit, or push. Signing-secret fallback, premium session user/resource binding, session single-use/concurrent replay, and historical forged premium-row identification remain excluded residual findings.
+- Final status: `FULL_PASS` for SEC-06 implementation and isolated local verification. Hosted migration/RLS verification and an independent commit gate remain required before commit.
+- Next work: Sol independent SEC-06 commit gate; do not commit before that review.
+
+### 2026-07-13 / Public Result Read Boundary hardening
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: application-layer shared-result read boundary only. `lib/analysis-results.js`, `lib/analysis-result-access.js`, `/api/results/[shareId]`, the analysis RLS static verifier, a dedicated DTO verifier, the existing Playwright public-share assertion, a dedicated security note, and this log were changed. Save/publish routes, migrations, RLS/grants, Supabase client construction, remote systems, providers, retained SEC-05 evidence, and user-owned files were not touched.
+- Contract: service-role server reads remain in place. Public rows always return the public DTO. Private rows require an exact authenticated owner ID and return the owner DTO. Public DTOs include only share presentation fields; owner DTOs add only `isPublic`. Internal row/owner IDs, image paths, timestamps, source/provider metadata, raw JSON, scoring/decision metadata, and unknown nested fields are dropped. API 500 responses now use a generic message.
+- Validation: the dedicated response-boundary verifier passed exact public/owner keys, nested key allowlists, malicious-key removal, legacy/null fail-closed behavior, and the public/private access matrix. JS syntax checks, `node scripts/verify-analysis-rls-contract.mjs`, and Playwright test discovery passed. The provider-backed live Playwright flow was not executed because remote/provider calls are outside this task.
+- Data/security: no linked/remote access, migration apply, DB write, provider call, credential exposure, staging, commit, or push. Existing OWASP audit `SEC-06` was not renamed or reused.
+- Next work: run the focused local non-production integration matrix only with approved Supabase/provider test authority, then submit this boundary for independent review.
+
+### 2026-07-13 / SEC-05 TAP PANIC fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the pgTAP suite detector in `run.ps1` so explicit line-start `PANIC:` output cannot coexist with an accepted passing TAP stream. README, the canonical isolated-harness security note, and this work log were updated. Production migration, pgTAP SQL, concurrency producer, final oracle, invoke helper, runtime code, remote systems, retained evidence, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Parser contract: explicit row-start `ERROR:`, `FATAL:`, and `PANIC:` markers, with optional leading whitespace and the existing `psql:` wrapper, fail the suite. Ordinary passing TAP descriptions containing `PANIC` or `PANIC:` do not. Failure summaries still prioritize the earliest actual `not ok`, then bailout, explicit PostgreSQL error output, and sanitized fallback.
+- Validation: PowerShell parsing passed. Panic-N01/N02 failed closed with validation exit 1 and a sanitized panic cause; Panic-P01/P02 passed. Existing ERROR/FATAL, not-ok priority, SQLSTATE-description, bailout, plan mismatch, duplicate/missing TAP number, and exit/TAP-conflict regressions passed. Two clean isolated runs passed migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, T01-T14, C01-C05, C03/C04 `8/1/7/0/0` with rows `0 -> 1`, cleanup, final oracle, direct evidence revalidation, and credential scans. Project-scoped TEMP, containers, volumes, raw/intermediate artifacts, and synthetic TEMP had zero residue.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, production migration change, credential exposure, retained-evidence mutation/deletion, staging, or commit.
+- Final status: `FULL_PASS` for this isolated SEC-05 remediation only. Full historical migration replay, application-route verification, remote verification, and commit approval remain out of scope.
+- Next work: Sol independent commit gate; do not commit before that review.
+
+### 2026-07-13 / SEC-05 final evidence type-coercion fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only `verify-test-evidence.ps1` final-evidence type validation, plus matching isolated-harness documentation and this work log. Production migration, pgTAP tests, concurrency producer, runner, bootstrap/config, invoke helper, runtime code, retained evidence, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Oracle contract: ordinary suite, V05, cleanup, and consumed run-level fields now require property presence, non-null values, and exact JSON-derived string/boolean/integer/array/object types before their value checks. `OverallStatus` is exact `RUNNING` during oracle invocation or retained `PASS`; suite/V05 status is exact `PASS`; lifecycle flags are booleans; assertion/scenario collections are arrays; and `CleanupStatus` is exact string `PASS` with integer zero residue. This rejects boolean `true` as `PASS`, truthy string `"false"`, numeric strings, scalar-for-array substitutions, nulls, missing properties, and floating-point counts.
+- Validation: PowerShell parser passed. P01/P02 passed. N01-N16, T01-T28, cleanup failure, missing worker, malformed aggregate, timeout, and ordinary-failure evidence all returned non-zero without `TEST_ORACLE=FULLY_OBSERVED`. Runner timeout/ordinary-failure regression and a real short child-process worker-timeout probe passed. Two clean isolated runs passed source/staged hash checks, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 `8/1/7/0/0`, cleanup, final oracle, strict retained-evidence revalidation, and credential-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, retained-evidence mutation/deletion, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 final concurrency-oracle contradiction fail-closed remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the finalized structured-concurrency evidence consumer. Production migration, pgTAP tests, concurrency producer, bootstrap/config, invoke helper, runtime code, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Oracle contract: it now requires `OverallStatus = PASS`, boolean `HasTimeout = false`, empty-array `TimeoutScenarioIds`, and the exact C01-C05/T11/T12 scenario set. C01/C02/C05 require existing worker transport counts and claimed, denial, use, and state metrics; C03/C04 retain strict worker-detail validation. Missing, duplicate, unknown, null, incorrectly typed, or contradictory evidence fails rather than being normalized.
+- Validation: PowerShell parser and protected hash gates passed. TEMP-only P01 passed; N01-N16, cleanup failure, missing worker, malformed aggregate, timeout, and ordinary-failure regressions all failed closed as expected. Two clean isolated runs passed source/staged migration hash, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 `8/1/7/0/0`, cleanup, final oracle, and secret scans. Finalized evidence retained `OverallStatus=PASS`, `HasTimeout=false`, `TimeoutScenarioIds=[]`, expected C01/C02/C05 metrics, and zero residue.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 worker timeout, V05 use precondition, and canonical-contract remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the Sol-confirmed worker-timeout propagation gap, V05 captured-use vacuous-pass gap, and canonical documentation mismatch. Production migration, R01-R23 test, bootstrap, config, invoke helper, runtime code, remote systems, and user-owned PNG/docs-domain changes were not touched. Production migration SHA-256 remains `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Timeout contract: a worker or worker-group timeout is now classified as `TIMEOUT`, retains `WORKER_TIMEOUT` sanitized worker evidence, records a top-level timeout signal, marks later DB-dependent concurrency scenarios `NOT_RUN`, and is recognized by `run.ps1` before cleanup and the final oracle. Ordinary assertion failures still continue-and-aggregate.
+- V05/documentation: V05 now requires exactly one captured grant-use before cleanup and absence of both that use and its grant afterward in the existing plan-13 assertion. Canonical documentation now states R01-R23, V05 grant/use deletion, worker evidence retention, timeout propagation, and cleanup-after oracle; prior R01-R17 records are marked historical.
+- Validation: PowerShell parser checks passed. A TEMP-only short-lived child-process regression produced `TIMEOUT`, `TimedOut=true`, `WORKER_TIMEOUT`, later scenario `NOT_RUN`, and outer-runner timeout recognition; an ordinary synthetic concurrency failure remained `FAIL` while later scenario evidence remained observable; synthetic timeout evidence caused the final oracle to fail. Two clean isolated runs passed no-BOM config, staged-source hash, migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, C03/C04 worker `8/1/7/0/0`, cleanup, final oracle, and secret-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: Sol independent security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 complete/fail NULL binding, final oracle, worker evidence, and timeout gate remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected the Sol-confirmed complete/fail NULL binding bypass, strengthened Result and V05 pgTAP coverage, retained sanitized concurrency aggregates, moved the actual oracle after cleanup, and made DB-dependent timeouts stop later DB suites while preserving cleanup and final evidence validation.
+- Production migration: `complete_anonymous_write_grant` and `fail_anonymous_write_grant` now reject malformed mandatory identifiers with SQLSTATE `22023` and `anonymous_write_grant_claim_invalid`; stored principal/resource/operation comparisons use `IS DISTINCT FROM`. Signature, return type, state machine, lease/expiry, RLS/ACL, constraints, indexes, and cleanup contract are unchanged. Current migration SHA-256: `10552DD1A65005D4CE74301546BF0F925BFF1AE8F24A4EB90D3429CA8E0370F4`.
+- Tests: Result plan is `23`; R15 checks exact SQLSTATE/message and R18-R23 verify complete/fail NULL principal, resource fields, and operation fail closed with no state transition. Track remains plan `13`; V05 verifies both the expired grant and linked use are deleted.
+- Evidence/oracle: C03/C04 retain sanitized worker classifications and aggregate counts only; final evidence verifies eight workers, one winner, seven no-ops, zero invalid/timed-out/non-zero workers, and linked rows `0 -> 1`. The final oracle runs after cleanup and requires zero isolated residue plus complete suite/scenario evidence. Raw worker stdout/stderr, SQL, URLs, keys, and credentials are not retained.
+- Validation: PowerShell parser checks passed. Synthetic final-oracle evidence passed its valid case and rejected cleanup failure, missing worker evidence, malformed aggregate, and timeout cases. A first runtime attempt exposed a V05 record-shape omission and cleaned up with zero isolated residue; after the in-scope runner fix, two clean local runs passed migration apply, Structure `15/15`, Privilege/RLS `23/23`, R01-R23, Track/V05 `13/13`, C01-C05/T11/T12, cleanup, final oracle, and secret-pattern scans.
+- Data/security: no linked/remote access, remote write, production/staging migration apply, runtime application change, credential exposure, or commit.
+- Final status: `FULL_PASS` for the isolated SEC-05 harness only. Full historical migration replay and remote deployment verification remain out of scope.
+- Next work: rerun the independent Sol security verification and commit gate; do not commit before that review.
+
+### 2026-07-12 / SEC-05 V05 sequencing, Track summary, and concurrency accounting remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only the V05 pgTAP evaluation order, runner pgTAP failure-summary selection, and C03/C04 local-worker result accounting. Production migration, RPC contract, runtime code, bootstrap, config, oracle, and other template tests remained unchanged.
+- V05: cleanup now executes before the grant-deletion assertion. The forensic result showed the previous one-statement assertion was false even though cleanup removed the fixture grant/use; timestamps, plan 13, assertion count, and expected deletion outcome remain unchanged.
+- Summary: pgTAP failures now report the earliest actual `not ok` assertion before bailout/explicit PostgreSQL errors/fallback. A passing `ok` line mentioning SQLSTATE no longer becomes the causal error.
+- Concurrency: C03/C04 now classify worker output line by line and require one UUID plus `INSERT 0 1` winner, seven `INSERT 0 0` no-ops, zero invalid workers, empty worker stderr, zero starting linked rows, and the existing final database invariants. C01/C02/C05 continue to validate their original state results and reject failed worker transport.
+- Validation: PowerShell parser checks passed; synthetic Track summary regression passed; `git diff --check` passed. Two clean isolated runs passed migration apply, Structure 15/15, Privilege/RLS 23/23, R01-R17, Track/V05 13/13, concurrency C01-C05 plus T11/T12, actual oracle, and cleanup. Sanitized evidence had no sensitive patterns; project-scoped container, volume, TEMP, raw-log, and raw-dump residue was zero.
+- Final status: `FULL_PASS` for the isolated SEC-05 database harness. No remote access/write, production migration apply, or runtime application change occurred. Commit remains deferred to independent review and commit gate.
+
+### 2026-07-12 / SEC-05 claim NULL guard and post-migration aggregation remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: added explicit NULL rejection only to the existing mandatory-input guard for `claim_anonymous_write_grant`; preserved its signature, SQLSTATE `22023`, message, state machine, ACL/RLS, and all test SQL/template helpers.
+- Runner: post-migration suite failures now aggregate after independently attempting Structure, Privilege/RLS, Result, Track/V05, concurrency, and the actual oracle. Start/reset/migration/hash/timeout/cleanup remain fail-fast. TAP evidence now parses all actual `ok N` and `not ok N` records and derives scenario status from observed assertion numbers.
+- Static validation: PowerShell parser passed; a synthetic `ok 1`/`not ok 2`/`ok 3` TAP check preserved the post-failure PASS for scenario 3; template/bootstrap/helper hashes remained unchanged; `git diff --check` passed.
+- Local execution: first diagnostic run was `EXECUTION_ENVIRONMENT_FAILURE`. The no-BOM config check passed, but Docker Desktop's Linux engine pipe was unavailable before local Supabase start. All suites, V05, concurrency, and the oracle are `NOT_RUN`; second clean run was not attempted.
+- Cleanup: isolated TEMP workdir and raw logs were removed. Docker stop/residue inspection could not be completed while the daemon was unavailable, so cleanup remains failed rather than assumed.
+- Data/security: no remote access, remote write, production/staging DB change, production migration apply, runtime application change, or credential exposure.
+- Next work: restore Docker availability, run the isolated harness once to gather all post-migration suite evidence, and run a second clean execution only if the first is FULL_PASS.
+
+### 2026-07-12 / SEC-05 V05 fixture and suite evidence persistence remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: changed only the isolated Track V05 fixture timestamps, runner suite-by-suite sanitized evidence persistence, and the evidence verifier's structured-suite input. Production migration/runtime, cleanup contract, bootstrap, config, 001/002/003 tests, concurrency helper, and user-owned `.codex/*.png` / `docs/domain/` changes were not touched.
+- V05 fixture: the expired in-progress grant now uses `issued_at = now() - interval '2 hours'` and `expires_at = now() - interval '1 hour'`, preserving `issued_at < expires_at < now()` and the original cleanup target. The 003/004 time-fixture inventory found no other direct expiry-order violation.
+- Evidence persistence: each suite writes immediate sanitized status with start/completion, exit code, planned/observed/pass/fail assertions, scenario IDs, ordered pass/fail/not-run scenario IDs when pgTAP reports a numbered failure, and sanitized first error. Run-level and cleanup status are persisted outside the raw TEMP workdir; raw logs, staged files, containers, and volumes are still removed. The verifier consumes the structured suite summary plus concurrency evidence.
+- First local rerun: start and migration apply passed; source/staged production migration hash matched `6793093152A863BB08193FADDDE90E81B097E675EAEF35B74AFB5E7B47E05423`. Structure passed 15/15 and privilege/RLS passed 23/23. Result state machine reached R15: R01-R14 are retained as completed/pass, R15 failed with `not ok 15 - R15 malformed identifier fails closed with the contract SQLSTATE`, and R16-R17 are retained as not run. Track, concurrency, V05, and oracle did not run. Cleanup passed with zero isolated TEMP/container/volume residue.
+- New defect: R15 expects `claim_anonymous_write_grant(NULL, ...)` to raise SQLSTATE `22023`, while the production nullable regex guard may not enter its exception branch for NULL. This contract/test mismatch is outside the V05/evidence scope and was not modified.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`. Overall: `FAIL_NEW_DEFECT`; no security PASS is claimed for unexecuted groups.
+- Next work: independently decide and test the production RPC NULL-input fail-closed SQLSTATE contract before another two-clean-run harness execution and commit gate.
+
+### 2026-07-12 / SEC-05 data-modifying CTE returning remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: 003/004 CTE inventory found only referenced DML CTEs in R13 and T10. Existing R13 request/first/request CTEs and T10 first insert already return `id`; R13 second insert already returned `1`; added only `RETURNING 1` to T10 second insert.
+- Contract: INSERT targets, columns, values, conflict predicates, assertions, scenario IDs, and plans remain unchanged (R13 17, T10 13). R10/T13 CTEs are SELECT pipelines and R16/V05 updates are outside CTEs, so no additional RETURNING was added.
+- First local rerun: no-BOM config, start, source/staged migration hash, and migration apply passed; execution moved beyond R13 and T10. pgTAP then stopped at V05 because its fixture sets `expires_at` before `issued_at`, violating `anonymous_write_grants_expiry_order` before cleanup characterization.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. No final PASS is claimed for suite evidence, concurrency, V05, or oracle.
+- Result: `FAIL_NEW_DEFECT`. Production migration/runtime, runner, bootstrap, config, helper scripts, and V05 fixture were not changed. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately construct the V05 expired fixture without violating expiry ordering, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 R13 CTE returning remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: added only `RETURNING 1` to R13 `second_insert` in `003_sec05_result_state_machine.sql`. Insert target/columns/values/conflict predicate, unique-linkage assertion, and plan 17 are unchanged.
+- Static contract: R13 has exactly one `RETURNING 1`; its first-insert count-one/second-insert count-zero assertion remains intact. Production migration hash, runner, bootstrap, 001/002/004 tests, config, and helper script hashes are unchanged.
+- First local rerun: start and migration apply passed, and execution moved past R13. pgTAP then stopped at `004_sec05_track_state_machine.sql:97-102` because T10 `second_insert` has the same missing-RETURNING CTE defect.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. No final PASS is claimed for structure, privilege/RLS, R01-R17, T01-T14, C01-C05, V05, or oracle.
+- Result: `FAIL_NEW_DEFECT`. No remote access/write, production migration change, runtime change, or T10 test change occurred. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately add the required T10 CTE `RETURNING` without weakening its unique-linkage assertion, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 pgTAP PUBLIC execute assertion remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: replaced only the invalid PUBLIC pseudo-role inquiry in `002_sec05_privileges_rls.sql`. The new assertion inspects the exact claim RPC ACL with `aclexplode(COALESCE(proacl, acldefault('f', proowner)))`, `grantee = 0`, `privilege_type = 'EXECUTE'`, and `regprocedure`; plan remains 23 and anon/authenticated/service_role assertions are unchanged.
+- Static contract: no `has_function_privilege('PUBLIC'...)`, `pg_has_role('PUBLIC'...)`, or `SET ROLE PUBLIC` remains in the test; the catalog predicates and exact overload signature are present.
+- First local rerun: start and migration apply passed; source/staged migration hash gate passed. The PUBLIC assertion no longer caused a SQL error. pgTAP then stopped at `003_sec05_result_state_machine.sql:136-141`: `second_insert` is read as a CTE without a `RETURNING` clause.
+- Second clean run: `NOT_RUN` because the first rerun was not `FULL_PASS`. Structure, privilege/RLS final result, R01-R17, T01-T14, C01-C05, V05, and oracle are not claimed as passed.
+- Result: `FAIL_NEW_DEFECT`. Production migration/runtime, runner, bootstrap, other tests, package files, remote systems, and scenario contracts were unchanged. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately add the required R13 CTE `RETURNING` clause without weakening the unique-linkage assertion, then rerun two clean harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 production migration reserved alias remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: changed only the unquoted reserved `grant` aliases in `20260711032649_sec_05_anonymous_write_grants.sql`; the two recordset aliases and cleanup join alias now use `grant_row`. SQL `GRANT` statements, RPC signatures, state machine, binding, checks, indexes, RLS, grants/revokes, exception SQLSTATEs, and cleanup contract were unchanged.
+- Static contract: legacy alias occurrences 0; `grant_row` occurrences 4; SQL `GRANT` statements 7. Corrected production migration SHA-256: `6793093152A863BB08193FADDDE90E81B097E675EAEF35B74AFB5E7B47E05423`.
+- First local run: local start and migration apply passed; staged-source hash gate passed. pgTAP then failed at `002_sec05_privileges_rls.sql:19` because `has_function_privilege('PUBLIC', ...)` treats PostgreSQL's PUBLIC pseudo-role as a nonexistent concrete role.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`. Structure lacks retained individual PASS evidence; privilege/RLS is `FAIL`; R01-R17, T01-T14, C01-C05, V05, and oracle are `NOT_RUN`.
+- Result: `FAIL_NEW_DEFECT`. The template test, bootstrap, runner, other migrations, runtime code, package files, remote systems, and security scenario contracts were not changed. Isolated TEMP/container/volume cleanup completed with zero residue.
+- Next work: separately correct the PostgreSQL-valid PUBLIC execute-denial assertion, then rerun two clean isolated harness executions before independent review and commit gate.
+
+### 2026-07-12 / SEC-05 isolated harness BOM and error-evidence remediation
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: corrected only isolated runner UTF-8 rendering and external-command evidence capture, then attempted local execution. Production migration/runtime code, bootstrap, test SQL, helper scripts, and SEC-05 scenario contracts were unchanged; no remote access or write occurred.
+- BOM root cause: Windows PowerShell 5.1 `Set-Content -Encoding UTF8` added `EF BB BF` to rendered `config.toml`, which Supabase CLI 2.82.0 rejected. The runner now uses `UTF8Encoding($false)` plus byte-level validation; observed first bytes were `70 72 6F` with no BOM.
+- Error evidence: stdout/stderr, actual exit code, timing, timeout, and redacted first causal error are captured separately. Cleanup failures no longer replace the original command failure. The earlier profile-prerequisite classification is corrected as inaccurate.
+- First run: `FAIL`. The local CLI reached migration application, then the unchanged SEC-05 migration failed with SQLSTATE `42601` at the reserved `grant` alias in `jsonb_to_recordset(...) as grant(...)`. Source and staged SHA-256 matched: `342044B4E0DDD0B116E8C122CF7322CA37C8DA96E6C9037CC7A7F1CDEBD4DC94`.
+- Second clean run: `NOT_RUN` because the first run was not `FULL_PASS`.
+- Test oracle: structure, privilege/RLS, R01-R17, T01-T14, C01-C05, V05, and completeness checks are `NOT_RUN`; no security PASS is claimed.
+- Cleanup: isolated TEMP, container, and volume residue counts were zero. User-owned `.codex/*.png` deletions and `docs/domain/` remained untouched.
+- Overall: `FAIL`. Next work is a separately authorized minimal production migration syntax correction followed by two clean isolated runs and independent commit-gate review.
+
+### 2026-07-11 / SEC-05 isolated local database harness
+
+- Branch: `codex/survey-input-contract-refactor`
+- Scope: isolated local harness implementation only. Production migrations, runtime code, root Supabase config, remote projects, row data, and credentials were not changed or accessed.
+- Bootstrap: pre-SEC-05 `recommendation_logs` direct contract only; staged source migrations are the unchanged 20260424 analysis schema migration and SEC-05 migration. SEC-01 is not a direct SEC-05 SQL dependency.
+- Coverage: pgTAP structure/ACL/RLS/result/track/V05 suites plus separate C01-C05 multi-connection worker harness and evidence-completeness gate.
+- Local execution: `NOT_RUN_SUPABASE_CLI_PROFILE_UNAVAILABLE`. Docker was available, but Supabase CLI 2.82.0 exited before local container creation because its local profile prerequisite was absent. Two isolated TEMP start attempts cleaned up without container/volume residue.
+- Result: no security PASS is claimed; pgTAP, concurrency, and V05 runtime results remain `NOT_RUN`.
+- Next work: restore the existing local CLI profile outside this repository, run the harness twice, then perform the requested independent verification/commit-gate review.
+
 ### 2026-07-11 / Supabase predecessor baseline safe schema dump intake
 
 - Branch: `codex/survey-input-contract-refactor`
@@ -2336,6 +2503,27 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Provider responses remain in memory only for existing parsing and fallback behavior; no public response, provider request, DB, Storage, or deployment behavior changed.
 - Added a negative-control verifier that drops attempted preview, raw response, prompt, and credential fields from the provider log event and rejects direct preview/content logging in both routes.
 
+### 2026-07-14 / SEC-07 product purchase-link safety boundary
+
+- Added a pure resolver that allowlists exact HTTPS product hosts and paths, rejects unsafe or lookalike direct URLs, and returns a deterministic Naver Shopping fallback or `none` without retaining a raw input URL field.
+- The resolver is now the read boundary for product source normalization, free analysis output, full-report output including known legacy product nodes, and free/full result-page anchors. Existing product data, migrations, crawler writers, and hosted targets were not changed.
+- The direct registry covers verified Olive Young and Hwahae product paths plus brand-bound official stores for Anua, Beauty of Joseon, SKIN1004, Purito, Aestura, Dr.G, and Round Lab. Unapproved third-party hosts fall back.
+- Added a static attack-matrix verifier and a Playwright client-boundary smoke assertion. Result anchors use `noopener noreferrer`; public shared-result DTOs continue to omit purchase URLs.
+- Required verification: SEC-07 verifier, existing public result-boundary verifier, syntax checks, Playwright discovery/smoke, build, diff/credential checks, and artifact cleanup. Remote Supabase, seller requests, providers, commit, and push remain out of scope. Link liveness and ingestion validation remain follow-up work; an independent commit gate is still required.
+
+### 2026-07-14 / SEC-07 nested and legacy purchase-URL fail-closed correction
+
+- Scope: replaced shallow product/report URL projection with one shared recursive response serializer. It removes the fixed purchase-URL alias denylist at every object/array depth and reintroduces only resolver-owned canonical links at explicit product-node paths for analyze and premium/full-report payloads. Unknown metadata, report-root, routine-step, legacy, and dangerous prototype keys cannot retain or promote a purchase URL.
+- Safety: plain JSON objects and arrays are bounded by depth and size; cycles, non-plain objects, and excessive branches fail closed. Text that merely contains a URL is preserved. No registry, UI anchor, DB, migration, crawler, hosted Supabase, seller request, provider, commit, or push change occurred.
+- Validation: the strengthened verifier directly exercised the shared analyzer/premium projections with nested aliases, safe unknown URLs, malformed legacy roots, prototype keys, cyclic/over-depth/oversized payloads, and direct/fallback/none product cases. SEC-07, public result-boundary, and analysis RLS verifiers, JavaScript syntax checks, Playwright discovery, targeted and full smoke, production build, diff check, credential-pattern scan, and artifact/process cleanup passed.
+- Final status: `FULL_PASS` for this SEC-07 correction. An independent commit gate remains required before commit.
+
+### 2026-07-15 / SEC-07 verifier case-omission fail-closed correction
+
+- Scope: added a frozen 42-ID SEC-07 verifier manifest, fixed expected count, machine-readable per-case results, and exact catalog/observed-set checks. Product resolver, serializer, routes, UI, registry, database, migration, crawler, and dependencies were not changed.
+- Safety: the verifier now rejects missing, duplicate, unknown, unobserved, failed, or count-mismatched cases before emitting `SEC07_PRODUCT_LINK_BOUNDARY=PASS`.
+- Validation: syntax and original verifier passed with 42/42 recorded cases. OS TEMP controls for removed userinfo execution, duplicate userinfo execution, unknown execution ID, excluded defined case, expected-count mismatch, and removed nested/legacy execution each returned non-zero without the PASS marker; TEMP residue was removed. The public result-boundary verifier was rerun after this correction. Smoke and build are deferred to the next independent commit gate because product code did not change.
+- Notes/risks: remote Supabase, provider, seller, commit, and push access remain out of scope. An independent commit gate is still required before commit.
 ### 2026-07-14 / Production full-report 401 origin and auth-session regression
 
 - Task type: diagnosis followed by bounded High-risk execution. Auth and Production were `Y`; DB, RLS, Storage, Provider, Payment, and Secret changes/execution were `N`. No hosted target, provider, Supabase database, environment file, entitlement rule, migration, policy, or deployment setting was changed or invoked.
@@ -2371,3 +2559,107 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Re-entry: the result CTA exposes the saved report ID only after that verified lookup and opens the existing `savedReportId` path, whose existing `id + user_id` verification runs before current-product application or persistence.
 - Regeneration: the same nested route requires the verified current saved report and premium-create access, creates a new random premium session from the existing base analysis, strips the directly persisted current-product fields (`currentProducts`, `currentProductVerdicts`), and replaces only the HttpOnly cookie with the existing options. It neither updates nor deletes the old saved-report row; subsequent normal persistence uses the new `source_session_id` and inserts a new row.
 - Verification: current-session re-entry verifier, full-report auth/origin verifier, premium release verifier, architecture guard, and `npm run build` passed. The architecture guard emitted its expected review warning for `app/result/page.js`; no architecture document update is needed because the schema, RLS, domain model, and existing saved-report ownership contract were unchanged.
+
+### 2026-07-15 / SEC-08 image upload decode and canonicalization boundary
+
+- Scope: hardened the existing in-memory JPEG/PNG/WebP upload boundary for `/api/analyze`, `/api/face-reading`, and optional `/api/full-report` face images. No DB migration, RLS, Storage, provider contract, remote target, commit, or push change occurred.
+- Dependency: promoted the already locked and installed `sharp` `0.34.5` to an exact direct production dependency without unrelated package upgrades.
+- Server contract: exact MIME, magic bytes, and decoded format must agree; Sharp must fully decode and re-encode the image. Orientation-aware dimensions are limited to 8192 by 8192, total pixels to 16,777,216, pages to one, and source/canonical bytes to 8MB. Animated WebP and APNG container markers fail closed.
+- Canonicalization: auto-orients and re-encodes to the same format, strips metadata, discards trailing payload, rechecks canonical signature/format/dimensions, and gives provider routes only canonical MIME and data URL. Decoder details and raw image data are not logged or returned.
+- Premium boundary: optional top-level `imageUrl` must be an exact allowed base64 data URL and pass the same canonicalizer. Nested and legacy face-image aliases are rejected; only the canonical data URL can enter a new Face Lab summary and premium session/saved-report persistence. Existing stored rows are not rewritten.
+- Client UX: file inputs now advertise exact JPEG/PNG/WebP MIME values and reject empty, unsupported, or over-8MB files before preview/session flow. The client check remains advisory; server validation is authoritative.
+- Verification: the frozen 55-case SEC-08 verifier passed 55/55. OS TEMP missing, duplicate, unknown, unobserved, and count-mismatch mutations all exited non-zero without the PASS marker. Existing result-boundary, analysis RLS, premium-release, analysis-request-guard, and provider runtime-log sanitization verifiers, syntax, Playwright discovery, targeted upload smoke, all three `@smoke` tests, production build, dependency check, and diff check passed.
+- Residual: the 8MB application UX remains larger than the approximately 4.5MB Vercel request ingress limit. Hosted deployment behavior and UX alignment remain a separate deployment item; no infrastructure-limit claim is made here.
+- Next: run an independent SEC-08 security review and commit gate before staging or committing these changes.
+
+### 2026-07-16 / SEC-07 verifier portability and SEC-09 public-read boundary local completion
+
+- SEC-07: source-text assertions now normalize only line endings before multiline wiring checks. The frozen 42-case manifest is unchanged; LF, CRLF, and indentation-only fixtures pass, while a removed resolver projection and omission/duplicate/unknown/count mutations fail closed. Product code was not changed.
+- SEC-09: new shares use canonical 16-byte base64url IDs while 8-character legacy reads remain compatible. The result-read guard uses the existing SEC-01 durable backend with HMAC-scoped principals, trusted Vercel-only client address handling, generic 404 outcomes, no-store responses, client-only shared-page loading, and owner-only unpublish.
+- Local verification: SEC-09 verifier 57/57, isolated pgTAP 24/24, concurrency 5 allowed / 7 denied, migration reapply, all related verifiers, targeted shared-result smoke, full @smoke, and production build passed. The corrective migration SHA-256 is `3FF38B6E7DAD556908E7B9310502F968E86496614EBA47551DBF6C24507E795E`.
+- Boundaries: no remote Supabase, Preview, Production, provider, commit, or push action occurred. Hosted proxy verification, safe staging classification, distributed-IP/WAF policy, and malformed-versus-missing timing remain residual deployment work. An independent commit gate is still required.
+
+### 2026-07-16 / SEC-10 browser image-origin contract
+
+- Added a pure product image policy that approves only canonical `https://img.hwahae.co.kr/products/<id>/<same-id>_<14-digit-timestamp>.jpg` URLs. Scheme, credentials, explicit ports, query/fragment, encoded or mismatched paths, IP/localhost, trailing-dot, lookalike, control-character, overlong, and unregistered-host inputs fail closed without retaining the raw URL.
+- Product source/current-product projection, anonymous persistence, analyze response, premium session/readback/saved-report persistence, and legacy payload reads now reproject only approved product-node images. Unknown image aliases are removed while the SEC-08 canonical `faceLabSummary.imageUrl` data URL remains intact; the Public Result DTO remains image-free.
+- Replaced raw product renderers with `SafeProductImage`, including `no-referrer`, stable local placeholder, and one-failure/no-retry behavior. AuthNav no longer renders OAuth/profile avatar URLs and uses initials or a local icon; profile upsert no longer copies new external avatar metadata.
+- Controlled enrichment validates image URLs before DB access/update, and candidate promotion converts inherited unapproved images to `null`. No DB migration, proxy, server fetch, rehosting, Next Image optimizer, package, CSP, middleware, layout, or global-header change was made.
+- The exact next-step CSP candidate is `img-src 'self' data: blob: https://img.hwahae.co.kr;`.
+- Validation: SEC-10 frozen manifest `44/44`, 13 omission/integrity/weakening TEMP mutations fail-closed, SEC-09 `57/57`, SEC-08 `55/55`, SEC-07 `42/42`, related response/request/RLS/premium/provider/anonymous verifiers, syntax, crawler typecheck, targeted Playwright `1/1`, full `@smoke` `5/5`, production build, and diff check passed. A first targeted run used stale step labels and timed out before image assertions; the test navigation alone was corrected before the passing run.
+- No external image, DNS, remote Supabase, Preview, Production, OAuth, provider, commit, or push action occurred. External-host IP visibility, host/path operational drift, legacy rows retained at rest, and CSP/nonce/global-header enforcement remain residual work. This entry does not mark SEC-10 closed or deployed.
+
+### 2026-07-16 / SEC-10 nonce CSP and global HTTP security headers
+
+- Added a pure deterministic security-header policy, global `next.config.js` headers, and an Edge-compatible 16-byte request nonce for HTML document responses. Production script policy uses only self, the request nonce, and `strict-dynamic`; `unsafe-inline` and `unsafe-eval` are absent. Development adds only `unsafe-eval` and an exact local HMR WebSocket origin.
+- Root layout now reads the Next.js 15 async request headers and applies the validated nonce to the existing theme script. Local production runtime confirmed that Next framework scripts and page bundles receive the same nonce. Application pages are now dynamically rendered; generated metadata images remain static.
+- CSP uses the existing exact product image registry and the parsed exact browser Supabase origin. Missing or malformed origin configuration fails closed without wildcard or broad-scheme fallback. No browser realtime caller was found, so production does not allow a WebSocket origin.
+- `next.config.js` applies nosniff, DENY, no-referrer, minimal Permissions-Policy, COOP same-origin, Origin-Agent-Cluster, DNS prefetch off, and cross-domain-policy denial to pages, APIs, and static assets. COEP, global CORP, wildcard CORS, and application HSTS scope expansion were not added.
+- Supabase middleware pass-through response creation now preserves forwarded nonce/CSP request headers while retaining refreshed request cookies and response `Set-Cookie` values. Canonical and auth redirects retain status, location, and document CSP; SEC-09 route-owned no-store headers remain unchanged.
+- Verification: SEC-10 header verifier `60/60`, 15 omission/integrity/weakening mutations fail-closed, local production header Playwright `1/1`, image-origin targeted `1/1`, full `@smoke` `5/5`, production build, syntax, discovery, diff check, SEC-10 image `44/44`, SEC-09 `57/57`, SEC-08 `55/55`, SEC-07 `42/42`, and related response/request/RLS/premium/provider/anonymous verifiers passed. Non-live browser Supabase traffic was intercepted locally.
+- No remote Supabase, external image, Preview, Production, OAuth, provider, dependency, DB, migration, commit, or push action occurred. Hosted CSP/HSTS/OAuth/session verification, style `unsafe-inline`, dynamic-rendering performance, and external reverse-proxy support remain residuals. This entry does not claim SEC-10 deployed or Production verified.
+
+### 2026-07-16 / SEC-10 Referrer compatibility and SEC-11 POST-only signout
+
+- SEC-10 compatibility: local Chromium reproduced that global `Referrer-Policy: no-referrer` makes a same-origin native form POST send `Origin: null`. The global policy is now exact `same-origin`; cross-origin browser requests still send no Referer, while SEC-07 purchase links retain `noreferrer` and SEC-10 product images retain component-level `no-referrer`. CSP, nonce, image registry, and all other global headers are unchanged.
+- SEC-11 transport: AuthNav now uses a JavaScript-independent POST form. GET and explicit HEAD return 405, OPTIONS returns 204, and all safe methods perform zero auth work. POST requires a single exact Origin and rejects null/missing/malformed/lookalike values; present `Sec-Fetch-Site` must be exact `same-origin`, with no Referer fallback.
+- SEC-11 session: hosted Production requires canonical/request/source triple-origin equality; Preview and local require source/request equality. Valid requests use `signOut({ scope: "local" })`, return fixed-root 303, and ignore redirect parameters. Unexpected Supabase failures return generic 503 with `Retry-After: 60`. Every outcome carries the three no-store headers and no CORS grant.
+- Middleware bypasses refresh and `getClaims()` only on exact `/api/auth/signout`, before client creation. Installed SSR synthetic tests confirmed one local logout call and deletion cookie, missing-session no-op success, and no partial cookie write on synthetic backend failure.
+- Verification: SEC-11 `40/40`; SEC-11 original plus 17 fail-closed mutations `18/18`; SEC-10 Referrer weakening matrix `5/5`; local production SEC-11, SEC-10 header, and image targeted tests each `1/1`; full `@smoke` `6/6`; SEC-10 headers `60/60`, image origin `44/44`, SEC-09 `57/57`, SEC-08 `55/55`, SEC-07 `42/42`, auth-origin, response, request/RLS, premium, provider-log, and anonymous-write verifiers; build and diff check passed. CSP and hydration collectors observed zero violations/errors.
+- No remote Supabase, external image/link, Preview, Production, OAuth, provider, dependency, DB, migration, commit, or push action occurred. Hosted Origin/canonical-domain/cookie behavior, actual OAuth and Supabase signout, provider-global logout, and access-JWT expiry remain residuals; this entry does not claim hosted verification.
+
+### 2026-07-17 / SEC-07 source-only purchase-anchor exact-set and SEC-10/11 gate re-entry
+
+- Prior gap: an OS TEMP copy reproduced that removing `noreferrer` from the inactive `TopPickHeroCard::top-pick` anchor still passed the prior HEAD SEC-07 verifier. The file-level string assertion did not bind security attributes to each purchase-anchor node.
+- Source contract: added one shared verifier-only anchor registry and discovery helper. Expected, discovered, and verified production-source anchors are `7/7/7`; each binds `purchaseLink.href`, resolver provenance, `_blank`, `noopener`, and `noreferrer`. Raw purchase-link binding, unknown/missing/duplicate IDs, and provenance changes fail closed.
+- Reachability contract: active `/result` and `/result/full-report` route graphs reach `0` purchase anchors; all `7` source anchors are runtime-unreachable. Playwright confirms runtime expected/rendered/covered `0/0/0` and zero seller/search outbound requests. Inactive purchase UI was neither reconnected nor deleted, and no production code changed in this follow-up.
+- Mutation evidence: per-anchor `noreferrer` `7/7`, `noopener` `7/7`, target `7/7`, source exact-set/provenance `10/10`, reachability `7/7`, SEC-11 `18/18`, global Referrer policy `3/3`, and SafeProductImage referrer `1/1` mutations were rejected non-zero without final PASS markers. TEMP residue was removed.
+- Fresh verification: SEC-07 `42/42`, SEC-10 headers `60/60`, SEC-11 `40/40`, SEC-10 image `44/44`, SEC-09 `57/57`, SEC-08 `55/55`, and 8 related auth/response/request/RLS/premium/provider/anonymous verifiers passed. Local production purchase-negative, SEC-11, SEC-10 header, and image targeted tests each passed `1/1`; full `@smoke` passed `6/6`; syntax and diff checks passed.
+- Runtime boundary: Chromium reconfirmed non-null exact same-origin native signout Origin, 303-to-GET semantics, no POST replay, zero CSP/hydration findings, and no Referer on intercepted Supabase, approved-image, and synthetic external-link requests. An actual production purchase-anchor click was not executable because the current route has no reachable purchase anchor and is not claimed as tested.
+- Boundaries: no remote Supabase, actual OAuth, Preview, Production, provider, external image/link request, dependency, DB, migration, stage, commit, or push action occurred. Hosted Origin/cookie/referrer behavior and seven inactive purchase UI implementations remain residual work.
+
+### 2026-07-17 / SEC-12 error response and log exposure boundary
+
+- Added one pure authoritative error-redaction boundary with frozen public-code and structured-log registries, fixed generic copy, exact sensitive no-store headers, hostile-object isolation, CR/LF/ANSI/control cleanup, a 1,024-byte payload cap, and logger-sink isolation. Raw throwable traversal or serialization is not used.
+- Replaced diagnosed raw DB/config responses and server/client raw logging in the exact 36-file allowlist. Track/save-report use fixed dependency codes; auth callback and Supabase/provider/analyze/client paths retain only categorical metadata. OpenAI key prefixes and concern/safety diagnostics were removed.
+- Provider runtime logging delegates to the central boundary with exact provider/stage registries. Prompt, completion, image, request/response body, token, cookie, identifier, stack, path, details, hint, and cause data are excluded in every environment.
+- SEC-12 frozen verifier passed `60/60`. OS TEMP mutations passed `28/28` fail-closed after the mutation exercise exposed and corrected three verifier-only gaps: provider descriptor return coverage, one-level nested-cause coverage, and ANSI residual/partial sanitizer-bypass coverage. Production behavior was not weakened to satisfy tests.
+- Local production verification: SEC-12 targeted `1/1`, SEC-07/10/11 targeted checks each `1/1`, and full `@smoke` `7/7` passed. Synthetic error markers were absent from DOM, console, URL, browser storage, and captured server stdout/stderr; no remote service or external URL was called.
+- Related SEC-07 through SEC-11, auth-origin, response/request/RLS, premium, provider, anonymous-write, and no-write verifiers passed. Next.js `15.5.18` production build passed. No package, DB, migration, middleware, Next config, stage, commit, or push action occurred.
+- Hosted residuals: Vercel retention/access/platform serialization, source maps/default error pages, hosted unhandled errors, actual provider SDK output, and remote Supabase/OAuth behavior remain unverified. This entry does not claim Preview, Production, Vercel-log, remote, provider, or deployment verification.
+
+### 2026-07-18 / SEC-12 model credential and analyze log accuracy correction
+
+- Replaced permissive model-shape retention with one frozen exact registry containing only `gpt-4o` and `gpt-4o-mini`. Unknown, custom, case-variant, credential-shaped, oversized, and control-bearing values are omitted by the central structured sink; the provider descriptor uses only the fixed `unknown` fallback.
+- Replaced analyze payload logging with a frozen 14-stage policy. Diagnostic, fallback, guard, product-source, and request-failure stages now emit fixed event/category/severity metadata without raw stage, environment diagnostics, response-shape details, error objects, DB codes, provider bodies, prompt/completion, concern/safety data, stacks, or paths.
+- Extended the frozen SEC-12 verifier from `60/60` to `62/62` while retaining the original 60 IDs. The provider verifier now shares the model registry. OS TEMP mutation verification rejected `30/30`, including permissive model and inaccurate stage-map mutations; a shorthand-property source-audit gap found during mutation was corrected before the final full pass.
+- Fresh verification passed SEC-12 `62/62`, provider runtime logging, SEC-07 `42/42`, SEC-08 `55/55`, SEC-09 `57/57`, SEC-10 image `44/44`, SEC-10 headers `60/60`, SEC-11 `40/40`, and related auth/response/request/RLS/premium/anonymous/no-write checks. Targeted Playwright checks each passed `1/1`, full `@smoke` passed `7/7`, and Next.js `15.5.18` production build passed.
+- No remote Supabase, actual OAuth, provider, external URL, Preview, Production, dependency, DB, migration, stage, commit, or push action occurred. Hosted log behavior and actual provider/remote dependency output remain residual verification.
+
+### 2026-07-18 / SEC-12 no-store exact-set verifier fail-open correction
+
+- Independent gate finding: `P09_NO_STORE_EXACT` used the production `SENSITIVE_NO_STORE_HEADERS` registry as both expected and actual. Removing all three entries made its validation loop empty, while P09, the helper-string-only I10 check, and the final `62/62` marker still passed. Production header values were correct; the defect was verifier integrity.
+- Correction: the SEC-12 verifier now owns a frozen literal three-header expectation independent from production code. P09 enforces exact count, duplicate/missing/extra sets, exact values, registry/reference independence, and the actual `Headers` builder output. Its direct 16-input matrix accepts only the exact contract and rejects empty/null/undefined, individual and total omissions, extra/duplicate entries, key-case and whitespace drift, and wrong values.
+- Integration: I10 now enforces expected/discovered/verified `11/11/11` for the sensitive route inventory and ties each named wrapper or direct helper use to the actual `NextResponse.json`/redirect response path. Import-only helper text cannot pass.
+- Mutation: the existing SEC-12 matrix passed `30/30` fail-closed. Independent deletions of Cache-Control, CDN-Cache-Control, Vercel-CDN-Cache-Control, and all three passed `4/4` fail-closed; combined result `34/34 rejected`. Four additional wrong-value/extra-header controls also failed without a final PASS marker.
+- Fresh validation: SEC-12 `62/62`, provider log, SEC-07 `42/42`, SEC-08 `55/55`, SEC-09 `57/57`, SEC-10 image `44/44`, SEC-10 headers `60/60`, SEC-11 `40/40`, auth-origin, response/request/RLS, premium, anonymous-write, analyze no-write, 30 JavaScript/MJS syntax checks, Playwright discovery, five targeted browser cases, full `@smoke 7/7`, and Next.js `15.5.18` production build passed. Seven local-safe response paths carried the exact no-store contract and retained SEC-10 headers.
+- Baseline residual: the SEC-06 exact-string verifier fails identically at HEAD and in the working tree on its stale `authoritativePremiumReport = updateResult.payload.premiumReport` marker. It was not changed, weakened, or counted as a SEC-12 pass.
+- Boundaries: no production source, Playwright, package, DB, migration, middleware, Next config, `.gitignore`, or private fixture change occurred. No remote Supabase, OAuth, provider, external URL, Preview, Production, stage, commit, or push action occurred. Hosted log/no-store behavior remains unverified.
+
+### 2026-07-18 / SEC-12 I10 exported-handler response-path binding correction
+
+- Independent gate finding: an OS TEMP `app/api/track/route.js` mutation left a dead `createNoStoreHeaders();` expression but returned `init.headers`; the prior I10 still printed `62/62 PASS`. This disproved the prior dead-call coverage claim while leaving production response behavior unchanged.
+- Correction: I10 now uses the parser bundled with Next.js `15.5.18` to resolve the frozen exported HTTP handlers, trace local response wrappers and variables, and require the authoritative no-store builder on every reachable terminal response path. Import-only/dead/unused/overwritten calls, post-return and constant-false paths, ignored wrapper results, ambiguous spreads, dynamic or unresolved wrappers, cycles, and mixed safe/unsafe paths fail closed.
+- Coverage: expected/discovered/verified routes are `11/11/11`, exported handler bindings `12/12/12`, and terminal response nodes `120/120/120`; dead, unsafe, and unresolved response paths are zero. The pure binding matrix accepted `2/2` positive controls and rejected `16/16` negative controls. The frozen SEC-12 manifest remains `62` and passed `62/62`.
+- Mutation: the existing matrix was re-executed `34/34` fail-closed. The exact dead-call reproduction became mutation 35 and also exited non-zero without a PASS marker, for `35/35 rejected`.
+- Fresh validation: provider logging, SEC-07 `42/42`, SEC-08 `55/55`, SEC-09 `57/57`, SEC-10 image `44/44`, SEC-10 headers `60/60`, SEC-11 `40/40`, auth-origin, response/request/RLS, premium, anonymous-write, analyze no-write, and changed JS/MJS syntax `28/28` passed. Seven safe local failure/redirect responses retained exact no-store and SEC-10 headers. Five targeted Playwright cases passed `1/1`, full `@smoke` passed `7/7`, and the Next.js `15.5.18` production build passed.
+- Captured local process output contained only fixed categorical events for intentional analyze/face-reading failures and no synthetic marker, bearer, JWT, cookie, service-role, API-key, or stack-path match. The stale SEC-06 exact-string verifier failed identically at HEAD and in the working tree and was not counted as a SEC-12 pass.
+- Boundaries: only the SEC-12 verifier, this work log, and the SEC-12 document changed in this correction. No production source, Playwright, package, dependency, DB, migration, middleware, Next config, `.gitignore`, private fixture, remote Supabase, OAuth, provider, external URL, Preview, Production, stage, commit, or push action occurred. Hosted behavior remains pending.
+
+### 2026-07-18 / SEC-12 authoritative 36-case mutation harness
+
+- Git forensics established that prior `28/28`, `30/30`, `34/34`, and `35/35` results had no repository-owned harness. Added the first executable authoritative harness at `scripts/verify-sec12-mutations.mjs`; the SEC-12 verifier and production sources were not changed.
+- The frozen ordered 36-case manifest preserves the historical 35 controls and adds I10 class-static response overwrite as case 36. It covers public/log/provider leakage, hostile inputs and normalization, verifier manifest integrity, sanitizer/model/stage bypasses, P09 header omissions, and I10 response binding.
+- Each mutation runs from a fresh OS TEMP copy after a required `62/62` baseline. Rejection requires exact exit `1`, non-empty stderr, no final PASS marker, and the expected contract boundary. A repeat run must produce byte-identical exit, signal, stdout, and stderr.
+- Fresh validation passed `node --check`, SEC-12 `62/62`, the mutation harness `36/36 rejected`, provider runtime logging, SEC-07 `42/42`, SEC-08 `55/55`, SEC-09 `57/57`, SEC-10 image `44/44`, SEC-10 headers `60/60`, and SEC-11 `40/40`.
+- No package/build script, dependency, workflow, production code, database, migration, remote service, stage, commit, or push was changed. The reproducible command is `node scripts/verify-sec12-mutations.mjs`.

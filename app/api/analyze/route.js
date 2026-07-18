@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
-import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
@@ -35,11 +34,32 @@ import {
   issueAnonymousWriteGrants
 } from "@/lib/security/anonymous-write-grant";
 import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonymous-write-grant-core";
-import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
-import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import {
+  projectProductImage,
+  sanitizeAnalyzeResultProductImages,
+  sanitizePremiumReportProductImages
+} from "@/lib/security/image-source-policy";
+import { canonicalizeImageFile } from "@/lib/server/image-upload-boundary";
+import {
+  formatUploadSize,
+  validateImageRequestContentLength,
+  validateImageUpload
+} from "@/lib/upload-validation";
+import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import {
+  getTrustedDirectPurchaseUrl,
+  projectProductPurchaseLink,
+  sanitizeAnalyzeResultPurchaseLinks,
+  sanitizePremiumReportPurchaseLinks
+} from "@/lib/product-purchase-link";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
+import {
+  createAnalyzeLogEvent,
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
@@ -76,45 +96,21 @@ function getAnalyzeCopy(locale = "ko") {
   return ANALYZE_COPY[locale] || ANALYZE_COPY.ko;
 }
 
-function logAnalyze(stage, payload = {}) {
-  console.log(`[analyze] ${stage}`, payload);
+function logAnalyze(stage) {
+  const event = createAnalyzeLogEvent(stage);
+  writeSafeLog(event.severity, event);
 }
 
 function logSurveyInputContractParallel(formInput, context = {}) {
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
+  void formInput;
+  void context;
+}
 
-  try {
-    const contract = buildSurveyInputContract(formInput, {
-      source: "api_analyze_parallel"
-    });
-
-    console.info("[analyze] survey-input-contract:parallel", {
-      primaryConcern: contract.goals.primaryConcern,
-      secondaryConcerns: contract.goals.secondaryConcerns,
-      unresolvedPrimaryConcern: contract.goals.unresolvedPrimaryConcern,
-      safety: contract.safety,
-      missingFields: contract.metadata.missingFields,
-      warnings: contract.metadata.warnings
-    });
-
-    const auditResult = appendSurveyInputContractDevAuditEvent(contract, {
-      hasImage: Boolean(context.hasImage)
-    });
-
-    if (!auditResult.ok) {
-      console.warn("[analyze] survey-input-contract:audit-write-failed", {
-        message: previewDiagnosticText(
-          auditResult.error instanceof Error ? auditResult.error.message : String(auditResult.error)
-        )
-      });
-    }
-  } catch (error) {
-    console.warn("[analyze] survey-input-contract:parallel-failed", {
-      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
-    });
-  }
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
 }
 
 async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, decision }) {
@@ -141,14 +137,10 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
     });
 
     if (!captureResult.captured) {
-      console.warn("[analyze] functional-shadow-capture:skipped", {
-        reason: captureResult.reason || "unknown"
-      });
+      logAnalyze("functional-shadow-capture:skipped");
     }
-  } catch (error) {
-    console.warn("[analyze] functional-shadow-capture:failed", {
-      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
-    });
+  } catch {
+    logAnalyze("functional-shadow-capture:failed");
   }
 }
 
@@ -227,7 +219,7 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
       });
     }
   } catch {
-    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
+    logAnalyze("shadow-boundary-dry-run:non-blocking-failure");
   }
 }
 
@@ -245,12 +237,10 @@ async function captureLocalShadowRecommendationEvidenceIfEnabled({ recommendatio
     const result = await writeLocalShadowRecommendationEvidence({ recommendationResult });
 
     if (!result.written) {
-      console.warn("[analyze] local-shadow-recommendation-evidence:skipped", {
-        reason: result.skipReason || "unknown"
-      });
+      logAnalyze("local-shadow-recommendation-evidence:skipped");
     }
   } catch {
-    console.warn("[analyze] local-shadow-recommendation-evidence:non-blocking-failure");
+    logAnalyze("local-shadow-recommendation-evidence:non-blocking-failure");
   }
 }
 
@@ -271,7 +261,7 @@ async function captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommenda
       recommendationResult
     });
   } catch {
-    console.warn("[analyze] local-actual-runtime-evidence:non-blocking-failure");
+    logAnalyze("local-actual-runtime-evidence:non-blocking-failure");
   }
 }
 
@@ -650,20 +640,22 @@ function sanitizeProductForPremium(product) {
     return null;
   }
 
+  const safeProduct = projectProductImage(projectProductPurchaseLink(product)) || {};
+
   return {
-    id: product.id || "",
-    name: product.name || "",
-    brand: product.brand || "",
-    category: product.category || "",
-    step: product.step || "",
-    texture: product.texture || "",
-    finish: product.finish || "",
-    use_time: product.use_time || "",
-    price_range: product.price_range || "",
-    buy_link: product.buy_link || "",
-    image_url: product.image_url || "",
-    reason: product.reason || "",
-    comparison_reason: product.comparison_reason || ""
+    id: safeProduct.id || "",
+    name: safeProduct.name || "",
+    brand: safeProduct.brand || "",
+    category: safeProduct.category || "",
+    step: safeProduct.step || "",
+    texture: safeProduct.texture || "",
+    finish: safeProduct.finish || "",
+    use_time: safeProduct.use_time || "",
+    price_range: safeProduct.price_range || "",
+    buy_link: safeProduct.buy_link || "",
+    ...(safeProduct.image_url ? { image_url: safeProduct.image_url } : {}),
+    reason: safeProduct.reason || "",
+    comparison_reason: safeProduct.comparison_reason || ""
   };
 }
 
@@ -704,7 +696,7 @@ function stripRawSignalBlobs(product) {
   delete nextProduct.review_signals;
   delete nextProduct.market_signals;
   delete nextProduct.ingredient_signals;
-  return nextProduct;
+  return projectProductImage(projectProductPurchaseLink(nextProduct));
 }
 
 function appendTopPickReviewEvidence(decision, locale = "ko") {
@@ -1113,7 +1105,11 @@ function sanitizePremiumReport(report) {
               price_range: item?.price_range || "",
               price_min: Number.isFinite(Number(item?.price_min)) ? Number(item.price_min) : null,
               price_max: Number.isFinite(Number(item?.price_max)) ? Number(item.price_max) : null,
-              buy_link: item?.buy_link || "",
+              buy_link: getTrustedDirectPurchaseUrl({
+                buyLink: item?.buy_link,
+                brand: item?.brand,
+                name: item?.name
+              }),
               image_url: item?.image_url || "",
               summary: item?.summary || ""
             }))
@@ -1350,6 +1346,21 @@ export async function POST(request) {
   let analysisGuard = null;
 
   try {
+    const contentLengthValidation = validateImageRequestContentLength(request);
+
+    if (!contentLengthValidation.ok) {
+      const copy = getAnalyzeCopy(responseLocale);
+      return sensitiveJsonResponse(
+        {
+          error:
+            contentLengthValidation.code === "too_large"
+              ? copy.imageTooLarge
+              : copy.invalidImageType
+        },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const image = formData.get("image");
     const skinType = formData.get("skinType");
@@ -1399,11 +1410,11 @@ export async function POST(request) {
       !afternoonSkinChange ||
       !mostDislikedFeel
     ) {
-      return NextResponse.json({ error: copy.missingRequired }, { status: 400 });
+      return sensitiveJsonResponse({ error: copy.missingRequired }, { status: 400 });
     }
 
     if (!imageValidation.ok) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           error:
             imageValidation.code === "too_large"
@@ -1478,50 +1489,44 @@ export async function POST(request) {
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
-    let imageDataUrl = null;
+    const buffer = Buffer.from(await image.arrayBuffer());
+    const canonicalImage = await canonicalizeImageFile(image, buffer);
 
-    if (typeof image.arrayBuffer === "function") {
-      const buffer = Buffer.from(await image.arrayBuffer());
-      imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
+    if (!canonicalImage.ok) {
+      const guardFailure = await failAnalysisRequestGuard(analysisGuard);
+
+      if (!guardFailure.ok) {
+        logAnalyze("analysis-guard:fail-failed");
+      }
+
+      return applyAnalysisGuardCookies(
+        sensitiveJsonResponse({ error: copy.invalidImageType }, { status: 400 }),
+        analysisGuard
+      );
     }
 
+    const canonicalDataUrl = canonicalImage.dataUrl;
+
     if (process.env.NODE_ENV !== "production") {
-      logAnalyze(
-        "openai-env:diagnostic",
-        localShadowProviderStub.enabled
-          ? {
-              route: "analyze",
-              routeUsesOpenAi: false,
-              routeUsesOpenRouter: false,
-              providerIsolation: localShadowProviderStub.reasonCode
-            }
-          : getOpenAiEnvDiagnostics({
-              route: "analyze",
-              routeUsesOpenAi: true,
-              routeUsesOpenRouter: false
-            })
-      );
+      logAnalyze("openai-env:diagnostic");
     }
 
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
     let photoNotice = "";
 
-    if (apiKey && imageDataUrl) {
+    if (apiKey && canonicalDataUrl) {
       try {
         photoAnalysis = await extractPhotoAnalysis({
           apiKey,
-          imageDataUrl,
+          imageDataUrl: canonicalDataUrl,
           locale,
           model,
           formInput
         });
-      } catch (photoError) {
+      } catch {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
         photoNotice = copy.photoFallbackNotice;
-        logAnalyze("photo-evidence:fallback", {
-          ok: false,
-          errorCategory: "fallback_used"
-        });
+        logAnalyze("photo-evidence:fallback");
       }
     } else {
       photoNotice = copy.photoFallbackNotice;
@@ -1557,12 +1562,9 @@ export async function POST(request) {
         if (explanationItems.length) {
           decision = applyExplanationBundle(decision, explanationItems);
         }
-      } catch (explanationError) {
+      } catch {
         explanationNotice = copy.explanationFallbackNotice;
-        logAnalyze("product-explanations:fallback", {
-          ok: false,
-          errorCategory: "fallback_used"
-        });
+        logAnalyze("product-explanations:fallback");
       }
     } else {
       explanationNotice = copy.missingApiKeyNotice;
@@ -1589,7 +1591,7 @@ export async function POST(request) {
     if (analysisGuard.principal.scope === "anonymous" && !anonymousWriteGrant?.ok) {
       await failAnalysisRequestGuard(analysisGuard);
 
-      return applyAnalysisGuardCookies(NextResponse.json(
+      return applyAnalysisGuardCookies(sensitiveJsonResponse(
         {
           error: "anonymous_write_grant_unavailable",
           message: "We cannot prepare the analysis save session right now. Please try again shortly."
@@ -1599,20 +1601,17 @@ export async function POST(request) {
     }
 
     if (process.env.NODE_ENV !== "production" && !hasAnalyzeResponseShape(publicDecision)) {
-      logAnalyze("response:shape-warning", {
-        hasSummary: typeof publicDecision?.summary === "string",
-        hasTopPickKey: publicDecision && "topPick" in publicDecision,
-        hasMorning: Array.isArray(publicDecision?.morning),
-        hasNight: Array.isArray(publicDecision?.night)
-      });
+      logAnalyze("response:shape-warning");
     }
 
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
     const premiumSessionReport = premiumReport
-      ? {
-          ...premiumReport,
-          freeResult: publicDecision
-        }
+      ? sanitizePremiumReportProductImages(
+          sanitizePremiumReportPurchaseLinks({
+            ...premiumReport,
+            freeResult: publicDecision
+          })
+        )
       : null;
     const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
     const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
@@ -1621,21 +1620,23 @@ export async function POST(request) {
           locale
         })
       : null;
-    const responsePayload = {
-      ...publicDecision,
-      meta: buildAnalyzeMeta({
-        locale,
-        photoNotice,
-        explanationNotice,
-        apiKey
-      }),
-      ...(anonymousWriteGrant?.ok
-        ? {
-            analysisRunId: anonymousWriteGrant.analysisRunId
-          }
-        : {})
-    };
-    const response = NextResponse.json(responsePayload);
+    const responsePayload = sanitizeAnalyzeResultProductImages(
+      sanitizeAnalyzeResultPurchaseLinks({
+        ...publicDecision,
+        meta: buildAnalyzeMeta({
+          locale,
+          photoNotice,
+          explanationNotice,
+          apiKey
+        }),
+        ...(anonymousWriteGrant?.ok
+          ? {
+              analysisRunId: anonymousWriteGrant.analysisRunId
+            }
+          : {})
+      })
+    );
+    const response = sensitiveJsonResponse(responsePayload);
 
     if (premiumSessionToken) {
       response.cookies.set(
@@ -1685,12 +1686,9 @@ export async function POST(request) {
     }
 
     if (isProductSourceUnavailableError(error)) {
-      logAnalyze("product-source:unavailable", {
-        code: error.code,
-        reason: error.reason
-      });
+      logAnalyze("product-source:unavailable");
 
-      return applyAnalysisGuardCookies(NextResponse.json(
+      return applyAnalysisGuardCookies(sensitiveJsonResponse(
         {
           error: PRODUCT_SOURCE_UNAVAILABLE_MESSAGE,
           code: PRODUCT_SOURCE_UNAVAILABLE_CODE
@@ -1699,9 +1697,9 @@ export async function POST(request) {
       ), analysisGuard);
     }
 
-    logAnalyze("request:error", { ok: false, errorCategory: "route_processing_failed" });
+    logAnalyze("request:error");
 
-    return applyAnalysisGuardCookies(NextResponse.json(
+    return applyAnalysisGuardCookies(sensitiveJsonResponse(
       {
         error: getAnalyzeCopy(responseLocale).serverError
       },

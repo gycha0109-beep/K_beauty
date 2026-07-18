@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ResultShareCard from "@/components/result/ResultShareCard";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
 import { getBrowserPermanentSupabaseAccessToken } from "@/lib/supabase/browser-client";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 import {
   clearAnonymousWriteGrantState,
   clearResultWriteAccessToken,
@@ -95,8 +96,14 @@ async function tryWriteClipboardText(text) {
   try {
     await navigator.clipboard.writeText(text);
     return true;
-  } catch (error) {
-    console.error("[result/share] clipboard write failed", error);
+  } catch {
+    writeSafeLog("warn", {
+      event: "client_operation_failed",
+      category: "browser_api_unavailable",
+      operation: "client",
+      dependency: "browser",
+      retryable: false
+    });
     return false;
   }
 }
@@ -250,7 +257,7 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
 
         const responseError = response.status === 401
           ? copy.sessionExpired
-          : data?.error || copy.saveError;
+          : copy.saveError;
 
         throw new Error(responseError);
       }
@@ -271,8 +278,14 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
       }
       setStatus(copy.savedMessage);
       return nextShare;
-    } catch (error) {
-      console.error("[result/share] save failed", error);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "network_unavailable",
+        operation: "client",
+        dependency: "application",
+        retryable: true
+      });
       setStatus(copy.saveError);
       return null;
     } finally {
@@ -307,8 +320,14 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
           url: saved.shareUrl
         });
         return;
-      } catch (error) {
-        console.error("[result/share] native share failed", error);
+      } catch {
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "browser_api_unavailable",
+          operation: "client",
+          dependency: "browser",
+          retryable: false
+        });
       }
     }
 
@@ -342,12 +361,55 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
       link.download = `k-beauty-result-${Date.now()}.png`;
       link.click();
       setStatus(copy.imageSaved);
-    } catch (error) {
-      console.error("[result/share] image export failed", error);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "browser_api_unavailable",
+        operation: "client",
+        dependency: "browser",
+        retryable: false
+      });
       setStatus(copy.imageError);
     } finally {
       setIsDownloading(false);
       setIsExportMounted(false);
+    }
+  }
+
+  async function handleUnpublish() {
+    if (!shareInfo?.shareId || !shareInfo?.savedWithAuth || !shareInfo?.isPublic) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const token = await getShareAccessToken();
+      if (!token) {
+        setStatus(copy.sessionExpired);
+        return;
+      }
+
+      const response = await fetch(`/api/results/${encodeURIComponent(shareInfo.shareId)}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ isPublic: false })
+      });
+
+      if (!response.ok) {
+        throw new Error("unpublish_failed");
+      }
+
+      const nextShare = { ...shareInfo, isPublic: false };
+      setShareInfo(nextShare);
+      writeSavedShare(nextShare);
+      setStatus(locale === "en" ? "Sharing stopped." : "Sharing has been stopped.");
+    } catch {
+      setStatus(copy.saveError);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -385,7 +447,16 @@ export default function ResultShareActions({ result, submission, locale = "ko", 
       icon: "image",
       onClick: handleDownloadImage,
       disabled: isDownloading
-    }
+    },
+    ...(shareInfo?.savedWithAuth && shareInfo?.isPublic
+      ? [{
+          key: "unpublish",
+          label: locale === "en" ? "Stop sharing" : "Stop sharing",
+          icon: "copy",
+          onClick: handleUnpublish,
+          disabled: isSaving
+        }]
+      : [])
   ];
 
   return (

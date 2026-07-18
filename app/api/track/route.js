@@ -10,6 +10,10 @@ import {
 } from "@/lib/security/anonymous-write-grant";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 import { consumeRateLimit, getRequestClientKey } from "@/lib/write-access";
 
 const TRACK_LIMIT = 50;
@@ -38,6 +42,13 @@ const TRACK_BODY_KEYS = new Set([
   "is_top_pick",
   "meta_json"
 ]);
+
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
 
 function isAccountUser(user) {
   return Boolean(user) && !user.is_anonymous && user.app_metadata?.provider !== "anonymous";
@@ -104,7 +115,7 @@ function buildTrackPayload(body = {}) {
 }
 
 function getUnauthorizedResponse() {
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: "The tracking session is missing or expired. Please run the analysis again."
@@ -127,7 +138,7 @@ function getAnonymousWriteErrorResponse(code, status) {
     anonymous_write_token_mixed: "Use either an account session or an anonymous tracking session."
   };
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: code,
@@ -204,7 +215,13 @@ async function dedupeAccountFeedback(supabase, payload) {
   const { data, error } = await duplicateQuery;
 
   if (error) {
-    console.error("[api/track] account feedback dedupe lookup failed", { message: error.message });
+    writeSafeLog("warn", {
+      event: "tracking_failed",
+      category: "database_unavailable",
+      operation: "track",
+      dependency: "supabase",
+      retryable: true
+    });
     return false;
   }
 
@@ -224,10 +241,10 @@ export async function POST(request) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           success: false,
-          error: "Invalid JSON body."
+          error: "invalid_request"
         },
         { status: 400 }
       );
@@ -237,13 +254,11 @@ export async function POST(request) {
 
     try {
       payload = buildTrackPayload(body);
-    } catch (validationError) {
-      return NextResponse.json(
+    } catch {
+      return sensitiveJsonResponse(
         {
           success: false,
-          error: validationError instanceof Error
-            ? validationError.message
-            : "Invalid tracking payload."
+          error: "invalid_request"
         },
         { status: 400 }
       );
@@ -257,10 +272,10 @@ export async function POST(request) {
     }
 
     if (!accountUser && Object.keys(body || {}).some((key) => !TRACK_BODY_KEYS.has(key))) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           success: false,
-          error: "Invalid tracking payload."
+          error: "invalid_request"
         },
         { status: 400 }
       );
@@ -273,10 +288,10 @@ export async function POST(request) {
     });
 
     if (!rateLimit.allowed) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           success: false,
-          error: "Too many tracking requests. Please slow down and try again."
+          error: "rate_limited"
         },
         {
           status: 429,
@@ -291,7 +306,10 @@ export async function POST(request) {
 
     if (!supabase) {
       return accountUser
-        ? NextResponse.json({ success: false, error: "Supabase environment variables are missing." }, { status: 500 })
+        ? sensitiveJsonResponse(
+            { success: false, error: "tracking_unavailable" },
+            { status: 503, headers: { "Retry-After": "60" } }
+          )
         : getAnonymousWriteErrorResponse("anonymous_write_grant_unavailable", 503);
     }
 
@@ -347,7 +365,7 @@ export async function POST(request) {
       }
 
       if (claimResult.claim.state === "completed") {
-        return NextResponse.json({ success: true, deduped: true });
+        return sensitiveJsonResponse({ success: true, deduped: true });
       }
 
       if (claimResult.claim.state !== "claimed") {
@@ -366,11 +384,11 @@ export async function POST(request) {
         });
 
         return completion.ok
-          ? NextResponse.json({ success: true, deduped: true })
+          ? sensitiveJsonResponse({ success: true, deduped: true })
           : getAnonymousWriteErrorResponse("anonymous_write_grant_unavailable", 503);
       }
     } else if (await dedupeAccountFeedback(supabase, payload)) {
-      return NextResponse.json({ success: true, deduped: true });
+      return sensitiveJsonResponse({ success: true, deduped: true });
     }
 
     const insertPayload = {
@@ -402,7 +420,7 @@ export async function POST(request) {
           });
 
           return completion.ok
-            ? NextResponse.json({ success: true, deduped: true })
+            ? sensitiveJsonResponse({ success: true, deduped: true })
             : getAnonymousWriteErrorResponse("anonymous_write_grant_unavailable", 503);
         }
       }
@@ -419,14 +437,23 @@ export async function POST(request) {
         }
       }
 
-      console.error("[api/track] insert failed", { message: error.message });
+      writeSafeLog("error", {
+        event: "tracking_failed",
+        category: "database_unavailable",
+        operation: "track",
+        dependency: "supabase",
+        retryable: true
+      });
 
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           success: false,
-          error: accountUser ? error.message : "tracking_store_failed"
+          error: accountUser ? "tracking_unavailable" : "tracking_store_failed"
         },
-        { status: 500 }
+        {
+          status: accountUser ? 503 : 500,
+          headers: accountUser ? { "Retry-After": "60" } : undefined
+        }
       );
     }
 
@@ -442,10 +469,10 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({
+    return sensitiveJsonResponse({
       success: true
     });
-  } catch (error) {
+  } catch {
     if (anonymousGrant && anonymousFingerprint && supabase) {
       const failure = await failAnonymousWriteGrant({
         supabase,
@@ -458,14 +485,18 @@ export async function POST(request) {
       }
     }
 
-    console.error("[api/track] request failed", {
-      message: error instanceof Error ? error.message : "unknown"
+    writeSafeLog("error", {
+      event: "tracking_failed",
+      category: "internal_error",
+      operation: "track",
+      dependency: "application",
+      retryable: false
     });
 
-    return NextResponse.json(
+    return sensitiveJsonResponse(
       {
         success: false,
-        error: accountUser ? "Failed to store event." : "tracking_store_failed"
+        error: accountUser ? "tracking_unavailable" : "tracking_store_failed"
       },
       { status: 500 }
     );

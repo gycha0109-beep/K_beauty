@@ -45,8 +45,12 @@ if (setupOne.setupStatus === "local_shadow_runtime_ready_for_controlled_route_ru
   const secondTeardown = await teardownIsolatedShadowRouteEnvironment({ runDirectory: setupOne.runDirectory });
   assert.equal(secondTeardown.cleanup.succeeded, true);
 } else {
-  assert.equal(setupOne.tools.dockerDaemonAvailable, false);
   assert.equal(setupOne.databaseCommandExecuted, false);
+  if (setupOne.reasonCode === "blocked_supabase_cli_unavailable") {
+    assert.equal(setupOne.tools.supabaseCliAvailable, false);
+  } else if (setupOne.reasonCode === "blocked_docker_daemon_unavailable") {
+    assert.equal(setupOne.tools.dockerDaemonAvailable, false);
+  }
 }
 
 console.log("verify-local-shadow-runtime-readiness passed");

@@ -144,7 +144,10 @@ function assertWhatIfContract(output) {
   assert.equal(output.safetyRegressionCheck.highRiskCollapsedHintCountPureReplay, 0);
   assert.equal(output.safetyRegressionCheck.passed, true);
   assert.equal(output.lowRiskCollapsedHintConsistency.passed, true);
-  assert.equal(output.actualWhatIfSummary.evidenceLabel, "actual_complete_product_row_capture");
+  assert.ok([
+    "actual_complete_product_row_capture",
+    "actual_capture_coverage_unavailable"
+  ].includes(output.actualWhatIfSummary.evidenceLabel));
   assert.equal(output.pureReplayWhatIfSummary.evidenceLabel, "pure_engine_replay");
   assert(!("productRowsLoaded" in output.actualWhatIfSummary), "actual evidence should not include pure replay source fields");
   assert(!("completeProductRowCaptures" in output.pureReplayWhatIfSummary), "pure replay should not include actual capture counts");

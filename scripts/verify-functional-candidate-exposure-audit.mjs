@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { buildFunctionalCandidateExposureAudit } from "../lib/functional-candidate-exposure-audit.js";
 
 function signals(labels) {
@@ -206,19 +208,80 @@ runCase("output excludes raw and identifying data strings", () => {
   ].forEach((token) => assert.equal(raw.includes(token), false, token));
 });
 
-runCase("complete fixture runner targets complete captures and excludes final-only fixtures", () => {
-  const stdout = execFileSync("node", ["scripts/run-functional-candidate-exposure-audit.mjs"], { encoding: "utf8" });
+runCase("runner handles controlled complete and final-only fixtures without relying on ignored repository state", () => {
+  const fixtureDir = mkdtempSync(path.join(os.tmpdir(), "functional-candidate-exposure-"));
 
-  assert.ok(stdout.includes("functional-candidate-exposure-audit summary"));
-  assert.ok(stdout.includes("\"completeCaptureCount\": 10"));
-  assert.ok(stdout.includes("\"excludedFixtureCount\": 10"));
-  assert.ok(stdout.includes("\"candidateReviewRowCount\": 1640"));
-  const artifact = JSON.parse(readFileSync("tmp/functional-shadow-captures/candidate-exposure-audit.json", "utf8"));
-  assert.equal(artifact.aggregate.candidateReviewRowCount, artifact.aggregate.totalEvaluatedProductRows);
-  assert.ok(Array.isArray(artifact.fixtureAudits[0].candidateReviewRows));
-  assert.equal(artifact.fixtureAudits[0].candidateReviewRows.length, 164);
-  assert.ok(artifact.aggregate.hiddenReasonDistribution.candidate_evaluator_blocked >= 1);
-  assert.ok(artifact.aggregate.collapsedReasonDistribution.guard_policy_collapsed_exposure_candidate >= 1);
+  try {
+    const fixtureProducts = Array.from({ length: 12 }, (_, index) => product(index % 3 === 0
+      ? {
+          id: `controlled-hidden-${index}`,
+          irritation_risk: "high",
+          sensitivity_safe: false,
+          ingredient_signals: signals(["whitening", "exfoliation"])
+        }
+      : {
+          id: `controlled-collapsed-${index}`,
+          ingredient_signals: signals(["skin hydration", "skin protection", "whitening"])
+        }));
+
+    for (let index = 0; index < 2; index += 1) {
+      const captureId = `controlled-complete-${index}`;
+      writeFileSync(path.join(fixtureDir, `${captureId}.json`), JSON.stringify({
+        captureVersion: "v1",
+        captureId,
+        survey: surveySafety(),
+        goalPolicy: {
+          rankingGoal: "dehydration",
+          safetyGoal: "redness",
+          recommendationGuard: "stabilize_first",
+          hasTension: true
+        },
+        candidateSource: {
+          completeness: "complete",
+          candidateIdentityMode: "product_row",
+          sourceStage: "controlled_clean_ci_fixture",
+          sourceCount: fixtureProducts.length,
+          products: fixtureProducts
+        }
+      }), "utf8");
+    }
+
+    for (let index = 0; index < 2; index += 1) {
+      const captureId = `controlled-final-only-${index}`;
+      writeFileSync(path.join(fixtureDir, `${captureId}.json`), JSON.stringify({
+        captureVersion: "v1",
+        captureId,
+        survey: surveySafety(),
+        goalPolicy: {},
+        candidateSource: {
+          completeness: "final_results_only",
+          candidateIdentityMode: "final_result",
+          sourceStage: "controlled_clean_ci_fixture",
+          sourceCount: 0,
+          products: []
+        }
+      }), "utf8");
+    }
+
+    const stdout = execFileSync(process.execPath, ["scripts/run-functional-candidate-exposure-audit.mjs"], {
+      encoding: "utf8",
+      env: { ...process.env, FUNCTIONAL_SHADOW_CAPTURE_DIR: fixtureDir }
+    });
+
+    assert.ok(stdout.includes("functional-candidate-exposure-audit summary"));
+    assert.ok(stdout.includes("\"completeCaptureCount\": 2"));
+    assert.ok(stdout.includes("\"excludedFixtureCount\": 2"));
+    assert.ok(stdout.includes("\"candidateReviewRowCount\": 24"));
+    const artifact = JSON.parse(readFileSync(path.join(fixtureDir, "candidate-exposure-audit.json"), "utf8"));
+    assert.equal(artifact.aggregate.candidateReviewRowCount, artifact.aggregate.totalEvaluatedProductRows);
+    assert.ok(Array.isArray(artifact.fixtureAudits[0].candidateReviewRows));
+    assert.equal(artifact.fixtureAudits[0].candidateReviewRows.length, 12);
+    assert.ok(artifact.aggregate.hiddenReasonDistribution.candidate_evaluator_blocked >= 1);
+    assert.ok(artifact.aggregate.collapsedReasonDistribution.guard_policy_collapsed_exposure_candidate >= 1);
+    assert.equal(artifact.fixtureAudits.every((item) => item.sourceStage === "controlled_clean_ci_fixture"), true);
+  } finally {
+    rmSync(fixtureDir, { recursive: true, force: true });
+  }
 });
 
 runCase("helper and runner are not wired into route, evaluator, existing CandidatePolicy, or UI", () => {

@@ -128,8 +128,8 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
   ) addViolation(violations, "dynamic_import_outside_guard");
 
   const persistenceIndex = routeSource.search(/\bconst\s+premiumSessionToken\s*=/);
-  const responsePayloadIndex = routeSource.search(/\bconst\s+responsePayload\s*=\s*\{/);
-  const responseIndex = routeSource.lastIndexOf("const response = NextResponse.json(responsePayload)");
+  const responsePayloadIndex = routeSource.search(/\bconst\s+responsePayload\s*=\s*sanitizeAnalyzeResultProductImages\s*\(/);
+  const responseIndex = routeSource.lastIndexOf("const response = sensitiveJsonResponse(responsePayload);");
   const guardCompletionIndex = routeSource.lastIndexOf("await completeAnalysisRequestGuard");
   const captureIndex = routeSource.lastIndexOf("await captureFunctionalShadowIfEnabled");
   const recommendationIndex = routeSource.lastIndexOf("const recommendationResult = {");
@@ -155,8 +155,8 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
     addViolation(violations, "unsafe_route_insertion_order");
   }
 
-  const responsePayloadStart = routeSource.lastIndexOf("const responsePayload = {");
-  const responsePayloadEnd = routeSource.indexOf("const response = NextResponse.json(responsePayload);", responsePayloadStart);
+  const responsePayloadStart = routeSource.lastIndexOf("const responsePayload = sanitizeAnalyzeResultProductImages(");
+  const responsePayloadEnd = routeSource.indexOf("const response = sensitiveJsonResponse(responsePayload);", responsePayloadStart);
   const responsePayloadBlock =
     responsePayloadStart >= 0 && responsePayloadEnd > responsePayloadStart
       ? routeSource.slice(responsePayloadStart, responsePayloadEnd)
