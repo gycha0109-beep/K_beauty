@@ -1,0 +1,64 @@
+{
+  "deploymentAttestationPath": "<secure-root>/deployment-attestation.json",
+  "vercelProjectId": "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA",
+  "supabaseProjectRef": "replace_with_preview_project_ref",
+  "catalogHash": "replace_with_64_char_sha256_catalog_hash",
+  "fixtureRoot": "<secure-root>/fixtures",
+  "accountA": {
+    "expectedUserIdHash": "replace_with_64_char_sha256_user_hash_a",
+    "storageStatePath": "<secure-root>/credentials/account-a-storage-state.json",
+    "loginEvidencePath": "<secure-root>/credentials/account-a-login-evidence.json",
+    "expectedAfterLoginPath": "/my"
+  },
+  "accountB": {
+    "expectedUserIdHash": "replace_with_64_char_sha256_user_hash_b",
+    "storageStatePath": "<secure-root>/credentials/account-b-storage-state.json",
+    "loginEvidencePath": "<secure-root>/credentials/account-b-login-evidence.json",
+    "expectedAfterLoginPath": "/my"
+  },
+  "fixtures": {
+    "normalPhoto": "<secure-root>/fixtures/images/normal-synthetic.png",
+    "fallbackPhoto": "<secure-root>/fixtures/images/fallback-synthetic.png"
+  },
+  "uiCases": {
+    "ko": "<secure-root>/fixtures/cases/ko-normal.json",
+    "en": "<secure-root>/fixtures/cases/en-normal.json"
+  },
+  "currentProductCases": [
+    {
+      "laneName": "selected-product",
+      "fixture": "<secure-root>/fixtures/cases/selected-product.json"
+    },
+    {
+      "laneName": "not-in-db",
+      "fixture": "<secure-root>/fixtures/cases/not-in-db.json"
+    },
+    {
+      "laneName": "selected-plus-not-in-db",
+      "fixture": "<secure-root>/fixtures/cases/selected-plus-not-in-db.json"
+    },
+    {
+      "laneName": "duplicate-axis",
+      "fixture": "<secure-root>/fixtures/cases/duplicate-axis.json"
+    }
+  ],
+  "photoFallbackCase": "<secure-root>/fixtures/cases/photo-fallback.json",
+  "routes": {
+    "login": "/",
+    "authCallbackPrefix": "/auth/callback",
+    "koMy": "/my",
+    "enMy": "/en/my",
+    "premiumEntry": "/premium"
+  },
+  "googleSignInMarker": {
+    "role": "button",
+    "name": "replace_with_exact_accessible_google_signin_name"
+  },
+  "faultCase": {
+    "path": "/api/full-report",
+    "method": "POST",
+    "body": {
+      "locale": "ko"
+    }
+  }
+}
