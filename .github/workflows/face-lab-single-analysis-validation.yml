@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/face-lab-single-analysis-multilocale
+  pull_request:
+    branches:
+      - codex/survey-input-contract-refactor
 
 permissions:
   contents: read
