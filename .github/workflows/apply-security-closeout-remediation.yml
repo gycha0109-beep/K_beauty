@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'chore(test): apply security closeout remediation payload'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +24,6 @@ jobs:
           rm .codex/security-closeout-remediation.patch-*
           rm -f .codex/security-closeout-remediation.part-*
           rm -f .codex/security-closeout-remediation.hex-*
-          rm .codex/security-closeout-remediation.trigger
           rm .github/workflows/remediation-source-snapshot.yml
           rm .github/workflows/apply-security-closeout-remediation.yml
           git diff --check
