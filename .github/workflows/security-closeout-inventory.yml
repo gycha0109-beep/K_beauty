@@ -1,0 +1,90 @@
+name: Security closeout inventory
+
+on:
+  pull_request:
+    branches:
+      - feature/premium-beta-flow
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: JavaScript syntax gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
+      - name: Production build
+        run: npm run build
+      - name: Diff hygiene
+        run: git diff --check "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+      - name: Inventory and probe security verifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-closeout-evidence
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const { spawnSync } = require('child_process');
+
+          const keywords = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot)/i;
+          const files = fs.readdirSync('scripts')
+            .filter((name) => /^verify-.*\.mjs$/.test(name))
+            .filter((name) => keywords.test(name))
+            .sort();
+
+          const results = [];
+          for (const name of files) {
+            const file = path.join('scripts', name);
+            const started = Date.now();
+            const run = spawnSync(process.execPath, [file], {
+              encoding: 'utf8',
+              timeout: 120000,
+              env: { ...process.env, CI: '1', NODE_ENV: 'test' },
+              maxBuffer: 8 * 1024 * 1024
+            });
+            results.push({
+              file,
+              status: run.status,
+              signal: run.signal,
+              error: run.error ? String(run.error.message || run.error) : null,
+              durationMs: Date.now() - started,
+              stdout: (run.stdout || '').slice(-4000),
+              stderr: (run.stderr || '').slice(-4000)
+            });
+          }
+
+          fs.writeFileSync('security-closeout-evidence/verifier-probe.json', JSON.stringify({ files, results }, null, 2));
+          const lines = ['# Security verifier inventory', '', `Selected: ${files.length}`, ''];
+          for (const item of results) {
+            lines.push(`- ${item.status === 0 ? 'PASS' : 'FAIL'} ${item.file} (${item.durationMs}ms)`);
+          }
+          fs.writeFileSync('security-closeout-evidence/verifier-probe.md', lines.join('\n') + '\n');
+          console.log(lines.join('\n'));
+          NODE
+      - name: Upload inventory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-closeout-inventory
+          path: security-closeout-evidence/
+          if-no-files-found: error
+          retention-days: 1
