@@ -75,8 +75,8 @@ assert.ok(skinProjector.includes("buildAlignment"), "survey alignment must be de
 assert.ok(faceProjector.includes('presentation_hint: "neutral"'));
 assert.ok(faceProjector.includes("lookalike_celebrities: { summary: \"\", matches: [] }"));
 assert.ok(faceProjector.includes('analysis.status !== "available"'), "partial Face Lab coverage must fail closed");
-assert.equal(/fieldValue\([^\n]*,\s*["'][^"']+["']\s*\)/.test(faceProjector), true, "projector must read canonical fields");
-assert.equal(/fieldValue\([^\n]*,\s*["'][^"']+["']\s*,/.test(faceProjector), false, "projector must not inject observation fallback values");
+assert.ok(faceProjector.includes("function fieldValue(analysis, group, key)"), "projector must read canonical fields without a fallback parameter");
+assert.equal(faceProjector.includes("function fieldValue(analysis, group, key, fallback"), false, "projector must not support observation fallback injection");
 assert.ok(packageJson.scripts?.["verify:unified-vision-pipeline"], "package verifier script must exist");
 
 console.log(JSON.stringify({
