@@ -6,6 +6,11 @@ on:
       - feature/premium-beta-flow
     paths:
       - .github/workflows/sec12-ast-fix-once.yml
+  pull_request:
+    branches:
+      - feature/premium-beta-flow
+    paths:
+      - .github/sec12-ast-trigger
   workflow_dispatch:
 
 permissions:
