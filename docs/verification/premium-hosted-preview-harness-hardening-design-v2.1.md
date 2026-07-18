@@ -23,6 +23,8 @@ This revision replaces v2. The previous design required `uncertaintyState` and a
    - Resolution: canonical meaning comes from the correlated `/api/full-report` response and saved snapshot; UI is checked only through accessible visibility markers.
 5. Fixture-controlled `requiredEvidence` permits false passes.
    - Resolution: mandatory evidence is code-owned and cannot be changed by fixtures.
+6. A product object may expose the same identifier under more than one supported key.
+   - Resolution: accept one or more supported ID paths only when every populated value is identical; conflicting values fail.
 
 ## 3. Canonical evidence inventory
 
@@ -51,7 +53,7 @@ All paths are relative to the successful `/api/full-report` response body and th
 
 ### 3.2 Nullable Top Pick
 
-Top Pick is nullable. The contract accepts exactly one of these explicit object ID paths when `freeResult.topPick` is present:
+Top Pick is nullable. The contract accepts these explicit object ID paths when `freeResult.topPick` is present:
 
 - `freeResult.topPick.id`
 - `freeResult.topPick.productId`
@@ -60,8 +62,9 @@ Top Pick is nullable. The contract accepts exactly one of these explicit object 
 Rules:
 
 - `freeResult.topPick == null` -> `topPickPresence = "absent"`, `topPickProductId = null`.
-- Present object -> exactly one supported ID path must contain a non-empty scalar identifier.
-- Multiple conflicting IDs or a present object without a supported ID -> canonical projection failure.
+- Present object -> at least one supported ID path must contain a non-empty scalar identifier.
+- Multiple populated paths are accepted only when all normalized values are identical.
+- Conflicting IDs or a present object without a supported ID -> canonical projection failure.
 - No synthetic `topPickNullReason` is created.
 
 ### 3.3 Deterministic derived field: evidenceStateV1
