@@ -1,0 +1,123 @@
+name: Premium Hosted Preview Live Ready Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - validation/premium-hosted-preview-live-ready-5cf1ec
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact implementation HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: 5cf1ec33cb4f6818b0936824f9c5a8a080ec3602
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check changed scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            scripts/capture-premium-hosted-preview-google-login.mjs \
+            scripts/cleanup-premium-hosted-preview-run.mjs \
+            scripts/generate-premium-hosted-preview-attestation.mjs \
+            scripts/premium-hosted-preview-contract-core.mjs \
+            scripts/premium-hosted-preview-core-v2.mjs \
+            scripts/premium-hosted-preview-core.mjs \
+            scripts/premium-hosted-preview-security.mjs \
+            scripts/verify-premium-hosted-preview-contract.mjs \
+            scripts/verify-premium-hosted-preview-db-evidence.mjs \
+            scripts/verify-premium-hosted-preview-error-boundaries.mjs \
+            scripts/verify-premium-hosted-preview-gate.mjs \
+            scripts/verify-premium-hosted-preview-preflight.mjs \
+            scripts/verify-premium-hosted-preview-ui-journey.mjs; do
+            node --check "$file"
+          done
+
+      - name: Validate live contract examples
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const manifestPath = 'docs/verification/examples/premium-hosted-preview/manifest.example.json';
+          const uiPath = 'docs/verification/examples/premium-hosted-preview/ui-case.example.json';
+          const conflictPath = 'docs/verification/examples/premium-hosted-preview/browser-conflict-body.example.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const ui = JSON.parse(fs.readFileSync(uiPath, 'utf8'));
+          JSON.parse(fs.readFileSync(conflictPath, 'utf8'));
+          if (!manifest.premiumEntryMarkers?.ko || !manifest.premiumEntryMarkers?.en) throw new Error('bilingual Premium entry markers missing');
+          if ('premiumEntryMarker' in manifest) throw new Error('legacy singular Premium entry marker present');
+          if (manifest.premiumEntryMarkers.ko.kind !== 'heading' || manifest.premiumEntryMarkers.en.kind !== 'heading') throw new Error('Premium entry markers must be headings');
+          if (!ui.actions.some((action) => action.type === 'uploadByRole' && action.role === 'button')) throw new Error('accessible file chooser fixture missing');
+          if (!ui.actions.some((action) => action.type === 'expectHeading' && action.name === manifest.premiumEntryMarkers.ko.name)) throw new Error('Premium entry observation missing');
+          NODE
+
+      - name: Reject stale and impossible runtime assumptions
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            scripts/generate-premium-hosted-preview-attestation.mjs
+            scripts/premium-hosted-preview-core-v2.mjs
+            scripts/capture-premium-hosted-preview-google-login.mjs
+            scripts/verify-premium-hosted-preview-preflight.mjs
+            scripts/verify-premium-hosted-preview-ui-journey.mjs
+            scripts/verify-premium-hosted-preview-db-evidence.mjs
+            scripts/verify-premium-hosted-preview-error-boundaries.mjs
+            scripts/verify-premium-hosted-preview-gate.mjs
+            scripts/cleanup-premium-hosted-preview-run.mjs
+          )
+          if grep -n -E 'prNumber:[[:space:]]*38|PREMIUM_HOSTED_PR_NUMBER.*38' "${files[@]}"; then
+            echo 'stale PR default found'
+            exit 1
+          fi
+          if grep -n 'routes?.premiumEntry' scripts/verify-premium-hosted-preview-ui-journey.mjs; then
+            echo 'impossible direct Premium entry navigation found'
+            exit 1
+          fi
+          grep -q 'uploadByRole' scripts/premium-hosted-preview-contract-core.mjs
+          grep -q 'premiumEntryMarkers' scripts/premium-hosted-preview-core-v2.mjs
+
+      - name: Run hardening contract verifier
+        run: npm run verify:premium-hosted-preview-harness-hardening
+
+      - name: Run existing Hosted Preview contract verifier
+        run: npm run verify:premium-hosted-preview-contract
+
+      - name: Run Premium browser journey contract
+        run: npm run verify:premium-browser-journey-contract
+
+      - name: Run Premium route and policy regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-decision-state.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check 1f483c19e235c54106d1d7604855e59a4ef96598..5cf1ec33cb4f6818b0936824f9c5a8a080ec3602
