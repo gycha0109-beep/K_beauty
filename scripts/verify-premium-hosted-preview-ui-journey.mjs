@@ -17,6 +17,7 @@ const headless = process.env.PREMIUM_HOSTED_HEADLESS !== "0";
 const browser = await chromium.launch({ headless });
 const lanes = [];
 const uploadExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+const allowedProtectionCookies = new Set(["_vercel_jwt", "__vercel_live_token"]);
 
 async function lane(name, severity, fn) {
   const started = Date.now();
@@ -33,8 +34,20 @@ async function lane(name, severity, fn) {
   }
 }
 
+function isAllowedBootstrapCookie(cookie) {
+  const name = String(cookie?.name || "");
+  return name.includes("auth-token") || allowedProtectionCookies.has(name);
+}
+
 async function newAccountContext(account) {
-  return browser.newContext({ storageState: account.storageStatePath, serviceWorkers: "block" });
+  const stored = JSON.parse(await readFile(account.storageStatePath, "utf8"));
+  const cookies = Array.isArray(stored.cookies) ? stored.cookies.filter(isAllowedBootstrapCookie) : [];
+  requireCondition(cookies.some((cookie) => String(cookie.name || "").includes("auth-token")), HOSTED_FAILURE_CATEGORIES.AUTH_EVIDENCE, "browser-context", "auth_cookie_missing_from_derived_state");
+  requireCondition(!cookies.some((cookie) => String(cookie.name || "").includes("premium_report")), HOSTED_FAILURE_CATEGORIES.HARNESS, "browser-context", "premium_cookie_leaked_into_derived_state");
+  return browser.newContext({
+    storageState: { cookies, origins: [] },
+    serviceWorkers: "block"
+  });
 }
 
 function locatorForMarker(page, marker) {
@@ -80,7 +93,6 @@ async function runUiCase(casePath, laneName, account = manifest.accountA) {
   const fixture = validateUiCaseFixture(rawFixture);
   const context = await newAccountContext(account);
   try {
-    await context.clearCookies({ name: "bejewely_premium_report" });
     const page = await context.newPage();
     await page.goto(`${config.baseUrl.origin}${fixture.startPath}`, { waitUntil: "domcontentloaded" });
     requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, laneName, "unexpected_ui_origin");
