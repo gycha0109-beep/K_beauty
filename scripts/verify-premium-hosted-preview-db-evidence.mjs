@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import {
@@ -27,13 +28,47 @@ const supabaseUrl = String(process.env.PREMIUM_HOSTED_SUPABASE_URL || "").trim()
 validateSupabasePublicConfig(supabaseUrl, manifest);
 const anonKey = String(process.env.PREMIUM_HOSTED_SUPABASE_ANON_KEY || "").trim();
 const accessToken = String(process.env.PREMIUM_HOSTED_ACCESS_TOKEN || "").trim();
-const savedIds = String(process.env.PREMIUM_HOSTED_SAVED_REPORT_IDS || "")
-  .split(",")
-  .map((value) => value.trim())
-  .filter(Boolean);
 requireCondition(accessToken && anonKey, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "supabase_reader_config_missing");
-requireCondition(savedIds.length >= 2 && savedIds.length <= 20, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "saved_report_ids_incomplete");
-requireCondition(new Set(savedIds).size === savedIds.length, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "saved_report_ids_duplicate");
+
+const browserPersistenceInput = String(process.env.PREMIUM_HOSTED_BROWSER_PERSISTENCE_PATH || "").trim();
+requireCondition(browserPersistenceInput, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "browser_persistence_path_missing");
+const browserPersistencePath = assertPathInside(
+  config.securePaths.credentialsDir,
+  browserPersistenceInput,
+  "browser_persistence_outside_secure_root"
+);
+const browserPersistence = JSON.parse(await readFile(browserPersistencePath, "utf8"));
+const savedIds = Array.isArray(browserPersistence?.createdSavedReportIds)
+  ? browserPersistence.createdSavedReportIds.map((value) => String(value || "").trim()).filter(Boolean)
+  : [];
+const recordIds = Array.isArray(browserPersistence?.records)
+  ? browserPersistence.records.map((row) => String(row?.savedReportId || "").trim()).filter(Boolean)
+  : [];
+requireCondition(
+  browserPersistence?.cleanupRequired === true &&
+    browserPersistence?.duplicateSourceTupleCount === 0 &&
+    savedIds.length >= 2 &&
+    savedIds.length <= 20 &&
+    new Set(savedIds).size === savedIds.length,
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "db-evidence",
+  "browser_persistence_contract_invalid"
+);
+requireCondition(
+  recordIds.length === savedIds.length &&
+    recordIds.every((id) => savedIds.includes(id)) &&
+    savedIds.every((id) => recordIds.includes(id)),
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "db-evidence",
+  "browser_persistence_record_mismatch"
+);
+requireCondition(
+  savedIds.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)),
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "db-evidence",
+  "browser_persistence_saved_report_id_invalid"
+);
+const browserPersistenceHash = await hashFileSha256(browserPersistencePath);
 
 const { buildPremiumReportSnapshot } = await import(
   pathToFileURL(resolve(process.cwd(), "lib/premium-report-snapshot.js")).href
@@ -98,6 +133,7 @@ const cleanupManifest = {
   deploymentId: attestation.vercelDeploymentId,
   deploymentSha: attestation.prHeadSha,
   ownerUserIdHash: manifest.accountA.expectedUserIdHash,
+  browserPersistenceHash,
   savedReportIds: [...savedIds],
   createdAt: new Date(createdAt).toISOString(),
   expiresAt: new Date(createdAt + 60 * 60 * 1000).toISOString()
@@ -107,10 +143,14 @@ const cleanupManifestHash = await hashFileSha256(cleanupManifestPath);
 
 console.log(JSON.stringify({
   status: "passed",
+  runId: config.runId,
+  prNumber: config.prNumber,
   deploymentId: attestation.vercelDeploymentId,
   deploymentSha: attestation.prHeadSha,
+  immutableHost: attestation.immutableHost,
   rows,
   duplicateTupleCount,
+  browserPersistenceHash,
   cleanupManifestCreated: true,
   cleanupManifestHash
 }, null, 2));
