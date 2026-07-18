@@ -55,6 +55,20 @@ export function normalizeReasonCodes(value, fieldName) {
   return [...normalized].sort();
 }
 
+function stableNormalize(value) {
+  if (Array.isArray(value)) return value.map(stableNormalize);
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, stableNormalize(value[key])])
+  );
+}
+
+export function stableStringify(value) {
+  return JSON.stringify(stableNormalize(value));
+}
+
 function normalizeProductActions(value) {
   if (!Array.isArray(value)) fail("canonical_product_actions_not_array");
   const normalized = value.map((item, index) => {
@@ -71,7 +85,9 @@ function normalizeProductActions(value) {
 }
 
 export function resolveTopPickIdentity(freeResult) {
-  const topPick = isRecord(freeResult) ? freeResult.topPick : null;
+  const source = requireRecord(freeResult, "canonical_free_result_missing");
+  if (!Object.prototype.hasOwnProperty.call(source, "topPick")) fail("canonical_top_pick_field_missing");
+  const topPick = source.topPick;
   if (topPick == null) return { topPickPresence: "absent", topPickProductId: null };
   if (!isRecord(topPick)) fail("canonical_top_pick_invalid");
   const values = [topPick.id, topPick.productId, topPick.product_id]
@@ -96,20 +112,6 @@ export function deriveEvidenceStateV1(canonical) {
     return "partial";
   }
   return "complete";
-}
-
-function stableNormalize(value) {
-  if (Array.isArray(value)) return value.map(stableNormalize);
-  if (!isRecord(value)) return value;
-  return Object.fromEntries(
-    Object.keys(value)
-      .sort()
-      .map((key) => [key, stableNormalize(value[key])])
-  );
-}
-
-export function stableStringify(value) {
-  return JSON.stringify(stableNormalize(value));
 }
 
 export function buildSemanticFingerprintV1(canonical) {
@@ -196,10 +198,12 @@ const SEMANTIC_KEYS = Object.freeze([
 ]);
 
 export function compareHostedLocaleSemantics(ko, en) {
-  const mismatches = SEMANTIC_KEYS.filter((key) => stableStringify(ko?.[key] ?? null) !== stableStringify(en?.[key] ?? null));
+  const mismatches = SEMANTIC_KEYS.filter(
+    (key) => stableStringify(ko?.[key] ?? null) !== stableStringify(en?.[key] ?? null)
+  );
   const fingerprintMismatch = ko?.semanticFingerprint !== en?.semanticFingerprint;
-  if (fingerprintMismatch && !mismatches.includes("semanticFingerprint")) mismatches.push("semanticFingerprint");
-  return { passed: mismatches.length === 0, mismatches };
+  if (fingerprintMismatch) mismatches.push("semanticFingerprint");
+  return { passed: mismatches.length === 0, mismatches: [...new Set(mismatches)] };
 }
 
 function validateRelativePath(value) {
@@ -221,6 +225,7 @@ function rejectUnknownKeys(value, allowed, code) {
   }
 }
 
+const ALLOWED_CLICK_ROLES = new Set(["button", "link", "radio", "checkbox", "tab", "option"]);
 const ACTION_SCHEMAS = Object.freeze({
   fillByLabel: new Set(["type", "label", "value"]),
   clickByRole: new Set(["type", "role", "name"]),
@@ -235,7 +240,7 @@ export function validateHostedUiCaseFixture(value) {
   const fixture = requireRecord(value, "fixture_invalid");
   rejectUnknownKeys(
     fixture,
-    new Set(["schemaVersion", "startPath", "actions", "resultMarker", "timeoutMs", "catalogHash"]),
+    new Set(["schemaVersion", "startPath", "actions", "resultMarker", "timeoutMs"]),
     "fixture_unknown_field"
   );
   if (fixture.schemaVersion !== HOSTED_UI_FIXTURE_VERSION) fail("fixture_schema_version_invalid");
@@ -246,16 +251,21 @@ export function validateHostedUiCaseFixture(value) {
     const allowed = ACTION_SCHEMAS[row.type];
     if (!allowed) fail("fixture_action_type_invalid", row.type);
     rejectUnknownKeys(row, allowed, "fixture_action_unknown_field");
-    if (["fillByLabel", "checkByLabel", "selectByLabel", "uploadByLabel"].includes(row.type)) requireString(row.label, `fixture_action_label_missing_${index}`);
+    if (["fillByLabel", "checkByLabel", "selectByLabel", "uploadByLabel"].includes(row.type)) {
+      requireString(row.label, `fixture_action_label_missing_${index}`);
+    }
     if (row.type === "clickByRole") {
-      requireString(row.role, `fixture_action_role_missing_${index}`);
+      const role = requireString(row.role, `fixture_action_role_missing_${index}`);
+      if (!ALLOWED_CLICK_ROLES.has(role)) fail("fixture_action_role_invalid", role);
       requireString(row.name, `fixture_action_name_missing_${index}`);
     }
-    if (["waitForVisibleText"].includes(row.type)) requireString(row.text, `fixture_action_text_missing_${index}`);
+    if (row.type === "waitForVisibleText") requireString(row.text, `fixture_action_text_missing_${index}`);
     if (row.type === "expectHeading") requireString(row.name, `fixture_action_heading_missing_${index}`);
     if (row.type === "uploadByLabel") {
       const uploadPath = requireString(row.path, `fixture_action_upload_path_missing_${index}`);
-      if (uploadPath.includes("..") || uploadPath.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(uploadPath)) fail("fixture_upload_path_unsafe", index);
+      if (uploadPath.includes("..") || uploadPath.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(uploadPath)) {
+        fail("fixture_upload_path_unsafe", index);
+      }
     }
     return { ...row };
   });
@@ -263,23 +273,35 @@ export function validateHostedUiCaseFixture(value) {
   rejectUnknownKeys(marker, new Set(["kind", "name", "role"]), "fixture_result_marker_unknown_field");
   if (!new Set(["heading", "text", "role"]).has(marker.kind)) fail("fixture_result_marker_kind_invalid");
   requireString(marker.name, "fixture_result_marker_name_missing");
-  if (marker.kind === "role") requireString(marker.role, "fixture_result_marker_role_missing");
+  if (marker.kind === "role") {
+    const role = requireString(marker.role, "fixture_result_marker_role_missing");
+    if (!ALLOWED_CLICK_ROLES.has(role) && role !== "status") fail("fixture_result_marker_role_invalid", role);
+  }
   const timeoutMs = fixture.timeoutMs == null ? 120000 : Number(fixture.timeoutMs);
   if (!Number.isFinite(timeoutMs) || timeoutMs < 1000 || timeoutMs > 300000) fail("fixture_timeout_invalid");
-  if (fixture.catalogHash != null && !/^[0-9a-f]{64}$/i.test(String(fixture.catalogHash))) fail("fixture_catalog_hash_invalid");
-  return { schemaVersion: fixture.schemaVersion, startPath, actions, resultMarker: { ...marker }, timeoutMs, catalogHash: fixture.catalogHash ?? null };
+  return {
+    schemaVersion: fixture.schemaVersion,
+    startPath,
+    actions,
+    resultMarker: { ...marker },
+    timeoutMs
+  };
 }
 
-export function validateHostedDeploymentAttestation(value, expected = {}) {
+export function validateHostedDeploymentAttestation(value, expected = {}, { now = Date.now() } = {}) {
   const attestation = requireRecord(value, "attestation_invalid");
   if (attestation.schemaVersion !== HOSTED_ATTESTATION_VERSION) fail("attestation_schema_version_invalid");
   const required = [
+    "generatedBy",
+    "generatedAt",
+    "expiresAt",
     "repository",
     "prNumber",
     "prState",
     "prDraft",
     "prMerged",
     "prHeadSha",
+    "githubDeploymentId",
     "githubDeploymentSha",
     "githubEnvironment",
     "vercelProjectId",
@@ -290,15 +312,25 @@ export function validateHostedDeploymentAttestation(value, expected = {}) {
     "immutableUrl"
   ];
   for (const key of required) if (!(key in attestation)) fail("attestation_field_missing", key);
+  if (attestation.generatedBy !== "authoritative-api") fail("attestation_provenance_invalid");
+  const generatedAt = Date.parse(attestation.generatedAt);
+  const expiresAt = Date.parse(attestation.expiresAt);
+  if (!Number.isFinite(generatedAt) || !Number.isFinite(expiresAt) || generatedAt > now + 60_000 || expiresAt <= now || expiresAt <= generatedAt) {
+    fail("attestation_expired_or_invalid");
+  }
   if (attestation.repository !== expected.repository) fail("attestation_repository_mismatch");
   if (Number(attestation.prNumber) !== Number(expected.prNumber)) fail("attestation_pr_mismatch");
   if (attestation.prState !== "open" || attestation.prDraft !== true || attestation.prMerged !== false) fail("attestation_pr_state_invalid");
   const sha = requireString(attestation.prHeadSha, "attestation_head_sha_missing");
-  if (![attestation.githubDeploymentSha, attestation.vercelSourceCommitSha, expected.headSha].every((item) => item === sha)) fail("attestation_sha_mismatch");
+  if (![attestation.githubDeploymentSha, attestation.vercelSourceCommitSha, expected.headSha].every((item) => item === sha)) {
+    fail("attestation_sha_mismatch");
+  }
   if (String(attestation.githubEnvironment).toLowerCase() !== "preview") fail("attestation_github_environment_invalid");
   if (attestation.vercelProjectId !== expected.vercelProjectId) fail("attestation_project_mismatch");
   if (String(attestation.vercelTarget).toLowerCase() !== "preview") fail("attestation_target_invalid");
   if (String(attestation.vercelState).toUpperCase() !== "READY") fail("attestation_state_invalid");
+  requireString(String(attestation.githubDeploymentId), "attestation_github_deployment_id_invalid");
+  requireString(String(attestation.vercelDeploymentId), "attestation_vercel_deployment_id_invalid");
   let url;
   try {
     url = new URL(attestation.immutableUrl);
