@@ -225,6 +225,13 @@ function rejectUnknownKeys(value, allowed, code) {
   }
 }
 
+function validateUploadPath(value, index) {
+  const uploadPath = requireString(value, `fixture_action_upload_path_missing_${index}`);
+  if (uploadPath.includes("..") || uploadPath.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(uploadPath)) {
+    fail("fixture_upload_path_unsafe", index);
+  }
+}
+
 const ALLOWED_CLICK_ROLES = new Set(["button", "link", "radio", "checkbox", "tab", "option"]);
 const ACTION_SCHEMAS = Object.freeze({
   fillByLabel: new Set(["type", "label", "value"]),
@@ -232,6 +239,7 @@ const ACTION_SCHEMAS = Object.freeze({
   checkByLabel: new Set(["type", "label"]),
   selectByLabel: new Set(["type", "label", "value"]),
   uploadByLabel: new Set(["type", "label", "path"]),
+  uploadByRole: new Set(["type", "role", "name", "path"]),
   waitForVisibleText: new Set(["type", "text"]),
   expectHeading: new Set(["type", "name"])
 });
@@ -254,19 +262,15 @@ export function validateHostedUiCaseFixture(value) {
     if (["fillByLabel", "checkByLabel", "selectByLabel", "uploadByLabel"].includes(row.type)) {
       requireString(row.label, `fixture_action_label_missing_${index}`);
     }
-    if (row.type === "clickByRole") {
+    if (["clickByRole", "uploadByRole"].includes(row.type)) {
       const role = requireString(row.role, `fixture_action_role_missing_${index}`);
       if (!ALLOWED_CLICK_ROLES.has(role)) fail("fixture_action_role_invalid", role);
+      if (row.type === "uploadByRole" && role !== "button") fail("fixture_upload_role_invalid", role);
       requireString(row.name, `fixture_action_name_missing_${index}`);
     }
     if (row.type === "waitForVisibleText") requireString(row.text, `fixture_action_text_missing_${index}`);
     if (row.type === "expectHeading") requireString(row.name, `fixture_action_heading_missing_${index}`);
-    if (row.type === "uploadByLabel") {
-      const uploadPath = requireString(row.path, `fixture_action_upload_path_missing_${index}`);
-      if (uploadPath.includes("..") || uploadPath.startsWith("/") || /^[a-zA-Z]:[\\/]/.test(uploadPath)) {
-        fail("fixture_upload_path_unsafe", index);
-      }
-    }
+    if (["uploadByLabel", "uploadByRole"].includes(row.type)) validateUploadPath(row.path, index);
     return { ...row };
   });
   const marker = requireRecord(fixture.resultMarker, "fixture_result_marker_missing");
