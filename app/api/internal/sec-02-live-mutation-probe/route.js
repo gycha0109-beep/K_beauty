@@ -270,7 +270,7 @@ export async function GET(request) {
 
     const forgedResponse = await resultsPost(saveRequest({
       ...savePayload,
-      result: { ...resultForSave, summary: `${resultForSave.summary || ""} forged` }
+      analysisRunId: `${analysisRunId}x`
     }));
     const forgedBody = await json(forgedResponse);
     checks.anonymousGrantForgeryBlocked = {
