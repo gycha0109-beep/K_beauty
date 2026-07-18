@@ -21,8 +21,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .codex/security-closeout-remediation.part-* | base64 --decode | tar -xzf -
-          rm .codex/security-closeout-remediation.part-*
+          cat .codex/security-closeout-remediation.patch-* | git apply --whitespace=error -
+          rm .codex/security-closeout-remediation.patch-*
+          rm -f .codex/security-closeout-remediation.part-*
           rm .codex/security-closeout-remediation.trigger
           rm .github/workflows/remediation-source-snapshot.yml
           rm .github/workflows/apply-security-closeout-remediation.yml
