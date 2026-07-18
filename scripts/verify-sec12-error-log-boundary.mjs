@@ -23,6 +23,40 @@ import {
 const require = createRequire(import.meta.url);
 const { parse: parseJavaScript } = require("next/dist/compiled/babel/parser");
 
+class UnsupportedAstNodeError extends Error {
+  constructor(nodeType, phase = "analysis") {
+    super(`SEC-12 unsupported AST node: ${phase}:${nodeType || "unknown"}`);
+    this.name = "UnsupportedAstNodeError";
+    this.code = "unsupported_ast_node";
+    this.nodeType = nodeType || "unknown";
+    this.phase = phase;
+  }
+}
+
+function failUnsupportedAstNode(node, phase) {
+  throw new UnsupportedAstNodeError(node?.type, phase);
+}
+
+const UNSUPPORTED_CLASS_AST_NODE_TYPES = new Set([
+  "ClassDeclaration",
+  "ClassExpression",
+  "StaticBlock",
+  "ClassProperty",
+  "PropertyDefinition",
+  "ClassPrivateProperty",
+  "ClassMethod",
+  "ClassPrivateMethod"
+]);
+
+function assertNoUnsupportedClassSyntax(node, phase) {
+  if (!node || typeof node !== "object") return;
+  walkAst(node, (candidate) => {
+    if (UNSUPPORTED_CLASS_AST_NODE_TYPES.has(candidate?.type)) {
+      failUnsupportedAstNode(candidate, phase);
+    }
+  });
+}
+
 export const EXPECTED_REQUIRED_CASE_COUNT = 62;
 export const REQUIRED_CASE_IDS = Object.freeze([
   "C01_ERROR_INSTANCE",
@@ -432,6 +466,7 @@ function bindEnvironmentExpression(environment, name, expression, sourceEnvironm
 }
 
 function recordReachableNoStoreCalls(expression, state) {
+  assertNoUnsupportedClassSyntax(expression, "expression");
   walkAst(expression, (node) => {
     if (isCreateNoStoreHeadersCall(node, state.model)) state.reachableHelperCalls.add(node);
   });
@@ -597,10 +632,10 @@ function analyzeStatement(statement, environment, state) {
   }
 
   if (statement.type === "WithStatement") {
-    throw new Error("SEC-12 response-path analysis does not accept with statements");
+    failUnsupportedAstNode(statement, "statement");
   }
 
-  return passthrough();
+  failUnsupportedAstNode(statement, "statement");
 }
 
 function collectFunctionTerminalPaths(functionNode, argumentBindings, state) {
@@ -772,6 +807,7 @@ function proveImportedResponseHelper(callExpression, imported, environment, stat
 
 function proveResponseExpression(expression, environment, state, callStack = new Set(), bindingStack = new Set()) {
   if (!expression) return createProofResult("unresolved");
+  assertNoUnsupportedClassSyntax(expression, "response-expression");
   if (["AwaitExpression", "ParenthesizedExpression", "TSAsExpression", "TSTypeAssertion"].includes(expression.type)) {
     return proveResponseExpression(expression.argument || expression.expression, environment, state, callStack, bindingStack);
   }
@@ -934,12 +970,18 @@ function assertI10PureNegativeMatrix() {
     `${helperImport} const handler = async () => { ${safeResponse} }; const alias = handler; export const POST = alias;`,
     `${helperImport} export async function POST() { return Response.json({}); }`,
     `${helperImport} export async function POST() { return Response.json({}, { metadata: createNoStoreHeaders(), headers: unsafeHeaders }); }`,
-    `${helperImport} function mixed(condition) { if (condition) { ${safeResponse} } ${unsafeResponse} } export async function POST(condition) { return mixed(condition); }`
+    `${helperImport} function mixed(condition) { if (condition) { ${safeResponse} } ${unsafeResponse} } export async function POST(condition) { return mixed(condition); }`,
+    `${helperImport} export async function POST() { let response = Response.json({}, { headers: createNoStoreHeaders() }); class Sec12StaticOverwrite { static { response = Response.json({}); } } return response; }`
   ];
 
   for (const source of negativeSources) {
-    const result = analyzeSyntheticHandler(source);
-    assert.equal(result.verified, false);
+    let rejected = false;
+    try {
+      rejected = analyzeSyntheticHandler(source).verified === false;
+    } catch (error) {
+      rejected = error?.code === "unsupported_ast_node";
+    }
+    assert.equal(rejected, true);
   }
 
   return Object.freeze({ positive: positiveSources.length, negative: negativeSources.length, rejected: negativeSources.length });
@@ -1347,7 +1389,7 @@ register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   assert.deepEqual(result.routes, { expected: 11, discovered: 11, verified: 11 });
   assert.deepEqual(result.handlerBindings, { expected: 12, discovered: 12, verified: 12 });
   assert.deepEqual(result.terminalResponsePaths, { expected: 120, discovered: 120, verified: 120 });
-  assert.deepEqual(result.pureMatrix, { positive: 2, negative: 16, rejected: 16 });
+  assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);
   assert.equal(result.unresolvedResponsePaths, 0);
