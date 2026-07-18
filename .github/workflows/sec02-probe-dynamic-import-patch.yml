@@ -1,0 +1,58 @@
+name: SEC-02 probe dynamic import patch
+
+on:
+  push:
+    branches:
+      - feature/premium-beta-flow
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'chore: trigger SEC-02 probe dynamic import patch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/premium-beta-flow
+          fetch-depth: 0
+      - name: Patch route handler imports
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('app/api/internal/sec-02-live-mutation-probe/route.js')
+          source = path.read_text(encoding='utf-8')
+          source = source.replace(
+              'import { POST as analyzePost } from "@/app/api/analyze/route";\n'
+              'import { POST as resultsPost } from "@/app/api/results/route";\n'
+              'import { GET as resultReadGet } from "@/app/api/results/[shareId]/route";\n',
+              ''
+          )
+          needle = '  try {\n    const key1 = `sec02-${randomUUID()}`;'
+          replacement = (
+              '  try {\n'
+              '    const analyzeModule = await import("@/app/api/analyze/route");\n'
+              '    const resultsModule = await import("@/app/api/results/route");\n'
+              '    const resultReadModule = await import("@/app/api/results/[shareId]/route");\n'
+              '    const analyzePost = analyzeModule.POST;\n'
+              '    const resultsPost = resultsModule.POST;\n'
+              '    const resultReadGet = resultReadModule.GET;\n\n'
+              '    const key1 = `sec02-${randomUUID()}`;'
+          )
+          if needle not in source:
+              raise SystemExit('SEC-02 probe patch anchor not found')
+          source = source.replace(needle, replacement, 1)
+          path.write_text(source, encoding='utf-8')
+          PY
+          node --check app/api/internal/sec-02-live-mutation-probe/route.js
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add app/api/internal/sec-02-live-mutation-probe/route.js
+          git commit -m "fix(test): load SEC-02 route handlers dynamically"
+          git push origin HEAD:feature/premium-beta-flow
