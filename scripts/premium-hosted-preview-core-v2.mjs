@@ -17,7 +17,7 @@ import {
   validateHostedDeploymentAttestation,
   validateHostedUiCaseFixture
 } from "./premium-hosted-preview-contract-core.mjs";
-import { resolveHostedRunPaths } from "./premium-hosted-preview-security.mjs";
+import { assertPathInside, resolveHostedRunPaths } from "./premium-hosted-preview-security.mjs";
 import { JourneyFailure, requireCondition } from "./premium-browser-journey-core.mjs";
 
 export { HOSTED_FAILURE_CATEGORIES };
@@ -151,12 +151,14 @@ export function parseHostedConfig(env = process.env) {
   const legacy = parseLegacyConfig(env);
   const prNumber = parseHostedPrNumber(env.PREMIUM_HOSTED_PR_NUMBER);
   let securePaths;
+  let manifestPath;
   try {
     securePaths = resolveHostedRunPaths(legacy.runId, env);
+    manifestPath = assertPathInside(securePaths.root, legacy.manifestPath, "hosted_manifest_outside_secure_root");
   } catch (error) {
     throw wrap(error, "CREDENTIAL_STORAGE_FAILURE", "configuration", "secure_run_path_invalid");
   }
-  return { ...legacy, prNumber, artifactDir: securePaths.artifactsDir, securePaths };
+  return { ...legacy, manifestPath, prNumber, artifactDir: securePaths.artifactsDir, securePaths };
 }
 
 export async function loadHostedManifest(path) {
@@ -215,8 +217,16 @@ export async function loadHostedManifest(path) {
 export async function loadDeploymentAttestation(config, manifest) {
   let document;
   try {
-    document = JSON.parse(await readFile(manifest.deploymentAttestationPath, "utf8"));
-  } catch {
+    const attestationPath = assertPathInside(
+      config.securePaths.credentialsDir,
+      manifest.deploymentAttestationPath,
+      "deployment_attestation_outside_secure_root"
+    );
+    document = JSON.parse(await readFile(attestationPath, "utf8"));
+  } catch (error) {
+    if (error instanceof HostedContractError) {
+      throw wrap(error, "CREDENTIAL_STORAGE_FAILURE", "deployment-attestation", "deployment_attestation_outside_secure_root");
+    }
     throw new JourneyFailure("PREVIEW_ATTESTATION_FAILURE", "deployment-attestation", "deployment_attestation_invalid_json");
   }
   const attestation = validateDeploymentAttestation(document, {
