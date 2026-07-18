@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "premium-hosted-ui-case-v2",
+  "startPath": "/",
+  "actions": [
+    {
+      "type": "uploadByLabel",
+      "label": "replace_with_exact_accessible_file_input_label",
+      "path": "images/normal-synthetic.png"
+    },
+    {
+      "type": "clickByRole",
+      "role": "button",
+      "name": "replace_with_exact_accessible_next_button_name"
+    },
+    {
+      "type": "waitForVisibleText",
+      "text": "replace_with_stable_visible_completion_text"
+    }
+  ],
+  "resultMarker": {
+    "kind": "heading",
+    "name": "replace_with_exact_accessible_result_heading"
+  },
+  "timeoutMs": 120000
+}
