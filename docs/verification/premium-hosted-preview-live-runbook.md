@@ -68,6 +68,7 @@ Never commit account emails, passwords, access tokens, refresh tokens, cookies, 
 
 ```powershell
 $env:PREMIUM_HOSTED_RUN_ID = "live-<timestamp>"
+$env:PREMIUM_HOSTED_PR_NUMBER = "51"
 $env:PREMIUM_HOSTED_ENVIRONMENT = "preview"
 $env:PREMIUM_HOSTED_BASE_URL = "https://<immutable-deployment-host>"
 $env:PREMIUM_HOSTED_EXPECTED_HOST = "<immutable-deployment-host>"
@@ -79,6 +80,8 @@ $env:PREMIUM_HOSTED_SUPABASE_URL = "https://<project-ref>.supabase.co"
 $env:PREMIUM_HOSTED_SUPABASE_ANON_KEY = "<public-anon-key>"
 ```
 
+`PREMIUM_HOSTED_PR_NUMBER` is mandatory. The verifier must not infer or default to an older stacked PR because the selected deployment must be bound to the current implementation PR and exact head.
+
 Attestation generation additionally requires authenticated GitHub and Vercel API credentials supplied only through the process environment. Do not write them into the manifest.
 
 ## Verification commands
@@ -87,8 +90,9 @@ Attestation generation additionally requires authenticated GitHub and Vercel API
 npm ci
 npm run verify:premium-hosted-preview-harness-hardening
 npm run verify:premium-hosted-preview-contract
-npm run verify:premium-hosted-preview-preflight
+npm run generate:premium-hosted-preview-attestation
 npm run capture:premium-hosted-preview-login
+npm run verify:premium-hosted-preview-preflight
 npm run verify:premium-hosted-preview-ui
 npm run verify:premium-browser-journey
 npm run verify:premium-hosted-preview-db
@@ -103,6 +107,7 @@ Account A and B login capture are separate headed-browser runs. The user must co
 Stop without weakening the verifier when any of the following occurs:
 
 - Preview metadata does not match the current PR #51 head.
+- configured PR number, attested PR number, deployment SHA, and Vercel source SHA do not all agree.
 - target is Production or the immutable host redirects to another origin.
 - Account A/B identity, permanence, provider, hash, or separation fails.
 - fixture path escapes the fixture root.
