@@ -3,7 +3,7 @@ name: Security closeout inventory
 on:
   pull_request:
     branches:
-      - feature/premium-beta-flow
+      - main
     types:
       - opened
       - synchronize
