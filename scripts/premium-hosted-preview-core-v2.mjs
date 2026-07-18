@@ -2,13 +2,12 @@ import { existsSync } from "node:fs";
 import {
   HOSTED_FAILURE_CATEGORIES,
   REQUIRED_HOSTED_LANES,
-  assertHostedArtifactsSafe,
+  assertHostedArtifactsSafe as assertLegacyArtifactsSafe,
   buildHostedRunManifest as buildLegacyRunManifest,
-  evaluateHostedVerdict,
   loadHostedManifest as loadLegacyManifest,
   parseHostedConfig as parseLegacyConfig,
-  sanitizeEvidence,
-  writeHostedArtifacts
+  sanitizeEvidence as sanitizeLegacyEvidence,
+  writeHostedArtifacts as writeLegacyArtifacts
 } from "./premium-hosted-preview-core.mjs";
 import {
   HostedContractError,
@@ -20,14 +19,15 @@ import {
 import { resolveHostedRunPaths } from "./premium-hosted-preview-security.mjs";
 import { JourneyFailure, requireCondition } from "./premium-browser-journey-core.mjs";
 
-export {
-  HOSTED_FAILURE_CATEGORIES,
-  REQUIRED_HOSTED_LANES,
-  assertHostedArtifactsSafe,
-  evaluateHostedVerdict,
-  sanitizeEvidence,
-  writeHostedArtifacts
-};
+export { HOSTED_FAILURE_CATEGORIES, REQUIRED_HOSTED_LANES };
+
+const FORBIDDEN_TEXT = /(bearer\s+\S+|data:image\/|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,})/i;
+const PRODUCT_LANES = Object.freeze([
+  "selected-product",
+  "not-in-db",
+  "selected-plus-not-in-db",
+  "duplicate-axis"
+]);
 
 function wrap(error, category, step, fallbackCode) {
   if (error instanceof JourneyFailure) return error;
@@ -62,6 +62,33 @@ export async function loadHostedManifest(path) {
     "configuration",
     "deployment_attestation_missing"
   );
+  requireCondition(
+    typeof manifest.vercelProjectId === "string" && manifest.vercelProjectId.trim(),
+    "PREVIEW_ATTESTATION_FAILURE",
+    "configuration",
+    "vercel_project_id_missing"
+  );
+  requireCondition(
+    typeof manifest.catalogHash === "string" && /^[0-9a-f]{64}$/i.test(manifest.catalogHash),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "catalog_hash_missing_or_invalid"
+  );
+  requireCondition(
+    manifest.fixtureRoot && existsSync(manifest.fixtureRoot),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "fixture_root_missing"
+  );
+  const lanes = manifest.currentProductCases.map((item) => item?.laneName);
+  requireCondition(
+    lanes.length === PRODUCT_LANES.length &&
+      new Set(lanes).size === PRODUCT_LANES.length &&
+      PRODUCT_LANES.every((name) => lanes.includes(name)),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "current_product_lanes_invalid"
+  );
   return manifest;
 }
 
@@ -85,12 +112,65 @@ export function validateUiCaseFixture(value) {
   }
 }
 
-export function validateDeploymentAttestation(value, expected) {
+export function validateDeploymentAttestation(value, expected, options = {}) {
   try {
-    return validateHostedDeploymentAttestation(value, expected);
+    return validateHostedDeploymentAttestation(value, expected, options);
   } catch (error) {
     throw wrap(error, "PREVIEW_ATTESTATION_FAILURE", "deployment-attestation", "deployment_attestation_failed");
   }
+}
+
+export function sanitizeEvidence(value, path = "root") {
+  const sanitized = sanitizeLegacyEvidence(value, path);
+  function scan(item, currentPath) {
+    if (typeof item === "string") {
+      requireCondition(!FORBIDDEN_TEXT.test(item), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "forbidden_evidence_value", currentPath);
+      return;
+    }
+    if (Array.isArray(item)) {
+      item.forEach((child, index) => scan(child, `${currentPath}[${index}]`));
+      return;
+    }
+    if (item && typeof item === "object") {
+      Object.entries(item).forEach(([key, child]) => scan(child, `${currentPath}.${key}`));
+    }
+  }
+  scan(sanitized, path);
+  return sanitized;
+}
+
+export function evaluateHostedVerdict(lanes) {
+  const source = Array.isArray(lanes) ? lanes : [];
+  const names = source.map((lane) => lane?.name).filter(Boolean);
+  const duplicateLanes = [...new Set(names.filter((name, index) => names.indexOf(name) !== index))];
+  const byName = new Map(source.map((lane) => [lane.name, lane]));
+  const missingLanes = REQUIRED_HOSTED_LANES.filter((name) => !byName.has(name));
+  const failedLanes = REQUIRED_HOSTED_LANES.filter((name) => byName.get(name)?.status !== "passed");
+  return {
+    status: missingLanes.length || failedLanes.length || duplicateLanes.length ? "failed" : "passed",
+    missingLanes,
+    failedLanes,
+    duplicateLanes,
+    criticalCount: source.filter((lane) => lane?.severity === "critical" && lane?.status !== "passed").length,
+    importantCount: source.filter((lane) => lane?.severity === "important" && lane?.status !== "passed").length
+  };
+}
+
+export async function writeHostedArtifacts(input) {
+  const safeInput = {
+    ...input,
+    manifest: sanitizeEvidence(input.manifest),
+    preflight: sanitizeEvidence(input.preflight),
+    lanes: sanitizeEvidence(input.lanes),
+    dbEvidence: sanitizeEvidence(input.dbEvidence),
+    verdict: sanitizeEvidence(input.verdict),
+    summary: sanitizeEvidence(String(input.summary || ""), "summary")
+  };
+  return writeLegacyArtifacts(safeInput);
+}
+
+export async function assertHostedArtifactsSafe(artifactDir, secrets = []) {
+  await assertLegacyArtifactsSafe(artifactDir, secrets);
 }
 
 export function buildHostedRunManifest(config, manifest, attestation = null) {
