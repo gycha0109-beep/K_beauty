@@ -36,10 +36,13 @@ const attestation = validateDeploymentAttestation(attestationDocument, {
 requireCondition(attestation.immutableHost === config.baseUrl.hostname, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "preflight", "immutable_host_mismatch");
 requireCondition(attestation.prHeadSha === config.expectedSha, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "preflight", "attested_head_mismatch");
 
-const runLock = await acquireHostedRunLock(
-  config.securePaths,
-  `${attestation.repository}:${attestation.prNumber}:${attestation.vercelDeploymentId}:${manifest.accountA.expectedUserIdHash}:${manifest.accountB.expectedUserIdHash}`
-);
+const parentLockHeld = process.env.PREMIUM_HOSTED_PARENT_LOCK_HELD === "1";
+const runLock = parentLockHeld
+  ? null
+  : await acquireHostedRunLock(
+      config.securePaths,
+      `${attestation.repository}:${attestation.prNumber}:${attestation.vercelDeploymentId}:${manifest.accountA.expectedUserIdHash}:${manifest.accountB.expectedUserIdHash}`
+    );
 
 function credentialPath(path, code) {
   try {
@@ -147,10 +150,11 @@ try {
       accountStorageStates: 2,
       googleLoginEvidence: 2,
       productCaseCount: manifest.currentProductCases.length,
-      catalogBound: true
+      catalogBound: true,
+      runLock: parentLockHeld ? "parent" : "standalone"
     }
   };
   console.log(JSON.stringify(output, null, 2));
 } finally {
-  await runLock.release();
+  if (runLock) await runLock.release();
 }
