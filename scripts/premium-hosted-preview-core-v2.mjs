@@ -129,6 +129,31 @@ function validateAccessibleMarker(marker, code) {
   }
 }
 
+function validatePremiumEntryMarkers(markers) {
+  requireCondition(markers && typeof markers === "object" && !Array.isArray(markers), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "premium_entry_markers_missing");
+  requireCondition(
+    Object.keys(markers).length === 2 && Object.keys(markers).every((key) => ["ko", "en"].includes(key)),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "premium_entry_markers_invalid"
+  );
+  for (const locale of ["ko", "en"]) {
+    validateAccessibleMarker(markers[locale], `premium_entry_marker_${locale}`);
+    requireCondition(
+      markers[locale].kind === "heading",
+      HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+      "configuration",
+      `premium_entry_marker_${locale}_must_be_heading`
+    );
+  }
+  requireCondition(
+    markers.ko.name !== markers.en.name,
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "premium_entry_marker_locales_must_differ"
+  );
+}
+
 export function parseHostedPrNumber(value) {
   const raw = String(value ?? "").trim();
   requireCondition(
@@ -199,9 +224,21 @@ export async function loadHostedManifest(path) {
     "configuration",
     "fixture_root_missing"
   );
+  requireCondition(
+    typeof manifest.browserConflictBodyPath === "string" && manifest.browserConflictBodyPath.trim(),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "browser_conflict_body_path_missing"
+  );
   validateGoogleSignInMarker(manifest.googleSignInMarker);
   validateAccessibleMarker(manifest.signedInMarker, "signed_in_marker");
-  validateAccessibleMarker(manifest.premiumEntryMarker, "premium_entry_marker");
+  validatePremiumEntryMarkers(manifest.premiumEntryMarkers);
+  requireCondition(
+    !Object.prototype.hasOwnProperty.call(manifest, "premiumEntryMarker"),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "legacy_singular_premium_entry_marker_forbidden"
+  );
   const lanes = manifest.currentProductCases.map((item) => item?.laneName);
   requireCondition(
     lanes.length === PRODUCT_LANES.length &&
