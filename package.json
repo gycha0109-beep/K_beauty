@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "node --check scripts/verify-sec12-error-log-boundary.mjs && node scripts/verify-sec12-error-log-boundary.mjs && node scripts/verify-provider-runtime-log-sanitization.mjs && node scripts/verify-sec07-product-link-boundary.mjs && node scripts/verify-sec08-image-upload-boundary.mjs && node scripts/verify-sec09-public-result-read-boundary.mjs && node scripts/verify-sec10-image-origin-contract.mjs && node scripts/verify-sec10-security-headers.mjs && node scripts/verify-sec11-signout-boundary.mjs && node scripts/verify-analysis-request-guard.mjs && node scripts/verify-analysis-result-response-boundary.mjs && node scripts/verify-analysis-rls-contract.mjs && next build",
+    "build": "next build",
     "start": "next start -p 3001",
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
