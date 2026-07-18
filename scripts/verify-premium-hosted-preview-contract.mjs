@@ -140,6 +140,12 @@ assert.throws(() => validateLoginEvidence({ ...evidence, providerCategory: "gith
 
 assert.throws(() => sanitizeEvidence({ accessToken: "secret" }), (error) => error.category === HOSTED_FAILURE_CATEGORIES.HARNESS);
 assert.throws(() => sanitizeEvidence({ note: "user@example.com" }), (error) => error.category === HOSTED_FAILURE_CATEGORIES.HARNESS);
+const rawUuid = "123e4567-e89b-12d3-a456-426614174000";
+const sanitizedIdentifiers = sanitizeEvidence({ savedReportId: rawUuid, nested: { productId: rawUuid } });
+assert.match(sanitizedIdentifiers.savedReportId, /^sha256:[0-9a-f]{64}$/);
+assert.equal(sanitizedIdentifiers.savedReportId, sanitizedIdentifiers.nested.productId);
+assert.notEqual(sanitizedIdentifiers.savedReportId, rawUuid);
+assert.throws(() => sanitizeEvidence({ note: rawUuid }), (error) => error.category === HOSTED_FAILURE_CATEGORIES.HARNESS);
 assert.deepEqual(sanitizeEvidence({ status: "passed", nested: { savedReportIdHash: "sha256:x" } }), { status: "passed", nested: { savedReportIdHash: "sha256:x" } });
 
 const allPassed = REQUIRED_HOSTED_LANES.map((name) => ({ name, status: "passed", severity: "important" }));
