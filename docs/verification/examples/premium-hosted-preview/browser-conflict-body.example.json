@@ -1,0 +1,18 @@
+{
+  "ko": {
+    "currentProducts": [
+      {
+        "sourceState": "not_using",
+        "category": "cleanser"
+      }
+    ]
+  },
+  "en": {
+    "currentProducts": [
+      {
+        "sourceState": "not_using",
+        "category": "cleanser"
+      }
+    ]
+  }
+}
