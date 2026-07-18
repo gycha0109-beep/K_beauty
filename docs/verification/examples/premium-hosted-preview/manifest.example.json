@@ -1,5 +1,5 @@
 {
-  "deploymentAttestationPath": "<secure-root>/deployment-attestation.json",
+  "deploymentAttestationPath": "<secure-root>/credentials/deployment-attestation.json",
   "vercelProjectId": "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA",
   "supabaseProjectRef": "replace_with_preview_project_ref",
   "catalogHash": "replace_with_64_char_sha256_catalog_hash",
@@ -54,7 +54,19 @@
     "role": "button",
     "name": "replace_with_exact_accessible_google_signin_name"
   },
+  "signedInMarker": {
+    "kind": "text",
+    "name": "replace_with_exact_stable_signed_in_text"
+  },
+  "premiumEntryMarker": {
+    "kind": "heading",
+    "name": "replace_with_exact_premium_entry_heading"
+  },
   "faultCase": {
+    "attestationPath": "<secure-root>/credentials/fault-preview-attestation.json",
+    "prNumber": 0,
+    "expectedSha": "replace_with_fault_preview_40_char_sha",
+    "vercelProjectId": "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA",
     "path": "/api/full-report",
     "method": "POST",
     "body": {
