@@ -1,21 +1,23 @@
 name: Remediation source snapshot
 
 on:
-  push:
+  pull_request:
     branches:
-      - remediation/security-closeout-verifier-reproducibility
+      - feature/premium-beta-flow
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: read
 
 jobs:
   snapshot:
-    if: github.event.head_commit.message == 'chore(test): export remediation source snapshot'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: remediation/security-closeout-verifier-reproducibility
           fetch-depth: 1
       - name: Create source snapshot
         shell: bash
