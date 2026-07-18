@@ -1,0 +1,29 @@
+name: Remediation source snapshot
+
+on:
+  push:
+    branches:
+      - remediation/security-closeout-verifier-reproducibility
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    if: github.event.head_commit.message == 'chore(test): export remediation source snapshot'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: remediation/security-closeout-verifier-reproducibility
+          fetch-depth: 1
+      - name: Create source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=zip --output=remediation-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: remediation-source
+          path: remediation-source.zip
+          retention-days: 1
