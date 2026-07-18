@@ -58,15 +58,34 @@ function wrap(error, category, step, fallbackCode) {
   return new JourneyFailure(category, step, fallbackCode, error?.message || fallbackCode);
 }
 
+export function parseHostedPrNumber(value) {
+  const raw = String(value ?? "").trim();
+  requireCondition(
+    /^\d+$/.test(raw),
+    "PREVIEW_ATTESTATION_FAILURE",
+    "configuration",
+    "premium_hosted_pr_number_missing_or_invalid"
+  );
+  const parsed = Number(raw);
+  requireCondition(
+    Number.isSafeInteger(parsed) && parsed > 0,
+    "PREVIEW_ATTESTATION_FAILURE",
+    "configuration",
+    "premium_hosted_pr_number_missing_or_invalid"
+  );
+  return parsed;
+}
+
 export function parseHostedConfig(env = process.env) {
   const legacy = parseLegacyConfig(env);
+  const prNumber = parseHostedPrNumber(env.PREMIUM_HOSTED_PR_NUMBER);
   let securePaths;
   try {
     securePaths = resolveHostedRunPaths(legacy.runId, env);
   } catch (error) {
     throw wrap(error, "CREDENTIAL_STORAGE_FAILURE", "configuration", "secure_run_path_invalid");
   }
-  return { ...legacy, artifactDir: securePaths.artifactsDir, securePaths };
+  return { ...legacy, prNumber, artifactDir: securePaths.artifactsDir, securePaths };
 }
 
 export async function loadHostedManifest(path) {
@@ -128,7 +147,7 @@ export async function loadDeploymentAttestation(config, manifest) {
   }
   const attestation = validateDeploymentAttestation(document, {
     repository: "gycha0109-beep/K_beauty",
-    prNumber: 38,
+    prNumber: config.prNumber,
     headSha: config.expectedSha,
     vercelProjectId: manifest.vercelProjectId
   });
@@ -248,6 +267,7 @@ export async function assertHostedArtifactsSafe(artifactDir, secrets = []) {
 export function buildHostedRunManifest(config, manifest, attestation = null) {
   return {
     ...buildLegacyRunManifest(config, manifest),
+    prNumber: config.prNumber,
     deploymentSha: attestation?.prHeadSha || config.deploymentSha,
     deploymentId: attestation?.vercelDeploymentId || null,
     immutableHost: attestation?.immutableHost || null,
