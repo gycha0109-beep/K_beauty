@@ -125,7 +125,7 @@ lanes.push(
 );
 
 requireCondition(
-  Array.isArray(ui.lanes) && ui.lanes.length === 9,
+  Array.isArray(ui.lanes) && ui.lanes.length === 9 && ui.createdReportCount === 7,
   HOSTED_FAILURE_CATEGORIES.HARNESS,
   "gate",
   "ui_lane_count_invalid"
@@ -141,8 +141,9 @@ requireCondition(
     dbEvidence.cleanupManifestCreated === true &&
     /^[0-9a-f]{64}$/i.test(dbEvidence.cleanupManifestHash || "") &&
     /^[0-9a-f]{64}$/i.test(dbEvidence.browserPersistenceHash || "") &&
+    /^[0-9a-f]{64}$/i.test(dbEvidence.uiEvidenceHash || "") &&
     Array.isArray(dbEvidence.rows) &&
-    dbEvidence.rows.length === 4 &&
+    dbEvidence.rows.length === 11 &&
     dbEvidence.rows.every((row) =>
       row.ownerMatches === true &&
       row.sourceSessionHash &&
@@ -162,7 +163,7 @@ requireCondition(
 );
 
 const runManifest = buildHostedRunManifest(config, manifest, attestation);
-const summary = `# Premium Hosted Preview Verification\n\n- Run: ${config.runId}\n- PR: ${config.prNumber}\n- Host: ${attestation.immutableHost}\n- Deployment SHA: ${attestation.prHeadSha}\n- Verdict: PASS\n- Required lanes: ${lanes.length}\n- Duplicate source tuples: 0`;
+const summary = `# Premium Hosted Preview Verification\n\n- Run: ${config.runId}\n- PR: ${config.prNumber}\n- Host: ${attestation.immutableHost}\n- Deployment SHA: ${attestation.prHeadSha}\n- Verdict: PASS\n- Required lanes: ${lanes.length}\n- Verified created reports: ${dbEvidence.rows.length}\n- Duplicate source tuples: 0`;
 await writeHostedArtifacts({
   artifactDir: config.artifactDir,
   manifest: runManifest,
