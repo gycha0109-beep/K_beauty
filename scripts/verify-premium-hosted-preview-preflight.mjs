@@ -88,6 +88,13 @@ try {
   for (const [index, path] of casePaths.entries()) {
     await validateFixturePath(fixtureRoot, path, new Set([".json"]), 1024 * 1024, `ui_case_${index}`);
   }
+  await validateFixturePath(
+    fixtureRoot,
+    manifest.browserConflictBodyPath,
+    new Set([".json"]),
+    1024 * 1024,
+    "browser_conflict_body"
+  );
 
   const accountHashes = [];
   for (const [accountKey, account] of [["accountA", manifest.accountA], ["accountB", manifest.accountB]]) {
@@ -147,6 +154,7 @@ try {
       fixtureRootBound: true,
       imageFixtureCount: imagePaths.length,
       uiCaseCount: casePaths.length,
+      browserConflictBody: true,
       accountStorageStates: 2,
       googleLoginEvidence: 2,
       productCaseCount: manifest.currentProductCases.length,
