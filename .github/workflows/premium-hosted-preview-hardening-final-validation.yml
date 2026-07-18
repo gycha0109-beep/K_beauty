@@ -1,0 +1,76 @@
+name: Premium Hosted Preview Harness Hardening Final Validation
+
+on:
+  pull_request:
+    branches:
+      - validation/premium-hosted-preview-harness-hardening-82ff42
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact final implementation HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: 82ff42e179253e4acbf8b3c908324df65d7f0df1
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check changed scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            scripts/capture-premium-hosted-preview-google-login.mjs \
+            scripts/cleanup-premium-hosted-preview-run.mjs \
+            scripts/generate-premium-hosted-preview-attestation.mjs \
+            scripts/premium-hosted-preview-contract-core.mjs \
+            scripts/premium-hosted-preview-core-v2.mjs \
+            scripts/premium-hosted-preview-security.mjs \
+            scripts/verify-premium-hosted-preview-contract.mjs \
+            scripts/verify-premium-hosted-preview-db-evidence.mjs \
+            scripts/verify-premium-hosted-preview-error-boundaries.mjs \
+            scripts/verify-premium-hosted-preview-gate.mjs \
+            scripts/verify-premium-hosted-preview-preflight.mjs \
+            scripts/verify-premium-hosted-preview-ui-journey.mjs; do
+            node --check "$file"
+          done
+
+      - name: Run hardening contract verifier
+        run: npm run verify:premium-hosted-preview-harness-hardening
+
+      - name: Run existing Hosted Preview contract verifier
+        run: npm run verify:premium-hosted-preview-contract
+
+      - name: Run Premium browser journey contract
+        run: npm run verify:premium-browser-journey-contract
+
+      - name: Run Premium route and policy regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-decision-state.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check 1f483c19e235c54106d1d7604855e59a4ef96598..82ff42e179253e4acbf8b3c908324df65d7f0df1
