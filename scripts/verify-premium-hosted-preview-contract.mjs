@@ -72,19 +72,25 @@ assert.throws(() => projectCanonicalEvidence(duplicateReason), (error) => error.
 
 const validFixture = {
   schemaVersion: HOSTED_UI_FIXTURE_VERSION,
-  startPath: "/premium",
+  startPath: "/",
   actions: [
-    { type: "fillByLabel", label: "Skin type", value: "combination" },
-    { type: "clickByRole", role: "button", name: "View report" }
+    { type: "uploadByRole", role: "button", name: "사진에서 선택", path: "images/normal-synthetic.png" },
+    { type: "clickByRole", role: "button", name: "분석 시작" },
+    { type: "expectHeading", name: "현재 쓰는 제품을 알려주세요" }
   ],
-  resultMarker: { kind: "heading", name: "Premium report" }
+  resultMarker: { kind: "heading", name: "맞춤 스킨케어 플랜" }
 };
-assert.equal(validateUiCaseFixture(validFixture).startPath, "/premium");
+const validatedFixture = validateUiCaseFixture(validFixture);
+assert.equal(validatedFixture.startPath, "/");
+assert.equal(validatedFixture.actions[0].type, "uploadByRole");
+assert.equal(validatedFixture.actions[0].role, "button");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, requiredEvidence: [] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, startPath: "https://evil.example" }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "evaluate", script: "1" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "clickByRole", role: "document", name: "x" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "uploadByLabel", label: "Photo", path: "../private.jpg" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
+assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "uploadByRole", role: "link", name: "Upload", path: "images/normal.png" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
+assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "uploadByRole", role: "button", name: "Upload", path: "../private.png" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 
 assert.equal(parseHostedPrNumber("51"), 51);
 assert.throws(() => parseHostedPrNumber(undefined), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
