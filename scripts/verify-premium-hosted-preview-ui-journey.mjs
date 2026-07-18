@@ -10,7 +10,11 @@ import {
   projectCanonicalEvidence,
   validateUiCaseFixture
 } from "./premium-hosted-preview-core-v2.mjs";
-import { assertPathInside } from "./premium-hosted-preview-security.mjs";
+import {
+  assertPathInside,
+  hashFileSha256,
+  secureWriteJson
+} from "./premium-hosted-preview-security.mjs";
 import { JourneyFailure, requireCondition } from "./premium-browser-journey-core.mjs";
 
 const config = parseHostedConfig();
@@ -19,8 +23,14 @@ const attestation = await loadDeploymentAttestation(config, manifest);
 const fixtureRoot = await realpath(resolve(manifest.fixtureRoot));
 const headless = process.env.PREMIUM_HOSTED_HEADLESS !== "0";
 const previewBypassToken = String(process.env.PREMIUM_HOSTED_PREVIEW_BYPASS_TOKEN || "").trim();
+const uiCreatedIdsDir = assertPathInside(
+  config.securePaths.credentialsDir,
+  process.env.PREMIUM_HOSTED_UI_CREATED_IDS_DIR || resolve(config.securePaths.credentialsDir, "ui-created-ids"),
+  "ui_created_ids_directory_outside_secure_root"
+);
 const browser = await chromium.launch({ headless });
 const lanes = [];
+const createdReportLanes = [];
 const uploadExtensions = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 const allowedProtectionCookies = new Set(["_vercel_jwt", "__vercel_live_token"]);
 
@@ -121,6 +131,32 @@ function isFullReportResponse(response) {
   }
 }
 
+async function persistCreatedReportEvidence(body, laneName) {
+  const persistence = body?.meta?.persistence || null;
+  const savedReportId = String(persistence?.savedReportId || "").trim();
+  requireCondition(
+    persistence?.status === "saved" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(savedReportId),
+    HOSTED_FAILURE_CATEGORIES.PERSISTENCE,
+    laneName,
+    "ui_saved_report_evidence_missing"
+  );
+  const path = resolve(uiCreatedIdsDir, `${laneName}.json`);
+  await secureWriteJson(path, {
+    schemaVersion: "premium-hosted-ui-created-report-v1",
+    runId: config.runId,
+    prNumber: config.prNumber,
+    deploymentId: attestation.vercelDeploymentId,
+    deploymentSha: attestation.prHeadSha,
+    ownerUserIdHash: manifest.accountA.expectedUserIdHash,
+    laneName,
+    savedReportId,
+    createdAt: new Date().toISOString()
+  });
+  createdReportLanes.push(laneName);
+  return hashFileSha256(path);
+}
+
 async function runUiCase(casePath, laneName, account = manifest.accountA) {
   requireCondition(casePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, laneName, "ui_case_missing");
   const resolvedCasePath = await resolveFixtureFile(casePath, new Set([".json"]), 1024 * 1024, laneName);
@@ -152,9 +188,10 @@ async function runUiCase(casePath, laneName, account = manifest.accountA) {
     } catch {
       throw new JourneyFailure(HOSTED_FAILURE_CATEGORIES.CANONICAL_PROJECTION, laneName, "full_report_response_invalid_json");
     }
+    const persistenceEvidenceHash = await persistCreatedReportEvidence(body, laneName);
     const canonical = projectCanonicalEvidence(body, { catalogHash: manifest.catalogHash });
     requireCondition(canonical.locale === (laneName === "en-normal" ? "en" : laneName === "ko-normal" ? "ko" : canonical.locale), HOSTED_FAILURE_CATEGORIES.LOCALE, laneName, "canonical_locale_mismatch");
-    return canonical;
+    return { ...canonical, persistenceEvidenceHash };
   } finally {
     await context.close();
   }
@@ -200,6 +237,7 @@ try {
     await lane(productCase.laneName, "important", () => runUiCase(productCase.fixture, productCase.laneName));
   }
   await lane("photo-fallback", "important", () => runUiCase(manifest.photoFallbackCase, "photo-fallback"));
+  requireCondition(new Set(createdReportLanes).size === 7, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "ui-journey", "ui_created_report_count_invalid");
   console.log(JSON.stringify({
     status: "passed",
     runId: config.runId,
@@ -207,6 +245,7 @@ try {
     deploymentId: attestation.vercelDeploymentId,
     deploymentSha: attestation.prHeadSha,
     immutableHost: attestation.immutableHost,
+    createdReportCount: createdReportLanes.length,
     lanes
   }, null, 2));
 } finally {
