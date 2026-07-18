@@ -38,16 +38,12 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Diff hygiene evidence
-        id: diff_hygiene
-        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
           git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}" \
             2>&1 | tee security-closeout-evidence/diff-check.txt
       - name: Inventory and probe security verifiers
-        id: verifiers
-        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -101,10 +97,3 @@ jobs:
           path: security-closeout-evidence/
           if-no-files-found: error
           retention-days: 1
-      - name: Final closeout gate
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "${{ steps.diff_hygiene.outcome }}" = "success"
-          test "${{ steps.verifiers.outcome }}" = "success"
