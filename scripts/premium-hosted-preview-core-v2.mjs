@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import {
@@ -43,6 +44,15 @@ export const REQUIRED_HOSTED_LANES = Object.freeze([
 ]);
 
 const FORBIDDEN_TEXT = /(bearer\s+\S+|data:image\/|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,})/i;
+const RAW_UUID = /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/i;
+const HASHED_IDENTIFIER_KEYS = new Set([
+  "savedReportId",
+  "productId",
+  "topPickProductId",
+  "sourceSessionId",
+  "userId",
+  "ownerId"
+]);
 const PRODUCT_LANES = Object.freeze([
   "selected-product",
   "not-in-db",
@@ -56,6 +66,28 @@ function wrap(error, category, step, fallbackCode) {
     return new JourneyFailure(category, step, error.code, error.detail == null ? error.code : String(error.detail));
   }
   return new JourneyFailure(category, step, fallbackCode, error?.message || fallbackCode);
+}
+
+function hashArtifactIdentifier(value) {
+  return `sha256:${createHash("sha256").update(String(value)).digest("hex")}`;
+}
+
+function normalizeArtifactEvidence(value, key = null, path = "root") {
+  if (typeof value === "string") {
+    if (key && HASHED_IDENTIFIER_KEYS.has(key) && value) return hashArtifactIdentifier(value);
+    requireCondition(!RAW_UUID.test(value), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "raw_uuid_detected", path);
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item, index) => normalizeArtifactEvidence(item, null, `${path}[${index}]`));
+  }
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([childKey, child]) => [
+      childKey,
+      normalizeArtifactEvidence(child, childKey, `${path}.${childKey}`)
+    ])
+  );
 }
 
 export function parseHostedPrNumber(value) {
@@ -212,10 +244,12 @@ export function validateDeploymentAttestation(value, expected, options = {}) {
 }
 
 export function sanitizeEvidence(value, path = "root") {
-  const sanitized = sanitizeLegacyEvidence(value, path);
+  const normalized = normalizeArtifactEvidence(value, null, path);
+  const sanitized = sanitizeLegacyEvidence(normalized, path);
   function scan(item, currentPath) {
     if (typeof item === "string") {
       requireCondition(!FORBIDDEN_TEXT.test(item), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "forbidden_evidence_value", currentPath);
+      requireCondition(!RAW_UUID.test(item), HOSTED_FAILURE_CATEGORIES.HARNESS, "evidence-sanitize", "raw_uuid_detected", currentPath);
       return;
     }
     if (Array.isArray(item)) {
@@ -223,7 +257,7 @@ export function sanitizeEvidence(value, path = "root") {
       return;
     }
     if (item && typeof item === "object") {
-      Object.entries(item).forEach(([key, child]) => scan(child, `${currentPath}.${key}`));
+      Object.entries(item).forEach(([childKey, child]) => scan(child, `${currentPath}.${childKey}`));
     }
   }
   scan(sanitized, path);
