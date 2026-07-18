@@ -729,6 +729,85 @@ test.describe("Visuali MVP E2E draft", () => {
     expect(hydrationErrors).toEqual([]);
   });
 
+  test("sensitive errors stay generic across API and browser boundaries @sec12-error-log @smoke", async ({ page, context, request }) => {
+    const markers = [
+      "SEC12_FAKE_BEARER_MARKER",
+      "SEC12_FAKE_COOKIE_MARKER",
+      "SEC12_FAKE_DB_HINT_MARKER",
+      "SEC12_FAKE_PROMPT_MARKER",
+      "SEC12_FAKE_STACK_PATH_MARKER"
+    ];
+    const consoleMessages: string[] = [];
+    const cspViolations: string[] = [];
+    const hydrationErrors: string[] = [];
+
+    page.on("console", (message) => {
+      const text = message.text();
+      consoleMessages.push(text);
+      if (/content security policy|refused to (?:load|execute|apply|connect)/i.test(text)) cspViolations.push(text);
+      if (/hydration|did not match|server rendered html/i.test(text)) hydrationErrors.push(text);
+    });
+    await interceptLocalSupabaseRequests(context);
+
+    const malformedTrack = await request.post("/api/track", {
+      data: "{",
+      headers: { "content-type": "application/json" }
+    });
+    expect(malformedTrack.status()).toBe(400);
+    expect(await malformedTrack.json()).toEqual({ success: false, error: "invalid_request" });
+    expectNoStoreHeaders(malformedTrack.headers());
+    expect(malformedTrack.headers()["x-content-type-options"]).toBe("nosniff");
+    expect(malformedTrack.headers()["x-frame-options"]).toBe("DENY");
+    expect(malformedTrack.headers()["referrer-policy"]).toBe("same-origin");
+
+    let interceptedTrackCount = 0;
+    await page.route("**/api/track", async (route) => {
+      interceptedTrackCount += 1;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0",
+          "CDN-Cache-Control": "no-store",
+          "Vercel-CDN-Cache-Control": "no-store"
+        },
+        body: JSON.stringify({
+          error: "unknown_dependency_failure",
+          message: markers[0],
+          cookie: markers[1],
+          hint: markers[2],
+          prompt: markers[3],
+          stack: `C:\\\\private\\\\${markers[4]}`
+        })
+      });
+    });
+
+    await page.goto("/en");
+    await seedProductImageResult(page, APPROVED_PRODUCT_IMAGE_URL);
+    await page.evaluate(() => {
+      sessionStorage.setItem("skinTestTrackWriteAccessToken", "synthetic-sec12-track-grant");
+      sessionStorage.setItem("skinTestAnonymousAnalysisRunId", "synthetic-sec12-analysis-run");
+    });
+    await page.goto("/en/result");
+    await expect.poll(() => interceptedTrackCount).toBeGreaterThan(0);
+    await page.waitForTimeout(250);
+
+    const browserSnapshot = await page.evaluate(() => ({
+      body: document.body.textContent || "",
+      url: window.location.href,
+      localStorage: JSON.stringify({ ...localStorage }),
+      sessionStorage: JSON.stringify({ ...sessionStorage })
+    }));
+    const observableText = JSON.stringify({ consoleMessages, browserSnapshot });
+
+    for (const marker of markers) {
+      expect(observableText).not.toContain(marker);
+    }
+    expect(consoleMessages.some((text) => text.includes("[security-event]"))).toBe(true);
+    expect(cspViolations).toEqual([]);
+    expect(hydrationErrors).toEqual([]);
+  });
+
   test("shared result loader has one read boundary and generic failure states @smoke", async ({ page, context }) => {
     let isPublic = true;
     let publicGetCount = 0;

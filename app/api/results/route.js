@@ -23,6 +23,10 @@ import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { getRouteSupabaseUser } from "@/lib/supabase/server-client";
 import { consumeRateLimit, getRequestClientKey } from "@/lib/write-access";
 import { parsePublicResultShareId } from "@/lib/security/public-result-read-guard-core";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const SAVE_RESULTS_LIMIT = 10;
 const SAVE_RESULTS_WINDOW_MS = 10 * 60 * 1000;
@@ -56,6 +60,13 @@ const ANONYMOUS_FORM_KEYS = new Set([
   "verySensitivePeriod"
 ]);
 
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
+
 function isAccountUser(user) {
   return Boolean(user) && !user.is_anonymous && user.app_metadata?.provider !== "anonymous";
 }
@@ -78,7 +89,7 @@ function getAnonymousWriteErrorResponse(code, status) {
     anonymous_write_token_mixed: "Use either an account session or an anonymous save session."
   };
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: code,
@@ -191,7 +202,13 @@ async function supportsUserIdColumn(supabase, tableName) {
   }
 
   if (error) {
-    console.error(`[api/results] failed to inspect ${tableName}.user_id support`, error);
+    writeSafeLog("warn", {
+      event: "results_save_failed",
+      category: "database_unavailable",
+      operation: "results",
+      dependency: "supabase",
+      retryable: true
+    });
   }
 
   USER_ID_COLUMN_SUPPORT.set(tableName, true);
@@ -252,7 +269,7 @@ async function publishExistingShare(supabase, { shareId, userId }) {
 }
 
 function getUnauthorizedResponse() {
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: "The analysis save session is missing or expired. Please run the analysis again."
@@ -262,7 +279,7 @@ function getUnauthorizedResponse() {
 }
 
 function createSavedResultResponse(saved, options = {}) {
-  return NextResponse.json({
+  return sensitiveJsonResponse({
     success: true,
     shareId: saved.share_id,
     sharePath: getSharePath(saved.share_id),
@@ -285,7 +302,7 @@ export async function POST(request) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         { success: false, error: "Invalid JSON body." },
         { status: 400 }
       );
@@ -312,7 +329,7 @@ export async function POST(request) {
     });
 
     if (!rateLimit.allowed) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           success: false,
           error: "Too many save requests. Please wait a moment and try again."
@@ -330,14 +347,14 @@ export async function POST(request) {
 
     if (!supabase) {
       return accountUser
-        ? NextResponse.json({ success: false, error: getResultSaveErrorMessage() }, { status: 500 })
+        ? sensitiveJsonResponse({ success: false, error: getResultSaveErrorMessage() }, { status: 500 })
         : getAnonymousWriteErrorResponse("anonymous_write_grant_unavailable", 503);
     }
 
     if (share && requestedShareId) {
       const parsedShareId = parsePublicResultShareId(requestedShareId);
       if (parsedShareId.kind === "invalid") {
-        return NextResponse.json({ success: false, error: "Invalid share id." }, { status: 400 });
+        return sensitiveJsonResponse({ success: false, error: "Invalid share id." }, { status: 400 });
       }
       const ownerUserId = accountUser ? currentUser.id : await getAnalysisResultOwnerUserId(request);
 
@@ -350,7 +367,7 @@ export async function POST(request) {
         userId: ownerUserId
       });
 
-      return NextResponse.json({
+      return sensitiveJsonResponse({
         success: true,
         shareId: published.share_id,
         sharePath: getSharePath(published.share_id),
@@ -361,14 +378,14 @@ export async function POST(request) {
     }
 
     if (!result || !submission?.form || typeof submission.form !== "object") {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         { success: false, error: "Missing analysis result payload." },
         { status: 400 }
       );
     }
 
     if (!share) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         { success: false, error: "Explicit share confirmation is required." },
         { status: 400 }
       );
@@ -414,7 +431,7 @@ export async function POST(request) {
       submissionForStorage = normalizeAnonymousSubmission(submission);
 
       if (!resultForStorage || !submissionForStorage) {
-        return NextResponse.json(
+        return sensitiveJsonResponse(
           { success: false, error: "Invalid analysis result payload." },
           { status: 400 }
         );
@@ -543,9 +560,13 @@ export async function POST(request) {
     }
 
     return createSavedResultResponse(saved, { replayed: insertion.replayed });
-  } catch (error) {
-    console.error("[api/results] save failed", {
-      message: error instanceof Error ? error.message : "unknown"
+  } catch {
+    writeSafeLog("error", {
+      event: "results_save_failed",
+      category: "database_unavailable",
+      operation: "results",
+      dependency: "supabase",
+      retryable: true
     });
 
     if (requestId && supabase) {
@@ -555,7 +576,13 @@ export async function POST(request) {
           .delete()
           .eq("id", requestId);
       } catch {
-        console.error("[api/results] request cleanup failed");
+        writeSafeLog("warn", {
+          event: "results_save_failed",
+          category: "database_unavailable",
+          operation: "results",
+          dependency: "supabase",
+          retryable: true
+        });
       }
     }
 
@@ -571,7 +598,7 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json(
+    return sensitiveJsonResponse(
       {
         success: false,
         error: getResultSaveErrorMessage()

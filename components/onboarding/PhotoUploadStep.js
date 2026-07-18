@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const INTRO_FACE_IMAGE_SRC = "/images/Facial_1.png";
 
@@ -280,7 +281,7 @@ export default function PhotoUploadStep({
           video: { facingMode: "user" },
           audio: false
         });
-      } catch (preferredCameraError) {
+      } catch {
         nextStream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false
@@ -289,8 +290,14 @@ export default function PhotoUploadStep({
 
       setStream(nextStream);
       setIsCameraOpen(true);
-    } catch (cameraOpenError) {
-      console.error("camera open failed", cameraOpenError);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "browser_api_unavailable",
+        operation: "client",
+        dependency: "browser",
+        retryable: false
+      });
       setCameraError(t.cameraError);
       cameraInputRef.current?.click();
     }

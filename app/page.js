@@ -25,6 +25,7 @@ import {
   writeAnonymousWriteGrantState
 } from "@/lib/write-access-client";
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const STEP_ORDER = ["photo", "survey", "loading"];
 const PRODUCT_SOURCE_UNAVAILABLE_CODE = "PRODUCT_SOURCE_UNAVAILABLE";
@@ -75,15 +76,15 @@ function clearStaleAnalysisStorage() {
 }
 
 function getAnalyzeErrorMessage(data, copy) {
-  if (ANALYSIS_GUARD_ERROR_CODES.has(data?.error) && typeof data?.message === "string") {
-    return data.message;
+  if (ANALYSIS_GUARD_ERROR_CODES.has(data?.error)) {
+    return copy.errors.analyzeFailed;
   }
 
   if (data?.code === PRODUCT_SOURCE_UNAVAILABLE_CODE) {
     return copy.errors.productSourceUnavailable;
   }
 
-  return data?.error || copy.errors.analyzeFailed;
+  return copy.errors.analyzeFailed;
 }
 
 function normalizeSurveyAnswers(form = {}) {
@@ -181,14 +182,20 @@ async function requestFaceLabResult(file, locale, idempotencyKey) {
     if (!response.ok || !data) {
       return isFaceLabResultEnvelope(data)
         ? data
-        : createFaceLabUnavailable(data?.error || "unknown");
+        : createFaceLabUnavailable("vision_request_failed");
     }
 
     return isFaceLabResultEnvelope(data)
       ? data
       : createFaceLabUnavailable("vision_response_invalid");
-  } catch (error) {
-    console.error("[onboarding] face lab request failed", error);
+  } catch {
+    writeSafeLog("warn", {
+      event: "client_operation_failed",
+      category: "network_unavailable",
+      operation: "client",
+      dependency: "application",
+      retryable: true
+    });
     return createFaceLabUnavailable("vision_request_failed");
   }
 }
@@ -339,9 +346,15 @@ export default function HomePage() {
         }
 
         router.push(locale === "en" ? "/en/result" : "/result");
-      } catch (submitError) {
-        console.error("[onboarding] analyze failed", submitError);
-        setError(submitError.message || copy.errors.unexpected);
+      } catch {
+        writeSafeLog("error", {
+          event: "client_operation_failed",
+          category: "network_unavailable",
+          operation: "client",
+          dependency: "application",
+          retryable: true
+        });
+        setError(copy.errors.unexpected);
         setCurrentStep("survey");
       } finally {
         setIsSubmitting(false);

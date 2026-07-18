@@ -27,6 +27,7 @@ import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 import {
   getBrowserPermanentSupabaseAccessToken,
   getBrowserSupabaseAccessToken
@@ -6403,7 +6404,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
         }
 
         if (!response.ok || !data) {
-          throw new Error(data?.error || copy.errorBody);
+          throw new Error(copy.errorBody);
         }
 
         const baseResult =
@@ -6429,12 +6430,24 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
             has_fit_gauges: Boolean(localizedData.topPickFitGauges?.gauges?.length)
           }
         });
-      } catch (requestError) {
+      } catch {
         if (process.env.NODE_ENV !== "production") {
-          console.warn("[full-report] using fallback report", requestError);
+          writeSafeLog("warn", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true
+          });
           setReport(developmentFallbackReport);
         } else {
-          console.error("[full-report] failed to load report", requestError);
+          writeSafeLog("error", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true
+          });
           setReport(null);
           setError(copy.errorBody);
         }

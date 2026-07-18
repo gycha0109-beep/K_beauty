@@ -5,7 +5,7 @@ import {
   validateImageRequestContentLength,
   validateImageUpload
 } from "@/lib/upload-validation";
-import { getOpenAiEnvDiagnostics, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { buildFaceLabStructuredData } from "@/lib/face-lab-launch";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 import {
@@ -21,6 +21,10 @@ import {
   createFaceLabInsufficientEvidence,
   createFaceLabUnavailable
 } from "@/lib/face-lab-result-envelope";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MODEL = "gpt-4o-mini";
@@ -190,11 +194,24 @@ function getCopy(locale = "ko") {
   return COPY[locale] || COPY.ko;
 }
 
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
+
 async function completeGuardedResponse(response, guardResult) {
   const completion = await completeAnalysisRequestGuard(guardResult);
 
   if (!completion.ok) {
-    console.warn("[face-reading] analysis guard complete failed");
+    writeSafeLog("warn", {
+      event: "face_reading_failed",
+      category: "internal_error",
+      operation: "face_reading",
+      dependency: "application",
+      retryable: false
+    });
   }
 
   return applyAnalysisGuardCookies(response, guardResult);
@@ -204,7 +221,13 @@ async function failGuardedResponse(response, guardResult) {
   const failure = await failAnalysisRequestGuard(guardResult);
 
   if (!failure.ok) {
-    console.warn("[face-reading] analysis guard fail failed");
+    writeSafeLog("warn", {
+      event: "face_reading_failed",
+      category: "internal_error",
+      operation: "face_reading",
+      dependency: "application",
+      retryable: false
+    });
   }
 
   return applyAnalysisGuardCookies(response, guardResult);
@@ -730,7 +753,7 @@ export async function POST(request) {
       const errorMessage = contentLengthValidation.code === "too_large"
         ? copy.imageTooLarge
         : copy.invalidImageType;
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
+      return sensitiveJsonResponse({ error: errorMessage }, { status: 400 });
     }
 
     const formData = await request.formData();
@@ -741,7 +764,7 @@ export async function POST(request) {
     const imageValidation = validateImageUpload(image);
 
     if (!image || typeof image.arrayBuffer !== "function") {
-      return NextResponse.json({ error: copy.errorNeedImage }, { status: 400 });
+      return sensitiveJsonResponse({ error: copy.errorNeedImage }, { status: 400 });
     }
 
     if (!imageValidation.ok) {
@@ -749,7 +772,7 @@ export async function POST(request) {
         ? copy.imageTooLarge
         : copy.invalidImageType;
 
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
+      return sensitiveJsonResponse({ error: errorMessage }, { status: 400 });
     }
 
     analysisGuard = await guardAnalysisRequest({
@@ -770,26 +793,16 @@ export async function POST(request) {
 
     if (!canonicalImage.ok) {
       return failGuardedResponse(
-        NextResponse.json({ error: copy.invalidImageType }, { status: 400 }),
+        sensitiveJsonResponse({ error: copy.invalidImageType }, { status: 400 }),
         analysisGuard
       );
     }
 
     const canonicalDataUrl = canonicalImage.dataUrl;
     const { apiKey } = resolveOpenAiApiKey();
-    if (process.env.NODE_ENV !== "production") {
-      console.info(
-        "[face-reading] openai-env:diagnostic",
-        getOpenAiEnvDiagnostics({
-          route: "face-reading",
-          routeUsesOpenAi: true,
-          routeUsesOpenRouter: false
-        })
-      );
-    }
     if (!apiKey) {
       return completeGuardedResponse(
-        NextResponse.json(createFaceLabUnavailable("api_key_missing")),
+        sensitiveJsonResponse(createFaceLabUnavailable("api_key_missing")),
         analysisGuard
       );
     }
@@ -838,7 +851,7 @@ export async function POST(request) {
         errorCategory: "request_failed"
       });
       return failGuardedResponse(
-        NextResponse.json(createFaceLabUnavailable("vision_request_failed")),
+        sensitiveJsonResponse(createFaceLabUnavailable("vision_request_failed")),
         analysisGuard
       );
     }
@@ -856,7 +869,7 @@ export async function POST(request) {
         errorCategory: "http_error"
       });
       return failGuardedResponse(
-        NextResponse.json(createFaceLabUnavailable("vision_request_failed")),
+        sensitiveJsonResponse(createFaceLabUnavailable("vision_request_failed")),
         analysisGuard
       );
     }
@@ -874,7 +887,7 @@ export async function POST(request) {
         errorCategory: "empty_response"
       });
       return failGuardedResponse(
-        NextResponse.json(createFaceLabUnavailable("vision_response_invalid")),
+        sensitiveJsonResponse(createFaceLabUnavailable("vision_response_invalid")),
         analysisGuard
       );
     }
@@ -892,20 +905,29 @@ export async function POST(request) {
       });
 
       if (!hasFaceReadingPayloadShape(parsed)) {
-        console.warn("[face-reading] response shape insufficient", {
-          hasBaseData: Boolean(parsed?.base_data),
-          hasFeatures: Boolean(parsed?.features)
+        writeSafeLog("warn", {
+          event: "face_reading_failed",
+          category: "response_shape_invalid",
+          operation: "face_reading",
+          dependency: "provider",
+          retryable: false
         });
         return failGuardedResponse(
-          NextResponse.json(createFaceLabUnavailable("required_features_missing")),
+          sensitiveJsonResponse(createFaceLabUnavailable("required_features_missing")),
           analysisGuard
         );
       }
 
       if (!hasRequiredFaceLabEvidence(parsed)) {
-        console.warn("[face-reading] response evidence insufficient");
+        writeSafeLog("warn", {
+          event: "face_reading_failed",
+          category: "response_shape_invalid",
+          operation: "face_reading",
+          dependency: "provider",
+          retryable: false
+        });
         return completeGuardedResponse(
-          NextResponse.json(
+          sensitiveJsonResponse(
             createFaceLabInsufficientEvidence(
               {
                 ...parsed,
@@ -922,14 +944,17 @@ export async function POST(request) {
       const structuredFaceLab = buildFaceLabStructuredData(parsed, locale);
 
       if (process.env.NODE_ENV !== "production" && !hasFaceReadingPayloadShape(normalizedFaceLab)) {
-        console.warn("[face-reading] response shape warning", {
-          hasBaseData: Boolean(normalizedFaceLab?.base_data),
-          hasFeatures: Boolean(normalizedFaceLab?.features)
+        writeSafeLog("warn", {
+          event: "face_reading_failed",
+          category: "response_shape_invalid",
+          operation: "face_reading",
+          dependency: "provider",
+          retryable: false
         });
       }
 
       return completeGuardedResponse(
-        NextResponse.json(createFaceLabAvailable({
+        sensitiveJsonResponse(createFaceLabAvailable({
           ...normalizedFaceLab,
           structured: structuredFaceLab
         })),
@@ -946,21 +971,23 @@ export async function POST(request) {
         errorCategory: "invalid_response"
       });
       return failGuardedResponse(
-        NextResponse.json(createFaceLabUnavailable("vision_response_invalid")),
+        sensitiveJsonResponse(createFaceLabUnavailable("vision_response_invalid")),
         analysisGuard
       );
     }
-  } catch (error) {
+  } catch {
     if (analysisGuard?.ok) {
       await failAnalysisRequestGuard(analysisGuard);
     }
 
-    console.error("[face-reading] request failed", {
-      stage: "face-reading",
-      ok: false,
-      errorCategory: "route_processing_failed"
+    writeSafeLog("error", {
+      event: "face_reading_failed",
+      category: "internal_error",
+      operation: "face_reading",
+      dependency: "application",
+      retryable: false
     });
-    return applyAnalysisGuardCookies(NextResponse.json(
+    return applyAnalysisGuardCookies(sensitiveJsonResponse(
       { error: getCopy(responseLocale).serverError },
       { status: 500 }
     ), analysisGuard);

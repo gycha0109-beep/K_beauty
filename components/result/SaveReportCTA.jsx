@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import {
+  getSafePublicErrorMessage,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const PENDING_SAVE_REPORT_KEY = "pendingSaveReport";
 const SHARE_SESSION_KEY = "skinTestShare";
@@ -154,7 +158,7 @@ async function saveReport(payload) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.error || "save_report_failed");
+    throw new Error(getSafePublicErrorMessage(data?.error, "save_report_unavailable"));
   }
 
   return {
@@ -276,8 +280,14 @@ export default function SaveReportCTA({
         onSaved?.();
         showSavedAlert(isEnglish);
       })
-      .catch((error) => {
-        console.error("[result/save-report] pending save failed", error);
+      .catch(() => {
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "network_unavailable",
+          operation: "client",
+          dependency: "application",
+          retryable: true
+        });
         setMessage(
           isEnglish
             ? "Could not save the result. The result page is still available."
@@ -309,8 +319,14 @@ export default function SaveReportCTA({
 
       try {
         await startGoogleSignIn(nextPath);
-      } catch (error) {
-        console.error("[result/save-report] google sign-in failed", error);
+      } catch {
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "session_unavailable",
+          operation: "client",
+          dependency: "supabase",
+          retryable: true
+        });
         setIsSaving(false);
         setMessage(
           isEnglish
@@ -342,8 +358,14 @@ export default function SaveReportCTA({
       setIsSaved(true);
       onSaved?.();
       showSavedAlert(isEnglish);
-    } catch (error) {
-      console.error("[result/save-report] save failed", error);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "network_unavailable",
+        operation: "client",
+        dependency: "application",
+        retryable: true
+      });
       setMessage(
         isEnglish
           ? "Could not save the result. The result page is still available."

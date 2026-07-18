@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import DailyCheckInForm from "@/components/my/DailyCheckInForm";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getMyCopy } from "@/lib/my/i18n";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
 export const dynamic = "force-dynamic";
 
@@ -131,8 +132,14 @@ export async function CheckInPageContent({ locale = "ko" } = {}) {
         </div>
       </main>
     );
-  } catch (error) {
-    console.error("[my/check-in] failed to load page", error);
+  } catch {
+    writeSafeLog("error", {
+      event: "check_in_failed",
+      category: "database_unavailable",
+      operation: "check_in",
+      dependency: "supabase",
+      retryable: true
+    });
 
     return (
       <main className="ui-page-shell min-h-screen px-4 py-8 sm:px-6">

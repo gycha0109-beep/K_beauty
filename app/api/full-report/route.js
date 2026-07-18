@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getOpenAiEnvDiagnostics } from "@/lib/openai-env-diagnostics";
-import { upsertProfileForUser, serializeSupabaseError } from "@/lib/auth/profile-upsert";
+import { upsertProfileForUser } from "@/lib/auth/profile-upsert";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { resolvePremiumAccessForRequest, isAccountUser } from "@/lib/premium-access";
 import {
@@ -22,8 +21,19 @@ import { sanitizePremiumReportPurchaseLinks } from "@/lib/product-purchase-link"
 import { sanitizePremiumReportProductImages } from "@/lib/security/image-source-policy";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
+
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
 
 function sanitizePremiumReportForBoundary(report) {
   return sanitizePremiumReportProductImages(
@@ -60,7 +70,7 @@ function getUnauthorizedResponse(reason) {
     ? reason
     : "login_required";
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: safeReason
@@ -70,7 +80,7 @@ function getUnauthorizedResponse(reason) {
 }
 
 function getPaymentRequiredResponse(access) {
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: "premium_payment_required",
@@ -82,7 +92,7 @@ function getPaymentRequiredResponse(access) {
 }
 
 function getPremiumUnavailableResponse() {
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: "premium_unavailable",
@@ -93,7 +103,7 @@ function getPremiumUnavailableResponse() {
 }
 
 function getPremiumPersistenceFailedResponse(code = "premium_save_failed") {
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       success: false,
       error: code
@@ -202,7 +212,13 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     .maybeSingle();
 
   if (existing.error) {
-    console.error("[full-report] saved premium lookup failed", serializeSupabaseError(existing.error));
+    writeSafeLog("error", {
+      event: "full_report_failed",
+      category: "database_unavailable",
+      operation: "full_report",
+      dependency: "supabase",
+      retryable: true
+    });
     return { ok: false, code: "lookup_failed" };
   }
 
@@ -236,7 +252,13 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
       .maybeSingle();
 
     if (error || !data?.id) {
-      console.error("[full-report] saved premium update failed", serializeSupabaseError(error));
+      writeSafeLog("error", {
+        event: "full_report_failed",
+        category: "database_unavailable",
+        operation: "full_report",
+        dependency: "supabase",
+        retryable: true
+      });
       return { ok: false, code: "update_failed" };
     }
 
@@ -250,7 +272,13 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     .single();
 
   if (error) {
-    console.error("[full-report] saved premium insert failed", serializeSupabaseError(error));
+    writeSafeLog("error", {
+      event: "full_report_failed",
+      category: "database_unavailable",
+      operation: "full_report",
+      dependency: "supabase",
+      retryable: true
+    });
     return { ok: false, code: "insert_failed" };
   }
 
@@ -281,17 +309,6 @@ async function applyCurrentProductsToReport({ report, body, locale }) {
 }
 
 export async function POST(request) {
-  if (process.env.NODE_ENV !== "production") {
-    console.info(
-      "[full-report] openai-env:diagnostic",
-      getOpenAiEnvDiagnostics({
-        route: "full-report",
-        routeUsesOpenAi: false,
-        routeUsesOpenRouter: false
-      })
-    );
-  }
-
   let body = null;
 
   try {
@@ -301,7 +318,7 @@ export async function POST(request) {
   const imageAliasValidation = validateFullReportImageAliases(body);
 
   if (!imageAliasValidation.ok) {
-    return NextResponse.json({ error: "invalid_image" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
   }
 
   const locale = body?.locale === "en" ? "en" : "ko";
@@ -316,7 +333,7 @@ export async function POST(request) {
     const savedReportImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
 
     if (!savedReportImage.ok) {
-      return NextResponse.json({ error: "invalid_image" }, { status: 400 });
+      return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
     }
 
     const { data: savedReport, error } = await loadSavedPremiumReport({
@@ -327,7 +344,13 @@ export async function POST(request) {
 
     if (error || !savedReport?.premium_report) {
       if (error) {
-        console.error("[full-report] saved premium read failed", serializeSupabaseError(error));
+        writeSafeLog("warn", {
+          event: "full_report_failed",
+          category: "database_unavailable",
+          operation: "full_report",
+          dependency: "supabase",
+          retryable: true
+        });
       }
       return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
@@ -339,7 +362,7 @@ export async function POST(request) {
         : null;
     const topPickFitGauges = buildProductFitGauges(body?.topPick || savedFreeResult?.topPick || null, { locale });
 
-    return NextResponse.json({
+    return sensitiveJsonResponse({
       ...savedPremiumReport,
       topPickFitGauges,
       meta: buildFullReportMeta(locale, "saved-report")
@@ -361,7 +384,13 @@ export async function POST(request) {
 
   if (!premiumSession.ok || !premiumSession.payload?.premiumReport) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[full-report] premium session rejected", premiumSession.code);
+      writeSafeLog("warn", {
+        event: "full_report_failed",
+        category: "session_unavailable",
+        operation: "full_report",
+        dependency: "application",
+        retryable: false
+      });
     }
     return getUnauthorizedResponse("premium_session_missing_or_expired");
   }
@@ -369,7 +398,7 @@ export async function POST(request) {
   const canonicalImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
 
   if (!canonicalImage.ok) {
-    return NextResponse.json({ error: "invalid_image" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
   }
 
   const canonicalImageUrl = canonicalImage.absent ? null : canonicalImage.dataUrl;
@@ -400,7 +429,13 @@ export async function POST(request) {
 
     if (!updateResult.ok || !updateResult.payload?.premiumReport) {
       if (process.env.NODE_ENV !== "production") {
-        console.warn("[full-report] premium session update failed", updateResult.code);
+        writeSafeLog("warn", {
+          event: "full_report_failed",
+          category: "session_unavailable",
+          operation: "full_report",
+          dependency: "supabase",
+          retryable: true
+        });
       }
       return getPremiumPersistenceFailedResponse("premium_session_update_failed");
     }
@@ -415,8 +450,14 @@ export async function POST(request) {
       supabase: userSupabase,
       user,
       preferAdmin: true
-    }).catch((error) => {
-      console.warn("[full-report] profile upsert before premium save skipped", error?.message || error);
+    }).catch(() => {
+      writeSafeLog("warn", {
+        event: "profile_sync_failed",
+        category: "database_unavailable",
+        operation: "profile_sync",
+        dependency: "supabase",
+        retryable: true
+      });
     });
 
     const adminSupabase = createSupabaseAdminClient();
@@ -434,9 +475,12 @@ export async function POST(request) {
   }
 
   if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {
-    console.warn("[full-report] response shape warning", {
-      hasFreeResult: storedPremiumReport && "freeResult" in storedPremiumReport,
-      hasFullRoutine: Boolean(storedPremiumReport?.fullRoutine)
+    writeSafeLog("warn", {
+      event: "full_report_failed",
+      category: "response_shape_invalid",
+      operation: "full_report",
+      dependency: "application",
+      retryable: false
     });
   }
 
@@ -446,7 +490,7 @@ export async function POST(request) {
       ? clientPremiumReport.freeResult
       : null;
   const topPickFitGauges = buildProductFitGauges(body?.topPick || storedFreeResult?.topPick || null, { locale });
-  const response = NextResponse.json({
+  const response = sensitiveJsonResponse({
     ...clientPremiumReport,
     topPickFitGauges,
     meta: buildFullReportMeta(locale)

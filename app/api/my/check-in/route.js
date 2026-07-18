@@ -9,6 +9,10 @@ import {
   mergeCheckinEventsContext,
   normalizeCheckinEvents
 } from "@/lib/my/checkin-events";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +23,13 @@ const LEVEL_FIELDS = [
   "breakout_level",
   "irritation_level"
 ];
+
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
 
 const SKIN_PROFILE_COLUMNS = [
   "id",
@@ -146,7 +157,7 @@ async function getActiveSkinProfile(supabase, userId) {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`active_skin_profile: ${error.message}`);
+    throw new Error("active_skin_profile_unavailable");
   }
 
   return data || null;
@@ -160,7 +171,7 @@ export async function POST(request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -168,20 +179,20 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_json" }, { status: 400 });
   }
 
   const { error: validationError, payload } = normalizeCheckinPayload(body);
 
   if (validationError) {
-    return NextResponse.json({ error: validationError }, { status: 400 });
+    return sensitiveJsonResponse({ error: validationError }, { status: 400 });
   }
 
   try {
     const skinProfile = await getActiveSkinProfile(supabase, user.id);
 
     if (!skinProfile) {
-      return NextResponse.json({ error: "skin_profile_required" }, { status: 409 });
+      return sensitiveJsonResponse({ error: "skin_profile_required" }, { status: 409 });
     }
 
     const now = new Date().toISOString();
@@ -194,7 +205,7 @@ export async function POST(request) {
       .maybeSingle();
 
     if (existingCheckinError) {
-      throw new Error(`daily_checkin_existing_read: ${existingCheckinError.message}`);
+      throw new Error("daily_checkin_existing_read_failed");
     }
 
     // checkin_date/routine_date are the user's calendar date.
@@ -222,7 +233,7 @@ export async function POST(request) {
       .single();
 
     if (checkinError) {
-      throw new Error(`daily_checkin_upsert: ${checkinError.message}`);
+      throw new Error("daily_checkin_upsert_failed");
     }
 
     const routinePayload = generateDailyRoutine({
@@ -251,16 +262,22 @@ export async function POST(request) {
       .single();
 
     if (routineError) {
-      throw new Error(`routine_log_upsert: ${routineError.message}`);
+      throw new Error("routine_log_upsert_failed");
     }
 
-    return NextResponse.json({
+    return sensitiveJsonResponse({
       todayCheckin: savedCheckin,
       todayRoutine: savedRoutine
     });
-  } catch (error) {
-    console.error("[my/check-in] failed to save check-in", error);
+  } catch {
+    writeSafeLog("error", {
+      event: "check_in_failed",
+      category: "database_unavailable",
+      operation: "check_in",
+      dependency: "supabase",
+      retryable: true
+    });
 
-    return NextResponse.json({ error: "checkin_save_failed" }, { status: 500 });
+    return sensitiveJsonResponse({ error: "checkin_save_failed" }, { status: 500 });
   }
 }

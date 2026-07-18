@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
-import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
@@ -46,7 +45,7 @@ import {
   validateImageRequestContentLength,
   validateImageUpload
 } from "@/lib/upload-validation";
-import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
+import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
 import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import {
@@ -56,6 +55,11 @@ import {
   sanitizePremiumReportPurchaseLinks
 } from "@/lib/product-purchase-link";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
+import {
+  createAnalyzeLogEvent,
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
@@ -92,45 +96,21 @@ function getAnalyzeCopy(locale = "ko") {
   return ANALYZE_COPY[locale] || ANALYZE_COPY.ko;
 }
 
-function logAnalyze(stage, payload = {}) {
-  console.log(`[analyze] ${stage}`, payload);
+function logAnalyze(stage) {
+  const event = createAnalyzeLogEvent(stage);
+  writeSafeLog(event.severity, event);
 }
 
 function logSurveyInputContractParallel(formInput, context = {}) {
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
+  void formInput;
+  void context;
+}
 
-  try {
-    const contract = buildSurveyInputContract(formInput, {
-      source: "api_analyze_parallel"
-    });
-
-    console.info("[analyze] survey-input-contract:parallel", {
-      primaryConcern: contract.goals.primaryConcern,
-      secondaryConcerns: contract.goals.secondaryConcerns,
-      unresolvedPrimaryConcern: contract.goals.unresolvedPrimaryConcern,
-      safety: contract.safety,
-      missingFields: contract.metadata.missingFields,
-      warnings: contract.metadata.warnings
-    });
-
-    const auditResult = appendSurveyInputContractDevAuditEvent(contract, {
-      hasImage: Boolean(context.hasImage)
-    });
-
-    if (!auditResult.ok) {
-      console.warn("[analyze] survey-input-contract:audit-write-failed", {
-        message: previewDiagnosticText(
-          auditResult.error instanceof Error ? auditResult.error.message : String(auditResult.error)
-        )
-      });
-    }
-  } catch (error) {
-    console.warn("[analyze] survey-input-contract:parallel-failed", {
-      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
-    });
-  }
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
 }
 
 async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, decision }) {
@@ -157,14 +137,10 @@ async function captureFunctionalShadowIfEnabled({ formInput, publicDecision, dec
     });
 
     if (!captureResult.captured) {
-      console.warn("[analyze] functional-shadow-capture:skipped", {
-        reason: captureResult.reason || "unknown"
-      });
+      logAnalyze("functional-shadow-capture:skipped");
     }
-  } catch (error) {
-    console.warn("[analyze] functional-shadow-capture:failed", {
-      message: previewDiagnosticText(error instanceof Error ? error.message : String(error))
-    });
+  } catch {
+    logAnalyze("functional-shadow-capture:failed");
   }
 }
 
@@ -243,7 +219,7 @@ async function runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendatio
       });
     }
   } catch {
-    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");
+    logAnalyze("shadow-boundary-dry-run:non-blocking-failure");
   }
 }
 
@@ -261,12 +237,10 @@ async function captureLocalShadowRecommendationEvidenceIfEnabled({ recommendatio
     const result = await writeLocalShadowRecommendationEvidence({ recommendationResult });
 
     if (!result.written) {
-      console.warn("[analyze] local-shadow-recommendation-evidence:skipped", {
-        reason: result.skipReason || "unknown"
-      });
+      logAnalyze("local-shadow-recommendation-evidence:skipped");
     }
   } catch {
-    console.warn("[analyze] local-shadow-recommendation-evidence:non-blocking-failure");
+    logAnalyze("local-shadow-recommendation-evidence:non-blocking-failure");
   }
 }
 
@@ -287,7 +261,7 @@ async function captureLocalActualRuntimeEvidenceIfEnabled({ decision, recommenda
       recommendationResult
     });
   } catch {
-    console.warn("[analyze] local-actual-runtime-evidence:non-blocking-failure");
+    logAnalyze("local-actual-runtime-evidence:non-blocking-failure");
   }
 }
 
@@ -1376,7 +1350,7 @@ export async function POST(request) {
 
     if (!contentLengthValidation.ok) {
       const copy = getAnalyzeCopy(responseLocale);
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           error:
             contentLengthValidation.code === "too_large"
@@ -1436,11 +1410,11 @@ export async function POST(request) {
       !afternoonSkinChange ||
       !mostDislikedFeel
     ) {
-      return NextResponse.json({ error: copy.missingRequired }, { status: 400 });
+      return sensitiveJsonResponse({ error: copy.missingRequired }, { status: 400 });
     }
 
     if (!imageValidation.ok) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
           error:
             imageValidation.code === "too_large"
@@ -1526,7 +1500,7 @@ export async function POST(request) {
       }
 
       return applyAnalysisGuardCookies(
-        NextResponse.json({ error: copy.invalidImageType }, { status: 400 }),
+        sensitiveJsonResponse({ error: copy.invalidImageType }, { status: 400 }),
         analysisGuard
       );
     }
@@ -1534,21 +1508,7 @@ export async function POST(request) {
     const canonicalDataUrl = canonicalImage.dataUrl;
 
     if (process.env.NODE_ENV !== "production") {
-      logAnalyze(
-        "openai-env:diagnostic",
-        localShadowProviderStub.enabled
-          ? {
-              route: "analyze",
-              routeUsesOpenAi: false,
-              routeUsesOpenRouter: false,
-              providerIsolation: localShadowProviderStub.reasonCode
-            }
-          : getOpenAiEnvDiagnostics({
-              route: "analyze",
-              routeUsesOpenAi: true,
-              routeUsesOpenRouter: false
-            })
-      );
+      logAnalyze("openai-env:diagnostic");
     }
 
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
@@ -1563,13 +1523,10 @@ export async function POST(request) {
           model,
           formInput
         });
-      } catch (photoError) {
+      } catch {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
         photoNotice = copy.photoFallbackNotice;
-        logAnalyze("photo-evidence:fallback", {
-          ok: false,
-          errorCategory: "fallback_used"
-        });
+        logAnalyze("photo-evidence:fallback");
       }
     } else {
       photoNotice = copy.photoFallbackNotice;
@@ -1605,12 +1562,9 @@ export async function POST(request) {
         if (explanationItems.length) {
           decision = applyExplanationBundle(decision, explanationItems);
         }
-      } catch (explanationError) {
+      } catch {
         explanationNotice = copy.explanationFallbackNotice;
-        logAnalyze("product-explanations:fallback", {
-          ok: false,
-          errorCategory: "fallback_used"
-        });
+        logAnalyze("product-explanations:fallback");
       }
     } else {
       explanationNotice = copy.missingApiKeyNotice;
@@ -1637,7 +1591,7 @@ export async function POST(request) {
     if (analysisGuard.principal.scope === "anonymous" && !anonymousWriteGrant?.ok) {
       await failAnalysisRequestGuard(analysisGuard);
 
-      return applyAnalysisGuardCookies(NextResponse.json(
+      return applyAnalysisGuardCookies(sensitiveJsonResponse(
         {
           error: "anonymous_write_grant_unavailable",
           message: "We cannot prepare the analysis save session right now. Please try again shortly."
@@ -1647,12 +1601,7 @@ export async function POST(request) {
     }
 
     if (process.env.NODE_ENV !== "production" && !hasAnalyzeResponseShape(publicDecision)) {
-      logAnalyze("response:shape-warning", {
-        hasSummary: typeof publicDecision?.summary === "string",
-        hasTopPickKey: publicDecision && "topPick" in publicDecision,
-        hasMorning: Array.isArray(publicDecision?.morning),
-        hasNight: Array.isArray(publicDecision?.night)
-      });
+      logAnalyze("response:shape-warning");
     }
 
     const premiumReport = sanitizePremiumReport(decision.premiumReport);
@@ -1687,7 +1636,7 @@ export async function POST(request) {
           : {})
       })
     );
-    const response = NextResponse.json(responsePayload);
+    const response = sensitiveJsonResponse(responsePayload);
 
     if (premiumSessionToken) {
       response.cookies.set(
@@ -1737,12 +1686,9 @@ export async function POST(request) {
     }
 
     if (isProductSourceUnavailableError(error)) {
-      logAnalyze("product-source:unavailable", {
-        code: error.code,
-        reason: error.reason
-      });
+      logAnalyze("product-source:unavailable");
 
-      return applyAnalysisGuardCookies(NextResponse.json(
+      return applyAnalysisGuardCookies(sensitiveJsonResponse(
         {
           error: PRODUCT_SOURCE_UNAVAILABLE_MESSAGE,
           code: PRODUCT_SOURCE_UNAVAILABLE_CODE
@@ -1751,9 +1697,9 @@ export async function POST(request) {
       ), analysisGuard);
     }
 
-    logAnalyze("request:error", { ok: false, errorCategory: "route_processing_failed" });
+    logAnalyze("request:error");
 
-    return applyAnalysisGuardCookies(NextResponse.json(
+    return applyAnalysisGuardCookies(sensitiveJsonResponse(
       {
         error: getAnalyzeCopy(responseLocale).serverError
       },

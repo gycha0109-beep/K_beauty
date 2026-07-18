@@ -5,9 +5,20 @@ import {
   createShareId,
   getSharePath
 } from "@/lib/analysis-results";
-import { upsertProfileForUser, isSchemaCacheError, serializeSupabaseError } from "@/lib/auth/profile-upsert";
+import { upsertProfileForUser, isSchemaCacheError } from "@/lib/auth/profile-upsert";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import {
+  createNoStoreHeaders,
+  writeSafeLog
+} from "@/lib/security/error-redaction";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+function sensitiveJsonResponse(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: createNoStoreHeaders(init.headers)
+  });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -301,19 +312,22 @@ async function createPrivateShareResult({ body, userId }) {
 }
 
 function getDbErrorResponse(label, error) {
-  const serializedError = serializeSupabaseError(error);
-
-  console.error(`[my/save-report] ${label}`, {
-    error: serializedError
+  void label;
+  writeSafeLog("error", {
+    event: "save_report_failed",
+    category: isSchemaCacheError(error) ? "schema_unavailable" : "database_unavailable",
+    operation: "save_report",
+    dependency: "supabase",
+    retryable: true
   });
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
-      error: isSchemaCacheError(error) ? "revisit_schema_unavailable" : label,
-      message: error?.message || "save_report_failed",
-      code: error?.code || null
+      error: "save_report_unavailable",
+      message: "The report cannot be saved right now.",
+      code: "save_report_unavailable"
     },
-    { status: isSchemaCacheError(error) ? 503 : 500 }
+    { status: 503, headers: { "Retry-After": "60" } }
   );
 }
 
@@ -329,9 +343,12 @@ async function restorePreviousActiveProfile({ supabase, userId, skinProfileId, p
     .eq("user_id", userId);
 
   if (deleteResult.error) {
-    console.error("[my/save-report] skin profile cleanup failed", {
-      error: serializeSupabaseError(deleteResult.error),
-      skinProfileId
+    writeSafeLog("warn", {
+      event: "save_report_failed",
+      category: "database_unavailable",
+      operation: "save_report",
+      dependency: "supabase",
+      retryable: true
     });
   }
 
@@ -346,9 +363,12 @@ async function restorePreviousActiveProfile({ supabase, userId, skinProfileId, p
     .eq("user_id", userId);
 
   if (restoreResult.error) {
-    console.error("[my/save-report] previous active profile restore failed", {
-      error: serializeSupabaseError(restoreResult.error),
-      previousActiveProfileId
+    writeSafeLog("warn", {
+      event: "save_report_failed",
+      category: "database_unavailable",
+      operation: "save_report",
+      dependency: "supabase",
+      retryable: true
     });
   }
 }
@@ -361,7 +381,7 @@ export async function POST(request) {
   } = await supabase.auth.getUser();
 
   if (userError || !isAccountUser(user)) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
   }
 
   let body;
@@ -369,17 +389,17 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_json" }, { status: 400 });
   }
 
   if (!isPlainObject(body)) {
-    return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
+    return sensitiveJsonResponse({ error: "invalid_payload" }, { status: 400 });
   }
 
   const validationError = getFreeSaveValidationError(body);
 
   if (validationError) {
-    return NextResponse.json({ error: validationError }, { status: 400 });
+    return sensitiveJsonResponse({ error: validationError }, { status: 400 });
   }
 
   const profileResult = await upsertProfileForUser({
@@ -389,20 +409,23 @@ export async function POST(request) {
   });
 
   if (profileResult.error) {
-    console.error("[my/save-report] profile upsert failed", {
-      error: serializeSupabaseError(profileResult.error),
-      method: profileResult.method,
-      payload: profileResult.payload,
-      attempts: profileResult.attempts
+    writeSafeLog("error", {
+      event: "profile_sync_failed",
+      category: isSchemaCacheError(profileResult.error)
+        ? "schema_unavailable"
+        : "database_unavailable",
+      operation: "profile_sync",
+      dependency: "supabase",
+      retryable: true
     });
 
     if (!isSchemaCacheError(profileResult.error)) {
-      return NextResponse.json(
+      return sensitiveJsonResponse(
         {
-          error: "profile_upsert_failed",
-          message: profileResult.error.message || "profile_upsert_failed"
+          error: "save_report_unavailable",
+          message: "The report cannot be saved right now."
         },
-        { status: 500 }
+        { status: 503, headers: { "Retry-After": "60" } }
       );
     }
   }
@@ -492,7 +515,7 @@ export async function POST(request) {
     return getDbErrorResponse("saved_report_insert_failed", savedReportError);
   }
 
-  return NextResponse.json(
+  return sensitiveJsonResponse(
     {
       skinProfileId: skinProfile.id,
       savedReportId: savedReport.id,
@@ -500,10 +523,6 @@ export async function POST(request) {
       sharePath: privateShareResult?.share_id ? getSharePath(privateShareResult.share_id) : null,
       publicShared: false
     },
-    {
-      headers: {
-        "Cache-Control": "no-store"
-      }
-    }
+    {}
   );
 }

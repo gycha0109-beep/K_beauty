@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Component, useEffect, useMemo, useRef, useState } from "react";
 import ErrorMessage from "@/components/ErrorMessage";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const TAB_ORDER = [
   "physiognomy",
@@ -290,8 +291,14 @@ class FaceLabErrorBoundary extends Component {
     return { hasError: true };
   }
 
-  componentDidCatch(error) {
-    console.error("FaceLab render error:", error);
+  componentDidCatch() {
+    writeSafeLog("error", {
+      event: "client_operation_failed",
+      category: "internal_error",
+      operation: "client",
+      dependency: "application",
+      retryable: false
+    });
   }
 
   render() {

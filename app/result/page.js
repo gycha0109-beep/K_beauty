@@ -43,6 +43,7 @@ import {
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import {
@@ -524,14 +525,24 @@ function trackEvent(eventName, data = {}) {
             clearTrackWriteAccessToken();
           }
 
-          console.error("[trackEvent] request failed", {
-            status: response.status,
-            error: details?.error || "unknown"
+          writeSafeLog("warn", {
+            event: "client_operation_failed",
+            category: "network_unavailable",
+            operation: "client",
+            dependency: "application",
+            retryable: true,
+            status: response.status
           });
         }
       })
-      .catch((requestError) => {
-        console.error("[trackEvent] request error", requestError);
+      .catch(() => {
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "network_unavailable",
+          operation: "client",
+          dependency: "application",
+          retryable: true
+        });
       });
   })();
 }
@@ -3210,8 +3221,14 @@ function ResultContent() {
       }
 
       router.push(`${targetPath}?access=${encodeURIComponent(access?.reason || "payment_required")}`);
-    } catch (premiumError) {
-      console.error("[result] premium access check failed", premiumError);
+    } catch {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "network_unavailable",
+        operation: "client",
+        dependency: "application",
+        retryable: true
+      });
       router.push(targetPath);
     }
   };

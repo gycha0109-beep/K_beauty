@@ -8,6 +8,7 @@ import {
 } from "@/lib/premium-report-session";
 import { buildRotatedPremiumReportPayload } from "@/lib/premium-report-reentry";
 import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
+import { createNoStoreHeaders } from "@/lib/security/error-redaction";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ function getBearerToken(request) {
 function getNoSavedReportResponse() {
   return NextResponse.json(
     { hasSavedReport: false },
-    { headers: { "Cache-Control": "no-store" } }
+    { headers: createNoStoreHeaders() }
   );
 }
 
@@ -87,7 +88,7 @@ export async function GET(request) {
       savedReportId
         ? { hasSavedReport: true, savedReportId }
         : { hasSavedReport: false },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: createNoStoreHeaders() }
     );
   } catch {
     return getNoSavedReportResponse();
@@ -99,7 +100,7 @@ export async function POST(request) {
     const context = await getCurrentSessionContext(request);
 
     if (!context || !context.access.canCreatePremium) {
-      return NextResponse.json({ rotated: false }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ rotated: false }, { headers: createNoStoreHeaders() });
     }
 
     const savedReportId = await findSavedReportForCurrentSession({
@@ -109,13 +110,13 @@ export async function POST(request) {
     });
 
     if (!savedReportId) {
-      return NextResponse.json({ rotated: false }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ rotated: false }, { headers: createNoStoreHeaders() });
     }
 
     const premiumReport = buildRotatedPremiumReportPayload(context.premiumSession.payload.premiumReport);
 
     if (!premiumReport) {
-      return NextResponse.json({ rotated: false }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ rotated: false }, { headers: createNoStoreHeaders() });
     }
 
     const premiumSessionToken = await createPremiumReportSession({
@@ -124,12 +125,12 @@ export async function POST(request) {
     });
 
     if (!premiumSessionToken) {
-      return NextResponse.json({ rotated: false }, { headers: { "Cache-Control": "no-store" } });
+      return NextResponse.json({ rotated: false }, { headers: createNoStoreHeaders() });
     }
 
     const response = NextResponse.json(
       { rotated: true },
-      { headers: { "Cache-Control": "no-store" } }
+      { headers: createNoStoreHeaders() }
     );
     response.cookies.set(
       PREMIUM_REPORT_COOKIE,
@@ -139,6 +140,6 @@ export async function POST(request) {
 
     return response;
   } catch {
-    return NextResponse.json({ rotated: false }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ rotated: false }, { headers: createNoStoreHeaders() });
   }
 }
