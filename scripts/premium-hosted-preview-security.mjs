@@ -8,6 +8,8 @@ import { HostedContractError } from "./premium-hosted-preview-contract-core.mjs"
 
 const execFileAsync = promisify(execFile);
 const CLOUD_SEGMENTS = new Set(["onedrive", "dropbox", "google drive", "googledrive", "icloud drive"]);
+const LOGIN_EVIDENCE_VERSION = "premium-hosted-login-evidence-v2";
+const MAX_LOGIN_EVIDENCE_TTL_MS = 31 * 60 * 1000;
 
 function fail(code, detail = null) {
   throw new HostedContractError(code, detail);
@@ -146,6 +148,10 @@ export function validateLoginEvidence(evidence, expected, { now = Date.now() } =
     "expiresAt"
   ];
   for (const key of required) if (!(key in evidence)) fail("login_evidence_field_missing", key);
+  if (evidence.schemaVersion !== LOGIN_EVIDENCE_VERSION) fail("login_evidence_schema_version_invalid");
+  if (!/^[0-9a-f]{64}$/i.test(String(evidence.userIdHash))) fail("login_evidence_user_hash_invalid");
+  if (!/^[0-9a-f]{64}$/i.test(String(evidence.storageStateHash))) fail("login_evidence_storage_hash_invalid");
+  if (!/^[0-9a-f]{40,64}$/i.test(String(evidence.deploymentSha))) fail("login_evidence_deployment_sha_invalid");
   if (evidence.accountKey !== expected.accountKey) fail("login_evidence_account_mismatch");
   if (evidence.userIdHash !== expected.userIdHash) fail("login_evidence_user_mismatch");
   if (evidence.permanentUser !== true) fail("login_evidence_not_permanent");
@@ -165,7 +171,8 @@ export function validateLoginEvidence(evidence, expected, { now = Date.now() } =
     !Number.isFinite(expiresAt) ||
     createdAt > now + 60_000 ||
     expiresAt <= now ||
-    expiresAt <= createdAt
+    expiresAt <= createdAt ||
+    expiresAt - createdAt > MAX_LOGIN_EVIDENCE_TTL_MS
   ) {
     fail("login_evidence_expired_or_invalid");
   }
