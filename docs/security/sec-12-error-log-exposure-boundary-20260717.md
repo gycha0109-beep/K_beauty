@@ -156,3 +156,19 @@ The existing mutation set was re-executed and rejected `34/34`. Mutation 35 repr
 Local production runtime rechecked malformed track, invalid analyze, malformed results, malformed full-report, malformed face-reading, foreign-Origin signout, and missing-code auth callback responses. Their existing statuses were `400`, `500`, `400`, `400`, `500`, `403`, and `307`; all seven carried the exact three no-store headers and SEC-10 headers. Captured process output contained only fixed categorical security events for the intentional analyze and face-reading failures, with zero synthetic marker, bearer, JWT, cookie, service-role, API-key, or stack-path matches. SEC-12, SEC-11, SEC-10 headers, SEC-10 image, and SEC-07 purchase targeted Playwright cases each passed `1/1`; full `@smoke` passed `7/7`; the Next.js `15.5.18` production build passed.
 
 The legacy SEC-06 exact-string verifier still fails identically at HEAD and in the working tree on its stale premium-persistence marker. It was not changed or counted as a SEC-12 pass. No production source, Playwright spec, package, dependency, database, migration, middleware, Next configuration, `.gitignore`, private fixture, remote service, external URL, stage, commit, or push was involved in this correction. Hosted platform behavior remains unverified.
+
+## Authoritative 36-Case Mutation Harness (2026-07-18)
+
+Git forensics found historical `28/28`, `30/30`, `34/34`, and `35/35` mutation results, but no tracked or dangling authoritative harness. `scripts/verify-sec12-mutations.mjs` is therefore the first repository-owned executable for the complete current matrix. Its single command is:
+
+```text
+node scripts/verify-sec12-mutations.mjs
+```
+
+The harness owns a frozen ordered manifest of 36 mutation IDs. Cases 1-18 cover raw public/log/provider data, hostile throwable handling, payload bounds, and normalization; 19-23 cover required-case manifest integrity; 24-30 cover route/provider/client sanitizer, exact model, and analyze-stage boundaries; 31-34 cover each independent and combined no-store omission; 35 covers the dead-helper response bypass; and 36 covers class-static response overwrite. The unmodified SEC-12 verifier remains authoritative.
+
+Each run copies only the required repository sources to an OS TEMP workspace, requires an unmodified `62/62` baseline, applies one mutation to a fresh copy, and requires verifier exit `1`, non-empty rejection stderr, no final PASS marker, and the expected last successful contract case. Every mutated workspace is executed twice and its exit code, signal, stdout, and stderr must match exactly. TEMP content is removed in `finally`.
+
+The baseline execution also runs the I10 pure matrix, which rejects unsupported statement/expression and class syntax, parser failures without regex or lexical fallback, response overwrite, ignored/dead helpers, unresolved aliases, object wrappers, dynamic wrappers, `ClassDeclaration`, `ClassExpression`, and static-block overwrite. The harness preflight binds to these current verifier contracts and to the independent P09 three-header exact set.
+
+Fresh results were `SEC12_MUTATION_BASELINE=PASS 62/62` and `SEC12_MUTATIONS=36/36 rejected`. The authoritative SEC-12 verifier remained `62/62 PASS`; provider logging and SEC-07 through SEC-11 verifiers also passed. No production code, SEC-12 verifier, package/build script, dependency, workflow, database, migration, remote service, commit, or push was changed by this harness work.
