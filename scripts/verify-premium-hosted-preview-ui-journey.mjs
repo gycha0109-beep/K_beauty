@@ -4,15 +4,19 @@ import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   HOSTED_FAILURE_CATEGORIES,
   compareLocaleSemantics,
+  loadDeploymentAttestation,
   loadHostedManifest,
   parseHostedConfig,
   projectCanonicalEvidence,
   validateUiCaseFixture
 } from "./premium-hosted-preview-core-v2.mjs";
+import { assertPathInside } from "./premium-hosted-preview-security.mjs";
 import { JourneyFailure, requireCondition } from "./premium-browser-journey-core.mjs";
 
 const config = parseHostedConfig();
 const manifest = await loadHostedManifest(config.manifestPath);
+const attestation = await loadDeploymentAttestation(config, manifest);
+const fixtureRoot = await realpath(resolve(manifest.fixtureRoot));
 const headless = process.env.PREMIUM_HOSTED_HEADLESS !== "0";
 const browser = await chromium.launch({ headless });
 const lanes = [];
@@ -40,7 +44,12 @@ function isAllowedBootstrapCookie(cookie) {
 }
 
 async function newAccountContext(account) {
-  const stored = JSON.parse(await readFile(account.storageStatePath, "utf8"));
+  const storageStatePath = assertPathInside(
+    config.securePaths.credentialsDir,
+    account.storageStatePath,
+    "account_storage_state_outside_secure_root"
+  );
+  const stored = JSON.parse(await readFile(storageStatePath, "utf8"));
   const cookies = Array.isArray(stored.cookies) ? stored.cookies.filter(isAllowedBootstrapCookie) : [];
   requireCondition(cookies.some((cookie) => String(cookie.name || "").includes("auth-token")), HOSTED_FAILURE_CATEGORIES.AUTH_EVIDENCE, "browser-context", "auth_cookie_missing_from_derived_state");
   requireCondition(!cookies.some((cookie) => String(cookie.name || "").includes("premium_report")), HOSTED_FAILURE_CATEGORIES.HARNESS, "browser-context", "premium_cookie_leaked_into_derived_state");
@@ -56,10 +65,21 @@ function locatorForMarker(page, marker) {
   return page.getByText(marker.name, { exact: true });
 }
 
+async function resolveFixtureFile(inputPath, allowedExtensions, maximumBytes, code) {
+  const candidate = await realpath(resolve(String(inputPath || ""))).catch(() => null);
+  requireCondition(candidate, HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, code, "fixture_file_missing");
+  const rel = relative(fixtureRoot, candidate);
+  requireCondition(rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel), HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, code, "fixture_file_outside_root");
+  requireCondition(allowedExtensions.has(extname(candidate).toLowerCase()), HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, code, "fixture_file_extension_invalid");
+  const info = await stat(candidate);
+  requireCondition(info.isFile() && info.size > 0 && info.size <= maximumBytes, HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, code, "fixture_file_size_invalid");
+  return candidate;
+}
+
 async function resolveUploadPath(relativePath) {
-  const root = await realpath(resolve(manifest.fixtureRoot));
-  const candidate = await realpath(resolve(root, relativePath));
-  const rel = relative(root, candidate);
+  const candidate = await realpath(resolve(fixtureRoot, relativePath)).catch(() => null);
+  requireCondition(candidate, HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, "fixture-upload", "fixture_upload_missing");
+  const rel = relative(fixtureRoot, candidate);
   requireCondition(rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel), HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, "fixture-upload", "fixture_upload_outside_root");
   requireCondition(uploadExtensions.has(extname(candidate).toLowerCase()), HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, "fixture-upload", "fixture_upload_extension_invalid");
   const info = await stat(candidate);
@@ -89,7 +109,8 @@ function isFullReportResponse(response) {
 
 async function runUiCase(casePath, laneName, account = manifest.accountA) {
   requireCondition(casePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, laneName, "ui_case_missing");
-  const rawFixture = JSON.parse(await readFile(casePath, "utf8"));
+  const resolvedCasePath = await resolveFixtureFile(casePath, new Set([".json"]), 1024 * 1024, laneName);
+  const rawFixture = JSON.parse(await readFile(resolvedCasePath, "utf8"));
   const fixture = validateUiCaseFixture(rawFixture);
   const context = await newAccountContext(account);
   try {
@@ -104,6 +125,7 @@ async function runUiCase(casePath, laneName, account = manifest.accountA) {
     page.on("response", onResponse);
     for (const action of fixture.actions) await applyAction(page, action, laneName);
     await locatorForMarker(page, fixture.resultMarker).waitFor({ state: "visible", timeout: fixture.timeoutMs });
+    requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, laneName, "result_page_origin_mismatch");
     await page.waitForTimeout(250);
     page.off("response", onResponse);
 
@@ -131,9 +153,9 @@ try {
       const page = await context.newPage();
       await page.goto(`${config.baseUrl.origin}${manifest.accountA.expectedAfterLoginPath || manifest.routes?.koMy || "/my"}`, { waitUntil: "domcontentloaded" });
       requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.OAUTH, "google-login", "unexpected_oauth_origin");
-      if (manifest.signedInMarker) await locatorForMarker(page, manifest.signedInMarker).waitFor({ state: "visible" });
+      await locatorForMarker(page, manifest.signedInMarker).waitFor({ state: "visible" });
       await page.reload({ waitUntil: "domcontentloaded" });
-      if (manifest.signedInMarker) await locatorForMarker(page, manifest.signedInMarker).waitFor({ state: "visible" });
+      await locatorForMarker(page, manifest.signedInMarker).waitFor({ state: "visible" });
       return { persistedAfterReload: true, finalPath: new URL(page.url()).pathname };
     } finally {
       await context.close();
@@ -146,7 +168,7 @@ try {
       const page = await context.newPage();
       await page.goto(`${config.baseUrl.origin}${manifest.routes?.premiumEntry || "/premium"}`, { waitUntil: "domcontentloaded" });
       requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.PREMIUM_ACCESS, "premium-entry", "premium_entry_origin_mismatch");
-      if (manifest.premiumEntryMarker) await locatorForMarker(page, manifest.premiumEntryMarker).waitFor({ state: "visible" });
+      await locatorForMarker(page, manifest.premiumEntryMarker).waitFor({ state: "visible" });
       return { path: new URL(page.url()).pathname };
     } finally {
       await context.close();
@@ -164,7 +186,15 @@ try {
     await lane(productCase.laneName, "important", () => runUiCase(productCase.fixture, productCase.laneName));
   }
   await lane("photo-fallback", "important", () => runUiCase(manifest.photoFallbackCase, "photo-fallback"));
-  console.log(JSON.stringify({ status: "passed", lanes }, null, 2));
+  console.log(JSON.stringify({
+    status: "passed",
+    runId: config.runId,
+    prNumber: config.prNumber,
+    deploymentId: attestation.vercelDeploymentId,
+    deploymentSha: attestation.prHeadSha,
+    immutableHost: attestation.immutableHost,
+    lanes
+  }, null, 2));
 } finally {
   await browser.close();
 }
