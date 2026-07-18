@@ -59,6 +59,8 @@ const PRODUCT_LANES = Object.freeze([
   "selected-plus-not-in-db",
   "duplicate-axis"
 ]);
+const CLICK_ROLES = new Set(["button", "link", "radio", "checkbox", "tab", "option"]);
+const MARKER_ROLES = new Set([...CLICK_ROLES, "status", "navigation", "region"]);
 
 function wrap(error, category, step, fallbackCode) {
   if (error instanceof JourneyFailure) return error;
@@ -88,6 +90,43 @@ function normalizeArtifactEvidence(value, key = null, path = "root") {
       normalizeArtifactEvidence(child, childKey, `${path}.${childKey}`)
     ])
   );
+}
+
+function validateGoogleSignInMarker(marker) {
+  requireCondition(marker && typeof marker === "object" && !Array.isArray(marker), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "google_signin_marker_missing");
+  requireCondition(
+    Object.keys(marker).every((key) => ["role", "name"].includes(key)),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "google_signin_marker_unknown_field"
+  );
+  requireCondition(
+    CLICK_ROLES.has(marker.role) && typeof marker.name === "string" && marker.name.trim(),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "google_signin_marker_invalid"
+  );
+}
+
+function validateAccessibleMarker(marker, code) {
+  requireCondition(marker && typeof marker === "object" && !Array.isArray(marker), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", `${code}_missing`);
+  requireCondition(
+    Object.keys(marker).every((key) => ["kind", "name", "role"].includes(key)),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    `${code}_unknown_field`
+  );
+  requireCondition(
+    ["heading", "text", "role"].includes(marker.kind) && typeof marker.name === "string" && marker.name.trim(),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    `${code}_invalid`
+  );
+  if (marker.kind === "role") {
+    requireCondition(MARKER_ROLES.has(marker.role), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", `${code}_role_invalid`);
+  } else {
+    requireCondition(marker.role == null, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", `${code}_unexpected_role`);
+  }
 }
 
 export function parseHostedPrNumber(value) {
@@ -158,6 +197,9 @@ export async function loadHostedManifest(path) {
     "configuration",
     "fixture_root_missing"
   );
+  validateGoogleSignInMarker(manifest.googleSignInMarker);
+  validateAccessibleMarker(manifest.signedInMarker, "signed_in_marker");
+  validateAccessibleMarker(manifest.premiumEntryMarker, "premium_entry_marker");
   const lanes = manifest.currentProductCases.map((item) => item?.laneName);
   requireCondition(
     lanes.length === PRODUCT_LANES.length &&
