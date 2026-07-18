@@ -1,0 +1,92 @@
+name: Premium Hosted Preview Live Prep Validation
+
+on:
+  push:
+    branches:
+      - validation/premium-hosted-preview-live-prep-trigger
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact implementation HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: 8b6558751b679440cfc82ff40fc3d635cb0509c6
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check changed scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            scripts/capture-premium-hosted-preview-google-login.mjs \
+            scripts/cleanup-premium-hosted-preview-run.mjs \
+            scripts/generate-premium-hosted-preview-attestation.mjs \
+            scripts/premium-hosted-preview-contract-core.mjs \
+            scripts/premium-hosted-preview-core-v2.mjs \
+            scripts/premium-hosted-preview-core.mjs \
+            scripts/premium-hosted-preview-security.mjs \
+            scripts/verify-premium-hosted-preview-contract.mjs \
+            scripts/verify-premium-hosted-preview-db-evidence.mjs \
+            scripts/verify-premium-hosted-preview-error-boundaries.mjs \
+            scripts/verify-premium-hosted-preview-gate.mjs \
+            scripts/verify-premium-hosted-preview-preflight.mjs \
+            scripts/verify-premium-hosted-preview-ui-journey.mjs; do
+            node --check "$file"
+          done
+
+      - name: Parse example contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'const fs=require("fs"); for (const p of ["docs/verification/examples/premium-hosted-preview/manifest.example.json","docs/verification/examples/premium-hosted-preview/ui-case.example.json","docs/verification/examples/premium-hosted-preview/browser-conflict-body.example.json"]) JSON.parse(fs.readFileSync(p,"utf8"));'
+
+      - name: Reject stale PR defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n -E 'prNumber:[[:space:]]*38|PREMIUM_HOSTED_PR_NUMBER[^\n]*\|\|[[:space:]]*["'"'']38["'"'']' scripts docs/verification; then
+            echo 'stale PR default found'
+            exit 1
+          fi
+
+      - name: Run hardening contract verifier
+        run: npm run verify:premium-hosted-preview-harness-hardening
+
+      - name: Run existing Hosted Preview contract verifier
+        run: npm run verify:premium-hosted-preview-contract
+
+      - name: Run Premium browser journey contract
+        run: npm run verify:premium-browser-journey-contract
+
+      - name: Run Premium route and policy regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-decision-state.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check 1f483c19e235c54106d1d7604855e59a4ef96598..8b6558751b679440cfc82ff40fc3d635cb0509c6
