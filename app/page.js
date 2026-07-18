@@ -163,35 +163,6 @@ function createClientIdempotencyKey() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-async function requestFaceLabResult(file, locale, idempotencyKey) {
-  const payload = new FormData();
-  payload.append("image", file);
-  payload.append("locale", locale);
-
-  try {
-    const response = await fetch("/api/face-reading", {
-      method: "POST",
-      headers: idempotencyKey ? { [IDEMPOTENCY_HEADER]: idempotencyKey } : undefined,
-      body: payload
-    });
-
-    const data = await response.json().catch(() => null);
-
-    if (!response.ok || !data) {
-      return isFaceLabResultEnvelope(data)
-        ? data
-        : createFaceLabUnavailable(data?.error || "unknown");
-    }
-
-    return isFaceLabResultEnvelope(data)
-      ? data
-      : createFaceLabUnavailable("vision_response_invalid");
-  } catch (error) {
-    console.error("[onboarding] face lab request failed", error);
-    return createFaceLabUnavailable("vision_request_failed");
-  }
-}
-
 export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -267,7 +238,6 @@ export default function HomePage() {
         setIsSubmitting(true);
         clearStaleAnalysisStorage();
         const analyzeIdempotencyKey = createClientIdempotencyKey();
-        const faceLabIdempotencyKey = createClientIdempotencyKey();
 
         const analyzePayload = new FormData();
         analyzePayload.append("image", imageFile);
@@ -280,7 +250,6 @@ export default function HomePage() {
         }
         analyzePayload.append("locale", locale);
 
-        const faceLabPromise = requestFaceLabResult(imageFile, locale, faceLabIdempotencyKey);
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: {
@@ -303,10 +272,10 @@ export default function HomePage() {
           analysisRunId: data.analysisRunId || null
         });
 
-        const [imagePreviewDataUrl, faceLabResult] = await Promise.all([
-          imagePreviewDataUrlPromise,
-          faceLabPromise
-        ]);
+        const imagePreviewDataUrl = await imagePreviewDataUrlPromise;
+        const faceLabResult = isFaceLabResultEnvelope(data.faceLab)
+          ? data.faceLab
+          : createFaceLabUnavailable("vision_response_invalid");
         const faceLabData = getAvailableVisionFaceLabData(faceLabResult);
         const faceLabLaunch = faceLabData ? buildFaceLabLaunchData(faceLabData, locale) : null;
         const faceLabTeaser = faceLabLaunch?.free?.teaserLine ? faceLabLaunch.free : null;
