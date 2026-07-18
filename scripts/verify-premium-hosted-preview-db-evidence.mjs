@@ -1,6 +1,7 @@
-import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, readdir, realpath } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import {
   fetchPremiumSessionRows,
   fetchSavedReportById,
@@ -38,7 +39,7 @@ const browserPersistencePath = assertPathInside(
   "browser_persistence_outside_secure_root"
 );
 const browserPersistence = JSON.parse(await readFile(browserPersistencePath, "utf8"));
-const savedIds = Array.isArray(browserPersistence?.createdSavedReportIds)
+const browserSavedIds = Array.isArray(browserPersistence?.createdSavedReportIds)
   ? browserPersistence.createdSavedReportIds.map((value) => String(value || "").trim()).filter(Boolean)
   : [];
 const recordIds = Array.isArray(browserPersistence?.records)
@@ -47,28 +48,90 @@ const recordIds = Array.isArray(browserPersistence?.records)
 requireCondition(
   browserPersistence?.cleanupRequired === true &&
     browserPersistence?.duplicateSourceTupleCount === 0 &&
-    savedIds.length >= 2 &&
-    savedIds.length <= 20 &&
-    new Set(savedIds).size === savedIds.length,
+    browserSavedIds.length === 4 &&
+    new Set(browserSavedIds).size === browserSavedIds.length,
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
   "db-evidence",
   "browser_persistence_contract_invalid"
 );
 requireCondition(
-  recordIds.length === savedIds.length &&
-    recordIds.every((id) => savedIds.includes(id)) &&
-    savedIds.every((id) => recordIds.includes(id)),
+  recordIds.length === browserSavedIds.length &&
+    recordIds.every((id) => browserSavedIds.includes(id)) &&
+    browserSavedIds.every((id) => recordIds.includes(id)),
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
   "db-evidence",
   "browser_persistence_record_mismatch"
 );
 requireCondition(
-  savedIds.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)),
+  browserSavedIds.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)),
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
   "db-evidence",
   "browser_persistence_saved_report_id_invalid"
 );
 const browserPersistenceHash = await hashFileSha256(browserPersistencePath);
+
+const expectedUiLanes = new Set([
+  "ko-normal",
+  "en-normal",
+  "selected-product",
+  "not-in-db",
+  "selected-plus-not-in-db",
+  "duplicate-axis",
+  "photo-fallback"
+]);
+const uiCreatedIdsDirInput = String(
+  process.env.PREMIUM_HOSTED_UI_CREATED_IDS_DIR || resolve(config.securePaths.credentialsDir, "ui-created-ids")
+).trim();
+const uiCreatedIdsDir = assertPathInside(
+  config.securePaths.credentialsDir,
+  uiCreatedIdsDirInput,
+  "ui_created_ids_directory_outside_secure_root"
+);
+const uiCreatedIdsReal = await realpath(uiCreatedIdsDir).catch(() => null);
+requireCondition(uiCreatedIdsReal, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "ui_created_ids_directory_missing");
+const fileNames = (await readdir(uiCreatedIdsReal)).filter((name) => name.endsWith(".json")).sort();
+requireCondition(fileNames.length === expectedUiLanes.size, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "ui_created_ids_file_count_invalid");
+const uiSavedIds = [];
+const uiLanes = [];
+const uiFileHashes = [];
+for (const fileName of fileNames) {
+  const filePath = await realpath(resolve(uiCreatedIdsReal, fileName)).catch(() => null);
+  requireCondition(filePath, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "ui_created_id_file_missing");
+  const rel = relative(uiCreatedIdsReal, filePath);
+  requireCondition(rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "db-evidence", "ui_created_id_file_outside_directory");
+  const document = JSON.parse(await readFile(filePath, "utf8"));
+  const savedReportId = String(document?.savedReportId || "").trim();
+  requireCondition(
+    document?.schemaVersion === "premium-hosted-ui-created-report-v1" &&
+      document?.runId === config.runId &&
+      document?.prNumber === config.prNumber &&
+      document?.deploymentId === attestation.vercelDeploymentId &&
+      document?.deploymentSha === attestation.prHeadSha &&
+      document?.ownerUserIdHash === manifest.accountA.expectedUserIdHash &&
+      expectedUiLanes.has(document?.laneName) &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(savedReportId),
+    HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+    "db-evidence",
+    "ui_created_report_evidence_invalid"
+  );
+  uiSavedIds.push(savedReportId);
+  uiLanes.push(document.laneName);
+  uiFileHashes.push(await hashFileSha256(filePath));
+}
+requireCondition(
+  new Set(uiLanes).size === expectedUiLanes.size && [...expectedUiLanes].every((lane) => uiLanes.includes(lane)),
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "db-evidence",
+  "ui_created_report_lane_mismatch"
+);
+const uiEvidenceHash = createHash("sha256").update(uiFileHashes.sort().join(":"), "utf8").digest("hex");
+const savedIds = [...browserSavedIds, ...uiSavedIds];
+requireCondition(
+  savedIds.length === 11 && new Set(savedIds).size === savedIds.length,
+  HOSTED_FAILURE_CATEGORIES.PRECONDITION,
+  "db-evidence",
+  "combined_saved_report_scope_invalid"
+);
 
 const { buildPremiumReportSnapshot } = await import(
   pathToFileURL(resolve(process.cwd(), "lib/premium-report-snapshot.js")).href
@@ -134,6 +197,7 @@ const cleanupManifest = {
   deploymentSha: attestation.prHeadSha,
   ownerUserIdHash: manifest.accountA.expectedUserIdHash,
   browserPersistenceHash,
+  uiEvidenceHash,
   savedReportIds: [...savedIds],
   createdAt: new Date(createdAt).toISOString(),
   expiresAt: new Date(createdAt + 60 * 60 * 1000).toISOString()
@@ -151,6 +215,7 @@ console.log(JSON.stringify({
   rows,
   duplicateTupleCount,
   browserPersistenceHash,
+  uiEvidenceHash,
   cleanupManifestCreated: true,
   cleanupManifestHash
 }, null, 2));
