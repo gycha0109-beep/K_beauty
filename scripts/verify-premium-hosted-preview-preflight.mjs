@@ -22,7 +22,7 @@ const manifest = await loadHostedManifest(config.manifestPath);
 const attestationDocument = JSON.parse(await readFile(manifest.deploymentAttestationPath, "utf8"));
 const attestation = validateDeploymentAttestation(attestationDocument, {
   repository: "gycha0109-beep/K_beauty",
-  prNumber: 38,
+  prNumber: config.prNumber,
   headSha: config.expectedSha,
   vercelProjectId: manifest.vercelProjectId
 });
@@ -32,7 +32,7 @@ requireCondition(attestation.prHeadSha === config.expectedSha, HOSTED_FAILURE_CA
 await ensureSecureRunDirectories(config.securePaths);
 const runLock = await acquireHostedRunLock(
   config.securePaths,
-  `${attestation.repository}:${attestation.vercelDeploymentId}:${manifest.accountA.expectedUserIdHash}:${manifest.accountB.expectedUserIdHash}`
+  `${attestation.repository}:${attestation.prNumber}:${attestation.vercelDeploymentId}:${manifest.accountA.expectedUserIdHash}:${manifest.accountB.expectedUserIdHash}`
 );
 
 function credentialPath(path, code) {
