@@ -35,6 +35,8 @@ function handleFatal(error) {
   if (fatalHandled) return;
   fatalHandled = true;
   console.error(`[face-lab-eval] failed=${fatalReasonCode(error)}`);
+  console.error("[face-lab-eval] error-message=", error?.message);
+  console.error("[face-lab-eval] error-stack=", error?.stack);
   process.exitCode = 1;
 }
 process.on("uncaughtException", handleFatal);
