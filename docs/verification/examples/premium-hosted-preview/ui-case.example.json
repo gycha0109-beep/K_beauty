@@ -3,23 +3,34 @@
   "startPath": "/",
   "actions": [
     {
-      "type": "uploadByLabel",
-      "label": "replace_with_exact_accessible_file_input_label",
+      "type": "uploadByRole",
+      "role": "button",
+      "name": "사진에서 선택",
       "path": "images/normal-synthetic.png"
     },
     {
       "type": "clickByRole",
       "role": "button",
-      "name": "replace_with_exact_accessible_next_button_name"
+      "name": "replace_with_exact_photo_continue_button_name"
     },
     {
-      "type": "waitForVisibleText",
-      "text": "replace_with_stable_visible_completion_text"
+      "type": "clickByRole",
+      "role": "button",
+      "name": "replace_with_exact_survey_completion_button_name"
+    },
+    {
+      "type": "expectHeading",
+      "name": "현재 쓰는 제품을 알려주세요"
+    },
+    {
+      "type": "clickByRole",
+      "role": "button",
+      "name": "replace_with_exact_full_report_submission_button_name"
     }
   ],
   "resultMarker": {
     "kind": "heading",
-    "name": "replace_with_exact_accessible_result_heading"
+    "name": "replace_with_exact_accessible_final_report_heading"
   },
   "timeoutMs": 120000
 }
