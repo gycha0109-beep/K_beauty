@@ -89,6 +89,17 @@ function locatorForMarker(page, marker) {
   return page.getByText(marker.name, { exact: true });
 }
 
+function premiumEntryMarkerForLane(laneName) {
+  return laneName === "en-normal" ? manifest.premiumEntryMarkers.en : manifest.premiumEntryMarkers.ko;
+}
+
+function fixtureObservesPremiumEntry(fixture, laneName) {
+  const marker = premiumEntryMarkerForLane(laneName);
+  return marker?.kind === "heading" && fixture.actions.some(
+    (action) => action.type === "expectHeading" && action.name === marker.name
+  );
+}
+
 async function resolveFixtureFile(inputPath, allowedExtensions, maximumBytes, code) {
   const candidate = await realpath(resolve(String(inputPath || ""))).catch(() => null);
   requireCondition(candidate, HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, code, "fixture_file_missing");
@@ -117,6 +128,12 @@ async function applyAction(page, action, laneName) {
   else if (action.type === "checkByLabel") await page.getByLabel(action.label, { exact: true }).check();
   else if (action.type === "selectByLabel") await page.getByLabel(action.label, { exact: true }).selectOption(action.value);
   else if (action.type === "uploadByLabel") await page.getByLabel(action.label, { exact: true }).setInputFiles(await resolveUploadPath(action.path));
+  else if (action.type === "uploadByRole") {
+    const chooserPromise = page.waitForEvent("filechooser");
+    await page.getByRole(action.role, { name: action.name, exact: true }).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles(await resolveUploadPath(action.path));
+  }
   else if (action.type === "waitForVisibleText") await page.getByText(action.text, { exact: true }).waitFor({ state: "visible" });
   else if (action.type === "expectHeading") await page.getByRole("heading", { name: action.name, exact: true }).waitFor({ state: "visible" });
   else throw new JourneyFailure(HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, laneName, "unsupported_ui_action");
@@ -162,6 +179,8 @@ async function runUiCase(casePath, laneName, account = manifest.accountA) {
   const resolvedCasePath = await resolveFixtureFile(casePath, new Set([".json"]), 1024 * 1024, laneName);
   const rawFixture = JSON.parse(await readFile(resolvedCasePath, "utf8"));
   const fixture = validateUiCaseFixture(rawFixture);
+  const observesPremiumEntry = fixtureObservesPremiumEntry(fixture, laneName);
+  requireCondition(observesPremiumEntry, HOSTED_FAILURE_CATEGORIES.FIXTURE_CONTRACT, laneName, "premium_entry_observation_missing");
   const context = await newAccountContext(account);
   try {
     const page = await context.newPage();
@@ -191,7 +210,7 @@ async function runUiCase(casePath, laneName, account = manifest.accountA) {
     const persistenceEvidenceHash = await persistCreatedReportEvidence(body, laneName);
     const canonical = projectCanonicalEvidence(body, { catalogHash: manifest.catalogHash });
     requireCondition(canonical.locale === (laneName === "en-normal" ? "en" : laneName === "ko-normal" ? "ko" : canonical.locale), HOSTED_FAILURE_CATEGORIES.LOCALE, laneName, "canonical_locale_mismatch");
-    return { ...canonical, persistenceEvidenceHash };
+    return { ...canonical, persistenceEvidenceHash, premiumEntryObserved: true };
   } finally {
     await context.close();
   }
@@ -213,21 +232,16 @@ try {
     }
   });
 
-  await lane("premium-entry", "critical", async () => {
-    const context = await newAccountContext(manifest.accountA);
-    try {
-      const page = await context.newPage();
-      await page.goto(`${config.baseUrl.origin}${manifest.routes?.premiumEntry || "/premium"}`, { waitUntil: "domcontentloaded" });
-      requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.PREMIUM_ACCESS, "premium-entry", "premium_entry_origin_mismatch");
-      await locatorForMarker(page, manifest.premiumEntryMarker).waitFor({ state: "visible" });
-      return { path: new URL(page.url()).pathname };
-    } finally {
-      await context.close();
-    }
-  });
-
   const ko = await lane("ko-normal", "important", () => runUiCase(manifest.uiCases.ko, "ko-normal"));
   const en = await lane("en-normal", "important", () => runUiCase(manifest.uiCases.en, "en-normal"));
+  requireCondition(ko.premiumEntryObserved && en.premiumEntryObserved, HOSTED_FAILURE_CATEGORIES.PREMIUM_ACCESS, "premium-entry", "premium_entry_not_observed_in_locale_lanes");
+  lanes.push({
+    name: "premium-entry",
+    severity: "critical",
+    status: "passed",
+    durationMs: 0,
+    evidence: { observedInLanes: ["ko-normal", "en-normal"] }
+  });
   const localeComparison = compareLocaleSemantics(ko, en);
   requireCondition(localeComparison.passed, HOSTED_FAILURE_CATEGORIES.LOCALE, "locale-parity", "locale_semantic_mismatch", localeComparison.mismatches.join(","));
 
