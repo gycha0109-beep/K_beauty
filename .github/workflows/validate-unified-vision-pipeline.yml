@@ -1,0 +1,26 @@
+name: Validate unified Vision pipeline
+
+on:
+  pull_request:
+    branches:
+      - design/unified-vision-observation-pipeline
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:unified-vision-pipeline
+      - run: npm run face-lab:eval:verify
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
