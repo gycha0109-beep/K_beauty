@@ -49,6 +49,16 @@ Existing run directories created by the prior execution model are rejected on re
 - the compatibility entrypoint delegates to the single-analysis runner;
 - KO/EN presentation contracts remain present while canonical eligibility and observation keys remain language-neutral.
 
+## Executed validation
+
+Temporary validation commit `50f4aac8e3f84031cfcfacb4fc1c032bd56f5521` changed the Preview build command only for validation. The Vercel Preview completed successfully while executing, in order:
+
+1. `npm run face-lab:eval:verify`
+2. `npm run architecture:guard`
+3. `next build`
+
+The temporary build-command override and temporary workflow are removed before final delivery. No provider request or fixture image was sent during this validation.
+
 ## Review outcome
 
 The implementation preserves the existing logical record schema and runtime API surface while removing the duplicated multimodal provider calls that caused unnecessary token consumption. Remaining locale-copy quality is a presentation concern and must be evaluated separately from canonical image-analysis stability; it is no longer represented as an independent provider-analysis metric in this harness.
