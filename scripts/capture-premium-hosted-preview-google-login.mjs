@@ -30,7 +30,7 @@ const attestation = validateDeploymentAttestation(
   JSON.parse(await readFile(manifest.deploymentAttestationPath, "utf8")),
   {
     repository: "gycha0109-beep/K_beauty",
-    prNumber: 38,
+    prNumber: config.prNumber,
     headSha: config.expectedSha,
     vercelProjectId: manifest.vercelProjectId
   }
