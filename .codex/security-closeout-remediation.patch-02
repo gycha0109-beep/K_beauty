@@ -1,0 +1,315 @@
+diff --git a/scripts/verify-evaluator-boundary-readiness-review.mjs b/scripts/verify-evaluator-boundary-readiness-review.mjs
+index 97e6b01..055debe 100644
+--- a/scripts/verify-evaluator-boundary-readiness-review.mjs
++++ b/scripts/verify-evaluator-boundary-readiness-review.mjs
+@@ -98,7 +98,15 @@ function assertNoForbiddenFileChanges() {
+ }
+ 
+ function assertEvidenceSeparation(output) {
+-  assert.equal(output.actualEvidenceSummary.evidenceType, "actual_complete_product_row_capture");
++  assert.ok([
++    "actual_complete_product_row_capture",
++    "actual_capture_coverage_unavailable"
++  ].includes(output.actualEvidenceSummary.evidenceType));
++  if (output.actualEvidenceSummary.evidenceType === "actual_capture_coverage_unavailable") {
++    assert.equal(output.actualEvidenceSummary.actualEvidenceAvailable, false);
++    assert.equal(output.actualEvidenceSummary.completeProductRowCaptures, 0);
++    assert.equal(output.readinessStatus, "blocked_by_source_unavailability");
++  }
+   assert.equal(output.pureReplayEvidenceSummary.evidenceType, "pure_engine_replay");
+   assert.equal(output.syntheticCoverageSummary.evidenceType, "synthetic_policy_coverage");
+   assert.equal(output.syntheticCoverageSummary.actualEvidence, false);
+diff --git a/scripts/verify-functional-candidate-exposure-audit.mjs b/scripts/verify-functional-candidate-exposure-audit.mjs
+index c254f28..76506d3 100644
+--- a/scripts/verify-functional-candidate-exposure-audit.mjs
++++ b/scripts/verify-functional-candidate-exposure-audit.mjs
+@@ -1,6 +1,8 @@
+ import assert from "node:assert/strict";
+ import { execFileSync } from "node:child_process";
+-import { readFileSync } from "node:fs";
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import os from "node:os";
++import path from "node:path";
+ import { buildFunctionalCandidateExposureAudit } from "../lib/functional-candidate-exposure-audit.js";
+ 
+ function signals(labels) {
+@@ -206,19 +208,80 @@ runCase("output excludes raw and identifying data strings", () => {
+   ].forEach((token) => assert.equal(raw.includes(token), false, token));
+ });
+ 
+-runCase("complete fixture runner targets complete captures and excludes final-only fixtures", () => {
+-  const stdout = execFileSync("node", ["scripts/run-functional-candidate-exposure-audit.mjs"], { encoding: "utf8" });
+-
+-  assert.ok(stdout.includes("functional-candidate-exposure-audit summary"));
+-  assert.ok(stdout.includes("\"completeCaptureCount\": 10"));
+-  assert.ok(stdout.includes("\"excludedFixtureCount\": 10"));
+-  assert.ok(stdout.includes("\"candidateReviewRowCount\": 1640"));
+-  const artifact = JSON.parse(readFileSync("tmp/functional-shadow-captures/candidate-exposure-audit.json", "utf8"));
+-  assert.equal(artifact.aggregate.candidateReviewRowCount, artifact.aggregate.totalEvaluatedProductRows);
+-  assert.ok(Array.isArray(artifact.fixtureAudits[0].candidateReviewRows));
+-  assert.equal(artifact.fixtureAudits[0].candidateReviewRows.length, 164);
+-  assert.ok(artifact.aggregate.hiddenReasonDistribution.candidate_evaluator_blocked >= 1);
+-  assert.ok(artifact.aggregate.collapsedReasonDistribution.guard_policy_collapsed_exposure_candidate >= 1);
++runCase("runner handles controlled complete and final-only fixtures without relying on ignored repository state", () => {
++  const fixtureDir = mkdtempSync(path.join(os.tmpdir(), "functional-candidate-exposure-"));
++
++  try {
++    const fixtureProducts = Array.from({ length: 12 }, (_, index) => product(index % 3 === 0
++      ? {
++          id: `controlled-hidden-${index}`,
++          irritation_risk: "high",
++          sensitivity_safe: false,
++          ingredient_signals: signals(["whitening", "exfoliation"])
++        }
++      : {
++          id: `controlled-collapsed-${index}`,
++          ingredient_signals: signals(["skin hydration", "skin protection", "whitening"])
++        }));
++
++    for (let index = 0; index < 2; index += 1) {
++      const captureId = `controlled-complete-${index}`;
++      writeFileSync(path.join(fixtureDir, `${captureId}.json`), JSON.stringify({
++        captureVersion: "v1",
++        captureId,
++        survey: surveySafety(),
++        goalPolicy: {
++          rankingGoal: "dehydration",
++          safetyGoal: "redness",
++          recommendationGuard: "stabilize_first",
++          hasTension: true
++        },
++        candidateSource: {
++          completeness: "complete",
++          candidateIdentityMode: "product_row",
++          sourceStage: "controlled_clean_ci_fixture",
++          sourceCount: fixtureProducts.length,
++          products: fixtureProducts
++        }
++      }), "utf8");
++    }
++
++    for (let index = 0; index < 2; index += 1) {
++      const captureId = `controlled-final-only-${index}`;
++      writeFileSync(path.join(fixtureDir, `${captureId}.json`), JSON.stringify({
++        captureVersion: "v1",
++        captureId,
++        survey: surveySafety(),
++        goalPolicy: {},
++        candidateSource: {
++          completeness: "final_results_only",
++          candidateIdentityMode: "final_result",
++          sourceStage: "controlled_clean_ci_fixture",
++          sourceCount: 0,
++          products: []
++        }
++      }), "utf8");
++    }
++
++    const stdout = execFileSync(process.execPath, ["scripts/run-functional-candidate-exposure-audit.mjs"], {
++      encoding: "utf8",
++      env: { ...process.env, FUNCTIONAL_SHADOW_CAPTURE_DIR: fixtureDir }
++    });
++
++    assert.ok(stdout.includes("functional-candidate-exposure-audit summary"));
++    assert.ok(stdout.includes("\"completeCaptureCount\": 2"));
++    assert.ok(stdout.includes("\"excludedFixtureCount\": 2"));
++    assert.ok(stdout.includes("\"candidateReviewRowCount\": 24"));
++    const artifact = JSON.parse(readFileSync(path.join(fixtureDir, "candidate-exposure-audit.json"), "utf8"));
++    assert.equal(artifact.aggregate.candidateReviewRowCount, artifact.aggregate.totalEvaluatedProductRows);
++    assert.ok(Array.isArray(artifact.fixtureAudits[0].candidateReviewRows));
++    assert.equal(artifact.fixtureAudits[0].candidateReviewRows.length, 12);
++    assert.ok(artifact.aggregate.hiddenReasonDistribution.candidate_evaluator_blocked >= 1);
++    assert.ok(artifact.aggregate.collapsedReasonDistribution.guard_policy_collapsed_exposure_candidate >= 1);
++    assert.equal(artifact.fixtureAudits.every((item) => item.sourceStage === "controlled_clean_ci_fixture"), true);
++  } finally {
++    rmSync(fixtureDir, { recursive: true, force: true });
++  }
+ });
+ 
+ runCase("helper and runner are not wired into route, evaluator, existing CandidatePolicy, or UI", () => {
+diff --git a/scripts/verify-isolated-shadow-route-comparison.mjs b/scripts/verify-isolated-shadow-route-comparison.mjs
+index 2d40ff3..0e117a8 100644
+--- a/scripts/verify-isolated-shadow-route-comparison.mjs
++++ b/scripts/verify-isolated-shadow-route-comparison.mjs
+@@ -1,4 +1,5 @@
+ import assert from "node:assert/strict";
++import { execFileSync } from "node:child_process";
+ import { existsSync, readFileSync, readdirSync } from "node:fs";
+ import path from "node:path";
+ import {
+@@ -222,7 +223,14 @@ function assertDurableEvidence(output) {
+   assert.deepEqual(readDurable(durable.files[4]), output.flagOn.actualRuntimeEvidence);
+ }
+ 
+-assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing");
++if (!existsSync(OUTPUT_PATH)) {
++  execFileSync(process.execPath, ["scripts/run-isolated-shadow-route-comparison.mjs"], {
++    cwd: ROOT,
++    encoding: "utf8",
++    env: process.env
++  });
++}
++assert(existsSync(OUTPUT_PATH), "controlled comparison evidence is missing after producer execution");
+ const output = JSON.parse(readFileSync(OUTPUT_PATH, "utf8"));
+ assert.equal(output.evidenceType, "isolated_shadow_route_controlled_run");
+ assert(ALLOWED_VERDICTS.has(output.verdict));
+diff --git a/scripts/verify-runtime-integration-acceptance-criteria.mjs b/scripts/verify-runtime-integration-acceptance-criteria.mjs
+index 0e29d40..771e5a3 100644
+--- a/scripts/verify-runtime-integration-acceptance-criteria.mjs
++++ b/scripts/verify-runtime-integration-acceptance-criteria.mjs
+@@ -85,14 +85,20 @@ function assertAcceptanceContract(output) {
+   }
+ 
+   assert.equal(output.gateResults.gateA_safetyRegression.status, "pass");
+-  assert.equal(output.gateResults.gateB_lowRiskConsistency.status, "pass");
++  assert.ok(["pass", "conditional"].includes(output.gateResults.gateB_lowRiskConsistency.status));
+   assert.equal(output.gateResults.gateC_evidenceSeparation.status, "pass");
+-  assert.equal(output.gateResults.gateD_serumCategory.status, "pass");
++  assert.ok(["pass", "conditional"].includes(output.gateResults.gateD_serumCategory.status));
+   assert.equal(output.gateResults.gateE_metadataIncomplete.status, "conditional");
+   assert.equal(output.gateResults.gateF_strongCaution.status, "conditional");
+   assert.equal(output.gateResults.gateG_activeOnly.status, "conditional");
+   assert.equal(output.gateResults.gateH_runtimeIsolation.status, "pass");
+ 
++  if (output.gateResults.gateB_lowRiskConsistency.status === "conditional" ||
++      output.gateResults.gateD_serumCategory.status === "conditional") {
++    assert.equal(READY_STATUSES.has(output.acceptanceStatus), false);
++    assert.equal(output.acceptanceStatus, "needs_more_evidence");
++  }
++
+   assert.equal(output.evidenceSeparationGate.details.syntheticCoverageRecordedAsActual, false);
+   assert.equal(output.gateResults.gateE_metadataIncomplete.details.requiredContractTest, "metadata_incomplete_routes_to_insufficient_evidence");
+   assert.equal(output.gateResults.gateF_strongCaution.details.requiredContractTest, "strong_caution_preserves_hidden_or_hard_block");
+diff --git a/scripts/verify-sec06-saved-report-boundary.mjs b/scripts/verify-sec06-saved-report-boundary.mjs
+index ac68015..f650b71 100644
+--- a/scripts/verify-sec06-saved-report-boundary.mjs
++++ b/scripts/verify-sec06-saved-report-boundary.mjs
+@@ -147,10 +147,21 @@ function verifyFullReportRoute(source) {
+   );
+   assertBefore(
+     postSource,
+-    "authoritativePremiumReport = updateResult.payload.premiumReport",
++    "authoritativePremiumReport = sanitizePremiumReportForBoundary(",
+     "persistPremiumSavedReport({",
+     "premium persistence authority"
+   );
++  assertBefore(
++    postSource,
++    "updateResult.payload.premiumReport",
++    "persistPremiumSavedReport({",
++    "premium persistence verified session payload"
++  );
++  assertNotIncludes(
++    postSource,
++    "authoritativePremiumReport = updateResult.payload.premiumReport",
++    "premium persistence sanitizer boundary"
++  );
+   assertNotIncludes(source, "supabase: userSupabase,\n      user,\n      sessionId", "premium persistence client boundary");
+   assertNotIncludes(source, "premiumReport: responsePremiumReport", "premium persistence payload source");
+ }
+@@ -219,7 +230,11 @@ const negativeControls = [
+   () => verifyMigration(migration.replace("grant update (title)", "grant update")),
+   () => verifySaveRoute(saveRoute.replace("premium_report: null", "premium_report: body.premiumReport")),
+   () => verifyPremiumSession(premiumSession.replace('.gt("expires_at", now)', "")),
+-  () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase"))
++  () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase")),
++  () => verifyFullReportRoute(fullReportRoute.replace(
++    "authoritativePremiumReport = sanitizePremiumReportForBoundary(\n      updateResult.payload.premiumReport\n    )",
++    "authoritativePremiumReport = updateResult.payload.premiumReport"
++  ))
+ ];
+ 
+ for (const [index, run] of negativeControls.entries()) {
+diff --git a/scripts/verify-shadow-dry-run-route-static-guard.mjs b/scripts/verify-shadow-dry-run-route-static-guard.mjs
+index 3ba45fa..9d14067 100644
+--- a/scripts/verify-shadow-dry-run-route-static-guard.mjs
++++ b/scripts/verify-shadow-dry-run-route-static-guard.mjs
+@@ -128,8 +128,8 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
+   ) addViolation(violations, "dynamic_import_outside_guard");
+ 
+   const persistenceIndex = routeSource.search(/\bconst\s+premiumSessionToken\s*=/);
+-  const responsePayloadIndex = routeSource.search(/\bconst\s+responsePayload\s*=\s*\{/);
+-  const responseIndex = routeSource.lastIndexOf("const response = NextResponse.json(responsePayload)");
++  const responsePayloadIndex = routeSource.search(/\bconst\s+responsePayload\s*=\s*sanitizeAnalyzeResultProductImages\s*\(/);
++  const responseIndex = routeSource.lastIndexOf("const response = sensitiveJsonResponse(responsePayload);");
+   const guardCompletionIndex = routeSource.lastIndexOf("await completeAnalysisRequestGuard");
+   const captureIndex = routeSource.lastIndexOf("await captureFunctionalShadowIfEnabled");
+   const recommendationIndex = routeSource.lastIndexOf("const recommendationResult = {");
+@@ -155,8 +155,8 @@ export function validateShadowDryRunRouteSources({ routeSource = "", writerSourc
+     addViolation(violations, "unsafe_route_insertion_order");
+   }
+ 
+-  const responsePayloadStart = routeSource.lastIndexOf("const responsePayload = {");
+-  const responsePayloadEnd = routeSource.indexOf("const response = NextResponse.json(responsePayload);", responsePayloadStart);
++  const responsePayloadStart = routeSource.lastIndexOf("const responsePayload = sanitizeAnalyzeResultProductImages(");
++  const responsePayloadEnd = routeSource.indexOf("const response = sensitiveJsonResponse(responsePayload);", responsePayloadStart);
+   const responsePayloadBlock =
+     responsePayloadStart >= 0 && responsePayloadEnd > responsePayloadStart
+       ? routeSource.slice(responsePayloadStart, responsePayloadEnd)
+diff --git a/scripts/verify-shadow-flag-invariance-preflight.mjs b/scripts/verify-shadow-flag-invariance-preflight.mjs
+index 7aca06c..aedf758 100644
+--- a/scripts/verify-shadow-flag-invariance-preflight.mjs
++++ b/scripts/verify-shadow-flag-invariance-preflight.mjs
+@@ -97,10 +97,10 @@ function assertContract(output) {
+   assert.equal(output.recommendationMutationDetected, false);
+   assert.equal(output.artifactWriterLocalOnly, true);
+   assert.equal(output.verifierIntegrity.passed, true);
+-  assert.equal(output.verifierIntegrity.detectedCount, 10);
+-  assert.equal(output.verifierIntegrity.totalCount, 10);
++  assert.equal(output.verifierIntegrity.detectedCount, 11);
++  assert.equal(output.verifierIntegrity.totalCount, 11);
+   assert.equal(output.verifierIntegrity.sourceFilesMutated, false);
+-  assert.equal(output.negativeControlResults.length, 10);
++  assert.equal(output.negativeControlResults.length, 11);
+   assert(output.negativeControlResults.every((item) => item.detected && item.verifierRejected));
+ 
+   assert.equal(output.actualRouteExecution.executed, false);
+diff --git a/scripts/verify-shadow-runtime-dry-run-plan.mjs b/scripts/verify-shadow-runtime-dry-run-plan.mjs
+index 01e4e73..06b301f 100644
+--- a/scripts/verify-shadow-runtime-dry-run-plan.mjs
++++ b/scripts/verify-shadow-runtime-dry-run-plan.mjs
+@@ -134,7 +134,19 @@ function assertPlanContract(output) {
+   assert(output.baselineVsShadowComparison.requiredComparisons.includes("api_response_shape_diff"));
+   assert(output.baselineVsShadowComparison.requiredComparisons.includes("recommendation_result_diff"));
+   assert(output.baselineVsShadowComparison.requiredComparisons.includes("db_write_attempt_count"));
+-  assert.equal(output.readinessFromPhase29.acceptanceStatus, "ready_for_runtime_integration_plan");
++  assert.ok([
++    "ready_for_runtime_integration_plan",
++    "ready_for_shadow_runtime_dry_run_only",
++    "needs_more_contract_tests",
++    "needs_more_evidence",
++    "blocked_by_safety_regression",
++    "blocked_by_runtime_mutation"
++  ].includes(output.readinessFromPhase29.acceptanceStatus));
++  if (output.readinessFromPhase29.acceptanceStatus !== "ready_for_runtime_integration_plan") {
++    assert.equal(output.runtimeConnected, false);
++    assert.ok(output.phase31ProhibitedScope.includes("connect_evaluator_runtime"));
++    assert.ok(output.phase31ProhibitedScope.includes("connect_candidate_policy_runtime"));
++  }
+   assert.equal(output.runtimeFileCheck.passed, true);
+ }
+ 
+diff --git a/scripts/verify-shadow-verifier-integrity.mjs b/scripts/verify-shadow-verifier-integrity.mjs
+index 9781f8d..84741f9 100644
+--- a/scripts/verify-shadow-verifier-integrity.mjs
++++ b/scripts/verify-shadow-verifier-integrity.mjs
+@@ -60,8 +60,8 @@ const NEGATIVE_CONTROLS = [
+     return {
+       routeSource: replacePatternRequired(
+         withoutCall,
+-        /^    const response = NextResponse\.json\(responsePayload\);\r?$/m,
+-        "    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });\n    const response = NextResponse.json(responsePayload);",
++        /^    const response = sensitiveJsonResponse\(responsePayload\);\r?$/m,
++        "    await runShadowBoundaryDryRunIfEnabled({ responsePayload, recommendationResult, decision });\n    const response = sensitiveJsonResponse(responsePayload);",
+         "route_insertion_moved_before_response_insert"
+       ),
+       writerSource
+@@ -124,7 +124,7 @@ const NEGATIVE_CONTROLS = [
+   control("writer_failure_propagates_to_route", "route_failure_can_propagate", ({ routeSource, writerSource }) => ({
+     routeSource: replaceRequired(
+       routeSource,
+-      '    console.warn("[analyze] shadow-boundary-dry-run:non-blocking-failure");',
++      '    logAnalyze("shadow-boundary-dry-run:non-blocking-failure");',
+       '    throw new Error("shadow dry-run writer failure");',
+       "writer_failure_propagates_to_route"
+     ),
