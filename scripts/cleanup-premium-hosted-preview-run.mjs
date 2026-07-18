@@ -51,7 +51,9 @@ requireCondition(
     cleanupManifest?.prNumber === config.prNumber &&
     cleanupManifest?.deploymentId === attestation.vercelDeploymentId &&
     cleanupManifest?.deploymentSha === attestation.prHeadSha &&
-    cleanupManifest?.ownerUserIdHash === manifest.accountA.expectedUserIdHash,
+    cleanupManifest?.ownerUserIdHash === manifest.accountA.expectedUserIdHash &&
+    /^[0-9a-f]{64}$/i.test(cleanupManifest?.browserPersistenceHash || "") &&
+    /^[0-9a-f]{64}$/i.test(cleanupManifest?.uiEvidenceHash || ""),
   HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION,
   "cleanup",
   "cleanup_manifest_binding_mismatch"
@@ -72,7 +74,7 @@ const ids = Array.isArray(cleanupManifest.savedReportIds)
   ? cleanupManifest.savedReportIds.map((value) => String(value || "").trim()).filter(Boolean)
   : [];
 requireCondition(
-  ids.length > 0 && ids.length <= 20 && new Set(ids).size === ids.length,
+  ids.length === 11 && new Set(ids).size === ids.length,
   HOSTED_FAILURE_CATEGORIES.PRECONDITION,
   "cleanup",
   "cleanup_scope_invalid"
@@ -120,12 +122,22 @@ for (const id of ids) {
     "cleanup",
     "cleanup_delete_failed"
   );
+  requireCondition(
+    await fetchSavedReportById(dbConfig, id) === null,
+    HOSTED_FAILURE_CATEGORIES.PERSISTENCE,
+    "cleanup",
+    "cleanup_delete_not_observed"
+  );
   deletedCount += 1;
 }
 await rm(config.securePaths.credentialsDir, { recursive: true, force: true });
 console.log(JSON.stringify({
   status: "passed",
+  runId: config.runId,
+  prNumber: config.prNumber,
   deploymentId: attestation.vercelDeploymentId,
+  deploymentSha: attestation.prHeadSha,
+  immutableHost: attestation.immutableHost,
   deletedCount,
   cleanupManifestHash: actualManifestHash,
   credentialsRemoved: true
