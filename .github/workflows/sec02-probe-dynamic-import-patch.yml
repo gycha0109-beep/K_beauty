@@ -22,7 +22,7 @@ jobs:
         id: probe
         shell: bash
         env:
-          PROBE_URL: https://k-beauty-jmd3wg4ag-johnny-self.vercel.app/?_vercel_share=2frWBNrL8WSZFz98corJ0117t19838AY
+          PROBE_URL: https://k-beauty-fgbgsca65-johnny-self.vercel.app/?_vercel_share=R2PUBm3MbJ0aJHuTy1jeNMVT1s7e6b7O
         run: |
           set -euo pipefail
           mkdir -p sec02-evidence
