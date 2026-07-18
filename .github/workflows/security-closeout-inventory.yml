@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -34,7 +36,10 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Diff hygiene
-        run: git diff --check "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
       - name: Inventory and probe security verifiers
         shell: bash
         run: |
@@ -72,13 +77,17 @@ jobs:
             });
           }
 
-          fs.writeFileSync('security-closeout-evidence/verifier-probe.json', JSON.stringify({ files, results }, null, 2));
-          const lines = ['# Security verifier inventory', '', `Selected: ${files.length}`, ''];
+          const failed = results.filter((item) => item.status !== 0 || item.signal || item.error);
+          fs.writeFileSync('security-closeout-evidence/verifier-probe.json', JSON.stringify({ files, results, failedCount: failed.length }, null, 2));
+          const lines = ['# Security verifier inventory', '', `Selected: ${files.length}`, `Failed: ${failed.length}`, ''];
           for (const item of results) {
-            lines.push(`- ${item.status === 0 ? 'PASS' : 'FAIL'} ${item.file} (${item.durationMs}ms)`);
+            lines.push(`- ${item.status === 0 && !item.signal && !item.error ? 'PASS' : 'FAIL'} ${item.file} (${item.durationMs}ms)`);
           }
           fs.writeFileSync('security-closeout-evidence/verifier-probe.md', lines.join('\n') + '\n');
           console.log(lines.join('\n'));
+          if (failed.length > 0) {
+            process.exitCode = 1;
+          }
           NODE
       - name: Upload inventory evidence
         if: always()
