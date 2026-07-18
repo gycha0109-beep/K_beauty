@@ -1,7 +1,7 @@
 # SEC-11 POST-Only Signout Boundary
 
-Date: 2026-07-16  
-Branch: `feature/premium-beta-flow`  
+Date: 2026-07-16
+Branch: `feature/premium-beta-flow`
 Scope: local application implementation and verification; hosted OAuth and Supabase are not verified.
 
 ## Prior Defect

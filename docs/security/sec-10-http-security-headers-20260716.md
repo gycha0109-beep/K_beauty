@@ -1,7 +1,7 @@
 # SEC-10 HTTP Security Headers And Nonce CSP
 
-Date: 2026-07-16  
-Branch: `feature/premium-beta-flow`  
+Date: 2026-07-16
+Branch: `feature/premium-beta-flow`
 Scope: local application implementation and verification; hosted deployment is not verified.
 
 ## Prior State

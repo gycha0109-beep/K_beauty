@@ -1,7 +1,7 @@
 # SEC-10 Browser Image-Origin Contract
 
-Date: 2026-07-16  
-Branch: `feature/premium-beta-flow`  
+Date: 2026-07-16
+Branch: `feature/premium-beta-flow`
 Scope: browser image-origin boundary only; CSP and global HTTP security headers are not implemented in this step.
 
 ## Finding

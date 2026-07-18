@@ -608,4 +608,3 @@ LLM은 판정 규칙의 대체재가 아니다. 특히 대표 상, affinity, 임
 - 영역별 fallback 미삽입 회귀 테스트
 - 무료와 프리미엄 projection이 동일 분석 객체를 사용하는지 검증
 - 구형 flat payload가 신규 `available` 결과로 승격되지 않는지 검증
-
