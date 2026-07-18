@@ -14,6 +14,11 @@ import {
   parseHostedConfig,
   validateSupabasePublicConfig
 } from "./premium-hosted-preview-core-v2.mjs";
+import {
+  assertPathInside,
+  hashFileSha256,
+  secureWriteJson
+} from "./premium-hosted-preview-security.mjs";
 
 const config = parseHostedConfig();
 const manifest = await loadHostedManifest(config.manifestPath);
@@ -56,7 +61,7 @@ for (const id of savedIds) {
   );
   requireCondition(row.source_session_id, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "source_session_missing");
   rows.push({
-    savedReportId: row.id,
+    savedReportIdHash: hashIdentifier(row.id),
     ownerMatches: hashIdentifier(row.user_id) === manifest.accountA.expectedUserIdHash,
     reportType: row.report_type,
     reportVersion: row.report_version,
@@ -80,10 +85,32 @@ const allSessionRows = await fetchPremiumSessionRows(dbConfig);
 const duplicateTupleCount = countDuplicateSourceTuples(allSessionRows);
 requireCondition(duplicateTupleCount === 0, HOSTED_FAILURE_CATEGORIES.PERSISTENCE, "db-evidence", "duplicate_source_tuple_detected");
 
+const cleanupManifestPath = assertPathInside(
+  config.securePaths.credentialsDir,
+  process.env.PREMIUM_HOSTED_CLEANUP_MANIFEST_OUTPUT || resolve(config.securePaths.credentialsDir, "cleanup-manifest.json"),
+  "cleanup_manifest_output_outside_secure_root"
+);
+const createdAt = Date.now();
+const cleanupManifest = {
+  schemaVersion: "premium-hosted-cleanup-manifest-v1",
+  runId: config.runId,
+  prNumber: config.prNumber,
+  deploymentId: attestation.vercelDeploymentId,
+  deploymentSha: attestation.prHeadSha,
+  ownerUserIdHash: manifest.accountA.expectedUserIdHash,
+  savedReportIds: [...savedIds],
+  createdAt: new Date(createdAt).toISOString(),
+  expiresAt: new Date(createdAt + 60 * 60 * 1000).toISOString()
+};
+await secureWriteJson(cleanupManifestPath, cleanupManifest);
+const cleanupManifestHash = await hashFileSha256(cleanupManifestPath);
+
 console.log(JSON.stringify({
   status: "passed",
   deploymentId: attestation.vercelDeploymentId,
   deploymentSha: attestation.prHeadSha,
   rows,
-  duplicateTupleCount
+  duplicateTupleCount,
+  cleanupManifestCreated: true,
+  cleanupManifestHash
 }, null, 2));
