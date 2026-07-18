@@ -4,6 +4,7 @@ import {
   REQUIRED_HOSTED_LANES,
   compareLocaleSemantics,
   evaluateHostedVerdict,
+  parseHostedPrNumber,
   projectCanonicalEvidence,
   sanitizeEvidence,
   validateDeploymentAttestation,
@@ -85,6 +86,11 @@ assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "
 assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "clickByRole", role: "document", name: "x" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 assert.throws(() => validateUiCaseFixture({ ...validFixture, actions: [{ type: "uploadByLabel", label: "Photo", path: "../private.jpg" }] }), (error) => error.category === "FIXTURE_CONTRACT_FAILURE");
 
+assert.equal(parseHostedPrNumber("51"), 51);
+assert.throws(() => parseHostedPrNumber(undefined), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
+assert.throws(() => parseHostedPrNumber("0"), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
+assert.throws(() => parseHostedPrNumber("38.5"), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
+
 const now = Date.now();
 const attestation = {
   schemaVersion: HOSTED_ATTESTATION_VERSION,
@@ -92,7 +98,7 @@ const attestation = {
   generatedAt: new Date(now - 1000).toISOString(),
   expiresAt: new Date(now + 60_000).toISOString(),
   repository: "gycha0109-beep/K_beauty",
-  prNumber: 38,
+  prNumber: 51,
   prState: "open",
   prDraft: true,
   prMerged: false,
@@ -107,8 +113,9 @@ const attestation = {
   vercelSourceCommitSha: "c".repeat(40),
   immutableUrl: "https://deployment.example.vercel.app"
 };
-const expectedAttestation = { repository: "gycha0109-beep/K_beauty", prNumber: 38, headSha: "c".repeat(40), vercelProjectId: "project-1" };
+const expectedAttestation = { repository: "gycha0109-beep/K_beauty", prNumber: 51, headSha: "c".repeat(40), vercelProjectId: "project-1" };
 assert.equal(validateDeploymentAttestation(attestation, expectedAttestation, { now }).immutableHost, "deployment.example.vercel.app");
+assert.throws(() => validateDeploymentAttestation({ ...attestation, prNumber: 38 }, expectedAttestation, { now }), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 assert.throws(() => validateDeploymentAttestation({ ...attestation, generatedBy: "manual" }, expectedAttestation, { now }), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 assert.throws(() => validateDeploymentAttestation({ ...attestation, vercelTarget: "production" }, expectedAttestation, { now }), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 assert.throws(() => validateDeploymentAttestation({ ...attestation, vercelState: "CANCELED" }, expectedAttestation, { now }), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
