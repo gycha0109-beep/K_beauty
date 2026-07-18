@@ -1,0 +1,47 @@
+name: Security closeout verifiers
+
+on:
+  pull_request:
+    branches:
+      - feature/premium-beta-flow
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: JavaScript syntax gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
+      - name: Production build
+        run: npm run build
+      - name: Diff hygiene
+        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+      - name: Upload verifier evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-closeout-verifier-evidence
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: error
+          retention-days: 7
