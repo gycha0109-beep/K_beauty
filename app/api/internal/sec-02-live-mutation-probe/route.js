@@ -17,7 +17,7 @@ const EXPECTED_BRANCH = "feature/premium-beta-flow";
 const ANALYZE_IP = "198.51.100.77";
 const RESULT_READ_IP = "203.0.113.77";
 const TINY_PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2n3sAAAAASUVORK5CYII=",
+  "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAZUlEQVR4nO3PQQ3AIADAQMC/CEQgBzETweOypKegnffs8WdLB7xqQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQGtAa0BrQPsAzvcCsCwgxscAAAAASUVORK5CYII=",
   "base64"
 );
 
@@ -131,6 +131,7 @@ export async function GET(request) {
         && Boolean(resultToken)
         && Boolean(cookie),
       status: firstResponse.status,
+      error: firstBody?.error || null,
       grantIssued: Boolean(resultToken),
       cookieIssued: Boolean(cookie)
     };
@@ -181,7 +182,8 @@ export async function GET(request) {
     const secondBody = await json(secondResponse);
     checks.secondAllowedAnalyze = {
       passed: secondResponse.status === 200 && Boolean(secondBody?.analysisRunId),
-      status: secondResponse.status
+      status: secondResponse.status,
+      error: secondBody?.error || null
     };
     if (secondBody?.analysisRunId) evidence.analysisRunIds.push(secondBody.analysisRunId);
 
@@ -220,7 +222,8 @@ export async function GET(request) {
     const saveBody = await json(saveResponse);
     checks.anonymousGrantUse = {
       passed: saveResponse.status === 200 && Boolean(saveBody?.shareId),
-      status: saveResponse.status
+      status: saveResponse.status,
+      error: saveBody?.error || null
     };
     if (!checks.anonymousGrantUse.passed) throw new Error("anonymous_grant_use_failed");
     evidence.shareId = saveBody.shareId;
