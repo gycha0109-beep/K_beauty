@@ -9,6 +9,7 @@ import {
   validateDeploymentAttestation
 } from "./premium-hosted-preview-core-v2.mjs";
 import {
+  assertPathInside,
   ensureSecureRunDirectories,
   hashFileSha256,
   secureWriteJson
@@ -25,9 +26,16 @@ const callbackPath = manifest.routes?.authCallbackPrefix || "/auth/callback";
 const signIn = manifest.googleSignInMarker;
 const supabaseUrl = String(process.env.PREMIUM_HOSTED_SUPABASE_URL || "").trim();
 const anonKey = String(process.env.PREMIUM_HOSTED_SUPABASE_ANON_KEY || "").trim();
+const previewBypassToken = String(process.env.PREMIUM_HOSTED_PREVIEW_BYPASS_TOKEN || "").trim();
 
+await ensureSecureRunDirectories(config.securePaths);
+const attestationPath = assertPathInside(
+  config.securePaths.credentialsDir,
+  manifest.deploymentAttestationPath,
+  "deployment_attestation_outside_secure_root"
+);
 const attestation = validateDeploymentAttestation(
-  JSON.parse(await readFile(manifest.deploymentAttestationPath, "utf8")),
+  JSON.parse(await readFile(attestationPath, "utf8")),
   {
     repository: "gycha0109-beep/K_beauty",
     prNumber: config.prNumber,
@@ -38,8 +46,6 @@ const attestation = validateDeploymentAttestation(
 requireCondition(attestation.immutableHost === config.baseUrl.hostname, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "google-login", "immutable_host_mismatch");
 requireCondition(signIn?.role && signIn?.name, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "google-login", "google_signin_accessible_locator_missing");
 requireCondition(supabaseUrl && anonKey, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "google-login", "supabase_public_config_missing");
-
-await ensureSecureRunDirectories(config.securePaths);
 
 function requireCredentialPath(path, code) {
   const target = resolve(path);
@@ -63,10 +69,30 @@ function createStorageStateSupabaseClient(storageState) {
   });
 }
 
+async function primePreviewProtection(context) {
+  const headers = previewBypassToken
+    ? {
+        "x-vercel-protection-bypass": previewBypassToken,
+        "x-vercel-set-bypass-cookie": "true"
+      }
+    : {};
+  const response = await context.request.get(config.baseUrl.origin, {
+    headers,
+    maxRedirects: 0
+  });
+  requireCondition(
+    response.status() < 400,
+    HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION,
+    "google-login",
+    "preview_protection_access_not_granted"
+  );
+}
+
 const browser = await chromium.launch({ headless: false });
 const context = await browser.newContext({ serviceWorkers: "block" });
 const page = await context.newPage();
 try {
+  await primePreviewProtection(context);
   await page.goto(`${config.baseUrl.origin}${loginPath}`, { waitUntil: "domcontentloaded" });
   requireCondition(new URL(page.url()).origin === config.baseUrl.origin, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "google-login", "login_start_origin_mismatch");
   await page.getByRole(signIn.role, { name: signIn.name, exact: true }).click();
