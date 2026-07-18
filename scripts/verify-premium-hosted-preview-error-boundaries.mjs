@@ -15,6 +15,8 @@ const manifest = await loadHostedManifest(config.manifestPath);
 const attestation = await loadDeploymentAttestation(config, manifest);
 const accountBToken = String(process.env.PREMIUM_HOSTED_ACCOUNT_B_ACCESS_TOKEN || "").trim();
 const accountASavedReportId = String(process.env.PREMIUM_HOSTED_ACCOUNT_A_SAVED_REPORT_ID || "").trim();
+const previewBypassToken = String(process.env.PREMIUM_HOSTED_PREVIEW_BYPASS_TOKEN || "").trim();
+const faultPreviewBypassToken = String(process.env.PREMIUM_HOSTED_FAULT_PREVIEW_BYPASS_TOKEN || "").trim();
 const lanes = [];
 const allowedProtectionCookies = new Set(["_vercel_jwt", "__vercel_live_token"]);
 
@@ -33,12 +35,25 @@ function isAllowedBootstrapCookie(cookie) {
   return name.includes("auth-token") || allowedProtectionCookies.has(name);
 }
 
+async function primePreviewProtection(context) {
+  const headers = previewBypassToken
+    ? {
+        "x-vercel-protection-bypass": previewBypassToken,
+        "x-vercel-set-bypass-cookie": "true"
+      }
+    : {};
+  const response = await context.request.get(config.baseUrl.origin, { headers, maxRedirects: 0 });
+  requireCondition(response.status() < 400, HOSTED_FAILURE_CATEGORIES.PREVIEW_ATTESTATION, "error-boundaries", "preview_protection_access_not_granted");
+}
+
 async function accountBContext(browser) {
   const path = assertPathInside(config.securePaths.credentialsDir, manifest.accountB.storageStatePath, "account_b_storage_state_outside_secure_root");
   const state = JSON.parse(await readFile(path, "utf8"));
   const cookies = Array.isArray(state.cookies) ? state.cookies.filter(isAllowedBootstrapCookie) : [];
   requireCondition(cookies.some((cookie) => String(cookie.name || "").includes("auth-token")), HOSTED_FAILURE_CATEGORIES.AUTH, "error-boundaries", "account_b_auth_cookie_missing");
-  return browser.newContext({ storageState: { cookies, origins: [] }, serviceWorkers: "block" });
+  const context = await browser.newContext({ storageState: { cookies, origins: [] }, serviceWorkers: "block" });
+  await primePreviewProtection(context);
+  return context;
 }
 
 async function postWithoutRedirect(context, url, options) {
@@ -48,6 +63,7 @@ async function postWithoutRedirect(context, url, options) {
 const browser = await chromium.launch({ headless: true });
 try {
   const anonymous = await browser.newContext({ serviceWorkers: "block" });
+  await primePreviewProtection(anonymous);
   await lane("unauthenticated", "critical", async () => {
     const response = await postWithoutRedirect(anonymous, `${config.baseUrl.origin}/api/full-report`, { data: { locale: "ko" } });
     const parsed = await parseApiResponse(response);
@@ -87,8 +103,13 @@ try {
     "safe-5xx",
     "fault_preview_attestation_missing"
   );
+  const faultAttestationPath = assertPathInside(
+    config.securePaths.credentialsDir,
+    fault.attestationPath,
+    "fault_preview_attestation_outside_secure_root"
+  );
   const faultAttestation = validateDeploymentAttestation(
-    JSON.parse(await readFile(fault.attestationPath, "utf8")),
+    JSON.parse(await readFile(faultAttestationPath, "utf8")),
     {
       repository: "gycha0109-beep/K_beauty",
       prNumber: fault.prNumber,
@@ -105,10 +126,19 @@ try {
   );
   const faultUrl = new URL(faultAttestation.immutableUrl);
   await lane("safe-5xx", "important", async () => {
+    const headers = {
+      "content-type": "application/json",
+      ...(faultPreviewBypassToken
+        ? {
+            "x-vercel-protection-bypass": faultPreviewBypassToken,
+            "x-vercel-set-bypass-cookie": "true"
+          }
+        : {})
+    };
     const response = await fetch(`${faultUrl.origin}${fault.path || "/api/full-report"}`, {
       method: fault.method || "POST",
       redirect: "manual",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify(fault.body || { locale: "ko" })
     });
     requireCondition(![301, 302, 303, 307, 308].includes(response.status), HOSTED_FAILURE_CATEGORIES.ERROR_HANDLING, "safe-5xx", "fault_preview_redirected");
@@ -118,7 +148,15 @@ try {
     return { status: response.status, safeBody: true, deploymentId: faultAttestation.vercelDeploymentId };
   });
 
-  console.log(JSON.stringify({ status: "passed", deploymentId: attestation.vercelDeploymentId, lanes }, null, 2));
+  console.log(JSON.stringify({
+    status: "passed",
+    runId: config.runId,
+    prNumber: config.prNumber,
+    deploymentId: attestation.vercelDeploymentId,
+    deploymentSha: attestation.prHeadSha,
+    immutableHost: attestation.immutableHost,
+    lanes
+  }, null, 2));
 } finally {
   await browser.close();
 }
