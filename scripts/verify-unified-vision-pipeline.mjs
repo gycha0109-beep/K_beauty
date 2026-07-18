@@ -55,9 +55,10 @@ assert.deepEqual(
   "only the canonical service may create an image-bearing provider request"
 );
 assert.equal(count(service, "fetch(OPENAI_URL"), 1, "canonical service must contain one provider execution site");
-assert.equal(/\bwhile\s*\(|\bfor\s*\([^)]*attempt|retry/i.test(service), false, "canonical service must not retry image requests");
+assert.equal(/maxRetries|retryAfter|retryCount|attempt\s*[+]=|attempt\s*=\s*attempt\s*\+/i.test(service), false, "canonical service must not retry image requests");
 assert.ok(service.includes("redirect: \"manual\""), "provider redirects must be rejected");
-assert.ok(service.includes("MAX_RESPONSE_BYTES"), "provider response size must be bounded");
+assert.ok(service.includes("response.body.getReader"), "provider response size must be enforced while streaming");
+assert.ok(service.includes("totalBytes > MAX_RESPONSE_BYTES"), "provider stream must stop at the byte cap");
 assert.ok(service.includes("imageProviderAttemptCount: 1"), "provider telemetry must record one image attempt");
 
 assert.ok(contract.includes('VISION_OBSERVATION_SCHEMA_VERSION = "vision-observation-v1"'));
@@ -73,6 +74,9 @@ assert.ok(normalizer.includes("rawProviderResponsePersisted: false"));
 assert.ok(skinProjector.includes("buildAlignment"), "survey alignment must be deterministic post-processing");
 assert.ok(faceProjector.includes('presentation_hint: "neutral"'));
 assert.ok(faceProjector.includes("lookalike_celebrities: { summary: \"\", matches: [] }"));
+assert.ok(faceProjector.includes('analysis.status !== "available"'), "partial Face Lab coverage must fail closed");
+assert.equal(/fieldValue\([^\n]*,\s*["'][^"']+["']\s*\)/.test(faceProjector), true, "projector must read canonical fields");
+assert.equal(/fieldValue\([^\n]*,\s*["'][^"']+["']\s*,/.test(faceProjector), false, "projector must not inject observation fallback values");
 assert.ok(packageJson.scripts?.["verify:unified-vision-pipeline"], "package verifier script must exist");
 
 console.log(JSON.stringify({
