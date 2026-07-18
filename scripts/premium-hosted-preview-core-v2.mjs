@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import {
   HOSTED_FAILURE_CATEGORIES,
-  REQUIRED_HOSTED_LANES,
   assertHostedArtifactsSafe as assertLegacyArtifactsSafe,
   buildHostedRunManifest as buildLegacyRunManifest,
   loadHostedManifest as loadLegacyManifest,
@@ -19,7 +19,28 @@ import {
 import { resolveHostedRunPaths } from "./premium-hosted-preview-security.mjs";
 import { JourneyFailure, requireCondition } from "./premium-browser-journey-core.mjs";
 
-export { HOSTED_FAILURE_CATEGORIES, REQUIRED_HOSTED_LANES };
+export { HOSTED_FAILURE_CATEGORIES };
+
+export const REQUIRED_HOSTED_LANES = Object.freeze([
+  "preflight",
+  "google-login",
+  "premium-entry",
+  "ko-normal",
+  "en-normal",
+  "selected-product",
+  "not-in-db",
+  "selected-plus-not-in-db",
+  "duplicate-axis",
+  "photo-fallback",
+  "persistence",
+  "finalized-conflict",
+  "session-rotation",
+  "unauthenticated",
+  "forbidden",
+  "ownership",
+  "principal-conflict",
+  "safe-5xx"
+]);
 
 const FORBIDDEN_TEXT = /(bearer\s+\S+|data:image\/|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,})/i;
 const PRODUCT_LANES = Object.freeze([
@@ -69,6 +90,12 @@ export async function loadHostedManifest(path) {
     "vercel_project_id_missing"
   );
   requireCondition(
+    typeof manifest.supabaseProjectRef === "string" && /^[a-z0-9]{8,64}$/.test(manifest.supabaseProjectRef),
+    "PREVIEW_ATTESTATION_FAILURE",
+    "configuration",
+    "supabase_project_ref_missing_or_invalid"
+  );
+  requireCondition(
     typeof manifest.catalogHash === "string" && /^[0-9a-f]{64}$/i.test(manifest.catalogHash),
     HOSTED_FAILURE_CATEGORIES.PRECONDITION,
     "configuration",
@@ -90,6 +117,51 @@ export async function loadHostedManifest(path) {
     "current_product_lanes_invalid"
   );
   return manifest;
+}
+
+export async function loadDeploymentAttestation(config, manifest) {
+  let document;
+  try {
+    document = JSON.parse(await readFile(manifest.deploymentAttestationPath, "utf8"));
+  } catch {
+    throw new JourneyFailure("PREVIEW_ATTESTATION_FAILURE", "deployment-attestation", "deployment_attestation_invalid_json");
+  }
+  const attestation = validateDeploymentAttestation(document, {
+    repository: "gycha0109-beep/K_beauty",
+    prNumber: 38,
+    headSha: config.expectedSha,
+    vercelProjectId: manifest.vercelProjectId
+  });
+  requireCondition(
+    attestation.immutableHost === config.baseUrl.hostname,
+    "PREVIEW_ATTESTATION_FAILURE",
+    "deployment-attestation",
+    "immutable_host_mismatch"
+  );
+  requireCondition(
+    attestation.prHeadSha === config.expectedSha,
+    "PREVIEW_ATTESTATION_FAILURE",
+    "deployment-attestation",
+    "attested_head_mismatch"
+  );
+  return attestation;
+}
+
+export function validateSupabasePublicConfig(supabaseUrl, manifest) {
+  let url;
+  try {
+    url = new URL(supabaseUrl);
+  } catch {
+    throw new JourneyFailure("PREVIEW_ATTESTATION_FAILURE", "supabase-config", "supabase_url_invalid");
+  }
+  requireCondition(url.protocol === "https:", "PREVIEW_ATTESTATION_FAILURE", "supabase-config", "supabase_url_not_https");
+  requireCondition(
+    url.hostname === `${manifest.supabaseProjectRef}.supabase.co`,
+    "PREVIEW_ATTESTATION_FAILURE",
+    "supabase-config",
+    "supabase_project_ref_mismatch"
+  );
+  return url;
 }
 
 export function compareLocaleSemantics(ko, en) {
@@ -178,6 +250,7 @@ export function buildHostedRunManifest(config, manifest, attestation = null) {
     ...buildLegacyRunManifest(config, manifest),
     deploymentSha: attestation?.prHeadSha || config.deploymentSha,
     deploymentId: attestation?.vercelDeploymentId || null,
-    immutableHost: attestation?.immutableHost || null
+    immutableHost: attestation?.immutableHost || null,
+    supabaseProjectRef: manifest.supabaseProjectRef
   };
 }
