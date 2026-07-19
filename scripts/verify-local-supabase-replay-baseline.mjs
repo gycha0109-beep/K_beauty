@@ -15,6 +15,7 @@ const paths = {
   seed: path.join(LOCAL, "project-template", "seed.sql"),
   prepare: path.join(ROOT, "scripts", "prepare-local-supabase-replay.mjs"),
   firstMigration: path.join(ROOT, "supabase", "migrations", "20260410_safe_review_and_promotion_layer.sql"),
+  categoryMapperReplacement: path.join(ROOT, "supabase", "migrations", "20260524054049_reclassify_existing_moisturizers.sql"),
   bridgeAnchor: path.join(ROOT, "supabase", "migrations", "20260526_moisturizer_lotion_emulsion_insert.sql")
 };
 
@@ -36,6 +37,16 @@ function tableBody(sql, name) {
   return normalized(match[1]);
 }
 
+function functionTextArgumentName(sql, qualifiedName) {
+  const expression = new RegExp(
+    `create\\s+or\\s+replace\\s+function\\s+${qualifiedName.replaceAll(".", "\\.")}\\s*\\(\\s*([a-z_][a-z0-9_]*)\\s+text\\s*\\)`,
+    "i"
+  );
+  const match = sql.match(expression);
+  assert(match, `missing_text_function:${qualifiedName}`);
+  return match[1].toLowerCase();
+}
+
 function includesAll(value, fragments, code) {
   for (const fragment of fragments) {
     assert(value.includes(fragment), `${code}:${fragment}`);
@@ -51,6 +62,7 @@ async function main() {
   const bridge = normalized(files.bridge);
   const runtime = normalized(files.runtime);
   const firstMigration = normalized(files.firstMigration);
+  const categoryMapperReplacement = normalized(files.categoryMapperReplacement);
   const bridgeAnchor = normalized(files.bridgeAnchor);
   const seed = normalized(files.seed);
   const prepare = normalized(files.prepare);
@@ -139,6 +151,23 @@ async function main() {
   assert(firstMigration.includes("alter table public.product_candidates"), "first_migration_candidate_dependency_changed");
   assert(firstMigration.includes("left join public.source_rankings sr"), "first_migration_ranking_dependency_changed");
 
+  const originalMapperArgument = functionTextArgumentName(
+    files.firstMigration,
+    "public.map_product_category"
+  );
+  const replacementMapperArgument = functionTextArgumentName(
+    files.categoryMapperReplacement,
+    "public.map_product_category"
+  );
+  assert(
+    originalMapperArgument === replacementMapperArgument,
+    `category_mapper_argument_rename:${originalMapperArgument}->${replacementMapperArgument}`
+  );
+  assert(
+    categoryMapperReplacement.includes(`public.normalize_basic_text(${replacementMapperArgument})`),
+    "category_mapper_body_argument_mismatch"
+  );
+
   includesAll(runtime, [
     "create unique index products_external_unique",
     "alter table public.products enable row level security",
@@ -163,7 +192,8 @@ async function main() {
   includesAll(prepare, [
     'const output_marker = ".kbeauty-local-replay-workspace"',
     'path.join(repository_root, "tmp")',
-    "tracked_migration_copy_hash_mismatch"
+    "tracked_migration_copy_hash_mismatch",
+    "local_replay_output_contains_symlink_component"
   ], "prepare_guard_gap");
 
   const order = [
@@ -177,7 +207,8 @@ async function main() {
     status: "PASS",
     predecessorTables: 4,
     localAdapters: 3,
-    syntheticSeedProducts: 5
+    syntheticSeedProducts: 5,
+    mapperArgumentCompatibility: replacementMapperArgument
   }));
 }
 
