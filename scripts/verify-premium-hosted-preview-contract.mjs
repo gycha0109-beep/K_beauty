@@ -17,6 +17,10 @@ import {
   resolveTopPickIdentity
 } from "./premium-hosted-preview-contract-core.mjs";
 import { validateCredentialRoot, validateLoginEvidence } from "./premium-hosted-preview-security.mjs";
+import {
+  assertVercelPreviewIdentity,
+  deriveVercelAttestationTarget
+} from "./premium-hosted-preview-vercel-target.mjs";
 
 function reportFixture(locale = "ko", overrides = {}) {
   return {
@@ -96,6 +100,43 @@ assert.equal(parseHostedPrNumber("51"), 51);
 assert.throws(() => parseHostedPrNumber(undefined), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 assert.throws(() => parseHostedPrNumber("0"), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 assert.throws(() => parseHostedPrNumber("38.5"), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
+
+const previewHeadSha = "c".repeat(40);
+const previewExpected = {
+  prNumber: 51,
+  headRef: "agent/premium-hosted-preview-harness-hardening",
+  headSha: previewHeadSha
+};
+const nullTargetPreview = {
+  target: null,
+  meta: {
+    githubPrId: "51",
+    githubCommitRef: previewExpected.headRef,
+    githubCommitSha: previewHeadSha
+  }
+};
+const derivedNullTarget = deriveVercelAttestationTarget(nullTargetPreview, previewExpected);
+assert.equal(derivedNullTarget.vercelTarget, "preview");
+assert.equal(derivedNullTarget.vercelTargetEvidence, "api-null-pr-bound-preview");
+assert.equal(derivedNullTarget.vercelPrBound, true);
+assert.equal(assertVercelPreviewIdentity(nullTargetPreview, previewExpected).vercelTarget, "preview");
+
+const explicitPreview = structuredClone(nullTargetPreview);
+explicitPreview.target = "preview";
+assert.equal(assertVercelPreviewIdentity(explicitPreview, previewExpected).vercelTargetEvidence, "api-explicit-preview-pr-bound");
+
+const wrongPrPreview = structuredClone(nullTargetPreview);
+wrongPrPreview.meta.githubPrId = "52";
+assert.throws(() => assertVercelPreviewIdentity(wrongPrPreview, previewExpected), /vercel_preview_pr_binding_invalid/);
+const wrongRefPreview = structuredClone(nullTargetPreview);
+wrongRefPreview.meta.githubCommitRef = "agent/other-branch";
+assert.throws(() => assertVercelPreviewIdentity(wrongRefPreview, previewExpected), /vercel_preview_pr_binding_invalid/);
+const wrongShaPreview = structuredClone(nullTargetPreview);
+wrongShaPreview.meta.githubCommitSha = "d".repeat(40);
+assert.throws(() => assertVercelPreviewIdentity(wrongShaPreview, previewExpected), /vercel_preview_pr_binding_invalid/);
+const productionDeployment = structuredClone(nullTargetPreview);
+productionDeployment.target = "production";
+assert.throws(() => assertVercelPreviewIdentity(productionDeployment, previewExpected), /vercel_preview_target_invalid/);
 
 const now = Date.now();
 const attestation = {
