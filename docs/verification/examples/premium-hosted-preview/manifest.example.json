@@ -6,13 +6,13 @@
   "fixtureRoot": "<secure-root>/fixtures",
   "browserConflictBodyPath": "<secure-root>/fixtures/cases/browser-conflict-body.json",
   "accountA": {
-    "expectedUserIdHash": "replace_with_64_char_sha256_user_hash_a",
+    "expectedUserIdHash": "sha256:replace_with_64_lowercase_hex_user_hash_a",
     "storageStatePath": "<secure-root>/credentials/account-a-storage-state.json",
     "loginEvidencePath": "<secure-root>/credentials/account-a-login-evidence.json",
     "expectedAfterLoginPath": "/my"
   },
   "accountB": {
-    "expectedUserIdHash": "replace_with_64_char_sha256_user_hash_b",
+    "expectedUserIdHash": "sha256:replace_with_64_lowercase_hex_user_hash_b",
     "storageStatePath": "<secure-root>/credentials/account-b-storage-state.json",
     "loginEvidencePath": "<secure-root>/credentials/account-b-login-evidence.json",
     "expectedAfterLoginPath": "/my"
