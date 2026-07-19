@@ -16,6 +16,7 @@
     "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
     "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",
     "generate:premium-hosted-preview-attestation": "node scripts/generate-premium-hosted-preview-attestation.mjs",
+    "verify:premium-hosted-preview-authoritative-api": "node scripts/verify-premium-hosted-preview-authoritative-api.mjs",
     "capture:premium-hosted-preview-login": "node scripts/capture-premium-hosted-preview-google-login.mjs",
     "verify:premium-hosted-preview-harness-hardening": "node scripts/verify-premium-hosted-preview-contract.mjs",
     "verify:premium-hosted-preview-contract": "node scripts/verify-premium-hosted-preview-contract.mjs",
