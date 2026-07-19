@@ -1,0 +1,68 @@
+name: Local Supabase Replay Guard
+
+on:
+  pull_request:
+    paths:
+      - "supabase/local-replay-test/**"
+      - "supabase/migrations/**"
+      - "scripts/prepare-local-supabase-replay.mjs"
+      - "scripts/verify-local-supabase-replay-baseline.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/local-supabase-replay-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify replay contracts
+        run: npm run db:replay:verify
+
+      - name: Prepare isolated replay workspace
+        run: npm run db:replay:prepare
+
+      - name: Start isolated Supabase
+        run: npx --yes supabase@2.82.0 start --workdir tmp/local-supabase-replay
+
+      - name: Reset migration chain twice
+        run: |
+          npx --yes supabase@2.82.0 db reset --workdir tmp/local-supabase-replay
+          npx --yes supabase@2.82.0 db reset --workdir tmp/local-supabase-replay
+
+      - name: Lint local database
+        run: npx --yes supabase@2.82.0 db lint --local --workdir tmp/local-supabase-replay
+
+      - name: Verify anonymous product read
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(npx --yes supabase@2.82.0 status -o env --workdir tmp/local-supabase-replay)"
+          test -n "${API_URL:-}"
+          test -n "${ANON_KEY:-}"
+          response="$(curl --fail --silent --show-error \
+            "${API_URL}/rest/v1/products?select=id&limit=5" \
+            -H "apikey: ${ANON_KEY}" \
+            -H "Authorization: Bearer ${ANON_KEY}")"
+          test "$(printf '%s' "${response}" | jq 'length')" -eq 5
+
+      - name: Stop isolated Supabase
+        if: always()
+        run: npx --yes supabase@2.82.0 stop --workdir tmp/local-supabase-replay --no-backup
