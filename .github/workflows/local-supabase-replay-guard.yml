@@ -37,7 +37,13 @@ jobs:
         run: npm ci
 
       - name: Verify replay contracts
-        run: npm run db:replay:verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          mkdir -p "${diagnostics_dir}"
+          npm run db:replay:verify 2>&1 | tee "${diagnostics_dir}/verifier.log"
+          rm -f "${diagnostics_dir}/verifier.log"
 
       - name: Prepare isolated replay workspace
         run: npm run db:replay:prepare
@@ -71,7 +77,9 @@ jobs:
             sed -E \
               -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
               -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
-              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g'
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
           }
           if ! npx --yes supabase@2.82.0 start \
             --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
@@ -91,7 +99,9 @@ jobs:
             sed -E \
               -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
               -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
-              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g'
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
           }
           for attempt in 1 2; do
             raw_log="$(mktemp)"
