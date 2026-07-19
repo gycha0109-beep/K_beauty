@@ -1,0 +1,3 @@
+docs/domain/facelab/unified-vision-provider-smoke-final-20260719.md:133: new blank line at EOF.
+
+exit_status=2
