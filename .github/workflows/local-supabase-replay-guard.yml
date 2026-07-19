@@ -122,6 +122,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          boundary_failure() {
+            mkdir -p "${diagnostics_dir}"
+            printf '%s\n' "$1" | tee "${diagnostics_dir}/anonymous-boundary.log" >&2
+            exit 1
+          }
+
           api_url=""
           anon_key=""
           while IFS='=' read -r name value; do
@@ -135,14 +142,29 @@ jobs:
           test -n "${api_url}"
           test -n "${anon_key}"
 
-          response="$(curl --fail --silent --show-error \
+          response_file="$(mktemp)"
+          read_status="$(curl --silent --show-error \
             --connect-timeout 5 \
             --max-time 15 \
-            "${api_url}/rest/v1/products?select=id,normalized_brand&order=id.asc" \
+            --output "${response_file}" \
+            --write-out '%{http_code}' \
+            "${api_url}/rest/v1/products?select=id,normalized_brand&normalized_brand=eq.replay%20lab&order=id.asc" \
             -H "apikey: ${anon_key}" \
             -H "Authorization: Bearer ${anon_key}")"
-          test "$(printf '%s' "${response}" | jq 'length')" -eq 5
-          test "$(printf '%s' "${response}" | jq 'all(.[]; .normalized_brand == "replay lab")')" = "true"
+          if [ "${read_status}" != "200" ]; then
+            rm -f "${response_file}"
+            boundary_failure "synthetic_read_unexpected_status:${read_status}"
+          fi
+          response="$(cat "${response_file}")"
+          rm -f "${response_file}"
+
+          read_count="$(printf '%s' "${response}" | jq 'length')"
+          if [ "${read_count}" -ne 5 ]; then
+            boundary_failure "synthetic_read_count:${read_count}"
+          fi
+          if [ "$(printf '%s' "${response}" | jq 'all(.[]; .normalized_brand == "replay lab")')" != "true" ]; then
+            boundary_failure "synthetic_read_brand_mismatch"
+          fi
 
           assert_denied() {
             method="$1"
@@ -161,10 +183,7 @@ jobs:
               --data "${payload}")"
             case "${status}" in
               401|403) ;;
-              *)
-                echo "anonymous_${method}_unexpected_status:${status}" >&2
-                exit 1
-                ;;
+              *) boundary_failure "anonymous_${method}_unexpected_status:${status}" ;;
             esac
           }
 
