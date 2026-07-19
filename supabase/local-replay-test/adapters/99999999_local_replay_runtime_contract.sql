@@ -13,7 +13,7 @@ create unique index products_external_unique
     and external_id is not null;
 
 alter table public.products enable row level security;
-revoke insert, update, delete on table public.products from anon, authenticated;
+revoke all on table public.products from public, anon, authenticated;
 grant select on table public.products to anon, authenticated;
 grant all on table public.products to service_role;
 
