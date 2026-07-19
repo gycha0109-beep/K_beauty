@@ -9,6 +9,7 @@ import {
   resolveHostedRunPaths,
   secureWriteJson
 } from "./premium-hosted-preview-security.mjs";
+import { createHostedAuthoritativeApiClient } from "./premium-hosted-preview-authoritative-api.mjs";
 import { assertVercelPreviewIdentity } from "./premium-hosted-preview-vercel-target.mjs";
 
 function requireValue(value, code) {
@@ -25,27 +26,12 @@ function requirePositiveInteger(value, code) {
   return parsed;
 }
 
-async function fetchJson(url, token, code) {
-  const response = await fetch(url, {
-    redirect: "manual",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "User-Agent": "bejewely-premium-hosted-verifier"
-    }
-  });
-  if (response.status !== 200) throw new Error(`${code}:${response.status}`);
-  return response.json();
-}
-
 const repository = "gycha0109-beep/K_beauty";
 const [owner, repo] = repository.split("/");
 const prNumber = requirePositiveInteger(process.env.PREMIUM_HOSTED_PR_NUMBER, "premium_hosted_pr_number_missing_or_invalid");
 const githubDeploymentId = requireValue(process.env.PREMIUM_HOSTED_GITHUB_DEPLOYMENT_ID, "github_deployment_id_missing");
 const vercelDeploymentId = requireValue(process.env.PREMIUM_HOSTED_VERCEL_DEPLOYMENT_ID, "vercel_deployment_id_missing");
 const vercelProjectId = requireValue(process.env.PREMIUM_HOSTED_VERCEL_PROJECT_ID, "vercel_project_id_missing");
-const githubToken = requireValue(process.env.GITHUB_TOKEN, "github_token_missing");
-const vercelToken = requireValue(process.env.VERCEL_TOKEN, "vercel_token_missing");
 const teamId = String(process.env.VERCEL_TEAM_ID || "").trim();
 const runId = requireValue(process.env.PREMIUM_HOSTED_RUN_ID, "run_id_missing");
 const paths = resolveHostedRunPaths(runId);
@@ -56,11 +42,11 @@ const outputPath = assertPathInside(
   "attestation_output_outside_secure_root"
 );
 
-const apiRoot = "https://api.github.com";
-const pr = await fetchJson(`${apiRoot}/repos/${owner}/${repo}/pulls/${prNumber}`, githubToken, "github_pr_lookup_failed");
-const deployment = await fetchJson(`${apiRoot}/repos/${owner}/${repo}/deployments/${githubDeploymentId}`, githubToken, "github_deployment_lookup_failed");
+const api = createHostedAuthoritativeApiClient();
+const pr = await api.github(`/repos/${owner}/${repo}/pulls/${prNumber}`, "github_pr_lookup_failed");
+const deployment = await api.github(`/repos/${owner}/${repo}/deployments/${githubDeploymentId}`, "github_deployment_lookup_failed");
 const vercelQuery = teamId ? `?teamId=${encodeURIComponent(teamId)}` : "";
-const vercel = await fetchJson(`https://api.vercel.com/v13/deployments/${encodeURIComponent(vercelDeploymentId)}${vercelQuery}`, vercelToken, "vercel_deployment_lookup_failed");
+const vercel = await api.vercel(`/v13/deployments/${encodeURIComponent(vercelDeploymentId)}${vercelQuery}`, "vercel_deployment_lookup_failed");
 
 const prHeadSha = requireValue(pr.head?.sha, "github_pr_head_sha_missing");
 const prHeadRef = requireValue(pr.head?.ref, "github_pr_head_ref_missing");
@@ -114,6 +100,7 @@ console.log(JSON.stringify({
   githubDeploymentId: validated.githubDeploymentId,
   vercelDeploymentId: validated.vercelDeploymentId,
   vercelTargetEvidence: attestation.vercelTargetEvidence,
+  apiModes: api.modes,
   immutableHost: validated.immutableHost,
   expiresAt: validated.expiresAt
 }, null, 2));
