@@ -1,0 +1,27 @@
+name: Resolve Hosted Preview GitHub Deployment ID b507f4
+
+on:
+  pull_request:
+    branches:
+      - validation/premium-hosted-preview-deployment-id-b507f4
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve exact Preview deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: b507f46fad4364bc9238018a519416c7dfbc9fcb
+        run: |
+          set -euo pipefail
+          payload="$(gh api --paginate "repos/gycha0109-beep/K_beauty/deployments?sha=${EXPECTED_SHA}")"
+          matches="$(printf '%s' "$payload" | jq -c '[.[] | select((.environment | ascii_downcase) == "preview" and .sha == env.EXPECTED_SHA)]')"
+          count="$(printf '%s' "$matches" | jq 'length')"
+          test "$count" -ge 1
+          printf '%s' "$matches" | jq -c '.[] | {id, sha, ref, environment, created_at, updated_at}'
