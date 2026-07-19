@@ -168,10 +168,11 @@ assert.throws(() => validateDeploymentAttestation({ ...attestation, vercelTarget
 assert.throws(() => validateDeploymentAttestation({ ...attestation, vercelState: "CANCELED" }, expectedAttestation, { now }), (error) => error.category === "PREVIEW_ATTESTATION_FAILURE");
 
 assert.throws(() => validateCredentialRoot(process.cwd(), { repositoryRoot: process.cwd(), osTempRoot: process.cwd() }), /credential_root_inside_repository/);
+const canonicalUserHash = `sha256:${"d".repeat(64)}`;
 const evidence = {
   schemaVersion: "premium-hosted-login-evidence-v2",
   accountKey: "A",
-  userIdHash: "d".repeat(64),
+  userIdHash: canonicalUserHash,
   permanentUser: true,
   providerCategory: "google",
   deploymentId: "deployment-1",
@@ -181,8 +182,10 @@ const evidence = {
   createdAt: new Date(now - 1000).toISOString(),
   expiresAt: new Date(now + 60_000).toISOString()
 };
-const expectedEvidence = { accountKey: "A", userIdHash: "d".repeat(64), deploymentId: "deployment-1", deploymentSha: "c".repeat(40), targetHost: "deployment.example.vercel.app", storageStateHash: "e".repeat(64) };
+const expectedEvidence = { accountKey: "A", userIdHash: canonicalUserHash, deploymentId: "deployment-1", deploymentSha: "c".repeat(40), targetHost: "deployment.example.vercel.app", storageStateHash: "e".repeat(64) };
 assert.equal(validateLoginEvidence(evidence, expectedEvidence, { now }), true);
+assert.throws(() => validateLoginEvidence({ ...evidence, userIdHash: "d".repeat(64) }, expectedEvidence, { now }), /login_evidence_user_hash_invalid/);
+assert.throws(() => validateLoginEvidence(evidence, { ...expectedEvidence, userIdHash: "d".repeat(64) }, { now }), /login_evidence_expected_user_hash_invalid/);
 assert.throws(() => validateLoginEvidence({ ...evidence, providerCategory: "github" }, expectedEvidence, { now }), /login_evidence_provider_invalid/);
 
 assert.throws(() => sanitizeEvidence({ accessToken: "secret" }), (error) => error.category === HOSTED_FAILURE_CATEGORIES.HARNESS);
