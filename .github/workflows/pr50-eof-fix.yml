@@ -1,0 +1,36 @@
+name: PR50 EOF Fix
+
+on:
+  push:
+    branches:
+      - design/unified-vision-observation-pipeline
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Vision branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: design/unified-vision-observation-pipeline
+
+      - name: Normalize final document EOF
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin codex/survey-input-contract-refactor
+          target="docs/domain/facelab/unified-vision-provider-smoke-final-20260719.md"
+          perl -0777 -pi -e 's/\n+\z/\n/' "${target}"
+          git diff --check origin/codex/survey-input-contract-refactor
+          git add "${target}"
+          git commit -m "docs(vision): normalize provider smoke EOF"
+          git push origin HEAD:design/unified-vision-observation-pipeline
