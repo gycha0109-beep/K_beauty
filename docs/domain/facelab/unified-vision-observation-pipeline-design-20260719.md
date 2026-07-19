@@ -824,34 +824,34 @@ Production에서 old/new Vision을 동시에 실행하지 않는다. 비교는 �
 
 ### 리뷰에서 수정한 문제
 
-1. **하나의 거대 multimodal prompt 안**  
+1. **하나의 거대 multimodal prompt 안**
    관찰만 provider에 남기고 정책·표현을 분리했다.
 
-2. **설문을 Vision prompt에 유지하던 안**  
+2. **설문을 Vision prompt에 유지하던 안**
    canonical 독립성을 위해 survey alignment를 post-processing으로 이동했다.
 
-3. **`/api/face-reading` 즉시 삭제 안**  
+3. **`/api/face-reading` 즉시 삭제 안**
    Hosted Evaluation과 standalone 도구를 위해 adapter로 유지했다.
 
-4. **Face Lab을 `publicDecision`에 직접 추가하던 안**  
+4. **Face Lab을 `publicDecision`에 직접 추가하던 안**
    anonymous strict allowlist를 깨므로 persistence 이후 response에 붙이도록 순서를 고정했다.
 
-5. **통합 provider 실패의 단일 실패 지점 누락**  
+5. **통합 provider 실패의 단일 실패 지점 누락**
    Skin survey fallback과 Face unavailable 축소를 명시했다.
 
-6. **legacy `physiognomy`의 성격 추론 위험**  
+6. **legacy `physiognomy`의 성격 추론 위험**
    key는 adapter로만 유지하고 행동·성격 단정을 금지했다.
 
-7. **provider retry가 이미지 1회 목표를 깨는 문제**  
+7. **provider retry가 이미지 1회 목표를 깨는 문제**
    정상 운영 request의 image-bearing provider attempt를 최대 1회로 고정했다.
 
-8. **provider fingerprint에 survey/products/locale을 넣었던 문제**  
+8. **provider fingerprint에 survey/products/locale을 넣었던 문제**
    Vision input fingerprint에서 제거했다.
 
-9. **content digest를 기존 guard fingerprint에 즉시 넣으려던 문제**  
+9. **content digest를 기존 guard fingerprint에 즉시 넣으려던 문제**
    현재 atomic DB/RPC 계약과 충돌하므로 별도 보안 작업으로 분리했다.
 
-10. **client cutover 후 feature flag rollback 문제**  
+10. **client cutover 후 feature flag rollback 문제**
     cutover 후에는 atomic deployment rollback만 허용하도록 수정했다.
 
 ### 남은 구현 리스크
