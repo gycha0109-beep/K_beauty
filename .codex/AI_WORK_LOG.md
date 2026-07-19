@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-07-19 / Unified Vision Provider environment revalidation
+
+- Branch: `design/unified-vision-observation-pipeline`; task type: High execution with Provider, Secret, DB, RLS, and local runtime boundaries.
+- Provider Gate: PASS. The actual development resolver selected `.env.local`; one text-only `gpt-4o-mini` request returned HTTP 200 in 2,090 ms with zero retries. No image, credential, prefix, header, response body, or fingerprint was retained. Development diagnostics now fully redact key-shaped text and expose no key-prefix fields.
+- DB Gate: FAIL / `BLOCKED_BY_SCHEMA_UNCERTAINTY`. A fresh unlinked local Supabase workdir reproduced missing `public.products` in the first migration. The shadow bootstrap remained excluded because it is a synthetic stub, and no guessed baseline, migration, remote DB, or environment file was changed.
+- Code changes: aligned the analysis guard verifier with the shared canonical Vision service; hardened Provider diagnostic redaction and its verifier. No runtime Vision data contract, route flow, projector, product logic, migration, Supabase config, fixture, or deployment file changed.
+- Validation: isolated `npm ci`, unified Vision verifier, Face Lab evaluation verifiers, architecture guard, analysis guard verifier, Provider log sanitizer, anonymous grant verifier, analysis RLS verifier, production build, and `git diff --check` passed. The install reported two existing audit findings (one moderate, one high).
+- Phase C: NOT RUN because DB Gate failed. This execution used zero unique images and zero image-bearing attempts; cumulative image-bearing attempts remain one, with zero retries. PR #50 remains open, Draft, unmerged, and not ready for review.
+- Detailed record: `docs/domain/facelab/unified-vision-provider-smoke-final-20260719.md`.
+
 ### 2026-07-19 / Unified Vision minimal Provider smoke
 
 - Branch: `design/unified-vision-observation-pipeline`
