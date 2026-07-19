@@ -53,6 +53,7 @@ async function main() {
   const firstMigration = normalized(files.firstMigration);
   const bridgeAnchor = normalized(files.bridgeAnchor);
   const seed = normalized(files.seed);
+  const prepare = normalized(files.prepare);
 
   assert(!/create\s+table\s+if\s+not\s+exists\s+public\.(products|product_candidates|source_rankings|recommendation_logs)/i.test(files.predecessor), "core_create_hides_drift");
 
@@ -159,7 +160,7 @@ async function main() {
   assert(seed.includes("on conflict (normalized_brand, normalized_name) do nothing"), "synthetic_seed_not_idempotent");
   assert(!/https?:\/\//i.test(files.seed), "synthetic_seed_contains_external_url");
 
-  includesAll(files.prepare, [
+  includesAll(prepare, [
     'const output_marker = ".kbeauty-local-replay-workspace"',
     'path.join(repository_root, "tmp")',
     "tracked_migration_copy_hash_mismatch"
