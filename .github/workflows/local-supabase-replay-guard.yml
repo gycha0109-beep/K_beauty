@@ -88,6 +88,15 @@ jobs:
             -H "Authorization: Bearer ${anon_key}")"
           test "$(printf '%s' "${response}" | jq 'length')" -eq 5
 
+      - name: Upload replay diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-supabase-replay-diagnostics
+          path: tmp/local-supabase-replay-*.log
+          if-no-files-found: ignore
+          retention-days: 1
+
       - name: Stop isolated Supabase
         if: always()
         run: npx --yes supabase@2.82.0 stop --workdir tmp/local-supabase-replay --no-backup
