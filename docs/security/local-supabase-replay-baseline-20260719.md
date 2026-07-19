@@ -147,9 +147,10 @@ Previous CI queried `products?select=id&limit=5`. A database containing six or m
 
 Correction:
 
-- query the complete isolated products set without `limit`
-- require exactly five rows
-- require every row to have `normalized_brand = 'replay lab'`
+- query the synthetic namespace with `normalized_brand = 'replay lab'` and no `limit`
+- require exactly five matching rows
+- require every returned row to carry the synthetic normalized brand
+- do not require the entire `products` table to contain only five rows, because byte-identical tracked operational migrations legitimately insert their own rows during replay
 
 ### 7.2 Browser write denial
 
@@ -194,6 +195,14 @@ Correction:
 - parse the tracked bridge anchor CTE column list
 - verify exact synthetic UUID and brand sets
 - verify the workflow's pinned CLI, static gates, exact read, write-denial checks, sanitized diagnostics, and cleanup split
+
+### 7.6 Review-gate self-corrections
+
+The hardened checks were themselves exercised fail-closed before final acceptance.
+
+- The first structural seed check counted both `brand` and `normalized_brand` occurrences and rejected the valid five-row seed. It was replaced with row-boundary checks for each fixed UUID, product name, display brand, and normalized brand.
+- The first dynamic cardinality check queried the whole `products` table. That correctly exposed that tracked operational migrations add their own rows, but it was not the intended synthetic seed assertion. The gate now filters the explicit synthetic namespace and requires exactly five matching rows without weakening tracked migration replay.
+- Verifier and anonymous-boundary failures are retained only as non-secret diagnostic codes; raw keys and connection credentials are not persisted.
 
 ## 8. Static validation
 
