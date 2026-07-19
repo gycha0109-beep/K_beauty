@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import {
   access,
   copyFile,
+  lstat,
   mkdir,
   readFile,
   readdir,
@@ -43,6 +44,29 @@ async function pathExists(candidate) {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function assertNoSymlinkComponents(candidate) {
+  const relative = path.relative(REPOSITORY_ROOT, candidate);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error("local_replay_output_escaped_repository");
+  }
+
+  let current = REPOSITORY_ROOT;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
+    current = path.join(current, segment);
+    try {
+      const metadata = await lstat(current);
+      if (metadata.isSymbolicLink()) {
+        throw new Error("local_replay_output_contains_symlink_component");
+      }
+    } catch (error) {
+      if (error && typeof error === "object" && error.code === "ENOENT") {
+        break;
+      }
+      throw error;
+    }
   }
 }
 
@@ -139,8 +163,10 @@ async function main() {
   const adapterDirectory = path.join(localReplayRoot, "adapters");
   const templateDirectory = path.join(localReplayRoot, "project-template");
 
+  await assertNoSymlinkComponents(outputRoot);
   await resetOutput(outputRoot);
   await mkdir(outputMigrations, { recursive: true });
+  await assertNoSymlinkComponents(outputRoot);
   await writeFile(
     path.join(outputRoot, OUTPUT_MARKER),
     "kbeauty-local-replay-v1\n",
@@ -211,6 +237,7 @@ async function main() {
     output: path.relative(REPOSITORY_ROOT, outputRoot).replaceAll(path.sep, "/"),
     safety: {
       localOnly: true,
+      symlinkComponentsRejected: true,
       linkedProjectMetadataCopied: false,
       remoteCommandsExecuted: false,
       productionMigrationsModified: false
