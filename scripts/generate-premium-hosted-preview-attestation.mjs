@@ -9,6 +9,7 @@ import {
   resolveHostedRunPaths,
   secureWriteJson
 } from "./premium-hosted-preview-security.mjs";
+import { assertVercelPreviewIdentity } from "./premium-hosted-preview-vercel-target.mjs";
 
 function requireValue(value, code) {
   const normalized = String(value || "").trim();
@@ -61,9 +62,15 @@ const deployment = await fetchJson(`${apiRoot}/repos/${owner}/${repo}/deployment
 const vercelQuery = teamId ? `?teamId=${encodeURIComponent(teamId)}` : "";
 const vercel = await fetchJson(`https://api.vercel.com/v13/deployments/${encodeURIComponent(vercelDeploymentId)}${vercelQuery}`, vercelToken, "vercel_deployment_lookup_failed");
 
-const now = Date.now();
-const sourceSha = vercel.gitSource?.sha || vercel.meta?.githubCommitSha || null;
+const prHeadSha = requireValue(pr.head?.sha, "github_pr_head_sha_missing");
+const prHeadRef = requireValue(pr.head?.ref, "github_pr_head_ref_missing");
+const vercelIdentity = assertVercelPreviewIdentity(vercel, {
+  prNumber,
+  headRef: prHeadRef,
+  headSha: prHeadSha
+});
 const immutableUrl = vercel.url ? `https://${vercel.url}` : null;
+const now = Date.now();
 const attestation = {
   schemaVersion: HOSTED_ATTESTATION_VERSION,
   generatedBy: "authoritative-api",
@@ -74,22 +81,27 @@ const attestation = {
   prState: pr.state,
   prDraft: pr.draft === true,
   prMerged: Boolean(pr.merged_at),
-  prHeadSha: pr.head?.sha || null,
+  prHeadSha,
+  prHeadRef,
   githubDeploymentId: String(deployment.id),
   githubDeploymentSha: deployment.sha || null,
   githubEnvironment: deployment.environment || null,
   vercelProjectId: vercel.projectId || vercel.project?.id || null,
   vercelDeploymentId: vercel.id || vercel.uid || vercelDeploymentId,
-  vercelTarget: vercel.target || null,
+  vercelRawTarget: vercelIdentity.vercelRawTarget,
+  vercelTarget: vercelIdentity.vercelTarget,
+  vercelTargetEvidence: vercelIdentity.vercelTargetEvidence,
+  vercelSourcePrNumber: vercelIdentity.vercelSourcePrNumber,
+  vercelSourceRef: vercelIdentity.vercelSourceRef,
   vercelState: vercel.readyState || vercel.state || null,
-  vercelSourceCommitSha: sourceSha,
+  vercelSourceCommitSha: vercelIdentity.vercelSourceCommitSha,
   immutableUrl
 };
 
 const validated = validateHostedDeploymentAttestation(attestation, {
   repository,
   prNumber,
-  headSha: pr.head?.sha,
+  headSha: prHeadSha,
   vercelProjectId
 });
 await secureWriteJson(outputPath, validated);
@@ -101,6 +113,7 @@ console.log(JSON.stringify({
   headSha: validated.prHeadSha,
   githubDeploymentId: validated.githubDeploymentId,
   vercelDeploymentId: validated.vercelDeploymentId,
+  vercelTargetEvidence: attestation.vercelTargetEvidence,
   immutableHost: validated.immutableHost,
   expiresAt: validated.expiresAt
 }, null, 2));
