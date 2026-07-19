@@ -1,0 +1,69 @@
+name: Premium Hosted Preview User Hash Exact Head
+
+on:
+  pull_request:
+    branches:
+      - validation/premium-hosted-preview-user-hash-b507f4
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact implementation HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: b507f46fad4364bc9238018a519416c7dfbc9fcb
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check Hosted Preview changes
+        run: |
+          node --check scripts/premium-hosted-preview-authoritative-api.mjs
+          node --check scripts/premium-hosted-preview-vercel-target.mjs
+          node --check scripts/generate-premium-hosted-preview-attestation.mjs
+          node --check scripts/premium-hosted-preview-security.mjs
+          node --check scripts/premium-hosted-preview-core.mjs
+          node --check scripts/verify-premium-hosted-preview-authoritative-api.mjs
+          node --check scripts/verify-premium-hosted-preview-user-hash-contract.mjs
+          node --check scripts/verify-premium-hosted-preview-contract.mjs
+
+      - name: Verify authoritative API modes
+        run: npm run verify:premium-hosted-preview-authoritative-api
+
+      - name: Verify canonical user hash contract
+        run: npm run verify:premium-hosted-preview-user-hash-contract
+
+      - name: Run Hosted Preview hardening contract
+        run: npm run verify:premium-hosted-preview-harness-hardening
+
+      - name: Run Premium browser journey contract
+        run: npm run verify:premium-browser-journey-contract
+
+      - name: Run route and decision regressions
+        run: |
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-decision-state.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check
