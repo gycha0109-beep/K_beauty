@@ -10,6 +10,7 @@ const execFileAsync = promisify(execFile);
 const CLOUD_SEGMENTS = new Set(["onedrive", "dropbox", "google drive", "googledrive", "icloud drive"]);
 const LOGIN_EVIDENCE_VERSION = "premium-hosted-login-evidence-v2";
 const MAX_LOGIN_EVIDENCE_TTL_MS = 31 * 60 * 1000;
+const USER_ID_HASH_PATTERN = /^sha256:[0-9a-f]{64}$/i;
 
 function fail(code, detail = null) {
   throw new HostedContractError(code, detail);
@@ -149,7 +150,8 @@ export function validateLoginEvidence(evidence, expected, { now = Date.now() } =
   ];
   for (const key of required) if (!(key in evidence)) fail("login_evidence_field_missing", key);
   if (evidence.schemaVersion !== LOGIN_EVIDENCE_VERSION) fail("login_evidence_schema_version_invalid");
-  if (!/^[0-9a-f]{64}$/i.test(String(evidence.userIdHash))) fail("login_evidence_user_hash_invalid");
+  if (!USER_ID_HASH_PATTERN.test(String(evidence.userIdHash))) fail("login_evidence_user_hash_invalid");
+  if (!USER_ID_HASH_PATTERN.test(String(expected.userIdHash))) fail("login_evidence_expected_user_hash_invalid");
   if (!/^[0-9a-f]{64}$/i.test(String(evidence.storageStateHash))) fail("login_evidence_storage_hash_invalid");
   if (!/^[0-9a-f]{40,64}$/i.test(String(evidence.deploymentSha))) fail("login_evidence_deployment_sha_invalid");
   if (evidence.accountKey !== expected.accountKey) fail("login_evidence_account_mismatch");
