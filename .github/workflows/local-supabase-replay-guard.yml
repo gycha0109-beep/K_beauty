@@ -99,4 +99,10 @@ jobs:
 
       - name: Stop isolated Supabase
         if: always()
-        run: npx --yes supabase@2.82.0 stop --workdir tmp/local-supabase-replay --no-backup
+        continue-on-error: true
+        run: |
+          if [ -d tmp/local-supabase-replay ]; then
+            npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup
+          fi
