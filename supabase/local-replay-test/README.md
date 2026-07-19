@@ -15,8 +15,9 @@ Nothing in this directory belongs in `supabase/migrations`.
 - Linked project metadata is not copied.
 - Tracked production migration files are copied byte-for-byte and hashed.
 - Hosted rows, Auth users, images, and provider payloads are not copied.
-- The seed contains five synthetic products using production-compatible UUID and enum contracts.
+- The seed contains exactly five synthetic products using UUID and final enum contracts.
 - The generated workspace uses isolated ports `56320` through `56322`.
+- Browser roles receive only product SELECT access in the local runtime adapter.
 
 Do not run link, push, pull, or remote SQL commands from the generated workspace.
 
@@ -33,19 +34,26 @@ Creates only the four predecessor relations required by the tracked chain:
 
 The six product fields converted by the first tracked migration use their replay input representation (`text`) rather than copying their current enum/array post-state.
 
+### `20260524054048_local_replay_category_mapper_preconditions.sql`
+
+Runs immediately before `20260524054049_reclassify_existing_moisturizers.sql`.
+
+It adds the three enum labels required by that tracked migration and drops the old `map_product_category(text)` function before the tracked migration changes its argument name.
+
 ### `20260525_local_replay_untracked_product_columns.sql`
 
-Adds only the product columns consumed by the tracked `20260526_moisturizer_lotion_emulsion_insert.sql` but absent from earlier tracked migrations.
+Runs immediately before `20260526_moisturizer_lotion_emulsion_insert.sql` and adds only the product columns consumed by that tracked insert but absent from earlier tracked migrations.
 
-This is a chronology bridge, not a historical provenance claim.
+This is an execution bridge, not a historical provenance claim.
 
 ### `99999999_local_replay_runtime_contract.sql`
 
-Runs after the tracked chain and restores the current product read boundary needed by the application runtime:
+Runs after the tracked chain and restores the local product read boundary needed by the application runtime:
 
 - external source identity unique index
 - products RLS
-- anon/authenticated read-only policy
+- `REVOKE ALL` from `public`, `anon`, and `authenticated`
+- anon/authenticated SELECT-only policy
 - service-role access
 
 It does not recreate analysis guard or anonymous write-grant objects because those remain owned by their tracked migrations.
@@ -58,13 +66,15 @@ npm run db:replay:verify
 
 The verifier checks:
 
-- adapters remain outside production migrations
+- the adapter directory contains exactly the four expected local-only SQL files
+- no local adapter appears in `supabase/migrations`
 - core predecessor tables use UUID keys
 - tracked post-state fields are not smuggled into the predecessor
-- the 20260525 bridge still matches actual 20260526 dependencies
-- product runtime access is read-only for browser roles
-- seed data is synthetic and idempotent
-- mixed eight-digit and fourteen-digit migration names preserve the intended order
+- both compatibility adapters are immediately before their tracked anchors
+- the bridge matches the tracked anchor's actual CTE columns
+- product runtime access is SELECT-only for browser roles
+- the seed contains exactly the five expected synthetic UUIDs and no external URLs
+- the workflow uses pinned Supabase CLI, sanitized diagnostics, exact read cardinality, write-denial probes, and non-hidden successful cleanup
 
 ## Build the disposable workspace
 
@@ -84,7 +94,7 @@ tmp/local-supabase-replay/
    └─ migrations/
 ```
 
-`replay-manifest.json` records SHA-256 hashes for every copied tracked migration and each local adapter.
+`replay-manifest.json` records SHA-256 hashes for every copied tracked migration and each local adapter in execution order.
 
 ## Local execution gate
 
@@ -97,12 +107,13 @@ supabase db reset --workdir tmp/local-supabase-replay
 supabase db lint --local --workdir tmp/local-supabase-replay
 ```
 
-Required result before resuming the unified Vision provider smoke:
+The GitHub Actions gate additionally requires:
 
-1. Two consecutive clean resets pass.
-2. `public.products`, `public.product_candidates`, `public.source_rankings`, and `public.recommendation_logs` exist.
-3. The five synthetic products are readable through the local anon key.
-4. Analysis guard and anonymous write-grant verifiers pass against the generated local project.
-5. No hosted database or provider image call occurs during this gate.
+1. exactly five synthetic products are anonymously readable
+2. every returned row belongs to normalized brand `replay lab`
+3. anonymous POST, PATCH, and DELETE are denied with `401` or `403`
+4. successful-path cleanup completes without being ignored
+5. failure artifacts contain only sanitized diagnostics
+6. no hosted database or Provider image call occurs
 
-A failure in the replay project must be fixed in the local adapter layer or the tracked migration that owns the defect. Do not patch the hosted schema or weaken the production contract to make the smoke test pass.
+A replay failure must be fixed in the local adapter layer or the tracked migration that owns the defect. Do not patch the hosted schema or weaken the production contract to make the gate pass.
