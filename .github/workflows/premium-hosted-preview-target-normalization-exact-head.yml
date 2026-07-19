@@ -1,0 +1,58 @@
+name: Premium Hosted Preview Target Normalization Exact Head
+
+on:
+  pull_request:
+    branches:
+      - validation/premium-hosted-preview-target-normalization-e4edbc
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact implementation HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: e4edbcb5751b22e1fc962ae5845788e00e6cb04c
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check target normalization changes
+        run: |
+          node --check scripts/premium-hosted-preview-vercel-target.mjs
+          node --check scripts/generate-premium-hosted-preview-attestation.mjs
+          node --check scripts/verify-premium-hosted-preview-contract.mjs
+
+      - name: Run Hosted Preview hardening contract
+        run: npm run verify:premium-hosted-preview-harness-hardening
+
+      - name: Run Premium browser journey contract
+        run: npm run verify:premium-browser-journey-contract
+
+      - name: Run route and decision regressions
+        run: |
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-decision-state.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff check
+        run: git diff --check
