@@ -48,7 +48,7 @@ set category = 'moisturizer_cream'::public.product_category
 where category = 'moisturizer'::public.product_category
   and id in (
     '4cbd41f3-1357-42c6-a6c7-6df0e90d54a7',
-    '03f5a72b-6c9a-4488-b031-b0a06b4702ca',
+    '03f5a72b-6c9a-4487-a3a9-39d1e6afa7bb',
     '4aa41038-de5b-4125-97b0-a50e7575cc00',
     'd2141a9d-3975-4d93-83f7-a4814c9c6a57'
   );
