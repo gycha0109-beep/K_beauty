@@ -10,7 +10,8 @@
 - Contract type: replay-equivalent local predecessor contract
 - PR: `#66`
 - Previous successful dynamic baseline: `e04f1ddf38f2ca150f63cc75af4ea321270369b6`, workflow run `29678512889`
-- Final independent hardening: implemented; the latest PR head must pass the same static and dynamic gates before merge approval
+- Hardened implementation validation: `49a8df58f84074f15ff7ef8f0b65c38b33b7cd9f`, workflow run `29681667668`, job `88178791673`, `SUCCESS`
+- Final documentation-only attestation head must retain the same successful gate before merge approval
 
 The historical pre-20260410 DDL provenance remains unresolved. This work does not promote the local adapter into an authoritative production schema.
 
@@ -139,7 +140,7 @@ The seed contains no hosted row, customer data, image, provider payload, or exte
 
 ## 7. Final independent review findings and corrections
 
-The final review found four Important assurance gaps.
+The final review found five Important assurance gaps.
 
 ### 7.1 Exact seed cardinality
 
@@ -235,7 +236,9 @@ Local Supabase start
 → mandatory successful-path cleanup
 ```
 
-The previous implementation head `e04f1ddf38f2ca150f63cc75af4ea321270369b6` passed start, two resets, lint, anonymous read, and cleanup in run `29678512889`. That run is historical evidence only and must not be reused as the final result for a later hardening head.
+The previous implementation head `e04f1ddf38f2ca150f63cc75af4ea321270369b6` passed start, two resets, lint, anonymous read, and cleanup in run `29678512889`. That run is historical evidence only.
+
+The hardened implementation head `49a8df58f84074f15ff7ef8f0b65c38b33b7cd9f` passed the complete static and dynamic gate in run `29681667668`, job `88178791673`, including exact synthetic read, anonymous write denial, and mandatory cleanup. A later documentation-only attestation commit must also pass because the workflow is path-scoped to this document.
 
 ## 10. Security and scope attestation
 
