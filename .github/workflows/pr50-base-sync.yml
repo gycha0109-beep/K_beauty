@@ -1,0 +1,51 @@
+name: PR50 Base Sync
+
+on:
+  push:
+    branches:
+      - design/unified-vision-observation-pipeline
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Vision branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: design/unified-vision-observation-pipeline
+
+      - name: Merge latest protected base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin codex/survey-input-contract-refactor
+
+          set +e
+          git merge --no-ff --no-edit origin/codex/survey-input-contract-refactor
+          merge_status=$?
+          set -e
+
+          if [ "${merge_status}" -ne 0 ]; then
+            conflicts="$(git diff --name-only --diff-filter=U)"
+            if [ "${conflicts}" != "package.json" ]; then
+              printf 'unexpected_merge_conflicts:\n%s\n' "${conflicts}" >&2
+              exit 1
+            fi
+
+            git checkout --ours package.json
+            git add package.json
+            git commit -m "merge: align unified vision with replay baseline"
+          fi
+
+          git merge-base --is-ancestor origin/codex/survey-input-contract-refactor HEAD
+          git push origin HEAD:design/unified-vision-observation-pipeline
