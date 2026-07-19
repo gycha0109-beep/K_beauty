@@ -15,6 +15,8 @@
     "face-lab:eval:report": "node scripts/report-face-lab-hosted-evaluation.mjs",
     "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs && node scripts/verify-face-lab-hosted-evaluation-review.mjs && node scripts/verify-face-lab-single-analysis-evaluation.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
+    "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
+    "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",
     "lint": "next lint"
   },
   "dependencies": {
