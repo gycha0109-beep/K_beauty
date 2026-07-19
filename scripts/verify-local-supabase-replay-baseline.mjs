@@ -9,6 +9,10 @@ const ADAPTERS = path.join(LOCAL, "adapters");
 
 const paths = {
   predecessor: path.join(ADAPTERS, "00000000_local_replay_predecessor.sql"),
+  categoryMapperPreconditions: path.join(
+    ADAPTERS,
+    "20260524054048_local_replay_category_mapper_preconditions.sql"
+  ),
   bridge: path.join(ADAPTERS, "20260525_local_replay_untracked_product_columns.sql"),
   runtime: path.join(ADAPTERS, "99999999_local_replay_runtime_contract.sql"),
   config: path.join(LOCAL, "project-template", "config.toml"),
@@ -59,6 +63,7 @@ async function main() {
   );
   const files = Object.fromEntries(entries);
   const predecessor = normalized(files.predecessor);
+  const categoryMapperPreconditions = normalized(files.categoryMapperPreconditions);
   const bridge = normalized(files.bridge);
   const runtime = normalized(files.runtime);
   const firstMigration = normalized(files.firstMigration);
@@ -159,10 +164,14 @@ async function main() {
     files.categoryMapperReplacement,
     "public.map_product_category"
   );
-  assert(
-    originalMapperArgument === replacementMapperArgument,
-    `category_mapper_argument_rename:${originalMapperArgument}->${replacementMapperArgument}`
-  );
+  assert(originalMapperArgument === "value", `unexpected_original_mapper_argument:${originalMapperArgument}`);
+  assert(replacementMapperArgument === "input", `unexpected_replacement_mapper_argument:${replacementMapperArgument}`);
+  includesAll(categoryMapperPreconditions, [
+    "alter type public.product_category add value if not exists 'toner_pad'",
+    "alter type public.product_category add value if not exists 'ampoule'",
+    "alter type public.product_category add value if not exists 'essence'",
+    "drop function public.map_product_category(text)"
+  ], "category_mapper_precondition_gap");
   assert(
     categoryMapperReplacement.includes(`public.normalize_basic_text(${replacementMapperArgument})`),
     "category_mapper_body_argument_mismatch"
@@ -197,18 +206,21 @@ async function main() {
   ], "prepare_guard_gap");
 
   const order = [
-    "20260524054049_example.sql",
+    "20260524054048_local_replay_category_mapper_preconditions.sql",
+    "20260524054049_reclassify_existing_moisturizers.sql",
     "20260525_local_replay_untracked_product_columns.sql",
     "20260526_moisturizer_lotion_emulsion_insert.sql"
   ].sort((left, right) => left.localeCompare(right, "en"));
-  assert(order[1].startsWith("20260525_"), "mixed_version_order_invalid");
+  assert(order[0].startsWith("20260524054048_"), "category_precondition_order_invalid");
+  assert(order[1].startsWith("20260524054049_"), "category_replacement_order_invalid");
+  assert(order[2].startsWith("20260525_"), "mixed_version_order_invalid");
 
   console.log(JSON.stringify({
     status: "PASS",
     predecessorTables: 4,
-    localAdapters: 3,
+    localAdapters: 4,
     syntheticSeedProducts: 5,
-    mapperArgumentCompatibility: replacementMapperArgument
+    mapperArgumentCompatibility: `${originalMapperArgument}->drop->${replacementMapperArgument}`
   }));
 }
 
