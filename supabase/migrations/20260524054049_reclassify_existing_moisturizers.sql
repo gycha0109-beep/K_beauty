@@ -1,10 +1,9 @@
-
-create or replace function public.map_product_category(input text)
+create or replace function public.map_product_category(value text)
 returns public.product_category
 language sql
 immutable
 as $$
-  select case public.normalize_basic_text(input)
+  select case public.normalize_basic_text(value)
     when 'cleanser' then 'cleanser'::public.product_category
     when 'cleansing' then 'cleanser'::public.product_category
     when 'toner' then 'toner_essence'::public.product_category
