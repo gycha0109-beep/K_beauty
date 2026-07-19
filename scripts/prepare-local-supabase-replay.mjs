@@ -18,6 +18,10 @@ const REPOSITORY_ROOT = path.resolve(SCRIPT_DIR, "..");
 const DEFAULT_OUTPUT = path.join(REPOSITORY_ROOT, "tmp", "local-supabase-replay");
 const OUTPUT_MARKER = ".kbeauty-local-replay-workspace";
 const PREDECESSOR_FILE = "00000000_local_replay_predecessor.sql";
+const CATEGORY_MAPPER_COMPATIBILITY_FILE =
+  "20260524054048_local_replay_category_mapper_preconditions.sql";
+const CATEGORY_MAPPER_COMPATIBILITY_ANCHOR =
+  "20260524054049_reclassify_existing_moisturizers.sql";
 const COMPATIBILITY_FILE = "20260525_local_replay_untracked_product_columns.sql";
 const COMPATIBILITY_ANCHOR = "20260526_moisturizer_lotion_emulsion_insert.sql";
 const RUNTIME_FILE = "99999999_local_replay_runtime_contract.sql";
@@ -104,12 +108,17 @@ async function copyTrackedMigrations(sourceDirectory, destinationDirectory) {
     throw new Error("missing_first_tracked_migration");
   }
 
+  if (!migrationNames.includes(CATEGORY_MAPPER_COMPATIBILITY_ANCHOR)) {
+    throw new Error("missing_category_mapper_compatibility_anchor");
+  }
+
   if (!migrationNames.includes(COMPATIBILITY_ANCHOR)) {
     throw new Error("missing_local_replay_compatibility_anchor");
   }
 
   const adapterNames = new Set([
     PREDECESSOR_FILE,
+    CATEGORY_MAPPER_COMPATIBILITY_FILE,
     COMPATIBILITY_FILE,
     RUNTIME_FILE
   ]);
@@ -198,6 +207,14 @@ async function main() {
     await copyLocalAdapter(
       adapterDirectory,
       outputMigrations,
+      CATEGORY_MAPPER_COMPATIBILITY_FILE,
+      "local-category-mapper-precondition-adapter"
+    )
+  );
+  files.push(
+    await copyLocalAdapter(
+      adapterDirectory,
+      outputMigrations,
       COMPATIBILITY_FILE,
       "local-untracked-dependency-adapter"
     )
@@ -217,12 +234,24 @@ async function main() {
   const orderedNames = orderedFiles.map((entry) => entry.file);
   const predecessorIndex = orderedNames.indexOf(PREDECESSOR_FILE);
   const firstTrackedIndex = orderedNames.indexOf("20260410_safe_review_and_promotion_layer.sql");
+  const categoryMapperCompatibilityIndex = orderedNames.indexOf(
+    CATEGORY_MAPPER_COMPATIBILITY_FILE
+  );
+  const categoryMapperAnchorIndex = orderedNames.indexOf(
+    CATEGORY_MAPPER_COMPATIBILITY_ANCHOR
+  );
   const compatibilityIndex = orderedNames.indexOf(COMPATIBILITY_FILE);
   const compatibilityAnchorIndex = orderedNames.indexOf(COMPATIBILITY_ANCHOR);
   const runtimeIndex = orderedNames.indexOf(RUNTIME_FILE);
 
   if (predecessorIndex !== 0 || firstTrackedIndex <= predecessorIndex) {
     throw new Error("invalid_predecessor_replay_order");
+  }
+  if (
+    categoryMapperCompatibilityIndex < 0 ||
+    categoryMapperCompatibilityIndex + 1 !== categoryMapperAnchorIndex
+  ) {
+    throw new Error("invalid_category_mapper_compatibility_order");
   }
   if (compatibilityIndex < 0 || compatibilityIndex >= compatibilityAnchorIndex) {
     throw new Error("invalid_untracked_dependency_adapter_order");
@@ -257,7 +286,7 @@ async function main() {
       "",
       "This directory is generated and must remain under repository tmp/.",
       "It contains byte-identical copies of tracked production migrations plus",
-      "three explicitly local-only adapters. It contains no linked project metadata.",
+      "four explicitly local-only adapters. It contains no linked project metadata.",
       "",
       "Run only against the generated local project:",
       `  supabase start --workdir ${path.relative(REPOSITORY_ROOT, outputRoot)}`,
@@ -274,7 +303,7 @@ async function main() {
     trackedMigrationCount: orderedFiles.filter(
       (entry) => entry.origin === "tracked-production-migration"
     ).length,
-    localAdapterCount: 3
+    localAdapterCount: 4
   }));
 }
 
