@@ -130,4 +130,3 @@ Provider authentication is repaired, but the DB Gate remains blocked by the miss
 2. Successful canonical JSON size, truncation behavior, image token usage, and success latency remain unverified against the real Provider.
 3. Lane A's single-image Skin/Face Lab response, anonymous write-grant, guard completion, and sessionStorage compatibility remain runtime-unverified.
 4. Lane B's KO/EN semantic parity, partial evidence quality, and cross-contamination remain runtime-unverified.
-
