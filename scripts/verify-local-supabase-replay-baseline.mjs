@@ -313,18 +313,38 @@ async function main() {
     "shadow_port = 56320"
   ], "local_config_gap");
 
+  const seedRowExpectations = [
+    ["00000000-0000-4000-8000-000000000101", "Local Replay Gentle Cleanser"],
+    ["00000000-0000-4000-8000-000000000102", "Local Replay Hydrating Toner"],
+    ["00000000-0000-4000-8000-000000000103", "Local Replay Calming Serum"],
+    ["00000000-0000-4000-8000-000000000104", "Local Replay Barrier Cream"],
+    ["00000000-0000-4000-8000-000000000105", "Local Replay Daily Sunscreen"]
+  ];
   const seedUuids = [...files.seed.matchAll(/'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'/gi)]
     .map((match) => match[0].slice(1, -1).toLowerCase());
-  exactSet(seedUuids, [
-    "00000000-0000-4000-8000-000000000101",
-    "00000000-0000-4000-8000-000000000102",
-    "00000000-0000-4000-8000-000000000103",
-    "00000000-0000-4000-8000-000000000104",
-    "00000000-0000-4000-8000-000000000105"
-  ], "synthetic_seed_uuid_set_changed");
+  exactSet(
+    seedUuids,
+    seedRowExpectations.map(([uuid]) => uuid),
+    "synthetic_seed_uuid_set_changed"
+  );
   assert((seed.match(/insert into public\.products/g) ?? []).length === 1, "synthetic_seed_insert_count_changed");
-  assert((seed.match(/'replay lab'/g) ?? []).length === 5, "synthetic_seed_brand_count_changed");
-  assert(seed.includes("local replay gentle cleanser"), "synthetic_seed_missing");
+
+  const seedSource = stripSqlComments(files.seed);
+  for (let index = 0; index < seedRowExpectations.length; index += 1) {
+    const [uuid, name] = seedRowExpectations[index];
+    const start = seedSource.indexOf(`'${uuid}'`);
+    const nextUuid = seedRowExpectations[index + 1]?.[0] ?? null;
+    const end = nextUuid
+      ? seedSource.indexOf(`'${nextUuid}'`, start + 1)
+      : seedSource.toLowerCase().indexOf("on conflict", start + 1);
+    assert(start >= 0 && end > start, `synthetic_seed_row_boundary_invalid:${uuid}`);
+    const row = seedSource.slice(start, end);
+    includesAll(
+      row,
+      [`'${name}'`, "'Replay Lab'", "'replay lab'"],
+      `synthetic_seed_row_contract_changed:${uuid}`
+    );
+  }
   assert(seed.includes("on conflict (normalized_brand, normalized_name) do nothing"), "synthetic_seed_not_idempotent");
   assert(!/https?:\/\//i.test(files.seed), "synthetic_seed_contains_external_url");
 
