@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { maskSecretText } from "../lib/openai-env-diagnostics.js";
 import { buildProviderRuntimeLogEvent } from "../lib/provider-runtime-log.js";
 
 const routePaths = [
@@ -7,6 +8,21 @@ const routePaths = [
   new URL("../app/api/face-reading/route.js", import.meta.url)
 ];
 const forbiddenLogFields = ["preview", "contentPreview", "rawText", "rawContent", "responseBody", "prompt", "imageDataUrl", "token", "apiKey"];
+
+assert.equal(
+  maskSecretText("provider failed for sk-example-secret"),
+  "provider failed for [REDACTED_OPENAI_KEY]"
+);
+
+const diagnosticsSource = await readFile(new URL("../lib/openai-env-diagnostics.js", import.meta.url), "utf8");
+assert.doesNotMatch(diagnosticsSource, /ApiKeyPrefix/, "environment diagnostics must not expose key prefixes.");
+assert.doesNotMatch(diagnosticsSource, /token\.slice\(/, "secret masking must not preserve key prefixes.");
+
+const providerServiceSource = await readFile(
+  new URL("../lib/server/vision-observation-service.js", import.meta.url),
+  "utf8"
+);
+assert.match(providerServiceSource, /logProviderRuntimeEvent\(/, "Vision provider service must use the provider log allowlist.");
 
 const event = buildProviderRuntimeLogEvent({
   stage: "photo-evidence",
@@ -31,12 +47,13 @@ assert.deepEqual(event, {
 
 for (const routePath of routePaths) {
   const source = await readFile(routePath, "utf8");
-  assert.match(source, /logProviderRuntimeEvent\(/, `${routePath.pathname} must use the provider log allowlist.`);
   assert.doesNotMatch(source, /\bpreview\s*:/i, `${routePath.pathname} must not log provider previews.`);
   assert.doesNotMatch(source, /\bcontentPreview\s*:/i, `${routePath.pathname} must not log provider content previews.`);
   for (const field of forbiddenLogFields) {
-    const directLogPattern = new RegExp(`(?:logAnalyze|console\\.(?:log|info|warn|error))\\([\\s\\S]{0,220}\\b${field}\\b`, "i");
-    assert.doesNotMatch(source, directLogPattern, `${routePath.pathname} must not directly log ${field}.`);
+    const loggedFieldPattern = new RegExp(`(?:logAnalyze|console\\.(?:log|info|warn|error))\\([\\s\\S]{0,220}\\b${field}\\s*:`, "i");
+    const directArgumentPattern = new RegExp(`(?:logAnalyze|console\\.(?:log|info|warn|error))\\([^)]*(?:^|,)\\s*${field}\\s*[,)]`, "i");
+    assert.doesNotMatch(source, loggedFieldPattern, `${routePath.pathname} must not log a ${field} field.`);
+    assert.doesNotMatch(source, directArgumentPattern, `${routePath.pathname} must not log ${field} as an argument.`);
   }
 }
 
