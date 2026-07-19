@@ -47,6 +47,7 @@ export const REQUIRED_HOSTED_LANES = Object.freeze([
 ]);
 
 const FORBIDDEN_EVIDENCE_KEY = /^(authorization|accessToken|refreshToken|cookie|cookies|serviceRoleKey|oauthCode|email|rawPhoto|originalPhoto)$/i;
+const USER_ID_HASH_PATTERN = /^sha256:[0-9a-f]{64}$/i;
 
 export function parseHostedConfig(env = process.env) {
   const runId = createRunId(env.PREMIUM_HOSTED_RUN_ID);
@@ -78,8 +79,8 @@ export async function loadHostedManifest(path) {
     throw new JourneyFailure(HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "hosted_manifest_invalid_json");
   }
   requireCondition(manifest && typeof manifest === "object", HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "hosted_manifest_invalid");
-  requireCondition(manifest.accountA?.expectedUserIdHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_a_hash_missing");
-  requireCondition(manifest.accountB?.expectedUserIdHash, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_b_hash_missing");
+  requireCondition(USER_ID_HASH_PATTERN.test(String(manifest.accountA?.expectedUserIdHash || "")), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_a_hash_missing_or_invalid");
+  requireCondition(USER_ID_HASH_PATTERN.test(String(manifest.accountB?.expectedUserIdHash || "")), HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "account_b_hash_missing_or_invalid");
   requireCondition(manifest.fixtures?.normalPhoto && manifest.fixtures?.fallbackPhoto, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "photo_fixtures_missing");
   requireCondition(manifest.uiCases?.ko && manifest.uiCases?.en, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "locale_ui_cases_missing");
   requireCondition(Array.isArray(manifest.currentProductCases) && manifest.currentProductCases.length >= 4, HOSTED_FAILURE_CATEGORIES.PRECONDITION, "configuration", "current_product_cases_incomplete");
