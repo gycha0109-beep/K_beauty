@@ -24,7 +24,7 @@ Both Korean and English journeys execute the following sequence:
 12. Submit a mandatory meaningful conflict fixture and receive HTTP 409.
 13. Verify the database row and `updated_at` remain unchanged.
 14. Verify current-session saved-report discovery.
-15. Optionally verify mismatched Cookie and Bearer users fail closed.
+15. Optionally verify mismatched Cookie and Bearer users fail closed and a second account cannot reopen the first account's saved report.
 16. Rotate the Premium session without exposing identifiers.
 17. Save a second report under a distinct source-session tuple.
 18. Verify the first report remains unchanged.
@@ -131,7 +131,7 @@ Infrastructure and harness failures are not classified as product defects.
 
 ## Cleanup
 
-The verifier does not delete data during evidence collection. Cleanup is a separate explicit command scoped to the exact saved-report IDs recorded by the run and the same hashed test account. Before deletion it checks target host, account ownership, UUID shape, Premium report type, and Premium-session source type. It records the result in `cleanup-result.json`. Production cleanup additionally requires the production-write confirmation used by the runtime verifier.
+The verifier does not delete data during evidence collection. Cleanup is a separate explicit command scoped to the exact saved-report IDs recorded by the run and the same hashed test account. Before deletion it checks target host, account ownership, UUID shape, Premium report type, and Premium-session source type. It records the result in `cleanup-result.json`. Cleanup revalidates the current environment, target host, expected deployment SHA, account, report type, source-session evidence, and recorded timestamps. Production cleanup additionally requires the production-write confirmation used by the runtime verifier.
 
 ## Promotion rule
 

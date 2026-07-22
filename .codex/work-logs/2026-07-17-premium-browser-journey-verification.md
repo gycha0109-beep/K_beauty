@@ -17,3 +17,5 @@
 - Integration review found that the environment-dependent runtime runner matched the security closeout verifier discovery pattern; it was renamed to `run-premium-browser-journey.mjs`, while the pure contract verifier was registered in the fail-closed manifest.
 - Added an actual cookie-only saved-report reopen so bearer success cannot mask unusable target-host auth cookies.
 - Hardened target-host cookie preconditions, version presence checks, conflict-fixture control-key matching, production cleanup confirmation, narrowed cleanup deletion filters, and artifact secret-scan quarantine.
+- Post-integration review added a direct second-account bearer-only attempt to reopen the first account's saved report; this complements, rather than substitutes for, the mixed Cookie/Bearer principal-conflict check.
+- Cleanup now revalidates the current environment, exact host, expected deployment SHA, account identity, and non-quarantined artifact evidence before deleting owner-scoped Premium session rows.

@@ -297,8 +297,34 @@ async function runLocaleJourney(locale) {
         requireCondition(result.status === 401 && result.body?.error === "premium_principal_conflict", FAILURE_CATEGORIES.AUTH, `${locale}:principal-conflict`, "principal_conflict_not_rejected");
         return result;
       });
+
+      const foreignContext = await browser.newContext({ extraHTTPHeaders });
+      try {
+        await runStep(`${locale}:cross-account-saved-report`, FAILURE_CATEGORIES.AUTH, async () => {
+          const result = await requestJson(
+            foreignContext,
+            `${locale}:cross-account-saved-report`,
+            "/api/full-report",
+            { method: "POST", data: { savedReportId: firstId, locale } },
+            conflictAccessToken
+          );
+          requireCondition(
+            result.status === 401 && result.body?.error === "premium_session_missing_or_expired",
+            FAILURE_CATEGORIES.AUTH,
+            `${locale}:cross-account-saved-report`,
+            "cross_account_saved_report_not_rejected"
+          );
+          return result;
+        });
+      } finally {
+        await foreignContext.close();
+      }
+
       const rowsAfter = await fetchPremiumSessionRows(supabaseConfig);
       assert.equal(rowsAfter.length, rowsBefore.length);
+      const ownerRowAfterCrossAccount = await fetchSavedReportById(supabaseConfig, firstId);
+      assert.deepEqual(ownerRowAfterCrossAccount?.premium_report, firstSaved.row.premium_report);
+      assert.equal(ownerRowAfterCrossAccount?.updated_at, firstSaved.row.updated_at);
     }
 
     const rotation = await runStep(`${locale}:rotation`, FAILURE_CATEGORIES.SESSION, async () => {
@@ -364,6 +390,14 @@ try {
     "cookie_backed_auth_verified",
     steps.filter((step) => step.name.endsWith(":cookie-auth-boundary")).length === 2 &&
       steps.filter((step) => step.name.endsWith(":cookie-auth-boundary")).every((step) => step.status === "passed")
+  );
+  recordCheck(
+    "cross_account_saved_report_denied",
+    !conflictAccessToken || (
+      steps.filter((step) => step.name.endsWith(":cross-account-saved-report")).length === 2 &&
+      steps.filter((step) => step.name.endsWith(":cross-account-saved-report")).every((step) => step.status === "passed")
+    ),
+    conflictAccessToken ? null : "optional_second_account_not_supplied"
   );
   recordCheck("principal_conflict_checked", Boolean(conflictAccessToken), conflictAccessToken ? null : "optional_second_account_not_supplied");
 } catch (error) {

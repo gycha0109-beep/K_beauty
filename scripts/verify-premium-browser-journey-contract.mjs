@@ -123,9 +123,14 @@ const coreSource = readFileSync(new URL("./premium-browser-journey-core.mjs", im
 const suiteSource = readFileSync(new URL("./run-security-closeout-verifier-suite.mjs", import.meta.url), "utf8");
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 assert.match(runnerSource, /cookie-auth-boundary/);
+assert.match(runnerSource, /cross-account-saved-report/);
+assert.match(runnerSource, /cross_account_saved_report_not_rejected/);
 assert.match(runnerSource, /responses:\s*\[\]/);
 assert.match(runnerSource, /artifact_quarantine_scan_failed/);
-assert.match(cleanupSource, /production_cleanup_not_confirmed/);
+assert.match(cleanupSource, /validateEnvironmentGuard/);
+assert.match(cleanupSource, /cleanup_environment_mismatch/);
+assert.match(cleanupSource, /cleanup_artifact_record_mismatch/);
+assert.match(cleanupSource, /cleanup_source_session_mismatch/);
 assert.match(coreSource, /report_type=eq\.premium&source_type=eq\.premium_report_session/);
 assert.match(suiteSource, /verify-premium-browser-journey-contract\.mjs/);
 assert.equal(

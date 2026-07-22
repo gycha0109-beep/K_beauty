@@ -10,7 +10,8 @@ import {
   hashIdentifier,
   loadJsonFile,
   normalizeBaseUrl,
-  requireCondition
+  requireCondition,
+  validateEnvironmentGuard
 } from "./premium-browser-journey-core.mjs";
 
 const artifactDirValue = String(process.env.PREMIUM_E2E_ARTIFACT_DIR || "").trim();
@@ -18,6 +19,9 @@ const accessToken = String(process.env.PREMIUM_E2E_ACCESS_TOKEN || "").trim();
 const supabaseUrl = String(process.env.PREMIUM_E2E_SUPABASE_URL || "").trim();
 const anonKey = String(process.env.PREMIUM_E2E_SUPABASE_ANON_KEY || "").trim();
 const baseUrl = normalizeBaseUrl(process.env.PREMIUM_E2E_BASE_URL);
+const environment = String(process.env.PREMIUM_E2E_ENVIRONMENT || "").trim();
+const expectedHost = String(process.env.PREMIUM_E2E_EXPECTED_HOST || "").trim();
+const expectedSha = String(process.env.PREMIUM_E2E_EXPECTED_SHA || "").trim();
 
 requireCondition(artifactDirValue, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "artifact_dir_missing");
 requireCondition(accessToken && supabaseUrl && anonKey, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_credentials_missing");
@@ -34,20 +38,15 @@ const [manifest, persistence] = await Promise.all([
   loadJsonFile(resolve(artifactDir, "persistence-evidence.json"), "persistence_evidence")
 ]);
 requireCondition(manifest.targetHost === baseUrl.hostname, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_target_host_mismatch");
-requireCondition(
-  ["preview", "production-like", "production"].includes(manifest.environment),
-  FAILURE_CATEGORIES.PRECONDITION,
-  "cleanup",
-  "cleanup_environment_invalid"
-);
-if (manifest.environment === "production") {
-  requireCondition(
-    process.env.PREMIUM_E2E_ALLOW_PRODUCTION === PRODUCTION_CONFIRMATION,
-    FAILURE_CATEGORIES.PRECONDITION,
-    "cleanup",
-    "production_cleanup_not_confirmed"
-  );
-}
+requireCondition(manifest.environment === environment, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_environment_mismatch");
+validateEnvironmentGuard({
+  baseUrl,
+  environment,
+  expectedHost,
+  expectedSha,
+  deploymentSha: String(manifest.targetGitSha || ""),
+  productionConfirmation: process.env.PREMIUM_E2E_ALLOW_PRODUCTION
+});
 requireCondition(
   process.env.PREMIUM_E2E_CLEANUP_CONFIRM === `DELETE_TEST_REPORTS_${manifest.runId}`,
   FAILURE_CATEGORIES.PRECONDITION,
@@ -71,6 +70,21 @@ requireCondition(
   "invalid_cleanup_id"
 );
 
+const records = Array.isArray(persistence.records) ? persistence.records : [];
+const recordById = new Map(
+  records
+    .filter((record) => record && typeof record.savedReportId === "string")
+    .map((record) => [record.savedReportId, record])
+);
+if (persistence.evidenceQuarantined !== true) {
+  requireCondition(
+    recordById.size === ids.length && ids.every((id) => recordById.has(id)),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "cleanup",
+    "cleanup_artifact_record_mismatch"
+  );
+}
+
 const deleted = [];
 for (const id of ids) {
   const existing = await fetchSavedReportById(config, id);
@@ -81,6 +95,18 @@ for (const id of ids) {
     "cleanup",
     "cleanup_row_not_test_premium_session"
   );
+  const record = recordById.get(id) || null;
+  if (record) {
+    requireCondition(record.sourceType === existing.source_type, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_source_type_mismatch");
+    requireCondition(
+      record.sourceSessionHash === hashIdentifier(existing.source_session_id),
+      FAILURE_CATEGORIES.PRECONDITION,
+      "cleanup",
+      "cleanup_source_session_mismatch"
+    );
+    requireCondition(record.createdAt === existing.created_at, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_created_at_mismatch");
+    requireCondition(record.updatedAt === existing.updated_at, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_updated_at_mismatch");
+  }
   const removedIds = await deleteSavedReportById(config, id);
   requireCondition(removedIds.includes(id), FAILURE_CATEGORIES.PERSISTENCE, "cleanup", "cleanup_delete_failed");
   requireCondition(await fetchSavedReportById(config, id) === null, FAILURE_CATEGORIES.PERSISTENCE, "cleanup", "cleanup_delete_not_observed");
