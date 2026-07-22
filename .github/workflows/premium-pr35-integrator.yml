@@ -34,6 +34,17 @@ jobs:
           git fetch origin agent/premium-browser-journey-verification
           test "$(git rev-parse origin/agent/premium-browser-journey-verification)" = "f28dbd8bd3f08b2aa6b8b1ab3281b4053cda0f6f"
           git merge --no-ff --no-commit origin/agent/premium-browser-journey-verification
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path(".github/scripts/premium-pr35-integrate.py")
+          text = path.read_text(encoding="utf-8")
+          old = 'log_path.write_text(log + "\\n", encoding="utf-8")'
+          new = 'log_path.write_text(log.rstrip() + "\\n", encoding="utf-8")'
+          if text.count(old) != 1:
+              raise SystemExit("worklog newline patch anchor mismatch")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
           python .github/scripts/premium-pr35-integrate.py .
           rm -f \
             .github/workflows/premium-pr35-integrator.yml \
