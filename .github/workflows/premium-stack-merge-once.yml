@@ -32,6 +32,18 @@ jobs:
           test "$(git rev-parse origin/agent/premium-integrated-evaluation-pack)" = "b2d89bc4009b2cc00b2ff2d0f0da08a4c9e37d77"
           git merge --no-ff --no-commit origin/agent/premium-integrated-evaluation-pack
           test -z "$(git diff --name-only --diff-filter=U)"
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/run-security-closeout-verifier-suite.mjs")
+          text = path.read_text(encoding="utf-8")
+          entry = '  "verify-premium-integrated-evaluation.mjs",\n'
+          if entry not in text:
+              anchor = '  "verify-premium-decision-state.mjs",\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit("security closeout premium verifier anchor mismatch")
+              text = text.replace(anchor, anchor + entry, 1)
+              path.write_text(text, encoding="utf-8")
+          PY
           rm .github/workflows/premium-stack-merge-once.yml
           git add -A
           git diff --cached --check
