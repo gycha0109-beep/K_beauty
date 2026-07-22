@@ -12,7 +12,7 @@ permissions:
 jobs:
   debug:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,6 +73,34 @@ jobs:
         run: |
           set -o pipefail
           node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-decision-verifier.log
+      - name: Run cross-domain verifier
+        id: cross
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-cross-domain-consistency.mjs 2>&1 | tee pr27-cross-verifier.log
+      - name: Run condition verifier
+        id: condition
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-condition-policy-single-source.mjs 2>&1 | tee pr27-condition-verifier.log
+      - name: Run routine verifier
+        id: routine
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-routine-policy-single-source.mjs 2>&1 | tee pr27-routine-verifier.log
+      - name: Run functional verifier
+        id: functional
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-functional-policy-single-source.mjs 2>&1 | tee pr27-functional-verifier.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -86,3 +114,7 @@ jobs:
           echo "evaluation=${{ steps.evaluation.outcome }}"
           echo "reentry=${{ steps.reentry.outcome }}"
           echo "decision=${{ steps.decision.outcome }}"
+          echo "cross=${{ steps.cross.outcome }}"
+          echo "condition=${{ steps.condition.outcome }}"
+          echo "routine=${{ steps.routine.outcome }}"
+          echo "functional=${{ steps.functional.outcome }}"
