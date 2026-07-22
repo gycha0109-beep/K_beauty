@@ -61,34 +61,19 @@ jobs:
             test "${CONFLICTS[$i]}" = "${EXPECTED[$i]}"
           done
 
-      - name: Resolve append-only work log
+      - name: Resolve work log with union merge
         shell: bash
         run: |
           set -euo pipefail
           git show :1:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-base.md"
           git show :2:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-ours.md"
           git show :3:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-theirs.md"
-          python - "$RUNNER_TEMP/worklog-base.md" "$RUNNER_TEMP/worklog-ours.md" "$RUNNER_TEMP/worklog-theirs.md" .codex/AI_WORK_LOG.md <<'PY'
-          from pathlib import Path
-          import sys
-
-          base_path, ours_path, theirs_path, output_path = map(Path, sys.argv[1:])
-          base = base_path.read_text(encoding="utf-8")
-          ours = ours_path.read_text(encoding="utf-8")
-          theirs = theirs_path.read_text(encoding="utf-8")
-          if not ours.startswith(base):
-              raise SystemExit("ours work log is not append-only")
-          if not theirs.startswith(base):
-              raise SystemExit("theirs work log is not append-only")
-          parts = [base.rstrip()]
-          ours_suffix = ours[len(base):].strip()
-          theirs_suffix = theirs[len(base):].strip()
-          if ours_suffix:
-              parts.append(ours_suffix)
-          if theirs_suffix:
-              parts.append(theirs_suffix)
-          Path(output_path).write_text("\n\n".join(parts).rstrip() + "\n", encoding="utf-8")
-          PY
+          git merge-file -p --union \
+            "$RUNNER_TEMP/worklog-ours.md" \
+            "$RUNNER_TEMP/worklog-base.md" \
+            "$RUNNER_TEMP/worklog-theirs.md" \
+            > .codex/AI_WORK_LOG.md
+          test -s .codex/AI_WORK_LOG.md
 
       - name: Resolve evolved PR2 engine files
         shell: bash
