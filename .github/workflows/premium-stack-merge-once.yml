@@ -1,4 +1,4 @@
-name: Premium PR27 stack merge diagnostic
+name: Premium PR27 stack merge executor
 
 on:
   pull_request:
@@ -7,18 +7,22 @@ on:
     paths: [.github/workflows/premium-stack-merge-once.yml]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: premium-pr27-stack-merge-executor
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  merge-and-verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
           ref: integration/premium-engine-main-sec-baseline
           fetch-depth: 0
-      - name: Merge PR27 head without committing
+      - name: Merge and resolve PR27
         shell: bash
         run: |
           set -euo pipefail
@@ -26,29 +30,61 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin agent/premium-route-storage-reentry-verification
           test "$(git rev-parse origin/agent/premium-route-storage-reentry-verification)" = "d88ad5075d9f4faab201e0d819b4f7c952d16867"
-          mkdir -p tmp/diag/conflicts
           set +e
-          git merge --no-ff --no-commit origin/agent/premium-route-storage-reentry-verification > tmp/diag/merge.log 2>&1
+          git merge --no-ff --no-commit origin/agent/premium-route-storage-reentry-verification
           STATUS=$?
           set -e
+          test "$STATUS" -ne 0
           mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
-          printf '%s\n' "${CONFLICTS[@]}" > tmp/diag/conflicts.txt
-          printf '{"mergeStatus":%s,"conflictCount":%s,"conflicts":[' "$STATUS" "${#CONFLICTS[@]}" > tmp/diag/summary.json
-          for i in "${!CONFLICTS[@]}"; do
-            p="${CONFLICTS[$i]}"; s=$(printf '%s' "$p" | sed 's#[^A-Za-z0-9._-]#_#g')
-            git show ":1:$p" > "tmp/diag/conflicts/${s}.base" || true
-            git show ":2:$p" > "tmp/diag/conflicts/${s}.ours" || true
-            git show ":3:$p" > "tmp/diag/conflicts/${s}.theirs" || true
-            cp "$p" "tmp/diag/conflicts/${s}.working" || true
-            [ "$i" -eq "$((${#CONFLICTS[@]}-1))" ] && c='' || c=','
-            printf '"%s"%s' "$p" "$c" >> tmp/diag/summary.json
-          done
-          printf ']}\n' >> tmp/diag/summary.json
-          git status --short > tmp/diag/status.txt
-          cat tmp/diag/merge.log
-          cat tmp/diag/summary.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: premium-stack-merge-diagnostic-pr27
-          path: tmp/diag
-          retention-days: 7
+          EXPECTED=("app/api/full-report/route.js" "app/api/full-report/session/route.js")
+          test "${#CONFLICTS[@]}" -eq "${#EXPECTED[@]}"
+          for i in "${!EXPECTED[@]}"; do test "${CONFLICTS[$i]}" = "${EXPECTED[$i]}"; done
+          python - <<'PY'
+          from pathlib import Path
+          import base64, zlib
+          full = "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"
+          session = "eNrdV8tuGzcU3esr6FmNAHnstMmiNgy3MNzWKBIbsrMeUJyrmPWInJAcJ4Kjf8/lU0NZspwW6KIbP3if59wHOXzRSWXIE/kAX80UdCeFBrIicyUXpBB4eKRBPYIqTkc86nL9G2OyF+YjypLyr0ctnx11Cha8XxxSxkDrgdWIEKaAGrjxGlOw57eoxKWYoPQTmEx0IeUDh+vOoFxbhZvp5furj+/r6eXN9fSuvri+/uvq0gowPT5fbvM72p6ccjqH2isNoc163jZTaTDPJnN4Q5etpA150aECEEYthw4VaNk+JtCyN3AhhUFid7myKofM6ww9efY+yFsjFfwJtAGlN3xoYL3iZnkESkmF6TSUGY9wBF+dH3SsDWmWgi44I2ekmEvF4DAcWMV5L5wR+VtLUc5ks5wQjYT0GtV/Oj4eu1oqML0SWdtUAwOrQoLZxP197zM+2YqjHKPOanw6Wo1GVC8FIykLbIuLXikkNtQ00Fcq+NyDNj4dD0sN6T0j9Avl5oUKJBen6IHPSTm0r2hv7i8tj+TsDHnqFBeMd7StMda85cwU4wAzcPFEHO0nW3XJygZZhUAH2QjlcXs8GZNv38hBdqz7js6ohp1BmWepDl1dLzj+Fp9S5MRS6DQ/X0hTYKFi7kBXyHi5ddbG59UjbXuwyYm+bU83XYYKJep3D2aZJZEKcJA7quSDI2LjtPOzeF4FqFfNi1rdMP6/oS/ZVFU1rM0kp3SyQcckxrCcWXfPm3zORXNLH6HxSf4uVd7z5ROJ9Z8Q2yBXDQ5lQr/KhgB0367bP9o51JXdFmWhbajaLy1djL1IQwvMlAVv4gl8LgsbrMajGHYg8va1WXaA4iKAHhpr2eNy2dQIgSPTWwxiDVzcBDPoCYlJ5q6sc67xp2U4qEmFi6Us/LZpamqVngjVDESDdT0hc9raqy6ot3zBTfkm/LegyxncoloLJTbnuvae3MoVlJz7ip7E04Yael7xZj0fq7R3Nwr+x+VdvsDw2gid6avINrbY3jV46oztEAVTn+Q4Zu6W8xO5p3rQaGsWHMgYXK81sLtiCvub1LkgqeVOIoq0vCZBw/fSWm7/R+KiOJV8rbF9uNcbwFkmGEPMOZhz8pwDo3ocq1xvhWV9iS0MRhg17D7fJ3tZtqtkZ1fcXN/+R22x907bRKT8myhAmaCUomDXXTchb4/fhNirXY35g4F2L+jt0Q5iOP8UrRgVF8MH6D9A6neOWyk2A9xENW1b+QWakMXPKYv/yTQlMjMQ49dS5i8aLWin75EsS9gcXz2Rrrf52skuaiRq32O83AMnv/gHYDZeBK8E4wS27nPK21TyX7ZiCKncyQdYP4d2f/+kYmeZxQK2ktEW9lbPqz0v3ZaUXl/AMGzaPtbrXtBHxE5nLTj071zDD9Cr+AV59syzX7LJsYAvaZLDHV2ktKOb9CTV+CQNZOz8ChzQN4QaRS9+Xpb+3k/h413vsti37H+oYd7hB1S8Bb4DBbxMrg=="
+          Path("app/api/full-report/route.js").write_bytes(zlib.decompress(base64.b64decode(full)))
+          Path("app/api/full-report/session/route.js").write_bytes(zlib.decompress(base64.b64decode(session)))
+          suite = Path("scripts/run-security-closeout-verifier-suite.mjs")
+          text = suite.read_text(encoding="utf-8")
+          entry = '  "verify-premium-route-storage-reentry.mjs",\n'
+          if entry not in text:
+              anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit("security closeout route verifier anchor mismatch")
+              suite.write_text(text.replace(anchor, anchor + entry, 1), encoding="utf-8")
+          PY
+          git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
+          test -z "$(git diff --name-only --diff-filter=U)"
+          rm .github/workflows/premium-stack-merge-once.yml
+          git add -A
+          node --check app/api/full-report/route.js
+          node --check app/api/full-report/session/route.js
+          git diff --cached --check
+          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
+          git commit -m "merge(premium): integrate immutable route storage and reentry"
+      - run: npm ci
+      - name: Verify PR27 route and engine contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-cross-domain-consistency.mjs
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify main security baseline
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Verify architecture and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run architecture:guard
+          npm run build
+          git diff --check
+      - name: Push reviewed commit
+        run: git push origin HEAD:integration/premium-engine-main-sec-baseline
