@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: premium-pr27-stack-merge-executor
+  group: premium-pr27-stack-merge-executor-v2
   cancel-in-progress: false
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
           PY
           git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
           test -z "$(git diff --name-only --diff-filter=U)"
-          rm .github/workflows/premium-stack-merge-once.yml
+          rm .github/workflows/premium-stack-merge-once.yml .github/workflows/premium-pr27-debug.yml
           git add -A
           node --check app/api/full-report/route.js
           node --check app/api/full-report/session/route.js
@@ -65,18 +65,22 @@ jobs:
           test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
           git commit -m "merge(premium): integrate immutable route storage and reentry"
       - run: npm ci
-      - name: Verify PR27 route and engine contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/verify-premium-route-storage-reentry.mjs
-          node scripts/verify-premium-integrated-evaluation.mjs
-          node scripts/verify-premium-report-reentry-contract.mjs
-          node scripts/verify-premium-decision-state.mjs
-          node scripts/verify-cross-domain-consistency.mjs
-          node scripts/verify-condition-policy-single-source.mjs
-          node scripts/verify-routine-policy-single-source.mjs
-          node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify route storage
+        run: node scripts/verify-premium-route-storage-reentry.mjs
+      - name: Verify integrated evaluation
+        run: node scripts/verify-premium-integrated-evaluation.mjs
+      - name: Verify report reentry
+        run: node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Verify decision state
+        run: node scripts/verify-premium-decision-state.mjs
+      - name: Verify cross-domain consistency
+        run: node scripts/verify-cross-domain-consistency.mjs
+      - name: Verify condition policy
+        run: node scripts/verify-condition-policy-single-source.mjs
+      - name: Verify routine policy
+        run: node scripts/verify-routine-policy-single-source.mjs
+      - name: Verify functional policy
+        run: node scripts/verify-functional-policy-single-source.mjs
       - name: Verify main security baseline
         run: node scripts/run-security-closeout-verifier-suite.mjs
       - name: Verify architecture and build
