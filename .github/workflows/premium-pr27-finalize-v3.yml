@@ -38,39 +38,127 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import ast, base64, re, zlib
+
           workflow = Path('.github/workflows/premium-stack-merge-once.yml').read_text(encoding='utf-8')
-          for name, target in [('full','app/api/full-report/route.js'),('session','app/api/full-report/session/route.js')]:
-              m = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
-              if not m: raise SystemExit(f'missing embedded {name} payload')
-              Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(m.group(1)))))
-          suite = Path('scripts/run-security-closeout-verifier-suite.mjs')
-          text = suite.read_text(encoding='utf-8')
+          for name, target in [('full', 'app/api/full-report/route.js'), ('session', 'app/api/full-report/session/route.js')]:
+              match = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
+              if not match:
+                  raise SystemExit(f'missing embedded {name} payload')
+              Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(match.group(1)))))
+
+          route_path = Path('app/api/full-report/route.js')
+          route = route_path.read_text(encoding='utf-8')
+          old_import = '''import {
+            buildPremiumCurrentProductsSnapshot,
+            buildPremiumCurrentProductVerdicts
+          } from "@/lib/premium-current-products";'''.replace('          ', '')
+          new_import = '''import {
+            buildPremiumCurrentProductsSnapshot,
+            enrichPremiumReportWithCurrentProducts
+          } from "@/lib/premium-current-products";'''.replace('          ', '')
+          if route.count(old_import) != 1:
+              raise SystemExit('premium current-product import contract mismatch')
+          route = route.replace(old_import, new_import, 1)
+
+          old_body = '''  const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
+          const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
+
+          return {
+            premiumReport: {
+              ...report,
+              currentProducts,
+              currentProductVerdicts
+            },
+            changed: true
+          };'''.replace('          ', '')
+          new_body = '''  const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
+          return {
+            premiumReport: enrichPremiumReportWithCurrentProducts(report, currentProducts, locale),
+            changed: true
+          };'''.replace('          ', '')
+          if route.count(old_body) != 1:
+              raise SystemExit('premium current-product route body contract mismatch')
+          route_path.write_text(route.replace(old_body, new_body, 1), encoding='utf-8')
+
+          current_products = Path('lib/premium-current-products.js').read_text(encoding='utf-8')
+          required = [
+              'export function enrichPremiumReportWithCurrentProducts',
+              'const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);',
+              'return rebuildPremiumDecisionState('
+          ]
+          for fragment in required:
+              if fragment not in current_products:
+                  raise SystemExit(f'missing canonical current-product enrichment fragment: {fragment}')
+
+          suite_path = Path('scripts/run-security-closeout-verifier-suite.mjs')
+          suite = suite_path.read_text(encoding='utf-8')
           entry = '  "verify-premium-route-storage-reentry.mjs",\n'
           anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
-          if entry not in text:
-              if text.count(anchor) != 1: raise SystemExit('security verifier anchor mismatch')
-              suite.write_text(text.replace(anchor, anchor + entry, 1), encoding='utf-8')
+          if entry not in suite:
+              if suite.count(anchor) != 1:
+                  raise SystemExit('security verifier anchor mismatch')
+              suite_path.write_text(suite.replace(anchor, anchor + entry, 1), encoding='utf-8')
           PY
           git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
-          rm -f .github/workflows/premium-stack-merge-once.yml .github/workflows/premium-pr27-debug.yml .github/workflows/premium-pr27-final-diagnostic.yml .github/workflows/premium-pr27-finalize.yml .github/workflows/premium-pr27-gate-diagnostic.yml .github/workflows/premium-pr27-finalize-v2.yml .github/workflows/premium-pr27-finalize-v3.yml
+          rm -f \
+            .github/workflows/premium-stack-merge-once.yml \
+            .github/workflows/premium-pr27-debug.yml \
+            .github/workflows/premium-pr27-final-diagnostic.yml \
+            .github/workflows/premium-pr27-finalize.yml \
+            .github/workflows/premium-pr27-gate-diagnostic.yml \
+            .github/workflows/premium-pr27-finalize-v2.yml \
+            .github/workflows/premium-pr27-finalize-v3.yml \
+            .github/workflows/premium-pr27-suite-diagnostic.yml
           git add -A
           node --check app/api/full-report/route.js
           node --check app/api/full-report/session/route.js
+          node --check lib/premium-current-products.js
           git diff --cached --check
+          test -z "$(git diff --name-only --diff-filter=U)"
           test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
           git commit -m "merge(premium): integrate immutable route storage and reentry"
           npm ci
-      - {name: Verify route storage, run: 'node scripts/verify-premium-route-storage-reentry.mjs'}
-      - {name: Verify integrated evaluation, run: 'node scripts/verify-premium-integrated-evaluation.mjs'}
-      - {name: Verify report reentry, run: 'node scripts/verify-premium-report-reentry-contract.mjs'}
-      - {name: Verify cross-domain consistency, run: 'node scripts/verify-cross-domain-consistency.mjs'}
-      - {name: Verify condition policy, run: 'node scripts/verify-condition-policy-single-source.mjs'}
-      - {name: Verify routine policy, run: 'node scripts/verify-routine-policy-single-source.mjs'}
-      - {name: Verify functional policy, run: 'node scripts/verify-functional-policy-single-source.mjs'}
-      - {name: Verify security closeout, run: 'node scripts/run-security-closeout-verifier-suite.mjs'}
-      - {name: Verify architecture, run: 'npm run architecture:guard'}
-      - {name: Verify production build, run: 'npm run build'}
+      - name: Verify route storage
+        run: node scripts/verify-premium-route-storage-reentry.mjs
+      - name: Verify integrated evaluation
+        run: node scripts/verify-premium-integrated-evaluation.mjs
+      - name: Verify report reentry
+        run: node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Verify decision determinism before suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for run in 1 2 3 4 5; do
+            echo "decision pre-suite run ${run}/5"
+            node scripts/verify-premium-decision-state.mjs
+          done
+      - name: Verify cross-domain consistency
+        run: node scripts/verify-cross-domain-consistency.mjs
+      - name: Verify condition policy
+        run: node scripts/verify-condition-policy-single-source.mjs
+      - name: Verify routine policy
+        run: node scripts/verify-routine-policy-single-source.mjs
+      - name: Verify functional policy
+        run: node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify security closeout
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Verify decision determinism after suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for run in 6 7 8 9 10; do
+            echo "decision post-suite run ${run}/10"
+            node scripts/verify-premium-decision-state.mjs
+          done
+      - name: Verify architecture
+        run: npm run architecture:guard
+      - name: Verify production build
+        run: npm run build
       - name: Verify diff hygiene
-        run: git diff --check
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git status --porcelain)"
       - name: Push reviewed integration
         run: git push origin HEAD:integration/premium-engine-main-sec-baseline
