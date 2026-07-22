@@ -1,0 +1,140 @@
+name: PR1 main SEC reconciliation
+
+on:
+  push:
+    branches:
+      - agent/shared-decision-context
+    paths:
+      - .github/workflows/pr1-main-sec-reconcile-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout PR1 branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/shared-decision-context
+          fetch-depth: 0
+
+      - name: Configure Git and fetch main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          echo "START_HEAD=$(git rev-parse HEAD)"
+          echo "MAIN_HEAD=$(git rev-parse origin/main)"
+
+      - name: Merge main and assert conflict scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          git merge --no-ff --no-commit origin/main
+          MERGE_STATUS=$?
+          set -e
+          test "$MERGE_STATUS" -ne 0
+          mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
+          printf 'CONFLICT=%s\n' "${CONFLICTS[@]}"
+          EXPECTED=(
+            ".codex/AI_WORK_LOG.md"
+            "app/api/full-report/route.js"
+          )
+          test "${#CONFLICTS[@]}" -eq "${#EXPECTED[@]}"
+          for i in "${!EXPECTED[@]}"; do
+            test "${CONFLICTS[$i]}" = "${EXPECTED[$i]}"
+          done
+
+      - name: Resolve append-only work log
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGE_BASE=$(git merge-base HEAD origin/main)
+          git show "$MERGE_BASE:.codex/AI_WORK_LOG.md" > "$RUNNER_TEMP/worklog-base.md"
+          git show :2:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-pr1.md"
+          git show :3:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-main.md"
+          python - "$RUNNER_TEMP/worklog-base.md" "$RUNNER_TEMP/worklog-pr1.md" "$RUNNER_TEMP/worklog-main.md" .codex/AI_WORK_LOG.md <<'PY'
+          from pathlib import Path
+          import sys
+
+          base_path, pr1_path, main_path, output_path = map(Path, sys.argv[1:])
+          base = base_path.read_text(encoding="utf-8")
+          pr1 = pr1_path.read_text(encoding="utf-8")
+          main = main_path.read_text(encoding="utf-8")
+
+          if not pr1.startswith(base):
+              raise SystemExit("PR1 work log is not append-only from the merge base")
+          if not main.startswith(base):
+              raise SystemExit("main work log is not append-only from the merge base")
+
+          main_suffix = main[len(base):].strip()
+          pr1_suffix = pr1[len(base):].strip()
+          parts = [base.rstrip()]
+          if main_suffix:
+              parts.append(main_suffix)
+          if pr1_suffix:
+              parts.append(pr1_suffix)
+          merged = "\n\n".join(parts).rstrip() + "\n"
+          Path(output_path).write_text(merged, encoding="utf-8")
+          PY
+
+      - name: Resolve full-report route semantically
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show :3:app/api/full-report/route.js > app/api/full-report/route.js
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("app/api/full-report/route.js")
+          text = path.read_text(encoding="utf-8")
+          old = '''  const currentProductVerdicts = currentProducts
+            ? buildPremiumCurrentProductVerdicts(currentProducts, report, locale)
+            : [];
+          '''
+          new = '''  const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
+          '''
+          if text.count(old) != 1:
+              raise SystemExit("full-report current-product verdict anchor mismatch")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          git add .codex/AI_WORK_LOG.md app/api/full-report/route.js
+          test -z "$(git diff --name-only --diff-filter=U)"
+
+      - name: Remove one-shot controller and verify diff hygiene
+        run: |
+          rm .github/workflows/pr1-main-sec-reconcile-once.yml
+          git add -A
+          git diff --cached --check
+          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
+          git status --short
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify premium decision layer
+        run: |
+          node --check lib/shared-skin-decision-context.js
+          node --check lib/premium-decision-state.js
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-functional-plan-decision.mjs
+          node scripts/verify-current-product-findings.mjs
+
+      - name: Verify main security baseline
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Verify architecture and production build
+        run: |
+          npm run architecture:guard
+          npm run build
+          git diff --cached --check
+
+      - name: Commit and push reconciliation
+        run: |
+          git commit -m "merge(security): reconcile main SEC baseline into premium decision context"
+          git push origin HEAD:agent/shared-decision-context
