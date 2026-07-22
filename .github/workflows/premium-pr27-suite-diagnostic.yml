@@ -1,0 +1,101 @@
+name: Premium PR27 suite diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths: [.github/workflows/premium-pr27-suite-diagnostic.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+      - name: Build exact finalizer tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin agent/premium-route-storage-reentry-verification
+          test "$(git rev-parse origin/agent/premium-route-storage-reentry-verification)" = "d88ad5075d9f4faab201e0d819b4f7c952d16867"
+          set +e
+          git merge --no-ff --no-commit origin/agent/premium-route-storage-reentry-verification
+          STATUS=$?
+          set -e
+          test "$STATUS" -ne 0
+          python - <<'PY'
+          from pathlib import Path
+          import ast, base64, re, zlib
+          workflow = Path('.github/workflows/premium-stack-merge-once.yml').read_text(encoding='utf-8')
+          for name, target in [('full','app/api/full-report/route.js'),('session','app/api/full-report/session/route.js')]:
+              m = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
+              if not m:
+                  raise SystemExit(f'missing embedded {name} payload')
+              Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(m.group(1)))))
+          suite = Path('scripts/run-security-closeout-verifier-suite.mjs')
+          text = suite.read_text(encoding='utf-8')
+          entry = '  "verify-premium-route-storage-reentry.mjs",\n'
+          anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
+          if entry not in text:
+              if text.count(anchor) != 1:
+                  raise SystemExit('security verifier anchor mismatch')
+              suite.write_text(text.replace(anchor, anchor + entry, 1), encoding='utf-8')
+          PY
+          git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
+          rm -f .github/workflows/premium-stack-merge-once.yml \
+            .github/workflows/premium-pr27-debug.yml \
+            .github/workflows/premium-pr27-final-diagnostic.yml \
+            .github/workflows/premium-pr27-finalize.yml \
+            .github/workflows/premium-pr27-gate-diagnostic.yml \
+            .github/workflows/premium-pr27-finalize-v2.yml \
+            .github/workflows/premium-pr27-finalize-v3.yml \
+            .github/workflows/premium-pr27-suite-diagnostic.yml
+          git add -A
+          git diff --cached --check
+          test -z "$(git diff --name-only --diff-filter=U)"
+          git commit -m "diagnostic: rebuild final PR27 tree"
+          npm ci
+      - name: Run security suite and expose exact failure
+        id: suite
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          node scripts/run-security-closeout-verifier-suite.mjs 2>&1 | tee security-suite.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if [ -f tmp/security-closeout-verifier-suite.json ]; then
+            node - <<'NODE'
+          const fs = require('node:fs');
+          const data = JSON.parse(fs.readFileSync('tmp/security-closeout-verifier-suite.json', 'utf8'));
+          const failures = (data.results || []).filter((item) => item.status !== 0 || item.signal || item.error);
+          console.log('SECURITY_SUITE_SUMMARY=' + JSON.stringify({
+            status: data.status,
+            expectedVerifierCount: data.expectedVerifierCount,
+            executedVerifierCount: data.executedVerifierCount,
+            passedVerifierCount: data.passedVerifierCount,
+            failedVerifierCount: data.failedVerifierCount,
+            failures
+          }, null, 2));
+          NODE
+          fi
+          exit "$STATUS"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: premium-pr27-suite-diagnostic
+          path: |
+            security-suite.log
+            tmp/security-closeout-verifier-suite.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Require suite pass
+        run: test "${{ steps.suite.outcome }}" = "success"
