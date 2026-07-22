@@ -30,6 +30,7 @@ const EXPECTED_VERIFIERS = [
   "verify-isolated-shadow-route-readiness.mjs",
   "verify-local-shadow-runtime-readiness.mjs",
   "verify-premium-decision-state.mjs",
+  "verify-premium-integrated-evaluation.mjs",
   "verify-premium-release-mode.mjs",
   "verify-premium-report-reentry-contract.mjs",
   "verify-production-env-preview-readiness-probe.mjs",
