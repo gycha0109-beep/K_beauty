@@ -114,7 +114,8 @@ jobs:
           if 'enrichPremiumReportWithCurrentProducts' not in import_names:
               import_names.append('enrichPremiumReportWithCurrentProducts')
           import_names = list(dict.fromkeys(import_names))
-          canonical_import = 'import {\n' + ''.join(f'  {name},\n' for name in import_names)[:-2] + '\n} from "@/lib/premium-current-products";'
+          import_lines = ',\n'.join(f'  {name}' for name in import_names)
+          canonical_import = f'import {{\n{import_lines}\n}} from "@/lib/premium-current-products";'
           route = route[:import_match.start()] + canonical_import + route[import_match.end():]
 
           function_start = route.find('async function applyCurrentProductsToReport')
@@ -207,7 +208,21 @@ jobs:
       - name: Verify architecture
         run: npm run architecture:guard
       - name: Verify production build
-        run: npm run build
+        id: production_build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee premium-pr27-production-build.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: premium-pr27-production-build
+          path: premium-pr27-production-build.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Require production build pass
+        run: test "${{ steps.production_build.outcome }}" = "success"
       - name: Verify diff hygiene
         shell: bash
         run: |
