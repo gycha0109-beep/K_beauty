@@ -1,0 +1,99 @@
+import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import {
+  DEDICATED_ACCOUNT_CONFIRMATION,
+  FAILURE_CATEGORIES,
+  PRODUCTION_CONFIRMATION,
+  deleteSavedReportById,
+  fetchAuthUser,
+  fetchSavedReportById,
+  hashIdentifier,
+  loadJsonFile,
+  normalizeBaseUrl,
+  requireCondition
+} from "./premium-browser-journey-core.mjs";
+
+const artifactDirValue = String(process.env.PREMIUM_E2E_ARTIFACT_DIR || "").trim();
+const accessToken = String(process.env.PREMIUM_E2E_ACCESS_TOKEN || "").trim();
+const supabaseUrl = String(process.env.PREMIUM_E2E_SUPABASE_URL || "").trim();
+const anonKey = String(process.env.PREMIUM_E2E_SUPABASE_ANON_KEY || "").trim();
+const baseUrl = normalizeBaseUrl(process.env.PREMIUM_E2E_BASE_URL);
+
+requireCondition(artifactDirValue, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "artifact_dir_missing");
+requireCondition(accessToken && supabaseUrl && anonKey, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_credentials_missing");
+requireCondition(
+  process.env.PREMIUM_E2E_DEDICATED_ACCOUNT_CONFIRMATION === DEDICATED_ACCOUNT_CONFIRMATION,
+  FAILURE_CATEGORIES.PRECONDITION,
+  "cleanup",
+  "dedicated_test_account_not_confirmed"
+);
+
+const artifactDir = resolve(artifactDirValue);
+const [manifest, persistence] = await Promise.all([
+  loadJsonFile(resolve(artifactDir, "run-manifest.json"), "run_manifest"),
+  loadJsonFile(resolve(artifactDir, "persistence-evidence.json"), "persistence_evidence")
+]);
+requireCondition(manifest.targetHost === baseUrl.hostname, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "cleanup_target_host_mismatch");
+requireCondition(
+  ["preview", "production-like", "production"].includes(manifest.environment),
+  FAILURE_CATEGORIES.PRECONDITION,
+  "cleanup",
+  "cleanup_environment_invalid"
+);
+if (manifest.environment === "production") {
+  requireCondition(
+    process.env.PREMIUM_E2E_ALLOW_PRODUCTION === PRODUCTION_CONFIRMATION,
+    FAILURE_CATEGORIES.PRECONDITION,
+    "cleanup",
+    "production_cleanup_not_confirmed"
+  );
+}
+requireCondition(
+  process.env.PREMIUM_E2E_CLEANUP_CONFIRM === `DELETE_TEST_REPORTS_${manifest.runId}`,
+  FAILURE_CATEGORIES.PRECONDITION,
+  "cleanup",
+  "cleanup_confirmation_missing"
+);
+
+const config = { supabaseUrl, anonKey, accessToken };
+const user = await fetchAuthUser(config);
+const accountHash = hashIdentifier(user.id);
+requireCondition(accountHash === manifest.accountHash, FAILURE_CATEGORIES.AUTH, "cleanup", "cleanup_account_mismatch");
+
+const ids = Array.isArray(persistence.createdSavedReportIds)
+  ? [...new Set(persistence.createdSavedReportIds)]
+  : [];
+requireCondition(ids.length > 0, FAILURE_CATEGORIES.PRECONDITION, "cleanup", "no_cleanup_ids");
+requireCondition(
+  ids.every((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)),
+  FAILURE_CATEGORIES.PRECONDITION,
+  "cleanup",
+  "invalid_cleanup_id"
+);
+
+const deleted = [];
+for (const id of ids) {
+  const existing = await fetchSavedReportById(config, id);
+  requireCondition(existing?.user_id === user.id, FAILURE_CATEGORIES.AUTH, "cleanup", "cleanup_row_owner_mismatch");
+  requireCondition(
+    existing?.report_type === "premium" && existing?.source_type === "premium_report_session",
+    FAILURE_CATEGORIES.PRECONDITION,
+    "cleanup",
+    "cleanup_row_not_test_premium_session"
+  );
+  const removedIds = await deleteSavedReportById(config, id);
+  requireCondition(removedIds.includes(id), FAILURE_CATEGORIES.PERSISTENCE, "cleanup", "cleanup_delete_failed");
+  requireCondition(await fetchSavedReportById(config, id) === null, FAILURE_CATEGORIES.PERSISTENCE, "cleanup", "cleanup_delete_not_observed");
+  deleted.push(id);
+}
+
+const result = {
+  runId: manifest.runId,
+  targetHost: manifest.targetHost,
+  accountHash,
+  deletedSavedReportIds: deleted,
+  deletedCount: deleted.length,
+  completedAt: new Date().toISOString()
+};
+await writeFile(resolve(artifactDir, "cleanup-result.json"), `${JSON.stringify(result, null, 2)}\n`, "utf8");
+console.log(JSON.stringify({ ok: true, runId: manifest.runId, deletedCount: deleted.length }, null, 2));
