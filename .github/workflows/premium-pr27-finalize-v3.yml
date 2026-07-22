@@ -94,7 +94,7 @@ jobs:
           route_path = Path('app/api/full-report/route.js')
           route = route_path.read_text(encoding='utf-8')
           import_pattern = re.compile(
-              r'import\s*\{(?P<body>.*?)\}\s*from\s*"@/lib/premium-current-products";',
+              r'import\s*\{(?P<body>[^{}]*)\}\s*from\s*"@/lib/premium-current-products";',
               re.DOTALL
           )
           import_match = import_pattern.search(route)
