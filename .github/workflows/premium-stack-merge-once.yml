@@ -52,7 +52,18 @@ jobs:
           new = base64.b64decode("ICAgIGNvbnN0IHByZW1pdW1EZWNpc2lvblNvdXJjZSA9IGRlY2lzaW9uLnByZW1pdW1SZXBvcnQKICAgICAgPyB7CiAgICAgICAgICAuLi5kZWNpc2lvbi5wcmVtaXVtUmVwb3J0LAogICAgICAgICAgZnJlZVJlc3VsdDogcHVibGljRGVjaXNpb24KICAgICAgICB9CiAgICAgIDogbnVsbDsKICAgIGNvbnN0IHByZW1pdW1TZXNzaW9uUmVwb3J0ID0gcHJlbWl1bURlY2lzaW9uU291cmNlCiAgICAgID8gc2FuaXRpemVQcmVtaXVtUmVwb3J0UHJvZHVjdEltYWdlcygKICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydFB1cmNoYXNlTGlua3MoCiAgICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydChyZWJ1aWxkUHJlbWl1bURlY2lzaW9uU3RhdGUocHJlbWl1bURlY2lzaW9uU291cmNlLCB7CiAgICAgICAgICAgICAgbG9jYWxlLAogICAgICAgICAgICAgIHNvdXJjZTogImFwaV9hbmFseXplX2luaXRpYWxfc2Vzc2lvbiIKICAgICAgICAgICAgfSkpCiAgICAgICAgICApCiAgICAgICAgKQogICAgICA6IG51bGw7").decode()
           if text.count(old) != 1:
               raise SystemExit("analyze premium session anchor mismatch")
-          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          text = text.replace(old, new, 1)
+          function_block = base64.b64decode("ZnVuY3Rpb24gc2FuaXRpemVDYW5vbmljYWxEZWNpc2lvbkFydGlmYWN0KHZhbHVlLCBkZXB0aCA9IDApIHsKICBpZiAoZGVwdGggPiAxMiB8fCB2YWx1ZSA9PSBudWxsKSByZXR1cm4gdmFsdWUgPT0gbnVsbCA/IG51bGwgOiB1bmRlZmluZWQ7CiAgaWYgKHR5cGVvZiB2YWx1ZSA9PT0gImJvb2xlYW4iKSByZXR1cm4gdmFsdWU7CiAgaWYgKHR5cGVvZiB2YWx1ZSA9PT0gIm51bWJlciIpIHJldHVybiBOdW1iZXIuaXNGaW5pdGUodmFsdWUpID8gdmFsdWUgOiBudWxsOwogIGlmICh0eXBlb2YgdmFsdWUgPT09ICJzdHJpbmciKSByZXR1cm4gdmFsdWUuc2xpY2UoMCwgMTAwMCk7CiAgaWYgKEFycmF5LmlzQXJyYXkodmFsdWUpKSB7CiAgICByZXR1cm4gdmFsdWUuc2xpY2UoMCwgNjApCiAgICAgIC5tYXAoKGl0ZW0pID0+IHNhbml0aXplQ2Fub25pY2FsRGVjaXNpb25BcnRpZmFjdChpdGVtLCBkZXB0aCArIDEpKQogICAgICAuZmlsdGVyKChpdGVtKSA9PiBpdGVtICE9PSB1bmRlZmluZWQpOwogIH0KICBpZiAodHlwZW9mIHZhbHVlICE9PSAib2JqZWN0IikgcmV0dXJuIHVuZGVmaW5lZDsKICByZXR1cm4gT2JqZWN0LmZyb21FbnRyaWVzKAogICAgT2JqZWN0LmVudHJpZXModmFsdWUpLnNsaWNlKDAsIDEyMCkKICAgICAgLm1hcCgoW2tleSwgaXRlbV0pID0+IFtTdHJpbmcoa2V5KS5zbGljZSgwLCAxMjApLCBzYW5pdGl6ZUNhbm9uaWNhbERlY2lzaW9uQXJ0aWZhY3QoaXRlbSwgZGVwdGggKyAxKV0pCiAgICAgIC5maWx0ZXIoKFssIGl0ZW1dKSA9PiBpdGVtICE9PSB1bmRlZmluZWQpCiAgKTsKfQoK").decode()
+          function_anchor = "function sanitizePremiumReport(report) {\n"
+          if text.count(function_anchor) != 1:
+              raise SystemExit("canonical sanitizer anchor mismatch")
+          text = text.replace(function_anchor, function_block + function_anchor, 1)
+          fields = base64.b64decode("ICAgIGNvbmRpdGlvblBvbGljeTogc2FuaXRpemVDYW5vbmljYWxEZWNpc2lvbkFydGlmYWN0KHJlcG9ydC5jb25kaXRpb25Qb2xpY3kpLAogICAgY29uZGl0aW9uUGxhbjogc2FuaXRpemVDYW5vbmljYWxEZWNpc2lvbkFydGlmYWN0KHJlcG9ydC5jb25kaXRpb25QbGFuKSwKICAgIGRlY2lzaW9uQnVuZGxlOiBzYW5pdGl6ZUNhbm9uaWNhbERlY2lzaW9uQXJ0aWZhY3QocmVwb3J0LmRlY2lzaW9uQnVuZGxlKSwKICAgIHJvdXRpbmVQb2xpY3k6IHNhbml0aXplQ2Fub25pY2FsRGVjaXNpb25BcnRpZmFjdChyZXBvcnQucm91dGluZVBvbGljeSksCiAgICByb3V0aW5lUGxhbjogc2FuaXRpemVDYW5vbmljYWxEZWNpc2lvbkFydGlmYWN0KHJlcG9ydC5yb3V0aW5lUGxhbiksCiAgICBmdW5jdGlvbmFsUG9saWN5OiBzYW5pdGl6ZUNhbm9uaWNhbERlY2lzaW9uQXJ0aWZhY3QocmVwb3J0LmZ1bmN0aW9uYWxQb2xpY3kpLAogICAgZnVuY3Rpb25hbFBsYW46IHNhbml0aXplQ2Fub25pY2FsRGVjaXNpb25BcnRpZmFjdChyZXBvcnQuZnVuY3Rpb25hbFBsYW4pLAo=").decode()
+          fields_anchor = "    conditionResponses: sanitizeConditionResponsesForPremium(report.conditionResponses),\n"
+          if text.count(fields_anchor) != 1:
+              raise SystemExit("canonical fields anchor mismatch")
+          text = text.replace(fields_anchor, fields_anchor + fields, 1)
+          path.write_text(text, encoding="utf-8")
           PY
           git add app/api/analyze/route.js
           test -z "$(git diff --name-only --diff-filter=U)"
