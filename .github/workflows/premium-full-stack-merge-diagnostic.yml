@@ -1,0 +1,62 @@
+name: Premium full-stack merge diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - .github/workflows/premium-full-stack-merge-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+
+      - name: Merge final design branch without committing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin agent/premium-hosted-preview-harness-hardening-design
+          set +e
+          git merge --no-ff --no-commit origin/agent/premium-hosted-preview-harness-hardening-design
+          STATUS=$?
+          set -e
+          mkdir -p tmp/full-stack-merge-diagnostic/conflicts
+          mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
+          printf '%s\n' "${CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/conflicts.txt
+          printf '{\n  "mergeStatus": %s,\n  "conflictCount": %s,\n  "conflicts": [' "$STATUS" "${#CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/summary.json
+          for i in "${!CONFLICTS[@]}"; do
+            path="${CONFLICTS[$i]}"
+            safe=$(printf '%s' "$path" | sed 's#[^A-Za-z0-9._-]#_#g')
+            git show ":1:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.base" || true
+            git show ":2:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.ours" || true
+            git show ":3:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.theirs" || true
+            cp "$path" "tmp/full-stack-merge-diagnostic/conflicts/${safe}.working" || true
+            comma=','
+            if [ "$i" -eq "$((${#CONFLICTS[@]} - 1))" ]; then comma=''; fi
+            printf '\n    "%s"%s' "$path" "$comma" >> tmp/full-stack-merge-diagnostic/summary.json
+          done
+          printf '\n  ]\n}\n' >> tmp/full-stack-merge-diagnostic/summary.json
+          git status --short > tmp/full-stack-merge-diagnostic/status.txt
+          cat tmp/full-stack-merge-diagnostic/summary.json
+
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-full-stack-merge-diagnostic
+          path: tmp/full-stack-merge-diagnostic
+          if-no-files-found: error
+          retention-days: 7
