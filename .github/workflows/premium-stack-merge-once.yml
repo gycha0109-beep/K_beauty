@@ -82,7 +82,19 @@ jobs:
       - name: Verify premium report reentry
         run: node scripts/verify-premium-report-reentry-contract.mjs
       - name: Verify main security baseline
+        id: security
+        continue-on-error: true
         run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Upload security evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr14-security-suite-evidence
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Enforce security gate
+        run: test "${{ steps.security.outcome }}" = "success"
       - name: Verify architecture and build
         shell: bash
         run: |
