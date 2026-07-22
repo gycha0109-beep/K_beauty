@@ -47,7 +47,10 @@ const emptyState = buildPremiumDecisionState(
   baseReport({ currentProducts: null, currentProductVerdicts: [] }),
   { locale: "ko", source: "verify_empty" }
 );
-assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v4");
+assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v5");
+assert.ok(emptyState.decisionBundle.rawPolicies.functional);
+assert.ok(emptyState.decisionBundle.consistency);
+assert.equal(emptyState.decisionBundle.effectivePolicySource, "raw");
 assert.equal(emptyState.decisionBundle.contextRevision, 1);
 assert.equal(emptyState.decisionBundle.context.productExposureState.activeExposurePresent, false);
 assert.equal(emptyState.functionalPolicy.version, "functional-policy-v1");

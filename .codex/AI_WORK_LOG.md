@@ -2670,3 +2670,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Minimal fix: current raw survey answers now win with the prior bundle used only as fallback, current-product verdict inputs follow the same precedence, and the full-report update path always invokes the verdict/decision rebuild even when the sanitized snapshot is null.
 - Regression coverage now proves survey changes advance the decision context and verifies the empty current-product call contract. Session rotation continues to remove current products and rebuild dependent decisions from retained non-product evidence.
 - Additional session-contract verification initially failed because its data-URL module loader could not resolve the new relative decision-state import (`ERR_UNSUPPORTED_RESOLVE_REQUEST`). The verifier now imports the real file URL so Node resolves the production import graph; the runtime contract was not weakened.
+
+
+## Cross-domain consistency v1
+
+- Type: execution/review, Medium-high structural decision integration.
+- Delta: added post-policy contradiction detection, fail-closed effective policies, Bundle v5 metadata, and projection guards.
+- Protected impact: no DB/Auth/RLS/Storage/Provider/Payment/Secret/Production execution; existing saved-report compatibility fields are preserved.
+- Verification: focused consistency verifier plus existing policy, decision-state, reentry, architecture, build, and diff checks.
