@@ -1,14 +1,22 @@
 name: PR1 main SEC reconciliation
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/shared-decision-context
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths:
       - .github/workflows/pr1-main-sec-reconcile-once.yml
 
 permissions:
   contents: write
+
+concurrency:
+  group: pr1-main-sec-reconciliation
+  cancel-in-progress: false
 
 jobs:
   reconcile:
