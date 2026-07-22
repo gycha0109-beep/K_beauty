@@ -1,4 +1,4 @@
-name: Premium PR27 committed decision debug
+name: Premium PR27 sequential decision debug
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   debug:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,42 +32,42 @@ jobs:
           from pathlib import Path
           import ast, base64, re, zlib
           workflow = Path('.github/workflows/premium-stack-merge-once.yml').read_text(encoding='utf-8')
-          for name, target in [
-              ('full', 'app/api/full-report/route.js'),
-              ('session', 'app/api/full-report/session/route.js')
-          ]:
+          for name, target in [('full', 'app/api/full-report/route.js'), ('session', 'app/api/full-report/session/route.js')]:
               match = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
               if not match:
                   raise SystemExit(f'missing embedded {name} payload')
-              encoded = ast.literal_eval(match.group(1))
-              Path(target).write_bytes(zlib.decompress(base64.b64decode(encoded)))
+              Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(match.group(1)))))
           suite = Path('scripts/run-security-closeout-verifier-suite.mjs')
           text = suite.read_text(encoding='utf-8')
           entry = '  "verify-premium-route-storage-reentry.mjs",\n'
           if entry not in text:
               anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
-              if text.count(anchor) != 1:
-                  raise SystemExit('security closeout route verifier anchor mismatch')
               suite.write_text(text.replace(anchor, anchor + entry, 1), encoding='utf-8')
           PY
           git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
           test -z "$(git diff --name-only --diff-filter=U)"
           rm .github/workflows/premium-stack-merge-once.yml .github/workflows/premium-pr27-debug.yml
           git add -A
-          git commit -m "debug: reproduce committed PR27 tree"
+          git commit -m "debug: reproduce sequential committed PR27 tree"
           npm ci
-      - name: Run committed decision verifier
+      - name: Run route verifier
+        run: node scripts/verify-premium-route-storage-reentry.mjs
+      - name: Run evaluation verifier
+        run: node scripts/verify-premium-integrated-evaluation.mjs
+      - name: Run reentry verifier
+        run: node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Run decision verifier with evidence
         id: decision
         continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-committed-decision.log
+          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-sequential-decision.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: premium-pr27-committed-decision-debug
-          path: pr27-committed-decision.log
+          name: premium-pr27-sequential-decision-debug
+          path: pr27-sequential-decision.log
           if-no-files-found: error
           retention-days: 7
       - name: Report outcome
