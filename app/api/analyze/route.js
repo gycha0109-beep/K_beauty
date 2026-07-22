@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
+import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
@@ -1036,6 +1037,24 @@ function sanitizeConditionResponsesForPremium(responses) {
     .slice(0, 5);
 }
 
+function sanitizeCanonicalDecisionArtifact(value, depth = 0) {
+  if (depth > 12 || value == null) return value == null ? null : undefined;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string") return value.slice(0, 1000);
+  if (Array.isArray(value)) {
+    return value.slice(0, 60)
+      .map((item) => sanitizeCanonicalDecisionArtifact(item, depth + 1))
+      .filter((item) => item !== undefined);
+  }
+  if (typeof value !== "object") return undefined;
+  return Object.fromEntries(
+    Object.entries(value).slice(0, 120)
+      .map(([key, item]) => [String(key).slice(0, 120), sanitizeCanonicalDecisionArtifact(item, depth + 1)])
+      .filter(([, item]) => item !== undefined)
+  );
+}
+
 function sanitizePremiumReport(report) {
   if (!report) {
     return null;
@@ -1055,6 +1074,13 @@ function sanitizePremiumReport(report) {
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
     conditionResponses: sanitizeConditionResponsesForPremium(report.conditionResponses),
+    conditionPolicy: sanitizeCanonicalDecisionArtifact(report.conditionPolicy),
+    conditionPlan: sanitizeCanonicalDecisionArtifact(report.conditionPlan),
+    decisionBundle: sanitizeCanonicalDecisionArtifact(report.decisionBundle),
+    routinePolicy: sanitizeCanonicalDecisionArtifact(report.routinePolicy),
+    routinePlan: sanitizeCanonicalDecisionArtifact(report.routinePlan),
+    functionalPolicy: sanitizeCanonicalDecisionArtifact(report.functionalPolicy),
+    functionalPlan: sanitizeCanonicalDecisionArtifact(report.functionalPlan),
     faceLabSummary: sanitizePremiumFaceLabSummary(report.faceLabSummary),
     fullRoutine: {
       morning: Array.isArray(report.fullRoutine?.morning)
@@ -1604,13 +1630,21 @@ export async function POST(request) {
       logAnalyze("response:shape-warning");
     }
 
-    const premiumReport = sanitizePremiumReport(decision.premiumReport);
+    const premiumDecisionSource = decision.premiumReport
+      ? {
+          ...decision.premiumReport,
+          freeResult: publicDecision
+        }
+      : null;
+    const premiumReport = premiumDecisionSource
+      ? sanitizePremiumReport(rebuildPremiumDecisionState(premiumDecisionSource, {
+          locale,
+          source: "api_analyze_initial_session"
+        }))
+      : null;
     const premiumSessionReport = premiumReport
       ? sanitizePremiumReportProductImages(
-          sanitizePremiumReportPurchaseLinks({
-            ...premiumReport,
-            freeResult: publicDecision
-          })
+          sanitizePremiumReportPurchaseLinks(premiumReport)
         )
       : null;
     const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);

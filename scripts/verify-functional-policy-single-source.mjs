@@ -79,7 +79,7 @@ const sensitiveState = buildPremiumDecisionState(sensitiveActiveReport, {
   locale: "ko",
   source: "verify_functional_policy_single_source"
 });
-assert.equal(sensitiveState.decisionBundle.version, "premium-decision-bundle-v3");
+assert.equal(sensitiveState.decisionBundle.version, "premium-decision-bundle-v4");
 assert.equal(sensitiveState.functionalPolicy.planMode, "HOLD");
 assert.equal(sensitiveState.functionalPolicy.allowedIntensity, "hold");
 assert.equal(sensitiveState.functionalPlan.planMode, "HOLD");

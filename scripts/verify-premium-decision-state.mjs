@@ -47,7 +47,7 @@ const emptyState = buildPremiumDecisionState(
   baseReport({ currentProducts: null, currentProductVerdicts: [] }),
   { locale: "ko", source: "verify_empty" }
 );
-assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v3");
+assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v4");
 assert.equal(emptyState.decisionBundle.contextRevision, 1);
 assert.equal(emptyState.decisionBundle.context.productExposureState.activeExposurePresent, false);
 assert.equal(emptyState.functionalPolicy.version, "functional-policy-v1");
@@ -57,7 +57,7 @@ assert.equal(emptyState.routinePlan.version, "premium-routine-projection-v1");
 assert.equal(emptyState.routinePolicy.invariants.sunscreenRequiredInMorning, true);
 assert.equal(emptyState.functionalRoutineAudit.status, "NO_ROUTINE_DATA");
 assert.equal(functionalStatus(emptyState, "texture_exfoliation"), "later");
-assert.equal(conditionStatus(emptyState, "active_load"), "reduce");
+assert.equal(conditionStatus(emptyState, "active_load"), null);
 assert.equal(
   emptyState.conditionResponses.find((item) => item.responseKey === "cleansing_load")?.title,
   "기존 세안 판단",
