@@ -1,0 +1,88 @@
+name: Premium PR27 verifier debug
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths: [.github/workflows/premium-pr27-debug.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+      - name: Rebuild reviewed PR27 merge tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin agent/premium-route-storage-reentry-verification
+          set +e
+          git merge --no-ff --no-commit origin/agent/premium-route-storage-reentry-verification
+          set -e
+          python - <<'PY'
+          from pathlib import Path
+          import ast, base64, re, zlib
+          workflow = Path('.github/workflows/premium-stack-merge-once.yml').read_text(encoding='utf-8')
+          for name, target in [
+              ('full', 'app/api/full-report/route.js'),
+              ('session', 'app/api/full-report/session/route.js')
+          ]:
+              match = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
+              if not match:
+                  raise SystemExit(f'missing embedded {name} payload')
+              encoded = ast.literal_eval(match.group(1))
+              Path(target).write_bytes(zlib.decompress(base64.b64decode(encoded)))
+          PY
+          git add app/api/full-report/route.js app/api/full-report/session/route.js
+          test -z "$(git diff --name-only --diff-filter=U)"
+          npm ci
+      - name: Run route verifier
+        id: route
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-premium-route-storage-reentry.mjs 2>&1 | tee pr27-route-verifier.log
+      - name: Run evaluation verifier
+        id: evaluation
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-premium-integrated-evaluation.mjs 2>&1 | tee pr27-evaluation-verifier.log
+      - name: Run reentry verifier
+        id: reentry
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-premium-report-reentry-contract.mjs 2>&1 | tee pr27-reentry-verifier.log
+      - name: Run decision verifier
+        id: decision
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-decision-verifier.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: premium-pr27-verifier-debug
+          path: pr27-*-verifier.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Report outcomes
+        run: |
+          echo "route=${{ steps.route.outcome }}"
+          echo "evaluation=${{ steps.evaluation.outcome }}"
+          echo "reentry=${{ steps.reentry.outcome }}"
+          echo "decision=${{ steps.decision.outcome }}"
