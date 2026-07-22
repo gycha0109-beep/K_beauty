@@ -33,6 +33,7 @@ const EXPECTED_VERIFIERS = [
   "verify-premium-integrated-evaluation.mjs",
   "verify-premium-release-mode.mjs",
   "verify-premium-report-reentry-contract.mjs",
+  "verify-premium-route-storage-reentry.mjs",
   "verify-production-env-preview-readiness-probe.mjs",
   "verify-sec06-saved-report-boundary.mjs",
   "verify-sec08-image-upload-boundary.mjs",

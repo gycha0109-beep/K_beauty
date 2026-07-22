@@ -18,7 +18,6 @@ const premiumSession = read("lib/premium-report-session.js");
 function assertBefore(text, earlier, later, label) {
   const earlierIndex = text.indexOf(earlier);
   const laterIndex = text.indexOf(later);
-
   assert.ok(earlierIndex >= 0, `${label} is missing: ${earlier}`);
   assert.ok(laterIndex >= 0, `${label} is missing: ${later}`);
   assert.ok(earlierIndex < laterIndex, `${label} must keep ${earlier} before ${later}`);
@@ -50,17 +49,25 @@ for (const requiredFragment of [
   '.order("created_at", { ascending: false })',
   "createPremiumReportSession({",
   "buildRotatedPremiumReportPayload",
-  "getPremiumReportCookieOptions()"
+  "getPremiumReportCookieOptions()",
+  "resolvePremiumRouteContext(request)",
+  'reason: "new_session_created"'
 ]) {
   assert.ok(sessionRoute.includes(requiredFragment), `missing current-session contract: ${requiredFragment}`);
 }
 
 assert.ok(!sessionRoute.includes(".update("), "session rotation must not update saved reports");
 assert.ok(!sessionRoute.includes(".delete("), "session rotation must not delete saved reports");
-assert.ok(!sessionRoute.includes("{ hasSavedReport: true, sessionId"), "session ID must not be returned by the re-entry route");
-assert.ok(!sessionRoute.includes("{ rotated: true, premiumSessionToken"), "premium token must not be returned by the re-entry route");
-assert.ok(!sessionRoute.includes("{ hasSavedReport: true, accessToken"), "access token must not be returned by the re-entry route");
-assert.ok(sessionRoute.includes("resolvePremiumAccessForRequest(request)"), "current user must be resolved server-side");
+for (const forbiddenResponseFragment of [
+  "{ rotated: true, sessionId",
+  "{ rotated: true, premiumSessionToken",
+  "{ rotated: true, accessToken",
+  "{ rotated: false, sessionId",
+  "{ rotated: false, premiumSessionToken",
+  "{ rotated: false, accessToken"
+]) {
+  assert.ok(!sessionRoute.includes(forbiddenResponseFragment), `re-entry response exposes sensitive data: ${forbiddenResponseFragment}`);
+}
 
 for (const requiredFragment of [
   'fetch("/api/full-report/session"',
@@ -102,6 +109,8 @@ assertBefore(
   "const currentProductsResult = await applyCurrentProductsToReport",
   "saved-report re-read"
 );
+assert.ok(!fullReportRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved report reentry must ignore request topPick");
+assert.ok(fullReportRoute.includes("savedFreeResult?.topPick || null"), "saved report gauges must derive from the stored snapshot");
 
 for (const requiredCookieOption of [
   "httpOnly: true",

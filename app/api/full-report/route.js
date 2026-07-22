@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { upsertProfileForUser } from "@/lib/auth/profile-upsert";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
-import { resolvePremiumAccessForRequest, isAccountUser } from "@/lib/premium-access";
+import { isAccountUser } from "@/lib/premium-access";
 import {
   buildPremiumCurrentProductsSnapshot,
-  buildPremiumCurrentProductVerdicts
+  enrichPremiumReportWithCurrentProducts
 } from "@/lib/premium-current-products";
 import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import {
@@ -17,16 +17,21 @@ import {
   updatePremiumReportSession,
   verifyPremiumReportSession
 } from "@/lib/premium-report-session";
+import { resolvePremiumRouteContext } from "@/lib/premium-route-context";
+import {
+  buildPremiumReportSnapshot,
+  classifyPremiumSnapshotReplay,
+  resolvePremiumReportLocale
+} from "@/lib/premium-report-snapshot";
 import { sanitizePremiumReportPurchaseLinks } from "@/lib/product-purchase-link";
 import { sanitizePremiumReportProductImages } from "@/lib/security/image-source-policy";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
-import { createRouteSupabaseAuthClient } from "@/lib/supabase/server-client";
 import {
   createNoStoreHeaders,
   writeSafeLog
 } from "@/lib/security/error-redaction";
 
-const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 1;
+const FULL_REPORT_RESPONSE_SCHEMA_VERSION = 2;
 
 function sensitiveJsonResponse(body, init = {}) {
   return NextResponse.json(body, {
@@ -41,12 +46,23 @@ function sanitizePremiumReportForBoundary(report) {
   );
 }
 
-function buildFullReportMeta(locale, source = "premium-session") {
+function buildFullReportMeta(locale, source = "premium-session", persistence = null, snapshot = null) {
   return {
     schemaVersion: FULL_REPORT_RESPONSE_SCHEMA_VERSION,
     source,
     locale,
-    generatedAt: new Date().toISOString()
+    generatedAt: new Date().toISOString(),
+    ...(persistence ? { persistence } : {}),
+    ...(snapshot
+      ? {
+          snapshot: {
+            immutable: true,
+            fingerprint: snapshot.fingerprint,
+            contextHash: snapshot.contextHash,
+            contextRevision: snapshot.contextRevision
+          }
+        }
+      : {})
   };
 }
 
@@ -62,7 +78,8 @@ function hasFullReportPayloadShape(report) {
 
 const FULL_REPORT_UNAUTHORIZED_REASONS = new Set([
   "login_required",
-  "premium_session_missing_or_expired"
+  "premium_session_missing_or_expired",
+  "premium_principal_conflict"
 ]);
 
 function getUnauthorizedResponse(reason) {
@@ -112,15 +129,18 @@ function getPremiumPersistenceFailedResponse(code = "premium_save_failed") {
   );
 }
 
-function getBearerToken(request) {
-  const authorizationHeader = request.headers.get("authorization");
+function getSnapshotConflictResponse() {
+  return sensitiveJsonResponse(
+    { success: false, error: "premium_snapshot_finalized" },
+    { status: 409 }
+  );
+}
 
-  if (!authorizationHeader) {
-    return null;
-  }
-
-  const [scheme, token] = authorizationHeader.split(" ");
-  return scheme?.toLowerCase() === "bearer" && token ? token.trim() : null;
+function getStorageUnavailableResponse() {
+  return sensitiveJsonResponse(
+    { success: false, error: "premium_save_unavailable" },
+    { status: 503 }
+  );
 }
 
 function resolveFaceLabSummary({ storedPremiumReport, body, locale, canonicalImageUrl }) {
@@ -169,11 +189,6 @@ function resolveFaceLabSummary({ storedPremiumReport, body, locale, canonicalIma
   };
 }
 
-async function getUserSupabaseClient(request) {
-  const accessToken = getBearerToken(request);
-  return accessToken ? createRouteSupabaseAuthClient(accessToken) : null;
-}
-
 async function loadSavedPremiumReport({ supabase, userId, savedReportId }) {
   if (!supabase || !userId || !savedReportId) {
     return { data: null, error: new Error("saved_report_lookup_unavailable") };
@@ -181,14 +196,60 @@ async function loadSavedPremiumReport({ supabase, userId, savedReportId }) {
 
   return supabase
     .from("saved_reports")
-    .select("id, report_type, premium_report, free_result, face_lab, created_at")
+    .select("id, report_type, report_version, premium_report, free_result, face_lab, created_at")
     .eq("id", savedReportId)
     .eq("user_id", userId)
     .eq("report_type", "premium")
     .maybeSingle();
 }
 
-async function persistPremiumSavedReport({ adminSupabase, user, sessionId, authoritativePremiumReport, locale }) {
+async function loadSavedPremiumReportForSession({ supabase, userId, sessionId }) {
+  if (!supabase || !userId || !sessionId) {
+    return { data: null, error: new Error("saved_report_session_lookup_unavailable") };
+  }
+
+  return supabase
+    .from("saved_reports")
+    .select("id, report_version, premium_report, created_at")
+    .eq("user_id", userId)
+    .eq("report_type", "premium")
+    .eq("source_type", "premium_report_session")
+    .eq("source_session_id", sessionId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+}
+
+function buildSavedPremiumReportResponse(savedReport, fallbackLocale = "ko") {
+  const savedPremiumReport = sanitizePremiumReportForBoundary(savedReport?.premium_report || {});
+  const savedLocale = resolvePremiumReportLocale(savedPremiumReport, fallbackLocale);
+  const savedFreeResult =
+    savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
+      ? savedPremiumReport.freeResult
+      : null;
+  const topPickFitGauges = buildProductFitGauges(savedFreeResult?.topPick || null, {
+    locale: savedLocale
+  });
+
+  return sensitiveJsonResponse({
+    ...savedPremiumReport,
+    topPickFitGauges,
+    meta: buildFullReportMeta(
+      savedLocale,
+      "saved-report",
+      { status: "existing", savedReportId: savedReport.id },
+      buildPremiumReportSnapshot(savedPremiumReport)
+    )
+  });
+}
+
+async function persistPremiumSavedReport({
+  adminSupabase,
+  user,
+  sessionId,
+  authoritativePremiumReport,
+  locale
+}) {
   if (
     !adminSupabase ||
     !isAccountUser(user) ||
@@ -200,16 +261,11 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     return { ok: false, code: "persist_not_available" };
   }
 
-  const existing = await adminSupabase
-    .from("saved_reports")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("report_type", "premium")
-    .eq("source_type", "premium_report_session")
-    .eq("source_session_id", sessionId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const existing = await loadSavedPremiumReportForSession({
+    supabase: adminSupabase,
+    userId: user.id,
+    sessionId
+  });
 
   if (existing.error) {
     writeSafeLog("error", {
@@ -222,48 +278,35 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     return { ok: false, code: "lookup_failed" };
   }
 
+  const snapshot = buildPremiumReportSnapshot(authoritativePremiumReport);
+  if (!snapshot) {
+    return { ok: false, code: "invalid_snapshot" };
+  }
+
+  if (existing.data?.id) {
+    const replay = classifyPremiumSnapshotReplay(
+      existing.data.premium_report,
+      authoritativePremiumReport
+    );
+    return replay.status === "existing"
+      ? { ok: true, code: "existing", savedReportId: existing.data.id, snapshot }
+      : { ok: false, code: "snapshot_conflict", savedReportId: existing.data.id, snapshot };
+  }
+
   const payload = {
     user_id: user.id,
     report_type: "premium",
     source_type: "premium_report_session",
     source_session_id: sessionId,
     title: locale === "en" ? "Premium routine report" : "프리미엄 루틴 리포트",
-    report_version: "premium-v1",
+    report_version: snapshot.reportVersion,
     premium_report: authoritativePremiumReport,
     free_result: null,
-    face_lab: authoritativePremiumReport.faceLabSummary || authoritativePremiumReport.faceLab || null
+    face_lab:
+      authoritativePremiumReport.faceLabSummary ||
+      authoritativePremiumReport.faceLab ||
+      null
   };
-
-  if (existing.data?.id) {
-    const { data, error } = await adminSupabase
-      .from("saved_reports")
-      .update({
-        premium_report: payload.premium_report,
-        face_lab: payload.face_lab,
-        title: payload.title,
-        report_version: payload.report_version
-      })
-      .eq("id", existing.data.id)
-      .eq("user_id", user.id)
-      .eq("report_type", "premium")
-      .eq("source_type", "premium_report_session")
-      .eq("source_session_id", sessionId)
-      .select("id")
-      .maybeSingle();
-
-    if (error || !data?.id) {
-      writeSafeLog("error", {
-        event: "full_report_failed",
-        category: "database_unavailable",
-        operation: "full_report",
-        dependency: "supabase",
-        retryable: true
-      });
-      return { ok: false, code: "update_failed" };
-    }
-
-    return { ok: true, savedReportId: data.id };
-  }
 
   const { data, error } = await adminSupabase
     .from("saved_reports")
@@ -272,6 +315,35 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     .single();
 
   if (error) {
+    const retry = await loadSavedPremiumReportForSession({
+      supabase: adminSupabase,
+      userId: user.id,
+      sessionId
+    });
+
+    if (!retry.error && retry.data?.id) {
+      const replay = classifyPremiumSnapshotReplay(
+        retry.data.premium_report,
+        authoritativePremiumReport
+      );
+      if (replay.status === "existing") {
+        return {
+          ok: true,
+          code: "existing",
+          savedReportId: retry.data.id,
+          snapshot
+        };
+      }
+      if (replay.status === "conflict") {
+        return {
+          ok: false,
+          code: "snapshot_conflict",
+          savedReportId: retry.data.id,
+          snapshot
+        };
+      }
+    }
+
     writeSafeLog("error", {
       event: "full_report_failed",
       category: "database_unavailable",
@@ -282,7 +354,12 @@ async function persistPremiumSavedReport({ adminSupabase, user, sessionId, autho
     return { ok: false, code: "insert_failed" };
   }
 
-  return { ok: true, savedReportId: data?.id || null };
+  return {
+    ok: true,
+    code: "saved",
+    savedReportId: data?.id || null,
+    snapshot
+  };
 }
 
 async function applyCurrentProductsToReport({ report, body, locale }) {
@@ -294,14 +371,8 @@ async function applyCurrentProductsToReport({ report, body, locale }) {
   }
 
   const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
-  const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
-
   return {
-    premiumReport: {
-      ...report,
-      currentProducts,
-      currentProductVerdicts
-    },
+    premiumReport: enrichPremiumReportWithCurrentProducts(report, currentProducts, locale),
     changed: true
   };
 }
@@ -319,19 +390,28 @@ export async function POST(request) {
     return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
   }
 
-  const locale = body?.locale === "en" ? "en" : "ko";
-  const userSupabase = await getUserSupabaseClient(request);
-  const { user, access } = await resolvePremiumAccessForRequest(request);
+  const canonicalImage = await canonicalizeOptionalImageDataUrl(body?.imageUrl);
+
+  if (!canonicalImage.ok) {
+    return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
+  }
+
+  const canonicalImageUrl = canonicalImage.absent ? null : canonicalImage.dataUrl;
+  const requestedLocale = body?.locale === "en" ? "en" : "ko";
+  const context = await resolvePremiumRouteContext(request);
+  const { user, access, supabase: userSupabase } = context;
+
+  if (context.authError === "principal_conflict") {
+    return getUnauthorizedResponse("premium_principal_conflict");
+  }
+
+  if (isAccountUser(user) && !userSupabase) {
+    return getStorageUnavailableResponse();
+  }
 
   if (body?.savedReportId) {
     if (!isAccountUser(user) || !userSupabase) {
       return getUnauthorizedResponse("login_required");
-    }
-
-    const savedReportImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
-
-    if (!savedReportImage.ok) {
-      return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
     }
 
     const { data: savedReport, error } = await loadSavedPremiumReport({
@@ -353,18 +433,7 @@ export async function POST(request) {
       return getUnauthorizedResponse("premium_session_missing_or_expired");
     }
 
-    const savedPremiumReport = sanitizePremiumReportForBoundary(savedReport.premium_report);
-    const savedFreeResult =
-      savedPremiumReport?.freeResult && typeof savedPremiumReport.freeResult === "object"
-        ? savedPremiumReport.freeResult
-        : null;
-    const topPickFitGauges = buildProductFitGauges(body?.topPick || savedFreeResult?.topPick || null, { locale });
-
-    return sensitiveJsonResponse({
-      ...savedPremiumReport,
-      topPickFitGauges,
-      meta: buildFullReportMeta(locale, "saved-report")
-    });
+    return buildSavedPremiumReportResponse(savedReport, requestedLocale);
   }
 
   if (!access.canCreatePremium) {
@@ -393,21 +462,43 @@ export async function POST(request) {
     return getUnauthorizedResponse("premium_session_missing_or_expired");
   }
 
-  const canonicalImage = await canonicalizeOptionalImageDataUrl(body.imageUrl);
+  let finalizedSavedReport = null;
 
-  if (!canonicalImage.ok) {
-    return sensitiveJsonResponse({ error: "invalid_image" }, { status: 400 });
+  if (isAccountUser(user)) {
+    const finalizedLookup = await loadSavedPremiumReportForSession({
+      supabase: userSupabase,
+      userId: user.id,
+      sessionId: premiumSession.payload.sessionId
+    });
+
+    if (finalizedLookup.error) {
+      writeSafeLog("error", {
+        event: "full_report_failed",
+        category: "database_unavailable",
+        operation: "full_report",
+        dependency: "supabase",
+        retryable: true
+      });
+      return getStorageUnavailableResponse();
+    }
+
+    finalizedSavedReport = finalizedLookup.data || null;
   }
 
-  const canonicalImageUrl = canonicalImage.absent ? null : canonicalImage.dataUrl;
+  const locale = finalizedSavedReport?.premium_report
+    ? resolvePremiumReportLocale(finalizedSavedReport.premium_report, requestedLocale)
+    : requestedLocale;
 
-  let storedPremiumReport = sanitizePremiumReportForBoundary(premiumSession.payload.premiumReport);
+  let storedPremiumReport = sanitizePremiumReportForBoundary(
+    premiumSession.payload.premiumReport
+  );
   const currentProductsResult = await applyCurrentProductsToReport({
     report: storedPremiumReport,
     body,
     locale
   });
   storedPremiumReport = currentProductsResult.premiumReport;
+
   const { faceLabSummary, shouldPersist } = resolveFaceLabSummary({
     storedPremiumReport,
     body,
@@ -416,25 +507,37 @@ export async function POST(request) {
   });
   const responsePremiumReport = sanitizePremiumReportForBoundary({
     ...storedPremiumReport,
-    faceLabSummary
+    faceLabSummary,
+    locale
   });
+
+  if (finalizedSavedReport?.premium_report) {
+    const replay = classifyPremiumSnapshotReplay(
+      finalizedSavedReport.premium_report,
+      responsePremiumReport
+    );
+    return replay.status === "existing"
+      ? buildSavedPremiumReportResponse(finalizedSavedReport, locale)
+      : getSnapshotConflictResponse();
+  }
+
   let authoritativePremiumReport = responsePremiumReport;
 
-  if (shouldPersist || currentProductsResult.changed) {
-    const updateResult = await updatePremiumReportSession(premiumCookie, {
-      ...responsePremiumReport
-    });
+  if (
+    shouldPersist ||
+    currentProductsResult.changed ||
+    storedPremiumReport.locale !== locale
+  ) {
+    const updateResult = await updatePremiumReportSession(premiumCookie, responsePremiumReport);
 
     if (!updateResult.ok || !updateResult.payload?.premiumReport) {
-      if (process.env.NODE_ENV !== "production") {
-        writeSafeLog("warn", {
-          event: "full_report_failed",
-          category: "session_unavailable",
-          operation: "full_report",
-          dependency: "supabase",
-          retryable: true
-        });
-      }
+      writeSafeLog("warn", {
+        event: "full_report_failed",
+        category: "session_unavailable",
+        operation: "full_report",
+        dependency: "supabase",
+        retryable: true
+      });
       return getPremiumPersistenceFailedResponse("premium_session_update_failed");
     }
 
@@ -442,6 +545,9 @@ export async function POST(request) {
       updateResult.payload.premiumReport
     );
   }
+
+  let persistence = null;
+  let snapshot = buildPremiumReportSnapshot(authoritativePremiumReport);
 
   if (userSupabase && isAccountUser(user)) {
     await upsertProfileForUser({
@@ -468,11 +574,22 @@ export async function POST(request) {
     });
 
     if (!persistResult.ok) {
-      return getPremiumPersistenceFailedResponse();
+      return persistResult.code === "snapshot_conflict"
+        ? getSnapshotConflictResponse()
+        : getPremiumPersistenceFailedResponse();
     }
+
+    persistence = {
+      status: persistResult.code,
+      savedReportId: persistResult.savedReportId
+    };
+    snapshot = persistResult.snapshot;
   }
 
-  if (process.env.NODE_ENV !== "production" && !hasFullReportPayloadShape(storedPremiumReport)) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    !hasFullReportPayloadShape(authoritativePremiumReport)
+  ) {
     writeSafeLog("warn", {
       event: "full_report_failed",
       category: "response_shape_invalid",
@@ -482,16 +599,27 @@ export async function POST(request) {
     });
   }
 
-  const clientPremiumReport = sanitizePremiumReportForBoundary(responsePremiumReport);
+  const clientPremiumReport = sanitizePremiumReportForBoundary(
+    authoritativePremiumReport
+  );
   const storedFreeResult =
-    clientPremiumReport?.freeResult && typeof clientPremiumReport.freeResult === "object"
+    clientPremiumReport?.freeResult &&
+    typeof clientPremiumReport.freeResult === "object"
       ? clientPremiumReport.freeResult
       : null;
-  const topPickFitGauges = buildProductFitGauges(body?.topPick || storedFreeResult?.topPick || null, { locale });
+  const topPickFitGauges = buildProductFitGauges(
+    storedFreeResult?.topPick || null,
+    { locale }
+  );
   const response = sensitiveJsonResponse({
     ...clientPremiumReport,
     topPickFitGauges,
-    meta: buildFullReportMeta(locale)
+    meta: buildFullReportMeta(
+      locale,
+      "premium-session",
+      persistence,
+      snapshot
+    )
   });
 
   response.cookies.set(

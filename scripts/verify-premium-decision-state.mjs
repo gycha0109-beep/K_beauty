@@ -210,10 +210,23 @@ const fullReportRoute = readFileSync(
   new URL("../app/api/full-report/route.js", import.meta.url),
   "utf8"
 );
+const premiumCurrentProducts = readFileSync(
+  new URL("../lib/premium-current-products.js", import.meta.url),
+  "utf8"
+);
 assert.match(
   fullReportRoute,
+  /premiumReport: enrichPremiumReportWithCurrentProducts\(report, currentProducts, locale\)/,
+  "empty current-product submissions must still pass through canonical enrichment"
+);
+assert.match(
+  premiumCurrentProducts,
   /const currentProductVerdicts = buildPremiumCurrentProductVerdicts\(currentProducts, report, locale\);/,
-  "empty current-product submissions must still rebuild the premium decision state"
+  "current-product verdicts must be created before the canonical rebuild"
+);
+assert.ok(
+  premiumCurrentProducts.includes("rebuildPremiumDecisionState("),
+  "current-product enrichment must rebuild the Premium decision state"
 );
 
 console.log("verify-premium-decision-state: ok");
