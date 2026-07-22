@@ -25,10 +25,7 @@ import { buildProductFitGauges } from "@/lib/product-fit-gauges";
 import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
-import {
-  getBrowserPermanentSupabaseAccessToken,
-  getBrowserSupabaseAccessToken
-} from "@/lib/supabase/browser-client";
+import { getBrowserPermanentSupabaseAccessToken } from "@/lib/supabase/browser-client";
 import {
   clearAnonymousWriteGrantState,
   clearTrackWriteAccessToken,
@@ -566,10 +563,6 @@ function getOrCreateTrackingSessionId() {
   const nextSessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   sessionStorage.setItem(TRACKING_SESSION_KEY, nextSessionId);
   return nextSessionId;
-}
-
-async function getFullReportAccessToken() {
-  return getBrowserSupabaseAccessToken();
 }
 
 async function getFullReportTrackingAccessToken() {
@@ -6364,12 +6357,12 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       }
 
       try {
-        const supabaseAccessToken = await getFullReportAccessToken();
         const response = await fetch("/api/full-report", {
           method: "POST",
+          cache: "no-store",
+          credentials: "same-origin",
           headers: {
-            "Content-Type": "application/json",
-            ...(supabaseAccessToken ? { Authorization: `Bearer ${supabaseAccessToken}` } : {})
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,

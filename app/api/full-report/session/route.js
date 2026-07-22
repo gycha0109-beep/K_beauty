@@ -14,7 +14,11 @@ export const dynamic = "force-dynamic";
 function json(body, status = 200) {
   return NextResponse.json(body, {
     status,
-    headers: { "Cache-Control": "no-store" }
+    headers: {
+      "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+      Pragma: "no-cache",
+      Vary: "Cookie, Authorization"
+    }
   });
 }
 
