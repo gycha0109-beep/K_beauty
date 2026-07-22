@@ -294,9 +294,7 @@ async function applyCurrentProductsToReport({ report, body, locale }) {
   }
 
   const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
-  const currentProductVerdicts = currentProducts
-    ? buildPremiumCurrentProductVerdicts(currentProducts, report, locale)
-    : [];
+  const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
 
   return {
     premiumReport: {
