@@ -4,14 +4,6 @@ import { useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import { getCommonCopy } from "@/lib/ui/i18n";
 
-function getAuthCallbackOrigin() {
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return window.location.origin;
-  }
-
-  return "";
-}
-
 export default function LoginButtons({
   compact = false,
   label,
@@ -31,12 +23,11 @@ export default function LoginButtons({
 
     try {
       const supabase = createBrowserSupabaseClient();
-      const origin = getAuthCallbackOrigin();
       const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/my";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
         }
       });
 

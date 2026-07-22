@@ -4,11 +4,27 @@ import { getMyDashboardPayload } from "@/lib/my/dashboard";
 
 export const dynamic = "force-dynamic";
 
+const PRIVATE_RESPONSE_HEADERS = {
+  "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+  Pragma: "no-cache",
+  Vary: "Cookie"
+};
+
+function json(body, init = {}) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: {
+      ...PRIVATE_RESPONSE_HEADERS,
+      ...(init.headers || {})
+    }
+  });
+}
+
 export async function GET(request) {
   const localDate = request.nextUrl.searchParams.get("localDate");
 
   if (localDate && !isValidLocalDate(localDate)) {
-    return NextResponse.json({ error: "invalid_local_date" }, { status: 400 });
+    return json({ error: "invalid_local_date" }, { status: 400 });
   }
 
   const result = await getMyDashboardPayload({
@@ -16,19 +32,15 @@ export async function GET(request) {
   });
 
   if (result.status === 401) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return json({ error: "unauthorized" }, { status: 401 });
   }
 
   if (result.status !== 200) {
-    return NextResponse.json(
+    return json(
       { error: result.error || "dashboard_unavailable" },
       { status: result.status }
     );
   }
 
-  return NextResponse.json(result.payload, {
-    headers: {
-      "Cache-Control": "no-store"
-    }
-  });
+  return json(result.payload);
 }

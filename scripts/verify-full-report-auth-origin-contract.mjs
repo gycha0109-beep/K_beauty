@@ -11,6 +11,7 @@ const premiumSession = read("lib/premium-report-session.js");
 const fullReportRoute = read("app/api/full-report/route.js");
 const fullReportPage = read("app/result/full-report/page.js");
 const authCallback = read("app/auth/callback/route.js");
+const loginButtons = read("components/auth/LoginButtons.jsx");
 
 assert.match(middleware, /getCanonicalProductionRedirectUrl\(request\.url\)/);
 assert.match(middleware, /NextResponse\.redirect\(canonicalUrl, 307\)/);
@@ -23,6 +24,14 @@ assert.match(fullReportPage, /data\?\.error === "login_required"/);
 assert.match(fullReportPage, /<LoginButtons/);
 assert.match(fullReportPage, /FULL_REPORT_AUTH_FAILURE_COPY/);
 assert.match(authCallback, /exchangeCodeForSession\(code\)/);
+assert.match(
+  loginButtons,
+  /redirectTo: `\$\{window\.location\.origin\}\/auth\/callback\?next=\$\{encodeURIComponent\(nextPath\)\}`/
+);
+assert.match(loginButtons, /typeof next === "string" && next\.startsWith\("\/"\) \? next : "\/my"/);
+assert.doesNotMatch(loginButtons, /NEXT_PUBLIC_SITE_URL|k-beauty-two\.vercel\.app/);
+assert.match(authCallback, /function getSafeRedirectPath\(value, origin\)/);
+assert.match(authCallback, /value\.startsWith\("\/"\) && !value\.startsWith\("\/\/"\)/);
 
 for (const requiredCookieOption of [
   'httpOnly: true',

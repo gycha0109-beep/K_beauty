@@ -7,6 +7,18 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const PRIVATE_RESPONSE_HEADERS = {
+  "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+  Pragma: "no-cache",
+  Vary: "Cookie"
+};
+
+function privateRedirect(url) {
+  return NextResponse.redirect(url, {
+    headers: PRIVATE_RESPONSE_HEADERS
+  });
+}
+
 function getSafeRedirectPath(value, origin) {
   if (!value) {
     return "/my";
@@ -59,7 +71,7 @@ export async function GET(request) {
   if (!code) {
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "missing_code");
-    return NextResponse.redirect(redirectUrl);
+    return privateRedirect(redirectUrl);
   }
 
   const supabase = await createServerSupabaseClient();
@@ -74,7 +86,7 @@ export async function GET(request) {
     });
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "exchange_failed");
-    return NextResponse.redirect(redirectUrl);
+    return privateRedirect(redirectUrl);
   }
 
   const {
@@ -88,7 +100,7 @@ export async function GET(request) {
     });
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "user_lookup_failed");
-    return NextResponse.redirect(redirectUrl);
+    return privateRedirect(redirectUrl);
   }
 
   const profileUpsertResult = await upsertProfileForUser({
@@ -100,23 +112,19 @@ export async function GET(request) {
 
   if (!profilePayload?.id || profilePayload.id !== user.id) {
     console.error("[auth/callback] profile_payload_user_id_mismatch", {
-      userId: user.id,
-      profileId: profilePayload?.id || null,
       idMatchesUser: profilePayload?.id === user.id,
       attempts: profileUpsertResult.attempts
     });
 
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth_error", "user_lookup_failed");
-    return NextResponse.redirect(redirectUrl);
+    return privateRedirect(redirectUrl);
   }
 
   const profileError = profileUpsertResult.error;
 
   if (profileError) {
     logAuthCallbackError("profile_upsert_failed", profileError, {
-      userId: user.id,
-      profileId: profilePayload.id,
       idMatchesUser: profilePayload.id === user.id,
       provider: profilePayload.provider,
       method: profileUpsertResult.method,
@@ -126,8 +134,8 @@ export async function GET(request) {
 
     const warningUrl = new URL("/my", requestUrl.origin);
     warningUrl.searchParams.set("auth_warning", "profile_upsert_failed");
-    return NextResponse.redirect(warningUrl);
+    return privateRedirect(warningUrl);
   }
 
-  return NextResponse.redirect(redirectUrl);
+  return privateRedirect(redirectUrl);
 }
