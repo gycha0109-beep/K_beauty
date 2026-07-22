@@ -29,12 +29,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin agent/premium-hosted-preview-harness-hardening-design
+          mkdir -p tmp/full-stack-merge-diagnostic/conflicts
+          {
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "DESIGN=$(git rev-parse origin/agent/premium-hosted-preview-harness-hardening-design)"
+            echo "MERGE_BASE=$(git merge-base HEAD origin/agent/premium-hosted-preview-harness-hardening-design || true)"
+            git status --short
+          } > tmp/full-stack-merge-diagnostic/preflight.txt
           set +e
-          git merge --no-ff --no-commit origin/agent/premium-hosted-preview-harness-hardening-design
+          git merge --no-ff --no-commit origin/agent/premium-hosted-preview-harness-hardening-design > tmp/full-stack-merge-diagnostic/merge.log 2>&1
           STATUS=$?
           set -e
-          mkdir -p tmp/full-stack-merge-diagnostic/conflicts
           mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
           printf '%s\n' "${CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/conflicts.txt
           printf '{\n  "mergeStatus": %s,\n  "conflictCount": %s,\n  "conflicts": [' "$STATUS" "${#CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/summary.json
@@ -51,6 +59,8 @@ jobs:
           done
           printf '\n  ]\n}\n' >> tmp/full-stack-merge-diagnostic/summary.json
           git status --short > tmp/full-stack-merge-diagnostic/status.txt
+          cat tmp/full-stack-merge-diagnostic/preflight.txt
+          cat tmp/full-stack-merge-diagnostic/merge.log
           cat tmp/full-stack-merge-diagnostic/summary.json
 
       - name: Upload diagnostic
