@@ -1,4 +1,4 @@
-name: Premium PR27 verifier debug
+name: Premium PR27 committed decision debug
 
 on:
   pull_request:
@@ -12,13 +12,13 @@ permissions:
 jobs:
   debug:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
           ref: integration/premium-engine-main-sec-baseline
           fetch-depth: 0
-      - name: Rebuild reviewed PR27 merge tree
+      - name: Rebuild and commit reviewed PR27 merge tree
         shell: bash
         run: |
           set -euo pipefail
@@ -41,80 +41,34 @@ jobs:
                   raise SystemExit(f'missing embedded {name} payload')
               encoded = ast.literal_eval(match.group(1))
               Path(target).write_bytes(zlib.decompress(base64.b64decode(encoded)))
+          suite = Path('scripts/run-security-closeout-verifier-suite.mjs')
+          text = suite.read_text(encoding='utf-8')
+          entry = '  "verify-premium-route-storage-reentry.mjs",\n'
+          if entry not in text:
+              anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
+              if text.count(anchor) != 1:
+                  raise SystemExit('security closeout route verifier anchor mismatch')
+              suite.write_text(text.replace(anchor, anchor + entry, 1), encoding='utf-8')
           PY
-          git add app/api/full-report/route.js app/api/full-report/session/route.js
+          git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
           test -z "$(git diff --name-only --diff-filter=U)"
+          rm .github/workflows/premium-stack-merge-once.yml .github/workflows/premium-pr27-debug.yml
+          git add -A
+          git commit -m "debug: reproduce committed PR27 tree"
           npm ci
-      - name: Run route verifier
-        id: route
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-premium-route-storage-reentry.mjs 2>&1 | tee pr27-route-verifier.log
-      - name: Run evaluation verifier
-        id: evaluation
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-premium-integrated-evaluation.mjs 2>&1 | tee pr27-evaluation-verifier.log
-      - name: Run reentry verifier
-        id: reentry
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-premium-report-reentry-contract.mjs 2>&1 | tee pr27-reentry-verifier.log
-      - name: Run decision verifier
+      - name: Run committed decision verifier
         id: decision
         continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-decision-verifier.log
-      - name: Run cross-domain verifier
-        id: cross
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-cross-domain-consistency.mjs 2>&1 | tee pr27-cross-verifier.log
-      - name: Run condition verifier
-        id: condition
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-condition-policy-single-source.mjs 2>&1 | tee pr27-condition-verifier.log
-      - name: Run routine verifier
-        id: routine
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-routine-policy-single-source.mjs 2>&1 | tee pr27-routine-verifier.log
-      - name: Run functional verifier
-        id: functional
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -o pipefail
-          node scripts/verify-functional-policy-single-source.mjs 2>&1 | tee pr27-functional-verifier.log
+          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-committed-decision.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: premium-pr27-verifier-debug
-          path: pr27-*-verifier.log
+          name: premium-pr27-committed-decision-debug
+          path: pr27-committed-decision.log
           if-no-files-found: error
           retention-days: 7
-      - name: Report outcomes
-        run: |
-          echo "route=${{ steps.route.outcome }}"
-          echo "evaluation=${{ steps.evaluation.outcome }}"
-          echo "reentry=${{ steps.reentry.outcome }}"
-          echo "decision=${{ steps.decision.outcome }}"
-          echo "cross=${{ steps.cross.outcome }}"
-          echo "condition=${{ steps.condition.outcome }}"
-          echo "routine=${{ steps.routine.outcome }}"
-          echo "functional=${{ steps.functional.outcome }}"
+      - name: Report outcome
+        run: echo "decision=${{ steps.decision.outcome }}"
