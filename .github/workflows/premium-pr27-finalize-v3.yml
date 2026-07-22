@@ -46,49 +46,99 @@ jobs:
                   raise SystemExit(f'missing embedded {name} payload')
               Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(match.group(1)))))
 
+          current_products_path = Path('lib/premium-current-products.js')
+          current_products = current_products_path.read_text(encoding='utf-8')
+          function_start = current_products.find('export function buildPremiumCurrentProductVerdicts')
+          if function_start < 0:
+              raise SystemExit('missing buildPremiumCurrentProductVerdicts export')
+          canonical_tail = '''export function buildPremiumCurrentProductVerdicts(currentProducts, report, locale = "ko") {
+            const freeResult = report?.freeResult && typeof report.freeResult === "object"
+              ? report.freeResult
+              : {};
+            return buildCurrentProductVerdicts(currentProducts, {
+              locale,
+              priorityAxis: freeResult?.priority?.axis || freeResult?.mainConcern || "",
+              answers:
+                freeResult?.answers ||
+                report?.decisionBundle?.context?.survey?.answers ||
+                {}
+            });
+          }
+
+          export function enrichPremiumReportWithCurrentProducts(report, currentProducts, locale = "ko") {
+            if (!report || typeof report !== "object" || Array.isArray(report)) return report;
+            const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
+            return rebuildPremiumDecisionState(
+              {
+                ...report,
+                currentProducts,
+                currentProductVerdicts
+              },
+              {
+                locale,
+                source: "full_report_current_products"
+              }
+            );
+          }
+          '''
+          canonical_tail = '\n'.join(line[10:] if line.startswith('          ') else line for line in canonical_tail.splitlines()) + '\n'
+          prefix = current_products[:function_start]
+          prefix = prefix.replace(
+              'import { applyPremiumDecisionState } from "@/lib/premium-decision-state";',
+              'import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";'
+          )
+          if 'from "@/lib/premium-decision-state";' not in prefix:
+              raise SystemExit('missing premium decision-state import')
+          current_products_path.write_text(prefix + canonical_tail, encoding='utf-8')
+
           route_path = Path('app/api/full-report/route.js')
           route = route_path.read_text(encoding='utf-8')
-          old_import = '''import {
-            buildPremiumCurrentProductsSnapshot,
-            buildPremiumCurrentProductVerdicts
-          } from "@/lib/premium-current-products";'''.replace('          ', '')
-          new_import = '''import {
-            buildPremiumCurrentProductsSnapshot,
-            enrichPremiumReportWithCurrentProducts
-          } from "@/lib/premium-current-products";'''.replace('          ', '')
-          if route.count(old_import) != 1:
-              raise SystemExit('premium current-product import contract mismatch')
-          route = route.replace(old_import, new_import, 1)
-
-          old_body = '''  const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
-          const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);
-
-          return {
-            premiumReport: {
-              ...report,
-              currentProducts,
-              currentProductVerdicts
-            },
-            changed: true
-          };'''.replace('          ', '')
-          new_body = '''  const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
-          return {
-            premiumReport: enrichPremiumReportWithCurrentProducts(report, currentProducts, locale),
-            changed: true
-          };'''.replace('          ', '')
-          if route.count(old_body) != 1:
-              raise SystemExit('premium current-product route body contract mismatch')
-          route_path.write_text(route.replace(old_body, new_body, 1), encoding='utf-8')
-
-          current_products = Path('lib/premium-current-products.js').read_text(encoding='utf-8')
-          required = [
-              'export function enrichPremiumReportWithCurrentProducts',
-              'const currentProductVerdicts = buildPremiumCurrentProductVerdicts(currentProducts, report, locale);',
-              'return rebuildPremiumDecisionState('
+          import_pattern = re.compile(
+              r'import\s*\{(?P<body>.*?)\}\s*from\s*"@/lib/premium-current-products";',
+              re.DOTALL
+          )
+          import_match = import_pattern.search(route)
+          if not import_match:
+              raise SystemExit('missing premium-current-products import block')
+          import_names = [
+              part.strip().rstrip(',')
+              for part in import_match.group('body').splitlines()
+              if part.strip()
           ]
-          for fragment in required:
-              if fragment not in current_products:
-                  raise SystemExit(f'missing canonical current-product enrichment fragment: {fragment}')
+          if 'buildPremiumCurrentProductsSnapshot' not in import_names:
+              raise SystemExit('missing current-product snapshot import')
+          import_names = [
+              'enrichPremiumReportWithCurrentProducts' if name == 'buildPremiumCurrentProductVerdicts' else name
+              for name in import_names
+          ]
+          if 'enrichPremiumReportWithCurrentProducts' not in import_names:
+              import_names.append('enrichPremiumReportWithCurrentProducts')
+          import_names = list(dict.fromkeys(import_names))
+          canonical_import = 'import {\n' + ''.join(f'  {name},\n' for name in import_names)[:-2] + '\n} from "@/lib/premium-current-products";'
+          route = route[:import_match.start()] + canonical_import + route[import_match.end():]
+
+          function_start = route.find('async function applyCurrentProductsToReport')
+          function_end_marker = '\n}\n\nexport async function POST'
+          function_end = route.find(function_end_marker, function_start)
+          if function_start < 0 or function_end < 0:
+              raise SystemExit('missing applyCurrentProductsToReport boundary')
+          canonical_function = '''async function applyCurrentProductsToReport({ report, body, locale }) {
+            if (!Array.isArray(body?.currentProducts)) {
+              return {
+                premiumReport: report,
+                changed: false
+              };
+            }
+
+            const currentProducts = await buildPremiumCurrentProductsSnapshot(body.currentProducts);
+            return {
+              premiumReport: enrichPremiumReportWithCurrentProducts(report, currentProducts, locale),
+              changed: true
+            };
+          }'''
+          canonical_function = '\n'.join(line[10:] if line.startswith('          ') else line for line in canonical_function.splitlines())
+          route = route[:function_start] + canonical_function + route[function_end + 2:]
+          route_path.write_text(route, encoding='utf-8')
 
           suite_path = Path('scripts/run-security-closeout-verifier-suite.mjs')
           suite = suite_path.read_text(encoding='utf-8')
@@ -99,7 +149,11 @@ jobs:
                   raise SystemExit('security verifier anchor mismatch')
               suite_path.write_text(suite.replace(anchor, anchor + entry, 1), encoding='utf-8')
           PY
-          git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
+          git add \
+            app/api/full-report/route.js \
+            app/api/full-report/session/route.js \
+            lib/premium-current-products.js \
+            scripts/run-security-closeout-verifier-suite.mjs
           rm -f \
             .github/workflows/premium-stack-merge-once.yml \
             .github/workflows/premium-pr27-debug.yml \
