@@ -1,4 +1,4 @@
-name: Premium stack merge diagnostic
+name: Premium PR2 stack merge executor
 
 on:
   pull_request:
@@ -12,12 +12,16 @@ on:
       - .github/workflows/premium-full-stack-merge-diagnostic.yml
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: premium-pr2-stack-merge-executor
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  merge-and-verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 75
     steps:
       - name: Checkout integration branch
         uses: actions/checkout@v4
@@ -25,48 +29,112 @@ jobs:
           ref: integration/premium-engine-main-sec-baseline
           fetch-depth: 0
 
-      - name: Merge PR2 head without committing
+      - name: Configure Git and fetch reviewed target
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin agent/functional-policy-single-source
-          mkdir -p tmp/premium-stack-merge-diagnostic/conflicts
-          {
-            echo "HEAD=$(git rev-parse HEAD)"
-            echo "TARGET=$(git rev-parse origin/agent/functional-policy-single-source)"
-            echo "MERGE_BASE=$(git merge-base HEAD origin/agent/functional-policy-single-source || true)"
-            git status --short
-          } > tmp/premium-stack-merge-diagnostic/preflight.txt
+          test "$(git rev-parse origin/agent/functional-policy-single-source)" = "098e5394c9e51be4977bc77372efabff40608412"
+          echo "START_HEAD=$(git rev-parse HEAD)"
+          echo "TARGET_HEAD=$(git rev-parse origin/agent/functional-policy-single-source)"
+
+      - name: Merge PR2 and assert conflict scope
+        shell: bash
+        run: |
+          set -euo pipefail
           set +e
-          git merge --no-ff --no-commit origin/agent/functional-policy-single-source > tmp/premium-stack-merge-diagnostic/merge.log 2>&1
+          git merge --no-ff --no-commit origin/agent/functional-policy-single-source
           STATUS=$?
           set -e
+          test "$STATUS" -ne 0
           mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
-          printf '%s\n' "${CONFLICTS[@]}" > tmp/premium-stack-merge-diagnostic/conflicts.txt
-          printf '{\n  "mergeStatus": %s,\n  "conflictCount": %s,\n  "conflicts": [' "$STATUS" "${#CONFLICTS[@]}" > tmp/premium-stack-merge-diagnostic/summary.json
-          for i in "${!CONFLICTS[@]}"; do
-            path="${CONFLICTS[$i]}"
-            safe=$(printf '%s' "$path" | sed 's#[^A-Za-z0-9._-]#_#g')
-            git show ":1:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.base" || true
-            git show ":2:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.ours" || true
-            git show ":3:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.theirs" || true
-            cp "$path" "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.working" || true
-            comma=','
-            if [ "$i" -eq "$((${#CONFLICTS[@]} - 1))" ]; then comma=''; fi
-            printf '\n    "%s"%s' "$path" "$comma" >> tmp/premium-stack-merge-diagnostic/summary.json
+          EXPECTED=(
+            ".codex/AI_WORK_LOG.md"
+            "lib/premium-decision-state.js"
+            "scripts/verify-premium-decision-state.mjs"
+          )
+          printf 'CONFLICT=%s\n' "${CONFLICTS[@]}"
+          test "${#CONFLICTS[@]}" -eq "${#EXPECTED[@]}"
+          for i in "${!EXPECTED[@]}"; do
+            test "${CONFLICTS[$i]}" = "${EXPECTED[$i]}"
           done
-          printf '\n  ]\n}\n' >> tmp/premium-stack-merge-diagnostic/summary.json
-          git status --short > tmp/premium-stack-merge-diagnostic/status.txt
-          cat tmp/premium-stack-merge-diagnostic/preflight.txt
-          cat tmp/premium-stack-merge-diagnostic/merge.log
-          cat tmp/premium-stack-merge-diagnostic/summary.json
 
-      - name: Upload diagnostic
-        uses: actions/upload-artifact@v4
-        with:
-          name: premium-stack-merge-diagnostic-pr2
-          path: tmp/premium-stack-merge-diagnostic
-          if-no-files-found: error
-          retention-days: 7
+      - name: Resolve append-only work log
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show :1:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-base.md"
+          git show :2:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-ours.md"
+          git show :3:.codex/AI_WORK_LOG.md > "$RUNNER_TEMP/worklog-theirs.md"
+          python - "$RUNNER_TEMP/worklog-base.md" "$RUNNER_TEMP/worklog-ours.md" "$RUNNER_TEMP/worklog-theirs.md" .codex/AI_WORK_LOG.md <<'PY'
+          from pathlib import Path
+          import sys
+
+          base_path, ours_path, theirs_path, output_path = map(Path, sys.argv[1:])
+          base = base_path.read_text(encoding="utf-8")
+          ours = ours_path.read_text(encoding="utf-8")
+          theirs = theirs_path.read_text(encoding="utf-8")
+          if not ours.startswith(base):
+              raise SystemExit("ours work log is not append-only")
+          if not theirs.startswith(base):
+              raise SystemExit("theirs work log is not append-only")
+          parts = [base.rstrip()]
+          ours_suffix = ours[len(base):].strip()
+          theirs_suffix = theirs[len(base):].strip()
+          if ours_suffix:
+              parts.append(ours_suffix)
+          if theirs_suffix:
+              parts.append(theirs_suffix)
+          Path(output_path).write_text("\n\n".join(parts).rstrip() + "\n", encoding="utf-8")
+          PY
+
+      - name: Resolve evolved PR2 engine files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout --theirs -- lib/premium-decision-state.js scripts/verify-premium-decision-state.mjs
+          git add .codex/AI_WORK_LOG.md lib/premium-decision-state.js scripts/verify-premium-decision-state.mjs
+          test -z "$(git diff --name-only --diff-filter=U)"
+
+      - name: Remove one-shot controller and check merge diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/premium-full-stack-merge-diagnostic.yml
+          git add -A
+          git diff --cached --check
+          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
+          git status --short
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify PR2 functional policy layer
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-functional-plan-decision.mjs
+          node scripts/verify-current-product-findings.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+
+      - name: Verify main security baseline
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Verify architecture and production build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run architecture:guard
+          npm run build
+          git diff --cached --check
+
+      - name: Commit and push reviewed merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git commit -m "merge(premium): integrate functional policy stack layer"
+          git push origin HEAD:integration/premium-engine-main-sec-baseline
