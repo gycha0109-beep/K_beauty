@@ -38,69 +38,30 @@ jobs:
           mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
           test "${#CONFLICTS[@]}" -eq 1
           test "${CONFLICTS[0]}" = "app/api/analyze/route.js"
+          git checkout --ours -- app/api/analyze/route.js
           python - <<'PY'
           from pathlib import Path
-          import re
+          import base64
 
           path = Path("app/api/analyze/route.js")
           text = path.read_text(encoding="utf-8")
-          text, count1 = re.subn(
-              r'<<<<<<< HEAD\n=======\nimport \{ rebuildPremiumDecisionState \} from "@/lib/premium-decision-state";\nimport \{ appendSurveyInputContractDevAuditEvent \} from "@/lib/survey-input-contract-dev-audit";\n>>>>>>> origin/agent/condition-policy-single-source\n',
-              'import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";\n',
-              text,
-              count=1,
-          )
-          second = r'''<<<<<<< HEAD
-    const premiumReport = sanitizePremiumReport\(decision\.premiumReport\);
-    const premiumSessionReport = premiumReport
-      \? sanitizePremiumReportProductImages\(
-          sanitizePremiumReportPurchaseLinks\(\{
-            \.\.\.premiumReport,
-            freeResult: publicDecision
-          \}\)
-        \)
-=======
-    const premiumDecisionSource = decision\.premiumReport
-      \? \{
-          \.\.\.decision\.premiumReport,
-          freeResult: publicDecision
-        \}
->>>>>>> origin/agent/condition-policy-single-source
-      : null;
-    const premiumSessionReport = premiumDecisionSource
-      \? sanitizePremiumReport\(rebuildPremiumDecisionState\(premiumDecisionSource, \{
-          locale,
-          source: "api_analyze_initial_session"
-        \}\)\)
-      : null;'''
-          replacement = '''    const premiumDecisionSource = decision.premiumReport
-      ? {
-          ...decision.premiumReport,
-          freeResult: publicDecision
-        }
-      : null;
-    const premiumSessionReport = premiumDecisionSource
-      ? sanitizePremiumReportProductImages(
-          sanitizePremiumReportPurchaseLinks(
-            sanitizePremiumReport(rebuildPremiumDecisionState(premiumDecisionSource, {
-              locale,
-              source: "api_analyze_initial_session"
-            }))
-          )
-        )
-      : null;'''
-          text, count2 = re.subn(second, replacement, text, count=1)
-          if count1 != 1 or count2 != 1:
-              raise SystemExit(f"analyze conflict resolution mismatch: imports={count1} body={count2}")
-          if any(marker in text for marker in ("<<<<<<<", "=======", ">>>>>>>")):
-              raise SystemExit("conflict marker remains in analyze route")
-          path.write_text(text, encoding="utf-8")
+          import_anchor = 'import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";\n'
+          import_replacement = import_anchor + 'import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";\n'
+          if text.count(import_anchor) != 1:
+              raise SystemExit("analyze import anchor mismatch")
+          text = text.replace(import_anchor, import_replacement, 1)
+          old = base64.b64decode("ICAgIGNvbnN0IHByZW1pdW1SZXBvcnQgPSBzYW5pdGl6ZVByZW1pdW1SZXBvcnQoZGVjaXNpb24ucHJlbWl1bVJlcG9ydCk7CiAgICBjb25zdCBwcmVtaXVtU2Vzc2lvblJlcG9ydCA9IHByZW1pdW1SZXBvcnQKICAgICAgPyBzYW5pdGl6ZVByZW1pdW1SZXBvcnRQcm9kdWN0SW1hZ2VzKAogICAgICAgICAgc2FuaXRpemVQcmVtaXVtUmVwb3J0UHVyY2hhc2VMaW5rcyh7CiAgICAgICAgICAgIC4uLnByZW1pdW1SZXBvcnQsCiAgICAgICAgICAgIGZyZWVSZXN1bHQ6IHB1YmxpY0RlY2lzaW9uCiAgICAgICAgICB9KQogICAgICAgICkKICAgICAgOiBudWxsOw==").decode()
+          new = base64.b64decode("ICAgIGNvbnN0IHByZW1pdW1EZWNpc2lvblNvdXJjZSA9IGRlY2lzaW9uLnByZW1pdW1SZXBvcnQKICAgICAgPyB7CiAgICAgICAgICAuLi5kZWNpc2lvbi5wcmVtaXVtUmVwb3J0LAogICAgICAgICAgZnJlZVJlc3VsdDogcHVibGljRGVjaXNpb24KICAgICAgICB9CiAgICAgIDogbnVsbDsKICAgIGNvbnN0IHByZW1pdW1TZXNzaW9uUmVwb3J0ID0gcHJlbWl1bURlY2lzaW9uU291cmNlCiAgICAgID8gc2FuaXRpemVQcmVtaXVtUmVwb3J0UHJvZHVjdEltYWdlcygKICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydFB1cmNoYXNlTGlua3MoCiAgICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydChyZWJ1aWxkUHJlbWl1bURlY2lzaW9uU3RhdGUocHJlbWl1bURlY2lzaW9uU291cmNlLCB7CiAgICAgICAgICAgICAgbG9jYWxlLAogICAgICAgICAgICAgIHNvdXJjZTogImFwaV9hbmFseXplX2luaXRpYWxfc2Vzc2lvbiIKICAgICAgICAgICAgfSkpCiAgICAgICAgICApCiAgICAgICAgKQogICAgICA6IG51bGw7").decode()
+          if text.count(old) != 1:
+              raise SystemExit("analyze premium session anchor mismatch")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
           PY
           git add app/api/analyze/route.js
           test -z "$(git diff --name-only --diff-filter=U)"
           rm .github/workflows/premium-stack-merge-once.yml
           git add -A
           git diff --cached --check
+          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
       - run: npm ci
       - name: Verify PR14 condition policy layer
         shell: bash
