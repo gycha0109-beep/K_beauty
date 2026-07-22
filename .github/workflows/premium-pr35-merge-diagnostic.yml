@@ -1,0 +1,45 @@
+name: Premium PR35 merge diagnostic
+
+on:
+  pull_request:
+    branches: [integration/premium-engine-main-sec-baseline]
+    types: [opened, reopened, synchronize]
+    paths: [.github/workflows/premium-pr35-merge-diagnostic.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-browser-journey-main-sec-baseline
+          fetch-depth: 0
+      - name: Build merge tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin agent/premium-browser-journey-verification
+          test "$(git rev-parse origin/agent/premium-browser-journey-verification)" = "f28dbd8bd3f08b2aa6b8b1ab3281b4053cda0f6f"
+          git merge --no-ff --no-commit origin/agent/premium-browser-journey-verification
+          mkdir -p diagnostic/scripts diagnostic/docs/verification diagnostic/.codex/work-logs
+          cp scripts/premium-browser-journey-core.mjs diagnostic/scripts/
+          cp scripts/verify-premium-browser-journey.mjs diagnostic/scripts/
+          cp scripts/cleanup-premium-browser-journey.mjs diagnostic/scripts/
+          cp scripts/verify-premium-browser-journey-contract.mjs diagnostic/scripts/
+          cp scripts/run-security-closeout-verifier-suite.mjs diagnostic/scripts/
+          cp package.json diagnostic/
+          cp docs/verification/premium-authenticated-browser-journey-v1.md diagnostic/docs/verification/
+          cp .codex/work-logs/2026-07-17-premium-browser-journey-verification.md diagnostic/.codex/work-logs/
+          git status --short > diagnostic/git-status.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: premium-pr35-merge-tree
+          path: diagnostic
+          if-no-files-found: error
+          retention-days: 7
