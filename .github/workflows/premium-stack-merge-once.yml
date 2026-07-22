@@ -1,0 +1,53 @@
+name: Premium PR14 stack merge diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths: [.github/workflows/premium-stack-merge-once.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+      - name: Merge PR14 head without committing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin agent/condition-policy-single-source
+          test "$(git rev-parse origin/agent/condition-policy-single-source)" = "f0045d816003523c46b63715291c57fe958d68ef"
+          mkdir -p tmp/diag/conflicts
+          set +e
+          git merge --no-ff --no-commit origin/agent/condition-policy-single-source > tmp/diag/merge.log 2>&1
+          STATUS=$?
+          set -e
+          mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
+          printf '%s\n' "${CONFLICTS[@]}" > tmp/diag/conflicts.txt
+          printf '{"mergeStatus":%s,"conflictCount":%s,"conflicts":[' "$STATUS" "${#CONFLICTS[@]}" > tmp/diag/summary.json
+          for i in "${!CONFLICTS[@]}"; do
+            p="${CONFLICTS[$i]}"; s=$(printf '%s' "$p" | sed 's#[^A-Za-z0-9._-]#_#g')
+            git show ":1:$p" > "tmp/diag/conflicts/${s}.base" || true
+            git show ":2:$p" > "tmp/diag/conflicts/${s}.ours" || true
+            git show ":3:$p" > "tmp/diag/conflicts/${s}.theirs" || true
+            [ "$i" -eq "$((${#CONFLICTS[@]}-1))" ] && c='' || c=','
+            printf '"%s"%s' "$p" "$c" >> tmp/diag/summary.json
+          done
+          printf ']}\n' >> tmp/diag/summary.json
+          git status --short > tmp/diag/status.txt
+          cat tmp/diag/merge.log
+          cat tmp/diag/summary.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: premium-stack-merge-diagnostic-pr14
+          path: tmp/diag
+          retention-days: 7
