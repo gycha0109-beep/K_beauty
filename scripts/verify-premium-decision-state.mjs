@@ -47,10 +47,12 @@ const emptyState = buildPremiumDecisionState(
   baseReport({ currentProducts: null, currentProductVerdicts: [] }),
   { locale: "ko", source: "verify_empty" }
 );
-
-assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v1");
+assert.equal(emptyState.decisionBundle.version, "premium-decision-bundle-v2");
 assert.equal(emptyState.decisionBundle.contextRevision, 1);
 assert.equal(emptyState.decisionBundle.context.productExposureState.activeExposurePresent, false);
+assert.equal(emptyState.functionalPolicy.version, "functional-policy-v1");
+assert.equal(emptyState.functionalPlan.policyVersion, "functional-policy-v1");
+assert.equal(emptyState.functionalRoutineAudit.status, "NO_ROUTINE_DATA");
 assert.equal(functionalStatus(emptyState, "texture_exfoliation"), "later");
 assert.equal(conditionStatus(emptyState, "active_load"), "reduce");
 assert.equal(
@@ -75,6 +77,11 @@ const activeProduct = {
 };
 
 const activeReport = baseReport({
+  freeResult: {
+    ...baseReport().freeResult,
+    priority: { axis: "pores", score: 25 },
+    answers: { sensitivity: "high", recentSkinChange: "yes" }
+  },
   currentProducts: {
     selections: [activeProduct],
     summary: { total: 1, selectedCount: 1 }
@@ -98,6 +105,9 @@ const activeState = buildPremiumDecisionState(activeReport, {
 assert.equal(activeState.decisionBundle.context.productExposureState.activeExposurePresent, true);
 assert.deepEqual(activeState.decisionBundle.context.productExposureState.rows[0].activeAxes, ["exfoliation"]);
 assert.equal(activeState.decisionBundle.context.safetyState.activeBurden, true);
+assert.equal(activeState.functionalPolicy.planMode, "HOLD");
+assert.equal(activeState.functionalPlan.planMode, "HOLD");
+assert.equal(activeState.functionalRoutineAudit.status, "OPTIMIZE");
 assert.equal(functionalStatus(activeState, "texture_exfoliation"), "pause");
 assert.equal(conditionStatus(activeState, "active_load"), "avoid_for_now");
 
@@ -107,23 +117,14 @@ const unknownState = buildPremiumDecisionState(
       selections: [{ status: "not_in_db", category: "serum", productId: null }],
       summary: { total: 1, notInDbCount: 1 }
     },
-    currentProductVerdicts: [
-      {
-        slotKey: "pm.functional.serum",
-        status: "check_needed",
-        title: "unknown",
-        summary: "unknown",
-        reasons: [],
-        adjustment: null
-      }
-    ]
+    currentProductVerdicts: []
   }),
   { locale: "ko", source: "verify_unknown" }
 );
 
 assert.equal(unknownState.decisionBundle.context.productExposureState.unknownProductCount, 1);
 assert.equal(unknownState.decisionBundle.context.productExposureState.activeExposurePresent, false);
-assert.equal(functionalStatus(unknownState, "texture_exfoliation"), "later");
+assert.equal(unknownState.functionalRoutineAudit.status, "UNKNOWN");
 assert.notEqual(conditionStatus(unknownState, "active_load"), "avoid_for_now");
 
 const rebuiltOnce = rebuildPremiumDecisionState(activeReport, {
@@ -167,17 +168,14 @@ const changedSurvey = rebuildPremiumDecisionState(
 assert.equal(changedSurvey.decisionBundle.context.survey.answers.recentSkinChange, "yes");
 assert.equal(changedSurvey.decisionBundle.context.safetyState.recentSkinChange, "yes");
 assert.notEqual(changedSurvey.decisionBundle.contextHash, previousSurvey.decisionBundle.contextHash);
-assert.equal(
-  changedSurvey.decisionBundle.contextRevision,
-  previousSurvey.decisionBundle.contextRevision + 1
-);
+assert.equal(changedSurvey.decisionBundle.contextRevision, previousSurvey.decisionBundle.contextRevision + 1);
 
 const rotated = buildRotatedPremiumReportPayload(rebuiltOnce);
 assert.ok(rotated);
 assert.equal(rotated.currentProducts, null);
 assert.deepEqual(rotated.currentProductVerdicts, []);
 assert.equal(rotated.decisionBundle.context.productExposureState.activeExposurePresent, false);
-assert.equal(functionalStatus(rotated, "texture_exfoliation"), "later");
+assert.equal(rotated.functionalRoutineAudit.status, "NO_ROUTINE_DATA");
 assert.notEqual(conditionStatus(rotated, "active_load"), "avoid_for_now");
 
 const conditionBase = {
