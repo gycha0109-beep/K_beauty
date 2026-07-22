@@ -1,4 +1,4 @@
-name: Premium full-stack merge diagnostic
+name: Premium stack merge diagnostic
 
 on:
   pull_request:
@@ -25,48 +25,48 @@ jobs:
           ref: integration/premium-engine-main-sec-baseline
           fetch-depth: 0
 
-      - name: Merge final design branch without committing
+      - name: Merge PR2 head without committing
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin agent/premium-hosted-preview-harness-hardening-design
-          mkdir -p tmp/full-stack-merge-diagnostic/conflicts
+          git fetch origin agent/functional-policy-single-source
+          mkdir -p tmp/premium-stack-merge-diagnostic/conflicts
           {
             echo "HEAD=$(git rev-parse HEAD)"
-            echo "DESIGN=$(git rev-parse origin/agent/premium-hosted-preview-harness-hardening-design)"
-            echo "MERGE_BASE=$(git merge-base HEAD origin/agent/premium-hosted-preview-harness-hardening-design || true)"
+            echo "TARGET=$(git rev-parse origin/agent/functional-policy-single-source)"
+            echo "MERGE_BASE=$(git merge-base HEAD origin/agent/functional-policy-single-source || true)"
             git status --short
-          } > tmp/full-stack-merge-diagnostic/preflight.txt
+          } > tmp/premium-stack-merge-diagnostic/preflight.txt
           set +e
-          git merge --no-ff --no-commit origin/agent/premium-hosted-preview-harness-hardening-design > tmp/full-stack-merge-diagnostic/merge.log 2>&1
+          git merge --no-ff --no-commit origin/agent/functional-policy-single-source > tmp/premium-stack-merge-diagnostic/merge.log 2>&1
           STATUS=$?
           set -e
           mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
-          printf '%s\n' "${CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/conflicts.txt
-          printf '{\n  "mergeStatus": %s,\n  "conflictCount": %s,\n  "conflicts": [' "$STATUS" "${#CONFLICTS[@]}" > tmp/full-stack-merge-diagnostic/summary.json
+          printf '%s\n' "${CONFLICTS[@]}" > tmp/premium-stack-merge-diagnostic/conflicts.txt
+          printf '{\n  "mergeStatus": %s,\n  "conflictCount": %s,\n  "conflicts": [' "$STATUS" "${#CONFLICTS[@]}" > tmp/premium-stack-merge-diagnostic/summary.json
           for i in "${!CONFLICTS[@]}"; do
             path="${CONFLICTS[$i]}"
             safe=$(printf '%s' "$path" | sed 's#[^A-Za-z0-9._-]#_#g')
-            git show ":1:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.base" || true
-            git show ":2:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.ours" || true
-            git show ":3:$path" > "tmp/full-stack-merge-diagnostic/conflicts/${safe}.theirs" || true
-            cp "$path" "tmp/full-stack-merge-diagnostic/conflicts/${safe}.working" || true
+            git show ":1:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.base" || true
+            git show ":2:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.ours" || true
+            git show ":3:$path" > "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.theirs" || true
+            cp "$path" "tmp/premium-stack-merge-diagnostic/conflicts/${safe}.working" || true
             comma=','
             if [ "$i" -eq "$((${#CONFLICTS[@]} - 1))" ]; then comma=''; fi
-            printf '\n    "%s"%s' "$path" "$comma" >> tmp/full-stack-merge-diagnostic/summary.json
+            printf '\n    "%s"%s' "$path" "$comma" >> tmp/premium-stack-merge-diagnostic/summary.json
           done
-          printf '\n  ]\n}\n' >> tmp/full-stack-merge-diagnostic/summary.json
-          git status --short > tmp/full-stack-merge-diagnostic/status.txt
-          cat tmp/full-stack-merge-diagnostic/preflight.txt
-          cat tmp/full-stack-merge-diagnostic/merge.log
-          cat tmp/full-stack-merge-diagnostic/summary.json
+          printf '\n  ]\n}\n' >> tmp/premium-stack-merge-diagnostic/summary.json
+          git status --short > tmp/premium-stack-merge-diagnostic/status.txt
+          cat tmp/premium-stack-merge-diagnostic/preflight.txt
+          cat tmp/premium-stack-merge-diagnostic/merge.log
+          cat tmp/premium-stack-merge-diagnostic/summary.json
 
       - name: Upload diagnostic
         uses: actions/upload-artifact@v4
         with:
-          name: premium-full-stack-merge-diagnostic
-          path: tmp/full-stack-merge-diagnostic
+          name: premium-stack-merge-diagnostic-pr2
+          path: tmp/premium-stack-merge-diagnostic
           if-no-files-found: error
           retention-days: 7
