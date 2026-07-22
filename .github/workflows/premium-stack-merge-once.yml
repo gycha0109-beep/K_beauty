@@ -1,4 +1,4 @@
-name: Premium PR17 stack merge diagnostic
+name: Premium PR17 stack merge executor
 
 on:
   pull_request:
@@ -7,18 +7,22 @@ on:
     paths: [.github/workflows/premium-stack-merge-once.yml]
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: premium-pr17-stack-merge-executor
+  cancel-in-progress: false
 
 jobs:
-  diagnose:
+  merge-and-verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
         with:
           ref: integration/premium-engine-main-sec-baseline
           fetch-depth: 0
-      - name: Merge PR17 head without committing
+      - name: Merge reviewed PR17 head
         shell: bash
         run: |
           set -euo pipefail
@@ -26,28 +30,32 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin agent/cross-domain-consistency
           test "$(git rev-parse origin/agent/cross-domain-consistency)" = "4a60cfac1f643e5a0c6ba117a01433cfab57e7e6"
-          mkdir -p tmp/diag/conflicts
-          set +e
-          git merge --no-ff --no-commit origin/agent/cross-domain-consistency > tmp/diag/merge.log 2>&1
-          STATUS=$?
-          set -e
-          mapfile -t CONFLICTS < <(git diff --name-only --diff-filter=U | sort)
-          printf '%s\n' "${CONFLICTS[@]}" > tmp/diag/conflicts.txt
-          printf '{"mergeStatus":%s,"conflictCount":%s,"conflicts":[' "$STATUS" "${#CONFLICTS[@]}" > tmp/diag/summary.json
-          for i in "${!CONFLICTS[@]}"; do
-            p="${CONFLICTS[$i]}"; s=$(printf '%s' "$p" | sed 's#[^A-Za-z0-9._-]#_#g')
-            git show ":1:$p" > "tmp/diag/conflicts/${s}.base" || true
-            git show ":2:$p" > "tmp/diag/conflicts/${s}.ours" || true
-            git show ":3:$p" > "tmp/diag/conflicts/${s}.theirs" || true
-            [ "$i" -eq "$((${#CONFLICTS[@]}-1))" ] && c='' || c=','
-            printf '"%s"%s' "$p" "$c" >> tmp/diag/summary.json
-          done
-          printf ']}\n' >> tmp/diag/summary.json
-          git status --short > tmp/diag/status.txt
-          cat tmp/diag/merge.log
-          cat tmp/diag/summary.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: premium-stack-merge-diagnostic-pr17
-          path: tmp/diag
-          retention-days: 7
+          git merge --no-ff --no-commit origin/agent/cross-domain-consistency
+          test -z "$(git diff --name-only --diff-filter=U)"
+          rm .github/workflows/premium-stack-merge-once.yml
+          git add -A
+          git diff --cached --check
+          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
+          git commit -m "merge(premium): integrate cross-domain consistency layer"
+      - run: npm ci
+      - name: Verify cross-domain policy stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-cross-domain-consistency.mjs
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Verify main security baseline
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Verify architecture and build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run architecture:guard
+          npm run build
+          git diff --check
+      - name: Push reviewed commit
+        run: git push origin HEAD:integration/premium-engine-main-sec-baseline
