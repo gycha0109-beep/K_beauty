@@ -1,0 +1,73 @@
+name: Premium PR27 final diagnostic
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+    paths: [.github/workflows/premium-pr27-final-diagnostic.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+      - name: Rebuild exact committed PR27 merge tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin agent/premium-route-storage-reentry-verification
+          set +e
+          git merge --no-ff --no-commit origin/agent/premium-route-storage-reentry-verification
+          STATUS=$?
+          set -e
+          test "$STATUS" -ne 0
+          python - <<'PY'
+          from pathlib import Path
+          import ast, base64, re, zlib
+          workflow = Path('.github/workflows/premium-stack-merge-once.yml').read_text(encoding='utf-8')
+          for name, target in [('full','app/api/full-report/route.js'),('session','app/api/full-report/session/route.js')]:
+              match = re.search(rf'^          {name} = (".*")$', workflow, re.MULTILINE)
+              if not match: raise SystemExit(f'missing embedded {name} payload')
+              Path(target).write_bytes(zlib.decompress(base64.b64decode(ast.literal_eval(match.group(1)))))
+          suite = Path('scripts/run-security-closeout-verifier-suite.mjs')
+          text = suite.read_text(encoding='utf-8')
+          entry = '  "verify-premium-route-storage-reentry.mjs",\n'
+          if entry not in text:
+              anchor = '  "verify-premium-report-reentry-contract.mjs",\n'
+              suite.write_text(text.replace(anchor, anchor + entry, 1), encoding='utf-8')
+          PY
+          git add app/api/full-report/route.js app/api/full-report/session/route.js scripts/run-security-closeout-verifier-suite.mjs
+          rm .github/workflows/premium-stack-merge-once.yml .github/workflows/premium-pr27-debug.yml .github/workflows/premium-pr27-final-diagnostic.yml
+          git add -A
+          git commit -m "merge(premium): diagnostic exact tree"
+          npm ci
+      - name: Run preceding verifiers
+        run: |
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-premium-integrated-evaluation.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Capture decision verifier
+        id: decision
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/verify-premium-decision-state.mjs 2>&1 | tee pr27-decision-final.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: premium-pr27-final-diagnostic
+          path: pr27-decision-final.log
+          if-no-files-found: error
+          retention-days: 7
+      - name: Enforce decision result
+        run: test "${{ steps.decision.outcome }}" = "success"
