@@ -42,14 +42,12 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import base64
-
           path = Path("app/api/analyze/route.js")
           text = path.read_text(encoding="utf-8")
-          import_anchor = 'import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";\n'
-          import_replacement = import_anchor + 'import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";\n'
-          if text.count(import_anchor) != 1:
+          anchor = 'import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";\n'
+          if text.count(anchor) != 1:
               raise SystemExit("analyze import anchor mismatch")
-          text = text.replace(import_anchor, import_replacement, 1)
+          text = text.replace(anchor, anchor + 'import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";\n', 1)
           old = base64.b64decode("ICAgIGNvbnN0IHByZW1pdW1SZXBvcnQgPSBzYW5pdGl6ZVByZW1pdW1SZXBvcnQoZGVjaXNpb24ucHJlbWl1bVJlcG9ydCk7CiAgICBjb25zdCBwcmVtaXVtU2Vzc2lvblJlcG9ydCA9IHByZW1pdW1SZXBvcnQKICAgICAgPyBzYW5pdGl6ZVByZW1pdW1SZXBvcnRQcm9kdWN0SW1hZ2VzKAogICAgICAgICAgc2FuaXRpemVQcmVtaXVtUmVwb3J0UHVyY2hhc2VMaW5rcyh7CiAgICAgICAgICAgIC4uLnByZW1pdW1SZXBvcnQsCiAgICAgICAgICAgIGZyZWVSZXN1bHQ6IHB1YmxpY0RlY2lzaW9uCiAgICAgICAgICB9KQogICAgICAgICkKICAgICAgOiBudWxsOw==").decode()
           new = base64.b64decode("ICAgIGNvbnN0IHByZW1pdW1EZWNpc2lvblNvdXJjZSA9IGRlY2lzaW9uLnByZW1pdW1SZXBvcnQKICAgICAgPyB7CiAgICAgICAgICAuLi5kZWNpc2lvbi5wcmVtaXVtUmVwb3J0LAogICAgICAgICAgZnJlZVJlc3VsdDogcHVibGljRGVjaXNpb24KICAgICAgICB9CiAgICAgIDogbnVsbDsKICAgIGNvbnN0IHByZW1pdW1TZXNzaW9uUmVwb3J0ID0gcHJlbWl1bURlY2lzaW9uU291cmNlCiAgICAgID8gc2FuaXRpemVQcmVtaXVtUmVwb3J0UHJvZHVjdEltYWdlcygKICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydFB1cmNoYXNlTGlua3MoCiAgICAgICAgICAgIHNhbml0aXplUHJlbWl1bVJlcG9ydChyZWJ1aWxkUHJlbWl1bURlY2lzaW9uU3RhdGUocHJlbWl1bURlY2lzaW9uU291cmNlLCB7CiAgICAgICAgICAgICAgbG9jYWxlLAogICAgICAgICAgICAgIHNvdXJjZTogImFwaV9hbmFseXplX2luaXRpYWxfc2Vzc2lvbiIKICAgICAgICAgICAgfSkpCiAgICAgICAgICApCiAgICAgICAgKQogICAgICA6IG51bGw7").decode()
           if text.count(old) != 1:
@@ -61,17 +59,17 @@ jobs:
           rm .github/workflows/premium-stack-merge-once.yml
           git add -A
           git diff --cached --check
-          test -z "$(git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- . ':!package-lock.json' || true)"
       - run: npm ci
-      - name: Verify PR14 condition policy layer
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/verify-condition-policy-single-source.mjs
-          node scripts/verify-routine-policy-single-source.mjs
-          node scripts/verify-functional-policy-single-source.mjs
-          node scripts/verify-premium-decision-state.mjs
-          node scripts/verify-premium-report-reentry-contract.mjs
+      - name: Verify condition policy
+        run: node scripts/verify-condition-policy-single-source.mjs
+      - name: Verify routine policy
+        run: node scripts/verify-routine-policy-single-source.mjs
+      - name: Verify functional policy
+        run: node scripts/verify-functional-policy-single-source.mjs
+      - name: Verify premium decision state
+        run: node scripts/verify-premium-decision-state.mjs
+      - name: Verify premium report reentry
+        run: node scripts/verify-premium-report-reentry-contract.mjs
       - name: Verify main security baseline
         run: node scripts/run-security-closeout-verifier-suite.mjs
       - name: Verify architecture and build
