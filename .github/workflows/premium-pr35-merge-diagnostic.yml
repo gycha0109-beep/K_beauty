@@ -18,7 +18,7 @@ jobs:
         with:
           ref: integration/premium-browser-journey-main-sec-baseline
           fetch-depth: 0
-      - name: Build merge tree
+      - name: Build and transform merge tree
         shell: bash
         run: |
           set -euo pipefail
@@ -28,8 +28,14 @@ jobs:
           test "$(git rev-parse origin/agent/premium-browser-journey-verification)" = "f28dbd8bd3f08b2aa6b8b1ab3281b4053cda0f6f"
           git merge --no-ff --no-commit origin/agent/premium-browser-journey-verification
           mkdir -p diagnostic/scripts diagnostic/docs/verification diagnostic/.codex/work-logs
+          set +e
+          python .github/scripts/premium-pr35-integrate.py . > diagnostic/transform.log 2>&1
+          STATUS=$?
+          set -e
+          echo "$STATUS" > diagnostic/transform-status.txt
           cp scripts/premium-browser-journey-core.mjs diagnostic/scripts/
-          cp scripts/verify-premium-browser-journey.mjs diagnostic/scripts/
+          if [ -f scripts/run-premium-browser-journey.mjs ]; then cp scripts/run-premium-browser-journey.mjs diagnostic/scripts/; fi
+          if [ -f scripts/verify-premium-browser-journey.mjs ]; then cp scripts/verify-premium-browser-journey.mjs diagnostic/scripts/; fi
           cp scripts/cleanup-premium-browser-journey.mjs diagnostic/scripts/
           cp scripts/verify-premium-browser-journey-contract.mjs diagnostic/scripts/
           cp scripts/run-security-closeout-verifier-suite.mjs diagnostic/scripts/
@@ -39,7 +45,8 @@ jobs:
           git status --short > diagnostic/git-status.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: premium-pr35-merge-tree
+          name: premium-pr35-transform-diagnostic
           path: diagnostic
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
