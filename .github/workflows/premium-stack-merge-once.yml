@@ -70,6 +70,7 @@ jobs:
           rm .github/workflows/premium-stack-merge-once.yml
           git add -A
           git diff --cached --check
+          git commit -m "merge(premium): integrate condition policy stack layer"
       - run: npm ci
       - name: Verify condition policy
         run: node scripts/verify-condition-policy-single-source.mjs
@@ -101,10 +102,6 @@ jobs:
           set -euo pipefail
           npm run architecture:guard
           npm run build
-          git diff --cached --check
-      - name: Commit and push
-        shell: bash
-        run: |
-          set -euo pipefail
-          git commit -m "merge(premium): integrate condition policy stack layer"
-          git push origin HEAD:integration/premium-engine-main-sec-baseline
+          git diff --check
+      - name: Push reviewed commit
+        run: git push origin HEAD:integration/premium-engine-main-sec-baseline
