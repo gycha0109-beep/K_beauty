@@ -2387,3 +2387,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Delta: added post-policy contradiction detection, fail-closed effective policies, Bundle v5 metadata, and projection guards.
 - Protected impact: no DB/Auth/RLS/Storage/Provider/Payment/Secret/Production execution; existing saved-report compatibility fields are preserved.
 - Verification: focused consistency verifier plus existing policy, decision-state, reentry, architecture, build, and diff checks.
+
+### 2026-07-22 / Hosted Preview OAuth callback-origin contract
+
+- Task type: bounded High-risk Auth execution. Auth, Provider, Secret, and hosted Preview execution are `Y`; DB, RLS, Storage, Payment, schema, policy, Site URL, provider configuration, and production configuration changes are `N`.
+- Minimal fix: `LoginButtons` now constructs Google OAuth `redirectTo` directly from `window.location.origin`, retaining the existing encoded relative `next` parameter. No canonical domain or Site URL fallback is referenced by the component.
+- Regression coverage: the full-report auth/origin contract now rejects production-domain and `NEXT_PUBLIC_SITE_URL` references in `LoginButtons`, requires the origin-derived callback shape, and verifies callback relative-path protections remain present.
+- Verification: `node scripts/verify-full-report-auth-origin-contract.mjs`, `npm run build`, and `git diff --check` passed. A live Preview OAuth A/B run remains pending a Git-backed Preview deployment.
