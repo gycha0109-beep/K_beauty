@@ -32,7 +32,7 @@ async function getCurrentSessionContext(request) {
   }
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
-  const premiumSession = await verifyPremiumReportSession(premiumCookie);
+  const premiumSession = await verifyPremiumReportSession(premiumCookie, { userId: routeContext.user.id });
   if (!premiumSession.ok || !premiumSession.payload?.sessionId || !premiumSession.payload?.premiumReport) {
     return { error: "current_session_missing" };
   }
@@ -99,7 +99,7 @@ export async function POST(request) {
     const premiumSessionToken = await createPremiumReportSession({
       premiumReport,
       locale: context.premiumSession.payload.locale
-    });
+    }, { userId: context.user.id });
     if (!premiumSessionToken) return json({ rotated: false, reason: "session_store_unavailable" }, 503);
 
     const response = json({ rotated: true, reason: "new_session_created" });

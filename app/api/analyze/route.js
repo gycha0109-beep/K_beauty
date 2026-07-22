@@ -1645,12 +1645,12 @@ export async function POST(request) {
           source: "api_analyze_initial_session"
         }))
       : null;
-    const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
+    const { user: premiumUser, access: premiumAccess } = await resolvePremiumAccessForRequest(request);
     const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
       ? await createPremiumReportSession({
           premiumReport: premiumSessionReport,
           locale
-        })
+        }, { userId: premiumUser?.id })
       : null;
     const responsePayload = {
       ...publicDecision,
