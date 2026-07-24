@@ -32,7 +32,10 @@ assert.match(authSource, /inspectStorageState/);
 assert.match(authSource, /local_runner_preview_only/);
 assert.match(authSource, /git_worktree_not_clean/);
 assert.match(authSource, /restrictLocalPath/);
+assert.match(authSource, /resetLocalAuthProfiles/);
 assert.match(authSource, /context\.request\.get/);
+assert.match(authSource, /maxRedirects:\s*0/);
+assert.match(authSource, /preview_navigation_left_target_origin/);
 assert.doesNotMatch(authSource, /signInWithPassword/);
 assert.doesNotMatch(authSource, /gmail\.com/i);
 assert.doesNotMatch(authSource, /password/i);
@@ -40,13 +43,18 @@ assert.doesNotMatch(authSource, /password/i);
 assert.match(bootstrapSource, /interactive:\s*true/);
 assert.match(bootstrapSource, /비밀번호는 이 스크립트나 저장소에 입력하지 않습니다/);
 assert.match(bootstrapSource, /saveBootstrapMetadata/);
+assert.match(bootstrapSource, /assertGitWorktreeClean\(\)/);
+assert.match(bootstrapSource, /reset-profiles/);
 
 assert.match(runnerSource, /interactive:\s*false/);
+assert.match(runnerSource, /assertGitWorktreeClean\(\)/);
 assert.match(runnerSource, /PREMIUM_E2E_CONFLICT_ACCESS_TOKEN/);
 assert.match(runnerSource, /cleanup-premium-browser-journey\.mjs/);
 assert.match(runnerSource, /DELETE_TEST_REPORTS_/);
 assert.match(runnerSource, /CLEANUP_FAILURE/);
 assert.match(runnerSource, /HOSTED_PREVIEW_PASS/);
+assert.match(runnerSource, /preview_probe_left_target_origin/);
+assert.match(runnerSource, /redirect:\s*"manual"/);
 assert.doesNotMatch(runnerSource, /PREMIUM_E2E_ALLOW_PRODUCTION/);
 
 console.log(JSON.stringify({
