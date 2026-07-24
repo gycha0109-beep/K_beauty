@@ -56,13 +56,45 @@ async function probePreview(baseUrl, previewBypassToken) {
     : {};
   let response;
   try {
-    response = await fetch(baseUrl.origin, { method: "GET", headers, redirect: "follow" });
+    response = await fetch(baseUrl.origin, { method: "GET", headers, redirect: "manual" });
   } catch {
     throw new JourneyFailure(FAILURE_CATEGORIES.INFRASTRUCTURE, "preview-probe", "preview_unreachable");
   }
   requireCondition(response.status < 400, FAILURE_CATEGORIES.INFRASTRUCTURE, "preview-probe", `preview_http_${response.status}`);
+  let finalUrl;
+  try {
+    finalUrl = new URL(response.url);
+  } catch {
+    throw new JourneyFailure(FAILURE_CATEGORIES.INFRASTRUCTURE, "preview-probe", "preview_final_url_invalid");
+  }
+  requireCondition(
+    finalUrl.origin === baseUrl.origin,
+    FAILURE_CATEGORIES.INFRASTRUCTURE,
+    "preview-probe",
+    "preview_probe_left_target_origin"
+  );
+  const redirectLocation = response.status >= 300 && response.status < 400
+    ? response.headers.get("location") || ""
+    : "";
+  if (response.status >= 300 && response.status < 400) {
+    requireCondition(redirectLocation, FAILURE_CATEGORIES.INFRASTRUCTURE, "preview-probe", "preview_redirect_location_missing");
+    let redirectUrl;
+    try {
+      redirectUrl = new URL(redirectLocation, baseUrl.origin);
+    } catch {
+      throw new JourneyFailure(FAILURE_CATEGORIES.INFRASTRUCTURE, "preview-probe", "preview_redirect_location_invalid");
+    }
+    requireCondition(
+      redirectUrl.origin === baseUrl.origin,
+      FAILURE_CATEGORIES.INFRASTRUCTURE,
+      "preview-probe",
+      "preview_probe_left_target_origin"
+    );
+  }
   return {
     status: response.status,
+    finalHost: finalUrl.hostname,
+    sameOriginRedirect: redirectLocation ? true : null,
     vercelRequestIdPresent: Boolean(response.headers.get("x-vercel-id"))
   };
 }
