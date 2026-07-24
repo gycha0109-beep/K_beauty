@@ -9,6 +9,7 @@ Google OAuth가 필요한 Premium Hosted E2E를 Codex나 GitHub Actions에 맡�
 - Google 이메일과 비밀번호를 코드, YAML, 환경 변수에 저장하지 않는다.
 - 기존 `run-premium-browser-journey.mjs`와 강제 cleanup 계약은 그대로 사용한다.
 - Preview 환경에서만 동작하며 `main`/`master`에서 bootstrap을 거부한다.
+- 추적·비추적 변경이 남은 Git working tree에서는 실행을 거부한다.
 
 ## 로컬 저장 위치
 
@@ -111,6 +112,7 @@ npm run e2e:premium:hosted -- --image=/absolute/path/to/test.png
 
 wrapper는 다음을 강제한다.
 
+- Git working tree가 clean일 것
 - 현재 checkout 브랜치가 bootstrap 당시 브랜치와 동일할 것
 - `expected SHA`가 현재 로컬 `HEAD`와 동일할 것
 - `deployment SHA`가 `expected SHA`와 동일할 것
