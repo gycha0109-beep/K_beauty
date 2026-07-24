@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { chromium } from "playwright";
 import {
@@ -74,6 +74,27 @@ export async function readJsonIfPresent(path) {
     return JSON.parse(await readFile(path, "utf8"));
   } catch {
     throw new JourneyFailure(FAILURE_CATEGORIES.PRECONDITION, "local-config", "local_json_invalid");
+  }
+}
+
+export async function resetLocalAuthProfiles({ resetA = false, resetB = false } = {}) {
+  const targets = [];
+  if (resetA) {
+    targets.push(
+      rm(LOCAL_PROFILE_A_PATH, { recursive: true, force: true }),
+      rm(LOCAL_STORAGE_A_PATH, { force: true })
+    );
+  }
+  if (resetB) {
+    targets.push(
+      rm(LOCAL_PROFILE_B_PATH, { recursive: true, force: true }),
+      rm(LOCAL_STORAGE_B_PATH, { force: true })
+    );
+  }
+  if (targets.length) {
+    targets.push(rm(LOCAL_ACCOUNT_METADATA_PATH, { force: true }));
+    await Promise.all(targets);
+    await ensureLocalRuntime();
   }
 }
 
@@ -227,6 +248,31 @@ function cookieMatchesTargetHost(cookie, targetHost) {
   return Boolean(domain && host && (host === domain || host.endsWith(`.${domain}`)));
 }
 
+function requireTargetOrigin(value, baseUrl, step) {
+  let resolved;
+  try {
+    resolved = new URL(String(value || ""), baseUrl.origin);
+  } catch {
+    throw new JourneyFailure(FAILURE_CATEGORIES.INFRASTRUCTURE, step, "preview_navigation_url_invalid");
+  }
+  requireCondition(
+    resolved.origin === baseUrl.origin,
+    FAILURE_CATEGORIES.INFRASTRUCTURE,
+    step,
+    "preview_navigation_left_target_origin"
+  );
+}
+
+function requireSafeApiResponseRedirect(response, baseUrl, step) {
+  const status = response.status();
+  requireTargetOrigin(response.url(), baseUrl, step);
+  if (status >= 300 && status < 400) {
+    const location = response.headers().location || "";
+    requireCondition(location, FAILURE_CATEGORIES.INFRASTRUCTURE, step, "preview_redirect_location_missing");
+    requireTargetOrigin(location, baseUrl, step);
+  }
+}
+
 async function triggerPostLoginAuthLookup({ context, page, baseUrl, deferred, timeoutMs, label }) {
   const deadline = Date.now() + timeoutMs;
   while (!deferred.settled && Date.now() < deadline) {
@@ -235,7 +281,9 @@ async function triggerPostLoginAuthLookup({ context, page, baseUrl, deferred, ti
       String(cookie?.name || "").includes("auth-token") && cookieMatchesTargetHost(cookie, baseUrl.hostname)
     );
     if (hasTargetAuthCookie) {
-      await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      const response = await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      requireCondition(response, FAILURE_CATEGORIES.INFRASTRUCTURE, `local-auth-${label}`, "preview_navigation_no_response");
+      requireTargetOrigin(page.url(), baseUrl, `local-auth-${label}`);
       return;
     }
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 500));
@@ -286,6 +334,7 @@ export async function captureAccountSession({
     if (previewBypassToken) {
       const bypassResponse = await context.request.get(baseUrl.origin, {
         headers: getPreviewHeaders(previewBypassToken),
+        maxRedirects: 0,
         timeout: 60_000
       });
       requireCondition(
@@ -294,8 +343,11 @@ export async function captureAccountSession({
         `local-auth-${label}`,
         "preview_bypass_failed"
       );
+      requireSafeApiResponseRedirect(bypassResponse, baseUrl, `local-auth-${label}`);
     }
-    await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    const initialResponse = await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
+    requireCondition(initialResponse, FAILURE_CATEGORIES.INFRASTRUCTURE, `local-auth-${label}`, "preview_navigation_no_response");
+    requireTargetOrigin(page.url(), baseUrl, `local-auth-${label}`);
     if (interactive) {
       console.log(`[${label}] 브라우저에서 전용 Google 테스트 계정으로 로그인하십시오. 로그인 완료를 자동 감지합니다.`);
       void triggerPostLoginAuthLookup({ context, page, baseUrl, deferred, timeoutMs, label }).catch(() => {
