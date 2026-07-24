@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { chromium } from "playwright";
 import {
@@ -49,12 +49,22 @@ export function parseCliArgs(argv = process.argv.slice(2)) {
   return args;
 }
 
+async function restrictLocalPath(path, mode) {
+  await chmod(path, mode).catch(() => {});
+}
+
 export async function ensureLocalRuntime() {
   await Promise.all([
-    mkdir(LOCAL_RUNTIME_ROOT, { recursive: true }),
-    mkdir(LOCAL_PROFILE_A_PATH, { recursive: true }),
-    mkdir(LOCAL_PROFILE_B_PATH, { recursive: true }),
-    mkdir(LOCAL_ARTIFACT_ROOT, { recursive: true })
+    mkdir(LOCAL_RUNTIME_ROOT, { recursive: true, mode: 0o700 }),
+    mkdir(LOCAL_PROFILE_A_PATH, { recursive: true, mode: 0o700 }),
+    mkdir(LOCAL_PROFILE_B_PATH, { recursive: true, mode: 0o700 }),
+    mkdir(LOCAL_ARTIFACT_ROOT, { recursive: true, mode: 0o700 })
+  ]);
+  await Promise.all([
+    restrictLocalPath(LOCAL_RUNTIME_ROOT, 0o700),
+    restrictLocalPath(LOCAL_PROFILE_A_PATH, 0o700),
+    restrictLocalPath(LOCAL_PROFILE_B_PATH, 0o700),
+    restrictLocalPath(LOCAL_ARTIFACT_ROOT, 0o700)
   ]);
 }
 
@@ -68,8 +78,9 @@ export async function readJsonIfPresent(path) {
 }
 
 export async function writePrivateJson(path, value) {
-  await mkdir(dirname(path), { recursive: true });
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
+  await restrictLocalPath(path, 0o600);
 }
 
 export function getGitHead() {
@@ -97,6 +108,20 @@ export function getGitBranch() {
   } catch {
     return "";
   }
+}
+
+export function assertGitWorktreeClean() {
+  let status;
+  try {
+    status = execFileSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"]
+    }).trim();
+  } catch {
+    throw new JourneyFailure(FAILURE_CATEGORIES.PRECONDITION, "git", "git_status_unavailable");
+  }
+  requireCondition(!status, FAILURE_CATEGORIES.PRECONDITION, "git", "git_worktree_not_clean");
 }
 
 export function resolvePreviewConfiguration({ args, storedConfig }) {
@@ -303,6 +328,7 @@ export async function captureAccountSession({
       "test_account_must_use_google"
     );
     const storageState = await context.storageState({ path: storageStatePath });
+    await restrictLocalPath(storageStatePath, 0o600);
     inspectStorageState(storageState, baseUrl.hostname);
     return {
       accessToken: captured.accessToken,
