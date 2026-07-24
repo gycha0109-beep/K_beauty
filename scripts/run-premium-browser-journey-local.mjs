@@ -19,6 +19,7 @@ import {
   LOCAL_STORAGE_B_PATH,
   LOCAL_SYNTHETIC_IMAGE_PATH,
   assertAccountPair,
+  assertGitWorktreeClean,
   captureAccountSession,
   ensureLocalRuntime,
   getGitBranch,
@@ -77,6 +78,7 @@ async function writeLocalSummary(artifactDir, value) {
 
 const args = parseCliArgs();
 await ensureLocalRuntime();
+assertGitWorktreeClean();
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
 const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
 const { expectedSha, deploymentSha, gitHead } = resolveExpectedSha(args);
