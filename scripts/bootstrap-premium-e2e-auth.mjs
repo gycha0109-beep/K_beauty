@@ -14,6 +14,7 @@ import {
   getGitBranch,
   parseCliArgs,
   readJsonIfPresent,
+  resetLocalAuthProfiles,
   resolvePreviewConfiguration,
   saveBootstrapMetadata,
   writeConflictFixture,
@@ -24,6 +25,11 @@ import {
 const args = parseCliArgs();
 await ensureLocalRuntime();
 assertGitWorktreeClean();
+const resetAll = args["reset-profiles"] === true;
+await resetLocalAuthProfiles({
+  resetA: resetAll || args["reset-a"] === true,
+  resetB: resetAll || args["reset-b"] === true
+});
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
 const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
 const branch = getGitBranch();
