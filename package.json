@@ -15,6 +15,9 @@
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
     "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
     "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",
+    "e2e:premium:login": "node scripts/bootstrap-premium-e2e-auth.mjs",
+    "e2e:premium:hosted": "node scripts/run-premium-browser-journey-local.mjs",
+    "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
     "lint": "next lint"
   },
   "dependencies": {
