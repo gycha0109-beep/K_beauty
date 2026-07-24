@@ -8,6 +8,7 @@ import {
   LOCAL_STORAGE_A_PATH,
   LOCAL_STORAGE_B_PATH,
   assertAccountPair,
+  assertGitWorktreeClean,
   captureAccountSession,
   ensureLocalRuntime,
   getGitBranch,
@@ -22,6 +23,7 @@ import {
 
 const args = parseCliArgs();
 await ensureLocalRuntime();
+assertGitWorktreeClean();
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
 const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
 const branch = getGitBranch();
