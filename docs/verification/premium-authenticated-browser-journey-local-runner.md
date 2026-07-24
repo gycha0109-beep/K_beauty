@@ -71,6 +71,30 @@ bypass token은 셸 기록에 남길 수 있으므로 환경 변수 사용이 �
 PREMIUM_E2E_PREVIEW_BYPASS_TOKEN=... npm run e2e:premium:login -- --url=https://YOUR-PREVIEW-URL
 ```
 
+Windows PowerShell에서는 토큰 값을 명령문에 직접 쓰지 않고 입력받을 수 있다.
+
+```powershell
+$env:PREMIUM_E2E_PREVIEW_BYPASS_TOKEN = Read-Host "Vercel bypass token"
+npm run e2e:premium:login -- --url=https://YOUR-PREVIEW-URL
+```
+
+## 계정 프로필 재설정
+
+잘못된 계정으로 로그인했거나 Chromium 프로필이 손상된 경우 저장된 URL 설정은 유지하고 인증 프로필만 지운다.
+
+```bash
+npm run e2e:premium:login -- --reset-profiles
+```
+
+한 계정만 다시 만들 수도 있다.
+
+```bash
+npm run e2e:premium:login -- --reset-a
+npm run e2e:premium:login -- --reset-b
+```
+
+재설정 후 A/B 로그인을 다시 완료해야 account metadata가 재생성된다.
+
 ## 반복 실행
 
 bootstrap 이후에는 다음 한 줄로 KO/EN Hosted E2E와 cleanup을 실행한다.
@@ -81,10 +105,10 @@ npm run e2e:premium:hosted
 
 동작 범위:
 
-- Preview 연결 확인
+- Preview 연결 및 최종 redirect origin 확인
 - 로컬 wrapper 계약 및 기존 Premium journey 계약 검증
 - A/B Chromium 프로필에서 최신 Supabase 세션 확인
-- A storage state 갱신
+- A/B storage state 갱신
 - KO/EN 전체 Premium journey 실행
 - cookie-only saved-report 재진입
 - mixed-principal 및 B 계정 직접 접근 차단 검증
