@@ -21,6 +21,7 @@ import {
   writeSyntheticImageFixture,
   LOCAL_CONFIG_PATH
 } from "./premium-browser-journey-local-auth.mjs";
+import { openManualSystemChromeSession } from "./premium-e2e-system-browser.mjs";
 
 const args = parseCliArgs();
 await ensureLocalRuntime();
@@ -45,24 +46,35 @@ const previewBypassToken = String(
 
 console.log(`Premium E2E 로그인 준비: ${baseUrl.origin}`);
 console.log("비밀번호는 이 스크립트나 저장소에 입력하지 않습니다.");
+console.log("Google 로그인은 Playwright가 아닌 일반 시스템 Chrome에서 수행합니다.");
 
+await openManualSystemChromeSession({
+  label: "A",
+  profilePath: LOCAL_PROFILE_A_PATH,
+  baseUrl
+});
 const accountA = await captureAccountSession({
   label: "A",
   profilePath: LOCAL_PROFILE_A_PATH,
   storageStatePath: LOCAL_STORAGE_A_PATH,
   baseUrl,
   previewBypassToken,
-  interactive: true
+  interactive: false
 });
 console.log(`[A] 로그인 확인 완료: ${accountA.userHash}`);
 
+await openManualSystemChromeSession({
+  label: "B",
+  profilePath: LOCAL_PROFILE_B_PATH,
+  baseUrl
+});
 const accountB = await captureAccountSession({
   label: "B",
   profilePath: LOCAL_PROFILE_B_PATH,
   storageStatePath: LOCAL_STORAGE_B_PATH,
   baseUrl,
   previewBypassToken,
-  interactive: true
+  interactive: false
 });
 console.log(`[B] 로그인 확인 완료: ${accountB.userHash}`);
 
