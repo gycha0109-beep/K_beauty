@@ -20,13 +20,21 @@ The workflow never prints the OpenAI key value, key prefix, authorization header
 
 ## Fixture bundle
 
-The workflow starts automatically when this base64-encoded encrypted file is pushed:
+The encrypted archive is base64-encoded and split into exactly eight bounded text parts:
 
 ```text
-private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64
+private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64.part-00
+...
+private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64.part-07
 ```
 
-After base64 decoding and AES-256-CBC decryption, the archive must contain exactly:
+These parts do not start the Provider workflow. The workflow starts only when this marker is pushed after all required secrets are configured:
+
+```text
+private/face-lab-e2e/run.trigger
+```
+
+After concatenation, base64 decoding, and AES-256-CBC decryption, the archive must contain exactly:
 
 ```text
 manifest.local.json
@@ -34,7 +42,7 @@ private/face-lab-fixtures/subject-a/frontal-clear.jpg
 private/face-lab-fixtures/subject-a/lower-face-occluded.jpg
 ```
 
-The source PNG fixtures are re-encoded as high-quality JPEG only to keep the encrypted GitHub transport file bounded. The plaintext manifest and images exist only in the Actions workspace and are removed during cleanup. The repository stores only encrypted bytes encoded as text, which must be deleted from the branch after the run is recorded.
+The source PNG fixtures are re-encoded as bounded high-quality JPEG only for encrypted GitHub transport. The plaintext manifest and images exist only in the Actions workspace and are removed during cleanup. The repository stores encrypted bytes encoded as text. The eight parts and trigger must be deleted from the branch after the run is recorded.
 
 ## Commands
 
