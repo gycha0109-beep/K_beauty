@@ -7,14 +7,24 @@ const paths = {
   auth: resolve(root, "scripts/premium-browser-journey-local-auth.mjs"),
   bootstrap: resolve(root, "scripts/bootstrap-premium-e2e-auth.mjs"),
   systemBrowser: resolve(root, "scripts/premium-e2e-system-browser.mjs"),
+  sessionCapture: resolve(root, "scripts/premium-e2e-session-capture.mjs"),
   runner: resolve(root, "scripts/run-premium-browser-journey-local.mjs"),
   package: resolve(root, "package.json"),
   gitignore: resolve(root, ".gitignore")
 };
-const [authSource, bootstrapSource, systemBrowserSource, runnerSource, packageSource, gitignoreSource] = await Promise.all([
+const [
+  authSource,
+  bootstrapSource,
+  systemBrowserSource,
+  sessionCaptureSource,
+  runnerSource,
+  packageSource,
+  gitignoreSource
+] = await Promise.all([
   readFile(paths.auth, "utf8"),
   readFile(paths.bootstrap, "utf8"),
   readFile(paths.systemBrowser, "utf8"),
+  readFile(paths.sessionCapture, "utf8"),
   readFile(paths.runner, "utf8"),
   readFile(paths.package, "utf8"),
   readFile(paths.gitignore, "utf8")
@@ -49,15 +59,25 @@ assert.match(systemBrowserSource, /--disable-background-mode/);
 assert.match(systemBrowserSource, /Playwright가 Google 로그인 화면을 제어하지 않습니다/);
 assert.doesNotMatch(systemBrowserSource, /remote-debugging/);
 
+assert.match(sessionCaptureSource, /createServerClient/);
+assert.match(sessionCaptureSource, /supabase\.auth\.getSession\(\)/);
+assert.match(sessionCaptureSource, /oauth_session_stored_on_different_host/);
+assert.match(sessionCaptureSource, /target_host_auth_cookie_missing/);
+assert.match(sessionCaptureSource, /supabase_public_config_missing_for_cookie_capture/);
+assert.match(sessionCaptureSource, /captureAccountSessionResilient/);
+assert.match(sessionCaptureSource, /NEXT_PUBLIC_SUPABASE_(?:PUBLISHABLE_KEY|ANON_KEY)/);
+assert.doesNotMatch(sessionCaptureSource, /signInWithPassword/);
+
 assert.match(bootstrapSource, /openManualSystemChromeSession/);
-assert.match(bootstrapSource, /interactive:\s*false/);
+assert.match(bootstrapSource, /captureAccountSessionResilient/);
+assert.match(bootstrapSource, /기존 로그인 세션을 재사용합니다/);
 assert.match(bootstrapSource, /Google 로그인은 Playwright가 아닌 일반 시스템 Chrome에서 수행합니다/);
 assert.match(bootstrapSource, /비밀번호는 이 스크립트나 저장소에 입력하지 않습니다/);
 assert.match(bootstrapSource, /saveBootstrapMetadata/);
 assert.match(bootstrapSource, /assertGitWorktreeClean\(\)/);
 assert.match(bootstrapSource, /reset-profiles/);
 
-assert.match(runnerSource, /interactive:\s*false/);
+assert.match(runnerSource, /captureAccountSessionResilient/);
 assert.match(runnerSource, /assertGitWorktreeClean\(\)/);
 assert.match(runnerSource, /PREMIUM_E2E_CONFLICT_ACCESS_TOKEN/);
 assert.match(runnerSource, /cleanup-premium-browser-journey\.mjs/);
@@ -72,8 +92,10 @@ console.log(JSON.stringify({
   ok: true,
   checks: [
     "manual_system_chrome_google_login",
+    "persisted_cookie_session_recovery",
+    "wrong_host_oauth_detection",
     "persistent_profile_reuse",
-    "network_captured_supabase_session",
+    "network_captured_supabase_session_fallback",
     "distinct_account_guard",
     "preview_only_guard",
     "hosted_runner_and_cleanup",
