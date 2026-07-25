@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64"
+      - "private/face-lab-e2e/run.trigger"
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64
+      BUNDLE_PREFIX: private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64.part-
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
       NEXT_TELEMETRY_DISABLED: "1"
@@ -45,7 +45,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
+          test -f "private/face-lab-e2e/run.trigger" || { echo "run_trigger_missing" >&2; exit 1; }
+          shopt -s nullglob
+          parts=( "${BUNDLE_PREFIX}"* )
+          test "${#parts[@]}" -eq 8 || { echo "fixture_bundle_part_count_invalid:${#parts[@]}" >&2; exit 1; }
           test -n "${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY_missing" >&2; exit 1; }
           test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
 
@@ -54,10 +57,15 @@ jobs:
         run: |
           set -euo pipefail
           work_dir="tmp/face-lab-provider-e2e-input"
+          encoded_path="${work_dir}/fixture-bundle.tar.gz.enc.b64"
           encrypted_path="${work_dir}/fixture-bundle.tar.gz.enc"
           archive_path="${work_dir}/fixture-bundle.tar.gz"
           mkdir -p "${work_dir}"
-          base64 --decode "${BUNDLE_PATH}" >"${encrypted_path}"
+          shopt -s nullglob
+          parts=( "${BUNDLE_PREFIX}"* )
+          printf '%s\n' "${parts[@]}" | sort | xargs cat >"${encoded_path}"
+          base64 --decode "${encoded_path}" >"${encrypted_path}"
+          rm -f "${encoded_path}"
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
             -in "${encrypted_path}" \
             -out "${archive_path}" \
