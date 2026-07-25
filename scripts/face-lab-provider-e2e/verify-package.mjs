@@ -29,7 +29,7 @@ const packageJson = JSON.parse(read(packagePath));
 for (const marker of [
   "workflow_dispatch:",
   "private/face-lab-e2e/fixture-bundle.tar.gz.enc",
-  "FACE_LAB_E2E_OPENAI_API_KEY",
+  "secrets.OPENAI_API_KEY",
   "FACE_LAB_E2E_FIXTURE_PASSPHRASE",
   "permissions:\n  contents: read",
   "npm run face-lab:e2e:verify",
@@ -42,7 +42,7 @@ for (const marker of [
 assert(!workflow.includes("pull_request_target"), "forbidden_pull_request_target_trigger");
 assert(!workflow.includes("contents: write"), "provider_e2e_must_not_have_contents_write");
 assert(!workflow.includes("actions/checkout@v3"), "checkout_action_must_be_v4");
-assert(!workflow.includes("secrets.OPENAI_API_KEY"), "use_dedicated_face_lab_e2e_secret_name");
+assert(!workflow.includes("FACE_LAB_E2E_OPENAI_API_KEY"), "stale_dedicated_openai_secret_name");
 
 for (const marker of [
   "subject-a-frontal-clear",
