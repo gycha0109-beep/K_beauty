@@ -1,5 +1,6 @@
 import {
   FAILURE_CATEGORIES,
+  JourneyFailure,
   requireCondition
 } from "./premium-browser-journey-core.mjs";
 import {
@@ -9,7 +10,6 @@ import {
   LOCAL_STORAGE_B_PATH,
   assertAccountPair,
   assertGitWorktreeClean,
-  captureAccountSession,
   ensureLocalRuntime,
   getGitBranch,
   parseCliArgs,
@@ -22,15 +22,15 @@ import {
   LOCAL_CONFIG_PATH
 } from "./premium-browser-journey-local-auth.mjs";
 import { openManualSystemChromeSession } from "./premium-e2e-system-browser.mjs";
+import { captureAccountSessionResilient } from "./premium-e2e-session-capture.mjs";
 
 const args = parseCliArgs();
 await ensureLocalRuntime();
 assertGitWorktreeClean();
 const resetAll = args["reset-profiles"] === true;
-await resetLocalAuthProfiles({
-  resetA: resetAll || args["reset-a"] === true,
-  resetB: resetAll || args["reset-b"] === true
-});
+const resetA = resetAll || args["reset-a"] === true;
+const resetB = resetAll || args["reset-b"] === true;
+await resetLocalAuthProfiles({ resetA, resetB });
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
 const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
 const branch = getGitBranch();
@@ -48,33 +48,52 @@ console.log(`Premium E2E 로그인 준비: ${baseUrl.origin}`);
 console.log("비밀번호는 이 스크립트나 저장소에 입력하지 않습니다.");
 console.log("Google 로그인은 Playwright가 아닌 일반 시스템 Chrome에서 수행합니다.");
 
-await openManualSystemChromeSession({
-  label: "A",
-  profilePath: LOCAL_PROFILE_A_PATH,
-  baseUrl
-});
-const accountA = await captureAccountSession({
+async function captureOrLogin({ label, profilePath, storageStatePath, reset }) {
+  if (!reset) {
+    try {
+      const existing = await captureAccountSessionResilient({
+        label,
+        profilePath,
+        storageStatePath,
+        baseUrl,
+        previewBypassToken,
+        timeoutMs: 1_500
+      });
+      console.log(`[${label}] 기존 로그인 세션을 재사용합니다.`);
+      return existing;
+    } catch (error) {
+      if (error instanceof JourneyFailure && [
+        "oauth_session_stored_on_different_host",
+        "supabase_public_config_missing_for_cookie_capture"
+      ].includes(error.code)) {
+        throw error;
+      }
+    }
+  }
+
+  await openManualSystemChromeSession({ label, profilePath, baseUrl });
+  return captureAccountSessionResilient({
+    label,
+    profilePath,
+    storageStatePath,
+    baseUrl,
+    previewBypassToken
+  });
+}
+
+const accountA = await captureOrLogin({
   label: "A",
   profilePath: LOCAL_PROFILE_A_PATH,
   storageStatePath: LOCAL_STORAGE_A_PATH,
-  baseUrl,
-  previewBypassToken,
-  interactive: false
+  reset: resetA
 });
 console.log(`[A] 로그인 확인 완료: ${accountA.userHash}`);
 
-await openManualSystemChromeSession({
-  label: "B",
-  profilePath: LOCAL_PROFILE_B_PATH,
-  baseUrl
-});
-const accountB = await captureAccountSession({
+const accountB = await captureOrLogin({
   label: "B",
   profilePath: LOCAL_PROFILE_B_PATH,
   storageStatePath: LOCAL_STORAGE_B_PATH,
-  baseUrl,
-  previewBypassToken,
-  interactive: false
+  reset: resetB
 });
 console.log(`[B] 로그인 확인 완료: ${accountB.userHash}`);
 
