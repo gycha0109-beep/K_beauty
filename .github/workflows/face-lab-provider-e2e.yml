@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 35
     env:
       BUNDLE_PATH: private/face-lab-e2e/fixture-bundle.tar.gz.enc
-      OPENAI_API_KEY: ${{ secrets.FACE_LAB_E2E_OPENAI_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
       NEXT_TELEMETRY_DISABLED: "1"
 
@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
-          test -n "${OPENAI_API_KEY}" || { echo "FACE_LAB_E2E_OPENAI_API_KEY_missing" >&2; exit 1; }
+          test -n "${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY_missing" >&2; exit 1; }
           test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
 
       - name: Decrypt bounded fixture bundle
