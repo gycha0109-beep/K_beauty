@@ -48,7 +48,7 @@ jobs:
           test -f "private/face-lab-e2e/run.trigger" || { echo "run_trigger_missing" >&2; exit 1; }
           shopt -s nullglob
           parts=( "${BUNDLE_PREFIX}"* )
-          test "${#parts[@]}" -eq 5 || { echo "fixture_bundle_part_count_invalid:${#parts[@]}" >&2; exit 1; }
+          test "${#parts[@]}" -eq 8 || { echo "fixture_bundle_part_count_invalid:${#parts[@]}" >&2; exit 1; }
           test -n "${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY_missing" >&2; exit 1; }
           test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
 
