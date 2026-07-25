@@ -13,28 +13,28 @@ The run permits at most two image-bearing Provider attempts and performs no auto
 
 ## Required repository secrets
 
-- `FACE_LAB_E2E_OPENAI_API_KEY`: a non-production OpenAI project key.
+- `OPENAI_API_KEY`: the configured OpenAI project key used only inside the Actions job.
 - `FACE_LAB_E2E_FIXTURE_PASSPHRASE`: the passphrase used to encrypt the fixture bundle.
 
-The workflow maps the OpenAI secret to `OPENAI_API_KEY` only inside the job. It never prints the value, key prefix, authorization header, request body, raw Provider response, image bytes, base64, or credential fingerprint.
+The workflow never prints the OpenAI key value, key prefix, authorization header, request body, raw Provider response, image bytes, decoded archive, or credential fingerprint.
 
 ## Fixture bundle
 
-The workflow starts automatically when this encrypted file is pushed:
+The workflow starts automatically when this base64-encoded encrypted file is pushed:
 
 ```text
-private/face-lab-e2e/fixture-bundle.tar.gz.enc
+private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64
 ```
 
-After decryption, the archive must contain exactly:
+After base64 decoding and AES-256-CBC decryption, the archive must contain exactly:
 
 ```text
 manifest.local.json
-private/face-lab-fixtures/subject-a/frontal-clear.png
-private/face-lab-fixtures/subject-a/lower-face-occluded.png
+private/face-lab-fixtures/subject-a/frontal-clear.jpg
+private/face-lab-fixtures/subject-a/lower-face-occluded.jpg
 ```
 
-The plaintext manifest and images exist only in the Actions workspace and are removed during cleanup. The repository stores only the encrypted archive, which should be deleted from the branch after the run is recorded.
+The source PNG fixtures are re-encoded as high-quality JPEG only to keep the encrypted GitHub transport file bounded. The plaintext manifest and images exist only in the Actions workspace and are removed during cleanup. The repository stores only encrypted bytes encoded as text, which must be deleted from the branch after the run is recorded.
 
 ## Commands
 
