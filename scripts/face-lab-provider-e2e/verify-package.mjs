@@ -28,9 +28,12 @@ const packageJson = JSON.parse(read(packagePath));
 
 for (const marker of [
   "workflow_dispatch:",
-  "private/face-lab-e2e/fixture-bundle.tar.gz.enc",
+  "private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64",
   "secrets.OPENAI_API_KEY",
   "FACE_LAB_E2E_FIXTURE_PASSPHRASE",
+  "base64 --decode",
+  "frontal-clear.jpg",
+  "lower-face-occluded.jpg",
   "permissions:\n  contents: read",
   "npm run face-lab:e2e:verify",
   "npm run face-lab:e2e:run",
