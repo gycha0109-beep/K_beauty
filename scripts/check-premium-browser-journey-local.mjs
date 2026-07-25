@@ -6,13 +6,15 @@ const root = process.cwd();
 const paths = {
   auth: resolve(root, "scripts/premium-browser-journey-local-auth.mjs"),
   bootstrap: resolve(root, "scripts/bootstrap-premium-e2e-auth.mjs"),
+  systemBrowser: resolve(root, "scripts/premium-e2e-system-browser.mjs"),
   runner: resolve(root, "scripts/run-premium-browser-journey-local.mjs"),
   package: resolve(root, "package.json"),
   gitignore: resolve(root, ".gitignore")
 };
-const [authSource, bootstrapSource, runnerSource, packageSource, gitignoreSource] = await Promise.all([
+const [authSource, bootstrapSource, systemBrowserSource, runnerSource, packageSource, gitignoreSource] = await Promise.all([
   readFile(paths.auth, "utf8"),
   readFile(paths.bootstrap, "utf8"),
+  readFile(paths.systemBrowser, "utf8"),
   readFile(paths.runner, "utf8"),
   readFile(paths.package, "utf8"),
   readFile(paths.gitignore, "utf8")
@@ -40,7 +42,16 @@ assert.doesNotMatch(authSource, /signInWithPassword/);
 assert.doesNotMatch(authSource, /gmail\.com/i);
 assert.doesNotMatch(authSource, /password/i);
 
-assert.match(bootstrapSource, /interactive:\s*true/);
+assert.match(systemBrowserSource, /Google\/Chrome\/Application\/chrome\.exe/);
+assert.match(systemBrowserSource, /PREMIUM_E2E_SYSTEM_CHROME/);
+assert.match(systemBrowserSource, /--user-data-dir=/);
+assert.match(systemBrowserSource, /--disable-background-mode/);
+assert.match(systemBrowserSource, /Playwright가 Google 로그인 화면을 제어하지 않습니다/);
+assert.doesNotMatch(systemBrowserSource, /remote-debugging/);
+
+assert.match(bootstrapSource, /openManualSystemChromeSession/);
+assert.match(bootstrapSource, /interactive:\s*false/);
+assert.match(bootstrapSource, /Google 로그인은 Playwright가 아닌 일반 시스템 Chrome에서 수행합니다/);
 assert.match(bootstrapSource, /비밀번호는 이 스크립트나 저장소에 입력하지 않습니다/);
 assert.match(bootstrapSource, /saveBootstrapMetadata/);
 assert.match(bootstrapSource, /assertGitWorktreeClean\(\)/);
@@ -60,7 +71,7 @@ assert.doesNotMatch(runnerSource, /PREMIUM_E2E_ALLOW_PRODUCTION/);
 console.log(JSON.stringify({
   ok: true,
   checks: [
-    "manual_google_login_only",
+    "manual_system_chrome_google_login",
     "persistent_profile_reuse",
     "network_captured_supabase_session",
     "distinct_account_guard",
