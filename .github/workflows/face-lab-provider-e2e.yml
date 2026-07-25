@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "private/face-lab-e2e/fixture-bundle.tar.gz.enc"
+      - "private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64"
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle.tar.gz.enc
+      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
       NEXT_TELEMETRY_DISABLED: "1"
@@ -54,18 +54,21 @@ jobs:
         run: |
           set -euo pipefail
           work_dir="tmp/face-lab-provider-e2e-input"
+          encrypted_path="${work_dir}/fixture-bundle.tar.gz.enc"
           archive_path="${work_dir}/fixture-bundle.tar.gz"
           mkdir -p "${work_dir}"
+          base64 --decode "${BUNDLE_PATH}" >"${encrypted_path}"
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
-            -in "${BUNDLE_PATH}" \
+            -in "${encrypted_path}" \
             -out "${archive_path}" \
             -pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE
+          rm -f "${encrypted_path}"
 
           actual_members="$(tar -tzf "${archive_path}" | sed 's#^\./##' | sort)"
           expected_members="$(printf '%s\n' \
             'manifest.local.json' \
-            'private/face-lab-fixtures/subject-a/frontal-clear.png' \
-            'private/face-lab-fixtures/subject-a/lower-face-occluded.png' | sort)"
+            'private/face-lab-fixtures/subject-a/frontal-clear.jpg' \
+            'private/face-lab-fixtures/subject-a/lower-face-occluded.jpg' | sort)"
           test "${actual_members}" = "${expected_members}" || {
             echo "fixture_bundle_member_contract_invalid" >&2
             exit 1
