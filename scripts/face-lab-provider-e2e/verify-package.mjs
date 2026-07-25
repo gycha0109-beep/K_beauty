@@ -30,6 +30,7 @@ for (const marker of [
   "workflow_dispatch:",
   "private/face-lab-e2e/run.trigger",
   "fixture-bundle.tar.gz.enc.b64.part-",
+  "-eq 5",
   "fixture_bundle_part_count_invalid",
   "secrets.OPENAI_API_KEY",
   "FACE_LAB_E2E_FIXTURE_PASSPHRASE",
