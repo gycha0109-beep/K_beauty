@@ -15,7 +15,7 @@
     "face-lab:eval:report": "node scripts/report-face-lab-hosted-evaluation.mjs",
     "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs && node scripts/verify-face-lab-hosted-evaluation-review.mjs && node scripts/verify-face-lab-single-analysis-evaluation.mjs",
     "face-lab:e2e:run": "node scripts/face-lab-provider-e2e/run.mjs",
-    "face-lab:e2e:verify": "node scripts/face-lab-provider-e2e/verify-package.mjs",
+    "face-lab:e2e:verify": "node scripts/face-lab-provider-e2e/verify-package-v2.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
     "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",
@@ -27,7 +27,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "dotenv": "^17.4.2",
     "framer-motion": "^12.38.0",
-    "html-to-image": "^1.11.13",
+    "html-to-image": "^11.1.13",
     "next": "15.5.18",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
