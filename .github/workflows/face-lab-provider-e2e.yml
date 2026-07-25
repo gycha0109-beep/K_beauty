@@ -1,0 +1,182 @@
+name: Face Lab Provider E2E
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "private/face-lab-e2e/fixture-bundle.tar.gz.enc"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-lab-provider-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  provider-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle.tar.gz.enc
+      OPENAI_API_KEY: ${{ secrets.FACE_LAB_E2E_OPENAI_API_KEY }}
+      FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Face Lab Provider E2E package
+        run: npm run face-lab:e2e:verify
+
+      - name: Verify encrypted inputs and secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
+          test -n "${OPENAI_API_KEY}" || { echo "FACE_LAB_E2E_OPENAI_API_KEY_missing" >&2; exit 1; }
+          test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
+
+      - name: Decrypt bounded fixture bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          work_dir="tmp/face-lab-provider-e2e-input"
+          archive_path="${work_dir}/fixture-bundle.tar.gz"
+          mkdir -p "${work_dir}"
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
+            -in "${BUNDLE_PATH}" \
+            -out "${archive_path}" \
+            -pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE
+
+          actual_members="$(tar -tzf "${archive_path}" | sed 's#^\./##' | sort)"
+          expected_members="$(printf '%s\n' \
+            'manifest.local.json' \
+            'private/face-lab-fixtures/subject-a/frontal-clear.png' \
+            'private/face-lab-fixtures/subject-a/lower-face-occluded.png' | sort)"
+          test "${actual_members}" = "${expected_members}" || {
+            echo "fixture_bundle_member_contract_invalid" >&2
+            exit 1
+          }
+
+          tar -xzf "${archive_path}" --no-same-owner --no-same-permissions -C .
+          rm -f "${archive_path}"
+
+      - name: Prepare isolated Local Supabase Replay
+        run: npm run db:replay:prepare
+
+      - name: Start and reset isolated Local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/face-lab-provider-e2e"
+          mkdir -p "${diagnostics_dir}"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
+          }
+
+          raw_log="$(mktemp)"
+          if ! npx --yes supabase@2.82.0 start --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 200 >"${diagnostics_dir}/supabase-start.log"
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+          raw_log="$(mktemp)"
+          if ! npx --yes supabase@2.82.0 db reset --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 200 >"${diagnostics_dir}/supabase-reset.log"
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Export masked local runtime variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_url=""
+          anon_key=""
+          service_role_key=""
+          while IFS='=' read -r name value; do
+            value="${value#\"}"
+            value="${value%\"}"
+            case "${name}" in
+              API_URL) api_url="${value}" ;;
+              ANON_KEY) anon_key="${value}" ;;
+              SERVICE_ROLE_KEY) service_role_key="${value}" ;;
+            esac
+          done < <(npx --yes supabase@2.82.0 status -o env --workdir tmp/local-supabase-replay)
+
+          test -n "${api_url}"
+          test -n "${anon_key}"
+          test -n "${service_role_key}"
+          case "${api_url}" in
+            http://127.0.0.1:*|http://localhost:*) ;;
+            *) echo "remote_supabase_url_rejected" >&2; exit 1 ;;
+          esac
+
+          guard_secret="$(openssl rand -hex 32)"
+          grant_secret="$(openssl rand -hex 32)"
+          printf '::add-mask::%s\n' "${anon_key}"
+          printf '::add-mask::%s\n' "${service_role_key}"
+          printf '::add-mask::%s\n' "${guard_secret}"
+          printf '::add-mask::%s\n' "${grant_secret}"
+          {
+            printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "${api_url}"
+            printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "${anon_key}"
+            printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "${service_role_key}"
+            printf 'ANALYSIS_REQUEST_GUARD_SECRET=%s\n' "${guard_secret}"
+            printf 'ANONYMOUS_WRITE_GRANT_SECRET=%s\n' "${grant_secret}"
+            printf 'NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=false\n'
+          } >>"${GITHUB_ENV}"
+
+      - name: Run bounded Lane B then Lane A
+        run: npm run face-lab:e2e:run -- --manifest manifest.local.json
+
+      - name: Upload sanitized E2E report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: face-lab-provider-e2e-report-${{ github.run_id }}
+          path: |
+            tmp/face-lab-provider-e2e/report.json
+            tmp/face-lab-provider-e2e/report.md
+            tmp/face-lab-provider-e2e/diagnostics.log
+            tmp/face-lab-provider-e2e/supabase-start.log
+            tmp/face-lab-provider-e2e/supabase-reset.log
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Mandatory cleanup
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          rm -rf app/api/__face-lab-provider-e2e
+          rm -f manifest.local.json
+          rm -rf private/face-lab-fixtures
+          rm -rf tmp/face-lab-provider-e2e-input
+          if [ -d tmp/local-supabase-replay ]; then
+            npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup >/dev/null 2>&1
+          fi
