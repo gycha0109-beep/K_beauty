@@ -35,6 +35,10 @@ function authCookie(cookie) {
   return AUTH_COOKIE_PATTERN.test(String(cookie?.name || ""));
 }
 
+function normalizeCookieDomain(value) {
+  return String(value || "").trim().replace(/^\./, "").toLowerCase();
+}
+
 function normalizeSupabaseUrl(value) {
   const raw = String(value || "").trim().replace(/\/$/, "");
   if (!raw) return "";
@@ -42,6 +46,18 @@ function normalizeSupabaseUrl(value) {
     const url = new URL(raw);
     if (url.protocol !== "https:") return "";
     return url.origin;
+  } catch {
+    return "";
+  }
+}
+
+function normalizeHttpsHost(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw.includes("://") ? raw : `https://${raw}`);
+    if (url.protocol !== "https:") return "";
+    return url.hostname.toLowerCase();
   } catch {
     return "";
   }
@@ -148,6 +164,24 @@ async function discoverPublicConfig({ page, context, cookies }) {
   return config;
 }
 
+async function discoverCanonicalOAuthHost(page) {
+  loadLocalEnvironment();
+  const explicit = normalizeHttpsHost(process.env.PREMIUM_E2E_OAUTH_RETURN_HOST || "");
+  if (explicit) return explicit;
+
+  const candidates = await page.evaluate(() => [
+    document.querySelector('link[rel="canonical"]')?.getAttribute("href") || "",
+    document.querySelector('meta[property="og:url"]')?.getAttribute("content") || "",
+    document.querySelector('meta[name="twitter:url"]')?.getAttribute("content") || ""
+  ]).catch(() => []);
+
+  for (const candidate of candidates) {
+    const host = normalizeHttpsHost(candidate);
+    if (host) return host;
+  }
+  return "";
+}
+
 function normalizeSameSite(value) {
   const normalized = String(value || "lax").toLowerCase();
   if (normalized === "strict") return "Strict";
@@ -171,7 +205,7 @@ async function applyCookieWrites(context, baseUrl, writes) {
   const finalWrites = new Map();
   for (const item of writes) finalWrites.set(item.name, item);
   for (const item of finalWrites.values()) {
-    await context.clearCookies({ name: item.name }).catch(() => {});
+    await context.clearCookies({ name: item.name, domain: baseUrl.hostname }).catch(() => {});
   }
   const additions = [];
   for (const item of finalWrites.values()) {
@@ -193,7 +227,44 @@ async function applyCookieWrites(context, baseUrl, writes) {
 }
 
 function cookieDomains(cookies) {
-  return Array.from(new Set(cookies.filter(authCookie).map((cookie) => String(cookie.domain || "")))).sort();
+  return Array.from(new Set(cookies.filter(authCookie).map((cookie) => normalizeCookieDomain(cookie.domain)))).filter(Boolean).sort();
+}
+
+function cookiesForHost(cookies, host) {
+  const normalizedHost = normalizeCookieDomain(host);
+  return cookies.filter((cookie) => authCookie(cookie) && normalizeCookieDomain(cookie.domain) === normalizedHost);
+}
+
+async function bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label }) {
+  const canonicalHost = await discoverCanonicalOAuthHost(page);
+  if (!canonicalHost || canonicalHost === baseUrl.hostname.toLowerCase()) return false;
+
+  const sourceCookies = cookiesForHost(allCookies, canonicalHost);
+  if (!sourceCookies.length) return false;
+
+  for (const cookie of sourceCookies) {
+    await context.clearCookies({ name: cookie.name, domain: baseUrl.hostname }).catch(() => {});
+  }
+  await context.addCookies(sourceCookies.map((cookie) => ({
+    name: cookie.name,
+    value: cookie.value,
+    domain: baseUrl.hostname,
+    path: "/",
+    secure: true,
+    httpOnly: cookie.httpOnly === true,
+    sameSite: normalizeSameSite(cookie.sameSite),
+    ...(typeof cookie.expires === "number" && cookie.expires > 0 ? { expires: cookie.expires } : {})
+  })));
+
+  const bridgedCookies = await context.cookies(baseUrl.origin);
+  requireCondition(
+    bridgedCookies.some(authCookie),
+    FAILURE_CATEGORIES.AUTH,
+    `local-auth-${label}`,
+    "oauth_cookie_bridge_failed"
+  );
+  console.log(`[${label}] OAuth 세션을 ${canonicalHost}에서 Preview 호스트로 로컬 복제했습니다.`);
+  return true;
 }
 
 async function captureFromPersistedCookies({
@@ -220,27 +291,32 @@ async function captureFromPersistedCookies({
     const response = await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
     requireCondition(response && response.status() < 400, FAILURE_CATEGORIES.INFRASTRUCTURE, `local-auth-${label}`, "preview_navigation_failed");
 
-    const targetCookies = await context.cookies(baseUrl.origin);
-    const targetAuthCookies = targetCookies.filter(authCookie);
+    let targetCookies = await context.cookies(baseUrl.origin);
+    let targetAuthCookies = targetCookies.filter(authCookie);
     if (!targetAuthCookies.length) {
       const allCookies = await context.cookies();
-      const otherDomains = cookieDomains(allCookies).filter((domain) => {
-        const normalized = domain.replace(/^\./, "").toLowerCase();
-        return normalized && normalized !== baseUrl.hostname.toLowerCase();
-      });
-      if (otherDomains.length) {
+      const bridged = await bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label });
+      if (bridged) {
+        targetCookies = await context.cookies(baseUrl.origin);
+        targetAuthCookies = targetCookies.filter(authCookie);
+      }
+
+      if (!targetAuthCookies.length) {
+        const otherDomains = cookieDomains(allCookies).filter((domain) => domain !== baseUrl.hostname.toLowerCase());
+        if (otherDomains.length) {
+          throw new JourneyFailure(
+            FAILURE_CATEGORIES.AUTH,
+            `local-auth-${label}`,
+            "oauth_session_stored_on_different_host",
+            `OAuth session host mismatch: ${otherDomains.join(", ")}`
+          );
+        }
         throw new JourneyFailure(
           FAILURE_CATEGORIES.AUTH,
           `local-auth-${label}`,
-          "oauth_session_stored_on_different_host",
-          `OAuth session host mismatch: ${otherDomains.join(", ")}`
+          "target_host_auth_cookie_missing"
         );
       }
-      throw new JourneyFailure(
-        FAILURE_CATEGORIES.AUTH,
-        `local-auth-${label}`,
-        "target_host_auth_cookie_missing"
-      );
     }
 
     const publicConfig = await discoverPublicConfig({ page, context, cookies: targetCookies });
