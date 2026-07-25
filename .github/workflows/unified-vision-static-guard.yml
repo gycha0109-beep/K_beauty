@@ -12,6 +12,7 @@ on:
       - "lib/skin-observation-projector.js"
       - "lib/vision-observation-contract.js"
       - "lib/vision-observation-normalizer.js"
+      - "scripts/face-lab-provider-e2e/**"
       - "scripts/verify-analysis-request-guard.mjs"
       - "scripts/verify-anonymous-write-grant-v2.mjs"
       - "scripts/verify-analysis-rls-contract.mjs"
@@ -20,6 +21,7 @@ on:
       - "scripts/verify-unified-vision-pipeline.mjs"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/face-lab-provider-e2e.yml"
       - ".github/workflows/unified-vision-static-guard.yml"
   workflow_dispatch:
 
@@ -51,6 +53,9 @@ jobs:
 
       - name: Verify Face Lab evaluation contracts
         run: npm run face-lab:eval:verify
+
+      - name: Verify Face Lab Provider E2E package
+        run: npm run face-lab:e2e:verify
 
       - name: Verify analysis request guard
         run: node scripts/verify-analysis-request-guard.mjs
