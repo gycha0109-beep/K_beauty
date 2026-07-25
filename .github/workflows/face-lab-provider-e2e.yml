@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 concurrency:
   group: face-lab-provider-e2e-${{ github.ref }}
@@ -38,10 +37,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm cache clean --force
+          npm ci --no-audit --no-fund
 
       - name: Verify Face Lab Provider E2E package
         id: verify_package
@@ -188,61 +190,6 @@ jobs:
             tmp/face-lab-provider-e2e/supabase-reset.log
           if-no-files-found: ignore
           retention-days: 3
-
-      - name: Publish sanitized PR status
-        if: always()
-        uses: actions/github-script@v7
-        env:
-          PACKAGE_OUTCOME: ${{ steps.verify_package.outcome }}
-          INPUT_OUTCOME: ${{ steps.verify_inputs.outcome }}
-          DECRYPT_OUTCOME: ${{ steps.decrypt.outcome }}
-          PREPARE_DB_OUTCOME: ${{ steps.prepare_db.outcome }}
-          START_DB_OUTCOME: ${{ steps.start_db.outcome }}
-          EXPORT_ENV_OUTCOME: ${{ steps.export_env.outcome }}
-          PROVIDER_OUTCOME: ${{ steps.provider_smoke.outcome }}
-        with:
-          script: |
-            const fs = require("fs");
-            const marker = "<!-- face-lab-provider-e2e-status -->";
-            const reportPath = "tmp/face-lab-provider-e2e/report.md";
-            const report = fs.existsSync(reportPath)
-              ? fs.readFileSync(reportPath, "utf8").slice(0, 8000)
-              : [
-                  "No runtime report was generated.",
-                  "",
-                  `- Package: ${process.env.PACKAGE_OUTCOME}`,
-                  `- Inputs: ${process.env.INPUT_OUTCOME}`,
-                  `- Decrypt: ${process.env.DECRYPT_OUTCOME}`,
-                  `- Prepare DB: ${process.env.PREPARE_DB_OUTCOME}`,
-                  `- Start DB: ${process.env.START_DB_OUTCOME}`,
-                  `- Export env: ${process.env.EXPORT_ENV_OUTCOME}`,
-                  `- Provider smoke: ${process.env.PROVIDER_OUTCOME}`,
-                  "- Image-bearing attempts before Provider step: 0"
-                ].join("\n");
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = `${marker}\n## Face Lab Provider E2E\n\n- Commit: \`${context.sha}\`\n- Run: ${runUrl}\n- Job status: **${{ job.status }}**\n\n${report}`;
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: 50,
-              per_page: 100
-            });
-            const existing = comments.find((comment) => comment.body?.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: 50,
-                body
-              });
-            }
 
       - name: Mandatory cleanup
         id: cleanup
