@@ -201,6 +201,19 @@ function cookieExpiry(options = {}) {
   return undefined;
 }
 
+function toTargetHostCookie(cookie, baseUrl) {
+  return {
+    name: cookie.name,
+    value: cookie.value,
+    domain: baseUrl.hostname,
+    path: "/",
+    secure: true,
+    httpOnly: cookie.httpOnly === true,
+    sameSite: normalizeSameSite(cookie.sameSite),
+    ...(typeof cookie.expires === "number" && cookie.expires > 0 ? { expires: cookie.expires } : {})
+  };
+}
+
 async function applyCookieWrites(context, baseUrl, writes) {
   const finalWrites = new Map();
   for (const item of writes) finalWrites.set(item.name, item);
@@ -215,9 +228,9 @@ async function applyCookieWrites(context, baseUrl, writes) {
     additions.push({
       name: item.name,
       value: item.value,
-      domain: String(options.domain || baseUrl.hostname),
-      path: String(options.path || "/"),
-      secure: options.secure !== false,
+      domain: baseUrl.hostname,
+      path: "/",
+      secure: true,
       httpOnly: options.httpOnly === true,
       sameSite: normalizeSameSite(options.sameSite),
       ...(typeof expires === "number" ? { expires } : {})
@@ -235,6 +248,36 @@ function cookiesForHost(cookies, host) {
   return cookies.filter((cookie) => authCookie(cookie) && normalizeCookieDomain(cookie.domain) === normalizedHost);
 }
 
+async function normalizeTargetAuthCookies({ context, baseUrl, label }) {
+  const targetCookies = await context.cookies(baseUrl.origin);
+  const authCookies = targetCookies.filter(authCookie);
+  requireCondition(
+    authCookies.length > 0,
+    FAILURE_CATEGORIES.AUTH,
+    `local-auth-${label}`,
+    "target_host_auth_cookie_missing_after_normalization"
+  );
+
+  for (const cookie of authCookies) {
+    await context.clearCookies({ name: cookie.name, domain: cookie.domain }).catch(() => {});
+  }
+  await context.addCookies(authCookies.map((cookie) => toTargetHostCookie(cookie, baseUrl)));
+
+  const normalizedCookies = await context.cookies(baseUrl.origin);
+  const normalizedAuthCookies = normalizedCookies.filter(authCookie);
+  requireCondition(
+    normalizedAuthCookies.length > 0 && normalizedAuthCookies.every((cookie) =>
+      normalizeCookieDomain(cookie.domain) === baseUrl.hostname.toLowerCase() &&
+      cookie.secure === true &&
+      cookie.path === "/"
+    ),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "configuration",
+    "target_host_auth_cookie_normalization_failed"
+  );
+  return normalizedCookies;
+}
+
 async function bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label }) {
   const canonicalHost = await discoverCanonicalOAuthHost(page);
   if (!canonicalHost || canonicalHost === baseUrl.hostname.toLowerCase()) return false;
@@ -245,16 +288,7 @@ async function bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies,
   for (const cookie of sourceCookies) {
     await context.clearCookies({ name: cookie.name, domain: baseUrl.hostname }).catch(() => {});
   }
-  await context.addCookies(sourceCookies.map((cookie) => ({
-    name: cookie.name,
-    value: cookie.value,
-    domain: baseUrl.hostname,
-    path: "/",
-    secure: true,
-    httpOnly: cookie.httpOnly === true,
-    sameSite: normalizeSameSite(cookie.sameSite),
-    ...(typeof cookie.expires === "number" && cookie.expires > 0 ? { expires: cookie.expires } : {})
-  })));
+  await context.addCookies(sourceCookies.map((cookie) => toTargetHostCookie(cookie, baseUrl)));
 
   const bridgedCookies = await context.cookies(baseUrl.origin);
   requireCondition(
@@ -319,6 +353,7 @@ async function captureFromPersistedCookies({
       }
     }
 
+    targetCookies = await normalizeTargetAuthCookies({ context, baseUrl, label });
     const publicConfig = await discoverPublicConfig({ page, context, cookies: targetCookies });
     requireCondition(
       publicConfig.supabaseUrl && publicConfig.anonKey,
@@ -351,6 +386,7 @@ async function captureFromPersistedCookies({
       "persisted_cookie_session_invalid_or_expired"
     );
     await applyCookieWrites(context, baseUrl, writes);
+    await normalizeTargetAuthCookies({ context, baseUrl, label });
 
     const session = sessionResult.data.session;
     const user = await fetchAuthUser({
