@@ -5,6 +5,9 @@ on:
   push:
     paths:
       - "private/face-lab-e2e/run.trigger"
+  pull_request:
+    paths:
+      - "private/face-lab-e2e/run.trigger"
 
 permissions:
   contents: read
@@ -16,6 +19,7 @@ concurrency:
 
 jobs:
   provider-e2e:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
