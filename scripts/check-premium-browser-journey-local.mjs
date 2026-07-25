@@ -61,6 +61,12 @@ assert.doesNotMatch(systemBrowserSource, /remote-debugging/);
 
 assert.match(sessionCaptureSource, /createServerClient/);
 assert.match(sessionCaptureSource, /supabase\.auth\.getSession\(\)/);
+assert.match(sessionCaptureSource, /discoverCanonicalOAuthHost/);
+assert.match(sessionCaptureSource, /meta\[property="og:url"\]/);
+assert.match(sessionCaptureSource, /PREMIUM_E2E_OAUTH_RETURN_HOST/);
+assert.match(sessionCaptureSource, /bridgeCanonicalOAuthCookies/);
+assert.match(sessionCaptureSource, /oauth_cookie_bridge_failed/);
+assert.match(sessionCaptureSource, /OAuth 세션을 .*Preview 호스트로 로컬 복제했습니다/);
 assert.match(sessionCaptureSource, /oauth_session_stored_on_different_host/);
 assert.match(sessionCaptureSource, /target_host_auth_cookie_missing/);
 assert.match(sessionCaptureSource, /supabase_public_config_missing_for_cookie_capture/);
@@ -93,6 +99,7 @@ console.log(JSON.stringify({
   checks: [
     "manual_system_chrome_google_login",
     "persisted_cookie_session_recovery",
+    "canonical_oauth_cookie_bridge",
     "wrong_host_oauth_detection",
     "persistent_profile_reuse",
     "network_captured_supabase_session_fallback",
