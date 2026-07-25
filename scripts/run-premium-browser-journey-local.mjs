@@ -20,7 +20,6 @@ import {
   LOCAL_SYNTHETIC_IMAGE_PATH,
   assertAccountPair,
   assertGitWorktreeClean,
-  captureAccountSession,
   ensureLocalRuntime,
   getGitBranch,
   loadBootstrapMetadata,
@@ -31,6 +30,7 @@ import {
   writeConflictFixture,
   writeSyntheticImageFixture
 } from "./premium-browser-journey-local-auth.mjs";
+import { captureAccountSessionResilient } from "./premium-e2e-session-capture.mjs";
 
 function runNodeScript(path, env) {
   return new Promise((resolvePromise, rejectPromise) => {
@@ -161,24 +161,26 @@ for (const preflightPath of [
 let accountA;
 let accountB;
 try {
-  accountA = await captureAccountSession({
+  accountA = await captureAccountSessionResilient({
     label: "A",
     profilePath: LOCAL_PROFILE_A_PATH,
     storageStatePath: LOCAL_STORAGE_A_PATH,
     baseUrl,
-    previewBypassToken,
-    interactive: false
+    previewBypassToken
   });
-  accountB = await captureAccountSession({
+  accountB = await captureAccountSessionResilient({
     label: "B",
     profilePath: LOCAL_PROFILE_B_PATH,
     storageStatePath: LOCAL_STORAGE_B_PATH,
     baseUrl,
-    previewBypassToken,
-    interactive: false
+    previewBypassToken
   });
 } catch (error) {
-  if (error instanceof JourneyFailure && error.code === "interactive_login_or_session_refresh_required") {
+  if (error instanceof JourneyFailure && [
+    "interactive_login_or_session_refresh_required",
+    "target_host_auth_cookie_missing",
+    "persisted_cookie_session_invalid_or_expired"
+  ].includes(error.code)) {
     console.error("AUTH_EXPIRED: npm run e2e:premium:login 을 먼저 실행하십시오.");
   }
   throw error;
