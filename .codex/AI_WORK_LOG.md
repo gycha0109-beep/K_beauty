@@ -2638,3 +2638,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Live contract: the actual single-image `/api/analyze` smoke now requires an available Vision Face Lab envelope, passed eligibility, available canonical analysis, a non-empty structured projection, at least one evidence-backed available Vision field, and non-persistence of the source image. Reports retain only booleans and a bounded field count.
 - Provider accounting: sanitized runtime events distinguish exactly one image-bearing Vision call, zero or one optional image-free explanation call, zero text preflight calls, zero unexpected stages, and zero automatic retries.
 - Cleanup: workflow cleanup now precedes artifact upload, checks all plaintext/encrypted input removal and Local Supabase stop results, emits boolean-only `face-lab-provider-e2e-cleanup-v1`, and fails closed while preserving `if: always()` artifact upload.
+
+### 2026-07-27 / Mobile analyze browser flow
+
+- Task type: Medium execution. Added Pixel 5 Playwright coverage for the real English onboarding and result pages without changing the production API, Provider orchestration, DB, migrations, fixtures, or response contracts.
+- Coverage: independent success, Face Lab unavailable/photo-ineligible, and bounded HTTP 503 scenarios each dispatch exactly one multipart `POST /api/analyze`; loading, duplicate-submit blocking, retry availability, result states, and mobile overflow are asserted.
+- Isolation: the suite uses a localhost-only browser environment and intercepted bounded responses. External network, real Provider calls, page errors, unexpected console errors, and horizontal overflow all remain zero.
+- Verification: mobile Playwright completed 3 passed with retries disabled. The Face Lab package verifier now normalizes CRLF/LF only for workflow text inspection, preserving its semantic checks.
