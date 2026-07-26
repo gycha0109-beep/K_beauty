@@ -6,6 +6,7 @@ on:
       - "app/api/analyze/**"
       - "app/api/face-reading/**"
       - "app/page.js"
+      - "lib/face-lab-archetype-*.js"
       - "lib/face-lab-observation-projector.js"
       - "lib/openai-env-diagnostics.js"
       - "lib/server/vision-observation-service.js"
@@ -50,6 +51,9 @@ jobs:
 
       - name: Verify unified Vision pipeline
         run: npm run verify:unified-vision-pipeline
+
+      - name: Verify Face Lab archetype shadow scoring
+        run: npm run verify:face-lab-archetype-scoring
 
       - name: Verify Face Lab evaluation contracts
         run: npm run face-lab:eval:verify
