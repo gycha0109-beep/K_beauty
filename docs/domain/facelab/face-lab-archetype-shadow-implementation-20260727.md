@@ -47,6 +47,10 @@
    - 모든 archetype lifecycle/calibration status 검사를 추가했다.
 5. ledger가 evidence 문자열을 복사할 가능성을 제거했다.
    - path와 evidence count만 남겼다.
+6. 분석 불가 또는 전 후보 0점에서 정렬 순서로 임의 top candidate가 생길 수 있었다.
+   - scorable positive score가 없으면 `topCandidate: null`로 fail-closed 처리했다.
+7. verifier가 observation enum을 별도 복제해 canonical 계약과 드리프트할 수 있었다.
+   - `lib/face-lab-observation-contract.js`의 실제 `FACE_LAB_OBSERVATION_DEFINITIONS`를 직접 로드하도록 수정했다.
 
 ## 검증
 
