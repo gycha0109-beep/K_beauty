@@ -21,7 +21,8 @@
     "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
     "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",
     "lint": "next lint",
-    "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs"
+    "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs",
+    "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
