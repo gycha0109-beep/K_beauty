@@ -13,42 +13,10 @@ function loadModule(path, names, dependencies = {}) {
   )(...dependencyNames.map((name) => dependencies[name]));
 }
 
-const FACE_LAB_OBSERVATION_DEFINITIONS = {
-  outline: {
-    faceShape: ["oval", "round", "square", "oblong", "heart", "diamond", "triangle", "mixed"],
-    foreheadWidthVsCheek: ["narrower", "similar", "wider"],
-    jawWidthVsCheek: ["narrower", "similar", "wider"],
-    jawlineAngularity: ["soft", "moderate", "angular"],
-    jawTaper: ["tapered", "balanced", "broad"],
-    cheekboneProminence: ["subtle", "moderate", "prominent"]
-  },
-  vertical: {
-    faceLengthBalance: ["short", "balanced", "long"],
-    foreheadHeight: ["low", "balanced", "high"],
-    midfaceLength: ["short", "balanced", "long"],
-    lowerFaceLength: ["short", "balanced", "long"]
-  },
-  eyes: {
-    eyeDirection: ["upturned", "level", "downturned", "mixed"],
-    eyeLength: ["short", "medium", "long"],
-    eyeOpenness: ["narrow", "medium", "wide"]
-  },
-  featureLayout: {
-    featureScale: ["small", "medium", "large", "mixed"],
-    featureConcentration: ["spread", "balanced", "centered"],
-    focalFeatures: ["eyes", "brows", "nose", "lips", "cheekbones", "jawline", "forehead"]
-  },
-  visualLanguage: {
-    straightCurveBalance: ["curved", "balanced", "straight"],
-    contourDefinition: ["soft", "moderate", "defined"],
-    featureContrast: ["low", "medium", "high"]
-  },
-  colorAppearance: {
-    apparentTemperature: ["warm", "neutral", "cool"],
-    apparentBrightness: ["low", "medium", "high"],
-    apparentSaturation: ["muted", "balanced", "clear"]
-  }
-};
+const observationModule = loadModule(
+  "lib/face-lab-observation-contract.js",
+  ["FACE_LAB_OBSERVATION_DEFINITIONS"]
+);
 
 const registryModule = loadModule(
   "lib/face-lab-archetype-registry.js",
@@ -58,7 +26,7 @@ const registryModule = loadModule(
     "FACE_LAB_ARCHETYPE_REGISTRY",
     "validateFaceLabArchetypeRegistry"
   ],
-  { FACE_LAB_OBSERVATION_DEFINITIONS }
+  { FACE_LAB_OBSERVATION_DEFINITIONS: observationModule.FACE_LAB_OBSERVATION_DEFINITIONS }
 );
 
 const scoringModule = loadModule(
@@ -203,6 +171,13 @@ assert.ok(insufficient.holdReasons.includes("insufficient_quality"));
 assert.ok(insufficient.holdReasons.includes("calibration_not_ready"));
 assert.equal(insufficient.productionEligible, false);
 assert.equal(insufficient.decision, null);
+assert.equal(insufficient.topCandidate, null);
+
+const zeroMatchAnalysis = makeAnalysis();
+zeroMatchAnalysis.observations = {};
+const zeroMatch = decisionModule.evaluateFaceLabArchetypeShadow(zeroMatchAnalysis);
+assert.equal(zeroMatch.topCandidate, null);
+assert.equal(zeroMatch.decision, null);
 
 const missingEvidenceAnalysis = makeAnalysis();
 missingEvidenceAnalysis.observations.eyes.eyeLength = {
