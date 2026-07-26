@@ -8,6 +8,9 @@ const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
 const runnerPath = "scripts/face-lab-provider-e2e/run.mjs";
 const packagePath = "package.json";
 const anonymousGrantRuntimeVerifierPath = "scripts/verify-anonymous-write-grant-local-runtime.mjs";
+const anonymousGrantReadinessModulePath = "scripts/lib/anonymous-write-grant-runtime-readiness.mjs";
+const anonymousGrantReadinessVerifierPath = "scripts/verify-anonymous-write-grant-runtime-readiness.mjs";
+const replayWorkflowPath = ".github/workflows/local-supabase-replay-guard.yml";
 const analyzeRoutePath = "app/api/analyze/route.js";
 const visionServicePath = "lib/server/vision-observation-service.js";
 const fixturePath = "private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc";
@@ -51,6 +54,9 @@ for (const requiredPath of [
   runnerPath,
   packagePath,
   anonymousGrantRuntimeVerifierPath,
+  anonymousGrantReadinessModulePath,
+  anonymousGrantReadinessVerifierPath,
+  replayWorkflowPath,
   analyzeRoutePath,
   visionServicePath,
   fixturePath
@@ -70,6 +76,9 @@ const analyzeRoute = read(analyzeRoutePath);
 const visionService = read(visionServicePath);
 const packageJson = JSON.parse(read(packagePath));
 const anonymousGrantRuntimeVerifier = read(anonymousGrantRuntimeVerifierPath);
+const anonymousGrantReadinessModule = read(anonymousGrantReadinessModulePath);
+const anonymousGrantReadinessVerifier = read(anonymousGrantReadinessVerifierPath);
+const replayWorkflow = read(replayWorkflowPath);
 const fixtureBytes = readFileSync(path.join(repoRoot, fixturePath));
 
 assert(statSync(path.join(repoRoot, fixturePath)).size === expectedFixtureSize, "encrypted_fixture_size_invalid");
@@ -97,6 +106,7 @@ for (const marker of [
   "remote_supabase_url_rejected",
   "Verify anonymous write-grant local runtime",
   "npm run anonymous-write-grant:runtime:verify",
+  "tmp/face-lab-provider-e2e/anonymous-grant-preflight.json",
   "Run single actual /api/analyze Provider smoke",
   "npm run face-lab:e2e:run",
   "retention-days: 3",
@@ -272,10 +282,16 @@ assert(
     "node scripts/verify-anonymous-write-grant-local-runtime.mjs",
   "package_script_anonymous_grant_runtime_verify_invalid"
 );
+assert(
+  packageJson.scripts?.["anonymous-write-grant:runtime-readiness:verify"] ===
+    "node scripts/verify-anonymous-write-grant-runtime-readiness.mjs",
+  "package_script_anonymous_grant_runtime_readiness_verify_invalid"
+);
 assert(!Object.hasOwn(packageJson.scripts || {}, "face-lab:e2e:verify-harness"), "harness_package_script_must_be_removed");
 
 for (const marker of [
-  'supabase.rpc("create_anonymous_write_grants"',
+  'p_grants: []',
+  "runAnonymousGrantRpcContract",
   '.from("anonymous_write_grants")',
   '.delete()',
   'eq("resource_id", bundle.analysisRunId)',
@@ -294,5 +310,72 @@ for (const marker of [
 }
 assert(!anonymousGrantRuntimeVerifier.includes("OPENAI_API_KEY"), "anonymous_grant_runtime_must_not_use_provider_secret");
 assert(!anonymousGrantRuntimeVerifier.includes("/api/analyze"), "anonymous_grant_runtime_must_not_call_analyze");
+
+for (const marker of [
+  "waitForAnonymousGrantRpcVisibility",
+  'RPC_VISIBILITY_READY_CODE = "22023"',
+  "RPC_VISIBILITY_TIMEOUT_MS = 60_000",
+  "RPC_VISIBILITY_INTERVAL_MS = 1_000",
+  "RPC_VISIBILITY_MAX_ATTEMPTS = 60",
+  "anonymous_grant_rpc_visibility_timeout",
+  "anonymous_grant_rpc_permission_denied",
+  "anonymous_grant_rpc_auth_failed",
+  "anonymous_grant_rpc_probe_contract_invalid",
+  "anonymous_grant_rpc_network_unready",
+  "anonymous_grant_rpc_execution_failed",
+  '"anonymous-grant-preflight-v1"',
+  "actualCreateRpcAttempts += 1",
+  "cleanupFailureMarker || primaryFailureMarker"
+]) {
+  assert(anonymousGrantReadinessModule.includes(marker), `anonymous_grant_readiness_contract_missing:${marker}`);
+}
+for (const forbidden of [".message", ".details", ".hint", "retry(", "maxRetries"]) {
+  assert(!anonymousGrantReadinessModule.includes(forbidden), `anonymous_grant_readiness_raw_or_retry_contract:${forbidden}`);
+}
+const visibilityFunctionIndex = anonymousGrantReadinessModule.indexOf("waitForAnonymousGrantRpcVisibility");
+const actualCreateAttemptIndex = anonymousGrantReadinessModule.indexOf("actualCreateRpcAttempts += 1");
+const rowContractIndex = anonymousGrantReadinessModule.indexOf('diagnostic.stage = "row_contract"');
+const cleanupIndex = anonymousGrantReadinessModule.indexOf("const primaryStage = diagnostic.stage");
+assert(
+  visibilityFunctionIndex >= 0 &&
+    actualCreateAttemptIndex > visibilityFunctionIndex &&
+    rowContractIndex > actualCreateAttemptIndex &&
+    cleanupIndex > rowContractIndex,
+  "anonymous_grant_readiness_execution_order_invalid"
+);
+assert(
+  count(anonymousGrantRuntimeVerifier, 'supabase.rpc("create_anonymous_write_grants"') === 2,
+  "anonymous_grant_rpc_call_site_count_invalid"
+);
+assert(
+  anonymousGrantRuntimeVerifier.indexOf("p_grants: []") <
+    anonymousGrantRuntimeVerifier.indexOf("p_grants: bundle.grants.map(toRpcGrant)"),
+  "anonymous_grant_probe_create_order_invalid"
+);
+assert(
+  anonymousGrantReadinessVerifier.includes("PGRST202") &&
+    anonymousGrantReadinessVerifier.includes("42501") &&
+    anonymousGrantReadinessVerifier.includes("PGRST301") &&
+    anonymousGrantReadinessVerifier.includes("actualCreateCalls, 1") &&
+    anonymousGrantReadinessVerifier.includes("cleanupFailureMarker"),
+  "anonymous_grant_readiness_static_cases_missing"
+);
+
+for (const marker of [
+  "Export masked local runtime variables",
+  "Verify anonymous write-grant runtime",
+  "npm run anonymous-write-grant:runtime:verify",
+  "Lint local database",
+  "Verify anonymous product boundary"
+]) {
+  assert(replayWorkflow.includes(marker), `replay_anonymous_grant_contract_missing:${marker}`);
+}
+const replayExportIndex = replayWorkflow.indexOf("- name: Export masked local runtime variables");
+const replayRuntimeIndex = replayWorkflow.indexOf("- name: Verify anonymous write-grant runtime");
+const replayLintIndex = replayWorkflow.indexOf("- name: Lint local database");
+assert(
+  replayExportIndex >= 0 && replayRuntimeIndex > replayExportIndex && replayLintIndex > replayRuntimeIndex,
+  "replay_anonymous_grant_step_order_invalid"
+);
 
 console.log("[face-lab-provider-e2e-verify] PASS");

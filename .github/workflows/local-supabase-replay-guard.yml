@@ -115,6 +115,37 @@ jobs:
             rm -f "${raw_log}"
           done
 
+      - name: Export masked local runtime variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_url=""
+          service_role_key=""
+          while IFS='=' read -r name value; do
+            value="${value#\"}"
+            value="${value%\"}"
+            case "${name}" in
+              API_URL) api_url="${value}" ;;
+              SERVICE_ROLE_KEY) service_role_key="${value}" ;;
+            esac
+          done < <(npx --yes supabase@2.82.0 status -o env --workdir tmp/local-supabase-replay)
+
+          test -n "${api_url}"
+          test -n "${service_role_key}"
+          case "${api_url}" in
+            http://127.0.0.1:*|http://localhost:*) ;;
+            *) echo "remote_supabase_url_rejected" >&2; exit 1 ;;
+          esac
+
+          printf '::add-mask::%s\n' "${service_role_key}"
+          {
+            printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "${api_url}"
+            printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "${service_role_key}"
+          } >>"${GITHUB_ENV}"
+
+      - name: Verify anonymous write-grant runtime
+        run: npm run anonymous-write-grant:runtime:verify
+
       - name: Lint local database
         run: npx --yes supabase@2.82.0 db lint --local --workdir tmp/local-supabase-replay
 
@@ -216,6 +247,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: local-supabase-replay-diagnostics
-          path: tmp/local-supabase-replay-diagnostics/*.log
+          path: |
+            tmp/local-supabase-replay-diagnostics/*.log
+            tmp/face-lab-provider-e2e/anonymous-grant-preflight.json
           if-no-files-found: ignore
           retention-days: 1

@@ -17,6 +17,7 @@
     "face-lab:e2e:run": "node scripts/face-lab-provider-e2e/run.mjs",
     "face-lab:e2e:verify": "node scripts/face-lab-provider-e2e/verify-package.mjs",
     "anonymous-write-grant:runtime:verify": "node scripts/verify-anonymous-write-grant-local-runtime.mjs",
+    "anonymous-write-grant:runtime-readiness:verify": "node scripts/verify-anonymous-write-grant-runtime-readiness.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
     "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",

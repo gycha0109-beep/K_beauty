@@ -1,18 +1,37 @@
 import { randomBytes } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import {
   canonicalizeAnonymousResultForPersistence,
   createAnonymousWriteGrantTokens
 } from "../lib/security/anonymous-write-grant-core.js";
+import {
+  createPreflightDiagnostic,
+  runAnonymousGrantRpcContract
+} from "./lib/anonymous-write-grant-runtime-readiness.mjs";
 
 const MARKERS = new Set([
   "anonymous_grant_canonicalization_failed",
   "anonymous_grant_rpc_failed",
+  "anonymous_grant_rpc_visibility_timeout",
+  "anonymous_grant_rpc_permission_denied",
+  "anonymous_grant_rpc_auth_failed",
+  "anonymous_grant_rpc_probe_contract_invalid",
+  "anonymous_grant_rpc_network_unready",
+  "anonymous_grant_rpc_execution_failed",
   "anonymous_grant_created_count_invalid",
   "anonymous_grant_row_contract_invalid",
   "anonymous_grant_cleanup_failed",
   "remote_supabase_url_rejected"
 ]);
+const DIAGNOSTIC_PATH = path.join(
+  process.cwd(),
+  "tmp",
+  "face-lab-provider-e2e",
+  "anonymous-grant-preflight.json"
+);
+let diagnosticWritten = false;
 
 class VerificationFailure extends Error {
   constructor(marker) {
@@ -48,6 +67,15 @@ function normalizeRpcJson(data) {
   } catch {
     return null;
   }
+}
+
+async function writeDiagnostic(diagnostic) {
+  await mkdir(path.dirname(DIAGNOSTIC_PATH), { recursive: true });
+  await writeFile(DIAGNOSTIC_PATH, `${JSON.stringify(diagnostic, null, 2)}\n`, {
+    encoding: "utf8",
+    mode: 0o600
+  });
+  diagnosticWritten = true;
 }
 
 function createSyntheticResult() {
@@ -147,79 +175,75 @@ async function main() {
       persistSession: false
     }
   });
-  let failureMarker = null;
-
-  try {
-    let rpcResponse = null;
-    try {
-      rpcResponse = await supabase.rpc("create_anonymous_write_grants", {
+  const diagnostic = await runAnonymousGrantRpcContract({
+    probeRpc: async () => {
+      const response = await supabase.rpc("create_anonymous_write_grants", {
+        p_grants: []
+      });
+      return {
+        error: response?.error ? { code: response.error.code } : null,
+        status: response?.status
+      };
+    },
+    createRpc: async () => {
+      const response = await supabase.rpc("create_anonymous_write_grants", {
         p_grants: bundle.grants.map(toRpcGrant)
       });
-    } catch {
-      fail("anonymous_grant_rpc_failed");
-    }
-
-    if (rpcResponse?.error) {
-      fail("anonymous_grant_rpc_failed");
-    }
-    if (normalizeRpcJson(rpcResponse?.data)?.created !== 2) {
-      fail("anonymous_grant_created_count_invalid");
-    }
-
-    const { data: rows, error: rowError } = await supabase
-      .from("anonymous_write_grants")
-      .select("resource_id,operation")
-      .eq("resource_id", bundle.analysisRunId);
-
-    const operations = Array.isArray(rows)
-      ? rows.map((row) => row.operation).sort()
-      : [];
-    if (
-      rowError ||
-      !Array.isArray(rows) ||
-      rows.length !== 2 ||
-      rows.some((row) => row.resource_id !== bundle.analysisRunId) ||
-      operations.join(",") !== "result:create,track:create"
-    ) {
-      fail("anonymous_grant_row_contract_invalid");
-    }
-  } catch (error) {
-    failureMarker = error instanceof VerificationFailure && MARKERS.has(error.marker)
-      ? error.marker
-      : "anonymous_grant_rpc_failed";
-  } finally {
-    let cleanupPassed = false;
-    try {
-      const { error: deleteError } = await supabase
+      return {
+        data: normalizeRpcJson(response?.data),
+        error: response?.error ? { code: response.error.code } : null
+      };
+    },
+    selectRows: async () => {
+      const { data: rows, error } = await supabase
+        .from("anonymous_write_grants")
+        .select("resource_id,operation")
+        .eq("resource_id", bundle.analysisRunId);
+      return {
+        rows: Array.isArray(rows) && rows.every((row) => row.resource_id === bundle.analysisRunId)
+          ? rows.map((row) => ({ operation: row.operation }))
+          : null,
+        error: Boolean(error)
+      };
+    },
+    deleteRows: async () => {
+      const { error } = await supabase
         .from("anonymous_write_grants")
         .delete()
         .eq("resource_id", bundle.analysisRunId);
-      const { count, error: countError } = await supabase
+      return { error: Boolean(error) };
+    },
+    countRows: async () => {
+      const { count, error } = await supabase
         .from("anonymous_write_grants")
         .select("id", { count: "exact", head: true })
         .eq("resource_id", bundle.analysisRunId);
-
-      cleanupPassed = !deleteError && !countError && count === 0;
-    } catch {
-      cleanupPassed = false;
+      return { count, error: Boolean(error) };
     }
+  });
 
-    if (!cleanupPassed) {
-      failureMarker = "anonymous_grant_cleanup_failed";
-    }
-  }
+  await writeDiagnostic(diagnostic);
+  if (diagnostic.failureMarker) fail(diagnostic.failureMarker);
 
-  if (failureMarker) {
-    fail(failureMarker);
-  }
-
-  console.log("[anonymous-write-grant-local-runtime] PASS");
+  console.log(
+    `[anonymous-write-grant-local-runtime] PASS probeAttempts=${diagnostic.probeAttempts} ` +
+      `safeErrorCode=${diagnostic.safeErrorCode} actualCreateRpcAttempts=${diagnostic.actualCreateRpcAttempts} ` +
+      `createdCount=${diagnostic.createdCount} rowCount=${diagnostic.rowCount} ` +
+      `cleanupRowCount=${diagnostic.cleanupRowCount}`
+  );
 }
 
 main().catch((error) => {
   const marker = error instanceof VerificationFailure && MARKERS.has(error.marker)
     ? error.marker
     : "anonymous_grant_rpc_failed";
+  if (!diagnosticWritten) {
+    writeDiagnostic({
+      ...createPreflightDiagnostic(),
+      failureMarker: marker,
+      primaryFailureMarker: marker
+    }).catch(() => {});
+  }
   console.error(marker);
   process.exitCode = 1;
 });

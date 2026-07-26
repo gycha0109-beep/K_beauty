@@ -34,7 +34,13 @@ Before that Provider smoke, the workflow runs a Provider-free anonymous write-gr
 npm run anonymous-write-grant:runtime:verify
 ```
 
-The gate canonicalizes a realistic synthetic free result (including bounded `imageEligibility`), creates a synthetic grant pair through the service-role-only `create_anonymous_write_grants` RPC, verifies exactly `result:create` and `track:create`, deletes the synthetic rows, and confirms zero rows remain. It rejects non-local Supabase URLs and never uses an image, fixture, Provider, production data, or a Repository Secret.
+The gate canonicalizes a realistic synthetic free result (including bounded `imageEligibility`). Before creating rows, it polls a no-write invalid call with `p_grants: []` for at most 60 seconds at one-second intervals. SQLSTATE `22023` is the readiness signal: PostgREST can see the exact RPC and the function rejected the invalid array before its insert loop. Only schema-cache/network readiness states are rechecked; authentication, permission, or unexpected function-contract results fail immediately.
+
+After visibility is confirmed, the gate calls the service-role-only `create_anonymous_write_grants` RPC with the real synthetic pair exactly once. It verifies exactly `result:create` and `track:create`, deletes the synthetic rows, and confirms zero rows remain. Actual grant creation is never retried. It rejects non-local Supabase URLs and never uses an image, fixture, Provider, production data, or a Repository Secret.
+
+The sanitized `anonymous-grant-preflight-v1` diagnostic records only the visibility attempt count, bounded safe error code, actual-create attempt count, created/row/cleanup counts, and fixed failure markers. It never records URLs, credentials, tokens, identifiers, row bodies, or raw database error text. The same gate runs in Local Supabase Replay Guard and before the Provider smoke.
+
+Run `30211073388` passed Local Supabase reset and masked runtime export, then stopped at the prior generic `anonymous_grant_rpc_failed` marker. The actual `/api/analyze` step was skipped, Provider text/image calls were zero, automatic retries were zero, and cleanup passed. Local execution and the exact-head Replay Guard passed, so immediate PostgREST RPC visibility after `db reset` is the probable boundary, not yet a confirmed root cause. The visibility diagnostic in the next Provider-free Replay Guard run is the deciding evidence. No migration, RPC body/signature, permission, RLS policy, Secret, fixture, or Provider request contract is changed by this readiness boundary.
 
 ## Sanitized report
 

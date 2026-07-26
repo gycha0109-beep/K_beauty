@@ -281,6 +281,7 @@ jobs:
             tmp/face-lab-provider-e2e/report.json
             tmp/face-lab-provider-e2e/report.md
             tmp/face-lab-provider-e2e/diagnostics.log
+            tmp/face-lab-provider-e2e/anonymous-grant-preflight.json
             tmp/face-lab-provider-e2e/supabase-start.log
             tmp/face-lab-provider-e2e/supabase-reset.log
           if-no-files-found: ignore
