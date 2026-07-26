@@ -14,35 +14,39 @@ The run permits at most two image-bearing Provider attempts and performs no auto
 ## Required repository secrets
 
 - `OPENAI_API_KEY`: the configured OpenAI project key used only inside the Actions job.
-- `FACE_LAB_E2E_FIXTURE_PASSPHRASE`: the passphrase used to encrypt the fixture bundle.
+- `FACE_LAB_E2E_FIXTURE_PASSPHRASE`: the passphrase used to decrypt the fixture bundle.
 
-The workflow never prints the OpenAI key value, key prefix, authorization header, request body, raw Provider response, image bytes, decoded archive, or credential fingerprint.
+Neither secret value is recorded in documentation, logs, command-line arguments, or repository files. The workflow never prints the OpenAI key value, key prefix, authorization header, request body, raw Provider response, image bytes, decrypted archive, or credential fingerprint.
 
 ## Fixture bundle
 
-The encrypted archive is base64-encoded and split into exactly eight bounded text parts:
+The workflow reads one encrypted binary file:
 
 ```text
-private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64.part-00
-...
-private/face-lab-e2e/fixture-bundle.tar.gz.enc.b64.part-07
+private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc
 ```
 
-These parts do not start the Provider workflow. The workflow starts only when this marker is pushed after all required secrets are configured:
+Its required size is `3210944` bytes and SHA-256 is:
+
+```text
+739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
+```
+
+The archive uses AES-256-CBC with salt, PBKDF2, and `iter 210000`. After decryption it must contain exactly:
+
+```text
+manifest.local.json
+private/face-lab-fixtures/subject-a/frontal-clear.png
+private/face-lab-fixtures/subject-a/lower-face-occluded.png
+```
+
+Plaintext fixtures are never stored in Git. They exist only in the Actions workspace and are removed during mandatory cleanup; the encrypted fixture is also removed from the runner workspace after use. The encrypted bytes are committed solely for this bounded E2E run, and Git history can retain encrypted data even after later removal.
+
+The workflow starts only when this marker is pushed after all required secrets are configured:
 
 ```text
 private/face-lab-e2e/run.trigger
 ```
-
-After concatenation, base64 decoding, and AES-256-CBC decryption, the archive must contain exactly:
-
-```text
-manifest.local.json
-private/face-lab-fixtures/subject-a/frontal-clear.jpg
-private/face-lab-fixtures/subject-a/lower-face-occluded.jpg
-```
-
-The source PNG fixtures are re-encoded as bounded high-quality JPEG only for encrypted GitHub transport. The plaintext manifest and images exist only in the Actions workspace and are removed during cleanup. The repository stores encrypted bytes encoded as text. The eight parts and trigger must be deleted from the branch after the run is recorded.
 
 ## Commands
 

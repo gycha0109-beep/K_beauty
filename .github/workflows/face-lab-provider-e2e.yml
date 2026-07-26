@@ -5,9 +5,6 @@ on:
   push:
     paths:
       - "private/face-lab-e2e/run.trigger"
-  pull_request:
-    paths:
-      - "private/face-lab-e2e/run.trigger"
 
 permissions:
   contents: read
@@ -22,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      BUNDLE_PREFIX: private/face-lab-e2e/fixture-bundle-v2.tar.gz.enc.b64.part-
+      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
       NEXT_TELEMETRY_DISABLED: "1"
@@ -54,10 +51,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          expected_size=3210944
+          expected_sha256=739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
           test -f "private/face-lab-e2e/run.trigger" || { echo "run_trigger_missing" >&2; exit 1; }
-          shopt -s nullglob
-          parts=( "${BUNDLE_PREFIX}"* )
-          test "${#parts[@]}" -eq 3 || { echo "fixture_bundle_part_count_invalid:${#parts[@]}" >&2; exit 1; }
+          test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
+          actual_size="$(wc -c <"${BUNDLE_PATH}")"
+          test "${actual_size}" -eq "${expected_size}" || { echo "fixture_bundle_size_invalid" >&2; exit 1; }
+          actual_sha256="$(sha256sum "${BUNDLE_PATH}" | awk '{print $1}')"
+          test "${actual_sha256}" = "${expected_sha256}" || { echo "fixture_bundle_sha256_invalid" >&2; exit 1; }
           test -n "${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY_missing" >&2; exit 1; }
           test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
 
@@ -67,26 +68,18 @@ jobs:
         run: |
           set -euo pipefail
           work_dir="tmp/face-lab-provider-e2e-input"
-          encoded_path="${work_dir}/fixture-bundle.tar.gz.enc.b64"
-          encrypted_path="${work_dir}/fixture-bundle.tar.gz.enc"
-          archive_path="${work_dir}/fixture-bundle.tar.gz"
+          archive_path="${work_dir}/fixture-bundle-v3.tar.gz"
           mkdir -p "${work_dir}"
-          shopt -s nullglob
-          parts=( "${BUNDLE_PREFIX}"* )
-          printf '%s\n' "${parts[@]}" | sort | xargs cat >"${encoded_path}"
-          base64 --decode "${encoded_path}" >"${encrypted_path}"
-          rm -f "${encoded_path}"
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
-            -in "${encrypted_path}" \
+            -in "${BUNDLE_PATH}" \
             -out "${archive_path}" \
             -pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE
-          rm -f "${encrypted_path}"
 
           actual_members="$(tar -tzf "${archive_path}" | sed 's#^\./##' | sort)"
           expected_members="$(printf '%s\n' \
             'manifest.local.json' \
-            'private/face-lab-fixtures/subject-a/frontal-clear.jpg' \
-            'private/face-lab-fixtures/subject-a/lower-face-occluded.jpg' | sort)"
+            'private/face-lab-fixtures/subject-a/frontal-clear.png' \
+            'private/face-lab-fixtures/subject-a/lower-face-occluded.png' | sort)"
           test "${actual_members}" = "${expected_members}" || {
             echo "fixture_bundle_member_contract_invalid" >&2
             exit 1
@@ -202,6 +195,7 @@ jobs:
           rm -f manifest.local.json
           rm -rf private/face-lab-fixtures
           rm -rf tmp/face-lab-provider-e2e-input
+          rm -f "${BUNDLE_PATH}"
           if [ -d tmp/local-supabase-replay ]; then
             npx --yes supabase@2.82.0 stop \
               --workdir tmp/local-supabase-replay \

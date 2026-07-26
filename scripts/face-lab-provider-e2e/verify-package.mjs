@@ -1,26 +1,32 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const repoRoot = process.cwd();
+const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
+const runnerPath = "scripts/face-lab-provider-e2e/run.mjs";
+const packagePath = "package.json";
+const temporaryRoutePath = "app/api/__face-lab-provider-e2e/route.js";
 
 function read(relativePath) {
   return readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
 function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
+  if (!condition) throw new Error(message);
 }
 
-const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
-const runnerPath = "scripts/face-lab-provider-e2e/run.mjs";
-const packagePath = "package.json";
-const temporaryRoutePath = "app/api/__face-lab-provider-e2e/route.js";
+function isTracked(relativePath) {
+  const result = spawnSync("git", ["ls-files", "--error-unmatch", relativePath], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  return result.status === 0;
+}
 
 assert(existsSync(path.join(repoRoot, workflowPath)), "missing_face_lab_provider_e2e_workflow");
 assert(existsSync(path.join(repoRoot, runnerPath)), "missing_face_lab_provider_e2e_runner");
-assert(!existsSync(path.join(repoRoot, temporaryRoutePath)), "temporary_e2e_route_must_not_be_tracked");
+assert(!isTracked(temporaryRoutePath), "temporary_e2e_route_must_not_be_tracked");
 
 const workflow = read(workflowPath);
 const runner = read(runnerPath);
@@ -29,26 +35,35 @@ const packageJson = JSON.parse(read(packagePath));
 for (const marker of [
   "workflow_dispatch:",
   "private/face-lab-e2e/run.trigger",
-  "fixture-bundle.tar.gz.enc.b64.part-",
-  "-eq 8",
-  "fixture_bundle_part_count_invalid",
+  "BUNDLE_PATH: private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc",
+  "expected_size=3210944",
+  "expected_sha256=739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658",
   "secrets.OPENAI_API_KEY",
-  "FACE_LAB_E2E_FIXTURE_PASSPHRASE",
-  "base64 --decode",
-  "frontal-clear.jpg",
-  "lower-face-occluded.jpg",
+  "secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE",
+  "openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000",
+  "-pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE",
+  "frontal-clear.png",
+  "lower-face-occluded.png",
   "permissions:\n  contents: read",
-  "npm run face-lab:e2e:verify",
   "npm run face-lab:e2e:run",
-  "retention-days: 3"
+  "retention-days: 3",
+  "Mandatory cleanup"
 ]) {
   assert(workflow.includes(marker), `workflow_contract_missing:${marker}`);
 }
 
-assert(!workflow.includes("pull_request_target"), "forbidden_pull_request_target_trigger");
-assert(!workflow.includes("contents: write"), "provider_e2e_must_not_have_contents_write");
-assert(!workflow.includes("actions/checkout@v3"), "checkout_action_must_be_v4");
-assert(!workflow.includes("FACE_LAB_E2E_OPENAI_API_KEY"), "stale_dedicated_openai_secret_name");
+for (const forbiddenMarker of [
+  "BUNDLE_PREFIX",
+  "fixture-bundle-v2",
+  "fixture-bundle.tar.gz.enc.b64.part-",
+  "base64 --decode",
+  "pull_request:",
+  "pull_request_target",
+  "contents: write",
+  "FACE_LAB_E2E_OPENAI_API_KEY"
+]) {
+  assert(!workflow.includes(forbiddenMarker), `forbidden_workflow_marker:${forbiddenMarker}`);
+}
 
 for (const marker of [
   "subject-a-frontal-clear",
@@ -66,7 +81,7 @@ for (const marker of [
   assert(runner.includes(marker), `runner_contract_missing:${marker}`);
 }
 
-assert(!runner.includes("console.log(process.env.OPENAI_API_KEY"), "runner_must_not_log_provider_secret");
+assert(!/console\.(?:log|info|warn|error)\([^\n]*(?:OPENAI_API_KEY|FACE_LAB_E2E_FIXTURE_PASSPHRASE)/.test(runner), "runner_must_not_log_provider_secret");
 assert(!runner.includes("Authorization: `Bearer ${process.env.OPENAI_API_KEY}`"), "runner_must_not_interpolate_secret_in_logs");
 assert(!runner.includes("retry("), "runner_must_not_define_automatic_retry_helper");
 
