@@ -1,3 +1,3 @@
-face-lab-provider-e2e-v3-member-contract-fix
-bundle-sha256=739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
-previous-run=30204169231
+face-lab-provider-e2e-v3-rekey
+bundle-sha256=3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f
+previous-run=30205374997

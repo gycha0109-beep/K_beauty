@@ -26,10 +26,10 @@ The workflow reads one encrypted binary file:
 private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc
 ```
 
-Its required size is `3210944` bytes and SHA-256 is:
+Its required size is `3094224` bytes and SHA-256 is:
 
 ```text
-739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
+3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f
 ```
 
 The archive uses AES-256-CBC with salt, PBKDF2, and `iter 210000`. After decryption it must contain exactly:
@@ -44,7 +44,7 @@ Plaintext fixtures are never stored in Git. They exist only in the Actions works
 
 Archive validation permits exactly three regular files. Tar archives may contain directory entries, but only the exact ancestor scaffolding (`.`, `private`, `private/face-lab-fixtures`, and `private/face-lab-fixtures/subject-a`) is allowed; directory entries are optional. Symlinks, hardlinks, devices, FIFOs, traversal paths, backslash paths, duplicate members, and every non-allowlisted member are rejected. The runner does not restore archive owner, mode, or mtime metadata: after full validation, it streams only the three expected files to newly created targets.
 
-The encrypted bundle binary, size, and SHA-256 remain unchanged by this member-contract fix. The preceding run `30204169231` reached the member contract after decryption but did not reach the Provider; it made zero image-bearing attempts. This push creates one new first attempt, with the existing two-image maximum and zero automatic retries.
+This replacement bundle was rebuilt with exactly the three allowlisted regular files and no directory entries. Its encrypted binary, size, and SHA-256 therefore replace the earlier v3 values while the file path, encryption algorithm, KDF, iteration count, two-image maximum, and zero automatic retries remain unchanged. The preceding run `30205374997` failed before the Provider and made zero image-bearing attempts. This trigger change creates one new first attempt.
 
 The workflow starts only when this marker is pushed after all required secrets are configured:
 

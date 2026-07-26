@@ -2579,3 +2579,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Task type: bounded High-risk execution. The prior run `30204169231` passed the encrypted input and OpenSSL stages, then stopped at `fixture_bundle_member_contract_invalid`; Provider attempts were 0. No secret was read, changed, or exposed.
 - Change: only the post-decryption tar member validation/extraction boundary is replaced. The encrypted fixture remains unchanged; Python standard-library validation accepts the three exact regular files and optional exact ancestor directories, rejects unsafe paths, links, special members, duplicates, and unlisted entries, and streams only verified files without restoring archive metadata.
 - Boundaries: no Provider call, Local/remote Supabase access, runtime policy, migration, production setting, plaintext fixture inspection, or fixture-binary change is authorized.
+
+### 2026-07-26 / Face Lab Provider E2E fixture v3 rekey
+
+- Task type: bounded High-risk execution. Secret and Provider workflow boundaries are `Y`; DB, RLS, Storage, Payment, migration, production deployment, hosted Supabase, and local Provider execution are `N`.
+- Change: regenerated the encrypted v3 fixture from the existing untracked manifest and two PNG sources using exactly three regular tar members, then AES-256-CBC with salt, PBKDF2, and 210000 iterations. Updated the tracked encrypted blob and its size/SHA-256 fail-closed markers; no plaintext fixture was added to Git.
+- Validation boundary: the generated encrypted output was immediately decrypted in the temporary workspace with the same process-only passphrase and its tar metadata matched exactly the three expected regular files. Plaintext archives and the process environment value were removed after validation.
+- Secret handling: the replacement Repository Secret was supplied through standard input without logging, command-line exposure, or repository persistence. No Secret value is recorded here.
+- Runtime boundary: no Provider API, Local or remote Supabase, migration, production deployment, workflow dispatch, or workflow rerun was invoked locally.

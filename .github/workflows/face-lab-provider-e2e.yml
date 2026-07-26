@@ -51,8 +51,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_size=3210944
-          expected_sha256=739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
+          expected_size=3094224
+          expected_sha256=3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f
           test -f "private/face-lab-e2e/run.trigger" || { echo "run_trigger_missing" >&2; exit 1; }
           test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
           actual_size="$(wc -c <"${BUNDLE_PATH}")"
