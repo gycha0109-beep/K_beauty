@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
 const repoRoot = process.cwd();
 const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
@@ -107,7 +108,10 @@ for (const marker of [
   "Run single actual /api/analyze Provider smoke",
   "npm run face-lab:e2e:run",
   "retention-days: 3",
-  "Mandatory cleanup"
+  "Mandatory cleanup",
+  "face-lab-provider-e2e-cleanup-v1",
+  "tmp/face-lab-provider-e2e/cleanup.json",
+  "workflow_cleanup_failed"
 ]) {
   assert(workflow.includes(marker), `workflow_contract_missing:${marker}`);
 }
@@ -145,8 +149,8 @@ const workflowSteps = [
   "Start and reset isolated Local Supabase",
   "Export masked local runtime variables",
   "Run single actual /api/analyze Provider smoke",
-  "Upload sanitized E2E report",
-  "Mandatory cleanup"
+  "Mandatory cleanup",
+  "Upload sanitized E2E report"
 ];
 let previousWorkflowStepIndex = -1;
 for (const workflowStep of workflowSteps) {
@@ -172,7 +176,7 @@ for (const marker of [
   "state.responseContractPassed = contractPassed",
   "state.visionUsageEventCount",
   "state.providerUsageObserved",
-  '"face-lab-provider-e2e-report-v2"',
+  '"face-lab-provider-e2e-report-v3"',
   '"actual-api-analyze-single-image"',
   "x-kbeauty-result-write-token",
   "x-kbeauty-track-write-token",
@@ -191,9 +195,21 @@ for (const marker of [
   "ANALYZE_TIMEOUT",
   "ANALYZE_HTTP_FAILED",
   "ANALYZE_RESPONSE_CONTRACT_FAILED",
+  "FACE_LAB_SEMANTIC_CONTRACT_FAILED",
+  "PROVIDER_CALL_ACCOUNTING_FAILED",
   "PROVIDER_USAGE_EVENT_MISSING",
   "PROVIDER_ATTEMPT_COUNT_INVALID",
   "REPORT_OR_CLEANUP_FAILED",
+  "inspectFaceLabSemanticContract",
+  "faceLabSemanticContractPassed",
+  "faceLabEvidenceBackedAvailableFieldCount",
+  "faceLabSourceImagePersistedFalse",
+  "extractProviderRuntimeEvents",
+  "imageProviderRuntimeCalls",
+  "textExplanationProviderCalls",
+  "textPreflightProviderCalls",
+  "unexpectedProviderStageCount",
+  "totalProviderRequestsObserved",
   "sanitizeApplicationError",
   "sanitizeDiagnosticText",
   "await stopChild(server)"
@@ -243,14 +259,83 @@ assert(
   "request_dispatch_accounting_order_invalid"
 );
 
+const payloadObjectValidationIndex = smokeSource.indexOf(
+  'if (!payload || typeof payload !== "object" || Array.isArray(payload))'
+);
+const baseResponseContractIndex = smokeSource.indexOf(
+  "state.responseContractPassed = contractPassed"
+);
+const faceLabInspectionIndex = smokeSource.indexOf(
+  "inspectFaceLabSemanticContract(payload.faceLab)"
+);
+const faceLabFailureIndex = smokeSource.indexOf(
+  'throw new Error("FACE_LAB_SEMANTIC_CONTRACT_FAILED")'
+);
+const providerAttemptValidationIndex = smokeSource.indexOf(
+  "state.responseReportedImageProviderAttempts !== MAX_IMAGE_ATTEMPTS"
+);
+assert(
+  payloadObjectValidationIndex >= 0 &&
+    baseResponseContractIndex > payloadObjectValidationIndex &&
+    faceLabInspectionIndex > baseResponseContractIndex &&
+    faceLabFailureIndex > faceLabInspectionIndex &&
+    providerAttemptValidationIndex > faceLabFailureIndex,
+  "face_lab_semantic_validation_order_invalid"
+);
+assert(
+  !/Boolean\s*\(\s*payload\.faceLab\s*\)/.test(smokeSource),
+  "face_lab_presence_only_contract_forbidden"
+);
+
 const mainStart = runner.indexOf("async function main()");
 const mainSource = runner.slice(mainStart);
+for (const marker of [
+  "state.imageProviderRuntimeCalls !== MAX_IMAGE_ATTEMPTS",
+  "state.textExplanationProviderCalls > 1",
+  "state.textPreflightProviderCalls !== 0",
+  "state.unexpectedProviderStageCount !== 0",
+  "state.totalProviderRequestsObserved > 2"
+]) {
+  assert(mainSource.includes(marker), `provider_call_accounting_contract_missing:${marker}`);
+}
+
 const serverStartIndex = mainSource.indexOf("server = startNextServer(capture, port)");
 const readinessIndex = mainSource.indexOf("await waitForServerReadiness(server, baseUrl)");
 const smokeIndex = mainSource.indexOf("await runAnalyzeProviderSmoke(fixture, baseUrl, state)");
 assert(
   serverStartIndex >= 0 && readinessIndex > serverStartIndex && smokeIndex > readinessIndex,
   "server_readiness_analyze_order_invalid"
+);
+
+const cleanupStepIndex = workflow.indexOf("- name: Mandatory cleanup");
+const uploadStepIndex = workflow.indexOf("- name: Upload sanitized E2E report");
+const cleanupStepSource = workflow.slice(cleanupStepIndex, uploadStepIndex);
+const uploadStepSource = workflow.slice(uploadStepIndex);
+assert(cleanupStepIndex >= 0 && uploadStepIndex > cleanupStepIndex, "cleanup_upload_order_invalid");
+assert(cleanupStepSource.includes("if: always()"), "cleanup_always_contract_missing");
+assert(uploadStepSource.includes("if: always()"), "upload_always_contract_missing");
+assert(
+  !cleanupStepSource.includes("continue-on-error: true"),
+  "cleanup_continue_on_error_forbidden"
+);
+for (const marker of [
+  "cleanup_failed=0",
+  "manifest_absent",
+  "plaintext_fixture_directory_absent",
+  "decrypted_input_directory_absent",
+  "encrypted_bundle_absent",
+  "local_supabase_stopped",
+  "supabase@2.82.0 stop",
+  "face-lab-provider-e2e-cleanup-v1",
+  "workflow_cleanup_failed",
+  'if [ "${cleanup_failed}" -ne 0 ]',
+  "exit 1"
+]) {
+  assert(cleanupStepSource.includes(marker), `cleanup_fail_closed_contract_missing:${marker}`);
+}
+assert(
+  uploadStepSource.includes("tmp/face-lab-provider-e2e/cleanup.json"),
+  "cleanup_artifact_upload_missing"
 );
 
 assert(analyzeRoute.includes('formData.get("image")'), "production_analyze_image_field_missing");
@@ -308,6 +393,108 @@ const replayLintIndex = replayWorkflow.indexOf("- name: Lint local database");
 assert(
   replayLintIndex > replayWorkflow.indexOf("- name: Reset migration chain twice"),
   "replay_existing_database_step_order_invalid"
+);
+
+const runnerModule = await import(
+  pathToFileURL(path.join(repoRoot, runnerPath)).href
+);
+const { inspectFaceLabSemanticContract, extractProviderRuntimeEvents } = runnerModule;
+assert(
+  typeof inspectFaceLabSemanticContract === "function",
+  "face_lab_semantic_inspector_export_missing"
+);
+assert(
+  typeof extractProviderRuntimeEvents === "function",
+  "provider_runtime_event_parser_export_missing"
+);
+
+const availableField = {
+  status: "available",
+  source: "vision",
+  confidence: 0.91,
+  evidence: ["bounded synthetic evidence"],
+  value: { category: "synthetic" },
+  unavailableReason: null
+};
+const validFaceLab = {
+  status: "available",
+  source: "vision",
+  failureReason: null,
+  eligibility: { faceLabEligible: true },
+  data: {
+    structured: { synthetic: true },
+    analysis: {
+      status: "available",
+      observations: { shape: { primary: availableField } },
+      coverage: { availableFieldCount: 1 },
+      privacy: { sourceImagePersisted: false }
+    }
+  }
+};
+const passInspection = inspectFaceLabSemanticContract(validFaceLab);
+assert(passInspection.semanticContractPassed === true, "face_lab_semantic_pass_case_failed");
+assert(
+  passInspection.evidenceBackedAvailableFieldCount === 1,
+  "face_lab_evidence_backed_count_invalid"
+);
+
+const semanticFailureCases = [
+  {},
+  { ...structuredClone(validFaceLab), status: "unavailable" },
+  { ...structuredClone(validFaceLab), source: "fallback" },
+  {
+    ...structuredClone(validFaceLab),
+    eligibility: { faceLabEligible: false }
+  },
+  (() => {
+    const value = structuredClone(validFaceLab);
+    value.data.analysis.status = "unavailable";
+    return value;
+  })(),
+  (() => {
+    const value = structuredClone(validFaceLab);
+    value.data.analysis.observations.shape.primary.evidence = [];
+    return value;
+  })(),
+  (() => {
+    const value = structuredClone(validFaceLab);
+    value.data.analysis.observations.shape.primary.source = "derived";
+    return value;
+  })(),
+  (() => {
+    const value = structuredClone(validFaceLab);
+    value.data.analysis.observations.shape.primary.value = null;
+    return value;
+  })(),
+  (() => {
+    const value = structuredClone(validFaceLab);
+    delete value.data.structured;
+    return value;
+  })(),
+  (() => {
+    const value = structuredClone(validFaceLab);
+    value.data.analysis.privacy.sourceImagePersisted = true;
+    return value;
+  })()
+];
+for (const [index, faceLab] of semanticFailureCases.entries()) {
+  assert(
+    inspectFaceLabSemanticContract(faceLab).semanticContractPassed === false,
+    `face_lab_semantic_fail_case_unexpected_pass:${index + 1}`
+  );
+}
+
+const providerEvents = extractProviderRuntimeEvents([
+  "[provider-runtime] { stage: 'vision-observation', ok: true }",
+  "[provider-runtime] { stage: 'product-explanations', ok: false }"
+].join("\n"));
+assert(
+  providerEvents.length === 2 &&
+    providerEvents[0].stage === "vision-observation" &&
+    providerEvents[0].ok === true &&
+    providerEvents[1].stage === "product-explanations" &&
+    providerEvents[1].ok === false,
+  "provider_runtime_event_parser_contract_invalid"
 );
 
 console.log("[face-lab-provider-e2e-verify] PASS");

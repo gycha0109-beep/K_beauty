@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 const REPO_ROOT = process.cwd();
 const LOCAL_HOST = "127.0.0.1";
@@ -19,7 +20,7 @@ const AUTOMATIC_RETRY_COUNT = 0;
 const SERVER_READINESS_TIMEOUT_MS = 120_000;
 const ANALYZE_TIMEOUT_MS = 300_000;
 const MAX_CAPTURED_LOG_BYTES = 1024 * 1024;
-const REPORT_SCHEMA_VERSION = "face-lab-provider-e2e-report-v2";
+const REPORT_SCHEMA_VERSION = "face-lab-provider-e2e-report-v3";
 const REPORT_MODE = "actual-api-analyze-single-image";
 const OUTPUT_DIR = path.join(REPO_ROOT, "tmp", "face-lab-provider-e2e");
 const REPORT_JSON_PATH = path.join(OUTPUT_DIR, "report.json");
@@ -215,6 +216,107 @@ function extractUsageEvents(logText) {
   });
 }
 
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function inspectFaceLabSemanticContract(faceLab) {
+  const faceLabPresent = isObject(faceLab);
+  const envelopeAvailable = faceLabPresent && faceLab.status === "available";
+  const sourceVision = faceLabPresent && faceLab.source === "vision";
+  const eligibilityPassed =
+    isObject(faceLab?.eligibility) && faceLab.eligibility.faceLabEligible === true;
+  const data = isObject(faceLab?.data) ? faceLab.data : null;
+  const analysis = isObject(data?.analysis) ? data.analysis : null;
+  const analysisAvailable = analysis?.status === "available";
+  const structuredProjectionPresent =
+    isObject(data?.structured) && Object.keys(data.structured).length > 0;
+  const sourceImagePersistedFalse =
+    isObject(analysis?.privacy) && analysis.privacy.sourceImagePersisted === false;
+
+  let evidenceBackedAvailableFieldCount = 0;
+  if (isObject(analysis?.observations)) {
+    for (const group of Object.values(analysis.observations)) {
+      if (!isObject(group)) continue;
+      for (const field of Object.values(group)) {
+        if (
+          isObject(field) &&
+          field.status === "available" &&
+          field.source === "vision" &&
+          Number.isFinite(field.confidence) &&
+          field.confidence >= 0 &&
+          field.confidence <= 1 &&
+          Array.isArray(field.evidence) &&
+          field.evidence.some((item) => typeof item === "string" && item.trim().length > 0) &&
+          field.value !== null &&
+          field.value !== undefined &&
+          field.unavailableReason === null
+        ) {
+          evidenceBackedAvailableFieldCount += 1;
+        }
+      }
+    }
+  }
+
+  const semanticContractPassed =
+    faceLabPresent &&
+    envelopeAvailable &&
+    sourceVision &&
+    faceLab.failureReason === null &&
+    eligibilityPassed &&
+    Boolean(data) &&
+    analysisAvailable &&
+    isObject(analysis?.coverage) &&
+    Number.isInteger(analysis.coverage.availableFieldCount) &&
+    analysis.coverage.availableFieldCount >= 1 &&
+    evidenceBackedAvailableFieldCount >= 1 &&
+    structuredProjectionPresent &&
+    sourceImagePersistedFalse;
+
+  return {
+    faceLabPresent,
+    envelopeAvailable,
+    sourceVision,
+    eligibilityPassed,
+    analysisAvailable,
+    structuredProjectionPresent,
+    evidenceBackedAvailableFieldCount,
+    sourceImagePersistedFalse,
+    semanticContractPassed
+  };
+}
+
+export function extractProviderRuntimeEvents(logText) {
+  const segments = String(logText || "").split("[provider-runtime]").slice(1);
+  return segments.map((segment) => {
+    const sample = segment.slice(0, 1200);
+    const stageMatch = sample.match(/stage:\s*['"]([a-z0-9-]+)['"]/i);
+    const okMatch = sample.match(/ok:\s*(true|false)/i);
+    return {
+      stage: stageMatch?.[1] || "unknown",
+      ok: okMatch?.[1]?.toLowerCase() === "true"
+    };
+  });
+}
+
+function applyProviderRuntimeCounts(state, logText) {
+  const events = extractProviderRuntimeEvents(logText);
+  state.imageProviderRuntimeCalls =
+    events.filter((event) => event.stage === "vision-observation").length;
+  state.textExplanationProviderCalls =
+    events.filter((event) => event.stage === "product-explanations").length;
+  state.textPreflightProviderCalls = 0;
+  state.unexpectedProviderStageCount =
+    events.filter(
+      (event) =>
+        event.stage !== "vision-observation" && event.stage !== "product-explanations"
+    ).length;
+  state.totalProviderRequestsObserved =
+    state.imageProviderRuntimeCalls +
+    state.textExplanationProviderCalls +
+    state.unexpectedProviderStageCount;
+}
+
 async function runAnalyzeProviderSmoke(fixture, baseUrl, state) {
   let form;
   try {
@@ -260,9 +362,6 @@ async function runAnalyzeProviderSmoke(fixture, baseUrl, state) {
   state.analysisRunIdPresent = typeof payload.analysisRunId === "string" && payload.analysisRunId.length > 0;
   state.resultWriteGrantPresent = Boolean(response.headers.get("x-kbeauty-result-write-token"));
   state.trackWriteGrantPresent = Boolean(response.headers.get("x-kbeauty-track-write-token"));
-  state.faceLabPresent = Boolean(
-    payload.faceLab && typeof payload.faceLab === "object" && !Array.isArray(payload.faceLab)
-  );
 
   const contractPassed =
     payload.meta?.schemaVersion === 2 &&
@@ -272,10 +371,28 @@ async function runAnalyzeProviderSmoke(fixture, baseUrl, state) {
     Array.isArray(payload.night) &&
     state.analysisRunIdPresent &&
     state.resultWriteGrantPresent &&
-    state.trackWriteGrantPresent &&
-    state.faceLabPresent;
+    state.trackWriteGrantPresent;
   state.responseContractPassed = contractPassed;
   if (!contractPassed) throw new Error("ANALYZE_RESPONSE_CONTRACT_FAILED");
+
+  const faceLabInspection = inspectFaceLabSemanticContract(payload.faceLab);
+  state.faceLabPresent = faceLabInspection.faceLabPresent;
+  state.faceLabEnvelopeAvailable = faceLabInspection.envelopeAvailable;
+  state.faceLabSourceVision = faceLabInspection.sourceVision;
+  state.faceLabEligibilityPassed = faceLabInspection.eligibilityPassed;
+  state.faceLabAnalysisAvailable = faceLabInspection.analysisAvailable;
+  state.faceLabStructuredProjectionPresent =
+    faceLabInspection.structuredProjectionPresent;
+  state.faceLabEvidenceBackedAvailableFieldCount =
+    faceLabInspection.evidenceBackedAvailableFieldCount;
+  state.faceLabSourceImagePersistedFalse =
+    faceLabInspection.sourceImagePersistedFalse;
+  state.faceLabSemanticContractPassed =
+    faceLabInspection.semanticContractPassed;
+  if (!state.faceLabSemanticContractPassed) {
+    throw new Error("FACE_LAB_SEMANTIC_CONTRACT_FAILED");
+  }
+
   if (state.responseReportedImageProviderAttempts !== MAX_IMAGE_ATTEMPTS) {
     throw new Error("PROVIDER_ATTEMPT_COUNT_INVALID");
   }
@@ -297,7 +414,21 @@ function buildMarkdown(report) {
     `- Response-reported image Provider attempts: ${report.responseReportedImageProviderAttempts ?? "N/A"}`,
     `- Vision usage event count: ${report.visionUsageEventCount}`,
     `- Provider usage observed: ${report.providerUsageObserved}`,
+    `- Image Provider runtime calls: ${report.imageProviderRuntimeCalls}`,
+    `- Optional text explanation Provider calls: ${report.textExplanationProviderCalls}`,
+    `- Text Provider preflight calls: ${report.textPreflightProviderCalls}`,
+    `- Unexpected Provider stages: ${report.unexpectedProviderStageCount}`,
+    `- Observed total Provider requests: ${report.totalProviderRequestsObserved}`,
     `- Automatic retries: ${report.automaticRetries}`,
+    `- Face Lab present: ${report.faceLabPresent}`,
+    `- Face Lab envelope available: ${report.faceLabEnvelopeAvailable}`,
+    `- Face Lab source Vision: ${report.faceLabSourceVision}`,
+    `- Face Lab eligibility passed: ${report.faceLabEligibilityPassed}`,
+    `- Face Lab analysis available: ${report.faceLabAnalysisAvailable}`,
+    `- Face Lab structured projection present: ${report.faceLabStructuredProjectionPresent}`,
+    `- Face Lab evidence-backed available field count: ${report.faceLabEvidenceBackedAvailableFieldCount}`,
+    `- Face Lab source image persisted false: ${report.faceLabSourceImagePersistedFalse}`,
+    `- Face Lab semantic contract passed: ${report.faceLabSemanticContractPassed}`,
     `- Server cleanup completed: ${report.serverCleanupCompleted}`,
     `- Final verdict: ${report.finalVerdict}`,
     `- Failure code: ${report.failureCode ?? "N/A"}`,
@@ -305,7 +436,6 @@ function buildMarkdown(report) {
     "## Safety",
     "",
     "- Temporary API routes: 0",
-    "- Text Provider preflight calls: 0",
     "- Production deployment: 0",
     "- Hosted Supabase access: 0",
     "- Remote schema mutation: 0",
@@ -332,6 +462,8 @@ function classifyFailure(error, state) {
     "ANALYZE_TIMEOUT",
     "ANALYZE_HTTP_FAILED",
     "ANALYZE_RESPONSE_CONTRACT_FAILED",
+    "FACE_LAB_SEMANTIC_CONTRACT_FAILED",
+    "PROVIDER_CALL_ACCOUNTING_FAILED",
     "PROVIDER_USAGE_EVENT_MISSING",
     "PROVIDER_ATTEMPT_COUNT_INVALID",
     "REPORT_OR_CLEANUP_FAILED",
@@ -363,11 +495,24 @@ async function main() {
     responseReportedImageProviderAttempts: null,
     visionUsageEventCount: 0,
     providerUsageObserved: false,
+    imageProviderRuntimeCalls: 0,
+    textExplanationProviderCalls: 0,
+    textPreflightProviderCalls: 0,
+    unexpectedProviderStageCount: 0,
+    totalProviderRequestsObserved: 0,
     automaticRetries: AUTOMATIC_RETRY_COUNT,
     analysisRunIdPresent: false,
     resultWriteGrantPresent: false,
     trackWriteGrantPresent: false,
     faceLabPresent: false,
+    faceLabEnvelopeAvailable: false,
+    faceLabSourceVision: false,
+    faceLabEligibilityPassed: false,
+    faceLabAnalysisAvailable: false,
+    faceLabStructuredProjectionPresent: false,
+    faceLabEvidenceBackedAvailableFieldCount: 0,
+    faceLabSourceImagePersistedFalse: false,
+    faceLabSemanticContractPassed: false,
     serverCleanupCompleted: false,
     finalVerdict: "FAIL",
     failureCode: null,
@@ -406,6 +551,17 @@ async function main() {
     ) {
       throw new Error("PROVIDER_USAGE_EVENT_MISSING");
     }
+    applyProviderRuntimeCounts(state, capture.logs);
+    if (
+      state.imageProviderRuntimeCalls !== MAX_IMAGE_ATTEMPTS ||
+      state.textExplanationProviderCalls > 1 ||
+      state.textPreflightProviderCalls !== 0 ||
+      state.unexpectedProviderStageCount !== 0 ||
+      state.totalProviderRequestsObserved < 1 ||
+      state.totalProviderRequestsObserved > 2
+    ) {
+      throw new Error("PROVIDER_CALL_ACCOUNTING_FAILED");
+    }
     assert(state.imageBearingRequestsDispatched === MAX_IMAGE_ATTEMPTS, "PROVIDER_ATTEMPT_COUNT_INVALID");
     state.finalVerdict = "FINAL_PROVIDER_E2E_PASS";
   } catch (error) {
@@ -422,6 +578,7 @@ async function main() {
     }
     state.visionUsageEventCount = extractUsageEvents(capture.logs).length;
     state.providerUsageObserved = state.visionUsageEventCount > 0;
+    applyProviderRuntimeCounts(state, capture.logs);
     writeReport(state, capture.logs);
   }
 
@@ -433,4 +590,9 @@ async function main() {
   process.exitCode = 1;
 }
 
-await main();
+const isCliEntry =
+  Boolean(process.argv[1]) &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+if (isCliEntry) {
+  await main();
+}

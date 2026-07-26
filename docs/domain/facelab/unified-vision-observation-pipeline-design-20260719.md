@@ -383,7 +383,7 @@ decision
 }
 ```
 
-Provider attempt 수와 token usage는 Production public response에 넣지 않고 telemetry에만 기록한다.
+Token usage는 Production public response에 넣지 않고 telemetry에만 기록한다. 이미지 호출 수는 공식 bounded runtime 계약인 `meta.imageProviderAttemptCount`로만 public response에 노출하며, raw Provider usage는 노출하지 않는다.
 
 ### persistence 경계
 

@@ -1,7 +1,9 @@
-face-lab-provider-e2e-v7-direct-analyze-no-preflight
+face-lab-provider-e2e-v8-semantic-contract-cleanup
 bundle-sha256=3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f
-previous-run=30211073388
+previous-run=30214727342
 max-image-requests=1
+max-text-explanation-requests=1
+text-preflight-requests=0
 automatic-retries=0
-synthetic-grant-preflight=removed
-actual-route=/api/analyze
+face-lab-semantic-contract=required
+workflow-cleanup=fail-closed

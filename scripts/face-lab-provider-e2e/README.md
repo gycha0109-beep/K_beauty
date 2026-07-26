@@ -24,9 +24,12 @@ Request dispatch is recorded immediately before `fetch()`, so a fetch exception 
 - response-contract success;
 - response-reported image Provider attempts;
 - the existing `[vision-observation-usage]` event;
+- image-bearing Vision Provider calls;
+- optional image-free product-explanation Provider calls;
+- text preflight calls and unexpected Provider stages;
 - automatic retry count.
 
-The production route can perform its existing optional image-free product-explanation call after successful Vision analysis. The smoke does not add, retry, or modify that behavior. The canonical Vision service remains the only image-bearing Provider execution site.
+The production route can perform its existing optional image-free product-explanation call after successful Vision analysis. The smoke allows at most one such call, requires exactly one image-bearing Vision call, rejects any unexpected Provider stage, and requires text preflight calls and automatic retries to remain zero. It does not add, retry, or modify production Provider behavior. The canonical Vision service remains the only image-bearing Provider execution site.
 
 There is no separate synthetic anonymous-grant preflight, RPC visibility poll, or readiness verifier. Local Supabase Replay Guard remains responsible for migration replay, database lint, and anonymous product-boundary checks; it does not duplicate the product write-grant flow.
 
@@ -38,23 +41,27 @@ encrypted fixture
 -> real Next application
 -> one POST /api/analyze
 -> production anonymous write-grant issuance
--> Face Lab and response-header contract validation
+-> Face Lab semantic and response-header contract validation
 -> sanitized report
--> mandatory cleanup
+-> fail-closed mandatory cleanup
 ```
 
-The runner verifies presence—not values—of the result and track write-grant headers returned by the actual route. Run `30212349131` was a PR merge-ref Replay Guard execution, not an exact-head replay. Its removed synthetic verifier failed before its visibility loop entered (`probeAttempts=0`), so that run did not observe a PostgREST schema-cache race or an RPC call.
+The runner verifies presence—not values—of the result and track write-grant headers returned by the actual route. An actual `/api/analyze` PASS also requires an available Vision Face Lab envelope, passed eligibility, an available canonical analysis, a non-empty structured projection, at least one evidence-backed available Vision field, and `sourceImagePersisted === false`. Evidence text, observation names and values, structured content, and grant values are not reported.
+
+`serverCleanupCompleted` covers only termination of the runner's Next child process. The workflow separately removes plaintext fixture inputs and the encrypted Actions copy, stops the isolated Local Supabase instance, writes a boolean-only `cleanup.json`, and fails the job if any mandatory cleanup result is false. Artifact upload runs afterward with `if: always()` so a cleanup failure remains observable without being converted to success.
+
+Run `30212349131` was a PR merge-ref Replay Guard execution, not an exact-head replay. Its removed synthetic verifier failed before its visibility loop entered (`probeAttempts=0`), so that run did not observe a PostgREST schema-cache race or an RPC call.
 
 ## Sanitized report
 
 The report uses:
 
 ```text
-schemaVersion: face-lab-provider-e2e-report-v2
+schemaVersion: face-lab-provider-e2e-report-v3
 mode: actual-api-analyze-single-image
 ```
 
-It records booleans and bounded machine-readable status only. It never stores image bytes, base64, the manifest body, raw Provider request or response, API keys, Supabase credentials, write-grant token values, the actual Idempotency-Key, face evidence, or local absolute paths.
+It records booleans, bounded counts, and machine-readable status only. Face Lab fields are limited to semantic booleans and the evidence-backed available-field count. Provider accounting separates image-bearing Vision calls, optional image-free explanation calls, text preflight calls, unexpected stages, and total observed Provider requests. It never stores image bytes, base64, the manifest body, raw Provider request or response, API keys, Supabase credentials, write-grant token values, the actual Idempotency-Key, face evidence, observation values, structured projection content, or local absolute paths.
 
 ## Fixture bundle
 

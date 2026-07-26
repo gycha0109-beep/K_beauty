@@ -267,6 +267,80 @@ jobs:
         id: provider_smoke
         run: npm run face-lab:e2e:run -- --manifest manifest.local.json
 
+      - name: Mandatory cleanup
+        id: cleanup
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          cleanup_failed=0
+          manifest_absent=false
+          plaintext_fixture_directory_absent=false
+          decrypted_input_directory_absent=false
+          encrypted_bundle_absent=false
+          local_supabase_stopped=true
+
+          rm -f manifest.local.json || cleanup_failed=1
+          rm -rf private/face-lab-fixtures || cleanup_failed=1
+          rm -rf tmp/face-lab-provider-e2e-input || cleanup_failed=1
+          rm -f "${BUNDLE_PATH}" || cleanup_failed=1
+
+          if [ ! -e manifest.local.json ] && [ ! -L manifest.local.json ]; then
+            manifest_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e private/face-lab-fixtures ] && [ ! -L private/face-lab-fixtures ]; then
+            plaintext_fixture_directory_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e tmp/face-lab-provider-e2e-input ] && [ ! -L tmp/face-lab-provider-e2e-input ]; then
+            decrypted_input_directory_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e "${BUNDLE_PATH}" ] && [ ! -L "${BUNDLE_PATH}" ]; then
+            encrypted_bundle_absent=true
+          else
+            cleanup_failed=1
+          fi
+
+          if [ -d tmp/local-supabase-replay ]; then
+            if ! npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup >/dev/null 2>&1; then
+              local_supabase_stopped=false
+              cleanup_failed=1
+            fi
+          fi
+
+          mkdir -p tmp/face-lab-provider-e2e || cleanup_failed=1
+          if [ "${cleanup_failed}" -eq 0 ]; then
+            cleanup_status=PASS
+          else
+            cleanup_status=FAIL
+          fi
+          cat >tmp/face-lab-provider-e2e/cleanup.json <<JSON
+          {
+            "schemaVersion": "face-lab-provider-e2e-cleanup-v1",
+            "manifestAbsent": ${manifest_absent},
+            "plaintextFixtureDirectoryAbsent": ${plaintext_fixture_directory_absent},
+            "decryptedInputDirectoryAbsent": ${decrypted_input_directory_absent},
+            "encryptedBundleAbsent": ${encrypted_bundle_absent},
+            "localSupabaseStopped": ${local_supabase_stopped},
+            "finalStatus": "${cleanup_status}"
+          }
+          JSON
+          if [ "$?" -ne 0 ]; then
+            cleanup_failed=1
+          fi
+
+          if [ "${cleanup_failed}" -ne 0 ]; then
+            echo "workflow_cleanup_failed" >&2
+            exit 1
+          fi
+
       - name: Upload sanitized E2E report
         id: upload_report
         if: always()
@@ -279,22 +353,6 @@ jobs:
             tmp/face-lab-provider-e2e/diagnostics.log
             tmp/face-lab-provider-e2e/supabase-start.log
             tmp/face-lab-provider-e2e/supabase-reset.log
+            tmp/face-lab-provider-e2e/cleanup.json
           if-no-files-found: ignore
           retention-days: 3
-
-      - name: Mandatory cleanup
-        id: cleanup
-        if: always()
-        continue-on-error: true
-        shell: bash
-        run: |
-          set +e
-          rm -f manifest.local.json
-          rm -rf private/face-lab-fixtures
-          rm -rf tmp/face-lab-provider-e2e-input
-          rm -f "${BUNDLE_PATH}"
-          if [ -d tmp/local-supabase-replay ]; then
-            npx --yes supabase@2.82.0 stop \
-              --workdir tmp/local-supabase-replay \
-              --no-backup >/dev/null 2>&1
-          fi
