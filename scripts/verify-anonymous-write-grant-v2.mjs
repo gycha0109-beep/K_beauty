@@ -200,13 +200,43 @@ const secondResultFingerprint = createAnonymousResultFingerprintHash({
 assert(firstResultFingerprint === secondResultFingerprint, "result fingerprint must be stable across field order");
 assert(!firstResultFingerprint.includes("redness"), "result fingerprint must not expose raw payload values");
 
+const eligibleImageEligibility = {
+  status: "eligible",
+  source: "vision",
+  imageType: "photorealistic_human",
+  humanFaceCount: 1,
+  faceLabEligible: true,
+  skinAnalysisEligible: true,
+  faceLabFailureReason: null,
+  skinFailureReason: null,
+  confidence: 0.94,
+  evidence: [
+    "one visible face with usable skin detail",
+    "bounded-2",
+    "bounded-3",
+    "bounded-4",
+    "bounded-5",
+    "bounded-6",
+    "must-be-removed"
+  ],
+  unknownNestedField: "must-not-persist"
+};
 const anonymousPersistenceSource = {
   summary: "summary",
   priority: { label: "redness" },
   topPick: { id: "product-1", name: "Product", buy_link: "https://example.test/product" },
+  alternative: { id: "product-2", name: "Alternative" },
+  amFocus: "protect",
+  pmFocus: "recover",
+  routineStructure: { mode: "balanced" },
   morning: ["cleanse"],
   night: ["cleanse"],
-  photoObservations: { source: "photo" }
+  warnings: ["patch test"],
+  photoEvidence: ["visible redness"],
+  photoObservations: { source: "photo" },
+  imageEligibility: eligibleImageEligibility,
+  surveyEvidence: ["dryness"],
+  scoring: { redness: 0.8 }
 };
 const anonymousPersistencePayload = createAnonymousResultPersistencePayload({
   ...anonymousPersistenceSource,
@@ -222,6 +252,12 @@ assert(canonicalPersistenceResult, "anonymous persistence payload must canonical
 assert(!("analysisRunId" in anonymousPersistencePayload), "analysisRunId must stay outside result persistence payload");
 assert(!("meta" in anonymousPersistencePayload), "analyze meta must not enter anonymous result persistence");
 assert(!("faceLab" in anonymousPersistencePayload), "Face Lab payload must not enter anonymous result persistence");
+assert(canonicalPersistenceResult.imageEligibility.status === "eligible", "image eligibility must persist");
+assert(
+  !Object.hasOwn(canonicalPersistenceResult.imageEligibility, "unknownNestedField"),
+  "unknown image eligibility fields must not persist"
+);
+assert(canonicalPersistenceResult.imageEligibility.evidence.length === 6, "image eligibility evidence must stay bounded");
 assert(
   ANONYMOUS_RESULT_PERSISTENCE_FIELDS.every((field) => Object.hasOwn(canonicalPersistenceResult, field)),
   "canonical result must define every persisted fingerprint field"
@@ -239,6 +275,23 @@ const productExtraCanonical = canonicalizeAnonymousResultForPersistence({
   topPick: { ...anonymousPersistencePayload.topPick, unbound_field: "ignored" }
 });
 assert(!Object.hasOwn(productExtraCanonical.topPick, "unbound_field"), "unknown product fields must not persist");
+const missingEligibilityCanonical = canonicalizeAnonymousResultForPersistence({
+  ...anonymousPersistencePayload,
+  imageEligibility: undefined
+});
+assert(missingEligibilityCanonical, "missing image eligibility must not invalidate the persistence payload");
+assert(
+  missingEligibilityCanonical.imageEligibility.status === "insufficient_evidence" &&
+    missingEligibilityCanonical.imageEligibility.faceLabEligible === false &&
+    missingEligibilityCanonical.imageEligibility.skinAnalysisEligible === false,
+  "missing image eligibility must use the bounded invalid eligibility contract"
+);
+const { imageEligibility: omittedEligibility, ...payloadWithoutEligibility } = anonymousPersistencePayload;
+const omittedEligibilityCanonical = canonicalizeAnonymousResultForPersistence(payloadWithoutEligibility);
+assert(
+  omittedEligibilityCanonical?.imageEligibility.status === "insufficient_evidence",
+  "omitted image eligibility must use the bounded invalid eligibility contract"
+);
 const canonicalPersistenceFingerprint = createAnonymousResultFingerprintHash({
   secret,
   locale: "ko",
@@ -255,6 +308,62 @@ const changedProductFingerprint = createAnonymousResultFingerprintHash({
   }
 });
 assert(canonicalPersistenceFingerprint !== changedProductFingerprint, "stored product field changes must change the result fingerprint");
+const reorderedEligibilityFingerprint = createAnonymousResultFingerprintHash({
+  secret,
+  locale: "ko",
+  form: { skinType: "dry" },
+  result: {
+    ...anonymousPersistencePayload,
+    imageEligibility: {
+      evidence: eligibleImageEligibility.evidence,
+      confidence: eligibleImageEligibility.confidence,
+      skinFailureReason: eligibleImageEligibility.skinFailureReason,
+      faceLabFailureReason: eligibleImageEligibility.faceLabFailureReason,
+      skinAnalysisEligible: eligibleImageEligibility.skinAnalysisEligible,
+      faceLabEligible: eligibleImageEligibility.faceLabEligible,
+      humanFaceCount: eligibleImageEligibility.humanFaceCount,
+      imageType: eligibleImageEligibility.imageType,
+      source: eligibleImageEligibility.source,
+      status: eligibleImageEligibility.status
+    }
+  }
+});
+assert(
+  canonicalPersistenceFingerprint === reorderedEligibilityFingerprint,
+  "image eligibility field order must not change the result fingerprint"
+);
+const changedEligibilityFingerprint = createAnonymousResultFingerprintHash({
+  secret,
+  locale: "ko",
+  form: { skinType: "dry" },
+  result: {
+    ...anonymousPersistencePayload,
+    imageEligibility: {
+      ...eligibleImageEligibility,
+      confidence: 0.93
+    }
+  }
+});
+assert(
+  canonicalPersistenceFingerprint !== changedEligibilityFingerprint,
+  "meaningful image eligibility changes must change the result fingerprint"
+);
+const eligibilityExtraFingerprint = createAnonymousResultFingerprintHash({
+  secret,
+  locale: "ko",
+  form: { skinType: "dry" },
+  result: {
+    ...anonymousPersistencePayload,
+    imageEligibility: {
+      ...eligibleImageEligibility,
+      anotherUnknownNestedField: "ignored"
+    }
+  }
+});
+assert(
+  canonicalPersistenceFingerprint === eligibilityExtraFingerprint,
+  "unknown image eligibility fields must not change the result fingerprint"
+);
 assert(
   createAnonymousResultFingerprintHash({
     secret,
@@ -264,6 +373,22 @@ assert(
   }) === null,
   "non-canonical Face Lab payload must not receive an anonymous result fingerprint"
 );
+for (const forbiddenTopLevelField of [
+  "meta",
+  "faceLab",
+  "faceLabTeaser",
+  "faceLabStructured",
+  "analysisRunId",
+  "arbitraryUnknown"
+]) {
+  assert(
+    canonicalizeAnonymousResultForPersistence({
+      ...anonymousPersistencePayload,
+      [forbiddenTopLevelField]: { rejected: true }
+    }) === null,
+    `${forbiddenTopLevelField} must remain fail-closed`
+  );
+}
 
 const serverDerivedOutdoorFingerprint = createAnonymousResultFingerprintHash({
   secret,
@@ -335,11 +460,48 @@ assertBefore(
 );
 
 const analyzeRoute = read("app/api/analyze/route.js");
+const anonymousWriteGrantSource = read("lib/security/anonymous-write-grant.js");
 const analyzePost = analyzeRoute.slice(analyzeRoute.indexOf("export async function POST"));
 assertBefore(analyzePost, "issueAnonymousWriteGrants({", "response.headers.set(ANONYMOUS_RESULT_WRITE_HEADER", "analyze grant before result token response");
 assertIncludes(analyzeRoute, "anonymous_write_grant_unavailable", "analyze fail-closed response");
+assertIncludes(analyzeRoute, "imageEligibility: normalizeImageAnalysisEligibility", "analyze bounded image eligibility");
 assertIncludes(analyzeRoute, "canonicalizeAnonymousResultForPersistence(publicDecision)", "analyze canonical anonymous result");
+assertIncludes(analyzeRoute, "anonymous_result_persistence_contract_invalid", "analyze payload-invalid marker");
+assertIncludes(analyzeRoute, "anonymous-write-grant:issue-failed", "analyze grant issue marker");
+assertBefore(
+  analyzePost,
+  "canonicalizeAnonymousResultForPersistence(publicDecision)",
+  'logAnalyze("anonymous-write-grant:payload-invalid"',
+  "analyze canonicalization before payload-invalid branch"
+);
+assertBefore(
+  analyzePost,
+  'logAnalyze("anonymous-write-grant:payload-invalid"',
+  "issueAnonymousWriteGrants({",
+  "analyze payload-invalid branch before grant issue"
+);
+assertBefore(
+  analyzePost,
+  "issueAnonymousWriteGrants({",
+  'logAnalyze("anonymous-write-grant:issue-failed"',
+  "analyze grant issue before issue-failed branch"
+);
+assertBefore(
+  analyzePost,
+  'logAnalyze("anonymous-write-grant:issue-failed"',
+  "response.headers.set(ANONYMOUS_RESULT_WRITE_HEADER",
+  "analyze issue-failed branch before token response"
+);
 assertNotIncludes(analyzeRoute, "x-kbeauty-write-token", "analyze legacy header");
+[
+  "grant_prerequisite_unavailable",
+  "grant_bundle_invalid",
+  "grant_rpc_failed",
+  "grant_rpc_result_invalid"
+].forEach((safeCode) => assertIncludes(anonymousWriteGrantSource, safeCode, "anonymous grant safe code"));
+["error.message", "error.details", "error.hint", "error.code"].forEach((rawErrorMarker) =>
+  assertNotIncludes(anonymousWriteGrantSource, rawErrorMarker, "anonymous grant raw error")
+);
 
 const resultsRoute = read("app/api/results/route.js");
 const resultsPost = resultsRoute.slice(resultsRoute.indexOf("export async function POST"));

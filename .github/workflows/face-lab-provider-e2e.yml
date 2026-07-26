@@ -263,6 +263,10 @@ jobs:
             printf 'NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=false\n'
           } >>"${GITHUB_ENV}"
 
+      - name: Verify anonymous write-grant local runtime
+        id: verify_anonymous_grant
+        run: npm run anonymous-write-grant:runtime:verify
+
       - name: Run single actual /api/analyze Provider smoke
         id: provider_smoke
         run: npm run face-lab:e2e:run -- --manifest manifest.local.json

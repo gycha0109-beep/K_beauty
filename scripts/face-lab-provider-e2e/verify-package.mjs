@@ -7,6 +7,7 @@ const repoRoot = process.cwd();
 const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
 const runnerPath = "scripts/face-lab-provider-e2e/run.mjs";
 const packagePath = "package.json";
+const anonymousGrantRuntimeVerifierPath = "scripts/verify-anonymous-write-grant-local-runtime.mjs";
 const analyzeRoutePath = "app/api/analyze/route.js";
 const visionServicePath = "lib/server/vision-observation-service.js";
 const fixturePath = "private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc";
@@ -49,6 +50,7 @@ for (const requiredPath of [
   workflowPath,
   runnerPath,
   packagePath,
+  anonymousGrantRuntimeVerifierPath,
   analyzeRoutePath,
   visionServicePath,
   fixturePath
@@ -67,6 +69,7 @@ const runner = read(runnerPath);
 const analyzeRoute = read(analyzeRoutePath);
 const visionService = read(visionServicePath);
 const packageJson = JSON.parse(read(packagePath));
+const anonymousGrantRuntimeVerifier = read(anonymousGrantRuntimeVerifierPath);
 const fixtureBytes = readFileSync(path.join(repoRoot, fixturePath));
 
 assert(statSync(path.join(repoRoot, fixturePath)).size === expectedFixtureSize, "encrypted_fixture_size_invalid");
@@ -92,6 +95,8 @@ for (const marker of [
   "frontal-clear.png",
   "lower-face-occluded.png",
   "remote_supabase_url_rejected",
+  "Verify anonymous write-grant local runtime",
+  "npm run anonymous-write-grant:runtime:verify",
   "Run single actual /api/analyze Provider smoke",
   "npm run face-lab:e2e:run",
   "retention-days: 3",
@@ -129,6 +134,7 @@ const workflowSteps = [
   "Prepare isolated Local Supabase Replay",
   "Start and reset isolated Local Supabase",
   "Export masked local runtime variables",
+  "Verify anonymous write-grant local runtime",
   "Run single actual /api/analyze Provider smoke",
   "Upload sanitized E2E report",
   "Mandatory cleanup"
@@ -261,6 +267,32 @@ assert(
     "node scripts/face-lab-provider-e2e/run.mjs",
   "package_script_face_lab_e2e_run_invalid"
 );
+assert(
+  packageJson.scripts?.["anonymous-write-grant:runtime:verify"] ===
+    "node scripts/verify-anonymous-write-grant-local-runtime.mjs",
+  "package_script_anonymous_grant_runtime_verify_invalid"
+);
 assert(!Object.hasOwn(packageJson.scripts || {}, "face-lab:e2e:verify-harness"), "harness_package_script_must_be_removed");
+
+for (const marker of [
+  'supabase.rpc("create_anonymous_write_grants"',
+  '.from("anonymous_write_grants")',
+  '.delete()',
+  'eq("resource_id", bundle.analysisRunId)',
+  "randomBytes(32)",
+  "canonicalizeAnonymousResultForPersistence",
+  "imageEligibility",
+  "remote_supabase_url_rejected",
+  "anonymous_grant_canonicalization_failed",
+  "anonymous_grant_rpc_failed",
+  "anonymous_grant_created_count_invalid",
+  "anonymous_grant_row_contract_invalid",
+  "anonymous_grant_cleanup_failed",
+  "[anonymous-write-grant-local-runtime] PASS"
+]) {
+  assert(anonymousGrantRuntimeVerifier.includes(marker), `anonymous_grant_runtime_contract_missing:${marker}`);
+}
+assert(!anonymousGrantRuntimeVerifier.includes("OPENAI_API_KEY"), "anonymous_grant_runtime_must_not_use_provider_secret");
+assert(!anonymousGrantRuntimeVerifier.includes("/api/analyze"), "anonymous_grant_runtime_must_not_call_analyze");
 
 console.log("[face-lab-provider-e2e-verify] PASS");

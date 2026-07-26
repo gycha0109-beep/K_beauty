@@ -28,6 +28,14 @@ Request dispatch is recorded immediately before `fetch()`, so a fetch exception 
 
 The production route can perform its existing optional image-free product-explanation call after successful Vision analysis. The smoke does not add, retry, or modify that behavior. The canonical Vision service remains the only image-bearing Provider execution site.
 
+Before that Provider smoke, the workflow runs a Provider-free anonymous write-grant gate against isolated Local Supabase:
+
+```text
+npm run anonymous-write-grant:runtime:verify
+```
+
+The gate canonicalizes a realistic synthetic free result (including bounded `imageEligibility`), creates a synthetic grant pair through the service-role-only `create_anonymous_write_grants` RPC, verifies exactly `result:create` and `track:create`, deletes the synthetic rows, and confirms zero rows remain. It rejects non-local Supabase URLs and never uses an image, fixture, Provider, production data, or a Repository Secret.
+
 ## Sanitized report
 
 The report uses:
@@ -75,6 +83,16 @@ Secret values are never documented, printed, or placed on the command line.
 Run `30208164340` passed fixture transport, Secret input gates, decryption/member validation, and Local Supabase. Its temporary harness readiness GET passed, its temporary POST returned a catch-all HTTP `502`, and the real `/api/analyze` route never ran. Because the temporary handler collapsed every internal exception into `provider_execution_failed`, that result is not classified as a production Provider failure.
 
 The temporary harness design is retired rather than repaired. This push creates the first single-image execution through the actual `/api/analyze` route.
+
+## Anonymous grant contract correction
+
+Run `30209305514` successfully completed the image Vision Provider call and the existing product-explanation call, then returned HTTP `503 anonymous_write_grant_unavailable`. The failure was before grant RPC creation: the free response contained bounded `imageEligibility`, but the anonymous persistence top-level allowlist did not. Its fail-closed canonicalizer therefore returned `null`.
+
+The persistence contract now includes only normalized `imageEligibility`; arbitrary nested fields are discarded, missing or malformed eligibility becomes the bounded invalid eligibility shape, and unrelated top-level response fields remain rejected. The route keeps the same external 503 contract while internally distinguishing invalid persistence payloads from grant issuance failures.
+
+No migration, RPC permission, Secret, fixture, image-attempt budget, or automatic-retry policy changes are part of this correction. The image-bearing request maximum remains one and automatic retries remain zero.
+
+Local Supabase Replay Guard run `30209306671` applied migrations and seed before timing out at the local Storage health/restart boundary. That result is not classified as a migration SQL or anonymous grant RPC failure.
 
 ## Commands
 

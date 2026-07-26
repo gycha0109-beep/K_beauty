@@ -1568,9 +1568,23 @@ export async function POST(request) {
       ? canonicalizeAnonymousResultForPersistence(publicDecision)
       : null;
 
+    if (analysisGuard.principal.scope === "anonymous" && !anonymousPersistenceResult) {
+      logAnalyze("anonymous-write-grant:payload-invalid", {
+        code: "anonymous_result_persistence_contract_invalid"
+      });
+      await failAnalysisRequestGuard(analysisGuard);
+
+      return applyAnalysisGuardCookies(NextResponse.json(
+        {
+          error: "anonymous_write_grant_unavailable",
+          message: "We cannot prepare the analysis save session right now. Please try again shortly."
+        },
+        { status: 503 }
+      ), analysisGuard);
+    }
+
     const anonymousWriteGrant = analysisGuard.principal.scope === "anonymous"
-      && anonymousPersistenceResult
-        ? await issueAnonymousWriteGrants({
+      ? await issueAnonymousWriteGrants({
           supabase: analysisGuard.supabase,
           anonymousPayload: analysisGuard.principal.anonymousPayload,
           result: anonymousPersistenceResult,
@@ -1580,6 +1594,9 @@ export async function POST(request) {
       : null;
 
     if (analysisGuard.principal.scope === "anonymous" && !anonymousWriteGrant?.ok) {
+      logAnalyze("anonymous-write-grant:issue-failed", {
+        code: anonymousWriteGrant?.code || "anonymous_write_grant_unavailable"
+      });
       await failAnalysisRequestGuard(analysisGuard);
 
       return applyAnalysisGuardCookies(NextResponse.json(
