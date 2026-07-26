@@ -137,15 +137,15 @@ const analyzePost = analyzeRoute.slice(analyzeRoute.indexOf("export async functi
 assertBefore(analyzePost, "guardAnalysisRequest({", "resolveOpenAiApiKey()", "analyze guard before api key");
 assertBefore(analyzePost, "guardAnalysisRequest({", "image.arrayBuffer", "analyze guard before image buffer");
 assertBefore(analyzePost, "guardAnalysisRequest({", "fetchCurrentProductSnapshotsByIds", "analyze guard before product db read");
-assertBefore(analyzePost, "guardAnalysisRequest({", "extractPhotoAnalysis({", "analyze guard before ai photo call");
+assertBefore(analyzePost, "guardAnalysisRequest({", "analyzeVisionObservation({", "analyze guard before ai photo call");
 assertIncludes(analyzeRoute, "completeAnalysisRequestGuard(analysisGuard)", "analyze complete");
 assertIncludes(analyzeRoute, "failAnalysisRequestGuard(analysisGuard)", "analyze fail");
 
 const faceRoute = read("app/api/face-reading/route.js");
 const facePost = faceRoute.slice(faceRoute.indexOf("export async function POST"));
 assertBefore(facePost, "guardAnalysisRequest({", "resolveOpenAiApiKey()", "face guard before api key");
-assertBefore(facePost, "guardAnalysisRequest({", "const buffer = Buffer.from(await image.arrayBuffer())", "face guard before image buffer");
-assertBefore(facePost, "guardAnalysisRequest({", "fetch(OPENAI_URL", "face guard before ai call");
+assertBefore(facePost, "guardAnalysisRequest({", "const imageBuffer = Buffer.from(await image.arrayBuffer())", "face guard before image buffer");
+assertBefore(facePost, "guardAnalysisRequest({", "analyzeVisionObservation({", "face guard before ai call");
 assertIncludes(faceRoute, "completeGuardedResponse", "face complete helper");
 assertIncludes(faceRoute, "failGuardedResponse", "face fail helper");
 

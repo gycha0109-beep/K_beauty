@@ -1,0 +1,89 @@
+name: Unified Vision Static Guard
+
+on:
+  pull_request:
+    paths:
+      - "app/api/analyze/**"
+      - "app/api/face-reading/**"
+      - "app/page.js"
+      - "lib/face-lab-observation-projector.js"
+      - "lib/openai-env-diagnostics.js"
+      - "lib/server/vision-observation-service.js"
+      - "lib/skin-observation-projector.js"
+      - "lib/vision-observation-contract.js"
+      - "lib/vision-observation-normalizer.js"
+      - "scripts/face-lab-provider-e2e/**"
+      - "scripts/verify-analysis-request-guard.mjs"
+      - "scripts/verify-anonymous-write-grant-v2.mjs"
+      - "scripts/verify-analysis-rls-contract.mjs"
+      - "scripts/verify-face-lab-*.mjs"
+      - "scripts/verify-provider-runtime-log-sanitization.mjs"
+      - "scripts/verify-unified-vision-pipeline.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/face-lab-provider-e2e.yml"
+      - ".github/workflows/unified-vision-static-guard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify unified Vision pipeline
+        run: npm run verify:unified-vision-pipeline
+
+      - name: Verify Face Lab evaluation contracts
+        run: npm run face-lab:eval:verify
+
+      - name: Verify Face Lab Provider E2E package
+        run: npm run face-lab:e2e:verify
+
+      - name: Verify analysis request guard
+        run: node scripts/verify-analysis-request-guard.mjs
+
+      - name: Verify Provider log sanitization
+        run: node scripts/verify-provider-runtime-log-sanitization.mjs
+
+      - name: Verify anonymous write grant
+        run: node scripts/verify-anonymous-write-grant-v2.mjs
+
+      - name: Verify analysis RLS contract
+        run: node scripts/verify-analysis-rls-contract.mjs
+
+      - name: Verify architecture guard
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "${BASE_SHA}" ] && [ -n "${HEAD_SHA}" ]; then
+            git diff --check "${BASE_SHA}" "${HEAD_SHA}"
+          else
+            git diff --check HEAD^
+          fi

@@ -1,0 +1,358 @@
+name: Face Lab Provider E2E
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "private/face-lab-e2e/run.trigger"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: face-lab-provider-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  provider-e2e:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      BUNDLE_PATH: private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FACE_LAB_E2E_FIXTURE_PASSPHRASE: ${{ secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE }}
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm cache clean --force
+          npm ci --no-audit --no-fund
+
+      - name: Verify Face Lab Provider E2E package
+        id: verify_package
+        run: npm run face-lab:e2e:verify
+
+      - name: Verify encrypted inputs and secrets
+        id: verify_inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_size=3094224
+          expected_sha256=3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f
+          test -f "private/face-lab-e2e/run.trigger" || { echo "run_trigger_missing" >&2; exit 1; }
+          test -f "${BUNDLE_PATH}" || { echo "fixture_bundle_missing" >&2; exit 1; }
+          actual_size="$(wc -c <"${BUNDLE_PATH}")"
+          test "${actual_size}" -eq "${expected_size}" || { echo "fixture_bundle_size_invalid" >&2; exit 1; }
+          actual_sha256="$(sha256sum "${BUNDLE_PATH}" | awk '{print $1}')"
+          test "${actual_sha256}" = "${expected_sha256}" || { echo "fixture_bundle_sha256_invalid" >&2; exit 1; }
+          test -n "${OPENAI_API_KEY}" || { echo "OPENAI_API_KEY_missing" >&2; exit 1; }
+          test -n "${FACE_LAB_E2E_FIXTURE_PASSPHRASE}" || { echo "FACE_LAB_E2E_FIXTURE_PASSPHRASE_missing" >&2; exit 1; }
+
+      - name: Decrypt bounded fixture bundle
+        id: decrypt
+        shell: bash
+        run: |
+          set -euo pipefail
+          work_dir="tmp/face-lab-provider-e2e-input"
+          archive_path="${work_dir}/fixture-bundle-v3.tar.gz"
+          mkdir -p "${work_dir}"
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000 \
+            -in "${BUNDLE_PATH}" \
+            -out "${archive_path}" \
+            -pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE
+
+          python3 - "${archive_path}" <<'PY'
+          import os
+          import re
+          import shutil
+          import stat
+          import sys
+          import tarfile
+          import tempfile
+          from pathlib import Path
+
+          archive_path = sys.argv[1]
+          extraction_root = Path.cwd().resolve()
+          expected_files = (
+              "manifest.local.json",
+              "private/face-lab-fixtures/subject-a/frontal-clear.png",
+              "private/face-lab-fixtures/subject-a/lower-face-occluded.png",
+          )
+          expected_file_set = set(expected_files)
+          allowed_directories = {
+              ".",
+              "private",
+              "private/face-lab-fixtures",
+              "private/face-lab-fixtures/subject-a",
+          }
+
+          def fail(marker):
+              print(marker, file=sys.stderr)
+              raise SystemExit(1)
+
+          def normalize_member_name(raw_name, is_directory):
+              if not isinstance(raw_name, str) or "\x00" in raw_name or "\\" in raw_name:
+                  fail("fixture_bundle_path_contract_invalid")
+              if raw_name.startswith("/") or re.match(r"^[A-Za-z]:", raw_name):
+                  fail("fixture_bundle_path_contract_invalid")
+              name = raw_name[2:] if raw_name.startswith("./") else raw_name
+              if name.startswith("./"):
+                  fail("fixture_bundle_path_contract_invalid")
+              if is_directory and name.endswith("/"):
+                  name = name[:-1]
+              if is_directory and name == "":
+                  name = "."
+              if not name or name.endswith("/") or name == "." and not is_directory:
+                  fail("fixture_bundle_path_contract_invalid")
+              if name != "." and any(part in {"", ".", ".."} for part in name.split("/")):
+                  fail("fixture_bundle_path_contract_invalid")
+              return name
+
+          try:
+              members_by_name = {}
+              with tarfile.open(archive_path, "r:gz") as archive:
+                  for member in archive.getmembers():
+                      is_directory = member.isdir()
+                      name = normalize_member_name(member.name, is_directory)
+                      if name in members_by_name:
+                          fail("fixture_bundle_duplicate_member")
+                      members_by_name[name] = member
+                      if member.isfile():
+                          if getattr(member, "sparse", None) or name not in expected_file_set:
+                              fail("fixture_bundle_type_contract_invalid")
+                      elif is_directory:
+                          if name not in allowed_directories:
+                              fail("fixture_bundle_member_contract_invalid")
+                      elif member.issym() or member.islnk():
+                          fail("fixture_bundle_type_contract_invalid")
+                      else:
+                          fail("fixture_bundle_type_contract_invalid")
+
+                  if set(name for name, member in members_by_name.items() if member.isfile()) != expected_file_set:
+                      fail("fixture_bundle_member_contract_invalid")
+
+                  extracted_files = set()
+                  for name in expected_files:
+                      member = members_by_name.get(name)
+                      if member is None or not member.isfile():
+                          fail("fixture_bundle_member_contract_invalid")
+                      target = extraction_root.joinpath(*name.split("/"))
+                      if os.path.commonpath([str(extraction_root), str(target.parent.resolve())]) != str(extraction_root):
+                          fail("fixture_bundle_path_contract_invalid")
+                      if target.exists() or target.is_symlink():
+                          fail("fixture_bundle_extract_failed")
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      source = archive.extractfile(member)
+                      if source is None:
+                          fail("fixture_bundle_extract_failed")
+                      temp_path = None
+                      try:
+                          with source, tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as temporary:
+                              temp_path = Path(temporary.name)
+                              shutil.copyfileobj(source, temporary)
+                          os.chmod(temp_path, 0o600)
+                          os.replace(temp_path, target)
+                      except Exception:
+                          if temp_path is not None:
+                              temp_path.unlink(missing_ok=True)
+                          fail("fixture_bundle_extract_failed")
+                      extracted_files.add(name)
+
+              if extracted_files != expected_file_set:
+                  fail("fixture_bundle_extract_failed")
+              for name in expected_files:
+                  target = extraction_root.joinpath(*name.split("/"))
+                  target_stat = os.lstat(target)
+                  if not stat.S_ISREG(target_stat.st_mode) or stat.S_ISLNK(target_stat.st_mode) or target_stat.st_size <= 0:
+                      fail("fixture_bundle_extract_failed")
+          except SystemExit:
+              raise
+          except Exception:
+              fail("fixture_bundle_extract_failed")
+          PY
+          rm -f "${archive_path}"
+
+      - name: Prepare isolated Local Supabase Replay
+        id: prepare_db
+        run: npm run db:replay:prepare
+
+      - name: Start and reset isolated Local Supabase
+        id: start_db
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/face-lab-provider-e2e"
+          mkdir -p "${diagnostics_dir}"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
+          }
+
+          raw_log="$(mktemp)"
+          if ! npx --yes supabase@2.82.0 start --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 200 >"${diagnostics_dir}/supabase-start.log"
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+          raw_log="$(mktemp)"
+          if ! npx --yes supabase@2.82.0 db reset --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 200 >"${diagnostics_dir}/supabase-reset.log"
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Export masked local runtime variables
+        id: export_env
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_url=""
+          anon_key=""
+          service_role_key=""
+          while IFS='=' read -r name value; do
+            value="${value#\"}"
+            value="${value%\"}"
+            case "${name}" in
+              API_URL) api_url="${value}" ;;
+              ANON_KEY) anon_key="${value}" ;;
+              SERVICE_ROLE_KEY) service_role_key="${value}" ;;
+            esac
+          done < <(npx --yes supabase@2.82.0 status -o env --workdir tmp/local-supabase-replay)
+
+          test -n "${api_url}"
+          test -n "${anon_key}"
+          test -n "${service_role_key}"
+          case "${api_url}" in
+            http://127.0.0.1:*|http://localhost:*) ;;
+            *) echo "remote_supabase_url_rejected" >&2; exit 1 ;;
+          esac
+
+          guard_secret="$(openssl rand -hex 32)"
+          grant_secret="$(openssl rand -hex 32)"
+          printf '::add-mask::%s\n' "${anon_key}"
+          printf '::add-mask::%s\n' "${service_role_key}"
+          printf '::add-mask::%s\n' "${guard_secret}"
+          printf '::add-mask::%s\n' "${grant_secret}"
+          {
+            printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "${api_url}"
+            printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "${anon_key}"
+            printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "${service_role_key}"
+            printf 'ANALYSIS_REQUEST_GUARD_SECRET=%s\n' "${guard_secret}"
+            printf 'ANONYMOUS_WRITE_GRANT_SECRET=%s\n' "${grant_secret}"
+            printf 'NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=false\n'
+          } >>"${GITHUB_ENV}"
+
+      - name: Run single actual /api/analyze Provider smoke
+        id: provider_smoke
+        run: npm run face-lab:e2e:run -- --manifest manifest.local.json
+
+      - name: Mandatory cleanup
+        id: cleanup
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          cleanup_failed=0
+          manifest_absent=false
+          plaintext_fixture_directory_absent=false
+          decrypted_input_directory_absent=false
+          encrypted_bundle_absent=false
+          local_supabase_stopped=true
+
+          rm -f manifest.local.json || cleanup_failed=1
+          rm -rf private/face-lab-fixtures || cleanup_failed=1
+          rm -rf tmp/face-lab-provider-e2e-input || cleanup_failed=1
+          rm -f "${BUNDLE_PATH}" || cleanup_failed=1
+
+          if [ ! -e manifest.local.json ] && [ ! -L manifest.local.json ]; then
+            manifest_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e private/face-lab-fixtures ] && [ ! -L private/face-lab-fixtures ]; then
+            plaintext_fixture_directory_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e tmp/face-lab-provider-e2e-input ] && [ ! -L tmp/face-lab-provider-e2e-input ]; then
+            decrypted_input_directory_absent=true
+          else
+            cleanup_failed=1
+          fi
+          if [ ! -e "${BUNDLE_PATH}" ] && [ ! -L "${BUNDLE_PATH}" ]; then
+            encrypted_bundle_absent=true
+          else
+            cleanup_failed=1
+          fi
+
+          if [ -d tmp/local-supabase-replay ]; then
+            if ! npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup >/dev/null 2>&1; then
+              local_supabase_stopped=false
+              cleanup_failed=1
+            fi
+          fi
+
+          mkdir -p tmp/face-lab-provider-e2e || cleanup_failed=1
+          if [ "${cleanup_failed}" -eq 0 ]; then
+            cleanup_status=PASS
+          else
+            cleanup_status=FAIL
+          fi
+          cat >tmp/face-lab-provider-e2e/cleanup.json <<JSON
+          {
+            "schemaVersion": "face-lab-provider-e2e-cleanup-v1",
+            "manifestAbsent": ${manifest_absent},
+            "plaintextFixtureDirectoryAbsent": ${plaintext_fixture_directory_absent},
+            "decryptedInputDirectoryAbsent": ${decrypted_input_directory_absent},
+            "encryptedBundleAbsent": ${encrypted_bundle_absent},
+            "localSupabaseStopped": ${local_supabase_stopped},
+            "finalStatus": "${cleanup_status}"
+          }
+          JSON
+          if [ "$?" -ne 0 ]; then
+            cleanup_failed=1
+          fi
+
+          if [ "${cleanup_failed}" -ne 0 ]; then
+            echo "workflow_cleanup_failed" >&2
+            exit 1
+          fi
+
+      - name: Upload sanitized E2E report
+        id: upload_report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: face-lab-provider-e2e-report-${{ github.run_id }}
+          path: |
+            tmp/face-lab-provider-e2e/report.json
+            tmp/face-lab-provider-e2e/report.md
+            tmp/face-lab-provider-e2e/diagnostics.log
+            tmp/face-lab-provider-e2e/supabase-start.log
+            tmp/face-lab-provider-e2e/supabase-reset.log
+            tmp/face-lab-provider-e2e/cleanup.json
+          if-no-files-found: ignore
+          retention-days: 3

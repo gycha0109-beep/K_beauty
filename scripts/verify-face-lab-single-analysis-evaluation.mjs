@@ -103,8 +103,16 @@ assert.doesNotMatch(runnerSource, /formData\.append\("locale", item\.locale\)/);
 assert.match(wrapperSource, /run-face-lab-hosted-evaluation-single-analysis\.mjs/);
 
 const routeSource = readFileSync("app/api/face-reading/route.js", "utf8");
-assert.match(routeSource, /ko:\s*\{/);
-assert.match(routeSource, /en:\s*\{/);
-assert.match(routeSource, /eligibility and observation_analysis keys, enum values, and evidence must remain in English/);
+const visionContractSource = readFileSync("lib/vision-observation-contract.js", "utf8");
+const faceProjectorSource = readFileSync("lib/face-lab-observation-projector.js", "utf8");
+assert.match(routeSource, /analyzeVisionObservation/);
+assert.match(routeSource, /projectFaceLabResult/);
+assert.doesNotMatch(routeSource, /type:\s*["']image_url["']/);
+assert.match(visionContractSource, /vision-observation-v1/);
+assert.match(visionContractSource, /Do not use survey answers, locale, products/);
+assert.match(visionContractSource, /Return enum tokens exactly as listed/);
+assert.match(faceProjectorSource, /ko:\s*\{/);
+assert.match(faceProjectorSource, /en:\s*\{/);
+assert.match(faceProjectorSource, /presentation_hint:\s*["']neutral["']/);
 
 console.log("Face Lab hosted evaluation single-analysis grouping checks passed.");

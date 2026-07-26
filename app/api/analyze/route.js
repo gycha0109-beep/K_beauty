@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
+import { buildFallbackPhotoAnalysis } from "@/lib/photo-evidence";
+import { projectSkinObservation } from "@/lib/skin-observation-projector";
+import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
+import { createFaceLabUnavailable } from "@/lib/face-lab-result-envelope";
+import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { appendSurveyInputContractDevAuditEvent } from "@/lib/survey-input-contract-dev-audit";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
@@ -38,16 +42,15 @@ import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonym
 import { formatUploadSize, validateImageUpload } from "@/lib/upload-validation";
 import { getOpenAiEnvDiagnostics, previewDiagnosticText, resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
-import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import { buildPremiumFaceLabSummary, sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
 import { logProviderRuntimeEvent } from "@/lib/provider-runtime-log";
 import { normalizeImageAnalysisEligibility } from "@/lib/image-analysis-eligibility";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
-const PHOTO_ANALYSIS_MAX_TOKENS = 900;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
-const ANALYZE_RESPONSE_SCHEMA_VERSION = 1;
+const ANALYZE_RESPONSE_SCHEMA_VERSION = 2;
 const PRODUCT_SOURCE_UNAVAILABLE_MESSAGE =
   "Recommendation products are temporarily unavailable. Please try again shortly.";
 const GENDER_PREFERENCE_VALUES = new Set(["female", "male", "unspecified"]);
@@ -291,7 +294,9 @@ function buildAnalyzeMeta({
   locale,
   photoNotice,
   explanationNotice,
-  apiKey
+  apiKey,
+  visionTelemetry,
+  imageProviderAttemptCount
 }) {
   return {
     schemaVersion: ANALYZE_RESPONSE_SCHEMA_VERSION,
@@ -301,7 +306,10 @@ function buildAnalyzeMeta({
     notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
     explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
     photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback",
-    photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback"
+    photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback",
+    visionObservationSchemaVersion: visionTelemetry?.schemaVersion || null,
+    visionObservationPromptVersion: visionTelemetry?.promptVersion || null,
+    imageProviderAttemptCount
   };
 }
 
@@ -1226,47 +1234,6 @@ async function fetchOpenAiJson({ apiKey, body, stage }) {
   }
 }
 
-async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model, formInput }) {
-  if (!apiKey || !imageDataUrl) {
-    return buildFallbackPhotoAnalysis(locale);
-  }
-
-  const photoPrompt = createPhotoEvidencePrompt(locale, buildSurveyContextForLlm(formInput));
-  const parsed = await fetchOpenAiJson({
-    apiKey,
-    stage: "photo-evidence",
-    body: {
-      model,
-      max_tokens: PHOTO_ANALYSIS_MAX_TOKENS,
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: photoPrompt
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: photoPrompt
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageDataUrl
-              }
-            }
-          ]
-        }
-      ]
-    }
-  });
-
-  return normalizePhotoAnalysis(parsed, locale);
-}
-
 async function generateProductExplanations({ apiKey, locale, decision, formInput, model }) {
   if (!apiKey || !(decision.explanationProducts || decision.products)?.length) {
     return [];
@@ -1481,12 +1448,9 @@ export async function POST(request) {
     const { apiKey } = localShadowProviderStub.enabled
       ? { apiKey: "" }
       : resolveOpenAiApiKey();
-    let imageDataUrl = null;
-
-    if (typeof image.arrayBuffer === "function") {
-      const buffer = Buffer.from(await image.arrayBuffer());
-      imageDataUrl = `data:${image.type || "image/jpeg"};base64,${buffer.toString("base64")}`;
-    }
+    const imageBuffer = typeof image.arrayBuffer === "function"
+      ? Buffer.from(await image.arrayBuffer())
+      : null;
 
     if (process.env.NODE_ENV !== "production") {
       logAnalyze(
@@ -1507,27 +1471,41 @@ export async function POST(request) {
     }
 
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
+    let faceLabResult = createFaceLabUnavailable("vision_request_failed");
+    let visionTelemetry = null;
     let photoNotice = "";
+    const imageProviderAttemptCount = apiKey && imageBuffer ? 1 : 0;
 
-    if (apiKey && imageDataUrl) {
+    if (apiKey && imageBuffer) {
       try {
-        photoAnalysis = await extractPhotoAnalysis({
+        const observationResult = await analyzeVisionObservation({
           apiKey,
-          imageDataUrl,
+          imageBuffer,
+          mimeType: image.type,
+          model
+        });
+        visionTelemetry = observationResult.telemetry;
+        photoAnalysis = projectSkinObservation(observationResult.bundle, {
           locale,
-          model,
           formInput
         });
-      } catch (photoError) {
+        faceLabResult = projectFaceLabResult(observationResult.bundle, { locale });
+
+        if (observationResult.bundle.skin?.status !== "available") {
+          photoNotice = copy.photoFallbackNotice;
+        }
+      } catch {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
+        faceLabResult = createFaceLabUnavailable("vision_request_failed");
         photoNotice = copy.photoFallbackNotice;
-        logAnalyze("photo-evidence:fallback", {
+        logAnalyze("vision-observation:fallback", {
           ok: false,
           errorCategory: "fallback_used"
         });
       }
     } else {
       photoNotice = copy.photoFallbackNotice;
+      faceLabResult = createFaceLabUnavailable(apiKey ? "vision_request_failed" : "api_key_missing");
     }
 
     const currentProductSnapshots = await fetchCurrentProductSnapshotsByIds(
@@ -1547,7 +1525,7 @@ export async function POST(request) {
 
     let explanationNotice = "";
 
-    if (apiKey) {
+    if (apiKey && visionTelemetry) {
       try {
         const explanationItems = await generateProductExplanations({
           apiKey,
@@ -1568,19 +1546,45 @@ export async function POST(request) {
         });
       }
     } else {
-      explanationNotice = copy.missingApiKeyNotice;
+      explanationNotice = apiKey
+        ? copy.explanationFallbackNotice
+        : copy.missingApiKeyNotice;
     }
 
     decision = appendTopPickReviewEvidence(decision, locale);
+
+    if (decision.premiumReport) {
+      decision = {
+        ...decision,
+        premiumReport: {
+          ...decision.premiumReport,
+          faceLabSummary: buildPremiumFaceLabSummary(faceLabResult, { locale })
+        }
+      };
+    }
 
     const publicDecision = buildFreeDecisionPayload(decision);
     const anonymousPersistenceResult = analysisGuard.principal.scope === "anonymous"
       ? canonicalizeAnonymousResultForPersistence(publicDecision)
       : null;
 
+    if (analysisGuard.principal.scope === "anonymous" && !anonymousPersistenceResult) {
+      logAnalyze("anonymous-write-grant:payload-invalid", {
+        code: "anonymous_result_persistence_contract_invalid"
+      });
+      await failAnalysisRequestGuard(analysisGuard);
+
+      return applyAnalysisGuardCookies(NextResponse.json(
+        {
+          error: "anonymous_write_grant_unavailable",
+          message: "We cannot prepare the analysis save session right now. Please try again shortly."
+        },
+        { status: 503 }
+      ), analysisGuard);
+    }
+
     const anonymousWriteGrant = analysisGuard.principal.scope === "anonymous"
-      && anonymousPersistenceResult
-        ? await issueAnonymousWriteGrants({
+      ? await issueAnonymousWriteGrants({
           supabase: analysisGuard.supabase,
           anonymousPayload: analysisGuard.principal.anonymousPayload,
           result: anonymousPersistenceResult,
@@ -1590,6 +1594,9 @@ export async function POST(request) {
       : null;
 
     if (analysisGuard.principal.scope === "anonymous" && !anonymousWriteGrant?.ok) {
+      logAnalyze("anonymous-write-grant:issue-failed", {
+        code: anonymousWriteGrant?.code || "anonymous_write_grant_unavailable"
+      });
       await failAnalysisRequestGuard(analysisGuard);
 
       return applyAnalysisGuardCookies(NextResponse.json(
@@ -1626,11 +1633,14 @@ export async function POST(request) {
       : null;
     const responsePayload = {
       ...publicDecision,
+      faceLab: faceLabResult,
       meta: buildAnalyzeMeta({
         locale,
         photoNotice,
         explanationNotice,
-        apiKey
+        apiKey,
+        visionTelemetry,
+        imageProviderAttemptCount
       }),
       ...(anonymousWriteGrant?.ok
         ? {

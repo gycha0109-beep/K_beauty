@@ -216,6 +216,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: local-supabase-replay-diagnostics
-          path: tmp/local-supabase-replay-diagnostics/*.log
+          path: |
+            tmp/local-supabase-replay-diagnostics/*.log
           if-no-files-found: ignore
           retention-days: 1

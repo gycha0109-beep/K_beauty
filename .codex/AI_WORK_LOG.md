@@ -2,6 +2,27 @@
 
 ## Entries
 
+### 2026-07-19 / Unified Vision Provider environment revalidation
+
+- Branch: `design/unified-vision-observation-pipeline`; task type: High execution with Provider, Secret, DB, RLS, and local runtime boundaries.
+- Provider Gate: PASS. The actual development resolver selected `.env.local`; one text-only `gpt-4o-mini` request returned HTTP 200 in 2,090 ms with zero retries. No image, credential, prefix, header, response body, or fingerprint was retained. Development diagnostics now fully redact key-shaped text and expose no key-prefix fields.
+- DB Gate: FAIL / `BLOCKED_BY_SCHEMA_UNCERTAINTY`. A fresh unlinked local Supabase workdir reproduced missing `public.products` in the first migration. The shadow bootstrap remained excluded because it is a synthetic stub, and no guessed baseline, migration, remote DB, or environment file was changed.
+- Code changes: aligned the analysis guard verifier with the shared canonical Vision service; hardened Provider diagnostic redaction and its verifier. No runtime Vision data contract, route flow, projector, product logic, migration, Supabase config, fixture, or deployment file changed.
+- Validation: isolated `npm ci`, unified Vision verifier, Face Lab evaluation verifiers, architecture guard, analysis guard verifier, Provider log sanitizer, anonymous grant verifier, analysis RLS verifier, production build, and `git diff --check` passed. The install reported two existing audit findings (one moderate, one high).
+- Phase C: NOT RUN because DB Gate failed. This execution used zero unique images and zero image-bearing attempts; cumulative image-bearing attempts remain one, with zero retries. PR #50 remains open, Draft, unmerged, and not ready for review.
+- Detailed record: `docs/domain/facelab/unified-vision-provider-smoke-final-20260719.md`.
+
+### 2026-07-19 / Unified Vision minimal Provider smoke
+
+- Branch: `design/unified-vision-observation-pipeline`
+- Task type: High execution / Provider smoke with a hard two-image-attempt budget.
+- Scope: PR #50 static gates, private fixture metadata review, isolated local runtime preparation, one Lane B Provider attempt, failure documentation, and PR status update. No runtime code, API contract, migration, production deployment, remote Supabase access, fixture copy, image artifact, raw Provider payload, or credential change was retained.
+- Static validation: isolated `npm ci`, `npm run verify:unified-vision-pipeline`, `npm run face-lab:eval:verify`, `npm run architecture:guard`, `npm run build`, and `git diff --check` passed. The default checkout `npm ci` first failed on a locked Next SWC binary; the isolated worktree install passed.
+- Runtime: Lane A was not run because local Supabase bootstrap failed on missing prerequisite relation `public.products`; configured non-local Supabase was intentionally not used. Lane B made exactly one image-bearing OpenAI attempt with `subject-a-lower-face-occluded` and received HTTP 401, classified as `authentication_failed`; no retry or second fixture call occurred.
+- Budget/privacy: one unique image transmitted, one image-bearing attempt, zero retries. No key, header, image, base64, full path, raw response, raw evidence, or identifying payload was retained. Temporary route, server, token, and logs were removed.
+- Final status: `FAIL`. PR #50 must remain unmerged and return to Draft until a valid non-production Provider credential and isolated Lane A database bootstrap are available for a new bounded smoke.
+- Detailed record: `docs/domain/facelab/unified-vision-provider-smoke-20260719.md`.
+
 ### 2026-07-13 / Public Result Read Boundary hardening
 
 - Branch: `codex/survey-input-contract-refactor`
@@ -2545,3 +2566,75 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Premium compatibility: new/current premium Face Lab conversion now requires an available Vision envelope containing at least one available Vision/derived structured field with object value and non-empty evidence. Flat, teaser, shape-only available, mock, fallback, default, and malformed legacy inputs produce unavailable summaries.
 - Historical snapshots: the `savedReportId` owner-scoped branch still returns the stored premium snapshot before current-session transformation. Current-session resolution no longer trusts a stored shape-only `faceLabSummary`; only a strict source envelope may create and persist a new summary, and rejected legacy raw input does not update the premium session.
 - Verification: the focused failure/legacy verifier, image-eligibility verifier, keyword-summary verifier, analysis-result response-boundary verifier, premium re-entry verifier, `npm run build`, and `git diff --check` passed. Hosted historical snapshot and storage round-trip checks remain intentionally out of scope.
+
+### 2026-07-26 / Face Lab Provider E2E encrypted fixture v3 staging
+
+- Task type: bounded High-risk execution. Provider and Secret boundaries are `Y`; no local Provider call, hosted Supabase, remote DB, migration, production deployment, or secret value access occurred.
+- Change: staged the verified single encrypted v3 fixture contract, replaced v1/v2 split base64 input handling with size/SHA-256 fail-closed validation and direct AES-256-CBC PBKDF2 decryption, enforced the three-PNG tar allowlist, removed legacy chunks and the v2 verifier, and updated the canonical verifier, package script, README, and one-shot trigger.
+- Validation: input and copied tracked fixture matched 3,210,944 bytes, SHA-256 `739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658`, and byte-for-byte equality. `npm run face-lab:e2e:verify`, `npm run verify:unified-vision-pipeline`, `npm run face-lab:eval:verify`, and `git diff --check` passed.
+- Boundaries: plaintext manifest/images/tar, passphrase files, environment files, runtime Provider policy, Supabase migration/configuration, and deployment settings remain unmodified. The workflow preserves Local Supabase-only checks, Lane B then Lane A, two image-bearing attempts, zero automatic retries, sanitized artifacts, three-day retention, and mandatory cleanup.
+
+### 2026-07-26 / Face Lab Provider E2E tar member contract boundary
+
+- Task type: bounded High-risk execution. The prior run `30204169231` passed the encrypted input and OpenSSL stages, then stopped at `fixture_bundle_member_contract_invalid`; Provider attempts were 0. No secret was read, changed, or exposed.
+- Change: only the post-decryption tar member validation/extraction boundary is replaced. The encrypted fixture remains unchanged; Python standard-library validation accepts the three exact regular files and optional exact ancestor directories, rejects unsafe paths, links, special members, duplicates, and unlisted entries, and streams only verified files without restoring archive metadata.
+- Boundaries: no Provider call, Local/remote Supabase access, runtime policy, migration, production setting, plaintext fixture inspection, or fixture-binary change is authorized.
+
+### 2026-07-26 / Face Lab Provider E2E fixture v3 rekey
+
+- Task type: bounded High-risk execution. Secret and Provider workflow boundaries are `Y`; DB, RLS, Storage, Payment, migration, production deployment, hosted Supabase, and local Provider execution are `N`.
+- Change: regenerated the encrypted v3 fixture from the existing untracked manifest and two PNG sources using exactly three regular tar members, then AES-256-CBC with salt, PBKDF2, and 210000 iterations. Updated the tracked encrypted blob and its size/SHA-256 fail-closed markers; no plaintext fixture was added to Git.
+- Validation boundary: the generated encrypted output was immediately decrypted in the temporary workspace with the same process-only passphrase and its tar metadata matched exactly the three expected regular files. Plaintext archives and the process environment value were removed after validation.
+- Secret handling: the replacement Repository Secret was supplied through standard input without logging, command-line exposure, or repository persistence. No Secret value is recorded here.
+- Runtime boundary: no Provider API, Local or remote Supabase, migration, production deployment, workflow dispatch, or workflow rerun was invoked locally.
+
+### 2026-07-27 / Face Lab Provider E2E routable harness boundary
+
+- Task type: bounded High-risk CI recovery. Provider-facing test orchestration is `Y`; Secret, fixture, DB contract, migration, production route, deployment, and hosted data changes are `N`.
+- Prior run: `30207202041` passed fixture input, decryption/member validation, and Local Supabase, then failed Lane B with sanitized marker `lane_b_http_404`. Lane A did not run, Provider image usage events were zero, and automatic retries were zero.
+- Root cause: the generated route used `app/api/__face-lab-provider-e2e/route.js`; the leading-underscore App Router segment was treated as private and was not registered as a Route Handler.
+- Fix boundary: use the non-private `face-lab-provider-e2e-harness` segment, require a token-protected empty `204` readiness response before Provider preflight, add a fixture/Secret/DB/Provider-free local harness verification mode, and clean both canonical and legacy exact paths.
+- Preserved contracts: encrypted fixture size/SHA-256 and bytes, Repository Secrets, production API routes, Provider request policy, Lane B then Lane A order, maximum two image attempts, zero automatic retries, Local Supabase-only execution, sanitized artifacts, and mandatory cleanup remain unchanged.
+
+### 2026-07-27 / Face Lab Provider E2E actual analyze route boundary
+
+- Task type: bounded High-risk CI recovery and execution. Provider, Secret, and Local DB orchestration are `Y`; production route behavior, migration, deployment, hosted data, and encrypted fixture changes are `N`.
+- Prior run: `30208164340` passed fixture transport, Secret gates, decryption/member validation, and Local Supabase. The temporary harness GET passed, its POST returned a catch-all `502`, and the actual `/api/analyze` route did not run. That result does not establish a production Provider failure.
+- Change: retire the temporary Route Handler, Lane B, harness-only readiness mode, and text Provider preflight. The Actions smoke now waits on the existing public application route and dispatches exactly one frontal-image multipart request to the real `POST /api/analyze` contract with zero automatic retries.
+- Measurement: report schema v2 separates request preparation, dispatch, response receipt/status, response-contract validation, response-reported image attempts, and the existing Vision usage event. Grant values, analysis IDs, raw payloads, image data, credentials, and local paths are not persisted.
+- Preserved boundaries: production `/api/analyze`, canonical Vision service, analysis guard, anonymous write grant, response serializer, Local Supabase configuration, migration chain, encrypted fixture bytes/size/SHA-256, and Repository Secrets are unchanged.
+
+### 2026-07-27 / Anonymous result grant payload alignment
+
+- Task type: bounded High-risk recovery and two-phase execution. Local DB/Auth/Provider/Secret boundaries are `Y`; migration, RLS policy, hosted/remote DB, production deployment, fixture, and Secret changes are `N`.
+- Confirmed root cause: run `30209305514` completed Vision image analysis and product explanation, then returned `anonymous_write_grant_unavailable` because `buildFreeDecisionPayload()` included `imageEligibility` while the anonymous persistence allowlist did not. Fail-closed canonicalization returned `null` before `create_anonymous_write_grants` could run.
+- Phase 1 change: add bounded normalized `imageEligibility` to the persisted fingerprint contract, preserve unknown top-level fail-closed behavior, distinguish sanitized payload-invalid and issuance-failed stages, and add safe grant issuance codes without returning raw Supabase errors.
+- Provider-free runtime gate: a synthetic realistic free result is canonicalized, issued through the service-role-only Local Supabase RPC, checked for exactly two operations, deleted, and checked for zero residue. Remote URLs, Provider calls, fixtures, images, actual tokens, and Repository Secrets are excluded.
+- Replay evidence: run `30209306671` applied migrations and seed before the local Storage bucket health/restart timeout. It is not classified as migration SQL, SEC-05, or anonymous grant RPC failure, and no replay workflow or migration is changed speculatively.
+- Preserved limits: maximum one image-bearing request, zero automatic retries, unchanged encrypted fixture, unchanged Secrets, unchanged migrations, and no Phase 1 `run.trigger` change.
+
+### 2026-07-27 / Local anonymous grant RPC visibility boundary
+
+- Task type: bounded High-risk CI diagnosis and two-phase recovery. Local DB and CI orchestration are `Y`; migration, RPC body/signature, RLS/grants, production route, Provider retry/request policy, hosted/remote DB, fixture, and Secret changes are `N`.
+- Prior run: `30211073388` passed Local Supabase start/reset and masked runtime export, then failed the anonymous grant runtime preflight with generic marker `anonymous_grant_rpc_failed`. The actual `/api/analyze` step was skipped, Provider text/image calls and automatic retries were zero, and mandatory cleanup passed.
+- Evidence boundary: the same runtime verifier passed locally and the exact-head Replay Guard passed. PostgREST RPC visibility immediately after `db reset` is therefore probable but not yet confirmed; Phase 1 Replay diagnostics must classify it without claiming a root cause in advance.
+- Phase 1 change: add a no-write `p_grants: []` visibility probe whose expected ready signal is SQLSTATE `22023`, bounded to 60 one-second attempts. Only schema-cache/network readiness states are rechecked. Authentication, permission, unexpected signature/contract results fail immediately.
+- Execution invariant: after visibility succeeds, the synthetic grant creation RPC remains exactly one attempt, verifies two operations, and always performs exact-resource cleanup with zero remaining rows. Provider automatic retry remains zero.
+- Sanitization: `anonymous-grant-preflight-v1` contains only fixed markers, safe error code, timing/attempt counters, and aggregate created/row/cleanup counts. It contains no URL, credential, token, identifier/hash, grant body, raw error message/details/hint, image, base64, or Provider payload.
+- CI alignment: Local Supabase Replay Guard now exports masked local runtime variables and runs the same Provider-free grant verifier before existing lint/boundary checks. The Provider workflow retains its preflight-before-smoke order and includes the sanitized diagnostic in its existing artifact.
+- Preserved boundaries: no migration, RPC, permission, RLS, production `/api/analyze`, encrypted fixture, Repository Secret, image-attempt budget, or `run.trigger` change is included in Phase 1.
+
+### 2026-07-27 / Face Lab Provider E2E synthetic preflight removal
+
+- Task type: bounded High-risk CI simplification. Provider and Local DB orchestration are `Y`; production route/grant code, migration, RPC, RLS/permissions, hosted/remote DB, fixture, Secret, and deployment changes are `N`.
+- Correction: Replay Guard run `30212349131` checked out the PR merge ref rather than the branch head directly. Its synthetic anonymous-grant verifier reported `probeAttempts=0`, so the visibility loop and PostgREST RPC were not observed; the prior probable schema-visibility explanation is not evidence for that run.
+- Removal: delete the synthetic grant runtime verifier, RPC visibility polling module, readiness test, package scripts, Provider preflight step/artifact, and Replay Guard integration.
+- Canonical verification path: unchanged encrypted fixture, isolated Local Supabase start/reset, real Next application, one actual `POST /api/analyze`, production anonymous write-grant issuance, response/Face Lab contract checks, sanitized report, and mandatory cleanup.
+- Preserved boundaries: production `/api/analyze`, anonymous grant canonicalization/issuance, migration/RPC/RLS/grants, fixture bytes/hash, Repository Secrets, maximum one image-bearing request, zero automatic retries, and `run.trigger` remain unchanged.
+
+### 2026-07-27 / Face Lab Provider E2E live semantic and cleanup contract
+
+- Task type: bounded High-risk CI verification hardening. Production `/api/analyze`, Vision service, Face Lab projection, anonymous grants, migration/RPC/RLS, fixture, Secret, and Provider retry behavior remain unchanged.
+- Live contract: the actual single-image `/api/analyze` smoke now requires an available Vision Face Lab envelope, passed eligibility, available canonical analysis, a non-empty structured projection, at least one evidence-backed available Vision field, and non-persistence of the source image. Reports retain only booleans and a bounded field count.
+- Provider accounting: sanitized runtime events distinguish exactly one image-bearing Vision call, zero or one optional image-free explanation call, zero text preflight calls, zero unexpected stages, and zero automatic retries.
+- Cleanup: workflow cleanup now precedes artifact upload, checks all plaintext/encrypted input removal and Local Supabase stop results, emits boolean-only `face-lab-provider-e2e-cleanup-v1`, and fails closed while preserving `if: always()` artifact upload.
