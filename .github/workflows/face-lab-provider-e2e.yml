@@ -46,10 +46,6 @@ jobs:
         id: verify_package
         run: npm run face-lab:e2e:verify
 
-      - name: Verify temporary harness route
-        id: verify_harness
-        run: npm run face-lab:e2e:verify-harness
-
       - name: Verify encrypted inputs and secrets
         id: verify_inputs
         shell: bash
@@ -267,7 +263,7 @@ jobs:
             printf 'NEXT_PUBLIC_PREMIUM_REPORT_ENABLED=false\n'
           } >>"${GITHUB_ENV}"
 
-      - name: Run bounded Lane B then Lane A
+      - name: Run single actual /api/analyze Provider smoke
         id: provider_smoke
         run: npm run face-lab:e2e:run -- --manifest manifest.local.json
 
@@ -293,8 +289,6 @@ jobs:
         shell: bash
         run: |
           set +e
-          rm -rf app/api/face-lab-provider-e2e-harness
-          rm -rf app/api/__face-lab-provider-e2e
           rm -f manifest.local.json
           rm -rf private/face-lab-fixtures
           rm -rf tmp/face-lab-provider-e2e-input

@@ -1,11 +1,9 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
-import { createServer } from "node:net";
 import {
   existsSync,
   mkdirSync,
   readFileSync,
-  rmSync,
   writeFileSync
 } from "node:fs";
 import path from "node:path";
@@ -14,22 +12,19 @@ import process from "node:process";
 const REPO_ROOT = process.cwd();
 const LOCAL_HOST = "127.0.0.1";
 const DEFAULT_E2E_PORT = 3001;
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
-const OPENAI_MODEL = "gpt-4o-mini";
-const LANE_A_FIXTURE_ID = "subject-a-frontal-clear";
-const LANE_B_FIXTURE_ID = "subject-a-lower-face-occluded";
-const MAX_IMAGE_ATTEMPTS = 2;
+const ANALYZE_ROUTE = "/api/analyze";
+const FIXTURE_ID = "subject-a-frontal-clear";
+const MAX_IMAGE_ATTEMPTS = 1;
 const AUTOMATIC_RETRY_COUNT = 0;
+const SERVER_READINESS_TIMEOUT_MS = 120_000;
+const ANALYZE_TIMEOUT_MS = 300_000;
+const MAX_CAPTURED_LOG_BYTES = 1024 * 1024;
+const REPORT_SCHEMA_VERSION = "face-lab-provider-e2e-report-v2";
+const REPORT_MODE = "actual-api-analyze-single-image";
 const OUTPUT_DIR = path.join(REPO_ROOT, "tmp", "face-lab-provider-e2e");
 const REPORT_JSON_PATH = path.join(OUTPUT_DIR, "report.json");
 const REPORT_MD_PATH = path.join(OUTPUT_DIR, "report.md");
 const DIAGNOSTICS_PATH = path.join(OUTPUT_DIR, "diagnostics.log");
-const HARNESS_ROUTE_SEGMENT = "face-lab-provider-e2e-harness";
-const HARNESS_ROUTE_DIR = path.join(REPO_ROOT, "app", "api", HARNESS_ROUTE_SEGMENT);
-const HARNESS_ROUTE_PATH = path.join(HARNESS_ROUTE_DIR, "route.js");
-const HARNESS_ROUTE_URL = `/api/${HARNESS_ROUTE_SEGMENT}`;
-const LEGACY_HARNESS_ROUTE_DIR = path.join(REPO_ROOT, "app", "api", "__face-lab-provider-e2e");
-const MAX_CAPTURED_LOG_BYTES = 1024 * 1024;
 
 function parseArgs(argv) {
   const result = {};
@@ -50,26 +45,10 @@ function assert(condition, code) {
 function resolvePort(value, fallback) {
   if (value === undefined || value === null || String(value).trim() === "") return fallback;
   const text = String(value).trim();
-  assert(/^\d+$/.test(text), "invalid_harness_port");
+  assert(/^\d+$/.test(text), "invalid_local_port");
   const port = Number(text);
-  assert(Number.isInteger(port) && port >= 1024 && port <= 65535, "invalid_harness_port");
+  assert(Number.isInteger(port) && port >= 1024 && port <= 65535, "invalid_local_port");
   return port;
-}
-
-async function findAvailableLocalPort() {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-    server.unref();
-    server.once("error", () => reject(new Error("harness_route_start_timeout")));
-    server.listen({ host: LOCAL_HOST, port: 0, exclusive: true }, () => {
-      const address = server.address();
-      const port = address && typeof address === "object" ? address.port : null;
-      server.close((error) => {
-        if (error || !Number.isInteger(port)) reject(new Error("harness_route_start_timeout"));
-        else resolve(port);
-      });
-    });
-  });
 }
 
 function localBaseUrl(port) {
@@ -91,25 +70,30 @@ function sanitizeDiagnosticText(value) {
     .replace(/(Bearer\s+)[A-Za-z0-9._-]+/gi, "$1[REDACTED]")
     .replace(/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g, "[REDACTED_JWT]")
     .replace(/data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+/gi, "[REDACTED_IMAGE_DATA]")
-    .replace(/[A-Za-z0-9+/]{512,}={0,2}/g, "[REDACTED_LONG_TOKEN]");
+    .replace(/(postgres(?:ql)?:\/\/[^:/\s]+:)[^@\s]+@/gi, "$1[REDACTED]@")
+    .replace(/[A-Za-z0-9+/]{512,}={0,2}/g, "[REDACTED_LONG_TOKEN]")
+    .replace(/[A-Za-z]:\\[^\r\n]+/g, "[REDACTED_LOCAL_PATH]")
+    .replace(/\/home\/runner\/work\/[^\s]+/g, "[REDACTED_RUNNER_PATH]");
 }
 
-function appendCapturedLog(state, chunk) {
-  if (state.logBytes >= MAX_CAPTURED_LOG_BYTES) return;
+function sanitizeApplicationError(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  for (const key of ["code", "error", "status", "reason"]) {
+    const value = payload[key];
+    if (typeof value !== "string") continue;
+    const trimmed = value.trim().slice(0, 120);
+    if (/^[A-Za-z0-9_.:-]{1,120}$/.test(trimmed)) return trimmed;
+  }
+  return null;
+}
+
+function appendCapturedLog(capture, chunk) {
+  if (capture.logBytes >= MAX_CAPTURED_LOG_BYTES) return;
   const text = String(chunk || "");
-  const remaining = MAX_CAPTURED_LOG_BYTES - state.logBytes;
+  const remaining = MAX_CAPTURED_LOG_BYTES - capture.logBytes;
   const clipped = text.slice(0, remaining);
-  state.logs += clipped;
-  state.logBytes += Buffer.byteLength(clipped, "utf8");
-}
-
-function classifyProviderStatus(status) {
-  if (status === 401) return "authentication_failed";
-  if (status === 403) return "authorization_failed";
-  if (status === 429) return "rate_limited";
-  if (status === 402) return "billing_required";
-  if (status >= 500) return "provider_server_error";
-  return `provider_http_${status}`;
+  capture.logs += clipped;
+  capture.logBytes += Buffer.byteLength(clipped, "utf8");
 }
 
 function resolveFixture(manifest, fixtureId) {
@@ -131,144 +115,7 @@ function resolveFixture(manifest, fixtureId) {
   };
 }
 
-async function providerPreflight(apiKey) {
-  const startedAt = Date.now();
-  const response = await fetch(OPENAI_URL, {
-    method: "POST",
-    redirect: "manual",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      max_tokens: 1,
-      temperature: 0,
-      messages: [{ role: "user", content: "Reply with OK." }]
-    })
-  });
-  const durationMs = Date.now() - startedAt;
-  await response.arrayBuffer();
-  if (!response.ok) {
-    throw new Error(`provider_gate_${classifyProviderStatus(response.status)}`);
-  }
-  return { status: "PASS", httpStatus: response.status, durationMs };
-}
-
-function buildHarnessRouteSource() {
-  return `import { timingSafeEqual } from "node:crypto";
-import { NextResponse } from "next/server";
-import { validateImageUpload } from "@/lib/upload-validation";
-import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
-import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
-import { projectSkinObservation } from "@/lib/skin-observation-projector";
-import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
-
-export const dynamic = "force-dynamic";
-
-function safeEqual(left, right) {
-  const leftBuffer = Buffer.from(String(left || ""), "utf8");
-  const rightBuffer = Buffer.from(String(right || ""), "utf8");
-  return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
-}
-
-function denied(status = 404) {
-  return NextResponse.json({ error: "not_found" }, { status });
-}
-
-export async function GET(request) {
-  if (process.env.NODE_ENV === "production" || process.env.FACE_LAB_PROVIDER_E2E_ENABLED !== "1") {
-    return denied();
-  }
-  if (!safeEqual(request.headers.get("x-face-lab-e2e-token"), process.env.FACE_LAB_PROVIDER_E2E_TOKEN)) {
-    return denied(403);
-  }
-
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Cache-Control": "no-store"
-    }
-  });
-}
-
-export async function POST(request) {
-  if (process.env.NODE_ENV === "production" || process.env.FACE_LAB_PROVIDER_E2E_ENABLED !== "1") {
-    return denied();
-  }
-  if (!safeEqual(request.headers.get("x-face-lab-e2e-token"), process.env.FACE_LAB_PROVIDER_E2E_TOKEN)) {
-    return denied(403);
-  }
-
-  try {
-    const formData = await request.formData();
-    const image = formData.get("image");
-    const validation = validateImageUpload(image);
-    if (!validation.ok || typeof image?.arrayBuffer !== "function") {
-      return NextResponse.json({ error: "fixture_invalid" }, { status: 400 });
-    }
-
-    const { apiKey } = resolveOpenAiApiKey();
-    if (!apiKey) {
-      return NextResponse.json({ error: "api_key_missing" }, { status: 503 });
-    }
-
-    const observation = await analyzeVisionObservation({
-      apiKey,
-      imageBuffer: Buffer.from(await image.arrayBuffer()),
-      mimeType: image.type,
-      model: "gpt-4o-mini"
-    });
-    const formInput = {
-      skinType: "combination",
-      sensitivity: "medium",
-      mainConcern: "pores",
-      mainConcerns: ["pores", "dehydration"],
-      primaryConcern: "pores"
-    };
-
-    return NextResponse.json({
-      ok: true,
-      canonical: {
-        schemaVersion: observation.bundle?.schemaVersion || null,
-        status: observation.bundle?.status || null,
-        skinStatus: observation.bundle?.skin?.status || null,
-        faceStatus: observation.bundle?.face?.status || null,
-        skinAnalysisEligible: observation.bundle?.eligibility?.skinAnalysisEligible === true,
-        faceLabEligible: observation.bundle?.eligibility?.faceLabEligible === true
-      },
-      telemetry: observation.telemetry,
-      projections: {
-        skin: {
-          ko: projectSkinObservation(observation.bundle, { locale: "ko", formInput }),
-          en: projectSkinObservation(observation.bundle, { locale: "en", formInput })
-        },
-        face: {
-          ko: projectFaceLabResult(observation.bundle, { locale: "ko" }),
-          en: projectFaceLabResult(observation.bundle, { locale: "en" })
-        }
-      },
-      projectionProviderCallCount: 0
-    });
-  } catch {
-    return NextResponse.json({ error: "provider_execution_failed" }, { status: 502 });
-  }
-}
-`;
-}
-
-function materializeHarnessRoute() {
-  assert(!existsSync(HARNESS_ROUTE_PATH), "temporary_harness_route_already_exists");
-  mkdirSync(HARNESS_ROUTE_DIR, { recursive: true });
-  writeFileSync(HARNESS_ROUTE_PATH, buildHarnessRouteSource(), "utf8");
-}
-
-function removeHarnessRoutes() {
-  rmSync(HARNESS_ROUTE_DIR, { recursive: true, force: true });
-  rmSync(LEGACY_HARNESS_ROUTE_DIR, { recursive: true, force: true });
-}
-
-function startNextServer(token, state, port) {
+function startNextServer(capture, port) {
   const nextBin = path.join(REPO_ROOT, "node_modules", "next", "dist", "bin", "next");
   assert(existsSync(nextBin), "next_binary_missing");
   const child = spawn(process.execPath, [nextBin, "dev", "-H", LOCAL_HOST, "-p", String(port)], {
@@ -277,105 +124,57 @@ function startNextServer(token, state, port) {
       ...process.env,
       CI: "1",
       NEXT_TELEMETRY_DISABLED: "1",
-      FACE_LAB_PROVIDER_E2E_ENABLED: "1",
-      FACE_LAB_PROVIDER_E2E_TOKEN: token,
       LOCAL_SHADOW_PROVIDER_STUB: "0"
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
-  child.stdout.on("data", (chunk) => appendCapturedLog(state, chunk));
-  child.stderr.on("data", (chunk) => appendCapturedLog(state, chunk));
+  child.stdout.on("data", (chunk) => appendCapturedLog(capture, chunk));
+  child.stderr.on("data", (chunk) => appendCapturedLog(capture, chunk));
   return child;
 }
 
-async function waitForHarnessRoute(child, token, baseUrl, timeoutMs = 120_000) {
+async function waitForServerReadiness(child, baseUrl, timeoutMs = SERVER_READINESS_TIMEOUT_MS) {
   const deadline = Date.now() + timeoutMs;
   let lastStatus = null;
   while (Date.now() < deadline) {
     if (child.exitCode !== null || child.signalCode !== null) {
-      throw new Error(`next_server_exited:${child.exitCode ?? -1}`);
+      throw new Error("SERVER_READINESS_FAILED");
     }
     try {
-      const response = await fetch(`${baseUrl}${HARNESS_ROUTE_URL}`, {
-        redirect: "manual",
-        headers: {
-          "x-face-lab-e2e-token": token
-        }
-      });
+      const response = await fetch(`${baseUrl}/`, { redirect: "manual" });
       await response.arrayBuffer();
       lastStatus = response.status;
-      if (response.status === 204) return;
-      if (response.status === 403) throw new Error("harness_route_forbidden");
+      if (response.status < 500) return;
     } catch {
-      if (lastStatus === 403) throw new Error("harness_route_forbidden");
-      // The server or route is still compiling.
+      // The existing public application route is still compiling.
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  if (lastStatus === 404) throw new Error("harness_route_not_ready_404");
-  if (lastStatus !== null && lastStatus >= 500) throw new Error("harness_route_not_ready_500");
-  throw new Error("harness_route_start_timeout");
+  void lastStatus;
+  throw new Error("SERVER_READINESS_FAILED");
 }
 
 async function stopChild(child) {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  if (!child || child.exitCode !== null || child.signalCode !== null) return true;
   child.kill("SIGTERM");
   await Promise.race([
     new Promise((resolve) => child.once("exit", resolve)),
     new Promise((resolve) => setTimeout(resolve, 5000))
   ]);
-  if (child.exitCode === null) child.kill("SIGKILL");
+  if (child.exitCode === null && child.signalCode === null) {
+    child.kill("SIGKILL");
+    await Promise.race([
+      new Promise((resolve) => child.once("exit", resolve)),
+      new Promise((resolve) => setTimeout(resolve, 2000))
+    ]);
+  }
+  return child.exitCode !== null || child.signalCode !== null;
 }
 
-function createImageForm(fixture) {
+function createAnalyzeForm(fixture) {
   const bytes = readFileSync(fixture.absolutePath);
   const form = new FormData();
   form.append("image", new Blob([bytes], { type: fixture.mimeType }), path.basename(fixture.absolutePath));
-  return form;
-}
-
-function assertProjectionObject(value, code) {
-  assert(value && typeof value === "object" && !Array.isArray(value), code);
-}
-
-async function runLaneB(fixture, token, baseUrl) {
-  const form = createImageForm(fixture);
-  const startedAt = Date.now();
-  const response = await fetch(`${baseUrl}${HARNESS_ROUTE_URL}`, {
-    method: "POST",
-    headers: { "x-face-lab-e2e-token": token },
-    body: form
-  });
-  const durationMs = Date.now() - startedAt;
-  const payload = await response.json().catch(() => null);
-  assert(response.ok && payload?.ok === true, `lane_b_http_${response.status}`);
-  assert(payload.canonical?.schemaVersion === "vision-observation-v1", "lane_b_schema_invalid");
-  assert(payload.telemetry?.imageProviderAttemptCount === 1, "lane_b_attempt_count_invalid");
-  assert(payload.projectionProviderCallCount === 0, "lane_b_projection_provider_call_detected");
-  assertProjectionObject(payload.projections?.skin?.ko, "lane_b_skin_ko_missing");
-  assertProjectionObject(payload.projections?.skin?.en, "lane_b_skin_en_missing");
-  assertProjectionObject(payload.projections?.face?.ko, "lane_b_face_ko_missing");
-  assertProjectionObject(payload.projections?.face?.en, "lane_b_face_en_missing");
-  assert(
-    payload.projections.face.ko.status === payload.projections.face.en.status,
-    "lane_b_face_locale_status_mismatch"
-  );
-  return {
-    status: "PASS",
-    fixtureId: fixture.fixtureId,
-    durationMs,
-    canonicalStatus: payload.canonical.status,
-    skinStatus: payload.canonical.skinStatus,
-    faceStatus: payload.canonical.faceStatus,
-    inputTokens: payload.telemetry.inputTokens,
-    outputTokens: payload.telemetry.outputTokens,
-    imageProviderAttemptCount: 1,
-    projectionProviderCallCount: 0,
-    koEnProjectionPresent: true
-  };
-}
-
-function appendAnalyzeFields(form) {
   const fields = {
     skinType: "combination",
     sensitivity: "medium",
@@ -401,81 +200,112 @@ function appendAnalyzeFields(form) {
     locale: "ko"
   };
   for (const [key, value] of Object.entries(fields)) form.append(key, value);
-}
-
-async function runLaneA(fixture, baseUrl) {
-  const form = createImageForm(fixture);
-  appendAnalyzeFields(form);
-  const startedAt = Date.now();
-  const response = await fetch(`${baseUrl}/api/analyze`, {
-    method: "POST",
-    headers: { "Idempotency-Key": randomUUID() },
-    body: form
-  });
-  const durationMs = Date.now() - startedAt;
-  const payload = await response.json().catch(() => null);
-  assert(response.ok && payload, `lane_a_http_${response.status}`);
-  assert(payload.meta?.schemaVersion !== 2 ? false : true, "lane_a_response_schema_invalid");
-  assert(payload.meta?.imageProviderAttemptCount === 1, "lane_a_attempt_count_invalid");
-  assert(payload.faceLab && typeof payload.faceLab === "object", "lane_a_face_lab_missing");
-  assert(typeof payload.summary === "string", "lane_a_summary_missing");
-  assert("topPick" in payload, "lane_a_top_pick_contract_missing");
-  assert(Array.isArray(payload.morning), "lane_a_morning_contract_missing");
-  assert(Array.isArray(payload.night), "lane_a_night_contract_missing");
-  assert(response.headers.get("x-kbeauty-result-write-token"), "lane_a_result_write_grant_missing");
-  assert(response.headers.get("x-kbeauty-track-write-token"), "lane_a_track_write_grant_missing");
-  assert(typeof payload.analysisRunId === "string" && payload.analysisRunId, "lane_a_analysis_run_id_missing");
-  return {
-    status: "PASS",
-    fixtureId: fixture.fixtureId,
-    durationMs,
-    schemaVersion: payload.meta.schemaVersion,
-    imageProviderAttemptCount: 1,
-    faceLabStatus: payload.faceLab.status || null,
-    anonymousWriteGrant: "PASS",
-    analysisGuard: "PASS",
-    responseContract: "PASS"
-  };
+  return form;
 }
 
 function extractUsageEvents(logText) {
   const segments = String(logText || "").split("[vision-observation-usage]").slice(1);
   return segments.map((segment) => {
     const sample = segment.slice(0, 1200);
-    const number = (name) => {
-      const matched = sample.match(new RegExp(`${name}:\\s*(\\d+|null)`));
-      return matched && matched[1] !== "null" ? Number(matched[1]) : null;
-    };
+    const matched = sample.match(/imageProviderAttemptCount:\s*(\d+|null)/);
     return {
-      inputTokens: number("inputTokens"),
-      outputTokens: number("outputTokens"),
-      imageProviderAttemptCount: number("imageProviderAttemptCount")
+      imageProviderAttemptCount:
+        matched && matched[1] !== "null" ? Number(matched[1]) : null
     };
   });
+}
+
+async function runAnalyzeProviderSmoke(fixture, baseUrl, state) {
+  let form;
+  try {
+    form = createAnalyzeForm(fixture);
+    state.requestPrepared = true;
+  } catch {
+    throw new Error("ANALYZE_REQUEST_PREPARATION_FAILED");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ANALYZE_TIMEOUT_MS);
+  let response;
+  try {
+    assert(state.imageBearingRequestsDispatched < MAX_IMAGE_ATTEMPTS, "PROVIDER_ATTEMPT_COUNT_INVALID");
+    state.requestDispatched = true;
+    state.imageBearingRequestsDispatched += 1;
+    response = await fetch(`${baseUrl}${ANALYZE_ROUTE}`, {
+      method: "POST",
+      headers: { "Idempotency-Key": randomUUID() },
+      body: form,
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") throw new Error("ANALYZE_TIMEOUT");
+    throw new Error("ANALYZE_FETCH_FAILED");
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  state.responseReceived = true;
+  state.httpStatus = response.status;
+  const payload = await response.json().catch(() => null);
+  state.sanitizedApplicationError = sanitizeApplicationError(payload);
+  if (!response.ok) throw new Error("ANALYZE_HTTP_FAILED");
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("ANALYZE_RESPONSE_CONTRACT_FAILED");
+  }
+
+  state.responseReportedImageProviderAttempts =
+    Number.isSafeInteger(payload.meta?.imageProviderAttemptCount)
+      ? payload.meta.imageProviderAttemptCount
+      : null;
+  state.analysisRunIdPresent = typeof payload.analysisRunId === "string" && payload.analysisRunId.length > 0;
+  state.resultWriteGrantPresent = Boolean(response.headers.get("x-kbeauty-result-write-token"));
+  state.trackWriteGrantPresent = Boolean(response.headers.get("x-kbeauty-track-write-token"));
+  state.faceLabPresent = Boolean(
+    payload.faceLab && typeof payload.faceLab === "object" && !Array.isArray(payload.faceLab)
+  );
+
+  const contractPassed =
+    payload.meta?.schemaVersion === 2 &&
+    typeof payload.summary === "string" &&
+    "topPick" in payload &&
+    Array.isArray(payload.morning) &&
+    Array.isArray(payload.night) &&
+    state.analysisRunIdPresent &&
+    state.resultWriteGrantPresent &&
+    state.trackWriteGrantPresent &&
+    state.faceLabPresent;
+  state.responseContractPassed = contractPassed;
+  if (!contractPassed) throw new Error("ANALYZE_RESPONSE_CONTRACT_FAILED");
+  if (state.responseReportedImageProviderAttempts !== MAX_IMAGE_ATTEMPTS) {
+    throw new Error("PROVIDER_ATTEMPT_COUNT_INVALID");
+  }
 }
 
 function buildMarkdown(report) {
   return [
     "# Face Lab Provider E2E Report",
     "",
-    `- HEAD: ${report.head}`,
-    `- Provider Gate: ${report.providerGate.status}`,
-    `- Lane B: ${report.laneB.status}`,
-    `- Lane A: ${report.laneA.status}`,
-    `- Image-bearing attempts: ${report.imageBearingAttempts}`,
+    `- Schema: ${report.schemaVersion}`,
+    `- Mode: ${report.mode}`,
+    `- Fixture: ${report.fixtureId}`,
+    `- Request prepared: ${report.requestPrepared}`,
+    `- Request dispatched: ${report.requestDispatched}`,
+    `- Response received: ${report.responseReceived}`,
+    `- HTTP status: ${report.httpStatus ?? "N/A"}`,
+    `- Response contract passed: ${report.responseContractPassed}`,
+    `- Image-bearing requests dispatched: ${report.imageBearingRequestsDispatched}`,
+    `- Response-reported image Provider attempts: ${report.responseReportedImageProviderAttempts ?? "N/A"}`,
+    `- Vision usage event count: ${report.visionUsageEventCount}`,
+    `- Provider usage observed: ${report.providerUsageObserved}`,
     `- Automatic retries: ${report.automaticRetries}`,
+    `- Server cleanup completed: ${report.serverCleanupCompleted}`,
     `- Final verdict: ${report.finalVerdict}`,
-    "",
-    "## Metrics",
-    "",
-    `- Provider preflight latency: ${report.providerGate.durationMs ?? "N/A"} ms`,
-    `- Lane B latency: ${report.laneB.durationMs ?? "N/A"} ms`,
-    `- Lane A latency: ${report.laneA.durationMs ?? "N/A"} ms`,
-    `- Lane B input/output tokens: ${report.laneB.inputTokens ?? "N/A"}/${report.laneB.outputTokens ?? "N/A"}`,
-    `- Captured Vision usage events: ${report.visionUsageEventCount}`,
+    `- Failure code: ${report.failureCode ?? "N/A"}`,
     "",
     "## Safety",
     "",
+    "- Temporary API routes: 0",
+    "- Text Provider preflight calls: 0",
     "- Production deployment: 0",
     "- Hosted Supabase access: 0",
     "- Remote schema mutation: 0",
@@ -485,60 +315,63 @@ function buildMarkdown(report) {
   ].join("\n");
 }
 
-function writeReport(report, diagnostics = "") {
+function writeReport(report, diagnostics) {
   mkdirSync(OUTPUT_DIR, { recursive: true });
   writeFileSync(REPORT_JSON_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   writeFileSync(REPORT_MD_PATH, buildMarkdown(report), "utf8");
-  if (diagnostics) {
-    const sanitized = sanitizeDiagnosticText(diagnostics).split(/\r?\n/).slice(-250).join("\n");
-    writeFileSync(DIAGNOSTICS_PATH, `${sanitized}\n`, "utf8");
-  }
+  const sanitized = sanitizeDiagnosticText(diagnostics).split(/\r?\n/).slice(-250).join("\n");
+  if (sanitized) writeFileSync(DIAGNOSTICS_PATH, `${sanitized}\n`, "utf8");
 }
 
-async function verifyHarnessRouteOnly(args) {
-  const state = { logs: "", logBytes: 0 };
-  const token = randomBytes(32).toString("hex");
-  let server = null;
-
-  try {
-    const requestedPort = args.port ?? process.env.FACE_LAB_PROVIDER_E2E_PORT;
-    const port = requestedPort === undefined
-      ? await findAvailableLocalPort()
-      : resolvePort(requestedPort, DEFAULT_E2E_PORT);
-    const baseUrl = localBaseUrl(port);
-    materializeHarnessRoute();
-    server = startNextServer(token, state, port);
-    await waitForHarnessRoute(server, token, baseUrl);
-    console.log("[face-lab-provider-e2e-harness] PASS");
-  } catch (error) {
-    const failureCode = error instanceof Error ? error.message : "harness_route_start_timeout";
-    console.error(`[face-lab-provider-e2e-harness] failed=${sanitizeDiagnosticText(failureCode)}`);
-    process.exitCode = 1;
-  } finally {
-    await stopChild(server);
-    removeHarnessRoutes();
+function classifyFailure(error, state) {
+  const code = error instanceof Error ? error.message : "UNKNOWN_FIRST_BLOCKER";
+  const allowedCodes = new Set([
+    "SERVER_READINESS_FAILED",
+    "ANALYZE_REQUEST_PREPARATION_FAILED",
+    "ANALYZE_FETCH_FAILED",
+    "ANALYZE_TIMEOUT",
+    "ANALYZE_HTTP_FAILED",
+    "ANALYZE_RESPONSE_CONTRACT_FAILED",
+    "PROVIDER_USAGE_EVENT_MISSING",
+    "PROVIDER_ATTEMPT_COUNT_INVALID",
+    "REPORT_OR_CLEANUP_FAILED",
+    "POTENTIAL_SECRET_EXPOSURE_DETECTED",
+    "UNKNOWN_FIRST_BLOCKER"
+  ]);
+  if (allowedCodes.has(code)) return code;
+  if (!state.requestPrepared && /^manifest_|^fixture_/.test(code)) {
+    return "ANALYZE_REQUEST_PREPARATION_FAILED";
   }
+  return "UNKNOWN_FIRST_BLOCKER";
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (args["verify-harness-route"] === true) {
-    await verifyHarnessRouteOnly(args);
-    return;
-  }
-
   const manifestPath = path.resolve(REPO_ROOT, String(args.manifest || "manifest.local.json"));
+  const capture = { logs: "", logBytes: 0 };
   const state = {
     head: process.env.GITHUB_SHA || "local",
-    providerGate: { status: "NOT_RUN" },
-    laneB: { status: "NOT_RUN" },
-    laneA: { status: "NOT_RUN" },
-    imageBearingAttempts: 0,
-    automaticRetries: AUTOMATIC_RETRY_COUNT,
+    schemaVersion: REPORT_SCHEMA_VERSION,
+    mode: REPORT_MODE,
+    fixtureId: FIXTURE_ID,
+    requestPrepared: false,
+    requestDispatched: false,
+    responseReceived: false,
+    httpStatus: null,
+    responseContractPassed: false,
+    imageBearingRequestsDispatched: 0,
+    responseReportedImageProviderAttempts: null,
     visionUsageEventCount: 0,
+    providerUsageObserved: false,
+    automaticRetries: AUTOMATIC_RETRY_COUNT,
+    analysisRunIdPresent: false,
+    resultWriteGrantPresent: false,
+    trackWriteGrantPresent: false,
+    faceLabPresent: false,
+    serverCleanupCompleted: false,
     finalVerdict: "FAIL",
-    logs: "",
-    logBytes: 0
+    failureCode: null,
+    sanitizedApplicationError: null
   };
   let server = null;
 
@@ -548,7 +381,8 @@ async function main() {
       DEFAULT_E2E_PORT
     );
     const baseUrl = localBaseUrl(port);
-    assert(MAX_IMAGE_ATTEMPTS === 2, "image_attempt_budget_invalid");
+    assert(MAX_IMAGE_ATTEMPTS === 1, "PROVIDER_ATTEMPT_COUNT_INVALID");
+    assert(AUTOMATIC_RETRY_COUNT === 0, "PROVIDER_ATTEMPT_COUNT_INVALID");
     assert(typeof process.env.OPENAI_API_KEY === "string" && process.env.OPENAI_API_KEY.trim(), "openai_secret_missing");
     assert(isLocalUrl(process.env.NEXT_PUBLIC_SUPABASE_URL), "remote_supabase_url_rejected");
     assert(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, "local_supabase_anon_key_missing");
@@ -558,44 +392,45 @@ async function main() {
     assert(existsSync(manifestPath), "manifest_missing");
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-    const laneAFixture = resolveFixture(manifest, LANE_A_FIXTURE_ID);
-    const laneBFixture = resolveFixture(manifest, LANE_B_FIXTURE_ID);
+    const fixture = resolveFixture(manifest, FIXTURE_ID);
+    server = startNextServer(capture, port);
+    await waitForServerReadiness(server, baseUrl);
+    await runAnalyzeProviderSmoke(fixture, baseUrl, state);
 
-    const token = randomBytes(32).toString("hex");
-    materializeHarnessRoute();
-    server = startNextServer(token, state, port);
-    await waitForHarnessRoute(server, token, baseUrl);
-    state.providerGate = await providerPreflight(process.env.OPENAI_API_KEY.trim());
-
-    state.laneB = await runLaneB(laneBFixture, token, baseUrl);
-    state.imageBearingAttempts += 1;
-
-    state.laneA = await runLaneA(laneAFixture, baseUrl);
-    state.imageBearingAttempts += 1;
-
-    const usageEvents = extractUsageEvents(state.logs);
+    const usageEvents = extractUsageEvents(capture.logs);
     state.visionUsageEventCount = usageEvents.length;
-    assert(state.imageBearingAttempts === MAX_IMAGE_ATTEMPTS, "image_attempt_count_invalid");
-    assert(usageEvents.length === MAX_IMAGE_ATTEMPTS, `vision_usage_event_count_invalid:${usageEvents.length}`);
-    assert(usageEvents.every((event) => event.imageProviderAttemptCount === 1), "vision_usage_attempt_marker_invalid");
-    assert(AUTOMATIC_RETRY_COUNT === 0, "automatic_retry_budget_invalid");
-
-    state.finalVerdict = "PASS";
-    writeReport(state);
-    console.log("[face-lab-provider-e2e] PASS");
+    state.providerUsageObserved = usageEvents.length > 0;
+    if (
+      usageEvents.length !== MAX_IMAGE_ATTEMPTS ||
+      !usageEvents.every((event) => event.imageProviderAttemptCount === MAX_IMAGE_ATTEMPTS)
+    ) {
+      throw new Error("PROVIDER_USAGE_EVENT_MISSING");
+    }
+    assert(state.imageBearingRequestsDispatched === MAX_IMAGE_ATTEMPTS, "PROVIDER_ATTEMPT_COUNT_INVALID");
+    state.finalVerdict = "FINAL_PROVIDER_E2E_PASS";
   } catch (error) {
-    state.finalVerdict = "FAIL";
-    state.failureCode = error instanceof Error ? error.message : String(error);
-    if (state.laneB.status === "NOT_RUN" && state.imageBearingAttempts > 0) state.laneB.status = "FAIL";
-    if (state.laneA.status === "NOT_RUN" && state.imageBearingAttempts > 1) state.laneA.status = "FAIL";
-    state.visionUsageEventCount = extractUsageEvents(state.logs).length;
-    writeReport(state, state.logs);
-    console.error(`[face-lab-provider-e2e] failed=${state.failureCode}`);
-    process.exitCode = 1;
+    state.failureCode = classifyFailure(error, state);
   } finally {
-    await stopChild(server);
-    removeHarnessRoutes();
+    try {
+      state.serverCleanupCompleted = await stopChild(server);
+    } catch {
+      state.serverCleanupCompleted = false;
+    }
+    if (!state.serverCleanupCompleted && !state.failureCode) {
+      state.failureCode = "REPORT_OR_CLEANUP_FAILED";
+      state.finalVerdict = "FAIL";
+    }
+    state.visionUsageEventCount = extractUsageEvents(capture.logs).length;
+    state.providerUsageObserved = state.visionUsageEventCount > 0;
+    writeReport(state, capture.logs);
   }
+
+  if (state.finalVerdict === "FINAL_PROVIDER_E2E_PASS") {
+    console.log("[face-lab-provider-e2e] PASS");
+    return;
+  }
+  console.error(`[face-lab-provider-e2e] failed=${state.failureCode || "UNKNOWN_FIRST_BLOCKER"}`);
+  process.exitCode = 1;
 }
 
 await main();

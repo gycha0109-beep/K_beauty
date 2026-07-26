@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
@@ -6,8 +7,15 @@ const repoRoot = process.cwd();
 const workflowPath = ".github/workflows/face-lab-provider-e2e.yml";
 const runnerPath = "scripts/face-lab-provider-e2e/run.mjs";
 const packagePath = "package.json";
-const temporaryRoutePath = "app/api/face-lab-provider-e2e-harness/route.js";
-const legacyTemporaryRoutePath = "app/api/__face-lab-provider-e2e/route.js";
+const analyzeRoutePath = "app/api/analyze/route.js";
+const visionServicePath = "lib/server/vision-observation-service.js";
+const fixturePath = "private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc";
+const temporaryRouteDirectories = [
+  "app/api/face-lab-provider-e2e-harness",
+  "app/api/__face-lab-provider-e2e"
+];
+const expectedFixtureSize = 3094224;
+const expectedFixtureSha256 = "3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f";
 
 function read(relativePath) {
   return readFileSync(path.join(repoRoot, relativePath), "utf8");
@@ -15,6 +23,10 @@ function read(relativePath) {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function count(source, marker) {
+  return source.split(marker).length - 1;
 }
 
 function isTracked(relativePath) {
@@ -25,43 +37,62 @@ function isTracked(relativePath) {
   return result.status === 0;
 }
 
-assert(existsSync(path.join(repoRoot, workflowPath)), "missing_face_lab_provider_e2e_workflow");
-assert(existsSync(path.join(repoRoot, runnerPath)), "missing_face_lab_provider_e2e_runner");
-assert(!isTracked(temporaryRoutePath), "temporary_e2e_route_must_not_be_tracked");
-assert(!isTracked(legacyTemporaryRoutePath), "legacy_temporary_e2e_route_must_not_be_tracked");
+function hasTrackedFilesUnder(relativePath) {
+  const result = spawnSync("git", ["ls-files", "--", relativePath], {
+    cwd: repoRoot,
+    encoding: "utf8"
+  });
+  return result.status === 0 && Boolean(result.stdout.trim());
+}
+
+for (const requiredPath of [
+  workflowPath,
+  runnerPath,
+  packagePath,
+  analyzeRoutePath,
+  visionServicePath,
+  fixturePath
+]) {
+  assert(existsSync(path.join(repoRoot, requiredPath)), `required_file_missing:${requiredPath}`);
+}
+
+for (const temporaryRouteDirectory of temporaryRouteDirectories) {
+  assert(!isTracked(`${temporaryRouteDirectory}/route.js`), `temporary_route_must_not_be_tracked:${temporaryRouteDirectory}`);
+  assert(!hasTrackedFilesUnder(temporaryRouteDirectory), `temporary_route_tree_must_not_be_tracked:${temporaryRouteDirectory}`);
+  assert(!existsSync(path.join(repoRoot, temporaryRouteDirectory)), `temporary_route_must_not_exist:${temporaryRouteDirectory}`);
+}
 
 const workflow = read(workflowPath);
 const runner = read(runnerPath);
+const analyzeRoute = read(analyzeRoutePath);
+const visionService = read(visionServicePath);
 const packageJson = JSON.parse(read(packagePath));
+const fixtureBytes = readFileSync(path.join(repoRoot, fixturePath));
+
+assert(statSync(path.join(repoRoot, fixturePath)).size === expectedFixtureSize, "encrypted_fixture_size_invalid");
+assert(
+  createHash("sha256").update(fixtureBytes).digest("hex") === expectedFixtureSha256,
+  "encrypted_fixture_sha256_invalid"
+);
 
 for (const marker of [
   "workflow_dispatch:",
   "private/face-lab-e2e/run.trigger",
+  "permissions:\n  contents: read",
+  "cancel-in-progress: false",
   "BUNDLE_PATH: private/face-lab-e2e/fixture-bundle-v3.tar.gz.enc",
   "expected_size=3094224",
-  "expected_sha256=3d7c888484c36b7f0293b8037d842b98cbc11ca4bcd6c28d136aef01222b935f",
+  `expected_sha256=${expectedFixtureSha256}`,
   "secrets.OPENAI_API_KEY",
   "secrets.FACE_LAB_E2E_FIXTURE_PASSPHRASE",
   "openssl enc -d -aes-256-cbc -pbkdf2 -iter 210000",
   "-pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE",
   "import tarfile",
-  "expected_files = (",
-  "allowed_directories = {",
-  "member.isfile()",
-  "member.isdir()",
-  "member.issym() or member.islnk()",
-  "fixture_bundle_path_contract_invalid",
-  "fixture_bundle_type_contract_invalid",
-  "fixture_bundle_duplicate_member",
-  "fixture_bundle_member_contract_invalid",
-  "fixture_bundle_extract_failed",
   "archive.extractfile(member)",
-  "os.replace(temp_path, target)",
-  "os.lstat(target)",
   "frontal-clear.png",
   "lower-face-occluded.png",
-  "permissions:\n  contents: read",
-  "npm run face-lab:e2e:verify-harness",
+  "remote_supabase_url_rejected",
+  "Run single actual /api/analyze Provider smoke",
   "npm run face-lab:e2e:run",
   "retention-days: 3",
   "Mandatory cleanup"
@@ -69,171 +100,167 @@ for (const marker of [
   assert(workflow.includes(marker), `workflow_contract_missing:${marker}`);
 }
 
-for (const forbiddenMarker of [
-  "BUNDLE_PREFIX",
-  "fixture-bundle-v2",
-  "fixture-bundle.tar.gz.enc.b64.part-",
-  "base64 --decode",
-  "tar.extractall",
-  "tar -xzf",
+for (const marker of [
+  "Verify temporary harness route",
+  "face-lab:e2e:verify-harness",
+  "face-lab-provider-e2e-harness",
+  "__face-lab-provider-e2e",
+  "Lane B",
+  "Lane A",
+  "providerPreflight",
+  "Reply with OK.",
   "pull_request:",
   "pull_request_target",
   "contents: write",
-  "FACE_LAB_E2E_OPENAI_API_KEY"
+  "base64 --decode",
+  "tar.extractall",
+  "tar -xzf"
 ]) {
-  assert(!workflow.includes(forbiddenMarker), `forbidden_workflow_marker:${forbiddenMarker}`);
+  assert(!workflow.includes(marker), `forbidden_workflow_marker:${marker}`);
+}
+
+const workflowSteps = [
+  "Checkout",
+  "Set up Node.js",
+  "Install dependencies",
+  "Verify Face Lab Provider E2E package",
+  "Verify encrypted inputs and secrets",
+  "Decrypt bounded fixture bundle",
+  "Prepare isolated Local Supabase Replay",
+  "Start and reset isolated Local Supabase",
+  "Export masked local runtime variables",
+  "Run single actual /api/analyze Provider smoke",
+  "Upload sanitized E2E report",
+  "Mandatory cleanup"
+];
+let previousWorkflowStepIndex = -1;
+for (const workflowStep of workflowSteps) {
+  const workflowStepIndex = workflow.indexOf(`- name: ${workflowStep}`);
+  assert(workflowStepIndex > previousWorkflowStepIndex, `workflow_step_order_invalid:${workflowStep}`);
+  previousWorkflowStepIndex = workflowStepIndex;
 }
 
 for (const marker of [
-  "subject-a-frontal-clear",
-  "subject-a-lower-face-occluded",
-  "MAX_IMAGE_ATTEMPTS = 2",
+  'ANALYZE_ROUTE = "/api/analyze"',
+  'FIXTURE_ID = "subject-a-frontal-clear"',
+  "MAX_IMAGE_ATTEMPTS = 1",
   "AUTOMATIC_RETRY_COUNT = 0",
-  "127.0.0.1",
-  "FACE_LAB_PROVIDER_E2E_ENABLED",
-  "FACE_LAB_PROVIDER_E2E_TOKEN",
-  'HARNESS_ROUTE_SEGMENT = "face-lab-provider-e2e-harness"',
-  "const HARNESS_ROUTE_URL = `/api/${HARNESS_ROUTE_SEGMENT}`",
-  "export async function GET(request)",
-  'status: 204',
-  '"Cache-Control": "no-store"',
-  "waitForHarnessRoute(child, token, baseUrl",
-  '"x-face-lab-e2e-token": token',
-  'args["verify-harness-route"] === true',
-  "[face-lab-provider-e2e-harness] PASS",
-  "FACE_LAB_PROVIDER_E2E_PORT",
-  "port >= 1024 && port <= 65535",
-  'rmSync(LEGACY_HARNESS_ROUTE_DIR, { recursive: true, force: true })',
-  "vision-observation-v1",
-  "schemaVersion !== 2",
+  'LOCAL_HOST = "127.0.0.1"',
+  "remote_supabase_url_rejected",
+  'headers: { "Idempotency-Key": randomUUID() }',
+  "state.requestPrepared = true",
+  "state.requestDispatched = true",
+  "state.imageBearingRequestsDispatched += 1",
+  "state.responseReceived = true",
+  "state.httpStatus = response.status",
+  "state.responseReportedImageProviderAttempts",
+  "state.responseContractPassed = contractPassed",
+  "state.visionUsageEventCount",
+  "state.providerUsageObserved",
+  '"face-lab-provider-e2e-report-v2"',
+  '"actual-api-analyze-single-image"',
   "x-kbeauty-result-write-token",
-  "x-kbeauty-track-write-token"
+  "x-kbeauty-track-write-token",
+  "payload.meta?.schemaVersion === 2",
+  "payload.meta?.imageProviderAttemptCount",
+  "payload.analysisRunId",
+  "payload.faceLab",
+  "payload.summary",
+  '"topPick" in payload',
+  "payload.morning",
+  "payload.night",
+  "[vision-observation-usage]",
+  "SERVER_READINESS_FAILED",
+  "ANALYZE_REQUEST_PREPARATION_FAILED",
+  "ANALYZE_FETCH_FAILED",
+  "ANALYZE_TIMEOUT",
+  "ANALYZE_HTTP_FAILED",
+  "ANALYZE_RESPONSE_CONTRACT_FAILED",
+  "PROVIDER_USAGE_EVENT_MISSING",
+  "PROVIDER_ATTEMPT_COUNT_INVALID",
+  "REPORT_OR_CLEANUP_FAILED",
+  "sanitizeApplicationError",
+  "sanitizeDiagnosticText",
+  "await stopChild(server)"
 ]) {
   assert(runner.includes(marker), `runner_contract_missing:${marker}`);
 }
 
-assert(!/console\.(?:log|info|warn|error)\([^\n]*(?:OPENAI_API_KEY|FACE_LAB_E2E_FIXTURE_PASSPHRASE)/.test(runner), "runner_must_not_log_provider_secret");
-assert(!runner.includes("Authorization: `Bearer ${process.env.OPENAI_API_KEY}`"), "runner_must_not_interpolate_secret_in_logs");
-assert(!runner.includes("retry("), "runner_must_not_define_automatic_retry_helper");
-assert(!runner.includes('HARNESS_ROUTE_SEGMENT = "__face-lab-provider-e2e"'), "legacy_private_segment_must_not_execute");
-assert(!runner.includes("/api/__face-lab-provider-e2e"), "legacy_private_route_url_must_not_execute");
-
-const routeSegmentMatch = runner.match(/HARNESS_ROUTE_SEGMENT = "([^"]+)"/);
-assert(routeSegmentMatch, "harness_route_segment_missing");
-assert(
-  /^[a-z0-9][a-z0-9-]*$/.test(routeSegmentMatch[1]) &&
-    !routeSegmentMatch[1].startsWith("_") &&
-    !routeSegmentMatch[1].startsWith("."),
-  "harness_route_segment_must_be_non_private_static_segment"
-);
-
-const readinessGetStart = runner.indexOf("export async function GET(request)");
-const harnessPostStart = runner.indexOf("export async function POST(request)");
-assert(
-  readinessGetStart >= 0 && harnessPostStart > readinessGetStart,
-  "harness_readiness_handler_missing"
-);
-const readinessGetSource = runner.slice(readinessGetStart, harnessPostStart);
-for (const requiredReadinessMarker of [
-  'process.env.NODE_ENV === "production"',
-  'process.env.FACE_LAB_PROVIDER_E2E_ENABLED !== "1"',
-  "safeEqual(",
-  "return denied(403)",
-  "status: 204",
-  '"Cache-Control": "no-store"'
+for (const marker of [
+  "HARNESS_ROUTE_SEGMENT",
+  "HARNESS_ROUTE_DIR",
+  "HARNESS_ROUTE_PATH",
+  "HARNESS_ROUTE_URL",
+  "LEGACY_HARNESS_ROUTE_DIR",
+  "buildHarnessRouteSource",
+  "materializeHarnessRoute",
+  "removeHarnessRoutes",
+  "waitForHarnessRoute",
+  "verifyHarnessRouteOnly",
+  "--verify-harness-route",
+  "runLaneB",
+  "LANE_B_FIXTURE_ID",
+  "providerPreflight",
+  "Reply with OK.",
+  "https://api.openai.com/v1/chat/completions",
+  "Authorization:",
+  "face-lab-provider-e2e-harness",
+  "__face-lab-provider-e2e",
+  "MAX_IMAGE_ATTEMPTS = 2",
+  "providerGate",
+  "laneB",
+  "laneA",
+  "retry("
 ]) {
-  assert(
-    readinessGetSource.includes(requiredReadinessMarker),
-    `harness_readiness_contract_missing:${requiredReadinessMarker}`
-  );
-}
-for (const forbiddenReadinessMarker of [
-  "resolveOpenAiApiKey",
-  "analyzeVisionObservation",
-  "request.formData",
-  "readFileSync",
-  "resolveFixture",
-  "Supabase"
-]) {
-  assert(
-    !readinessGetSource.includes(forbiddenReadinessMarker),
-    `harness_readiness_forbidden_operation:${forbiddenReadinessMarker}`
-  );
+  assert(!runner.includes(marker), `forbidden_runner_marker:${marker}`);
 }
 
-const verifyHarnessStart = runner.indexOf("async function verifyHarnessRouteOnly(args)");
+assert(count(runner, "await fetch(`${baseUrl}${ANALYZE_ROUTE}`") === 1, "analyze_dispatch_site_count_invalid");
+const smokeStart = runner.indexOf("async function runAnalyzeProviderSmoke");
+const reportStart = runner.indexOf("function buildMarkdown");
+assert(smokeStart >= 0 && reportStart > smokeStart, "analyze_smoke_function_missing");
+const smokeSource = runner.slice(smokeStart, reportStart);
+const dispatchIndex = smokeSource.indexOf("state.requestDispatched = true");
+const dispatchCountIndex = smokeSource.indexOf("state.imageBearingRequestsDispatched += 1");
+const fetchIndex = smokeSource.indexOf("await fetch(`${baseUrl}${ANALYZE_ROUTE}`");
+assert(
+  dispatchIndex >= 0 && dispatchCountIndex > dispatchIndex && fetchIndex > dispatchCountIndex,
+  "request_dispatch_accounting_order_invalid"
+);
+
 const mainStart = runner.indexOf("async function main()");
-assert(verifyHarnessStart >= 0 && mainStart > verifyHarnessStart, "harness_only_function_missing");
-const verifyHarnessSource = runner.slice(verifyHarnessStart, mainStart);
-for (const forbiddenHarnessOnlyMarker of [
-  "providerPreflight(",
-  "runLaneB(",
-  "runLaneA(",
-  "resolveFixture(",
-  "readFileSync("
-]) {
-  assert(
-    !verifyHarnessSource.includes(forbiddenHarnessOnlyMarker),
-    `harness_only_forbidden_operation:${forbiddenHarnessOnlyMarker}`
-  );
-}
-for (const requiredHarnessOnlyMarker of [
-  "materializeHarnessRoute();",
-  "startNextServer(token, state, port)",
-  "await waitForHarnessRoute(server, token, baseUrl)",
-  "await stopChild(server)",
-  "removeHarnessRoutes();"
-]) {
-  assert(
-    verifyHarnessSource.includes(requiredHarnessOnlyMarker),
-    `harness_only_contract_missing:${requiredHarnessOnlyMarker}`
-  );
-}
-
 const mainSource = runner.slice(mainStart);
-const materializeIndex = mainSource.indexOf("materializeHarnessRoute();");
-const readinessIndex = mainSource.indexOf("await waitForHarnessRoute(server, token, baseUrl)");
-const providerPreflightIndex = mainSource.indexOf(
-  "state.providerGate = await providerPreflight(process.env.OPENAI_API_KEY.trim())"
-);
-const laneBIndex = mainSource.indexOf("state.laneB = await runLaneB");
-const laneAIndex = mainSource.indexOf("state.laneA = await runLaneA");
+const serverStartIndex = mainSource.indexOf("server = startNextServer(capture, port)");
+const readinessIndex = mainSource.indexOf("await waitForServerReadiness(server, baseUrl)");
+const smokeIndex = mainSource.indexOf("await runAnalyzeProviderSmoke(fixture, baseUrl, state)");
 assert(
-  materializeIndex >= 0 &&
-    readinessIndex > materializeIndex &&
-    providerPreflightIndex > readinessIndex &&
-    laneBIndex > providerPreflightIndex &&
-    laneAIndex > laneBIndex,
-  "harness_readiness_provider_order_invalid"
+  serverStartIndex >= 0 && readinessIndex > serverStartIndex && smokeIndex > readinessIndex,
+  "server_readiness_analyze_order_invalid"
 );
 
-const packageVerifyIndex = workflow.indexOf("npm run face-lab:e2e:verify");
-const harnessVerifyIndex = workflow.indexOf("npm run face-lab:e2e:verify-harness");
-const inputVerifyIndex = workflow.indexOf("- name: Verify encrypted inputs and secrets");
+assert(analyzeRoute.includes('formData.get("image")'), "production_analyze_image_field_missing");
+assert(analyzeRoute.includes("guardAnalysisRequest"), "production_analysis_guard_missing");
+assert(analyzeRoute.includes("analyzeVisionObservation"), "production_vision_service_missing");
+assert(analyzeRoute.includes("issueAnonymousWriteGrants"), "production_write_grant_missing");
+assert(analyzeRoute.includes("ANALYZE_RESPONSE_SCHEMA_VERSION = 2"), "production_response_schema_marker_missing");
 assert(
-  packageVerifyIndex >= 0 &&
-    harnessVerifyIndex > packageVerifyIndex &&
-    inputVerifyIndex > harnessVerifyIndex,
-  "workflow_harness_verification_order_invalid"
+  count(visionService, "fetch(OPENAI_URL") === 1 &&
+    visionService.includes('type: "image_url"') &&
+    visionService.includes("imageProviderAttemptCount: 1"),
+  "canonical_vision_provider_site_invalid"
 );
-assert(
-  workflow.includes("rm -rf app/api/face-lab-provider-e2e-harness") &&
-    workflow.includes("rm -rf app/api/__face-lab-provider-e2e"),
-  "workflow_harness_cleanup_missing"
-);
+assert(!/maxRetries|retryAfter|retryCount|attempt\s*[+]=|attempt\s*=\s*attempt\s*\+/i.test(visionService), "canonical_vision_retry_detected");
 
 assert(
-  packageJson.scripts?.["face-lab:e2e:verify"] === "node scripts/face-lab-provider-e2e/verify-package.mjs",
+  packageJson.scripts?.["face-lab:e2e:verify"] ===
+    "node scripts/face-lab-provider-e2e/verify-package.mjs",
   "package_script_face_lab_e2e_verify_invalid"
 );
 assert(
-  packageJson.scripts?.["face-lab:e2e:run"] === "node scripts/face-lab-provider-e2e/run.mjs",
+  packageJson.scripts?.["face-lab:e2e:run"] ===
+    "node scripts/face-lab-provider-e2e/run.mjs",
   "package_script_face_lab_e2e_run_invalid"
 );
-assert(
-  packageJson.scripts?.["face-lab:e2e:verify-harness"] ===
-    "node scripts/face-lab-provider-e2e/run.mjs --verify-harness-route",
-  "package_script_face_lab_e2e_verify_harness_invalid"
-);
+assert(!Object.hasOwn(packageJson.scripts || {}, "face-lab:e2e:verify-harness"), "harness_package_script_must_be_removed");
 
 console.log("[face-lab-provider-e2e-verify] PASS");

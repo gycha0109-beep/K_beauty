@@ -2595,3 +2595,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Root cause: the generated route used `app/api/__face-lab-provider-e2e/route.js`; the leading-underscore App Router segment was treated as private and was not registered as a Route Handler.
 - Fix boundary: use the non-private `face-lab-provider-e2e-harness` segment, require a token-protected empty `204` readiness response before Provider preflight, add a fixture/Secret/DB/Provider-free local harness verification mode, and clean both canonical and legacy exact paths.
 - Preserved contracts: encrypted fixture size/SHA-256 and bytes, Repository Secrets, production API routes, Provider request policy, Lane B then Lane A order, maximum two image attempts, zero automatic retries, Local Supabase-only execution, sanitized artifacts, and mandatory cleanup remain unchanged.
+
+### 2026-07-27 / Face Lab Provider E2E actual analyze route boundary
+
+- Task type: bounded High-risk CI recovery and execution. Provider, Secret, and Local DB orchestration are `Y`; production route behavior, migration, deployment, hosted data, and encrypted fixture changes are `N`.
+- Prior run: `30208164340` passed fixture transport, Secret gates, decryption/member validation, and Local Supabase. The temporary harness GET passed, its POST returned a catch-all `502`, and the actual `/api/analyze` route did not run. That result does not establish a production Provider failure.
+- Change: retire the temporary Route Handler, Lane B, harness-only readiness mode, and text Provider preflight. The Actions smoke now waits on the existing public application route and dispatches exactly one frontal-image multipart request to the real `POST /api/analyze` contract with zero automatic retries.
+- Measurement: report schema v2 separates request preparation, dispatch, response receipt/status, response-contract validation, response-reported image attempts, and the existing Vision usage event. Grant values, analysis IDs, raw payloads, image data, credentials, and local paths are not persisted.
+- Preserved boundaries: production `/api/analyze`, canonical Vision service, analysis guard, anonymous write grant, response serializer, Local Supabase configuration, migration chain, encrypted fixture bytes/size/SHA-256, and Repository Secrets are unchanged.
