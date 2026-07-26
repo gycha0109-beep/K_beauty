@@ -46,6 +46,10 @@ jobs:
         id: verify_package
         run: npm run face-lab:e2e:verify
 
+      - name: Verify temporary harness route
+        id: verify_harness
+        run: npm run face-lab:e2e:verify-harness
+
       - name: Verify encrypted inputs and secrets
         id: verify_inputs
         shell: bash
@@ -289,6 +293,7 @@ jobs:
         shell: bash
         run: |
           set +e
+          rm -rf app/api/face-lab-provider-e2e-harness
           rm -rf app/api/__face-lab-provider-e2e
           rm -f manifest.local.json
           rm -rf private/face-lab-fixtures

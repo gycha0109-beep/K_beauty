@@ -11,6 +11,25 @@ This package runs the final bounded Provider smoke for the unified Vision pipeli
 
 The run permits at most two image-bearing Provider attempts and performs no automatic retry.
 
+## Temporary harness readiness
+
+Lane B uses a temporary, untracked App Router handler at:
+
+```text
+app/api/face-lab-provider-e2e-harness/route.js
+/api/face-lab-provider-e2e-harness
+```
+
+The runner materializes this non-private segment before starting the localhost Next.js server. A token-protected `GET` must return an empty `204` response with `Cache-Control: no-store` before the text-only Provider preflight or either image lane can run. Production mode or a disabled E2E flag returns `404`; an invalid ephemeral token returns `403`. The readiness request does not read a fixture, access Supabase, or call the Provider.
+
+The route contract can be verified locally without secrets, fixtures, Provider calls, or Supabase:
+
+```text
+npm run face-lab:e2e:verify-harness
+```
+
+This mode selects an available localhost port unless `FACE_LAB_PROVIDER_E2E_PORT` or `--port` supplies a validated port from `1024` through `65535`. Both the canonical temporary route and the legacy private `app/api/__face-lab-provider-e2e` directory are removed during cleanup and must remain untracked.
+
 ## Required repository secrets
 
 - `OPENAI_API_KEY`: the configured OpenAI project key used only inside the Actions job.
@@ -46,6 +65,8 @@ Archive validation permits exactly three regular files. Tar archives may contain
 
 This replacement bundle was rebuilt with exactly the three allowlisted regular files and no directory entries. Its encrypted binary, size, and SHA-256 therefore replace the earlier v3 values while the file path, encryption algorithm, KDF, iteration count, two-image maximum, and zero automatic retries remain unchanged. The preceding run `30205374997` failed before the Provider and made zero image-bearing attempts. This trigger change creates one new first attempt.
 
+Run `30207202041` subsequently passed the encrypted input, decryption/member, and Local Supabase gates but received HTTP `404` from Lane B before any Provider image usage event. The cause was the legacy temporary segment beginning with `__`, which Next.js treated as a private folder and excluded from routing. The routable segment and non-Provider readiness probe fix that boundary without changing the encrypted fixture, Secret, production routes, Provider runtime contract, attempt budget, or retry policy.
+
 The workflow starts only when this marker is pushed after all required secrets are configured:
 
 ```text
@@ -56,6 +77,7 @@ private/face-lab-e2e/run.trigger
 
 ```text
 npm run face-lab:e2e:verify
+npm run face-lab:e2e:verify-harness
 npm run face-lab:e2e:run -- --manifest manifest.local.json
 ```
 

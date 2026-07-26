@@ -2587,3 +2587,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Validation boundary: the generated encrypted output was immediately decrypted in the temporary workspace with the same process-only passphrase and its tar metadata matched exactly the three expected regular files. Plaintext archives and the process environment value were removed after validation.
 - Secret handling: the replacement Repository Secret was supplied through standard input without logging, command-line exposure, or repository persistence. No Secret value is recorded here.
 - Runtime boundary: no Provider API, Local or remote Supabase, migration, production deployment, workflow dispatch, or workflow rerun was invoked locally.
+
+### 2026-07-27 / Face Lab Provider E2E routable harness boundary
+
+- Task type: bounded High-risk CI recovery. Provider-facing test orchestration is `Y`; Secret, fixture, DB contract, migration, production route, deployment, and hosted data changes are `N`.
+- Prior run: `30207202041` passed fixture input, decryption/member validation, and Local Supabase, then failed Lane B with sanitized marker `lane_b_http_404`. Lane A did not run, Provider image usage events were zero, and automatic retries were zero.
+- Root cause: the generated route used `app/api/__face-lab-provider-e2e/route.js`; the leading-underscore App Router segment was treated as private and was not registered as a Route Handler.
+- Fix boundary: use the non-private `face-lab-provider-e2e-harness` segment, require a token-protected empty `204` readiness response before Provider preflight, add a fixture/Secret/DB/Provider-free local harness verification mode, and clean both canonical and legacy exact paths.
+- Preserved contracts: encrypted fixture size/SHA-256 and bytes, Repository Secrets, production API routes, Provider request policy, Lane B then Lane A order, maximum two image attempts, zero automatic retries, Local Supabase-only execution, sanitized artifacts, and mandatory cleanup remain unchanged.

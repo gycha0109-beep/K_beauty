@@ -16,6 +16,7 @@
     "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs && node scripts/verify-face-lab-hosted-evaluation-review.mjs && node scripts/verify-face-lab-single-analysis-evaluation.mjs",
     "face-lab:e2e:run": "node scripts/face-lab-provider-e2e/run.mjs",
     "face-lab:e2e:verify": "node scripts/face-lab-provider-e2e/verify-package.mjs",
+    "face-lab:e2e:verify-harness": "node scripts/face-lab-provider-e2e/run.mjs --verify-harness-route",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
     "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",

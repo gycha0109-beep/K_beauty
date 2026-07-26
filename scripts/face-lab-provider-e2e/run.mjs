@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import {
   existsSync,
   mkdirSync,
@@ -11,7 +12,8 @@ import path from "node:path";
 import process from "node:process";
 
 const REPO_ROOT = process.cwd();
-const BASE_URL = "http://127.0.0.1:3001";
+const LOCAL_HOST = "127.0.0.1";
+const DEFAULT_E2E_PORT = 3001;
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const OPENAI_MODEL = "gpt-4o-mini";
 const LANE_A_FIXTURE_ID = "subject-a-frontal-clear";
@@ -22,8 +24,11 @@ const OUTPUT_DIR = path.join(REPO_ROOT, "tmp", "face-lab-provider-e2e");
 const REPORT_JSON_PATH = path.join(OUTPUT_DIR, "report.json");
 const REPORT_MD_PATH = path.join(OUTPUT_DIR, "report.md");
 const DIAGNOSTICS_PATH = path.join(OUTPUT_DIR, "diagnostics.log");
-const HARNESS_ROUTE_DIR = path.join(REPO_ROOT, "app", "api", "__face-lab-provider-e2e");
+const HARNESS_ROUTE_SEGMENT = "face-lab-provider-e2e-harness";
+const HARNESS_ROUTE_DIR = path.join(REPO_ROOT, "app", "api", HARNESS_ROUTE_SEGMENT);
 const HARNESS_ROUTE_PATH = path.join(HARNESS_ROUTE_DIR, "route.js");
+const HARNESS_ROUTE_URL = `/api/${HARNESS_ROUTE_SEGMENT}`;
+const LEGACY_HARNESS_ROUTE_DIR = path.join(REPO_ROOT, "app", "api", "__face-lab-provider-e2e");
 const MAX_CAPTURED_LOG_BYTES = 1024 * 1024;
 
 function parseArgs(argv) {
@@ -40,6 +45,35 @@ function parseArgs(argv) {
 
 function assert(condition, code) {
   if (!condition) throw new Error(code);
+}
+
+function resolvePort(value, fallback) {
+  if (value === undefined || value === null || String(value).trim() === "") return fallback;
+  const text = String(value).trim();
+  assert(/^\d+$/.test(text), "invalid_harness_port");
+  const port = Number(text);
+  assert(Number.isInteger(port) && port >= 1024 && port <= 65535, "invalid_harness_port");
+  return port;
+}
+
+async function findAvailableLocalPort() {
+  return new Promise((resolve, reject) => {
+    const server = createServer();
+    server.unref();
+    server.once("error", () => reject(new Error("harness_route_start_timeout")));
+    server.listen({ host: LOCAL_HOST, port: 0, exclusive: true }, () => {
+      const address = server.address();
+      const port = address && typeof address === "object" ? address.port : null;
+      server.close((error) => {
+        if (error || !Number.isInteger(port)) reject(new Error("harness_route_start_timeout"));
+        else resolve(port);
+      });
+    });
+  });
+}
+
+function localBaseUrl(port) {
+  return `http://${LOCAL_HOST}:${port}`;
 }
 
 function isLocalUrl(value) {
@@ -142,6 +176,22 @@ function denied(status = 404) {
   return NextResponse.json({ error: "not_found" }, { status });
 }
 
+export async function GET(request) {
+  if (process.env.NODE_ENV === "production" || process.env.FACE_LAB_PROVIDER_E2E_ENABLED !== "1") {
+    return denied();
+  }
+  if (!safeEqual(request.headers.get("x-face-lab-e2e-token"), process.env.FACE_LAB_PROVIDER_E2E_TOKEN)) {
+    return denied(403);
+  }
+
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
 export async function POST(request) {
   if (process.env.NODE_ENV === "production" || process.env.FACE_LAB_PROVIDER_E2E_ENABLED !== "1") {
     return denied();
@@ -213,14 +263,15 @@ function materializeHarnessRoute() {
   writeFileSync(HARNESS_ROUTE_PATH, buildHarnessRouteSource(), "utf8");
 }
 
-function removeHarnessRoute() {
+function removeHarnessRoutes() {
   rmSync(HARNESS_ROUTE_DIR, { recursive: true, force: true });
+  rmSync(LEGACY_HARNESS_ROUTE_DIR, { recursive: true, force: true });
 }
 
-function startNextServer(token, state) {
+function startNextServer(token, state, port) {
   const nextBin = path.join(REPO_ROOT, "node_modules", "next", "dist", "bin", "next");
   assert(existsSync(nextBin), "next_binary_missing");
-  const child = spawn(process.execPath, [nextBin, "dev", "-H", "127.0.0.1", "-p", "3001"], {
+  const child = spawn(process.execPath, [nextBin, "dev", "-H", LOCAL_HOST, "-p", String(port)], {
     cwd: REPO_ROOT,
     env: {
       ...process.env,
@@ -237,24 +288,37 @@ function startNextServer(token, state) {
   return child;
 }
 
-async function waitForServer(child, timeoutMs = 120_000) {
+async function waitForHarnessRoute(child, token, baseUrl, timeoutMs = 120_000) {
   const deadline = Date.now() + timeoutMs;
+  let lastStatus = null;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) throw new Error(`next_server_exited:${child.exitCode}`);
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(`next_server_exited:${child.exitCode ?? -1}`);
+    }
     try {
-      const response = await fetch(`${BASE_URL}/`, { redirect: "manual" });
+      const response = await fetch(`${baseUrl}${HARNESS_ROUTE_URL}`, {
+        redirect: "manual",
+        headers: {
+          "x-face-lab-e2e-token": token
+        }
+      });
       await response.arrayBuffer();
-      if (response.status < 500) return;
+      lastStatus = response.status;
+      if (response.status === 204) return;
+      if (response.status === 403) throw new Error("harness_route_forbidden");
     } catch {
-      // Server is still compiling.
+      if (lastStatus === 403) throw new Error("harness_route_forbidden");
+      // The server or route is still compiling.
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  throw new Error("next_server_start_timeout");
+  if (lastStatus === 404) throw new Error("harness_route_not_ready_404");
+  if (lastStatus !== null && lastStatus >= 500) throw new Error("harness_route_not_ready_500");
+  throw new Error("harness_route_start_timeout");
 }
 
 async function stopChild(child) {
-  if (!child || child.exitCode !== null) return;
+  if (!child || child.exitCode !== null || child.signalCode !== null) return;
   child.kill("SIGTERM");
   await Promise.race([
     new Promise((resolve) => child.once("exit", resolve)),
@@ -274,10 +338,10 @@ function assertProjectionObject(value, code) {
   assert(value && typeof value === "object" && !Array.isArray(value), code);
 }
 
-async function runLaneB(fixture, token) {
+async function runLaneB(fixture, token, baseUrl) {
   const form = createImageForm(fixture);
   const startedAt = Date.now();
-  const response = await fetch(`${BASE_URL}/api/__face-lab-provider-e2e`, {
+  const response = await fetch(`${baseUrl}${HARNESS_ROUTE_URL}`, {
     method: "POST",
     headers: { "x-face-lab-e2e-token": token },
     body: form
@@ -339,11 +403,11 @@ function appendAnalyzeFields(form) {
   for (const [key, value] of Object.entries(fields)) form.append(key, value);
 }
 
-async function runLaneA(fixture) {
+async function runLaneA(fixture, baseUrl) {
   const form = createImageForm(fixture);
   appendAnalyzeFields(form);
   const startedAt = Date.now();
-  const response = await fetch(`${BASE_URL}/api/analyze`, {
+  const response = await fetch(`${baseUrl}/api/analyze`, {
     method: "POST",
     headers: { "Idempotency-Key": randomUUID() },
     body: form
@@ -431,8 +495,38 @@ function writeReport(report, diagnostics = "") {
   }
 }
 
+async function verifyHarnessRouteOnly(args) {
+  const state = { logs: "", logBytes: 0 };
+  const token = randomBytes(32).toString("hex");
+  let server = null;
+
+  try {
+    const requestedPort = args.port ?? process.env.FACE_LAB_PROVIDER_E2E_PORT;
+    const port = requestedPort === undefined
+      ? await findAvailableLocalPort()
+      : resolvePort(requestedPort, DEFAULT_E2E_PORT);
+    const baseUrl = localBaseUrl(port);
+    materializeHarnessRoute();
+    server = startNextServer(token, state, port);
+    await waitForHarnessRoute(server, token, baseUrl);
+    console.log("[face-lab-provider-e2e-harness] PASS");
+  } catch (error) {
+    const failureCode = error instanceof Error ? error.message : "harness_route_start_timeout";
+    console.error(`[face-lab-provider-e2e-harness] failed=${sanitizeDiagnosticText(failureCode)}`);
+    process.exitCode = 1;
+  } finally {
+    await stopChild(server);
+    removeHarnessRoutes();
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args["verify-harness-route"] === true) {
+    await verifyHarnessRouteOnly(args);
+    return;
+  }
+
   const manifestPath = path.resolve(REPO_ROOT, String(args.manifest || "manifest.local.json"));
   const state = {
     head: process.env.GITHUB_SHA || "local",
@@ -449,6 +543,11 @@ async function main() {
   let server = null;
 
   try {
+    const port = resolvePort(
+      args.port ?? process.env.FACE_LAB_PROVIDER_E2E_PORT,
+      DEFAULT_E2E_PORT
+    );
+    const baseUrl = localBaseUrl(port);
     assert(MAX_IMAGE_ATTEMPTS === 2, "image_attempt_budget_invalid");
     assert(typeof process.env.OPENAI_API_KEY === "string" && process.env.OPENAI_API_KEY.trim(), "openai_secret_missing");
     assert(isLocalUrl(process.env.NEXT_PUBLIC_SUPABASE_URL), "remote_supabase_url_rejected");
@@ -462,16 +561,16 @@ async function main() {
     const laneAFixture = resolveFixture(manifest, LANE_A_FIXTURE_ID);
     const laneBFixture = resolveFixture(manifest, LANE_B_FIXTURE_ID);
 
-    state.providerGate = await providerPreflight(process.env.OPENAI_API_KEY.trim());
     const token = randomBytes(32).toString("hex");
     materializeHarnessRoute();
-    server = startNextServer(token, state);
-    await waitForServer(server);
+    server = startNextServer(token, state, port);
+    await waitForHarnessRoute(server, token, baseUrl);
+    state.providerGate = await providerPreflight(process.env.OPENAI_API_KEY.trim());
 
-    state.laneB = await runLaneB(laneBFixture, token);
+    state.laneB = await runLaneB(laneBFixture, token, baseUrl);
     state.imageBearingAttempts += 1;
 
-    state.laneA = await runLaneA(laneAFixture);
+    state.laneA = await runLaneA(laneAFixture, baseUrl);
     state.imageBearingAttempts += 1;
 
     const usageEvents = extractUsageEvents(state.logs);
@@ -495,7 +594,7 @@ async function main() {
     process.exitCode = 1;
   } finally {
     await stopChild(server);
-    removeHarnessRoute();
+    removeHarnessRoutes();
   }
 }
 
