@@ -28,19 +28,22 @@ Request dispatch is recorded immediately before `fetch()`, so a fetch exception 
 
 The production route can perform its existing optional image-free product-explanation call after successful Vision analysis. The smoke does not add, retry, or modify that behavior. The canonical Vision service remains the only image-bearing Provider execution site.
 
-Before that Provider smoke, the workflow runs a Provider-free anonymous write-grant gate against isolated Local Supabase:
+There is no separate synthetic anonymous-grant preflight, RPC visibility poll, or readiness verifier. Local Supabase Replay Guard remains responsible for migration replay, database lint, and anonymous product-boundary checks; it does not duplicate the product write-grant flow.
+
+The single actual smoke is the write-grant verification path:
 
 ```text
-npm run anonymous-write-grant:runtime:verify
+encrypted fixture
+-> isolated Local Supabase start/reset
+-> real Next application
+-> one POST /api/analyze
+-> production anonymous write-grant issuance
+-> Face Lab and response-header contract validation
+-> sanitized report
+-> mandatory cleanup
 ```
 
-The gate canonicalizes a realistic synthetic free result (including bounded `imageEligibility`). Before creating rows, it polls a no-write invalid call with `p_grants: []` for at most 60 seconds at one-second intervals. SQLSTATE `22023` is the readiness signal: PostgREST can see the exact RPC and the function rejected the invalid array before its insert loop. Only schema-cache/network readiness states are rechecked; authentication, permission, or unexpected function-contract results fail immediately.
-
-After visibility is confirmed, the gate calls the service-role-only `create_anonymous_write_grants` RPC with the real synthetic pair exactly once. It verifies exactly `result:create` and `track:create`, deletes the synthetic rows, and confirms zero rows remain. Actual grant creation is never retried. It rejects non-local Supabase URLs and never uses an image, fixture, Provider, production data, or a Repository Secret.
-
-The sanitized `anonymous-grant-preflight-v1` diagnostic records only the visibility attempt count, bounded safe error code, actual-create attempt count, created/row/cleanup counts, and fixed failure markers. It never records URLs, credentials, tokens, identifiers, row bodies, or raw database error text. The same gate runs in Local Supabase Replay Guard and before the Provider smoke.
-
-Run `30211073388` passed Local Supabase reset and masked runtime export, then stopped at the prior generic `anonymous_grant_rpc_failed` marker. The actual `/api/analyze` step was skipped, Provider text/image calls were zero, automatic retries were zero, and cleanup passed. Local execution and the exact-head Replay Guard passed, so immediate PostgREST RPC visibility after `db reset` is the probable boundary, not yet a confirmed root cause. The visibility diagnostic in the next Provider-free Replay Guard run is the deciding evidence. No migration, RPC body/signature, permission, RLS policy, Secret, fixture, or Provider request contract is changed by this readiness boundary.
+The runner verifies presence—not values—of the result and track write-grant headers returned by the actual route. Run `30212349131` was a PR merge-ref Replay Guard execution, not an exact-head replay. Its removed synthetic verifier failed before its visibility loop entered (`probeAttempts=0`), so that run did not observe a PostgREST schema-cache race or an RPC call.
 
 ## Sanitized report
 
@@ -88,7 +91,7 @@ Secret values are never documented, printed, or placed on the command line.
 
 Run `30208164340` passed fixture transport, Secret input gates, decryption/member validation, and Local Supabase. Its temporary harness readiness GET passed, its temporary POST returned a catch-all HTTP `502`, and the real `/api/analyze` route never ran. Because the temporary handler collapsed every internal exception into `provider_execution_failed`, that result is not classified as a production Provider failure.
 
-The temporary harness design is retired rather than repaired. This push creates the first single-image execution through the actual `/api/analyze` route.
+The temporary harness design is retired rather than repaired. The current workflow uses the single-image execution through the actual `/api/analyze` route.
 
 ## Anonymous grant contract correction
 

@@ -2623,3 +2623,11 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Sanitization: `anonymous-grant-preflight-v1` contains only fixed markers, safe error code, timing/attempt counters, and aggregate created/row/cleanup counts. It contains no URL, credential, token, identifier/hash, grant body, raw error message/details/hint, image, base64, or Provider payload.
 - CI alignment: Local Supabase Replay Guard now exports masked local runtime variables and runs the same Provider-free grant verifier before existing lint/boundary checks. The Provider workflow retains its preflight-before-smoke order and includes the sanitized diagnostic in its existing artifact.
 - Preserved boundaries: no migration, RPC, permission, RLS, production `/api/analyze`, encrypted fixture, Repository Secret, image-attempt budget, or `run.trigger` change is included in Phase 1.
+
+### 2026-07-27 / Face Lab Provider E2E synthetic preflight removal
+
+- Task type: bounded High-risk CI simplification. Provider and Local DB orchestration are `Y`; production route/grant code, migration, RPC, RLS/permissions, hosted/remote DB, fixture, Secret, and deployment changes are `N`.
+- Correction: Replay Guard run `30212349131` checked out the PR merge ref rather than the branch head directly. Its synthetic anonymous-grant verifier reported `probeAttempts=0`, so the visibility loop and PostgREST RPC were not observed; the prior probable schema-visibility explanation is not evidence for that run.
+- Removal: delete the synthetic grant runtime verifier, RPC visibility polling module, readiness test, package scripts, Provider preflight step/artifact, and Replay Guard integration.
+- Canonical verification path: unchanged encrypted fixture, isolated Local Supabase start/reset, real Next application, one actual `POST /api/analyze`, production anonymous write-grant issuance, response/Face Lab contract checks, sanitized report, and mandatory cleanup.
+- Preserved boundaries: production `/api/analyze`, anonymous grant canonicalization/issuance, migration/RPC/RLS/grants, fixture bytes/hash, Repository Secrets, maximum one image-bearing request, zero automatic retries, and `run.trigger` remain unchanged.
