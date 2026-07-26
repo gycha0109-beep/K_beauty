@@ -2573,3 +2573,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Change: staged the verified single encrypted v3 fixture contract, replaced v1/v2 split base64 input handling with size/SHA-256 fail-closed validation and direct AES-256-CBC PBKDF2 decryption, enforced the three-PNG tar allowlist, removed legacy chunks and the v2 verifier, and updated the canonical verifier, package script, README, and one-shot trigger.
 - Validation: input and copied tracked fixture matched 3,210,944 bytes, SHA-256 `739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658`, and byte-for-byte equality. `npm run face-lab:e2e:verify`, `npm run verify:unified-vision-pipeline`, `npm run face-lab:eval:verify`, and `git diff --check` passed.
 - Boundaries: plaintext manifest/images/tar, passphrase files, environment files, runtime Provider policy, Supabase migration/configuration, and deployment settings remain unmodified. The workflow preserves Local Supabase-only checks, Lane B then Lane A, two image-bearing attempts, zero automatic retries, sanitized artifacts, three-day retention, and mandatory cleanup.
+
+### 2026-07-26 / Face Lab Provider E2E tar member contract boundary
+
+- Task type: bounded High-risk execution. The prior run `30204169231` passed the encrypted input and OpenSSL stages, then stopped at `fixture_bundle_member_contract_invalid`; Provider attempts were 0. No secret was read, changed, or exposed.
+- Change: only the post-decryption tar member validation/extraction boundary is replaced. The encrypted fixture remains unchanged; Python standard-library validation accepts the three exact regular files and optional exact ancestor directories, rejects unsafe paths, links, special members, duplicates, and unlisted entries, and streams only verified files without restoring archive metadata.
+- Boundaries: no Provider call, Local/remote Supabase access, runtime policy, migration, production setting, plaintext fixture inspection, or fixture-binary change is authorized.

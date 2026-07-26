@@ -42,6 +42,10 @@ private/face-lab-fixtures/subject-a/lower-face-occluded.png
 
 Plaintext fixtures are never stored in Git. They exist only in the Actions workspace and are removed during mandatory cleanup; the encrypted fixture is also removed from the runner workspace after use. The encrypted bytes are committed solely for this bounded E2E run, and Git history can retain encrypted data even after later removal.
 
+Archive validation permits exactly three regular files. Tar archives may contain directory entries, but only the exact ancestor scaffolding (`.`, `private`, `private/face-lab-fixtures`, and `private/face-lab-fixtures/subject-a`) is allowed; directory entries are optional. Symlinks, hardlinks, devices, FIFOs, traversal paths, backslash paths, duplicate members, and every non-allowlisted member are rejected. The runner does not restore archive owner, mode, or mtime metadata: after full validation, it streams only the three expected files to newly created targets.
+
+The encrypted bundle binary, size, and SHA-256 remain unchanged by this member-contract fix. The preceding run `30204169231` reached the member contract after decryption but did not reach the Provider; it made zero image-bearing attempts. This push creates one new first attempt, with the existing two-image maximum and zero automatic retries.
+
 The workflow starts only when this marker is pushed after all required secrets are configured:
 
 ```text

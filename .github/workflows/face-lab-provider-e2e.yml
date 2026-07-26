@@ -75,17 +75,115 @@ jobs:
             -out "${archive_path}" \
             -pass env:FACE_LAB_E2E_FIXTURE_PASSPHRASE
 
-          actual_members="$(tar -tzf "${archive_path}" | sed 's#^\./##' | sort)"
-          expected_members="$(printf '%s\n' \
-            'manifest.local.json' \
-            'private/face-lab-fixtures/subject-a/frontal-clear.png' \
-            'private/face-lab-fixtures/subject-a/lower-face-occluded.png' | sort)"
-          test "${actual_members}" = "${expected_members}" || {
-            echo "fixture_bundle_member_contract_invalid" >&2
-            exit 1
+          python3 - "${archive_path}" <<'PY'
+          import os
+          import re
+          import shutil
+          import stat
+          import sys
+          import tarfile
+          import tempfile
+          from pathlib import Path
+
+          archive_path = sys.argv[1]
+          extraction_root = Path.cwd().resolve()
+          expected_files = (
+              "manifest.local.json",
+              "private/face-lab-fixtures/subject-a/frontal-clear.png",
+              "private/face-lab-fixtures/subject-a/lower-face-occluded.png",
+          )
+          expected_file_set = set(expected_files)
+          allowed_directories = {
+              ".",
+              "private",
+              "private/face-lab-fixtures",
+              "private/face-lab-fixtures/subject-a",
           }
 
-          tar -xzf "${archive_path}" --no-same-owner --no-same-permissions -C .
+          def fail(marker):
+              print(marker, file=sys.stderr)
+              raise SystemExit(1)
+
+          def normalize_member_name(raw_name, is_directory):
+              if not isinstance(raw_name, str) or "\x00" in raw_name or "\\" in raw_name:
+                  fail("fixture_bundle_path_contract_invalid")
+              if raw_name.startswith("/") or re.match(r"^[A-Za-z]:", raw_name):
+                  fail("fixture_bundle_path_contract_invalid")
+              name = raw_name[2:] if raw_name.startswith("./") else raw_name
+              if name.startswith("./"):
+                  fail("fixture_bundle_path_contract_invalid")
+              if is_directory and name.endswith("/"):
+                  name = name[:-1]
+              if is_directory and name == "":
+                  name = "."
+              if not name or name.endswith("/") or name == "." and not is_directory:
+                  fail("fixture_bundle_path_contract_invalid")
+              if name != "." and any(part in {"", ".", ".."} for part in name.split("/")):
+                  fail("fixture_bundle_path_contract_invalid")
+              return name
+
+          try:
+              members_by_name = {}
+              with tarfile.open(archive_path, "r:gz") as archive:
+                  for member in archive.getmembers():
+                      is_directory = member.isdir()
+                      name = normalize_member_name(member.name, is_directory)
+                      if name in members_by_name:
+                          fail("fixture_bundle_duplicate_member")
+                      members_by_name[name] = member
+                      if member.isfile():
+                          if getattr(member, "sparse", None) or name not in expected_file_set:
+                              fail("fixture_bundle_type_contract_invalid")
+                      elif is_directory:
+                          if name not in allowed_directories:
+                              fail("fixture_bundle_member_contract_invalid")
+                      elif member.issym() or member.islnk():
+                          fail("fixture_bundle_type_contract_invalid")
+                      else:
+                          fail("fixture_bundle_type_contract_invalid")
+
+                  if set(name for name, member in members_by_name.items() if member.isfile()) != expected_file_set:
+                      fail("fixture_bundle_member_contract_invalid")
+
+                  extracted_files = set()
+                  for name in expected_files:
+                      member = members_by_name.get(name)
+                      if member is None or not member.isfile():
+                          fail("fixture_bundle_member_contract_invalid")
+                      target = extraction_root.joinpath(*name.split("/"))
+                      if os.path.commonpath([str(extraction_root), str(target.parent.resolve())]) != str(extraction_root):
+                          fail("fixture_bundle_path_contract_invalid")
+                      if target.exists() or target.is_symlink():
+                          fail("fixture_bundle_extract_failed")
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      source = archive.extractfile(member)
+                      if source is None:
+                          fail("fixture_bundle_extract_failed")
+                      temp_path = None
+                      try:
+                          with source, tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as temporary:
+                              temp_path = Path(temporary.name)
+                              shutil.copyfileobj(source, temporary)
+                          os.chmod(temp_path, 0o600)
+                          os.replace(temp_path, target)
+                      except Exception:
+                          if temp_path is not None:
+                              temp_path.unlink(missing_ok=True)
+                          fail("fixture_bundle_extract_failed")
+                      extracted_files.add(name)
+
+              if extracted_files != expected_file_set:
+                  fail("fixture_bundle_extract_failed")
+              for name in expected_files:
+                  target = extraction_root.joinpath(*name.split("/"))
+                  target_stat = os.lstat(target)
+                  if not stat.S_ISREG(target_stat.st_mode) or stat.S_ISLNK(target_stat.st_mode) or target_stat.st_size <= 0:
+                      fail("fixture_bundle_extract_failed")
+          except SystemExit:
+              raise
+          except Exception:
+              fail("fixture_bundle_extract_failed")
+          PY
           rm -f "${archive_path}"
 
       - name: Prepare isolated Local Supabase Replay

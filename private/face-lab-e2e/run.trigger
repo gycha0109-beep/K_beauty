@@ -1,2 +1,3 @@
-face-lab-provider-e2e-v3
+face-lab-provider-e2e-v3-member-contract-fix
 bundle-sha256=739365fe304253c3213100440a8894797e330cbe4081b3483c2493770b3eb658
+previous-run=30204169231
