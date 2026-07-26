@@ -26,6 +26,8 @@ jobs:
         run: npm ci
       - name: Security closeout verifier suite
         run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: SEC-11 site origin normalization
+        run: npm run check:sec11-origin-normalization
       - name: JavaScript syntax gate
         shell: bash
         run: |
