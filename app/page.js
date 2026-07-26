@@ -308,7 +308,7 @@ export default function HomePage() {
 
         router.push(locale === "en" ? "/en/result" : "/result");
       } catch (submitError) {
-        console.error("[onboarding] analyze failed", submitError);
+        console.warn("[onboarding] analyze failed", submitError);
         setError(submitError.message || copy.errors.unexpected);
         setCurrentStep("survey");
       } finally {

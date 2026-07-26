@@ -740,19 +740,21 @@ function FreeResultV2DiagnosisSummaryCard({
 
   if (hasFaceLab) {
     return (
-      <FreeResultV2FaceLabPhotoCarousel
-        photoUrl={photoUrl}
-        photoAlt={photoAlt}
-        photoFallback={photoFallback}
-        faceLabPreview={faceLabPreview}
-        locale={locale}
-      />
+      <div data-testid="face-lab-available">
+        <FreeResultV2FaceLabPhotoCarousel
+          photoUrl={photoUrl}
+          photoAlt={photoAlt}
+          photoFallback={photoFallback}
+          faceLabPreview={faceLabPreview}
+          locale={locale}
+        />
+      </div>
     );
   }
 
   if (faceLabDisplayStatus === "photo_ineligible") {
     return (
-      <FreeResultV2Card className="p-4 sm:p-5">
+      <FreeResultV2Card className="p-4 sm:p-5" data-testid="face-lab-photo-ineligible">
         <div className="flex justify-center">
           <FreeResultV2PhotoFrame
             photoUrl={photoUrl}
@@ -763,7 +765,14 @@ function FreeResultV2DiagnosisSummaryCard({
           />
         </div>
         <p className="mt-4 text-center text-sm font-semibold leading-6 text-[#7a5360] dark:text-[#e8cbd5]">
-          {locale === "en" ? "Photo recognition failed." : "사진 인식에 실패했습니다"}
+          {locale === "en"
+            ? "We could not verify the full face in this photo."
+            : "사진에서 얼굴 전체를 충분히 확인하지 못했어요."}
+        </p>
+        <p className="ui-text-secondary mt-1.5 text-center text-xs leading-5">
+          {locale === "en"
+            ? "Try again with another photo where your full face is clearly visible."
+            : "얼굴 전체가 선명하게 보이는 다른 사진으로 다시 시도해 주세요."}
         </p>
       </FreeResultV2Card>
     );

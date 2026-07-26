@@ -1094,6 +1094,7 @@ function SurveyFooterActions({
   copy,
   isFinalQuestion,
   finalCtaEnabled,
+  submitLocked,
   finalCtaShowsSparkles,
   finalCtaText,
   canSkipToResult,
@@ -1132,6 +1133,9 @@ function SurveyFooterActions({
           <button
             type="button"
             onClick={onNext}
+            data-testid={isFinalQuestion ? "analyze-submit" : undefined}
+            disabled={isFinalQuestion && submitLocked}
+            aria-busy={isFinalQuestion && submitLocked}
             className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
               finalCtaEnabled
                 ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
@@ -1264,6 +1268,8 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   const [questionIndex, setQuestionIndex] = useState(0);
   const [message, setMessage] = useState("");
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
+  const [submitLocked, setSubmitLocked] = useState(false);
+  const submitLockedRef = useRef(false);
   const currentQuestion = questions[questionIndex] || questions[0];
   const totalQuestions = questions.length;
   const requiredQuestionsComplete = useMemo(
@@ -1298,7 +1304,14 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
     setMessage("");
 
     if (questionIndex >= questions.length - 1) {
-      onComplete();
+      if (submitLockedRef.current) {
+        return;
+      }
+      submitLockedRef.current = true;
+      setSubmitLocked(true);
+      window.requestAnimationFrame(() => {
+        onComplete();
+      });
       return;
     }
 
@@ -1412,6 +1425,7 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           copy={copy}
           isFinalQuestion={isFinalQuestion}
           finalCtaEnabled={finalCtaEnabled}
+          submitLocked={submitLocked}
           finalCtaShowsSparkles={finalCtaShowsSparkles}
           finalCtaText={finalCtaText}
           canSkipToResult={canSkipToResult}

@@ -28,6 +28,10 @@ function read(relativePath) {
   return readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n?/g, "\n");
+}
+
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -74,12 +78,12 @@ for (const temporaryRouteDirectory of temporaryRouteDirectories) {
   assert(!existsSync(path.join(repoRoot, temporaryRouteDirectory)), `temporary_route_must_not_exist:${temporaryRouteDirectory}`);
 }
 
-const workflow = read(workflowPath);
+const workflow = normalizeLineEndings(read(workflowPath));
 const runner = read(runnerPath);
 const analyzeRoute = read(analyzeRoutePath);
 const visionService = read(visionServicePath);
 const packageJson = JSON.parse(read(packagePath));
-const replayWorkflow = read(replayWorkflowPath);
+const replayWorkflow = normalizeLineEndings(read(replayWorkflowPath));
 const fixtureBytes = readFileSync(path.join(repoRoot, fixturePath));
 
 assert(statSync(path.join(repoRoot, fixturePath)).size === expectedFixtureSize, "encrypted_fixture_size_invalid");
