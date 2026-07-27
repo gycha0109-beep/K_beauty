@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "recommendation-feature-v1-shadow-evidence-v1",
+  "schemaVersion": "recommendation-feature-v1-shadow-evidence-v2",
   "status": "verified",
   "repository": "gycha0109-beep/K_beauty",
   "base": {
@@ -16,7 +16,8 @@
     "reason": "diverged_stack_without_unified_vision_contract"
   },
   "branch": "codex/recommendation-feature-v1-shadow",
-  "verifiedImplementationHead": "6cc725a5b2b0782adef38f0935a41ca8744b8e5b",
+  "priorReviewedHead": "630111fbb6309f384e7f848c9a49a746aa49329f",
+  "verifiedImplementationHead": "59f38f60bd8e4007a106280d81845cb2d04a689a",
   "finalHeadSource": "git_branch_head_after_evidence_record_commit",
   "mode": "shadow",
   "productionAuthoritative": false,
@@ -31,6 +32,8 @@
   "changedFiles": [
     ".github/workflows/unified-vision-static-guard.yml",
     "docs/domain/recommendation/recommendation-feature-contract-v1.md",
+    "docs/domain/recommendation/recommendation-feature-v1-implementation-record.md",
+    "docs/domain/recommendation/recommendation-feature-v1-skin-availability-amendment.md",
     "docs/verification/recommendation-feature-v1-shadow-evidence.json",
     "lib/recommendation-feature-adapters.js",
     "lib/recommendation-feature-contract.js",
@@ -44,6 +47,53 @@
     "scripts/verify-recommendation-feature-contract.mjs",
     "scripts/verify-recommendation-feature-derived.mjs"
   ],
+  "availabilityAmendment": {
+    "status": "implemented",
+    "document": "docs/domain/recommendation/recommendation-feature-v1-skin-availability-amendment.md",
+    "observationAvailabilityMeaning": "canonical_visible_cue_status_is_available",
+    "quantizationResolvedMeaning": "observed_level_has_approved_legacy_numeric_mapping",
+    "legacySignalAvailabilityMeaning": "legacy_numeric_signal_is_comparable_or_consumable",
+    "compatibilityAvailabilityAlias": "legacySignalAvailability",
+    "metadataAvailabilityMeaning": "legacy_numeric_signal_available",
+    "comparisonRequiresLegacySignalAvailability": true
+  },
+  "skinQuantization": {
+    "absence": {
+      "canonicalLevel": "none",
+      "legacySignal": 0,
+      "observationAvailable": true,
+      "quantizationResolved": true,
+      "legacySignalAvailable": true,
+      "status": "resolved_absence"
+    },
+    "nonZero": {
+      "canonicalLevels": ["mild", "moderate", "high"],
+      "legacySignal": 0,
+      "observationAvailable": true,
+      "quantizationResolved": false,
+      "legacySignalAvailable": false,
+      "status": "unresolved_non_zero",
+      "comparable": false
+    },
+    "unavailable": {
+      "sourceStatuses": ["insufficient_evidence", "unavailable"],
+      "legacySignal": 0,
+      "observationAvailable": false,
+      "quantizationResolved": false,
+      "legacySignalAvailable": false,
+      "status": "unavailable"
+    },
+    "unsupported": {
+      "axis": "uv",
+      "legacySignal": 0,
+      "observationAvailable": false,
+      "quantizationResolved": false,
+      "legacySignalAvailable": false,
+      "status": "unsupported"
+    },
+    "legacyScoreMapping": null,
+    "authoritativeTransitionAllowed": false
+  },
   "faceLifecycle": {
     "registryLifecycle": "rubric_ready",
     "registryCalibrationStatus": "not_ready",
@@ -52,37 +102,50 @@
     "productionEligible": false,
     "decision": null
   },
-  "skinQuantization": {
-    "absence": {
-      "canonicalLevel": "none",
-      "legacySignal": 0,
-      "availability": true,
-      "status": "resolved"
-    },
-    "nonZeroLevels": ["mild", "moderate", "high"],
-    "legacyScoreMapping": null,
-    "status": "unresolved",
-    "authoritativeTransitionAllowed": false
+  "amendmentDiff": {
+    "base": "630111fbb6309f384e7f848c9a49a746aa49329f",
+    "head": "59f38f60bd8e4007a106280d81845cb2d04a689a",
+    "aheadBy": 3,
+    "behindBy": 0,
+    "files": [
+      "docs/domain/recommendation/recommendation-feature-v1-skin-availability-amendment.md",
+      "lib/recommendation-feature-adapters.js",
+      "scripts/verify-recommendation-feature-adapters.mjs"
+    ],
+    "faceRuntimeFilesChanged": false,
+    "skinProductionFilesChanged": false
   },
   "fixtures": {
     "contractSections": 4,
     "contractAssertions": 23,
     "derivedAssertions": 10,
-    "adapterAssertions": 39,
+    "adapterAssertions": 67,
     "adapterFixtureGroups": 6,
     "privacyAssertions": 5,
-    "combinedAbsenceUnavailableRegression": true
+    "combinedAbsenceUnavailableRegression": true,
+    "positiveObservationQuantizationSeparationRegression": true,
+    "observationLegacyAvailabilitySeparationRegression": true,
+    "unsupportedUvSeparationRegression": true
   },
   "workflowRuns": {
     "unifiedVisionStaticGuard": {
-      "runId": 30248889780,
-      "runNumber": 81,
+      "runId": 30251019138,
+      "runNumber": 86,
       "conclusion": "success"
     },
     "localSupabaseReplayGuard": {
-      "runId": 30248889821,
-      "runNumber": 117,
-      "conclusion": "success"
+      "runId": 30251019089,
+      "runNumber": 122,
+      "conclusion": "success",
+      "retry": {
+        "initialConclusion": "failure",
+        "initialFailedStep": "Reset migration chain twice",
+        "initialFailureClass": "local_supabase_storage_readiness_timeout",
+        "initialFailureMessage": "context deadline exceeded while awaiting headers",
+        "codeRegressionIndicated": false,
+        "failedJobsRerun": true,
+        "retryConclusion": "success"
+      }
     }
   },
   "verifiers": {
@@ -101,7 +164,7 @@
     "architecture:guard": "pass",
     "build": "pass",
     "diffCheck": "pass",
-    "localSupabaseReplay": "pass"
+    "localSupabaseReplay": "pass_after_failed_job_retry"
   },
   "privacy": {
     "sourceImagePersisted": false,
@@ -110,9 +173,20 @@
     "rawProviderResponsePersisted": false,
     "imageDataLogged": false
   },
+  "regressionReview": {
+    "criticalIssuesRemaining": 0,
+    "importantIssuesRemaining": 0,
+    "productionFacingContractRegressionDetected": false,
+    "runtimeProductionActivationPerformed": false,
+    "liveTrafficParityEvaluated": false,
+    "faceHoldPreserved": true,
+    "unresolvedCompatibilityZeroComparable": false
+  },
   "result": {
     "productionBehaviorUnchanged": true,
     "faceHoldPreserved": true,
-    "recommendationFeatureV1ShadowIntegrated": true
+    "recommendationFeatureV1ShadowIntegrated": true,
+    "skinAvailabilityAmendmentComplete": true,
+    "nonZeroSkinQuantizationResolved": false
   }
 }
