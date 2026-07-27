@@ -8,6 +8,8 @@
     "basePr": 74
   },
   "branch": "codex/skin-quantization-calibration",
+  "verifiedImplementationHead": "487790257c8dfb9cdc3b37e0869743eecc078aae",
+  "finalHeadSource": "branch_head_after_verification_record_commit",
   "mode": "offline_shadow_governance",
   "productionAuthoritative": false,
   "activationAllowed": false,
@@ -74,7 +76,11 @@
     "routineReplayComplete": false,
     "productionEngineImportedCalibrationPolicy": false,
     "productionAdapterImportedCalibrationPolicy": false,
-    "existingDirectSignalsRemainAuthoritative": true
+    "existingDirectSignalsRemainAuthoritative": true,
+    "publicApiChanged": false,
+    "premiumPayloadChanged": false,
+    "savedSnapshotChanged": false,
+    "faceLifecycleChanged": false
   },
   "blockers": [
     "insufficient_positive_pair_count",
@@ -85,10 +91,43 @@
     "routine_regression_missing",
     "priority_flip_detected"
   ],
+  "workflowRuns": {
+    "unifiedVisionStaticGuard": {
+      "runId": 30254278764,
+      "runNumber": 92,
+      "testedHead": "487790257c8dfb9cdc3b37e0869743eecc078aae",
+      "conclusion": "success"
+    },
+    "localSupabaseReplayGuard": {
+      "runId": 30254278932,
+      "runNumber": 128,
+      "testedHead": "487790257c8dfb9cdc3b37e0869743eecc078aae",
+      "conclusion": "success"
+    }
+  },
+  "verifiers": {
+    "verify:skin-quantization-calibration": "pass",
+    "verify:recommendation-feature-shadow": "pass",
+    "verify:unified-vision-pipeline": "pass",
+    "verify:face-lab-archetype-scoring": "pass",
+    "verify:face-lab-archetype-calibration": "pass",
+    "face-lab:eval:verify": "pass",
+    "face-lab:e2e:verify": "pass",
+    "analysis-request-guard": "pass",
+    "provider-log-sanitization": "pass",
+    "anonymous-write-grant": "pass",
+    "analysis-rls-contract": "pass",
+    "architecture:guard": "pass",
+    "build": "pass",
+    "diffCheck": "pass",
+    "localSupabaseReplay": "pass"
+  },
   "result": {
     "policySelection": "none",
     "authoritativeTransitionAllowed": false,
     "separateActivationPrAllowed": false,
+    "governanceHarnessImplemented": true,
+    "regressionReviewCompleteForAvailableEvidence": true,
     "nextRequiredEvidence": [
       "consented_real_or_declared_synthetic_ground_truth_pairs",
       "minimum_30_positive_pairs",
