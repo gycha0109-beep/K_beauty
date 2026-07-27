@@ -13,7 +13,7 @@ on:
       - "lib/skin-observation-projector.js"
       - "lib/vision-observation-contract.js"
       - "lib/vision-observation-normalizer.js"
-      - "scripts/evaluate-face-lab-archetype-calibration.mjs"
+      - "scripts/evaluate-face-lab-archetype-calibration*.mjs"
       - "scripts/face-lab-provider-e2e/**"
       - "scripts/fixtures/face-lab-archetype-calibration-*.json"
       - "scripts/verify-analysis-request-guard.mjs"
