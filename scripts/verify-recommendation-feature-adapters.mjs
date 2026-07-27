@@ -181,9 +181,21 @@ assert.equal(evaluateFaceLabArchetypeShadow(conditionalAnalysis).productionEligi
 
 const skinShadow = buildSkinLegacyShadowAdapter(canonical, derived);
 assert.equal(skinShadow.productionAuthoritative, false);
+assert.equal(skinShadow.observationAvailability.oiliness, true);
+assert.equal(skinShadow.quantizationResolved.oiliness, false);
+assert.equal(skinShadow.legacySignalAvailability.oiliness, false);
 assert.equal(skinShadow.availability.oiliness, false);
+assert.equal(skinShadow.metadata.availabilityMeaning, "legacy_numeric_signal_available");
 assert.equal(skinShadow.signals.oiliness, 0);
 assert.equal(skinShadow.metadata.quantizationStatus.oiliness, "unresolved_non_zero");
+assert.equal(skinShadow.metadata.unresolvedReason.oiliness, "unresolved_non_zero");
+assert.equal(skinShadow.comparison.oiliness.shadowObservationAvailable, true);
+assert.equal(skinShadow.comparison.oiliness.shadowQuantizationResolved, false);
+assert.equal(skinShadow.comparison.oiliness.shadowLegacySignalAvailable, false);
+assert.equal(skinShadow.comparison.oiliness.comparable, false);
+assert.equal(skinShadow.observationAvailability.uv, false);
+assert.equal(skinShadow.quantizationResolved.uv, false);
+assert.equal(skinShadow.legacySignalAvailability.uv, false);
 assert.equal(skinShadow.availability.uv, false);
 assert.equal(skinShadow.metadata.sourceStatus.uv, "unsupported");
 assert.equal(skinShadow.comparison.oiliness.directLegacySignal, 4);
@@ -201,8 +213,13 @@ observedNone.atomic.skin.visibleSurfaceShine = createAvailableObservation({
 const noneDerived = buildDerivedRecommendationFeatures(observedNone);
 const noneAdapter = buildSkinLegacyShadowAdapter(observedNone, noneDerived);
 assert.equal(noneAdapter.signals.oiliness, 0);
+assert.equal(noneAdapter.observationAvailability.oiliness, true);
+assert.equal(noneAdapter.quantizationResolved.oiliness, true);
+assert.equal(noneAdapter.legacySignalAvailability.oiliness, true);
 assert.equal(noneAdapter.availability.oiliness, true);
 assert.equal(noneAdapter.metadata.quantizationStatus.oiliness, "resolved_absence");
+assert.equal(noneAdapter.metadata.unresolvedReason.oiliness, null);
+assert.equal(noneAdapter.comparison.oiliness.comparable, true);
 
 const unavailableSkin = structuredClone(observedNone);
 unavailableSkin.atomic.skin.visibleSurfaceShine = createUnavailableObservation("quality_insufficient");
@@ -211,8 +228,12 @@ const unavailableAdapter = buildSkinLegacyShadowAdapter(
   buildDerivedRecommendationFeatures(unavailableSkin)
 );
 assert.equal(unavailableAdapter.signals.oiliness, 0);
+assert.equal(unavailableAdapter.observationAvailability.oiliness, false);
+assert.equal(unavailableAdapter.quantizationResolved.oiliness, false);
+assert.equal(unavailableAdapter.legacySignalAvailability.oiliness, false);
 assert.equal(unavailableAdapter.availability.oiliness, false);
 assert.notEqual(unavailableAdapter.metadata.quantizationStatus.oiliness, "resolved_absence");
+assert.equal(unavailableAdapter.comparison.oiliness.comparable, false);
 
 const shadow = buildRecommendationFeatureShadow(visionBundle);
 assert.equal(shadow.valid, true);
@@ -220,6 +241,9 @@ assert.equal(shadow.productionAuthoritative, false);
 assert.equal(shadow.adapters.face.comparison.productionEligibleUnchanged, true);
 assert.equal(shadow.adapters.face.comparison.heldUnchanged, true);
 assert.equal(shadow.adapters.face.comparison.decisionRemainsNull, true);
+assert.equal(shadow.adapters.skin.observationAvailability.oiliness, true);
+assert.equal(shadow.adapters.skin.quantizationResolved.oiliness, false);
+assert.equal(shadow.adapters.skin.legacySignalAvailability.oiliness, false);
 assert.equal(shadow.privacy.sourceImagePersisted, false);
 assert.equal(shadow.privacy.faceCropPersisted, false);
 assert.equal(shadow.privacy.rawProviderResponsePersisted, false);
@@ -229,9 +253,10 @@ for (const forbidden of ["data:image", "base64,", "image_url", "imageBuffer"]) {
   assert.equal(serialized.includes(forbidden), false, `forbidden shadow content: ${forbidden}`);
 }
 
+const checkCount = 67;
 console.log(JSON.stringify({
   ok: true,
-  checks: 39,
+  checks: checkCount,
   fixtures: 6,
   faceLifecycle: {
     status: adaptedDecision.status,
@@ -244,7 +269,14 @@ console.log(JSON.stringify({
     unresolvedAxes: Object.entries(skinShadow.metadata.quantizationStatus)
       .filter(([, status]) => status === "unresolved_non_zero")
       .map(([axis]) => axis),
-    uvAvailable: skinShadow.availability.uv
+    observationAvailableAxes: Object.entries(skinShadow.observationAvailability)
+      .filter(([, available]) => available)
+      .map(([axis]) => axis),
+    legacySignalAvailableAxes: Object.entries(skinShadow.legacySignalAvailability)
+      .filter(([, available]) => available)
+      .map(([axis]) => axis),
+    uvObservationAvailable: skinShadow.observationAvailability.uv,
+    uvLegacySignalAvailable: skinShadow.legacySignalAvailability.uv
   },
   productionBehaviorChanged: false,
   privacy: shadow.privacy
