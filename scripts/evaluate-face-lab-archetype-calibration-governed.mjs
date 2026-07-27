@@ -79,6 +79,7 @@ function resolveInput(value, label) {
   if (!existsSync(PRIVATE_ROOT)) throw new Error("private calibration root does not exist");
   const rootResolved = path.resolve(PRIVATE_ROOT);
   const rootReal = realpathSync(PRIVATE_ROOT);
+  if (rootReal !== rootResolved) throw new Error("private calibration root must not be a symlink");
   const resolved = path.resolve(process.cwd(), value);
   if (!isInside(rootResolved, resolved)) throw new Error(`${label} must stay under private/face-lab-calibration/`);
   if (!existsSync(resolved) || !statSync(resolved).isFile()) {
@@ -92,7 +93,9 @@ function resolveInput(value, label) {
 
 function resolveOutput(value) {
   mkdirSync(OUTPUT_ROOT, { recursive: true });
+  const rootResolved = path.resolve(OUTPUT_ROOT);
   const rootReal = realpathSync(OUTPUT_ROOT);
+  if (rootReal !== rootResolved) throw new Error("output root must not be a symlink");
   const resolved = path.resolve(process.cwd(), value);
   if (path.dirname(resolved) !== OUTPUT_ROOT || path.extname(resolved).toLowerCase() !== ".json") {
     throw new Error("output must be a direct .json file under tmp/face-lab-archetype-calibration/");
@@ -113,7 +116,7 @@ function readJson(filePath, label) {
 function classifyFailure(error) {
   const message = String(error?.message || "");
   if (message.includes("holdout evaluation requires")) return "holdout_confirmation_required";
-  if (message.includes("must stay under") || message.includes("output must be")) return "path_boundary_rejected";
+  if (message.includes("must stay under") || message.includes("output must be") || message.includes("symlink")) return "path_boundary_rejected";
   if (message.includes("already exists")) return "output_exists";
   if (message.includes("required") || message.includes("unknown argument")) return "arguments_invalid";
   return "calibration_input_or_evaluation_invalid";
