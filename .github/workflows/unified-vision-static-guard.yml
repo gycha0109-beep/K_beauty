@@ -64,8 +64,17 @@ jobs:
       - name: Verify Face Lab archetype calibration harness
         run: npm run verify:face-lab-archetype-calibration
 
-      - name: Verify Recommendation Feature V1 contract
-        run: npm run verify:recommendation-feature-contract
+      - name: Verify Recommendation Feature V1 enums
+        run: node scripts/verify-recommendation-feature-contract.mjs --section=enums
+
+      - name: Verify Recommendation Feature V1 field envelope
+        run: node scripts/verify-recommendation-feature-contract.mjs --section=field
+
+      - name: Verify Recommendation Feature V1 Skin cue invariants
+        run: node scripts/verify-recommendation-feature-contract.mjs --section=skin
+
+      - name: Verify Recommendation Feature V1 bundle
+        run: node scripts/verify-recommendation-feature-contract.mjs --section=bundle
 
       - name: Verify Recommendation Feature V1 adapters
         run: npm run verify:recommendation-feature-adapters
