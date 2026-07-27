@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";
+import { buildPremiumSessionReportSource } from "@/lib/premium-session-payload";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
@@ -1631,12 +1632,11 @@ export async function POST(request) {
       logAnalyze("response:shape-warning");
     }
 
-    const premiumDecisionSource = premiumReportForSession
-      ? {
-          ...premiumReportForSession,
-          freeResult: publicDecision
-        }
-      : null;
+    const premiumDecisionSource = buildPremiumSessionReportSource({
+      premiumReport: premiumReportForSession,
+      decision,
+      freeResult: publicDecision
+    });
     const premiumReport = premiumDecisionSource
       ? sanitizePremiumReport(rebuildPremiumDecisionState(premiumDecisionSource, {
           locale,
