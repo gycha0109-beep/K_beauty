@@ -2700,3 +2700,8 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Root cause: the image-source sanitizer's global 1,000-entry traversal ceiling was lower than the normal server-built Premium report. The first observed collapse was therefore isolated to `sanitizePremiumReportProductImages`, not authentication, entitlement, decision construction, rebuild, purchase-link sanitation, or session signing.
 - Minimal fix: retain the existing depth, cycle, dangerous-key, image-origin, and finite traversal controls while raising only the global traversal ceiling to 4,096. A direct regression proves a 2,100-entry canonical-shaped decision bundle plus `freeResult` remains intact, and a 4,097-entry subtree still fails closed without retaining its content.
 - Local verification passed the new capacity regression, SEC-10 image-origin `44/44`, runtime diagnostic, Premium payload/decision/reentry/storage/RLS, browser journey local/contract, architecture guard, JavaScript syntax, production build, and diff check. Hosted cookie diagnosis and the full KO/EN journey remain pending the Git-generated Preview for the Phase B commit.
+
+### 2026-07-27 / Premium image sanitizer capacity attempt rejected
+
+- Hosted verification of commit `71db43a4397ad4c1e1407b8e47a115c361b41e2d` disproved the proposed 4,096-entry ceiling: S5 remained a valid record and S6 still collapsed to null, followed by `premium_report_missing` and zero Premium Set-Cookie headers.
+- The ineffective threshold change was reverted rather than increased again by guesswork. The Preview-only structural measurement ceiling was expanded, without recording values or weakening the sanitizer, so the next Git Preview can attest the actual bounded traversal size before a replacement fix is selected.

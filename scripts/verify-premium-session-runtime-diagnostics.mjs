@@ -84,7 +84,7 @@ for (let index = 0; index < 30; index += 1) {
 }
 assert.equal(describePremiumSessionStructure(deep).truncatedMeasurement, true);
 assert.equal(
-  describePremiumSessionStructure(Array.from({ length: 2500 }, (_, index) => index))
+  describePremiumSessionStructure(Array.from({ length: 70000 }, (_, index) => index))
     .truncatedMeasurement,
   true
 );

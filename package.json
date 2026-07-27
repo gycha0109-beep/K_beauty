@@ -20,7 +20,6 @@
     "diagnose:premium:access": "node scripts/diagnose-premium-hosted-access.mjs",
     "diagnose:premium:session-cookie": "node scripts/diagnose-premium-session-cookie.mjs",
     "verify:premium-session-runtime-diagnostics": "node scripts/verify-premium-session-runtime-diagnostics.mjs",
-    "verify:premium-image-sanitizer-capacity": "node scripts/verify-premium-image-sanitizer-capacity.mjs",
     "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
     "lint": "next lint"
   },
