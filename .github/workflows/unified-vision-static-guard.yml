@@ -76,6 +76,9 @@ jobs:
       - name: Verify Recommendation Feature V1 bundle
         run: node scripts/verify-recommendation-feature-contract.mjs --section=bundle
 
+      - name: Verify Recommendation Feature V1 derived features
+        run: npm run verify:recommendation-feature-derived
+
       - name: Verify Recommendation Feature V1 adapters
         run: npm run verify:recommendation-feature-adapters
 
