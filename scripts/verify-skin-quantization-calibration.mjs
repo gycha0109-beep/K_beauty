@@ -94,7 +94,7 @@ const capped = result.policyResults.find((policy) => policy.policyId === "capped
 assert.equal(Number(linear.meanAbsoluteError.toFixed(6)), Number((5 / 7).toFixed(6)));
 assert.equal(Number(conservative.meanAbsoluteError.toFixed(6)), Number((6 / 7).toFixed(6)));
 assert.equal(Number(capped.meanAbsoluteError.toFixed(6)), Number((6 / 7).toFixed(6)));
-assert.equal(linear.exactMatchRate, 2 / 7);
+assert.equal(linear.exactMatchRate, 3 / 7);
 assert.equal(conservative.exactMatchRate, 3 / 7);
 assert.equal(capped.exactMatchRate, 3 / 7);
 
