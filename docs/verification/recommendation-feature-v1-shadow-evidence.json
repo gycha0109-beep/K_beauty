@@ -1,6 +1,6 @@
 {
   "schemaVersion": "recommendation-feature-v1-shadow-evidence-v1",
-  "status": "pending_ci",
+  "status": "verified",
   "repository": "gycha0109-beep/K_beauty",
   "base": {
     "branch": "codex/face-eval-1-calibration-harness",
@@ -16,8 +16,8 @@
     "reason": "diverged_stack_without_unified_vision_contract"
   },
   "branch": "codex/recommendation-feature-v1-shadow",
-  "implementationHeadBeforeEvidence": "e5fb6a261975b3e919bad6f9c926558a11e132d5",
-  "finalHeadSource": "git_branch_head_after_ci_and_evidence_finalization",
+  "verifiedImplementationHead": "6cc725a5b2b0782adef38f0935a41ca8744b8e5b",
+  "finalHeadSource": "git_branch_head_after_evidence_record_commit",
   "mode": "shadow",
   "productionAuthoritative": false,
   "providerImageCallDelta": 0,
@@ -28,6 +28,22 @@
   "faceRegistryChanged": false,
   "faceScoringWeightsChanged": false,
   "faceDecisionThresholdsChanged": false,
+  "changedFiles": [
+    ".github/workflows/unified-vision-static-guard.yml",
+    "docs/domain/recommendation/recommendation-feature-contract-v1.md",
+    "docs/verification/recommendation-feature-v1-shadow-evidence.json",
+    "lib/recommendation-feature-adapters.js",
+    "lib/recommendation-feature-contract.js",
+    "lib/recommendation-feature-derived.js",
+    "lib/recommendation-feature-normalizer.js",
+    "lib/recommendation-feature-shadow.js",
+    "lib/server/vision-observation-service.js",
+    "lib/vision-observation-contract.js",
+    "package.json",
+    "scripts/verify-recommendation-feature-adapters.mjs",
+    "scripts/verify-recommendation-feature-contract.mjs",
+    "scripts/verify-recommendation-feature-derived.mjs"
+  ],
   "faceLifecycle": {
     "registryLifecycle": "rubric_ready",
     "registryCalibrationStatus": "not_ready",
@@ -49,29 +65,43 @@
     "authoritativeTransitionAllowed": false
   },
   "fixtures": {
-    "observationField": 5,
-    "skinAbsenceAndAvailability": 6,
-    "faceAdapter": 6,
-    "suitability": 3,
-    "skinShadow": 7,
-    "privacy": 5,
-    "regression": 6
+    "contractSections": 4,
+    "contractAssertions": 23,
+    "derivedAssertions": 10,
+    "adapterAssertions": 39,
+    "adapterFixtureGroups": 6,
+    "privacyAssertions": 5,
+    "combinedAbsenceUnavailableRegression": true
+  },
+  "workflowRuns": {
+    "unifiedVisionStaticGuard": {
+      "runId": 30248889780,
+      "runNumber": 81,
+      "conclusion": "success"
+    },
+    "localSupabaseReplayGuard": {
+      "runId": 30248889821,
+      "runNumber": 117,
+      "conclusion": "success"
+    }
   },
   "verifiers": {
-    "verify:recommendation-feature-contract": "pending",
-    "verify:recommendation-feature-adapters": "pending",
-    "verify:unified-vision-pipeline": "pending",
-    "verify:face-lab-archetype-scoring": "pending",
-    "verify:face-lab-archetype-calibration": "pending",
-    "face-lab:eval:verify": "pending",
-    "face-lab:e2e:verify": "pending",
-    "analysis-request-guard": "pending",
-    "provider-log-sanitization": "pending",
-    "anonymous-write-grant": "pending",
-    "analysis-rls-contract": "pending",
-    "architecture:guard": "pending",
-    "build": "pending",
-    "diffCheck": "pending"
+    "verify:recommendation-feature-contract": "pass",
+    "verify:recommendation-feature-derived": "pass",
+    "verify:recommendation-feature-adapters": "pass",
+    "verify:unified-vision-pipeline": "pass",
+    "verify:face-lab-archetype-scoring": "pass",
+    "verify:face-lab-archetype-calibration": "pass",
+    "face-lab:eval:verify": "pass",
+    "face-lab:e2e:verify": "pass",
+    "analysis-request-guard": "pass",
+    "provider-log-sanitization": "pass",
+    "anonymous-write-grant": "pass",
+    "analysis-rls-contract": "pass",
+    "architecture:guard": "pass",
+    "build": "pass",
+    "diffCheck": "pass",
+    "localSupabaseReplay": "pass"
   },
   "privacy": {
     "sourceImagePersisted": false,
@@ -79,5 +109,10 @@
     "base64Persisted": false,
     "rawProviderResponsePersisted": false,
     "imageDataLogged": false
+  },
+  "result": {
+    "productionBehaviorUnchanged": true,
+    "faceHoldPreserved": true,
+    "recommendationFeatureV1ShadowIntegrated": true
   }
 }
