@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "recommendation-feature-v1-shadow-evidence-v1",
+  "status": "pending_ci",
+  "repository": "gycha0109-beep/K_beauty",
+  "base": {
+    "branch": "codex/face-eval-1-calibration-harness",
+    "sha": "9bcade3fd27138ec8691865bc4c462c8e3f54ac7",
+    "basePr": 73,
+    "stackedOnPr": 72
+  },
+  "otherInspectedStack": {
+    "pr": 69,
+    "branch": "integration/premium-browser-journey-main-sec-baseline",
+    "sha": "eb041962edfbff311e938166078cbbf086cb2b5b",
+    "integrated": false,
+    "reason": "diverged_stack_without_unified_vision_contract"
+  },
+  "branch": "codex/recommendation-feature-v1-shadow",
+  "implementationHeadBeforeEvidence": "e5fb6a261975b3e919bad6f9c926558a11e132d5",
+  "finalHeadSource": "git_branch_head_after_ci_and_evidence_finalization",
+  "mode": "shadow",
+  "productionAuthoritative": false,
+  "providerImageCallDelta": 0,
+  "publicApiResponseChanged": false,
+  "premiumPayloadChanged": false,
+  "savedSnapshotChanged": false,
+  "skinEngineInputChanged": false,
+  "faceRegistryChanged": false,
+  "faceScoringWeightsChanged": false,
+  "faceDecisionThresholdsChanged": false,
+  "faceLifecycle": {
+    "registryLifecycle": "rubric_ready",
+    "registryCalibrationStatus": "not_ready",
+    "archetypeCalibrationStatus": "unvalidated",
+    "decisionStatus": "held",
+    "productionEligible": false,
+    "decision": null
+  },
+  "skinQuantization": {
+    "absence": {
+      "canonicalLevel": "none",
+      "legacySignal": 0,
+      "availability": true,
+      "status": "resolved"
+    },
+    "nonZeroLevels": ["mild", "moderate", "high"],
+    "legacyScoreMapping": null,
+    "status": "unresolved",
+    "authoritativeTransitionAllowed": false
+  },
+  "fixtures": {
+    "observationField": 5,
+    "skinAbsenceAndAvailability": 6,
+    "faceAdapter": 6,
+    "suitability": 3,
+    "skinShadow": 7,
+    "privacy": 5,
+    "regression": 6
+  },
+  "verifiers": {
+    "verify:recommendation-feature-contract": "pending",
+    "verify:recommendation-feature-adapters": "pending",
+    "verify:unified-vision-pipeline": "pending",
+    "verify:face-lab-archetype-scoring": "pending",
+    "verify:face-lab-archetype-calibration": "pending",
+    "face-lab:eval:verify": "pending",
+    "face-lab:e2e:verify": "pending",
+    "analysis-request-guard": "pending",
+    "provider-log-sanitization": "pending",
+    "anonymous-write-grant": "pending",
+    "analysis-rls-contract": "pending",
+    "architecture:guard": "pending",
+    "build": "pending",
+    "diffCheck": "pending"
+  },
+  "privacy": {
+    "sourceImagePersisted": false,
+    "faceCropPersisted": false,
+    "base64Persisted": false,
+    "rawProviderResponsePersisted": false,
+    "imageDataLogged": false
+  }
+}
