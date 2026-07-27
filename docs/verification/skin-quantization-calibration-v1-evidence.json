@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "skin-quantization-calibration-v1-evidence",
+  "status": "no_policy_approved",
+  "repository": "gycha0109-beep/K_beauty",
+  "base": {
+    "branch": "codex/recommendation-feature-v1-shadow",
+    "sha": "0acd4404df012ee72fb0e8a5691ba8db91d17c33",
+    "basePr": 74
+  },
+  "branch": "codex/skin-quantization-calibration",
+  "mode": "offline_shadow_governance",
+  "productionAuthoritative": false,
+  "activationAllowed": false,
+  "fixtureSummary": {
+    "fixtureCount": 4,
+    "positivePairs": 7,
+    "requiredPositivePairs": 30,
+    "minimumPairsPerAxis": 3,
+    "referenceTypes": [
+      "legacy_provider_output"
+    ],
+    "declaredPurpose": "diagnostic_only_not_ground_truth"
+  },
+  "policyCandidates": [
+    {
+      "policyId": "linear_0135_v1",
+      "mapping": {
+        "none": 0,
+        "mild": 1,
+        "moderate": 3,
+        "high": 5
+      },
+      "meanAbsoluteError": 0.7142857142857143,
+      "maximumAbsoluteError": 2,
+      "exactMatchRate": 0.2857142857142857,
+      "priorityFlipRate": 0.25,
+      "approved": false
+    },
+    {
+      "policyId": "capped_0124_v1",
+      "mapping": {
+        "none": 0,
+        "mild": 1,
+        "moderate": 2,
+        "high": 4
+      },
+      "meanAbsoluteError": 0.8571428571428571,
+      "maximumAbsoluteError": 2,
+      "exactMatchRate": 0.42857142857142855,
+      "priorityFlipRate": 0.25,
+      "approved": false
+    },
+    {
+      "policyId": "conservative_0123_v1",
+      "mapping": {
+        "none": 0,
+        "mild": 1,
+        "moderate": 2,
+        "high": 3
+      },
+      "meanAbsoluteError": 0.8571428571428571,
+      "maximumAbsoluteError": 2,
+      "exactMatchRate": 0.42857142857142855,
+      "priorityFlipRate": 0.25,
+      "approved": false
+    }
+  ],
+  "diagnosticBestPolicy": "linear_0135_v1",
+  "approvedPolicy": null,
+  "regression": {
+    "priorityComparableFixtures": 4,
+    "priorityFlipsPerPolicy": 1,
+    "productReplayComplete": false,
+    "routineReplayComplete": false,
+    "productionEngineImportedCalibrationPolicy": false,
+    "productionAdapterImportedCalibrationPolicy": false,
+    "existingDirectSignalsRemainAuthoritative": true
+  },
+  "blockers": [
+    "insufficient_positive_pair_count",
+    "insufficient_per_axis_coverage",
+    "reference_provenance_not_calibration_ground_truth",
+    "downstream_engine_replay_missing",
+    "product_regression_missing",
+    "routine_regression_missing",
+    "priority_flip_detected"
+  ],
+  "result": {
+    "policySelection": "none",
+    "authoritativeTransitionAllowed": false,
+    "separateActivationPrAllowed": false,
+    "nextRequiredEvidence": [
+      "consented_real_or_declared_synthetic_ground_truth_pairs",
+      "minimum_30_positive_pairs",
+      "minimum_3_pairs_per_supported_axis",
+      "full_skin_engine_replay",
+      "product_output_regression",
+      "routine_output_regression",
+      "zero_priority_flip_gate"
+    ]
+  }
+}
