@@ -18,6 +18,13 @@ import {
   writeSyntheticImageFixture
 } from "./premium-browser-journey-local-auth.mjs";
 import { captureAccountSessionResilient } from "./premium-e2e-session-capture.mjs";
+import {
+  createPremiumSessionDiagnosticId,
+  PREMIUM_SESSION_DIAGNOSTIC_REQUEST_HEADER,
+  PREMIUM_SESSION_DIAGNOSTIC_VERSION_HEADER,
+  PREMIUM_SESSION_FINAL_STAGE_HEADER,
+  PREMIUM_SESSION_RUNTIME_COMMIT_HEADER
+} from "../lib/premium-session-payload-diagnostics.js";
 
 function getPreviewHeaders(previewBypassToken) {
   return previewBypassToken
@@ -99,6 +106,7 @@ const previewBypassToken = String(
   args["preview-bypass-token"] || process.env.PREMIUM_E2E_PREVIEW_BYPASS_TOKEN || ""
 ).trim();
 const extraHTTPHeaders = getPreviewHeaders(previewBypassToken);
+const diagnosticId = createPremiumSessionDiagnosticId();
 
 await writeSyntheticImageFixture();
 const imageFixture = await loadImageFixture(LOCAL_SYNTHETIC_IMAGE_PATH);
@@ -129,6 +137,7 @@ try {
     const response = await context.request.post(`${baseUrl.origin}/api/analyze`, {
       headers: {
         ...extraHTTPHeaders,
+        [PREMIUM_SESSION_DIAGNOSTIC_REQUEST_HEADER]: diagnosticId,
         Authorization: `Bearer ${account.accessToken}`
       },
       multipart: {
@@ -153,6 +162,7 @@ try {
     });
 
     const body = await response.json().catch(() => null);
+    const responseHeaders = response.headers();
     const premiumHeaderContracts = response
       .headersArray()
       .filter((header) => header.name.toLowerCase() === "set-cookie")
@@ -169,7 +179,19 @@ try {
     const result = {
       ok: diagnosis === "premium_cookie_boundary_ok",
       targetHost: baseUrl.hostname,
-      accountHash: account.userHash,
+      runtimeDiagnostic: {
+        diagnosticId,
+        responseDiagnosticId:
+          responseHeaders[PREMIUM_SESSION_DIAGNOSTIC_REQUEST_HEADER] || null,
+        diagnosticIdMatches:
+          responseHeaders[PREMIUM_SESSION_DIAGNOSTIC_REQUEST_HEADER] === diagnosticId,
+        responseDiagnosticVersion:
+          responseHeaders[PREMIUM_SESSION_DIAGNOSTIC_VERSION_HEADER] || null,
+        responseRuntimeCommit:
+          responseHeaders[PREMIUM_SESSION_RUNTIME_COMMIT_HEADER] || null,
+        responseFinalStage:
+          responseHeaders[PREMIUM_SESSION_FINAL_STAGE_HEADER] || null
+      },
       analyze: {
         status: response.status(),
         error: typeof body?.error === "string" ? body.error : null,

@@ -9,6 +9,7 @@ const paths = {
   systemBrowser: resolve(root, "scripts/premium-e2e-system-browser.mjs"),
   sessionCapture: resolve(root, "scripts/premium-e2e-session-capture.mjs"),
   sessionCookieDiagnostic: resolve(root, "scripts/diagnose-premium-session-cookie.mjs"),
+  runtimeDiagnostic: resolve(root, "lib/premium-session-payload-diagnostics.js"),
   runner: resolve(root, "scripts/run-premium-browser-journey-local.mjs"),
   package: resolve(root, "package.json"),
   gitignore: resolve(root, ".gitignore")
@@ -19,6 +20,7 @@ const [
   systemBrowserSource,
   sessionCaptureSource,
   sessionCookieDiagnosticSource,
+  runtimeDiagnosticSource,
   runnerSource,
   packageSource,
   gitignoreSource
@@ -28,6 +30,7 @@ const [
   readFile(paths.systemBrowser, "utf8"),
   readFile(paths.sessionCapture, "utf8"),
   readFile(paths.sessionCookieDiagnostic, "utf8"),
+  readFile(paths.runtimeDiagnostic, "utf8"),
   readFile(paths.runner, "utf8"),
   readFile(paths.package, "utf8"),
   readFile(paths.gitignore, "utf8")
@@ -37,6 +40,7 @@ const packageJson = JSON.parse(packageSource);
 assert.equal(packageJson.scripts["e2e:premium:login"], "node scripts/bootstrap-premium-e2e-auth.mjs");
 assert.equal(packageJson.scripts["e2e:premium:hosted"], "node scripts/run-premium-browser-journey-local.mjs");
 assert.equal(packageJson.scripts["diagnose:premium:session-cookie"], "node scripts/diagnose-premium-session-cookie.mjs");
+assert.equal(packageJson.scripts["verify:premium-session-runtime-diagnostics"], "node scripts/verify-premium-session-runtime-diagnostics.mjs");
 assert.equal(packageJson.scripts["check:premium-browser-journey-local"], "node scripts/check-premium-browser-journey-local.mjs");
 assert.match(gitignoreSource, /^\.codex\/runtime\/premium-e2e\/$/m);
 
@@ -90,7 +94,17 @@ assert.match(sessionCookieDiagnosticSource, /premium_cookie_boundary_ok/);
 assert.match(sessionCookieDiagnosticSource, /premiumReportExposed/);
 assert.match(sessionCookieDiagnosticSource, /premiumHeaderCount/);
 assert.match(sessionCookieDiagnosticSource, /premiumCookieCount/);
+assert.match(sessionCookieDiagnosticSource, /PREMIUM_SESSION_DIAGNOSTIC_REQUEST_HEADER/);
+assert.match(sessionCookieDiagnosticSource, /responseDiagnosticVersion/);
+assert.match(sessionCookieDiagnosticSource, /responseRuntimeCommit/);
+assert.match(sessionCookieDiagnosticSource, /responseFinalStage/);
 assert.doesNotMatch(sessionCookieDiagnosticSource, /console\.log\([^\n]*(?:accessToken|cookie\.value|header\.value)/);
+
+assert.match(runtimeDiagnosticSource, /VERCEL_ENV === "preview"/);
+assert.match(runtimeDiagnosticSource, /MAX_MEASUREMENT_DEPTH/);
+assert.match(runtimeDiagnosticSource, /MAX_MEASUREMENT_ENTRIES/);
+assert.match(runtimeDiagnosticSource, /MAX_MEASUREMENT_BYTES/);
+assert.doesNotMatch(runtimeDiagnosticSource, /(?:accessToken|refreshToken|cookieValue|reportBody|serviceRole)/);
 
 assert.match(bootstrapSource, /openManualSystemChromeSession/);
 assert.match(bootstrapSource, /captureAccountSessionResilient/);
@@ -120,6 +134,7 @@ console.log(JSON.stringify({
     "canonical_oauth_cookie_bridge",
     "target_host_auth_cookie_normalization",
     "redacted_premium_session_cookie_diagnostic",
+    "preview_only_runtime_stage_attestation",
     "wrong_host_oauth_detection",
     "persistent_profile_reuse",
     "network_captured_supabase_session_fallback",

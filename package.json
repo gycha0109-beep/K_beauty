@@ -19,6 +19,7 @@
     "e2e:premium:hosted": "node scripts/run-premium-browser-journey-local.mjs",
     "diagnose:premium:access": "node scripts/diagnose-premium-hosted-access.mjs",
     "diagnose:premium:session-cookie": "node scripts/diagnose-premium-session-cookie.mjs",
+    "verify:premium-session-runtime-diagnostics": "node scripts/verify-premium-session-runtime-diagnostics.mjs",
     "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
     "lint": "next lint"
   },
