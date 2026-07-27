@@ -64,8 +64,11 @@ jobs:
       - name: Verify Face Lab archetype calibration harness
         run: npm run verify:face-lab-archetype-calibration
 
-      - name: Verify Recommendation Feature V1 shadow
-        run: npm run verify:recommendation-feature-shadow
+      - name: Verify Recommendation Feature V1 contract
+        run: npm run verify:recommendation-feature-contract
+
+      - name: Verify Recommendation Feature V1 adapters
+        run: npm run verify:recommendation-feature-adapters
 
       - name: Verify Face Lab evaluation contracts
         run: npm run face-lab:eval:verify
