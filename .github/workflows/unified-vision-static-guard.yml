@@ -9,6 +9,7 @@ on:
       - "lib/face-lab-archetype-*.js"
       - "lib/face-lab-observation-projector.js"
       - "lib/openai-env-diagnostics.js"
+      - "lib/recommendation-feature-*.js"
       - "lib/server/vision-observation-service.js"
       - "lib/skin-observation-projector.js"
       - "lib/vision-observation-contract.js"
@@ -21,7 +22,10 @@ on:
       - "scripts/verify-analysis-rls-contract.mjs"
       - "scripts/verify-face-lab-*.mjs"
       - "scripts/verify-provider-runtime-log-sanitization.mjs"
+      - "scripts/verify-recommendation-feature-*.mjs"
       - "scripts/verify-unified-vision-pipeline.mjs"
+      - "docs/domain/recommendation/**"
+      - "docs/verification/recommendation-feature-*.json"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/face-lab-provider-e2e.yml"
@@ -59,6 +63,9 @@ jobs:
 
       - name: Verify Face Lab archetype calibration harness
         run: npm run verify:face-lab-archetype-calibration
+
+      - name: Verify Recommendation Feature V1 shadow
+        run: npm run verify:recommendation-feature-shadow
 
       - name: Verify Face Lab evaluation contracts
         run: npm run face-lab:eval:verify
