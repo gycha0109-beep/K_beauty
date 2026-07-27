@@ -225,7 +225,7 @@ assert.equal(shadow.privacy.faceCropPersisted, false);
 assert.equal(shadow.privacy.rawProviderResponsePersisted, false);
 
 const serialized = JSON.stringify(shadow);
-for (const forbidden of ["data:image", "base64,", "image_url", "imageBuffer", "rawProviderResponse"]) {
+for (const forbidden of ["data:image", "base64,", "image_url", "imageBuffer"]) {
   assert.equal(serialized.includes(forbidden), false, `forbidden shadow content: ${forbidden}`);
 }
 
