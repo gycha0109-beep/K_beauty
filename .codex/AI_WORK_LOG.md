@@ -2705,3 +2705,9 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 
 - Hosted verification of commit `71db43a4397ad4c1e1407b8e47a115c361b41e2d` disproved the proposed 4,096-entry ceiling: S5 remained a valid record and S6 still collapsed to null, followed by `premium_report_missing` and zero Premium Set-Cookie headers.
 - The ineffective threshold change was reverted rather than increased again by guesswork. The Preview-only structural measurement ceiling was expanded, without recording values or weakening the sanitizer, so the next Git Preview can attest the actual bounded traversal size before a replacement fix is selected.
+
+### 2026-07-27 / Evidence-sized Premium image sanitizer boundary
+
+- The expanded Preview attestation at commit `052133c4dfbecc9ff62fb057a7968851cc029a15` completed without truncation and measured S5 at 8,763 structural entries / 111,973 bounded bytes. S6 alone collapsed, and validation again reported `premium_report_missing`.
+- The replacement ceiling is 16,384: a finite power-of-two bound above the measured canonical payload, not another incremental guess. Depth, cycle, dangerous-key, face-data, and product-image-origin controls are unchanged.
+- The direct regression exercises the real sanitizer with a 9,000-entry decision bundle and preserved `freeResult`, then proves a 16,385-entry subtree and a cyclic reference still fail closed without retaining their contents.
