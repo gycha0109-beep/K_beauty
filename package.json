@@ -26,8 +26,9 @@
     "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs",
     "verify:face-lab-archetype-calibration": "node scripts/verify-face-lab-archetype-calibration.mjs && node scripts/verify-face-lab-archetype-calibration-governance.mjs",
     "verify:recommendation-feature-contract": "node scripts/verify-recommendation-feature-contract.mjs",
+    "verify:recommendation-feature-derived": "node scripts/verify-recommendation-feature-derived.mjs",
     "verify:recommendation-feature-adapters": "node scripts/verify-recommendation-feature-adapters.mjs",
-    "verify:recommendation-feature-shadow": "npm run verify:recommendation-feature-contract && npm run verify:recommendation-feature-adapters"
+    "verify:recommendation-feature-shadow": "npm run verify:recommendation-feature-contract && npm run verify:recommendation-feature-derived && npm run verify:recommendation-feature-adapters"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
