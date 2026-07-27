@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 function loadModule(path, names, dependencies = {}) {
   const source = readFileSync(path, "utf8")
@@ -71,6 +72,7 @@ assert.equal(reportA.governanceSchemaVersion, "face-lab-archetype-calibration-go
 assert.equal(reportA.labelingMode, "blind_to_model_scores");
 assert.equal(reportA.labelsFrozenBeforePolicyEvaluation, true);
 assert.equal(reportA.auditSliceConsentEnforced, true);
+assert.equal(reportA.suppressedSliceIdentitiesHidden, true);
 assert.equal(reportA.policySelectionProtocol, "manual_predeclared");
 assert.equal(reportA.policyCandidatesFrozenBeforeEvaluation, true);
 assert.equal(reportA.automaticPolicySelection, false);
@@ -82,6 +84,8 @@ assert.equal(reportA.sampleCount, 2);
 for (const policyResult of reportA.policyResults) {
   assert.equal(policyResult.adjacentPairMetrics.cat__wolf.sampleCount, 1);
   assert.equal(policyResult.adjacentPairMetrics.cat__wolf.totalWrongReleases, 0);
+  assert.deepEqual(policyResult.sliceMetrics.sexGroup, {});
+  assert.equal(policyResult.sliceSuppression.sexGroup.suppressedGroupCount, 2);
 }
 
 assert.throws(
@@ -160,6 +164,56 @@ assert.equal(balanced.adjacentPairMetrics.cat__wolf.totalWrongReleaseRate, 1);
 
 const reportText = JSON.stringify(reportA);
 assert.doesNotMatch(reportText, /sampleId|subjectId|auditSliceConsentConfirmed|data:image|base64/i);
+assert.doesNotMatch(reportText, /"sexGroup":\{"female"|"sexGroup":\{"male"/i);
+
+const privateRoot = "private/face-lab-calibration";
+const outputRoot = "tmp/face-lab-archetype-calibration";
+const datasetPath = `${privateRoot}/governance-verifier-dataset.json`;
+const policyPath = `${privateRoot}/governance-verifier-policies.json`;
+const outputPath = `${outputRoot}/governance-verifier-report.json`;
+mkdirSync(privateRoot, { recursive: true });
+mkdirSync(outputRoot, { recursive: true });
+copyFileSync("scripts/fixtures/face-lab-archetype-calibration-dataset.example.json", datasetPath);
+copyFileSync("scripts/fixtures/face-lab-archetype-calibration-policies.example.json", policyPath);
+rmSync(outputPath, { force: true });
+const cliArgs = [
+  "scripts/evaluate-face-lab-archetype-calibration-governed.mjs",
+  "--dataset", datasetPath,
+  "--policies", policyPath,
+  "--split", "validation",
+  "--output", outputPath
+];
+const cliSuccess = spawnSync(process.execPath, cliArgs, { encoding: "utf8" });
+assert.equal(cliSuccess.status, 0, `${cliSuccess.stdout}\n${cliSuccess.stderr}`);
+assert.equal(existsSync(outputPath), true);
+const cliOverwrite = spawnSync(process.execPath, cliArgs, { encoding: "utf8" });
+assert.notEqual(cliOverwrite.status, 0);
+assert.match(cliOverwrite.stderr, /failed=output_exists/);
+const cliOutside = spawnSync(process.execPath, [
+  "scripts/evaluate-face-lab-archetype-calibration-governed.mjs",
+  "--dataset", "scripts/fixtures/face-lab-archetype-calibration-dataset.example.json",
+  "--policies", policyPath,
+  "--split", "validation",
+  "--output", `${outputRoot}/governance-verifier-reject.json`
+], { encoding: "utf8" });
+assert.notEqual(cliOutside.status, 0);
+assert.match(cliOutside.stderr, /failed=path_boundary_rejected/);
+const cliHoldout = spawnSync(process.execPath, [
+  "scripts/evaluate-face-lab-archetype-calibration-governed.mjs",
+  "--dataset", datasetPath,
+  "--policies", policyPath,
+  "--split", "holdout",
+  "--output", `${outputRoot}/governance-verifier-holdout.json`
+], { encoding: "utf8" });
+assert.notEqual(cliHoldout.status, 0);
+assert.match(cliHoldout.stderr, /failed=holdout_confirmation_required/);
+for (const cleanupPath of [
+  datasetPath,
+  policyPath,
+  outputPath,
+  `${outputRoot}/governance-verifier-reject.json`,
+  `${outputRoot}/governance-verifier-holdout.json`
+]) rmSync(cleanupPath, { force: true });
 
 for (const sourcePath of [
   "lib/face-lab-archetype-calibration-governance.js",
@@ -168,6 +222,9 @@ for (const sourcePath of [
   const source = readFileSync(sourcePath, "utf8");
   assert.doesNotMatch(source, /https?:\/\//);
   assert.doesNotMatch(source, /registry\s*\.\s*decisionPolicy\s*=/);
+  if (sourcePath.includes("evaluate-face-lab")) {
+    assert.match(source, /root must not be a symlink/);
+  }
 }
 
 console.log("[verify-face-lab-archetype-calibration-governance] PASS");
