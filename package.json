@@ -16,13 +16,15 @@
     "face-lab:eval:verify": "node scripts/verify-face-lab-hosted-evaluation-harness.mjs && node scripts/verify-face-lab-hosted-evaluation-review.mjs && node scripts/verify-face-lab-single-analysis-evaluation.mjs",
     "face-lab:e2e:run": "node scripts/face-lab-provider-e2e/run.mjs",
     "face-lab:e2e:verify": "node scripts/face-lab-provider-e2e/verify-package.mjs",
+    "face-lab:archetype:calibrate": "node scripts/evaluate-face-lab-archetype-calibration.mjs",
     "test:e2e:mobile-analyze": "playwright test --config=playwright.mobile-analyze.config.ts",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "db:replay:verify": "node scripts/verify-local-supabase-replay-baseline.mjs",
     "db:replay:prepare": "npm run db:replay:verify && node scripts/prepare-local-supabase-replay.mjs",
     "lint": "next lint",
     "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs",
-    "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs"
+    "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs",
+    "verify:face-lab-archetype-calibration": "node scripts/verify-face-lab-archetype-calibration.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
