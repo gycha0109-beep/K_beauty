@@ -29,6 +29,13 @@ function expectFailure(result, code) {
   checks += 1;
 }
 
+function available(value, evidence) {
+  return createAvailableObservation(value, {
+    confidence: 0.9,
+    evidence: [evidence]
+  });
+}
+
 if (shouldRun("enums")) {
   assert.deepEqual([...OBSERVATION_STATUSES], [
     "available",
@@ -63,10 +70,7 @@ if (shouldRun("enums")) {
 }
 
 if (shouldRun("field")) {
-  const validAvailable = createAvailableObservation("clear", {
-    confidence: 0.9,
-    evidence: ["visible face boundary"]
-  });
+  const validAvailable = available("clear", "visible face boundary");
   assert.equal(validateObservationField(validAvailable, { allowedValues: ["clear"] }).ok, true);
   checks += 1;
 
@@ -117,13 +121,33 @@ if (shouldRun("skin")) {
 }
 
 if (shouldRun("bundle")) {
+  const quality = {
+    faceVisibility: available("clear", "quality:faceVisibility"),
+    faceScale: available("adequate", "quality:faceScale"),
+    pose: {
+      yaw: available("frontal", "quality:yaw"),
+      pitch: available("level", "quality:pitch"),
+      roll: available("level", "quality:roll")
+    },
+    occlusion: {
+      forehead: available("none", "quality:forehead"),
+      brows: available("none", "quality:brows"),
+      eyes: available("none", "quality:eyes"),
+      cheeks: available("none", "quality:cheeks"),
+      jawline: available("none", "quality:jawline")
+    },
+    sharpness: available("clear", "quality:sharpness"),
+    exposure: available("balanced", "quality:exposure"),
+    lightingUniformity: available("even", "quality:lighting"),
+    whiteBalance: available("stable", "quality:whiteBalance"),
+    filterOrEditing: available("none_detected", "quality:filter"),
+    makeupCoverage: available("none_or_light", "quality:makeup")
+  };
+
   const face = Object.fromEntries([
     ...Object.entries(FACE_CORE_FIELD_DEFINITIONS),
     ...Object.entries(FACE_CONDITIONAL_FIELD_DEFINITIONS)
-  ].map(([name, definition]) => [name, createAvailableObservation(definition.values[0], {
-    confidence: 0.9,
-    evidence: [`face:${name}`]
-  })]));
+  ].map(([name, definition]) => [name, available(definition.values[0], `face:${name}`)]));
   const skin = Object.fromEntries([
     "visibleSurfaceShine",
     "visibleDryTexture",
@@ -145,7 +169,7 @@ if (shouldRun("bundle")) {
     schemaVersion: RECOMMENDATION_FEATURE_SCHEMA_VERSION,
     mode: "shadow",
     productionAuthoritative: false,
-    atomic: { face, skin },
+    atomic: { quality, face, skin },
     privacy: {
       sourceImagePersisted: false,
       faceCropPersisted: false,
@@ -154,6 +178,13 @@ if (shouldRun("bundle")) {
   };
   const bundleValidation = validateRecommendationFeatureBundle(validBundle);
   assert.deepEqual(bundleValidation, { ok: true, errors: [] }, bundleValidation.errors.join(", "));
+
+  const invalidQualityBundle = structuredClone(validBundle);
+  invalidQualityBundle.atomic.quality.pose.yaw.value = "diagonal";
+  expectFailure(
+    validateRecommendationFeatureBundle(invalidQualityBundle),
+    "quality.pose.yaw.available_value_invalid"
+  );
 
   const unavailableIsNotZero = createUnavailableObservation("quality_insufficient");
   assert.equal(unavailableIsNotZero.value, null);
