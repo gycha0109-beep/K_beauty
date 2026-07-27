@@ -78,7 +78,7 @@ The existing contract fixture produces the following diagnostic ordering.
 
 | Policy | MAE | Exact match | Priority flip rate | Approved |
 |---|---:|---:|---:|---|
-| `linear_0135_v1` | `5/7` | `2/7` | `1/4` | no |
+| `linear_0135_v1` | `5/7` | `3/7` | `1/4` | no |
 | `capped_0124_v1` | `6/7` | `3/7` | `1/4` | no |
 | `conservative_0123_v1` | `6/7` | `3/7` | `1/4` | no |
 
