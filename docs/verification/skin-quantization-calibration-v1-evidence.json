@@ -32,7 +32,7 @@
       },
       "meanAbsoluteError": 0.7142857142857143,
       "maximumAbsoluteError": 2,
-      "exactMatchRate": 0.2857142857142857,
+      "exactMatchRate": 0.42857142857142855,
       "priorityFlipRate": 0.25,
       "approved": false
     },
