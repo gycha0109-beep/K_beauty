@@ -138,3 +138,45 @@ A future calibration pass requires:
 9. a separate production-activation PR.
 
 Until those conditions exist, all non-zero canonical Skin observations remain shadow-only and unresolved for legacy numeric use.
+
+## 9. Verification
+
+Verified implementation head:
+
+```text
+487790257c8dfb9cdc3b37e0869743eecc078aae
+```
+
+GitHub Actions:
+
+```text
+Unified Vision Static Guard #92
+run 30254278764
+SUCCESS
+
+Local Supabase Replay Guard #128
+run 30254278932
+SUCCESS
+```
+
+The successful gates include:
+
+- all predeclared policy mappings;
+- invalid policy and invalid level rejection;
+- fixture schema and declared diagnostic-only provenance;
+- positive-pair and per-axis minimum gates;
+- provenance gate;
+- downstream engine, product, and routine replay gates;
+- priority-flip detection;
+- MAE and exact-match calculations;
+- no production adapter import;
+- no production Skin Engine import;
+- existing Recommendation Feature, Vision, Face, privacy, security, architecture, build, migration replay, DB lint, and anonymous product-boundary checks.
+
+The implementation result is deliberately a governed rejection:
+
+```text
+Diagnostic best: linear_0135_v1
+Approved policy: none
+Activation allowed: false
+```
