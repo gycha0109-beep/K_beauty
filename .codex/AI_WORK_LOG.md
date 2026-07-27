@@ -2678,3 +2678,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Delta: added post-policy contradiction detection, fail-closed effective policies, Bundle v5 metadata, and projection guards.
 - Protected impact: no DB/Auth/RLS/Storage/Provider/Payment/Secret/Production execution; existing saved-report compatibility fields are preserved.
 - Verification: focused consistency verifier plus existing policy, decision-state, reentry, architecture, build, and diff checks.
+
+### 2026-07-27 / Premium Hosted E2E session payload boundary
+
+- Task type: bounded High-risk execution. Auth, Provider, Secret, and Preview execution are `Y`; no OAuth/Supabase configuration, schema, RLS, entitlement, environment file, or production target was changed.
+- Root cause evidence: the authenticated Preview diagnostic reached `/api/analyze` with HTTP 200 but recorded `premium_report_failed` as `validation_rejected`; no Premium Set-Cookie was emitted. The session creator only records that category when its `premiumReport` input is absent.
+- Minimal fix: capture the deterministic engine's `decision.premiumReport` immediately after construction and use that captured object as the Premium session source after optional explanation enrichment. The public response shape and session-cookie contract are unchanged.
+- Local verification: premium decision-state, premium release-mode, browser-journey contract/local checks, architecture guard, and production build passed. Hosted cookie and full KO/EN journey verification remain pending the new Preview deployment.

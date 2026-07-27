@@ -1572,6 +1572,7 @@ export async function POST(request) {
       includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
       includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
+    const premiumReportForSession = decision?.premiumReport || null;
 
     let explanationNotice = "";
 
@@ -1630,9 +1631,9 @@ export async function POST(request) {
       logAnalyze("response:shape-warning");
     }
 
-    const premiumDecisionSource = decision.premiumReport
+    const premiumDecisionSource = premiumReportForSession
       ? {
-          ...decision.premiumReport,
+          ...premiumReportForSession,
           freeResult: publicDecision
         }
       : null;
