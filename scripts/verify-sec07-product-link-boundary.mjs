@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import {
   readPurchaseAnchorSources,
@@ -6,6 +7,8 @@ import {
 } from "./lib/purchase-anchor-contract.mjs";
 
 const root = process.cwd();
+const require = createRequire(import.meta.url);
+const { parse: parseJavaScript } = require("next/dist/compiled/babel/parser");
 const checkedFiles = [];
 const DANGEROUS_OBJECT_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 const EXPECTED_REQUIRED_CASE_COUNT = 42;
@@ -148,6 +151,124 @@ function read(path) {
 
 function readSourceText(path) {
   return read(path).replace(/\r\n?/g, "\n");
+}
+
+function walkAst(node, callback) {
+  if (!node || typeof node !== "object") return;
+  callback(node);
+  for (const value of Object.values(node)) {
+    if (Array.isArray(value)) {
+      for (const item of value) walkAst(item, callback);
+    } else {
+      walkAst(value, callback);
+    }
+  }
+}
+
+function parseModule(source) {
+  return parseJavaScript(source, {
+    sourceType: "module",
+    plugins: ["jsx"]
+  });
+}
+
+function isIdentifier(node, name) {
+  return node?.type === "Identifier" && node.name === name;
+}
+
+function isCall(node, calleeName, argumentName) {
+  return (
+    node?.type === "CallExpression" &&
+    isIdentifier(node.callee, calleeName) &&
+    (argumentName === undefined || isIdentifier(node.arguments?.[0], argumentName))
+  );
+}
+
+function unwrapConditionalCall(node) {
+  return node?.type === "ConditionalExpression" ? node.consequent : node;
+}
+
+function verifyAnalyzePremiumBoundaryWiring(source) {
+  const ast = parseModule(source);
+  const bindings = new Map();
+  let sessionPayloadConsumesBoundary = false;
+  let publicResponseUsesPurchaseBoundary = false;
+
+  walkAst(ast, (node) => {
+    if (node.type === "VariableDeclarator" && node.id?.type === "Identifier") {
+      bindings.set(node.id.name, node.init);
+    }
+    if (
+      node.type === "ObjectProperty" &&
+      isIdentifier(node.key, "premiumReport") &&
+      isIdentifier(node.value, "premiumSessionReport")
+    ) {
+      sessionPayloadConsumesBoundary = true;
+    }
+    if (
+      isCall(node, "sanitizeAnalyzeResultProductImages") &&
+      isCall(node.arguments?.[0], "sanitizeAnalyzeResultPurchaseLinks")
+    ) {
+      publicResponseUsesPurchaseBoundary = true;
+    }
+  });
+
+  return (
+    isCall(
+      unwrapConditionalCall(bindings.get("purchaseSanitizedPremiumReport")),
+      "sanitizePremiumReportPurchaseLinks",
+      "premiumReport"
+    ) &&
+    isCall(
+      unwrapConditionalCall(bindings.get("premiumSessionReport")),
+      "sanitizePremiumReportProductImages",
+      "purchaseSanitizedPremiumReport"
+    ) &&
+    sessionPayloadConsumesBoundary &&
+    publicResponseUsesPurchaseBoundary
+  );
+}
+
+function verifyFullReportBoundaryWiring(source) {
+  const ast = parseModule(source);
+  let helperUsesPurchaseBoundary = false;
+  let savedResponseUsesHelper = false;
+  let sessionResponseUsesHelper = false;
+
+  const containsIdentifier = (node, name) => {
+    let found = false;
+    walkAst(node, (child) => {
+      if (isIdentifier(child, name)) found = true;
+    });
+    return found;
+  };
+
+  walkAst(ast, (node) => {
+    if (
+      node.type === "FunctionDeclaration" &&
+      isIdentifier(node.id, "sanitizePremiumReportForBoundary")
+    ) {
+      walkAst(node.body, (child) => {
+        if (
+          isCall(child, "sanitizePremiumReportProductImages") &&
+          isCall(child.arguments?.[0], "sanitizePremiumReportPurchaseLinks")
+        ) {
+          helperUsesPurchaseBoundary = true;
+        }
+      });
+    }
+    if (isCall(node, "sanitizePremiumReportForBoundary")) {
+      const argument = node.arguments?.[0];
+      if (containsIdentifier(argument, "savedReport") && containsIdentifier(argument, "premium_report")) {
+        savedResponseUsesHelper = true;
+      }
+      if (isIdentifier(argument, "authoritativePremiumReport")) {
+        sessionResponseUsesHelper = true;
+      }
+    }
+  });
+
+  return helperUsesPurchaseBoundary && savedResponseUsesHelper && sessionResponseUsesHelper;
 }
 
 function assertPurchaseAnchorMutationRejected({ label, sourceRoot, mutate }) {
@@ -520,17 +641,13 @@ runCase("response_wiring", () => {
     /getTrustedDirectPurchaseUrl\(\{\s*buyLink:\s*product\.buy_link,/.test(productSource),
     "product source must project direct links through the resolver"
   );
-  assert(analyzeRoute.includes("sanitizeAnalyzeResultPurchaseLinks({"), "analysis response must apply the final recursive purchase-link boundary");
-  assert(analyzeRoute.includes("sanitizePremiumReportPurchaseLinks({"), "premium session payload must apply the shared recursive purchase-link boundary");
-  const fullReportBoundaryStart = fullReportRoute.indexOf("function sanitizePremiumReportForBoundary(report)");
-  const fullReportBoundaryEnd = fullReportRoute.indexOf("function buildFullReportMeta", fullReportBoundaryStart);
-  const fullReportBoundary = fullReportRoute.slice(fullReportBoundaryStart, fullReportBoundaryEnd);
   assert(
-    fullReportBoundaryStart >= 0 &&
-      fullReportBoundary.includes("sanitizePremiumReportPurchaseLinks(report || {})") &&
-      fullReportRoute.includes("sanitizePremiumReportForBoundary(savedReport.premium_report)") &&
-      fullReportRoute.includes("sanitizePremiumReportForBoundary(responsePremiumReport)"),
-    "full-report must apply the shared recursive purchase-link boundary to saved and session payloads"
+    verifyAnalyzePremiumBoundaryWiring(analyzeRoute),
+    "analyze must pass both the public response and Premium session payload through the executable purchase-link boundary"
+  );
+  assert(
+    verifyFullReportBoundaryWiring(fullReportRoute),
+    "full-report must execute the shared purchase-link boundary for saved and session payloads"
   );
   assert(!freePage.includes("isExactOliveYoungProductLink") && !fullPage.includes("isExactOliveYoungProductLink"), "result pages must not keep duplicate substring validators");
   assert(
