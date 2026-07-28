@@ -5,6 +5,7 @@ import {
   resolvePremiumReportLocale
 } from "../lib/premium-report-snapshot.js";
 import { rebuildPremiumDecisionState } from "../lib/premium-decision-state.js";
+import { sanitizePurchaseLinkPayload } from "../lib/product-purchase-link.js";
 
 function baseReport(locale = "ko", extra = {}) {
   return {
@@ -126,5 +127,15 @@ assert.equal(
   "ko",
   "request locale tampering must not alter the stored locale"
 );
+
+const sharedConsistency = { status: "consistent", buy_link: "javascript:alert(1)" };
+const sanitizedSharedNodes = sanitizePurchaseLinkPayload({
+  consistency: sharedConsistency,
+  decisionBundle: { consistency: sharedConsistency }
+});
+assert.equal(sanitizedSharedNodes.consistency?.status, "consistent");
+assert.equal(sanitizedSharedNodes.decisionBundle?.consistency?.status, "consistent");
+assert.equal("buy_link" in sanitizedSharedNodes.consistency, false);
+assert.equal("buy_link" in sanitizedSharedNodes.decisionBundle.consistency, false);
 
 console.log("premium identical retry verification passed");
