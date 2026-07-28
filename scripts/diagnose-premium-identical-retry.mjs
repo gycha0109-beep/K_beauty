@@ -70,19 +70,35 @@ function runCleanup(env) {
   });
 }
 
+function getResponseHeader(response, name) {
+  const headers = typeof response?.headers === "function"
+    ? response.headers()
+    : response?.headers;
+  if (headers?.get) return headers.get(name);
+  const target = String(name).toLowerCase();
+  const match = Object.entries(headers || {}).find(
+    ([key]) => String(key).toLowerCase() === target
+  );
+  return match ? String(match[1]) : null;
+}
+
 function responseHeaders(response) {
   return {
-    runtimeCommit: response.headers.get(PREMIUM_SESSION_RUNTIME_COMMIT_HEADER),
-    replayStatus: response.headers.get(PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER),
-    diffPaths: String(response.headers.get(PREMIUM_SNAPSHOT_REPLAY_DIFF_HEADER) || "")
+    runtimeCommit: getResponseHeader(response, PREMIUM_SESSION_RUNTIME_COMMIT_HEADER),
+    replayStatus: getResponseHeader(response, PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER),
+    diffPaths: String(getResponseHeader(response, PREMIUM_SNAPSHOT_REPLAY_DIFF_HEADER) || "")
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean)
       .slice(0, 4),
-    existingFingerprint: response.headers.get(
+    existingFingerprint: getResponseHeader(
+      response,
       PREMIUM_SNAPSHOT_REPLAY_EXISTING_FINGERPRINT_HEADER
     ),
-    nextFingerprint: response.headers.get(PREMIUM_SNAPSHOT_REPLAY_NEXT_FINGERPRINT_HEADER)
+    nextFingerprint: getResponseHeader(
+      response,
+      PREMIUM_SNAPSHOT_REPLAY_NEXT_FINGERPRINT_HEADER
+    )
   };
 }
 
@@ -214,7 +230,7 @@ try {
     safeErrorCode(analyze)
   );
   requireCondition(
-    analyzeResponse.headers.get(PREMIUM_SESSION_RUNTIME_COMMIT_HEADER) === head,
+    getResponseHeader(analyzeResponse, PREMIUM_SESSION_RUNTIME_COMMIT_HEADER) === head,
     FAILURE_CATEGORIES.INFRASTRUCTURE,
     "ko:analyze",
     "runtime_commit_mismatch"
