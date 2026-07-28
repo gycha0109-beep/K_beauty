@@ -3,6 +3,7 @@ import {
   applyPremiumSnapshotReplayDiagnosticHeaders,
   createPremiumSnapshotReplayDiagnostic,
   PREMIUM_SNAPSHOT_REPLAY_DIFF_HEADER,
+  PREMIUM_SNAPSHOT_REPLAY_DIFF_CONTRACT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_EXISTING_FINGERPRINT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_NEXT_FINGERPRINT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER
@@ -81,6 +82,17 @@ assert.equal(
   response.headers.get(PREMIUM_SNAPSHOT_REPLAY_DIFF_HEADER),
   "decisionBundle.contextRevision"
 );
+const diffContract = JSON.parse(
+  Buffer.from(
+    response.headers.get(PREMIUM_SNAPSHOT_REPLAY_DIFF_CONTRACT_HEADER),
+    "base64url"
+  ).toString("utf8")
+);
+assert.equal(diffContract[0].path, "decisionBundle.contextRevision");
+assert.equal(diffContract[0].existingType, "number");
+assert.equal(diffContract[0].nextType, "number");
+assert.match(diffContract[0].existingHash, /^sha256:[0-9a-f]{64}$/);
+assert.match(diffContract[0].nextHash, /^sha256:[0-9a-f]{64}$/);
 assert.equal(
   response.headers.get(PREMIUM_SNAPSHOT_REPLAY_EXISTING_FINGERPRINT_HEADER),
   existingFingerprint
@@ -104,5 +116,9 @@ assert.equal(production.active, false);
 const productionResponse = new Response(null);
 applyPremiumSnapshotReplayDiagnosticHeaders(productionResponse, production);
 assert.equal(productionResponse.headers.has(PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER), false);
+assert.equal(
+  productionResponse.headers.has(PREMIUM_SNAPSHOT_REPLAY_DIFF_CONTRACT_HEADER),
+  false
+);
 
 console.log("premium snapshot replay diagnostics verification passed");

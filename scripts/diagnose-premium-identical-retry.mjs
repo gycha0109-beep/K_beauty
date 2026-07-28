@@ -51,6 +51,7 @@ import {
 } from "../lib/premium-session-payload-diagnostics.js";
 import {
   PREMIUM_SNAPSHOT_REPLAY_DIFF_HEADER,
+  PREMIUM_SNAPSHOT_REPLAY_DIFF_CONTRACT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_EXISTING_FINGERPRINT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_NEXT_FINGERPRINT_HEADER,
   PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER
@@ -83,6 +84,19 @@ function getResponseHeader(response, name) {
 }
 
 function responseHeaders(response) {
+  let diffContract = [];
+  try {
+    const encoded = getResponseHeader(
+      response,
+      PREMIUM_SNAPSHOT_REPLAY_DIFF_CONTRACT_HEADER
+    );
+    const parsed = encoded
+      ? JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"))
+      : [];
+    diffContract = Array.isArray(parsed) ? parsed.slice(0, 4) : [];
+  } catch {
+    diffContract = [];
+  }
   return {
     runtimeCommit: getResponseHeader(response, PREMIUM_SESSION_RUNTIME_COMMIT_HEADER),
     replayStatus: getResponseHeader(response, PREMIUM_SNAPSHOT_REPLAY_STATUS_HEADER),
@@ -91,6 +105,7 @@ function responseHeaders(response) {
       .map((value) => value.trim())
       .filter(Boolean)
       .slice(0, 4),
+    diffContract,
     existingFingerprint: getResponseHeader(
       response,
       PREMIUM_SNAPSHOT_REPLAY_EXISTING_FINGERPRINT_HEADER
@@ -309,6 +324,7 @@ try {
     fingerprint: retry.body?.meta?.snapshot?.fingerprint || null,
     replayStatus: replayHeaders.replayStatus,
     diffPaths: replayHeaders.diffPaths,
+    diffContract: replayHeaders.diffContract,
     existingFingerprint: replayHeaders.existingFingerprint,
     nextFingerprint: replayHeaders.nextFingerprint
   };
