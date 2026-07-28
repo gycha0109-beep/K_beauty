@@ -84,16 +84,18 @@ function sanitizeResponse(item) {
   };
 }
 
-export default function PremiumConditionResponseSection({ responses = [], locale = "ko", onNavigate }) {
+export default function PremiumConditionResponseSection({ conditionPlan = null, responses = [], locale = "ko", onNavigate }) {
   const copy = getCopy(locale);
-  const items = (Array.isArray(responses) ? responses : [])
+  const canonicalResponses = Array.isArray(conditionPlan?.responses) ? conditionPlan.responses : null;
+  const source = canonicalResponses ? "canonical" : "legacy_adapter";
+  const items = (canonicalResponses || (Array.isArray(responses) ? responses : []))
     .map(sanitizeResponse)
     .filter(Boolean)
     .sort((left, right) => statusRank(left.status) - statusRank(right.status))
     .slice(0, 5);
 
   return (
-    <section className="ui-card p-5 sm:p-6">
+    <section className="ui-card p-5 sm:p-6" data-condition-source={source}>
       <div className="min-w-0">
         <p className="ui-kicker">{copy.kicker}</p>
         <h3 className="ui-title mt-2 text-xl leading-tight">{copy.title}</h3>
@@ -149,6 +151,12 @@ export default function PremiumConditionResponseSection({ responses = [], locale
           <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-300">{copy.fallbackBody}</p>
         </div>
       )}
+
+      {conditionPlan?.globalNotice ? (
+        <p className="mt-4 rounded-[0.85rem] border border-amber-300/20 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
+          {conditionPlan.globalNotice}
+        </p>
+      ) : null}
 
       <button
         type="button"

@@ -115,7 +115,7 @@ assert(!premiumUnavailableResponse.includes("releaseMode"), "unavailable respons
 assertBefore(fullReportPost, 'if (access.reason === "premium_unavailable")', "const premiumSession = await verifyPremiumReportSession", "full-report fail-closed guard");
 
 const analyzeSessionBlock = analyzeRoute.slice(analyzeRoute.indexOf("const premiumReport ="));
-assertBefore(analyzeSessionBlock, "canPreparePremiumReportSession(premiumAccess)", "createPremiumReportSession({", "analyze premium session guard");
+assertBefore(analyzeSessionBlock, "canPreparePremiumReportSession(premiumAccess)", "createPremiumReportSession(", "analyze premium session guard");
 assert(resultPage.includes('setPremiumAvailability(access?.reason === "premium_unavailable" ? "unavailable" : "available")'), "result UI availability check missing");
 assert(resultPage.includes('premiumAvailability={premiumAvailability}'), "result UI availability prop missing");
 assert(fullReportPage.includes('accessReason === "premium_unavailable"'), "full-report unavailable UI route handling missing");

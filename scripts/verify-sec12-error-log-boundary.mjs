@@ -168,13 +168,52 @@ const HTTP_METHOD_NAMES = Object.freeze(["DELETE", "GET", "HEAD", "OPTIONS", "PA
 const HTTP_METHOD_NAME_SET = new Set(HTTP_METHOD_NAMES);
 const EXPECTED_SENSITIVE_ROUTE_COUNT = 11;
 const EXPECTED_SENSITIVE_HANDLER_BINDING_COUNT = 12;
-const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 120;
+const EXPECTED_SENSITIVE_TERMINAL_RESPONSE_PATH_COUNT = 125;
+const FULL_REPORT_POST_TERMINAL_SIGNATURES = Object.freeze([
+  "call:buildSavedPremiumReportResponse",
+  "call:getPremiumPersistenceFailedResponse(\"premium_session_update_failed\")",
+  "call:getPremiumUnavailableResponse",
+  "call:getStorageUnavailableResponse",
+  "call:getStorageUnavailableResponse",
+  "call:getUnauthorizedResponse(\"login_required\")",
+  "call:getUnauthorizedResponse(\"premium_principal_conflict\")",
+  "call:getUnauthorizedResponse(\"premium_session_missing_or_expired\")",
+  "call:sensitiveJsonResponse{error=\"invalid_image\"}",
+  "call:sensitiveJsonResponse{error=\"invalid_image\"}",
+  "conditional:access.reason?call:getPaymentRequiredResponse:call:getUnauthorizedResponse(\"login_required\")",
+  "conditional:persistResult.code?call:getSnapshotConflictResponse:call:getPremiumPersistenceFailedResponse",
+  "conditional:replay.status?call:buildSavedPremiumReportResponse:call:getSnapshotConflictResponse",
+  "identifier:response",
+  "call:getUnauthorizedResponse(\"premium_session_missing_or_expired\")"
+].sort());
+const FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES = Object.freeze([
+  "call:json{reason=\"current_session_missing\"}",
+  "call:json{reason=\"premium_creation_not_allowed\"}",
+  "call:json{reason=\"principal_conflict\"}",
+  "call:json{reason=\"rotation_failed\"}",
+  "call:json{reason=\"rotation_failed\"}",
+  "call:json{reason=\"saved_snapshot_not_found\"}",
+  "call:json{reason=\"session_store_unavailable\"}",
+  "identifier:response"
+].sort());
 const SENSITIVE_ROUTE_HANDLER_BINDINGS = Object.freeze([
   Object.freeze({ id: "app/api/analyze/route.js::POST", path: "app/api/analyze/route.js", method: "POST", expectedTerminalPaths: 9 }),
   Object.freeze({ id: "app/api/face-reading/route.js::POST", path: "app/api/face-reading/route.js", method: "POST", expectedTerminalPaths: 14 }),
-  Object.freeze({ id: "app/api/full-report/route.js::POST", path: "app/api/full-report/route.js", method: "POST", expectedTerminalPaths: 12 }),
+  Object.freeze({
+    id: "app/api/full-report/route.js::POST",
+    path: "app/api/full-report/route.js",
+    method: "POST",
+    expectedTerminalPaths: 15,
+    expectedTerminalSignatures: FULL_REPORT_POST_TERMINAL_SIGNATURES
+  }),
   Object.freeze({ id: "app/api/full-report/session/route.js::GET", path: "app/api/full-report/session/route.js", method: "GET", expectedTerminalPaths: 3 }),
-  Object.freeze({ id: "app/api/full-report/session/route.js::POST", path: "app/api/full-report/session/route.js", method: "POST", expectedTerminalPaths: 6 }),
+  Object.freeze({
+    id: "app/api/full-report/session/route.js::POST",
+    path: "app/api/full-report/session/route.js",
+    method: "POST",
+    expectedTerminalPaths: 8,
+    expectedTerminalSignatures: FULL_REPORT_SESSION_POST_TERMINAL_SIGNATURES
+  }),
   Object.freeze({ id: "app/api/my/check-in/route.js::POST", path: "app/api/my/check-in/route.js", method: "POST", expectedTerminalPaths: 6 }),
   Object.freeze({ id: "app/api/my/dashboard/route.js::GET", path: "app/api/my/dashboard/route.js", method: "GET", expectedTerminalPaths: 4 }),
   Object.freeze({ id: "app/api/my/save-report/route.js::POST", path: "app/api/my/save-report/route.js", method: "POST", expectedTerminalPaths: 11 }),
@@ -189,6 +228,15 @@ const AUDITED_EXTERNAL_RESPONSE_HELPERS = Object.freeze({
     helpers: Object.freeze({
       applyAnalysisGuardCookies: Object.freeze({ kind: "response-pass-through", responseArgumentIndex: 0 }),
       createAnalysisGuardResponse: Object.freeze({ kind: "safe-response-factory" })
+    })
+  }),
+  "@/lib/premium-snapshot-replay-diagnostics": Object.freeze({
+    path: "lib/premium-snapshot-replay-diagnostics.js",
+    helpers: Object.freeze({
+      applyPremiumSnapshotReplayDiagnosticHeaders: Object.freeze({
+        kind: "response-pass-through",
+        responseArgumentIndex: 0
+      })
     })
   })
 });
@@ -874,10 +922,52 @@ function analyzeHandlerNode(functionNode, model, externalHelpers) {
   const unresolvedPaths = pathProofs.filter((proof) => proof.kind === "unresolved").length;
   const verifiedPaths = pathProofs.filter((proof) => proof.kind === "safe").length;
   const terminalPaths = terminalPathGroups.size;
+  const terminalPathLocations = [...terminalPathGroups.keys()]
+    .map((node) => `${node.loc?.start?.line || 0}:${node.loc?.start?.column || 0}`)
+    .sort();
+  const describeMember = (node) => {
+    if (node?.type === "Identifier") return node.name;
+    if (node?.type === "MemberExpression" || node?.type === "OptionalMemberExpression") {
+      return `${describeMember(node.object)}.${describeMember(node.property)}`;
+    }
+    return node?.type || "unknown";
+  };
+  const describeCall = (node) => {
+    const callee = describeMember(node?.callee);
+    const firstArgument = node?.arguments?.[0];
+    let literalSuffix = "";
+    if (firstArgument?.type === "StringLiteral") {
+      literalSuffix = `(${JSON.stringify(firstArgument.value)})`;
+    } else if (firstArgument?.type === "ObjectExpression") {
+      const discriminator = firstArgument.properties?.find(
+        (property) =>
+          property?.type === "ObjectProperty" &&
+          ["error", "reason"].includes(property.key?.name) &&
+          property.value?.type === "StringLiteral"
+      );
+      if (discriminator) {
+        literalSuffix = `{${discriminator.key.name}=${JSON.stringify(discriminator.value.value)}}`;
+      }
+    }
+    return `call:${callee}${literalSuffix}`;
+  };
+  const describeTerminal = (expression) => {
+    if (expression?.type === "Identifier") return `identifier:${expression.name}`;
+    if (expression?.type === "CallExpression") return describeCall(expression);
+    if (expression?.type === "ConditionalExpression") {
+      return `conditional:${describeMember(expression.test?.left)}?${describeTerminal(expression.consequent)}:${describeTerminal(expression.alternate)}`;
+    }
+    return `expression:${expression?.type || "unknown"}`;
+  };
+  const terminalPathSignatures = [...terminalPathGroups.values()]
+    .map((paths) => describeTerminal(paths[0]?.expression))
+    .sort();
 
   return Object.freeze({
     deadHelperCalls,
     terminalPaths,
+    terminalPathLocations: Object.freeze(terminalPathLocations),
+    terminalPathSignatures: Object.freeze(terminalPathSignatures),
     unsafePaths,
     unresolvedPaths,
     verifiedPaths,
@@ -1029,7 +1119,26 @@ async function assertSensitiveRouteIntegrationExactSet() {
     const model = modelByPath.get(descriptor.path);
     assert.ok(model, `missing route model: ${descriptor.path}`);
     const result = analyzeHandlerNode(model.exportedHttpHandlers.get(descriptor.method), model, externalHelpers);
+    if (result.terminalPaths !== descriptor.expectedTerminalPaths) {
+      console.error(`${descriptor.id} terminal response paths: ${result.terminalPathLocations.join(", ")}`);
+    }
     assert.equal(result.terminalPaths, descriptor.expectedTerminalPaths, `${descriptor.id} terminal response path count mismatch`);
+    if (descriptor.expectedTerminalSignatures) {
+      assert.deepEqual(
+        result.terminalPathSignatures,
+        descriptor.expectedTerminalSignatures,
+        `${descriptor.id} terminal response path signature exact-set mismatch`
+      );
+    }
+    if (!result.verified) {
+      console.error(`${descriptor.id} terminal verification: ${JSON.stringify({
+        deadHelperCalls: result.deadHelperCalls,
+        terminalPaths: result.terminalPaths,
+        unsafePaths: result.unsafePaths,
+        unresolvedPaths: result.unresolvedPaths,
+        verifiedPaths: result.verifiedPaths
+      })}`);
+    }
     discoveredTerminalPaths += result.terminalPaths;
     verifiedTerminalPaths += result.verifiedPaths;
     unsafeResponsePaths += result.unsafePaths;
@@ -1388,7 +1497,7 @@ register("I10_SENSITIVE_ROUTE_NO_STORE", async () => {
   const result = await assertSensitiveRouteIntegrationExactSet();
   assert.deepEqual(result.routes, { expected: 11, discovered: 11, verified: 11 });
   assert.deepEqual(result.handlerBindings, { expected: 12, discovered: 12, verified: 12 });
-  assert.deepEqual(result.terminalResponsePaths, { expected: 120, discovered: 120, verified: 120 });
+  assert.deepEqual(result.terminalResponsePaths, { expected: 125, discovered: 125, verified: 125 });
   assert.deepEqual(result.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(result.deadHelperCalls, 0);
   assert.equal(result.unsafeResponsePaths, 0);

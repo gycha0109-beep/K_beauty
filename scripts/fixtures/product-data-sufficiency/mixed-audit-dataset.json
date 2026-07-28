@@ -1,0 +1,77 @@
+[
+  {
+    "id": "treatment-complete",
+    "brand": "Fixture",
+    "name": "Complete Treatment",
+    "category": "treatment",
+    "product_form": "serum",
+    "skin_types": ["combination"],
+    "concerns": ["pores"],
+    "texture": "watery",
+    "finish": "natural",
+    "irritation_risk": "low",
+    "sensitivity_safe": true,
+    "ingredient_signals": {
+      "source": "fixture_source",
+      "functional": [{ "label": "exfoliation", "count": 4 }]
+    },
+    "review_signals": { "source": "fixture_reviews" },
+    "market_signals": { "source": "fixture_market" },
+    "buy_link": "https://oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=fixture",
+    "image_url": "https://example.invalid/treatment.jpg",
+    "price_min": 20000,
+    "price_max": 25000
+  },
+  {
+    "id": "sunscreen-complete",
+    "brand": "Fixture",
+    "name": "Complete Sunscreen",
+    "category": "sunscreen",
+    "skin_types": ["oily"],
+    "concerns": ["uneven_tone"],
+    "texture": "lotion",
+    "finish": "natural",
+    "irritation_risk": "low",
+    "sensitivity_safe": true,
+    "spf_value": 50,
+    "uva_label": "PA++++",
+    "uv_filter_type": "organic",
+    "tone_up": false,
+    "white_cast": "none",
+    "eye_sting": "low",
+    "pilling_risk": "low",
+    "ingredient_signals": {
+      "source": "fixture_source",
+      "functional": [{ "label": "uv protection", "count": 6 }]
+    },
+    "review_signals": { "source": "fixture_reviews" },
+    "market_signals": { "source": "fixture_market" },
+    "image_url": "https://example.invalid/sunscreen.jpg",
+    "price_min": 18000
+  },
+  {
+    "id": "legacy-serum",
+    "brand": "Fixture",
+    "name": "Legacy Serum",
+    "category": "serum",
+    "irritation_risk": "low",
+    "sensitivity_safe": null,
+    "ingredient_signals": {
+      "functional": [{ "label": "new unknown label", "count": 5 }]
+    }
+  },
+  {
+    "id": "duplicate-product",
+    "brand": "Fixture",
+    "name": "Duplicate A",
+    "category": "cleanser",
+    "ingredient_signals": { "functional": [] }
+  },
+  {
+    "id": "duplicate-product",
+    "brand": "Fixture",
+    "name": "Duplicate B",
+    "category": "cleanser",
+    "ingredient_signals": "malformed"
+  }
+]
