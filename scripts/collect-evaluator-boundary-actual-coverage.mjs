@@ -2,10 +2,17 @@ import { execFileSync } from "node:child_process";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveEvaluatorRecentInstabilityBoundaryPolicy } from "../lib/evaluator-recent-instability-boundary-policy.js";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
-const CAPTURE_DIR = process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
-  path.join(process.cwd(), "tmp", "functional-shadow-captures");
-const OUTPUT_DIR = path.join(process.cwd(), "tmp");
+const CAPTURE_DIR = resolveCliDirectory(
+  "--capture-dir",
+  process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
+    path.join(process.cwd(), "tmp", "functional-shadow-captures")
+);
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(process.cwd(), "tmp"));
 const EXPOSURE_AUDIT_PATH = path.join(CAPTURE_DIR, "candidate-exposure-audit.json");
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-actual-coverage.json");
 const MD_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-actual-coverage.md");
@@ -66,7 +73,11 @@ async function ensureExposureAudit() {
   const hasRows = existing?.fixtureAudits?.some((fixture) => Array.isArray(fixture.candidateReviewRows));
 
   if (!hasRows) {
-    execFileSync(process.execPath, ["scripts/run-functional-candidate-exposure-audit.mjs"], {
+    execFileSync(process.execPath, [
+      "scripts/run-functional-candidate-exposure-audit.mjs",
+      "--capture-dir",
+      CAPTURE_DIR
+    ], {
       cwd: process.cwd(),
       stdio: "ignore",
       env: process.env
@@ -315,12 +326,14 @@ function renderMarkdown(output) {
 await ensureExposureAudit();
 
 const captureSummary = await scanCaptureFiles();
-const actualEvidenceAvailable = captureSummary.completeProductRowFixturesUsed > 0;
-
 const candidateExposureAudit = await readJsonIfPresent(EXPOSURE_AUDIT_PATH);
 const fixtureAudits = Array.isArray(candidateExposureAudit?.fixtureAudits)
   ? candidateExposureAudit.fixtureAudits
   : [];
+const fixtureEvidenceAvailable =
+  candidateExposureAudit?.evidenceType === "deterministic_contract_fixture";
+const actualEvidenceAvailable =
+  captureSummary.completeProductRowFixturesUsed > 0 && !fixtureEvidenceAvailable;
 const rows = fixtureAudits.flatMap((fixture) =>
   (Array.isArray(fixture.candidateReviewRows) ? fixture.candidateReviewRows : [])
     .map((row) => ({ row, fixture }))
@@ -388,11 +401,14 @@ for (const key of Object.keys(gapCoverage)) {
 }
 
 const output = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: resolveGeneratedAt(),
   evidenceType: actualEvidenceAvailable
     ? "actual_complete_product_row_capture"
+    : fixtureEvidenceAvailable
+      ? "deterministic_contract_fixture"
     : "actual_capture_coverage_unavailable",
   actualEvidenceAvailable,
+  fixtureEvidenceAvailable,
   captureSummary,
   candidateSummary: {
     totalCandidateRows: highConfidenceRows.length,
@@ -407,7 +423,8 @@ const output = {
   },
   limitations: [
     ...buildLimitations(gapCoverage),
-    ...(actualEvidenceAvailable ? [] : ["actual_complete_product_row_capture_not_available_in_clean_checkout"])
+    ...(actualEvidenceAvailable ? [] : ["actual_complete_product_row_capture_not_available_in_clean_checkout"]),
+    ...(fixtureEvidenceAvailable ? ["deterministic_fixture_is_not_actual_evidence"] : [])
   ].sort(),
   runtimeMutation: false
 };

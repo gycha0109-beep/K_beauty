@@ -180,14 +180,15 @@ const lowRiskConsistencyGate = gate(
   }
 );
 
-const actualEvidenceLabels = new Set([
+const nonReplayEvidenceLabels = new Set([
   "actual_complete_product_row_capture",
+  "deterministic_contract_fixture",
   "actual_capture_coverage_unavailable"
 ]);
 const actualIntegrationLabel = integrationWhatIf.actualWhatIfSummary?.evidenceLabel;
 const actualReceiverLabel = receiverWhatIf.actualReceiverSummary?.evidenceLabel;
 const evidenceSeparationGate = gate(
-  actualEvidenceLabels.has(actualIntegrationLabel) &&
+  nonReplayEvidenceLabels.has(actualIntegrationLabel) &&
     actualReceiverLabel === actualIntegrationLabel &&
     integrationWhatIf.pureReplayWhatIfSummary?.evidenceLabel === "pure_engine_replay" &&
     receiverWhatIf.pureReplayReceiverSummary?.evidenceLabel === "pure_engine_replay" &&

@@ -37,9 +37,14 @@ runCase("collector executes and output JSON exists", () => {
 runCase("actual evidence presence or absence is represented explicitly", () => {
   assert.ok(output.captureSummary.totalFilesScanned >= output.captureSummary.completeProductRowFixturesUsed);
   assert.equal(typeof output.actualEvidenceAvailable, "boolean");
+  assert.equal(typeof output.fixtureEvidenceAvailable, "boolean");
   if (output.actualEvidenceAvailable) {
     assert.equal(output.evidenceType, "actual_complete_product_row_capture");
     assert.ok(output.captureSummary.completeProductRowFixturesUsed > 0);
+  } else if (output.fixtureEvidenceAvailable) {
+    assert.equal(output.evidenceType, "deterministic_contract_fixture");
+    assert.ok(output.captureSummary.completeProductRowFixturesUsed > 0);
+    assert.ok(output.limitations.includes("deterministic_fixture_is_not_actual_evidence"));
   } else {
     assert.equal(output.evidenceType, "actual_capture_coverage_unavailable");
     assert.equal(output.captureSummary.completeProductRowFixturesUsed, 0);
@@ -53,6 +58,12 @@ runCase("candidate and boundary counts are internally consistent", () => {
   if (output.actualEvidenceAvailable) {
     assert.ok(output.candidateSummary.totalCandidateRows > 0);
     assert.ok(output.candidateSummary.boundaryApplicableRows > 0);
+  } else if (output.fixtureEvidenceAvailable) {
+    assert.ok(output.candidateSummary.totalCandidateRows > 0);
+    assert.equal(
+      output.candidateSummary.boundaryApplicableRows,
+      output.candidateSummary.reviewedRows
+    );
   } else {
     assert.equal(output.candidateSummary.totalCandidateRows, 0);
     assert.equal(output.candidateSummary.boundaryApplicableRows, 0);

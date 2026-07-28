@@ -1,13 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "tmp");
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(ROOT, "tmp"));
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-readiness-review.json");
 const MD_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-readiness-review.md");
 
-const ACTUAL_PATH = path.join(ROOT, "tmp", "evaluator-boundary-actual-coverage.json");
-const PURE_REPLAY_PATH = path.join(ROOT, "tmp", "evaluator-boundary-pure-engine-target-replay.json");
+const ACTUAL_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-actual-coverage.json");
+const PURE_REPLAY_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-pure-engine-target-replay.json");
 
 const DOC_SOURCES = [
   "docs/reviews/evaluator-recent-instability-boundary-shadow-20260703.md",
@@ -370,7 +374,7 @@ if (!READINESS_STATUSES.includes(readiness.readinessStatus)) {
 }
 
 const output = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: resolveGeneratedAt(),
   evidenceSources,
   actualEvidenceSummary,
   pureReplayEvidenceSummary,

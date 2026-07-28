@@ -6,10 +6,17 @@ import {
   EVALUATOR_RECENT_INSTABILITY_BOUNDARY_POLICY_VALUES,
   resolveEvaluatorRecentInstabilityBoundaryPolicy
 } from "../lib/evaluator-recent-instability-boundary-policy.js";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
-const CAPTURE_DIR = process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
-  path.join(process.cwd(), "tmp", "functional-shadow-captures");
-const OUTPUT_DIR = path.join(process.cwd(), "tmp");
+const CAPTURE_DIR = resolveCliDirectory(
+  "--capture-dir",
+  process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
+    path.join(process.cwd(), "tmp", "functional-shadow-captures")
+);
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(process.cwd(), "tmp"));
 const EXPOSURE_AUDIT_PATH = path.join(CAPTURE_DIR, "candidate-exposure-audit.json");
 const ACTUAL_COVERAGE_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-actual-coverage.json");
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-target-capture-plan.json");
@@ -646,7 +653,9 @@ export async function buildEvaluatorBoundaryTargetCapturePlan({ generatedAt = ne
 }
 
 async function main() {
-  const plan = await buildEvaluatorBoundaryTargetCapturePlan();
+  const plan = await buildEvaluatorBoundaryTargetCapturePlan({
+    generatedAt: resolveGeneratedAt()
+  });
   await mkdir(OUTPUT_DIR, { recursive: true });
   await writeFile(JSON_OUTPUT, `${JSON.stringify(plan, null, 2)}\n`, "utf8");
   await writeFile(MD_OUTPUT, makeMarkdown(plan), "utf8");

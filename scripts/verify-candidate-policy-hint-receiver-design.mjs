@@ -1,15 +1,25 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync
+} from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {
   CANDIDATE_POLICY_HINT_RECEIVER_CONTRACT_VALUES,
   resolveCandidatePolicyHintReceiver
 } from "../lib/candidate-policy-hint-receiver-contract.js";
+import {
+  cleanupCandidatePolicyVerifierWorkspace,
+  materializeCandidatePolicyVerifierBaseline,
+  validateHintReceiverWhatIf
+} from "./lib/candidate-policy-verifier-baseline.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_PATH = path.join(ROOT, "tmp", "candidate-policy-hint-receiver-whatif.json");
-const MD_OUTPUT_PATH = path.join(ROOT, "tmp", "candidate-policy-hint-receiver-whatif.md");
 const ARCHITECTURE_DOC_PATH = path.join(ROOT, "docs", "architecture", "candidate-policy-hint-receiver.md");
 const REVIEW_DOC_PATH = path.join(ROOT, "docs", "reviews", "candidate-policy-hint-receiver-whatif-20260709.md");
 const FORBIDDEN_RUNTIME_FILES = [
@@ -64,17 +74,33 @@ function resolve(input = {}) {
   });
 }
 
-function runWhatIf() {
-  const stdout = execFileSync(process.execPath, ["scripts/run-candidate-policy-hint-receiver-whatif.mjs"], {
-    cwd: ROOT,
-    encoding: "utf8",
-    env: process.env
-  });
+function runWhatIf(workspace, { staleNegativeControl = false } = {}) {
+  if (staleNegativeControl) {
+    const staleOutputDir = path.join(workspace, "artifacts");
+    mkdirSync(staleOutputDir, { recursive: true });
+    writeFileSync(
+      path.join(staleOutputDir, "evaluator-boundary-integration-whatif.json"),
+      "{\"invalid\":true}\n",
+      "utf8"
+    );
+    writeFileSync(
+      path.join(staleOutputDir, "candidate-policy-hint-receiver-whatif.json"),
+      "{\"invalid\":true}\n",
+      "utf8"
+    );
+  }
 
-  assert(stdout.includes("candidate-policy-hint-receiver-whatif summary"));
-  assert(existsSync(OUTPUT_PATH), "receiver what-if JSON should exist");
-  assert(existsSync(MD_OUTPUT_PATH), "receiver what-if markdown should exist");
-  return JSON.parse(readFileSync(OUTPUT_PATH, "utf8"));
+  const result = materializeCandidatePolicyVerifierBaseline({
+    root: ROOT,
+    workspace,
+    includeHintReceiver: true
+  });
+  assert.equal(result.runs.every((run) => run.status === 0), true);
+  assert.equal(
+    result.hintReceiver.receiverContractVersion,
+    "candidate-policy-hint-receiver-contract-v1"
+  );
+  return result;
 }
 
 function stripVolatile(output) {
@@ -155,6 +181,25 @@ function assertHelperSemantics() {
   });
   assert.equal(none.receiverDecision, "keep_existing_exposure");
   assert.equal(none.futureExposureGroup, "unchanged");
+
+  const unknown = resolve({
+    collapsedHintResult: {
+      candidatePolicyHint: "unknown_hint",
+      boundaryDecision: "unexpected",
+      futureEvaluatorAction: "unexpected"
+    }
+  });
+  assert.equal(unknown.applies, false);
+  assert.equal(unknown.receivedHint, "none");
+  assert.equal(unknown.futureExposureGroup, "unchanged");
+
+  const malformedCollapsed = resolve({
+    collapsedHintResult: {
+      candidatePolicyHint: "collapsed_candidate_hint"
+    }
+  });
+  assert.equal(malformedCollapsed.receiverDecision, "preserve_hidden_candidate");
+  assert.equal(malformedCollapsed.futureExposureGroup, "hidden_candidate");
 }
 
 function assertWhatIfContract(output) {
@@ -165,6 +210,7 @@ function assertWhatIfContract(output) {
   assert.equal(output.runtimeMutation, false);
   assert.ok([
     "actual_complete_product_row_capture",
+    "deterministic_contract_fixture",
     "actual_capture_coverage_unavailable"
   ].includes(output.actualReceiverSummary.evidenceLabel));
   assert.equal(output.pureReplayReceiverSummary.evidenceLabel, "pure_engine_replay");
@@ -195,10 +241,10 @@ function assertDocs() {
   assert(review.includes("Still prohibited"));
 }
 
-function assertNoLeakage() {
+function assertNoLeakage(outputDir) {
   const serialized = [
-    readFileSync(OUTPUT_PATH, "utf8"),
-    readFileSync(MD_OUTPUT_PATH, "utf8"),
+    readFileSync(path.join(outputDir, "candidate-policy-hint-receiver-whatif.json"), "utf8"),
+    readFileSync(path.join(outputDir, "candidate-policy-hint-receiver-whatif.md"), "utf8"),
     existsSync(REVIEW_DOC_PATH) ? readFileSync(REVIEW_DOC_PATH, "utf8") : ""
   ].join("\n");
 
@@ -243,21 +289,69 @@ function assertNoRuntimeConnections() {
   assert(changedFiles.every((file) => !file.startsWith("supabase/")), "Supabase files should not be modified");
 }
 
+function assertMissingAndMalformedPrerequisitesFailClosed() {
+  const workspace = mkdtempSync(path.join(os.tmpdir(), "candidate-hint-missing-"));
+  try {
+    const outputDir = path.join(workspace, "artifacts");
+    mkdirSync(outputDir, { recursive: true });
+    const missing = spawnSync(process.execPath, [
+      "scripts/run-candidate-policy-hint-receiver-whatif.mjs",
+      "--output-dir",
+      outputDir
+    ], {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: process.env
+    });
+    assert.notEqual(missing.status, 0, "missing integration prerequisite must fail");
+
+    const malformed = {
+      evidenceType: "candidate_policy_hint_receiver_whatif",
+      receiverContractVersion: "candidate-policy-hint-receiver-contract-v1",
+      safetyRegressionCheck: { passed: false }
+    };
+    assert.throws(
+      () => validateHintReceiverWhatIf(malformed),
+      /exact key set|safetyRegressionCheck/
+    );
+  } finally {
+    cleanupCandidatePolicyVerifierWorkspace(workspace);
+  }
+}
+
 assertHelperSemantics();
-const first = runWhatIf();
-assertWhatIfContract(first);
-assertNoRuntimeConnections();
+assertMissingAndMalformedPrerequisitesFailClosed();
 
-const second = runWhatIf();
-assert.deepEqual(
-  stripVolatile(first),
-  stripVolatile(second),
-  "receiver what-if output should be deterministic apart from generatedAt"
-);
+const firstWorkspace = mkdtempSync(path.join(os.tmpdir(), "candidate-hint-a-"));
+const secondWorkspace = mkdtempSync(path.join(os.tmpdir(), "candidate-hint-b-"));
+try {
+  const first = runWhatIf(firstWorkspace, { staleNegativeControl: true });
+  assertWhatIfContract(first.hintReceiver);
+  const tamperedHintReceiver = structuredClone(first.hintReceiver);
+  tamperedHintReceiver.safetyRegressionCheck.passed = false;
+  assert.throws(
+    () => validateHintReceiverWhatIf(tamperedHintReceiver),
+    (error) => error?.actual === false && error?.expected === true
+  );
+  assertNoRuntimeConnections();
 
-if (existsSync(ARCHITECTURE_DOC_PATH) && existsSync(REVIEW_DOC_PATH)) {
-  assertDocs();
-  assertNoLeakage();
+  const second = runWhatIf(secondWorkspace);
+  assert.deepEqual(first.captureFiles, second.captureFiles);
+  assert.deepEqual(first.outputFiles, second.outputFiles);
+  assert.deepEqual(first.semanticHashes, second.semanticHashes);
+  assert.deepEqual(
+    stripVolatile(first.hintReceiver),
+    stripVolatile(second.hintReceiver),
+    "receiver what-if output should be deterministic apart from generatedAt"
+  );
+
+  if (existsSync(ARCHITECTURE_DOC_PATH) && existsSync(REVIEW_DOC_PATH)) {
+    assertDocs();
+    assertNoLeakage(first.outputDir);
+  }
+} finally {
+  cleanupCandidatePolicyVerifierWorkspace(firstWorkspace);
+  cleanupCandidatePolicyVerifierWorkspace(secondWorkspace);
 }
 
 console.log("verify-candidate-policy-hint-receiver-design passed");

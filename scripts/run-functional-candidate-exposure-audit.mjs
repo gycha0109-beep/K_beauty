@@ -1,9 +1,16 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildFunctionalCandidateExposureAudit } from "../lib/functional-candidate-exposure-audit.js";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
-const CAPTURE_DIR = process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
-  path.join(process.cwd(), "tmp", "functional-shadow-captures");
+const CAPTURE_DIR = resolveCliDirectory(
+  "--capture-dir",
+  process.env.FUNCTIONAL_SHADOW_CAPTURE_DIR ||
+    path.join(process.cwd(), "tmp", "functional-shadow-captures")
+);
 const JSON_OUTPUT = path.join(CAPTURE_DIR, "candidate-exposure-audit.json");
 const MD_OUTPUT = path.join(CAPTURE_DIR, "candidate-exposure-audit.md");
 const REPLAY_SUMMARY_PATH = path.join(CAPTURE_DIR, "replay-summary.json");
@@ -336,10 +343,24 @@ aggregate.functionalProfileDistribution = sortGrouped(aggregate.functionalProfil
 aggregate.safetyMetadataProfileDistribution = sortGrouped(aggregate.safetyMetadataProfileDistribution);
 aggregate.currentProductRelationDistribution = sortGrouped(aggregate.currentProductRelationDistribution);
 fixtureAudits.sort((left, right) => String(left.captureId || "").localeCompare(String(right.captureId || "")));
+const deterministicContractFixture = fixtureAudits.length > 0 &&
+  fixtureAudits.every(
+    (fixture) => fixture.sourceStage === "candidate_policy_verifier_baseline_fixture"
+  );
 
 const output = {
   auditVersion: "functional-candidate-exposure-audit-v1",
-  generatedAt: new Date().toISOString(),
+  generatedAt: resolveGeneratedAt(),
+  evidenceType: deterministicContractFixture
+    ? "deterministic_contract_fixture"
+    : fixtureAudits.length > 0
+      ? "actual_complete_product_row_capture"
+      : "actual_capture_coverage_unavailable",
+  provenance: {
+    fixtureContract: "functional-shadow-capture-v1",
+    productionSourceModule: "lib/functional-candidate-exposure-audit.js",
+    producer: "scripts/run-functional-candidate-exposure-audit.mjs"
+  },
   aggregate,
   fixtureAudits,
   excludedFixtures

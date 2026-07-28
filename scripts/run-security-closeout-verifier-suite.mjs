@@ -14,6 +14,7 @@ const EXPECTED_VERIFIERS = [
   "verify-analysis-rls-contract.mjs",
   "verify-anonymous-write-grant-v2.mjs",
   "verify-candidate-policy-hint-receiver-design.mjs",
+  "verify-evaluator-boundary-integration-design.mjs",
   "verify-evaluator-boundary-policy-production-observability.mjs",
   "verify-existing-recommendation-candidate-source.mjs",
   "verify-face-lab-keyword-summary.mjs",
@@ -68,6 +69,7 @@ const PREPARATION_STEPS = [
   "verify-evaluator-boundary-readiness-review.mjs",
   "verify-evaluator-boundary-integration-design.mjs",
   "verify-candidate-policy-hint-receiver-design.mjs",
+  "materialize-candidate-policy-verifier-baseline.mjs",
   "verify-runtime-integration-acceptance-criteria.mjs",
   "verify-shadow-runtime-dry-run-plan.mjs",
   "verify-evaluator-boundary-required-contract-tests.mjs",
@@ -114,7 +116,11 @@ function runScript(name, phase) {
 
 const discovered = readdirSync(path.join(ROOT, "scripts"))
   .filter((name) => /^verify-.*\.mjs$/.test(name))
-  .filter((name) => KEYWORDS.test(name))
+  .filter(
+    (name) =>
+      KEYWORDS.test(name) ||
+      name === "verify-evaluator-boundary-integration-design.mjs"
+  )
   .sort();
 
 if (!sameOrdered(discovered, EXPECTED_VERIFIERS)) {

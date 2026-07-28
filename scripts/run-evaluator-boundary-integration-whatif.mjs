@@ -2,15 +2,23 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveEvaluatorBoundaryCollapsedHint } from "../lib/evaluator-boundary-collapsed-hint-contract.js";
 import { resolveEvaluatorRecentInstabilityBoundaryPolicy } from "../lib/evaluator-recent-instability-boundary-policy.js";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "tmp");
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(ROOT, "tmp"));
+const CAPTURE_DIR = resolveCliDirectory(
+  "--capture-dir",
+  path.join(ROOT, "tmp", "functional-shadow-captures")
+);
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-integration-whatif.json");
 const MD_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-integration-whatif.md");
-const ACTUAL_AUDIT_PATH = path.join(ROOT, "tmp", "functional-shadow-captures", "candidate-exposure-audit.json");
-const ACTUAL_COVERAGE_PATH = path.join(ROOT, "tmp", "evaluator-boundary-actual-coverage.json");
-const PURE_REPLAY_PATH = path.join(ROOT, "tmp", "evaluator-boundary-pure-engine-target-replay.json");
-const READINESS_PATH = path.join(ROOT, "tmp", "evaluator-boundary-readiness-review.json");
+const ACTUAL_AUDIT_PATH = path.join(CAPTURE_DIR, "candidate-exposure-audit.json");
+const ACTUAL_COVERAGE_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-actual-coverage.json");
+const PURE_REPLAY_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-pure-engine-target-replay.json");
+const READINESS_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-readiness-review.json");
 
 function normalizeText(value) {
   return String(value ?? "").trim().toLowerCase();
@@ -411,8 +419,9 @@ const pureReplayWhatIfSummary = applyWhatIf(flattenPureReplayRows(pureReplay), "
 const options = integrationOptions();
 
 const output = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: resolveGeneratedAt(),
   evidenceType: "integration_whatif_shadow",
+  contractVersion: "evaluator-boundary-collapsed-hint-contract-v1",
   runtimeConnected: false,
   routeInvoked: false,
   supabaseWriteExecuted: false,

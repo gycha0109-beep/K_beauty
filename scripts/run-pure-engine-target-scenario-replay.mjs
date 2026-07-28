@@ -3,9 +3,13 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "tmp");
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(ROOT, "tmp"));
 const PLAN_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-target-capture-plan.json");
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-pure-engine-target-replay.json");
 const MD_OUTPUT = path.join(OUTPUT_DIR, "evaluator-boundary-pure-engine-target-replay.md");
@@ -762,7 +766,9 @@ export async function runPureEngineTargetScenarioReplay({ generatedAt = new Date
 }
 
 async function main() {
-  const result = await runPureEngineTargetScenarioReplay();
+  const result = await runPureEngineTargetScenarioReplay({
+    generatedAt: resolveGeneratedAt()
+  });
   await mkdir(OUTPUT_DIR, { recursive: true });
   await writeFile(JSON_OUTPUT, `${JSON.stringify(result, null, 2)}\n`, "utf8");
   await writeFile(MD_OUTPUT, makeMarkdown(result), "utf8");

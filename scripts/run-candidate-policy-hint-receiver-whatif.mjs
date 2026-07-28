@@ -1,13 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveCandidatePolicyHintReceiver } from "../lib/candidate-policy-hint-receiver-contract.js";
+import {
+  resolveCliDirectory,
+  resolveGeneratedAt
+} from "./lib/verifier-cli-options.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_DIR = path.join(ROOT, "tmp");
+const OUTPUT_DIR = resolveCliDirectory("--output-dir", path.join(ROOT, "tmp"));
 const JSON_OUTPUT = path.join(OUTPUT_DIR, "candidate-policy-hint-receiver-whatif.json");
 const MD_OUTPUT = path.join(OUTPUT_DIR, "candidate-policy-hint-receiver-whatif.md");
-const INTEGRATION_WHATIF_PATH = path.join(ROOT, "tmp", "evaluator-boundary-integration-whatif.json");
-const READINESS_PATH = path.join(ROOT, "tmp", "evaluator-boundary-readiness-review.json");
+const INTEGRATION_WHATIF_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-integration-whatif.json");
+const READINESS_PATH = path.join(OUTPUT_DIR, "evaluator-boundary-readiness-review.json");
 
 function countFrom(map = {}, key) {
   return Number(map?.[key] || 0);
@@ -211,8 +215,9 @@ const actualReceiverSummary = buildReceiverSummary(
 const pureReplayReceiverSummary = buildReceiverSummary(integrationWhatIf.pureReplayWhatIfSummary, "pure_engine_replay");
 
 const output = {
-  generatedAt: new Date().toISOString(),
+  generatedAt: resolveGeneratedAt(),
   evidenceType: "candidate_policy_hint_receiver_whatif",
+  receiverContractVersion: "candidate-policy-hint-receiver-contract-v1",
   runtimeConnected: false,
   routeInvoked: false,
   supabaseWriteExecuted: false,

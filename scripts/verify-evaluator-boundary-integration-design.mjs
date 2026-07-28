@@ -1,15 +1,25 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync
+} from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {
   EVALUATOR_BOUNDARY_COLLAPSED_HINT_CONTRACT_VALUES,
   resolveEvaluatorBoundaryCollapsedHint
 } from "../lib/evaluator-boundary-collapsed-hint-contract.js";
+import {
+  cleanupCandidatePolicyVerifierWorkspace,
+  materializeCandidatePolicyVerifierBaseline,
+  validateIntegrationWhatIf
+} from "./lib/candidate-policy-verifier-baseline.mjs";
 
 const ROOT = process.cwd();
-const OUTPUT_PATH = path.join(ROOT, "tmp", "evaluator-boundary-integration-whatif.json");
-const MD_OUTPUT_PATH = path.join(ROOT, "tmp", "evaluator-boundary-integration-whatif.md");
 const ARCHITECTURE_DOC_PATH = path.join(ROOT, "docs", "architecture", "evaluator-boundary-collapsed-hint-integration.md");
 const REVIEW_DOC_PATH = path.join(ROOT, "docs", "reviews", "evaluator-boundary-integration-whatif-20260709.md");
 const FORBIDDEN_RUNTIME_FILES = [
@@ -38,17 +48,32 @@ const FORBIDDEN_OUTPUT_PATTERNS = [
   /Bearer\s+[A-Za-z0-9._-]+/i
 ];
 
-function runWhatIf() {
-  const stdout = execFileSync(process.execPath, ["scripts/run-evaluator-boundary-integration-whatif.mjs"], {
-    cwd: ROOT,
-    encoding: "utf8",
-    env: process.env
-  });
+function runWhatIf(workspace, { staleNegativeControl = false } = {}) {
+  if (staleNegativeControl) {
+    const staleCaptureDir = path.join(workspace, "captures");
+    const staleOutputDir = path.join(workspace, "artifacts");
+    mkdirSync(staleCaptureDir, { recursive: true });
+    mkdirSync(staleOutputDir, { recursive: true });
+    writeFileSync(
+      path.join(staleCaptureDir, "candidate-exposure-audit.json"),
+      "{\"invalid\":true}\n",
+      "utf8"
+    );
+    writeFileSync(
+      path.join(staleOutputDir, "evaluator-boundary-integration-whatif.json"),
+      "{\"invalid\":true}\n",
+      "utf8"
+    );
+  }
 
-  assert(stdout.includes("evaluator-boundary-integration-whatif summary"));
-  assert(existsSync(OUTPUT_PATH), "what-if JSON should exist");
-  assert(existsSync(MD_OUTPUT_PATH), "what-if markdown should exist");
-  return JSON.parse(readFileSync(OUTPUT_PATH, "utf8"));
+  const result = materializeCandidatePolicyVerifierBaseline({
+    root: ROOT,
+    workspace
+  });
+  assert.equal(result.runs.every((run) => run.status === 0), true);
+  assert.equal(result.candidateAudit.aggregate.totalEvaluatedProductRows, 24);
+  assert.equal(result.integration.contractVersion, "evaluator-boundary-collapsed-hint-contract-v1");
+  return result;
 }
 
 function stripVolatile(output) {
@@ -146,6 +171,7 @@ function assertWhatIfContract(output) {
   assert.equal(output.lowRiskCollapsedHintConsistency.passed, true);
   assert.ok([
     "actual_complete_product_row_capture",
+    "deterministic_contract_fixture",
     "actual_capture_coverage_unavailable"
   ].includes(output.actualWhatIfSummary.evidenceLabel));
   assert.equal(output.pureReplayWhatIfSummary.evidenceLabel, "pure_engine_replay");
@@ -157,10 +183,10 @@ function assertWhatIfContract(output) {
   assert(output.prohibitedNextStep.includes("connect_candidate_policy_runtime"));
 }
 
-function assertNoLeakage() {
+function assertNoLeakage(outputDir) {
   const serialized = [
-    readFileSync(OUTPUT_PATH, "utf8"),
-    readFileSync(MD_OUTPUT_PATH, "utf8"),
+    readFileSync(path.join(outputDir, "evaluator-boundary-integration-whatif.json"), "utf8"),
+    readFileSync(path.join(outputDir, "evaluator-boundary-integration-whatif.md"), "utf8"),
     readFileSync(REVIEW_DOC_PATH, "utf8")
   ].join("\n");
 
@@ -220,18 +246,74 @@ function assertNoForbiddenRuntimeConnections() {
   assert(changedFiles.every((file) => !file.startsWith("supabase/")), "Supabase files should not be modified");
 }
 
-assertContractHelper();
-const first = runWhatIf();
-assertWhatIfContract(first);
-assertDocsExistAndStayDesignOnly();
-assertNoLeakage();
-assertNoForbiddenRuntimeConnections();
+function assertMissingAndMalformedPrerequisitesFailClosed() {
+  const workspace = mkdtempSync(path.join(os.tmpdir(), "candidate-policy-missing-"));
+  try {
+    const captureDir = path.join(workspace, "captures");
+    const outputDir = path.join(workspace, "artifacts");
+    mkdirSync(captureDir, { recursive: true });
+    mkdirSync(outputDir, { recursive: true });
+    const missing = spawnSync(process.execPath, [
+      "scripts/run-evaluator-boundary-integration-whatif.mjs",
+      "--capture-dir",
+      captureDir,
+      "--output-dir",
+      outputDir
+    ], {
+      cwd: ROOT,
+      encoding: "utf8",
+      env: process.env
+    });
+    assert.notEqual(missing.status, 0, "missing prerequisites must fail");
 
-const second = runWhatIf();
-assert.deepEqual(
-  stripVolatile(first),
-  stripVolatile(second),
-  "integration what-if output should be deterministic apart from generatedAt"
-);
+    const malformed = {
+      evidenceType: "integration_whatif_shadow",
+      contractVersion: "evaluator-boundary-collapsed-hint-contract-v1",
+      recommendedIntegrationOption: "tampered_option",
+      safetyRegressionCheck: { passed: true },
+      lowRiskCollapsedHintConsistency: { passed: true }
+    };
+    assert.throws(
+      () => validateIntegrationWhatIf(malformed),
+      /exact key set|recommendedIntegrationOption/
+    );
+  } finally {
+    cleanupCandidatePolicyVerifierWorkspace(workspace);
+  }
+}
+
+assertContractHelper();
+assertMissingAndMalformedPrerequisitesFailClosed();
+
+const firstWorkspace = mkdtempSync(path.join(os.tmpdir(), "candidate-policy-integration-a-"));
+const secondWorkspace = mkdtempSync(path.join(os.tmpdir(), "candidate-policy-integration-b-"));
+try {
+  const first = runWhatIf(firstWorkspace, { staleNegativeControl: true });
+  assertWhatIfContract(first.integration);
+  const tamperedIntegration = structuredClone(first.integration);
+  tamperedIntegration.recommendedIntegrationOption = "tampered_option";
+  assert.throws(
+    () => validateIntegrationWhatIf(tamperedIntegration),
+    (error) =>
+      error?.actual === "tampered_option" &&
+      error?.expected === "option_b_evaluator_pass_with_collapsed_hint"
+  );
+  assertDocsExistAndStayDesignOnly();
+  assertNoLeakage(first.outputDir);
+  assertNoForbiddenRuntimeConnections();
+
+  const second = runWhatIf(secondWorkspace);
+  assert.deepEqual(first.captureFiles, second.captureFiles);
+  assert.deepEqual(first.outputFiles, second.outputFiles);
+  assert.deepEqual(first.semanticHashes, second.semanticHashes);
+  assert.deepEqual(
+    stripVolatile(first.integration),
+    stripVolatile(second.integration),
+    "integration what-if output should be deterministic apart from generatedAt"
+  );
+} finally {
+  cleanupCandidatePolicyVerifierWorkspace(firstWorkspace);
+  cleanupCandidatePolicyVerifierWorkspace(secondWorkspace);
+}
 
 console.log("verify-evaluator-boundary-integration-design passed");
