@@ -1,0 +1,115 @@
+name: PR68 main integration dispatcher
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr68-main-integration-dispatch
+  cancel-in-progress: false
+
+jobs:
+  merge-main:
+    if: >-
+      github.repository == 'gycha0109-beep/K_beauty' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 68 &&
+      github.event.comment.body == '/merge-main-into-premium-integration' &&
+      github.actor == 'gycha0109-beep'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/premium-engine-main-sec-baseline
+          fetch-depth: 0
+
+      - name: Attest integration and main heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "c1b3b63a7bf9deefbbf58081aae0a22b2b3bc567"
+          git fetch origin main
+          git merge-base --is-ancestor 3a8f113e07d2d629463af5ecf7f70624e47ce8df origin/main
+          test "$(git diff --name-only 3a8f113e07d2d629463af5ecf7f70624e47ce8df..origin/main | sort)" = ".github/workflows/pr68-main-integration-dispatch.yml"
+
+      - name: Verify reconciled SEC-11 tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code 3a8f113e07d2d629463af5ecf7f70624e47ce8df -- \
+            .github/workflows/security-closeout-verifiers.yml \
+            app/api/auth/signout/route.js \
+            lib/canonical-site-origin.js \
+            scripts/check-sec11-site-origin-normalization.mjs
+          node <<'NODE'
+          const pkg = require('./package.json');
+          const expected = {
+            'check:sec11-origin-normalization': 'node scripts/check-sec11-site-origin-normalization.mjs',
+            'verify:premium-browser-journey': 'node scripts/run-premium-browser-journey.mjs',
+            'verify:premium-identical-retry': 'node scripts/verify-premium-identical-retry.mjs',
+            'verify:premium-browser-journey-contract': 'node scripts/verify-premium-browser-journey-contract.mjs',
+            'cleanup:premium-browser-journey': 'node scripts/cleanup-premium-browser-journey.mjs',
+            'e2e:premium:login': 'node scripts/bootstrap-premium-e2e-auth.mjs',
+            'e2e:premium:hosted': 'node scripts/run-premium-browser-journey-local.mjs',
+            'diagnose:premium:access': 'node scripts/diagnose-premium-hosted-access.mjs',
+            'diagnose:premium:session-cookie': 'node scripts/diagnose-premium-session-cookie.mjs',
+            'diagnose:premium:identical-retry': 'node scripts/diagnose-premium-identical-retry.mjs',
+            'verify:premium-session-runtime-diagnostics': 'node scripts/verify-premium-session-runtime-diagnostics.mjs',
+            'verify:premium-image-sanitizer-capacity': 'node scripts/verify-premium-image-sanitizer-capacity.mjs',
+            'check:premium-browser-journey-local': 'node scripts/check-premium-browser-journey-local.mjs'
+          };
+          for (const [name, command] of Object.entries(expected)) {
+            if (pkg.scripts?.[name] !== command) {
+              throw new Error(`missing or changed package script: ${name}`);
+            }
+          }
+          NODE
+
+      - name: Create history merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git merge -s ours --no-ff origin/main -m "merge: integrate latest main SEC-11 baseline"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: SEC-11 origin normalization
+        run: npm run check:sec11-origin-normalization
+
+      - name: Security closeout suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Premium browser contract checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check:premium-browser-journey-local
+          npm run verify:premium-browser-journey-contract
+          npm run verify:premium-identical-retry
+          npm run verify:premium-session-runtime-diagnostics
+          npm run verify:premium-image-sanitizer-capacity
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+      - name: Push verified merge commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin HEAD:integration/premium-engine-main-sec-baseline
