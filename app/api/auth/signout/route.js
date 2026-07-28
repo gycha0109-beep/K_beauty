@@ -1,4 +1,7 @@
-import { getCanonicalProductionOrigin } from "@/lib/canonical-site-origin";
+import {
+  getCanonicalProductionOrigin,
+  getNormalizedConfiguredProductionOrigin
+} from "@/lib/canonical-site-origin";
 import {
   createSignOutRouteHandlers,
   getSignOutRuntimeOriginContract
@@ -10,7 +13,7 @@ const signOutHandlers = createSignOutRouteHandlers({
   getRuntimeOriginContract() {
     return getSignOutRuntimeOriginContract({
       vercelEnvironment: process.env.VERCEL_ENV,
-      configuredProductionOrigin: process.env.NEXT_PUBLIC_SITE_URL,
+      configuredProductionOrigin: getNormalizedConfiguredProductionOrigin(),
       canonicalProductionOrigin: getCanonicalProductionOrigin()
     });
   }
