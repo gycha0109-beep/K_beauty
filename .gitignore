@@ -24,6 +24,7 @@ private
 # Codex local runtime files
 .codex/environments/
 .codex/review-chrome-profile/
+.codex/runtime/premium-e2e/
 
 # OS / editor local files
 .DS_Store

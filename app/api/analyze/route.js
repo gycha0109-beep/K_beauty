@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";
+import { buildPremiumSessionReportSource } from "@/lib/premium-session-payload";
+import {
+  applyPremiumSessionDiagnosticHeaders,
+  createPremiumSessionDiagnosticContext,
+  logPremiumSessionDiagnosticStage
+} from "@/lib/premium-session-payload-diagnostics";
 import { buildSurveyInputContract } from "@/lib/survey-input-contract";
 import { resolveFunctionalGoalPolicy } from "@/lib/functional-goal-policy";
 import { sanitizeCurrentProducts } from "@/lib/current-products";
@@ -1370,6 +1376,8 @@ async function generateProductExplanations({ apiKey, locale, decision, formInput
 export async function POST(request) {
   let responseLocale = "ko";
   let analysisGuard = null;
+  const premiumDiagnosticContext =
+    createPremiumSessionDiagnosticContext(request);
 
   try {
     const contentLengthValidation = validateImageRequestContentLength(request);
@@ -1572,6 +1580,19 @@ export async function POST(request) {
       includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
       includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S0_decision",
+      decision,
+      { requiredKeys: ["premiumReport"] }
+    );
+    const premiumReportForSession = decision?.premiumReport || null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S1_original_premium_report",
+      premiumReportForSession,
+      { requiredKeys: ["topPickDetailedReason"] }
+    );
 
     let explanationNotice = "";
 
@@ -1630,30 +1651,79 @@ export async function POST(request) {
       logAnalyze("response:shape-warning");
     }
 
-    const premiumDecisionSource = decision.premiumReport
-      ? {
-          ...decision.premiumReport,
-          freeResult: publicDecision
-        }
-      : null;
-    const premiumReport = premiumDecisionSource
-      ? sanitizePremiumReport(rebuildPremiumDecisionState(premiumDecisionSource, {
+    const premiumDecisionSource = buildPremiumSessionReportSource({
+      premiumReport: premiumReportForSession,
+      decision,
+      freeResult: publicDecision
+    });
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S2_session_source",
+      premiumDecisionSource,
+      { requiredKeys: ["freeResult"] }
+    );
+    const rebuiltPremiumReport = premiumDecisionSource
+      ? rebuildPremiumDecisionState(premiumDecisionSource, {
           locale,
           source: "api_analyze_initial_session"
-        }))
-      : null;
-    const premiumSessionReport = premiumReport
-      ? sanitizePremiumReportProductImages(
-          sanitizePremiumReportPurchaseLinks(premiumReport)
-        )
-      : null;
-    const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
-    const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
-      ? await createPremiumReportSession({
-          premiumReport: premiumSessionReport,
-          locale
         })
       : null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S3_rebuilt_report",
+      rebuiltPremiumReport,
+      { requiredKeys: ["decisionBundle", "freeResult"] }
+    );
+    const premiumReport = rebuiltPremiumReport
+      ? sanitizePremiumReport(rebuiltPremiumReport)
+      : null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S4_report_sanitized",
+      premiumReport,
+      { requiredKeys: ["decisionBundle", "freeResult"] }
+    );
+    const purchaseSanitizedPremiumReport = premiumReport
+      ? sanitizePremiumReportPurchaseLinks(premiumReport)
+      : null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S5_purchase_sanitized",
+      purchaseSanitizedPremiumReport,
+      { requiredKeys: ["decisionBundle", "freeResult"] }
+    );
+    const premiumSessionReport = purchaseSanitizedPremiumReport
+      ? sanitizePremiumReportProductImages(purchaseSanitizedPremiumReport)
+      : null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S6_image_sanitized",
+      premiumSessionReport,
+      { requiredKeys: ["decisionBundle", "freeResult"] }
+    );
+    const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
+    const premiumSessionPayload = {
+      premiumReport: premiumSessionReport,
+      locale
+    };
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S7_session_input",
+      premiumSessionPayload,
+      { requiredKeys: ["premiumReport", "locale"] }
+    );
+    const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
+      ? await createPremiumReportSession(
+          premiumSessionPayload,
+          { diagnosticContext: premiumDiagnosticContext }
+        )
+      : null;
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S8_session_result",
+      { tokenPresent: Boolean(premiumSessionToken) },
+      { requiredKeys: ["tokenPresent"] }
+    );
     const responsePayload = sanitizeAnalyzeResultProductImages(
       sanitizeAnalyzeResultPurchaseLinks({
         ...publicDecision,
@@ -1679,6 +1749,12 @@ export async function POST(request) {
         getPremiumReportCookieOptions()
       );
     }
+    logPremiumSessionDiagnosticStage(
+      premiumDiagnosticContext,
+      "S9_cookie_emission",
+      { cookieEmitted: Boolean(premiumSessionToken) },
+      { requiredKeys: ["cookieEmitted"] }
+    );
 
     if (anonymousWriteGrant?.ok) {
       response.headers.set(ANONYMOUS_RESULT_WRITE_HEADER, anonymousWriteGrant.resultToken);
@@ -1692,6 +1768,7 @@ export async function POST(request) {
     }
 
     applyAnalysisGuardCookies(response, analysisGuard);
+    applyPremiumSessionDiagnosticHeaders(response, premiumDiagnosticContext);
 
     await captureFunctionalShadowIfEnabled({
       formInput,

@@ -23,6 +23,10 @@ import {
   classifyPremiumSnapshotReplay,
   resolvePremiumReportLocale
 } from "@/lib/premium-report-snapshot";
+import {
+  applyPremiumSnapshotReplayDiagnosticHeaders,
+  createPremiumSnapshotReplayDiagnostic
+} from "@/lib/premium-snapshot-replay-diagnostics";
 import { sanitizePremiumReportPurchaseLinks } from "@/lib/product-purchase-link";
 import { sanitizePremiumReportProductImages } from "@/lib/security/image-source-policy";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
@@ -129,11 +133,12 @@ function getPremiumPersistenceFailedResponse(code = "premium_save_failed") {
   );
 }
 
-function getSnapshotConflictResponse() {
-  return sensitiveJsonResponse(
+function getSnapshotConflictResponse(diagnostic = null) {
+  const response = sensitiveJsonResponse(
     { success: false, error: "premium_snapshot_finalized" },
     { status: 409 }
   );
+  return applyPremiumSnapshotReplayDiagnosticHeaders(response, diagnostic);
 }
 
 function getStorageUnavailableResponse() {
@@ -516,9 +521,18 @@ export async function POST(request) {
       finalizedSavedReport.premium_report,
       responsePremiumReport
     );
+    const replayDiagnostic = createPremiumSnapshotReplayDiagnostic({
+      request,
+      replay,
+      body,
+      locale,
+      currentProductsChanged: currentProductsResult.changed,
+      faceLabPersistenceDecision: shouldPersist ? "persist" : "preserve",
+      sourceStage: "finalized_replay"
+    });
     return replay.status === "existing"
       ? buildSavedPremiumReportResponse(finalizedSavedReport, locale)
-      : getSnapshotConflictResponse();
+      : getSnapshotConflictResponse(replayDiagnostic);
   }
 
   let authoritativePremiumReport = responsePremiumReport;

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VERIFIER_PATH = "scripts/verify-sec12-error-log-boundary.mjs";
 const FINAL_PASS_MARKER = "SEC12_ERROR_LOG_BOUNDARY=PASS";
-const EXPECTED_MUTATION_COUNT = 36;
+const EXPECTED_MUTATION_COUNT = 37;
 const REQUIRED_MUTATION_IDS = Object.freeze([
   "M01_PUBLIC_RAW_MESSAGE",
   "M02_PUBLIC_RAW_STACK",
@@ -46,7 +46,8 @@ const REQUIRED_MUTATION_IDS = Object.freeze([
   "M33_VERCEL_CDN_CACHE_CONTROL_OMITTED",
   "M34_ALL_NO_STORE_HEADERS_OMITTED",
   "M35_I10_DEAD_HELPER_RESPONSE_BYPASS",
-  "M36_I10_CLASS_STATIC_RESPONSE_OVERWRITE"
+  "M36_I10_CLASS_STATIC_RESPONSE_OVERWRITE",
+  "M37_I10_FULL_REPORT_TERMINAL_SET_DRIFT"
 ]);
 const SNAPSHOT_PATHS = Object.freeze([
   "app",
@@ -369,6 +370,17 @@ const mutationCases = Object.freeze([
         "export async function POST(request) {\n  let sec12MutationResponse = NextResponse.json({}, { headers: createNoStoreHeaders() });\n  class Sec12StaticOverwrite {\n    static {\n      sec12MutationResponse = NextResponse.json({});\n    }\n  }\n  return sec12MutationResponse;\n",
         "M36_I10_CLASS_STATIC_RESPONSE_OVERWRITE"
       ))
+  }),
+  Object.freeze({
+    id: "M37_I10_FULL_REPORT_TERMINAL_SET_DRIFT",
+    expectedLastPass: "I09_CLIENT_CONSOLE_BOUNDARY",
+    apply: (workspace) => mutateFile(workspace, "app/api/full-report/route.js", "M37_I10_FULL_REPORT_TERMINAL_SET_DRIFT", (source) =>
+      replaceFirst(
+        source,
+        "return getStorageUnavailableResponse();",
+        "return getUnauthorizedResponse(\"login_required\");",
+        "M37_I10_FULL_REPORT_TERMINAL_SET_DRIFT"
+      ))
   })
 ]);
 
@@ -443,7 +455,7 @@ function assertBaseline(result) {
   const { sec12I10 } = JSON.parse(i10Line);
   assert.deepEqual(sec12I10.routes, { discovered: 11, expected: 11, verified: 11 });
   assert.deepEqual(sec12I10.handlerBindings, { discovered: 12, expected: 12, verified: 12 });
-  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 120, expected: 120, verified: 120 });
+  assert.deepEqual(sec12I10.terminalResponsePaths, { discovered: 125, expected: 125, verified: 125 });
   assert.deepEqual(sec12I10.pureMatrix, { positive: 2, negative: 17, rejected: 17 });
   assert.equal(sec12I10.deadHelperCalls, 0);
   assert.equal(sec12I10.unsafeResponsePaths, 0);
