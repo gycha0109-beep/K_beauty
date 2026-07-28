@@ -13,6 +13,7 @@
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
+    "verify:premium-identical-retry": "node scripts/verify-premium-identical-retry.mjs",
     "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
     "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",
     "e2e:premium:login": "node scripts/bootstrap-premium-e2e-auth.mjs",
