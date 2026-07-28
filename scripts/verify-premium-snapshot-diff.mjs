@@ -35,6 +35,19 @@ assert.equal(presence.diffPaths[0].nextType, "object");
 const dangerousExisting = JSON.parse('{"safe":1,"__proto__":{"token":"secret"}}');
 const dangerousNext = JSON.parse('{"safe":1,"__proto__":{"token":"changed"}}');
 assert.equal(diffPremiumSnapshots(dangerousExisting, dangerousNext).equal, true);
+assert.equal(
+  diffPremiumSnapshots(
+    { omitted: undefined, stable: true },
+    { stable: true }
+  ).equal,
+  true,
+  "object properties omitted by JSON.stringify must not be reported as fingerprint differences"
+);
+assert.equal(
+  diffPremiumSnapshots([undefined, Number.NaN], [null, null]).equal,
+  true,
+  "array holes and non-finite numbers must follow JSON fingerprint semantics"
+);
 
 const cyclic = { stable: true };
 cyclic.self = cyclic;
