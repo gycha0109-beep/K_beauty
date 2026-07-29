@@ -16,11 +16,7 @@ const INITIAL_RESULT = Object.freeze({
   state: FACE_GUIDE_STATE.loading
 });
 
-export default function useFaceLandmarkerGuide({
-  active,
-  guideRef,
-  videoRef
-}) {
+export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
   const [result, setResult] = useState(INITIAL_RESULT);
   const animationFrameRef = useRef(null);
   const consecutiveErrorsRef = useRef(0);
@@ -31,12 +27,10 @@ export default function useFaceLandmarkerGuide({
 
   useEffect(() => {
     let cancelled = false;
+    let terminal = false;
 
     const publish = (nextResult) => {
-      if (cancelled) {
-        return;
-      }
-
+      if (cancelled) return;
       const nextState = nextResult.state;
       if (
         nextState !== lastStateRef.current ||
@@ -48,39 +42,47 @@ export default function useFaceLandmarkerGuide({
       }
     };
 
-    if (!active) {
+    const reset = () => {
       stableFramesRef.current = 0;
       consecutiveErrorsRef.current = 0;
       lastInferenceAtRef.current = 0;
       lastVideoTimeRef.current = -1;
       lastStateRef.current = FACE_GUIDE_STATE.loading;
+    };
+
+    if (!active) {
+      reset();
       setResult(INITIAL_RESULT);
       return undefined;
     }
 
+    reset();
     publish(INITIAL_RESULT);
 
     const run = async () => {
       let faceLandmarker;
-
       try {
         faceLandmarker = await getFaceLandmarker();
       } catch {
+        terminal = true;
         publish({ metrics: null, state: FACE_GUIDE_STATE.unavailable });
         return;
       }
 
-      const detect = (timestamp) => {
-        if (cancelled) {
-          return;
+      const scheduleNext = (detect) => {
+        if (!cancelled && !terminal) {
+          animationFrameRef.current = window.requestAnimationFrame(detect);
         }
+      };
 
-        animationFrameRef.current = window.requestAnimationFrame(detect);
+      const detect = (timestamp) => {
+        if (cancelled || terminal) return;
 
         if (
           document.visibilityState === "hidden" ||
           timestamp - lastInferenceAtRef.current < INFERENCE_INTERVAL_MS
         ) {
+          scheduleNext(detect);
           return;
         }
 
@@ -94,6 +96,7 @@ export default function useFaceLandmarkerGuide({
           !video.videoHeight ||
           video.currentTime === lastVideoTimeRef.current
         ) {
+          scheduleNext(detect);
           return;
         }
 
@@ -112,7 +115,6 @@ export default function useFaceLandmarkerGuide({
           });
 
           consecutiveErrorsRef.current = 0;
-
           if (evaluated.state === FACE_GUIDE_STATE.ready) {
             stableFramesRef.current += 1;
             if (stableFramesRef.current >= READY_STABLE_FRAMES) {
@@ -124,27 +126,31 @@ export default function useFaceLandmarkerGuide({
                 state: FACE_GUIDE_STATE.stabilizing
               });
             }
-            return;
+          } else {
+            stableFramesRef.current = 0;
+            publish(evaluated);
           }
-
-          stableFramesRef.current = 0;
-          publish(evaluated);
         } catch {
           stableFramesRef.current = 0;
           consecutiveErrorsRef.current += 1;
           if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) {
+            terminal = true;
             publish({ metrics: null, state: FACE_GUIDE_STATE.unavailable });
+            return;
           }
         }
+
+        scheduleNext(detect);
       };
 
-      animationFrameRef.current = window.requestAnimationFrame(detect);
+      scheduleNext(detect);
     };
 
     run();
 
     return () => {
       cancelled = true;
+      terminal = true;
       if (animationFrameRef.current) {
         window.cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
@@ -152,8 +158,10 @@ export default function useFaceLandmarkerGuide({
     };
   }, [active, guideRef, videoRef]);
 
+  const isCaptureReady = result.state === FACE_GUIDE_STATE.ready;
   return {
-    isCaptureReady: result.state === FACE_GUIDE_STATE.ready,
+    canCapture: isCaptureReady || result.state === FACE_GUIDE_STATE.unavailable,
+    isCaptureReady,
     metrics: result.metrics,
     progress: result.progress || 0,
     state: result.state
