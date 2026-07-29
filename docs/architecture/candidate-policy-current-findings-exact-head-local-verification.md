@@ -120,10 +120,14 @@ The earlier live-catalog harness exposed three invalid fixture assumptions:
 
 These corrections do not modify Production CandidatePolicy code.
 
+## CI validation boundary
+
+Every retained-verifier change must pass the existing security exact-manifest suite, JavaScript syntax gate, Production build, and diff hygiene before the PR base is restored to PR #83.
+
 ## Current state
 
 - Current Production catalog CandidatePolicy diagnostic: `PASS`
-- Preserved export exact runner: implemented and CI-validated
+- Preserved export exact runner: implemented; CI rerun required at the latest head
 - Preserved local file execution in this environment: unavailable
 - Production code repair required from this task: none
 
