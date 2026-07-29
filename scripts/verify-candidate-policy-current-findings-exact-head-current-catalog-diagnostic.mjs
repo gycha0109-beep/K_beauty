@@ -10,6 +10,7 @@ const source = readFileSync(sourcePath, "utf8");
 const hashAssertion = '  equal(audit.dataset.datasetHash, EXPECTED_DATASET_HASH, "actual catalog dataset hash");';
 const statusMarker = '    status: "CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP",';
 const duplicateFixturePattern = /  const acneProducts = firstTwo\([\s\S]*?  \);\n  const completeSunscreen/;
+const requestedOnlyPattern = /  const requestedOnly = canonical\(\{\n    requested: "acne",\n    detected: "dehydration",\n    selections: \[selection\(acneProducts\[0\]\)\]\n  \}\);/;
 
 if (!source.includes(hashAssertion)) {
   throw new Error("preserved dataset hash assertion marker missing");
@@ -19,6 +20,9 @@ if (!source.includes(statusMarker)) {
 }
 if ((source.match(duplicateFixturePattern) || []).length !== 1) {
   throw new Error("duplicate active fixture marker count invalid");
+}
+if ((source.match(requestedOnlyPattern) || []).length !== 1) {
+  throw new Error("requested-only fixture marker count invalid");
 }
 
 let diagnostic = source
@@ -46,11 +50,29 @@ let diagnostic = source
     "duplicate active axis"
   );
   const completeSunscreen`
+  )
+  .replace(
+    requestedOnlyPattern,
+    `  const requestedOnlyChoice = ["acne", "pores", "uneven_tone", "barrier", "redness", "oiliness", "uv"]
+    .flatMap((goal) => rows
+      .filter((row) => supportsGoal(row, goal) && !supportsGoal(row, "dehydration"))
+      .map((row) => ({ goal, row })))
+    .sort((left, right) => left.goal.localeCompare(right.goal) || left.row.id.localeCompare(right.row.id))[0];
+  check(requestedOnlyChoice, "requested-only fixture must exist in actual catalog");
+  const requestedOnly = canonical({
+    requested: requestedOnlyChoice.goal,
+    detected: "dehydration",
+    selections: [selection(requestedOnlyChoice.row.product)]
+  });`
+  )
+  .replaceAll(
+    'requested: "acne",\n    detected: "acne"',
+    "requested: duplicateGoal,\n    detected: duplicateGoal"
+  )
+  .replace(
+    'const duplicateEmpty = canonical({ requested: "acne", detected: "acne" });',
+    "const duplicateEmpty = canonical({ requested: duplicateGoal, detected: duplicateGoal });"
   );
-
-diagnostic = diagnostic
-  .replaceAll('requested: "acne"', "requested: duplicateGoal")
-  .replaceAll('detected: "acne"', "detected: duplicateGoal");
 
 writeFileSync(diagnosticPath, diagnostic, "utf8");
 try {
