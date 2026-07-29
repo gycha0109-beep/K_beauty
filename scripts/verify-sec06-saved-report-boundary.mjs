@@ -31,6 +31,13 @@ function assertBefore(source, first, second, label) {
   assert(firstIndex < secondIndex, `${label} order invalid: ${first} must precede ${second}`);
 }
 
+function replaceRegexExactlyOnce(source, pattern, replacement, label) {
+  const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
+  const matches = source.match(new RegExp(pattern.source, flags)) || [];
+  assert(matches.length === 1, `${label} mutation target count invalid: ${matches.length}`);
+  return source.replace(pattern, replacement);
+}
+
 function findMigration(namePart) {
   const file = readdirSync(resolve(root, "supabase/migrations")).find(
     (entry) => entry.includes(namePart) && entry.endsWith(".sql")
@@ -226,15 +233,19 @@ assertIncludes(adminClient, 'import "server-only"', "Supabase admin client");
 assertIncludes(adminClient, "SUPABASE_SERVICE_ROLE_KEY", "Supabase admin client");
 assertNotIncludes(adminClient, "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY", "Supabase admin client");
 
+const unsanitizedFullReportRoute = replaceRegexExactlyOnce(
+  fullReportRoute,
+  /authoritativePremiumReport\s*=\s*sanitizePremiumReportForBoundary\(\s*updateResult\.payload\.premiumReport\s*\)/,
+  "authoritativePremiumReport = updateResult.payload.premiumReport",
+  "SEC-06 premium sanitizer negative control"
+);
+
 const negativeControls = [
   () => verifyMigration(migration.replace("grant update (title)", "grant update")),
   () => verifySaveRoute(saveRoute.replace("premium_report: null", "premium_report: body.premiumReport")),
   () => verifyPremiumSession(premiumSession.replace('.gt("expires_at", now)', "")),
   () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase")),
-  () => verifyFullReportRoute(fullReportRoute.replace(
-    "authoritativePremiumReport = sanitizePremiumReportForBoundary(\n      updateResult.payload.premiumReport\n    )",
-    "authoritativePremiumReport = updateResult.payload.premiumReport"
-  ))
+  () => verifyFullReportRoute(unsanitizedFullReportRoute)
 ];
 
 for (const [index, run] of negativeControls.entries()) {
