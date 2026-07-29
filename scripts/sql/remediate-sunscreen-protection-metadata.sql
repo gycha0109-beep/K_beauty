@@ -1,3 +1,6 @@
+-- Execution record: rollback dry-run PASS; Production transaction committed 2026-07-29.
+-- Post-apply verification: sunscreen UVA 11/11, pilling 11/11, remaining gaps 0.
+
 begin;
 
 select pg_advisory_xact_lock(hashtext('bejewely:sunscreen-protection-metadata-remediation-v1'));
