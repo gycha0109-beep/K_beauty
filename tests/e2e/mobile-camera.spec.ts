@@ -1,24 +1,99 @@
 import { expect, test, type Page } from "playwright/test";
 
+type FaceGuideMode =
+  | "multiple_faces"
+  | "no_face"
+  | "not_frontal"
+  | "off_center"
+  | "ready"
+  | "too_close"
+  | "too_far";
+
 type CameraMockOptions = {
   deferFirstFrame?: boolean;
   deny?: boolean;
+  faceGuideMode?: FaceGuideMode;
+  faceModelFails?: boolean;
 };
 
 async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
-  await page.addInitScript(({ deferFirstFrame, deny }) => {
+  await page.addInitScript(({ deferFirstFrame, deny, faceGuideMode, faceModelFails }) => {
     const cameraWindow = window as typeof window & {
       __cameraGetUserMediaCalls?: number;
       __cameraStops?: number;
       __cameraStreams?: MediaStream[];
       __cameraCanvases?: HTMLCanvasElement[];
+      __faceGuideMode?: FaceGuideMode;
       __releaseCameraFrame?: () => void;
+      __setFaceGuideMode?: (mode: FaceGuideMode) => void;
+      __bejewelyFaceLandmarkerFactory?: () => Promise<{
+        detectForVideo: () => { faceLandmarks: Array<Array<{ x: number; y: number; z: number }>> };
+      }>;
+    };
+    const ovalIndices = [
+      10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365,
+      379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93,
+      234, 127, 162, 21, 54, 103, 67, 109
+    ];
+
+    const createFace = (mode: FaceGuideMode) => {
+      const scale = mode === "too_far" ? 0.55 : mode === "too_close" ? 1.18 : 1;
+      const centerX = mode === "off_center" ? 0.56 : 0.5;
+      const centerY = 0.45;
+      const radiusX = 0.14 * scale;
+      const radiusY = 0.25 * scale;
+      const landmarks = Array.from({ length: 478 }, () => ({ x: centerX, y: centerY, z: 0 }));
+
+      ovalIndices.forEach((index, pointIndex) => {
+        const angle = -Math.PI / 2 + (pointIndex / ovalIndices.length) * Math.PI * 2;
+        landmarks[index] = {
+          x: centerX + Math.cos(angle) * radiusX,
+          y: centerY + Math.sin(angle) * radiusY,
+          z: 0
+        };
+      });
+
+      landmarks[33] = { x: centerX - radiusX * 0.5, y: centerY - radiusY * 0.36, z: 0 };
+      landmarks[263] = { x: centerX + radiusX * 0.5, y: centerY - radiusY * 0.36, z: 0 };
+      landmarks[234] = { x: centerX - radiusX, y: centerY, z: 0 };
+      landmarks[454] = { x: centerX + radiusX, y: centerY, z: 0 };
+      landmarks[152] = { x: centerX, y: centerY + radiusY, z: 0 };
+      landmarks[1] = {
+        x: mode === "not_frontal" ? centerX - radiusX * 0.72 : centerX,
+        y: centerY + radiusY * 0.04,
+        z: 0
+      };
+
+      return landmarks;
+    };
+
+    const getFaceLandmarks = () => {
+      const mode = cameraWindow.__faceGuideMode || "ready";
+      if (mode === "no_face") {
+        return [];
+      }
+      if (mode === "multiple_faces") {
+        return [createFace("ready"), createFace("ready")];
+      }
+      return [createFace(mode)];
     };
 
     cameraWindow.__cameraGetUserMediaCalls = 0;
     cameraWindow.__cameraStops = 0;
     cameraWindow.__cameraStreams = [];
     cameraWindow.__cameraCanvases = [];
+    cameraWindow.__faceGuideMode = faceGuideMode || "ready";
+    cameraWindow.__setFaceGuideMode = (mode) => {
+      cameraWindow.__faceGuideMode = mode;
+    };
+    cameraWindow.__bejewelyFaceLandmarkerFactory = async () => {
+      if (faceModelFails) {
+        throw new Error("mock_face_model_failure");
+      }
+      return {
+        detectForVideo: () => ({ faceLandmarks: getFaceLandmarks() })
+      };
+    };
 
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,
@@ -79,6 +154,16 @@ function getCameraOpenButton(page: Page) {
   return page.getByRole("button", { name: "지금 촬영하기", exact: true });
 }
 
+function getCaptureButton(page: Page) {
+  return page.getByRole("button", { name: "사진 촬영", exact: true });
+}
+
+async function setFaceGuideMode(page: Page, mode: FaceGuideMode) {
+  await page.evaluate((nextMode) => {
+    (window as typeof window & { __setFaceGuideMode?: (mode: FaceGuideMode) => void }).__setFaceGuideMode?.(nextMode);
+  }, mode);
+}
+
 test.describe("mobile fullscreen camera", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -105,6 +190,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(overlay.locator("video")).toHaveAttribute("data-preview-orientation", "mirrored");
     await expect(overlay.locator("video")).toHaveClass(/scale-x-\[-1\]/);
     await expect(page.locator("body")).toHaveCSS("position", "fixed");
+    await expect(getCaptureButton(page)).toBeEnabled();
   });
 
   test("opens, closes with cleanup, and re-enters once", async ({ page }) => {
@@ -127,9 +213,9 @@ test.describe("mobile fullscreen camera", () => {
 
     const overlay = page.getByTestId("mobile-camera-overlay");
     await expect(overlay).toHaveAttribute("data-camera-phase", "open");
-    await expect(page.locator('[data-face-guide-state="idle"]')).toBeVisible();
+    await expect(page.locator('[data-face-guide-state="ready"]')).toBeVisible();
     await expect(page.getByRole("button", { name: "카메라 닫기", exact: true })).toBeFocused();
-    await expect(page.getByRole("button", { name: "사진 촬영", exact: true })).toBeEnabled();
+    await expect(getCaptureButton(page)).toBeEnabled();
     await expect
       .poll(() => page.evaluate(() => (window as typeof window & { __cameraPhases?: string[] }).__cameraPhases))
       .toEqual(expect.arrayContaining(["preparing", "opening", "open"]));
@@ -144,6 +230,7 @@ test.describe("mobile fullscreen camera", () => {
 
     await openButton.click();
     await expect(overlay).toHaveAttribute("data-camera-phase", "open");
+    await expect(getCaptureButton(page)).toBeEnabled();
     await expect(overlay).toHaveCount(1);
     await expect
       .poll(() =>
@@ -170,6 +257,47 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.locator("body")).toHaveCSS("position", "static");
   });
 
+  test("keeps capture disabled until one centered frontal face is stable", async ({ page }) => {
+    await installCameraMock(page, { faceGuideMode: "no_face" });
+    await openHydratedHome(page);
+    await getCameraOpenButton(page).click();
+
+    const captureButton = getCaptureButton(page);
+    await expect(captureButton).toBeDisabled();
+    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴을 타원 안에 맞춰 주세요");
+    await expect(page.locator('[data-face-guide-state="no_face"]')).toBeVisible();
+
+    await setFaceGuideMode(page, "too_far");
+    await expect(page.getByTestId("face-guide-message")).toHaveText("조금 더 가까이 와 주세요");
+    await expect(captureButton).toBeDisabled();
+
+    await setFaceGuideMode(page, "off_center");
+    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴을 타원 중앙에 맞춰 주세요");
+    await expect(captureButton).toBeDisabled();
+
+    await setFaceGuideMode(page, "not_frontal");
+    await expect(page.getByTestId("face-guide-message")).toHaveText("정면을 바라봐 주세요");
+    await expect(captureButton).toBeDisabled();
+
+    await setFaceGuideMode(page, "ready");
+    await expect(page.getByTestId("face-guide-message")).toHaveText("좋아요, 잠시 그대로 있어 주세요");
+    await expect(captureButton).toBeDisabled();
+    await expect(page.getByTestId("face-guide-message")).toHaveText("좋아요, 촬영할 수 있어요");
+    await expect(captureButton).toBeEnabled();
+  });
+
+  test("blocks capture when multiple faces or model initialization failure is detected", async ({ page }) => {
+    await installCameraMock(page, { faceGuideMode: "multiple_faces" });
+    await openHydratedHome(page);
+    await getCameraOpenButton(page).click();
+
+    await expect(page.getByTestId("face-guide-message")).toHaveText("한 명만 화면에 보여 주세요");
+    await expect(getCaptureButton(page)).toBeDisabled();
+
+    await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+  });
+
   test("keeps the mirrored interaction and result preview while preserving original capture pixels", async ({ page }) => {
     await installCameraMock(page);
     await openHydratedHome(page);
@@ -179,7 +307,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(liveVideo).toHaveAttribute("data-preview-orientation", "mirrored");
     await expect(liveVideo).toHaveClass(/scale-x-\[-1\]/);
 
-    const captureButton = page.getByRole("button", { name: "사진 촬영", exact: true });
+    const captureButton = getCaptureButton(page);
     await expect(captureButton).toBeEnabled();
     await captureButton.click();
 
@@ -241,9 +369,9 @@ test.describe("mobile fullscreen camera", () => {
     await getCameraOpenButton(page).click();
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
 
-    const guideBox = await page.locator('[data-face-guide-state="idle"] > div').boundingBox();
+    const guideBox = await page.getByTestId("face-guide-oval").boundingBox();
     const closeBox = await page.getByRole("button", { name: "카메라 닫기", exact: true }).boundingBox();
-    const captureBox = await page.getByRole("button", { name: "사진 촬영", exact: true }).boundingBox();
+    const captureBox = await getCaptureButton(page).boundingBox();
 
     expect(guideBox).not.toBeNull();
     expect(closeBox).not.toBeNull();
@@ -255,7 +383,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCSS("width", "568px");
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCSS("height", "320px");
     await expect(page.getByRole("button", { name: "카메라 닫기", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "사진 촬영", exact: true })).toBeVisible();
+    await expect(getCaptureButton(page)).toBeVisible();
 
     await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
   });
@@ -267,6 +395,7 @@ test.describe("mobile fullscreen camera", () => {
     await getCameraOpenButton(page).click();
 
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
+    await expect(getCaptureButton(page)).toBeEnabled();
     await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
     await expect(page.locator("body")).toHaveCSS("position", "static");
