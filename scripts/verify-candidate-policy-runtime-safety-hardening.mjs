@@ -13,6 +13,7 @@ import {
   buildCandidatePolicyRuntimeSafetyContext,
   CANDIDATE_POLICY_RUNTIME_SAFETY_CONTEXT_VERSION
 } from "../lib/candidate-policy-runtime-safety.js";
+import { buildCandidatePolicyGoalContext } from "../lib/candidate-policy-goal-context.js";
 import {
   buildEvaluatorBoundaryPolicyRuntimeTelemetry,
   resolveEvaluatorBoundaryPolicyRuntimeControl,
@@ -87,6 +88,23 @@ function safetyContext(stabilizationMode) {
   });
 }
 
+function goalContext() {
+  return buildCandidatePolicyGoalContext({
+    surveyContract: {
+      goals: { primaryConcern: "dehydration" }
+    },
+    sharedContext: {
+      version: "shared-skin-decision-context-v3",
+      skinState: { priorityAxis: "dehydration" }
+    },
+    functionalPolicy: {
+      version: "functional-policy-v1",
+      priorityAxis: "dehydration"
+    },
+    effectivePolicySource: "raw"
+  });
+}
+
 function runtime(products, context = safetyContext(false)) {
   return buildEvaluatorBoundaryPolicyRuntime({
     products,
@@ -104,7 +122,8 @@ function runtime(products, context = safetyContext(false)) {
       recentInstability: context?.stabilizationMode === true,
       highSensitivity: context?.stabilizationMode === true
     },
-    candidateSafetyContext: context
+    candidateSafetyContext: context,
+    candidateGoalContext: goalContext()
   });
 }
 
@@ -180,7 +199,8 @@ function materializeEvidence() {
       recentInstability: true,
       highSensitivity: true
     },
-    candidateSafetyContext: stabilizing
+    candidateSafetyContext: stabilizing,
+    candidateGoalContext: goalContext()
   });
 
   return {

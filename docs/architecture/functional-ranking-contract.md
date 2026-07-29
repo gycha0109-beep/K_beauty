@@ -15,7 +15,9 @@ It does:
 - combine `SurveyInputContract`, goal policy, product functional profile, and current-product findings
 - distinguish hard filters from soft score penalties
 - return `scoreBreakdown`, `reasons`, `penalties`, `confidence`, and `rankingContext`
-- keep `rankingGoal` based on the user's explicit `primaryConcern`
+- consume the caller-provided `rankingGoal`; CandidatePolicy runtime callers must
+  supply the canonical FunctionalPolicy priority through
+  `candidate-policy-goal-context-v1`
 - keep `safetyGoal` and `recommendationGuard` based on skin-state and safety constraints
 
 It does not:
@@ -46,7 +48,10 @@ Inputs:
 
 - `product`: product row or product snapshot with structured fields such as `id`, `category`, `product_form`, `skin_types`, `concerns`, `texture`, `finish`, `irritation_risk`, `sensitivity_safe`, `ingredient_signals`, `review_signals`, `market_signals`, and sunscreen metadata.
 - `surveyContract`: output from `buildSurveyInputContract()`.
-- `goalPolicy`: output from `resolveFunctionalGoalPolicy()`, especially `rankingGoal`, `safetyGoal`, `recommendationGuard`, and `hasTension`.
+- `goalPolicy`: a runtime-aligned projection of
+  `candidate-policy-goal-context-v1` plus the canonical runtime safety context.
+  `resolveFunctionalGoalPolicy()` remains the legacy/requested-goal compatibility
+  source used to preserve explanation fields.
 - `productProfile`: output from `resolveProductFunctionalProfile(product)`. If omitted, Phase 1 may resolve it from the provided product snapshot only.
 - `currentProductFindings`: output from `buildCurrentProductFindings()`, used only for conservative duplicate/current-routine context.
 
@@ -144,13 +149,18 @@ Returning `null` for non-pass avoids the false interpretation that a blocked or 
 
 ## 8. primaryConcern / priority / safety Separation
 
-Ranking continues the Phase 0 policy:
+The standalone legacy helper continues the Phase 0 requested-goal behavior.
+CandidatePolicy runtime and shadow use the aligned contract:
 
-- `rankingGoal` comes from explicit `primaryConcern` first.
-- `safetyGoal` comes from `priority.axis` first.
-- `recommendationGuard` comes from safety/skin-state constraints.
+- `requestedConcern` comes from explicit `primaryConcern` and remains available
+  for explanation.
+- `rankingGoal` comes from the canonical FunctionalPolicy `priorityAxis`.
+- `safetyGoal` comes from the canonical detected priority.
+- `recommendationGuard` is projected from the canonical CandidatePolicy runtime
+  safety context.
 - `primaryConcern !== priority.axis` is `tension`, not a conflict.
-- Tension preserves `rankingGoal` while allowing `safetyGoal` to affect hard filters, penalties, candidate visibility, and copy caution.
+- Tension preserves the requested concern without allowing it to overwrite
+  runtime ranking or safety guards.
 
 ## 9. CurrentProductFinding Connection
 

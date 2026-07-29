@@ -238,7 +238,8 @@ Routine and safety use principles:
 
 CandidatePolicy connection principles:
 
-- CandidatePolicy should receive both `rankingGoal` and `safetyGoal`.
+- CandidatePolicy receives a versioned canonical goal context plus the existing
+  canonical runtime safety context.
 - `rankingGoal` controls which functional candidate family is considered first.
 - `safetyGoal` and `recommendationGuard` control visibility: `visible`, `limited`, `collapsed`, or `hidden`.
 - A `stabilize_first` guard can collapse or hide aggressive candidates while preserving the requested concern for later expansion.
@@ -252,7 +253,7 @@ Copy generation principles:
 - Do not say scoring detected a concern from skipped/unknown values unless that concern is supported by survey, environment, or photo evidence.
 - When safety hides or collapses candidates, copy should explain the guardrail without implying the user's goal was wrong.
 
-Phase 1 policy helper draft:
+Legacy/requested-goal compatibility helper:
 
 ```js
 resolveFunctionalGoalPolicy({
@@ -270,12 +271,18 @@ Returns:
   detectedPriority,      // freeResult.priority.axis
   hasTension,
   tensionType,
-  rankingGoal,           // primaryConcern first, priority fallback
+  rankingGoal,           // legacy: primaryConcern first, priority fallback
   safetyGoal,            // priority first, primary fallback
   copyStrategy,
   recommendationGuard    // "normal" or "stabilize_first"
 }
 ```
+
+CandidatePolicy runtime and shadow do not consume that legacy ranking choice as
+authority. They project `requestedGoal`, `detectedPriority`, `rankingGoal`, and
+`goalTension` through `candidate-policy-goal-context-v1`; `rankingGoal` is the
+canonical FunctionalPolicy priority while `requestedGoal` remains explanation
+context.
 
 Future `FunctionalPlanDecision` should receive `SurveyInputContract.goals`, `SurveyInputContract.safety`, `freeResult.priority`, and optionally top `scoring.concernScores` totals. Ranking Engine Phase 1 should receive `primaryConcern`, `secondaryConcerns`, `safety`, `behavior`, `preferences`, `sunscreen`, `priority.axis`, and the top public concern scores. It should not require raw form fields.
 
