@@ -5,7 +5,7 @@ import path from "node:path";
 const ROOT = process.cwd();
 const TMP_DIR = path.join(ROOT, "tmp");
 const OUTPUT_PATH = path.join(TMP_DIR, "security-closeout-verifier-suite.json");
-const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot)/i;
+const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot|sunscreen)/i;
 const STEP_TIMEOUT_MS = 180_000;
 
 const EXPECTED_VERIFIERS = [
