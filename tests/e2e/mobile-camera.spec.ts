@@ -37,11 +37,11 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
     ];
 
     const createFace = (mode: FaceGuideMode) => {
-      const scale = mode === "too_far" ? 0.55 : mode === "too_close" ? 1.18 : 1;
-      const centerX = mode === "off_center" ? 0.56 : 0.5;
+      const scale = mode === "too_far" ? 0.65 : mode === "too_close" ? 1.2 : 1;
+      const centerX = mode === "off_center" ? 0.55 : 0.5;
       const centerY = 0.45;
-      const radiusX = 0.14 * scale;
-      const radiusY = 0.25 * scale;
+      const radiusX = 0.11 * scale;
+      const radiusY = 0.2 * scale;
       const landmarks = Array.from({ length: 478 }, () => ({ x: centerX, y: centerY, z: 0 }));
 
       ovalIndices.forEach((index, pointIndex) => {
@@ -59,7 +59,7 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
       landmarks[454] = { x: centerX + radiusX, y: centerY, z: 0 };
       landmarks[152] = { x: centerX, y: centerY + radiusY, z: 0 };
       landmarks[1] = {
-        x: mode === "not_frontal" ? centerX - radiusX * 0.72 : centerX,
+        x: mode === "not_frontal" ? centerX - radiusX * 0.75 : centerX,
         y: centerY + radiusY * 0.04,
         z: 0
       };
@@ -286,7 +286,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(captureButton).toBeEnabled();
   });
 
-  test("blocks capture when multiple faces or model initialization failure is detected", async ({ page }) => {
+  test("blocks capture when multiple faces are detected", async ({ page }) => {
     await installCameraMock(page, { faceGuideMode: "multiple_faces" });
     await openHydratedHome(page);
     await getCameraOpenButton(page).click();
@@ -296,6 +296,15 @@ test.describe("mobile fullscreen camera", () => {
 
     await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+  });
+
+  test("blocks capture when face model initialization fails", async ({ page }) => {
+    await installCameraMock(page, { faceModelFails: true });
+    await openHydratedHome(page);
+    await getCameraOpenButton(page).click();
+
+    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴 가이드를 준비하지 못했습니다");
+    await expect(getCaptureButton(page)).toBeDisabled();
   });
 
   test("keeps the mirrored interaction and result preview while preserving original capture pixels", async ({ page }) => {
