@@ -14,6 +14,7 @@ const EXPECTED_VERIFIERS = [
   "verify-analysis-rls-contract.mjs",
   "verify-anonymous-write-grant-v2.mjs",
   "verify-candidate-policy-hint-receiver-design.mjs",
+  "verify-candidate-policy-runtime-safety-hardening.mjs",
   "verify-evaluator-boundary-integration-design.mjs",
   "verify-evaluator-boundary-policy-production-observability.mjs",
   "verify-existing-recommendation-candidate-source.mjs",
