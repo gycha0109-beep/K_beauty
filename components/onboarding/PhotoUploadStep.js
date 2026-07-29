@@ -258,6 +258,7 @@ export default function PhotoUploadStep({
   const [fullscreenPhase, setFullscreenPhase] = useState("closed");
   const [transitionRect, setTransitionRect] = useState(null);
   const [viewportSize, setViewportSize] = useState({ width: 1, height: 1 });
+  const [isCapturedPreviewMirrored, setIsCapturedPreviewMirrored] = useState(false);
   const isFullscreenSession = fullscreenPhase !== "closed";
   const isFullscreenVisible = fullscreenPhase === "opening" || fullscreenPhase === "open" || fullscreenPhase === "closing";
 
@@ -270,6 +271,12 @@ export default function PhotoUploadStep({
       window.clearTimeout(timerId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!previewUrl) {
+      setIsCapturedPreviewMirrored(false);
+    }
+  }, [previewUrl]);
 
   useEffect(() => {
     if (!isCameraOpen || !stream || !videoRef.current) {
@@ -412,13 +419,19 @@ export default function PhotoUploadStep({
     };
   }, [fullscreenPhase, reducedMotion]);
 
-  const handleFileChange = (file) => {
+  const handleCameraFileChange = (file) => {
     if (!file) {
       return;
     }
 
     setCameraError(null);
+    setIsCapturedPreviewMirrored(true);
     onImageChange?.({ target: { files: [file] } });
+  };
+
+  const handleGalleryFileChange = (event) => {
+    setIsCapturedPreviewMirrored(false);
+    onImageChange?.(event);
   };
 
   function clearVideoReadyTimeout() {
@@ -746,7 +759,7 @@ export default function PhotoUploadStep({
         }
 
         const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
-        handleFileChange(file);
+        handleCameraFileChange(file);
 
         if (isFullscreenSession) {
           closeFullscreenCamera();
@@ -768,6 +781,7 @@ export default function PhotoUploadStep({
           playsInline
           muted
           onCanPlay={() => setIsVideoReady(true)}
+          data-preview-orientation="mirrored"
           className="absolute inset-0 h-full w-full scale-x-[-1] rounded-full object-cover object-center"
         />
       );
@@ -778,7 +792,10 @@ export default function PhotoUploadStep({
         <img
           src={previewUrl}
           alt={t.previewAlt}
-          className="absolute inset-0 h-full w-full rounded-full object-cover object-center"
+          data-preview-orientation={isCapturedPreviewMirrored ? "mirrored" : "original"}
+          className={`absolute inset-0 h-full w-full rounded-full object-cover object-center ${
+            isCapturedPreviewMirrored ? "scale-x-[-1]" : ""
+          }`}
         />
       );
     }
@@ -930,7 +947,7 @@ export default function PhotoUploadStep({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={onImageChange}
+          onChange={handleGalleryFileChange}
         />
         <canvas ref={canvasRef} className="hidden" />
       </div>
