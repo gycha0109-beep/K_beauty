@@ -179,3 +179,7 @@ const output = {
 
 writeFileSync(OUTPUT_PATH, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 console.log(`SECURITY_CLOSEOUT_VERIFIERS=${status} ${output.passedVerifierCount}/${output.expectedVerifierCount}`);
+
+if (status !== "PASS") {
+  process.exitCode = 1;
+}
