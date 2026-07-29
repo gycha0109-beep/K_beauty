@@ -9,6 +9,7 @@ const source = readFileSync(sourcePath, "utf8");
 
 const hashAssertion = '  equal(audit.dataset.datasetHash, EXPECTED_DATASET_HASH, "actual catalog dataset hash");';
 const statusMarker = '    status: "CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP",';
+const duplicateFixturePattern = /  const acneProducts = firstTwo\([\s\S]*?  \);\n  const completeSunscreen/;
 
 if (!source.includes(hashAssertion)) {
   throw new Error("preserved dataset hash assertion marker missing");
@@ -16,8 +17,11 @@ if (!source.includes(hashAssertion)) {
 if (!source.includes(statusMarker)) {
   throw new Error("verification status marker missing");
 }
+if ((source.match(duplicateFixturePattern) || []).length !== 1) {
+  throw new Error("duplicate active fixture marker count invalid");
+}
 
-const diagnostic = source
+let diagnostic = source
   .replace(
     hashAssertion,
     '  const preservedDatasetHashMatches = audit.dataset.datasetHash === EXPECTED_DATASET_HASH;'
@@ -25,7 +29,28 @@ const diagnostic = source
   .replace(
     statusMarker,
     '    status: preservedDatasetHashMatches\n      ? "CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP"\n      : "CURRENT_CATALOG_REPLAY_PASS_PRESERVED_HASH_MISMATCH",\n    preservedDatasetHashMatches,\n    expectedDatasetHash: EXPECTED_DATASET_HASH,'
+  )
+  .replace(
+    duplicateFixturePattern,
+    `  const duplicateGoal = ["acne", "pores", "uneven_tone"].find((goal) =>
+    rows.filter((row) =>
+      supportsGoal(row, goal) &&
+      row.profile.functionalAxes.some((axis) => ACTIVE_AXES.has(axis.axis))
+    ).length >= 2
   );
+  check(duplicateGoal, "duplicate active goal must exist in actual catalog");
+  const acneProducts = firstTwo(
+    rows,
+    (row) => supportsGoal(row, duplicateGoal) &&
+      row.profile.functionalAxes.some((axis) => ACTIVE_AXES.has(axis.axis)),
+    "duplicate active axis"
+  );
+  const completeSunscreen`
+  );
+
+diagnostic = diagnostic
+  .replaceAll('requested: "acne"', "requested: duplicateGoal")
+  .replaceAll('detected: "acne"', "detected: duplicateGoal");
 
 writeFileSync(diagnosticPath, diagnostic, "utf8");
 try {
