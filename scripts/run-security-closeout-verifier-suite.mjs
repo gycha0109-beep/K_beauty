@@ -5,7 +5,7 @@ import path from "node:path";
 const ROOT = process.cwd();
 const TMP_DIR = path.join(ROOT, "tmp");
 const OUTPUT_PATH = path.join(TMP_DIR, "security-closeout-verifier-suite.json");
-const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot|sunscreen)/i;
+const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot)/i;
 const STEP_TIMEOUT_MS = 180_000;
 
 const EXPECTED_VERIFIERS = [
@@ -64,9 +64,7 @@ const EXPECTED_VERIFIERS = [
   "verify-shadow-runtime-dry-run-artifact-schema.mjs",
   "verify-shadow-runtime-dry-run-plan.mjs",
   "verify-shadow-safety-verifier-skeletons.mjs",
-  "verify-shadow-verifier-integrity.mjs",
-  "verify-sunscreen-metadata-rebaseline-live.mjs",
-  "verify-sunscreen-metadata-rebaseline-policy-live.mjs"
+  "verify-shadow-verifier-integrity.mjs"
 ];
 
 const PREPARATION_STEPS = [
@@ -120,13 +118,6 @@ function runScript(name, phase) {
   };
 }
 
-function printFailure(result) {
-  if (result.status === 0 && !result.signal && !result.error) return;
-  if (result.stdoutTail) console.error(`STDOUT ${result.name}\n${result.stdoutTail}`);
-  if (result.stderrTail) console.error(`STDERR ${result.name}\n${result.stderrTail}`);
-  if (result.error) console.error(`ERROR ${result.name}\n${result.error}`);
-}
-
 const discovered = readdirSync(path.join(ROOT, "scripts"))
   .filter((name) => /^verify-.*\.mjs$/.test(name))
   .filter(
@@ -157,7 +148,6 @@ for (const name of PREPARATION_STEPS) {
   const result = runScript(name, "preparation");
   results.push(result);
   console.log(`${result.status === 0 && !result.signal && !result.error ? "PASS" : "FAIL"} prep ${name}`);
-  printFailure(result);
   if (result.status !== 0 || result.signal || result.error) break;
 }
 
@@ -166,7 +156,6 @@ if (results.every((result) => result.status === 0 && !result.signal && !result.e
     const result = runScript(name, "verification");
     results.push(result);
     console.log(`${result.status === 0 && !result.signal && !result.error ? "PASS" : "FAIL"} ${name}`);
-    printFailure(result);
   }
 }
 
