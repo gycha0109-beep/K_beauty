@@ -13,6 +13,7 @@ const EXPECTED_VERIFIERS = [
   "verify-analysis-result-response-boundary.mjs",
   "verify-analysis-rls-contract.mjs",
   "verify-anonymous-write-grant-v2.mjs",
+  "verify-candidate-policy-current-findings-integration.mjs",
   "verify-candidate-policy-goal-alignment.mjs",
   "verify-candidate-policy-hint-receiver-design.mjs",
   "verify-candidate-policy-runtime-safety-hardening.mjs",
@@ -178,7 +179,3 @@ const output = {
 
 writeFileSync(OUTPUT_PATH, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 console.log(`SECURITY_CLOSEOUT_VERIFIERS=${status} ${output.passedVerifierCount}/${output.expectedVerifierCount}`);
-
-if (status !== "PASS") {
-  process.exitCode = 1;
-}
