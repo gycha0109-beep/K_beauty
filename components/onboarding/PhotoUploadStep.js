@@ -6,6 +6,8 @@ import MobileFullscreenCamera from "@/components/onboarding/MobileFullscreenCame
 import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const INTRO_FACE_IMAGE_SRC = "/images/Facial_1.png";
+const CAMERA_HISTORY_STATE_KEY = "bejewelyMobileCamera";
+const VIDEO_READY_TIMEOUT_MS = 8000;
 
 const STEP_COPY = {
   ko: {
@@ -228,7 +230,6 @@ export default function PhotoUploadStep({
   error
 }) {
   const t = STEP_COPY[locale] || STEP_COPY.ko;
-  const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -241,6 +242,10 @@ export default function PhotoUploadStep({
   const isRequestingRef = useRef(false);
   const isCapturingRef = useRef(false);
   const transitionFallbackRef = useRef(null);
+  const videoReadyTimeoutRef = useRef(null);
+  const historyEntryRef = useRef(null);
+  const popStateHandlerRef = useRef(null);
+  const historyCloseFallbackRef = useRef(null);
   const lastCameraTriggerRef = useRef(null);
   const reducedMotion = useReducedMotion();
   const hasPreview = Boolean(previewUrl);
@@ -253,7 +258,9 @@ export default function PhotoUploadStep({
   const [fullscreenPhase, setFullscreenPhase] = useState("closed");
   const [transitionRect, setTransitionRect] = useState(null);
   const [viewportSize, setViewportSize] = useState({ width: 1, height: 1 });
-  const isFullscreenActive = fullscreenPhase !== "closed";
+  const [isCapturedPreviewMirrored, setIsCapturedPreviewMirrored] = useState(false);
+  const isFullscreenSession = fullscreenPhase !== "closed";
+  const isFullscreenVisible = fullscreenPhase === "opening" || fullscreenPhase === "open" || fullscreenPhase === "closing";
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -266,13 +273,19 @@ export default function PhotoUploadStep({
   }, []);
 
   useEffect(() => {
+    if (!previewUrl) {
+      setIsCapturedPreviewMirrored(false);
+    }
+  }, [previewUrl]);
+
+  useEffect(() => {
     if (!isCameraOpen || !stream || !videoRef.current) {
       return;
     }
 
     videoRef.current.srcObject = stream;
     videoRef.current.play().catch(() => {});
-  }, [isCameraOpen, isFullscreenActive, stream]);
+  }, [isCameraOpen, isFullscreenSession, stream]);
 
   useEffect(() => {
     return () => {
@@ -285,11 +298,27 @@ export default function PhotoUploadStep({
       if (transitionFallbackRef.current) {
         window.clearTimeout(transitionFallbackRef.current);
       }
+      if (videoReadyTimeoutRef.current) {
+        window.clearTimeout(videoReadyTimeoutRef.current);
+      }
+      if (historyCloseFallbackRef.current) {
+        window.clearTimeout(historyCloseFallbackRef.current);
+      }
+      if (popStateHandlerRef.current) {
+        window.removeEventListener("popstate", popStateHandlerRef.current);
+      }
+
+      const entry = historyEntryRef.current;
+      if (entry && window.history.state?.[CAMERA_HISTORY_STATE_KEY]?.id === entry.id) {
+        const nextState = { ...(window.history.state || {}) };
+        delete nextState[CAMERA_HISTORY_STATE_KEY];
+        window.history.replaceState(nextState, "", window.location.href);
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (!isFullscreenActive) {
+    if (!isFullscreenVisible) {
       return;
     }
 
@@ -323,10 +352,10 @@ export default function PhotoUploadStep({
       Object.assign(root.style, previousRootStyles);
       window.scrollTo(0, scrollY);
     };
-  }, [isFullscreenActive]);
+  }, [isFullscreenVisible]);
 
   useEffect(() => {
-    if (!isFullscreenActive) {
+    if (!isFullscreenVisible) {
       return;
     }
 
@@ -345,7 +374,7 @@ export default function PhotoUploadStep({
       window.removeEventListener("resize", syncViewportSize);
       visualViewport?.removeEventListener("resize", syncViewportSize);
     };
-  }, [isFullscreenActive]);
+  }, [isFullscreenVisible]);
 
   useEffect(() => {
     if (fullscreenPhase !== "open") {
@@ -390,14 +419,27 @@ export default function PhotoUploadStep({
     };
   }, [fullscreenPhase, reducedMotion]);
 
-  const handleFileChange = (file) => {
+  const handleCameraFileChange = (file) => {
     if (!file) {
       return;
     }
 
     setCameraError(null);
+    setIsCapturedPreviewMirrored(true);
     onImageChange?.({ target: { files: [file] } });
   };
+
+  const handleGalleryFileChange = (event) => {
+    setIsCapturedPreviewMirrored(false);
+    onImageChange?.(event);
+  };
+
+  function clearVideoReadyTimeout() {
+    if (videoReadyTimeoutRef.current) {
+      window.clearTimeout(videoReadyTimeoutRef.current);
+      videoReadyTimeoutRef.current = null;
+    }
+  }
 
   function stopCameraTracks() {
     const activeStream = streamRef.current;
@@ -410,11 +452,71 @@ export default function PhotoUploadStep({
     setStream(null);
   }
 
-  function finishFullscreenClose() {
-    if (fullscreenPhaseRef.current !== "closing") {
+  function clearCameraHistoryEntry({ removeCurrentMarker = false } = {}) {
+    if (historyCloseFallbackRef.current) {
+      window.clearTimeout(historyCloseFallbackRef.current);
+      historyCloseFallbackRef.current = null;
+    }
+
+    if (popStateHandlerRef.current) {
+      window.removeEventListener("popstate", popStateHandlerRef.current);
+      popStateHandlerRef.current = null;
+    }
+
+    const entry = historyEntryRef.current;
+    if (
+      removeCurrentMarker &&
+      entry &&
+      window.history.state?.[CAMERA_HISTORY_STATE_KEY]?.id === entry.id
+    ) {
+      const nextState = { ...(window.history.state || {}) };
+      delete nextState[CAMERA_HISTORY_STATE_KEY];
+      window.history.replaceState(nextState, "", window.location.href);
+    }
+
+    historyEntryRef.current = null;
+  }
+
+  function createCameraHistoryEntry() {
+    if (historyEntryRef.current) {
       return;
     }
 
+    const entryId = `camera-${Date.now()}-${requestTokenRef.current}`;
+    const existingState =
+      window.history.state && typeof window.history.state === "object" && !Array.isArray(window.history.state)
+        ? window.history.state
+        : {};
+
+    historyEntryRef.current = { id: entryId };
+    popStateHandlerRef.current = () => {
+      if (!historyEntryRef.current) {
+        return;
+      }
+
+      clearCameraHistoryEntry();
+      beginFullscreenClose();
+    };
+    window.addEventListener("popstate", popStateHandlerRef.current);
+    window.history.pushState(
+      {
+        ...existingState,
+        [CAMERA_HISTORY_STATE_KEY]: { id: entryId }
+      },
+      "",
+      window.location.href
+    );
+  }
+
+  function finishFullscreenClose() {
+    if (fullscreenPhaseRef.current === "closed") {
+      return;
+    }
+
+    clearVideoReadyTimeout();
+    clearCameraHistoryEntry({ removeCurrentMarker: true });
+    stopCameraTracks();
+    setIsCameraOpen(false);
     fullscreenPhaseRef.current = "closed";
     setFullscreenPhase("closed");
     setTransitionRect(null);
@@ -429,6 +531,7 @@ export default function PhotoUploadStep({
   const stopCamera = () => {
     requestTokenRef.current += 1;
     isRequestingRef.current = false;
+    clearVideoReadyTimeout();
     stopCameraTracks();
     setIsCameraOpen(false);
     setIsVideoReady(false);
@@ -436,15 +539,20 @@ export default function PhotoUploadStep({
     isCapturingRef.current = false;
   };
 
-  const closeFullscreenCamera = () => {
+  function beginFullscreenClose() {
     if (fullscreenPhaseRef.current === "closed" || fullscreenPhaseRef.current === "closing") {
       return;
     }
 
     requestTokenRef.current += 1;
     isRequestingRef.current = false;
-    stopCameraTracks();
-    setIsCameraOpen(false);
+    clearVideoReadyTimeout();
+
+    if (fullscreenPhaseRef.current === "preparing") {
+      finishFullscreenClose();
+      return;
+    }
+
     setViewportSize({
       width: window.innerWidth,
       height: window.innerHeight
@@ -459,6 +567,30 @@ export default function PhotoUploadStep({
     );
     fullscreenPhaseRef.current = "closing";
     setFullscreenPhase("closing");
+  }
+
+  const closeFullscreenCamera = () => {
+    if (fullscreenPhaseRef.current === "closed" || fullscreenPhaseRef.current === "closing") {
+      return;
+    }
+
+    const entry = historyEntryRef.current;
+    const isCurrentCameraEntry = entry && window.history.state?.[CAMERA_HISTORY_STATE_KEY]?.id === entry.id;
+
+    if (isCurrentCameraEntry) {
+      historyCloseFallbackRef.current = window.setTimeout(() => {
+        if (!historyEntryRef.current) {
+          return;
+        }
+
+        clearCameraHistoryEntry({ removeCurrentMarker: true });
+        beginFullscreenClose();
+      }, 700);
+      window.history.back();
+      return;
+    }
+
+    beginFullscreenClose();
   };
 
   const openCamera = async (event) => {
@@ -489,8 +621,8 @@ export default function PhotoUploadStep({
         width: rect.width,
         height: rect.height
       });
-      fullscreenPhaseRef.current = "opening";
-      setFullscreenPhase("opening");
+      fullscreenPhaseRef.current = "preparing";
+      setFullscreenPhase("preparing");
     }
 
     try {
@@ -502,9 +634,15 @@ export default function PhotoUploadStep({
           video: { facingMode: "user" },
           audio: false
         });
-      } catch {
+      } catch (primaryError) {
         if (requestTokenRef.current !== token) {
           return;
+        }
+
+        const shouldRetryWithoutFacingMode =
+          primaryError?.name === "OverconstrainedError" || primaryError?.name === "NotFoundError";
+        if (!shouldRetryWithoutFacingMode) {
+          throw primaryError;
         }
 
         nextStream = await navigator.mediaDevices.getUserMedia({
@@ -521,8 +659,28 @@ export default function PhotoUploadStep({
       streamRef.current = nextStream;
       setStream(nextStream);
       setIsCameraOpen(true);
+
+      if (useFullscreen) {
+        clearVideoReadyTimeout();
+        videoReadyTimeoutRef.current = window.setTimeout(() => {
+          if (requestTokenRef.current !== token || fullscreenPhaseRef.current !== "preparing") {
+            return;
+          }
+
+          writeSafeLog("warn", {
+            event: "client_operation_failed",
+            category: "browser_api_unavailable",
+            operation: "camera_video_ready",
+            dependency: "browser",
+            retryable: true
+          });
+          setCameraError(t.cameraError);
+          beginFullscreenClose();
+        }, VIDEO_READY_TIMEOUT_MS);
+      }
     } catch {
       if (requestTokenRef.current !== token) {
+        nextStream?.getTracks().forEach((track) => track.stop());
         return;
       }
 
@@ -536,17 +694,32 @@ export default function PhotoUploadStep({
       setCameraError(t.cameraError);
 
       if (useFullscreen) {
-        closeFullscreenCamera();
+        beginFullscreenClose();
       } else {
         stopCamera();
       }
-
-      cameraInputRef.current?.click();
     } finally {
       if (requestTokenRef.current === token) {
         isRequestingRef.current = false;
       }
     }
+  };
+
+  const handleFullscreenVideoReady = () => {
+    if (fullscreenPhaseRef.current !== "preparing" || !streamRef.current) {
+      return;
+    }
+
+    const video = videoRef.current;
+    if (!video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || !video.videoWidth || !video.videoHeight) {
+      return;
+    }
+
+    clearVideoReadyTimeout();
+    setIsVideoReady(true);
+    createCameraHistoryEntry();
+    fullscreenPhaseRef.current = "opening";
+    setFullscreenPhase("opening");
   };
 
   const capturePhoto = () => {
@@ -586,9 +759,9 @@ export default function PhotoUploadStep({
         }
 
         const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
-        handleFileChange(file);
+        handleCameraFileChange(file);
 
-        if (isFullscreenActive) {
+        if (isFullscreenSession) {
           closeFullscreenCamera();
         } else {
           stopCamera();
@@ -600,7 +773,7 @@ export default function PhotoUploadStep({
   };
 
   const stageContent = () => {
-    if (isCameraOpen && !isFullscreenActive) {
+    if (isCameraOpen && !isFullscreenSession) {
       return (
         <video
           ref={videoRef}
@@ -608,6 +781,7 @@ export default function PhotoUploadStep({
           playsInline
           muted
           onCanPlay={() => setIsVideoReady(true)}
+          data-preview-orientation="mirrored"
           className="absolute inset-0 h-full w-full scale-x-[-1] rounded-full object-cover object-center"
         />
       );
@@ -618,7 +792,10 @@ export default function PhotoUploadStep({
         <img
           src={previewUrl}
           alt={t.previewAlt}
-          className="absolute inset-0 h-full w-full rounded-full object-cover object-center"
+          data-preview-orientation={isCapturedPreviewMirrored ? "mirrored" : "original"}
+          className={`absolute inset-0 h-full w-full rounded-full object-cover object-center ${
+            isCapturedPreviewMirrored ? "scale-x-[-1]" : ""
+          }`}
         />
       );
     }
@@ -638,10 +815,10 @@ export default function PhotoUploadStep({
     );
   };
 
-  const primaryLabel = isCameraOpen ? t.capture : hasPreview ? t.next : t.camera;
-  const secondaryLabel = isCameraOpen ? t.cancel : t.gallery;
-  const primaryAction = isCameraOpen ? capturePhoto : hasPreview ? onNext : openCamera;
-  const secondaryAction = isCameraOpen ? stopCamera : () => galleryInputRef.current?.click();
+  const primaryLabel = isCameraOpen && !isFullscreenSession ? t.capture : hasPreview ? t.next : t.camera;
+  const secondaryLabel = isCameraOpen && !isFullscreenSession ? t.cancel : t.gallery;
+  const primaryAction = isCameraOpen && !isFullscreenSession ? capturePhoto : hasPreview ? onNext : openCamera;
+  const secondaryAction = isCameraOpen && !isFullscreenSession ? stopCamera : () => galleryInputRef.current?.click();
 
   const handleFullscreenAnimationComplete = () => {
     if (fullscreenPhase === "opening") {
@@ -707,7 +884,7 @@ export default function PhotoUploadStep({
                 <button
                   type="button"
                   onClick={primaryAction}
-                  disabled={isRequestingRef.current || fullscreenPhase === "closing"}
+                  disabled={isRequestingRef.current || fullscreenPhase !== "closed"}
                   className="ui-button-primary min-h-[54px] rounded-[0.9rem] px-5 text-base font-bold sm:min-h-[58px]"
                 >
                   {hasPreview && !isCameraOpen ? null : <CameraIcon />}
@@ -718,6 +895,7 @@ export default function PhotoUploadStep({
                     <button
                       type="button"
                       onClick={openCamera}
+                      disabled={fullscreenPhase !== "closed"}
                       className="ui-button-secondary-soft min-h-[48px] rounded-[0.9rem] px-3 text-sm font-semibold sm:min-h-[52px]"
                     >
                       <CameraIcon />
@@ -756,19 +934,20 @@ export default function PhotoUploadStep({
         </div>
 
         <input
-          ref={cameraInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           capture="user"
+          disabled
+          aria-hidden="true"
+          tabIndex={-1}
           className="hidden"
-          onChange={onImageChange}
         />
         <input
           ref={galleryInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={onImageChange}
+          onChange={handleGalleryFileChange}
         />
         <canvas ref={canvasRef} className="hidden" />
       </div>
@@ -776,28 +955,15 @@ export default function PhotoUploadStep({
       {cameraError ? <p className="ui-text-danger mt-4 text-sm font-medium">{cameraError}</p> : null}
       {error ? <p className="ui-text-danger mt-4 text-sm font-medium">{error}</p> : null}
 
-      {isFullscreenActive && typeof document !== "undefined" ? (
+      {isFullscreenSession && typeof document !== "undefined" ? (
         <MobileFullscreenCamera
           phase={fullscreenPhase}
           transitionRect={transitionRect}
           viewportSize={viewportSize}
           reducedMotion={reducedMotion}
-          loadingVisual={
-            <>
-              <FaceSilhouette />
-              <img
-                src={INTRO_FACE_IMAGE_SRC}
-                alt=""
-                aria-hidden="true"
-                className={`absolute inset-0 z-10 h-full w-full object-cover object-center transition-opacity duration-500 motion-reduce:transition-none ${
-                  showIntroFace ? "opacity-75" : "opacity-0"
-                }`}
-              />
-            </>
-          }
           isVideoReady={isVideoReady}
           videoRef={videoRef}
-          onVideoReady={() => setIsVideoReady(true)}
+          onVideoReady={handleFullscreenVideoReady}
           closeButtonRef={closeButtonRef}
           isCapturing={isCapturing}
           copy={t}

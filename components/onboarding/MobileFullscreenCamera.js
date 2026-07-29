@@ -33,7 +33,6 @@ export default function MobileFullscreenCamera({
   transitionRect,
   viewportSize,
   reducedMotion,
-  loadingVisual,
   isVideoReady,
   videoRef,
   onVideoReady,
@@ -49,75 +48,73 @@ export default function MobileFullscreenCamera({
   const source = transitionRect || { left: 0, top: 0, width, height };
   const scaleX = source.width / width;
   const scaleY = source.height / height;
+  const isPreparing = phase === "preparing";
   const isOpening = phase === "opening";
   const isClosing = phase === "closing";
-  const duration = reducedMotion ? 0.01 : isClosing ? 0.38 : 0.56;
-  const initial = isOpening
-    ? {
-        x: source.left,
-        y: source.top,
-        scaleX,
-        scaleY,
-        borderRadius: "999px"
-      }
-    : false;
-  const animate = isOpening
-    ? {
-        x: [source.left, source.left + source.width * 0.015, 0],
-        y: [source.top, source.top + source.height * 0.015, 0],
-        scaleX: [scaleX, scaleX * 0.97, 1],
-        scaleY: [scaleY, scaleY * 0.97, 1],
-        borderRadius: ["999px", "999px", "0px"]
-      }
-    : isClosing
+  const duration = reducedMotion ? 0.01 : isClosing ? 0.4 : 0.56;
+  const transitionStart = {
+    x: source.left,
+    y: source.top,
+    scaleX,
+    scaleY,
+    borderRadius: "999px"
+  };
+  const animate = isPreparing
+    ? transitionStart
+    : isOpening
       ? {
-          x: source.left,
-          y: source.top,
-          scaleX,
-          scaleY,
-          borderRadius: "999px"
+          x: [source.left, source.left + source.width * 0.015, 0],
+          y: [source.top, source.top + source.height * 0.015, 0],
+          scaleX: [scaleX, scaleX * 0.97, 1],
+          scaleY: [scaleY, scaleY * 0.97, 1],
+          borderRadius: ["999px", "999px", "0px"]
         }
-      : {
-          x: 0,
-          y: 0,
-          scaleX: 1,
-          scaleY: 1,
-          borderRadius: "0px"
-        };
+      : isClosing
+        ? {
+            x: [0, source.left * 0.16, source.left],
+            y: [0, source.top * 0.16, source.top],
+            scaleX: [1, 1 - (1 - scaleX) * 0.16, scaleX],
+            scaleY: [1, 1 - (1 - scaleY) * 0.16, scaleY],
+            borderRadius: ["0px", "999px", "999px"]
+          }
+        : {
+            x: 0,
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            borderRadius: "0px"
+          };
 
   return createPortal(
     <motion.div
       role="dialog"
       aria-modal="true"
       aria-label={copy.capturePhoto}
+      aria-hidden={isPreparing}
       data-testid="mobile-camera-overlay"
       data-camera-phase={phase}
-      className="fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw]"
-      initial={initial}
+      className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
+        isPreparing ? "pointer-events-none opacity-[0.001]" : "opacity-100"
+      }`}
+      initial={transitionStart}
       animate={animate}
       transition={{
         duration,
-        times: isOpening ? [0, 0.14, 1] : undefined,
+        times: isOpening ? [0, 0.14, 1] : isClosing ? [0, 0.16, 1] : undefined,
         ease: reducedMotion ? "linear" : [0.22, 0.78, 0.2, 1]
       }}
       onAnimationComplete={onAnimationComplete}
     >
       <div className="absolute inset-0 bg-[#09070A]">
-        <div className={`absolute inset-0 transition-opacity duration-200 ${isVideoReady ? "opacity-0" : "opacity-100"}`}>
-          {loadingVisual}
-        </div>
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          onCanPlay={() => {
-            onVideoReady();
-            videoRef.current?.play().catch(() => {});
-          }}
-          className={`absolute inset-0 h-full w-full scale-x-[-1] object-cover object-center transition-opacity duration-200 ${
-            isVideoReady ? "opacity-100" : "opacity-0"
-          }`}
+          onCanPlay={onVideoReady}
+          onPlaying={onVideoReady}
+          data-preview-orientation="mirrored"
+          className="absolute inset-0 h-full w-full scale-x-[-1] object-cover object-center"
         />
       </div>
 
