@@ -51,13 +51,14 @@ jobs:
             local label="$1"
             shift
             local log="/tmp/candidate-current-findings-${label}.log"
+            local status
             echo "==> ${label}"
-            if "$@" >"${log}" 2>&1; then
-              cat "${log}"
+            "$@" >"${log}" 2>&1
+            status=$?
+            cat "${log}"
+            if [[ ${status} -eq 0 ]]; then
               return 0
             fi
-            local status=$?
-            cat "${log}"
             printf '%s' "${label}" > /tmp/candidate-current-findings-failure-label
             tail -c 6000 "${log}" > /tmp/candidate-current-findings-failure.log
             return "${status}"
