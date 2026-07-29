@@ -36,6 +36,7 @@ export default function MobileFullscreenCamera({
   loadingVisual,
   isVideoReady,
   videoRef,
+  onVideoReady,
   closeButtonRef,
   isCapturing,
   copy,
@@ -48,20 +49,19 @@ export default function MobileFullscreenCamera({
   const source = transitionRect || { left: 0, top: 0, width, height };
   const scaleX = source.width / width;
   const scaleY = source.height / height;
-  const isPreparing = phase === "requesting" || phase === "waiting_for_frame";
-  const isExpanding = phase === "expanding";
+  const isOpening = phase === "opening";
   const isClosing = phase === "closing";
   const duration = reducedMotion ? 0.01 : isClosing ? 0.38 : 0.56;
-  const transitionStart = {
-    x: source.left,
-    y: source.top,
-    scaleX,
-    scaleY,
-    borderRadius: "999px"
-  };
-  const animate = isPreparing
-    ? transitionStart
-    : isExpanding
+  const initial = isOpening
+    ? {
+        x: source.left,
+        y: source.top,
+        scaleX,
+        scaleY,
+        borderRadius: "999px"
+      }
+    : false;
+  const animate = isOpening
     ? {
         x: [source.left, source.left + source.width * 0.015, 0],
         y: [source.top, source.top + source.height * 0.015, 0],
@@ -90,17 +90,14 @@ export default function MobileFullscreenCamera({
       role="dialog"
       aria-modal="true"
       aria-label={copy.capturePhoto}
-      aria-hidden={isPreparing}
       data-testid="mobile-camera-overlay"
       data-camera-phase={phase}
-      className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
-        isPreparing ? "pointer-events-none opacity-0" : "opacity-100"
-      }`}
-      initial={transitionStart}
+      className="fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw]"
+      initial={initial}
       animate={animate}
       transition={{
         duration,
-        times: isExpanding ? [0, 0.14, 1] : undefined,
+        times: isOpening ? [0, 0.14, 1] : undefined,
         ease: reducedMotion ? "linear" : [0.22, 0.78, 0.2, 1]
       }}
       onAnimationComplete={onAnimationComplete}
@@ -114,7 +111,11 @@ export default function MobileFullscreenCamera({
           autoPlay
           playsInline
           muted
-          className={`absolute inset-0 h-full w-full scale-x-[-1] object-cover object-center ${
+          onCanPlay={() => {
+            onVideoReady();
+            videoRef.current?.play().catch(() => {});
+          }}
+          className={`absolute inset-0 h-full w-full scale-x-[-1] object-cover object-center transition-opacity duration-200 ${
             isVideoReady ? "opacity-100" : "opacity-0"
           }`}
         />
