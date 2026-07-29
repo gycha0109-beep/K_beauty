@@ -95,33 +95,36 @@ where id = 'cbcd06a2-de29-47ca-afd1-ab1d5de93903';
 
 do $$
 begin
-  if exists (
-    select 1
+  if (
+    select count(*)
     from public.products
     where id = '9983f167-24e7-4223-bd86-446ce6ced31b'
-      and (
-        uva_label is distinct from 'PA++++'
-        or pilling_risk is distinct from 'low'
-        or source_url is null
-        or hwahae_url is null
-        or review_signals -> 'metadata_remediation' ->> 'version'
-          is distinct from 'sunscreen-protection-metadata-remediation-v1'
-      )
-  ) then
+      and normalized_brand = '라로슈포제'
+      and normalized_name = '안뗄리오스 선 플루이드'
+      and category = 'sunscreen'
+      and uva_label = 'PA++++'
+      and pilling_risk = 'low'
+      and source_url = 'https://www.larocheposay.co.kr/product/view/4833.do'
+      and hwahae_url = 'https://www.hwahae.com/en/products/LAROCHE-POSAY-ANTHELIOS-SUN-FLUID-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/2199136'
+      and review_signals -> 'metadata_remediation' ->> 'version'
+        = 'sunscreen-protection-metadata-remediation-v1'
+  ) <> 1 then
     raise exception 'laroche_postcondition_failed';
   end if;
 
-  if exists (
-    select 1
+  if (
+    select count(*)
     from public.products
     where id = 'cbcd06a2-de29-47ca-afd1-ab1d5de93903'
-      and (
-        pilling_risk is distinct from 'low'
-        or source_url is null
-        or review_signals -> 'metadata_remediation' ->> 'version'
-          is distinct from 'sunscreen-protection-metadata-remediation-v1'
-      )
-  ) then
+      and normalized_brand = '아넷사'
+      and normalized_name = '퍼펙트 UV 선스크린 스킨케어 밀크 NA'
+      and category = 'sunscreen'
+      and uva_label = 'PA++++'
+      and pilling_risk = 'low'
+      and source_url = 'https://www.shinsegaev.com/goods/initDetailGoods.siv?goods_no=2403357889'
+      and review_signals -> 'metadata_remediation' ->> 'version'
+        = 'sunscreen-protection-metadata-remediation-v1'
+  ) <> 1 then
     raise exception 'anessa_postcondition_failed';
   end if;
 
