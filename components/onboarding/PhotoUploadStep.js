@@ -1,4 +1,8 @@
+"use client";
+
+import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import MobileFullscreenCamera from "@/components/onboarding/MobileFullscreenCamera";
 import { writeSafeLog } from "@/lib/security/error-redaction";
 
 const INTRO_FACE_IMAGE_SRC = "/images/Facial_1.png";
@@ -19,6 +23,10 @@ const STEP_COPY = {
     next: "다음",
     capture: "촬영",
     cancel: "취소",
+    closeCamera: "카메라 닫기",
+    capturePhoto: "사진 촬영",
+    cameraLoading: "카메라를 준비하고 있어요",
+    alignFace: "타원 안에 얼굴을 맞춰 주세요",
     cameraError: "카메라 접근에 실패했습니다.",
     previewAlt: "업로드한 얼굴 사진 미리보기",
     steps: [
@@ -47,6 +55,10 @@ const STEP_COPY = {
     next: "Next",
     capture: "Capture",
     cancel: "Cancel",
+    closeCamera: "Close camera",
+    capturePhoto: "Take photo",
+    cameraLoading: "Preparing camera",
+    alignFace: "Position your face inside the oval",
     cameraError: "Camera access failed.",
     previewAlt: "Preview of the uploaded face photo",
     steps: [
@@ -220,11 +232,28 @@ export default function PhotoUploadStep({
   const galleryInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const cameraStageRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const mountedRef = useRef(true);
+  const streamRef = useRef(null);
+  const requestTokenRef = useRef(0);
+  const fullscreenPhaseRef = useRef("closed");
+  const isRequestingRef = useRef(false);
+  const isCapturingRef = useRef(false);
+  const transitionFallbackRef = useRef(null);
+  const lastCameraTriggerRef = useRef(null);
+  const reducedMotion = useReducedMotion();
   const hasPreview = Boolean(previewUrl);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [stream, setStream] = useState(null);
   const [cameraError, setCameraError] = useState(null);
   const [showIntroFace, setShowIntroFace] = useState(true);
+  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [fullscreenPhase, setFullscreenPhase] = useState("closed");
+  const [transitionRect, setTransitionRect] = useState(null);
+  const [viewportSize, setViewportSize] = useState({ width: 1, height: 1 });
+  const isFullscreenActive = fullscreenPhase !== "closed";
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -242,15 +271,124 @@ export default function PhotoUploadStep({
     }
 
     videoRef.current.srcObject = stream;
-  }, [isCameraOpen, stream]);
+    videoRef.current.play().catch(() => {});
+  }, [isCameraOpen, isFullscreenActive, stream]);
 
   useEffect(() => {
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      mountedRef.current = false;
+      requestTokenRef.current += 1;
+      isRequestingRef.current = false;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+
+      if (transitionFallbackRef.current) {
+        window.clearTimeout(transitionFallbackRef.current);
       }
     };
-  }, [stream]);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreenActive) {
+      return;
+    }
+
+    const body = document.body;
+    const root = document.documentElement;
+    const scrollY = window.scrollY;
+    const previousBodyStyles = {
+      overflow: body.style.overflow,
+      overscrollBehavior: body.style.overscrollBehavior,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      touchAction: body.style.touchAction
+    };
+    const previousRootStyles = {
+      overflow: root.style.overflow,
+      overscrollBehavior: root.style.overscrollBehavior
+    };
+
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.touchAction = "none";
+
+    return () => {
+      Object.assign(body.style, previousBodyStyles);
+      Object.assign(root.style, previousRootStyles);
+      window.scrollTo(0, scrollY);
+    };
+  }, [isFullscreenActive]);
+
+  useEffect(() => {
+    if (!isFullscreenActive) {
+      return;
+    }
+
+    const syncViewportSize = () => {
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+    const visualViewport = window.visualViewport;
+
+    window.addEventListener("resize", syncViewportSize);
+    visualViewport?.addEventListener("resize", syncViewportSize);
+
+    return () => {
+      window.removeEventListener("resize", syncViewportSize);
+      visualViewport?.removeEventListener("resize", syncViewportSize);
+    };
+  }, [isFullscreenActive]);
+
+  useEffect(() => {
+    if (fullscreenPhase !== "open") {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [fullscreenPhase]);
+
+  useEffect(() => {
+    if (fullscreenPhase !== "opening" && fullscreenPhase !== "closing") {
+      return;
+    }
+
+    if (transitionFallbackRef.current) {
+      window.clearTimeout(transitionFallbackRef.current);
+    }
+
+    transitionFallbackRef.current = window.setTimeout(
+      () => {
+        if (fullscreenPhase === "opening") {
+          fullscreenPhaseRef.current = "open";
+          setFullscreenPhase("open");
+        } else {
+          finishFullscreenClose();
+        }
+      },
+      reducedMotion ? 80 : fullscreenPhase === "opening" ? 720 : 520
+    );
+
+    return () => {
+      if (transitionFallbackRef.current) {
+        window.clearTimeout(transitionFallbackRef.current);
+        transitionFallbackRef.current = null;
+      }
+    };
+  }, [fullscreenPhase, reducedMotion]);
 
   const handleFileChange = (file) => {
     if (!file) {
@@ -261,20 +399,103 @@ export default function PhotoUploadStep({
     onImageChange?.({ target: { files: [file] } });
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
+  function stopCameraTracks() {
+    const activeStream = streamRef.current;
+
+    if (activeStream) {
+      activeStream.getTracks().forEach((track) => track.stop());
     }
 
+    streamRef.current = null;
     setStream(null);
+  }
+
+  function finishFullscreenClose() {
+    if (fullscreenPhaseRef.current !== "closing") {
+      return;
+    }
+
+    fullscreenPhaseRef.current = "closed";
+    setFullscreenPhase("closed");
+    setTransitionRect(null);
+    setIsVideoReady(false);
+    setIsCapturing(false);
+    isCapturingRef.current = false;
+    window.requestAnimationFrame(() => {
+      lastCameraTriggerRef.current?.focus({ preventScroll: true });
+    });
+  }
+
+  const stopCamera = () => {
+    requestTokenRef.current += 1;
+    isRequestingRef.current = false;
+    stopCameraTracks();
     setIsCameraOpen(false);
+    setIsVideoReady(false);
+    setIsCapturing(false);
+    isCapturingRef.current = false;
   };
 
-  const openCamera = async () => {
+  const closeFullscreenCamera = () => {
+    if (fullscreenPhaseRef.current === "closed" || fullscreenPhaseRef.current === "closing") {
+      return;
+    }
+
+    requestTokenRef.current += 1;
+    isRequestingRef.current = false;
+    stopCameraTracks();
+    setIsCameraOpen(false);
+    setViewportSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+    setTransitionRect(
+      cameraStageRef.current?.getBoundingClientRect() || {
+        left: 0,
+        top: 0,
+        width: 1,
+        height: 1
+      }
+    );
+    fullscreenPhaseRef.current = "closing";
+    setFullscreenPhase("closing");
+  };
+
+  const openCamera = async (event) => {
+    if (isRequestingRef.current || isCameraOpen || fullscreenPhaseRef.current !== "closed") {
+      return;
+    }
+
+    const useFullscreen =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 1023px)").matches &&
+      Boolean(cameraStageRef.current);
+    const token = requestTokenRef.current + 1;
     let nextStream = null;
+
+    requestTokenRef.current = token;
+    isRequestingRef.current = true;
+    lastCameraTriggerRef.current = event?.currentTarget || null;
+
+    if (useFullscreen) {
+      const rect = cameraStageRef.current.getBoundingClientRect();
+      setViewportSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      setTransitionRect({
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      });
+      fullscreenPhaseRef.current = "opening";
+      setFullscreenPhase("opening");
+    }
 
     try {
       setCameraError(null);
+      setIsVideoReady(false);
 
       try {
         nextStream = await navigator.mediaDevices.getUserMedia({
@@ -282,15 +503,29 @@ export default function PhotoUploadStep({
           audio: false
         });
       } catch {
+        if (requestTokenRef.current !== token) {
+          return;
+        }
+
         nextStream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false
         });
       }
 
+      if (requestTokenRef.current !== token) {
+        nextStream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      streamRef.current = nextStream;
       setStream(nextStream);
       setIsCameraOpen(true);
     } catch {
+      if (requestTokenRef.current !== token) {
+        return;
+      }
+
       writeSafeLog("warn", {
         event: "client_operation_failed",
         category: "browser_api_unavailable",
@@ -299,11 +534,26 @@ export default function PhotoUploadStep({
         retryable: false
       });
       setCameraError(t.cameraError);
+
+      if (useFullscreen) {
+        closeFullscreenCamera();
+      } else {
+        stopCamera();
+      }
+
       cameraInputRef.current?.click();
+    } finally {
+      if (requestTokenRef.current === token) {
+        isRequestingRef.current = false;
+      }
     }
   };
 
   const capturePhoto = () => {
+    if (isCapturingRef.current) {
+      return;
+    }
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
@@ -320,16 +570,29 @@ export default function PhotoUploadStep({
       return;
     }
 
+    isCapturingRef.current = true;
+    setIsCapturing(true);
     context.drawImage(video, 0, 0);
     canvas.toBlob(
       (blob) => {
+        if (!mountedRef.current) {
+          return;
+        }
+
         if (!blob) {
+          isCapturingRef.current = false;
+          setIsCapturing(false);
           return;
         }
 
         const file = new File([blob], "selfie.jpg", { type: "image/jpeg" });
         handleFileChange(file);
-        stopCamera();
+
+        if (isFullscreenActive) {
+          closeFullscreenCamera();
+        } else {
+          stopCamera();
+        }
       },
       "image/jpeg",
       0.9
@@ -337,13 +600,14 @@ export default function PhotoUploadStep({
   };
 
   const stageContent = () => {
-    if (isCameraOpen) {
+    if (isCameraOpen && !isFullscreenActive) {
       return (
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
+          onCanPlay={() => setIsVideoReady(true)}
           className="absolute inset-0 h-full w-full scale-x-[-1] rounded-full object-cover object-center"
         />
       );
@@ -379,6 +643,15 @@ export default function PhotoUploadStep({
   const primaryAction = isCameraOpen ? capturePhoto : hasPreview ? onNext : openCamera;
   const secondaryAction = isCameraOpen ? stopCamera : () => galleryInputRef.current?.click();
 
+  const handleFullscreenAnimationComplete = () => {
+    if (fullscreenPhase === "opening") {
+      fullscreenPhaseRef.current = "open";
+      setFullscreenPhase("open");
+    } else if (fullscreenPhase === "closing") {
+      finishFullscreenClose();
+    }
+  };
+
   return (
     <section className="relative flex flex-1 flex-col py-2 lg:py-7">
       <div className="relative overflow-hidden rounded-[1.6rem] border border-[#F4DCE5] bg-white shadow-[0_18px_50px_rgba(255,79,138,0.08)] dark:border-[#2D2932] dark:bg-[#17141C] dark:shadow-[0_22px_70px_rgba(0,0,0,0.34)] sm:rounded-[2rem]">
@@ -411,7 +684,10 @@ export default function PhotoUploadStep({
 
             <div className="order-3">
               <div className="relative mx-auto mt-4 flex w-full justify-center sm:mt-6">
-                <div className="relative aspect-square w-[min(64vw,258px)] max-w-[258px] overflow-hidden rounded-full border-2 border-[#F6AFC7] bg-[#FFF8FA] shadow-[0_0_0_10px_rgba(255,79,138,0.055),0_14px_34px_rgba(255,79,138,0.115)] dark:border-[#FF4F8A] dark:bg-[#0B0A0E] dark:shadow-[0_0_0_10px_rgba(255,79,138,0.08),0_0_42px_rgba(255,79,138,0.24)] sm:w-[min(56vw,368px)] sm:max-w-[368px] lg:w-[min(48vw,430px)] lg:max-w-[430px]">
+                <div
+                  ref={cameraStageRef}
+                  className="relative aspect-square w-[min(64vw,258px)] max-w-[258px] overflow-hidden rounded-full border-2 border-[#F6AFC7] bg-[#FFF8FA] shadow-[0_0_0_10px_rgba(255,79,138,0.055),0_14px_34px_rgba(255,79,138,0.115)] dark:border-[#FF4F8A] dark:bg-[#0B0A0E] dark:shadow-[0_0_0_10px_rgba(255,79,138,0.08),0_0_42px_rgba(255,79,138,0.24)] sm:w-[min(56vw,368px)] sm:max-w-[368px] lg:w-[min(48vw,430px)] lg:max-w-[430px]"
+                >
                   {stageContent()}
                   {!hasPreview && !isCameraOpen ? (
                     <div className="pointer-events-none absolute inset-x-4 top-[18%] z-20 flex justify-center">
@@ -431,6 +707,7 @@ export default function PhotoUploadStep({
                 <button
                   type="button"
                   onClick={primaryAction}
+                  disabled={isRequestingRef.current || fullscreenPhase === "closing"}
                   className="ui-button-primary min-h-[54px] rounded-[0.9rem] px-5 text-base font-bold sm:min-h-[58px]"
                 >
                   {hasPreview && !isCameraOpen ? null : <CameraIcon />}
@@ -498,6 +775,37 @@ export default function PhotoUploadStep({
 
       {cameraError ? <p className="ui-text-danger mt-4 text-sm font-medium">{cameraError}</p> : null}
       {error ? <p className="ui-text-danger mt-4 text-sm font-medium">{error}</p> : null}
+
+      {isFullscreenActive && typeof document !== "undefined" ? (
+        <MobileFullscreenCamera
+          phase={fullscreenPhase}
+          transitionRect={transitionRect}
+          viewportSize={viewportSize}
+          reducedMotion={reducedMotion}
+          loadingVisual={
+            <>
+              <FaceSilhouette />
+              <img
+                src={INTRO_FACE_IMAGE_SRC}
+                alt=""
+                aria-hidden="true"
+                className={`absolute inset-0 z-10 h-full w-full object-cover object-center transition-opacity duration-500 motion-reduce:transition-none ${
+                  showIntroFace ? "opacity-75" : "opacity-0"
+                }`}
+              />
+            </>
+          }
+          isVideoReady={isVideoReady}
+          videoRef={videoRef}
+          onVideoReady={() => setIsVideoReady(true)}
+          closeButtonRef={closeButtonRef}
+          isCapturing={isCapturing}
+          copy={t}
+          onClose={closeFullscreenCamera}
+          onCapture={capturePhoto}
+          onAnimationComplete={handleFullscreenAnimationComplete}
+        />
+      ) : null}
     </section>
   );
 }
