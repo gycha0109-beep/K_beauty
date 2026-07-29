@@ -19,7 +19,8 @@ No production route, persistence, migration, RLS, database, or runtime policy wa
 
 ## Required verification
 
-- focused SEC-06 verifier passes with all five negative controls rejected;
-- the security closeout exact manifest passes all 56 verifiers;
-- architecture guard and production build pass;
+- `node scripts/verify-sec06-saved-report-boundary.mjs` passes with all five negative controls rejected;
+- `npm run verify:security-closeout` reports an exact `56/56 PASS` manifest;
+- `npm run architecture:guard` and `npm run build` pass;
+- tracked mutation remains zero;
 - the temporary verification workflow is removed before final review.
