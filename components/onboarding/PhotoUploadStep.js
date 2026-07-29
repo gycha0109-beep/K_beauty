@@ -621,9 +621,15 @@ export default function PhotoUploadStep({
           video: { facingMode: "user" },
           audio: false
         });
-      } catch {
+      } catch (primaryError) {
         if (requestTokenRef.current !== token) {
           return;
+        }
+
+        const shouldRetryWithoutFacingMode =
+          primaryError?.name === "OverconstrainedError" || primaryError?.name === "NotFoundError";
+        if (!shouldRetryWithoutFacingMode) {
+          throw primaryError;
         }
 
         nextStream = await navigator.mediaDevices.getUserMedia({
@@ -910,6 +916,15 @@ export default function PhotoUploadStep({
           </div>
         </div>
 
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          capture="user"
+          disabled
+          aria-hidden="true"
+          tabIndex={-1}
+          className="hidden"
+        />
         <input
           ref={galleryInputRef}
           type="file"
