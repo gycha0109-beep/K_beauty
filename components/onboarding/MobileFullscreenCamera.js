@@ -17,7 +17,7 @@ const FACE_GUIDE_COPY = Object.freeze({
     stabilizing: "Good, hold still for a moment",
     too_close: "Move a little farther away",
     too_far: "Move a little closer",
-    unavailable: "Face guidance could not be prepared"
+    unavailable: "Face guidance is unavailable. Align with the oval and take the photo manually"
   }),
   ko: Object.freeze({
     loading: "얼굴 가이드를 준비하고 있어요",
@@ -29,7 +29,7 @@ const FACE_GUIDE_COPY = Object.freeze({
     stabilizing: "좋아요, 잠시 그대로 있어 주세요",
     too_close: "조금 더 멀리 떨어져 주세요",
     too_far: "조금 더 가까이 와 주세요",
-    unavailable: "얼굴 가이드를 준비하지 못했습니다"
+    unavailable: "얼굴 가이드를 사용할 수 없습니다. 타원에 맞춘 뒤 직접 촬영해 주세요"
   })
 });
 
@@ -49,7 +49,8 @@ export function FaceGuide({ guideRef, state = "loading" }) {
     "not_frontal",
     "off_center",
     "too_close",
-    "too_far"
+    "too_far",
+    "unavailable"
   ].includes(state);
   const borderClass = isReady
     ? "border-emerald-300/95 shadow-[0_0_0_9999px_rgba(9,6,10,0.38)]"
@@ -151,7 +152,8 @@ export default function MobileFullscreenCamera({
       aria-hidden={isPreparing}
       data-testid="mobile-camera-overlay"
       data-camera-phase={phase}
-      data-face-capture-ready={faceGuide.isCaptureReady ? "true" : "false"}
+      data-face-guidance-ready={faceGuide.isCaptureReady ? "true" : "false"}
+      data-face-capture-allowed={faceGuide.canCapture ? "true" : "false"}
       className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
         isPreparing ? "pointer-events-none opacity-[0.001]" : "opacity-100"
       }`}
@@ -219,7 +221,7 @@ export default function MobileFullscreenCamera({
             type="button"
             aria-label={copy.capturePhoto}
             onClick={onCapture}
-            disabled={!isVideoReady || !faceGuide.isCaptureReady || isCapturing}
+            disabled={!isVideoReady || !faceGuide.canCapture || isCapturing}
             className={`flex h-[76px] w-[76px] items-center justify-center rounded-full border-[5px] bg-white/25 shadow-[0_10px_34px_rgba(0,0,0,0.35)] transition active:scale-95 disabled:opacity-45 ${
               faceGuide.isCaptureReady ? "border-emerald-200" : "border-white"
             }`}
