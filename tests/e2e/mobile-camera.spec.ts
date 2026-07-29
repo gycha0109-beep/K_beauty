@@ -39,8 +39,10 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
 
           const paintFrame = () => {
             if (context) {
-              context.fillStyle = "rgb(255, 79, 138)";
-              context.fillRect(0, 0, canvas.width, canvas.height);
+              context.fillStyle = "rgb(255, 0, 0)";
+              context.fillRect(0, 0, canvas.width / 2, canvas.height);
+              context.fillStyle = "rgb(0, 0, 255)";
+              context.fillRect(canvas.width / 2, 0, canvas.width / 2, canvas.height);
             }
             track?.requestFrame?.();
           };
@@ -100,6 +102,8 @@ test.describe("mobile fullscreen camera", () => {
 
     await expect(overlay).toHaveAttribute("data-camera-phase", "open");
     await expect(overlay).toHaveCSS("opacity", "1");
+    await expect(overlay.locator("video")).toHaveAttribute("data-preview-orientation", "mirrored");
+    await expect(overlay.locator("video")).toHaveClass(/scale-x-\[-1\]/);
     await expect(page.locator("body")).toHaveCSS("position", "fixed");
   });
 
@@ -166,25 +170,46 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.locator("body")).toHaveCSS("position", "static");
   });
 
-  test("captures a full-resolution frame and returns to the preview flow", async ({ page }) => {
+  test("keeps the mirrored interaction and result preview while preserving original capture pixels", async ({ page }) => {
     await installCameraMock(page);
     await openHydratedHome(page);
     await getCameraOpenButton(page).click();
+
+    const liveVideo = page.getByTestId("mobile-camera-overlay").locator("video");
+    await expect(liveVideo).toHaveAttribute("data-preview-orientation", "mirrored");
+    await expect(liveVideo).toHaveClass(/scale-x-\[-1\]/);
 
     const captureButton = page.getByRole("button", { name: "사진 촬영", exact: true });
     await expect(captureButton).toBeEnabled();
     await captureButton.click();
 
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
-    await expect(page.getByAltText("업로드한 얼굴 사진 미리보기")).toBeVisible();
+    const resultPreview = page.getByAltText("업로드한 얼굴 사진 미리보기");
+    await expect(resultPreview).toBeVisible();
+    await expect(resultPreview).toHaveAttribute("data-preview-orientation", "mirrored");
+    await expect(resultPreview).toHaveClass(/scale-x-\[-1\]/);
     await expect
       .poll(() =>
         page.evaluate(() => {
           const canvas = document.querySelector("canvas");
-          return canvas ? { width: canvas.width, height: canvas.height } : null;
+          if (!canvas) {
+            return null;
+          }
+          const context = canvas.getContext("2d");
+          if (!context) {
+            return null;
+          }
+          const left = Array.from(context.getImageData(10, 10, 1, 1).data.slice(0, 3));
+          const right = Array.from(context.getImageData(canvas.width - 10, 10, 1, 1).data.slice(0, 3));
+          return { width: canvas.width, height: canvas.height, left, right };
         })
       )
-      .toEqual({ width: 640, height: 480 });
+      .toEqual({
+        width: 640,
+        height: 480,
+        left: [255, 0, 0],
+        right: [0, 0, 255]
+      });
   });
 
   test("denied permission stays on the page without opening a native picker", async ({ page }) => {
@@ -247,7 +272,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.locator("body")).toHaveCSS("position", "static");
   });
 
-  test("preserves explicit gallery selection without opening a stream", async ({ page }) => {
+  test("preserves explicit gallery selection in original orientation without opening a stream", async ({ page }) => {
     await installCameraMock(page);
     await openHydratedHome(page);
 
@@ -260,7 +285,10 @@ test.describe("mobile fullscreen camera", () => {
       )
     });
 
-    await expect(page.getByAltText("업로드한 얼굴 사진 미리보기")).toBeVisible();
+    const galleryPreview = page.getByAltText("업로드한 얼굴 사진 미리보기");
+    await expect(galleryPreview).toBeVisible();
+    await expect(galleryPreview).toHaveAttribute("data-preview-orientation", "original");
+    await expect(galleryPreview).not.toHaveClass(/scale-x-\[-1\]/);
     const getUserMediaCalls = await page.evaluate(
       () => (window as typeof window & { __cameraGetUserMediaCalls?: number }).__cameraGetUserMediaCalls
     );
@@ -268,14 +296,17 @@ test.describe("mobile fullscreen camera", () => {
   });
 });
 
-test("desktop keeps the in-card camera flow", async ({ page }) => {
+test("desktop keeps the mirrored in-card camera flow", async ({ page }) => {
   await installCameraMock(page);
   await page.setViewportSize({ width: 1280, height: 900 });
   await openHydratedHome(page);
   await getCameraOpenButton(page).click();
 
   await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
-  await expect(page.locator("video")).toBeVisible();
+  const desktopVideo = page.locator("video");
+  await expect(desktopVideo).toBeVisible();
+  await expect(desktopVideo).toHaveAttribute("data-preview-orientation", "mirrored");
+  await expect(desktopVideo).toHaveClass(/scale-x-\[-1\]/);
   await expect(page.getByRole("button", { name: "취소", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "취소", exact: true }).click();
   await expect(page.locator("video")).toHaveCount(0);
