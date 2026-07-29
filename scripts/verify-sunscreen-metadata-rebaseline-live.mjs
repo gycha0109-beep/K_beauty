@@ -119,6 +119,7 @@ async function run() {
       REMEDIATION_VERSION,
       "versioned remediation evidence"
     );
+    check(hasValue(product.source_url), "primary source URL is present");
     check(Array.isArray(product?.review_signals?.metadata_remediation?.sources), "source evidence array");
     check(product.review_signals.metadata_remediation.sources.length > 0, "source evidence is non-empty");
   }
@@ -155,6 +156,20 @@ async function run() {
   equal(audit.summary.sunscreenPreferenceReadyCount, 11, "sunscreen preference ready");
 
   const exportText = `${JSON.stringify(firstRead, null, 2)}\n`;
+  const sunscreenSummary = {
+    total: sunscreen.length,
+    uvaComplete: sunscreen.filter((product) => hasValue(product.uva_label)).length,
+    pillingComplete: sunscreen.filter((product) => hasValue(product.pilling_risk)).length,
+    protectionReady: audit.summary.sunscreenProtectionReadyCount,
+    preferenceReady: audit.summary.sunscreenPreferenceReadyCount
+  };
+  const auditSummary = {
+    status: audit.status,
+    transportComplete: audit.summary.transportCompleteCount,
+    criticalGaps: audit.summary.criticalGapCount,
+    importantGaps: audit.summary.importantGapCount,
+    qualityGaps: audit.summary.qualityGapCount
+  };
   const evidence = {
     status: "SUNSCREEN_METADATA_REMEDIATION_REBASELINE_LIVE_PASS",
     source: "production_public_products_select_only",
@@ -163,37 +178,19 @@ async function run() {
     changedAfterPreservedExport: updatedAfterPreservedExport.length,
     approvedChangedProductCount: 2,
     unexpectedChangedProductCount: 0,
-    sunscreen: {
-      total: sunscreen.length,
-      uvaComplete: sunscreen.filter((product) => hasValue(product.uva_label)).length,
-      pillingComplete: sunscreen.filter((product) => hasValue(product.pilling_risk)).length,
-      protectionReady: audit.summary.sunscreenProtectionReadyCount,
-      preferenceReady: audit.summary.sunscreenPreferenceReadyCount
-    },
-    audit: {
-      status: audit.status,
-      transportComplete: audit.summary.transportCompleteCount,
-      criticalGaps: audit.summary.criticalGapCount,
-      importantGaps: audit.summary.importantGapCount,
-      qualityGaps: audit.summary.qualityGapCount
-    },
+    sunscreen: sunscreenSummary,
+    audit: auditSummary,
     rawExportSha256: hash(exportText),
     datasetHash: audit.dataset.datasetHash,
     semanticHash: hash(JSON.stringify(stable({
       rows: firstRead.length,
-      changedIds: updatedAfterPreservedExport.map(productId).sort(),
-      datasetHash: audit.dataset.datasetHash,
-      audit: evidence?.audit
+      changedAfterPreservedExport: updatedAfterPreservedExport.length,
+      sunscreen: sunscreenSummary,
+      audit: auditSummary,
+      datasetHash: audit.dataset.datasetHash
     }))),
     assertions
   };
-  evidence.semanticHash = hash(JSON.stringify(stable({
-    rows: evidence.rows,
-    changedAfterPreservedExport: evidence.changedAfterPreservedExport,
-    sunscreen: evidence.sunscreen,
-    audit: evidence.audit,
-    datasetHash: evidence.datasetHash
-  })));
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
   writeFileSync(EXPORT_PATH, exportText, "utf8");
