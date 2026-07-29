@@ -11,6 +11,7 @@ const hashAssertion = '  equal(audit.dataset.datasetHash, EXPECTED_DATASET_HASH,
 const statusMarker = '    status: "CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP",';
 const duplicateFixturePattern = /  const acneProducts = firstTwo\([\s\S]*?  \);\n  const completeSunscreen/;
 const requestedOnlyPattern = /  const requestedOnly = canonical\(\{\n    requested: "acne",\n    detected: "dehydration",\n    selections: \[selection\(acneProducts\[0\]\)\]\n  \}\);/;
+const neutralVisibleCountMarker = '    9,\n    "protection-complete visible sunscreen count"';
 
 if (!source.includes(hashAssertion)) {
   throw new Error("preserved dataset hash assertion marker missing");
@@ -23,6 +24,9 @@ if ((source.match(duplicateFixturePattern) || []).length !== 1) {
 }
 if ((source.match(requestedOnlyPattern) || []).length !== 1) {
   throw new Error("requested-only fixture marker count invalid");
+}
+if (!source.includes(neutralVisibleCountMarker)) {
+  throw new Error("neutral sunscreen visibility marker missing");
 }
 
 let diagnostic = source
@@ -72,6 +76,10 @@ let diagnostic = source
   .replace(
     'const duplicateEmpty = canonical({ requested: "acne", detected: "acne" });',
     "const duplicateEmpty = canonical({ requested: duplicateGoal, detected: duplicateGoal });"
+  )
+  .replace(
+    neutralVisibleCountMarker,
+    '    sunscreenRows.filter((row) => supportsGoal(row, "uv")).length,\n    "protection-complete visible sunscreen count"'
   );
 
 writeFileSync(diagnosticPath, diagnostic, "utf8");
