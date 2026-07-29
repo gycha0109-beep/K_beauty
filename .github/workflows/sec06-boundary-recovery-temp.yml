@@ -1,0 +1,144 @@
+name: SEC-06 saved-report boundary recovery verification
+
+on:
+  push:
+    branches:
+      - codex/sec06-saved-report-boundary-recovery
+
+permissions:
+  contents: write
+  statuses: write
+
+concurrency:
+  group: sec06-boundary-recovery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/sec06-saved-report-boundary-recovery
+          fetch-depth: 0
+
+      - name: Reproduce stale negative control
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-sec06-saved-report-boundary.mjs > /tmp/sec06-prechange.log 2>&1
+          status=$?
+          cat /tmp/sec06-prechange.log
+          test "$status" -ne 0
+          grep -F "negative control 5 was not rejected" /tmp/sec06-prechange.log
+
+      - name: Repair mutation contract
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const path = "scripts/verify-sec06-saved-report-boundary.mjs";
+          const original = fs.readFileSync(path, "utf8");
+          const eol = original.includes("\r\n") ? "\r\n" : "\n";
+          let source = original.replace(/\r\n/g, "\n");
+
+          const helperMarker = "function findMigration(namePart) {";
+          const helper = `function replaceRegexExactlyOnce(source, pattern, replacement, label) {\n  const flags = pattern.flags.includes("g") ? pattern.flags : \`${'${pattern.flags}'}g\`;\n  const matches = source.match(new RegExp(pattern.source, flags)) || [];\n  assert(matches.length === 1, \`${'${label}'} mutation target count invalid: ${'${matches.length}'}\`);\n  return source.replace(pattern, replacement);\n}\n\n`;
+          if (!source.includes(helperMarker) || source.includes("function replaceRegexExactlyOnce")) {
+            throw new Error("SEC-06 helper insertion contract invalid");
+          }
+          source = source.replace(helperMarker, helper + helperMarker);
+
+          const controlsMarker = "const negativeControls = [";
+          const mutationSetup = `const unsanitizedFullReportRoute = replaceRegexExactlyOnce(\n  fullReportRoute,\n  /authoritativePremiumReport\\s*=\\s*sanitizePremiumReportForBoundary\\(\\s*updateResult\\.payload\\.premiumReport\\s*\\)/,\n  "authoritativePremiumReport = updateResult.payload.premiumReport",\n  "SEC-06 premium sanitizer negative control"\n);\n\n`;
+          if (!source.includes(controlsMarker) || source.includes("const unsanitizedFullReportRoute")) {
+            throw new Error("SEC-06 mutation setup contract invalid");
+          }
+          source = source.replace(controlsMarker, mutationSetup + controlsMarker);
+
+          const oldBlock = `  () => verifyFullReportRoute(fullReportRoute.replace(\n    "authoritativePremiumReport = sanitizePremiumReportForBoundary(\\n      updateResult.payload.premiumReport\\n    )",\n    "authoritativePremiumReport = updateResult.payload.premiumReport"\n  ))`;
+          const newBlock = "  () => verifyFullReportRoute(unsanitizedFullReportRoute)";
+          const blockCount = source.split(oldBlock).length - 1;
+          if (blockCount !== 1) {
+            throw new Error(`SEC-06 stale negative control block count invalid: ${'${blockCount}'}`);
+          }
+          source = source.replace(oldBlock, newBlock);
+          fs.writeFileSync(path, source.replace(/\n/g, eol), "utf8");
+          NODE
+
+          git diff -- scripts/verify-sec06-saved-report-boundary.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify-sec06-saved-report-boundary.mjs
+          git commit -m "test(sec-06): make sanitizer negative control deterministic"
+          git push origin HEAD:codex/sec06-saved-report-boundary-recovery
+          echo "PATCH_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify SEC-06 focused boundary
+        run: node scripts/verify-sec06-saved-report-boundary.mjs
+
+      - name: Verify exact security manifest
+        shell: bash
+        run: |
+          npm run verify:security-closeout
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const result = JSON.parse(fs.readFileSync("tmp/security-closeout-verifier-suite.json", "utf8"));
+          const failed = (Array.isArray(result.results) ? result.results : [])
+            .filter((item) => item.phase === "verification")
+            .filter((item) => item.status !== 0 || item.signal || item.error)
+            .map((item) => item.name);
+          if (
+            result.expectedVerifierCount !== 56 ||
+            result.executedVerifierCount !== 56 ||
+            result.passedVerifierCount !== 56 ||
+            result.failedVerifierCount !== 0 ||
+            failed.length !== 0
+          ) {
+            throw new Error(JSON.stringify({
+              expectedVerifierCount: result.expectedVerifierCount,
+              executedVerifierCount: result.executedVerifierCount,
+              passedVerifierCount: result.passedVerifierCount,
+              failedVerifierCount: result.failedVerifierCount,
+              failed
+            }));
+          }
+          console.log("security exact manifest 56/56 PASS");
+          NODE
+
+      - name: Verify architecture
+        run: npm run architecture:guard
+
+      - name: Verify production build
+        run: npm run build
+
+      - name: Verify tracked mutation
+        run: git diff --exit-code
+
+      - name: Publish exact-head success status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          payload=$(jq -n \
+            --arg state success \
+            --arg context "SEC-06 Boundary Recovery" \
+            --arg description "SEC-06 focused, security 56/56, architecture, and build passed" \
+            '{state:$state,context:$context,description:$description}')
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/statuses/${PATCH_SHA}" \
+            -d "$payload" >/dev/null
