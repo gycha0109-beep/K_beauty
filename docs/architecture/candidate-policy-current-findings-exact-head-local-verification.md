@@ -32,6 +32,10 @@ Verify the CandidatePolicy current-findings contract against the exact stacked h
 - DB writes, migrations, or backfills;
 - Production canary or deployment changes.
 
+## Verification state
+
+`PENDING_EXACT_HEAD_EXECUTION`
+
 ## Completion verdict
 
 If all invariants pass with zero unexplained exposure drift, the verdict is:
