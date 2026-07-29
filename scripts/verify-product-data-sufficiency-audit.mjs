@@ -7,6 +7,9 @@ import {
   PRODUCT_DATA_SUFFICIENCY_AUDIT_VERSION,
   buildProductDataSufficiencyAudit
 } from "../lib/product-data-sufficiency-audit.js";
+import {
+  CURRENT_PRODUCT_SNAPSHOT_PROTECTION_FIELDS
+} from "../lib/current-product-snapshot-contract.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(
@@ -42,8 +45,10 @@ const sunscreen = audit.rows.find((row) => row.productId === "sunscreen-complete
 assert.equal(sunscreen.capabilities.sunscreenProtectionReady, true);
 assert.equal(sunscreen.capabilities.sunscreenPreferenceReady, true);
 assert.equal(
-  sunscreen.gaps.some(
-    (gap) => gap.code === "SNAPSHOT_FIELD_DROPPED" && gap.fieldPaths.includes("uv_filter_type")
+  CURRENT_PRODUCT_SNAPSHOT_PROTECTION_FIELDS.every(
+    (field) => !sunscreen.gaps.some(
+      (gap) => gap.code === "SNAPSHOT_FIELD_DROPPED" && gap.fieldPaths.includes(field)
+    )
   ),
   true
 );
@@ -74,8 +79,10 @@ assert.deepEqual(audit.unknownFunctionalLabels, [
   }
 ]);
 assert.equal(
-  audit.transportGaps.some(
-    (gap) => gap.fieldPath === "uv_filter_type" && gap.destination === "current_product_snapshot"
+  CURRENT_PRODUCT_SNAPSHOT_PROTECTION_FIELDS.every(
+    (field) => !audit.transportGaps.some(
+      (gap) => gap.fieldPath === field && gap.destination === "current_product_snapshot"
+    )
   ),
   true
 );
