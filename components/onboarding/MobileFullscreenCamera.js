@@ -57,7 +57,14 @@ export default function MobileFullscreenCamera({
     y: source.top,
     scaleX,
     scaleY,
-    borderRadius: "999px"
+    borderRadius: "50%"
+  };
+  const closingProgress = 0.16;
+  const closingIntermediate = {
+    x: source.left * closingProgress,
+    y: source.top * closingProgress,
+    scaleX: 1 - (1 - scaleX) * closingProgress,
+    scaleY: 1 - (1 - scaleY) * closingProgress
   };
   const animate = isPreparing
     ? transitionStart
@@ -67,16 +74,22 @@ export default function MobileFullscreenCamera({
           y: [source.top, source.top + source.height * 0.015, 0],
           scaleX: [scaleX, scaleX * 0.97, 1],
           scaleY: [scaleY, scaleY * 0.97, 1],
-          borderRadius: ["999px", "999px", "0px"]
+          borderRadius: ["50%", "50%", "0%"]
         }
       : isClosing
-        ? transitionStart
+        ? {
+            x: [0, closingIntermediate.x, source.left],
+            y: [0, closingIntermediate.y, source.top],
+            scaleX: [1, closingIntermediate.scaleX, scaleX],
+            scaleY: [1, closingIntermediate.scaleY, scaleY],
+            borderRadius: ["0%", "50%", "50%"]
+          }
         : {
             x: 0,
             y: 0,
             scaleX: 1,
             scaleY: 1,
-            borderRadius: "0px"
+            borderRadius: "0%"
           };
 
   return createPortal(
@@ -94,7 +107,7 @@ export default function MobileFullscreenCamera({
       animate={animate}
       transition={{
         duration,
-        times: isOpening ? [0, 0.14, 1] : undefined,
+        times: isOpening ? [0, 0.14, 1] : isClosing ? [0, closingProgress, 1] : undefined,
         ease: reducedMotion ? "linear" : [0.22, 0.78, 0.2, 1]
       }}
       onAnimationComplete={onAnimationComplete}
