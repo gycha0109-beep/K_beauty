@@ -6,7 +6,7 @@ This task re-baselines the 164-row Production catalog after the two-row sunscree
 
 ## Exact-head base
 
-- PR #85 head: `1efe64dde1b8fffa00ba15717a19e32f34702872`
+- PR #85 Production-remediation head: `ccd0100dcef8e267d37f498998cab85a362161dc`
 - Expected Production rows: `164`
 - Expected remediation rows after the preserved export timestamp: exactly `2`
 - Expected sunscreen rows: `11`
@@ -29,6 +29,8 @@ Required evidence:
 8. Runtime and shadow visibility remain identical.
 9. Canonical stabilization exposes zero active-axis candidates.
 10. The post-remediation export SHA-256 and audit dataset hash are retained as a new baseline version.
+
+The live read and export producer is temporary. Embedded public access material and the temporary workflow must be removed after evidence collection. The final branch retains only reusable local verification and architecture records.
 
 ## Crawler ingestion policy
 
