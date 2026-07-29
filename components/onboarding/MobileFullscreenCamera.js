@@ -113,7 +113,8 @@ export default function MobileFullscreenCamera({
           muted
           onCanPlay={onVideoReady}
           onPlaying={onVideoReady}
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          data-preview-orientation="mirrored"
+          className="absolute inset-0 h-full w-full scale-x-[-1] object-cover object-center"
         />
       </div>
 
