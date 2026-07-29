@@ -92,7 +92,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(overlay).toHaveCSS("opacity", "0.001");
     await expect(page.locator("body")).toHaveCSS("position", "static");
     await expect(openButton).toBeVisible();
-    await expect(page.locator('input[capture]')).toHaveCount(0);
+    await expect(page.locator('input[capture="user"]')).toBeDisabled();
 
     await page.evaluate(() => {
       (window as typeof window & { __releaseCameraFrame?: () => void }).__releaseCameraFrame?.();
@@ -200,8 +200,13 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
     await expect(page.getByText("카메라 접근에 실패했습니다.")).toBeVisible();
     await expect(page.locator("body")).toHaveCSS("position", "static");
-    await expect(page.locator('input[capture]')).toHaveCount(0);
+    await expect(page.locator('input[capture="user"]')).toBeDisabled();
     expect(fileChooserCount).toBe(0);
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as typeof window & { __cameraGetUserMediaCalls?: number }).__cameraGetUserMediaCalls)
+      )
+      .toBe(1);
   });
 
   test("keeps the oval and controls separated on a small portrait viewport", async ({ page }) => {
@@ -246,7 +251,7 @@ test.describe("mobile fullscreen camera", () => {
     await installCameraMock(page);
     await openHydratedHome(page);
 
-    await page.locator('input[type="file"]').setInputFiles({
+    await page.locator('input[type="file"]:not([capture])').setInputFiles({
       name: "face.png",
       mimeType: "image/png",
       buffer: Buffer.from(
