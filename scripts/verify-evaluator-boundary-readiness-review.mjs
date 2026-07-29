@@ -105,7 +105,10 @@ function assertEvidenceSeparation(output) {
   if (output.actualEvidenceSummary.evidenceType === "actual_capture_coverage_unavailable") {
     assert.equal(output.actualEvidenceSummary.actualEvidenceAvailable, false);
     assert.equal(output.actualEvidenceSummary.completeProductRowCaptures, 0);
-    assert.equal(output.readinessStatus, "blocked_by_source_unavailability");
+    assert.equal(output.readinessStatus, "needs_more_evidence_before_design");
+    assert(output.readinessReasons.includes(
+      "low_risk_downgrade_consistency_was_not_established_across_actual_and_pure_replay_evidence"
+    ));
   }
   assert.equal(output.pureReplayEvidenceSummary.evidenceType, "pure_engine_replay");
   assert.equal(output.syntheticCoverageSummary.evidenceType, "synthetic_policy_coverage");
