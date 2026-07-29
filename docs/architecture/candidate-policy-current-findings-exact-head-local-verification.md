@@ -19,32 +19,62 @@ The verification isolates current-findings behavior by comparing:
 
 This prevents changes in canonical safety or goal state caused by current-product input from being misclassified as a current-findings exposure effect.
 
-Actual-product fixtures were selected deterministically from catalog capabilities rather than from hard-coded product identities or a hard-coded concern axis.
+Actual-product fixtures are selected deterministically from preserved-export capabilities rather than from product identities or a fixed concern axis.
 
-No product names, brands, URLs, complete IDs, or raw rows were written to logs or evidence.
+No product names, brands, URLs, complete IDs, or raw rows are written to logs or evidence.
 
-## Preserved export gate
+## Preserved export identity gate
 
-Expected preserved export evidence:
+Required exact evidence:
 
-- rows: `164`
-- dataset hash: `f346d90ed722432dd1e1367a50939954ec5030abb9a7ea72fdef61bb1dc93e2f`
-
-The original local ignored export was not accessible in the execution environment. Two ordered SELECT-only reads of the same Production `public.products` relation returned:
-
+- input basename: `products-raw-export.json`
+- raw export SHA-256: `2b16bd7c66aa719367cb9a5cd422a40d57ccf2296b780e931892b4d5325aeed6`
 - rows: `164`
 - unique IDs: `164`
-- repeated row set: identical
-- current dataset hash: `2c0f7f9db11305c995c123c5a6683be99f4937dcb64cffa288cc4bbead251a68`
-- current reconstructed export hash: `86588f6295ccc784c77ea043a9bee27949cbd7465322a34899fe93d24b0026d8`
+- audit dataset hash: `f346d90ed722432dd1e1367a50939954ec5030abb9a7ea72fdef61bb1dc93e2f`
 
-The current dataset hash does not equal the preserved-export hash. The expected hash was not rewritten or accepted as equivalent.
+The expected hashes are immutable gates. A mismatch is reported as `PRECONDITION_FAILURE`; the expected values are not rewritten or accepted as equivalent.
 
-`products.updated_at` showed zero rows updated after the recorded export time and the table has an update timestamp trigger, but this does not prove that the two datasets are byte- or field-equivalent. Exact preserved-export verification therefore remains blocked.
+## Exact local gate runner
+
+The retained verifier is:
+
+`scripts/verify-preserved-product-export-exact-gate.mjs`
+
+It performs only local file reads and pure in-process evaluation. It performs no DB, Supabase, HTTP, deployment, environment, or credential access.
+
+Run from the repository:
+
+```powershell
+cd "D:\Ji_hwan\K_Beauti AI"
+git fetch origin
+git switch codex/candidate-policy-current-findings-exact-head-local-verification
+git pull --ff-only
+node scripts/verify-preserved-product-export-exact-gate.mjs --input "_local_data/products-raw-export.json"
+```
+
+Machine-readable output:
+
+`tmp/preserved-product-export-exact-gate.json`
+
+The runner fails closed when:
+
+- the tracked working tree is dirty;
+- PR #83 exact head is not an ancestor;
+- files other than this verifier and this architecture record differ from PR #83;
+- the input file is absent;
+- raw export hash, row count, unique ID count, or dataset hash differs;
+- Product Data Sufficiency Audit invariants differ;
+- runtime/shadow parity fails;
+- Current Findings changes exposure;
+- UVA protection metadata fails open;
+- stabilization exposes an active-axis candidate;
+- malformed findings fail to block;
+- replay is not deterministic.
 
 ## Current Production catalog diagnostic
 
-The current 164-row catalog completed a read-only diagnostic replay:
+The current 164-row catalog previously completed a read-only diagnostic replay:
 
 - audit status: `audit_complete`
 - current-product transport complete: `164/164`
@@ -82,22 +112,21 @@ Diagnostic semantic hash:
 
 ## Review corrections
 
-The initial verifier was corrected in the verification-only harness for three invalid fixture assumptions:
+The earlier live-catalog harness exposed three invalid fixture assumptions:
 
-1. A fixed acne-treatment pair did not exist at the required confidence level, so the duplicate active goal was derived from actual catalog capabilities.
-2. The requested-only product also supported the canonical goal, so an actual non-overlapping requested-only fixture was selected.
-3. A fixed visible-sunscreen count and the first pilling-missing row mixed preference and safety effects, so neutral-context eligibility and findings-only exposure comparisons were separated.
+1. A fixed acne-treatment pair did not exist at the required confidence level, so duplicate active goal selection is capability-derived.
+2. A requested-only product could also support the canonical goal, so the runner selects a non-overlapping product deterministically.
+3. Preference and safety effects could be mixed with Current Findings, so neutral eligibility and findings-only exposure comparisons are separated.
 
-These corrections did not modify Production CandidatePolicy code.
+These corrections do not modify Production CandidatePolicy code.
 
-## Cleanup
-
-The live catalog verifier, temporary diagnostic wrapper, embedded public access material, and temporary security-manifest entry were removed after evidence collection. The final branch retains only this architecture record over PR #83.
-
-## Final result
+## Current state
 
 - Current Production catalog CandidatePolicy diagnostic: `PASS`
-- Preserved exact-export verification: `PRECONDITION_FAILURE`
+- Preserved export exact runner: implemented and CI-validated
+- Preserved local file execution in this environment: unavailable
 - Production code repair required from this task: none
 
-The completion verdict `CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP` cannot be assigned to the preserved export until the original ignored export with the expected hash is supplied to an exact-head local run.
+The final completion verdict remains `PRECONDITION_FAILURE` until the local command runs against the preserved file and returns:
+
+`CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP`
