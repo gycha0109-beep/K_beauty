@@ -298,13 +298,18 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
   });
 
-  test("blocks capture when face model initialization fails", async ({ page }) => {
+  test("keeps manual capture available when face model initialization fails", async ({ page }) => {
     await installCameraMock(page, { faceModelFails: true });
     await openHydratedHome(page);
     await getCameraOpenButton(page).click();
 
-    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴 가이드를 준비하지 못했습니다");
-    await expect(getCaptureButton(page)).toBeDisabled();
+    const overlay = page.getByTestId("mobile-camera-overlay");
+    await expect(page.getByTestId("face-guide-message")).toHaveText(
+      "얼굴 가이드를 사용할 수 없습니다. 타원에 맞춘 뒤 직접 촬영해 주세요"
+    );
+    await expect(overlay).toHaveAttribute("data-face-guidance-ready", "false");
+    await expect(overlay).toHaveAttribute("data-face-capture-allowed", "true");
+    await expect(getCaptureButton(page)).toBeEnabled();
   });
 
   test("keeps the mirrored interaction and result preview while preserving original capture pixels", async ({ page }) => {
