@@ -4,8 +4,13 @@
 
 This contract aligns CandidatePolicy runtime and shadow ranking with the
 canonical Premium decision stack. It does not change FunctionalPolicy
-decisions, current-product findings transport, product data, runtime flags, or
-deployment behavior.
+decisions, product data, runtime flags, or deployment behavior.
+
+Current-product semantics are defined by the separate
+`candidate-policy-current-findings-context-v1` contract. The goal-context object
+carries that independently versioned boundary context so runtime and shadow can
+consume one frozen canonical envelope; current-product findings do not become
+goal authority.
 
 ## Goal meanings
 
@@ -31,10 +36,12 @@ deployment behavior.
 4. `buildCandidatePolicyRuntimeSafetyContext()` projects the existing PR #79
    safety contract from the shared context and raw FunctionalPolicy.
 5. `buildCandidatePolicyGoalContext()` projects the requested goal, detected
-   priority, and effective FunctionalPolicy ranking goal.
+   priority, effective FunctionalPolicy ranking goal, and the separately
+   versioned canonical current-findings boundary context.
 6. `resolveCandidatePolicyGoalPolicy()` preserves legacy explanation fields but
    replaces CandidatePolicy ranking and guard authority with the canonical goal
-   and safety contexts.
+   and safety contexts. It transports validated current findings without using
+   them as goal authority.
 7. Runtime and shadow receive the same survey, aligned goal policy, goal
    context, and safety context. `buildEvaluatorBoundaryPolicyExecution()` again
    validates and resolves the aligned goal policy before ranking, guard, hint,
@@ -55,11 +62,18 @@ contains:
 - canonical ranking goal;
 - requested/detected tension;
 - shared/effective policy provenance;
-- bounded reason codes.
+- bounded reason codes;
+- one independently versioned `candidate-policy-current-findings-context-v1`
+  boundary object.
 
-It contains no product identity, raw survey text, user identity, URL, token, or
-session data. Missing or invalid context blocks the pure runtime and shadow
-execution. There is no implicit production legacy fallback.
+The goal fields contain no product identity. The nested current-findings
+contract may contain internal product IDs required to detect the same selected
+product, but excludes names, brands, URLs, prices, raw survey text, user
+identity, tokens, and session data. Runtime telemetry exposes only bounded
+aggregate counts and never serializes those IDs.
+
+Missing or invalid goal or nested current-findings context blocks the pure
+runtime and shadow execution. There is no implicit production legacy fallback.
 
 ## Divergence classification
 
@@ -85,9 +99,9 @@ divergence, and safety-invariant violations to be zero.
 
 Legacy requested-goal policy objects remain available to non-runtime consumers.
 Runtime observability records only bounded fields: context version, requested
-and detected presence, tension, ranking source, legacy-fallback use, and a
-bounded alignment stop reason. Goal values and user/product identity are not
-logged.
+and detected presence, tension, ranking source, legacy-fallback use, alignment
+stop reason, and current-findings aggregate state/counts. Goal values, product
+IDs, and user identity are not logged.
 
 ## Verification
 
@@ -96,6 +110,9 @@ scenarios, all 128 goal/risk combinations, runtime/shadow parity, ordering and
 downstream pool assertions, missing/invalid fail-closed behavior, 12 negative
 controls, semantic double-run equality, exact temporary artifact files, and
 cleanup.
+
+`npm run verify:candidate-policy-current-findings` separately verifies the
+current-product contract and its ranking-context integration.
 
 The actual 164-product replay is local ignored evidence only. Product rows,
 names, brands, URLs, and real identifiers are not committed.
