@@ -65,7 +65,8 @@ const EXPECTED_VERIFIERS = [
   "verify-shadow-runtime-dry-run-plan.mjs",
   "verify-shadow-safety-verifier-skeletons.mjs",
   "verify-shadow-verifier-integrity.mjs",
-  "verify-sunscreen-metadata-rebaseline-live.mjs"
+  "verify-sunscreen-metadata-rebaseline-live.mjs",
+  "verify-sunscreen-metadata-rebaseline-policy-live.mjs"
 ];
 
 const PREPARATION_STEPS = [
