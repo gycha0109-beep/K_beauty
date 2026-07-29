@@ -119,6 +119,13 @@ function runScript(name, phase) {
   };
 }
 
+function printFailure(result) {
+  if (result.status === 0 && !result.signal && !result.error) return;
+  if (result.stdoutTail) console.error(`STDOUT ${result.name}\n${result.stdoutTail}`);
+  if (result.stderrTail) console.error(`STDERR ${result.name}\n${result.stderrTail}`);
+  if (result.error) console.error(`ERROR ${result.name}\n${result.error}`);
+}
+
 const discovered = readdirSync(path.join(ROOT, "scripts"))
   .filter((name) => /^verify-.*\.mjs$/.test(name))
   .filter(
@@ -149,6 +156,7 @@ for (const name of PREPARATION_STEPS) {
   const result = runScript(name, "preparation");
   results.push(result);
   console.log(`${result.status === 0 && !result.signal && !result.error ? "PASS" : "FAIL"} prep ${name}`);
+  printFailure(result);
   if (result.status !== 0 || result.signal || result.error) break;
 }
 
@@ -157,6 +165,7 @@ if (results.every((result) => result.status === 0 && !result.signal && !result.e
     const result = runScript(name, "verification");
     results.push(result);
     console.log(`${result.status === 0 && !result.signal && !result.error ? "PASS" : "FAIL"} ${name}`);
+    printFailure(result);
   }
 }
 
