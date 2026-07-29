@@ -1,18 +1,61 @@
 import { expect, test, type Page } from "playwright/test";
 
-async function installCameraMock(page: Page, options: { deny?: boolean } = {}) {
-  await page.addInitScript(({ deny }) => {
+type CameraMockOptions = {
+  deferFirstFrame?: boolean;
+  deny?: boolean;
+  pending?: boolean;
+};
+
+async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
+  await page.addInitScript(({ deferFirstFrame, deny, pending }) => {
     const cameraWindow = window as typeof window & {
       __cameraGetUserMediaCalls?: number;
       __cameraStops?: number;
       __cameraStreams?: MediaStream[];
       __cameraCanvases?: HTMLCanvasElement[];
+      __releaseCameraFrame?: () => void;
+      __resolveCameraRequest?: () => void;
     };
 
     cameraWindow.__cameraGetUserMediaCalls = 0;
     cameraWindow.__cameraStops = 0;
     cameraWindow.__cameraStreams = [];
     cameraWindow.__cameraCanvases = [];
+
+    const createStream = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 640;
+      canvas.height = 480;
+      const context = canvas.getContext("2d");
+      const stream = canvas.captureStream(deferFirstFrame ? 0 : 12);
+      const track = stream.getVideoTracks()[0];
+
+      const paintFrame = () => {
+        if (context) {
+          context.fillStyle = "rgb(255, 79, 138)";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        track?.requestFrame?.();
+      };
+
+      if (deferFirstFrame) {
+        cameraWindow.__releaseCameraFrame = paintFrame;
+      } else {
+        paintFrame();
+      }
+
+      for (const streamTrack of stream.getTracks()) {
+        const originalStop = streamTrack.stop.bind(streamTrack);
+        streamTrack.stop = () => {
+          cameraWindow.__cameraStops = (cameraWindow.__cameraStops || 0) + 1;
+          originalStop();
+        };
+      }
+
+      cameraWindow.__cameraCanvases?.push(canvas);
+      cameraWindow.__cameraStreams?.push(stream);
+      return stream;
+    };
 
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,
@@ -24,33 +67,30 @@ async function installCameraMock(page: Page, options: { deny?: boolean } = {}) {
             throw new DOMException("Permission denied", "NotAllowedError");
           }
 
-          const canvas = document.createElement("canvas");
-          canvas.width = 640;
-          canvas.height = 480;
-          const context = canvas.getContext("2d");
-          context?.fillRect(0, 0, canvas.width, canvas.height);
-          const stream = canvas.captureStream(12);
-
-          for (const track of stream.getTracks()) {
-            const originalStop = track.stop.bind(track);
-            track.stop = () => {
-              cameraWindow.__cameraStops = (cameraWindow.__cameraStops || 0) + 1;
-              originalStop();
-            };
+          if (pending) {
+            return new Promise<MediaStream>((resolve) => {
+              cameraWindow.__resolveCameraRequest = () => resolve(createStream());
+            });
           }
 
-          cameraWindow.__cameraCanvases?.push(canvas);
-          cameraWindow.__cameraStreams?.push(stream);
-          return stream;
+          return createStream();
         }
       }
     });
   }, options);
 }
 
-async function openHydratedHome(page: Page) {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
+async function openHydratedPage(page: Page, path = "/") {
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle");
+}
+
+function getCameraOpenButton(page: Page) {
+  return page.locator("button.ui-button-primary");
+}
+
+function getFullscreenCloseButton(page: Page) {
+  return page.getByTestId("mobile-camera-overlay").locator("button").first();
 }
 
 test.describe("mobile fullscreen camera", () => {
@@ -58,7 +98,7 @@ test.describe("mobile fullscreen camera", () => {
 
   test("opens from the capture area, closes with cleanup, and re-enters once", async ({ page }) => {
     await installCameraMock(page);
-    await openHydratedHome(page);
+    await openHydratedPage(page);
 
     const openButton = page.getByRole("button", { name: "지금 촬영하기", exact: true });
     await page.evaluate(() => {
@@ -84,7 +124,7 @@ test.describe("mobile fullscreen camera", () => {
       .poll(() =>
         page.evaluate(() => (window as typeof window & { __cameraPhases?: string[] }).__cameraPhases)
       )
-      .toEqual(expect.arrayContaining(["opening", "open"]));
+      .toEqual(expect.arrayContaining(["requesting", "waiting_for_frame", "expanding", "open"]));
 
     await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
     await expect(overlay).toHaveCount(0);
@@ -111,7 +151,7 @@ test.describe("mobile fullscreen camera", () => {
 
   test("captures a full-resolution frame and returns to the existing preview flow", async ({ page }) => {
     await installCameraMock(page);
-    await openHydratedHome(page);
+    await openHydratedPage(page);
     await page.getByRole("button", { name: "지금 촬영하기", exact: true }).click();
 
     const captureButton = page.getByRole("button", { name: "사진 촬영", exact: true });
@@ -132,7 +172,7 @@ test.describe("mobile fullscreen camera", () => {
 
   test("recovers from denied permission instead of leaving a loading overlay", async ({ page }) => {
     await installCameraMock(page, { deny: true });
-    await openHydratedHome(page);
+    await openHydratedPage(page);
     await page.locator('input[capture="user"]').evaluate((input) => {
       input.addEventListener("click", (event) => event.preventDefault());
     });
@@ -142,12 +182,15 @@ test.describe("mobile fullscreen camera", () => {
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
     await expect(page.getByText("카메라 접근에 실패했습니다.")).toBeVisible();
     await expect(page.locator("body")).toHaveCSS("position", "static");
+    await expect
+      .poll(() => page.evaluate(() => Boolean(window.history.state?.bejewelyMobileCamera)))
+      .toBe(false);
   });
 
   test("keeps the oval and controls separated on a small portrait viewport", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await installCameraMock(page);
-    await openHydratedHome(page);
+    await openHydratedPage(page);
     await page.getByRole("button", { name: "지금 촬영하기", exact: true }).click();
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
 
@@ -173,7 +216,7 @@ test.describe("mobile fullscreen camera", () => {
   test("honors reduced motion without leaving the transition locked", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await installCameraMock(page);
-    await openHydratedHome(page);
+    await openHydratedPage(page);
     await page.getByRole("button", { name: "지금 촬영하기", exact: true }).click();
 
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
@@ -184,7 +227,7 @@ test.describe("mobile fullscreen camera", () => {
 
   test("preserves gallery selection without opening a stream", async ({ page }) => {
     await installCameraMock(page);
-    await openHydratedHome(page);
+    await openHydratedPage(page);
 
     await page.locator('input[type="file"]:not([capture])').setInputFiles({
       name: "face.png",
@@ -201,12 +244,94 @@ test.describe("mobile fullscreen camera", () => {
     );
     expect(getUserMediaCalls).toBe(0);
   });
+
+  test("consumes one browser back navigation to close the camera and restores the page", async ({ page }) => {
+    await installCameraMock(page);
+    await openHydratedPage(page);
+
+    const openButton = getCameraOpenButton(page);
+    await openButton.click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
+
+    const pathnameBeforeBack = new URL(page.url()).pathname;
+    await page.evaluate(() => window.history.back());
+
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+    await expect(page.locator("body")).toHaveCSS("position", "static");
+    await expect(openButton).toBeFocused();
+    await expect.poll(() => new URL(page.url()).pathname).toBe(pathnameBeforeBack);
+    await expect
+      .poll(() => page.evaluate(() => (window as typeof window & { __cameraStops?: number }).__cameraStops))
+      .toBe(1);
+  });
+
+  test("removes the camera history entry after X close", async ({ page }) => {
+    await installCameraMock(page);
+    await openHydratedPage(page, "/?camera-history-source=1");
+    await openHydratedPage(page);
+
+    await getCameraOpenButton(page).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "open");
+    await getFullscreenCloseButton(page).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+
+    await page.goBack();
+    await expect.poll(() => new URL(page.url()).search).toBe("?camera-history-source=1");
+  });
+
+  test("keeps the page visible until a first video frame is available", async ({ page }) => {
+    await installCameraMock(page, { deferFirstFrame: true });
+    await openHydratedPage(page);
+
+    await getCameraOpenButton(page).click();
+    const overlay = page.getByTestId("mobile-camera-overlay");
+    await expect(overlay).toHaveAttribute("data-camera-phase", "waiting_for_frame");
+    await expect(overlay).toHaveCSS("opacity", "0");
+    await expect(page.locator("body")).toHaveCSS("position", "static");
+    await expect(getCameraOpenButton(page)).toBeVisible();
+
+    await page.evaluate(() => {
+      (window as typeof window & { __releaseCameraFrame?: () => void }).__releaseCameraFrame?.();
+    });
+
+    await expect(overlay).toHaveAttribute("data-camera-phase", "open");
+    await expect
+      .poll(() =>
+        overlay.locator("video").evaluate((video) => {
+          const element = video as HTMLVideoElement;
+          return element.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && element.videoWidth > 0;
+        })
+      )
+      .toBe(true);
+    await expect(overlay).toHaveCSS("opacity", "1");
+    await getFullscreenCloseButton(page).click();
+  });
+
+  test("cancels a pending camera request through browser back and stops its stale stream", async ({ page }) => {
+    await installCameraMock(page, { pending: true });
+    await openHydratedPage(page);
+
+    await getCameraOpenButton(page).click();
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveAttribute("data-camera-phase", "requesting");
+    await expect(page.locator("body")).toHaveCSS("position", "static");
+
+    await page.evaluate(() => window.history.back());
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+    await page.evaluate(() => {
+      (window as typeof window & { __resolveCameraRequest?: () => void }).__resolveCameraRequest?.();
+    });
+
+    await expect
+      .poll(() => page.evaluate(() => (window as typeof window & { __cameraStops?: number }).__cameraStops))
+      .toBe(1);
+    await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+  });
 });
 
 test("desktop keeps the in-card camera flow", async ({ page }) => {
   await installCameraMock(page);
   await page.setViewportSize({ width: 1280, height: 900 });
-  await openHydratedHome(page);
+  await openHydratedPage(page);
   await page.getByRole("button", { name: "지금 촬영하기", exact: true }).click();
 
   await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
