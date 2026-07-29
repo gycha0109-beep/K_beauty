@@ -11,23 +11,15 @@ const hashAssertion = '  equal(audit.dataset.datasetHash, EXPECTED_DATASET_HASH,
 const statusMarker = '    status: "CANDIDATE_POLICY_CURRENT_FINDINGS_CONTRACTED_NOOP",';
 const duplicateFixturePattern = /  const acneProducts = firstTwo\([\s\S]*?  \);\n  const completeSunscreen/;
 const requestedOnlyPattern = /  const requestedOnly = canonical\(\{\n    requested: "acne",\n    detected: "dehydration",\n    selections: \[selection\(acneProducts\[0\]\)\]\n  \}\);/;
+const pillingFixturePattern = /  const pillingOnlyMissingSunscreen = first\(\n    rows,\n    \(row\) => row\.product\.category === "sunscreen" && supportsGoal\(row, "uv"\) && !hasValue\(row\.product\.pilling_risk\),\n    "pilling-only-missing sunscreen"\n  \);/;
 const neutralVisibleCountMarker = '    9,\n    "protection-complete visible sunscreen count"';
 
-if (!source.includes(hashAssertion)) {
-  throw new Error("preserved dataset hash assertion marker missing");
-}
-if (!source.includes(statusMarker)) {
-  throw new Error("verification status marker missing");
-}
-if ((source.match(duplicateFixturePattern) || []).length !== 1) {
-  throw new Error("duplicate active fixture marker count invalid");
-}
-if ((source.match(requestedOnlyPattern) || []).length !== 1) {
-  throw new Error("requested-only fixture marker count invalid");
-}
-if (!source.includes(neutralVisibleCountMarker)) {
-  throw new Error("neutral sunscreen visibility marker missing");
-}
+if (!source.includes(hashAssertion)) throw new Error("preserved dataset hash assertion marker missing");
+if (!source.includes(statusMarker)) throw new Error("verification status marker missing");
+if ((source.match(duplicateFixturePattern) || []).length !== 1) throw new Error("duplicate active fixture marker count invalid");
+if ((source.match(requestedOnlyPattern) || []).length !== 1) throw new Error("requested-only fixture marker count invalid");
+if ((source.match(pillingFixturePattern) || []).length !== 1) throw new Error("pilling fixture marker count invalid");
+if (!source.includes(neutralVisibleCountMarker)) throw new Error("neutral sunscreen visibility marker missing");
 
 let diagnostic = source
   .replace(
@@ -68,6 +60,19 @@ let diagnostic = source
     detected: "dehydration",
     selections: [selection(requestedOnlyChoice.row.product)]
   });`
+  )
+  .replace(
+    pillingFixturePattern,
+    `  const pillingVisibilityProbe = canonical({ requested: "uv", detected: "uv" });
+  const pillingVisibleIds = new Set(runtime(products, pillingVisibilityProbe).visibleCandidateIds);
+  const pillingOnlyMissingSunscreen = first(
+    rows,
+    (row) => row.product.category === "sunscreen" &&
+      supportsGoal(row, "uv") &&
+      !hasValue(row.product.pilling_risk) &&
+      pillingVisibleIds.has(row.id),
+    "pilling-only-missing visible sunscreen"
+  );`
   )
   .replaceAll(
     'requested: "acne",\n    detected: "acne"',
