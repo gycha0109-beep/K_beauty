@@ -24,6 +24,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Production catalog rebaseline
+        run: node scripts/verify-sunscreen-metadata-rebaseline-live.mjs
       - name: Security closeout verifier suite
         run: node scripts/run-security-closeout-verifier-suite.mjs
       - name: SEC-11 site origin normalization
@@ -44,6 +46,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: security-closeout-verifier-evidence
-          path: tmp/security-closeout-verifier-suite.json
+          path: |
+            tmp/security-closeout-verifier-suite.json
+            tmp/sunscreen-metadata-rebaseline/
           if-no-files-found: error
           retention-days: 7
