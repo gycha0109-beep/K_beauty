@@ -1,0 +1,45 @@
+name: Candidate current findings temporary verification
+
+on:
+  push:
+    branches:
+      - codex/candidate-policy-current-findings-integration
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate-current-findings-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify CandidatePolicy baseline
+        run: npm run verify:candidate-policy-baseline
+
+      - name: Verify current-product snapshot transport
+        run: npm run verify:current-product-snapshot-transport
+
+      - name: Verify architecture
+        run: npm run architecture:guard
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Check tracked mutation
+        run: git diff --exit-code
