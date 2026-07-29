@@ -13,13 +13,25 @@ const duplicateFixturePattern = /  const acneProducts = firstTwo\([\s\S]*?  \);\
 const requestedOnlyPattern = /  const requestedOnly = canonical\(\{\n    requested: "acne",\n    detected: "dehydration",\n    selections: \[selection\(acneProducts\[0\]\)\]\n  \}\);/;
 const pillingFixturePattern = /  const pillingOnlyMissingSunscreen = first\(\n    rows,\n    \(row\) => row\.product\.category === "sunscreen" && supportsGoal\(row, "uv"\) && !hasValue\(row\.product\.pilling_risk\),\n    "pilling-only-missing sunscreen"\n  \);/;
 const neutralVisibleCountMarker = '    9,\n    "protection-complete visible sunscreen count"';
+const pillingAssertionMarker = '  check(runtime(products, pillingMissing).visibleCandidateIds.includes(productId(pillingOnlyMissingSunscreen)), "pilling-only missing sunscreen remains visible");';
+const safetyComparisonMarker = '    deepEqual(bundle.candidateSafetyContext, emptyTwin.candidateSafetyContext, `${id} safety context invariant`);';
+const emptyRuntimeMarker = '    const emptyContextRuntime = runtime(products, withFindingsContext(bundle, emptyTwin.findingsContext));';
+const pillingOutputMarker = '      pillingOnlyMissingVisible: true';
 
-if (!source.includes(hashAssertion)) throw new Error("preserved dataset hash assertion marker missing");
-if (!source.includes(statusMarker)) throw new Error("verification status marker missing");
+for (const [marker, label] of [
+  [hashAssertion, "preserved dataset hash assertion"],
+  [statusMarker, "verification status"],
+  [neutralVisibleCountMarker, "neutral sunscreen visibility"],
+  [pillingAssertionMarker, "pilling assertion"],
+  [safetyComparisonMarker, "safety comparison"],
+  [emptyRuntimeMarker, "empty runtime"],
+  [pillingOutputMarker, "pilling output"]
+]) {
+  if (!source.includes(marker)) throw new Error(`${label} marker missing`);
+}
 if ((source.match(duplicateFixturePattern) || []).length !== 1) throw new Error("duplicate active fixture marker count invalid");
 if ((source.match(requestedOnlyPattern) || []).length !== 1) throw new Error("requested-only fixture marker count invalid");
 if ((source.match(pillingFixturePattern) || []).length !== 1) throw new Error("pilling fixture marker count invalid");
-if (!source.includes(neutralVisibleCountMarker)) throw new Error("neutral sunscreen visibility marker missing");
 
 let diagnostic = source
   .replace(
@@ -85,6 +97,34 @@ let diagnostic = source
   .replace(
     neutralVisibleCountMarker,
     '    sunscreenRows.filter((row) => supportsGoal(row, "uv")).length,\n    "protection-complete visible sunscreen count"'
+  )
+  .replace(
+    pillingAssertionMarker,
+    `  const pillingRuntime = runtime(products, pillingMissing);
+  const pillingEmptyFindingsRuntime = runtime(
+    products,
+    withFindingsContext(pillingMissing, pillingVisibilityProbe.findingsContext)
+  );
+  deepEqual(
+    exposureSignature(pillingRuntime),
+    exposureSignature(pillingEmptyFindingsRuntime),
+    "pilling-only missing selection remains an exposure no-op for current findings"
+  );`
+  )
+  .replace(
+    safetyComparisonMarker,
+    `    const emptyFindingsBundle = withFindingsContext(bundle, emptyTwin.findingsContext);
+    deepEqual(bundle.candidateSafetyContext, emptyFindingsBundle.candidateSafetyContext, \`${'${id}'} safety context isolated\`);`
+  )
+  .replace(
+    emptyRuntimeMarker,
+    "    const emptyContextRuntime = runtime(products, emptyFindingsBundle);"
+  )
+  .replace(
+    pillingOutputMarker,
+    `      pillingOnlyMissingVisibleUnderNeutralBaseline: pillingVisibleIds.has(productId(pillingOnlyMissingSunscreen)),
+      pillingSelectionExposureNoop: semanticHash(exposureSignature(pillingRuntime)) ===
+        semanticHash(exposureSignature(pillingEmptyFindingsRuntime))`
   );
 
 writeFileSync(diagnosticPath, diagnostic, "utf8");
