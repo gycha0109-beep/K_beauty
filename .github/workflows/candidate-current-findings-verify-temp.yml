@@ -73,6 +73,7 @@ jobs:
             shift
             local log="/tmp/candidate-current-findings-${label}.log"
             local status
+            local location
             local detail
             echo "==> ${label}"
             "$@" >"${log}" 2>&1
@@ -82,11 +83,12 @@ jobs:
               post_status success "Verify ${label}" "${label} passed"
               return 0
             fi
-            detail=$(grep -E 'AssertionError|Error:|ERR_|expected|actual' "${log}" | tail -n 3 | tr '\n' ' ' | tr -cd '[:alnum:] _.,:;()\[\]/=-' | cut -c1-150)
+            location=$(grep -Eo 'verify-candidate-policy-current-findings-integration\.mjs:[0-9]+:[0-9]+' "${log}" | head -n 1 || true)
+            detail=$(grep -E 'AssertionError|Error:|ERR_|expected|actual' "${log}" | head -n 4 | tr '\n' ' ' | tr -cd '[:alnum:] _.,:;()\[\]/=-' | cut -c1-110)
             if [[ -z "${detail}" ]]; then
-              detail=$(tail -n 3 "${log}" | tr '\n' ' ' | tr -cd '[:alnum:] _.,:;()\[\]/=-' | cut -c1-150)
+              detail=$(tail -n 3 "${log}" | tr '\n' ' ' | tr -cd '[:alnum:] _.,:;()\[\]/=-' | cut -c1-110)
             fi
-            post_status failure "FAIL ${label}: ${detail}" "${label} failed"
+            post_status failure "FAIL ${label} ${location}: ${detail}" "${label} failed"
             return "${status}"
           }
 
