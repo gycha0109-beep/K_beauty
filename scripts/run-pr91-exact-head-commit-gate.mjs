@@ -4,10 +4,14 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const REQUIRED_CHANGED_FILES = [
+  ".github/workflows/pr91-exact-head-commit-gate.yml",
   "docs/architecture/shared-skin-decision-context-v4.md",
   "lib/premium-decision-state.js",
   "lib/shared-skin-decision-context-v4.js",
   "package.json",
+  "scripts/run-pr91-exact-head-commit-gate.mjs",
+  "scripts/verify-condition-policy-single-source.mjs",
+  "scripts/verify-routine-policy-single-source.mjs",
   "scripts/verify-shared-skin-decision-context-v4.mjs"
 ];
 
@@ -25,8 +29,12 @@ function run(command, args = []) {
   }
 }
 
+function read(file) {
+  return readFileSync(path.join(ROOT, file), "utf8");
+}
+
 function verifyTextHygiene(file) {
-  const value = readFileSync(path.join(ROOT, file), "utf8");
+  const value = read(file);
   if (value.includes("\0")) throw new Error(`${file}: NUL byte found`);
   if (/^(<<<<<<<|=======|>>>>>>>)/m.test(value)) {
     throw new Error(`${file}: merge conflict marker found`);
@@ -42,9 +50,17 @@ console.log(`node=${process.version}`);
 
 for (const file of REQUIRED_CHANGED_FILES) verifyTextHygiene(file);
 
-run(process.execPath, ["--check", "lib/shared-skin-decision-context-v4.js"]);
-run(process.execPath, ["--check", "lib/premium-decision-state.js"]);
-run(process.execPath, ["--check", "scripts/verify-shared-skin-decision-context-v4.mjs"]);
+for (const file of [
+  "lib/shared-skin-decision-context-v4.js",
+  "lib/premium-decision-state.js",
+  "scripts/run-pr91-exact-head-commit-gate.mjs",
+  "scripts/verify-condition-policy-single-source.mjs",
+  "scripts/verify-routine-policy-single-source.mjs",
+  "scripts/verify-shared-skin-decision-context-v4.mjs"
+]) {
+  run(process.execPath, ["--check", file]);
+}
+
 run("npm", ["run", "verify:shared-skin-decision-context"]);
 
 const scriptNames = readdirSync(path.join(ROOT, "scripts"));
@@ -75,13 +91,20 @@ if (selected.length < 4) {
   throw new Error(`expected at least 4 relevant verifiers, found ${selected.length}`);
 }
 
+const staleV3Contracts = selected.filter((name) =>
+  read(`scripts/${name}`).includes("shared-skin-decision-context-v3")
+);
+if (staleV3Contracts.length) {
+  throw new Error(`stale v3 verifier contracts: ${staleV3Contracts.join(", ")}`);
+}
+
 console.log(`\nSelected relevant verifiers (${selected.length})`);
 for (const name of selected) console.log(`- scripts/${name}`);
 for (const name of selected) run(process.execPath, [`scripts/${name}`]);
 
 run("npm", ["run", "architecture:guard"]);
 
-const caller = readFileSync(path.join(ROOT, "lib/premium-decision-state.js"), "utf8");
+const caller = read("lib/premium-decision-state.js");
 if (!caller.includes('from "./shared-skin-decision-context-v4.js"')) {
   throw new Error("Premium decision state does not import SharedSkinDecisionContext v4");
 }
