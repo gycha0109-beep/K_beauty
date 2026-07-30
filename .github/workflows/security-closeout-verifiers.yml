@@ -75,8 +75,6 @@ jobs:
 
       - name: Verify product review contracts
         run: |
-          bash -n scripts/verify-admin-product-review-runtime.sh
-          bash -n scripts/run-admin-product-review-runtime-with-readiness.sh
           npm run verify:admin-access-foundation
           npm run verify:admin-product-candidate-reviews
 
@@ -138,7 +136,9 @@ jobs:
             exit 1
           fi
           rm -f "${raw_log}"
-          bash scripts/run-admin-product-review-runtime-with-readiness.sh tmp/admin-product-review-runtime
+          docker exec -i supabase_db_admin-product-review-runtime \
+            psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < tests/fixtures/admin-product-reviews/verify_admin_product_review_runtime.sql
 
       - name: Verify architecture boundaries
         run: npm run architecture:guard
