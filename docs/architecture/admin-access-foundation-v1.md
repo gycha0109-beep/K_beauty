@@ -70,6 +70,7 @@ admin.roles.manage
 관리자 변경 작업의 append-only 기록이다.
 
 - actor와 당시 역할
+- 작업에 필요했던 capability
 - action, target type, target id
 - 변경 전·후 JSON
 - 필수 사유
@@ -77,7 +78,7 @@ admin.roles.manage
 - 제한된 metadata
 - 생성 시각
 
-브라우저 직접 쓰기는 금지한다. 활성 관리자만 검증된 DB 함수를 통해 기록할 수 있다. 감사 로그 조회는 `admin_owner`만 허용한다.
+브라우저 직접 쓰기와 authenticated RPC 실행을 모두 금지한다. 향후 검증된 Server Action 또는 Route Handler가 service-role 전용 함수를 호출하고, 함수는 전달받은 actor의 활성 멤버십과 required capability를 DB에서 다시 확인한다. 감사 로그 조회는 `admin_owner`만 허용한다.
 
 ## 5. 접근 경계
 
@@ -92,6 +93,9 @@ Middleware
 
 향후 Server Action / Route Handler
 → 작업별 capability 재검증
+→ service-role 전용 변경 함수 호출
+→ actor·required capability DB 재검증
+→ 변경과 감사 기록을 같은 통제 경계에서 처리
 
 Postgres RLS / security-definer function
 → 데이터 접근과 변경의 최종 차단
@@ -103,14 +107,17 @@ Middleware에서 DB 멤버십 조회를 수행하지 않는다. 일반 사용자
 
 이 migration은 이메일이나 UUID를 하드코딩하지 않는다.
 
-최초 `admin_owner`는 service-role만 실행할 수 있는 단회 bootstrap 함수로 부여한다. 활성 관리자 행이 이미 존재하면 bootstrap은 실패해야 한다. 이후 역할 관리 UI는 별도 단계에서 구현한다.
+최초 `admin_owner`는 service-role만 실행할 수 있는 단회 bootstrap 함수로 부여한다. 함수는 transaction advisory lock을 획득한 뒤 활성 관리자 존재 여부를 다시 확인하므로 동시 요청으로 owner가 두 명 생성되지 않는다. 이후 역할 관리 UI는 별도 단계에서 구현한다.
 
 ## 7. 감사 불변식
 
+- audit 함수 자체는 service-role만 실행할 수 있다.
+- actor user id는 인증된 서버 계층이 전달하며 DB가 활성 멤버십을 다시 확인한다.
+- required capability가 actor role에 없으면 기록하지 않는다.
 - 사유가 없거나 너무 짧으면 기록하지 않는다.
-- actor는 현재 Supabase 세션의 `auth.uid()`로 고정한다.
 - actor role은 DB의 활성 멤버십에서 다시 읽는다.
-- token, cookie, secret, 원본 얼굴 이미지, base64 image를 metadata에 저장하지 않는다.
+- token, cookie, secret, 원본 얼굴 이미지, base64 image를 before/after/metadata에 저장하지 않는다.
+- before/after/metadata payload는 제한된 크기만 허용한다.
 - 같은 actor/request/action/target 조합의 중복 기록을 막는다.
 - 감사 기록 실패 시 향후 고위험 변경 작업은 성공 처리하지 않는다.
 
@@ -122,13 +129,14 @@ Middleware에서 DB 멤버십 조회를 수행하지 않는다. 일반 사용자
 - `admin_audit_logs`
 - DB role/capability helper
 - service-role first-owner bootstrap
-- 감사 이벤트 기록 함수
+- service-role 감사 이벤트 기록 함수
 - 애플리케이션 capability registry
 - 현재 사용자 관리자 접근 resolver
 - `/admin` 로그인 pre-check
 - `/admin` 서버 권한 재검증
 - 최소 관리자 홈
 - 정적 계약 verifier
+- isolated Supabase role-matrix 검증
 - CI 검증
 
 ### 비대상
@@ -149,7 +157,9 @@ Middleware에서 DB 멤버십 조회를 수행하지 않는다. 일반 사용자
 - Premium `admin_override`만 가진 사용자는 관리자로 인정되지 않는다.
 - 활성 멤버십과 capability가 있는 사용자만 관리자 홈을 볼 수 있다.
 - 브라우저에서 멤버십·감사 로그를 직접 변경할 수 없다.
+- authenticated 사용자는 audit RPC를 직접 실행할 수 없다.
 - 최초 owner bootstrap은 service-role만 실행할 수 있고 두 번째 bootstrap은 거절된다.
-- 감사 함수는 비관리자를 거절하고 사유·request id를 강제한다.
+- audit 함수는 actor의 활성 역할과 required capability를 다시 검증하고 사유·request id를 강제한다.
+- 같은 audit 요청은 같은 id를 반환한다.
 - 관리자 helper는 raw Supabase 오류나 개인정보를 클라이언트에 노출하지 않는다.
-- migration replay, 정적 verifier, architecture guard, production build가 통과한다.
+- isolated migration replay, role matrix, 정적 verifier, architecture guard, production build가 통과한다.
