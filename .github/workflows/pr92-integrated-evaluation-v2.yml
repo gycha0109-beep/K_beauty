@@ -1,0 +1,66 @@
+name: PR92 Integrated Evaluation V2 Gate
+
+on:
+  pull_request:
+    branches:
+      - codex/shared-skin-decision-context-completeness-v4
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr92-integrated-evaluation-v2-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax checks
+        run: |
+          node --check lib/candidate-policy-current-findings-context.js
+          node --check lib/candidate-policy-goal-context.js
+          node --check scripts/verify-premium-integrated-evaluation-v2.mjs
+
+      - name: Integrated evaluation v2
+        run: npm run verify:premium-integrated-evaluation-v2
+
+      - name: Decision engine regression suite
+        run: |
+          npm run verify:shared-skin-decision-context
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-cross-domain-consistency.mjs
+          node scripts/verify-premium-decision-state.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          npm run verify:candidate-policy-runtime-safety
+          npm run verify:candidate-policy-goal-alignment
+          npm run verify:candidate-policy-current-findings
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Optimized build
+        run: npm run build
+
+      - name: Diff hygiene
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --check "$BASE_SHA"...HEAD
+          test -z "$(git status --short)"
