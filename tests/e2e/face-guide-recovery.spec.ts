@@ -39,14 +39,31 @@ async function installRecoveryMock(page: Page) {
           canvas.width = 640;
           canvas.height = 480;
           const context = canvas.getContext("2d");
-          const stream = canvas.captureStream(12);
+          const stream = canvas.captureStream(20);
           const track = stream.getVideoTracks()[0];
+          let frame = 0;
 
-          if (context) {
-            context.fillStyle = "rgb(32, 32, 32)";
+          const paintFrame = () => {
+            if (!context || track?.readyState === "ended") {
+              return;
+            }
+
+            context.fillStyle = frame % 2 === 0 ? "rgb(32, 32, 32)" : "rgb(33, 33, 33)";
             context.fillRect(0, 0, canvas.width, canvas.height);
-          }
-          track?.requestFrame?.();
+            track?.requestFrame?.();
+            frame += 1;
+          };
+
+          paintFrame();
+          const frameTimer = window.setInterval(paintFrame, 50);
+          track?.addEventListener(
+            "ended",
+            () => {
+              window.clearInterval(frameTimer);
+            },
+            { once: true }
+          );
+
           return stream;
         }
       }
