@@ -118,7 +118,12 @@ function verifyPremiumSession(source) {
   ].forEach((pattern) => assertIncludes(source, pattern, "premium session authority"));
 
   const updateSource = source.slice(source.indexOf("export async function updatePremiumReportSession"));
-  assertBefore(updateSource, "const verified = await verifyPremiumReportSession(token)", ".update({", "premium session update");
+  assertBefore(
+    updateSource,
+    "const verified = await verifyPremiumReportSession(token, options)",
+    ".update({",
+    "premium session update"
+  );
   assertBefore(updateSource, ".update({", '.select("premium_report, locale, expires_at")', "premium session readback");
 }
 
@@ -141,7 +146,7 @@ function verifyFullReportRoute(source) {
   const postSource = source.slice(source.indexOf("export async function POST"));
   assertBefore(
     postSource,
-    "const premiumSession = await verifyPremiumReportSession(premiumCookie)",
+    "const premiumSession = await verifyPremiumReportSession(premiumCookie, {",
     "const adminSupabase = createSupabaseAdminClient()",
     "premium persistence authorization"
   );
@@ -231,10 +236,12 @@ const negativeControls = [
   () => verifySaveRoute(saveRoute.replace("premium_report: null", "premium_report: body.premiumReport")),
   () => verifyPremiumSession(premiumSession.replace('.gt("expires_at", now)', "")),
   () => verifyFullReportRoute(fullReportRoute.replace("const adminSupabase = createSupabaseAdminClient()", "const adminSupabase = userSupabase")),
-  () => verifyFullReportRoute(fullReportRoute.replace(
-    "authoritativePremiumReport = sanitizePremiumReportForBoundary(\n      updateResult.payload.premiumReport\n    )",
-    "authoritativePremiumReport = updateResult.payload.premiumReport"
-  ))
+  () => verifyFullReportRoute(
+    fullReportRoute.replace(
+      /authoritativePremiumReport = sanitizePremiumReportForBoundary\(\r?\n\s+updateResult\.payload\.premiumReport\r?\n\s+\)/,
+      "authoritativePremiumReport = updateResult.payload.premiumReport"
+    )
+  )
 ];
 
 for (const [index, run] of negativeControls.entries()) {

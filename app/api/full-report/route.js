@@ -452,7 +452,9 @@ export async function POST(request) {
   }
 
   const premiumCookie = request.cookies.get(PREMIUM_REPORT_COOKIE)?.value || null;
-  const premiumSession = await verifyPremiumReportSession(premiumCookie);
+  const premiumSession = await verifyPremiumReportSession(premiumCookie, {
+    userId: user?.id
+  });
 
   if (!premiumSession.ok || !premiumSession.payload?.premiumReport) {
     if (process.env.NODE_ENV !== "production") {
@@ -542,7 +544,11 @@ export async function POST(request) {
     currentProductsResult.changed ||
     storedPremiumReport.locale !== locale
   ) {
-    const updateResult = await updatePremiumReportSession(premiumCookie, responsePremiumReport);
+    const updateResult = await updatePremiumReportSession(
+      premiumCookie,
+      responsePremiumReport,
+      { userId: user?.id }
+    );
 
     if (!updateResult.ok || !updateResult.payload?.premiumReport) {
       writeSafeLog("warn", {

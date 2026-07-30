@@ -1701,7 +1701,10 @@ export async function POST(request) {
       premiumSessionReport,
       { requiredKeys: ["decisionBundle", "freeResult"] }
     );
-    const { access: premiumAccess } = await resolvePremiumAccessForRequest(request);
+    const {
+      user: premiumUser,
+      access: premiumAccess
+    } = await resolvePremiumAccessForRequest(request);
     const premiumSessionPayload = {
       premiumReport: premiumSessionReport,
       locale
@@ -1715,7 +1718,10 @@ export async function POST(request) {
     const premiumSessionToken = canPreparePremiumReportSession(premiumAccess)
       ? await createPremiumReportSession(
           premiumSessionPayload,
-          { diagnosticContext: premiumDiagnosticContext }
+          {
+            diagnosticContext: premiumDiagnosticContext,
+            userId: premiumUser?.id
+          }
         )
       : null;
     logPremiumSessionDiagnosticStage(

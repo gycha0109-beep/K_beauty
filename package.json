@@ -25,6 +25,18 @@
     "verify:premium-session-runtime-diagnostics": "node scripts/verify-premium-session-runtime-diagnostics.mjs",
     "verify:premium-image-sanitizer-capacity": "node scripts/verify-premium-image-sanitizer-capacity.mjs",
     "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
+    "generate:premium-hosted-preview-attestation": "node scripts/generate-premium-hosted-preview-attestation.mjs",
+    "verify:premium-hosted-preview-authoritative-api": "node scripts/verify-premium-hosted-preview-authoritative-api.mjs",
+    "verify:premium-hosted-preview-user-hash-contract": "node scripts/verify-premium-hosted-preview-user-hash-contract.mjs",
+    "capture:premium-hosted-preview-login": "node scripts/capture-premium-hosted-preview-google-login.mjs",
+    "verify:premium-hosted-preview-harness-hardening": "node scripts/verify-premium-hosted-preview-contract.mjs",
+    "verify:premium-hosted-preview-contract": "node scripts/verify-premium-hosted-preview-contract.mjs",
+    "verify:premium-hosted-preview-preflight": "node scripts/verify-premium-hosted-preview-preflight.mjs",
+    "verify:premium-hosted-preview-ui": "node scripts/verify-premium-hosted-preview-ui-journey.mjs",
+    "verify:premium-hosted-preview-errors": "node scripts/verify-premium-hosted-preview-error-boundaries.mjs",
+    "verify:premium-hosted-preview-db": "node scripts/verify-premium-hosted-preview-db-evidence.mjs",
+    "verify:premium-hosted-preview-gate": "node scripts/verify-premium-hosted-preview-gate.mjs",
+    "cleanup:premium-hosted-preview": "node scripts/cleanup-premium-hosted-preview-run.mjs",
     "lint": "next lint"
   },
   "dependencies": {

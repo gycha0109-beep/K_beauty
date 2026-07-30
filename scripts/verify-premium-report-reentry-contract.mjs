@@ -40,14 +40,16 @@ assert.equal(reentryModule.buildRotatedPremiumReportPayload(null), null);
 
 for (const requiredFragment of [
   'request.cookies.get(PREMIUM_REPORT_COOKIE)?.value',
-  "verifyPremiumReportSession(premiumCookie)",
+  "verifyPremiumReportSession(premiumCookie, {",
+  "userId: routeContext.user.id",
   '.eq("user_id", userId)',
   '.eq("report_type", "premium")',
   '.eq("source_type", "premium_report_session")',
   '.eq("source_session_id", sessionId)',
   '.not("premium_report", "is", null)',
   '.order("created_at", { ascending: false })',
-  "createPremiumReportSession({",
+  "createPremiumReportSession(",
+  "{ userId: context.user.id }",
   "buildRotatedPremiumReportPayload",
   "getPremiumReportCookieOptions()",
   "resolvePremiumRouteContext(request)",

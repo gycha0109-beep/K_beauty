@@ -7,6 +7,13 @@ const TMP_DIR = path.join(ROOT, "tmp");
 const OUTPUT_PATH = path.join(TMP_DIR, "security-closeout-verifier-suite.json");
 const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|shadow|release|credential|environment|production|deployment|rls|grant|rate|idempot)/i;
 const STEP_TIMEOUT_MS = 180_000;
+const EXTERNALLY_GATED_VERIFIERS = new Set([
+  "verify-premium-hosted-preview-db-evidence.mjs",
+  "verify-premium-hosted-preview-error-boundaries.mjs",
+  "verify-premium-hosted-preview-gate.mjs",
+  "verify-premium-hosted-preview-preflight.mjs",
+  "verify-premium-hosted-preview-ui-journey.mjs"
+]);
 
 const EXPECTED_VERIFIERS = [
   "verify-analysis-request-guard.mjs",
@@ -31,12 +38,17 @@ const EXPECTED_VERIFIERS = [
   "verify-local-shadow-runtime-readiness.mjs",
   "verify-premium-browser-journey-contract.mjs",
   "verify-premium-decision-state.mjs",
+  "verify-premium-hosted-preview-authoritative-api.mjs",
+  "verify-premium-hosted-preview-contract.mjs",
+  "verify-premium-hosted-preview-user-hash-contract.mjs",
   "verify-premium-identical-retry.mjs",
   "verify-premium-image-sanitizer-capacity.mjs",
   "verify-premium-integrated-evaluation.mjs",
   "verify-premium-release-mode.mjs",
+  "verify-premium-report-ownership-boundary.mjs",
   "verify-premium-report-reentry-contract.mjs",
   "verify-premium-route-storage-reentry.mjs",
+  "verify-premium-security-evidence-closure.mjs",
   "verify-premium-session-payload-boundary.mjs",
   "verify-premium-session-runtime-diagnostics.mjs",
   "verify-premium-snapshot-diff.mjs",
@@ -87,7 +99,13 @@ function sameOrdered(left, right) {
 
 function runScript(name, phase) {
   const startedAt = Date.now();
-  const result = spawnSync(process.execPath, [path.join("scripts", name)], {
+  const nodeArguments = name === "verify-premium-security-evidence-closure.mjs"
+    ? ["--experimental-vm-modules"]
+    : [];
+  const result = spawnSync(process.execPath, [
+    ...nodeArguments,
+    path.join("scripts", name)
+  ], {
     cwd: ROOT,
     encoding: "utf8",
     timeout: STEP_TIMEOUT_MS,
@@ -115,6 +133,7 @@ function runScript(name, phase) {
 const discovered = readdirSync(path.join(ROOT, "scripts"))
   .filter((name) => /^verify-.*\.mjs$/.test(name))
   .filter((name) => KEYWORDS.test(name))
+  .filter((name) => !EXTERNALLY_GATED_VERIFIERS.has(name))
   .sort();
 
 if (!sameOrdered(discovered, EXPECTED_VERIFIERS)) {
@@ -157,6 +176,7 @@ const status = failures.length === 0 && verificationResults.length === EXPECTED_
 const output = {
   suiteVersion: "security-closeout-verifier-suite-v1",
   status,
+  externallyGatedVerifiers: [...EXTERNALLY_GATED_VERIFIERS].sort(),
   expectedVerifierCount: EXPECTED_VERIFIERS.length,
   executedVerifierCount: verificationResults.length,
   passedVerifierCount: verificationResults.filter((result) => result.status === 0 && !result.signal && !result.error).length,

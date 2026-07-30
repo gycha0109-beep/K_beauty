@@ -9,6 +9,7 @@ const importModule = (path) => import(pathToFileURL(resolve(root, path)).href);
 
 const snapshotModule = await importModule("lib/premium-report-snapshot.js");
 const principalModule = await importModule("lib/premium-route-principal.js");
+const sessionOwnerModule = await importModule("lib/premium-report-session-owner.js");
 const finalizationModule = await importModule("lib/premium-finalization.js");
 
 const baseReport = {
@@ -82,6 +83,26 @@ assert.equal(bearerPrincipal.authSource, "bearer");
 assert.equal(bearerPrincipal.user, bearerUser);
 assert.equal(bearerPrincipal.supabase, bearerClient);
 
+const ownerSecret = "test-only-owner-binding-secret";
+const ownerBinding = sessionOwnerModule.createPremiumReportOwnerBinding("account-a", ownerSecret);
+assert.ok(ownerBinding, "premium session owner binding must be created for an authenticated owner");
+assert.ok(!ownerBinding.includes("account-a"), "premium session owner binding must not expose the raw user id");
+assert.equal(
+  sessionOwnerModule.matchesPremiumReportOwnerBinding(ownerBinding, "account-a", ownerSecret),
+  true,
+  "premium session must remain readable by its owner"
+);
+assert.equal(
+  sessionOwnerModule.matchesPremiumReportOwnerBinding(ownerBinding, "account-b", ownerSecret),
+  false,
+  "premium session must reject a different authenticated user"
+);
+assert.equal(
+  sessionOwnerModule.matchesPremiumReportOwnerBinding(null, "account-a", ownerSecret),
+  false,
+  "legacy unbound premium sessions must fail closed"
+);
+
 const savedReport = { id: "saved-1", premium_report: baseReport };
 assert.equal(finalizationModule.classifyFinalizedPremiumSession(null, baseReport).status, "open");
 assert.equal(finalizationModule.classifyFinalizedPremiumSession(savedReport, sameSemanticReport).status, "existing");
@@ -91,6 +112,9 @@ const fullRoute = read("app/api/full-report/route.js");
 const sessionRoute = read("app/api/full-report/session/route.js");
 const routeContext = read("lib/premium-route-context.js");
 const routePrincipal = read("lib/premium-route-principal.js");
+const premiumSessionStore = read("lib/premium-report-session.js");
+const analyzeRoute = read("app/api/analyze/route.js");
+const signoutRoute = read("app/api/auth/signout/route.js");
 const currentProducts = read("lib/premium-current-products.js");
 const reentry = read("lib/premium-report-reentry.js");
 const migrationPath = "supabase/migrations/20260717031925_premium_saved_report_snapshot_immutability.sql";
@@ -115,12 +139,12 @@ assert.ok(!fullRoute.includes(".update({"), "saved premium snapshots must not be
 assert.ok(!fullRoute.includes("body?.topPick || savedFreeResult?.topPick"), "saved reentry must ignore request topPick");
 assert.ok(
   fullRoute.indexOf("const finalizedLookup = await loadSavedPremiumReportForSession") <
-    fullRoute.indexOf("updatePremiumReportSession(premiumCookie, responsePremiumReport)"),
+    fullRoute.indexOf("const updateResult = await updatePremiumReportSession("),
   "finalized snapshot lookup must happen before any mutable session update"
 );
 assert.ok(
   fullRoute.indexOf("if (finalizedSavedReport?.premium_report)") <
-    fullRoute.indexOf("updatePremiumReportSession(premiumCookie, responsePremiumReport)"),
+    fullRoute.indexOf("const updateResult = await updatePremiumReportSession("),
   "finalized sessions must return before mutable session persistence"
 );
 
@@ -134,6 +158,41 @@ for (const fragment of [
 }
 assert.ok(!routeContext.includes("resolvePremiumAccessForRequest"), "route context must not preselect a bearer principal");
 assert.ok(routePrincipal.includes('authError: "principal_conflict"'), "principal conflicts must fail closed");
+
+for (const fragment of [
+  "createPremiumReportOwnerBinding(options.userId, secret)",
+  "matchesPremiumReportOwnerBinding(payload.owner, options.userId, secret)",
+  'code: "owner_mismatch"'
+]) {
+  assert.ok(premiumSessionStore.includes(fragment), `premium session store is missing ${fragment}`);
+}
+assert.ok(
+  analyzeRoute.includes("userId: premiumUser?.id"),
+  "analysis-created premium sessions must bind to the verified account user"
+);
+assert.ok(
+  fullRoute.includes("verifyPremiumReportSession(premiumCookie, {") &&
+    fullRoute.includes("userId: user?.id"),
+  "full-report reads must verify the premium session owner"
+);
+assert.ok(
+  fullRoute.includes("{ userId: user?.id }") &&
+    fullRoute.includes("updatePremiumReportSession("),
+  "full-report updates must retain the premium session owner check"
+);
+assert.ok(
+  sessionRoute.includes("verifyPremiumReportSession(premiumCookie, {") &&
+    sessionRoute.includes("userId: routeContext.user.id"),
+  "premium session re-entry must verify the current owner"
+);
+assert.ok(
+  sessionRoute.includes("{ userId: context.user.id }"),
+  "rotated premium sessions must remain bound to the current owner"
+);
+assert.ok(
+  signoutRoute.includes("PREMIUM_REPORT_COOKIE") && signoutRoute.includes("maxAge: 0"),
+  "sign-out must expire the path-scoped premium report cookie"
+);
 
 assert.ok(currentProducts.includes("rebuildPremiumDecisionState("), "current-product enrichment must use the canonical rebuild entrypoint");
 assert.ok(!currentProducts.includes("Object.assign("), "current-product enrichment must not mutate the report through Object.assign");
