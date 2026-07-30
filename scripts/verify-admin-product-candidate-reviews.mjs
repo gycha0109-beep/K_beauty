@@ -36,6 +36,7 @@ const migration = read(`supabase/migrations/${migrationFiles[0]}`);
 const hardening = read(`supabase/migrations/${migrationFiles[1]}`);
 const design = read("docs/architecture/admin-product-candidate-reviews-v1.md");
 const access = read("lib/admin/access.js");
+const requestPolicy = read("lib/admin/request-policy.js");
 const serverBoundary = read("lib/admin/product-reviews.js");
 const preflightRoute = read("app/api/admin/product-reviews/preflight/route.js");
 const confirmRoute = read("app/api/admin/product-reviews/confirm/route.js");
@@ -103,6 +104,15 @@ assert(
 
 [
   'import "server-only"',
+  "evaluateSignOutRequest",
+  "getSignOutRuntimeOriginContract",
+  "getNormalizedConfiguredProductionOrigin",
+  "getCanonicalProductionOrigin",
+  "decision.allowed === true"
+].forEach((value) => includes(requestPolicy, value, "admin request origin policy"));
+
+[
+  'import "server-only"',
   "createSupabaseAdminClient",
   "loadProductReviewWorkbench",
   "runProductReviewPreflight",
@@ -124,8 +134,13 @@ for (const [route, label] of [
   [confirmRoute, "confirm route"]
 ]) {
   includes(route, "ADMIN_CAPABILITIES.PRODUCTS_REVIEW", label);
+  includes(route, "isAllowedAdminMutationRequest(request)", label);
+  includes(route, 'error: "invalid_request_origin"', label);
   includes(route, "MAX_BODY_BYTES = 8192", label);
-  includes(route, '"Cache-Control": "no-store"', label);
+  includes(route, 'export const runtime = "nodejs"', label);
+  includes(route, '"Cache-Control": "private, no-store, max-age=0"', label);
+  includes(route, '"CDN-Cache-Control": "no-store"', label);
+  includes(route, '"Vercel-CDN-Cache-Control": "no-store"', label);
   excludes(route, "SUPABASE_SERVICE_ROLE_KEY", label);
 }
 
