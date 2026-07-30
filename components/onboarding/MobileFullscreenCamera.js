@@ -6,6 +6,8 @@ import { useEffect, useRef } from "react";
 import useFaceLandmarkerGuide from "@/hooks/useFaceLandmarkerGuide";
 import { preloadFaceLandmarker } from "@/lib/face-guide/face-landmarker-client";
 
+const AUTO_CAPTURE_COUNTDOWN_MS = 600;
+
 const FACE_GUIDE_COPY = Object.freeze({
   en: Object.freeze({
     loading: "Preparing face guidance",
@@ -14,7 +16,7 @@ const FACE_GUIDE_COPY = Object.freeze({
     not_frontal: "Look straight at the camera",
     off_center: "Center your face inside the oval",
     ready: "Great, you can take the photo",
-    stabilizing: "Good, hold still for a moment",
+    stabilizing: "Good, hold still",
     too_close: "Move a little farther away",
     too_far: "Move a little closer",
     unavailable: "Face recognition could not start. Close the camera and try again"
@@ -26,7 +28,7 @@ const FACE_GUIDE_COPY = Object.freeze({
     not_frontal: "정면을 바라봐 주세요",
     off_center: "얼굴을 타원 중앙에 맞춰 주세요",
     ready: "좋아요, 촬영할 수 있어요",
-    stabilizing: "좋아요, 잠시 그대로 있어 주세요",
+    stabilizing: "좋아요, 그대로 있어 주세요",
     too_close: "조금 더 멀리 떨어져 주세요",
     too_far: "조금 더 가까이 와 주세요",
     unavailable: "얼굴 인식을 시작하지 못했습니다. 카메라를 닫고 다시 시도해 주세요"
@@ -53,7 +55,7 @@ export function FaceGuide({ guideRef, state = "loading" }) {
     "unavailable"
   ].includes(state);
   const borderClass = isReady
-    ? "border-emerald-300/95 shadow-[0_0_0_9999px_rgba(9,6,10,0.38)]"
+    ? "border-emerald-300/95 shadow-[0_0_0_9999px_rgba(9,6,10,0.38),0_0_34px_rgba(110,231,183,0.55)]"
     : isStabilizing
       ? "border-emerald-200/90 shadow-[0_0_0_9999px_rgba(9,6,10,0.42)]"
       : isWarning
@@ -65,7 +67,7 @@ export function FaceGuide({ guideRef, state = "loading" }) {
       <div
         ref={guideRef}
         data-testid="face-guide-oval"
-        className={`absolute left-1/2 top-[45%] aspect-[3/4] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 shadow-[0_0_0_9999px_rgba(9,6,10,0.48)] transition-colors duration-200 ${borderClass}`}
+        className={`absolute left-1/2 top-[45%] aspect-[3/4] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 shadow-[0_0_0_9999px_rgba(9,6,10,0.48)] transition-[border-color,box-shadow] duration-150 ${borderClass}`}
         style={{
           width: "min(72dvw, calc((100dvh - 230px) * 0.72), 330px)"
         }}
@@ -90,14 +92,24 @@ export default function MobileFullscreenCamera({
   onAnimationComplete
 }) {
   const guideRef = useRef(null);
+  const autoCaptureHandledRef = useRef(0);
+  const autoCaptureTimerRef = useRef(null);
   const faceGuideActive = isVideoReady && (phase === "opening" || phase === "open");
   const faceGuide = useFaceLandmarkerGuide({
     active: faceGuideActive,
     guideRef,
     videoRef
   });
+  const {
+    autoCaptureToken,
+    confirmCurrentFrame,
+    isCaptureReady,
+    progress,
+    rearmAutoCapture,
+    state
+  } = faceGuide;
   const language = copy.capturePhoto === "Take photo" ? "en" : "ko";
-  const faceGuideMessage = FACE_GUIDE_COPY[language][faceGuide.state];
+  const faceGuideMessage = FACE_GUIDE_COPY[language][state];
   const width = Math.max(viewportSize.width, 1);
   const height = Math.max(viewportSize.height, 1);
   const source = transitionRect || { left: 0, top: 0, width, height };
@@ -144,6 +156,68 @@ export default function MobileFullscreenCamera({
     preloadFaceLandmarker().catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (
+      phase !== "open" ||
+      state !== "ready" ||
+      !autoCaptureToken ||
+      isCapturing ||
+      autoCaptureHandledRef.current === autoCaptureToken
+    ) {
+      return undefined;
+    }
+
+    autoCaptureHandledRef.current = autoCaptureToken;
+    autoCaptureTimerRef.current = window.setTimeout(() => {
+      autoCaptureTimerRef.current = null;
+      if (!confirmCurrentFrame()) {
+        rearmAutoCapture();
+        return;
+      }
+
+      videoRef.current?.pause();
+      onCapture?.({
+        faceGuideValidated: true,
+        source: "auto"
+      });
+    }, AUTO_CAPTURE_COUNTDOWN_MS);
+
+    return () => {
+      if (autoCaptureTimerRef.current) {
+        window.clearTimeout(autoCaptureTimerRef.current);
+        autoCaptureTimerRef.current = null;
+      }
+    };
+  }, [
+    autoCaptureToken,
+    confirmCurrentFrame,
+    isCapturing,
+    onCapture,
+    phase,
+    rearmAutoCapture,
+    state,
+    videoRef
+  ]);
+
+  useEffect(() => {
+    if (phase === "preparing" || phase === "closing") {
+      autoCaptureHandledRef.current = 0;
+    }
+  }, [phase]);
+
+  const handleManualCapture = () => {
+    if (!isCaptureReady || isCapturing || !confirmCurrentFrame()) {
+      rearmAutoCapture();
+      return;
+    }
+
+    videoRef.current?.pause();
+    onCapture?.({
+      faceGuideValidated: true,
+      source: "manual"
+    });
+  };
+
   return createPortal(
     <motion.div
       role="dialog"
@@ -152,9 +226,11 @@ export default function MobileFullscreenCamera({
       aria-hidden={isPreparing}
       data-testid="mobile-camera-overlay"
       data-camera-phase={phase}
-      data-face-guidance-ready={faceGuide.isCaptureReady ? "true" : "false"}
+      data-face-guidance-ready={isCaptureReady ? "true" : "false"}
       data-face-capture-allowed={faceGuide.canCapture ? "true" : "false"}
       data-face-guide-error-stage={faceGuide.errorStage || "none"}
+      data-face-guide-progress={progress.toFixed(3)}
+      data-face-auto-capture-token={autoCaptureToken}
       className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
         isPreparing ? "pointer-events-none opacity-[0.001]" : "opacity-100"
       }`}
@@ -186,7 +262,7 @@ export default function MobileFullscreenCamera({
         animate={{ opacity: phase === "open" ? 1 : 0 }}
         transition={{ duration: reducedMotion ? 0.01 : 0.18 }}
       >
-        <FaceGuide guideRef={guideRef} state={faceGuide.state} />
+        <FaceGuide guideRef={guideRef} state={state} />
 
         <button
           ref={closeButtonRef}
@@ -221,12 +297,21 @@ export default function MobileFullscreenCamera({
           <button
             type="button"
             aria-label={copy.capturePhoto}
-            onClick={onCapture}
-            disabled={!isVideoReady || !faceGuide.isCaptureReady || isCapturing}
-            className={`flex h-[76px] w-[76px] items-center justify-center rounded-full border-[5px] bg-white/25 shadow-[0_10px_34px_rgba(0,0,0,0.35)] transition active:scale-95 disabled:opacity-45 ${
-              faceGuide.isCaptureReady ? "border-emerald-200" : "border-white"
+            onClick={handleManualCapture}
+            disabled={!isVideoReady || !isCaptureReady || isCapturing}
+            className={`relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-[5px] bg-white/25 shadow-[0_10px_34px_rgba(0,0,0,0.35)] transition active:scale-95 disabled:opacity-45 ${
+              isCaptureReady ? "border-emerald-200" : "border-white"
             }`}
           >
+            <span
+              className="absolute inset-[-7px] rounded-full"
+              aria-hidden="true"
+              style={{
+                background: `conic-gradient(rgba(110,231,183,0.95) ${Math.round(progress * 360)}deg, rgba(255,255,255,0.16) 0deg)`,
+                mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)",
+                WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)"
+              }}
+            />
             <span className="h-[56px] w-[56px] rounded-full bg-white" aria-hidden="true" />
           </button>
         </div>
