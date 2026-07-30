@@ -34,14 +34,23 @@ jobs:
 
           integrated = Path("scripts/verify-premium-integrated-evaluation-v2.mjs")
           text = integrated.read_text(encoding="utf-8")
-          old = '  equal(state.functionalPolicy.planMode, "HOLD", "functional hold");\n'
-          new = (
+          hold_old = '  equal(state.functionalPolicy.planMode, "HOLD", "functional hold");\n'
+          hold_new = (
               '  equal(state.functionalPolicy.planMode, "START", "support policy starts");\n'
               '  equal(state.functionalPolicy.allowedIntensity, "support_only", "support intensity only");\n'
           )
-          if old not in text and new not in text:
+          if hold_old not in text and hold_new not in text:
               raise SystemExit("S03 verifier contract target missing")
-          integrated.write_text(text.replace(old, new), encoding="utf-8")
+          text = text.replace(hold_old, hold_new)
+          text = text.replace(
+              '  koLocaleState = build(report(), "ko", "locale-ko");\n',
+              '  koLocaleState = build(report(), "ko", "locale-parity");\n'
+          )
+          text = text.replace(
+              '  enLocaleState = build(report(), "en", "locale-en");\n',
+              '  enLocaleState = build(report(), "en", "locale-parity");\n'
+          )
+          integrated.write_text(text, encoding="utf-8")
 
           runtime = Path("scripts/verify-candidate-policy-runtime-safety-hardening.mjs")
           text = runtime.read_text(encoding="utf-8")
