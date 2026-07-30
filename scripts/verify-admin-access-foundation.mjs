@@ -54,23 +54,30 @@ const middleware = read("lib/supabase/middleware.js");
 const layout = read("app/admin/layout.js");
 const page = read("app/admin/page.js");
 const design = read("docs/architecture/admin-access-foundation-v1.md");
+const runtimeVerifier = read("scripts/verify-admin-access-runtime.sh");
 const packageJson = JSON.parse(read("package.json"));
 
 [
   "create table if not exists public.admin_memberships",
   "create table if not exists public.admin_audit_logs",
+  "required_capability text not null",
   "alter table public.admin_memberships enable row level security",
   "alter table public.admin_audit_logs enable row level security",
-  "revoke all on table public.admin_memberships from public, anon, authenticated",
-  "revoke all on table public.admin_audit_logs from public, anon, authenticated",
+  "revoke all on table public.admin_memberships from public, anon, authenticated, service_role",
+  "revoke all on table public.admin_audit_logs from public, anon, authenticated, service_role",
   "create or replace function public.get_current_admin_role()",
   "create or replace function public.admin_has_capability(p_capability text)",
   "create or replace function public.bootstrap_first_admin_owner(p_user_id uuid)",
   "create or replace function public.record_admin_audit_event(",
+  "p_actor_user_id uuid",
+  "p_required_capability text",
+  "pg_advisory_xact_lock(hashtextextended('bejewely_admin_owner_bootstrap', 0))",
   "grant execute on function public.bootstrap_first_admin_owner(uuid) to service_role",
-  "grant execute on function public.record_admin_audit_event(text, text, text, jsonb, jsonb, text, text, jsonb) to authenticated",
+  "grant execute on function public.record_admin_audit_event(uuid, text, text, text, text, jsonb, jsonb, text, text, jsonb) to service_role",
+  "grant select on table public.admin_audit_logs to service_role",
   "admin_owner_already_bootstrapped",
   "admin_access_required",
+  "admin_capability_required",
   "admin_audit_reason_required",
   "admin_audit_logs_idempotency_uidx"
 ].forEach((value) => assertIncludes(migration, value, "admin migration"));
@@ -80,8 +87,16 @@ assert(
   "authenticated browser role must not receive direct admin table writes"
 );
 assert(
-  !/grant\s+execute[\s\S]{0,180}bootstrap_first_admin_owner[\s\S]{0,80}to\s+(anon|authenticated|public)/i.test(migration),
+  !/grant\s+execute[\s\S]{0,220}bootstrap_first_admin_owner[\s\S]{0,100}to\s+(anon|authenticated|public)/i.test(migration),
   "first-owner bootstrap must remain service-role-only"
+);
+assert(
+  !/grant\s+execute[\s\S]{0,260}record_admin_audit_event[\s\S]{0,100}to\s+(anon|authenticated|public)/i.test(migration),
+  "audit RPC must remain service-role-only"
+);
+assert(
+  !/grant\s+(insert|update|delete|all)[\s\S]{0,120}admin_audit_logs[\s\S]{0,80}to\s+service_role/i.test(migration),
+  "service role must not receive direct audit-log mutation privileges"
 );
 assert(
   !/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(migration),
@@ -149,8 +164,20 @@ assertIncludes(page, "Product Candidate Reviews", "admin next scope");
   "Middleware",
   "admin_memberships",
   "admin_audit_logs",
-  "service-role"
+  "service-role",
+  "transaction advisory lock",
+  "isolated Supabase role-matrix"
 ].forEach((value) => assertIncludes(design, value, "admin design"));
+
+[
+  "bootstrap_first_admin_owner",
+  "admin_owner_already_bootstrapped",
+  "premium_entitlement",
+  "admin.products.review",
+  "authenticated audit RPC",
+  "idempotent audit retry",
+  "service-role direct audit table write"
+].forEach((value) => assertIncludes(runtimeVerifier, value, "admin runtime verifier"));
 
 assert(
   packageJson.scripts?.["verify:admin-access-foundation"] ===
