@@ -7,7 +7,7 @@ on:
     paths:
       - hooks/useFaceLandmarkerGuide.js
       - lib/face-guide/face-landmarker-client.js
-      - "app/api/mediapipe/[...asset]/route.js"
+      - app/api/mediapipe/**
       - components/onboarding/MobileFullscreenCamera.js
       - tests/e2e/face-guide-recovery.spec.ts
       - tests/e2e/face-guide-runtime.spec.ts
