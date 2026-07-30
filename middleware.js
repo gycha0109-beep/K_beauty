@@ -9,10 +9,6 @@ const {
   isDocumentRequest
 } = securityHeaderPolicy;
 
-const CSP_HEADER_NAME = "Content-Security-Policy";
-const SCRIPT_SRC_PREFIX = "script-src ";
-const WASM_EXECUTION_SOURCE = "'wasm-unsafe-eval'";
-
 function createSecurityPolicyUnavailableResponse() {
   return NextResponse.json(
     { success: false, error: "security_policy_unavailable" },
@@ -20,26 +16,9 @@ function createSecurityPolicyUnavailableResponse() {
   );
 }
 
-function enableWasmExecution(contentSecurityPolicy) {
-  if (contentSecurityPolicy.includes(WASM_EXECUTION_SOURCE)) {
-    return contentSecurityPolicy;
-  }
-
-  if (!contentSecurityPolicy.includes(SCRIPT_SRC_PREFIX)) {
-    throw new Error("script_src_directive_missing");
-  }
-
-  return contentSecurityPolicy.replace(
-    SCRIPT_SRC_PREFIX,
-    `${SCRIPT_SRC_PREFIX}${WASM_EXECUTION_SOURCE} `
-  );
-}
-
 export async function middleware(request) {
   if (isDocumentRequest(request)) {
     let securityContext;
-    let contentSecurityPolicy;
-    let requestHeaders;
 
     try {
       securityContext = createDocumentSecurityContext({
@@ -48,11 +27,6 @@ export async function middleware(request) {
         isDevelopment: process.env.NODE_ENV === "development",
         requestUrl: request.url
       });
-      contentSecurityPolicy = enableWasmExecution(
-        securityContext.contentSecurityPolicy
-      );
-      requestHeaders = new Headers(securityContext.requestHeaders);
-      requestHeaders.set(CSP_HEADER_NAME, contentSecurityPolicy);
     } catch {
       return createSecurityPolicyUnavailableResponse();
     }
@@ -62,16 +36,16 @@ export async function middleware(request) {
     if (canonicalUrl) {
       return applyDocumentSecurityHeaders(
         NextResponse.redirect(canonicalUrl, 307),
-        contentSecurityPolicy
+        securityContext.contentSecurityPolicy
       );
     }
 
     const response = await updateSession(request, {
-      requestHeaders
+      requestHeaders: securityContext.requestHeaders
     });
     return applyDocumentSecurityHeaders(
       response,
-      contentSecurityPolicy
+      securityContext.contentSecurityPolicy
     );
   }
 
