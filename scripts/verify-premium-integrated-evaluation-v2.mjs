@@ -517,10 +517,10 @@ scenario("S13_REPEAT_STABILITY", "default", () => {
 let koLocaleState;
 let enLocaleState;
 scenario("S14_LOCALE_PARITY", "ko", () => {
-  koLocaleState = build(report(), "ko", "locale-ko");
+  koLocaleState = build(report(), "ko", "locale-parity");
 });
 scenario("S14_LOCALE_PARITY", "en", () => {
-  enLocaleState = build(report(), "en", "locale-en");
+  enLocaleState = build(report(), "en", "locale-parity");
 });
 deepEqual(koLocaleState.decisionBundle.context, enLocaleState.decisionBundle.context, "KO/EN context parity");
 equal(koLocaleState.functionalPolicy.planMode, enLocaleState.functionalPolicy.planMode, "KO/EN functional parity");
