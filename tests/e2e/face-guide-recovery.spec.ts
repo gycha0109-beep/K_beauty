@@ -80,27 +80,10 @@ function closeCameraButton(page: Page) {
 }
 
 async function openHome(page: Page) {
-  page.on("pageerror", (error) => {
-    console.log(`recovery-page-error: ${error.name}: ${error.message}`);
-  });
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      console.log(`recovery-console-error: ${message.text()}`);
-    }
-  });
-
   const response = await page.goto("/", { waitUntil: "domcontentloaded" });
-  console.log(`recovery-page-status: ${response?.status() ?? "none"}`);
-  console.log(`recovery-page-url: ${page.url()}`);
-
-  try {
-    await expect(cameraButton(page)).toBeVisible();
-    await expect(cameraButton(page)).toBeEnabled();
-  } catch (error) {
-    const bodyText = await page.locator("body").innerText().catch(() => "<body unavailable>");
-    console.log(`recovery-page-body: ${bodyText.slice(0, 1500)}`);
-    throw error;
-  }
+  expect(response?.status()).toBe(200);
+  await expect(cameraButton(page)).toBeVisible();
+  await expect(cameraButton(page)).toBeEnabled();
 }
 
 async function expectCpuNoFaceState(page: Page) {
