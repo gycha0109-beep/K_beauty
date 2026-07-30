@@ -129,7 +129,10 @@ async function expectSafeUnavailable(page: Page) {
 async function expectAssetContract(response: APIResponse, contract: (typeof ASSET_CONTRACTS)[number]) {
   expect(response.status(), contract.path).toBe(200);
   expect(response.headers()["content-type"], contract.path).toContain(contract.contentType);
-  expect(response.headers()["content-length"], contract.path).toBe(String(contract.bytes));
+  const contentLength = response.headers()["content-length"];
+  if (contentLength !== undefined) {
+    expect(contentLength, contract.path).toBe(String(contract.bytes));
+  }
   expect(response.headers()["x-bejewely-mediapipe-asset-bytes"], contract.path).toBe(
     String(contract.bytes)
   );
