@@ -12,6 +12,7 @@ const READY_STABLE_FRAMES = 6;
 const MAX_CONSECUTIVE_ERRORS = 3;
 
 const INITIAL_RESULT = Object.freeze({
+  errorStage: null,
   metrics: null,
   state: FACE_GUIDE_STATE.loading
 });
@@ -63,9 +64,13 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       let faceLandmarker;
       try {
         faceLandmarker = await getFaceLandmarker();
-      } catch {
+      } catch (error) {
         terminal = true;
-        publish({ metrics: null, state: FACE_GUIDE_STATE.unavailable });
+        publish({
+          errorStage: error?.stage || "initialization",
+          metrics: null,
+          state: FACE_GUIDE_STATE.unavailable
+        });
         return;
       }
 
@@ -118,9 +123,10 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
           if (evaluated.state === FACE_GUIDE_STATE.ready) {
             stableFramesRef.current += 1;
             if (stableFramesRef.current >= READY_STABLE_FRAMES) {
-              publish(evaluated);
+              publish({ ...evaluated, errorStage: null });
             } else {
               publish({
+                errorStage: null,
                 metrics: evaluated.metrics,
                 progress: stableFramesRef.current / READY_STABLE_FRAMES,
                 state: FACE_GUIDE_STATE.stabilizing
@@ -128,14 +134,18 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
             }
           } else {
             stableFramesRef.current = 0;
-            publish(evaluated);
+            publish({ ...evaluated, errorStage: null });
           }
         } catch {
           stableFramesRef.current = 0;
           consecutiveErrorsRef.current += 1;
           if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) {
             terminal = true;
-            publish({ metrics: null, state: FACE_GUIDE_STATE.unavailable });
+            publish({
+              errorStage: "inference",
+              metrics: null,
+              state: FACE_GUIDE_STATE.unavailable
+            });
             return;
           }
         }
@@ -160,7 +170,8 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
 
   const isCaptureReady = result.state === FACE_GUIDE_STATE.ready;
   return {
-    canCapture: isCaptureReady || result.state === FACE_GUIDE_STATE.unavailable,
+    canCapture: isCaptureReady,
+    errorStage: result.errorStage || null,
     isCaptureReady,
     metrics: result.metrics,
     progress: result.progress || 0,
