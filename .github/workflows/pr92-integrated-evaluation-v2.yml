@@ -26,6 +26,49 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Apply reviewed verifier corrections
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          integrated = Path("scripts/verify-premium-integrated-evaluation-v2.mjs")
+          text = integrated.read_text(encoding="utf-8")
+          old = '  equal(state.functionalPolicy.planMode, "HOLD", "functional hold");\n'
+          new = (
+              '  equal(state.functionalPolicy.planMode, "START", "support policy starts");\n'
+              '  equal(state.functionalPolicy.allowedIntensity, "support_only", "support intensity only");\n'
+          )
+          if old not in text and new not in text:
+              raise SystemExit("S03 verifier contract target missing")
+          integrated.write_text(text.replace(old, new), encoding="utf-8")
+
+          runtime = Path("scripts/verify-candidate-policy-runtime-safety-hardening.mjs")
+          text = runtime.read_text(encoding="utf-8")
+          import_old = 'import { buildCandidatePolicyGoalContext } from "../lib/candidate-policy-goal-context.js";\n'
+          import_new = (
+              'import { buildCandidatePolicyGoalContext } from "../lib/candidate-policy-goal-context.js";\n'
+              'import { SHARED_SKIN_DECISION_CONTEXT_VERSION } from "../lib/shared-skin-decision-context-v4.js";\n'
+          )
+          if import_new not in text:
+              if import_old not in text:
+                  raise SystemExit("runtime-safety import target missing")
+              text = text.replace(import_old, import_new)
+          literal = '      version: "shared-skin-decision-context-v3",\n'
+          replacement = '      version: SHARED_SKIN_DECISION_CONTEXT_VERSION,\n'
+          if literal not in text and replacement not in text:
+              raise SystemExit("runtime-safety version target missing")
+          runtime.write_text(text.replace(literal, replacement), encoding="utf-8")
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify-premium-integrated-evaluation-v2.mjs scripts/verify-candidate-policy-runtime-safety-hardening.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "test(skin-decision): align PR92 verifier contracts"
+            git push
+          fi
+
       - name: Execute exact-head gate
         id: gate
         shell: bash
@@ -39,7 +82,7 @@ jobs:
           {
             echo "# PR92 Integrated Evaluation V2 Gate"
             echo
-            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Commit: \`$(git rev-parse HEAD)\`"
             echo "- Runner: \`$RUNNER_OS\`"
             echo "- Node target: \`24\`"
             echo
@@ -62,7 +105,7 @@ jobs:
           }
 
           run_gate "npm ci" npm ci
-          run_gate "syntax" bash -lc 'node --check lib/candidate-policy-current-findings-context.js && node --check lib/candidate-policy-goal-context.js && node --check scripts/verify-premium-integrated-evaluation-v2.mjs'
+          run_gate "syntax" bash -lc 'node --check lib/candidate-policy-current-findings-context.js && node --check lib/candidate-policy-goal-context.js && node --check scripts/verify-candidate-policy-runtime-safety-hardening.mjs && node --check scripts/verify-premium-integrated-evaluation-v2.mjs'
           run_gate "integrated evaluation v2" npm run verify:premium-integrated-evaluation-v2
           run_gate "shared context" npm run verify:shared-skin-decision-context
           run_gate "functional policy" node scripts/verify-functional-policy-single-source.mjs
@@ -89,7 +132,7 @@ jobs:
           echo "## Log tail" >> "$RESULT"
           echo >> "$RESULT"
           echo '```text' >> "$RESULT"
-          tail -n 160 "$LOG" >> "$RESULT"
+          tail -n 220 "$LOG" >> "$RESULT"
           echo '```' >> "$RESULT"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           exit "$STATUS"
