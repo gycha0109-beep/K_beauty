@@ -128,7 +128,7 @@ jobs:
           run_gate "candidate current findings" npm run verify:candidate-policy-current-findings
           run_gate "architecture guard" npm run architecture:guard
           run_gate "optimized build" npm run build
-          run_gate "diff hygiene" bash -lc 'git diff --check 3f697f3e5c2ae607c9d86af3f16bdfe2cdb43037...HEAD && test -z "$(git status --short --untracked-files=no)"'
+          run_gate "diff hygiene" bash -lc 'git diff --check 3f697f3e5c2ae607c9d86af3f16bdfe2cdb43037...HEAD -- . ":(exclude)docs/verification/pr92-integrated-evaluation-v2-result.md" && test -z "$(git status --short --untracked-files=no -- . ":(exclude)docs/verification/pr92-integrated-evaluation-v2-result.md")"'
 
           echo "## Result" >> "$RESULT"
           echo >> "$RESULT"
@@ -141,7 +141,7 @@ jobs:
           echo "## Log tail" >> "$RESULT"
           echo >> "$RESULT"
           echo '```text' >> "$RESULT"
-          tail -n 220 "$LOG" >> "$RESULT"
+          tail -n 220 "$LOG" | sed 's/[[:space:]]\+$//' >> "$RESULT"
           echo '```' >> "$RESULT"
           echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           exit "$STATUS"
