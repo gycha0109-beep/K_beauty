@@ -171,7 +171,7 @@ assertIncludes(page, "Product Candidate Reviews", "admin next scope");
 
 [
   "bootstrap_first_admin_owner",
-  "admin_owner_already_bootstrapped",
+  "second owner bootstrap",
   "premium_entitlement",
   "admin.products.review",
   "authenticated audit RPC",
