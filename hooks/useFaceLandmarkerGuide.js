@@ -8,6 +8,7 @@ import {
 } from "@/lib/face-guide/face-guide-evaluator.mjs";
 import {
   getFaceLandmarker,
+  markFaceLandmarkerGpuUnhealthy,
   resetFaceLandmarker
 } from "@/lib/face-guide/face-landmarker-client";
 import { writeSafeLog } from "@/lib/security/error-redaction";
@@ -146,6 +147,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
     if (!active) {
       reset();
       faceLandmarkerRef.current = null;
+      resetFaceLandmarker();
       setResult(INITIAL_RESULT);
       return undefined;
     }
@@ -153,11 +155,14 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
     reset();
     publish(INITIAL_RESULT);
 
-    const initialize = async ({ forceReload = false } = {}) => {
+    const initialize = async ({ forceReload = false, preferCpu = false } = {}) => {
       let lastError = null;
       for (let attempt = 0; attempt < MAX_INITIALIZATION_ATTEMPTS; attempt += 1) {
         try {
-          return await getFaceLandmarker({ forceReload: forceReload || attempt > 0 });
+          return await getFaceLandmarker({
+            forceReload: forceReload || attempt > 0,
+            preferCpu: preferCpu || attempt > 0
+          });
         } catch (error) {
           lastError = error;
           if (attempt + 1 < MAX_INITIALIZATION_ATTEMPTS) {
@@ -173,6 +178,8 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         faceLandmarkerRef.current = await initialize();
       } catch (error) {
         terminal = true;
+        faceLandmarkerRef.current = null;
+        resetFaceLandmarker();
         publish({
           autoCaptureToken: autoCaptureSequenceRef.current,
           errorStage: error?.stage || "initialization",
@@ -192,6 +199,8 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       const recoverRuntime = async (detect, error) => {
         if (runtimeRecoveries >= MAX_RUNTIME_RECOVERIES) {
           terminal = true;
+          faceLandmarkerRef.current = null;
+          resetFaceLandmarker();
           publish({
             autoCaptureToken: autoCaptureSequenceRef.current,
             errorStage: "inference",
@@ -207,7 +216,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         autoCaptureIssuedRef.current = false;
         publish({
           autoCaptureToken: autoCaptureSequenceRef.current,
-          errorStage: "inference_recovery",
+          errorStage: "inference_gpu_recovery",
           metrics: null,
           progress: 0,
           state: FACE_GUIDE_STATE.loading
@@ -221,13 +230,18 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
           error
         });
 
-        resetFaceLandmarker();
+        faceLandmarkerRef.current = null;
+        markFaceLandmarkerGpuUnhealthy();
         try {
-          faceLandmarkerRef.current = await initialize({ forceReload: true });
+          faceLandmarkerRef.current = await initialize({ preferCpu: true });
           consecutiveErrorsRef.current = 0;
+          lastDetectionTimestampRef.current = 0;
+          lastVideoTimeRef.current = -1;
           scheduleNext(detect);
         } catch (recoveryError) {
           terminal = true;
+          faceLandmarkerRef.current = null;
+          resetFaceLandmarker();
           publish({
             autoCaptureToken: autoCaptureSequenceRef.current,
             errorStage: recoveryError?.stage || "inference_recovery",
@@ -340,6 +354,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       cancelled = true;
       terminal = true;
       faceLandmarkerRef.current = null;
+      resetFaceLandmarker();
       if (animationFrameRef.current) {
         window.cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
