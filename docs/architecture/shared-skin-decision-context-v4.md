@@ -13,16 +13,18 @@ This change does not activate CandidatePolicy runtime, change recommendation vis
 
 ## Why v4 is required
 
-`shared-skin-decision-context-v3` is already the real source used by the Premium decision orchestrator and the three sibling policies. It correctly provides deterministic skin, safety, current-product exposure, routine burden, environment, condition signals, and an evidence ledger.
+`shared-skin-decision-context-v3` is already used by the Premium decision orchestrator and the three sibling policies. It provides deterministic priority, safety, current-product rows, routine burden, environment, condition signals, and an evidence ledger.
 
-The restored exact head still has four contract gaps:
+The restored exact head still has contract gaps:
 
-1. concern facts are present only inside `skinState`, without an explicit completeness/unknown model;
-2. photo absence, photo-analysis failure, and unpersisted photo availability can collapse into `null`;
-3. a recent product change or reported reaction can be observed without being linked to a specific exposure, but that unresolved relationship is not represented;
-4. uncertainty is distributed across warnings and policy confidence rather than exposed as a canonical state.
+1. `skinState` does not expose the agreed skin type, sensitivity, and per-axis burden facts;
+2. concern facts have no explicit known/unknown coverage model;
+3. selected, unknown, unused, and unanswered product states are represented as rows and counts rather than canonical collections;
+4. photo absence, photo-analysis failure, and unpersisted photo availability can collapse into `null`;
+5. a recent product change or reported reaction can exist without product-specific linkage, but the unresolved relationship is not canonical;
+6. uncertainty is distributed across warnings and policy confidence instead of being an explicit fact state.
 
-These gaps do not justify rewriting the existing policies. They require a backward-compatible context extension.
+These gaps do not justify rewriting the existing policies. v4 is a backward-compatible completeness projection over v3.
 
 ## Authoritative path
 
@@ -36,9 +38,30 @@ Premium report inputs
 → Canonical Premium decision bundle
 ```
 
-`premium-decision-state` imports v4 directly. No UI or policy is allowed to bypass it for newly rebuilt Premium decisions.
+`premium-decision-state` imports v4 directly. The existing UI continues to render projections from the canonical bundle.
 
-## Added canonical states
+## Added and completed canonical states
+
+### `skinState`
+
+v4 preserves the existing priority and score fields and adds:
+
+```ts
+{
+  skinType,
+  sensitivity,
+  drynessBurden,
+  rednessBurden,
+  oilinessBurden,
+  acneBurden,
+  barrierBurden,
+  textureBurden,
+  toneBurden,
+  uvPriority
+}
+```
+
+Burden fields reuse the existing concern score for the corresponding axis. Missing or null evidence remains `null`; it is not converted to zero.
 
 ### `concernState`
 
@@ -53,8 +76,6 @@ Premium report inputs
   surveyPhotoAlignment: "aligned" | "partial" | "conflict" | "unknown"
 }
 ```
-
-Missing axes remain unknown. They are not filled with zero by v4.
 
 ### `photo`
 
@@ -74,20 +95,27 @@ Missing axes remain unknown. They are not filled with zero by v4.
 }
 ```
 
-A missing persisted status remains `unknown`; it is not silently classified as no-photo or successful analysis.
+When older or current payloads do not persist a photo state, v4 keeps `unknown`. It does not silently classify the case as no-photo or successful analysis.
 
-### `productExposureState` additions
+### `productExposureState`
+
+v4 adds explicit canonical collections and axis aggregation:
 
 ```ts
 {
+  selectedProducts,
+  unknownProducts,
+  unusedSlots,
+  unansweredSlots,
+  functionalAxes,
+  uncertainAxes,
+  uncertainAxisReasons,
   recentExposureState:
-    | "linked"
     | "reported_unlinked"
     | "none_reported"
     | "unknown",
   recentExposures,
   reactionLinkState:
-    | "linked"
     | "unresolved"
     | "none_reported"
     | "unknown",
@@ -97,7 +125,7 @@ A missing persisted status remains `unknown`; it is not silently classified as n
 }
 ```
 
-A survey-level recent change or reaction is not assigned to a product unless an explicit link exists. Product name, brand, category, satisfaction, or ingredient count is not treated as causal evidence.
+The current survey/current-product contract does not contain product-specific recent-change or reaction linkage. Therefore a reported change or reaction remains unlinked and the product arrays remain empty. Product name, brand, category, satisfaction, and ingredient count are not used to create causal attribution.
 
 ### `uncertaintyState`
 
@@ -111,75 +139,63 @@ A survey-level recent change or reaction is not assigned to a product unless an 
 }
 ```
 
-This state records missing concern coverage, unavailable or unknown photo state, unknown products, unlinked recent changes, unresolved reaction linkage, missing environment context, and minimal condition signals.
+Reasons cover incomplete concern evidence, unknown skin facts, missing survey persistence, unavailable or unknown photo state, unknown products, unanswered usage, unlinked recent changes, unresolved reaction linkage, missing environment context, and minimal condition signals.
 
 ## Evidence ledger additions
 
-The following stable entries are appended:
+The following stable records are appended:
 
+- `skin_state`
 - `concern_state`
 - `photo_evidence_state`
 - `recent_exposure_state`
 - `reaction_link_state`
 - `uncertainty_state`
 
-They contain only structured status and completeness data. They do not add product names, inferred concentrations, causal claims, secrets, or raw image data.
+They contain structured facts and completeness only. They do not add inferred concentrations, causal claims, secrets, product names, or raw image data.
 
 ## Determinism and revision
 
-The v4 context hash covers the canonical facts and evidence ledger but excludes task/source metadata. Identical v4 inputs preserve `contextHash` and `contextRevision`. A v3-to-v4 transition or material evidence change advances the revision once.
+The v4 hash covers canonical facts and evidence, excluding task/source metadata. Identical v4 inputs preserve `contextHash` and `contextRevision`. A v3-to-v4 transition or material evidence change advances the revision once.
 
 ## Policy compatibility
 
-The existing policies continue to read their current fields:
+The existing sibling policies continue to consume their current fields:
 
-- FunctionalPolicy: `skinState`, `safetyState`, `productExposureState`, survey
+- FunctionalPolicy: skin/safety/exposure/survey facts
 - RoutinePolicy: shared skin/safety/exposure/burden facts
 - ConditionPolicy: shared safety/exposure/burden/environment/condition facts
 - CrossDomainConsistency: the three sibling outputs plus shared facts
 
-The new fields are additive. No policy status, recommendation score, visibility rule, route response field, DB schema, or saved-report ownership rule is changed in this PR.
+The v4 fields are additive. This PR does not change policy statuses, candidate visibility, recommendation scoring, route response names, DB schema, saved-report ownership, or runtime flags.
 
 ## Verification matrix
 
 `verify-shared-skin-decision-context-v4.mjs` asserts:
 
-- survey-only and explicit no-photo;
-- explicit photo-analysis unavailable;
-- unpersisted photo state remains unknown;
-- selected product;
-- not-in-DB only;
-- selected plus not-in-DB;
-- not-using;
-- unanswered;
-- duplicate functional axis;
-- partial concern coverage;
-- recent product change without a link;
-- reported reaction without a link;
-- explicit reaction link;
-- explicit recent exposure link;
+- survey-only, explicit no-photo, unavailable photo, and unknown persisted photo state;
+- complete and partial concern evidence, including null remaining null;
+- skin type, sensitivity, and burden facts;
+- selected, not-in-DB, mixed, not-using, and unanswered states;
+- known functional-axis grouping and duplicate axes;
+- unknown product axes remain unresolved;
+- recent product change and reaction remain unlinked without product-specific evidence;
 - protection invariant;
 - deterministic hash/revision;
 - evidence-ledger completeness;
-- actual Premium caller imports v4.
+- the actual Premium caller imports v4.
 
 ## Non-targets
 
-- FunctionalPolicy rule changes
-- RoutinePolicy rule changes
-- ConditionPolicy rule changes
-- Cross-domain fallback changes
+- FunctionalPolicy, RoutinePolicy, ConditionPolicy, or consistency rule changes
 - CandidatePolicy runtime activation
-- recommendation scoring changes
-- UI copy or layout
+- recommendation scoring or UI changes
 - authentication, RLS, Storage, migration, or Production data
-- new current-product survey fields
-- causal attribution from satisfaction or product metadata
-- crawler work
-- Face Lab
+- adding new product-specific reaction survey fields
+- crawler or Face Lab work
 
 ## Completion boundary
 
-This PR closes the canonical context completeness gap only when the focused verifier, existing Premium decision-state verifier, relevant policy/consistency verifiers, syntax, architecture guard, build, and diff hygiene pass on the exact head.
+This PR closes the context completeness gap only when the focused verifier, existing Premium decision-state verifier, relevant policy/consistency verifiers, syntax, architecture guard, build, and diff hygiene pass on the exact head.
 
-Hosted Preview user-flow verification remains a later external check; a Vercel build alone is not equivalent to route/storage/reentry or Security-suite PASS.
+Hosted Preview user-flow verification remains a later external check. A Vercel build alone is not route/storage/reentry or Security-suite PASS.
