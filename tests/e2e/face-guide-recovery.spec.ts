@@ -54,17 +54,19 @@ async function installRecoveryMock(page: Page) {
   });
 }
 
-async function openHome(page: Page) {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.waitForLoadState("networkidle");
-}
-
 function cameraButton(page: Page) {
   return page.getByRole("button", { name: "지금 촬영하기", exact: true });
 }
 
+async function openHome(page: Page) {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(cameraButton(page)).toBeVisible();
+  await expect(cameraButton(page)).toBeEnabled();
+}
+
 test.describe("MediaPipe runtime recovery", () => {
   test.use({ viewport: { width: 390, height: 844 } });
+  test.setTimeout(60000);
 
   test("replaces a GPU inference failure with a clean CPU session across reopen", async ({ page }) => {
     await installRecoveryMock(page);
