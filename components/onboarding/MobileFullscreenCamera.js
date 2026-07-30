@@ -2,6 +2,38 @@
 
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useEffect, useRef } from "react";
+import useFaceLandmarkerGuide from "@/hooks/useFaceLandmarkerGuide";
+import { preloadFaceLandmarker } from "@/lib/face-guide/face-landmarker-client";
+
+const AUTO_CAPTURE_COUNTDOWN_MS = 600;
+
+const FACE_GUIDE_COPY = Object.freeze({
+  en: Object.freeze({
+    loading: "Preparing face guidance",
+    multiple_faces: "Keep only one person in the frame",
+    no_face: "Position your face inside the oval",
+    not_frontal: "Look straight at the camera",
+    off_center: "Center your face inside the oval",
+    ready: "Great, you can take the photo",
+    stabilizing: "Good, hold still",
+    too_close: "Move a little farther away",
+    too_far: "Move a little closer",
+    unavailable: "Face recognition could not start. Close the camera and try again"
+  }),
+  ko: Object.freeze({
+    loading: "얼굴 가이드를 준비하고 있어요",
+    multiple_faces: "한 명만 화면에 보여 주세요",
+    no_face: "얼굴을 타원 안에 맞춰 주세요",
+    not_frontal: "정면을 바라봐 주세요",
+    off_center: "얼굴을 타원 중앙에 맞춰 주세요",
+    ready: "좋아요, 촬영할 수 있어요",
+    stabilizing: "좋아요, 그대로 있어 주세요",
+    too_close: "조금 더 멀리 떨어져 주세요",
+    too_far: "조금 더 가까이 와 주세요",
+    unavailable: "얼굴 인식을 시작하지 못했습니다. 카메라를 닫고 다시 시도해 주세요"
+  })
+});
 
 function CloseIcon() {
   return (
@@ -11,15 +43,31 @@ function CloseIcon() {
   );
 }
 
-export function FaceGuide({ state = "idle" }) {
+export function FaceGuide({ guideRef, state = "loading" }) {
+  const isReady = state === "ready";
+  const isStabilizing = state === "stabilizing";
+  const isWarning = [
+    "multiple_faces",
+    "not_frontal",
+    "off_center",
+    "too_close",
+    "too_far",
+    "unavailable"
+  ].includes(state);
+  const borderClass = isReady
+    ? "border-emerald-300/95 shadow-[0_0_0_9999px_rgba(9,6,10,0.38),0_0_34px_rgba(110,231,183,0.55)]"
+    : isStabilizing
+      ? "border-emerald-200/90 shadow-[0_0_0_9999px_rgba(9,6,10,0.42)]"
+      : isWarning
+        ? "border-amber-300/95"
+        : "border-[#FF8CB3]/95";
+
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" data-face-guide-state={state}>
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div
-        className={`absolute left-1/2 top-[45%] aspect-[3/4] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 shadow-[0_0_0_9999px_rgba(9,6,10,0.48)] transition-colors ${
-          state === "ready"
-            ? "border-emerald-300/95 shadow-[0_0_0_9999px_rgba(9,6,10,0.4)]"
-            : "border-[#FF8CB3]/95"
-        }`}
+        ref={guideRef}
+        data-testid="face-guide-oval"
+        className={`absolute left-1/2 top-[45%] aspect-[3/4] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 shadow-[0_0_0_9999px_rgba(9,6,10,0.48)] transition-[border-color,box-shadow] duration-150 ${borderClass}`}
         style={{
           width: "min(72dvw, calc((100dvh - 230px) * 0.72), 330px)"
         }}
@@ -43,6 +91,25 @@ export default function MobileFullscreenCamera({
   onCapture,
   onAnimationComplete
 }) {
+  const guideRef = useRef(null);
+  const autoCaptureHandledRef = useRef(0);
+  const autoCaptureTimerRef = useRef(null);
+  const faceGuideActive = isVideoReady && (phase === "opening" || phase === "open");
+  const faceGuide = useFaceLandmarkerGuide({
+    active: faceGuideActive,
+    guideRef,
+    videoRef
+  });
+  const {
+    autoCaptureToken,
+    confirmCurrentFrame,
+    isCaptureReady,
+    progress,
+    rearmAutoCapture,
+    state
+  } = faceGuide;
+  const language = copy.capturePhoto === "Take photo" ? "en" : "ko";
+  const faceGuideMessage = FACE_GUIDE_COPY[language][state];
   const width = Math.max(viewportSize.width, 1);
   const height = Math.max(viewportSize.height, 1);
   const source = transitionRect || { left: 0, top: 0, width, height };
@@ -85,6 +152,72 @@ export default function MobileFullscreenCamera({
             borderRadius: "0px"
           };
 
+  useEffect(() => {
+    preloadFaceLandmarker().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (
+      phase !== "open" ||
+      state !== "ready" ||
+      !autoCaptureToken ||
+      isCapturing ||
+      autoCaptureHandledRef.current === autoCaptureToken
+    ) {
+      return undefined;
+    }
+
+    autoCaptureHandledRef.current = autoCaptureToken;
+    autoCaptureTimerRef.current = window.setTimeout(() => {
+      autoCaptureTimerRef.current = null;
+      if (!confirmCurrentFrame()) {
+        rearmAutoCapture();
+        return;
+      }
+
+      videoRef.current?.pause();
+      onCapture?.({
+        faceGuideValidated: true,
+        source: "auto"
+      });
+    }, AUTO_CAPTURE_COUNTDOWN_MS);
+
+    return () => {
+      if (autoCaptureTimerRef.current) {
+        window.clearTimeout(autoCaptureTimerRef.current);
+        autoCaptureTimerRef.current = null;
+      }
+    };
+  }, [
+    autoCaptureToken,
+    confirmCurrentFrame,
+    isCapturing,
+    onCapture,
+    phase,
+    rearmAutoCapture,
+    state,
+    videoRef
+  ]);
+
+  useEffect(() => {
+    if (phase === "preparing" || phase === "closing") {
+      autoCaptureHandledRef.current = 0;
+    }
+  }, [phase]);
+
+  const handleManualCapture = () => {
+    if (!isCaptureReady || isCapturing || !confirmCurrentFrame()) {
+      rearmAutoCapture();
+      return;
+    }
+
+    videoRef.current?.pause();
+    onCapture?.({
+      faceGuideValidated: true,
+      source: "manual"
+    });
+  };
+
   return createPortal(
     <motion.div
       role="dialog"
@@ -93,6 +226,20 @@ export default function MobileFullscreenCamera({
       aria-hidden={isPreparing}
       data-testid="mobile-camera-overlay"
       data-camera-phase={phase}
+      data-face-guidance-ready={isCaptureReady ? "true" : "false"}
+      data-face-capture-allowed={faceGuide.canCapture ? "true" : "false"}
+      data-face-guide-state={state}
+      data-face-guide-attempt={String(faceGuide.attempt)}
+      data-face-guide-delegate={faceGuide.delegate}
+      data-face-guide-error-category={faceGuide.errorCategory}
+      data-face-guide-error-code={faceGuide.errorCode}
+      data-face-guide-error-name={faceGuide.errorName}
+      data-face-guide-error-stage={faceGuide.errorStage || "none"}
+      data-face-guide-progress={progress.toFixed(3)}
+      data-face-guide-recovery-attempted={faceGuide.recoveryAttempted ? "true" : "false"}
+      data-face-guide-wasm-capable={faceGuide.webAssemblyCapable ? "true" : "false"}
+      data-face-guide-webgl-capable={faceGuide.webGlCapable ? "true" : "false"}
+      data-face-auto-capture-token={autoCaptureToken}
       className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
         isPreparing ? "pointer-events-none opacity-[0.001]" : "opacity-100"
       }`}
@@ -124,7 +271,7 @@ export default function MobileFullscreenCamera({
         animate={{ opacity: phase === "open" ? 1 : 0 }}
         transition={{ duration: reducedMotion ? 0.01 : 0.18 }}
       >
-        <FaceGuide state="idle" />
+        <FaceGuide guideRef={guideRef} state={state} />
 
         <button
           ref={closeButtonRef}
@@ -149,16 +296,31 @@ export default function MobileFullscreenCamera({
             paddingRight: "calc(env(safe-area-inset-right) + 20px)"
           }}
         >
-          <p className="mb-4 rounded-full bg-black/35 px-4 py-2 text-center text-xs font-semibold text-white/90 backdrop-blur-sm">
-            {isVideoReady ? copy.alignFace : copy.cameraLoading}
+          <p
+            aria-live="polite"
+            data-testid="face-guide-message"
+            className="mb-4 rounded-full bg-black/35 px-4 py-2 text-center text-xs font-semibold text-white/90 backdrop-blur-sm"
+          >
+            {isVideoReady ? faceGuideMessage : copy.cameraLoading}
           </p>
           <button
             type="button"
             aria-label={copy.capturePhoto}
-            onClick={onCapture}
-            disabled={!isVideoReady || isCapturing}
-            className="flex h-[76px] w-[76px] items-center justify-center rounded-full border-[5px] border-white bg-white/25 shadow-[0_10px_34px_rgba(0,0,0,0.35)] transition active:scale-95 disabled:opacity-45"
+            onClick={handleManualCapture}
+            disabled={!isVideoReady || !isCaptureReady || isCapturing}
+            className={`relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-[5px] bg-white/25 shadow-[0_10px_34px_rgba(0,0,0,0.35)] transition active:scale-95 disabled:opacity-45 ${
+              isCaptureReady ? "border-emerald-200" : "border-white"
+            }`}
           >
+            <span
+              className="absolute inset-[-7px] rounded-full"
+              aria-hidden="true"
+              style={{
+                background: `conic-gradient(rgba(110,231,183,0.95) ${Math.round(progress * 360)}deg, rgba(255,255,255,0.16) 0deg)`,
+                mask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)",
+                WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)"
+              }}
+            />
             <span className="h-[56px] w-[56px] rounded-full bg-white" aria-hidden="true" />
           </button>
         </div>

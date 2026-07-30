@@ -1,0 +1,44 @@
+name: MediaPipe recovery E2E
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - hooks/useFaceLandmarkerGuide.js
+      - lib/face-guide/face-landmarker-client.js
+      - app/api/mediapipe/**
+      - components/onboarding/MobileFullscreenCamera.js
+      - tests/e2e/face-guide-recovery.spec.ts
+      - tests/e2e/face-guide-runtime.spec.ts
+      - tests/unit/mediapipe-asset-route.test.mjs
+      - playwright.config.ts
+      - .github/workflows/mediapipe-recovery-e2e.yml
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify MediaPipe asset route integrity
+        run: node --test tests/unit/mediapipe-asset-route.test.mjs
+      - name: Run recovery regression
+        run: npx playwright test tests/e2e/face-guide-recovery.spec.ts --project=chromium
+      - name: Run real MediaPipe runtime smoke
+        run: npx playwright test tests/e2e/face-guide-runtime.spec.ts --project=mediapipe-runtime
