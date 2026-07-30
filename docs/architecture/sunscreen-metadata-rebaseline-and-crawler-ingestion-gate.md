@@ -2,7 +2,7 @@
 
 ## Scope
 
-This task re-baselines the 164-row Production catalog after the two-row sunscreen metadata remediation and defines the mandatory ingestion boundary for future crawler data.
+This task re-baselines the 164-row Production catalog after the two-row sunscreen metadata remediation and records the evidence standard that future crawler promotion must preserve.
 
 ## Base and boundaries
 
@@ -101,13 +101,17 @@ Machine-readable result:
 
 `tmp/sunscreen-metadata-rebaseline-local.json`
 
-## Crawler ingestion policy
+## Crawler ingestion boundary — deferred follow-up
 
-Crawler output must never write directly into the authoritative `public.products` relation.
+The current crawler structure was inspected after this rebaseline. It already separates ranking observations, candidate accumulation, ranking-based review selection, human review, and final catalog promotion.
 
-Required flow:
+Current path:
 
-`crawler raw capture -> normalized staging -> evidence validator -> quarantine or approval queue -> governed promotion -> post-write replay`
+`ranking_snapshots / source_rankings -> product_candidates -> candidate_promotion_reviews -> human review -> governed products promotion -> post-write replay`
+
+Crawler collection and review-queue refresh do not write directly into the authoritative `public.products` relation. No crawler code, schema, review rule, or promotion path is changed by this task.
+
+The following evidence rules are retained as requirements for the future point at which crawler promotion is completed and hardened.
 
 ### 1. Immutable raw capture
 
@@ -147,7 +151,7 @@ Direct mapped evidence such as `밀림없는 -> pilling_low` is stronger than in
 
 ### 4. Validation and quarantine
 
-Every staged row must pass:
+Before any future promotion, the existing candidate and review-queue path must enforce:
 
 - identity uniqueness and exact-product resolution;
 - enum and schema validation;
@@ -157,7 +161,7 @@ Every staged row must pass:
 - snapshot transport preservation;
 - affected-category CandidatePolicy replay.
 
-A failure produces a machine-readable quarantine reason. It cannot partially update Production.
+A failure must produce a machine-readable review or quarantine reason and must not partially update Production.
 
 ### 5. Governed promotion
 
@@ -171,18 +175,18 @@ Promotion must use one transaction with:
 - exact postconditions;
 - rollback on any mismatch.
 
-Each crawler batch must retain:
+Each promoted crawler batch must retain:
 
 - raw input hash;
 - normalized input hash;
 - crawler/parser/rule versions;
-- approved and quarantined counts;
+- approved and rejected or deferred counts;
 - approved IDs and fields;
 - post-write export and dataset hashes.
 
 ### 6. Continuous regression
 
-After every promoted batch:
+After every future promoted batch:
 
 - export the resulting catalog as a new version;
 - compare only approved IDs and allow-listed fields;
@@ -191,19 +195,8 @@ After every promoted batch:
 - rerun security, syntax, and Production build gates;
 - retain the prior baseline for rollback and audit.
 
-## Next implementation task
+## Continuation boundary
 
-Implement **Crawler Product Staging & Evidence Validator** before changing any crawler write path.
+Crawler implementation is explicitly deferred. No new `crawler_product_staging` table or crawler hardening branch is authorized by this task.
 
-Required first delivery:
-
-- `crawler_product_staging` contract;
-- field-authority registry;
-- evidence-rule registry;
-- pure validator;
-- machine-readable quarantine reasons;
-- versioned batch manifest;
-- governed promotion plan;
-- post-write replay contract.
-
-Direct crawler writes remain disabled until all of these gates pass.
+The current continuation is limited to closing the PR #85 remediation stack through PR #88 exact-head verification, evidence cleanup, stack consistency, and commit-gate reporting. Engine work resumes from the already approved engine plan after this stack is closed.
