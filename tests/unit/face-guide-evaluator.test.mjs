@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   evaluateFaceGuide,
+  FACE_GUIDE_EVALUATION_MODE,
   FACE_GUIDE_STATE,
   mapLandmarkToCoverFrame
 } from "../../lib/face-guide/face-guide-evaluator.mjs";
@@ -20,8 +21,8 @@ const FRAME = Object.freeze({
 });
 
 function createFace(mode = "ready") {
-  const scale = mode === "too_far" ? 0.65 : mode === "too_close" ? 1.2 : 1;
-  const centerX = mode === "off_center" ? 0.55 : 0.5;
+  const scale = mode === "too_far" ? 0.65 : mode === "too_close" ? 1.2 : mode === "edge" ? 0.94 : 1;
+  const centerX = mode === "off_center" ? 0.55 : mode === "edge" ? 0.52 : 0.5;
   const centerY = 0.45;
   const radiusX = 0.11 * scale;
   const radiusY = 0.2 * scale;
@@ -55,11 +56,12 @@ function createFace(mode = "ready") {
   return landmarks;
 }
 
-function evaluate(faces, mirrored = true) {
+function evaluate(faces, mirrored = true, mode = FACE_GUIDE_EVALUATION_MODE.enter) {
   return evaluateFaceGuide({
     ...FRAME,
     faceLandmarks: faces,
-    mirrored
+    mirrored,
+    mode
   });
 }
 
@@ -101,4 +103,13 @@ test("keeps frontal roll valid for mirrored and original eye order", () => {
   assert.equal(unmirroredReady.state, FACE_GUIDE_STATE.ready);
   assert.ok(mirroredReady.metrics.rollDegrees < 0.01);
   assert.ok(unmirroredReady.metrics.rollDegrees < 0.01);
+});
+
+test("uses stricter entry thresholds and wider maintenance thresholds", () => {
+  const edgeFace = createFace("edge");
+  const entry = evaluate([edgeFace], true, FACE_GUIDE_EVALUATION_MODE.enter);
+  const maintain = evaluate([edgeFace], true, FACE_GUIDE_EVALUATION_MODE.maintain);
+
+  assert.notEqual(entry.state, FACE_GUIDE_STATE.ready);
+  assert.equal(maintain.state, FACE_GUIDE_STATE.ready);
 });
