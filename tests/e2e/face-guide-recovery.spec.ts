@@ -55,13 +55,24 @@ async function installRecoveryMock(page: Page) {
 }
 
 function cameraButton(page: Page) {
-  return page.getByRole("button", { name: "지금 촬영하기", exact: true });
+  return page.getByRole("button", { name: /지금 촬영하기|Use Camera/ });
+}
+
+function closeCameraButton(page: Page) {
+  return page.getByRole("button", { name: /카메라 닫기|Close camera/ });
 }
 
 async function openHome(page: Page) {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(cameraButton(page)).toBeVisible();
   await expect(cameraButton(page)).toBeEnabled();
+}
+
+async function expectCpuNoFaceState(page: Page) {
+  const overlay = page.getByTestId("mobile-camera-overlay");
+  await expect(overlay).toHaveAttribute("data-camera-phase", "open");
+  await expect(page.locator('[data-face-guide-state="no_face"]')).toBeVisible();
+  await expect(overlay).toHaveAttribute("data-face-guide-error-stage", "none");
 }
 
 test.describe("MediaPipe runtime recovery", () => {
@@ -75,9 +86,7 @@ test.describe("MediaPipe runtime recovery", () => {
     await cameraButton(page).click();
     const overlay = page.getByTestId("mobile-camera-overlay");
 
-    await expect(overlay).toHaveAttribute("data-camera-phase", "open");
-    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴을 타원 안에 맞춰 주세요");
-    await expect(overlay).toHaveAttribute("data-face-guide-error-stage", "none");
+    await expectCpuNoFaceState(page);
     await expect
       .poll(() =>
         page.evaluate(() => (window as RecoveryWindow).__faceGuideDelegateAttempts)
@@ -87,14 +96,11 @@ test.describe("MediaPipe runtime recovery", () => {
       .poll(() => page.evaluate(() => (window as RecoveryWindow).__faceGuideCloseCount))
       .toBeGreaterThanOrEqual(1);
 
-    await page.getByRole("button", { name: "카메라 닫기", exact: true }).click();
+    await closeCameraButton(page).click();
     await expect(overlay).toHaveCount(0);
 
     await cameraButton(page).click();
-    const reopenedOverlay = page.getByTestId("mobile-camera-overlay");
-    await expect(reopenedOverlay).toHaveAttribute("data-camera-phase", "open");
-    await expect(page.getByTestId("face-guide-message")).toHaveText("얼굴을 타원 안에 맞춰 주세요");
-    await expect(reopenedOverlay).toHaveAttribute("data-face-guide-error-stage", "none");
+    await expectCpuNoFaceState(page);
     await expect
       .poll(() =>
         page.evaluate(() => (window as RecoveryWindow).__faceGuideDelegateAttempts)
