@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+
 jobs:
   verify:
     runs-on: ubuntu-24.04
@@ -47,3 +50,110 @@ jobs:
           path: tmp/security-closeout-verifier-suite.json
           if-no-files-found: error
           retention-days: 7
+
+  admin-product-reviews:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify product review contracts
+        run: |
+          bash -n scripts/verify-admin-product-review-runtime.sh
+          npm run verify:admin-access-foundation
+          npm run verify:admin-product-candidate-reviews
+
+      - name: Prepare isolated Supabase project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp/admin-product-review-runtime
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
+            --workdir tmp/admin-product-review-runtime \
+            --force
+          mkdir -p tmp/admin-product-review-runtime/supabase/migrations
+          cp tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql \
+            tmp/admin-product-review-runtime/supabase/migrations/
+          cp supabase/migrations/*_admin_access_foundation.sql \
+            tmp/admin-product-review-runtime/supabase/migrations/
+          cp supabase/migrations/*_admin_product_candidate_reviews*.sql \
+            tmp/admin-product-review-runtime/supabase/migrations/
+
+      - name: Start isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir tmp/admin-product-review-runtime \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 160 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Replay migrations and verify review workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
+            --workdir tmp/admin-product-review-runtime \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 180 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+          bash scripts/verify-admin-product-review-runtime.sh tmp/admin-product-review-runtime
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        run: |
+          if [[ -d tmp/admin-product-review-runtime/supabase ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir tmp/admin-product-review-runtime \
+              --no-backup
+          fi
