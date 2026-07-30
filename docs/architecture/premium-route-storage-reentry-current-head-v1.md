@@ -139,6 +139,7 @@ The fixture must contain a valid Decision Bundle and `freeResult` before session
    - source session is present;
    - stored fingerprint equals the response fingerprint;
    - report, snapshot, and Decision Bundle versions are present and distinct.
+5. Account A RLS read returns the row; Account B RLS read returns no row.
 
 ### C. Immutability and reentry
 
@@ -208,6 +209,28 @@ A cleanup failure forces the overall verdict to FAIL.
 - no `postbuild`, workflow, runtime flag, test secret, credential, test account, or database residue remains;
 - final diff is reviewed against PR #92 exact head;
 - PR remains Draft.
+
+## Attempt recorded on 2026-07-30
+
+The reviewed temporary implementation and execution workflow were created, reviewed, and then removed because no Preview execution path was available.
+
+Repository validation passed on commit `c5bdf7022a50382468e85331da793d47084e2fb0`:
+
+- dependency installation;
+- temporary endpoint syntax;
+- existing Premium Route / Storage / Reentry verifier;
+- Premium saved-report reentry verifier;
+- Integrated Evaluation Pack v2 (`401 assertions`, `21 logical scenarios`, `28 variants`, `6 negative cases`);
+- architecture guard and ghost-code audit;
+- diff hygiene.
+
+Hosted execution did not start:
+
+- Vercel Git Preview was rejected before build by the project build-rate-limit;
+- the repository had no `VERCEL_TOKEN` GitHub Actions secret for a CLI Preview deployment;
+- the connected Vercel file-deployment API required a complete source archive that the available private-repository connector could not provide.
+
+Because the Preview endpoint never executed, no temporary Auth user, profile, Premium session, or saved report was created. The temporary endpoint, workflow, and result file were removed. This is an infrastructure-blocked attempt, not a product PASS or product failure.
 
 ## Completion rule
 
