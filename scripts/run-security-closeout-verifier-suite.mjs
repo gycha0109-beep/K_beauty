@@ -9,11 +9,11 @@ const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|s
 const STEP_TIMEOUT_MS = 180_000;
 
 const EXPECTED_VERIFIERS = [
+  "verify-admin-product-candidate-reviews.mjs",
   "verify-analysis-request-guard.mjs",
   "verify-analysis-result-response-boundary.mjs",
   "verify-analysis-rls-contract.mjs",
   "verify-anonymous-write-grant-v2.mjs",
-  "verify-admin-product-candidate-reviews.mjs",
   "verify-candidate-policy-hint-receiver-design.mjs",
   "verify-evaluator-boundary-policy-production-observability.mjs",
   "verify-existing-recommendation-candidate-source.mjs",
