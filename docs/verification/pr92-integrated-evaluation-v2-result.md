@@ -1,6 +1,6 @@
 # PR92 Integrated Evaluation V2 Gate
 
-- Commit: `6cd58c051e96881ca1101e1631719d200fa8dd2f`
+- Commit: `8d78fb0466ead4a768631725618d35002299497b`
 - Runner: `Linux`
 - Node target: `24`
 
@@ -66,18 +66,18 @@ PASS
 
 ## diff hygiene
 
-FAIL (exit 2)
+PASS
 
 ## Result
 
-PR92_INTEGRATED_EVALUATION_V2_GATE_FAIL
+PR92_INTEGRATED_EVALUATION_V2_GATE_PASS
 
 ## Log tail
 
 ```text
 ### npm ci
 
-added 118 packages, and audited 119 packages in 13s
+added 118 packages, and audited 119 packages in 15s
 
 31 packages are looking for funding
   run `npm fund` for details
@@ -101,7 +101,7 @@ npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to revi
 > k-beauty-ai-skin-test@0.1.0 verify:premium-integrated-evaluation-v2
 > node scripts/verify-premium-integrated-evaluation-v2.mjs
 
-(node:2098) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
+(node:2258) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -111,44 +111,44 @@ premium integrated evaluation v2 verified: 401 assertions, 21 logical scenarios,
 > k-beauty-ai-skin-test@0.1.0 verify:shared-skin-decision-context
 > node scripts/verify-shared-skin-decision-context-v4.mjs
 
-(node:2117) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/shared-skin-decision-context-v4.js is not specified and it doesn't parse as CommonJS.
+(node:2277) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/shared-skin-decision-context-v4.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 verify-shared-skin-decision-context-v4: ok (74 assertions)
 ### functional policy
-(node:2124) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/functional-plan-decision.js is not specified and it doesn't parse as CommonJS.
+(node:2284) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/functional-plan-decision.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 verify-functional-policy-single-source: ok
 ### routine policy
-(node:2131) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/routine-policy.js is not specified and it doesn't parse as CommonJS.
+(node:2291) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/routine-policy.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 verify-routine-policy-single-source: PASS
 ### condition policy
-(node:2138) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/condition-policy.js is not specified and it doesn't parse as CommonJS.
+(node:2298) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/condition-policy.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 verify-condition-policy-single-source: PASS
 ### cross-domain consistency
-(node:2145) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/cross-domain-consistency.js is not specified and it doesn't parse as CommonJS.
+(node:2305) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/cross-domain-consistency.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 cross-domain consistency verifier passed
 ### premium decision state
-(node:2152) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/premium-condition-responses.js is not specified and it doesn't parse as CommonJS.
+(node:2312) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/premium-condition-responses.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 verify-premium-decision-state: ok
 ### premium report reentry
 premium report re-entry contract verification passed
-(node:2159) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/premium-report-reentry.js is not specified and it doesn't parse as CommonJS.
+(node:2319) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/premium-report-reentry.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -157,7 +157,7 @@ To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_
 > k-beauty-ai-skin-test@0.1.0 verify:candidate-policy-runtime-safety
 > node scripts/verify-candidate-policy-runtime-safety-hardening.mjs
 
-(node:2178) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-runtime-safety.js is not specified and it doesn't parse as CommonJS.
+(node:2338) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-runtime-safety.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -167,7 +167,7 @@ To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_
 > k-beauty-ai-skin-test@0.1.0 verify:candidate-policy-goal-alignment
 > node scripts/verify-candidate-policy-goal-alignment.mjs
 
-(node:2201) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
+(node:2361) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -177,7 +177,7 @@ To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_
 > k-beauty-ai-skin-test@0.1.0 verify:candidate-policy-current-findings
 > node scripts/verify-candidate-policy-current-findings-integration.mjs
 
-(node:2224) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-current-findings-context.js is not specified and it doesn't parse as CommonJS.
+(node:2384) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-current-findings-context.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
@@ -206,13 +206,13 @@ https://nextjs.org/telemetry
    Creating an optimized production build ...
 <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (101kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
 <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (231kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
- ✓ Compiled successfully in 17.0s
+ ✓ Compiled successfully in 20.7s
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/26) ...
-   Generating static pages (6/26) 
-   Generating static pages (12/26) 
-   Generating static pages (19/26) 
+   Generating static pages (6/26)
+   Generating static pages (12/26)
+   Generating static pages (19/26)
  ✓ Generating static pages (26/26)
    Finalizing page optimization ...
    Collecting build traces ...
@@ -278,16 +278,10 @@ Route (app)                                                      Size  First Loa
 > k-beauty-ai-skin-test@0.1.0 verify:premium-integrated-evaluation-v2
 > node scripts/verify-premium-integrated-evaluation-v2.mjs
 
-(node:2392) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
+(node:2552) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///home/runner/work/K_beauty/K_beauty/lib/candidate-policy-goal-context.js is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
 To eliminate this warning, add "type": "module" to /home/runner/work/K_beauty/K_beauty/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 premium integrated evaluation v2 verified: 401 assertions, 21 logical scenarios, 28 variants, 6 negative cases, semantic hash 93192f940bd50bd3e1e2fd6d58f6d03fae17b75b3e7bf1951953ce89e9c5d0eb
 ### diff hygiene
-docs/verification/pr92-integrated-evaluation-v2-result.md:293: trailing whitespace.
-++   Generating static pages (6/26) 
-docs/verification/pr92-integrated-evaluation-v2-result.md:295: trailing whitespace.
-++   Generating static pages (12/26) 
-docs/verification/pr92-integrated-evaluation-v2-result.md:297: trailing whitespace.
-++   Generating static pages (19/26) 
 ```
