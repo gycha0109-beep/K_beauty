@@ -55,17 +55,35 @@ async function installRecoveryMock(page: Page) {
 }
 
 function cameraButton(page: Page) {
-  return page.getByRole("button", { name: /지금 촬영하기|Use Camera/ });
+  return page.locator("button.ui-button-primary").first();
 }
 
 function closeCameraButton(page: Page) {
-  return page.getByRole("button", { name: /카메라 닫기|Close camera/ });
+  return page.getByTestId("mobile-camera-overlay").locator("button").first();
 }
 
 async function openHome(page: Page) {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(cameraButton(page)).toBeVisible();
-  await expect(cameraButton(page)).toBeEnabled();
+  page.on("pageerror", (error) => {
+    console.log(`recovery-page-error: ${error.name}: ${error.message}`);
+  });
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      console.log(`recovery-console-error: ${message.text()}`);
+    }
+  });
+
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
+  console.log(`recovery-page-status: ${response?.status() ?? "none"}`);
+  console.log(`recovery-page-url: ${page.url()}`);
+
+  try {
+    await expect(cameraButton(page)).toBeVisible();
+    await expect(cameraButton(page)).toBeEnabled();
+  } catch (error) {
+    const bodyText = await page.locator("body").innerText().catch(() => "<body unavailable>");
+    console.log(`recovery-page-body: ${bodyText.slice(0, 1500)}`);
+    throw error;
+  }
 }
 
 async function expectCpuNoFaceState(page: Page) {
