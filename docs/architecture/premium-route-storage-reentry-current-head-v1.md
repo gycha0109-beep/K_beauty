@@ -53,9 +53,11 @@ The endpoint fails closed unless every condition is true:
 - request query `run` is a valid UUID;
 - request method is `POST`;
 - Vercel Preview Protection authorizes the request;
-- no existing validation with the same run ID is active.
+- the run-derived temporary Account A does not already exist.
 
-Production, local development, malformed SHA, malformed run ID, and concurrent duplicate execution return no test result and perform no writes.
+The unique run-derived Account A identity is the no-schema concurrency guard. A repeated or concurrent invocation with the same run ID fails during fixture creation before route persistence begins.
+
+Production, local development, malformed SHA, malformed run ID, and duplicate execution return no test result and perform no application-route writes.
 
 ### Response contract
 
@@ -81,7 +83,7 @@ The response must not contain:
 - full report bodies;
 - service-role or public keys.
 
-## Test identities
+## Test identities and cookie capture
 
 The endpoint creates two random, email-confirmed, password-based Supabase Auth users through the server-only Admin API.
 
@@ -91,7 +93,15 @@ The endpoint creates two random, email-confirmed, password-based Supabase Auth u
 - both are deleted during cleanup;
 - authorization decisions use `app_metadata`, not user-editable metadata.
 
-The public Supabase client signs in each temporary user to obtain short-lived Bearer tokens. Tokens remain process-local and are never serialized.
+A server-only `@supabase/ssr` client signs in each temporary user with a cookie adapter. The adapter captures the exact cookies emitted by the installed SSR library while the returned access token remains process-local.
+
+This supports all three current principal cases without fabricating cookie encoding:
+
+- Cookie A only;
+- Bearer B only;
+- Cookie A plus Bearer B conflict.
+
+No token or cookie value is serialized.
 
 ## Deterministic report fixture
 
@@ -111,11 +121,11 @@ The fixture must contain a valid Decision Bundle and `freeResult` before session
 ### A. Preconditions
 
 1. Verify Preview/exact-SHA/run guards.
-2. Verify Supabase Admin configuration.
-3. Acquire a database advisory lock scoped to this gate version.
-4. Create and sign in Accounts A and B.
+2. Verify Supabase Admin and public Auth configuration.
+3. Create and sign in Accounts A and B; Account A uniqueness guards duplicate execution.
+4. Capture Account A and B SSR auth cookies from the installed library.
 5. Build the deterministic report.
-6. Create Account A Premium session and extract only its signed cookie value in memory.
+6. Create Account A Premium session and retain only its signed cookie value in memory.
 
 ### B. Authorization and first persistence
 
@@ -141,9 +151,9 @@ The fixture must contain a valid Decision Bundle and `freeResult` before session
 
 ### D. Authorization isolation
 
-1. Account B cannot read Account A's saved-report ID.
-2. Account A Premium cookie plus Account B Bearer token is rejected as `premium_principal_conflict` when an authenticated Cookie principal is available.
-3. If the temporary harness cannot construct a valid Supabase auth cookie without depending on browser internals, Bearer-only cross-account denial remains mandatory and principal-conflict is reported as not executed, not passed.
+1. Account B Cookie or Bearer cannot read Account A's saved-report ID.
+2. Account A SSR auth cookie plus Account B Bearer token is rejected as `premium_principal_conflict`.
+3. Rejected requests create no saved report and mutate no existing row.
 
 ### E. Rotation and second persistence
 
@@ -158,12 +168,11 @@ The fixture must contain a valid Decision Bundle and `freeResult` before session
 
 Cleanup executes in `finally` and is mandatory on both PASS and FAIL:
 
-1. delete the exact saved-report IDs created by the run;
+1. delete the exact saved-report IDs owned by Accounts A and B;
 2. delete Premium session rows for the exact in-memory session IDs;
 3. delete exact temporary profile rows;
 4. delete Accounts A and B through `auth.admin.deleteUser`;
-5. verify saved-report, session, profile, and Auth-user residue counts are zero;
-6. release the advisory lock.
+5. verify saved-report, session, profile, and Auth-user residue counts are zero.
 
 A cleanup failure forces the overall verdict to FAIL.
 
