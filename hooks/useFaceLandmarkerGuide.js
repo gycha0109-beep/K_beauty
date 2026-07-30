@@ -1,34 +1,121 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   evaluateFaceGuide,
+  FACE_GUIDE_EVALUATION_MODE,
   FACE_GUIDE_STATE
 } from "@/lib/face-guide/face-guide-evaluator.mjs";
-import { getFaceLandmarker } from "@/lib/face-guide/face-landmarker-client";
+import {
+  getFaceLandmarker,
+  resetFaceLandmarker
+} from "@/lib/face-guide/face-landmarker-client";
+import { writeSafeLog } from "@/lib/security/error-redaction";
 
-const INFERENCE_INTERVAL_MS = 110;
-const READY_STABLE_FRAMES = 6;
+const INFERENCE_INTERVAL_MS = 100;
+const READY_HOLD_MS = 900;
+const CAPTURE_SAMPLE_MAX_AGE_MS = 350;
 const MAX_CONSECUTIVE_ERRORS = 3;
+const MAX_INITIALIZATION_ATTEMPTS = 2;
+const MAX_RUNTIME_RECOVERIES = 1;
 
 const INITIAL_RESULT = Object.freeze({
+  autoCaptureToken: 0,
   errorStage: null,
   metrics: null,
+  progress: 0,
   state: FACE_GUIDE_STATE.loading
 });
+
+function wait(durationMs) {
+  return new Promise((resolve) => window.setTimeout(resolve, durationMs));
+}
 
 export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
   const [result, setResult] = useState(INITIAL_RESULT);
   const animationFrameRef = useRef(null);
+  const faceLandmarkerRef = useRef(null);
   const consecutiveErrorsRef = useRef(0);
   const lastInferenceAtRef = useRef(0);
+  const lastDetectionTimestampRef = useRef(0);
   const lastStateRef = useRef(FACE_GUIDE_STATE.loading);
   const lastVideoTimeRef = useRef(-1);
-  const stableFramesRef = useRef(0);
+  const latestEvaluationRef = useRef(null);
+  const latestSampleAtRef = useRef(0);
+  const readySinceRef = useRef(null);
+  const autoCaptureIssuedRef = useRef(false);
+  const autoCaptureSequenceRef = useRef(0);
+
+  const evaluateCurrentFrame = useCallback((mode) => {
+    const faceLandmarker = faceLandmarkerRef.current;
+    const video = videoRef.current;
+    const guide = guideRef.current;
+    if (
+      !faceLandmarker ||
+      !video ||
+      !guide ||
+      video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
+      !video.videoWidth ||
+      !video.videoHeight
+    ) {
+      return null;
+    }
+
+    const now = performance.now();
+    const timestamp = Math.max(now, lastDetectionTimestampRef.current + 0.01);
+    lastDetectionTimestampRef.current = timestamp;
+    const detection = faceLandmarker.detectForVideo(video, timestamp);
+    const evaluated = evaluateFaceGuide({
+      faceLandmarks: detection?.faceLandmarks,
+      guideRect: guide.getBoundingClientRect(),
+      mirrored: true,
+      mode,
+      videoHeight: video.videoHeight,
+      videoRect: video.getBoundingClientRect(),
+      videoWidth: video.videoWidth
+    });
+
+    latestEvaluationRef.current = evaluated;
+    latestSampleAtRef.current = now;
+    return evaluated;
+  }, [guideRef, videoRef]);
+
+  const confirmCurrentFrame = useCallback(() => {
+    const latest = latestEvaluationRef.current;
+    if (
+      !active ||
+      !latest ||
+      latest.state !== FACE_GUIDE_STATE.ready ||
+      performance.now() - latestSampleAtRef.current > CAPTURE_SAMPLE_MAX_AGE_MS
+    ) {
+      return false;
+    }
+
+    try {
+      const confirmed = evaluateCurrentFrame(FACE_GUIDE_EVALUATION_MODE.enter);
+      return confirmed?.state === FACE_GUIDE_STATE.ready;
+    } catch (error) {
+      writeSafeLog("warn", {
+        event: "client_operation_failed",
+        category: "browser_api_unavailable",
+        operation: "face_guide_capture_confirmation",
+        dependency: "mediapipe",
+        retryable: true,
+        error
+      });
+      return false;
+    }
+  }, [active, evaluateCurrentFrame]);
+
+  const rearmAutoCapture = useCallback(() => {
+    autoCaptureIssuedRef.current = false;
+    readySinceRef.current = null;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     let terminal = false;
+    let runtimeRecoveries = 0;
 
     const publish = (nextResult) => {
       if (cancelled) return;
@@ -44,15 +131,21 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
     };
 
     const reset = () => {
-      stableFramesRef.current = 0;
       consecutiveErrorsRef.current = 0;
       lastInferenceAtRef.current = 0;
+      lastDetectionTimestampRef.current = 0;
       lastVideoTimeRef.current = -1;
+      latestEvaluationRef.current = null;
+      latestSampleAtRef.current = 0;
+      readySinceRef.current = null;
+      autoCaptureIssuedRef.current = false;
+      autoCaptureSequenceRef.current = 0;
       lastStateRef.current = FACE_GUIDE_STATE.loading;
     };
 
     if (!active) {
       reset();
+      faceLandmarkerRef.current = null;
       setResult(INITIAL_RESULT);
       return undefined;
     }
@@ -60,15 +153,31 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
     reset();
     publish(INITIAL_RESULT);
 
+    const initialize = async ({ forceReload = false } = {}) => {
+      let lastError = null;
+      for (let attempt = 0; attempt < MAX_INITIALIZATION_ATTEMPTS; attempt += 1) {
+        try {
+          return await getFaceLandmarker({ forceReload: forceReload || attempt > 0 });
+        } catch (error) {
+          lastError = error;
+          if (attempt + 1 < MAX_INITIALIZATION_ATTEMPTS) {
+            await wait(220);
+          }
+        }
+      }
+      throw lastError;
+    };
+
     const run = async () => {
-      let faceLandmarker;
       try {
-        faceLandmarker = await getFaceLandmarker();
+        faceLandmarkerRef.current = await initialize();
       } catch (error) {
         terminal = true;
         publish({
+          autoCaptureToken: autoCaptureSequenceRef.current,
           errorStage: error?.stage || "initialization",
           metrics: null,
+          progress: 0,
           state: FACE_GUIDE_STATE.unavailable
         });
         return;
@@ -77,6 +186,55 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       const scheduleNext = (detect) => {
         if (!cancelled && !terminal) {
           animationFrameRef.current = window.requestAnimationFrame(detect);
+        }
+      };
+
+      const recoverRuntime = async (detect, error) => {
+        if (runtimeRecoveries >= MAX_RUNTIME_RECOVERIES) {
+          terminal = true;
+          publish({
+            autoCaptureToken: autoCaptureSequenceRef.current,
+            errorStage: "inference",
+            metrics: null,
+            progress: 0,
+            state: FACE_GUIDE_STATE.unavailable
+          });
+          return;
+        }
+
+        runtimeRecoveries += 1;
+        readySinceRef.current = null;
+        autoCaptureIssuedRef.current = false;
+        publish({
+          autoCaptureToken: autoCaptureSequenceRef.current,
+          errorStage: "inference_recovery",
+          metrics: null,
+          progress: 0,
+          state: FACE_GUIDE_STATE.loading
+        });
+        writeSafeLog("warn", {
+          event: "client_operation_failed",
+          category: "browser_api_unavailable",
+          operation: "face_guide_inference",
+          dependency: "mediapipe",
+          retryable: true,
+          error
+        });
+
+        resetFaceLandmarker();
+        try {
+          faceLandmarkerRef.current = await initialize({ forceReload: true });
+          consecutiveErrorsRef.current = 0;
+          scheduleNext(detect);
+        } catch (recoveryError) {
+          terminal = true;
+          publish({
+            autoCaptureToken: autoCaptureSequenceRef.current,
+            errorStage: recoveryError?.stage || "inference_recovery",
+            metrics: null,
+            progress: 0,
+            state: FACE_GUIDE_STATE.unavailable
+          });
         }
       };
 
@@ -109,43 +267,63 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         lastVideoTimeRef.current = video.currentTime;
 
         try {
-          const detection = faceLandmarker.detectForVideo(video, timestamp);
-          const evaluated = evaluateFaceGuide({
-            faceLandmarks: detection?.faceLandmarks,
-            guideRect: guide.getBoundingClientRect(),
-            mirrored: true,
-            videoHeight: video.videoHeight,
-            videoRect: video.getBoundingClientRect(),
-            videoWidth: video.videoWidth
-          });
+          const previousState = latestEvaluationRef.current?.state;
+          const mode =
+            previousState === FACE_GUIDE_STATE.ready ||
+            previousState === FACE_GUIDE_STATE.stabilizing
+              ? FACE_GUIDE_EVALUATION_MODE.maintain
+              : FACE_GUIDE_EVALUATION_MODE.enter;
+          const evaluated = evaluateCurrentFrame(mode);
+          if (!evaluated) {
+            scheduleNext(detect);
+            return;
+          }
 
           consecutiveErrorsRef.current = 0;
           if (evaluated.state === FACE_GUIDE_STATE.ready) {
-            stableFramesRef.current += 1;
-            if (stableFramesRef.current >= READY_STABLE_FRAMES) {
-              publish({ ...evaluated, errorStage: null });
+            const sampleAt = latestSampleAtRef.current;
+            if (readySinceRef.current === null) {
+              readySinceRef.current = sampleAt;
+            }
+            const stableDuration = sampleAt - readySinceRef.current;
+            const progress = Math.min(1, stableDuration / READY_HOLD_MS);
+
+            if (progress >= 1) {
+              if (!autoCaptureIssuedRef.current) {
+                autoCaptureIssuedRef.current = true;
+                autoCaptureSequenceRef.current += 1;
+              }
+              publish({
+                ...evaluated,
+                autoCaptureToken: autoCaptureSequenceRef.current,
+                errorStage: null,
+                progress: 1
+              });
             } else {
               publish({
+                autoCaptureToken: autoCaptureSequenceRef.current,
                 errorStage: null,
                 metrics: evaluated.metrics,
-                progress: stableFramesRef.current / READY_STABLE_FRAMES,
+                progress,
                 state: FACE_GUIDE_STATE.stabilizing
               });
             }
           } else {
-            stableFramesRef.current = 0;
-            publish({ ...evaluated, errorStage: null });
+            readySinceRef.current = null;
+            autoCaptureIssuedRef.current = false;
+            publish({
+              ...evaluated,
+              autoCaptureToken: autoCaptureSequenceRef.current,
+              errorStage: null,
+              progress: 0
+            });
           }
-        } catch {
-          stableFramesRef.current = 0;
+        } catch (error) {
+          readySinceRef.current = null;
+          autoCaptureIssuedRef.current = false;
           consecutiveErrorsRef.current += 1;
           if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) {
-            terminal = true;
-            publish({
-              errorStage: "inference",
-              metrics: null,
-              state: FACE_GUIDE_STATE.unavailable
-            });
+            void recoverRuntime(detect, error);
             return;
           }
         }
@@ -156,25 +334,29 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       scheduleNext(detect);
     };
 
-    run();
+    void run();
 
     return () => {
       cancelled = true;
       terminal = true;
+      faceLandmarkerRef.current = null;
       if (animationFrameRef.current) {
         window.cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
       }
     };
-  }, [active, guideRef, videoRef]);
+  }, [active, evaluateCurrentFrame]);
 
   const isCaptureReady = result.state === FACE_GUIDE_STATE.ready;
   return {
+    autoCaptureToken: result.autoCaptureToken || 0,
     canCapture: isCaptureReady,
+    confirmCurrentFrame,
     errorStage: result.errorStage || null,
     isCaptureReady,
     metrics: result.metrics,
     progress: result.progress || 0,
+    rearmAutoCapture,
     state: result.state
   };
 }
