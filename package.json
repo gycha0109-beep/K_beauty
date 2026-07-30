@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
-    "postbuild": "node scripts/verify-candidate-policy-current-findings-integration.mjs",
     "start": "next start -p 3001",
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
@@ -14,6 +13,7 @@
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "verify:shared-skin-decision-context": "node scripts/verify-shared-skin-decision-context-v4.mjs",
+    "verify:premium-integrated-evaluation-v2": "node scripts/verify-premium-integrated-evaluation-v2.mjs",
     "check:sec11-origin-normalization": "node scripts/check-sec11-site-origin-normalization.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
     "verify:premium-identical-retry": "node scripts/verify-premium-identical-retry.mjs",
