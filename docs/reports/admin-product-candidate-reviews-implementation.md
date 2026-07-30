@@ -8,7 +8,7 @@
 
 - `feature/admin-product-candidate-reviews`
 - stacked base: `feature/admin-access-foundation`
-- validation: stacked PR exact-HEAD workflow
+- validation: main-registered workflow의 exact-HEAD 임시 job
 
 ## 구현
 
