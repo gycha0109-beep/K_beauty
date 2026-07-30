@@ -1,0 +1,197 @@
+name: PR93 Stage9 Route Storage Reentry Gate
+
+on:
+  push:
+    branches:
+      - codex/premium-route-storage-reentry-current-head-v1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr93-stage9-route-storage-reentry
+  cancel-in-progress: true
+
+jobs:
+  hosted-gate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
+      VERCEL_SCOPE: johnny-self
+      BASE_SHA: 697c7314ff52e16b9254bc8693e2f5fce7030009
+      RESULT_PATH: docs/verification/pr93-stage9-route-storage-reentry-result.md
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Execute exact-head hosted gate
+        id: gate
+        shell: bash
+        run: |
+          set +e
+          mkdir -p docs/verification
+          LOG=/tmp/pr93-stage9-gate.log
+          PROBE_JSON=/tmp/pr93-stage9-probe.json
+          STATUS=0
+          : > "$LOG"
+
+          {
+            echo "# PR93 Stage 9 Route / Storage / Reentry Gate"
+            echo
+            echo "- Validation commit: \`$GITHUB_SHA\`"
+            echo "- Runner: \`$RUNNER_OS\`"
+            echo "- Node: \`24\`"
+            echo
+          } > "$RESULT_PATH"
+
+          run_gate() {
+            NAME="$1"
+            shift
+            echo "## $NAME" >> "$RESULT_PATH"
+            echo >> "$RESULT_PATH"
+            echo "### $NAME" >> "$LOG"
+            if "$@" >> "$LOG" 2>&1; then
+              echo "PASS" >> "$RESULT_PATH"
+            else
+              CODE=$?
+              echo "FAIL (exit $CODE)" >> "$RESULT_PATH"
+              STATUS=1
+            fi
+            echo >> "$RESULT_PATH"
+          }
+
+          run_gate "npm ci" npm ci
+          run_gate "JavaScript syntax" bash -lc 'node --check app/api/internal/stage9-route-storage-reentry-probe/route.js'
+          run_gate "Premium route storage reentry" node scripts/verify-premium-route-storage-reentry.mjs
+          run_gate "Premium report reentry" node scripts/verify-premium-report-reentry-contract.mjs
+          run_gate "Integrated evaluation v2" npm run verify:premium-integrated-evaluation-v2
+          run_gate "Architecture guard" npm run architecture:guard
+          run_gate "Diff hygiene" bash -lc 'git diff --check "$BASE_SHA"...HEAD -- . ":(exclude)docs/verification/pr93-stage9-route-storage-reentry-result.md"'
+
+          echo "## Vercel CLI Preview" >> "$RESULT_PATH"
+          echo >> "$RESULT_PATH"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "FAIL (VERCEL_TOKEN secret unavailable)" >> "$RESULT_PATH"
+            echo >> "$RESULT_PATH"
+            echo "VERCEL_TOKEN secret unavailable" >> "$LOG"
+            STATUS=1
+          else
+            npm install --global vercel@latest >> "$LOG" 2>&1
+            CLI_INSTALL=$?
+            if [ "$CLI_INSTALL" -ne 0 ]; then
+              echo "FAIL (Vercel CLI install)" >> "$RESULT_PATH"
+              echo >> "$RESULT_PATH"
+              STATUS=1
+            else
+              vercel pull --yes --environment=preview --token="$VERCEL_TOKEN" --scope="$VERCEL_SCOPE" >> "$LOG" 2>&1
+              PULL_STATUS=$?
+              vercel build --token="$VERCEL_TOKEN" --scope="$VERCEL_SCOPE" >> "$LOG" 2>&1
+              BUILD_STATUS=$?
+              DEPLOYMENT_URL=""
+              if [ "$PULL_STATUS" -eq 0 ] && [ "$BUILD_STATUS" -eq 0 ]; then
+                DEPLOYMENT_URL=$(vercel deploy --prebuilt --archive=tgz --token="$VERCEL_TOKEN" --scope="$VERCEL_SCOPE" 2>> "$LOG" | tail -n 1)
+                DEPLOY_STATUS=$?
+              else
+                DEPLOY_STATUS=1
+              fi
+
+              if [ "$PULL_STATUS" -eq 0 ] && [ "$BUILD_STATUS" -eq 0 ] && [ "$DEPLOY_STATUS" -eq 0 ] && [[ "$DEPLOYMENT_URL" == https://*.vercel.app ]]; then
+                echo "PASS" >> "$RESULT_PATH"
+                echo "- Preview host created for exact validation commit." >> "$RESULT_PATH"
+                echo >> "$RESULT_PATH"
+
+                RUN_ID=$(node -e 'console.log(require("node:crypto").randomUUID())')
+                PROBE_URL="$DEPLOYMENT_URL/api/internal/stage9-route-storage-reentry-probe?expectedSha=$GITHUB_SHA&run=$RUN_ID"
+                vercel curl "$PROBE_URL" -X POST -H "Content-Type: application/json" -d '{}' -sS -o "$PROBE_JSON" -w '%{http_code}' --token="$VERCEL_TOKEN" --scope="$VERCEL_SCOPE" > /tmp/pr93-stage9-http-code 2>> "$LOG"
+                CURL_STATUS=$?
+                HTTP_CODE=$(cat /tmp/pr93-stage9-http-code 2>/dev/null || true)
+
+                echo "## Hosted round-trip" >> "$RESULT_PATH"
+                echo >> "$RESULT_PATH"
+                HTTP_CODE="$HTTP_CODE" GITHUB_SHA="$GITHUB_SHA" PROBE_JSON="$PROBE_JSON" RESULT_PATH="$RESULT_PATH" node <<'NODE' >> "$LOG" 2>&1
+          const fs = require("node:fs");
+          const path = process.env.PROBE_JSON;
+          const resultPath = process.env.RESULT_PATH;
+          let payload = null;
+          try {
+            payload = JSON.parse(fs.readFileSync(path, "utf8"));
+          } catch {}
+          const steps = Array.isArray(payload?.steps) ? payload.steps : [];
+          const cleanup = payload?.cleanup || {};
+          const passed =
+            process.env.HTTP_CODE === "200" &&
+            payload?.verdict === "STAGE_9_ROUTE_STORAGE_REENTRY_HOSTED_PASS" &&
+            payload?.runtimeSha === process.env.GITHUB_SHA &&
+            steps.length >= 13 &&
+            steps.every((step) => step?.passed === true && Number(step?.status) < 500) &&
+            payload?.invariants?.firstSnapshotImmutable === true &&
+            payload?.invariants?.secondSessionDistinct === true &&
+            payload?.invariants?.duplicateSourceTuplesZero === true &&
+            cleanup?.residueZero === true &&
+            cleanup?.savedReportResidue === 0 &&
+            cleanup?.sessionResidue === 0 &&
+            cleanup?.profileResidue === 0 &&
+            cleanup?.authUserResidue === 0 &&
+            payload?.error === null;
+          fs.appendFileSync(resultPath, passed ? "PASS\n\n" : "FAIL\n\n");
+          fs.appendFileSync(resultPath, `- HTTP status: \`${process.env.HTTP_CODE || "missing"}\`\n`);
+          fs.appendFileSync(resultPath, `- Step count: \`${steps.length}\`\n`);
+          fs.appendFileSync(resultPath, `- Saved reports deleted: \`${Number(cleanup?.savedReportsDeleted || 0)}\`\n`);
+          fs.appendFileSync(resultPath, `- Sessions deleted: \`${Number(cleanup?.sessionsDeleted || 0)}\`\n`);
+          fs.appendFileSync(resultPath, `- Profiles deleted: \`${Number(cleanup?.profilesDeleted || 0)}\`\n`);
+          fs.appendFileSync(resultPath, `- Auth users deleted: \`${Number(cleanup?.authUsersDeleted || 0)}\`\n`);
+          fs.appendFileSync(resultPath, `- Residue zero: \`${cleanup?.residueZero === true}\`\n\n`);
+          process.exit(passed ? 0 : 1);
+          NODE
+                PROBE_STATUS=$?
+                if [ "$CURL_STATUS" -ne 0 ] || [ "$PROBE_STATUS" -ne 0 ]; then
+                  STATUS=1
+                fi
+              else
+                echo "FAIL (pull=$PULL_STATUS build=$BUILD_STATUS deploy=$DEPLOY_STATUS)" >> "$RESULT_PATH"
+                echo >> "$RESULT_PATH"
+                STATUS=1
+              fi
+            fi
+          fi
+
+          echo "## Final result" >> "$RESULT_PATH"
+          echo >> "$RESULT_PATH"
+          if [ "$STATUS" -eq 0 ]; then
+            echo "PR93_STAGE9_ROUTE_STORAGE_REENTRY_GATE_PASS" >> "$RESULT_PATH"
+          else
+            echo "PR93_STAGE9_ROUTE_STORAGE_REENTRY_GATE_FAIL" >> "$RESULT_PATH"
+          fi
+          echo >> "$RESULT_PATH"
+          echo "## Redacted log tail" >> "$RESULT_PATH"
+          echo >> "$RESULT_PATH"
+          echo '```text' >> "$RESULT_PATH"
+          sed -E 's/(token|authorization|cookie|password|email)([^[:space:]]*)/\1[redacted]/Ig' "$LOG" | tail -n 120 | sed -E 's/[[:space:]]+$//' >> "$RESULT_PATH"
+          echo '```' >> "$RESULT_PATH"
+
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          exit "$STATUS"
+
+      - name: Commit redacted gate result
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$RESULT_PATH"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "test(premium): record PR93 hosted gate result"
+          git push
