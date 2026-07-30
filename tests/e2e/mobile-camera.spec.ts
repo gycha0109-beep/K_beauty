@@ -122,10 +122,25 @@ async function installCameraMock(page: Page, options: CameraMockOptions = {}) {
             track?.requestFrame?.();
           };
 
-          if (deferFirstFrame) {
-            cameraWindow.__releaseCameraFrame = paintFrame;
-          } else {
+          let frameTimer: number | null = null;
+          const startFrames = () => {
             paintFrame();
+            if (frameTimer === null) {
+              frameTimer = window.setInterval(paintFrame, 50);
+            }
+          };
+          track?.addEventListener("ended", () => {
+            if (frameTimer !== null) {
+              window.clearInterval(frameTimer);
+            }
+          }, {
+            once: true
+          });
+
+          if (deferFirstFrame) {
+            cameraWindow.__releaseCameraFrame = startFrames;
+          } else {
+            startFrames();
           }
 
           for (const streamTrack of stream.getTracks()) {
@@ -280,7 +295,7 @@ test.describe("mobile fullscreen camera", () => {
     await expect(captureButton).toBeDisabled();
 
     await setFaceGuideMode(page, "ready");
-    await expect(page.getByTestId("face-guide-message")).toHaveText("좋아요, 잠시 그대로 있어 주세요");
+    await expect(page.getByTestId("face-guide-message")).toHaveText("좋아요, 그대로 있어 주세요");
     await expect(captureButton).toBeDisabled();
     await expect(page.getByTestId("face-guide-message")).toHaveText("좋아요, 촬영할 수 있어요");
     await expect(captureButton).toBeEnabled();
@@ -314,7 +329,7 @@ test.describe("mobile fullscreen camera", () => {
   });
 
   test("keeps the mirrored interaction and result preview while preserving original capture pixels", async ({ page }) => {
-    await installCameraMock(page);
+    await installCameraMock(page, { faceGuideMode: "not_frontal" });
     await openHydratedHome(page);
     await getCameraOpenButton(page).click();
 
@@ -322,11 +337,41 @@ test.describe("mobile fullscreen camera", () => {
     await expect(liveVideo).toHaveAttribute("data-preview-orientation", "mirrored");
     await expect(liveVideo).toHaveClass(/scale-x-\[-1\]/);
 
-    const captureButton = getCaptureButton(page);
-    await expect(captureButton).toBeEnabled();
-    await captureButton.click();
+    await page.evaluate(() => {
+      const cameraWindow = window as typeof window & {
+        __manualCaptureClickedWhenEnabled?: boolean;
+      };
+      const button = document.querySelector<HTMLButtonElement>(
+        '[data-testid="mobile-camera-overlay"] button[aria-label="사진 촬영"]'
+      );
+      if (!button) {
+        throw new Error("manual_capture_button_missing");
+      }
+      const observer = new MutationObserver(() => {
+        if (!button.disabled) {
+          cameraWindow.__manualCaptureClickedWhenEnabled = true;
+          observer.disconnect();
+          button.click();
+        }
+      });
+      observer.observe(button, {
+        attributeFilter: ["disabled"],
+        attributes: true
+      });
+    });
+    await setFaceGuideMode(page, "ready");
 
     await expect(page.getByTestId("mobile-camera-overlay")).toHaveCount(0);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as typeof window & {
+              __manualCaptureClickedWhenEnabled?: boolean;
+            }).__manualCaptureClickedWhenEnabled
+        )
+      )
+      .toBe(true);
     const resultPreview = page.getByAltText("업로드한 얼굴 사진 미리보기");
     await expect(resultPreview).toBeVisible();
     await expect(resultPreview).toHaveAttribute("data-preview-orientation", "mirrored");

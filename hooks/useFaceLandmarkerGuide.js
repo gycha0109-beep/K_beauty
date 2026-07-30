@@ -7,6 +7,9 @@ import {
   FACE_GUIDE_STATE
 } from "@/lib/face-guide/face-guide-evaluator.mjs";
 import {
+  getFaceLandmarkerErrorDiagnostic,
+  getFaceLandmarkerInstanceDiagnostic,
+  getFaceLandmarkerRuntimeCapabilities,
   getFaceLandmarker,
   markFaceLandmarkerGpuUnhealthy,
   resetFaceLandmarker
@@ -20,7 +23,20 @@ const MAX_CONSECUTIVE_ERRORS = 3;
 const MAX_INITIALIZATION_ATTEMPTS = 2;
 const MAX_RUNTIME_RECOVERIES = 1;
 
+const INITIAL_DIAGNOSTIC = Object.freeze({
+  attempt: 0,
+  delegate: "unknown",
+  errorCategory: "none",
+  errorCode: "none",
+  errorName: "none",
+  recoveryAttempted: false,
+  stage: "none",
+  webAssemblyCapable: false,
+  webGlCapable: false
+});
+
 const INITIAL_RESULT = Object.freeze({
+  ...INITIAL_DIAGNOSTIC,
   autoCaptureToken: 0,
   errorStage: null,
   metrics: null,
@@ -46,6 +62,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
   const readySinceRef = useRef(null);
   const autoCaptureIssuedRef = useRef(false);
   const autoCaptureSequenceRef = useRef(0);
+  const diagnosticRef = useRef(INITIAL_DIAGNOSTIC);
 
   const evaluateCurrentFrame = useCallback((mode) => {
     const faceLandmarker = faceLandmarkerRef.current;
@@ -127,8 +144,45 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         nextState === FACE_GUIDE_STATE.stabilizing
       ) {
         lastStateRef.current = nextState;
-        setResult(nextResult);
+        setResult({
+          ...diagnosticRef.current,
+          ...nextResult
+        });
       }
+    };
+
+    const setDiagnostic = (diagnostic) => {
+      const capabilities = getFaceLandmarkerRuntimeCapabilities();
+      diagnosticRef.current = {
+        ...INITIAL_DIAGNOSTIC,
+        ...diagnostic,
+        webAssemblyCapable: capabilities.webAssembly,
+        webGlCapable: capabilities.webGl
+      };
+    };
+
+    const publishTerminalFailure = (error, overrides = {}) => {
+      const diagnostic = getFaceLandmarkerErrorDiagnostic(error, overrides);
+      setDiagnostic(diagnostic);
+      console.error("[bejewely-face-guide-runtime]", {
+        attempt: diagnosticRef.current.attempt,
+        delegate: diagnosticRef.current.delegate,
+        errorCategory: diagnosticRef.current.errorCategory,
+        errorCode: diagnosticRef.current.errorCode,
+        errorName: diagnosticRef.current.errorName,
+        finalState: "unavailable",
+        recoveryAttempted: diagnosticRef.current.recoveryAttempted,
+        stage: diagnosticRef.current.stage,
+        webAssemblyCapable: diagnosticRef.current.webAssemblyCapable,
+        webGlCapable: diagnosticRef.current.webGlCapable
+      });
+      publish({
+        autoCaptureToken: autoCaptureSequenceRef.current,
+        errorStage: diagnosticRef.current.stage,
+        metrics: null,
+        progress: 0,
+        state: FACE_GUIDE_STATE.unavailable
+      });
     };
 
     const reset = () => {
@@ -142,6 +196,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       autoCaptureIssuedRef.current = false;
       autoCaptureSequenceRef.current = 0;
       lastStateRef.current = FACE_GUIDE_STATE.loading;
+      setDiagnostic(INITIAL_DIAGNOSTIC);
     };
 
     if (!active) {
@@ -159,10 +214,15 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
       let lastError = null;
       for (let attempt = 0; attempt < MAX_INITIALIZATION_ATTEMPTS; attempt += 1) {
         try {
-          return await getFaceLandmarker({
+          const instance = await getFaceLandmarker({
             forceReload: forceReload || attempt > 0,
             preferCpu: preferCpu || attempt > 0
           });
+          setDiagnostic({
+            ...getFaceLandmarkerInstanceDiagnostic(instance),
+            attempt: attempt + 1
+          });
+          return instance;
         } catch (error) {
           lastError = error;
           if (attempt + 1 < MAX_INITIALIZATION_ATTEMPTS) {
@@ -180,13 +240,7 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         terminal = true;
         faceLandmarkerRef.current = null;
         resetFaceLandmarker();
-        publish({
-          autoCaptureToken: autoCaptureSequenceRef.current,
-          errorStage: error?.stage || "initialization",
-          metrics: null,
-          progress: 0,
-          state: FACE_GUIDE_STATE.unavailable
-        });
+        publishTerminalFailure(error);
         return;
       }
 
@@ -201,12 +255,11 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
           terminal = true;
           faceLandmarkerRef.current = null;
           resetFaceLandmarker();
-          publish({
-            autoCaptureToken: autoCaptureSequenceRef.current,
-            errorStage: "inference",
-            metrics: null,
-            progress: 0,
-            state: FACE_GUIDE_STATE.unavailable
+          publishTerminalFailure(error, {
+            attempt: runtimeRecoveries + 1,
+            delegate: diagnosticRef.current.delegate,
+            recoveryAttempted: runtimeRecoveries > 0,
+            stage: "inference"
           });
           return;
         }
@@ -214,6 +267,12 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
         runtimeRecoveries += 1;
         readySinceRef.current = null;
         autoCaptureIssuedRef.current = false;
+        setDiagnostic(getFaceLandmarkerErrorDiagnostic(error, {
+          attempt: runtimeRecoveries,
+          delegate: diagnosticRef.current.delegate,
+          recoveryAttempted: true,
+          stage: "inference_gpu_recovery"
+        }));
         publish({
           autoCaptureToken: autoCaptureSequenceRef.current,
           errorStage: "inference_gpu_recovery",
@@ -242,12 +301,11 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
           terminal = true;
           faceLandmarkerRef.current = null;
           resetFaceLandmarker();
-          publish({
-            autoCaptureToken: autoCaptureSequenceRef.current,
-            errorStage: recoveryError?.stage || "inference_recovery",
-            metrics: null,
-            progress: 0,
-            state: FACE_GUIDE_STATE.unavailable
+          publishTerminalFailure(recoveryError, {
+            attempt: runtimeRecoveries,
+            delegate: "cpu",
+            recoveryAttempted: true,
+            stage: recoveryError?.stage || "inference_recovery"
           });
         }
       };
@@ -367,11 +425,19 @@ export default function useFaceLandmarkerGuide({ active, guideRef, videoRef }) {
     autoCaptureToken: result.autoCaptureToken || 0,
     canCapture: isCaptureReady,
     confirmCurrentFrame,
+    delegate: result.delegate,
+    errorCategory: result.errorCategory,
+    errorCode: result.errorCode,
+    errorName: result.errorName,
     errorStage: result.errorStage || null,
+    attempt: result.attempt,
     isCaptureReady,
     metrics: result.metrics,
     progress: result.progress || 0,
     rearmAutoCapture,
+    recoveryAttempted: result.recoveryAttempted,
+    webAssemblyCapable: result.webAssemblyCapable,
+    webGlCapable: result.webGlCapable,
     state: result.state
   };
 }

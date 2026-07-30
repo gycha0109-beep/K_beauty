@@ -82,6 +82,7 @@ function closeCameraButton(page: Page) {
 async function openHome(page: Page) {
   const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
+  await page.waitForLoadState("networkidle");
   await expect(cameraButton(page)).toBeVisible();
   await expect(cameraButton(page)).toBeEnabled();
 }

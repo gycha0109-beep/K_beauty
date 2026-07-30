@@ -63,7 +63,7 @@ export function FaceGuide({ guideRef, state = "loading" }) {
         : "border-[#FF8CB3]/95";
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" data-face-guide-state={state}>
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <div
         ref={guideRef}
         data-testid="face-guide-oval"
@@ -228,8 +228,17 @@ export default function MobileFullscreenCamera({
       data-camera-phase={phase}
       data-face-guidance-ready={isCaptureReady ? "true" : "false"}
       data-face-capture-allowed={faceGuide.canCapture ? "true" : "false"}
+      data-face-guide-state={state}
+      data-face-guide-attempt={String(faceGuide.attempt)}
+      data-face-guide-delegate={faceGuide.delegate}
+      data-face-guide-error-category={faceGuide.errorCategory}
+      data-face-guide-error-code={faceGuide.errorCode}
+      data-face-guide-error-name={faceGuide.errorName}
       data-face-guide-error-stage={faceGuide.errorStage || "none"}
       data-face-guide-progress={progress.toFixed(3)}
+      data-face-guide-recovery-attempted={faceGuide.recoveryAttempted ? "true" : "false"}
+      data-face-guide-wasm-capable={faceGuide.webAssemblyCapable ? "true" : "false"}
+      data-face-guide-webgl-capable={faceGuide.webGlCapable ? "true" : "false"}
       data-face-auto-capture-token={autoCaptureToken}
       className={`fixed left-0 top-0 z-[1000] h-screen w-screen origin-top-left overflow-hidden bg-[#09070A] [height:100dvh] [width:100dvw] ${
         isPreparing ? "pointer-events-none opacity-[0.001]" : "opacity-100"

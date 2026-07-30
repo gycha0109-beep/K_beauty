@@ -33,6 +33,17 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         viewport: { width: 1440, height: 1080 }
       }
+    },
+    {
+      name: "mediapipe-runtime",
+      testMatch: /face-guide-runtime\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          args: ["--disable-gpu", "--disable-webgl"]
+        },
+        viewport: { width: 390, height: 844 }
+      }
     }
   ]
 });
