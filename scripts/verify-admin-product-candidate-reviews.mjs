@@ -44,6 +44,8 @@ const page = read("app/admin/products/reviews/page.js");
 const workbench = read("app/admin/products/reviews/ProductReviewWorkbench.js");
 const navigation = read("app/admin/AdminNavigation.js");
 const fixture = read("tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql");
+const runtimeSql = read("tests/fixtures/admin-product-reviews/verify_admin_product_review_runtime.sql");
+const workflow = read(".github/workflows/admin-product-candidate-reviews.yml");
 const packageJson = JSON.parse(read("package.json"));
 
 [
@@ -170,6 +172,33 @@ includes(navigation, 'href: "/admin/products/reviews"', "admin navigation");
   "create table public.candidate_promotion_reviews",
   "create or replace function public.promote_product_candidate"
 ].forEach((value) => includes(fixture, value, "isolated runtime fixture"));
+
+[
+  "premium_override_became_admin",
+  "missing_product_form_preflight_not_blocked",
+  "insert_preflight_changed_products",
+  "wrong_hash_confirm_unexpectedly_succeeded",
+  "idempotent_retry_failed",
+  "merge_confirm_failed",
+  "defer_confirm_failed",
+  "block_confirm_failed",
+  "stale_preflight_unexpectedly_succeeded",
+  "audit_count_invalid",
+  "owner_audit_visibility_invalid",
+  "viewer_audit_visibility_invalid",
+  "viewer_direct_escalation_unexpectedly_succeeded",
+  "ADMIN_PRODUCT_CANDIDATE_REVIEW_SQL_RUNTIME_VERIFIED"
+].forEach((value) => includes(runtimeSql, value, "isolated SQL runtime verifier"));
+
+[
+  "Admin Product Candidate Reviews",
+  "npm run verify:admin-product-candidate-reviews",
+  "supabase_db_admin-product-review-runtime",
+  "verify_admin_product_review_runtime.sql",
+  "npm run architecture:guard",
+  "npm run build",
+  "git diff --check"
+].forEach((value) => includes(workflow, value, "product review workflow"));
 
 assert(
   packageJson.scripts?.["verify:admin-product-candidate-reviews"] ===
