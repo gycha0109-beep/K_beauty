@@ -20,6 +20,7 @@ create table if not exists public.admin_audit_logs (
   id uuid primary key default gen_random_uuid(),
   actor_user_id uuid not null,
   actor_role text not null,
+  required_capability text not null,
   action text not null,
   target_type text not null,
   target_id text,
@@ -31,6 +32,9 @@ create table if not exists public.admin_audit_logs (
   created_at timestamptz not null default now(),
   constraint admin_audit_logs_actor_role_check check (
     actor_role in ('admin_viewer', 'admin_operator', 'admin_privacy', 'admin_owner')
+  ),
+  constraint admin_audit_logs_capability_check check (
+    char_length(btrim(required_capability)) between 3 and 120
   ),
   constraint admin_audit_logs_action_check check (
     char_length(btrim(action)) between 3 and 120
@@ -145,6 +149,8 @@ begin
     raise exception 'admin_bootstrap_user_required' using errcode = '22004';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended('bejewely_admin_owner_bootstrap', 0));
+
   if exists (
     select 1
     from public.admin_memberships
@@ -184,6 +190,8 @@ end;
 $$;
 
 create or replace function public.record_admin_audit_event(
+  p_actor_user_id uuid,
+  p_required_capability text,
   p_action text,
   p_target_type text,
   p_target_id text,
@@ -199,14 +207,29 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_actor_user_id uuid := auth.uid();
   v_actor_role text;
   v_audit_id uuid;
 begin
-  v_actor_role := public.get_current_admin_role();
+  if p_actor_user_id is null then
+    raise exception 'admin_actor_required' using errcode = '22004';
+  end if;
 
-  if v_actor_user_id is null or v_actor_role is null then
+  select membership.role into v_actor_role
+  from public.admin_memberships as membership
+  where membership.user_id = p_actor_user_id
+    and membership.is_active = true
+  limit 1;
+
+  if v_actor_role is null then
     raise exception 'admin_access_required' using errcode = '42501';
+  end if;
+
+  if not (
+    btrim(coalesce(p_required_capability, '')) = any(
+      public.admin_role_capabilities(v_actor_role)
+    )
+  ) then
+    raise exception 'admin_capability_required' using errcode = '42501';
   end if;
 
   if char_length(btrim(coalesce(p_action, ''))) not between 3 and 120 then
@@ -236,6 +259,7 @@ begin
   insert into public.admin_audit_logs (
     actor_user_id,
     actor_role,
+    required_capability,
     action,
     target_type,
     target_id,
@@ -246,8 +270,9 @@ begin
     metadata
   )
   values (
-    v_actor_user_id,
+    p_actor_user_id,
     v_actor_role,
+    btrim(p_required_capability),
     btrim(p_action),
     btrim(p_target_type),
     nullif(btrim(coalesce(p_target_id, '')), ''),
@@ -270,7 +295,7 @@ begin
   if v_audit_id is null then
     select id into v_audit_id
     from public.admin_audit_logs
-    where actor_user_id = v_actor_user_id
+    where actor_user_id = p_actor_user_id
       and request_id = btrim(p_request_id)
       and action = btrim(p_action)
       and target_type = btrim(p_target_type)
@@ -284,13 +309,13 @@ $$;
 alter table public.admin_memberships enable row level security;
 alter table public.admin_audit_logs enable row level security;
 
-revoke all on table public.admin_memberships from public, anon, authenticated;
-revoke all on table public.admin_audit_logs from public, anon, authenticated;
+revoke all on table public.admin_memberships from public, anon, authenticated, service_role;
+revoke all on table public.admin_audit_logs from public, anon, authenticated, service_role;
 
 grant select on table public.admin_memberships to authenticated;
 grant select on table public.admin_audit_logs to authenticated;
 grant select, insert, update, delete on table public.admin_memberships to service_role;
-grant select, insert, update, delete on table public.admin_audit_logs to service_role;
+grant select on table public.admin_audit_logs to service_role;
 
 drop policy if exists "Admins can read own active membership" on public.admin_memberships;
 create policy "Admins can read own active membership"
@@ -315,24 +340,23 @@ revoke all on function public.admin_role_capabilities(text) from public, anon, a
 revoke all on function public.get_current_admin_role() from public, anon, authenticated;
 revoke all on function public.admin_has_capability(text) from public, anon, authenticated;
 revoke all on function public.bootstrap_first_admin_owner(uuid) from public, anon, authenticated;
-revoke all on function public.record_admin_audit_event(text, text, text, jsonb, jsonb, text, text, jsonb) from public, anon, authenticated;
+revoke all on function public.record_admin_audit_event(uuid, text, text, text, text, jsonb, jsonb, text, text, jsonb) from public, anon, authenticated;
 
 grant execute on function public.get_current_admin_role() to authenticated;
 grant execute on function public.admin_has_capability(text) to authenticated;
-grant execute on function public.record_admin_audit_event(text, text, text, jsonb, jsonb, text, text, jsonb) to authenticated;
 grant execute on function public.admin_role_capabilities(text) to service_role;
 grant execute on function public.get_current_admin_role() to service_role;
 grant execute on function public.admin_has_capability(text) to service_role;
 grant execute on function public.bootstrap_first_admin_owner(uuid) to service_role;
-grant execute on function public.record_admin_audit_event(text, text, text, jsonb, jsonb, text, text, jsonb) to service_role;
+grant execute on function public.record_admin_audit_event(uuid, text, text, text, text, jsonb, jsonb, text, text, jsonb) to service_role;
 
 comment on table public.admin_memberships is
   'Authoritative Bejewely administrator membership and role registry.';
 comment on table public.admin_audit_logs is
-  'Append-only audit events emitted by authenticated active administrators.';
+  'Append-only audit events emitted through a service-role-only function after active membership and capability validation.';
 comment on function public.bootstrap_first_admin_owner(uuid) is
   'Service-role-only one-time bootstrap for the first active admin_owner.';
-comment on function public.record_admin_audit_event(text, text, text, jsonb, jsonb, text, text, jsonb) is
-  'Records an idempotent audit event after re-validating the active administrator role.';
+comment on function public.record_admin_audit_event(uuid, text, text, text, text, jsonb, jsonb, text, text, jsonb) is
+  'Records an idempotent audit event after re-validating the actor active role and required capability.';
 
 commit;
