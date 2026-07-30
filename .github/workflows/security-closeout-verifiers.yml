@@ -76,6 +76,7 @@ jobs:
       - name: Verify product review contracts
         run: |
           bash -n scripts/verify-admin-product-review-runtime.sh
+          bash -n scripts/run-admin-product-review-runtime-with-readiness.sh
           npm run verify:admin-access-foundation
           npm run verify:admin-product-candidate-reviews
 
@@ -137,7 +138,7 @@ jobs:
             exit 1
           fi
           rm -f "${raw_log}"
-          bash scripts/verify-admin-product-review-runtime.sh tmp/admin-product-review-runtime
+          bash scripts/run-admin-product-review-runtime-with-readiness.sh tmp/admin-product-review-runtime
 
       - name: Verify architecture boundaries
         run: npm run architecture:guard
