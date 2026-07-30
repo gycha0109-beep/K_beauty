@@ -19,7 +19,7 @@ function deepEqual(actual, expected, message) {
   assert.deepEqual(actual, expected, message);
 }
 
-function baseReport(extra = {}) {
+function baseReport(overrides = {}) {
   return {
     freeResult: {
       priority: { axis: "barrier", score: 24 },
@@ -46,15 +46,11 @@ function baseReport(extra = {}) {
     },
     photoEvidenceState: { status: "not_provided" },
     currentProducts: null,
-    ...extra
+    ...overrides
   };
 }
 
-function activeProduct({
-  id = "active-serum",
-  category = "serum",
-  axisLabel = "Exfoliation"
-} = {}) {
+function activeProduct({ id = "active-serum", category = "serum" } = {}) {
   return {
     status: "selected",
     category,
@@ -65,30 +61,34 @@ function activeProduct({
       name: "Fixture Product",
       category,
       ingredient_signals: {
-        functional: [{ label: axisLabel, count: 4 }]
+        functional: [{ label: "Exfoliation", count: 4 }]
       }
     }
   };
 }
 
 function build(report) {
-  return buildSharedSkinDecisionContext(report, { source: "verify_shared_context_v4" });
+  return buildSharedSkinDecisionContext(report, {
+    source: "verify_shared_skin_decision_context_v4"
+  });
 }
 
 const noPhoto = build(baseReport());
-equal(noPhoto.context.version, "shared-skin-decision-context-v4", "v4 context must be authoritative");
+equal(noPhoto.context.version, "shared-skin-decision-context-v4", "v4 must be authoritative");
 equal(noPhoto.context.skinState.skinType, "combination", "skin type must remain a survey fact");
 equal(noPhoto.context.skinState.sensitivity, "high", "sensitivity must remain a survey fact");
-equal(noPhoto.context.skinState.barrierBurden, 24, "barrier burden must retain the canonical score");
-equal(noPhoto.context.skinState.drynessBurden, 18, "dryness burden must retain the canonical score");
-equal(noPhoto.context.photo.status, "not_provided", "no-photo state must remain explicit");
+equal(noPhoto.context.skinState.barrierBurden, 24, "barrier burden must retain its score");
+equal(noPhoto.context.skinState.drynessBurden, 18, "dryness burden must retain its score");
+equal(noPhoto.context.skinState.poresBurden, 12, "pores burden must retain its score");
+equal(noPhoto.context.skinState.textureBurden, null, "texture burden needs dedicated evidence");
+equal(noPhoto.context.photo.status, "not_provided", "no-photo must remain explicit");
 equal(noPhoto.context.photo.evidenceAvailable, false, "no-photo must not create evidence");
-equal(noPhoto.context.photo.factsMayBeInferred, false, "no-photo must not authorize inference");
-equal(noPhoto.context.concernState.completeness, "complete", "all concern axes must be recognized");
+equal(noPhoto.context.photo.factsMayBeInferred, false, "photo facts must not be inferred");
+equal(noPhoto.context.concernState.completeness, "complete", "all concern axes must be known");
 equal(noPhoto.context.concernState.priorityAxis, "barrier", "priority must remain canonical");
-deepEqual(noPhoto.context.concernState.unknownAxes, [], "complete concern input must have no unknown axes");
+deepEqual(noPhoto.context.concernState.unknownAxes, [], "complete concern input has no unknown axes");
 equal(noPhoto.context.uncertaintyState.unknownPreserved, true, "unknown preservation is invariant");
-check(noPhoto.context.uncertaintyState.reasons.includes("photo_not_provided"), "no-photo uncertainty reason is required");
+check(noPhoto.context.uncertaintyState.reasons.includes("photo_not_provided"), "no-photo uncertainty is required");
 equal(noPhoto.context.safetyState.protectionMustMaintain, true, "protection invariant must remain");
 
 const unavailablePhoto = build(baseReport({
@@ -98,20 +98,20 @@ const unavailablePhoto = build(baseReport({
     source: "vision"
   }
 }));
-equal(unavailablePhoto.context.photo.status, "unavailable", "analysis failure must differ from no-photo");
-equal(unavailablePhoto.context.photo.failureReason, "analysis_unavailable", "analysis failure reason must remain");
+equal(unavailablePhoto.context.photo.status, "unavailable", "analysis failure differs from no-photo");
+equal(unavailablePhoto.context.photo.failureReason, "analysis_unavailable", "failure reason must remain");
 check(
   unavailablePhoto.context.uncertaintyState.reasons.includes("photo_analysis_unavailable"),
   "analysis failure must cap certainty"
 );
 
-const surveyOnly = build(baseReport({
+const unknownPhoto = build(baseReport({
   photoEvidenceState: { status: "unknown" }
 }));
-equal(surveyOnly.context.photo.status, "unknown", "unpersisted photo state must remain unknown");
+equal(unknownPhoto.context.photo.status, "unknown", "unpersisted photo state remains unknown");
 check(
-  surveyOnly.context.uncertaintyState.reasons.includes("photo_availability_unknown"),
-  "unknown photo availability must not be treated as no-photo or success"
+  unknownPhoto.context.uncertaintyState.reasons.includes("photo_availability_unknown"),
+  "unknown photo availability must remain uncertain"
 );
 
 const selected = build(baseReport({
@@ -120,16 +120,16 @@ const selected = build(baseReport({
     summary: { total: 1, selectedCount: 1 }
   }
 }));
-equal(selected.context.productExposureState.selectedCount, 1, "selected product must be retained");
-equal(selected.context.productExposureState.selectedProducts.length, 1, "selected product list must be explicit");
+equal(selected.context.productExposureState.selectedCount, 1, "selected count must remain");
+equal(selected.context.productExposureState.selectedProducts.length, 1, "selected collection must be explicit");
 equal(selected.context.productExposureState.activeExposurePresent, true, "known active exposure must be detected");
 equal(
   selected.context.productExposureState.functionalAxes.exfoliation.exposureCount,
   1,
-  "functional-axis exposure must be grouped deterministically"
+  "functional-axis aggregation must be deterministic"
 );
-deepEqual(selected.context.productExposureState.recentExposures, [], "recent exposure requires product-specific evidence");
-deepEqual(selected.context.productExposureState.reactionLinkedExposures, [], "reaction exposure requires product-specific evidence");
+deepEqual(selected.context.productExposureState.recentExposures, [], "recent exposure needs product-specific evidence");
+deepEqual(selected.context.productExposureState.reactionLinkedExposures, [], "reaction linkage needs product-specific evidence");
 equal(selected.context.productExposureState.concentrationOrStrengthInferred, false, "strength must not be inferred");
 
 const notInDb = build(baseReport({
@@ -139,7 +139,7 @@ const notInDb = build(baseReport({
   }
 }));
 equal(notInDb.context.productExposureState.unknownProductCount, 1, "not_in_db must remain unknown");
-equal(notInDb.context.productExposureState.unknownProducts.length, 1, "unknown product list must be explicit");
+equal(notInDb.context.productExposureState.unknownProducts.length, 1, "unknown collection must be explicit");
 equal(notInDb.context.productExposureState.unknownExposurePresent, true, "unknown exposure must be explicit");
 deepEqual(
   notInDb.context.productExposureState.uncertainAxisReasons,
@@ -154,14 +154,14 @@ check(
 const mixed = build(baseReport({
   currentProducts: {
     selections: [
-      activeProduct({ id: "known-treatment", category: "serum" }),
+      activeProduct({ id: "known-treatment" }),
       { status: "not_in_db", category: "toner_pad" }
     ],
     summary: { total: 2, selectedCount: 1, notInDbCount: 1 }
   }
 }));
-equal(mixed.context.productExposureState.selectedProducts.length, 1, "mixed input must retain selected row");
-equal(mixed.context.productExposureState.unknownProducts.length, 1, "mixed input must retain unknown row");
+equal(mixed.context.productExposureState.selectedProducts.length, 1, "mixed input retains selected row");
+equal(mixed.context.productExposureState.unknownProducts.length, 1, "mixed input retains unknown row");
 equal(mixed.context.productExposureState.completeness, "partial", "mixed input must be partial");
 
 const notUsing = build(baseReport({
@@ -170,10 +170,10 @@ const notUsing = build(baseReport({
     summary: { total: 1, notUsingCount: 1 }
   }
 }));
-equal(notUsing.context.productExposureState.rows[0].sourceState, "not_using", "not_using must remain distinct");
-equal(notUsing.context.productExposureState.unusedSlots.length, 1, "unused slots must be explicit");
-equal(notUsing.context.productExposureState.activeExposurePresent, false, "not_using must not create active exposure");
-equal(notUsing.context.productExposureState.unknownExposurePresent, false, "known non-use is not unknown exposure");
+equal(notUsing.context.productExposureState.rows[0].sourceState, "not_using", "not_using remains distinct");
+equal(notUsing.context.productExposureState.unusedSlots.length, 1, "unused collection must be explicit");
+equal(notUsing.context.productExposureState.activeExposurePresent, false, "not_using must not create exposure");
+equal(notUsing.context.productExposureState.unknownExposurePresent, false, "known non-use is not unknown");
 
 const unanswered = build(baseReport({
   currentProducts: {
@@ -181,9 +181,9 @@ const unanswered = build(baseReport({
     summary: { total: 1 }
   }
 }));
-equal(unanswered.context.productExposureState.rows[0].sourceState, "unanswered", "unanswered must remain distinct");
-equal(unanswered.context.productExposureState.unansweredSlots.length, 1, "unanswered slots must be explicit");
-equal(unanswered.context.productExposureState.unknownExposurePresent, true, "unanswered usage must remain uncertain");
+equal(unanswered.context.productExposureState.rows[0].sourceState, "unanswered", "unanswered remains distinct");
+equal(unanswered.context.productExposureState.unansweredSlots.length, 1, "unanswered collection must be explicit");
+equal(unanswered.context.productExposureState.unknownExposurePresent, true, "unanswered usage remains uncertain");
 equal(unanswered.context.productExposureState.activeExposurePresent, false, "unanswered must not create exposure");
 check(
   unanswered.context.uncertaintyState.reasons.includes("current_product_usage_unanswered"),
@@ -201,7 +201,7 @@ const duplicate = build(baseReport({
 }));
 check(
   duplicate.context.productExposureState.duplicateActiveAxes.includes("exfoliation"),
-  "duplicate functional axis must remain explicit"
+  "duplicate active axis must remain explicit"
 );
 equal(
   duplicate.context.productExposureState.functionalAxes.exfoliation.exposureCount,
@@ -219,19 +219,21 @@ const incompleteConcern = build({
       }
     },
     answers: {
-      skinType: "",
+      skinType: "not_sure",
       sensitivity: ""
     }
   },
   photoEvidenceState: { status: "not_provided" }
 });
-equal(incompleteConcern.context.concernState.completeness, "partial", "partial concern evidence must remain partial");
-equal(incompleteConcern.context.concernState.scores.barrier, null, "null concern evidence must remain unknown");
-check(incompleteConcern.context.concernState.unknownAxes.includes("barrier"), "missing axis must remain unknown");
+equal(incompleteConcern.context.concernState.completeness, "partial", "partial evidence remains partial");
+equal(incompleteConcern.context.concernState.scores.barrier, null, "null score remains unknown");
+check(incompleteConcern.context.concernState.unknownAxes.includes("barrier"), "missing axis remains unknown");
 equal(incompleteConcern.context.skinState.barrierBurden, null, "unknown burden must not become zero");
-equal(incompleteConcern.context.skinState.skinType, "unknown", "missing skin type must remain unknown");
-equal(incompleteConcern.context.skinState.sensitivity, "unknown", "missing sensitivity must remain unknown");
-equal(incompleteConcern.context.uncertaintyState.confidenceCeiling, "medium", "partial evidence must cap confidence");
+equal(incompleteConcern.context.skinState.poresBurden, 15, "known pores burden remains known");
+equal(incompleteConcern.context.skinState.textureBurden, null, "pores must not be relabelled as texture");
+equal(incompleteConcern.context.skinState.skinType, "unknown", "not_sure maps to unknown fact");
+equal(incompleteConcern.context.skinState.sensitivity, "unknown", "missing sensitivity remains unknown");
+equal(incompleteConcern.context.uncertaintyState.confidenceCeiling, "medium", "partial evidence caps confidence");
 
 const recentUnlinked = build(baseReport({
   freeResult: {
@@ -250,30 +252,22 @@ const recentUnlinked = build(baseReport({
 equal(
   recentUnlinked.context.productExposureState.recentExposureState,
   "reported_unlinked",
-  "recent product change must not be assigned to a product without product-specific evidence"
+  "recent change must not be assigned without product-specific evidence"
 );
 equal(
   recentUnlinked.context.productExposureState.reactionLinkState,
   "unresolved",
   "reaction must remain unresolved without product-specific evidence"
 );
-deepEqual(
-  recentUnlinked.context.productExposureState.recentExposures,
-  [],
-  "recent exposure must not be attributed by product name, category, or satisfaction"
-);
-deepEqual(
-  recentUnlinked.context.productExposureState.reactionLinkedExposures,
-  [],
-  "reaction must not be attributed by product name, category, or satisfaction"
-);
+deepEqual(recentUnlinked.context.productExposureState.recentExposures, [], "recent exposure must not be guessed");
+deepEqual(recentUnlinked.context.productExposureState.reactionLinkedExposures, [], "reaction link must not be guessed");
 check(
   recentUnlinked.context.uncertaintyState.reasons.includes("recent_product_change_unlinked"),
   "unlinked recent change must be recorded"
 );
 check(
   recentUnlinked.context.uncertaintyState.reasons.includes("product_reaction_link_unresolved"),
-  "unresolved reaction linkage must be recorded"
+  "unresolved reaction must be recorded"
 );
 
 const first = build(baseReport());
@@ -287,7 +281,7 @@ const repeated = build({
   }
 });
 equal(repeated.contextHash, first.contextHash, "identical input must have identical hash");
-equal(repeated.contextRevision, first.contextRevision, "identical v4 input must preserve revision");
+equal(repeated.contextRevision, first.contextRevision, "identical v4 input preserves revision");
 
 const changed = build({
   ...baseReport({
@@ -307,7 +301,7 @@ const changed = build({
   }
 });
 check(changed.contextHash !== first.contextHash, "changed evidence must change hash");
-equal(changed.contextRevision, first.contextRevision + 1, "changed evidence must advance revision");
+equal(changed.contextRevision, first.contextRevision + 1, "changed evidence advances revision");
 
 const ledgerKeys = new Set(noPhoto.context.evidenceLedger.map((item) => item.key));
 for (const key of [
@@ -327,11 +321,11 @@ const caller = readFileSync(
 );
 check(
   caller.includes('from "./shared-skin-decision-context-v4.js"'),
-  "Premium decision state must consume v4 context"
+  "Premium decision state must consume v4"
 );
 check(
   !caller.includes('from "./shared-skin-decision-context.js"'),
-  "Premium decision state must not bypass v4 context"
+  "Premium decision state must not bypass v4"
 );
 
 console.log(`verify-shared-skin-decision-context-v4: ok (${assertions} assertions)`);
