@@ -2,7 +2,7 @@
 
 ## 상태
 
-구현 완료, 격리 검증 대기.
+구현 완료. 정확한 HEAD를 대상으로 정적·격리 Supabase·빌드 검증을 수행한다.
 
 ## 브랜치
 
@@ -30,6 +30,18 @@
 3. 동일 request id 동시 confirm을 advisory lock으로 직렬화했다.
 4. 초기 unsafe 함수의 service-role 직접 실행 권한을 회수하고 hardened wrapper만 공개했다.
 5. 브라우저에는 service-role key와 raw Supabase error를 노출하지 않는다.
+
+## 검증 범위
+
+- 정적 권한·호출 계약
+- isolated migration replay
+- owner/operator/viewer/Premium override 권한 행렬
+- dry-run products write 0
+- 신규 제품 insert와 기존 제품 merge
+- defer / block products write 0
+- stale preflight와 request conflict 차단
+- idempotent retry와 audit 기록
+- architecture guard, production build, diff check
 
 ## 비대상
 
