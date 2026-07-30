@@ -14,6 +14,7 @@ import {
   CANDIDATE_POLICY_RUNTIME_SAFETY_CONTEXT_VERSION
 } from "../lib/candidate-policy-runtime-safety.js";
 import { buildCandidatePolicyGoalContext } from "../lib/candidate-policy-goal-context.js";
+import { SHARED_SKIN_DECISION_CONTEXT_VERSION } from "../lib/shared-skin-decision-context-v4.js";
 import {
   buildEvaluatorBoundaryPolicyRuntimeTelemetry,
   resolveEvaluatorBoundaryPolicyRuntimeControl,
@@ -94,7 +95,7 @@ function goalContext() {
       goals: { primaryConcern: "dehydration" }
     },
     sharedContext: {
-      version: "shared-skin-decision-context-v3",
+      version: SHARED_SKIN_DECISION_CONTEXT_VERSION,
       skinState: { priorityAxis: "dehydration" }
     },
     functionalPolicy: {
