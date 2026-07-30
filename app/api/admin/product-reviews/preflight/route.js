@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { ADMIN_CAPABILITIES } from "@/lib/admin/capabilities";
 import { requireAdminCapability } from "@/lib/admin/access";
+import { isAllowedAdminMutationRequest } from "@/lib/admin/request-policy";
 import {
   ProductReviewOperationError,
   runProductReviewPreflight
 } from "@/lib/admin/product-reviews";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const MAX_BODY_BYTES = 8192;
 
@@ -14,7 +16,9 @@ function json(body, status = 200) {
   return NextResponse.json(body, {
     status,
     headers: {
-      "Cache-Control": "no-store"
+      "Cache-Control": "private, no-store, max-age=0",
+      "CDN-Cache-Control": "no-store",
+      "Vercel-CDN-Cache-Control": "no-store"
     }
   });
 }
@@ -34,6 +38,10 @@ async function readBody(request) {
 }
 
 export async function POST(request) {
+  if (!isAllowedAdminMutationRequest(request)) {
+    return json({ ok: false, error: "invalid_request_origin" }, 403);
+  }
+
   const access = await requireAdminCapability(
     ADMIN_CAPABILITIES.PRODUCTS_REVIEW
   );
