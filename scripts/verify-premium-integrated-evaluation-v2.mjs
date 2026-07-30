@@ -399,7 +399,8 @@ scenario("S03_BARRIER_AGGRESSIVE_ACTIVE", "default", () => {
   });
   const state = build(input);
   equal(state.decisionBundle.context.safetyState.level, "stabilize_first", "barrier stabilization");
-  equal(state.functionalPolicy.planMode, "HOLD", "functional hold");
+  equal(state.functionalPolicy.planMode, "START", "support policy starts");
+  equal(state.functionalPolicy.allowedIntensity, "support_only", "support intensity only");
   equal(state.routinePolicy.weeklySchedule.activeDaysMax, 0, "active days held");
 });
 
