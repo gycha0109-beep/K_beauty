@@ -48,8 +48,17 @@ create table if not exists public.admin_audit_logs (
   constraint admin_audit_logs_request_id_check check (
     char_length(btrim(request_id)) between 8 and 200
   ),
+  constraint admin_audit_logs_before_value_size_check check (
+    before_value is null or octet_length(before_value::text) <= 65536
+  ),
+  constraint admin_audit_logs_after_value_size_check check (
+    after_value is null or octet_length(after_value::text) <= 65536
+  ),
   constraint admin_audit_logs_metadata_object_check check (
     jsonb_typeof(metadata) = 'object'
+  ),
+  constraint admin_audit_logs_metadata_size_check check (
+    octet_length(metadata::text) <= 8192
   )
 );
 
@@ -246,6 +255,14 @@ begin
 
   if char_length(btrim(coalesce(p_request_id, ''))) not between 8 and 200 then
     raise exception 'admin_audit_request_id_invalid' using errcode = '22023';
+  end if;
+
+  if p_before_value is not null and octet_length(p_before_value::text) > 65536 then
+    raise exception 'admin_audit_before_value_too_large' using errcode = '22023';
+  end if;
+
+  if p_after_value is not null and octet_length(p_after_value::text) > 65536 then
+    raise exception 'admin_audit_after_value_too_large' using errcode = '22023';
   end if;
 
   if jsonb_typeof(coalesce(p_metadata, '{}'::jsonb)) <> 'object' then
