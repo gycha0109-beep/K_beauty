@@ -1,0 +1,31 @@
+name: MediaPipe recovery E2E
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - hooks/useFaceLandmarkerGuide.js
+      - lib/face-guide/face-landmarker-client.js
+      - tests/e2e/face-guide-recovery.spec.ts
+      - .github/workflows/mediapipe-recovery-e2e.yml
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run recovery regression
+        run: npx playwright test tests/e2e/face-guide-recovery.spec.ts --project=chromium
