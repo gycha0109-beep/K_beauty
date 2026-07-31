@@ -53,7 +53,12 @@ export function createHostedAuthoritativeApiClient({
   const githubToken = optionalValue(env.GITHUB_TOKEN);
   const vercelToken = optionalValue(env.VERCEL_TOKEN);
   const githubCommand = platform === "win32" ? "gh.exe" : "gh";
-  const vercelCommand = platform === "win32" ? "vercel.cmd" : "vercel";
+  const vercelCommand = platform === "win32"
+    ? optionalValue(env.ComSpec || env.COMSPEC) || "cmd.exe"
+    : "vercel";
+  const vercelArgs = (path) => platform === "win32"
+    ? ["/d", "/s", "/c", "vercel.cmd", "api", path]
+    : ["api", path];
 
   return {
     async github(path, code) {
@@ -67,7 +72,7 @@ export function createHostedAuthoritativeApiClient({
       if (vercelToken) {
         return fetchBearerJson(`https://api.vercel.com${path}`, vercelToken, code, fetchImpl);
       }
-      return execJson(vercelCommand, ["api", path], code, execFileImpl);
+      return execJson(vercelCommand, vercelArgs(path), code, execFileImpl);
     },
 
     modes: {

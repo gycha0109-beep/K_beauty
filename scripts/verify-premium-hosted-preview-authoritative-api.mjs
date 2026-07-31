@@ -19,9 +19,16 @@ assert.deepEqual(cliClient.modes, {
   vercel: "authenticated-cli"
 });
 assert.equal((await cliClient.github("/repos/example/repo/pulls/1", "github_failed")).source, "gh.exe");
-assert.equal((await cliClient.vercel("/v13/deployments/dpl_1", "vercel_failed")).source, "vercel.cmd");
+assert.equal((await cliClient.vercel("/v13/deployments/dpl_1", "vercel_failed")).source, "cmd.exe");
 assert.deepEqual(cliCalls[0].args, ["api", "/repos/example/repo/pulls/1"]);
-assert.deepEqual(cliCalls[1].args, ["api", "/v13/deployments/dpl_1"]);
+assert.deepEqual(cliCalls[1].args, [
+  "/d",
+  "/s",
+  "/c",
+  "vercel.cmd",
+  "api",
+  "/v13/deployments/dpl_1"
+]);
 assert.equal(cliCalls.every((call) => call.options.windowsHide === true && call.options.maxBuffer === 4 * 1024 * 1024), true);
 
 const fetchCalls = [];
