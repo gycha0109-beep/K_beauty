@@ -69,6 +69,7 @@ async function waitForBrowserClose(child, label, timeoutMs = 10 * 60 * 1000) {
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
+      child.kill();
       rejectPromise(
         new JourneyFailure(
           FAILURE_CATEGORIES.AUTH,
