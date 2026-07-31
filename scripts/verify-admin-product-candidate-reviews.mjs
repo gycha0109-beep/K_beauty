@@ -30,10 +30,11 @@ function excludes(text, value, label) {
 const migrationFiles = readdirSync(resolve(root, "supabase/migrations"))
   .filter((name) => name.includes("admin_product_candidate_reviews"))
   .sort();
-assert(migrationFiles.length === 2, "two admin product review migrations are required");
+assert(migrationFiles.length === 3, "three admin product review migrations are required");
 
 const migration = read(`supabase/migrations/${migrationFiles[0]}`);
 const hardening = read(`supabase/migrations/${migrationFiles[1]}`);
+const securityHardening = read(`supabase/migrations/${migrationFiles[2]}`);
 const design = read("docs/architecture/admin-product-candidate-reviews-v1.md");
 const access = read("lib/admin/access.js");
 const requestPolicy = read("lib/admin/request-policy.js");
@@ -75,9 +76,24 @@ const packageJson = JSON.parse(read("package.json"));
   "admin_product_review_unsafe_function_exposed"
 ].forEach((value) => includes(hardening, value, "product review hardening"));
 
+[
+  "admin_audit_payload_has_forbidden_content",
+  "admin_audit_sensitive_payload_rejected",
+  "record_admin_audit_event_unsafe_v1",
+  "admin_preflight_product_candidate_review_unsafe_v2",
+  "invalid_duplicate_product_reference",
+  "invalid_matched_product_reference",
+  "conflicting_product_identity",
+  "conflicting_product_references",
+  "for share",
+  "admin_security_hardening_unsafe_function_exposed"
+].forEach((value) =>
+  includes(securityHardening, value, "product review security hardening")
+);
+
 assert(
   !/grant\s+execute[\s\S]{0,300}admin_(?:preflight|confirm)_product_candidate_review[\s\S]{0,120}to\s+(?:anon|authenticated|public)/i.test(
-    `${migration}\n${hardening}`
+    `${migration}\n${hardening}\n${securityHardening}`
   ),
   "product review RPCs must not be callable by browser roles"
 );
@@ -110,7 +126,9 @@ assert(
   "getSignOutRuntimeOriginContract",
   "getNormalizedConfiguredProductionOrigin",
   "getCanonicalProductionOrigin",
-  "decision.allowed === true"
+  "decision.allowed === true",
+  'request?.headers?.get?.("referer")',
+  "source.origin === target.origin"
 ].forEach((value) => includes(requestPolicy, value, "admin request origin policy"));
 
 [
@@ -122,7 +140,14 @@ assert(
   "admin_preflight_product_candidate_review",
   "admin_confirm_product_candidate_review",
   "ProductReviewOperationError",
-  "LIST_LIMIT = 100"
+  "LIST_LIMIT = 100",
+  "UUID_PATTERN",
+  "HASH_PATTERN",
+  "REQUEST_ID_PATTERN",
+  '"source_url"',
+  '"first_seen_at"',
+  '"last_seen_at"',
+  '"seen_count"'
 ].forEach((value) => includes(serverBoundary, value, "product review server boundary"));
 
 [
@@ -139,6 +164,11 @@ for (const [route, label] of [
   includes(route, "isAllowedAdminMutationRequest(request)", label);
   includes(route, 'error: "invalid_request_origin"', label);
   includes(route, "MAX_BODY_BYTES = 8192", label);
+  includes(route, 'request.headers.get("content-length")', label);
+  includes(route, "request.body?.getReader()", label);
+  includes(route, "receivedBytes > MAX_BODY_BYTES", label);
+  includes(route, "await reader.cancel()", label);
+  includes(route, "Array.isArray(body)", label);
   includes(route, 'export const runtime = "nodejs"', label);
   includes(route, '"Cache-Control": "private, no-store, max-age=0"', label);
   includes(route, '"CDN-Cache-Control": "no-store"', label);
@@ -161,10 +191,26 @@ for (const [route, label] of [
   "preflight.status === \"ready\"",
   "router.refresh()",
   "evidenceSnapshot",
-  "matchedProduct"
+  "matchedProduct",
+  "confirmRequestId",
+  "requestInFlight",
+  "현재 원시 후보는 승인 dry-run에서 차단되는 것이 정상입니다.",
+  "Source URL",
+  "Observed count",
+  "필드별 근거·confidence"
 ].forEach((value) => includes(workbench, value, "product review workbench"));
 
 includes(navigation, 'href: "/admin/products/reviews"', "admin navigation");
+includes(
+  navigation,
+  "capability: ADMIN_CAPABILITIES.PRODUCTS_READ",
+  "admin navigation"
+);
+includes(
+  navigation,
+  "!grantedCapabilities.has(item.capability)",
+  "admin navigation"
+);
 
 [
   "create type public.product_review_status",
@@ -183,6 +229,14 @@ includes(navigation, 'href: "/admin/products/reviews"', "admin navigation");
   "defer_confirm_failed",
   "block_confirm_failed",
   "stale_preflight_unexpectedly_succeeded",
+  "stale_candidate_unexpectedly_succeeded",
+  "stale_review_unexpectedly_succeeded",
+  "request_id_conflict_unexpectedly_succeeded",
+  "conflicting_identity_preflight_not_blocked",
+  "null_required_fields_preflight_not_blocked",
+  "sensitive_audit_payload_unexpectedly_succeeded",
+  "transaction_rollback_failed",
+  "privacy_capability_matrix_invalid",
   "audit_count_invalid",
   "owner_audit_visibility_invalid",
   "viewer_audit_visibility_invalid",

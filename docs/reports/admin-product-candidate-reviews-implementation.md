@@ -2,7 +2,7 @@
 
 ## 상태
 
-구현·리뷰·격리 검증 완료.
+구현·리뷰·2026-07-31 로컬 독립 재검수 완료.
 
 ## 브랜치
 
@@ -11,7 +11,13 @@
 - validated application / DB logic SHA: `9cfb4fcab51e1c554ab3766c71182c3e18e96ffc`
 - validation run: `Security closeout verifiers #174` (`30527263743`)
 
-검증 이후 커밋은 임시 workflow 복구, 불안정한 HTTP fixture 제거, 독립 workflow 및 최종 보고서 정리다. 제품 UI·API·migration 로직은 검증된 SHA와 동일하다.
+해당 기록 이후에는 workflow와 보고서 정리가 있었고, 2026-07-31 로컬 재검수에서
+아래 UI·API·migration hardening이 working tree에 추가됐다.
+
+위 SHA와 workflow 기록은 과거 구현 기록이다. 현재 판정 근거는 GitHub Actions가
+아니라 `feature/admin-product-candidate-reviews` working tree에서 수행한 로컬
+정적 검토, 격리 migration replay, SQL role/RLS/RPC 시나리오, architecture guard,
+JavaScript syntax 검사와 production build다.
 
 ## 구현
 
@@ -37,6 +43,25 @@
 5. 브라우저에는 service-role key와 raw Supabase error를 노출하지 않는다.
 6. preflight·confirm API에 기존 SEC-11 same-origin 정책을 적용했다.
 7. 불안정한 Auth HTTP fixture를 제거하고 Postgres 트랜잭션 기반 검증으로 교체했다.
+
+## 2026-07-31 로컬 독립 재검수 hardening
+
+1. 감사 payload의 중첩 key/value에서 token, cookie, secret, authorization,
+   service-role key, password, raw/base64 image를 차단하는 후속 migration을
+   추가했다.
+2. `matched_product_id`와 `duplicate_of_product_id`가 canonical normalized
+   identity와 충돌하면 approve preflight를 fail-closed 하도록 보강했다.
+3. Origin뿐 아니라 제공된 Referer도 same-origin인지 확인하고, API body object,
+   UUID, hash, timestamp, request id 검증을 DB 호출 전에 수행한다.
+4. UI confirm 재시도는 동일 request id를 유지하며 요청 중 중복 클릭과 입력 변경을
+   막는다.
+5. 상세 화면에 source URL, external type, raw/normalized/canonical identity,
+   최초·최근·누적 관측, 필드별 근거·confidence 상태를 표시한다.
+6. 원시 후보의 approve 차단 사유를 dry-run 전에도 명확히 보여주고 defer/block은
+   계속 가능함을 구분한다.
+7. 격리 SQL verifier에 privacy 권한, NULL 필수값, identity conflict, request id
+   conflict, candidate/review/evidence stale, 민감 감사 payload, 감사 실패 전체
+   rollback 시나리오를 추가했다.
 
 ## 검증 결과
 

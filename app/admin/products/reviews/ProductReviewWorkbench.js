@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const FILTERS = Object.freeze([
@@ -51,7 +51,11 @@ const ISSUE_LABELS = Object.freeze({
   invalid_finish: "마무리감 값이 허용 범위를 벗어났습니다.",
   missing_irritation_risk: "자극 위험 정보가 없습니다.",
   invalid_irritation_risk: "자극 위험 값이 허용 범위를 벗어났습니다.",
-  missing_sensitivity_safe: "민감성 안전 여부가 확정되지 않았습니다."
+  missing_sensitivity_safe: "민감성 안전 여부가 확정되지 않았습니다.",
+  invalid_duplicate_product_reference: "중복 대상으로 지정된 기존 제품을 찾을 수 없습니다.",
+  invalid_matched_product_reference: "매칭 대상으로 지정된 기존 제품을 찾을 수 없습니다.",
+  conflicting_product_identity: "기존 제품 연결과 정규화 identity가 충돌합니다.",
+  conflicting_product_references: "중복 대상과 매칭 대상이 서로 다릅니다."
 });
 
 const ERROR_LABELS = Object.freeze({
@@ -183,19 +187,94 @@ function EvidenceSummary({ evidence }) {
   );
 }
 
-function ReviewActionPanel({ candidateId, canReview, actionable }) {
+function getApprovalIssues(candidate) {
+  const issues = [];
+
+  if (!candidate?.externalType || !candidate?.externalId) {
+    issues.push("missing_external_identity");
+  }
+  if (!candidate?.canonicalName) {
+    issues.push("missing_canonical_name");
+  }
+  if (!candidate?.canonicalBrand) {
+    issues.push("missing_canonical_brand");
+  }
+  if (!candidate?.serviceCategory) {
+    issues.push("ambiguous_category");
+  }
+  if (candidate?.serviceCategory === "treatment" && !candidate?.productForm) {
+    issues.push("missing_product_form");
+  }
+  if (!candidate?.promotion?.skinTypes?.length) {
+    issues.push("missing_skin_types");
+  }
+  if (!candidate?.promotion?.concerns?.length) {
+    issues.push("missing_concerns");
+  }
+  if (!candidate?.promotion?.texture) {
+    issues.push("missing_texture");
+  }
+  if (!candidate?.promotion?.finish) {
+    issues.push("missing_finish");
+  }
+  if (!candidate?.promotion?.irritationRisk) {
+    issues.push("missing_irritation_risk");
+  }
+  if (candidate?.promotion?.sensitivitySafe === null) {
+    issues.push("missing_sensitivity_safe");
+  }
+
+  return issues;
+}
+
+function FieldEvidence({ metadata }) {
+  const evidence =
+    metadata?.field_evidence ?? metadata?.fieldEvidence ?? metadata?.evidence;
+  const entries =
+    evidence && typeof evidence === "object" && !Array.isArray(evidence)
+      ? Object.entries(evidence)
+      : [];
+
+  if (entries.length === 0) {
+    return (
+      <p className="text-sm text-[#8a919c]">
+        필드별 근거·confidence가 아직 제공되지 않았습니다.
+      </p>
+    );
+  }
+
+  return (
+    <dl className="grid gap-3 sm:grid-cols-2">
+      {entries.map(([field, value]) => (
+        <div key={field} className="rounded-xl bg-[#f6f7f9] p-3 dark:bg-[#20242b]">
+          <dt className="text-xs font-semibold">{field}</dt>
+          <dd className="mt-1 break-words text-xs leading-5 text-[#68717d] dark:text-[#b0b7c1]">
+            {typeof value === "string" ? value : JSON.stringify(value)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function ReviewActionPanel({ candidateId, candidate, canReview, actionable }) {
   const router = useRouter();
   const [decision, setDecision] = useState("approve");
   const [reason, setReason] = useState("");
   const [preflight, setPreflight] = useState(null);
+  const [confirmRequestId, setConfirmRequestId] = useState(null);
   const [phase, setPhase] = useState("idle");
   const [error, setError] = useState(null);
+  const requestInFlight = useRef(false);
 
   const reasonValid = reason.trim().length >= 3 && reason.trim().length <= 1000;
   const preflightReady = preflight?.status === "ready";
+  const busy = phase === "preflighting" || phase === "confirming";
+  const approvalIssues = getApprovalIssues(candidate);
 
   function resetPreflight() {
     setPreflight(null);
+    setConfirmRequestId(null);
     setError(null);
     setPhase("idle");
   }
@@ -216,6 +295,11 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
   }
 
   async function runPreflight() {
+    if (requestInFlight.current || !reasonValid) {
+      return;
+    }
+
+    requestInFlight.current = true;
     setPhase("preflighting");
     setError(null);
     setPreflight(null);
@@ -227,23 +311,34 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
         reason: reason.trim()
       });
       setPreflight(payload.preflight);
+      setConfirmRequestId(
+        payload.preflight.status === "ready" ? crypto.randomUUID() : null
+      );
       setPhase(payload.preflight.status === "ready" ? "ready" : "blocked");
     } catch (requestError) {
+      setConfirmRequestId(null);
       setError(requestError.message);
       setPhase("failed");
+    } finally {
+      requestInFlight.current = false;
     }
   }
 
   async function confirm() {
-    if (!preflightReady) {
+    if (
+      requestInFlight.current ||
+      !preflightReady ||
+      !confirmRequestId ||
+      phase === "confirmed"
+    ) {
       return;
     }
 
+    requestInFlight.current = true;
     setPhase("confirming");
     setError(null);
 
     try {
-      const requestId = crypto.randomUUID();
       await requestJson("/api/admin/product-reviews/confirm", {
         candidateId,
         decision,
@@ -252,13 +347,15 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
         reviewUpdatedAt: preflight.review_updated_at,
         evidenceHash: preflight.evidence_hash,
         preflightHash: preflight.preflight_hash,
-        requestId
+        requestId: confirmRequestId
       });
       setPhase("confirmed");
       router.refresh();
     } catch (requestError) {
       setError(requestError.message);
       setPhase("failed");
+    } finally {
+      requestInFlight.current = false;
     }
   }
 
@@ -280,11 +377,28 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
 
   return (
     <section className="rounded-2xl border border-[#dfe3e9] bg-white p-5 dark:border-[#303640] dark:bg-[#16191f]">
+      {decision === "approve" && approvalIssues.length > 0 ? (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950/30">
+          <p className="font-semibold">
+            현재 원시 후보는 승인 dry-run에서 차단되는 것이 정상입니다.
+          </p>
+          <p className="mt-1 text-[#6f5a18] dark:text-amber-200">
+            아래 필드가 채워진 뒤 승인할 수 있습니다. 보류·차단 조치는 계속 가능합니다.
+          </p>
+          <ul className="mt-2 grid gap-1">
+            {approvalIssues.map((issue) => (
+              <li key={issue}>• {ISSUE_LABELS[issue]}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         {DECISIONS.map(([value, label]) => (
           <button
             key={value}
             type="button"
+            disabled={busy}
             onClick={() => {
               setDecision(value);
               resetPreflight();
@@ -304,6 +418,7 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
         <span className="text-sm font-semibold">조치 사유</span>
         <textarea
           value={reason}
+          disabled={busy}
           onChange={(event) => {
             setReason(event.target.value);
             resetPreflight();
@@ -318,7 +433,7 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          disabled={!reasonValid || phase === "preflighting" || phase === "confirming"}
+          disabled={!reasonValid || busy}
           onClick={runPreflight}
           className="rounded-full border border-[#171a20] px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#e4e8ee]"
         >
@@ -326,7 +441,7 @@ function ReviewActionPanel({ candidateId, canReview, actionable }) {
         </button>
         <button
           type="button"
-          disabled={!preflightReady || phase === "confirming"}
+          disabled={!preflightReady || !confirmRequestId || busy || phase === "confirmed"}
           onClick={confirm}
           className="rounded-full bg-[#171a20] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-35 dark:bg-[#f2f4f7] dark:text-[#171a20]"
         >
@@ -485,12 +600,41 @@ export default function ProductReviewWorkbench({
 
                 <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <Field label="Source" value={selected.candidate?.sourceName} />
+                  <Field label="Source type" value={selected.candidate?.externalType} />
                   <Field label="External ID" value={selected.candidate?.externalId} />
+                  <Field label="Category path" value={selected.candidate?.categoryPath} />
                   <Field label="Category" value={selected.candidate?.serviceCategory} />
                   <Field label="Product form" value={selected.candidate?.productForm} />
                   <Field label="Match method" value={selected.candidate?.matchMethod} />
                   <Field label="Match confidence" value={formatPercent(selected.candidate?.matchConfidence)} />
+                  <Field label="Raw brand" value={selected.candidate?.brandNameRaw} />
+                  <Field label="Raw name" value={selected.candidate?.productNameRaw} />
+                  <Field label="Normalized brand" value={selected.candidate?.normalizedBrand} />
+                  <Field label="Normalized name" value={selected.candidate?.normalizedName} />
+                  <Field label="Canonical brand" value={selected.candidate?.canonicalBrand} />
+                  <Field label="Canonical name" value={selected.candidate?.canonicalName} />
+                  <Field label="Observed count" value={selected.candidate?.seenCount} />
+                  <Field label="First observed" value={formatDate(selected.candidate?.firstSeenAt)} />
+                  <Field label="Last observed" value={formatDate(selected.candidate?.lastSeenAt)} />
                 </dl>
+
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#7d8490]">
+                    Source URL
+                  </p>
+                  {selected.candidate?.sourceUrl ? (
+                    <a
+                      href={selected.candidate.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-block break-all text-sm font-medium text-blue-700 underline dark:text-blue-300"
+                    >
+                      {selected.candidate.sourceUrl}
+                    </a>
+                  ) : (
+                    <p className="mt-2 text-sm text-[#8a919c]">제공되지 않음</p>
+                  )}
+                </div>
 
                 <div className="mt-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#7d8490]">Review flags</p>
@@ -561,11 +705,18 @@ export default function ProductReviewWorkbench({
                     <div className="mt-2"><Tags values={selected.candidate?.promotion?.concerns} /></div>
                   </div>
                 </div>
+                <div className="mt-5 border-t border-[#e2e6ec] pt-5 dark:border-[#303640]">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.1em] text-[#7d8490]">
+                    필드별 근거·confidence
+                  </p>
+                  <FieldEvidence metadata={selected.candidate?.promotion?.metadata} />
+                </div>
               </section>
 
               <ReviewActionPanel
                 key={selected.review.candidateId}
                 candidateId={selected.review.candidateId}
+                candidate={selected.candidate}
                 canReview={canReview}
                 actionable={["queued", "reviewing"].includes(selected.review.status)}
               />

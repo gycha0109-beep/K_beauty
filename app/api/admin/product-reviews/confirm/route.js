@@ -24,14 +24,46 @@ function json(body, status = 200) {
 }
 
 async function readBody(request) {
-  const raw = await request.text();
+  const contentLength = Number(request.headers.get("content-length"));
 
-  if (Buffer.byteLength(raw, "utf8") > MAX_BODY_BYTES) {
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
     throw new ProductReviewOperationError("product_review_invalid_request", 413);
   }
 
+  const reader = request.body?.getReader();
+  const chunks = [];
+  let receivedBytes = 0;
+
+  if (reader) {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      receivedBytes += value.byteLength;
+      if (receivedBytes > MAX_BODY_BYTES) {
+        await reader.cancel();
+        throw new ProductReviewOperationError(
+          "product_review_invalid_request",
+          413
+        );
+      }
+      chunks.push(Buffer.from(value));
+    }
+  }
+
+  const raw = Buffer.concat(chunks).toString("utf8");
+
   try {
-    return JSON.parse(raw || "{}");
+    const body = JSON.parse(raw || "{}");
+
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      throw new ProductReviewOperationError("product_review_invalid_request", 400);
+    }
+
+    return body;
   } catch {
     throw new ProductReviewOperationError("product_review_invalid_request", 400);
   }

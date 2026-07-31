@@ -53,7 +53,7 @@ export default async function AdminLayout({ children }) {
             </span>
           </div>
 
-          <AdminNavigation />
+          <AdminNavigation capabilities={access.capabilities} />
         </aside>
 
         <div className="min-w-0">

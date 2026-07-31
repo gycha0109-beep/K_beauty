@@ -17,14 +17,16 @@ insert into auth.users (
   ('30000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'owner-product-review@example.test', '{}'::jsonb, '{}'::jsonb, now(), now(), false, false),
   ('30000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'operator-product-review@example.test', '{}'::jsonb, '{}'::jsonb, now(), now(), false, false),
   ('30000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'viewer-product-review@example.test', '{}'::jsonb, '{}'::jsonb, now(), now(), false, false),
-  ('30000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'premium-product-review@example.test', '{"premium_entitlement":"admin_override","role":"admin","admin":true}'::jsonb, '{}'::jsonb, now(), now(), false, false);
+  ('30000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'premium-product-review@example.test', '{"premium_entitlement":"admin_override","role":"admin","admin":true}'::jsonb, '{}'::jsonb, now(), now(), false, false),
+  ('30000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'privacy-product-review@example.test', '{}'::jsonb, '{}'::jsonb, now(), now(), false, false);
 
 select public.bootstrap_first_admin_owner('30000000-0000-4000-8000-000000000001'::uuid);
 
 insert into public.admin_memberships (user_id, role, is_active, granted_by)
 values
   ('30000000-0000-4000-8000-000000000002', 'admin_operator', true, '30000000-0000-4000-8000-000000000001'),
-  ('30000000-0000-4000-8000-000000000003', 'admin_viewer', true, '30000000-0000-4000-8000-000000000001');
+  ('30000000-0000-4000-8000-000000000003', 'admin_viewer', true, '30000000-0000-4000-8000-000000000001'),
+  ('30000000-0000-4000-8000-000000000005', 'admin_privacy', true, '30000000-0000-4000-8000-000000000001');
 
 insert into public.products (
   id,
@@ -109,6 +111,36 @@ insert into public.product_candidates (
     'Stale Serum', 'Stale Brand', 'staleserum', 'stalebrand', 'treatment', 'serum',
     'Stale Serum', 'Stale Brand', 'needs_review', null,
     '{"product":{"skin_types":["combination"],"concerns":["acne"],"texture":"gel","finish":"natural","irritation_risk":"low","sensitivity_safe":true}}'::jsonb
+  ),
+  (
+    '20000000-0000-4000-8000-000000000007', 'hwahae', 'goods', 'identity-conflict-1', 'skincare/serum',
+    'Different Serum', 'Different Brand', 'differentserum', 'differentbrand', 'treatment', 'serum',
+    'Different Serum', 'Different Brand', 'needs_review', '10000000-0000-4000-8000-000000000001',
+    '{"product":{"skin_types":["combination"],"concerns":["acne"],"texture":"gel","finish":"natural","irritation_risk":"low","sensitivity_safe":true}}'::jsonb
+  ),
+  (
+    '20000000-0000-4000-8000-000000000008', 'hwahae', 'goods', 'rollback-1', 'skincare/serum',
+    'Rollback Serum', 'Rollback Brand', 'rollbackserum', 'rollbackbrand', 'treatment', 'serum',
+    'Rollback Serum', 'Rollback Brand', 'needs_review', null,
+    '{"product":{"skin_types":["combination"],"concerns":["acne"],"texture":"gel","finish":"natural","irritation_risk":"low","sensitivity_safe":true}}'::jsonb
+  ),
+  (
+    '20000000-0000-4000-8000-000000000009', 'hwahae', 'goods', 'missing-payload-1', 'skincare/serum',
+    'Missing Payload Serum', 'Missing Payload Brand', 'missingpayloadserum', 'missingpayloadbrand', 'treatment', 'serum',
+    'Missing Payload Serum', 'Missing Payload Brand', 'needs_review', null,
+    '{"product":{"skin_types":null,"concerns":null,"texture":null,"finish":null,"irritation_risk":null,"sensitivity_safe":null}}'::jsonb
+  ),
+  (
+    '20000000-0000-4000-8000-000000000010', 'hwahae', 'goods', 'stale-candidate-1', 'skincare/serum',
+    'Stale Candidate Serum', 'Stale Candidate Brand', 'stalecandidateserum', 'stalecandidatebrand', 'treatment', 'serum',
+    'Stale Candidate Serum', 'Stale Candidate Brand', 'needs_review', null,
+    '{"product":{"skin_types":["combination"],"concerns":["acne"],"texture":"gel","finish":"natural","irritation_risk":"low","sensitivity_safe":true}}'::jsonb
+  ),
+  (
+    '20000000-0000-4000-8000-000000000011', 'hwahae', 'goods', 'stale-review-1', 'skincare/serum',
+    'Stale Review Serum', 'Stale Review Brand', 'stalereviewserum', 'stalereviewbrand', 'treatment', 'serum',
+    'Stale Review Serum', 'Stale Review Brand', 'needs_review', null,
+    '{"product":{"skin_types":["combination"],"concerns":["acne"],"texture":"gel","finish":"natural","irritation_risk":"low","sensitivity_safe":true}}'::jsonb
   );
 
 insert into public.candidate_promotion_reviews (
@@ -124,7 +156,12 @@ insert into public.candidate_promotion_reviews (
   ('20000000-0000-4000-8000-000000000003', 'queued', 80, 'needs metadata', '{"concerns":[{"concern":"acne","latest_rank":3}]}'::jsonb, 'ranking-review-v2'),
   ('20000000-0000-4000-8000-000000000004', 'queued', 70, 'needs source', '{"concerns":[{"concern":"redness","latest_rank":4}]}'::jsonb, 'ranking-review-v2'),
   ('20000000-0000-4000-8000-000000000005', 'queued', 60, 'identity risk', '{"concerns":[{"concern":"acne","latest_rank":5}]}'::jsonb, 'ranking-review-v2'),
-  ('20000000-0000-4000-8000-000000000006', 'queued', 50, 'stale test', '{"concerns":[{"concern":"acne","latest_rank":6}]}'::jsonb, 'ranking-review-v2');
+  ('20000000-0000-4000-8000-000000000006', 'queued', 50, 'stale evidence test', '{"concerns":[{"concern":"acne","latest_rank":6}]}'::jsonb, 'ranking-review-v2'),
+  ('20000000-0000-4000-8000-000000000007', 'queued', 40, 'identity conflict test', '{"concerns":[{"concern":"acne","latest_rank":7}]}'::jsonb, 'ranking-review-v2'),
+  ('20000000-0000-4000-8000-000000000008', 'queued', 30, 'rollback test', '{"concerns":[{"concern":"acne","latest_rank":8}]}'::jsonb, 'ranking-review-v2'),
+  ('20000000-0000-4000-8000-000000000009', 'queued', 20, 'null validation test', '{"concerns":[{"concern":"acne","latest_rank":9}]}'::jsonb, 'ranking-review-v2'),
+  ('20000000-0000-4000-8000-000000000010', 'queued', 10, 'stale candidate test', '{"concerns":[{"concern":"acne","latest_rank":10}]}'::jsonb, 'ranking-review-v2'),
+  ('20000000-0000-4000-8000-000000000011', 'queued', 5, 'stale review test', '{"concerns":[{"concern":"acne","latest_rank":11}]}'::jsonb, 'ranking-review-v2');
 
 do $$
 declare
@@ -168,6 +205,30 @@ begin
     when insufficient_privilege then null;
   end;
 
+  begin
+    perform public.admin_preflight_product_candidate_review(
+      '30000000-0000-4000-8000-000000000005',
+      '20000000-0000-4000-8000-000000000001',
+      'approve',
+      'privacy admin must be denied'
+    );
+    raise exception 'privacy_preflight_unexpectedly_succeeded';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  if not (
+    'admin.privacy.execute' = any(
+      public.admin_role_capabilities('admin_privacy')
+    )
+  ) or (
+    'admin.products.read' = any(
+      public.admin_role_capabilities('admin_privacy')
+    )
+  ) then
+    raise exception 'privacy_capability_matrix_invalid';
+  end if;
+
   select count(*) into v_products_initial from public.products;
 
   v_preflight := public.admin_preflight_product_candidate_review(
@@ -186,6 +247,39 @@ begin
 
   if (select count(*) from public.products) <> v_products_initial then
     raise exception 'blocked_preflight_changed_products';
+  end if;
+
+  v_preflight := public.admin_preflight_product_candidate_review(
+    '30000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000009',
+    'approve',
+    'null fields must be rejected'
+  );
+
+  if v_preflight ->> 'status' <> 'blocked'
+    or not ((v_preflight -> 'issues') ? 'missing_skin_types')
+    or not ((v_preflight -> 'issues') ? 'missing_concerns')
+    or not ((v_preflight -> 'issues') ? 'missing_texture')
+    or not ((v_preflight -> 'issues') ? 'missing_finish')
+    or not ((v_preflight -> 'issues') ? 'missing_irritation_risk')
+    or not ((v_preflight -> 'issues') ? 'missing_sensitivity_safe')
+    or (v_preflight #>> '{planned,products_write_count}')::integer <> 0
+  then
+    raise exception 'null_required_fields_preflight_not_blocked: %', v_preflight;
+  end if;
+
+  v_preflight := public.admin_preflight_product_candidate_review(
+    '30000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000007',
+    'approve',
+    'identity conflict must be rejected'
+  );
+
+  if v_preflight ->> 'status' <> 'blocked'
+    or not ((v_preflight -> 'issues') ? 'conflicting_product_identity')
+    or (v_preflight #>> '{planned,products_write_count}')::integer <> 0
+  then
+    raise exception 'conflicting_identity_preflight_not_blocked: %', v_preflight;
   end if;
 
   v_preflight := public.admin_preflight_product_candidate_review(
@@ -261,6 +355,23 @@ begin
   if v_retry <> v_result or (select count(*) from public.products) <> v_products_after_insert then
     raise exception 'idempotent_retry_failed';
   end if;
+
+  begin
+    perform public.admin_confirm_product_candidate_review(
+      '30000000-0000-4000-8000-000000000002',
+      '20000000-0000-4000-8000-000000000002',
+      'approve',
+      'same request id must conflict across tasks',
+      v_preflight ->> 'candidate_updated_at',
+      v_preflight ->> 'review_updated_at',
+      v_preflight ->> 'evidence_hash',
+      v_preflight ->> 'preflight_hash',
+      'review-insert-confirm-0001'
+    );
+    raise exception 'request_id_conflict_unexpectedly_succeeded';
+  exception
+    when unique_violation then null;
+  end;
 
   v_preflight := public.admin_preflight_product_candidate_review(
     '30000000-0000-4000-8000-000000000001',
@@ -353,8 +464,7 @@ begin
   );
 
   update public.candidate_promotion_reviews
-  set evidence_snapshot = '{"concerns":[{"concern":"acne","latest_rank":1}],"changed":true}'::jsonb,
-      updated_at = '2030-01-01T00:00:00Z'
+  set evidence_snapshot = '{"concerns":[{"concern":"acne","latest_rank":1}],"changed":true}'::jsonb
   where candidate_id = '20000000-0000-4000-8000-000000000006';
 
   begin
@@ -373,6 +483,142 @@ begin
   exception
     when serialization_failure then null;
   end;
+
+  v_preflight := public.admin_preflight_product_candidate_review(
+    '30000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000010',
+    'defer',
+    'stale candidate test'
+  );
+
+  update public.product_candidates
+  set canonical_name = 'Changed Candidate Name',
+      updated_at = '2030-01-02T00:00:00Z'
+  where id = '20000000-0000-4000-8000-000000000010';
+
+  begin
+    perform public.admin_confirm_product_candidate_review(
+      '30000000-0000-4000-8000-000000000002',
+      '20000000-0000-4000-8000-000000000010',
+      'defer',
+      'stale candidate test',
+      v_preflight ->> 'candidate_updated_at',
+      v_preflight ->> 'review_updated_at',
+      v_preflight ->> 'evidence_hash',
+      v_preflight ->> 'preflight_hash',
+      'review-stale-candidate-0001'
+    );
+    raise exception 'stale_candidate_unexpectedly_succeeded';
+  exception
+    when serialization_failure then null;
+  end;
+
+  v_preflight := public.admin_preflight_product_candidate_review(
+    '30000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000011',
+    'defer',
+    'stale review test'
+  );
+
+  update public.candidate_promotion_reviews
+  set updated_at = '2030-01-03T00:00:00Z'
+  where candidate_id = '20000000-0000-4000-8000-000000000011';
+
+  begin
+    perform public.admin_confirm_product_candidate_review(
+      '30000000-0000-4000-8000-000000000002',
+      '20000000-0000-4000-8000-000000000011',
+      'defer',
+      'stale review test',
+      v_preflight ->> 'candidate_updated_at',
+      v_preflight ->> 'review_updated_at',
+      v_preflight ->> 'evidence_hash',
+      v_preflight ->> 'preflight_hash',
+      'review-stale-review-0001'
+    );
+    raise exception 'stale_review_unexpectedly_succeeded';
+  exception
+    when serialization_failure then null;
+  end;
+
+  begin
+    perform public.record_admin_audit_event(
+      '30000000-0000-4000-8000-000000000001',
+      'admin.roles.manage',
+      'admin.sensitive.payload.test',
+      'admin_membership',
+      'sensitive-test',
+      null,
+      '{"access_token":"must-not-be-stored"}'::jsonb,
+      'sensitive payload must fail',
+      'review-sensitive-audit-0001',
+      '{}'::jsonb
+    );
+    raise exception 'sensitive_audit_payload_unexpectedly_succeeded';
+  exception
+    when invalid_parameter_value then null;
+  end;
+
+  execute $ddl$
+    create function public.fail_admin_audit_insert_for_test()
+    returns trigger
+    language plpgsql
+    as $fn$
+    begin
+      raise exception 'forced_audit_failure';
+    end;
+    $fn$
+  $ddl$;
+  execute $ddl$
+    create trigger fail_admin_audit_insert_for_test
+    before insert on public.admin_audit_logs
+    for each row execute function public.fail_admin_audit_insert_for_test()
+  $ddl$;
+
+  v_preflight := public.admin_preflight_product_candidate_review(
+    '30000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000008',
+    'approve',
+    'forced rollback test'
+  );
+
+  begin
+    perform public.admin_confirm_product_candidate_review(
+      '30000000-0000-4000-8000-000000000002',
+      '20000000-0000-4000-8000-000000000008',
+      'approve',
+      'forced rollback test',
+      v_preflight ->> 'candidate_updated_at',
+      v_preflight ->> 'review_updated_at',
+      v_preflight ->> 'evidence_hash',
+      v_preflight ->> 'preflight_hash',
+      'review-rollback-confirm-0001'
+    );
+    raise exception 'forced_audit_failure_confirm_unexpectedly_succeeded';
+  exception
+    when raise_exception then
+      if sqlerrm <> 'forced_audit_failure' then
+        raise;
+      end if;
+  end;
+
+  execute 'drop trigger fail_admin_audit_insert_for_test on public.admin_audit_logs';
+  execute 'drop function public.fail_admin_audit_insert_for_test()';
+
+  if (select count(*) from public.products) <> v_products_after_insert
+    or (
+      select review_status
+      from public.product_candidates
+      where id = '20000000-0000-4000-8000-000000000008'
+    ) <> 'needs_review'::public.product_review_status
+    or exists (
+      select 1
+      from public.admin_product_review_confirmations
+      where request_id = 'review-rollback-confirm-0001'
+    )
+  then
+    raise exception 'transaction_rollback_failed';
+  end if;
 
   select count(*) into v_audit_count
   from public.admin_audit_logs

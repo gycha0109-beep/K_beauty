@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ADMIN_CAPABILITIES } from "@/lib/admin/capabilities";
 
 const NAVIGATION = Object.freeze([
-  { label: "Overview", href: "/admin" },
-  { label: "Product reviews", href: "/admin/products/reviews" },
+  {
+    label: "Overview",
+    href: "/admin",
+    capability: ADMIN_CAPABILITIES.DASHBOARD_READ
+  },
+  {
+    label: "Product reviews",
+    href: "/admin/products/reviews",
+    capability: ADMIN_CAPABILITIES.PRODUCTS_READ
+  },
   { label: "Skin Match", href: null },
   { label: "Face Lab", href: null },
   { label: "Users & reports", href: null },
@@ -21,8 +30,9 @@ function isActivePath(pathname, href) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function AdminNavigation() {
+export default function AdminNavigation({ capabilities = [] }) {
   const pathname = usePathname();
+  const grantedCapabilities = new Set(capabilities);
 
   return (
     <nav
@@ -30,6 +40,14 @@ export default function AdminNavigation() {
       className="mt-6 grid gap-1 sm:grid-cols-2 lg:grid-cols-1"
     >
       {NAVIGATION.map((item) => {
+        if (
+          item.href &&
+          item.capability &&
+          !grantedCapabilities.has(item.capability)
+        ) {
+          return null;
+        }
+
         if (!item.href) {
           return (
             <span

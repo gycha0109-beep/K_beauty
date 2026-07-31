@@ -61,6 +61,7 @@ create table public.product_candidates (
   source_name text not null,
   external_type text,
   external_id text,
+  source_url text,
   category_path text,
   product_name_raw text not null,
   brand_name_raw text not null,
@@ -81,9 +82,19 @@ create table public.product_candidates (
   reviewed_at timestamptz,
   reviewed_by text,
   promotion_version text,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  seen_count integer not null default 1 check (seen_count >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create unique index product_candidates_source_external_key
+  on public.product_candidates (source_name, external_type, external_id)
+  where external_id is not null
+    and btrim(external_id) <> ''
+    and external_type is not null
+    and btrim(external_type) <> '';
 
 create table public.candidate_promotion_reviews (
   id uuid primary key default gen_random_uuid(),

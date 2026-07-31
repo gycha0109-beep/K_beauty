@@ -91,6 +91,7 @@ deferred
 1. 후보 식별
    - 원본·정규화·canonical 브랜드/제품명
    - source external identity
+   - source URL과 최초·최근 관측 시각, 누적 관측 횟수
    - category / product form
 2. 검토 큐 근거
    - concern 관측
@@ -158,6 +159,8 @@ after
 - category / treatment product_form
 - promotion payload 필수 enum·배열·boolean
 - 기존 products 중복 대상 예측
+- `matched_product_id`·`duplicate_of_product_id`가 canonical normalized identity와
+  충돌하면 fail-closed
 
 preflight hash는 신뢰 토큰이 아니라 optimistic concurrency fingerprint다. confirm은 모든 값을 다시 계산한다.
 
@@ -228,6 +231,8 @@ admin.product_candidate.review_confirmed
 - queue status
 
 감사 로그에는 token, cookie, secret, 원본 얼굴 이미지, 대형 evidence snapshot을 넣지 않는다. before/after는 후보·큐 상태와 최종 product id 수준으로 제한한다.
+감사 RPC는 중첩 JSON key와 문자열 값도 검사하여 token, cookie, authorization,
+service-role key, password, raw/base64 image 형태를 거절한다.
 
 감사 기록 실패 시 confirm 전체를 rollback 한다.
 
@@ -242,6 +247,13 @@ idle
 ```
 
 후보·decision·reason이 바뀌면 기존 preflight를 즉시 폐기한다. confirm 버튼은 `ready` 상태에서만 활성화한다.
+한 preflight에는 하나의 request id를 유지하여 응답 유실 재시도가 같은 멱등성
+키를 사용하게 하고, 요청 중에는 입력과 중복 클릭을 잠근다. 원시 후보는 승인에
+필요한 누락 필드를 조치 패널에서 먼저 설명하되 defer와 block은 계속 허용한다.
+
+preflight와 confirm API는 Origin을 필수로 검증하고, Referer가 전달된 경우에도
+요청 대상과 같은 origin인지 확인한다. JSON object가 아닌 body, 8 KiB 초과 body,
+잘못된 UUID·hash·timestamp·request id는 DB 호출 전에 고정 오류 코드로 거절한다.
 
 ## 12. 비대상
 
@@ -263,12 +275,17 @@ idle
 - dry-run products write = 0
 - missing product form approve preflight 차단
 - wrong hash / stale timestamp confirm 차단
+- candidate / review / evidence 각각의 stale 상태 차단
 - approve 신규 제품 insert
 - approve 기존 제품 merge
+- 기존 제품 참조와 normalized identity 충돌 차단
 - defer products write = 0
 - block products write = 0
 - 동일 request retry 결과 동일
+- 다른 작업의 동일 request id 충돌
 - direct table escalation 차단
+- 민감한 감사 payload 차단
+- 감사 기록 실패 시 product·candidate·queue·idempotency ledger 전체 rollback
 - audit 1건 기록
 - architecture guard, production build, diff check 통과
 
