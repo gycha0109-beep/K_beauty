@@ -326,31 +326,27 @@ async function captureFromPersistedCookies({
     requireCondition(response && response.status() < 400, FAILURE_CATEGORIES.INFRASTRUCTURE, `local-auth-${label}`, "preview_navigation_failed");
 
     let targetCookies = await context.cookies(baseUrl.origin);
-    let targetAuthCookies = targetCookies.filter(authCookie);
+    const allCookies = await context.cookies();
+    const bridged = await bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label });
+    if (bridged) {
+      targetCookies = await context.cookies(baseUrl.origin);
+    }
+    const targetAuthCookies = targetCookies.filter(authCookie);
     if (!targetAuthCookies.length) {
-      const allCookies = await context.cookies();
-      const bridged = await bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label });
-      if (bridged) {
-        targetCookies = await context.cookies(baseUrl.origin);
-        targetAuthCookies = targetCookies.filter(authCookie);
-      }
-
-      if (!targetAuthCookies.length) {
-        const otherDomains = cookieDomains(allCookies).filter((domain) => domain !== baseUrl.hostname.toLowerCase());
-        if (otherDomains.length) {
-          throw new JourneyFailure(
-            FAILURE_CATEGORIES.AUTH,
-            `local-auth-${label}`,
-            "oauth_session_stored_on_different_host",
-            `OAuth session host mismatch: ${otherDomains.join(", ")}`
-          );
-        }
+      const otherDomains = cookieDomains(allCookies).filter((domain) => domain !== baseUrl.hostname.toLowerCase());
+      if (otherDomains.length) {
         throw new JourneyFailure(
           FAILURE_CATEGORIES.AUTH,
           `local-auth-${label}`,
-          "target_host_auth_cookie_missing"
+          "oauth_session_stored_on_different_host",
+          `OAuth session host mismatch: ${otherDomains.join(", ")}`
         );
       }
+      throw new JourneyFailure(
+        FAILURE_CATEGORIES.AUTH,
+        `local-auth-${label}`,
+        "target_host_auth_cookie_missing"
+      );
     }
 
     targetCookies = await normalizeTargetAuthCookies({ context, baseUrl, label });
