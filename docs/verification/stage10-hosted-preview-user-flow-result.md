@@ -133,3 +133,118 @@ e56d4fcda490e7b10a07c52c4842309f54f91a3ea729cb73df0d34fc8400b1c8
 3. 위 두 blocker가 해소된 뒤 동일 exact-SHA 계열에서 전체 UI fixture를 다시 실행해야 Stage 10 PASS로 승격할 수 있다.
 
 CandidatePolicy runtime은 활성화하지 않았고, Production 배포·promote·alias·환경변수·OAuth 설정·DB schema/RLS를 변경하지 않았다. PR #97은 Draft이며 merge하지 않았다.
+
+---
+
+## Stage 10B blocker closure (2026-07-31)
+
+### Final verdict
+
+`STAGE_10_HOSTED_PREVIEW_USER_FLOW_PASS`
+
+```text
+CI_NOT_USED
+GITHUB_ACTIONS_NOT_USED
+PRODUCTION_NOT_PROMOTED
+RUN_SCOPED_CLEANUP_RESIDUE_ZERO
+PR_REMAINS_DRAFT
+```
+
+This section supersedes the earlier blocked verdict while retaining the original
+blocked evidence above.
+
+### Blocker resolution
+
+- Previous blocked validation commit: `d257074e102fbc25632ccb290b194efd26906db9`
+- Final validation commit: `67521b3def0ce617dd5cde4d806eac9f328b40d8`
+- Supabase Auth Site URL remained `https://k-beauty-two.vercel.app`.
+- The Auth redirect allowlist contained three existing entries and did not contain
+  a K Beauty Preview redirect. The single project-scoped pattern
+  `https://k-beauty-*-johnny-self.vercel.app/**` was appended; existing entries
+  were not removed or replaced.
+- The Google provider callback configuration was not changed.
+- The OAuth caller now resolves Production, project-scoped Vercel Preview, and
+  localhost return origins explicitly. Untrusted hosts fall back to the canonical
+  Production origin, and unsafe callback paths are rejected.
+- Account A and Account B both completed a new Google OAuth round trip directly on
+  the exact Preview host. Both captured sessions were permanent Google sessions
+  whose safe source classification was `target_host`; the canonical-cookie bridge
+  was not used.
+- The previous HTTP 429 was an hourly limiter result after repeated verification.
+  The authoritative KO/EN rerun issued exactly two analyze requests and received no
+  unexpected 429. No limiter threshold, reset state, or bypass was changed.
+
+### Exact Preview
+
+- Vercel deployment ID: `dpl_HfxF3QksAn67iScd5598RtcVE3b1`
+- Immutable host: `k-beauty-dnvdj1fe3-johnny-self.vercel.app`
+- State: `READY`
+- Target: Preview (`null`), not Production
+- Source SHA: `67521b3def0ce617dd5cde4d806eac9f328b40d8`
+- Branch alias: `k-beauty-git-codex-stage10-hosted-preview-user-flow-johnny-self.vercel.app`
+- Branch alias and immutable deployment resolved to the same deployment.
+- Basic Preview HTTP check: 200.
+
+Production remained deployment `dpl_14cM1sGrm15CmgW6GQYq8swFx7oZ` at SHA
+`a30970b78ff2fb3f5784d947b746223a66954e44`; no promotion or Production alias
+change was performed.
+
+### Authoritative KO/EN rerun
+
+- Run: `premium-e2e-20260731030813-27924c25`
+- Verdict: `HOSTED_PREVIEW_PASS`
+- Browser/API steps: 29/29 PASS
+- Analyze request count: 2 (one KO and one EN)
+- Anonymous Premium boundary: 401
+- First save: 200
+- Identical retry: 200 / existing
+- Saved report reopen without reanalysis: 200
+- Finalized snapshot change: 409
+- Principal conflict: 401
+- Cross-account read: 401
+- Session rotation: 200
+- Second independent save: 200
+- Duplicate source tuple count: 0
+- KO first/second fingerprint:
+  `fe8d3fa4f4e47d21882b59e851aa412e68e2c698710fe2bdd51937a5f90afd91`
+- EN first/second fingerprint:
+  `c93cf40338b1237089cf00eafaf72df46886d256fe288332f8f6ce7011cb3095`
+- Actual Preview sign-out POST returned 303 and the header transitioned to the
+  signed-out state. The route-level SEC-11 contract continues to verify Supabase
+  logout plus path-scoped Premium cookie expiry.
+
+### Run-scoped cleanup
+
+- Known Premium session IDs created: 4
+- Known Premium session IDs deleted by exact ID: 4
+- Known Premium session exact-ID residue: 0
+- Saved reports created: 4
+- Saved reports deleted by exact ID: 4
+- Saved report exact-ID residue: 0
+- Auth users/profile cleanup: `NOT_APPLICABLE` because the two permanent test
+  accounts were reused.
+- The raw run-scoped cleanup file was kept only in the ignored runtime directory
+  and removed after successful cleanup. No raw session ID, token, cookie, email, or
+  secret is recorded in this document.
+
+### Direct local verification
+
+All checks were executed locally; GitHub Actions was not used.
+
+- `npm ci`: PASS
+- `npm run build`: PASS
+- `npm run architecture:guard`: PASS
+- `node scripts/verify-premium-route-storage-reentry.mjs`: PASS
+- `node scripts/verify-premium-report-reentry-contract.mjs`: PASS
+- `node scripts/verify-premium-integrated-evaluation.mjs`: PASS
+- `npm run verify:premium-hosted-preview-harness-hardening`: PASS
+- `npm run verify:preview-oauth-origin`: PASS, 13 assertions
+- `npm run verify:premium-run-scoped-cleanup`: PASS, 15 assertions
+- `node scripts/verify-premium-browser-journey-contract.mjs`: PASS
+- `node scripts/check-premium-browser-journey-local.mjs`: PASS
+- `node scripts/run-security-closeout-verifier-suite.mjs`: PASS, 57/57
+- `git diff --check`: PASS
+
+The dependency installation continued to report four existing high-severity audit
+findings. No dependency or package policy was changed in this bounded blocker
+closure.
