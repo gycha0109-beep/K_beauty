@@ -11,6 +11,8 @@
     "enrich:queue": "tsx enrich-queue.ts",
     "list:candidates": "tsx list-candidates.ts",
     "promote:report": "tsx promote-report.ts",
+    "reviews:export": "tsx export-product-reviews.ts",
+    "reviews:import-reviewed": "tsx import-reviewed-product-reviews.ts",
     "reviews:pending": "tsx reviews-pending.ts",
     "review:prep": "tsx review-prep.ts",
     "reject:candidate": "tsx reject-candidate.ts",
@@ -18,6 +20,8 @@
     "jobs:matrix": "tsx jobs-matrix.ts",
     "test:ranking-review-rules": "tsx test-ranking-review-rules.ts",
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
+    "verify:product-review-export": "tsx test-product-review-export.ts",
+    "verify:product-review-intake-dry-run": "tsx test-product-review-intake-dry-run.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
