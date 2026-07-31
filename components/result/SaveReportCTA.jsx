@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { buildResultFingerprint, getSharePath } from "@/lib/analysis-results";
+import { buildOAuthCallbackUrl } from "@/lib/auth/oauth-return-origin.mjs";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import {
   getSafePublicErrorMessage,
@@ -57,22 +58,20 @@ function getSourceSessionId() {
   return window.sessionStorage.getItem(TRACKING_SESSION_KEY) || null;
 }
 
-function getAuthCallbackOrigin() {
-  if (typeof window !== "undefined" && window.location?.origin) {
-    return window.location.origin;
-  }
-
-  return "";
-}
-
 async function startGoogleSignIn(next) {
   const supabase = createBrowserSupabaseClient();
-  const origin = getAuthCallbackOrigin();
-  const nextPath = typeof next === "string" && next.startsWith("/") ? next : "/my";
+  const redirectTo = buildOAuthCallbackUrl({
+    currentOrigin: window.location.origin,
+    configuredProductionOrigin: process.env.NEXT_PUBLIC_SITE_URL,
+    next
+  });
+  if (!redirectTo) {
+    throw new Error("oauth_return_origin_unavailable");
+  }
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+      redirectTo
     }
   });
 
