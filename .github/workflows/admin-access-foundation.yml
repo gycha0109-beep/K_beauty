@@ -31,6 +31,7 @@ jobs:
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+      ADMIN_ACCESS_RUNTIME_DIR: ${{ runner.temp }}/admin-access-runtime
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,13 +56,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf tmp/admin-access-runtime
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
-            --workdir tmp/admin-access-runtime \
+            --workdir "${ADMIN_ACCESS_RUNTIME_DIR}" \
             --force
-          mkdir -p tmp/admin-access-runtime/supabase/migrations
+          mkdir -p "${ADMIN_ACCESS_RUNTIME_DIR}/supabase/migrations"
           cp supabase/migrations/*_admin_access_foundation.sql \
-            tmp/admin-access-runtime/supabase/migrations/
+            "${ADMIN_ACCESS_RUNTIME_DIR}/supabase/migrations/"
 
       - name: Start isolated Supabase
         shell: bash
@@ -76,7 +76,7 @@ jobs:
               -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
           }
           if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
-            --workdir tmp/admin-access-runtime \
+            --workdir "${ADMIN_ACCESS_RUNTIME_DIR}" \
             --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
             >"${raw_log}" 2>&1; then
             sanitize_log <"${raw_log}" | tail -n 160 >&2
@@ -98,14 +98,14 @@ jobs:
               -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
           }
           if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
-            --workdir tmp/admin-access-runtime \
+            --workdir "${ADMIN_ACCESS_RUNTIME_DIR}" \
             >"${raw_log}" 2>&1; then
             sanitize_log <"${raw_log}" | tail -n 160 >&2
             rm -f "${raw_log}"
             exit 1
           fi
           rm -f "${raw_log}"
-          bash scripts/verify-admin-access-runtime.sh tmp/admin-access-runtime
+          bash scripts/verify-admin-access-runtime.sh "${ADMIN_ACCESS_RUNTIME_DIR}"
 
       - name: Verify architecture boundaries
         run: npm run architecture:guard
@@ -130,8 +130,9 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          if [[ -d tmp/admin-access-runtime/supabase ]]; then
+          if [[ -d "${ADMIN_ACCESS_RUNTIME_DIR}/supabase" ]]; then
             npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
-              --workdir tmp/admin-access-runtime \
+              --workdir "${ADMIN_ACCESS_RUNTIME_DIR}" \
               --no-backup
           fi
+          rm -rf -- "${ADMIN_ACCESS_RUNTIME_DIR}"

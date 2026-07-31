@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORKDIR="${1:-tmp/admin-access-runtime}"
+WORKDIR="${1:?usage: verify-admin-access-runtime.sh <isolated-supabase-workdir>}"
 SUPABASE_CLI_VERSION="${SUPABASE_CLI_VERSION:-2.109.1}"
 TEMP_DIR="$(mktemp -d)"
 

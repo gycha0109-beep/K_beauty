@@ -247,12 +247,23 @@ includes(
 [
   "Admin Product Candidate Reviews",
   "npm run verify:admin-product-candidate-reviews",
+  "ADMIN_PRODUCT_REVIEW_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-runtime",
+  "--workdir \"${ADMIN_PRODUCT_REVIEW_RUNTIME_DIR}\"",
   "supabase_db_admin-product-review-runtime",
   "verify_admin_product_review_runtime.sql",
   "npm run architecture:guard",
   "npm run build",
   "git diff --check"
 ].forEach((value) => includes(workflow, value, "product review workflow"));
+assert(
+  !workflow.includes("tmp/admin-product-review-runtime"),
+  "product review workflow must not create a repository-local Supabase workdir"
+);
+includes(
+  workflow,
+  'rm -rf -- "${ADMIN_PRODUCT_REVIEW_RUNTIME_DIR}"',
+  "product review workflow cleanup"
+);
 
 assert(
   packageJson.scripts?.["verify:admin-product-candidate-reviews"] ===

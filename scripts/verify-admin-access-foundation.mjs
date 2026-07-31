@@ -55,6 +55,7 @@ const layout = read("app/admin/layout.js");
 const page = read("app/admin/page.js");
 const design = read("docs/architecture/admin-access-foundation-v1.md");
 const runtimeVerifier = read("scripts/verify-admin-access-runtime.sh");
+const workflow = read(".github/workflows/admin-access-foundation.yml");
 const packageJson = JSON.parse(read("package.json"));
 
 [
@@ -178,6 +179,21 @@ assertIncludes(page, "Product Candidate Reviews", "admin next scope");
   "idempotent audit retry",
   "service-role direct audit table write"
 ].forEach((value) => assertIncludes(runtimeVerifier, value, "admin runtime verifier"));
+
+assertIncludes(
+  workflow,
+  "ADMIN_ACCESS_RUNTIME_DIR: ${{ runner.temp }}/admin-access-runtime",
+  "admin workflow isolated workdir"
+);
+assert(
+  !workflow.includes("tmp/admin-access-runtime"),
+  "admin workflow must not create a repository-local Supabase workdir"
+);
+assertIncludes(
+  workflow,
+  'rm -rf -- "${ADMIN_ACCESS_RUNTIME_DIR}"',
+  "admin workflow cleanup"
+);
 
 assert(
   packageJson.scripts?.["verify:admin-access-foundation"] ===
