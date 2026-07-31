@@ -72,6 +72,8 @@ assert.match(sessionCaptureSource, /supabase\.auth\.getSession\(\)/);
 assert.match(sessionCaptureSource, /discoverCanonicalOAuthHost/);
 assert.match(sessionCaptureSource, /meta\[property="og:url"\]/);
 assert.match(sessionCaptureSource, /PREMIUM_E2E_OAUTH_RETURN_HOST/);
+assert.match(sessionCaptureSource, /allowCanonicalBridge = true/);
+assert.match(sessionCaptureSource, /oauthSessionSource: bridged \? "canonical_bridge" : "target_host"/);
 assert.match(sessionCaptureSource, /bridgeCanonicalOAuthCookies/);
 assert.match(sessionCaptureSource, /oauth_cookie_bridge_failed/);
 assert.match(sessionCaptureSource, /OAuth 세션을 .*Preview 호스트로 로컬 복제했습니다/);
@@ -81,11 +83,11 @@ assert.match(
 );
 assert.match(
   sessionCaptureSource,
-  /const publicConfig = await discoverPublicConfig\([\s\S]*?const canonicalHost = await discoverCanonicalOAuthHost\(page\);[\s\S]*?await page\.close\(\);[\s\S]*?const bridged = await bridgeCanonicalOAuthCookies/
+  /const publicConfig = await discoverPublicConfig\([\s\S]*?const canonicalHost = await discoverCanonicalOAuthHost\(page\);[\s\S]*?await page\.close\(\);[\s\S]*?const bridged = allowCanonicalBridge[\s\S]*?bridgeCanonicalOAuthCookies/
 );
 assert.match(
   sessionCaptureSource,
-  /const bridged = await bridgeCanonicalOAuthCookies\([\s\S]*?if \(bridged\) \{[\s\S]*?targetCookies = await context\.cookies\(baseUrl\.origin\);[\s\S]*?\}[\s\S]*?const targetAuthCookies/
+  /const bridged = allowCanonicalBridge[\s\S]*?bridgeCanonicalOAuthCookies\([\s\S]*?if \(bridged\) \{[\s\S]*?targetCookies = await context\.cookies\(baseUrl\.origin\);[\s\S]*?\}[\s\S]*?const targetAuthCookies/
 );
 assert.match(sessionCaptureSource, /normalizeTargetAuthCookies/);
 assert.match(sessionCaptureSource, /target_host_auth_cookie_normalization_failed/);
@@ -126,6 +128,8 @@ assert.match(bootstrapSource, /비밀번호는 이 스크립트나 저장소에 
 assert.match(bootstrapSource, /saveBootstrapMetadata/);
 assert.match(bootstrapSource, /assertGitWorktreeClean\(\)/);
 assert.match(bootstrapSource, /reset-profiles/);
+assert.match(bootstrapSource, /require-direct-preview-oauth/);
+assert.match(bootstrapSource, /direct_preview_oauth_not_proven/);
 
 assert.match(runnerSource, /captureAccountSessionResilient/);
 assert.match(runnerSource, /assertGitWorktreeClean\(\)/);

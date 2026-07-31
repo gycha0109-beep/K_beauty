@@ -30,6 +30,13 @@ assertGitWorktreeClean();
 const resetAll = args["reset-profiles"] === true;
 const resetA = resetAll || args["reset-a"] === true;
 const resetB = resetAll || args["reset-b"] === true;
+const requireDirectPreviewOAuth = args["require-direct-preview-oauth"] === true;
+requireCondition(
+  !requireDirectPreviewOAuth || (resetA && resetB),
+  FAILURE_CATEGORIES.PRECONDITION,
+  "local-auth",
+  "direct_preview_oauth_requires_reset_profiles"
+);
 await resetLocalAuthProfiles({ resetA, resetB });
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
 const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
@@ -57,7 +64,8 @@ async function captureOrLogin({ label, profilePath, storageStatePath, reset }) {
         storageStatePath,
         baseUrl,
         previewBypassToken,
-        timeoutMs: 1_500
+        timeoutMs: 1_500,
+        allowCanonicalBridge: !requireDirectPreviewOAuth
       });
       console.log(`[${label}] 기존 로그인 세션을 재사용합니다.`);
       return existing;
@@ -77,7 +85,8 @@ async function captureOrLogin({ label, profilePath, storageStatePath, reset }) {
     profilePath,
     storageStatePath,
     baseUrl,
-    previewBypassToken
+    previewBypassToken,
+    allowCanonicalBridge: !requireDirectPreviewOAuth
   });
 }
 
@@ -98,8 +107,26 @@ const accountB = await captureOrLogin({
 console.log(`[B] 로그인 확인 완료: ${accountB.userHash}`);
 
 assertAccountPair(accountA, accountB);
+requireCondition(
+  !requireDirectPreviewOAuth ||
+    (
+      accountA.oauthSessionSource === "target_host" &&
+      accountB.oauthSessionSource === "target_host"
+    ),
+  FAILURE_CATEGORIES.AUTH,
+  "local-auth-pair",
+  "direct_preview_oauth_not_proven"
+);
 await Promise.all([
-  saveBootstrapMetadata({ baseUrl, environment, expectedHost, branch, accountA, accountB }),
+  saveBootstrapMetadata({
+    baseUrl,
+    environment,
+    expectedHost,
+    branch,
+    accountA,
+    accountB,
+    requireDirectPreviewOAuth
+  }),
   writeConflictFixture(),
   writeSyntheticImageFixture()
 ]);
@@ -110,6 +137,11 @@ console.log(JSON.stringify({
   branch,
   accountAHash: accountA.userHash,
   accountBHash: accountB.userHash,
+  oauthSessionSources: [
+    accountA.oauthSessionSource,
+    accountB.oauthSessionSource
+  ],
+  directPreviewOAuthRequired: requireDirectPreviewOAuth,
   distinctAccounts: true,
   nextCommand: "npm run e2e:premium:hosted"
 }, null, 2));

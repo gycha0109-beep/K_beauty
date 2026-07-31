@@ -14,6 +14,8 @@
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "check:sec11-origin-normalization": "node scripts/check-sec11-site-origin-normalization.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
+    "verify:preview-oauth-origin": "node scripts/verify-preview-oauth-origin.mjs",
+    "verify:premium-run-scoped-cleanup": "node scripts/verify-premium-run-scoped-cleanup.mjs",
     "verify:premium-identical-retry": "node scripts/verify-premium-identical-retry.mjs",
     "verify:premium-browser-journey-contract": "node scripts/verify-premium-browser-journey-contract.mjs",
     "cleanup:premium-browser-journey": "node scripts/cleanup-premium-browser-journey.mjs",

@@ -229,6 +229,26 @@ export function safeErrorCode(response) {
   return response?.body?.error || response?.body?.reason || `http_${response?.status ?? "unknown"}`;
 }
 
+export function extractPremiumSessionId(cookieValue) {
+  if (typeof cookieValue !== "string") return null;
+  const [encodedPayload, signature, extra] = cookieValue.split(".");
+  if (!encodedPayload || !signature || extra) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8"));
+    if (
+      payload?.scope !== "premium-report" ||
+      typeof payload.sid !== "string" ||
+      !/^[A-Za-z0-9_-]{16,64}$/.test(payload.sid)
+    ) {
+      return null;
+    }
+    return payload.sid;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchAuthUser({ supabaseUrl, anonKey, accessToken }) {
   let response;
   try {
@@ -261,6 +281,61 @@ async function supabaseRest({ supabaseUrl, anonKey, accessToken, path, method = 
   const body = await response.json().catch(() => null);
   requireCondition(response.ok, FAILURE_CATEGORIES.PERSISTENCE, method === "DELETE" ? "cleanup" : "persistence-read", `supabase_rest_${response.status}`);
   return body;
+}
+
+async function supabaseServiceRest({
+  supabaseUrl,
+  serviceRoleKey,
+  path,
+  method = "GET",
+  prefer = ""
+}) {
+  let response;
+  try {
+    response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/${path}`, {
+      method,
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        Accept: "application/json",
+        ...(prefer ? { Prefer: prefer } : {})
+      }
+    });
+  } catch {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.INFRASTRUCTURE,
+      "session-cleanup",
+      "supabase_service_rest_unreachable"
+    );
+  }
+  const body = await response.json().catch(() => null);
+  requireCondition(
+    response.ok,
+    FAILURE_CATEGORIES.PERSISTENCE,
+    "session-cleanup",
+    `supabase_service_rest_${response.status}`
+  );
+  return body;
+}
+
+export async function fetchPremiumReportSessionById(config, sessionId) {
+  const rows = await supabaseServiceRest({
+    ...config,
+    path: `premium_report_sessions?select=session_id&session_id=eq.${encodeURIComponent(sessionId)}`
+  });
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+export async function deletePremiumReportSessionById(config, sessionId) {
+  const rows = await supabaseServiceRest({
+    ...config,
+    method: "DELETE",
+    prefer: "return=representation",
+    path: `premium_report_sessions?session_id=eq.${encodeURIComponent(sessionId)}&select=session_id`
+  });
+  return Array.isArray(rows)
+    ? rows.map((row) => row?.session_id).filter(Boolean)
+    : [];
 }
 
 export async function fetchSavedReportById(config, id) {
@@ -331,8 +406,20 @@ export async function writeArtifactSet({ artifactDir, manifest, steps, responses
 }
 
 export async function scanArtifactDirectoryForSecrets(artifactDir, secretValues = []) {
-  const names = ["run-manifest.json", "browser-steps.json", "response-contracts.json", "persistence-evidence.json", "invariant-verdict.json", "summary.md"];
-  const contents = (await Promise.all(names.map((name) => readFile(resolve(artifactDir, name), "utf8")))).join("\n");
+  const names = [
+    "run-manifest.json",
+    "browser-steps.json",
+    "response-contracts.json",
+    "persistence-evidence.json",
+    "invariant-verdict.json",
+    "summary.md",
+    "cleanup-scope.json"
+  ];
+  const contents = (
+    await Promise.all(
+      names.map((name) => readFile(resolve(artifactDir, name), "utf8").catch(() => ""))
+    )
+  ).join("\n");
   for (const secret of secretValues.filter((value) => typeof value === "string" && value.length >= 8)) {
     requireCondition(!contents.includes(secret), FAILURE_CATEGORIES.HARNESS, "artifact-secret-scan", "secret_material_detected_in_artifact");
   }

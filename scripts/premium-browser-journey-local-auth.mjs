@@ -448,7 +448,15 @@ export function assertAccountPair(accountA, accountB) {
   );
 }
 
-export async function saveBootstrapMetadata({ baseUrl, environment, expectedHost, branch, accountA, accountB }) {
+export async function saveBootstrapMetadata({
+  baseUrl,
+  environment,
+  expectedHost,
+  branch,
+  accountA,
+  accountB,
+  requireDirectPreviewOAuth = false
+}) {
   requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "local-config", "preview_branch_invalid");
   await writePrivateJson(LOCAL_CONFIG_PATH, {
     schemaVersion: 1,
@@ -464,6 +472,11 @@ export async function saveBootstrapMetadata({ baseUrl, environment, expectedHost
     accountAHash: accountA.userHash,
     accountBHash: accountB.userHash,
     providers: [accountA.provider, accountB.provider],
+    oauthSessionSources: [
+      accountA.oauthSessionSource || "unknown",
+      accountB.oauthSessionSource || "unknown"
+    ],
+    directPreviewOAuthRequired: requireDirectPreviewOAuth,
     distinctAccounts: accountA.userId !== accountB.userId,
     updatedAt: new Date().toISOString()
   });

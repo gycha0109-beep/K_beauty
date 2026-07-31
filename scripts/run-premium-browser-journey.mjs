@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
+import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -10,6 +11,7 @@ import {
   buildPersistenceEvidence,
   countDuplicateSourceTuples,
   createRunId,
+  extractPremiumSessionId,
   fetchAuthUser,
   fetchPremiumSessionRows,
   fetchSavedReportById,
@@ -101,6 +103,8 @@ const responses = [];
 const persistenceRecords = [];
 const checks = [];
 const createdSavedReportIds = [];
+const createdPremiumSessionIds = new Set();
+let analyzeRequestCount = 0;
 let browser = null;
 let finalError = null;
 
@@ -140,6 +144,7 @@ async function requestJson(context, name, path, options = {}, token = accessToke
 }
 
 async function runAnalyze(context, locale) {
+  analyzeRequestCount += 1;
   const response = await context.request.post(`${baseUrl.origin}/api/analyze`, {
     headers: authHeaders(),
     multipart: {
@@ -169,6 +174,9 @@ async function premiumCookie(context, previous = null) {
   const cookie = cookies[0];
   requireCondition(cookie.httpOnly && cookie.secure && cookie.sameSite === "Lax" && cookie.path === "/api/full-report", FAILURE_CATEGORIES.SESSION, "premium-cookie", "premium_cookie_contract_invalid");
   if (previous) requireCondition(cookie.value !== previous, FAILURE_CATEGORIES.SESSION, "premium-cookie", "premium_cookie_not_rotated");
+  const sessionId = extractPremiumSessionId(cookie.value);
+  requireCondition(sessionId, FAILURE_CATEGORIES.SESSION, "premium-cookie", "premium_session_id_unreadable");
+  createdPremiumSessionIds.add(sessionId);
   return cookie;
 }
 
@@ -400,6 +408,7 @@ try {
     conflictAccessToken ? null : "optional_second_account_not_supplied"
   );
   recordCheck("principal_conflict_checked", Boolean(conflictAccessToken), conflictAccessToken ? null : "optional_second_account_not_supplied");
+  recordCheck("analyze_request_count", analyzeRequestCount === 2, `observed_${analyzeRequestCount}`);
 } catch (error) {
   finalError = error instanceof JourneyFailure ? error : new JourneyFailure(FAILURE_CATEGORIES.HARNESS, "unhandled", "unhandled_error", error?.message || "unhandled_error");
 } finally {
@@ -419,10 +428,33 @@ try {
     fixture: getFixtureMetadata(imageFixture),
     storageState: { authCookieCount: storageInspection.authCookieCount, stalePremiumCookieRemovedBeforeEachLocale: true }
   };
-  const persistence = { createdSavedReportIds, records: persistenceRecords, duplicateSourceTupleCount: checks.find((item) => item.name === "source_tuple_duplicates_zero")?.passed ? 0 : null, cleanupRequired: createdSavedReportIds.length > 0 };
+  const premiumSessionIds = [...createdPremiumSessionIds];
+  const persistence = {
+    createdSavedReportIds,
+    records: persistenceRecords,
+    analyzeRequestCount,
+    knownPremiumSessionCount: premiumSessionIds.length,
+    knownPremiumSessionHashes: premiumSessionIds.map(hashIdentifier),
+    duplicateSourceTupleCount: checks.find((item) => item.name === "source_tuple_duplicates_zero")?.passed ? 0 : null,
+    cleanupRequired: createdSavedReportIds.length > 0 || premiumSessionIds.length > 0
+  };
   let verdict = { passed, failure: finalError ? { category: finalError.category, step: finalError.step, code: finalError.code } : null, checks };
-  let summary = `# Premium authenticated runtime journey\n\n- Run ID: \`${runId}\`\n- Environment: \`${environment}\`\n- Target host: \`${baseUrl.hostname}\`\n- Target SHA: \`${deploymentSha}\`\n- Result: **${passed ? "PASS" : "FAIL"}**\n- Created test reports: ${createdSavedReportIds.length}\n- Cleanup: ${createdSavedReportIds.length ? "required through the separate cleanup command" : "not required"}\n${finalError ? `- Failure: \`${finalError.category}/${finalError.step}/${finalError.code}\`` : ""}\n`;
+  let summary = `# Premium authenticated runtime journey\n\n- Run ID: \`${runId}\`\n- Environment: \`${environment}\`\n- Target host: \`${baseUrl.hostname}\`\n- Target SHA: \`${deploymentSha}\`\n- Result: **${passed ? "PASS" : "FAIL"}**\n- Analyze requests: ${analyzeRequestCount}\n- Created test reports: ${createdSavedReportIds.length}\n- Known Premium sessions: ${premiumSessionIds.length}\n- Cleanup: ${persistence.cleanupRequired ? "required through the separate cleanup command" : "not required"}\n${finalError ? `- Failure: \`${finalError.category}/${finalError.step}/${finalError.code}\`` : ""}\n`;
   await writeArtifactSet({ artifactDir, manifest, steps, responses, persistence, verdict, summary });
+  await writeFile(
+    resolve(artifactDir, "cleanup-scope.json"),
+    `${JSON.stringify(
+      {
+        schemaVersion: "premium-run-cleanup-scope-v1",
+        runId,
+        createdSavedReportIds: [...new Set(createdSavedReportIds)],
+        premiumSessionIds
+      },
+      null,
+      2
+    )}\n`,
+    { encoding: "utf8", mode: 0o600 }
+  );
   try {
     await scanArtifactDirectoryForSecrets(artifactDir, [accessToken, conflictAccessToken, previewBypassToken]);
   } catch (scanError) {
@@ -438,8 +470,11 @@ try {
     const quarantinedPersistence = {
       createdSavedReportIds: [...new Set(createdSavedReportIds)],
       records: [],
+      analyzeRequestCount,
+      knownPremiumSessionCount: premiumSessionIds.length,
+      knownPremiumSessionHashes: premiumSessionIds.map(hashIdentifier),
       duplicateSourceTupleCount: persistence.duplicateSourceTupleCount,
-      cleanupRequired: createdSavedReportIds.length > 0,
+      cleanupRequired: persistence.cleanupRequired,
       evidenceQuarantined: true
     };
     await writeArtifactSet({
@@ -480,7 +515,10 @@ try {
         persistence: {
           createdSavedReportIds: [...new Set(createdSavedReportIds)],
           records: [],
-          cleanupRequired: createdSavedReportIds.length > 0,
+          analyzeRequestCount,
+          knownPremiumSessionCount: premiumSessionIds.length,
+          knownPremiumSessionHashes: premiumSessionIds.map(hashIdentifier),
+          cleanupRequired: persistence.cleanupRequired,
           evidenceQuarantined: true
         },
         verdict,

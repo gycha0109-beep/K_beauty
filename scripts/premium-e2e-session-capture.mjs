@@ -314,7 +314,8 @@ async function captureFromPersistedCookies({
   profilePath,
   storageStatePath,
   baseUrl,
-  previewBypassToken = ""
+  previewBypassToken = "",
+  allowCanonicalBridge = true
 }) {
   const extraHTTPHeaders = previewBypassToken
     ? {
@@ -339,14 +340,16 @@ async function captureFromPersistedCookies({
     await page.close();
 
     let targetCookies = await context.cookies(baseUrl.origin);
-    const bridged = await bridgeCanonicalOAuthCookies({
-      context,
-      page,
-      baseUrl,
-      allCookies,
-      label,
-      canonicalHost
-    });
+    const bridged = allowCanonicalBridge
+      ? await bridgeCanonicalOAuthCookies({
+          context,
+          page,
+          baseUrl,
+          allCookies,
+          label,
+          canonicalHost
+        })
+      : false;
     if (bridged) {
       targetCookies = await context.cookies(baseUrl.origin);
     }
@@ -423,6 +426,7 @@ async function captureFromPersistedCookies({
       userId: user.id,
       userHash: hashIdentifier(user.id),
       provider: "google",
+      oauthSessionSource: bridged ? "canonical_bridge" : "target_host",
       storageStatePath
     };
   } finally {

@@ -48,6 +48,7 @@ const EXPECTED_VERIFIERS = [
   "verify-premium-report-ownership-boundary.mjs",
   "verify-premium-report-reentry-contract.mjs",
   "verify-premium-route-storage-reentry.mjs",
+  "verify-premium-run-scoped-cleanup.mjs",
   "verify-premium-security-evidence-closure.mjs",
   "verify-premium-session-payload-boundary.mjs",
   "verify-premium-session-runtime-diagnostics.mjs",
