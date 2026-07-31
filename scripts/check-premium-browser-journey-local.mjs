@@ -77,6 +77,10 @@ assert.match(sessionCaptureSource, /oauth_cookie_bridge_failed/);
 assert.match(sessionCaptureSource, /OAuth 세션을 .*Preview 호스트로 로컬 복제했습니다/);
 assert.match(
   sessionCaptureSource,
+  /const targetCookies = await context\.cookies\(baseUrl\.origin\);[\s\S]*?for \(const cookie of targetCookies\.filter\(authCookie\)\) \{[\s\S]*?clearCookies\(\{ name: cookie\.name, domain: cookie\.domain \}\)/
+);
+assert.match(
+  sessionCaptureSource,
   /const bridged = await bridgeCanonicalOAuthCookies\([\s\S]*?if \(bridged\) \{[\s\S]*?targetCookies = await context\.cookies\(baseUrl\.origin\);[\s\S]*?\}[\s\S]*?const targetAuthCookies/
 );
 assert.match(sessionCaptureSource, /normalizeTargetAuthCookies/);

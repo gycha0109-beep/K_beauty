@@ -285,8 +285,9 @@ async function bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies,
   const sourceCookies = cookiesForHost(allCookies, canonicalHost);
   if (!sourceCookies.length) return false;
 
-  for (const cookie of sourceCookies) {
-    await context.clearCookies({ name: cookie.name, domain: baseUrl.hostname }).catch(() => {});
+  const targetCookies = await context.cookies(baseUrl.origin);
+  for (const cookie of targetCookies.filter(authCookie)) {
+    await context.clearCookies({ name: cookie.name, domain: cookie.domain }).catch(() => {});
   }
   await context.addCookies(sourceCookies.map((cookie) => toTargetHostCookie(cookie, baseUrl)));
 
