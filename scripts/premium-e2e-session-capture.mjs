@@ -278,8 +278,15 @@ async function normalizeTargetAuthCookies({ context, baseUrl, label }) {
   return normalizedCookies;
 }
 
-async function bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label }) {
-  const canonicalHost = await discoverCanonicalOAuthHost(page);
+async function bridgeCanonicalOAuthCookies({
+  context,
+  page,
+  baseUrl,
+  allCookies,
+  label,
+  canonicalHost: providedCanonicalHost = ""
+}) {
+  const canonicalHost = providedCanonicalHost || await discoverCanonicalOAuthHost(page);
   if (!canonicalHost || canonicalHost === baseUrl.hostname.toLowerCase()) return false;
 
   const sourceCookies = cookiesForHost(allCookies, canonicalHost);
@@ -326,9 +333,20 @@ async function captureFromPersistedCookies({
     const response = await page.goto(baseUrl.origin, { waitUntil: "domcontentloaded", timeout: 60_000 });
     requireCondition(response && response.status() < 400, FAILURE_CATEGORIES.INFRASTRUCTURE, `local-auth-${label}`, "preview_navigation_failed");
 
-    let targetCookies = await context.cookies(baseUrl.origin);
     const allCookies = await context.cookies();
-    const bridged = await bridgeCanonicalOAuthCookies({ context, page, baseUrl, allCookies, label });
+    const publicConfig = await discoverPublicConfig({ page, context, cookies: allCookies });
+    const canonicalHost = await discoverCanonicalOAuthHost(page);
+    await page.close();
+
+    let targetCookies = await context.cookies(baseUrl.origin);
+    const bridged = await bridgeCanonicalOAuthCookies({
+      context,
+      page,
+      baseUrl,
+      allCookies,
+      label,
+      canonicalHost
+    });
     if (bridged) {
       targetCookies = await context.cookies(baseUrl.origin);
     }
@@ -351,7 +369,6 @@ async function captureFromPersistedCookies({
     }
 
     targetCookies = await normalizeTargetAuthCookies({ context, baseUrl, label });
-    const publicConfig = await discoverPublicConfig({ page, context, cookies: targetCookies });
     requireCondition(
       publicConfig.supabaseUrl && publicConfig.anonKey,
       FAILURE_CATEGORIES.PRECONDITION,

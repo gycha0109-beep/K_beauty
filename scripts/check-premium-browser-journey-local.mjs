@@ -81,6 +81,10 @@ assert.match(
 );
 assert.match(
   sessionCaptureSource,
+  /const publicConfig = await discoverPublicConfig\([\s\S]*?const canonicalHost = await discoverCanonicalOAuthHost\(page\);[\s\S]*?await page\.close\(\);[\s\S]*?const bridged = await bridgeCanonicalOAuthCookies/
+);
+assert.match(
+  sessionCaptureSource,
   /const bridged = await bridgeCanonicalOAuthCookies\([\s\S]*?if \(bridged\) \{[\s\S]*?targetCookies = await context\.cookies\(baseUrl\.origin\);[\s\S]*?\}[\s\S]*?const targetAuthCookies/
 );
 assert.match(sessionCaptureSource, /normalizeTargetAuthCookies/);
