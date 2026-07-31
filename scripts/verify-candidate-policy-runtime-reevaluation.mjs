@@ -13,8 +13,19 @@ const ALLOWED_CHANGED_FILES = new Set([
   ".codex/AI_WORK_LOG.md",
   ARCHITECTURE,
   REVIEW,
+  "app/api/analyze/route.js",
+  "docs/architecture/candidate-exposure-policy-shadow-runtime-v1.md",
+  "docs/verification/candidate-exposure-policy-shadow-runtime-result.md",
+  "lib/candidate-exposure-policy-contract.js",
+  "lib/candidate-exposure-policy-evaluator-adapter.js",
+  "lib/candidate-exposure-policy-observability.js",
+  "lib/candidate-exposure-policy-shadow.js",
+  "lib/candidate-exposure-policy.js",
+  "lib/evaluator-boundary-policy-shadow.js",
+  "package.json",
   "scripts/review-candidate-policy-runtime-reevaluation.mjs",
   "scripts/run-security-closeout-verifier-suite.mjs",
+  "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
   "scripts/verify-candidate-policy-runtime-reevaluation.mjs"
 ]);
 

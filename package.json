@@ -6,6 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
+    "verify:candidate-exposure-policy-shadow": "node scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
     "hwahae:override": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
