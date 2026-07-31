@@ -26,7 +26,8 @@ const ALLOWED_CHANGED_FILES = new Set([
   "scripts/review-candidate-policy-runtime-reevaluation.mjs",
   "scripts/run-security-closeout-verifier-suite.mjs",
   "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
-  "scripts/verify-candidate-policy-runtime-reevaluation.mjs"
+  "scripts/verify-candidate-policy-runtime-reevaluation.mjs",
+  "scripts/verify-evaluator-boundary-readiness-review.mjs"
 ]);
 
 function read(relativePath) {
