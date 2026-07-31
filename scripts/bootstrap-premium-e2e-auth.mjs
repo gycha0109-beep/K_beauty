@@ -79,7 +79,12 @@ async function captureOrLogin({ label, profilePath, storageStatePath, reset }) {
     }
   }
 
-  await openManualSystemChromeSession({ label, profilePath, baseUrl });
+  await openManualSystemChromeSession({
+    label,
+    profilePath,
+    baseUrl,
+    waitForClose: requireDirectPreviewOAuth
+  });
   return captureAccountSessionResilient({
     label,
     profilePath,

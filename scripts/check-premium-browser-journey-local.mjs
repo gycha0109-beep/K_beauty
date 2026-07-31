@@ -62,6 +62,8 @@ assert.doesNotMatch(authSource, /password/i);
 
 assert.match(systemBrowserSource, /Google\/Chrome\/Application\/chrome\.exe/);
 assert.match(systemBrowserSource, /PREMIUM_E2E_SYSTEM_CHROME/);
+assert.match(systemBrowserSource, /waitForBrowserClose/);
+assert.match(systemBrowserSource, /interactive_login_timeout/);
 assert.match(systemBrowserSource, /--user-data-dir=/);
 assert.match(systemBrowserSource, /--disable-background-mode/);
 assert.match(systemBrowserSource, /Playwright가 Google 로그인 화면을 제어하지 않습니다/);

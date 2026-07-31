@@ -63,7 +63,48 @@ async function waitForBrowserStart(child, label) {
   });
 }
 
-export async function openManualSystemChromeSession({ label, profilePath, baseUrl }) {
+async function waitForBrowserClose(child, label, timeoutMs = 10 * 60 * 1000) {
+  await new Promise((resolvePromise, rejectPromise) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      rejectPromise(
+        new JourneyFailure(
+          FAILURE_CATEGORIES.AUTH,
+          `system-browser-${label}`,
+          "interactive_login_timeout"
+        )
+      );
+    }, timeoutMs);
+    child.once("exit", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolvePromise();
+    });
+    child.once("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      rejectPromise(
+        new JourneyFailure(
+          FAILURE_CATEGORIES.INFRASTRUCTURE,
+          `system-browser-${label}`,
+          "system_chrome_runtime_failed",
+          error?.message || "system_chrome_runtime_failed"
+        )
+      );
+    });
+  });
+}
+
+export async function openManualSystemChromeSession({
+  label,
+  profilePath,
+  baseUrl,
+  waitForClose = false
+}) {
   requireCondition(
     baseUrl?.protocol === "https:",
     FAILURE_CATEGORIES.PRECONDITION,
@@ -88,11 +129,17 @@ export async function openManualSystemChromeSession({ label, profilePath, baseUr
   });
 
   await waitForBrowserStart(child, label);
-  child.unref();
 
   console.log(`[${label}] 일반 Google Chrome을 열었습니다.`);
   console.log(`[${label}] 이 창에서 앱의 Google 로그인을 완료하십시오. Playwright가 Google 로그인 화면을 제어하지 않습니다.`);
 
+  if (waitForClose) {
+    await waitForBrowserClose(child, label);
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 1500));
+    return;
+  }
+
+  child.unref();
   const prompt = createInterface({ input, output });
   try {
     await prompt.question(`[${label}] 앱 화면으로 돌아온 뒤 이 전용 Chrome 창을 모두 닫고 Enter를 누르십시오: `);
