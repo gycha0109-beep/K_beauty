@@ -1,0 +1,361 @@
+name: Stage 11C Hosted Revalidation Once
+
+on:
+  pull_request:
+    types: [edited]
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-revalidation:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
+      VERCEL_SCOPE: johnny-self
+      IMPLEMENTATION_SHA: c425fab4458026477ca0d6be9b98a04e62a1ad1f
+      HEAD_REF: codex/candidate-exposure-policy-shadow-evaluation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: c425fab4458026477ca0d6be9b98a04e62a1ad1f
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Require Vercel deployment authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "STAGE11C_HOSTED_REVALIDATION_BLOCKED: VERCEL_TOKEN secret unavailable" >&2
+            exit 1
+          fi
+          echo "::add-mask::$VERCEL_TOKEN"
+
+      - name: Install Vercel CLI
+        shell: bash
+        run: npm install --global vercel@latest
+
+      - name: Discover default-off deployment and create exact-SHA shadow-on deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time, urllib.parse, urllib.request
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          project = os.environ['VERCEL_PROJECT_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          headers = {'Authorization': f'Bearer {token}'}
+          url = 'https://api.vercel.com/v6/deployments?' + urllib.parse.urlencode({
+              'projectId': project,
+              'teamId': team,
+              'limit': 100,
+          })
+          deadline = time.time() + 900
+          while time.time() < deadline:
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  payload = json.load(response)
+              matches = [d for d in payload.get('deployments', [])
+                         if d.get('meta', {}).get('githubCommitSha') == sha
+                         and d.get('target') is None
+                         and (d.get('readyState') == 'READY' or d.get('state') == 'READY')]
+              if matches:
+                  deployment = max(matches, key=lambda d: d.get('createdAt', d.get('created', 0)))
+                  out = {
+                      'id': deployment.get('uid') or deployment['id'],
+                      'url': 'https://' + deployment['url'],
+                      'sha': sha,
+                  }
+                  open('default-deployment.json', 'w').write(json.dumps(out))
+                  print(json.dumps({'defaultDeploymentId': out['id'], 'sha': sha}))
+                  break
+              time.sleep(15)
+          else:
+              raise SystemExit('default_off_exact_sha_preview_not_ready')
+          PY
+
+          vercel pull --yes --environment=preview --git-branch="$HEAD_REF" --token="$VERCEL_TOKEN" --scope "$VERCEL_SCOPE" >/dev/null
+          vercel deploy --yes \
+            --env DEV_ONLY_CANDIDATE_EXPOSURE_POLICY_SHADOW=1 \
+            --meta githubCommitSha="$IMPLEMENTATION_SHA" \
+            --meta githubCommitRef="$HEAD_REF" \
+            --meta actor=codex-stage11c \
+            --token="$VERCEL_TOKEN" \
+            --scope "$VERCEL_SCOPE" > shadow-deploy.log
+
+          python3 - <<'PY'
+          import json, os, re, time, urllib.parse, urllib.request
+          text = open('shadow-deploy.log', errors='replace').read()
+          urls = re.findall(r'https://[^\s]+?\.vercel\.app', text)
+          if not urls:
+              raise SystemExit('shadow_deployment_url_missing')
+          deployment_url = urls[-1].rstrip('/')
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          headers = {'Authorization': f'Bearer {token}'}
+          endpoint = 'https://api.vercel.com/v13/deployments/' + urllib.parse.quote(
+              deployment_url.removeprefix('https://'), safe=''
+          ) + '?' + urllib.parse.urlencode({'teamId': team})
+          deadline = time.time() + 900
+          while time.time() < deadline:
+              req = urllib.request.Request(endpoint, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  deployment = json.load(response)
+              state = deployment.get('readyState') or deployment.get('state')
+              if state == 'READY':
+                  actual_sha = deployment.get('meta', {}).get('githubCommitSha')
+                  if actual_sha != sha:
+                      raise SystemExit('shadow_runtime_sha_mismatch')
+                  out = {
+                      'id': deployment['id'],
+                      'url': 'https://' + deployment['url'],
+                      'sha': actual_sha,
+                  }
+                  open('shadow-deployment.json', 'w').write(json.dumps(out))
+                  print(json.dumps({'shadowDeploymentId': out['id'], 'sha': actual_sha}))
+                  break
+              if state in {'ERROR', 'CANCELED'}:
+                  raise SystemExit('shadow_deployment_failed')
+              time.sleep(15)
+          else:
+              raise SystemExit('shadow_deployment_not_ready')
+          PY
+          rm -f shadow-deploy.log
+
+      - name: Run four exact-SHA Hosted probes and build aggregate evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import binascii, hashlib, http.cookiejar, json, os, re, struct, time, urllib.error, urllib.parse, urllib.request, uuid, zlib
+          TOKEN = os.environ['VERCEL_TOKEN']
+          TEAM = os.environ['VERCEL_ORG_ID']
+          SHA = os.environ['IMPLEMENTATION_SHA']
+          deployments = {
+              'off': json.load(open('default-deployment.json')),
+              'on': json.load(open('shadow-deployment.json')),
+          }
+          api_headers = {'Authorization': f'Bearer {TOKEN}', 'Content-Type': 'application/json'}
+          bypasses = {}
+
+          def api_patch(path, body):
+              request = urllib.request.Request(
+                  'https://api.vercel.com' + path,
+                  data=json.dumps(body).encode(),
+                  headers=api_headers,
+                  method='PATCH',
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          def find_secret(value):
+              if isinstance(value, dict):
+                  for key, nested in value.items():
+                      if isinstance(nested, str) and re.search(r'(secret|bypass)', key, re.I) and len(nested) >= 8:
+                          return nested
+                  for nested in value.values():
+                      found = find_secret(nested)
+                      if found:
+                          return found
+              elif isinstance(value, list):
+                  for nested in value:
+                      found = find_secret(nested)
+                      if found:
+                          return found
+              return None
+
+          def create_bypass(deployment_id):
+              errors = []
+              for prefix in ('/v2/aliases', '/aliases'):
+                  path = f'{prefix}/{urllib.parse.quote(deployment_id)}/protection-bypass?' + urllib.parse.urlencode({'teamId': TEAM})
+                  try:
+                      payload = api_patch(path, {'ttl': 3600})
+                      secret = find_secret(payload)
+                      if secret:
+                          print(f'::add-mask::{secret}')
+                          return path, secret
+                      errors.append('secret_missing')
+                  except urllib.error.HTTPError as error:
+                      errors.append(str(error.code))
+              raise RuntimeError('protection_bypass_unavailable:' + ','.join(errors))
+
+          def revoke_bypass(path, secret):
+              try:
+                  api_patch(path, {'revoke': {'secret': secret, 'regenerate': False}})
+              except Exception:
+                  pass
+
+          def png_fixture():
+              width = height = 64
+              raw = b''.join(b'\x00' + bytes([196, 148, 132]) * width for _ in range(height))
+              def chunk(kind, data):
+                  return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
+              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
+
+          fields = {
+              'skinType': 'combination',
+              'sensitivityLevel': 'low',
+              'mainConcern': 'uneven_tone',
+              'mainConcerns': '["uneven_tone","dehydration"]',
+              'primaryConcern': 'uneven_tone',
+              'recentSkinChange': 'no',
+              'recentlyChangedProduct': 'no',
+              'cleansingFrequency': 'twice',
+              'texturePreference': 'gel',
+              'postCleanseFeel': 'comfortable',
+              'afternoonState': 'mostly_same',
+              'environmentExposure': '["outdoor"]',
+              'dislikedFeel': 'sticky',
+              'genderPreference': 'unspecified',
+              'whiteCastHate': 'true',
+              'toneUpWanted': 'false',
+              'makeupUse': 'true',
+              'eyeSensitive': 'false',
+              'sunscreenPreferenceState': 'answered',
+              'outdoorExposure': 'true',
+              'verySensitivePeriod': 'false',
+              'currentProducts': '[]',
+          }
+
+          def multipart(locale):
+              boundary = '----stage11c-' + uuid.uuid4().hex
+              chunks = []
+              for key, value in {**fields, 'locale': locale}.items():
+                  chunks.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode())
+              chunks.append(f'--{boundary}\r\nContent-Disposition: form-data; name="image"; filename="stage11c-fixture.png"\r\nContent-Type: image/png\r\n\r\n'.encode() + png_fixture() + b'\r\n')
+              chunks.append(f'--{boundary}--\r\n'.encode())
+              return boundary, b''.join(chunks)
+
+          def stable(value):
+              if isinstance(value, dict): return {key: stable(value[key]) for key in sorted(value)}
+              if isinstance(value, list): return [stable(item) for item in value]
+              return value
+
+          def digest(value):
+              encoded = json.dumps(stable(value), ensure_ascii=False, separators=(',', ':')).encode()
+              return hashlib.sha256(encoded).hexdigest()
+
+          def collect_ids(value, output):
+              if isinstance(value, dict):
+                  if isinstance(value.get('id'), str) and value['id']:
+                      output.append(value['id'])
+                  for key in sorted(value): collect_ids(value[key], output)
+              elif isinstance(value, list):
+                  for item in value: collect_ids(item, output)
+
+          def open_share_session(base, secret):
+              jar = http.cookiejar.CookieJar()
+              opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+              share = base + '/?_vercel_share=' + urllib.parse.quote(secret)
+              with opener.open(share, timeout=60) as response:
+                  response.read(1)
+              return opener
+
+          records = []
+          try:
+              for mode, deployment in deployments.items():
+                  bypasses[mode] = create_bypass(deployment['id'])
+              sessions = {
+                  mode: open_share_session(deployments[mode]['url'], bypasses[mode][1])
+                  for mode in ('off', 'on')
+              }
+              for locale in ('ko', 'en'):
+                  for mode in ('off', 'on'):
+                      boundary, body = multipart(locale)
+                      diagnostic = 'premium-session-diagnostic-' + str(uuid.uuid4())
+                      request = urllib.request.Request(
+                          deployments[mode]['url'] + '/api/analyze',
+                          data=body,
+                          headers={
+                              'Content-Type': f'multipart/form-data; boundary={boundary}',
+                              'x-bejewely-premium-diagnostic-id': diagnostic,
+                          },
+                          method='POST',
+                      )
+                      started = time.time()
+                      try:
+                          response = sessions[mode].open(request, timeout=180)
+                          status = response.status
+                          headers = dict(response.headers.items())
+                          payload = json.loads(response.read())
+                      except urllib.error.HTTPError as error:
+                          status = error.code
+                          try: error_payload = json.loads(error.read())
+                          except Exception: error_payload = {}
+                          raise RuntimeError(f'{locale}_{mode}_http_{status}_' + str(error_payload.get('code') or error_payload.get('error') or 'unknown'))
+                      if status != 200:
+                          raise RuntimeError(f'{locale}_{mode}_http_{status}')
+                      normalized = json.loads(json.dumps(payload))
+                      normalized.pop('analysisRunId', None)
+                      if isinstance(normalized.get('meta'), dict): normalized['meta'].pop('generatedAt', None)
+                      order = []
+                      collect_ids(normalized, order)
+                      lower = {str(key).lower(): value for key, value in headers.items()}
+                      records.append({
+                          'locale': locale,
+                          'mode': mode,
+                          'httpStatus': status,
+                          'durationMs': round((time.time() - started) * 1000),
+                          'responseFingerprint': digest(normalized),
+                          'candidateOrderFingerprint': digest(order),
+                          'candidateReferenceCount': len(order),
+                          'runtimeCommit': lower.get('x-bejewely-runtime-commit'),
+                          'diagnosticVersion': lower.get('x-bejewely-premium-diagnostic-version'),
+                          'finalStage': lower.get('x-bejewely-premium-final-stage'),
+                      })
+              pairs = {}
+              for locale in ('ko', 'en'):
+                  off = next(record for record in records if record['locale'] == locale and record['mode'] == 'off')
+                  on = next(record for record in records if record['locale'] == locale and record['mode'] == 'on')
+                  pairs[locale] = {
+                      'responseFingerprintMatch': off['responseFingerprint'] == on['responseFingerprint'],
+                      'candidateOrderFingerprintMatch': off['candidateOrderFingerprint'] == on['candidateOrderFingerprint'],
+                      'candidateReferenceCountMatch': off['candidateReferenceCount'] == on['candidateReferenceCount'],
+                  }
+              if any(record['runtimeCommit'] != SHA for record in records):
+                  raise RuntimeError('runtime_commit_mismatch')
+              result = {
+                  'schemaVersion': 'stage11c-hosted-revalidation-aggregate-v1',
+                  'implementationSha': SHA,
+                  'defaultDeploymentId': deployments['off']['id'],
+                  'shadowDeploymentId': deployments['on']['id'],
+                  'analyzeCallCount': len(records),
+                  'records': records,
+                  'pairs': pairs,
+              }
+              open('stage11c-hosted-revalidation-aggregate.json', 'w').write(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
+              print(json.dumps({
+                  'schemaVersion': result['schemaVersion'],
+                  'implementationSha': SHA,
+                  'analyzeCallCount': len(records),
+                  'http200Count': sum(record['httpStatus'] == 200 for record in records),
+                  'runtimeCommitMatchCount': sum(record['runtimeCommit'] == SHA for record in records),
+                  'premiumFinalStageCount': sum(record['finalStage'] == 'S9_cookie_emission' for record in records),
+                  'pairs': pairs,
+              }, indent=2))
+          finally:
+              for path, secret in bypasses.values():
+                  revoke_bypass(path, secret)
+          PY
+          rm -f default-deployment.json shadow-deployment.json
+
+      - name: Upload aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11c-hosted-revalidation-aggregate
+          path: stage11c-hosted-revalidation-aggregate.json
+          if-no-files-found: warn
+          retention-days: 1
