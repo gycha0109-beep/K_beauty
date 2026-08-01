@@ -17,13 +17,14 @@ jobs:
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
       IMPLEMENTATION_SHA: 3d697efd3b7b90137c68e988d42487c7a58a92a2
       DEFAULT_DEPLOYMENT_ID: dpl_FBndGs9izVGgC32FUoRLJngcm5Dh
       DEFAULT_DEPLOYMENT_URL: https://k-beauty-36a69u14b-johnny-self.vercel.app
       SHADOW_DEPLOYMENT_ID: dpl_GGCBUfuwjAD52oF6pJiaSNhwApHy
       SHADOW_DEPLOYMENT_URL: https://k-beauty-euj8399kp-johnny-self.vercel.app
     steps:
-      - name: Run exact-SHA KO/EN off/on probes
+      - name: Run four exact-SHA probes with temporary automation bypass
         shell: bash
         run: |
           set -euo pipefail
@@ -32,10 +33,8 @@ jobs:
           python3 - <<'PY'
           import binascii
           import hashlib
-          import http.cookiejar
           import json
           import os
-          import re
           import struct
           import time
           import urllib.error
@@ -46,8 +45,9 @@ jobs:
 
           TOKEN = os.environ['VERCEL_TOKEN']
           TEAM = os.environ['VERCEL_ORG_ID']
+          PROJECT = os.environ['VERCEL_PROJECT_ID']
           SHA = os.environ['IMPLEMENTATION_SHA']
-          deployments = {
+          DEPLOYMENTS = {
               'off': {
                   'id': os.environ['DEFAULT_DEPLOYMENT_ID'],
                   'url': os.environ['DEFAULT_DEPLOYMENT_URL'],
@@ -57,44 +57,47 @@ jobs:
                   'url': os.environ['SHADOW_DEPLOYMENT_URL'],
               },
           }
-          api_headers = {
+          API_HEADERS = {
               'Authorization': f'Bearer {TOKEN}',
               'Content-Type': 'application/json',
           }
-          bypasses = {}
+          BYPASS_ENDPOINT = (
+              f'/v1/projects/{urllib.parse.quote(PROJECT, safe="")}/protection-bypass?'
+              + urllib.parse.urlencode({'teamId': TEAM})
+          )
+          PROJECT_ENDPOINT = (
+              f'/v9/projects/{urllib.parse.quote(PROJECT, safe="")}?'
+              + urllib.parse.urlencode({'teamId': TEAM})
+          )
+          RECORDS = []
+          GENERATED_SECRET = None
+          RUN_ERROR = None
+          CLEANUP_ERROR = None
 
           def api_request(path, method='GET', body=None):
               request = urllib.request.Request(
                   'https://api.vercel.com' + path,
                   data=None if body is None else json.dumps(body).encode(),
-                  headers=api_headers,
+                  headers=API_HEADERS,
                   method=method,
               )
               with urllib.request.urlopen(request, timeout=30) as response:
                   return json.load(response)
 
-          def share_secret(value):
-              if isinstance(value, str):
-                  match = re.search(r'[?&]_vercel_share=([^&]+)', value)
-                  return urllib.parse.unquote(match.group(1)) if match else None
-              if isinstance(value, dict):
-                  for nested in value.values():
-                      found = share_secret(nested)
-                      if found:
-                          return found
-              if isinstance(value, list):
-                  for nested in value:
-                      found = share_secret(nested)
-                      if found:
-                          return found
-              return None
+          def project_bypass_map():
+              project = api_request(PROJECT_ENDPOINT)
+              value = project.get('protectionBypass')
+              return value if isinstance(value, dict) else {}
 
           def verify_deployment(mode):
-              deployment = deployments[mode]
-              details = api_request(
-                  '/v13/deployments/' + urllib.parse.quote(deployment['id'], safe='') +
-                  '?' + urllib.parse.urlencode({'teamId': TEAM})
+              deployment = DEPLOYMENTS[mode]
+              endpoint = (
+                  '/v13/deployments/'
+                  + urllib.parse.quote(deployment['id'], safe='')
+                  + '?'
+                  + urllib.parse.urlencode({'teamId': TEAM})
               )
+              details = api_request(endpoint)
               state = details.get('readyState') or details.get('state')
               if state != 'READY':
                   raise RuntimeError(f'{mode}_deployment_not_ready')
@@ -105,43 +108,35 @@ jobs:
               if mode == 'on' and details.get('meta', {}).get('actor') != 'codex-stage11c-linked':
                   raise RuntimeError('shadow_deployment_actor_mismatch')
 
-          def create_bypass(deployment_id):
-              errors = []
-              for prefix in ('/v2/aliases', '/aliases'):
-                  path = (
-                      f'{prefix}/{urllib.parse.quote(deployment_id, safe="")}/protection-bypass?' +
-                      urllib.parse.urlencode({'teamId': TEAM})
-                  )
-                  try:
-                      payload = api_request(path, method='PATCH', body={'ttl': 3600})
-                      secret = share_secret(payload)
-                      if secret:
-                          print(f'::add-mask::{secret}')
-                          return path, secret
-                      errors.append('shareable_url_missing')
-                  except urllib.error.HTTPError as error:
-                      errors.append(str(error.code))
-              raise RuntimeError('protection_bypass_unavailable:' + ','.join(errors))
-
-          def revoke_bypass(path, secret):
-              try:
-                  api_request(
-                      path,
-                      method='PATCH',
-                      body={'revoke': {'secret': secret, 'regenerate': False}},
-                  )
-              except Exception:
-                  pass
-
-          def open_session(base, secret):
-              jar = http.cookiejar.CookieJar()
-              opener = urllib.request.build_opener(
-                  urllib.request.HTTPCookieProcessor(jar)
+          def generate_temporary_bypass():
+              before = set(project_bypass_map())
+              api_request(
+                  BYPASS_ENDPOINT,
+                  method='PATCH',
+                  body={'generate': {'note': 'Stage 11C exact-SHA hosted probe temporary'}},
               )
-              share_url = base + '/?_vercel_share=' + urllib.parse.quote(secret)
-              with opener.open(share_url, timeout=60) as response:
-                  response.read(1)
-              return opener
+              after_map = project_bypass_map()
+              created = [
+                  secret
+                  for secret in set(after_map) - before
+                  if isinstance(after_map.get(secret), dict)
+                  and after_map[secret].get('scope') == 'automation-bypass'
+                  and after_map[secret].get('note') == 'Stage 11C exact-SHA hosted probe temporary'
+              ]
+              if len(created) != 1:
+                  raise RuntimeError('temporary_automation_bypass_identification_failed')
+              secret = created[0]
+              print(f'::add-mask::{secret}')
+              return secret
+
+          def revoke_temporary_bypass(secret):
+              api_request(
+                  BYPASS_ENDPOINT,
+                  method='PATCH',
+                  body={'revoke': {'secret': secret, 'regenerate': False}},
+              )
+              if secret in project_bypass_map():
+                  raise RuntimeError('temporary_automation_bypass_still_present')
 
           def png_fixture():
               width = height = 64
@@ -149,19 +144,23 @@ jobs:
                   b'\x00' + bytes([196, 148, 132]) * width
                   for _ in range(height)
               )
+
               def chunk(kind, data):
                   return (
-                      struct.pack('>I', len(data)) + kind + data +
-                      struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
+                      struct.pack('>I', len(data))
+                      + kind
+                      + data
+                      + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
                   )
+
               return (
-                  b'\x89PNG\r\n\x1a\n' +
-                  chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)) +
-                  chunk(b'IDAT', zlib.compress(raw, 9)) +
-                  chunk(b'IEND', b'')
+                  b'\x89PNG\r\n\x1a\n'
+                  + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
+                  + chunk(b'IDAT', zlib.compress(raw, 9))
+                  + chunk(b'IEND', b'')
               )
 
-          fields = {
+          FIELDS = {
               'skinType': 'combination',
               'sensitivityLevel': 'low',
               'mainConcern': 'uneven_tone',
@@ -189,7 +188,7 @@ jobs:
           def multipart(locale):
               boundary = '----stage11c-' + uuid.uuid4().hex
               chunks = []
-              for key, value in {**fields, 'locale': locale}.items():
+              for key, value in {**FIELDS, 'locale': locale}.items():
                   chunks.append(
                       f'--{boundary}\r\n'
                       f'Content-Disposition: form-data; name="{key}"\r\n\r\n'
@@ -199,8 +198,9 @@ jobs:
                   f'--{boundary}\r\n'
                   'Content-Disposition: form-data; name="image"; '
                   'filename="stage11c-fixture.png"\r\n'
-                  'Content-Type: image/png\r\n\r\n'.encode() +
-                  png_fixture() + b'\r\n'
+                  'Content-Type: image/png\r\n\r\n'.encode()
+                  + png_fixture()
+                  + b'\r\n'
               )
               chunks.append(f'--{boundary}--\r\n'.encode())
               return boundary, b''.join(chunks)
@@ -228,81 +228,69 @@ jobs:
                   for item in value:
                       collect_ids(item, output)
 
-          records = []
-          try:
-              verify_deployment('off')
-              verify_deployment('on')
-              for mode in ('off', 'on'):
-                  bypasses[mode] = create_bypass(deployments[mode]['id'])
-              sessions = {
-                  mode: open_session(deployments[mode]['url'], bypasses[mode][1])
-                  for mode in ('off', 'on')
+          def run_probe(locale, mode, bypass_secret):
+              boundary, body = multipart(locale)
+              diagnostic_id = 'premium-session-diagnostic-' + str(uuid.uuid4())
+              request = urllib.request.Request(
+                  DEPLOYMENTS[mode]['url'] + '/api/analyze',
+                  data=body,
+                  headers={
+                      'Content-Type': f'multipart/form-data; boundary={boundary}',
+                      'x-vercel-protection-bypass': bypass_secret,
+                      'x-bejewely-premium-diagnostic-id': diagnostic_id,
+                  },
+                  method='POST',
+              )
+              started = time.time()
+              try:
+                  response = urllib.request.urlopen(request, timeout=180)
+                  status = response.status
+                  headers = dict(response.headers.items())
+                  payload = json.loads(response.read())
+              except urllib.error.HTTPError as error:
+                  status = error.code
+                  try:
+                      error_payload = json.loads(error.read())
+                  except Exception:
+                      error_payload = {}
+                  code = error_payload.get('code') or error_payload.get('error') or 'unknown'
+                  raise RuntimeError(f'{locale}_{mode}_http_{status}_{code}')
+              if status != 200:
+                  raise RuntimeError(f'{locale}_{mode}_http_{status}')
+
+              normalized = json.loads(json.dumps(payload))
+              normalized.pop('analysisRunId', None)
+              if isinstance(normalized.get('meta'), dict):
+                  normalized['meta'].pop('generatedAt', None)
+              order = []
+              collect_ids(normalized, order)
+              lower_headers = {
+                  str(key).lower(): value for key, value in headers.items()
               }
+              RECORDS.append({
+                  'locale': locale,
+                  'mode': mode,
+                  'httpStatus': status,
+                  'durationMs': round((time.time() - started) * 1000),
+                  'diagnosticId': diagnostic_id,
+                  'responseFingerprint': digest(normalized),
+                  'candidateOrderFingerprint': digest(order),
+                  'candidateReferenceCount': len(order),
+                  'runtimeCommit': lower_headers.get('x-bejewely-runtime-commit'),
+                  'diagnosticVersion': lower_headers.get('x-bejewely-premium-diagnostic-version'),
+                  'finalStage': lower_headers.get('x-bejewely-premium-final-stage'),
+              })
 
-              for locale in ('ko', 'en'):
-                  for mode in ('off', 'on'):
-                      boundary, body = multipart(locale)
-                      diagnostic_id = 'premium-session-diagnostic-' + str(uuid.uuid4())
-                      request = urllib.request.Request(
-                          deployments[mode]['url'] + '/api/analyze',
-                          data=body,
-                          headers={
-                              'Content-Type': f'multipart/form-data; boundary={boundary}',
-                              'x-bejewely-premium-diagnostic-id': diagnostic_id,
-                          },
-                          method='POST',
-                      )
-                      started = time.time()
-                      try:
-                          response = sessions[mode].open(request, timeout=180)
-                          status = response.status
-                          headers = dict(response.headers.items())
-                          payload = json.loads(response.read())
-                      except urllib.error.HTTPError as error:
-                          status = error.code
-                          try:
-                              error_payload = json.loads(error.read())
-                          except Exception:
-                              error_payload = {}
-                          raise RuntimeError(
-                              f'{locale}_{mode}_http_{status}_' +
-                              str(error_payload.get('code') or error_payload.get('error') or 'unknown')
-                          )
-                      if status != 200:
-                          raise RuntimeError(f'{locale}_{mode}_http_{status}')
-
-                      normalized = json.loads(json.dumps(payload))
-                      normalized.pop('analysisRunId', None)
-                      if isinstance(normalized.get('meta'), dict):
-                          normalized['meta'].pop('generatedAt', None)
-                      order = []
-                      collect_ids(normalized, order)
-                      lower_headers = {
-                          str(key).lower(): value for key, value in headers.items()
-                      }
-                      records.append({
-                          'locale': locale,
-                          'mode': mode,
-                          'httpStatus': status,
-                          'durationMs': round((time.time() - started) * 1000),
-                          'diagnosticId': diagnostic_id,
-                          'responseFingerprint': digest(normalized),
-                          'candidateOrderFingerprint': digest(order),
-                          'candidateReferenceCount': len(order),
-                          'runtimeCommit': lower_headers.get('x-bejewely-runtime-commit'),
-                          'diagnosticVersion': lower_headers.get('x-bejewely-premium-diagnostic-version'),
-                          'finalStage': lower_headers.get('x-bejewely-premium-final-stage'),
-                      })
-
+          def pair_results():
               pairs = {}
               for locale in ('ko', 'en'):
                   off = next(
-                      item for item in records
-                      if item['locale'] == locale and item['mode'] == 'off'
+                      record for record in RECORDS
+                      if record['locale'] == locale and record['mode'] == 'off'
                   )
                   on = next(
-                      item for item in records
-                      if item['locale'] == locale and item['mode'] == 'on'
+                      record for record in RECORDS
+                      if record['locale'] == locale and record['mode'] == 'on'
                   )
                   pairs[locale] = {
                       'responseFingerprintMatch': (
@@ -315,44 +303,82 @@ jobs:
                           off['candidateReferenceCount'] == on['candidateReferenceCount']
                       ),
                   }
+              return pairs
 
-              if len(records) != 4:
+          try:
+              verify_deployment('off')
+              verify_deployment('on')
+              GENERATED_SECRET = generate_temporary_bypass()
+              for locale, mode in (
+                  ('ko', 'off'),
+                  ('ko', 'on'),
+                  ('en', 'off'),
+                  ('en', 'on'),
+              ):
+                  run_probe(locale, mode, GENERATED_SECRET)
+              if len(RECORDS) != 4:
                   raise RuntimeError('analyze_call_count_invalid')
-              if any(item['runtimeCommit'] != SHA for item in records):
+              if any(record['runtimeCommit'] != SHA for record in RECORDS):
                   raise RuntimeError('runtime_commit_mismatch')
-
-              result = {
-                  'schemaVersion': 'stage11c-hosted-revalidation-aggregate-v1',
-                  'implementationSha': SHA,
-                  'defaultDeploymentId': deployments['off']['id'],
-                  'shadowDeploymentId': deployments['on']['id'],
-                  'analyzeCallCount': len(records),
-                  'records': records,
-                  'pairs': pairs,
-              }
-              with open('stage11c-hosted-revalidation-aggregate.json', 'w') as handle:
-                  json.dump(result, handle, ensure_ascii=False, indent=2)
-                  handle.write('\n')
-              print(json.dumps({
-                  'implementationSha': SHA,
-                  'analyzeCallCount': len(records),
-                  'http200Count': sum(item['httpStatus'] == 200 for item in records),
-                  'runtimeCommitMatchCount': sum(item['runtimeCommit'] == SHA for item in records),
-                  'premiumFinalStageCount': sum(
-                      item['finalStage'] == 'S9_cookie_emission' for item in records
-                  ),
-                  'pairs': pairs,
-              }, indent=2))
+              if any(record['finalStage'] != 'S9_cookie_emission' for record in RECORDS):
+                  raise RuntimeError('premium_final_stage_mismatch')
+          except Exception as error:
+              RUN_ERROR = error
           finally:
-              for path, secret in bypasses.values():
-                  revoke_bypass(path, secret)
+              if GENERATED_SECRET:
+                  try:
+                      revoke_temporary_bypass(GENERATED_SECRET)
+                  except Exception as error:
+                      CLEANUP_ERROR = error
+
+          result = {
+              'schemaVersion': 'stage11c-hosted-revalidation-aggregate-v2',
+              'implementationSha': SHA,
+              'defaultDeploymentId': DEPLOYMENTS['off']['id'],
+              'shadowDeploymentId': DEPLOYMENTS['on']['id'],
+              'plannedAnalyzeCallCount': 4,
+              'completedAnalyzeCallCount': len(RECORDS),
+              'http200Count': sum(record['httpStatus'] == 200 for record in RECORDS),
+              'runtimeCommitMatchCount': sum(
+                  record['runtimeCommit'] == SHA for record in RECORDS
+              ),
+              'premiumFinalStageCount': sum(
+                  record['finalStage'] == 'S9_cookie_emission' for record in RECORDS
+              ),
+              'temporaryAutomationBypassCreated': GENERATED_SECRET is not None,
+              'temporaryAutomationBypassRevoked': (
+                  GENERATED_SECRET is not None and CLEANUP_ERROR is None
+              ),
+              'records': RECORDS,
+              'pairs': pair_results() if len(RECORDS) == 4 else {},
+              'errorCategory': (
+                  'cleanup_failed'
+                  if CLEANUP_ERROR is not None
+                  else 'probe_failed'
+                  if RUN_ERROR is not None
+                  else 'none'
+              ),
+          }
+          with open('stage11c-hosted-revalidation-aggregate.json', 'w') as handle:
+              json.dump(result, handle, ensure_ascii=False, indent=2)
+              handle.write('\n')
+          print(json.dumps({
+              key: value
+              for key, value in result.items()
+              if key not in {'records'}
+          }, ensure_ascii=False, indent=2))
+
+          if CLEANUP_ERROR is not None:
+              raise CLEANUP_ERROR
+          if RUN_ERROR is not None:
+              raise RUN_ERROR
           PY
 
-      - name: Upload aggregate evidence
+      - name: Upload redacted aggregate evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: stage11c-hosted-revalidation-aggregate
           path: stage11c-hosted-revalidation-aggregate.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 1
