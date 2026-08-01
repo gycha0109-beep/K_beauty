@@ -46,11 +46,15 @@ const PRODUCT_LIB_FILES = [
 ];
 const FORBIDDEN_IMPLEMENTATION_PATTERNS = [
   /\bfetch\s*\(/,
+  /\baxios(?:\.|\s*\()/i,
+  /\bhttps?\.(?:request|get)\s*\(/i,
+  /\bXMLHttpRequest\b/,
+  /\bWebSocket\s*\(/,
+  /\bundici\b/i,
   /https?:\/\//i,
   /VERCEL_TOKEN/,
   /x-vercel-protection-bypass/i,
   /\bvercel\s+deploy\b/i,
-  /\/api\/analyze/,
   /workflow_dispatch/,
   /production\s+deploy/i
 ];
