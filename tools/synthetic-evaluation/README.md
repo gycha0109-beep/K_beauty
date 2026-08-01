@@ -6,9 +6,9 @@ Synthetic Evaluation Toolkit is the non-production workspace for generating, imp
 
 - The production application must not depend on this toolkit.
 - The toolkit does not change production routes, UI, database behavior, or Provider runtime.
-- Shared contracts may be consumed through `@bejewely/face-contracts`.
+- Shared contracts are consumed through `@bejewely/face-contracts`.
 
-## Planned responsibility flow
+## Responsibility flow
 
 ```text
 Generation
@@ -19,46 +19,18 @@ Generation
 → Locked Dataset
 ```
 
-Generation intent is not an observed label or ground truth. Candidate promotion remains a separate, purpose-specific decision.
-
-## Toolkit Track #T1
-
-Included:
-
-- npm workspace registration
-- package dependency boundary
-- local data ignore boundary
-- workspace smoke test
+Generation intent is not an observed label or ground truth.
 
 ## Toolkit Track #T2
 
 Implemented:
 
 - exact `DraftGenerationSpecV1` validation
-- canonical semantic payload and SHA-256 spec identity
-- deeply frozen finalized spec and compiled prompt artifacts
-- registry-owned mandatory exclusions
-- observation-backed face-feature cue registry
-- archetype taxonomy fail-closed boundary
+- deterministic spec and prompt digests
 - Gemini and GPT manual prompt profiles
 - SDXL reference-only profile
 - A/B/C/D skin-control fixtures
-- frozen Gemini prompt snapshots
-- deterministic prompt digest
-- production dependency and no-execution architecture checks
-
-Not included:
-
-- Provider API or browser execution
-- image generation
-- reference-image transfer
-- candidate import
-- hashing or duplicate detection
-- Vision observation adapter
-- archetype taxonomy or scoring
-- Gold promotion
-- human review UI
-- database, API route, UI, or production integration
+- Provider execution disabled
 
 Design and decisions:
 
@@ -68,9 +40,52 @@ docs/adr/0001-generation-spec-identity-and-policy-registries.md
 docs/adr/0002-generation-compiler-implementation-resolution.md
 ```
 
-ADR 0001 replaces the initial caller-owned identity and exclusion shapes. ADR 0002 records the implementation review decisions for the observation-backed cue registry, basis-point weights, disabled archetype taxonomy, unverified reference capability, and dynamic subject compilation.
+## Toolkit Track #T3
 
-Verification:
+Implemented:
+
+- exact candidate import request validation
+- synthetic-only and rights-review attestation
+- safe relative paths and symbolic-link rejection
+- PNG, JPEG, and static WebP inspection
+- immutable raw object and lossless canonical PNG storage
+- logical verification and retention of #T2 spec/prompt artifacts
+- SHA-256 asset and candidate identities
+- dHash64 duplicate-neighbor reporting
+- dry-run with zero persistent writes
+- single-candidate manifest-last confirm
+- idempotent retry preserving the original registration time
+- visible external mark warning with unverified provenance
+- blinded T4 observation projection
+
+Commands:
+
+```bash
+npm run synthetic:import -- --request .synthetic-local/requests/import-0001.json --dry-run
+npm run synthetic:import -- --request .synthetic-local/requests/import-0001.json --confirm
+```
+
+Not included:
+
+- Provider API or browser execution
+- image generation
+- batch confirm
+- face observation or same-person verification
+- archetype scoring
+- dataset promotion
+- database, API route, UI, or production integration
+
+Design and decisions:
+
+```text
+docs/candidate-import-provenance-v1.md
+docs/adr/0003-import-artifact-retention-and-registration-outcomes.md
+docs/adr/0004-import-implementation-resolution.md
+```
+
+ADR 0003 removes a committed quarantine state. ADR 0004 distinguishes logical artifact digests from full-envelope bytes, defines manifest-last publication, preserves retry timestamps, keeps mark provenance unverified, and defers batch confirm.
+
+## Verification
 
 ```text
 npm run synthetic:test
@@ -79,46 +94,14 @@ npm run architecture:guard
 npm run build
 ```
 
-## Toolkit Track #T3 design
-
-The next design defines manual candidate import and provenance:
-
-```text
-docs/candidate-import-provenance-v1.md
-docs/adr/0003-import-artifact-retention-and-registration-outcomes.md
-```
-
-The design separates:
-
-```text
-raw asset identity
-≠ candidate identity
-≠ observed label
-≠ Gold
-```
-
-It specifies:
-
-- explicit ImportRequest linkage to #T2 artifacts
-- immutable content-addressed raw assets
-- lossless canonical analysis derivatives
-- content-addressed copies of finalized spec and compiled prompt artifacts
-- exact duplicate and non-authoritative perceptual fingerprint records
-- atomic dry-run/confirm registration
-- idempotent candidate manifests
-- blinded T4 observation input
-- no Provider, DB, API, UI, or production execution
-
-ADR 0003 supersedes ambiguous quarantine and artifact-reference wording in the primary #T3 document. #T3 v1 has only two committed outcomes: validation failure with no writes, or registered `G0_GENERATED` candidate with explicit warnings.
-
 `#T1`, `#T2`, and later identifiers are internal Toolkit Track IDs. They are not GitHub pull request numbers.
 
 ## Local data boundary
 
-Future local synthetic assets and outputs belong under:
+Synthetic assets and outputs belong under:
 
 ```text
 .synthetic-local/
 ```
 
-A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and #T2 do not create or read that environment variable. The #T3 design defines its future use but does not create files or read the variable.
+The root may be changed with `BEJEWELY_SYNTHETIC_DATA_ROOT`.
