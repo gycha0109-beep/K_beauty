@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "candidate-exposure-policy-shadow-eligibility-evidence-v1",
+  "recordedAt": "2026-08-02T05:06:00+09:00",
+  "branch": "codex/candidate-exposure-policy-shadow-evaluation",
+  "draftPullRequest": 100,
+  "githubActionsRunId": 30716127743,
+  "implementation": {
+    "productionHardDisabled": true,
+    "selfHostedProductionHardDisabled": true,
+    "killSwitchPrecedence": true,
+    "malformedEnvironmentDisabled": true,
+    "telemetryContractStrict": true,
+    "divergenceClassifierStrict": true,
+    "runtimeFilterConnected": false,
+    "responseMutationConnected": false,
+    "storageMutationConnected": false,
+    "productionConfigurationChanged": false
+  },
+  "local": {
+    "shadowVerifierPass": true,
+    "assertions": 193,
+    "currentProductFixtures": 12,
+    "safetyFixtures": 13,
+    "securityCloseoutPass": true,
+    "architectureGuardPass": true,
+    "productionBuildPass": true
+  },
+  "catalog": {
+    "loadedRows": 164,
+    "scorerCompatibleRows": 164,
+    "scenarios": 4,
+    "candidateRows": 656,
+    "highRiskCollapsedCount": 0
+  },
+  "hosted": {
+    "workflowPass": true,
+    "implementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "currentImplementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "defaultDeploymentId": "dpl_2eueMeSRe72BNBu5tsVA7NscnDSp",
+    "shadowDeploymentId": "dpl_FUEVEGNzPpRNys6uZShi1k6cHYtJ",
+    "analyzeCallCount": 4,
+    "http200Count": 4,
+    "runtimeCommitMatchCount": 4,
+    "premiumFinalStageCount": 4,
+    "defaultOffShadowExecutionCount": 0,
+    "responseFingerprintMatchCount": 2,
+    "snapshotFingerprintMatchCount": 2,
+    "candidateOrderMatchCount": 2,
+    "unexpectedDivergenceCount": 0,
+    "unclassifiedDivergenceCount": 0,
+    "expectedCanonicalEvaluatorRebuildCount": 20,
+    "shadowExceptionCount": 0,
+    "fallbackCount": 0,
+    "invalidContextCount": 0,
+    "temporaryAutomationBypassCreated": true,
+    "temporaryAutomationBypassRevoked": true
+  },
+  "authorization": {
+    "limitedPreviewCanaryPlan": true,
+    "runtimeActivation": false,
+    "productionActivation": false
+  }
+}
