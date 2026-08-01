@@ -2,7 +2,7 @@ name: Stage 11C CandidatePolicy Evaluation
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
     branches:
       - codex/candidate-exposure-policy-shadow-runtime
 
