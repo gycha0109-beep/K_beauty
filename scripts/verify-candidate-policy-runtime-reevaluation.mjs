@@ -9,6 +9,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARCHITECTURE =
   "docs/architecture/candidate-policy-runtime-reevaluation-v1.md";
 const REVIEW = "docs/reviews/candidate-policy-runtime-reevaluation-review.md";
+const REVIEW_BASE_REF = "codex/stage10-hosted-preview-user-flow";
+const REVIEW_HEAD_CANDIDATES = [
+  "codex/candidate-policy-runtime-reevaluation",
+  "origin/codex/candidate-policy-runtime-reevaluation"
+];
 const ALLOWED_CHANGED_FILES = new Set([
   ".codex/AI_WORK_LOG.md",
   ARCHITECTURE,
@@ -32,6 +37,22 @@ const ALLOWED_CHANGED_FILES = new Set([
 
 function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+}
+
+function git(...args) {
+  return execFileSync("git", args, { cwd: ROOT, encoding: "utf8" }).trim();
+}
+
+function resolveRef(candidates) {
+  for (const candidate of candidates) {
+    try {
+      git("rev-parse", "--verify", `${candidate}^{commit}`);
+      return candidate;
+    } catch {
+      // Try the next canonical local/remote ref without weakening the boundary.
+    }
+  }
+  throw new Error(`candidate policy reevaluation ref unavailable: ${candidates.join(", ")}`);
 }
 
 let assertions = 0;
@@ -145,21 +166,19 @@ for (const section of [
   check(review.includes(section), `review section is required: ${section}`);
 }
 
-const changedFiles = execFileSync(
-  "git",
-  ["diff", "--name-only", "codex/stage10-hosted-preview-user-flow...HEAD"],
-  { cwd: ROOT, encoding: "utf8" }
+const reviewHeadRef = resolveRef(REVIEW_HEAD_CANDIDATES);
+const changedFiles = git(
+  "diff",
+  "--name-only",
+  `${REVIEW_BASE_REF}...${reviewHeadRef}`
 )
   .split(/\r?\n/)
   .filter(Boolean);
 for (const file of changedFiles) {
-  check(ALLOWED_CHANGED_FILES.has(file), `runtime or unrelated file changed: ${file}`);
+  check(ALLOWED_CHANGED_FILES.has(file), `Stage 11A runtime or unrelated file changed: ${file}`);
 }
 
-const workingFiles = execFileSync("git", ["status", "--short"], {
-  cwd: ROOT,
-  encoding: "utf8"
-})
+const workingFiles = git("status", "--short")
   .split(/\r?\n/)
   .filter(Boolean)
   .map((line) => line.slice(3).replaceAll("\\", "/"));
