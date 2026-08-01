@@ -1,10 +1,10 @@
 # CandidateExposurePolicy Isolated Canary Implementation Review
 
-## 1. Review scope
+## 1. Scope
 
-Stage 11F implements the previously approved isolated Preview canary harness as a local `validate-only` system.
+Stage 11F implements the approved isolated canary design as a local `validate-only` harness.
 
-The implementation includes:
+Included:
 
 - pure control state machine;
 - immutable isolated candidate projection;
@@ -16,14 +16,14 @@ The implementation includes:
 - implementation path allowlist;
 - contract and import-boundary verifiers.
 
-The implementation does not include:
+Not included:
 
 - Vercel deployment or API access;
 - `/api/analyze` HTTP calls;
 - protection bypass or secret access;
 - Hosted execution mode;
 - runtime candidate filtering;
-- recommendation, response, snapshot, persistence, or UI mutation;
+- recommendation, response, persistence, or UI mutation;
 - public Preview traffic;
 - project environment or Production changes.
 
@@ -31,16 +31,16 @@ The implementation does not include:
 
 Two ambiguities were resolved before implementation:
 
-1. `reasonCodeCounts` remains available only in the in-memory projection and deterministic fingerprint input. It is rejected from serialized telemetry and implementation-readiness evidence.
-2. Stage 11F emits a separate implementation-readiness evidence schema. Future deployment IDs, HTTP results, Hosted cleanup, and Hosted PASS evidence remain Stage 11G responsibilities.
+1. `reasonCodeCounts` remains available only in the in-memory projection and deterministic fingerprint input. It is rejected from serialized telemetry and readiness evidence.
+2. Stage 11F emits a separate implementation-readiness evidence schema. Deployment IDs, HTTP results, Hosted cleanup, and Hosted PASS evidence remain future-stage responsibilities.
 
 The Stage 11E machine telemetry allowlist remains authoritative.
 
 ## 3. Architecture review
 
-### 3.1 Control
+### Control
 
-The control module implements the exact states:
+The exact states are:
 
 ```text
 disabled
@@ -51,24 +51,13 @@ completed
 invalid_configuration
 ```
 
-Execution is authorized only when all of the following are true:
+Execution is eligible only when design status and SHA, runtime SHA and byte attestation, implementation path scope, exact request budget, duration ceiling, exact stop-condition map, `validate-only` mode, and all non-activation permissions are valid.
 
-- Stage 11E design status is ready;
-- exact design-base SHA matches;
-- exact runtime SHA matches;
-- recursive runtime attestation passes;
-- implementation path scope passes;
-- mode is exactly `validate-only`;
-- request budget is exactly 16;
-- duration ceiling is at most 60 minutes;
-- stop-condition map has the exact key set and all values are true;
-- network, Hosted, and Production permissions are false.
+Terminal states cannot resume or increment the matrix count.
 
-Terminal states cannot resume or increment request counts.
+### Projection
 
-### 3.2 Projection
-
-The projection accepts only reduced descriptors:
+Projection input is reduced to:
 
 ```js
 {
@@ -77,35 +66,29 @@ The projection accepts only reduced descriptors:
 }
 ```
 
-It rejects duplicate references, non-contiguous indices, count mismatch, order mismatch, and invalid CandidateExposurePolicy decisions. It reuses the production policy contract rather than duplicating exposure, lane, or reason vocabularies.
+Duplicate references, non-contiguous indices, count mismatch, order mismatch, and invalid CandidateExposurePolicy decisions are rejected. Exposure, lane, and reason vocabularies come from the existing production policy contract.
 
-Candidate references and ordered vectors remain under `memoryOnly`. Telemetry and readiness evidence do not accept them.
+Candidate references and ordered vectors remain under `memoryOnly` and never enter serialized telemetry or readiness evidence.
 
-### 3.3 Telemetry
+### Telemetry
 
-The telemetry schema uses the exact Stage 11E aggregate allowlist. It rejects:
+The telemetry schema uses the exact Stage 11E aggregate allowlist. It rejects unknown or missing fields, invalid count-map keys, negative or inconsistent totals, contradictory execution states, candidate/product/user/session/report identifiers, tokens and secrets, raw payloads, provider content, ordered vectors, and `reasonCodeCounts`.
 
-- unknown or missing fields;
-- invalid exposure, lane, or divergence key sets;
-- negative counts and total mismatches;
-- contradictory execution states;
-- candidate, product, user, session, report, token, secret, raw request/response, provider, ordered-vector, and reason-count fields.
+Control entries use `validate_only_control_disabled`. Canary entries use `validate_only_simulation`; they are not represented as Hosted observations.
 
-Control entries explicitly report `validate_only_control_disabled`. Canary entries explicitly report `validate_only_simulation`; they are not represented as Hosted observations.
+### Readiness evidence
 
-### 3.4 Readiness evidence
-
-The readiness evidence proves only implementation properties:
+The readiness evidence proves implementation properties only:
 
 - runtime closure attestation;
 - implementation scope;
-- exact matrix;
+- exact matrix construction;
 - valid aggregate telemetry;
-- zero divergence, exception, fallback, invalid context, or mutation mismatch;
+- zero divergence, exception, fallback, invalid context, and mutation mismatch;
 - zero network, Hosted, Production, and temporary-resource residue;
 - all activation authorizations remain false.
 
-It rejects Hosted-only fields such as deployment IDs, HTTP counts, deployment URLs, and bypass secrets.
+Hosted-only fields such as deployment IDs, HTTP counts, URLs, and bypass secrets are forbidden.
 
 ## 4. Fixture review
 
@@ -116,98 +99,143 @@ The manifest contains exactly four synthetic scenarios:
 - `current_product_semantics`;
 - `metadata_incomplete`.
 
-Each scenario has a deterministic canonical state, two synthetic candidates, expected policy reasons, and no real user data. The runner replays each scenario in KO and EN using control and canary entries for an exact total of 16.
+Each scenario contains a deterministic canonical state, two synthetic candidates, expected policy reasons, and no real user data. The runner replays every scenario in KO and EN with control and canary entries, producing exactly 16 entries.
 
-The fixture semantic fingerprint excludes locale text generation because Stage 11F performs no provider call. KO and EN therefore share the same structural fixture semantics while retaining distinct matrix locale entries.
+## 5. Runtime authority review
 
-## 5. Runtime attestation review
-
-The runner recursively follows relative local imports from the contracted runtime roots and compares current file bytes against runtime SHA:
+Product runtime authority:
 
 ```text
 1bc119347a2f8d3387a935163e24849ceebe349d
 ```
 
-The implementation path check independently compares Stage 11F HEAD against design base:
+Stage 11E design base:
 
 ```text
 d82f097ac49bf3d2fbfe68b0ee57b1f07c55953a
 ```
 
-These checks answer different questions:
+The checks remain separate:
 
-- implementation scope: only approved Stage 11F files changed;
-- runtime integrity: product runtime import closure remains byte-identical.
+- implementation scope compares Stage 11F changes with the design base;
+- runtime integrity recursively compares the product runtime import closure byte-for-byte with the runtime authority SHA.
 
 ## 6. Findings and corrections
 
-### Important 1 — baseline newline loss
+### Important — baseline newline loss
 
-Initial attestation reused a trimmed Git command helper for `git show`. A final newline in a runtime file could therefore create a false byte mismatch.
+The first attestation implementation trimmed `git show` output and could falsely report a final-newline difference. Baseline file content now uses an untrimmed Git path and compares UTF-8 bytes without normalization.
 
-Correction:
+### Important — static guard self-match
 
-- general Git metadata output remains trimmed;
-- baseline file content uses an untrimmed path;
-- current and baseline UTF-8 bytes are compared without normalization.
+The first import-boundary verifier scanned its own forbidden-pattern definitions. Operational-pattern scans now apply only to implementation modules and the runner; verifier source is excluded from literal self-scanning.
 
-### Important 2 — static guard self-match
+### Important — route path versus network call
 
-The initial import-boundary verifier applied forbidden literal checks to its own source. The verifier necessarily contains strings such as `workflow_dispatch` and Vercel-related forbidden patterns as test definitions, which could cause a false positive.
+The first final run treated the runtime attestation path `app/api/analyze/route.js` as an HTTP call because it rejected the generic `/api/analyze` substring.
 
-Correction:
+The corrected guard permits repository route paths while directly rejecting network-capable constructs: `fetch`, Axios, Node HTTP requests, XHR, WebSocket, Undici, external URLs, Vercel deployment, tokens, and bypass material.
 
-- forbidden operational-pattern scans apply only to implementation modules and the runner;
-- verifier source is excluded from literal self-scanning;
-- product import scans and changed-path allowlists still cover all relevant files.
+### Important — exact branch HEAD authority
 
-### Important 3 — implementation and Hosted evidence conflation
+The second run checked out GitHub's synthetic PR merge commit, so the readiness artifact identified the merge SHA rather than the Stage 11F branch SHA.
 
-The design contained future Hosted evidence fields that Stage 11F cannot truthfully populate.
+The final workflow explicitly checked out `${{ github.event.pull_request.head.sha }}`. The authoritative artifact therefore records:
 
-Correction:
+```text
+ebc16f9f166ccdefc86de777cf75836eca4af595
+```
 
-- Stage 11F uses `candidate-exposure-policy-isolated-canary-implementation-readiness-v1`;
-- deployment, HTTP, bypass, and Hosted cleanup fields are forbidden;
-- ready status is `implementation_ready_for_hosted_execution_review` rather than a Hosted PASS.
+### Important — Stage 10 verifier baseline
 
-### Important 4 — serialized reason-count expansion
+The second run omitted the local Stage 10 ref required by the existing Stage 11A verifier. The final workflow explicitly fetched `codex/stage10-hosted-preview-user-flow` before the security suite. No verifier contract was weakened.
 
-The implementation design proposed reason counts in telemetry although the approved Stage 11E machine allowlist did not.
+### Important — implementation and Hosted evidence separation
 
-Correction:
+Stage 11F uses `candidate-exposure-policy-isolated-canary-implementation-readiness-v1`. Deployment, HTTP, bypass, and Hosted cleanup fields are forbidden. The ready status is `implementation_ready_for_hosted_execution_review`, not a Hosted PASS.
 
-- reason counts remain in memory for deterministic local checks and projection fingerprints;
-- serialized telemetry explicitly rejects `reasonCodeCounts`.
+### Important — serialized reason-count expansion
 
-### Minor 1 — evidence privacy vocabulary
+Reason counts remain in memory for deterministic projection checks and fingerprints. Serialized telemetry rejects `reasonCodeCounts`.
 
-The readiness evidence forbidden-key vocabulary originally covered `brandId` but not the plain `brand` key.
+### Minor — evidence privacy vocabulary
 
-Correction:
+Both `brand` and `brandId` normalized keys are forbidden.
 
-- both normalized forms are forbidden.
+### Minor — invalid finalization shape
 
-### Minor 2 — invalid finalization shape
+Invalid finalization changes only the existing status to `evidence_invalid`; it does not append non-schema validation fields.
 
-The first finalizer draft added `validationErrors` to an invalid evidence object, producing a shape outside the exact schema.
+## 7. Final static boundary
 
-Correction:
-
-- invalid finalization changes only the existing `status` field to `evidence_invalid`;
-- detailed validation errors remain return-time diagnostics and are never serialized as evidence.
-
-## 7. Static boundary review
-
-The import-boundary verifier confirms:
+The final verifier confirms:
 
 - no `app/**`, `components/**`, selected production `lib/**`, package, lockfile, or Supabase path changes;
 - no product module imports a Stage 11F harness module;
-- implementation modules contain no `fetch`, external URL, Vercel token, bypass, deployment, `/api/analyze`, workflow-dispatch, or Production-deploy operation;
+- implementation modules contain no network-capable client, external URL, Vercel token, bypass, deployment, workflow-dispatch, or Production-deploy operation;
+- the runner may reference `app/api/analyze/route.js` only as a local runtime-attestation root;
 - only the attestation runner uses `node:child_process`;
-- runner mode is `validate-only` and exposes no hosted or deploy option.
+- runner mode is exactly `validate-only`, with no hosted or deploy option.
 
-## 8. Pre-verification review result
+## 8. Validation history
+
+### Run `30722395069`
+
+- contract verifier: PASS;
+- import boundary: failed on an over-broad `/api/analyze` substring rule;
+- later stages skipped;
+- no Hosted or Production operation occurred.
+
+### Run `30722443126`
+
+- Stage 11F contract: PASS;
+- import boundary: PASS;
+- validate-only runner: PASS;
+- security closeout: 59/60 because the workflow did not fetch the existing Stage 10 local verifier ref;
+- architecture and build skipped;
+- runner evidence identified the PR merge SHA, exposing the checkout-authority issue;
+- no Hosted or Production operation occurred.
+
+### Authoritative run `30722550071`
+
+Exact Stage 11F branch HEAD:
+
+```text
+ebc16f9f166ccdefc86de777cf75836eca4af595
+```
+
+Results:
+
+- contract verifier: 129 assertions PASS;
+- import boundary: 597 assertions PASS;
+- changed Stage 11F paths: 11, all allowed;
+- product files scanned: 102;
+- security closeout: 60/60 PASS;
+- architecture guard: PASS;
+- Production build: PASS;
+- validate-only runner: PASS;
+- diff hygiene: PASS;
+- readiness artifact uploaded and retained for one day.
+
+Readiness evidence:
+
+- runtime closure files: 16;
+- changed runtime files: 0;
+- completed entries: 16/16;
+- control entries: 8;
+- canary entries: 8;
+- telemetry records valid: 16/16;
+- unexpected divergence: 0;
+- unclassified divergence: 0;
+- shadow exception: 0;
+- fallback: 0;
+- invalid context: 0;
+- mutation mismatch: 0;
+- network operations: 0;
+- Hosted operations: 0;
+- Production changes: 0.
+
+## 9. Final review result
 
 ```text
 Critical unresolved: 0
@@ -215,9 +243,15 @@ Important unresolved: 0
 Blocking Minor unresolved: 0
 ```
 
-The implementation is ready for one final authoritative validation run. This review does not claim that run has passed yet.
+Final machine status:
 
-## 9. Authorization boundary
+```text
+implementation_ready_for_hosted_execution_review
+```
+
+This status does not authorize Hosted execution or runtime activation.
+
+## 10. Authorization boundary
 
 ```text
 harnessImplemented=true
@@ -234,12 +268,16 @@ projectEnvironmentMutationAuthorized=false
 productionActivationAuthorized=false
 ```
 
-## 10. Pre-verification markers
+## 11. Final markers
 
 ```text
-STAGE_11F_IMPLEMENTATION_REVIEW_COMPLETE
-FINAL_VALIDATION_PENDING
-HOSTED_EXECUTION_NOT_IMPLEMENTED
+STAGE_11F_VALIDATE_ONLY_HARNESS_IMPLEMENTATION_PASS
+IMPLEMENTATION_READY_FOR_HOSTED_EXECUTION_REVIEW
+EXACT_16_ENTRY_MATRIX_PASS
+RUNTIME_CLOSURE_UNCHANGED
+AGGREGATE_TELEMETRY_ONLY
+NETWORK_OPERATION_ZERO
+HOSTED_OPERATION_ZERO
 RUNTIME_FILTER_NOT_CONNECTED
 PRODUCTION_NOT_CHANGED
 PR_REMAINS_DRAFT
