@@ -16,17 +16,20 @@ const HARNESS_MARKERS = [
   "candidate-exposure-policy-isolated-canary-evidence",
   "run-candidate-exposure-policy-isolated-preview-canary"
 ];
-const HARNESS_FILES = [
+const IMPLEMENTATION_FILES = [
   "lib/candidate-exposure-policy-isolated-canary-control.js",
   "lib/candidate-exposure-policy-isolated-projection.js",
   "lib/candidate-exposure-policy-isolated-canary-telemetry.js",
   "lib/candidate-exposure-policy-isolated-canary-evidence.js",
-  "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs",
+  "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs"
+];
+const VERIFIER_FILES = [
   "scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs",
   "scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs"
 ];
+const ALL_STAGE11F_CODE_FILES = [...IMPLEMENTATION_FILES, ...VERIFIER_FILES];
 const EXACT_ALLOWED_PATHS = new Set([
-  ...HARNESS_FILES,
+  ...ALL_STAGE11F_CODE_FILES,
   "docs/reviews/candidate-exposure-policy-isolated-canary-implementation-review.md",
   "docs/verification/candidate-exposure-policy-isolated-canary-implementation-result.md",
   ".github/workflows/stage11f-isolated-canary-final-validation.yml"
@@ -41,7 +44,7 @@ const PRODUCT_LIB_FILES = [
   "lib/candidate-exposure-policy-contract.js",
   "lib/candidate-exposure-policy-evaluator-adapter.js"
 ];
-const FORBIDDEN_HARNESS_PATTERNS = [
+const FORBIDDEN_IMPLEMENTATION_PATTERNS = [
   /\bfetch\s*\(/,
   /https?:\/\//i,
   /VERCEL_TOKEN/,
@@ -122,13 +125,15 @@ for (const filePath of productFiles) {
   }
 }
 
-for (const filePath of HARNESS_FILES) {
+for (const filePath of IMPLEMENTATION_FILES) {
   const source = readFileSync(path.join(ROOT, filePath), "utf8");
-  for (const pattern of FORBIDDEN_HARNESS_PATTERNS) {
-    assertCondition(!pattern.test(source), `stage11f_forbidden_harness_pattern:${filePath}:${pattern}`);
+  for (const pattern of FORBIDDEN_IMPLEMENTATION_PATTERNS) {
+    assertCondition(
+      !pattern.test(source),
+      `stage11f_forbidden_implementation_pattern:${filePath}:${pattern}`
+    );
   }
-  if (filePath !== "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs" &&
-      filePath !== "scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs") {
+  if (filePath !== "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs") {
     assertCondition(
       !source.includes("node:child_process"),
       `stage11f_child_process_outside_attestation:${filePath}`
@@ -150,7 +155,10 @@ const manifest = JSON.parse(readFileSync(
   "utf8"
 ));
 assertCondition(manifest.actualUserData === false, "stage11f_manifest_user_data_not_false");
-assertCondition(Array.isArray(manifest.scenarios) && manifest.scenarios.length === 4, "stage11f_manifest_scenario_count_invalid");
+assertCondition(
+  Array.isArray(manifest.scenarios) && manifest.scenarios.length === 4,
+  "stage11f_manifest_scenario_count_invalid"
+);
 
 console.log(
   `check-candidate-exposure-policy-isolated-canary-import-boundary: PASS ` +
