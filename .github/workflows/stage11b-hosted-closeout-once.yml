@@ -2,11 +2,9 @@ name: Stage 11B Hosted Closeout Once
 
 on:
   pull_request:
-    types: [synchronize]
+    types: [edited]
     branches:
       - codex/candidate-policy-runtime-reevaluation
-    paths:
-      - .github/workflows/stage11b-hosted-closeout-once.yml
 
 permissions:
   contents: read
@@ -63,10 +61,7 @@ jobs:
           PY
           )"
 
-            curl --fail --silent --show-error --location \
-              --cookie-jar "$jar" \
-              "$share" \
-              --output /dev/null
+            curl --fail --silent --show-error --location --cookie-jar "$jar" "$share" --output /dev/null
 
             local status
             status="$(curl --silent --show-error --location \
@@ -129,7 +124,6 @@ jobs:
         run: |
           python3 - <<'PY'
           import hashlib, json, pathlib, re
-
           root = pathlib.Path('probe')
           records = []
 
@@ -198,9 +192,7 @@ jobs:
               'records': records,
               'pairs': pairs
           }
-          pathlib.Path('stage11b-hosted-closeout-aggregate.json').write_text(
-              json.dumps(result, ensure_ascii=False, indent=2) + '\n'
-          )
+          pathlib.Path('stage11b-hosted-closeout-aggregate.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
           print(json.dumps(result, ensure_ascii=False, indent=2))
           PY
 
