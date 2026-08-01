@@ -30,6 +30,10 @@ async function readManifest(environment, candidateId) {
   return JSON.parse(await readFile(path.join(environment.dataRoot, "candidates", candidateId, "manifest.json"), "utf8"));
 }
 
+function fromRelativePath(root, relativePath) {
+  return path.join(root, ...relativePath.split("/"));
+}
+
 test("dry-run performs no persistent writes", async () => {
   const environment = await createTestImportEnvironment();
   const result = await importCandidate(importOptions(environment, environment.request, "dry_run"));
@@ -95,6 +99,29 @@ test("tampered prompt artifact fails before candidate registration", async () =>
   assert.equal(result.ok, false);
   assert.ok(result.validationErrors.some((error) => error.code === "prompt_digest_mismatch"));
   assert.equal(await pathExists(path.join(environment.dataRoot, "candidates")), false);
+});
+
+test("conflicting stored generation object fails before a second manifest is published", async () => {
+  const environment = await createTestImportEnvironment({ providerGenerationId: "generation-001" });
+  const first = await importCandidate(importOptions(environment, environment.request, "confirm"));
+  assert.equal(first.ok, true);
+
+  const firstManifest = await readManifest(environment, first.proposedCandidateId);
+  const storedSpecPath = fromRelativePath(
+    environment.dataRoot,
+    firstManifest.generation.artifactReferences.spec.objectRelativePath
+  );
+  await writeFile(storedSpecPath, "{}\n", "utf8");
+
+  const secondRequest = clone(environment.request);
+  secondRequest.providerRun.providerGenerationId = "generation-002";
+  const second = await importCandidate(importOptions(environment, secondRequest, "confirm"));
+  assert.equal(second.ok, false);
+  assert.ok(second.validationErrors.some((error) => error.code === "generation_artifact_identity_conflict"));
+  assert.equal(
+    await pathExists(path.join(environment.dataRoot, "candidates", second.proposedCandidateId || "missing")),
+    false
+  );
 });
 
 test("visible external mark remains a warning and does not block G0 registration", async () => {
