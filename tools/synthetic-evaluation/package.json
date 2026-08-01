@@ -6,8 +6,8 @@
   "exports": "./src/index.js",
   "sideEffects": false,
   "scripts": {
-    "test": "node --test tests/workspace.test.mjs",
-    "verify": "npm run test"
+    "test": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs",
+    "verify": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs"
   },
   "dependencies": {
     "@bejewely/face-contracts": "0.0.0"
