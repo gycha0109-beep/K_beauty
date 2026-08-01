@@ -1,9 +1,10 @@
 name: Stage 11B Hosted Closeout Once
 
 on:
-  push:
+  pull_request:
+    types: [synchronize]
     branches:
-      - codex/candidate-exposure-policy-shadow-runtime
+      - codex/candidate-policy-runtime-reevaluation
     paths:
       - .github/workflows/stage11b-hosted-closeout-once.yml
 
@@ -12,7 +13,7 @@ permissions:
 
 jobs:
   hosted-probe:
-    if: github.event.head_commit.message == 'chore(ci): run stage11b hosted closeout once'
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-runtime'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
