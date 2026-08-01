@@ -70,7 +70,7 @@ export function buildGenerationSemanticPayload(draftSpec) {
     sourceTemplateId: normalized.provenance.sourceTemplateId,
     sourceTemplateVersion: normalized.provenance.sourceTemplateVersion
   };
-  return Object.freeze({ ok: true, semanticPayload: sortKeys(normalized) });
+  return Object.freeze({ ok: true, semanticPayload: deepFreeze(sortKeys(normalized)) });
 }
 
 export function finalizeGenerationSpec(draftSpec) {
