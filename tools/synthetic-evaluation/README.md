@@ -42,6 +42,16 @@ Not included:
 - human review UI
 - database or Provider API integration
 
+## Toolkit Track #T2 design
+
+The design for the generation contract and versioned Provider prompt compiler is recorded at:
+
+```text
+docs/generation-contract-prompt-compiler-v1.md
+```
+
+The #T2 design is intentionally implementation-free. It defines intended targets, deterministic compilation, Provider capability boundaries, A/B/C/D skin fixtures, validation failures, and future acceptance criteria. It does not call a Provider or generate an image.
+
 `#T1`, `#T2`, and later identifiers are internal Toolkit Track IDs. They are not GitHub pull request numbers.
 
 ## Local data boundary
@@ -52,4 +62,4 @@ Future local synthetic assets and outputs belong under:
 .synthetic-local/
 ```
 
-A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 does not create or read that environment variable.
+A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and the #T2 design do not create or read that environment variable.
