@@ -19,6 +19,6 @@ test("workspace packages resolve as ESM modules", async () => {
   const contractModule = await import("@bejewely/face-contracts");
   const toolkitModule = await import("../src/index.js");
 
-  assert.equal(typeof contractModule, "object");
-  assert.equal(typeof toolkitModule, "object");
+  assert.equal(typeof contractModule.validateDraftGenerationSpec, "function");
+  assert.equal(typeof toolkitModule.compileGenerationPrompt, "function");
 });
