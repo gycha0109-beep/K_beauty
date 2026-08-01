@@ -22,7 +22,6 @@ jobs:
       EXPECTED_RUNTIME_SHA: 054a9c91c853c51e1285ba12901c51bbe60c00a6
     steps:
       - uses: actions/checkout@v4
-
       - name: Generate canonical PNG fixture
         shell: bash
         run: |
@@ -40,65 +39,25 @@ jobs:
           assert len(png) > 100
           PY
           file stage11b-fixture.png
-
       - name: Run four authoritative probes
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p probe
-
           run_probe() {
-            local locale="$1"
-            local mode="$2"
-            local base="$3"
-            local share="$4"
-            local jar="probe/${mode}.cookies"
-            local prefix="probe/${locale}-${mode}"
+            local locale="$1" mode="$2" base="$3" share="$4"
+            local jar="probe/${mode}.cookies" prefix="probe/${locale}-${mode}"
             local diagnostic_id
             diagnostic_id="$(python3 - <<'PY'
           import uuid
           print('premium-session-diagnostic-' + str(uuid.uuid4()))
           PY
           )"
-
             curl --fail --silent --show-error --location --cookie-jar "$jar" "$share" --output /dev/null
-
             local status
-            status="$(curl --silent --show-error --location \
-              --cookie "$jar" --cookie-jar "$jar" \
-              --dump-header "${prefix}.headers" \
-              --output "${prefix}.body" \
-              --write-out '%{http_code}' \
-              --header "x-bejewely-premium-diagnostic-id: ${diagnostic_id}" \
-              --form 'image=@stage11b-fixture.png;type=image/png;filename=stage11b-fixture.png' \
-              --form 'skinType=combination' \
-              --form 'sensitivityLevel=low' \
-              --form 'mainConcern=uneven_tone' \
-              --form 'mainConcerns=["uneven_tone","dehydration"]' \
-              --form 'primaryConcern=uneven_tone' \
-              --form 'recentSkinChange=no' \
-              --form 'recentlyChangedProduct=no' \
-              --form 'cleansingFrequency=twice' \
-              --form 'texturePreference=gel' \
-              --form 'postCleanseFeel=comfortable' \
-              --form 'afternoonState=mostly_same' \
-              --form 'environmentExposure=["outdoor"]' \
-              --form 'dislikedFeel=sticky' \
-              --form 'genderPreference=unspecified' \
-              --form 'whiteCastHate=true' \
-              --form 'toneUpWanted=false' \
-              --form 'makeupUse=true' \
-              --form 'eyeSensitive=false' \
-              --form 'sunscreenPreferenceState=answered' \
-              --form 'outdoorExposure=true' \
-              --form 'verySensitivePeriod=false' \
-              --form 'currentProducts=[]' \
-              --form "locale=${locale}" \
-              "${base}/api/analyze")"
-
+            status="$(curl --silent --show-error --location --cookie "$jar" --cookie-jar "$jar" --dump-header "${prefix}.headers" --output "${prefix}.body" --write-out '%{http_code}' --header "x-bejewely-premium-diagnostic-id: ${diagnostic_id}" --form 'image=@stage11b-fixture.png;type=image/png;filename=stage11b-fixture.png' --form 'skinType=combination' --form 'sensitivityLevel=low' --form 'mainConcern=uneven_tone' --form 'mainConcerns=["uneven_tone","dehydration"]' --form 'primaryConcern=uneven_tone' --form 'recentSkinChange=no' --form 'recentlyChangedProduct=no' --form 'cleansingFrequency=twice' --form 'texturePreference=gel' --form 'postCleanseFeel=comfortable' --form 'afternoonState=mostly_same' --form 'environmentExposure=["outdoor"]' --form 'dislikedFeel=sticky' --form 'genderPreference=unspecified' --form 'whiteCastHate=true' --form 'toneUpWanted=false' --form 'makeupUse=true' --form 'eyeSensitive=false' --form 'sunscreenPreferenceState=answered' --form 'outdoorExposure=true' --form 'verySensitivePeriod=false' --form 'currentProducts=[]' --form "locale=${locale}" "${base}/api/analyze")"
             printf '%s' "$status" > "${prefix}.status"
             printf '%s' "$diagnostic_id" > "${prefix}.diagnostic-id"
-
             if [[ ! "$status" =~ ^2 ]]; then
               echo "${locale}/${mode} failed with HTTP ${status}"
               python3 - "$prefix" <<'PY'
@@ -113,95 +72,50 @@ jobs:
               exit 1
             fi
           }
-
           run_probe ko off "$DEFAULT_BASE" "$DEFAULT_SHARE"
           run_probe ko on "$SHADOW_BASE" "$SHADOW_SHARE"
           run_probe en off "$DEFAULT_BASE" "$DEFAULT_SHARE"
           run_probe en on "$SHADOW_BASE" "$SHADOW_SHARE"
-
       - name: Build redacted aggregate evidence
         shell: bash
         run: |
           python3 - <<'PY'
           import hashlib, json, pathlib, re
-          root = pathlib.Path('probe')
-          records = []
-
-          def stable(value):
-              if isinstance(value, dict):
-                  return {k: stable(value[k]) for k in sorted(value)}
-              if isinstance(value, list):
-                  return [stable(v) for v in value]
-              return value
-
-          def digest(value):
-              raw = json.dumps(stable(value), ensure_ascii=False, separators=(',', ':')).encode()
-              return hashlib.sha256(raw).hexdigest()
-
-          def collect_ids(value, out):
-              if isinstance(value, dict):
-                  if isinstance(value.get('id'), str) and value.get('id'):
-                      out.append(value['id'])
-                  for key in sorted(value):
-                      collect_ids(value[key], out)
-              elif isinstance(value, list):
-                  for item in value:
-                      collect_ids(item, out)
-
-          for locale in ('ko', 'en'):
-              for mode in ('off', 'on'):
+          root = pathlib.Path('probe'); records = []
+          def stable(v):
+              if isinstance(v, dict): return {k: stable(v[k]) for k in sorted(v)}
+              if isinstance(v, list): return [stable(x) for x in v]
+              return v
+          def digest(v): return hashlib.sha256(json.dumps(stable(v), ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+          def collect_ids(v, out):
+              if isinstance(v, dict):
+                  if isinstance(v.get('id'), str) and v.get('id'): out.append(v['id'])
+                  for k in sorted(v): collect_ids(v[k], out)
+              elif isinstance(v, list):
+                  for x in v: collect_ids(x, out)
+          for locale in ('ko','en'):
+              for mode in ('off','on'):
                   prefix = root / f'{locale}-{mode}'
                   body = json.loads(prefix.with_suffix('.body').read_text())
-                  normalized = json.loads(json.dumps(body))
-                  normalized.pop('analysisRunId', None)
-                  if isinstance(normalized.get('meta'), dict):
-                      normalized['meta'].pop('generatedAt', None)
-                  ids = []
-                  collect_ids(normalized, ids)
-                  headers = prefix.with_suffix('.headers').read_text(errors='replace')
+                  normalized = json.loads(json.dumps(body)); normalized.pop('analysisRunId', None)
+                  if isinstance(normalized.get('meta'), dict): normalized['meta'].pop('generatedAt', None)
+                  ids=[]; collect_ids(normalized, ids)
+                  headers=prefix.with_suffix('.headers').read_text(errors='replace')
                   def header(name):
-                      m = re.search(rf'(?im)^{re.escape(name)}:\s*(.+?)\s*$', headers)
-                      return m.group(1).strip() if m else None
-                  records.append({
-                      'locale': locale,
-                      'mode': mode,
-                      'httpStatus': int(prefix.with_suffix('.status').read_text()),
-                      'diagnosticId': prefix.with_suffix('.diagnostic-id').read_text(),
-                      'responseFingerprint': digest(normalized),
-                      'candidateOrderFingerprint': digest(ids),
-                      'candidateReferenceCount': len(ids),
-                      'runtimeCommit': header('x-bejewely-runtime-commit'),
-                      'diagnosticVersion': header('x-bejewely-premium-diagnostic-version'),
-                      'finalStage': header('x-bejewely-premium-final-stage')
-                  })
-
-          pairs = {}
-          for locale in ('ko', 'en'):
-              off = next(r for r in records if r['locale'] == locale and r['mode'] == 'off')
-              on = next(r for r in records if r['locale'] == locale and r['mode'] == 'on')
-              pairs[locale] = {
-                  'responseFingerprintMatch': off['responseFingerprint'] == on['responseFingerprint'],
-                  'candidateOrderFingerprintMatch': off['candidateOrderFingerprint'] == on['candidateOrderFingerprint'],
-                  'candidateReferenceCountMatch': off['candidateReferenceCount'] == on['candidateReferenceCount']
-              }
-
-          result = {
-              'schemaVersion': 'stage11b-hosted-closeout-aggregate-v1',
-              'expectedRuntimeSha': '054a9c91c853c51e1285ba12901c51bbe60c00a6',
-              'analyzeCallCount': 4,
-              'records': records,
-              'pairs': pairs
-          }
-          pathlib.Path('stage11b-hosted-closeout-aggregate.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
-          print(json.dumps(result, ensure_ascii=False, indent=2))
+                      m=re.search(rf'(?im)^{re.escape(name)}:\s*(.+?)\s*$', headers); return m.group(1).strip() if m else None
+                  records.append({'locale':locale,'mode':mode,'httpStatus':int(prefix.with_suffix('.status').read_text()),'diagnosticId':prefix.with_suffix('.diagnostic-id').read_text(),'responseFingerprint':digest(normalized),'candidateOrderFingerprint':digest(ids),'candidateReferenceCount':len(ids),'runtimeCommit':header('x-bejewely-runtime-commit'),'diagnosticVersion':header('x-bejewely-premium-diagnostic-version'),'finalStage':header('x-bejewely-premium-final-stage')})
+          pairs={}
+          for locale in ('ko','en'):
+              off=next(r for r in records if r['locale']==locale and r['mode']=='off'); on=next(r for r in records if r['locale']==locale and r['mode']=='on')
+              pairs[locale]={'responseFingerprintMatch':off['responseFingerprint']==on['responseFingerprint'],'candidateOrderFingerprintMatch':off['candidateOrderFingerprint']==on['candidateOrderFingerprint'],'candidateReferenceCountMatch':off['candidateReferenceCount']==on['candidateReferenceCount']}
+          result={'schemaVersion':'stage11b-hosted-closeout-aggregate-v1','expectedRuntimeSha':'054a9c91c853c51e1285ba12901c51bbe60c00a6','analyzeCallCount':4,'records':records,'pairs':pairs}
+          pathlib.Path('stage11b-hosted-closeout-aggregate.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(result,ensure_ascii=False,indent=2))
           PY
-
       - name: Remove raw probe material
         if: always()
         shell: bash
-        run: |
-          rm -f probe/*.body probe/*.headers probe/*.cookies stage11b-fixture.png
-
+        run: rm -f probe/*.body probe/*.headers probe/*.cookies stage11b-fixture.png
       - name: Upload aggregate evidence
         if: always()
         uses: actions/upload-artifact@v4
