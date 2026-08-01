@@ -50,7 +50,7 @@ const MARK_KEYS = Object.freeze(["status", "location", "provenanceStatus"]);
 const TOKEN_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 const CANDIDATE_ID_PATTERN = /^cand_[a-f0-9]{24}$/;
-const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
+const ISO_TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-](\d{2}):(\d{2}))$/;
 const MARK_LOCATIONS = new Set(["bottom_right", "bottom_left", "top_right", "top_left", "other"]);
 const EXECUTION_MODES = new Set(["manual_web", "local_workflow"]);
 const MARK_STATUSES = new Set(["present", "absent", "unknown"]);
@@ -77,7 +77,39 @@ function validIso(value, nullable = false) {
   if (nullable && value === null) {
     return true;
   }
-  return typeof value === "string" && ISO_TIMESTAMP_PATTERN.test(value) && Number.isFinite(Date.parse(value));
+  if (typeof value !== "string") {
+    return false;
+  }
+  const match = ISO_TIMESTAMP_PATTERN.exec(value);
+  if (!match) {
+    return false;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  const offsetHour = match[8] === "Z" ? 0 : Number(match[9]);
+  const offsetMinute = match[8] === "Z" ? 0 : Number(match[10]);
+
+  if (
+    hour > 23 ||
+    minute > 59 ||
+    second > 59 ||
+    offsetHour > 14 ||
+    offsetMinute > 59 ||
+    (offsetHour === 14 && offsetMinute !== 0)
+  ) {
+    return false;
+  }
+
+  const calendar = new Date(Date.UTC(year, month - 1, day));
+  const validCalendarDate =
+    calendar.getUTCFullYear() === year &&
+    calendar.getUTCMonth() === month - 1 &&
+    calendar.getUTCDate() === day;
+  return validCalendarDate && Number.isFinite(Date.parse(value));
 }
 
 function push(errors, code, path, detail = null) {
