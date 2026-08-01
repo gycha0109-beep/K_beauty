@@ -31,6 +31,17 @@ test("PNG, JPEG, and static WebP pass inspection", async () => {
   }
 });
 
+test("equivalent JPEG filename extensions produce stable asset metadata", async () => {
+  const buffer = await raster("jpeg");
+  const jpg = await inspectImageBuffer(buffer, "sample.jpg");
+  const jpeg = await inspectImageBuffer(buffer, "sample.jpeg");
+  assert.equal(jpg.ok, true);
+  assert.equal(jpeg.ok, true);
+  assert.equal(jpg.inspection.assetId, jpeg.inspection.assetId);
+  assert.equal(jpg.inspection.originalExtension, ".jpg");
+  assert.equal(jpeg.inspection.originalExtension, ".jpg");
+});
+
 test("extension spoof and undersized images fail closed", async () => {
   const spoofed = await inspectImageBuffer(await raster("png"), "sample.jpg");
   assert.equal(spoofed.ok, false);
