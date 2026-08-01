@@ -1,0 +1,240 @@
+name: Stage 11C Divergence Diagnostic Once
+
+on:
+  pull_request:
+    types: [edited]
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  divergence-diagnostic:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
+      IMPLEMENTATION_SHA: 19e28502acf935249ec9b3650c320163f219ed7f
+      HEAD_REF: codex/candidate-exposure-policy-shadow-evaluation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 19e28502acf935249ec9b3650c320163f219ed7f
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy diagnostic shadow Preview and run one KO probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${VERCEL_TOKEN:-}"
+          echo "::add-mask::$VERCEL_TOKEN"
+          rm -rf .vercel
+          mkdir -p .vercel
+          python3 - <<'PY'
+          import json, os
+          open('.vercel/project.json', 'w').write(json.dumps({
+              'orgId': os.environ['VERCEL_ORG_ID'],
+              'projectId': os.environ['VERCEL_PROJECT_ID'],
+          }))
+          PY
+
+          vercel deploy --yes --force \
+            --env DEV_ONLY_CANDIDATE_EXPOSURE_POLICY_SHADOW=1 \
+            --meta githubCommitSha="$IMPLEMENTATION_SHA" \
+            --meta githubCommitRef="$HEAD_REF" \
+            --meta actor=codex-stage11c-divergence-diagnostic \
+            --token="$VERCEL_TOKEN" > diagnostic-deploy.log
+
+          python3 - <<'PY'
+          import binascii
+          import json
+          import os
+          import re
+          import struct
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          import uuid
+          import zlib
+
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          project = os.environ['VERCEL_PROJECT_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          api_headers = {
+              'Authorization': f'Bearer {token}',
+              'Content-Type': 'application/json',
+          }
+
+          def api_request(path, method='GET', body=None):
+              request = urllib.request.Request(
+                  'https://api.vercel.com' + path,
+                  data=None if body is None else json.dumps(body).encode(),
+                  headers=api_headers,
+                  method=method,
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          text = open('diagnostic-deploy.log', errors='replace').read()
+          urls = re.findall(r'https://[^\s]+?\.vercel\.app', text)
+          if not urls:
+              raise SystemExit('diagnostic_deployment_url_missing')
+          deployment_url = urls[-1].rstrip('/')
+          endpoint = (
+              '/v13/deployments/'
+              + urllib.parse.quote(deployment_url.removeprefix('https://'), safe='')
+              + '?'
+              + urllib.parse.urlencode({'teamId': team})
+          )
+          deadline = time.time() + 900
+          deployment = None
+          while time.time() < deadline:
+              deployment = api_request(endpoint)
+              state = deployment.get('readyState') or deployment.get('state')
+              if state == 'READY':
+                  break
+              if state in {'ERROR', 'CANCELED'}:
+                  raise SystemExit('diagnostic_deployment_failed')
+              time.sleep(15)
+          else:
+              raise SystemExit('diagnostic_deployment_not_ready')
+
+          if deployment.get('meta', {}).get('githubCommitSha') != sha:
+              raise SystemExit('diagnostic_runtime_sha_mismatch')
+          deployment_id = deployment['id']
+          deployment_url = 'https://' + deployment['url']
+
+          bypass_endpoint = (
+              f'/v1/projects/{urllib.parse.quote(project, safe="")}/protection-bypass?'
+              + urllib.parse.urlencode({'teamId': team})
+          )
+          project_endpoint = (
+              f'/v9/projects/{urllib.parse.quote(project, safe="")}?'
+              + urllib.parse.urlencode({'teamId': team})
+          )
+
+          def bypass_map():
+              value = api_request(project_endpoint).get('protectionBypass')
+              return value if isinstance(value, dict) else {}
+
+          before = set(bypass_map())
+          api_request(
+              bypass_endpoint,
+              method='PATCH',
+              body={'generate': {'note': 'Stage 11C divergence diagnostic temporary'}},
+          )
+          after = bypass_map()
+          created = [
+              secret for secret in set(after) - before
+              if isinstance(after.get(secret), dict)
+              and after[secret].get('scope') == 'automation-bypass'
+              and after[secret].get('note') == 'Stage 11C divergence diagnostic temporary'
+          ]
+          if len(created) != 1:
+              raise SystemExit('diagnostic_bypass_identification_failed')
+          secret = created[0]
+          print(f'::add-mask::{secret}')
+
+          def png_fixture():
+              width = height = 64
+              raw = b''.join(b'\x00' + bytes([196, 148, 132]) * width for _ in range(height))
+              def chunk(kind, data):
+                  return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
+              return b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
+
+          fields = {
+              'skinType': 'combination',
+              'sensitivityLevel': 'low',
+              'mainConcern': 'uneven_tone',
+              'mainConcerns': '["uneven_tone","dehydration"]',
+              'primaryConcern': 'uneven_tone',
+              'recentSkinChange': 'no',
+              'recentlyChangedProduct': 'no',
+              'cleansingFrequency': 'twice',
+              'texturePreference': 'gel',
+              'postCleanseFeel': 'comfortable',
+              'afternoonState': 'mostly_same',
+              'environmentExposure': '["outdoor"]',
+              'dislikedFeel': 'sticky',
+              'genderPreference': 'unspecified',
+              'whiteCastHate': 'true',
+              'toneUpWanted': 'false',
+              'makeupUse': 'true',
+              'eyeSensitive': 'false',
+              'sunscreenPreferenceState': 'answered',
+              'outdoorExposure': 'true',
+              'verySensitivePeriod': 'false',
+              'currentProducts': '[]',
+              'locale': 'ko',
+          }
+          boundary = '----stage11c-' + uuid.uuid4().hex
+          chunks = []
+          for key, value in fields.items():
+              chunks.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode())
+          chunks.append(f'--{boundary}\r\nContent-Disposition: form-data; name="image"; filename="stage11c-fixture.png"\r\nContent-Type: image/png\r\n\r\n'.encode() + png_fixture() + b'\r\n')
+          chunks.append(f'--{boundary}--\r\n'.encode())
+          diagnostic_id = 'premium-session-diagnostic-' + str(uuid.uuid4())
+
+          try:
+              request = urllib.request.Request(
+                  deployment_url + '/api/analyze',
+                  data=b''.join(chunks),
+                  headers={
+                      'Content-Type': f'multipart/form-data; boundary={boundary}',
+                      'x-vercel-protection-bypass': secret,
+                      'x-bejewely-premium-diagnostic-id': diagnostic_id,
+                  },
+                  method='POST',
+              )
+              with urllib.request.urlopen(request, timeout=180) as response:
+                  status = response.status
+                  runtime_sha = response.headers.get('x-bejewely-runtime-commit')
+                  response.read()
+              if status != 200:
+                  raise RuntimeError(f'diagnostic_http_{status}')
+              if runtime_sha != sha:
+                  raise RuntimeError('diagnostic_response_sha_mismatch')
+          finally:
+              api_request(
+                  bypass_endpoint,
+                  method='PATCH',
+                  body={'revoke': {'secret': secret, 'regenerate': False}},
+              )
+              if secret in bypass_map():
+                  raise RuntimeError('diagnostic_bypass_cleanup_failed')
+
+          evidence = {
+              'implementationSha': sha,
+              'deploymentId': deployment_id,
+              'diagnosticId': diagnostic_id,
+              'httpStatus': status,
+              'runtimeCommit': runtime_sha,
+              'temporaryAutomationBypassRevoked': True,
+          }
+          open('stage11c-divergence-diagnostic.json', 'w').write(json.dumps(evidence, indent=2) + '\n')
+          print(json.dumps(evidence, indent=2))
+          PY
+          rm -rf .vercel
+          rm -f diagnostic-deploy.log
+
+      - name: Upload diagnostic locator
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11c-divergence-diagnostic
+          path: stage11c-divergence-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 1
