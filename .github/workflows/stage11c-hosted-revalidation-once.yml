@@ -13,23 +13,133 @@ jobs:
   hosted-revalidation:
     if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
       VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
-      IMPLEMENTATION_SHA: 3d697efd3b7b90137c68e988d42487c7a58a92a2
-      DEFAULT_DEPLOYMENT_ID: dpl_FBndGs9izVGgC32FUoRLJngcm5Dh
-      DEFAULT_DEPLOYMENT_URL: https://k-beauty-36a69u14b-johnny-self.vercel.app
-      SHADOW_DEPLOYMENT_ID: dpl_GGCBUfuwjAD52oF6pJiaSNhwApHy
-      SHADOW_DEPLOYMENT_URL: https://k-beauty-euj8399kp-johnny-self.vercel.app
+      IMPLEMENTATION_SHA: 1bc119347a2f8d3387a935163e24849ceebe349d
+      IMPLEMENTATION_REF: codex/candidate-exposure-policy-shadow-evaluation
+      DEFAULT_DEPLOYMENT_ID: dpl_2eueMeSRe72BNBu5tsVA7NscnDSp
+      DEFAULT_DEPLOYMENT_URL: https://k-beauty-aqb363e1t-johnny-self.vercel.app
     steps:
-      - name: Run four exact-SHA probes with temporary automation bypass
+      - uses: actions/checkout@v4
+        with:
+          ref: 1bc119347a2f8d3387a935163e24849ceebe349d
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Create exact-SHA shadow-on Preview
         shell: bash
         run: |
           set -euo pipefail
           test -n "${VERCEL_TOKEN:-}"
           echo "::add-mask::$VERCEL_TOKEN"
+
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          deployment_id = os.environ['DEFAULT_DEPLOYMENT_ID']
+          headers = {'Authorization': f'Bearer {token}'}
+          endpoint = (
+              'https://api.vercel.com/v13/deployments/'
+              + urllib.parse.quote(deployment_id, safe='')
+              + '?'
+              + urllib.parse.urlencode({'teamId': team})
+          )
+          with urllib.request.urlopen(urllib.request.Request(endpoint, headers=headers), timeout=30) as response:
+              deployment = json.load(response)
+          state = deployment.get('readyState') or deployment.get('state')
+          if state != 'READY':
+              raise SystemExit('default_off_deployment_not_ready')
+          if deployment.get('target') is not None:
+              raise SystemExit('default_off_deployment_not_preview')
+          if deployment.get('meta', {}).get('githubCommitSha') != sha:
+              raise SystemExit('default_off_deployment_sha_mismatch')
+          PY
+
+          rm -rf .vercel
+          mkdir -p .vercel
+          python3 - <<'PY'
+          import json, os
+          with open('.vercel/project.json', 'w') as handle:
+              json.dump({
+                  'orgId': os.environ['VERCEL_ORG_ID'],
+                  'projectId': os.environ['VERCEL_PROJECT_ID'],
+              }, handle)
+          PY
+
+          vercel deploy --yes --force \
+            --env DEV_ONLY_CANDIDATE_EXPOSURE_POLICY_SHADOW=1 \
+            --meta githubCommitSha="$IMPLEMENTATION_SHA" \
+            --meta githubCommitRef="$IMPLEMENTATION_REF" \
+            --meta actor=codex-stage11c-remediated \
+            --token="$VERCEL_TOKEN" > shadow-deploy.log
+
+          python3 - <<'PY'
+          import json, os, re, time, urllib.parse, urllib.request
+
+          text = open('shadow-deploy.log', errors='replace').read()
+          urls = re.findall(r'https://[^\s]+?\.vercel\.app', text)
+          if not urls:
+              raise SystemExit('shadow_deployment_url_missing')
+          deployment_url = urls[-1].rstrip('/')
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          headers = {'Authorization': f'Bearer {token}'}
+          endpoint = (
+              'https://api.vercel.com/v13/deployments/'
+              + urllib.parse.quote(deployment_url.removeprefix('https://'), safe='')
+              + '?'
+              + urllib.parse.urlencode({'teamId': team})
+          )
+          deadline = time.time() + 900
+          while time.time() < deadline:
+              with urllib.request.urlopen(urllib.request.Request(endpoint, headers=headers), timeout=30) as response:
+                  deployment = json.load(response)
+              state = deployment.get('readyState') or deployment.get('state')
+              if state == 'READY':
+                  if deployment.get('target') is not None:
+                      raise SystemExit('shadow_deployment_not_preview')
+                  if deployment.get('meta', {}).get('githubCommitSha') != sha:
+                      raise SystemExit('shadow_deployment_sha_mismatch')
+                  if deployment.get('meta', {}).get('actor') != 'codex-stage11c-remediated':
+                      raise SystemExit('shadow_deployment_actor_mismatch')
+                  with open('shadow-deployment.json', 'w') as handle:
+                      json.dump({
+                          'id': deployment['id'],
+                          'url': 'https://' + deployment['url'],
+                          'sha': sha,
+                      }, handle)
+                  print(json.dumps({
+                      'shadowDeploymentId': deployment['id'],
+                      'implementationSha': sha,
+                  }))
+                  break
+              if state in {'ERROR', 'CANCELED'}:
+                  raise SystemExit('shadow_deployment_failed')
+              time.sleep(15)
+          else:
+              raise SystemExit('shadow_deployment_not_ready')
+          PY
+
+          rm -f shadow-deploy.log
+          rm -rf .vercel
+
+      - name: Run exactly four KO/EN off/on probes
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           import binascii
           import hashlib
@@ -52,10 +162,7 @@ jobs:
                   'id': os.environ['DEFAULT_DEPLOYMENT_ID'],
                   'url': os.environ['DEFAULT_DEPLOYMENT_URL'],
               },
-              'on': {
-                  'id': os.environ['SHADOW_DEPLOYMENT_ID'],
-                  'url': os.environ['SHADOW_DEPLOYMENT_URL'],
-              },
+              'on': json.load(open('shadow-deployment.json')),
           }
           API_HEADERS = {
               'Authorization': f'Bearer {TOKEN}',
@@ -69,10 +176,10 @@ jobs:
               f'/v9/projects/{urllib.parse.quote(PROJECT, safe="")}?'
               + urllib.parse.urlencode({'teamId': TEAM})
           )
-          RECORDS = []
-          GENERATED_SECRET = None
-          RUN_ERROR = None
-          CLEANUP_ERROR = None
+          records = []
+          bypass_secret = None
+          probe_error = None
+          cleanup_error = None
 
           def api_request(path, method='GET', body=None):
               request = urllib.request.Request(
@@ -85,58 +192,37 @@ jobs:
                   return json.load(response)
 
           def project_bypass_map():
-              project = api_request(PROJECT_ENDPOINT)
-              value = project.get('protectionBypass')
+              value = api_request(PROJECT_ENDPOINT).get('protectionBypass')
               return value if isinstance(value, dict) else {}
 
-          def verify_deployment(mode):
-              deployment = DEPLOYMENTS[mode]
-              endpoint = (
-                  '/v13/deployments/'
-                  + urllib.parse.quote(deployment['id'], safe='')
-                  + '?'
-                  + urllib.parse.urlencode({'teamId': TEAM})
-              )
-              details = api_request(endpoint)
-              state = details.get('readyState') or details.get('state')
-              if state != 'READY':
-                  raise RuntimeError(f'{mode}_deployment_not_ready')
-              if details.get('target') is not None:
-                  raise RuntimeError(f'{mode}_deployment_not_preview')
-              if details.get('meta', {}).get('githubCommitSha') != SHA:
-                  raise RuntimeError(f'{mode}_deployment_sha_mismatch')
-              if mode == 'on' and details.get('meta', {}).get('actor') != 'codex-stage11c-linked':
-                  raise RuntimeError('shadow_deployment_actor_mismatch')
-
-          def generate_temporary_bypass():
+          def generate_bypass():
               before = set(project_bypass_map())
+              note = 'Stage 11C remediated exact-SHA probe temporary'
               api_request(
                   BYPASS_ENDPOINT,
                   method='PATCH',
-                  body={'generate': {'note': 'Stage 11C exact-SHA hosted probe temporary'}},
+                  body={'generate': {'note': note}},
               )
-              after_map = project_bypass_map()
+              after = project_bypass_map()
               created = [
-                  secret
-                  for secret in set(after_map) - before
-                  if isinstance(after_map.get(secret), dict)
-                  and after_map[secret].get('scope') == 'automation-bypass'
-                  and after_map[secret].get('note') == 'Stage 11C exact-SHA hosted probe temporary'
+                  secret for secret in set(after) - before
+                  if isinstance(after.get(secret), dict)
+                  and after[secret].get('scope') == 'automation-bypass'
+                  and after[secret].get('note') == note
               ]
               if len(created) != 1:
-                  raise RuntimeError('temporary_automation_bypass_identification_failed')
-              secret = created[0]
-              print(f'::add-mask::{secret}')
-              return secret
+                  raise RuntimeError('temporary_bypass_identification_failed')
+              print(f'::add-mask::{created[0]}')
+              return created[0]
 
-          def revoke_temporary_bypass(secret):
+          def revoke_bypass(secret):
               api_request(
                   BYPASS_ENDPOINT,
                   method='PATCH',
                   body={'revoke': {'secret': secret, 'regenerate': False}},
               )
               if secret in project_bypass_map():
-                  raise RuntimeError('temporary_automation_bypass_still_present')
+                  raise RuntimeError('temporary_bypass_cleanup_failed')
 
           def png_fixture():
               width = height = 64
@@ -144,15 +230,11 @@ jobs:
                   b'\x00' + bytes([196, 148, 132]) * width
                   for _ in range(height)
               )
-
               def chunk(kind, data):
                   return (
-                      struct.pack('>I', len(data))
-                      + kind
-                      + data
+                      struct.pack('>I', len(data)) + kind + data
                       + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
                   )
-
               return (
                   b'\x89PNG\r\n\x1a\n'
                   + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
@@ -160,7 +242,7 @@ jobs:
                   + chunk(b'IEND', b'')
               )
 
-          FIELDS = {
+          fields = {
               'skinType': 'combination',
               'sensitivityLevel': 'low',
               'mainConcern': 'uneven_tone',
@@ -188,7 +270,7 @@ jobs:
           def multipart(locale):
               boundary = '----stage11c-' + uuid.uuid4().hex
               chunks = []
-              for key, value in {**FIELDS, 'locale': locale}.items():
+              for key, value in {**fields, 'locale': locale}.items():
                   chunks.append(
                       f'--{boundary}\r\n'
                       f'Content-Disposition: form-data; name="{key}"\r\n\r\n'
@@ -199,8 +281,7 @@ jobs:
                   'Content-Disposition: form-data; name="image"; '
                   'filename="stage11c-fixture.png"\r\n'
                   'Content-Type: image/png\r\n\r\n'.encode()
-                  + png_fixture()
-                  + b'\r\n'
+                  + png_fixture() + b'\r\n'
               )
               chunks.append(f'--{boundary}--\r\n'.encode())
               return boundary, b''.join(chunks)
@@ -213,10 +294,9 @@ jobs:
               return value
 
           def digest(value):
-              encoded = json.dumps(
-                  stable(value), ensure_ascii=False, separators=(',', ':')
-              ).encode()
-              return hashlib.sha256(encoded).hexdigest()
+              return hashlib.sha256(
+                  json.dumps(stable(value), ensure_ascii=False, separators=(',', ':')).encode()
+              ).hexdigest()
 
           def collect_ids(value, output):
               if isinstance(value, dict):
@@ -228,7 +308,7 @@ jobs:
                   for item in value:
                       collect_ids(item, output)
 
-          def run_probe(locale, mode, bypass_secret):
+          def run_probe(locale, mode, secret):
               boundary, body = multipart(locale)
               diagnostic_id = 'premium-session-diagnostic-' + str(uuid.uuid4())
               request = urllib.request.Request(
@@ -236,7 +316,7 @@ jobs:
                   data=body,
                   headers={
                       'Content-Type': f'multipart/form-data; boundary={boundary}',
-                      'x-vercel-protection-bypass': bypass_secret,
+                      'x-vercel-protection-bypass': secret,
                       'x-bejewely-premium-diagnostic-id': diagnostic_id,
                   },
                   method='POST',
@@ -264,10 +344,8 @@ jobs:
                   normalized['meta'].pop('generatedAt', None)
               order = []
               collect_ids(normalized, order)
-              lower_headers = {
-                  str(key).lower(): value for key, value in headers.items()
-              }
-              RECORDS.append({
+              lower = {str(key).lower(): value for key, value in headers.items()}
+              records.append({
                   'locale': locale,
                   'mode': mode,
                   'httpStatus': status,
@@ -276,86 +354,68 @@ jobs:
                   'responseFingerprint': digest(normalized),
                   'candidateOrderFingerprint': digest(order),
                   'candidateReferenceCount': len(order),
-                  'runtimeCommit': lower_headers.get('x-bejewely-runtime-commit'),
-                  'diagnosticVersion': lower_headers.get('x-bejewely-premium-diagnostic-version'),
-                  'finalStage': lower_headers.get('x-bejewely-premium-final-stage'),
+                  'runtimeCommit': lower.get('x-bejewely-runtime-commit'),
+                  'diagnosticVersion': lower.get('x-bejewely-premium-diagnostic-version'),
+                  'finalStage': lower.get('x-bejewely-premium-final-stage'),
               })
 
-          def pair_results():
-              pairs = {}
-              for locale in ('ko', 'en'):
-                  off = next(
-                      record for record in RECORDS
-                      if record['locale'] == locale and record['mode'] == 'off'
-                  )
-                  on = next(
-                      record for record in RECORDS
-                      if record['locale'] == locale and record['mode'] == 'on'
-                  )
-                  pairs[locale] = {
-                      'responseFingerprintMatch': (
-                          off['responseFingerprint'] == on['responseFingerprint']
-                      ),
-                      'candidateOrderFingerprintMatch': (
-                          off['candidateOrderFingerprint'] == on['candidateOrderFingerprint']
-                      ),
-                      'candidateReferenceCountMatch': (
-                          off['candidateReferenceCount'] == on['candidateReferenceCount']
-                      ),
-                  }
-              return pairs
-
           try:
-              verify_deployment('off')
-              verify_deployment('on')
-              GENERATED_SECRET = generate_temporary_bypass()
+              bypass_secret = generate_bypass()
               for locale, mode in (
                   ('ko', 'off'),
                   ('ko', 'on'),
                   ('en', 'off'),
                   ('en', 'on'),
               ):
-                  run_probe(locale, mode, GENERATED_SECRET)
-              if len(RECORDS) != 4:
+                  run_probe(locale, mode, bypass_secret)
+
+              if len(records) != 4:
                   raise RuntimeError('analyze_call_count_invalid')
-              if any(record['runtimeCommit'] != SHA for record in RECORDS):
+              if any(record['runtimeCommit'] != SHA for record in records):
                   raise RuntimeError('runtime_commit_mismatch')
-              if any(record['finalStage'] != 'S9_cookie_emission' for record in RECORDS):
+              if any(record['finalStage'] != 'S9_cookie_emission' for record in records):
                   raise RuntimeError('premium_final_stage_mismatch')
           except Exception as error:
-              RUN_ERROR = error
+              probe_error = error
           finally:
-              if GENERATED_SECRET:
+              if bypass_secret:
                   try:
-                      revoke_temporary_bypass(GENERATED_SECRET)
+                      revoke_bypass(bypass_secret)
                   except Exception as error:
-                      CLEANUP_ERROR = error
+                      cleanup_error = error
+
+          pairs = {}
+          if len(records) == 4:
+              for locale in ('ko', 'en'):
+                  off = next(item for item in records if item['locale'] == locale and item['mode'] == 'off')
+                  on = next(item for item in records if item['locale'] == locale and item['mode'] == 'on')
+                  pairs[locale] = {
+                      'responseFingerprintMatch': off['responseFingerprint'] == on['responseFingerprint'],
+                      'candidateOrderFingerprintMatch': off['candidateOrderFingerprint'] == on['candidateOrderFingerprint'],
+                      'candidateReferenceCountMatch': off['candidateReferenceCount'] == on['candidateReferenceCount'],
+                  }
+              if any(not value['candidateOrderFingerprintMatch'] for value in pairs.values()):
+                  probe_error = probe_error or RuntimeError('candidate_order_fingerprint_mismatch')
+              if any(not value['candidateReferenceCountMatch'] for value in pairs.values()):
+                  probe_error = probe_error or RuntimeError('candidate_reference_count_mismatch')
 
           result = {
-              'schemaVersion': 'stage11c-hosted-revalidation-aggregate-v2',
+              'schemaVersion': 'stage11c-hosted-revalidation-aggregate-v3',
               'implementationSha': SHA,
               'defaultDeploymentId': DEPLOYMENTS['off']['id'],
               'shadowDeploymentId': DEPLOYMENTS['on']['id'],
               'plannedAnalyzeCallCount': 4,
-              'completedAnalyzeCallCount': len(RECORDS),
-              'http200Count': sum(record['httpStatus'] == 200 for record in RECORDS),
-              'runtimeCommitMatchCount': sum(
-                  record['runtimeCommit'] == SHA for record in RECORDS
-              ),
-              'premiumFinalStageCount': sum(
-                  record['finalStage'] == 'S9_cookie_emission' for record in RECORDS
-              ),
-              'temporaryAutomationBypassCreated': GENERATED_SECRET is not None,
-              'temporaryAutomationBypassRevoked': (
-                  GENERATED_SECRET is not None and CLEANUP_ERROR is None
-              ),
-              'records': RECORDS,
-              'pairs': pair_results() if len(RECORDS) == 4 else {},
+              'completedAnalyzeCallCount': len(records),
+              'http200Count': sum(record['httpStatus'] == 200 for record in records),
+              'runtimeCommitMatchCount': sum(record['runtimeCommit'] == SHA for record in records),
+              'premiumFinalStageCount': sum(record['finalStage'] == 'S9_cookie_emission' for record in records),
+              'temporaryAutomationBypassCreated': bypass_secret is not None,
+              'temporaryAutomationBypassRevoked': bypass_secret is not None and cleanup_error is None,
+              'records': records,
+              'pairs': pairs,
               'errorCategory': (
-                  'cleanup_failed'
-                  if CLEANUP_ERROR is not None
-                  else 'probe_failed'
-                  if RUN_ERROR is not None
+                  'cleanup_failed' if cleanup_error is not None
+                  else 'probe_failed' if probe_error is not None
                   else 'none'
               ),
           }
@@ -363,22 +423,20 @@ jobs:
               json.dump(result, handle, ensure_ascii=False, indent=2)
               handle.write('\n')
           print(json.dumps({
-              key: value
-              for key, value in result.items()
-              if key not in {'records'}
+              key: value for key, value in result.items() if key != 'records'
           }, ensure_ascii=False, indent=2))
 
-          if CLEANUP_ERROR is not None:
-              raise CLEANUP_ERROR
-          if RUN_ERROR is not None:
-              raise RUN_ERROR
+          if cleanup_error is not None:
+              raise cleanup_error
+          if probe_error is not None:
+              raise probe_error
           PY
 
-      - name: Upload redacted aggregate evidence
+      - name: Upload aggregate evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stage11c-hosted-revalidation-aggregate
+          name: stage11c-remediated-hosted-revalidation
           path: stage11c-hosted-revalidation-aggregate.json
           if-no-files-found: error
           retention-days: 1
