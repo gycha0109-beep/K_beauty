@@ -14,7 +14,7 @@
 - `face-lab-observation-v1`
 - eligibility, skin, and Face Lab observation normalization
 - one bounded OpenAI image request
-- no source-image or raw-response persistence
+- no new source-image copy or raw-response persistence by the observation execution
 
 The #T3 implementation branch does not contain the current observation modules and is 127 commits behind the observation source branch at design time. Direct cross-branch imports are impossible, while copying code without source identity would make later results unauditable.
 
@@ -26,6 +26,7 @@ Additional risks:
 4. Automatic retry would hide independent model variance and spend an unbounded image-attempt budget.
 5. Mutating the candidate manifest would mix import provenance with later observations.
 6. A conventional `dry-run` label is ambiguous when Provider execution itself is the costly side effect.
+7. Embedding the normalized bundle directly in the run manifest would conflict with content-addressed object retention and manifest-last publication.
 
 ## Decisions
 
@@ -42,15 +43,18 @@ canonical transform policy version
 
 Generation spec, prompt, condition, campaign, Provider provenance, and operator hints are unavailable to T4 execution.
 
-### 2. Pin a versioned observation contract snapshot
+### 2. Pin a versioned semantic observation contract snapshot
 
-T4 does not import production `lib/**` at runtime.
+T4 does not import or execute production `lib/**` at runtime.
 
 A snapshot records:
 
 - source repository and exact commit
 - required source file paths and blob SHAs
 - Vision and Face Lab schema/prompt versions
+- semantic enum/shape export
+- canonical prompt text/digest
+- parity fixture manifest and result digest
 - exported capabilities
 - canonical snapshot digest
 
@@ -61,26 +65,32 @@ gycha0109-beep/K_beauty
 f050b1d5f72588a1ce6a0a8e5fa42b92d0a8a893
 ```
 
+Toolkit validators and normalizers implement the exported semantics and must pass provider-free parity fixtures. Production JS aliases or server-only modules are not vendored as executable Toolkit dependencies.
+
 A changed source requires a new snapshot ID and drift review. Existing observation runs remain bound to their original snapshot.
 
-### 3. Separate contract, transport, and registration
+### 3. Separate contract, transport, normalization, and registration
 
 ```text
-contract snapshot
-→ prompt/schema/normalizer
+semantic contract snapshot
+→ schema/prompt/parity data
+
+Toolkit validator/normalizer
+→ canonical bundle validation and normalization
 
 transport adapter
 → bounded Provider request and response extraction
 
 registrar
-→ immutable observation object and run manifest
+→ immutable observation object
+→ object reference in manifest-last run
 ```
 
 The shared contract may later be extracted into `@bejewely/face-contracts`. The production application must never depend on `@bejewely/synthetic-evaluation`.
 
-### 4. Publish only canonical successful bundles as observations
+### 4. Publish only canonical successful bundles as observation objects
 
-An observation object is published only when the pinned normalizer returns:
+An observation object is published only when the pinned validator/normalizer returns:
 
 ```text
 schemaVersion = vision-observation-v1
@@ -89,13 +99,17 @@ privacy.sourceImagePersisted = false
 privacy.rawProviderResponsePersisted = false
 ```
 
+The first privacy flag means that the observation execution created no additional persisted image. It does not claim that the #T3 synthetic candidate asset does not exist.
+
 A valid bundle may report image ineligibility or insufficient Face Lab/Skin Match evidence. That remains a successful observation of an unsuitable image.
 
 Provider failure, parse failure, schema mismatch, or contract-invalid normalization produces no observation object. A sanitized failure run may be registered after an actual Provider attempt.
 
-### 5. Keep candidate and observation artifacts separate
+### 5. Keep observation object, run manifest, and candidate manifest separate
 
 T4 never changes the #T3 candidate manifest or state.
+
+The normalized bundle is stored as an immutable content-addressed observation object. The observation run manifest references that object and is published last. Failure runs contain no observation-object reference.
 
 Observation runs are append-only artifacts keyed by candidate ID. Candidate grade, consensus, and promotion are derived by later tracks.
 
@@ -105,13 +119,14 @@ Each Provider execution has a maximum of one image-bearing attempt and no automa
 
 ```text
 same replicate ordinal
-→ idempotent retry of the same logical run
+→ verify and return the existing logical run
+→ no second Provider call
 
 higher replicate ordinal
-→ intentional independent observation run
+→ explicit independent Provider attempt
 ```
 
-Timestamps and usage telemetry do not participate in run identity.
+A manual recovery call after timeout therefore uses a new ordinal and remains visible as a separate attempt. Timestamps and usage telemetry do not participate in run identity.
 
 ### 7. Use `preflight` and `execute`, not ambiguous Provider dry-run
 
@@ -130,26 +145,28 @@ Timestamps and usage telemetry do not participate in run identity.
 
 T4 references the existing #T3 canonical asset and does not create another image copy.
 
-It stores no raw Provider body, raw model prose, authorization data, base64 image, or absolute local path. Normalized observations and allowlisted telemetry only are permitted.
+It stores no raw Provider body, unvalidated model prose, authorization data, base64 image, or absolute local path. Canonical normalized observations, validated evidence fields, and allowlisted telemetry only are permitted.
 
 ## Consequences
 
 ### Positive
 
 - generation intent cannot bias observation execution;
-- observation results are traceable to exact source contract bytes;
+- observation results are traceable to exact source contract bytes and semantic export;
 - branch divergence does not create hidden runtime coupling;
 - invalid Provider output cannot masquerade as observed data;
 - repeated model measurements are explicit and auditable;
 - candidate import history remains immutable;
+- observation objects can be deduplicated independently of run history;
 - future judgment and consensus can consume stable observation artifacts.
 
 ### Costs
 
-- a snapshot/export and drift-verification step is required;
+- a semantic snapshot exporter, parity fixture, and drift verifier are required;
 - schema updates create new snapshot versions instead of silently updating old runs;
-- Provider transport must be implemented separately from the existing production service;
+- Provider transport and Toolkit normalizer must be implemented separately from the production service;
 - cross-snapshot result comparison requires explicit compatibility policy;
+- manual recovery after a failed call consumes a new replicate ordinal;
 - batch execution remains deferred.
 
 ## Rejected alternatives
@@ -161,6 +178,10 @@ Rejected because the relevant branches are not linearly aligned and production m
 ### Copy prompt and normalizer without source metadata
 
 Rejected because results could not be tied to an exact source contract or reviewed for drift.
+
+### Execute copied production source from a snapshot
+
+Rejected because a snapshot is provenance and semantic data, not a hidden application-runtime dependency. Toolkit behavior must be verified by parity fixtures.
 
 ### Pass the full candidate manifest and promise not to read intent
 
@@ -178,21 +199,26 @@ Rejected because a Provider or contract failure is not an observation.
 
 Rejected because it hides attempt count, changes cost, and conflates recovery with independent replicate measurement.
 
+### Embed the normalized bundle in the run manifest
+
+Rejected because observation content identity and run/execution identity are distinct. The manifest must reference an immutable observation object.
+
 ### Update candidate state to `G2_OBSERVED`
 
 Rejected because import provenance and observation history are separate append-only domains. A later registry may derive an effective grade.
 
 ## Implementation gates
 
-1. contract snapshot manifest and drift verifier;
-2. exact request/result schemas with unknown-field rejection;
-3. blind-input-only source audit;
-4. canonical asset hash and path preflight;
-5. provider-free fixture replay;
-6. immutable object plus manifest-last registration;
-7. bounded OpenAI adapter with attempt count 1;
-8. blind judgment projection;
-9. provider-free full contract suite;
-10. separately approved one-image synthetic Provider smoke.
+1. semantic contract snapshot exporter and drift verifier;
+2. provider-free parity fixtures and Toolkit validator/normalizer;
+3. exact request, observation-object, and run-manifest schemas with unknown-field rejection;
+4. blind-input-only source audit;
+5. canonical asset hash and path preflight;
+6. provider-free fixture replay;
+7. immutable observation object plus manifest-last run registration;
+8. bounded OpenAI adapter with attempt count 1;
+9. blind judgment projection;
+10. provider-free full contract suite;
+11. separately approved one-image synthetic Provider smoke.
 
-Until gates 1–9 pass, no Provider image execution is authorized by this ADR.
+Until gates 1–10 pass, no Provider image execution is authorized by this ADR.
