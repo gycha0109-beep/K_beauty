@@ -30,35 +30,54 @@ Included:
 - local data ignore boundary
 - workspace smoke test
 
+## Toolkit Track #T2
+
+Implemented:
+
+- exact `DraftGenerationSpecV1` validation
+- canonical semantic payload and SHA-256 spec identity
+- deeply frozen finalized spec and compiled prompt artifacts
+- registry-owned mandatory exclusions
+- observation-backed face-feature cue registry
+- archetype taxonomy fail-closed boundary
+- Gemini and GPT manual prompt profiles
+- SDXL reference-only profile
+- A/B/C/D skin-control fixtures
+- frozen Gemini prompt snapshots
+- deterministic prompt digest
+- production dependency and no-execution architecture checks
+
 Not included:
 
-- GenerationSpec
-- Gemini prompt compiler
-- image import
+- Provider API or browser execution
+- image generation
+- reference-image transfer
+- candidate import
 - hashing or duplicate detection
 - Vision observation adapter
-- archetype scoring
+- archetype taxonomy or scoring
 - Gold promotion
 - human review UI
-- database or Provider API integration
+- database, API route, UI, or production integration
 
-## Toolkit Track #T2 design
-
-The generation contract and versioned Provider prompt compiler design is recorded at:
+Design and decisions:
 
 ```text
 docs/generation-contract-prompt-compiler-v1.md
+docs/adr/0001-generation-spec-identity-and-policy-registries.md
+docs/adr/0002-generation-compiler-implementation-resolution.md
 ```
 
-The accepted correction for non-circular spec identity, registry-owned exclusions, and taxonomy-bound archetype metadata is recorded at:
+ADR 0001 replaces the initial caller-owned identity and exclusion shapes. ADR 0002 records the implementation review decisions for the observation-backed cue registry, basis-point weights, disabled archetype taxonomy, unverified reference capability, and dynamic subject compilation.
+
+Verification:
 
 ```text
-docs/adr/0001-generation-spec-identity-and-policy-registries.md
+npm run synthetic:test
+npm run synthetic:verify
+npm run architecture:guard
+npm run build
 ```
-
-The ADR supersedes ambiguous identity and caller-owned policy wording in the primary design document.
-
-The #T2 design is intentionally implementation-free. It defines intended targets, deterministic compilation, Provider capability boundaries, A/B/C/D skin fixtures, validation failures, and future acceptance criteria. It does not call a Provider or generate an image.
 
 `#T1`, `#T2`, and later identifiers are internal Toolkit Track IDs. They are not GitHub pull request numbers.
 
@@ -70,4 +89,4 @@ Future local synthetic assets and outputs belong under:
 .synthetic-local/
 ```
 
-A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and the #T2 design do not create or read that environment variable.
+A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and #T2 do not create or read that environment variable.
