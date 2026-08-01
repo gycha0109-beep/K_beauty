@@ -50,6 +50,7 @@ const MARK_KEYS = Object.freeze(["status", "location", "provenanceStatus"]);
 const TOKEN_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 const CANDIDATE_ID_PATTERN = /^cand_[a-f0-9]{24}$/;
+const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
 const MARK_LOCATIONS = new Set(["bottom_right", "bottom_left", "top_right", "top_left", "other"]);
 const EXECUTION_MODES = new Set(["manual_web", "local_workflow"]);
 const MARK_STATUSES = new Set(["present", "absent", "unknown"]);
@@ -64,7 +65,8 @@ function hasExactKeys(value, expected) {
     return false;
   }
   const actual = Object.keys(value).sort();
-  return actual.length === expected.length && actual.every((key, index) => key === [...expected].sort()[index]);
+  const sortedExpected = [...expected].sort();
+  return actual.length === sortedExpected.length && actual.every((key, index) => key === sortedExpected[index]);
 }
 
 function nullableString(value, max = 256) {
@@ -75,7 +77,7 @@ function validIso(value, nullable = false) {
   if (nullable && value === null) {
     return true;
   }
-  return typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+  return typeof value === "string" && ISO_TIMESTAMP_PATTERN.test(value) && Number.isFinite(Date.parse(value));
 }
 
 function push(errors, code, path, detail = null) {
