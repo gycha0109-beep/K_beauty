@@ -54,7 +54,11 @@ test("sensitive provenance and invalid timestamps are rejected", async () => {
   sensitive.operatorHints.notes = "Bearer secret-token-value";
   assert.ok(codes(validateCandidateImportRequest(sensitive)).includes("sensitive_provenance_forbidden"));
 
-  const invalidTime = clone(request);
-  invalidTime.providerRun.downloadedAt = "yesterday";
-  assert.ok(codes(validateCandidateImportRequest(invalidTime)).includes("invalid_request_schema"));
+  const vagueTime = clone(request);
+  vagueTime.providerRun.downloadedAt = "yesterday";
+  assert.ok(codes(validateCandidateImportRequest(vagueTime)).includes("invalid_request_schema"));
+
+  const impossibleDate = clone(request);
+  impossibleDate.providerRun.downloadedAt = "2026-02-31T08:22:00+09:00";
+  assert.ok(codes(validateCandidateImportRequest(impossibleDate)).includes("invalid_request_schema"));
 });
