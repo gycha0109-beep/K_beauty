@@ -93,7 +93,7 @@ function parseMode(argv) {
   return "validate-only";
 }
 
-function runGit(args) {
+function runGit(args, { trim = true } = {}) {
   const result = spawnSync("git", args, {
     cwd: ROOT,
     encoding: "utf8",
@@ -102,7 +102,8 @@ function runGit(args) {
   if (result.status !== 0) {
     throw new Error(`git_command_failed:${args.join(" ")}:${String(result.stderr || "").trim()}`);
   }
-  return String(result.stdout || "").trim();
+  const output = String(result.stdout || "");
+  return trim ? output.trim() : output;
 }
 
 function stableValue(value) {
@@ -166,7 +167,7 @@ function resolveLocalImport(fromPath, specifier) {
 }
 
 function baselineFile(filePath) {
-  return runGit(["show", `${RUNTIME_IMPLEMENTATION_SHA}:${filePath}`]);
+  return runGit(["show", `${RUNTIME_IMPLEMENTATION_SHA}:${filePath}`], { trim: false });
 }
 
 function attestRuntimeClosure() {
