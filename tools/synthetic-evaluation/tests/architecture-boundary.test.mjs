@@ -49,3 +49,19 @@ test("generation source contains no network, browser automation, or image write 
     assert.doesNotMatch(source, /writeFile|createWriteStream|appendFile/, file);
   }
 });
+
+test("import source has no network, browser automation, shell, or Provider execution", async () => {
+  const sourceRoot = path.resolve(testDirectory, "../src/import");
+  for (const file of await collectFiles(sourceRoot)) {
+    const source = await fs.readFile(file, "utf8");
+    assert.doesNotMatch(source, /\bfetch\s*\(/, file);
+    assert.doesNotMatch(source, /playwright|puppeteer|webdriver/i, file);
+    assert.doesNotMatch(source, /child_process|execFile|spawn\s*\(/, file);
+    assert.doesNotMatch(source, /gemini\.google|api\.openai|generativelanguage/i, file);
+  }
+});
+
+test("T3 v1 exposes no batch-confirm command", async () => {
+  const packageJson = JSON.parse(await fs.readFile(path.resolve(testDirectory, "../package.json"), "utf8"));
+  assert.equal(Object.keys(packageJson.scripts || {}).some((name) => /batch/i.test(name)), false);
+});
