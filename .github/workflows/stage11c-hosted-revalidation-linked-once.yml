@@ -2,7 +2,7 @@ name: Stage 11C Hosted Existing-Deployment Probe Once
 
 on:
   pull_request:
-    types: [edited]
+    types: [synchronize]
     branches:
       - codex/candidate-exposure-policy-shadow-runtime
 
