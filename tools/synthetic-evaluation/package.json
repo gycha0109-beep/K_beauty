@@ -6,10 +6,12 @@
   "exports": "./src/index.js",
   "sideEffects": false,
   "scripts": {
-    "test": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs",
-    "verify": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs"
+    "test": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs",
+    "verify": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs",
+    "import": "node src/import/cli/import-candidate.js"
   },
   "dependencies": {
-    "@bejewely/face-contracts": "0.0.0"
+    "@bejewely/face-contracts": "0.0.0",
+    "sharp": "0.35.3"
   }
 }
