@@ -44,11 +44,19 @@ Not included:
 
 ## Toolkit Track #T2 design
 
-The design for the generation contract and versioned Provider prompt compiler is recorded at:
+The generation contract and versioned Provider prompt compiler design is recorded at:
 
 ```text
 docs/generation-contract-prompt-compiler-v1.md
 ```
+
+The accepted correction for non-circular spec identity, registry-owned exclusions, and taxonomy-bound archetype metadata is recorded at:
+
+```text
+docs/adr/0001-generation-spec-identity-and-policy-registries.md
+```
+
+The ADR supersedes ambiguous identity and caller-owned policy wording in the primary design document.
 
 The #T2 design is intentionally implementation-free. It defines intended targets, deterministic compilation, Provider capability boundaries, A/B/C/D skin fixtures, validation failures, and future acceptance criteria. It does not call a Provider or generate an image.
 
