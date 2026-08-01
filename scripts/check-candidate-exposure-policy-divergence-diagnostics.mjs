@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { buildCandidateExposureUnexpectedDivergenceDiagnostics } from "../lib/candidate-exposure-policy-divergence-diagnostics.js";
+import { classifyCandidateExposureDivergence } from "../lib/candidate-exposure-policy-observability.js";
 
 const legacyExecution = {
   receivers: [
@@ -17,9 +18,51 @@ const legacyExecution = {
       productId: "candidate-c",
       baselineExposureGroup: "primary_candidate",
       futureExposureGroup: "unchanged"
+    },
+    {
+      productId: "candidate-d",
+      baselineExposureGroup: "primary_candidate",
+      futureExposureGroup: "unchanged"
     }
   ]
 };
+
+const canonicalEvaluatorRebuildDecision = {
+  candidateRef: "candidate-d",
+  exposure: "hidden",
+  reasonCodes: ["canonical_goal_match"],
+  currentProductRelation: "none",
+  evidenceState: "complete",
+  provenance: {
+    adapterExposure: "hidden"
+  }
+};
+
+assert.equal(
+  classifyCandidateExposureDivergence(canonicalEvaluatorRebuildDecision, "primary"),
+  "expected_canonical_evaluator_rebuild"
+);
+assert.equal(
+  classifyCandidateExposureDivergence(
+    { ...canonicalEvaluatorRebuildDecision, provenance: { adapterExposure: "primary" } },
+    "primary"
+  ),
+  "unexpected_divergence"
+);
+assert.equal(
+  classifyCandidateExposureDivergence(
+    { ...canonicalEvaluatorRebuildDecision, reasonCodes: ["canonical_goal_match", "protection_maintained"] },
+    "primary"
+  ),
+  "unexpected_divergence"
+);
+assert.equal(
+  classifyCandidateExposureDivergence(
+    { ...canonicalEvaluatorRebuildDecision, evidenceState: "insufficient" },
+    "primary"
+  ),
+  "unexpected_divergence"
+);
 
 const decisions = [
   {
@@ -36,7 +79,8 @@ const decisions = [
     candidateRef: "candidate-c",
     exposure: "hidden",
     reasonCodes: ["stabilization_active_block"]
-  }
+  },
+  canonicalEvaluatorRebuildDecision
 ];
 
 const diagnostics = buildCandidateExposureUnexpectedDivergenceDiagnostics({
@@ -59,7 +103,7 @@ const reversed = buildCandidateExposureUnexpectedDivergenceDiagnostics({
 assert.deepEqual(reversed, diagnostics);
 
 const serialized = JSON.stringify(diagnostics);
-for (const forbidden of ["candidate-a", "candidate-b", "candidate-c", "productId", "candidateRef"]) {
+for (const forbidden of ["candidate-a", "candidate-b", "candidate-c", "candidate-d", "productId", "candidateRef"]) {
   assert.equal(serialized.includes(forbidden), false, forbidden);
 }
 
