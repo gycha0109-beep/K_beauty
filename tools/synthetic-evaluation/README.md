@@ -85,6 +85,37 @@ docs/adr/0004-import-implementation-resolution.md
 
 ADR 0003 removes a committed quarantine state. ADR 0004 distinguishes logical artifact digests from full-envelope bytes, defines manifest-last publication, preserves retry timestamps, keeps mark provenance unverified, and defers batch confirm.
 
+## Toolkit Track #T4 design
+
+Defined:
+
+- blind candidate input as the only observation image boundary
+- pinned snapshot of the current canonical Vision/Face Lab observation contract
+- direct production runtime import prohibition
+- contract, Provider transport, and registration separation
+- preflight with zero Provider calls and zero writes
+- explicit execute with one image-bearing attempt and no automatic retry
+- immutable observation objects and manifest-last run publication
+- valid ineligible observation versus Provider/contract failure separation
+- replicate ordinal identity and idempotent retry
+- raw Provider response and image-copy retention prohibition
+- blind judgment handoff without generation intent
+
+Not implemented:
+
+- observation contract snapshot exporter
+- Provider transport
+- observation CLI
+- observation run storage
+- judgment, consensus, archetype scoring, or promotion
+
+Design and decision:
+
+```text
+docs/observation-adapter-v1.md
+docs/adr/0005-observation-contract-snapshot-and-blind-execution.md
+```
+
 ## Verification
 
 ```text
