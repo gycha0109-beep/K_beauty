@@ -4,21 +4,20 @@
 
 이 문서는 Stage 11E에서 확정한 `CandidateExposurePolicy` 격리 Preview canary 계약을 실제 코드로 옮기기 위한 **Stage 11F 구현 설계서**다.
 
-이 단계의 목적은 Hosted canary를 실행하는 것이 아니라, 다음을 구현 가능한 수준으로 고정하는 것이다.
+Stage 11E 문서는 정책·안전 경계의 권위 문서다. 이 문서는 그 경계를 다음 구현 항목으로 구체화한다.
 
 - 파일별 책임과 공개 인터페이스
 - 실행 상태 머신
-- runtime SHA와 harness SHA의 권위 분리
-- runtime tree attestation
-- 고정 fixture 패키지
-- Hosted invariance lane
-- deterministic projection replay lane
-- aggregate telemetry와 evidence
+- Stage 11E base, product runtime SHA, harness SHA의 권위 분리
+- runtime import closure digest attestation
+- 고정 fixture manifest
+- deterministic isolated projection
+- aggregate telemetry와 final evidence
 - fail-closed stop condition
-- cleanup 및 비밀정보 처리
+- cleanup 및 민감정보 경계
 - 구현 순서와 검증 매트릭스
 
-이 문서는 기존 Stage 11E 설계 계약을 대체하지 않는다. Stage 11E 문서는 정책·안전 경계의 권위 문서이고, 이 문서는 그 경계를 코드 구조와 실행 절차로 구체화하는 하위 구현 문서다.
+이 문서는 harness를 실행하거나 Production 활성화를 승인하지 않는다.
 
 ---
 
@@ -27,17 +26,19 @@
 ### 2.1 Stage 11F에서 허용되는 작업
 
 - harness 전용 pure module 구현
-- harness runner 구현
+- validate-only runner 구현
 - synthetic fixture manifest 구현
 - aggregate telemetry/evidence validator 구현
-- local validate-only 실행
 - positive/negative contract verifier 구현
 - static import-direction guard 구현
+- runtime digest attestation 구현
+- local validate-only 실행
 - 기존 security verifier, architecture guard, Production build 실행
 - Draft PR 유지
 
 ### 2.2 Stage 11F에서 금지되는 작업
 
+- Hosted 실행 기능 구현
 - Vercel Preview 생성 또는 재배포
 - `/api/analyze` Hosted 호출
 - protection bypass 생성
@@ -54,58 +55,64 @@
 - PR Ready 전환
 - merge
 
-Stage 11F 구현 완료는 **Hosted 실행 승인**이 아니다. Hosted 실행은 별도 Stage 11G 승인과 명시적 실행 창을 요구한다.
+Stage 11F 완료는 **Hosted 실행 검토 자격**만 의미한다. Hosted 실행기는 별도 Stage 11G에서 설계·구현·승인한다.
 
 ---
 
-## 3. 권위 기준
+## 3. 세 가지 권위
 
-### 3.1 Stage 11E 설계 권위
+### 3.1 Stage 11E design base
+
+Stage 11F 브랜치는 구현 시작 시점에 승인된 PR #102의 exact HEAD에서 생성한다.
 
 ```text
-branch: codex/candidate-exposure-policy-isolated-preview-canary-harness-design
-status: design_ready_for_implementation_review
+stage11eDesignBaseSha:
+Stage 11F 브랜치 생성 시 고정한 PR #102 exact HEAD
 ```
 
-### 3.2 Hosted product-runtime 권위
+Stage 11F가 추가할 수 있는 파일은 `stage11eDesignBaseSha..harnessImplementationSha` diff allowlist로 검증한다.
+
+### 3.2 Hosted product runtime
 
 ```text
 runtimeImplementationSha:
 1bc119347a2f8d3387a935163e24849ceebe349d
 ```
 
-### 3.3 Stage 11F harness 권위
+이 SHA는 향후 control/canary Preview가 실행해야 할 product runtime 권위다.
+
+### 3.3 Harness implementation
 
 ```text
 harnessImplementationSha:
 Stage 11F 구현 브랜치의 최종 검증 HEAD
 ```
 
-두 SHA는 동일할 수 없다. Stage 11F에는 harness 파일이 새로 추가되기 때문이다.
+### 3.4 권위 증명
 
-따라서 실행 권위는 다음 두 증명으로 구성한다.
+Stage 11F는 다음을 각각 증명한다.
 
 ```text
-1. Hosted deployment가 runtimeImplementationSha를 실행한다.
-2. harnessImplementationSha가 runtimeImplementationSha 대비
-   허용된 harness-only 파일 외에는 어떤 변경도 포함하지 않는다.
+A. stage11eDesignBaseSha 대비 harness-only 파일만 추가됐다.
+B. harnessImplementationSha의 runtime import closure가
+   runtimeImplementationSha와 byte-identical하다.
 ```
 
-두 번째 증명은 path allowlist와 content digest attestation을 모두 통과해야 한다.
+A는 구현 범위 증명이고 B는 product runtime 불변성 증명이다. 둘 중 하나라도 실패하면 `blocked_runtime_attestation`이다.
 
 ---
 
-## 4. 전체 구현 구조
+## 4. 전체 구조
 
 ```text
 Stage 11F local validation
         |
         +-- Authority preflight
-        |     +-- Stage 11E contract 확인
-        |     +-- runtime SHA 확인
+        |     +-- Stage 11E status 확인
+        |     +-- design base SHA 확인
         |     +-- harness HEAD 확인
-        |     +-- changed-path allowlist 확인
-        |     +-- runtime tree digest attestation
+        |     +-- implementation diff allowlist
+        |     +-- runtime import closure digest attestation
         |
         +-- Pure contract modules
         |     +-- control state machine
@@ -113,45 +120,29 @@ Stage 11F local validation
         |     +-- telemetry schema
         |     +-- final evidence schema
         |
-        +-- Fixture package validation
-        |     +-- manifest schema
-        |     +-- asset hash
+        +-- Fixture manifest validation
+        |     +-- exact four scenarios
+        |     +-- exact KO/EN semantics
         |     +-- semantic fingerprint
-        |     +-- KO/EN 구조 동등성
         |
         +-- Validate-only runner
-        |     +-- exact 16-entry plan 생성
-        |     +-- no network
-        |     +-- no Vercel
-        |     +-- no analyze call
+        |     +-- exact 16-entry plan
+        |     +-- deterministic replay
         |     +-- simulated stop conditions
+        |     +-- no network
         |
-        +-- Contract verifier
+        +-- Contract verification
               +-- positive cases
               +-- negative controls
               +-- import-direction guard
               +-- evidence leak guard
 ```
 
-향후 Stage 11G에서만 다음 Hosted 경로를 사용한다.
-
-```text
-Explicit Stage 11G authorization
-        |
-        +-- exact runtime SHA control Preview
-        +-- exact runtime SHA canary Preview
-        +-- fixed 16-request matrix
-        +-- same-request invariance
-        +-- deterministic projection replay
-        +-- aggregate evidence
-        +-- mandatory cleanup
-```
+Stage 11F에는 Vercel, HTTP, deployment, bypass adapter가 존재하지 않는다.
 
 ---
 
-## 5. 파일 계획
-
-Stage 11F는 아래 파일만 추가한다. 기존 product runtime 파일은 수정하지 않는다.
+## 5. Stage 11F 파일 계획
 
 ```text
 lib/candidate-exposure-policy-isolated-canary-control.js
@@ -163,12 +154,24 @@ scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs
 scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs
 fixtures/candidate-exposure-policy-isolated-canary/manifest.v1.json
 fixtures/candidate-exposure-policy-isolated-canary/README.md
+docs/reviews/candidate-exposure-policy-isolated-canary-implementation-review.md
 docs/verification/candidate-exposure-policy-isolated-canary-implementation-result.md
 ```
 
-Stage 11F 구현을 위해 `package.json`, `package-lock.json`, application route, recommendation runtime, response builder, storage, UI 파일을 수정하지 않는다.
+Stage 11F는 다음을 수정하지 않는다.
 
-Node script는 다음처럼 직접 실행한다.
+```text
+package.json
+package-lock.json
+app/**
+components/**
+middleware.*
+next.config.*
+supabase/**
+기존 lib runtime 파일
+```
+
+실행은 package script 추가 없이 직접 수행한다.
 
 ```bash
 node scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs
@@ -178,9 +181,68 @@ node scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs --mode va
 
 ---
 
-## 6. 모듈별 책임과 인터페이스
+## 6. 현재 runtime exact contract
 
-## 6.1 Control module
+Stage 11F는 새 이름을 만들지 않고 현재 runtime contract를 그대로 import한다.
+
+### 6.1 Exposure
+
+```text
+primary
+contextual
+collapsed
+hidden
+insufficient_evidence
+```
+
+### 6.2 Lane eligibility
+
+```text
+topPick
+supporting
+budget
+routine
+treatment
+```
+
+### 6.3 Decision shape
+
+```js
+{
+  policyVersion: string,
+  candidateRef: string,
+  exposure:
+    | "primary"
+    | "contextual"
+    | "collapsed"
+    | "hidden"
+    | "insufficient_evidence",
+  reasonCodes: string[],
+  currentProductRelation: string,
+  evidenceState: string,
+  laneEligibility: {
+    topPick: boolean,
+    supporting: boolean,
+    budget: boolean,
+    routine: boolean,
+    treatment: boolean
+  },
+  provenance: object
+}
+```
+
+Harness는 exposure, lane, reason code 목록을 복제 정의하지 않는다. 다음 export가 권위다.
+
+```text
+CANDIDATE_EXPOSURES
+CANDIDATE_EXPOSURE_LANES
+CANDIDATE_EXPOSURE_REASON_CODES
+validateCandidateExposureDecision
+```
+
+---
+
+## 7. Control module
 
 파일:
 
@@ -195,16 +257,16 @@ lib/candidate-exposure-policy-isolated-canary-control.js
 - request/time budget 검증
 - exact stop-condition key 검증
 - terminal state 보호
-- 요청 실행 가능 여부 판정
+- matrix entry 실행 가능 여부 판정
 - stop 이후 실행 차단
 
 비책임:
 
-- Git 명령 실행
-- Vercel API 호출
-- HTTP 요청
+- Git 명령
+- filesystem digest 계산
+- HTTP/Vercel 호출
 - telemetry serialization
-- evidence 파일 write
+- evidence write
 
 공개 인터페이스:
 
@@ -215,36 +277,45 @@ export const ISOLATED_CANARY_STOP_CONDITIONS
 export function createIsolatedCanaryControl(input)
 export function validateIsolatedCanaryAuthority(input)
 export function transitionIsolatedCanaryControl(control, event)
-export function canExecuteIsolatedCanaryRequest(control, entry)
+export function canExecuteIsolatedCanaryEntry(control, entry)
 export function stopIsolatedCanaryRun(control, stopCondition)
 ```
 
-권장 event:
+상태:
 
 ```text
-authority_validated
-configuration_invalid
-run_started
-request_completed
-contract_violation
-run_completed
-cleanup_failed
+disabled
+eligible
+running
+stopped
+completed
+invalid_configuration
 ```
+
+전이:
+
+```text
+disabled -> eligible
+disabled -> invalid_configuration
+eligible -> running
+eligible -> invalid_configuration
+running -> completed
+running -> stopped
+```
+
+`stopped`, `completed`, `invalid_configuration`은 terminal이다.
 
 불변식:
 
-- 초기 상태는 `disabled`
 - authority 통과 없이 `running` 불가
-- `stopped`, `completed`, `invalid_configuration`은 terminal
-- stop 이후 completed request count 증가 금지
-- request budget은 항상 16 이하
-- duration budget은 60분 이하
-- unknown stop-condition key 존재 시 `invalid_configuration`
-- stop-condition key 누락 또는 disabled 시 `invalid_configuration`
+- request budget 정확히 16
+- duration ceiling 60분
+- stop 이후 completed count 증가 금지
+- unknown/missing/disabled stop condition은 실행 전 invalid
 
 ---
 
-## 6.2 Isolated projection module
+## 8. Isolated projection module
 
 파일:
 
@@ -254,21 +325,18 @@ lib/candidate-exposure-policy-isolated-projection.js
 
 책임:
 
-- candidate와 policy decision의 immutable projection
-- exact exposure-state 검증
-- exact lane-eligibility 검증
+- candidate와 policy decision의 immutable join
+- 현재 contract validator 재사용
 - candidate order 보존
-- candidate reference 중복 탐지
+- duplicate candidateRef 탐지
 - aggregate exposure count 계산
 - aggregate lane count 계산
-- projection fingerprint 계산용 canonical value 생성
+- aggregate reason-code count 계산
+- deterministic projection fingerprint 생성
 
 공개 인터페이스:
 
 ```js
-export const ISOLATED_CANARY_EXPOSURE_STATES
-export const ISOLATED_CANARY_LANES
-
 export function buildIsolatedCandidateProjection({
   candidates,
   decisions
@@ -277,34 +345,12 @@ export function buildIsolatedCandidateProjection({
 export function fingerprintIsolatedCandidateProjection(projection)
 ```
 
-입력 후보 최소 shape:
+입력 candidate는 원본 product 객체를 직접 노출하지 않고 runner가 다음 descriptor로 축소한다.
 
 ```js
 {
   candidateRef: string,
   sourceIndex: number
-}
-```
-
-입력 decision 최소 shape:
-
-```js
-{
-  candidateRef: string,
-  exposureState:
-    | "primary"
-    | "contextual"
-    | "collapsed"
-    | "hidden"
-    | "insufficient_evidence",
-  laneEligibility: {
-    top_pick: boolean,
-    supporting: boolean,
-    budget: boolean,
-    routine: boolean,
-    alternative: boolean
-  },
-  reasonCategories: string[]
 }
 ```
 
@@ -316,15 +362,15 @@ export function fingerprintIsolatedCandidateProjection(projection)
     candidateCount: number,
     exposureCounts: Record<string, number>,
     laneEligibilityCounts: Record<string, number>,
-    reasonCategoryCounts: Record<string, number>
+    reasonCodeCounts: Record<string, number>
   },
   fingerprintInput: {
     candidateCount: number,
-    orderedExposureStates: string[],
+    orderedExposures: string[],
     orderedLaneEligibilityBits: string[],
     exposureCounts: Record<string, number>,
     laneEligibilityCounts: Record<string, number>,
-    reasonCategoryCounts: Record<string, number>
+    reasonCodeCounts: Record<string, number>
   },
   memoryOnly: {
     orderedCandidateRefs: string[]
@@ -332,22 +378,21 @@ export function fingerprintIsolatedCandidateProjection(projection)
 }
 ```
 
-`memoryOnly`는 runner 내부에서 fingerprint와 order 검증 후 즉시 폐기한다. telemetry와 evidence builder는 `memoryOnly` 속성을 입력으로 받지 않는다.
+`memoryOnly`는 order/fingerprint 검증 후 폐기한다. telemetry와 evidence builder는 `memoryOnly`를 입력으로 받지 않는다.
 
-Fail-closed 조건:
+Fail-closed:
 
 - duplicate candidateRef
 - candidate/decision 수 불일치
-- unknown exposure state
-- lane key 누락 또는 unknown lane key
-- boolean이 아닌 lane 값
-- sourceIndex 중복 또는 비연속
-- decision의 candidateRef가 후보와 불일치
+- sourceIndex 중복·비연속
+- candidateRef 순서 불일치
+- `validateCandidateExposureDecision()` 실패
 - aggregate total 불일치
+- source candidate mutation
 
 ---
 
-## 6.3 Aggregate telemetry module
+## 9. Aggregate telemetry module
 
 파일:
 
@@ -357,13 +402,12 @@ lib/candidate-exposure-policy-isolated-canary-telemetry.js
 
 책임:
 
-- per-request aggregate telemetry exact schema
+- per-entry aggregate schema
 - unknown field 거부
 - required field 누락 거부
 - count reconciliation
 - contradictory execution state 거부
-- candidate-level data 탐지
-- raw request/response, identifier, secret 탐지
+- candidate/product/user/secret/raw payload 탐지
 
 공개 인터페이스:
 
@@ -382,7 +426,7 @@ export function serializeIsolatedCanaryTelemetry(record)
 ```text
 schemaVersion
 planVersion
-runtimeImplementationShaMatch
+runtimeAttestationMatch
 fixtureScenario
 locale
 mode
@@ -390,6 +434,7 @@ executionStatus
 candidateCount
 exposureCounts
 laneEligibilityCounts
+reasonCodeCounts
 divergenceCategoryCounts
 responseFingerprintMatch
 snapshotFingerprintMatch
@@ -402,6 +447,8 @@ fallbackCount
 invalidContextCount
 stopCondition
 ```
+
+Stage 11F validate-only에서 response/snapshot/order 값은 Hosted 관측 결과가 아니라 **simulation contract result**임을 `executionStatus=validate_only_simulation`으로 명확히 구분한다.
 
 금지 데이터:
 
@@ -426,11 +473,11 @@ providerPrompt
 providerOutput
 ```
 
-직렬화 전 object tree 전체 key를 재귀 검사한다. 금지 key의 대소문자·snake_case·camelCase 변형도 탐지한다.
+object tree 전체 key를 재귀 검사하고 camelCase, snake_case, 대소문자 변형을 정규화해 탐지한다.
 
 ---
 
-## 6.4 Final evidence module
+## 10. Final evidence module
 
 파일:
 
@@ -440,14 +487,14 @@ lib/candidate-exposure-policy-isolated-canary-evidence.js
 
 책임:
 
-- run-level evidence 생성
-- planned/completed count 검증
-- request telemetry aggregate
+- run-level evidence
+- planned/completed count
+- scenario aggregate
+- runtime attestation summary
 - stop-condition result
 - cleanup result
 - authorization invariant
 - final status 계산
-- PASS와 cleanup failure의 양립 차단
 
 공개 인터페이스:
 
@@ -462,21 +509,23 @@ export function validateIsolatedCanaryEvidence(evidence)
 export function serializeIsolatedCanaryEvidence(evidence)
 ```
 
-최종 status:
+status:
 
 ```text
-completed_pass
-stopped_on_contract_violation
-blocked_before_execution
+implementation_ready_for_hosted_execution_review
+blocked_implementation_contract
+blocked_runtime_attestation
+blocked_boundary_violation
 cleanup_failed
 evidence_invalid
 ```
 
-authorization object는 항상 다음을 포함한다.
+authorization:
 
 ```js
 {
   harnessImplemented: true,
+  hostedExecutionImplemented: false,
   hostedExecutionAuthorized: false,
   runtimeActivationAuthorized: false,
   runtimeFilterConnectionAuthorized: false,
@@ -490,112 +539,36 @@ authorization object는 항상 다음을 포함한다.
 }
 ```
 
-Stage 11F local validation evidence에서는 `hostedExecutionAuthorized`가 반드시 `false`다.
+cleanup failure와 ready status는 양립할 수 없다.
 
 ---
 
-## 6.5 Runner
+## 11. Runtime attestation
 
-파일:
+## 11.1 Implementation diff allowlist
 
-```text
-scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs
-```
-
-지원 mode:
+비교 범위:
 
 ```text
-validate-only
-hosted-execution
+stage11eDesignBaseSha..harnessImplementationSha
 ```
 
-Stage 11F에서는 `validate-only`만 허용한다.
-
-`hosted-execution` mode는 코드에 존재할 수 있으나 다음 세 조건을 모두 요구하며, Stage 11F에서는 만족시킬 수 없다.
-
-```text
-1. --authorization-file <path>
-2. authorization.stage === "11G"
-3. authorization.hostedExecutionAuthorized === true
-```
-
-추가로 다음이 필요하다.
-
-```text
-ALLOW_CANDIDATE_EXPOSURE_POLICY_HOSTED_CANARY=1
-```
-
-Stage 11F verifier는 해당 environment가 없을 때 hosted mode가 네트워크 접근 전에 fail-closed하는지 확인한다.
-
-Runner 공개 동작:
-
-```text
-parse config
-→ validate Stage 11E design evidence
-→ resolve harness HEAD
-→ validate changed-path allowlist
-→ build runtime tree attestation
-→ validate fixture package
-→ build exact 16-entry matrix
-→ create control state
-→ validate-only simulation
-→ build aggregate evidence
-→ cleanup in finally
-→ write one sanitized evidence JSON
-```
-
-Runner는 product route에 import되지 않는다.
-
----
-
-## 7. Runtime tree attestation
-
-## 7.1 Changed-path allowlist
-
-Stage 11F HEAD와 `runtimeImplementationSha`의 변경 파일은 다음 prefix/path만 허용한다.
+허용 경로:
 
 ```text
 lib/candidate-exposure-policy-isolated-canary-*.js
 scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs
 scripts/check-candidate-exposure-policy-isolated-canary-*.mjs
 fixtures/candidate-exposure-policy-isolated-canary/**
-docs/architecture/candidate-exposure-policy-isolated-preview-canary-harness-implementation-design-v1.md
 docs/reviews/candidate-exposure-policy-isolated-canary-implementation-review.md
 docs/verification/candidate-exposure-policy-isolated-canary-implementation-result.md
 ```
 
-다음 파일이 변경되면 즉시 차단한다.
+allowlist 밖의 변경은 `blocked_boundary_violation`이다.
 
-```text
-app/**
-components/**
-middleware.*
-next.config.*
-package.json
-package-lock.json
-lib/candidate-exposure-policy.js
-lib/candidate-exposure-policy-shadow.js
-lib/candidate-exposure-policy-observability.js
-lib/candidate-exposure-policy-divergence-diagnostics.js
-lib/skin-match-decision-engine.js
-lib/shared-skin-decision-context*.js
-lib/*functional*.js
-lib/*current-product*.js
-supabase/**
-```
+## 11.2 Runtime import closure digest
 
-allowlist 밖의 변경은 파일 내용과 관계없이 `runtimeShaMismatch`로 처리한다.
-
-## 7.2 Content digest attestation
-
-allowlist 검증 후 다음 runtime-sensitive 파일의 SHA-256 digest를 두 ref에서 계산한다.
-
-```text
-runtimeImplementationSha
-harnessImplementationSha
-```
-
-필수 digest 대상:
+다음 root에서 시작해 상대 경로 local import를 재귀 탐색한다.
 
 ```text
 app/api/analyze/route.js
@@ -606,15 +579,31 @@ lib/candidate-exposure-policy-divergence-diagnostics.js
 lib/skin-match-decision-engine.js
 ```
 
-추가 대상은 manifest에서 확장 가능하지만 삭제할 수 없다.
+필수 포함 파일:
 
-attestation 출력:
+```text
+lib/candidate-exposure-policy-contract.js
+lib/candidate-exposure-policy-evaluator-adapter.js
+lib/evaluator-boundary-policy-shadow.js
+lib/product-functional-profile.js
+```
+
+규칙:
+
+- unresolved local import가 있으면 실패
+- dynamic local import가 있으면 명시적 manifest 없이는 실패
+- import closure의 각 파일을 두 ref에서 SHA-256 계산
+- `runtimeImplementationSha`와 `harnessImplementationSha`의 모든 digest가 일치해야 함
+- harness-only 파일은 runtime closure에 포함되면 안 됨
+
+attestation 내부 결과:
 
 ```js
 {
   runtimeImplementationSha: string,
   harnessImplementationSha: string,
   algorithm: "sha256",
+  rootFiles: string[],
   files: {
     [path]: {
       runtimeDigest: string,
@@ -626,11 +615,12 @@ attestation 출력:
 }
 ```
 
-final evidence에는 전체 파일 digest map을 저장하지 않는다. 다음만 저장한다.
+final evidence에는 개별 digest를 저장하지 않고 다음만 저장한다.
 
 ```text
 algorithm
-fileCount
+rootFileCount
+closureFileCount
 matchedFileCount
 allMatch
 attestationFingerprint
@@ -638,9 +628,9 @@ attestationFingerprint
 
 ---
 
-## 8. Fixture package
+## 12. Fixture manifest
 
-## 8.1 저장 구조
+저장:
 
 ```text
 fixtures/candidate-exposure-policy-isolated-canary/
@@ -648,89 +638,74 @@ fixtures/candidate-exposure-policy-isolated-canary/
 └─ README.md
 ```
 
-이미지 binary는 Git에 저장하지 않는다.
+Stage 11F는 이미지 binary를 저장하거나 다운로드하지 않는다.
 
-manifest는 승인된 synthetic fixture artifact를 참조한다.
+manifest는 네 scenario의 **semantic fixture**만 포함한다.
+
+```text
+standard_goal_alignment
+stabilization_active_block
+current_product_semantics
+metadata_incomplete
+```
+
+구조:
 
 ```js
 {
   schemaVersion: "candidate-exposure-policy-isolated-canary-fixtures-v1",
-  artifact: {
-    source: "github_actions_artifact",
-    artifactName: string,
-    assetBundleSha256: string
-  },
-  scenarios: []
+  scenarios: [
+    {
+      scenario: string,
+      semanticInput: {
+        canonicalState: object,
+        candidates: object[]
+      },
+      localePresentation: {
+        ko: object,
+        en: object
+      },
+      expected: {
+        allowedReasonCodes: string[],
+        forbiddenReasonCodes: string[],
+        forbiddenErrorCategories: string[]
+      }
+    }
+  ]
 }
 ```
 
-Stage 11F validate-only에서는 fixture binary를 다운로드하지 않는다. manifest와 semantic contract만 검증한다.
+실제 `/api/analyze`용 synthetic image asset 계약은 Stage 11G에서 별도 작성한다.
 
-Stage 11G 실행 시에만 artifact를 다운로드하고 다음을 검증한다.
+fixture semantic fingerprint 포함:
 
-- artifact name exact match
-- bundle SHA-256
-- 각 asset SHA-256
-- MIME 및 image decode
-- synthetic provenance
-- 실제 사용자 데이터 없음
-- asset count exact match
-
-## 8.2 Scenario manifest
-
-각 scenario는 locale-independent semantic input과 KO/EN presentation input을 분리한다.
-
-```js
-{
-  scenario: "standard_goal_alignment",
-  semanticInput: {
-    survey: {},
-    currentProducts: {},
-    candidateMetadataOverrides: {}
-  },
-  localeInputs: {
-    ko: {},
-    en: {}
-  },
-  assetRef: string,
-  assetSha256: string,
-  expected: {
-    controlExecution: "disabled",
-    canaryExecution: "executed",
-    allowedReasonCategories: [],
-    forbiddenErrorCategories: [],
-    structuralInvariantKeys: []
-  }
-}
-```
-
-fixture semantic fingerprint는 다음만 포함한다.
-
-- scenario key
-- locale-independent survey semantics
-- current-product semantic state
-- candidate metadata override state
+- scenario
+- locale-independent canonical state
+- candidate semantic metadata
 - expected canonical conditions
 
-localized string과 provider-generated text는 포함하지 않는다.
+제외:
+
+- localized string
+- provider-generated text
+- request ID
+- timestamp
 
 ---
 
-## 9. Exact request matrix builder
+## 13. Exact 16-entry plan
 
-Runner는 manifest 순서를 신뢰하지 않고 고정 상수에서 matrix를 생성한다.
+Runner는 manifest 순서를 신뢰하지 않고 상수에서 matrix를 생성한다.
 
 ```text
 locale order: ko, en
 scenario order:
-  1. standard_goal_alignment
-  2. stabilization_active_block
-  3. current_product_semantics
-  4. metadata_incomplete
+  standard_goal_alignment
+  stabilization_active_block
+  current_product_semantics
+  metadata_incomplete
 mode order: control, canary
 ```
-
-생성 결과:
 
 ```text
 1  ko standard_goal_alignment control
@@ -751,91 +726,92 @@ mode order: control, canary
 16 en metadata_incomplete canary
 ```
 
-manifest가 matrix 항목을 추가·삭제·재정렬할 수 없다.
+Stage 11F에서는 이 matrix를 생성·검증·simulation할 뿐 HTTP 요청을 보내지 않는다.
 
 ---
 
-## 10. Hosted invariance lane 설계
+## 14. Validate-only runner
 
-Stage 11F에서는 실행하지 않지만, 구현 인터페이스는 다음을 따른다.
+파일:
 
-입력:
-
-```js
-{
-  deploymentRole: "default_off" | "deployment_scoped_opt_in",
-  deploymentId: string,
-  expectedRuntimeSha: string,
-  fixture: object,
-  locale: "ko" | "en"
-}
+```text
+scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs
 ```
 
-요청 전 확인:
+지원 mode:
 
-- deployment target은 Preview
-- deployment runtime SHA exact match
-- control은 shadow opt-in 없음
-- canary는 deployment-scoped opt-in만 존재
-- project-wide env mutation 없음
-- Production alias와 environment unchanged
-- request budget remaining
-- control state `running`
+```text
+validate-only
+```
 
-요청 후 확인:
+다른 mode나 unknown flag는 config parse 단계에서 실패한다.
 
-- HTTP 200
-- runtime commit header exact match
-- control에서 shadow execution 0
-- canary에서 shadow execution 1
-- response pre/post match
-- snapshot pre/post match
-- candidate-order pre/post match
-- unexpected divergence 0
-- unclassified divergence 0
-- shadow exception 0
-- fallback 0
-- invalid context 0
+실행 순서:
 
-Independent control/canary full response hash equality는 요구하지 않는다.
+```text
+parse validate-only config
+→ load Stage 11E machine contract
+→ resolve design base and harness HEAD
+→ validate implementation diff allowlist
+→ build runtime import closure attestation
+→ validate fixture manifest
+→ build exact 16-entry plan
+→ create control state
+→ deterministic projection replay
+→ simulate control/canary aggregate records
+→ simulate every stop condition
+→ build final evidence
+→ cleanup in finally
+→ write sanitized evidence JSON
+```
+
+금지 adapter:
+
+```text
+HTTP
+DNS
+Vercel
+Supabase
+Provider
+fixture download
+child process with network command
+```
+
+verifier는 주입된 adapter invocation count가 0인지 확인한다.
 
 ---
 
-## 11. Deterministic projection replay lane 설계
+## 15. Projection replay
 
-입력:
-
-```text
-synthetic fixture semantic state
-+ exact candidate descriptors
-+ canonical decision state
-```
-
-실행:
+각 scenario에 대해:
 
 ```text
-build canonical fixture state
-→ deep-freeze input
+load semantic fixture
+→ deep-clone and deep-freeze source
 → evaluateCandidateExposurePolicy()
+→ validate every decision with current contract
 → buildIsolatedCandidateProjection()
-→ verify original candidates unchanged
-→ verify original candidate order unchanged
-→ compute aggregate fingerprint
-→ discard memory-only candidate refs
+→ verify source unchanged
+→ verify candidate order unchanged
+→ compute projection fingerprint
+→ discard memoryOnly refs
+→ build aggregate-only telemetry
 ```
 
-Hosted lane과 projection lane의 상관은 다음 두 값만 사용한다.
+KO/EN은 같은 semantic fixture를 공유하며 locale presentation만 다르다.
 
-```text
-fixtureSemanticFingerprint
-aggregate policy category/count contract
-```
+필수 parity:
 
-Hosted response에서 policy decision 배열을 추출하거나 노출하지 않는다.
+- candidate count
+- exposure counts
+- lane eligibility counts
+- reason code counts
+- projection fingerprint
+- stop decision
 
 ---
 
-## 12. Stop-condition 처리
+## 16. Stop conditions
 
 정확한 key set:
 
@@ -854,124 +830,63 @@ candidateLevelTelemetryDetected
 productionOrProjectConfigurationChange
 ```
 
-처리 순서:
+Stage 11F simulation은 각 condition을 한 번씩 강제하고 다음을 검증한다.
 
 ```text
-detect
-→ atomically set firstStopCondition
-→ transition running -> stopped
-→ prevent all remaining requests
-→ prevent retry
-→ preserve completed aggregate only
-→ enter finally cleanup
-→ finalize evidence
+first condition recorded
+running -> stopped
+remaining entries blocked
+retry blocked
+cleanup executed
+ready status impossible
 ```
 
-첫 stop condition만 권위 있는 `stopCondition`으로 저장한다. 이후 cleanup 중 발견된 오류는 별도 `cleanup.errors`에 기록하고 최종 status를 `cleanup_failed`로 승격할 수 있다.
+첫 stop condition만 권위 있는 `stopCondition`으로 저장한다. cleanup 오류는 별도 `cleanup.errors`에 기록하고 최종 status를 `cleanup_failed`로 만든다.
 
 ---
 
-## 13. Cleanup 설계
+## 17. Cleanup
 
-Runner의 main body는 반드시 `try/finally` 구조를 사용한다.
+Runner main은 `try/finally`를 강제한다.
 
-```js
-let cleanupContext = createCleanupContext();
-try {
-  // preflight and optional execution
-} finally {
-  cleanupResult = await cleanupIsolatedCanaryResources(cleanupContext);
-}
-```
+Stage 11F cleanup 대상:
 
-cleanup 대상:
+- temporary evidence working file
+- temporary digest manifest
+- temporary fixture normalization file
+- authorization simulation file
 
-- automation/protection bypass
-- downloaded fixture artifact
-- extracted fixture directory
-- deployment locator temp file
-- aggregate working file
-- masked environment material
-- authorization working copy
-
-cleanup 후 검증:
+Stage 11F postcondition:
 
 ```text
-bypass residue = 0
-fixture temp file residue = 0
-authorization copy residue = 0
+temporary file residue = 0
+network resource count = 0
 project environment mutation = 0
 Production change = 0
 ```
 
-cleanup 실패 시 request 결과와 관계없이 PASS 금지.
+Stage 11G의 bypass/deployment cleanup은 Stage 11F 범위가 아니다.
 
 ---
 
-## 14. Secret 및 민감정보 처리
+## 18. 민감정보 경계
 
-Stage 11F validate-only는 secret을 읽지 않는다.
-
-Stage 11G Hosted 실행 시에도 다음 원칙을 적용한다.
-
-- token은 process environment에서만 읽음
-- CLI argument로 token 전달 금지
-- token·bypass 값을 object serialization 대상에 포함 금지
-- stdout/stderr 로그 금지
-- artifact 저장 금지
-- temp file에 평문 저장 금지
-- child process environment는 exact allowlist로 전달
-- request header dump 금지
-- error object의 request config 직렬화 금지
-
-로그와 evidence에는 opaque deployment ID만 허용하며 URL은 저장하지 않는다.
-
----
-
-## 15. Validate-only mode
-
-Stage 11F의 권위 검증 mode다.
-
-수행:
-
-- design evidence load
-- runtime/harness SHA 형식 검증
-- changed-path allowlist 검증
-- content digest attestation
-- fixture manifest schema 검증
-- exact matrix 생성 검증
-- control state positive transition
-- 모든 stop condition simulation
-- projection deterministic replay
-- telemetry positive/negative validation
-- evidence positive/negative validation
-- cleanup simulation
-- network adapter가 호출되지 않았는지 assertion
+Stage 11F는 secret을 읽지 않는다.
 
 금지:
 
-- DNS
-- HTTP
-- Vercel
-- Supabase
-- Provider
-- deployment lookup
-- fixture binary download
+- environment secret enumeration
+- token/bypass parsing
+- deployment URL 저장
+- raw request/response
+- product/candidate identifier evidence
+- user/account/session/report 정보
 
-validate-only output:
-
-```text
-implementation_ready_for_hosted_execution_review
-blocked_implementation_contract
-blocked_runtime_attestation
-blocked_boundary_violation
-```
-
-`implementation_ready_for_hosted_execution_review`는 Stage 11G 검토 자격일 뿐 실행 승인이 아니다.
+허용 evidence는 aggregate count, boolean invariant, SHA summary, status뿐이다.
 
 ---
 
-## 16. Contract verifier 설계
+## 19. Contract verifier
 
 파일:
 
@@ -979,83 +894,73 @@ blocked_boundary_violation
 scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs
 ```
 
-필수 positive 검증:
+Positive:
 
-- exact state set
-- valid transition set
+- exact state set와 transition
 - exact stop-condition set
-- exact 16-entry matrix
-- four fixture scenarios
+- exact 16-entry plan
+- exact four scenarios
 - KO/EN semantic parity
-- exact exposure-state set
-- exact lane set
-- deterministic projection fingerprint
+- current exposure/lane/reason contract import
+- deterministic projection
 - aggregate telemetry round-trip
 - final evidence round-trip
-- cleanup success PASS
-- hosted authorization false
+- cleanup success
+- network invocation 0
+- Hosted authorization false
 
-필수 negative controls:
+Negative controls:
 
 ### Control
 
-- authority 없는 run 시작
+- authority 없는 run
 - terminal state 재전환
-- 17번째 request
+- 17번째 entry
 - 60분 초과
-- stop 이후 request
-- unknown stop-condition key
-- stop-condition key 누락
-- disabled stop-condition
+- stop 이후 entry
+- unknown/missing/disabled stop key
 
 ### Projection
 
 - duplicate candidateRef
-- candidate/decision 수 불일치
-- order change
-- unknown exposure state
-- lane key 누락
-- unknown lane
-- non-boolean lane
-- source candidate mutation
-- decision candidate mismatch
+- candidate/decision count mismatch
+- candidate order change
+- invalid current decision contract
+- source mutation
+- aggregate reconciliation mismatch
 
 ### Telemetry
 
-- candidate ID 삽입
-- product name 삽입
-- raw response 삽입
-- unknown top-level field
+- candidateRef 삽입
+- productName 삽입
+- rawResponse 삽입
 - nested forbidden field
-- negative count
-- non-integer count
-- candidate count reconciliation 실패
-- contradictory execution/error state
+- unknown field
+- negative/non-integer count
+- contradictory status
 
 ### Evidence
 
-- cleanup failure + completed_pass
-- Hosted authorization true in Stage 11F
-- Production authorization true
+- cleanup failure + ready status
+- hostedExecutionImplemented=true
+- hostedExecutionAuthorized=true
+- Production authorization=true
 - deployment URL 저장
-- bypass secret 저장
 - candidate-level array 저장
-- request count mismatch
-- stop condition과 status 불일치
+- planned/completed mismatch
 
-### Runner
+### Attestation
 
-- hosted mode without authorization file
-- wrong stage authorization
-- environment gate 없음
-- runtime attestation mismatch
-- forbidden changed path
-- fixture hash mismatch
-- simulated stop 후 후속 matrix entry 실행
+- design base mismatch
+- forbidden implementation path
+- unresolved local import
+- dynamic import without manifest
+- runtime file digest mismatch
+- harness module imported by runtime closure
 
 ---
 
-## 17. Import-direction guard
+## 20. Import-direction guard
 
 파일:
 
@@ -1068,13 +973,10 @@ scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs
 ```text
 app/**
 components/**
-lib/skin-match-decision-engine.js
-lib/candidate-exposure-policy.js
-lib/candidate-exposure-policy-shadow.js
-lib/candidate-exposure-policy-observability.js
+기존 lib/**
 ```
 
-다음 문자열/import를 금지한다.
+기존 파일에서 다음 harness import를 금지한다.
 
 ```text
 candidate-exposure-policy-isolated-canary-control
@@ -1084,114 +986,92 @@ candidate-exposure-policy-isolated-canary-evidence
 run-candidate-exposure-policy-isolated-preview-canary
 ```
 
-허용 dependency direction:
+허용:
 
 ```text
-runner/checker -> isolated harness modules
-runner -> existing read-only canonical/policy modules
+runner/checker -> harness modules
+runner -> existing read-only runtime modules
 ```
 
-금지 dependency direction:
+금지:
 
 ```text
-product runtime -> isolated harness modules
-route -> isolated harness modules
-response/storage/UI -> isolated harness modules
+product runtime -> harness modules
+route/response/storage/UI -> harness modules
 ```
 
 ---
 
-## 18. 구현 순서
+## 21. 구현 순서
 
 ### Phase 1 — Pure control and schema
 
 1. control state constants
 2. authority validator
 3. transition reducer
-4. stop-condition exact-key validator
-5. telemetry exact schema
-6. evidence exact schema
+4. stop-condition validator
+5. telemetry schema
+6. evidence schema
 
-검증:
+### Phase 2 — Projection
 
-- pure positive tests
-- malformed configuration negative controls
-
-### Phase 2 — Isolated projection
-
-1. candidate/decision join
-2. duplicate detection
-3. exact exposure/lane validation
+1. current runtime contract import
+2. immutable descriptor join
+3. duplicate/order validation
 4. aggregate counts
-5. canonical fingerprint input
-6. memory-only candidate refs
+5. deterministic fingerprint
+6. memory-only ref disposal
 
-검증:
+### Phase 3 — Authority attestation
 
-- deterministic replay
-- mutation/order negative controls
+1. design base resolver
+2. implementation diff allowlist
+3. recursive local import graph
+4. runtime digest comparison
+5. attestation summary
 
-### Phase 3 — Fixture manifest and attestation
+### Phase 4 — Fixture and runner
 
-1. manifest schema
-2. exact scenario set
-3. KO/EN semantic parity
-4. changed-path allowlist
-5. runtime digest attestation
-
-검증:
-
-- stale runtime SHA
-- forbidden product change
-- fixture hash mismatch
-
-### Phase 4 — Validate-only runner
-
-1. CLI parse
-2. preflight
-3. exact matrix build
-4. simulated execution
+1. four-scenario manifest
+2. KO/EN parity
+3. exact matrix builder
+4. validate-only orchestration
 5. stop simulation
-6. evidence finalization
-7. cleanup simulation
+6. cleanup
 
-검증:
+### Phase 5 — Verification
 
-- network adapter invocation count = 0
-- Hosted authorization false
-
-### Phase 5 — Static boundary and repository regression
-
-1. import-direction guard
-2. Stage 11F contract verifier
+1. contract verifier
+2. import-direction guard
 3. existing security closeout suite
 4. architecture guard
 5. Production build
 6. diff hygiene
 
-### Phase 6 — Implementation review
+### Phase 6 — Independent implementation review
 
-1. file responsibility review
-2. no product runtime diff 확인
-3. no candidate-level evidence 확인
-4. no secret handling path 확인
-5. all negative controls 확인
+1. no product runtime diff
+2. no network capability
+3. no candidate-level evidence
+4. no secret path
+5. negative controls complete
 6. Draft PR 유지
 
 ---
 
-## 19. 검증 매트릭스
+## 22. 검증 매트릭스
 
-| 검증 계층 | 필수 결과 |
+| 계층 | 필수 결과 |
 |---|---|
-| Control unit | 모든 상태·전이·budget·stop invariant PASS |
-| Projection unit | exposure/lane/order/immutability PASS |
-| Telemetry unit | exact allowlist와 leak detection PASS |
-| Evidence unit | status/count/cleanup/authorization PASS |
-| Attestation | forbidden changed path 0, runtime digest mismatch 0 |
-| Fixture contract | 4 scenarios, KO/EN semantic parity PASS |
-| Runner validate-only | network/Vercel/analyze 호출 0 |
-| Import boundary | product runtime import 0 |
+| Control | 상태·전이·budget·stop invariant PASS |
+| Projection | contract/order/immutability/fingerprint PASS |
+| Telemetry | exact allowlist와 leak detection PASS |
+| Evidence | status/count/cleanup/authorization PASS |
+| Implementation diff | allowlist 밖 변경 0 |
+| Runtime closure | unresolved import 0, digest mismatch 0 |
+| Fixture | 4 scenarios, KO/EN parity PASS |
+| Runner | network/Vercel/analyze 호출 0 |
+| Import boundary | 기존 runtime의 harness import 0 |
 | Security closeout | 기존 전체 suite PASS |
 | Architecture guard | PASS |
 | Production build | PASS |
@@ -1199,26 +1079,26 @@ response/storage/UI -> isolated harness modules
 
 ---
 
-## 20. 구현 완료 조건
-
-Stage 11F는 다음을 모두 충족해야 완료다.
+## 23. 완료 조건
 
 ```text
-1. 계획된 harness 파일만 추가됨
-2. product runtime 파일 변경 0
-3. runtime attestation allMatch=true
-4. exact 16-entry matrix 생성
-5. four-scenario fixture contract 통과
-6. control state machine positive/negative 검증 통과
-7. isolated projection deterministic 검증 통과
-8. candidate-level telemetry/evidence 0
-9. validate-only network call 0
-10. Hosted execution authorization=false
-11. Production authorization=false
-12. 기존 security verifier 전체 PASS
-13. architecture guard PASS
-14. Production build PASS
-15. Draft PR 유지
+1. 계획된 harness 파일만 추가
+2. 기존 product runtime 파일 변경 0
+3. stage11e design base exact match
+4. runtime import closure allMatch=true
+5. exact 16-entry plan 보존
+6. four-scenario fixture contract 통과
+7. current exposure/lane/reason contract 재사용
+8. projection deterministic
+9. candidate-level telemetry/evidence 0
+10. validate-only network call 0
+11. hostedExecutionImplemented=false
+12. hostedExecutionAuthorized=false
+13. Production authorization=false
+14. security verifier 전체 PASS
+15. architecture guard PASS
+16. Production build PASS
+17. Draft PR 유지
 ```
 
 완료 status:
@@ -1227,41 +1107,32 @@ Stage 11F는 다음을 모두 충족해야 완료다.
 implementation_ready_for_hosted_execution_review
 ```
 
-이 상태는 다음을 의미하지 않는다.
-
-```text
-Hosted execution approved
-runtime activation approved
-recommendation mutation approved
-Production approved
-```
+이 상태는 Hosted 실행 또는 runtime 활성화 승인이 아니다.
 
 ---
 
-## 21. Stage 11F 결과 문서 형식
-
-파일:
+## 24. Stage 11F 결과 문서
 
 ```text
 docs/verification/candidate-exposure-policy-isolated-canary-implementation-result.md
 ```
 
-필수 항목:
+필수 내용:
 
-- branch
-- base
-- harness implementation SHA
-- runtime implementation SHA
+- branch/base/head
+- stage11eDesignBaseSha
+- runtimeImplementationSha
+- harnessImplementationSha
 - changed file list
-- runtime attestation summary
-- fixture contract summary
-- verifier assertion count
-- negative-control count
-- security closeout result
-- architecture guard result
-- Production build result
-- diff hygiene result
-- network/Vercel/analyze call count
+- implementation diff allowlist result
+- runtime closure attestation summary
+- fixture result
+- assertion/negative-control count
+- network invocation count
+- security closeout
+- architecture guard
+- Production build
+- diff hygiene
 - authorization object
 - unresolved findings
 - final status
@@ -1271,12 +1142,15 @@ docs/verification/candidate-exposure-policy-isolated-canary-implementation-resul
 ```text
 CANDIDATE_EXPOSURE_POLICY_ISOLATED_PREVIEW_CANARY_HARNESS_IMPLEMENTATION_PASS
 IMPLEMENTATION_READY_FOR_HOSTED_EXECUTION_REVIEW
-RUNTIME_TREE_ATTESTATION_PASS
+DESIGN_BASE_EXACT
+RUNTIME_IMPORT_CLOSURE_ATTESTATION_PASS
 EXACT_16_REQUEST_PLAN_PRESERVED
 ISOLATED_PROJECTION_IMPLEMENTED
+CURRENT_EXPOSURE_CONTRACT_REUSED
 AGGREGATE_TELEMETRY_ONLY
 CANDIDATE_LEVEL_EVIDENCE_ZERO
 VALIDATE_ONLY_NETWORK_CALL_ZERO
+HOSTED_EXECUTION_NOT_IMPLEMENTED
 HOSTED_EXECUTION_NOT_AUTHORIZED
 RUNTIME_FILTER_NOT_CONNECTED
 RECOMMENDATION_MUTATION_NOT_CONNECTED
@@ -1290,25 +1164,26 @@ PR_REMAINS_DRAFT
 
 ---
 
-## 22. 후속 단계
+## 25. 후속 단계
 
-Stage 11F가 통과하면 다음 단계는 별도 승인된 Stage 11G다.
+Stage 11F가 통과한 뒤에만 별도 Stage 11G 설계를 시작한다.
 
 ```text
 Stage 11G — Bounded Hosted Isolated Preview Canary Execution
 ```
 
-Stage 11G는 다음을 새로 확인해야 한다.
+Stage 11G는 다음을 별도로 설계·승인해야 한다.
 
 - exact Preview deployment IDs
 - exact runtime SHA
 - deployment-scoped canary opt-in
-- Stage 11G authorization manifest
-- 실행 시간 창
-- 16-request quota
-- synthetic fixture artifact
-- protection bypass 생성·삭제 권한
-- cleanup 책임자
+- synthetic image fixture artifact
+- request construction
+- protection bypass 생성·삭제
+- Vercel secret 사용 경계
+- 16-request 실행 창
+- Hosted telemetry 수집
+- cleanup 책임
 - stop-condition monitoring
 
-Stage 11F PASS만으로 Stage 11G를 자동 실행하지 않는다.
+Stage 11F PASS만으로 Stage 11G를 자동 시작하지 않는다.
