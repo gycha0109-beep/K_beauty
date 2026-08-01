@@ -168,9 +168,19 @@ for (const path of forbiddenImplementationFiles) {
   equal(existsSync(path), false, `${path} is not implemented in Stage 11E`);
 }
 
-const workflowNames = readdirSync(".github/workflows");
-for (const name of workflowNames) {
-  equal(/stage11e|isolated-preview-canary/i.test(name), false, `${name} is not a Stage 11E Hosted workflow`);
+const hostedWorkflowPatterns = [
+  "vercel deploy",
+  "/api/analyze",
+  "VERCEL_TOKEN",
+  "protection-bypass",
+  "x-vercel-protection-bypass",
+  "run-candidate-exposure-policy-isolated-preview-canary"
+];
+for (const name of readdirSync(".github/workflows")) {
+  const source = readFileSync(`.github/workflows/${name}`, "utf8");
+  for (const pattern of hostedWorkflowPatterns) {
+    equal(source.includes(pattern), false, `${name} does not contain Hosted harness pattern ${pattern}`);
+  }
 }
 
 const serialized = readFileSync(evidencePath, "utf8");
