@@ -1,0 +1,42 @@
+name: Stage 11C CandidatePolicy Evaluation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-policy-evaluation:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: CandidateExposurePolicy shadow evaluation
+        run: npm run verify:candidate-exposure-policy-shadow-evaluation
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Architecture guard
+        run: npm run architecture:guard
+      - name: Production build
+        run: npm run build
+      - name: Diff hygiene
+        run: git diff --check HEAD^
+      - name: Upload closeout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11c-candidate-policy-evaluation
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: warn
+          retention-days: 1
