@@ -1,0 +1,219 @@
+name: Stage 11B Hosted Closeout Once
+
+on:
+  push:
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+    paths:
+      - .github/workflows/stage11b-hosted-closeout-once.yml
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-probe:
+    if: github.event.head_commit.message == 'chore(ci): run stage11b hosted closeout once'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEFAULT_BASE: https://k-beauty-joao1wkn4-johnny-self.vercel.app
+      DEFAULT_SHARE: https://k-beauty-joao1wkn4-johnny-self.vercel.app/?_vercel_share=J1w0LpT3rxrIbxrXQHvLiW3r4jEIyOau
+      SHADOW_BASE: https://k-beauty-qkhfhqrw5-johnny-self.vercel.app
+      SHADOW_SHARE: https://k-beauty-qkhfhqrw5-johnny-self.vercel.app/?_vercel_share=xidGgqs79Qtc2SGcq9P26S8yfc7vKdVT
+      EXPECTED_RUNTIME_SHA: 054a9c91c853c51e1285ba12901c51bbe60c00a6
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate canonical PNG fixture
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import binascii, struct, zlib
+          width = height = 64
+          raw = b''.join(b'\x00' + bytes([196, 148, 132]) * width for _ in range(height))
+          def chunk(kind, data):
+              return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', binascii.crc32(kind + data) & 0xffffffff)
+          png = b'\x89PNG\r\n\x1a\n'
+          png += chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
+          png += chunk(b'IDAT', zlib.compress(raw, 9))
+          png += chunk(b'IEND', b'')
+          open('stage11b-fixture.png', 'wb').write(png)
+          assert len(png) > 100
+          PY
+          file stage11b-fixture.png
+
+      - name: Run four authoritative probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p probe
+
+          run_probe() {
+            local locale="$1"
+            local mode="$2"
+            local base="$3"
+            local share="$4"
+            local jar="probe/${mode}.cookies"
+            local prefix="probe/${locale}-${mode}"
+            local diagnostic_id
+            diagnostic_id="$(python3 - <<'PY'
+          import uuid
+          print('premium-session-diagnostic-' + str(uuid.uuid4()))
+          PY
+          )"
+
+            curl --fail --silent --show-error --location \
+              --cookie-jar "$jar" \
+              "$share" \
+              --output /dev/null
+
+            local status
+            status="$(curl --silent --show-error --location \
+              --cookie "$jar" --cookie-jar "$jar" \
+              --dump-header "${prefix}.headers" \
+              --output "${prefix}.body" \
+              --write-out '%{http_code}' \
+              --header "x-bejewely-premium-diagnostic-id: ${diagnostic_id}" \
+              --form 'image=@stage11b-fixture.png;type=image/png;filename=stage11b-fixture.png' \
+              --form 'skinType=combination' \
+              --form 'sensitivityLevel=low' \
+              --form 'mainConcern=uneven_tone' \
+              --form 'mainConcerns=["uneven_tone","dehydration"]' \
+              --form 'primaryConcern=uneven_tone' \
+              --form 'recentSkinChange=no' \
+              --form 'recentlyChangedProduct=no' \
+              --form 'cleansingFrequency=twice' \
+              --form 'texturePreference=gel' \
+              --form 'postCleanseFeel=comfortable' \
+              --form 'afternoonState=mostly_same' \
+              --form 'environmentExposure=["outdoor"]' \
+              --form 'dislikedFeel=sticky' \
+              --form 'genderPreference=unspecified' \
+              --form 'whiteCastHate=true' \
+              --form 'toneUpWanted=false' \
+              --form 'makeupUse=true' \
+              --form 'eyeSensitive=false' \
+              --form 'sunscreenPreferenceState=answered' \
+              --form 'outdoorExposure=true' \
+              --form 'verySensitivePeriod=false' \
+              --form 'currentProducts=[]' \
+              --form "locale=${locale}" \
+              "${base}/api/analyze")"
+
+            printf '%s' "$status" > "${prefix}.status"
+            printf '%s' "$diagnostic_id" > "${prefix}.diagnostic-id"
+
+            if [[ ! "$status" =~ ^2 ]]; then
+              echo "${locale}/${mode} failed with HTTP ${status}"
+              python3 - "$prefix" <<'PY'
+          import json, pathlib, sys
+          p = pathlib.Path(sys.argv[1] + '.body')
+          try:
+              data = json.loads(p.read_text())
+              print({'error': data.get('error'), 'code': data.get('code'), 'retryAfterSeconds': data.get('retryAfterSeconds')})
+          except Exception:
+              print({'error': 'non_json_response'})
+          PY
+              exit 1
+            fi
+          }
+
+          run_probe ko off "$DEFAULT_BASE" "$DEFAULT_SHARE"
+          run_probe ko on "$SHADOW_BASE" "$SHADOW_SHARE"
+          run_probe en off "$DEFAULT_BASE" "$DEFAULT_SHARE"
+          run_probe en on "$SHADOW_BASE" "$SHADOW_SHARE"
+
+      - name: Build redacted aggregate evidence
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, re
+
+          root = pathlib.Path('probe')
+          records = []
+
+          def stable(value):
+              if isinstance(value, dict):
+                  return {k: stable(value[k]) for k in sorted(value)}
+              if isinstance(value, list):
+                  return [stable(v) for v in value]
+              return value
+
+          def digest(value):
+              raw = json.dumps(stable(value), ensure_ascii=False, separators=(',', ':')).encode()
+              return hashlib.sha256(raw).hexdigest()
+
+          def collect_ids(value, out):
+              if isinstance(value, dict):
+                  if isinstance(value.get('id'), str) and value.get('id'):
+                      out.append(value['id'])
+                  for key in sorted(value):
+                      collect_ids(value[key], out)
+              elif isinstance(value, list):
+                  for item in value:
+                      collect_ids(item, out)
+
+          for locale in ('ko', 'en'):
+              for mode in ('off', 'on'):
+                  prefix = root / f'{locale}-{mode}'
+                  body = json.loads(prefix.with_suffix('.body').read_text())
+                  normalized = json.loads(json.dumps(body))
+                  normalized.pop('analysisRunId', None)
+                  if isinstance(normalized.get('meta'), dict):
+                      normalized['meta'].pop('generatedAt', None)
+                  ids = []
+                  collect_ids(normalized, ids)
+                  headers = prefix.with_suffix('.headers').read_text(errors='replace')
+                  def header(name):
+                      m = re.search(rf'(?im)^{re.escape(name)}:\s*(.+?)\s*$', headers)
+                      return m.group(1).strip() if m else None
+                  records.append({
+                      'locale': locale,
+                      'mode': mode,
+                      'httpStatus': int(prefix.with_suffix('.status').read_text()),
+                      'diagnosticId': prefix.with_suffix('.diagnostic-id').read_text(),
+                      'responseFingerprint': digest(normalized),
+                      'candidateOrderFingerprint': digest(ids),
+                      'candidateReferenceCount': len(ids),
+                      'runtimeCommit': header('x-bejewely-runtime-commit'),
+                      'diagnosticVersion': header('x-bejewely-premium-diagnostic-version'),
+                      'finalStage': header('x-bejewely-premium-final-stage')
+                  })
+
+          pairs = {}
+          for locale in ('ko', 'en'):
+              off = next(r for r in records if r['locale'] == locale and r['mode'] == 'off')
+              on = next(r for r in records if r['locale'] == locale and r['mode'] == 'on')
+              pairs[locale] = {
+                  'responseFingerprintMatch': off['responseFingerprint'] == on['responseFingerprint'],
+                  'candidateOrderFingerprintMatch': off['candidateOrderFingerprint'] == on['candidateOrderFingerprint'],
+                  'candidateReferenceCountMatch': off['candidateReferenceCount'] == on['candidateReferenceCount']
+              }
+
+          result = {
+              'schemaVersion': 'stage11b-hosted-closeout-aggregate-v1',
+              'expectedRuntimeSha': '054a9c91c853c51e1285ba12901c51bbe60c00a6',
+              'analyzeCallCount': 4,
+              'records': records,
+              'pairs': pairs
+          }
+          pathlib.Path('stage11b-hosted-closeout-aggregate.json').write_text(
+              json.dumps(result, ensure_ascii=False, indent=2) + '\n'
+          )
+          print(json.dumps(result, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Remove raw probe material
+        if: always()
+        shell: bash
+        run: |
+          rm -f probe/*.body probe/*.headers probe/*.cookies stage11b-fixture.png
+
+      - name: Upload aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11b-hosted-closeout-aggregate
+          path: stage11b-hosted-closeout-aggregate.json
+          if-no-files-found: error
+          retention-days: 1
