@@ -1,0 +1,347 @@
+{
+  "schemaVersion": "candidate-exposure-policy-isolated-canary-fixture-manifest-v1",
+  "runtimeImplementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+  "actualUserData": false,
+  "scenarios": [
+    {
+      "scenario": "standard_goal_alignment",
+      "semanticVersion": "standard-goal-alignment-v1",
+      "expectedReasonCodes": [
+        "canonical_goal_match",
+        "protection_maintained"
+      ],
+      "canonicalState": {
+        "decisionBundle": {
+          "context": {
+            "version": "fixture-context-standard-v1",
+            "survey": {
+              "answers": {
+                "skinType": "combination",
+                "sensitivity": "low",
+                "postWashFeeling": "comfortable",
+                "afternoonSkinChange": "mostly_same"
+              }
+            },
+            "skinState": {
+              "priorityAxis": "tone_care"
+            },
+            "safetyState": {
+              "sensitiveBurden": false,
+              "recentSkinChange": "no",
+              "recentlyChangedProduct": "no"
+            }
+          }
+        },
+        "functionalPolicy": {
+          "version": "fixture-functional-policy-standard-v1",
+          "priorityAxis": "tone_care",
+          "functionalDirection": "tone_care",
+          "planMode": "ADD",
+          "recommendationSuppressed": false,
+          "safety": {
+            "level": "stable",
+            "activeExpansionAllowed": true,
+            "protectionMustMaintain": true
+          }
+        },
+        "consistency": {
+          "version": "fixture-consistency-standard-v1",
+          "effectivePolicySource": "functional_policy"
+        },
+        "currentProductFindings": {
+          "findings": [],
+          "summary": {
+            "selectedCount": 0,
+            "unknownCount": 0
+          }
+        }
+      },
+      "candidates": [
+        {
+          "id": "synthetic-standard-sunscreen",
+          "category": "sunscreen",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "UV protection",
+                "count": 8
+              }
+            ]
+          },
+          "spf_value": "50",
+          "uva_label": "PA++++",
+          "uv_filter_type": "hybrid",
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        },
+        {
+          "id": "synthetic-standard-tone-serum",
+          "category": "serum",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "Whitening",
+                "count": 6
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        }
+      ]
+    },
+    {
+      "scenario": "stabilization_active_block",
+      "semanticVersion": "stabilization-active-block-v1",
+      "expectedReasonCodes": [
+        "stabilization_active_block"
+      ],
+      "canonicalState": {
+        "decisionBundle": {
+          "context": {
+            "version": "fixture-context-stabilization-v1",
+            "survey": {
+              "answers": {
+                "skinType": "dry",
+                "sensitivity": "high",
+                "postWashFeeling": "tight",
+                "afternoonSkinChange": "more_sensitive"
+              }
+            },
+            "skinState": {
+              "priorityAxis": "tone_care"
+            },
+            "safetyState": {
+              "sensitiveBurden": true,
+              "recentSkinChange": "yes",
+              "recentlyChangedProduct": "yes"
+            }
+          }
+        },
+        "functionalPolicy": {
+          "version": "fixture-functional-policy-stabilization-v1",
+          "priorityAxis": "tone_care",
+          "functionalDirection": "tone_care",
+          "planMode": "HOLD",
+          "recommendationSuppressed": true,
+          "safety": {
+            "level": "stabilize_first",
+            "activeExpansionAllowed": false,
+            "protectionMustMaintain": true
+          }
+        },
+        "consistency": {
+          "version": "fixture-consistency-stabilization-v1",
+          "effectivePolicySource": "stabilization_fallback"
+        },
+        "currentProductFindings": {
+          "findings": [],
+          "summary": {
+            "selectedCount": 0,
+            "unknownCount": 0
+          }
+        }
+      },
+      "candidates": [
+        {
+          "id": "synthetic-stabilization-tone-serum",
+          "category": "serum",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "Whitening",
+                "count": 6
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        },
+        {
+          "id": "synthetic-stabilization-acne-ampoule",
+          "category": "ampoule",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "Acne relief",
+                "count": 5
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "medium"
+        }
+      ]
+    },
+    {
+      "scenario": "current_product_semantics",
+      "semanticVersion": "current-product-semantics-v1",
+      "expectedReasonCodes": [
+        "already_using",
+        "duplicate_axis",
+        "replacement_intent_unknown"
+      ],
+      "canonicalState": {
+        "decisionBundle": {
+          "context": {
+            "version": "fixture-context-current-product-v1",
+            "survey": {
+              "answers": {
+                "skinType": "combination",
+                "sensitivity": "low",
+                "postWashFeeling": "comfortable",
+                "afternoonSkinChange": "mostly_same"
+              }
+            },
+            "skinState": {
+              "priorityAxis": "tone_care"
+            },
+            "safetyState": {
+              "sensitiveBurden": false,
+              "recentSkinChange": "no",
+              "recentlyChangedProduct": "no"
+            }
+          }
+        },
+        "functionalPolicy": {
+          "version": "fixture-functional-policy-current-product-v1",
+          "priorityAxis": "tone_care",
+          "functionalDirection": "tone_care",
+          "planMode": "ADD",
+          "recommendationSuppressed": false,
+          "safety": {
+            "level": "stable",
+            "activeExpansionAllowed": true,
+            "protectionMustMaintain": false
+          }
+        },
+        "consistency": {
+          "version": "fixture-consistency-current-product-v1",
+          "effectivePolicySource": "functional_policy"
+        },
+        "currentProductFindings": {
+          "findings": [
+            {
+              "sourceState": "selected",
+              "productId": "synthetic-current-tone-primary",
+              "relationToPlan": "supports_goal"
+            }
+          ],
+          "summary": {
+            "selectedCount": 1,
+            "unknownCount": 0
+          }
+        }
+      },
+      "candidates": [
+        {
+          "id": "synthetic-current-tone-primary",
+          "category": "serum",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "Whitening",
+                "count": 6
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        },
+        {
+          "id": "synthetic-current-tone-alternative",
+          "category": "essence",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "Whitening",
+                "count": 4
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        }
+      ]
+    },
+    {
+      "scenario": "metadata_incomplete",
+      "semanticVersion": "metadata-incomplete-v1",
+      "expectedReasonCodes": [
+        "metadata_incomplete",
+        "protection_evidence_incomplete"
+      ],
+      "canonicalState": {
+        "decisionBundle": {
+          "context": {
+            "version": "fixture-context-metadata-v1",
+            "survey": {
+              "answers": {
+                "skinType": "normal",
+                "sensitivity": "low",
+                "postWashFeeling": "comfortable",
+                "afternoonSkinChange": "mostly_same"
+              }
+            },
+            "skinState": {
+              "priorityAxis": "tone_care"
+            },
+            "safetyState": {
+              "sensitiveBurden": false,
+              "recentSkinChange": "no",
+              "recentlyChangedProduct": "no"
+            }
+          }
+        },
+        "functionalPolicy": {
+          "version": "fixture-functional-policy-metadata-v1",
+          "priorityAxis": "tone_care",
+          "functionalDirection": "tone_care",
+          "planMode": "ADD",
+          "recommendationSuppressed": false,
+          "safety": {
+            "level": "stable",
+            "activeExpansionAllowed": true,
+            "protectionMustMaintain": true
+          }
+        },
+        "consistency": {
+          "version": "fixture-consistency-metadata-v1",
+          "effectivePolicySource": "functional_policy"
+        },
+        "currentProductFindings": {
+          "findings": [],
+          "summary": {
+            "selectedCount": 0,
+            "unknownCount": 0
+          }
+        }
+      },
+      "candidates": [
+        {
+          "id": "synthetic-metadata-unknown",
+          "category": "serum",
+          "ingredient_signals": {
+            "functional": []
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        },
+        {
+          "id": "synthetic-metadata-sunscreen",
+          "category": "sunscreen",
+          "ingredient_signals": {
+            "functional": [
+              {
+                "label": "UV protection",
+                "count": 5
+              }
+            ]
+          },
+          "sensitivity_safe": true,
+          "irritation_risk": "low"
+        }
+      ]
+    }
+  ]
+}
