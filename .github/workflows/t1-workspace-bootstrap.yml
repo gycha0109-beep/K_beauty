@@ -1,11 +1,15 @@
 name: T1 Workspace Bootstrap
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/T1-synthetic-toolkit-workspace-foundation
+      - main
     paths:
       - .github/workflows/t1-workspace-bootstrap.yml
+      - package.json
+      - package-lock.json
+      - packages/face-contracts/**
+      - tools/synthetic-evaluation/**
 
 permissions:
   contents: write
