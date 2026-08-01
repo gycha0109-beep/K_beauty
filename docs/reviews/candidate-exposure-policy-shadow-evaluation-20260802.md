@@ -4,7 +4,8 @@
 
 Stage 11C reviews the completed Stage 11B shadow implementation and defines a fail-closed eligibility gate for a future limited Preview canary plan. This stage does not connect CandidateExposurePolicy output to runtime candidate filtering, recommendations, API responses, saved payloads, UI, or Production configuration.
 
-Base branch: `codex/candidate-exposure-policy-shadow-runtime`  
+Base branch: `codex/candidate-exposure-policy-shadow-runtime`
+
 Stage branch: `codex/candidate-exposure-policy-shadow-evaluation`
 
 ## 2. Design review
