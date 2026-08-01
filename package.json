@@ -2,6 +2,10 @@
   "name": "k-beauty-ai-skin-test",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
@@ -25,6 +29,8 @@
     "verify:premium-session-runtime-diagnostics": "node scripts/verify-premium-session-runtime-diagnostics.mjs",
     "verify:premium-image-sanitizer-capacity": "node scripts/verify-premium-image-sanitizer-capacity.mjs",
     "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
+    "synthetic:test": "npm run test --workspace @bejewely/synthetic-evaluation",
+    "synthetic:verify": "npm run verify --workspace @bejewely/synthetic-evaluation",
     "lint": "next lint"
   },
   "dependencies": {
