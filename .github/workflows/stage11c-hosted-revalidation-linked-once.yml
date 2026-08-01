@@ -79,6 +79,8 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
+
           source = Path('.github/workflows/stage11c-hosted-revalidation-once.yml').read_text().splitlines()
           step_name = 'Run four exact-SHA Hosted probes and build aggregate evidence'
           start = next(i for i, line in enumerate(source) if line.strip() == f'- name: {step_name}')
@@ -88,7 +90,41 @@ jobs:
               if line.startswith('      - name:'):
                   break
               body.append(line[10:] if line.startswith('          ') else line)
-          Path('/tmp/stage11c-probe.sh').write_text('\n'.join(body).rstrip() + '\n')
+          text = '\n'.join(body).rstrip() + '\n'
+          replacement = '''def find_secret(value):
+              if isinstance(value, str):
+                  match = re.search(r'[?&]_vercel_share=([^&]+)', value)
+                  return urllib.parse.unquote(match.group(1)) if match else None
+              if isinstance(value, dict):
+                  for key, nested in value.items():
+                      if isinstance(nested, str):
+                          match = re.search(r'[?&]_vercel_share=([^&]+)', nested)
+                          if match:
+                              return urllib.parse.unquote(match.group(1))
+                          if re.search(r'(secret|bypass)', key, re.I) and len(nested) >= 8:
+                              return nested
+                  for nested in value.values():
+                      found = find_secret(nested)
+                      if found:
+                          return found
+              elif isinstance(value, list):
+                  for nested in value:
+                      found = find_secret(nested)
+                      if found:
+                          return found
+              return None
+
+'''
+          text, count = re.subn(
+              r'def find_secret\(value\):\n.*?(?=def create_bypass)',
+              replacement,
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit('share_parser_patch_failed')
+          Path('/tmp/stage11c-probe.sh').write_text(text)
           PY
           bash -n /tmp/stage11c-probe.sh
 
