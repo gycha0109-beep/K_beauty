@@ -16,6 +16,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch Stage 10 reevaluation baseline
+        run: git fetch --no-tags origin codex/stage10-hosted-preview-user-flow:refs/heads/codex/stage10-hosted-preview-user-flow
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
