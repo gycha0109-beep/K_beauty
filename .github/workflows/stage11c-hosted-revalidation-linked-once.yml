@@ -1,0 +1,163 @@
+name: Stage 11C Hosted Revalidation Linked Once
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-revalidation:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
+      IMPLEMENTATION_SHA: 3d697efd3b7b90137c68e988d42487c7a58a92a2
+      HEAD_REF: codex/candidate-exposure-policy-shadow-evaluation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3d697efd3b7b90137c68e988d42487c7a58a92a2
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Require Vercel deployment authority
+        run: |
+          set -euo pipefail
+          test -n "${VERCEL_TOKEN:-}"
+          echo "::add-mask::$VERCEL_TOKEN"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Extract canonical probe script
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('.github/workflows/stage11c-hosted-revalidation-once.yml').read_text().splitlines()
+          step_name = 'Run four exact-SHA Hosted probes and build aggregate evidence'
+          start = next(i for i, line in enumerate(source) if line.strip() == f'- name: {step_name}')
+          run_line = next(i for i in range(start + 1, len(source)) if source[i].strip() == 'run: |')
+          body = []
+          for line in source[run_line + 1:]:
+              if line.startswith('      - name:'):
+                  break
+              body.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/stage11c-probe.sh').write_text('\n'.join(body).rstrip() + '\n')
+          PY
+          bash -n /tmp/stage11c-probe.sh
+
+      - name: Discover default-off and create linked shadow-on Preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          project = os.environ['VERCEL_PROJECT_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          headers = {'Authorization': f'Bearer {token}'}
+          url = 'https://api.vercel.com/v6/deployments?' + urllib.parse.urlencode({
+              'projectId': project,
+              'teamId': team,
+              'limit': 100,
+          })
+          with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=30) as response:
+              payload = json.load(response)
+          matches = [d for d in payload.get('deployments', [])
+                     if d.get('meta', {}).get('githubCommitSha') == sha
+                     and d.get('target') is None
+                     and (d.get('readyState') == 'READY' or d.get('state') == 'READY')]
+          if not matches:
+              raise SystemExit('default_off_exact_sha_preview_not_ready')
+          deployment = max(matches, key=lambda d: d.get('createdAt', d.get('created', 0)))
+          out = {
+              'id': deployment.get('uid') or deployment['id'],
+              'url': 'https://' + deployment['url'],
+              'sha': sha,
+          }
+          open('default-deployment.json', 'w').write(json.dumps(out))
+          print(json.dumps({'defaultDeploymentId': out['id'], 'implementationSha': sha}))
+          PY
+
+          rm -rf .vercel
+          mkdir -p .vercel
+          python3 - <<'PY'
+          import json, os
+          open('.vercel/project.json', 'w').write(json.dumps({
+              'orgId': os.environ['VERCEL_ORG_ID'],
+              'projectId': os.environ['VERCEL_PROJECT_ID'],
+          }))
+          PY
+
+          vercel deploy --yes --force \
+            --env DEV_ONLY_CANDIDATE_EXPOSURE_POLICY_SHADOW=1 \
+            --meta githubCommitSha="$IMPLEMENTATION_SHA" \
+            --meta githubCommitRef="$HEAD_REF" \
+            --meta actor=codex-stage11c-linked \
+            --token="$VERCEL_TOKEN" > shadow-deploy.log
+
+          python3 - <<'PY'
+          import json, os, re, time, urllib.parse, urllib.request
+          text = open('shadow-deploy.log', errors='replace').read()
+          urls = re.findall(r'https://[^\s]+?\.vercel\.app', text)
+          if not urls:
+              print(text)
+              raise SystemExit('shadow_deployment_url_missing')
+          deployment_url = urls[-1].rstrip('/')
+          token = os.environ['VERCEL_TOKEN']
+          team = os.environ['VERCEL_ORG_ID']
+          sha = os.environ['IMPLEMENTATION_SHA']
+          headers = {'Authorization': f'Bearer {token}'}
+          endpoint = 'https://api.vercel.com/v13/deployments/' + urllib.parse.quote(
+              deployment_url.removeprefix('https://'), safe=''
+          ) + '?' + urllib.parse.urlencode({'teamId': team})
+          deadline = time.time() + 900
+          while time.time() < deadline:
+              with urllib.request.urlopen(urllib.request.Request(endpoint, headers=headers), timeout=30) as response:
+                  deployment = json.load(response)
+              state = deployment.get('readyState') or deployment.get('state')
+              if state == 'READY':
+                  actual_sha = deployment.get('meta', {}).get('githubCommitSha')
+                  if actual_sha != sha:
+                      raise SystemExit('shadow_runtime_sha_mismatch')
+                  out = {
+                      'id': deployment['id'],
+                      'url': 'https://' + deployment['url'],
+                      'sha': actual_sha,
+                  }
+                  open('shadow-deployment.json', 'w').write(json.dumps(out))
+                  print(json.dumps({'shadowDeploymentId': out['id'], 'implementationSha': actual_sha}))
+                  break
+              if state in {'ERROR', 'CANCELED'}:
+                  raise SystemExit('shadow_deployment_failed')
+              time.sleep(15)
+          else:
+              raise SystemExit('shadow_deployment_not_ready')
+          PY
+          rm -f shadow-deploy.log
+          rm -rf .vercel
+
+      - name: Run four exact-SHA Hosted probes
+        shell: bash
+        run: bash /tmp/stage11c-probe.sh
+
+      - name: Upload aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11c-hosted-revalidation-aggregate-linked
+          path: stage11c-hosted-revalidation-aggregate.json
+          if-no-files-found: warn
+          retention-days: 1
