@@ -8,7 +8,8 @@
   "design": {
     "version": "candidate-exposure-policy-isolated-preview-canary-harness-design-v1",
     "status": "design_ready_for_implementation_review",
-    "implementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "runtimeImplementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "harnessImplementationShaResolution": "stage11f_head_at_execution",
     "controlStates": [
       "disabled",
       "eligible",
@@ -17,25 +18,27 @@
       "completed",
       "invalid_configuration"
     ],
+    "controlTransitions": [
+      "disabled>eligible",
+      "eligible>running",
+      "running>completed",
+      "running>stopped",
+      "disabled>invalid_configuration",
+      "eligible>invalid_configuration"
+    ],
     "maxAnalyzeRequests": 16,
     "maxDurationMinutes": 60,
-    "locales": [
-      "ko",
-      "en"
-    ],
+    "locales": ["ko", "en"],
     "scenarios": [
       "standard_goal_alignment",
       "stabilization_active_block",
       "current_product_semantics",
       "metadata_incomplete"
     ],
-    "modes": [
-      "control",
-      "canary"
-    ],
+    "modes": ["control", "canary"],
     "execution": {
-      "hostedLane": "exact_sha_response_invariance_and_shadow_aggregate",
-      "projectionLane": "same_sha_checkout_deterministic_projection_replay",
+      "hostedLane": "exact_runtime_sha_response_invariance_and_shadow_aggregate",
+      "projectionLane": "harness_head_with_runtime_module_digest_attestation",
       "lanesShareFixtureSemanticFingerprint": true,
       "hostedLaneExposesPolicyDecisions": false,
       "projectionLaneUsesActualUserData": false,
@@ -43,6 +46,23 @@
       "warmupRequestsAllowed": false,
       "quotaProbeAllowed": false,
       "exploratoryRequestsAllowed": false
+    },
+    "runtimeModuleAttestation": {
+      "baselineRuntimeSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+      "harnessHeadResolvedAtExecution": true,
+      "runtimeSensitivePaths": [
+        "app/api/analyze/route.js",
+        "app/api/full-report/route.js",
+        "lib/skin-match-decision-engine.js",
+        "lib/candidate-exposure-policy.js",
+        "lib/candidate-exposure-policy-contract.js",
+        "lib/candidate-exposure-policy-evaluator-adapter.js",
+        "lib/candidate-exposure-policy-shadow.js",
+        "lib/candidate-exposure-policy-observability.js"
+      ],
+      "unchangedPathDiffRequired": true,
+      "contentDigestAttestationRequired": true,
+      "mismatchStopsBeforeExecution": true
     },
     "requestMatrix": [
       {"sequence": 1, "locale": "ko", "scenario": "standard_goal_alignment", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
@@ -139,7 +159,7 @@
       "backflowPrevention": ["runner-only import direction", "no route import", "no response-builder import", "no storage import", "no UI import", "projection object not returned from production modules"]
     },
     "fingerprints": {
-      "types": ["response_pre_post", "snapshot_pre_post", "candidate_order_pre_post", "isolated_projection", "runtime_implementation_sha", "fixture_semantic"],
+      "types": ["response_pre_post", "snapshot_pre_post", "candidate_order_pre_post", "isolated_projection", "runtime_implementation_sha", "harness_implementation_sha", "runtime_module_digest_attestation", "fixture_semantic"],
       "sameRequestMutationChecks": true,
       "independentProviderResponseEqualityRequired": false,
       "controlCanaryComparisonUsesAggregateProjection": true,
@@ -161,7 +181,7 @@
       "rawResponseAllowed": false
     },
     "stopConditions": {
-      "runtimeShaMismatch": {"detectionLocation": "deployment preflight and response headers", "detectionTiming": "before first request and after every response", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["runtimeShaMatchCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "runtimeShaMismatch": {"detectionLocation": "deployment preflight, runtime module attestation, and response headers", "detectionTiming": "before first request and after every response", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["runtimeShaMatchCount", "runtimeModuleDigestAttestation", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
       "defaultOffShadowExecution": {"detectionLocation": "default-off deployment aggregate runtime logs", "detectionTiming": "after each control request", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["defaultOffExecutionCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
       "unexpectedDivergence": {"detectionLocation": "canary aggregate telemetry", "detectionTiming": "after each canary request and projection replay", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["unexpectedDivergenceCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
       "unclassifiedDivergence": {"detectionLocation": "canary aggregate telemetry", "detectionTiming": "after each canary request and projection replay", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["unclassifiedDivergenceCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
@@ -186,7 +206,7 @@
       "secretMaskingRequired": true
     },
     "evidence": {
-      "requiredFields": ["schemaVersion", "planVersion", "implementationSha", "controlDeploymentId", "canaryDeploymentId", "startedAt", "completedAt", "plannedRequestCount", "completedRequestCount", "http200Count", "runtimeShaMatchCount", "defaultOffExecutionCount", "canaryExecutionCount", "scenarioResults", "aggregateDivergenceCounts", "aggregateMutationChecks", "cleanup", "stopCondition", "status", "authorization"],
+      "requiredFields": ["schemaVersion", "planVersion", "runtimeImplementationSha", "harnessImplementationSha", "runtimeModuleDigestAttestation", "controlDeploymentId", "canaryDeploymentId", "startedAt", "completedAt", "plannedRequestCount", "completedRequestCount", "http200Count", "runtimeShaMatchCount", "defaultOffExecutionCount", "canaryExecutionCount", "scenarioResults", "aggregateDivergenceCounts", "aggregateMutationChecks", "cleanup", "stopCondition", "status", "authorization"],
       "statuses": ["completed_pass", "stopped_on_contract_violation", "blocked_before_execution", "cleanup_failed", "evidence_invalid"],
       "deploymentUrlStored": false,
       "bypassSecretStored": false,
@@ -198,11 +218,11 @@
       "cleanupFailureCanPass": false
     },
     "stage11fFilePlan": [
-      {"path": "lib/candidate-exposure-policy-isolated-canary-control.js", "responsibility": "Pure state machine, environment authority, request/time budget, exact-SHA and stop-condition transitions."},
-      {"path": "lib/candidate-exposure-policy-isolated-projection.js", "responsibility": "Immutable candidate/decision projection with memory-only vectors and aggregate fingerprint output."},
+      {"path": "lib/candidate-exposure-policy-isolated-canary-control.js", "responsibility": "Pure state machine, environment authority, request and time budget, runtime attestation, and stop-condition transitions."},
+      {"path": "lib/candidate-exposure-policy-isolated-projection.js", "responsibility": "Immutable candidate and decision projection with memory-only vectors and aggregate fingerprint output."},
       {"path": "lib/candidate-exposure-policy-isolated-canary-telemetry.js", "responsibility": "Exact allowlisted aggregate telemetry validation and serialization."},
       {"path": "lib/candidate-exposure-policy-isolated-canary-evidence.js", "responsibility": "Aggregate evidence state, cleanup result, final status, and authorization schema."},
-      {"path": "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs", "responsibility": "Runner-only orchestration of exact-SHA hosted lane and deterministic projection replay lane."},
+      {"path": "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs", "responsibility": "Runner-only orchestration of exact runtime SHA hosted lane and harness-head deterministic projection replay lane."},
       {"path": "scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs", "responsibility": "Positive and negative controls for the implementation contract without invoking public traffic or Production."}
     ],
     "dependencyDirection": {
