@@ -132,3 +132,15 @@ test("sensitive provenance is rejected", () => {
   assert.equal(result.ok, false);
   assert.ok(errorCodes(result).includes("sensitive_provenance_forbidden"));
 });
+
+test("exported fixtures and semantic payloads are deeply immutable", () => {
+  assert.equal(Object.isFrozen(SKIN_CONTROL_FIXTURES.A.spec.skinIntent), true);
+  assert.throws(() => {
+    SKIN_CONTROL_FIXTURES.A.spec.skinIntent.redness.severity = "mild";
+  }, TypeError);
+  const finalized = finalizeGenerationSpec(SKIN_CONTROL_FIXTURES.A.spec);
+  assert.equal(Object.isFrozen(finalized.semanticPayload.skinIntent), true);
+  assert.throws(() => {
+    finalized.semanticPayload.skinIntent.redness.severity = "mild";
+  }, TypeError);
+});
