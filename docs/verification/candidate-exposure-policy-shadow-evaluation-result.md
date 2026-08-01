@@ -1,43 +1,136 @@
 # CandidateExposurePolicy Shadow Evaluation Result
 
-1. **Branch**: `codex/candidate-exposure-policy-shadow-evaluation`.
-2. **Draft PR**: #100, base `codex/candidate-exposure-policy-shadow-runtime`, Draft 유지.
-3. **Design review**: Stage 11B post-canonical shadow-only responsibility boundary 유지.
-4. **Implementation fixes**:
-   - empty `VERCEL_ENV` + `NODE_ENV=production` self-hosted Production hard-disable;
-   - unknown/missing environment fail-closed;
-   - aggregate telemetry nested vocabulary, exact lane set, count total, contradiction validation;
-   - reason/target-compatible divergence classification;
-   - Stage 11A verifier fixed-range audit.
-5. **Focused verifier**: Stage 11B 193 assertions, current-product 12/12, safety 13/13 PASS.
-6. **Stage 11C verifier**: 54 assertions, telemetry negative controls 12/12, divergence fixtures 10/10 PASS.
-7. **Security closeout**: GitHub Actions run `30710205166`, 60/60 PASS.
-8. **Architecture guard**: PASS.
-9. **Production build**: PASS.
-10. **Diff hygiene**: PASS.
-11. **Automatic default-off Preview**: implementation SHA `3d697efd3b7b90137c68e988d42487c7a58a92a2`, deployment `dpl_FBndGs9izVGgC32FUoRLJngcm5Dh`, READY.
-12. **Hosted exact-SHA shadow-on attempt**: GitHub Actions run `30710504707` failed closed before deployment because repository secret `VERCEL_TOKEN` was absent.
-13. **Hosted execution effects**: shadow-on deployment 0, analyze calls 0, protection bypass 0, environment writes 0, Production changes 0.
-14. **Eligibility**: exact-SHA KO/EN off/on evidence missing; limited Preview canary plan eligibility not granted.
-15. **Runtime boundary**: runtime filtering, response mutation, storage mutation, UI mutation, Production activation all disconnected and unauthorized.
-16. **Final marker**: `CANDIDATE_EXPOSURE_POLICY_SHADOW_EVALUATION_BLOCKED_EXTERNAL`.
+## Final status
+
+- Branch: `codex/candidate-exposure-policy-shadow-evaluation`
+- Draft PR: #100
+- Base: `codex/candidate-exposure-policy-shadow-runtime`
+- Runtime implementation SHA: `1bc119347a2f8d3387a935163e24849ceebe349d`
+- Status: `eligible_for_limited_preview_canary_plan`
+- Runtime activation authorized: no
+- Production activation authorized: no
+
+## Design and implementation review
+
+Stage 11C preserved the post-canonical shadow-only responsibility boundary and completed the following hardening:
+
+- empty `VERCEL_ENV` with `NODE_ENV=production` is Production-hard-disabled;
+- missing and unknown environment classifications fail closed;
+- aggregate telemetry validates nested vocabularies, exact lane keys, count totals, and execution-state consistency;
+- divergence classifiers require reason-compatible exposure transitions;
+- canonical evaluator rebuild provenance is explicit and narrowly classified;
+- generic `primary > hidden` remains unexpected unless exact adapter provenance and complete canonical conditions are present;
+- the Stage 11A design verifier audits its fixed Stage 10 to Stage 11A range.
+
+## Verification
+
+### Local and GitHub Actions
+
+Final remediation regression run: `30715974099`
+
+- Stage 11B shadow verifier: 193 assertions PASS
+- Current-product fixtures: 12/12 PASS
+- Safety fixtures: 13/13 PASS
+- Stage 11C verifier: PASS
+- Aggregate divergence diagnostics: PASS
+- Security closeout: 60/60 PASS
+- Architecture guard: PASS
+- Production build: PASS
+- Diff hygiene: PASS
+
+### Hosted history retained
+
+Run `30710504707` failed closed before deployment because `VERCEL_TOKEN` was absent. No deployment, analyze call, bypass, environment write, or Production change occurred.
+
+Run `30715168863` later completed four Hosted calls but exposed ten reproducible unexpected divergences in both KO and EN. Aggregate-only diagnostics identified the exact bucket as `primary>hidden|canonical_goal_match = 10`. This finding was remediated through explicit canonical adapter provenance rather than a broad transition allowlist.
+
+### Remediated exact-SHA Hosted revalidation
+
+GitHub Actions run: `30716127743`
+
+Deployments:
+
+- default-off Preview: `dpl_2eueMeSRe72BNBu5tsVA7NscnDSp`
+- shadow-on Preview: `dpl_FUEVEGNzPpRNys6uZShi1k6cHYtJ`
+
+Aggregate result:
+
+- planned analyze calls: 4
+- completed analyze calls: 4
+- HTTP 200: 4/4
+- runtime SHA match: 4/4
+- `S9_cookie_emission`: 4/4
+- KO candidate-order fingerprint match: true
+- EN candidate-order fingerprint match: true
+- KO candidate-reference count match: true
+- EN candidate-reference count match: true
+- temporary automation bypass created: true
+- temporary automation bypass revoked: true
+- workflow error category: none
+
+Default-off behavior:
+
+- KO shadow execution count: 0
+- EN shadow execution count: 0
+
+Shadow-on KO and EN telemetry:
+
+- execution status: `executed`
+- response pre/post fingerprint match: true
+- snapshot pre/post fingerprint match: true
+- candidate-order pre/post fingerprint match: true
+- `expected_canonical_evaluator_rebuild`: 10 per locale
+- `expected_canonical_goal_alignment`: 68 per locale
+- `expected_exposure_state_expansion`: 86 per locale
+- unexpected divergence: 0
+- unclassified divergence: 0
+- shadow exception: 0
+- fallback: 0
+- invalid context: 0
+
+The independent default-off and shadow-on HTTP response body hashes are not required to match because each request independently performs provider-backed text generation. Mutation invariance is established by the same shadow-on request's pre/post fingerprints and unchanged candidate ordering.
+
+## Eligibility gate
+
+Machine-readable aggregate evidence:
+
+`docs/verification/candidate-exposure-policy-shadow-eligibility-evidence.json`
+
+Canonical gate result:
+
+```text
+eligible_for_limited_preview_canary_plan
+```
+
+Authorization remains bounded:
+
+```text
+limited Preview canary plan design: authorized
+runtime activation: not authorized
+Production activation: not authorized
+```
 
 ## Verification markers
 
 ```text
-CANDIDATE_EXPOSURE_POLICY_SHADOW_EVALUATION_BLOCKED_EXTERNAL
-BLOCKED_PENDING_EXACT_SHA_HOSTED_REVALIDATION
-DESIGN_REVIEW_COMPLETE
-IMPLEMENTATION_REVIEW_COMPLETE
-IMPLEMENTATION_HARDENING_COMPLETE
-FOCUSED_VERIFICATION_PASS
-SECURITY_CLOSEOUT_60_OF_60_PASS
-ARCHITECTURE_GUARD_PASS
-PRODUCTION_BUILD_PASS
-DIFF_HYGIENE_PASS
-DEFAULT_OFF_EXACT_SHA_PREVIEW_READY
-SHADOW_ON_DEPLOYMENT_NOT_CREATED
-HOSTED_ANALYZE_NOT_RUN
+CANDIDATE_EXPOSURE_POLICY_SHADOW_EVALUATION_PASS
+HOSTED_KO_EN_REVALIDATION_PASS
+EXACT_SHA_RUNTIME_MATCH
+DEFAULT_OFF_SHADOW_NOT_EXECUTED
+SHADOW_ON_EXECUTED
+RESPONSE_FINGERPRINT_UNCHANGED
+SNAPSHOT_FINGERPRINT_UNCHANGED
+CANDIDATE_ORDER_UNCHANGED
+EXPECTED_CANONICAL_EVALUATOR_REBUILD_CLASSIFIED
+UNEXPECTED_DIVERGENCE_ZERO
+UNCLASSIFIED_DIVERGENCE_ZERO
+SHADOW_EXCEPTION_ZERO
+FALLBACK_ZERO
+INVALID_CONTEXT_ZERO
+TEMPORARY_AUTOMATION_BYPASS_REVOKED
+CANARY_PLAN_ELIGIBLE
+RUNTIME_ACTIVATION_NOT_AUTHORIZED
+PRODUCTION_ACTIVATION_NOT_AUTHORIZED
 RUNTIME_FILTER_NOT_CONNECTED
 RESPONSE_MUTATION_NOT_CONNECTED
 STORAGE_MUTATION_NOT_CONNECTED
@@ -45,6 +138,6 @@ PRODUCTION_NOT_CHANGED
 PR_REMAINS_DRAFT
 ```
 
-## External prerequisite
+## Next eligible stage
 
-A repository-scoped `VERCEL_TOKEN` GitHub Actions secret with authority to create Preview deployments and temporary deployment-protection bypasses is required. After that prerequisite is intentionally supplied, rerun exactly one Stage 11C Hosted closeout using the implementation SHA under review. Do not proceed to Stage 11D until the eligibility gate returns `eligible_for_limited_preview_canary_plan`.
+Stage 11D may design and verify a limited Preview canary plan. It must not activate CandidateExposurePolicy filtering or change recommendation output, API responses, persistence, UI, project-wide Preview configuration, or Production behavior.
