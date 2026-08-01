@@ -26,6 +26,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Aggregate divergence diagnostics
+        run: node scripts/check-candidate-exposure-policy-divergence-diagnostics.mjs
       - name: CandidateExposurePolicy shadow evaluation
         run: npm run verify:candidate-exposure-policy-shadow-evaluation
       - name: Security closeout verifier suite
