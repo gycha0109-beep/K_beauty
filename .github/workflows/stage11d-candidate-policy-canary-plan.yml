@@ -1,0 +1,48 @@
+name: Stage 11D CandidatePolicy Canary Plan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - codex/candidate-exposure-policy-shadow-evaluation
+
+permissions:
+  contents: read
+
+jobs:
+  canary-plan:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-limited-preview-canary-plan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch Stage 10 baseline
+        run: git fetch --no-tags origin codex/stage10-hosted-preview-user-flow:refs/heads/codex/stage10-hosted-preview-user-flow
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Stage 11C eligibility evidence
+        run: node scripts/check-candidate-exposure-policy-shadow-eligibility-evidence.mjs
+      - name: Stage 11D canary plan contract
+        run: node scripts/check-candidate-exposure-policy-limited-preview-canary-plan.mjs
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+      - name: Architecture guard
+        run: npm run architecture:guard
+      - name: Production build
+        run: npm run build
+      - name: Diff hygiene
+        run: git diff --check HEAD^
+      - name: Upload closeout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11d-candidate-policy-canary-plan
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: warn
+          retention-days: 1
