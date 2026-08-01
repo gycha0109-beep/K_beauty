@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { importCandidate } from "../import-candidate.js";
+import { resolveSafeContainedFile } from "../resolve-safe-path.js";
 
 function parseArgs(argv) {
   const args = { request: null, mode: null };
@@ -39,7 +40,14 @@ export async function runImportCli(argv, environment = process.env) {
   if (!isInside(requestRoot, requestAbsolutePath)) {
     throw new Error("Request file must be inside the configured requests directory");
   }
-  const request = JSON.parse(await readFile(requestAbsolutePath, "utf8"));
+
+  const requestRelativePath = path.relative(requestRoot, requestAbsolutePath);
+  const safeRequestPath = await resolveSafeContainedFile(requestRoot, requestRelativePath, "request");
+  if (!safeRequestPath.ok) {
+    throw new Error(`Unsafe request file: ${safeRequestPath.errors[0].code}`);
+  }
+
+  const request = JSON.parse(await readFile(safeRequestPath.absolutePath, "utf8"));
   return importCandidate({
     request,
     mode: args.mode,
