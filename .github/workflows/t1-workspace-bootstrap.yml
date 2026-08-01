@@ -1,0 +1,70 @@
+name: T1 Workspace Bootstrap
+
+on:
+  push:
+    branches:
+      - feature/T1-synthetic-toolkit-workspace-foundation
+    paths:
+      - .github/workflows/t1-workspace-bootstrap.yml
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/T1-synthetic-toolkit-workspace-foundation
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Synchronize workspace lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Verify lockfile-only delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff -- package-lock.json
+          test -z "$(git diff --name-only -- . ':(exclude)package-lock.json')"
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify workspace inventory
+        run: npm ls --workspaces --depth=0
+
+      - name: Run toolkit test
+        run: npm run synthetic:test
+
+      - name: Run toolkit verifier
+        run: npm run synthetic:verify
+
+      - name: Run architecture guard
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Commit synchronized lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore(toolkit): [T1] synchronize workspace lockfile"
+          git push origin HEAD:feature/T1-synthetic-toolkit-workspace-foundation
