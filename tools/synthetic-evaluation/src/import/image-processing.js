@@ -13,6 +13,11 @@ const EXTENSIONS = Object.freeze({
   jpeg: new Set([".jpg", ".jpeg"]),
   webp: new Set([".webp"])
 });
+const NORMALIZED_EXTENSIONS = Object.freeze({
+  png: ".png",
+  jpeg: ".jpg",
+  webp: ".webp"
+});
 
 function failure(code, pathValue, detail = null) {
   return { ok: false, errors: [createCandidateImportError(code, pathValue, detail)] };
@@ -73,7 +78,7 @@ export async function inspectImageBuffer(buffer, originalDownloadName) {
       assetId: `asset_${rawSha256.slice(0, 24)}`,
       byteLength: buffer.byteLength,
       detectedFormat: format,
-      originalExtension: extension,
+      originalExtension: NORMALIZED_EXTENSIONS[format],
       width,
       height,
       frameCount: 1,
