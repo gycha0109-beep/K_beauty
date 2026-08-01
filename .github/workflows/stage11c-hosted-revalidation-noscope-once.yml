@@ -1,0 +1,86 @@
+name: Stage 11C Hosted Revalidation No-Scope Once
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches:
+      - codex/candidate-exposure-policy-shadow-runtime
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-revalidation:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-shadow-evaluation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_xuYA9OhCWlJETaYFOmeVodgS
+      VERCEL_PROJECT_ID: prj_VHh3BMegmXFGwxgOJLlgFQjksmKA
+      VERCEL_SCOPE: johnny-self
+      HEAD_SHA: 3d697efd3b7b90137c68e988d42487c7a58a92a2
+      HEAD_REF: codex/candidate-exposure-policy-shadow-evaluation
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3d697efd3b7b90137c68e988d42487c7a58a92a2
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Require Vercel deployment authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${VERCEL_TOKEN:-}"
+          echo "::add-mask::$VERCEL_TOKEN"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Extract existing exact-SHA scripts without CLI scope
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/stage11c-hosted-revalidation-once.yml').read_text().splitlines()
+
+          def extract(step_name, output):
+              start = next(i for i, line in enumerate(source) if line.strip() == f'- name: {step_name}')
+              run_line = next(i for i in range(start + 1, len(source)) if source[i].strip() == 'run: |')
+              body = []
+              for line in source[run_line + 1:]:
+                  if line.startswith('      - name:'):
+                      break
+                  body.append(line[10:] if line.startswith('          ') else line)
+              text = '\n'.join(body).rstrip() + '\n'
+              text = text.replace(' --scope "$VERCEL_SCOPE"', '')
+              text = text.replace(' --scope "$VERCEL_SCOPE" > shadow-deploy.log', ' > shadow-deploy.log')
+              Path(output).write_text(text)
+
+          extract('Discover default-off deployment and create exact-SHA shadow-on deployment', '/tmp/stage11c-deploy.sh')
+          extract('Run four exact-SHA Hosted probes and build aggregate evidence', '/tmp/stage11c-probe.sh')
+          PY
+          bash -n /tmp/stage11c-deploy.sh
+          bash -n /tmp/stage11c-probe.sh
+
+      - name: Create exact-SHA shadow-on deployment
+        shell: bash
+        run: bash /tmp/stage11c-deploy.sh
+
+      - name: Run four exact-SHA Hosted probes
+        shell: bash
+        run: bash /tmp/stage11c-probe.sh
+
+      - name: Upload aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11c-hosted-revalidation-aggregate-noscope
+          path: stage11c-hosted-revalidation-aggregate.json
+          if-no-files-found: warn
+          retention-days: 1
