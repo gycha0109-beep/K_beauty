@@ -13,6 +13,10 @@ build
 coverage
 tmp/
 _local_data/
+
+# Local synthetic evaluation assets and outputs
+.synthetic-local/
+
 debug.png
 .tmp-*
 *headers*.txt
