@@ -52,17 +52,17 @@ jobs:
           set -euo pipefail
           cat >> .codex/AI_WORK_LOG.md <<'LOG'
 
-### 2026-08-02 / Toolkit Track #T1 Workspace Foundation
+          ### 2026-08-02 / Toolkit Track #T1 Workspace Foundation
 
-- Task type: Medium bounded execution. Production/build compatibility was checked; DB, Auth, RLS, Storage, Provider, Payment, Secret, API, UI, and Production execution were out of scope.
-- Base and branch: current `main` at task start → `feature/T1-synthetic-toolkit-workspace-foundation`. The stale `codex/survey-input-contract-refactor` prompt base was rejected because it had diverged substantially from current `main`.
-- Change: registered `packages/*` and `tools/*` npm workspaces; added contract-only `@bejewely/face-contracts`; added non-production `@bejewely/synthetic-evaluation`; added Node ESM workspace-resolution smoke tests; ignored `.synthetic-local/`.
-- Dependency direction: production code does not import or depend on `@bejewely/synthetic-evaluation`; the toolkit depends only on the local contract package. External dependencies added: 0.
-- Verification: npm lockfile synchronization produced workspace-only entries; `npm ci --ignore-scripts`, workspace inventory, `synthetic:test`, `synthetic:verify`, `architecture:guard`, and production `build` passed in GitHub Actions on Node 20.
-- Boundaries: no synthetic images or evaluation data, Provider call, DB/migration, API route, UI, runtime scoring, GenerationSpec, prompt compiler, import, observation, judgment, or promotion implementation was added.
-- Remaining risk: T1 proves package/install/build isolation only. Domain contracts and generation behavior remain intentionally absent until Toolkit Track #T2.
-- Follow-up: Toolkit Track #T2 — Generation Contract & Prompt Compiler.
-LOG
+          - Task type: Medium bounded execution. Production/build compatibility was checked; DB, Auth, RLS, Storage, Provider, Payment, Secret, API, UI, and Production execution were out of scope.
+          - Base and branch: current `main` at task start → `feature/T1-synthetic-toolkit-workspace-foundation`. The stale `codex/survey-input-contract-refactor` prompt base was rejected because it had diverged substantially from current `main`.
+          - Change: registered `packages/*` and `tools/*` npm workspaces; added contract-only `@bejewely/face-contracts`; added non-production `@bejewely/synthetic-evaluation`; added Node ESM workspace-resolution smoke tests; ignored `.synthetic-local/`.
+          - Dependency direction: production code does not import or depend on `@bejewely/synthetic-evaluation`; the toolkit depends only on the local contract package. External dependencies added: 0.
+          - Verification: npm lockfile synchronization produced workspace-only entries; `npm ci --ignore-scripts`, workspace inventory, `synthetic:test`, `synthetic:verify`, `architecture:guard`, and production `build` passed in GitHub Actions on Node 20.
+          - Boundaries: no synthetic images or evaluation data, Provider call, DB/migration, API route, UI, runtime scoring, GenerationSpec, prompt compiler, import, observation, judgment, or promotion implementation was added.
+          - Remaining risk: T1 proves package/install/build isolation only. Domain contracts and generation behavior remain intentionally absent until Toolkit Track #T2.
+          - Follow-up: Toolkit Track #T2 — Generation Contract & Prompt Compiler.
+          LOG
           rm .github/workflows/t1-finalize.yml
 
       - name: Verify final allowed-path boundary and diff hygiene
