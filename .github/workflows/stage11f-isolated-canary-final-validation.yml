@@ -21,7 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+
+      - name: Fetch Stage 10 verifier baseline
+        run: git fetch --no-tags origin codex/stage10-hosted-preview-user-flow:refs/heads/codex/stage10-hosted-preview-user-flow
 
       - uses: actions/setup-node@v4
         with:
@@ -37,9 +41,6 @@ jobs:
       - name: Stage 11F import boundary
         run: node scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs
 
-      - name: Stage 11F validate-only runner
-        run: node scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs --mode validate-only
-
       - name: Security closeout verifier suite
         run: node scripts/run-security-closeout-verifier-suite.mjs
 
@@ -48,6 +49,9 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Stage 11F validate-only runner
+        run: node scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs --mode validate-only
 
       - name: Diff hygiene
         run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
