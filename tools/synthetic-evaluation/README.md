@@ -79,6 +79,38 @@ npm run architecture:guard
 npm run build
 ```
 
+## Toolkit Track #T3 design
+
+The next design defines manual candidate import and provenance:
+
+```text
+docs/candidate-import-provenance-v1.md
+docs/adr/0003-import-artifact-retention-and-registration-outcomes.md
+```
+
+The design separates:
+
+```text
+raw asset identity
+≠ candidate identity
+≠ observed label
+≠ Gold
+```
+
+It specifies:
+
+- explicit ImportRequest linkage to #T2 artifacts
+- immutable content-addressed raw assets
+- lossless canonical analysis derivatives
+- content-addressed copies of finalized spec and compiled prompt artifacts
+- exact duplicate and non-authoritative perceptual fingerprint records
+- atomic dry-run/confirm registration
+- idempotent candidate manifests
+- blinded T4 observation input
+- no Provider, DB, API, UI, or production execution
+
+ADR 0003 supersedes ambiguous quarantine and artifact-reference wording in the primary #T3 document. #T3 v1 has only two committed outcomes: validation failure with no writes, or registered `G0_GENERATED` candidate with explicit warnings.
+
 `#T1`, `#T2`, and later identifiers are internal Toolkit Track IDs. They are not GitHub pull request numbers.
 
 ## Local data boundary
@@ -89,4 +121,4 @@ Future local synthetic assets and outputs belong under:
 .synthetic-local/
 ```
 
-A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and #T2 do not create or read that environment variable.
+A later track may support `BEJEWELY_SYNTHETIC_DATA_ROOT`. Track #T1 and #T2 do not create or read that environment variable. The #T3 design defines its future use but does not create files or read the variable.
