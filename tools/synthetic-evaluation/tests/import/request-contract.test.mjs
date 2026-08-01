@@ -12,6 +12,13 @@ test("valid import request passes exact validation", async () => {
   assert.deepEqual(validateCandidateImportRequest(request), { ok: true, errors: [] });
 });
 
+test("explicit ISO timezone offsets are accepted", async () => {
+  const { request } = await createTestImportEnvironment();
+  const localTimestamp = clone(request);
+  localTimestamp.providerRun.downloadedAt = "2026-08-02T08:22:00+09:00";
+  assert.deepEqual(validateCandidateImportRequest(localTimestamp), { ok: true, errors: [] });
+});
+
 test("unknown fields and weak attestation fail closed", async () => {
   const { request } = await createTestImportEnvironment();
   const unknown = clone(request);
