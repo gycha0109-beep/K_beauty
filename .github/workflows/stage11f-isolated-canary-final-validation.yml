@@ -1,0 +1,62 @@
+name: Stage 11F Isolated Canary Final Validation
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches:
+      - codex/candidate-exposure-policy-isolated-preview-canary-harness-design
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage11f-isolated-canary-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  final-validation:
+    if: github.event.pull_request.head.ref == 'codex/candidate-exposure-policy-isolated-preview-canary-harness'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Stage 11F contract verifier
+        run: node scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs
+
+      - name: Stage 11F import boundary
+        run: node scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs
+
+      - name: Stage 11F validate-only runner
+        run: node scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs --mode validate-only
+
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Diff hygiene
+        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+      - name: Upload implementation-readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11f-isolated-canary-implementation-readiness
+          path: tmp/stage11f-isolated-canary-implementation-evidence.json
+          if-no-files-found: warn
+          retention-days: 1
