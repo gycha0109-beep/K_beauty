@@ -13,6 +13,7 @@ const FLOW_COPY = {
     optional: "선택",
     multiple: "복수",
     next: "다음",
+    nextQuestion: "다음 질문",
     back: "이전으로",
     skipToResult: "지금 결과 보기",
     skipConfirm: {
@@ -49,6 +50,7 @@ const FLOW_COPY = {
     optional: "Optional",
     multiple: "Multiple",
     next: "Next",
+    nextQuestion: "Next question",
     back: "Back",
     skipToResult: "See result now",
     skipConfirm: {
@@ -1097,6 +1099,8 @@ function SurveyFooterActions({
   finalCtaShowsSparkles,
   finalCtaText,
   canSkipToResult,
+  nextButtonRef,
+  isNextPending,
   onBack,
   onNext,
   onSkipToResult
@@ -1130,9 +1134,11 @@ function SurveyFooterActions({
             </span>
           ) : null}
           <button
+            ref={nextButtonRef}
             type="button"
             onClick={onNext}
-            className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] ${
+            disabled={isNextPending}
+            className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] disabled:cursor-wait disabled:opacity-70 ${
               finalCtaEnabled
                 ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
                 : ""
@@ -1148,6 +1154,27 @@ function SurveyFooterActions({
         </span>
       </div>
     </div>
+  );
+}
+
+function FloatingSurveyNextButton({ visible, label, isPending, onNext }) {
+  if (!visible) {
+    return null;
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onNext}
+      disabled={isPending}
+      className="floating-survey-next fixed right-[calc(0.75rem+env(safe-area-inset-right))] top-[clamp(14rem,60dvh,calc(100dvh-7.25rem))] z-30 flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d9b9b1] bg-[linear-gradient(135deg,#fffaf7_0%,#fff1ed_100%)] text-[#d94d75] shadow-[0_8px_18px_rgba(112,63,75,0.16)] transition duration-150 ease-out hover:border-[#dd8fa2] hover:bg-[#fff8f5] focus:outline-none focus:ring-2 focus:ring-[#e76b91]/45 focus:ring-offset-2 focus:ring-offset-[#fff7f4] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60 sm:hidden dark:border-[#77505a] dark:bg-[linear-gradient(135deg,#2b1820_0%,#1d1117_100%)] dark:text-[#ffa0b0] dark:shadow-[0_8px_18px_rgba(0,0,0,0.22)] dark:hover:border-[#b96678] dark:hover:bg-[#33202a] dark:focus:ring-offset-[#170d12]"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    </button>
   );
 }
 
@@ -1264,6 +1291,11 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   const [questionIndex, setQuestionIndex] = useState(0);
   const [message, setMessage] = useState("");
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [footerNextIsVisible, setFooterNextIsVisible] = useState(true);
+  const [isNextPending, setIsNextPending] = useState(false);
+  const footerNextButtonRef = useRef(null);
+  const nextPendingRef = useRef(false);
   const currentQuestion = questions[questionIndex] || questions[0];
   const totalQuestions = questions.length;
   const requiredQuestionsComplete = useMemo(
@@ -1281,6 +1313,63 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
     ? "사진과 답변을 바탕으로 맞춤 리포트를 생성합니다."
     : "Your custom report will be generated from the photo and answers.";
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const mobileQuery = window.matchMedia("(max-width: 639px)");
+    const updateMobileViewport = () => setIsMobileViewport(mobileQuery.matches);
+
+    updateMobileViewport();
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener("change", updateMobileViewport);
+    } else {
+      mobileQuery.addListener(updateMobileViewport);
+    }
+
+    return () => {
+      if (mobileQuery.removeEventListener) {
+        mobileQuery.removeEventListener("change", updateMobileViewport);
+      } else {
+        mobileQuery.removeListener(updateMobileViewport);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setFooterNextIsVisible(true);
+
+    if (!isMobileViewport || !footerNextButtonRef.current || typeof IntersectionObserver === "undefined") {
+      return undefined;
+    }
+
+    const footerButton = footerNextButtonRef.current;
+    const updateFooterVisibility = () => {
+      const rect = footerButton.getBoundingClientRect();
+      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+      setFooterNextIsVisible(visibleHeight >= rect.height * 0.75);
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterNextIsVisible(Boolean(entry?.isIntersecting && entry.intersectionRatio >= 0.75)),
+      { threshold: [0, 0.75, 1] }
+    );
+
+    observer.observe(footerButton);
+    updateFooterVisibility();
+    window.addEventListener("resize", updateFooterVisibility);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateFooterVisibility);
+    };
+  }, [isMobileViewport, questionIndex]);
+
+  useEffect(() => {
+    nextPendingRef.current = false;
+    setIsNextPending(false);
+  }, [questionIndex]);
+
   const scrollToTop = () => {
     if (typeof window === "undefined") {
       return;
@@ -1290,12 +1379,18 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
   };
 
   const handleNext = () => {
+    if (nextPendingRef.current) {
+      return;
+    }
+
     if (!screenIsValid) {
       setMessage(copy.needAnswer);
       return;
     }
 
     setMessage("");
+    nextPendingRef.current = true;
+    setIsNextPending(true);
 
     if (questionIndex >= questions.length - 1) {
       onComplete();
@@ -1415,11 +1510,20 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           finalCtaShowsSparkles={finalCtaShowsSparkles}
           finalCtaText={finalCtaText}
           canSkipToResult={canSkipToResult}
+          nextButtonRef={footerNextButtonRef}
+          isNextPending={isNextPending}
           onBack={handleBack}
           onNext={handleNext}
           onSkipToResult={handleSkipToResult}
         />
       </div>
+
+      <FloatingSurveyNextButton
+        visible={isMobileViewport && screenIsValid && !isFinalQuestion && !footerNextIsVisible}
+        label={copy.nextQuestion}
+        isPending={isNextPending}
+        onNext={handleNext}
+      />
 
       {skipConfirmOpen ? (
         <SkipResultConfirmModal
@@ -1449,6 +1553,22 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .floating-survey-next {
+          animation: floating-survey-next-enter 160ms ease-out;
+        }
+
+        @keyframes floating-survey-next-enter {
+          from {
+            opacity: 0;
+            transform: translateX(6px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
         }
 
         @keyframes survey-card-enter {
@@ -1554,6 +1674,10 @@ export default function SurveyFlow({ locale = "ko", form, onAnswerChange, onBack
         }
 
         @media (prefers-reduced-motion: reduce) {
+          .floating-survey-next {
+            animation: none;
+          }
+
           :global(.final-cta-shimmer) {
             animation: none;
           }
