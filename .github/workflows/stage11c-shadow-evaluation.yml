@@ -28,6 +28,8 @@ jobs:
         run: npm ci
       - name: Aggregate divergence diagnostics
         run: node scripts/check-candidate-exposure-policy-divergence-diagnostics.mjs
+      - name: Hosted eligibility evidence
+        run: node scripts/check-candidate-exposure-policy-shadow-eligibility-evidence.mjs
       - name: CandidateExposurePolicy shadow evaluation
         run: npm run verify:candidate-exposure-policy-shadow-evaluation
       - name: Security closeout verifier suite
