@@ -73,6 +73,7 @@ const contractMutations = [
   ["pairing", (value) => { value.plan.pairedRequestsPerScenario = 1; }],
   ["stop condition missing", (value) => { delete value.plan.stopConditions.shadowException; }],
   ["stop condition disabled", (value) => { value.plan.stopConditions.unexpectedDivergence = false; }],
+  ["stop condition unknown", (value) => { value.plan.stopConditions.ignoreFutureFailure = false; }],
   ["default-off control", (value) => { value.plan.defaultOffControlRequired = false; }],
   ["deployment opt-in", (value) => { value.plan.deploymentScopedOptInRequired = false; }],
   ["kill switch", (value) => { value.plan.killSwitchRequired = false; }],
