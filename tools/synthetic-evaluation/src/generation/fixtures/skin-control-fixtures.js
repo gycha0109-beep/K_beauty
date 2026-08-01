@@ -3,8 +3,9 @@ import {
   GENERATION_REFERENCE_PRESERVE_ORDER,
   GENERATION_SPEC_SCHEMA_VERSION
 } from "@bejewely/face-contracts";
+import { deepFreeze } from "../canonicalize-generation-spec.js";
 
-const SUBJECT = Object.freeze({
+const SUBJECT = deepFreeze({
   syntheticPersonOnly: true,
   adultAgeBand: "20s",
   presentation: "feminine",
@@ -12,7 +13,7 @@ const SUBJECT = Object.freeze({
   personCount: 1
 });
 
-const CAPTURE = Object.freeze({
+const CAPTURE = deepFreeze({
   mediaStyle: "realistic_documentary_reference",
   pose: "direct_frontal",
   gaze: "camera",
@@ -28,7 +29,7 @@ const CAPTURE = Object.freeze({
   height: 1024
 });
 
-const APPEARANCE = Object.freeze({
+const APPEARANCE = deepFreeze({
   hairColor: "dark_brown_black",
   hairStyle: "tied_back",
   hairFaceClearance: "away_from_forehead_and_cheeks",
@@ -39,7 +40,7 @@ const APPEARANCE = Object.freeze({
   visibleMakeup: "none"
 });
 
-const PROVENANCE = Object.freeze({
+const PROVENANCE = deepFreeze({
   campaignId: "skin-control-abcd-v1",
   authoredBy: "campaign_planner",
   sourceTemplateId: "skin-control-reference-portrait",
@@ -48,7 +49,7 @@ const PROVENANCE = Object.freeze({
   notes: null
 });
 
-const INDEPENDENT_VARIATION = Object.freeze({
+const INDEPENDENT_VARIATION = deepFreeze({
   pairingMode: "independent",
   referenceCandidateId: null,
   mutationScope: "full_generation",
@@ -66,9 +67,9 @@ function skinIntent({ redness, blemishes }) {
 }
 
 function buildFixture(id, skin) {
-  return Object.freeze({
+  return deepFreeze({
     id,
-    spec: Object.freeze({
+    spec: {
       schemaVersion: GENERATION_SPEC_SCHEMA_VERSION,
       purpose: "skin_cue_control",
       subject: SUBJECT,
@@ -80,30 +81,30 @@ function buildFixture(id, skin) {
       variation: INDEPENDENT_VARIATION,
       exclusionPolicyVersion: EXCLUSION_POLICY_VERSION,
       provenance: PROVENANCE
-    })
+    }
   });
 }
 
-const NO_REDNESS = Object.freeze({ severity: "none", regions: [], pattern: "none" });
-const MILD_REDNESS = Object.freeze({
+const NO_REDNESS = deepFreeze({ severity: "none", regions: [], pattern: "none" });
+const MILD_REDNESS = deepFreeze({
   severity: "mild",
   regions: ["left_cheek", "right_cheek", "sides_of_nose"],
   pattern: "diffuse"
 });
-const NO_BLEMISHES = Object.freeze({
+const NO_BLEMISHES = deepFreeze({
   severity: "none",
   regions: [],
   countBand: "none",
   pattern: "none"
 });
-const MILD_BLEMISHES = Object.freeze({
+const MILD_BLEMISHES = deepFreeze({
   severity: "mild",
   regions: ["left_cheek", "right_cheek", "chin"],
   countBand: "three_to_five",
   pattern: "discrete"
 });
 
-export const SKIN_CONTROL_FIXTURES = Object.freeze({
+export const SKIN_CONTROL_FIXTURES = deepFreeze({
   A: buildFixture("A_clean", skinIntent({ redness: NO_REDNESS, blemishes: NO_BLEMISHES })),
   B: buildFixture("B_redness_only", skinIntent({ redness: MILD_REDNESS, blemishes: NO_BLEMISHES })),
   C: buildFixture("C_blemishes_only", skinIntent({ redness: NO_REDNESS, blemishes: MILD_BLEMISHES })),
@@ -114,7 +115,7 @@ export function createPairedSkinEditDraft(skin, referenceCandidateId) {
   return {
     ...SKIN_CONTROL_FIXTURES.D.spec,
     purpose: "paired_skin_edit",
-    skinIntent: skin,
+    skinIntent: JSON.parse(JSON.stringify(skin)),
     variation: {
       pairingMode: "reference_edit",
       referenceCandidateId,
