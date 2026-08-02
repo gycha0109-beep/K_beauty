@@ -23,19 +23,23 @@ function stageReached(row) {
   return "planned";
 }
 function blindItemId(sourceSnapshotDigest, row) { return `blind_${sha256Hex(`${sourceSnapshotDigest}:${row.rowDigest}`).slice(0,24)}`; }
+function reviewDocumentAssetPath(relativePath) {
+  if (!relativePath.startsWith("review/")) throw Object.assign(new Error("report_review_package_invalid"), { code: "report_review_package_invalid" });
+  return relativePath.slice("review/".length);
+}
 function documentShell(title, body, mode) {
   return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>${escapeHtml(title)}</title>\n<style>\n:root{font-family:system-ui,sans-serif;color:#171717;background:#fff}body{margin:24px}h1{font-size:1.4rem}.notice{padding:12px;border:2px solid #333;margin-bottom:16px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}.card{border:1px solid #777;padding:10px;break-inside:avoid}.thumb{width:100%;aspect-ratio:1;object-fit:contain;background:#eee}.placeholder{display:grid;place-items:center}.meta{font-size:.8rem;overflow-wrap:anywhere}.warnings{font-weight:700}@media print{body{margin:8mm}.grid{grid-template-columns:repeat(4,1fr)}.card{page-break-inside:avoid}}\n</style>\n</head>\n<body data-review-mode="${mode}">\n<h1>${escapeHtml(title)}</h1>\n${body}\n</body>\n</html>\n`;
 }
 function blindCard(sourceSnapshotDigest, row, thumbnail) {
   const itemId = blindItemId(sourceSnapshotDigest, row);
   const image = thumbnail
-    ? `<img class="thumb" src="${escapeHtml(thumbnail.blindRelativePath)}" alt="Synthetic review item ${escapeHtml(itemId)}">`
+    ? `<img class="thumb" src="${escapeHtml(reviewDocumentAssetPath(thumbnail.blindRelativePath))}" alt="Synthetic review item ${escapeHtml(itemId)}">`
     : `<div class="thumb placeholder" role="img" aria-label="No registered candidate">no candidate</div>`;
   return `<article class="card">${image}<p class="meta">review item ${escapeHtml(itemId)}</p></article>`;
 }
 function annotatedCard(row, thumbnail) {
   const image = thumbnail
-    ? `<img class="thumb" src="${escapeHtml(thumbnail.annotatedRelativePath)}" alt="Synthetic candidate ${escapeHtml(row.candidate.candidateId)} for slot ${escapeHtml(row.slotId)}">`
+    ? `<img class="thumb" src="${escapeHtml(reviewDocumentAssetPath(thumbnail.annotatedRelativePath))}" alt="Synthetic candidate ${escapeHtml(row.candidate.candidateId)} for slot ${escapeHtml(row.slotId)}">`
     : `<div class="thumb placeholder" role="img" aria-label="No registered candidate">no candidate</div>`;
   const warnings = row.warnings.length ? `<p class="meta warnings">warnings: ${escapeHtml(row.warnings.join(", "))}</p>` : "";
   return `<article class="card">${image}<p class="meta">slot ${escapeHtml(row.slotId)}<br>condition ${escapeHtml(row.conditionId)} · wave ${row.waveOrdinal}<br>stage ${escapeHtml(stageReached(row))}<br>terminal ${escapeHtml(row.promotion.terminalOutcome)}<br>mark hint ${escapeHtml(row.candidate.visibleExternalMarkHint || "none")}<br>row ${escapeHtml(row.rowDigest.slice(0, 12))}</p>${warnings}</article>`;
