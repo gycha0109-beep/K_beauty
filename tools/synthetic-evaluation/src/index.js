@@ -40,14 +40,13 @@ export {
 } from "./observation/snapshot/canonical-v1.js";
 export { verifyObservationSourceCheckout } from "./observation/snapshot/verify-source-checkout.js";
 
-export { createBlindJudgmentAssignment, verifyBlindJudgmentAssignmentIntegrity } from "./judgment/assignment.js";
-export { buildJudgmentExecutionClaim, finalizeJudgmentSubmission, verifyJudgmentSubmissionIntegrity } from "./judgment/submission.js";
-export { buildJudgmentConsensus, verifyJudgmentConsensusIntegrity } from "./judgment/consensus.js";
-export { resolveCandidateIntent } from "./judgment/intent-resolver.js";
-export { alignJudgmentToIntent, verifyIntentAlignmentIntegrity } from "./judgment/alignment.js";
-export { deriveG2ObservedRecord, deriveG3ConsensusRecord, verifyDerivedGradeRecordIntegrity } from "./judgment/grades.js";
+export { verifyBlindJudgmentAssignmentIntegrity } from "./judgment/assignment.js";
+export { verifyJudgmentSubmissionIntegrity } from "./judgment/submission.js";
+export { verifyJudgmentConsensusIntegrity } from "./judgment/consensus.js";
+export { verifyIntentAlignmentIntegrity } from "./judgment/alignment.js";
+export { verifyDerivedGradeRecordIntegrity } from "./judgment/grades.js";
 export { prepareBlindJudgmentAssignment } from "./judgment/prepare-assignment.js";
-export { readAndResolveCandidateIntent } from "./judgment/read-intent-artifacts.js";
+export { prepareStoredJudgmentAlignment } from "./judgment/stored-alignment.js";
 export {
   readJudgmentConsensus,
   readJudgmentSubmissionByDigest,
