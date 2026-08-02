@@ -13,6 +13,28 @@ export function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+const CANDIDATE_OUTCOMES = new Set([
+  "observation_valid_ineligible",
+  "observation_failed",
+  "judgment_incomplete",
+  "retained_g3_negative_control",
+  "promotion_held",
+  "promotion_rejected",
+  "promoted_g4"
+]);
+const CONSENSUS_OUTCOMES = new Set([
+  "retained_g3_negative_control",
+  "promotion_held",
+  "promotion_rejected",
+  "promoted_g4"
+]);
+const PROMOTION_OUTCOMES = new Set([
+  "retained_g3_negative_control",
+  "promotion_held",
+  "promotion_rejected",
+  "promoted_g4"
+]);
+
 export async function makeFakeSource({ dataRoot = null, providerProfileId = "gemini-image-manual-v1", comparisonGroupId = null, runNonce = "report-run-001", withCandidates = false } = {}) {
   const plan = makePlan({ providerProfileId, comparisonGroupId });
   const runResult = makeRun(plan, { runNonce });
@@ -36,7 +58,7 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
   for (let index = 0; index < slots.length; index += 1) {
     const slot = slots[index];
     const terminalOutcome = terminalCycle[index % terminalCycle.length];
-    const candidatePresent = withCandidates && index < 4;
+    const candidatePresent = CANDIDATE_OUTCOMES.has(terminalOutcome) || (withCandidates && index < 4);
     let candidateId = null;
     let candidateDigest = null;
     let canonicalSha256 = null;
@@ -54,10 +76,11 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
       }
       artifactIndex.push({ track: "T3", artifactType: "canonical-image", artifactDigest: canonicalSha256, campaignRunId: run.campaignRunId, slotId: slot.slotId, candidateId, integrityStatus: "verified", relativeObjectPath: canonicalPath });
     }
-    const hasObservation = candidatePresent && index >= 1;
-    const hasConsensus = candidatePresent && index >= 2;
-    const hasAlignment = candidatePresent && index >= 2;
-    const hasDecision = candidatePresent && index >= 3;
+    const observationRunExists = CANDIDATE_OUTCOMES.has(terminalOutcome);
+    const authoritativeObservation = observationRunExists && terminalOutcome !== "observation_failed";
+    const hasConsensus = CONSENSUS_OUTCOMES.has(terminalOutcome);
+    const hasAlignment = hasConsensus;
+    const hasDecision = PROMOTION_OUTCOMES.has(terminalOutcome);
     const promoted = terminalOutcome === "promoted_g4";
     const projection = {
       slotId: slot.slotId,
@@ -69,16 +92,16 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
       checkpointReady: true,
       generationAttempts: terminalOutcome === "cancelled_operator" ? 0 : terminalOutcome === "generation_failed_no_asset" ? 2 : 1,
       generationRetries: terminalOutcome === "generation_failed_no_asset" ? 1 : 0,
-      observationRuns: hasObservation ? 1 : 0,
-      authoritativeObservationRuns: hasObservation ? 1 : 0,
+      observationRuns: observationRunExists ? 1 : 0,
+      authoritativeObservationRuns: authoritativeObservation ? 1 : 0,
       observationRecoveryRuns: 0,
       refs: {
         candidateId,
         candidateDigest,
         canonicalSha256,
-        observationRunId: hasObservation ? `obs_${hash(`obs:${slot.slotId}`).slice(0,24)}` : null,
-        observationRunDigest: hasObservation ? hash(`obs-run:${slot.slotId}`) : null,
-        observationObjectDigest: hasObservation ? hash(`obs-object:${slot.slotId}`) : null,
+        observationRunId: observationRunExists ? `obs_${hash(`obs:${slot.slotId}`).slice(0,24)}` : null,
+        observationRunDigest: observationRunExists ? hash(`obs-run:${slot.slotId}`) : null,
+        observationObjectDigest: authoritativeObservation ? hash(`obs-object:${slot.slotId}`) : null,
         consensusDigest: hasConsensus ? hash(`consensus:${slot.slotId}`) : null,
         alignmentDigest: hasAlignment ? hash(`alignment:${slot.slotId}`) : null,
         promotionDecisionDigest: hasDecision ? hash(`decision:${slot.slotId}`) : null
@@ -93,9 +116,9 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
       projection,
       evidence: {
         assetReady: terminalOutcome !== "cancelled_operator" && terminalOutcome !== "generation_failed_no_asset",
-        markHint: candidatePresent ? (index === 0 ? "present" : "absent") : null,
+        markHint: candidatePresent ? (index === 3 ? "present" : "absent") : null,
         candidateManifest: candidatePresent ? { candidateId, asset: { canonicalSha256, canonicalObjectRelativePath: canonicalPath } } : null,
-        observationObject: hasObservation ? { observationDigest: projection.refs.observationObjectDigest, bundle: { eligibility: { status: terminalOutcome === "observation_valid_ineligible" ? "ineligible" : "eligible" } } } : null,
+        observationObject: authoritativeObservation ? { observationDigest: projection.refs.observationObjectDigest, bundle: { eligibility: { status: terminalOutcome === "observation_valid_ineligible" ? "ineligible" : "eligible" } } } : null,
         consensus: hasConsensus ? { consensusDigest: projection.refs.consensusDigest } : null,
         alignment: hasAlignment ? { alignmentDigest: projection.refs.alignmentDigest } : null,
         promotion: hasDecision ? { decision: { decisionDigest: projection.refs.promotionDecisionDigest }, gradeRecord: promoted ? { gradeRecordDigest: projection.activeG4.gradeRecordDigest } : null } : { decision: null, gradeRecord: null }
