@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildProviderComparisonKey, verifyProviderComparisonKey } from "../../src/reporting/comparison.js";
-import { buildCampaignEvidenceSnapshot, deriveCampaignMetricSet, deriveCampaignSlotRows } from "../../src/reporting/derive.js";
+import { buildCampaignEvidenceSnapshot, deriveCampaignMetricSet, deriveCampaignSlotRows, verifyCampaignMetricSetIntegrity } from "../../src/reporting/derive.js";
+import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
 import { clone, makeFakeSource } from "./helpers.mjs";
 
 test("provider-only variation passes the strict T8 comparison gate", async () => {
@@ -23,6 +24,13 @@ test("provider-only variation passes the strict T8 comparison gate", async () =>
   assert.equal(metrics.metricSet.comparison.ranking, null);
   assert.equal(metrics.metricSet.comparison.significance, null);
   assert.equal(metrics.metricSet.comparison.causalAttribution, null);
+  assert.equal(verifyCampaignMetricSetIntegrity(metrics.metricSet), true);
+
+  const forged = clone(metrics.metricSet);
+  forged.comparison.ranking = "provider_a";
+  const { metricSetDigest, ...semantic } = forged;
+  forged.metricSetDigest = sha256Hex(stableStringify(semantic));
+  assert.equal(verifyCampaignMetricSetIntegrity(forged), false);
 });
 
 test("comparison rejects missing group, identical provider, and non-provider drift", async () => {
