@@ -3,7 +3,7 @@ import { buildJudgmentConsensus } from "../consensus.js";
 import {
   readJudgmentSubmissionByDigest,
   registerJudgmentConsensus
-} from "../registrar.js";
+} from "../blind-registrar.js";
 import { fail, parseArgs, printResult, readRequestJson, resolveDataRoot } from "./helpers.js";
 
 async function main() {
