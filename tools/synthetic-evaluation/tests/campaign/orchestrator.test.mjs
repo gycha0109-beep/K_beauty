@@ -7,11 +7,10 @@ import {
   closePilotCampaign,
   compileAndStorePilotCampaign,
   getPilotCampaignStatus,
-  issuePilotWave,
   registerPilotGenerationHandoff,
-  reservePilotGenerationRetry,
-  submitPilotCheckpoint
+  reservePilotGenerationRetry
 } from "../../src/campaign/orchestrator.js";
+import { issuePilotWave, submitPilotCheckpoint } from "../../src/campaign/safe-operations.js";
 import { registerPilotStage } from "../../src/campaign/stage-registration.js";
 import { readCampaignBundle } from "../../src/campaign/storage.js";
 
@@ -68,10 +67,12 @@ test("compile and Wave 1 issue are idempotent and emit only four primary packets
   const runId = compiled.run.campaignRunId;
   const first = await issuePilotWave({ dataRoot, runId, waveOrdinal: 1 });
   assert.equal(first.ok, true);
+  assert.equal(first.packetsIssued, 4);
   assert.equal(first.projection.denominators.issuedPrimarySlots, 4);
   assert.equal(first.projection.budget.generationAttemptsUsed, 4);
   const second = await issuePilotWave({ dataRoot, runId, waveOrdinal: 1 });
   assert.equal(second.ok, true);
+  assert.equal(second.packetsIssued, 0);
   const bundle = await readCampaignBundle(dataRoot, runId);
   assert.equal(bundle.packets.length, 4);
   assert.equal(bundle.events.filter((event) => event.eventType === "wave_issued").length, 1);
@@ -123,6 +124,7 @@ test("technical retries consume reserve and checkpoint allows Wave 2 without T5 
   assert.equal(checkpoint.ok, true);
   const wave2 = await issuePilotWave({ dataRoot, runId, waveOrdinal: 2 });
   assert.equal(wave2.ok, true);
+  assert.equal(wave2.packetsIssued, 8);
   assert.equal(wave2.projection.denominators.issuedPrimarySlots, 12);
 });
 
@@ -137,8 +139,8 @@ test("stop checkpoint explicitly terminates every unissued future slot and permi
     checkpointDraft: {
       completedWaveOrdinal: 1,
       checklist: {
-        sourceFreezeStillValid: false,
-        providerProfileStillAllowed: true,
+        sourceFreezeStillValid: true,
+        providerProfileStillAllowed: false,
         noRealPersonReferenceEvidence: true,
         noSystemicExternalMarkIssue: true,
         noCandidateReplacementOccurred: true,
