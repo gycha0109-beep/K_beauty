@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdtemp, readFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, symlink } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -67,4 +67,14 @@ test("one predecessor report can have only one immutable successor", async () =>
   const reportB = buildCampaignReport({ sourceSnapshot: value.sourceSnapshot, metricSet: value.metricSet, reviewPackage: value.reviewPackage, reviewSubmission: reviewB, predecessorReportDigest: value.report.reportDigest }).report;
   const linkB = createReportRevisionLink({ predecessorReport: value.report, successorReport: reportB, reasonCode: "limitation_clarification", linkedAt: "2026-08-03T04:00:00.000Z" }).link;
   await assert.rejects(saveReviewedReport({ dataRoot: value.dataRoot, report: reportB, reviewSubmission: reviewB, revisionLink: linkB }), (error) => error?.code === "immutable_report_artifact_conflict");
+});
+
+test("report storage rejects a symbolic-link root", { skip: process.platform === "win32" }, async () => {
+  const value = await fixture();
+  const outside = await mkdtemp(path.join(os.tmpdir(), "t8-storage-outside-"));
+  await symlink(outside, path.join(value.dataRoot, "reports"), "dir");
+  await assert.rejects(
+    saveReviewArtifacts({ dataRoot: value.dataRoot, sourceSnapshot: value.sourceSnapshot, artifactIndex: value.artifactIndex, rows: value.rows, metricSet: value.metricSet, reviewPackage: value.reviewPackage, thumbnails: value.thumbnails, reviewFiles: value.files }),
+    (error) => error?.code === "report_path_symlink_forbidden"
+  );
 });
