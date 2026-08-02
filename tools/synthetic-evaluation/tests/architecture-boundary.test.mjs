@@ -132,10 +132,30 @@ test("public T6 API exposes authority-checked orchestration rather than raw prom
   assert.doesNotMatch(source, /export \{ finalizePromotionReviewSubmission/);
 });
 
-test("T3 through T6 expose no batch, G5, holdout, or split execution command", async () => {
+test("T7 runtime performs no generation Provider, browser, DB, shell, image transformation, or automatic human decision execution", async () => {
+  for (const file of await collectFiles(path.resolve(testDirectory, "../src/campaign"))) {
+    const source = await fs.readFile(file, "utf8");
+    assert.doesNotMatch(source, /\bfetch\s*\(|api\.openai\.com|gemini\.google|generativelanguage|playwright|puppeteer|webdriver|@supabase|child_process|execFile|spawn\s*\(/i, file);
+    assert.doesNotMatch(source, /sharp\s*\(|resize\s*\(|extract\s*\(|composite\s*\(/i, file);
+    assert.doesNotMatch(source, /autoReview|autoPromote|autoGenerate|assignSplit|lockHoldout/i, file);
+  }
+});
+
+test("T7 CLI exposes single-boundary orchestration and no prohibited automation command", async () => {
+  const source = await fs.readFile(path.resolve(testDirectory, "../src/campaign/cli/campaign.js"), "utf8");
+  assert.match(source, /--compile/);
+  assert.match(source, /--issue-wave/);
+  assert.match(source, /--generation-handoff/);
+  assert.match(source, /--checkpoint/);
+  assert.match(source, /--advance/);
+  assert.doesNotMatch(source, /--auto-all|--generate-provider|--auto-review|--auto-promote|--assign-split|--lock-holdout/);
+});
+
+test("T3 through T7 expose no batch, G5, holdout, or split execution command", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.resolve(testDirectory, "../package.json"), "utf8"));
   const scripts = Object.keys(packageJson.scripts || {});
   assert.equal(scripts.some((name) => /batch/i.test(name)), false);
   assert.equal(scripts.some((name) => /g5|holdout|split|lock/i.test(name)), false);
   assert.equal(scripts.includes("promote"), true);
+  assert.equal(scripts.includes("campaign"), true);
 });
