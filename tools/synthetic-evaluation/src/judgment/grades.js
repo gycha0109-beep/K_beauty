@@ -1,4 +1,6 @@
 import {
+  ALIGNMENT_POLICY_ID,
+  ALIGNMENT_POLICY_VERSION,
   DERIVED_GRADE_RECORD_SCHEMA_VERSION,
   validateDerivedGradeRecordShape
 } from "@bejewely/face-contracts";
@@ -29,6 +31,34 @@ function finalizeGrade(semantic, recordedAt) {
       gradeRecordDigest
     })
   });
+}
+
+function hasValidGradeSemantics(record) {
+  const requiredAxes = record.scope.requiredAxes;
+  const sortedAxes = [...requiredAxes].sort();
+  if (
+    stableStringify(requiredAxes) !== stableStringify(sortedAxes) ||
+    new Set(requiredAxes).size !== requiredAxes.length ||
+    record.scope.requiredAxesDigest !== sha256Hex(stableStringify(requiredAxes))
+  ) {
+    return false;
+  }
+  const sortedSources = [...record.sourceDigests].sort();
+  if (stableStringify(record.sourceDigests) !== stableStringify(sortedSources)) return false;
+  if (record.grade === "G2_OBSERVED") {
+    return record.scope.purpose === null &&
+      record.scope.policyId === "authoritative-observation-v1" &&
+      record.scope.policyVersion === "1.0.0" &&
+      requiredAxes.length === 0;
+  }
+  if (record.grade === "G3_CONSENSUS_VALIDATED") {
+    return typeof record.scope.purpose === "string" &&
+      record.scope.purpose.length > 0 &&
+      record.scope.policyId === ALIGNMENT_POLICY_ID &&
+      record.scope.policyVersion === ALIGNMENT_POLICY_VERSION &&
+      requiredAxes.length > 0;
+  }
+  return false;
 }
 
 export function deriveG2ObservedRecord({ run, observationObject, recordedAt = new Date().toISOString() }) {
@@ -90,7 +120,7 @@ export function deriveG3ConsensusRecord({ consensus, alignment, recordedAt = new
 }
 
 export function verifyDerivedGradeRecordIntegrity(record) {
-  if (!validateDerivedGradeRecordShape(record).ok) return false;
+  if (!validateDerivedGradeRecordShape(record).ok || !hasValidGradeSemantics(record)) return false;
   const digest = sha256Hex(stableStringify(gradeSemantic(record)));
   return record.gradeRecordDigest === digest && record.gradeRecordId === `grd_${digest.slice(0, 24)}`;
 }
