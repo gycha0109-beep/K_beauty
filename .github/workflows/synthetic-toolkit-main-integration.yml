@@ -1,0 +1,62 @@
+name: Synthetic Toolkit Main Integration
+
+on:
+  pull_request:
+    paths:
+      - "packages/face-contracts/**"
+      - "tools/synthetic-evaluation/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".gitignore"
+      - ".github/workflows/synthetic-toolkit-main-integration.yml"
+      - "app/admin/**"
+      - "lib/admin/**"
+      - "lib/supabase/middleware.js"
+      - "scripts/verify-admin-access-foundation.mjs"
+      - "scripts/verify-admin-access-runtime.sh"
+      - "supabase/migrations/20260730152900_admin_access_foundation.sql"
+      - "components/onboarding/SurveyFlow.js"
+      - "tests/e2e/visuali-mvp.spec.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: synthetic-toolkit-main-integration-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node24-toolkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run synthetic:rehearsal -- --full --failure-matrix --report integration-rehearsal-node24.json
+      - run: npm run synthetic:test
+      - run: npm run synthetic:verify
+      - run: npm run verify:admin-access-foundation
+      - run: git diff --check
+
+  node20-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run synthetic:rehearsal -- --full --failure-matrix --report integration-rehearsal-node20.json
+      - run: npm run synthetic:test
+      - run: npm run synthetic:verify
+      - run: npm run verify:admin-access-foundation
+      - run: npm run architecture:guard
+      - run: npm run build
+      - run: git diff --check
