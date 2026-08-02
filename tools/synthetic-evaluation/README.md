@@ -16,6 +16,8 @@ Generation
 → Observation
 → Judgment
 → Promotion
+→ Pilot Campaign
+→ Review / Export / Report
 → Locked Dataset
 ```
 
@@ -240,15 +242,47 @@ docs/adr/0013-two-stage-promotion-evidence-and-visual-review.md
 
 ADR 0013 supersedes the single-bundle ordering in the main T6 design and requires a source snapshot, explicit visual policy review, then a final evidence bundle.
 
+## Toolkit Track #T7
+
+Designed, not implemented:
+
+- fixed 20-slot A/B/C/D skin-control pilot matrix
+- balanced 4/8/8 wave issue with explicit checkpoints
+- one manual generation provider profile per campaign run
+- generation work packet and safe manual handoff contract
+- hard generation/observation budgets and technical-only retry reserve
+- registered candidate replacement prohibition
+- single-slot T2–T6 advancement without new judgment authority
+- explicit T4 Provider authorization boundary
+- append-only run/slot event ledger
+- deterministic projection, resume, stop, and closeout contracts
+- all registered Gold, non-Gold, held, rejected, and failed outcomes retained
+- report/export interpretation reserved for #T8
+- split/G5/holdout/regression authority reserved for #T9
+
+The 20 primary slots are an experimental denominator, not a G4 quota. T7 does not generate images, fabricate human reviews, automatically promote candidates, or assign dataset splits.
+
+Design and decisions:
+
+```text
+docs/pilot-campaign-runner-v1.md
+docs/adr/0014-campaign-orchestration-without-new-judgment-authority.md
+docs/adr/0015-fixed-pilot-matrix-waves-and-anti-cherry-picking.md
+docs/adr/0016-manual-generation-handoff-and-single-provider-runs.md
+docs/adr/0017-frozen-run-versions-and-t8-t9-handoff.md
+```
+
 ## Not included
 
-- automatic image generation
-- batch import, observation, judgment, alignment, or promotion
+- actual automatic image generation
+- implemented batch import, observation, judgment, alignment, or promotion
+- actual pilot campaign execution
 - browser automation
 - same-person verification
 - archetype scoring
 - actual human review execution or reviewed dataset
 - automatic legal or rights judgment
+- T8 report/export implementation
 - G5 holdout lock or dataset split
 - database, API route, UI, or production integration
 
