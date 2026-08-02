@@ -11,6 +11,7 @@
 - Provider execution: none
 - Actual human judgments: none
 - G4/G5 promotion: excluded
+- Promotion review eligibility: deferred to `#T6`
 
 ## Runtime flow
 
@@ -25,6 +26,7 @@ authoritative T4 observation artifacts
 → verified T3 candidate + finalized T2 GenerationSpec
 → purpose-specific alignment
 → G2/G3 derived records
+→ T6 promotion-policy review
 ```
 
 ## Process separation
@@ -100,18 +102,27 @@ Before alignment, the stored orchestrator re-verifies:
 
 The alignment engine then selects purpose-required gate and target axes. It does not use a numeric average. A required mismatch yields `misaligned`; a required unresolved/unavailable axis yields `unverifiable`.
 
-Feature cue strength remains diagnostic and `unverifiable` in v1. `paired_skin_edit` cannot claim identity preservation and cannot become promotion-review eligible. `mixed_control_pilot` remains promotion blocked.
+Feature cue strength remains diagnostic and `unverifiable` in v1. `paired_skin_edit` cannot claim identity preservation. `mixed_control_pilot` remains outside promotion policy.
 
-Alignment verification recomputes the sorted required-axis digest, rejects duplicate axis results, requires every required axis to have a gate or target result, cross-checks required-axis verdicts against the overall verdict, and validates promotion-review eligibility constraints.
+Alignment verification recomputes the sorted required-axis digest, rejects duplicate axis results, requires every required axis to have a gate or target result, and cross-checks required-axis verdicts against the overall verdict.
+
+T5 always emits:
+
+```text
+promotionReviewEligible = false
+promotionBlockReasons includes promotion_policy_pending_t6
+```
+
+This prevents an aligned T5 artifact from being mistaken for a promotion decision before T6 validates complete candidate-policy, provenance, duplicate, licensing, and purpose-specific promotion evidence.
 
 ## Derived grades
 
 - `G2_OBSERVED`: re-verified authoritative, non-fixture T4 observation only
 - `G3_CONSENSUS_VALIDATED`: purpose-scoped required axes all have agreed blind consensus values
 - G3 does not mean the values match the generation intent
-- promotion review requires both purpose-scoped G3 and `overallVerdict = aligned`
 - alignment confirmation registers both G2 and G3 rather than creating G3 without its observation-grade source
 - grade verification recomputes the required-axis digest and checks G2/G3 scope semantics
+- G2/G3 plus aligned status are T6 inputs, not promotion approval
 - no G4/G5 command exists
 
 ## Storage
@@ -140,12 +151,13 @@ Stored relative paths are reconstructed from validated IDs and digests instead o
 3. Missing generation artifact references now fail before safe-path resolution.
 4. Architecture tests enforce that blind modules contain no purpose/spec/prompt/campaign/condition dependency.
 5. Region arrays are normalized as unordered sets before consensus comparison.
-6. Consensus status, required-axis scope, overall verdict, promotion eligibility, and G2/G3 scope are semantically checked in addition to digest verification.
+6. Consensus status, required-axis scope, overall verdict, promotion boundary, and G2/G3 scope are semantically checked in addition to digest verification.
 7. Submission and alignment manifest object paths are reconstructed from validated identifiers and digests.
 8. Timestamp-excluded identities preserve the first valid stored artifact on idempotent replay.
 9. Unreviewable submissions are prohibited from retaining observed axis claims.
 10. A sealed consensus originally could reach the pure alignment function without reloading its T4 source artifacts. The CLI and public package API now use only `prepareStoredJudgmentAlignment()`, which re-verifies T4 authority and returns both G2 and G3 sources.
 11. Raw assignment, consensus, intent-resolution, alignment, and grade-derivation constructors were removed from the package root export; only authority-checked orchestration and integrity readers remain public.
+12. T3 candidate identity does not yet cryptographically cover every policy-relevant hint. T5 therefore cannot mark any result promotion-review eligible; that authority is explicitly deferred to T6.
 
 ## Verification scope
 
@@ -156,7 +168,8 @@ Stored relative paths are reconstructed from validated IDs and digests instead o
 - region-order equivalence
 - A/B/C/D skin alignment cases
 - feature strength limitation
-- visible-mark promotion hold
+- visible-mark hold preservation
+- T6 promotion-boundary enforcement
 - manifest-last registration and orphan-claim blocking
 - path-redirection rejection
 - semantic idempotency across timestamp changes
