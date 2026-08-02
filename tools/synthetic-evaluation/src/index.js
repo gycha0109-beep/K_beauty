@@ -90,3 +90,30 @@ export {
 export { verifyCampaignReviewPackageIntegrity } from "./reporting/review-package.js";
 export { verifyCampaignReportIntegrity, verifyReportReviewSubmissionIntegrity, verifyReportRevisionLinkIntegrity } from "./reporting/claims-report.js";
 export { verifyCampaignExportManifestIntegrity } from "./reporting/render.js";
+
+export {
+  lockAndActivateDataset,
+  materializeHoldoutReferences,
+  preflightDatasetLock,
+  verifyCurrentDataset
+} from "./dataset/orchestrator.js";
+export {
+  activateRegressionBaseline,
+  preflightRegressionBaseline,
+  verifyRegressionBaselineIntegrity,
+  verifyRegressionBaselineReviewIntegrity
+} from "./dataset/baseline.js";
+export { verifyDatasetSourceSnapshotIntegrity } from "./dataset/source.js";
+export { verifyLeakageGraphIntegrity } from "./dataset/leakage.js";
+export { verifyDatasetExposureClaimIntegrity } from "./dataset/exposure.js";
+export { verifyDatasetSplitAssignmentIntegrity, verifyDatasetSplitPlanIntegrity } from "./dataset/split.js";
+export { verifyDatasetLockReviewIntegrity } from "./dataset/review.js";
+export {
+  verifyDatasetActivationManifestIntegrity,
+  verifyDatasetLockBasisIntegrity,
+  verifyDatasetMemberIntegrity,
+  verifyDatasetVersionManifestIntegrity,
+  verifyDatasetVersionStatusEventIntegrity,
+  verifyG5HoldoutRecordIntegrity,
+  verifyG5StatusEventIntegrity
+} from "./dataset/lock.js";
