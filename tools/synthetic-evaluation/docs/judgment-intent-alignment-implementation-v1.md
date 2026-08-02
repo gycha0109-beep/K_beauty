@@ -21,6 +21,7 @@ authoritative T4 observation artifacts
 → immutable submission
 → intent-free per-axis consensus
 → sealed complete or partial consensus
+→ T4 authority re-verification
 → verified T3 candidate + finalized T2 GenerationSpec
 → purpose-specific alignment
 → G2/G3 derived records
@@ -47,13 +48,14 @@ Intent-aware runtime modules:
 ```text
 intent-resolver.js
 read-intent-artifacts.js
+stored-alignment.js
 alignment.js
 grades.js
 alignment-registrar.js
 cli/align.js
 ```
 
-The intent-aware process runs only after a sealed consensus artifact has been read and verified.
+The intent-aware process runs only after a sealed consensus artifact has been read and verified. `stored-alignment.js` then reloads the referenced T4 run and observation object, verifies their digests and authority, reconstructs the canonical blind handoff, and compares it with the sealed consensus before alignment or grade derivation.
 
 ## Implemented contracts
 
@@ -84,10 +86,13 @@ Unknown keys, free-text authoritative notes, direct purpose/condition fields, in
 
 ## Alignment
 
-The intent resolver verifies:
+Before alignment, the stored orchestrator re-verifies:
 
+- T4 run manifest and observation object integrity
+- `authority = observed_image`
+- `execution.mode = provider_bounded`
+- candidate ID, observation run ID, observation digest, and canonical image SHA linkage
 - candidate schema/state and candidate identity digest
-- canonical image SHA reference
 - finalized GenerationSpec identity and digest
 - compiled prompt digest and spec reference
 - Provider profile reference
@@ -101,10 +106,11 @@ Alignment verification recomputes the sorted required-axis digest, rejects dupli
 
 ## Derived grades
 
-- `G2_OBSERVED`: authoritative, non-fixture T4 observation only
+- `G2_OBSERVED`: re-verified authoritative, non-fixture T4 observation only
 - `G3_CONSENSUS_VALIDATED`: purpose-scoped required axes all have agreed blind consensus values
 - G3 does not mean the values match the generation intent
 - promotion review requires both purpose-scoped G3 and `overallVerdict = aligned`
+- alignment confirmation registers both G2 and G3 rather than creating G3 without its observation-grade source
 - grade verification recomputes the required-axis digest and checks G2/G3 scope semantics
 - no G4/G5 command exists
 
@@ -138,6 +144,8 @@ Stored relative paths are reconstructed from validated IDs and digests instead o
 7. Submission and alignment manifest object paths are reconstructed from validated identifiers and digests.
 8. Timestamp-excluded identities preserve the first valid stored artifact on idempotent replay.
 9. Unreviewable submissions are prohibited from retaining observed axis claims.
+10. A sealed consensus originally could reach the pure alignment function without reloading its T4 source artifacts. The CLI and public package API now use only `prepareStoredJudgmentAlignment()`, which re-verifies T4 authority and returns both G2 and G3 sources.
+11. Raw assignment, consensus, intent-resolution, alignment, and grade-derivation constructors were removed from the package root export; only authority-checked orchestration and integrity readers remain public.
 
 ## Verification scope
 
@@ -153,5 +161,7 @@ Stored relative paths are reconstructed from validated IDs and digests instead o
 - path-redirection rejection
 - semantic idempotency across timestamp changes
 - recomputed-digest semantic tamper rejection
+- end-to-end stored T4 authority re-verification before alignment and G2/G3 derivation
+- public API authority boundary
 - production dependency boundary
 - no Provider, browser, DB, shell, batch, G4, or G5 execution path
