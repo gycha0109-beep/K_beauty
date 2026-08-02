@@ -65,6 +65,7 @@ export async function appendDatasetVersionStatus({ dataRoot, datasetLineageId, d
   catch (error) { return failure(error?.code || "status_chain_invalid", "datasetStatus"); }
   const projected = projectLinearStatus(events, verifyDatasetVersionStatusEventIntegrity, "datasetVersionDigest");
   if (!projected.ok) return projected;
+  if (!projected.active) return failure("dataset_status_already_inactive", "datasetStatus", projected.latestEvent.event);
   const created = createDatasetEvent({ datasetVersionDigest: bundle.version.datasetVersionDigest, event, reasonCodes, predecessorEventDigest: projected.latestEvent.eventDigest, recordedAt });
   if (!created.ok) return created;
   const successor = { schemaVersion: "dataset-status-successor-claim-v1", datasetVersionDigest: bundle.version.datasetVersionDigest, predecessorEventDigest: projected.latestEvent.eventDigest, successorEventDigest: created.event.eventDigest };
@@ -83,6 +84,7 @@ export async function appendG5Status({ dataRoot, datasetLineageId, datasetVersio
   catch (error) { return failure(error?.code || "status_chain_invalid", "g5Status"); }
   const projected = projectLinearStatus(events, verifyG5StatusEventIntegrity, "g5GradeRecordDigest");
   if (!projected.ok) return projected;
+  if (!projected.active) return failure("g5_status_already_inactive", "g5Status", projected.latestEvent.event);
   const created = createG5Event({ g5GradeRecordDigest, event, reasonCodes, predecessorEventDigest: projected.latestEvent.eventDigest, recordedAt });
   if (!created.ok) return created;
   const successor = { schemaVersion: "g5-status-successor-claim-v1", g5GradeRecordDigest, predecessorEventDigest: projected.latestEvent.eventDigest, successorEventDigest: created.event.eventDigest };
