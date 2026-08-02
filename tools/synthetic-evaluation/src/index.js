@@ -74,3 +74,5 @@ export {
   verifyPromotionDecisionIntegrity,
   verifyPromotionStatusEventIntegrity
 } from "./promotion/decision.js";
+
+export * from "./campaign/index.js";
