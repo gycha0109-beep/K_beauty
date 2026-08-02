@@ -1,5 +1,5 @@
 import { readJson, writeExclusiveJson, writeSemanticAddressedJson } from "../judgment/artifact-store.js";
-import { stableStringify } from "../shared/canonical-json.js";
+import { sha256Hex, stableStringify } from "../shared/canonical-json.js";
 import { verifyLeakageGraphIntegrity } from "./leakage.js";
 import {
   verifyDatasetActivationManifestIntegrity,
@@ -17,6 +17,12 @@ import { verifyDatasetSplitAssignmentIntegrity, verifyDatasetSplitPlanIntegrity 
 import { datasetStorageLayout, nativeDatasetPath } from "./storage-layout.js";
 
 function failure(code, path, detail = null) { return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) }); }
+function exactKeys(value, keys) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const expected = [...keys].sort();
+  return actual.length === expected.length && actual.every((key, index) => key === expected[index]);
+}
 
 async function storeObject(dataRoot, relativePath, value, verifier, digestKey) {
   const result = await writeSemanticAddressedJson(nativeDatasetPath(dataRoot, relativePath), value, (existing, proposed) => verifier(existing) && existing[digestKey] === proposed[digestKey]);
@@ -38,16 +44,36 @@ async function claim(dataRoot, relativePath, value, code) {
   }
 }
 
-function verifyMemberIndex(value, members) {
-  if (!value || value.schemaVersion !== "dataset-member-index-v1" || !Array.isArray(value.memberDigests) || typeof value.memberIndexDigest !== "string") return false;
-  return stableStringify(value.memberDigests) === stableStringify(members.map((member) => member.memberDigest).sort());
+export function verifyMemberIndex(value, members = null) {
+  if (!exactKeys(value, ["schemaVersion", "memberDigests", "countsBySplit", "memberIndexDigest"]) || value.schemaVersion !== "dataset-member-index-v1" || !Array.isArray(value.memberDigests) || new Set(value.memberDigests).size !== value.memberDigests.length || stableStringify(value.memberDigests) !== stableStringify([...value.memberDigests].sort()) || !exactKeys(value.countsBySplit, ["train", "development", "validation", "test", "holdout"]) || !Object.values(value.countsBySplit).every((count) => Number.isInteger(count) && count >= 0)) return false;
+  const semantic = { schemaVersion: value.schemaVersion, memberDigests: value.memberDigests, countsBySplit: value.countsBySplit };
+  if (value.memberIndexDigest !== sha256Hex(stableStringify(semantic)) || Object.values(value.countsBySplit).reduce((sum, count) => sum + count, 0) !== value.memberDigests.length) return false;
+  if (!members) return true;
+  const expectedDigests = members.map((member) => member.memberDigest).sort();
+  const expectedCounts = Object.fromEntries(["train", "development", "validation", "test", "holdout"].map((split) => [split, members.filter((member) => member.split === split).length]));
+  return stableStringify(value.memberDigests) === stableStringify(expectedDigests) && stableStringify(value.countsBySplit) === stableStringify(expectedCounts);
 }
-function verifyExposureIndex(value, claims) { return value?.schemaVersion === "dataset-exposure-index-v1" && stableStringify(value.claimDigests) === stableStringify(claims.map((claim) => claim.claimDigest)); }
-function verifyG5Index(value, records) { return value?.schemaVersion === "g5-index-v1" && stableStringify(value.gradeRecordDigests) === stableStringify(records.map((record) => record.gradeRecordDigest)); }
-function verifyG5StatusIndex(value, events) { return value?.schemaVersion === "g5-status-head-index-v1" && stableStringify(value.entries) === stableStringify(events.map((event) => ({ g5GradeRecordDigest: event.g5GradeRecordDigest, statusHeadDigest: event.eventDigest }))); }
+export function verifyExposureIndex(value, claims = null) {
+  if (!exactKeys(value, ["schemaVersion", "claimDigests", "exposureClaimIndexDigest"]) || value.schemaVersion !== "dataset-exposure-index-v1" || !Array.isArray(value.claimDigests) || new Set(value.claimDigests).size !== value.claimDigests.length || stableStringify(value.claimDigests) !== stableStringify([...value.claimDigests].sort()) || value.exposureClaimIndexDigest !== sha256Hex(stableStringify(value.claimDigests))) return false;
+  return !claims || stableStringify(value.claimDigests) === stableStringify(claims.map((claim) => claim.claimDigest).sort());
+}
+export function verifyG5Index(value, records = null) {
+  if (!exactKeys(value, ["schemaVersion", "gradeRecordDigests", "g5IndexDigest"]) || value.schemaVersion !== "g5-index-v1" || !Array.isArray(value.gradeRecordDigests) || new Set(value.gradeRecordDigests).size !== value.gradeRecordDigests.length || stableStringify(value.gradeRecordDigests) !== stableStringify([...value.gradeRecordDigests].sort()) || value.g5IndexDigest !== sha256Hex(stableStringify(value.gradeRecordDigests))) return false;
+  return !records || stableStringify(value.gradeRecordDigests) === stableStringify(records.map((record) => record.gradeRecordDigest).sort());
+}
+export function verifyG5StatusIndex(value, events = null) {
+  if (!exactKeys(value, ["schemaVersion", "entries", "g5StatusHeadIndexDigest"]) || value.schemaVersion !== "g5-status-head-index-v1" || !Array.isArray(value.entries) || !value.entries.every((entry) => exactKeys(entry, ["g5GradeRecordDigest", "statusHeadDigest"]) && /^[a-f0-9]{64}$/.test(entry.g5GradeRecordDigest || "") && /^[a-f0-9]{64}$/.test(entry.statusHeadDigest || "")) || new Set(value.entries.map((entry) => entry.g5GradeRecordDigest)).size !== value.entries.length) return false;
+  const expectedDigest = sha256Hex(stableStringify(value.entries.map((entry) => [entry.g5GradeRecordDigest, entry.statusHeadDigest])));
+  if (value.g5StatusHeadIndexDigest !== expectedDigest) return false;
+  return !events || stableStringify(value.entries) === stableStringify(events.map((event) => ({ g5GradeRecordDigest: event.g5GradeRecordDigest, statusHeadDigest: event.eventDigest })));
+}
+export function verifyDatasetStatusIndex(value, versionDigest = null, headDigest = null) {
+  if (!exactKeys(value, ["schemaVersion", "datasetVersionDigest", "statusHeadDigest"]) || value.schemaVersion !== "dataset-status-head-index-v1" || !/^[a-f0-9]{64}$/.test(value.datasetVersionDigest || "") || !/^[a-f0-9]{64}$/.test(value.statusHeadDigest || "")) return false;
+  return (!versionDigest || value.datasetVersionDigest === versionDigest) && (!headDigest || value.statusHeadDigest === headDigest);
+}
 
 export async function registerLockedDataset({ dataRoot, sourceSnapshot, leakageGraph, splitPlan, assignment, lockReview, artifacts }) {
-  if (!verifyDatasetSourceSnapshotIntegrity(sourceSnapshot) || !verifyLeakageGraphIntegrity(leakageGraph) || !verifyDatasetSplitPlanIntegrity(splitPlan) || !verifyDatasetSplitAssignmentIntegrity(assignment) || !verifyDatasetLockReviewIntegrity(lockReview) || !artifacts?.members?.every(verifyDatasetMemberIntegrity) || !verifyDatasetLockBasisIntegrity(artifacts.lockBasis) || !verifyDatasetVersionManifestIntegrity(artifacts.datasetVersion) || artifacts.datasetVersion.lockBasisDigest !== artifacts.lockBasis.lockBasisDigest) return failure("dataset_lock_invalid", "artifacts");
+  if (!verifyDatasetSourceSnapshotIntegrity(sourceSnapshot) || !verifyLeakageGraphIntegrity(leakageGraph) || !verifyDatasetSplitPlanIntegrity(splitPlan) || !verifyDatasetSplitAssignmentIntegrity(assignment) || !verifyDatasetLockReviewIntegrity(lockReview) || !artifacts?.members?.every(verifyDatasetMemberIntegrity) || !verifyDatasetLockBasisIntegrity(artifacts.lockBasis) || !verifyDatasetVersionManifestIntegrity(artifacts.datasetVersion) || artifacts.datasetVersion.lockBasisDigest !== artifacts.lockBasis.lockBasisDigest || !verifyMemberIndex(artifacts.memberIndex, artifacts.members)) return failure("dataset_lock_invalid", "artifacts");
   const version = artifacts.datasetVersion;
   const lineageClaim = {
     schemaVersion: "dataset-lineage-successor-claim-v1",
@@ -74,7 +100,7 @@ export async function registerLockedDataset({ dataRoot, sourceSnapshot, leakageG
 
 export async function registerDatasetActivation({ dataRoot, artifacts }) {
   const version = artifacts?.datasetVersion;
-  if (!verifyDatasetVersionManifestIntegrity(version) || !artifacts.exposureClaims.every(verifyDatasetExposureClaimIntegrity) || !artifacts.g5Records.every(verifyG5HoldoutRecordIntegrity) || !verifyDatasetVersionStatusEventIntegrity(artifacts.datasetStatusEvent) || !artifacts.g5StatusEvents.every(verifyG5StatusEventIntegrity) || !verifyDatasetActivationManifestIntegrity(artifacts.activation) || artifacts.activation.datasetVersionDigest !== version.datasetVersionDigest) return failure("dataset_activation_invalid", "artifacts");
+  if (!verifyDatasetVersionManifestIntegrity(version) || !artifacts.exposureClaims.every(verifyDatasetExposureClaimIntegrity) || !artifacts.g5Records.every(verifyG5HoldoutRecordIntegrity) || !verifyDatasetVersionStatusEventIntegrity(artifacts.datasetStatusEvent) || !artifacts.g5StatusEvents.every(verifyG5StatusEventIntegrity) || !verifyDatasetActivationManifestIntegrity(artifacts.activation) || artifacts.activation.datasetVersionDigest !== version.datasetVersionDigest || !verifyExposureIndex(artifacts.exposureClaimIndex, artifacts.exposureClaims) || !verifyG5Index(artifacts.g5Index, artifacts.g5Records) || !verifyG5StatusIndex(artifacts.g5StatusHeadIndex, artifacts.g5StatusEvents)) return failure("dataset_activation_invalid", "artifacts");
   const writes = [];
   try {
     for (const exposure of artifacts.exposureClaims) {
@@ -94,7 +120,8 @@ export async function registerDatasetActivation({ dataRoot, artifacts }) {
     writes.push(await storeObject(dataRoot, datasetStorageLayout.exposureIndex(version.datasetLineageId, version.datasetVersionId), artifacts.exposureClaimIndex, (value) => verifyExposureIndex(value, artifacts.exposureClaims), "exposureClaimIndexDigest"));
     writes.push(await storeObject(dataRoot, datasetStorageLayout.g5Index(version.datasetLineageId, version.datasetVersionId), artifacts.g5Index, (value) => verifyG5Index(value, artifacts.g5Records), "g5IndexDigest"));
     writes.push(await storeObject(dataRoot, datasetStorageLayout.g5StatusIndex(version.datasetLineageId, version.datasetVersionId), artifacts.g5StatusHeadIndex, (value) => verifyG5StatusIndex(value, artifacts.g5StatusEvents), "g5StatusHeadIndexDigest"));
-    writes.push(await storeObject(dataRoot, datasetStorageLayout.datasetStatusIndex(version.datasetLineageId, version.datasetVersionId), { schemaVersion: "dataset-status-head-index-v1", datasetVersionDigest: version.datasetVersionDigest, statusHeadDigest: artifacts.datasetStatusEvent.eventDigest }, (value) => value?.datasetVersionDigest === version.datasetVersionDigest && value?.statusHeadDigest === artifacts.datasetStatusEvent.eventDigest, "statusHeadDigest"));
+    const statusIndex = { schemaVersion: "dataset-status-head-index-v1", datasetVersionDigest: version.datasetVersionDigest, statusHeadDigest: artifacts.datasetStatusEvent.eventDigest };
+    writes.push(await storeObject(dataRoot, datasetStorageLayout.datasetStatusIndex(version.datasetLineageId, version.datasetVersionId), statusIndex, (value) => verifyDatasetStatusIndex(value, version.datasetVersionDigest, artifacts.datasetStatusEvent.eventDigest), "statusHeadDigest"));
     const activationClaim = { schemaVersion: "dataset-activation-claim-v1", datasetVersionDigest: version.datasetVersionDigest, activationDigest: artifacts.activation.activationDigest };
     writes.push(await claim(dataRoot, datasetStorageLayout.activationClaim(version.datasetLineageId, version.datasetVersionId), activationClaim, "dataset_activation_conflict"));
     writes.push(await storeObject(dataRoot, datasetStorageLayout.activation(artifacts.activation.activationDigest), artifacts.activation, verifyDatasetActivationManifestIntegrity, "activationDigest"));
@@ -111,6 +138,8 @@ export async function readDatasetVersionBundle(dataRoot, datasetLineageId, datas
     const exposureIndex = await readJson(nativeDatasetPath(dataRoot, datasetStorageLayout.exposureIndex(datasetLineageId, datasetVersionId)));
     const g5Index = await readJson(nativeDatasetPath(dataRoot, datasetStorageLayout.g5Index(datasetLineageId, datasetVersionId)));
     const g5StatusIndex = await readJson(nativeDatasetPath(dataRoot, datasetStorageLayout.g5StatusIndex(datasetLineageId, datasetVersionId)));
-    return Object.freeze({ ok: true, version, activation, memberIndex, exposureIndex, g5Index, g5StatusIndex });
+    const datasetStatusIndex = await readJson(nativeDatasetPath(dataRoot, datasetStorageLayout.datasetStatusIndex(datasetLineageId, datasetVersionId)));
+    if (!verifyDatasetVersionManifestIntegrity(version) || !verifyDatasetActivationManifestIntegrity(activation) || !verifyMemberIndex(memberIndex) || !verifyExposureIndex(exposureIndex) || !verifyG5Index(g5Index) || !verifyG5StatusIndex(g5StatusIndex) || !verifyDatasetStatusIndex(datasetStatusIndex, version.datasetVersionDigest, activation.datasetStatusHeadDigest)) return failure("dataset_storage_invalid", "datasetBundle", "index_integrity");
+    return Object.freeze({ ok: true, version, activation, memberIndex, exposureIndex, g5Index, g5StatusIndex, datasetStatusIndex });
   } catch (error) { return failure(error?.code === "ENOENT" ? "locked_incomplete" : "dataset_storage_invalid", "datasetBundle"); }
 }
