@@ -35,7 +35,7 @@ const PROMOTION_OUTCOMES = new Set([
   "promoted_g4"
 ]);
 
-export async function makeFakeSource({ dataRoot = null, providerProfileId = "gemini-image-manual-v1", comparisonGroupId = null, runNonce = "report-run-001", withCandidates = false } = {}) {
+export async function makeFakeSource({ dataRoot = null, providerProfileId = "gemini-image-manual-v1", comparisonGroupId = null, runNonce = "report-run-001" } = {}) {
   const plan = makePlan({ providerProfileId, comparisonGroupId });
   const runResult = makeRun(plan, { runNonce });
   const run = runResult.run;
@@ -58,7 +58,7 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
   for (let index = 0; index < slots.length; index += 1) {
     const slot = slots[index];
     const terminalOutcome = terminalCycle[index % terminalCycle.length];
-    const candidatePresent = CANDIDATE_OUTCOMES.has(terminalOutcome) || (withCandidates && index < 4);
+    const candidatePresent = CANDIDATE_OUTCOMES.has(terminalOutcome);
     let candidateId = null;
     let candidateDigest = null;
     let canonicalSha256 = null;
