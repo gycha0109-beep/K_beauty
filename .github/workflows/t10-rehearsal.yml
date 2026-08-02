@@ -34,7 +34,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: t10-rehearsal-node24
-          path: t10-rehearsal-report-node24.json
+          path: tools/synthetic-evaluation/t10-rehearsal-report-node24.json
           if-no-files-found: error
 
   node20-full:
@@ -55,5 +55,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: t10-rehearsal-node20
-          path: t10-rehearsal-report-node20.json
+          path: tools/synthetic-evaluation/t10-rehearsal-report-node20.json
           if-no-files-found: error
