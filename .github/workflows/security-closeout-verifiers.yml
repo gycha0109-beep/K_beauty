@@ -5,34 +5,19 @@ on:
     branches:
       - feature/premium-beta-flow
       - main
-    types:
-      - edited
-      - reopened
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - ".codex/**"
   workflow_dispatch:
-    inputs:
-      base_ref:
-        description: Base branch or ref used for diff hygiene
-        required: false
-        default: main
 
 concurrency:
-  group: security-closeout-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
   verify:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.body || '', '<!-- run-full-validation -->')
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,15 +42,7 @@ jobs:
       - name: Production build
         run: npm run build
       - name: Diff hygiene
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
-          else
-            git fetch --no-tags origin "${{ inputs.base_ref }}"
-            git diff --check "origin/${{ inputs.base_ref }}...HEAD"
-          fi
+        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
       - name: Upload verifier evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,4 +50,4 @@ jobs:
           name: security-closeout-verifier-evidence
           path: tmp/security-closeout-verifier-suite.json
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
