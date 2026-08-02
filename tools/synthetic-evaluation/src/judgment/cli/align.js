@@ -1,12 +1,9 @@
 #!/usr/bin/env node
-import { alignJudgmentToIntent } from "../alignment.js";
-import { deriveG3ConsensusRecord } from "../grades.js";
-import { readAndResolveCandidateIntent } from "../read-intent-artifacts.js";
-import { readJudgmentConsensus } from "../blind-registrar.js";
 import {
   registerDerivedGradeRecord,
   registerIntentAlignment
 } from "../alignment-registrar.js";
+import { prepareStoredJudgmentAlignment } from "../stored-alignment.js";
 import { fail, parseArgs, printResult, resolveDataRoot } from "./helpers.js";
 
 async function main() {
@@ -17,46 +14,35 @@ async function main() {
   const preflight = args.flags.has("--preflight");
   const confirm = args.flags.has("--confirm");
   if (!candidateId || !consensusDigest || preflight === confirm) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
-  const [consensus, artifacts] = await Promise.all([
-    readJudgmentConsensus(dataRoot, candidateId, consensusDigest),
-    readAndResolveCandidateIntent({ dataRoot, candidateId })
-  ]);
-  if (!artifacts.ok) {
-    printResult(artifacts);
-    process.exitCode = 1;
-    return;
-  }
-  const aligned = alignJudgmentToIntent({
-    consensus,
-    candidateManifest: artifacts.candidateManifest,
-    finalizedSpec: artifacts.finalizedSpec,
-    compiledPrompt: artifacts.compiledPrompt
-  });
-  if (!aligned.ok) {
-    printResult(aligned);
-    process.exitCode = 1;
-    return;
-  }
-  const g3 = deriveG3ConsensusRecord({ consensus, alignment: aligned.alignment });
-  if (!g3.ok) {
-    printResult(g3);
+
+  const prepared = await prepareStoredJudgmentAlignment({ dataRoot, candidateId, consensusDigest });
+  if (!prepared.ok) {
+    printResult(prepared);
     process.exitCode = 1;
     return;
   }
   if (preflight) {
     printResult({
       ok: true,
-      proposedAlignmentId: aligned.alignment.alignmentId,
-      overallVerdict: aligned.alignment.overallVerdict,
-      promotionReviewEligible: aligned.alignment.promotionReviewEligible,
-      proposedGradeRecordId: g3.gradeRecord.gradeRecordId,
+      proposedAlignmentId: prepared.alignment.alignmentId,
+      overallVerdict: prepared.alignment.overallVerdict,
+      promotionReviewEligible: prepared.alignment.promotionReviewEligible,
+      proposedG2RecordId: prepared.g2.gradeRecordId,
+      proposedG3RecordId: prepared.g3.gradeRecordId,
       writesPerformed: 0
     });
     return;
   }
-  const alignmentRegistration = await registerIntentAlignment({ dataRoot, alignment: aligned.alignment });
-  const gradeRegistration = await registerDerivedGradeRecord({ dataRoot, gradeRecord: g3.gradeRecord });
-  printResult({ ok: true, alignment: alignmentRegistration, grade: gradeRegistration });
+  const alignmentRegistration = await registerIntentAlignment({ dataRoot, alignment: prepared.alignment });
+  const [g2Registration, g3Registration] = await Promise.all([
+    registerDerivedGradeRecord({ dataRoot, gradeRecord: prepared.g2 }),
+    registerDerivedGradeRecord({ dataRoot, gradeRecord: prepared.g3 })
+  ]);
+  printResult({
+    ok: true,
+    alignment: alignmentRegistration,
+    grades: { g2: g2Registration, g3: g3Registration }
+  });
 }
 
 main().catch(fail);
