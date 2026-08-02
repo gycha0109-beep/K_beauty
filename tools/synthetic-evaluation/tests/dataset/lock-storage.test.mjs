@@ -14,6 +14,7 @@ import {
 } from "../../src/dataset/lock.js";
 import { finalizeDatasetLockReview } from "../../src/dataset/review.js";
 import { assignLeakageComponents, createDatasetSplitPlan } from "../../src/dataset/split.js";
+import { appendDatasetVersionStatus, appendG5Status } from "../../src/dataset/status.js";
 import { registerDatasetActivation, registerLockedDataset } from "../../src/dataset/storage.js";
 import { datasetStorageLayout, nativeDatasetPath } from "../../src/dataset/storage-layout.js";
 import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
@@ -32,6 +33,13 @@ function preparedCase() {
 function sealStatusEvent(value) {
   const { recordedAt, eventDigest, ...semantic } = value;
   return { ...semantic, recordedAt, eventDigest: sha256Hex(stableStringify(semantic)) };
+}
+
+async function publish(dataRoot, prepared) {
+  const locked = await registerLockedDataset({ dataRoot, sourceSnapshot: prepared.snapshot, leakageGraph: prepared.graph, splitPlan: prepared.plan, assignment: prepared.assignment, lockReview: prepared.review, artifacts: prepared.artifacts });
+  assert.equal(locked.ok, true);
+  const activated = await registerDatasetActivation({ dataRoot, artifacts: prepared.artifacts });
+  assert.equal(activated.ok, true);
 }
 
 test("locked version and G5 records have separate immutable identities", () => {
@@ -71,4 +79,53 @@ test("locked manifest is published before activation manifest and registration i
   const again = await registerDatasetActivation({ dataRoot, artifacts: prepared.artifacts });
   assert.equal(again.ok, true);
   assert.equal(again.state, "existing_active");
+});
+
+test("dataset and G5 deactivation are append-only and cannot be appended twice", async () => {
+  const dataRoot = await mkdtemp(path.join(os.tmpdir(), "t9-status-"));
+  const prepared = preparedCase();
+  await publish(dataRoot, prepared);
+  const version = prepared.artifacts.datasetVersion;
+  const datasetStatus = await appendDatasetVersionStatus({
+    dataRoot,
+    datasetLineageId: version.datasetLineageId,
+    datasetVersionId: version.datasetVersionId,
+    event: "invalidated",
+    reasonCodes: ["cross_split_leakage_conflict"],
+    recordedAt: "2026-08-03T04:00:00.000Z"
+  });
+  assert.equal(datasetStatus.ok, true);
+  const secondDatasetStatus = await appendDatasetVersionStatus({
+    dataRoot,
+    datasetLineageId: version.datasetLineageId,
+    datasetVersionId: version.datasetVersionId,
+    event: "retired",
+    reasonCodes: ["manual_retirement"],
+    recordedAt: "2026-08-03T04:01:00.000Z"
+  });
+  assert.equal(secondDatasetStatus.ok, false);
+  assert.equal(secondDatasetStatus.errors[0].code, "dataset_status_already_inactive");
+
+  const g5Digest = prepared.artifacts.g5Records[0].gradeRecordDigest;
+  const g5Status = await appendG5Status({
+    dataRoot,
+    datasetLineageId: version.datasetLineageId,
+    datasetVersionId: version.datasetVersionId,
+    g5GradeRecordDigest: g5Digest,
+    event: "revoked",
+    reasonCodes: ["source_g4_revoked"],
+    recordedAt: "2026-08-03T04:02:00.000Z"
+  });
+  assert.equal(g5Status.ok, true);
+  const secondG5Status = await appendG5Status({
+    dataRoot,
+    datasetLineageId: version.datasetLineageId,
+    datasetVersionId: version.datasetVersionId,
+    g5GradeRecordDigest: g5Digest,
+    event: "superseded",
+    reasonCodes: ["new_dataset_version"],
+    recordedAt: "2026-08-03T04:03:00.000Z"
+  });
+  assert.equal(secondG5Status.ok, false);
+  assert.equal(secondG5Status.errors[0].code, "g5_status_already_inactive");
 });
