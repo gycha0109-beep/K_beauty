@@ -1,0 +1,142 @@
+name: Admin Access Foundation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/admin/**"
+      - "lib/admin/**"
+      - "lib/supabase/middleware.js"
+      - "supabase/migrations/*_admin_access_foundation.sql"
+      - "scripts/verify-admin-access-foundation.mjs"
+      - "scripts/verify-admin-access-runtime.sh"
+      - "docs/architecture/admin-access-foundation-v1.md"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/admin-access-foundation.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify admin access contracts
+        run: |
+          bash -n scripts/verify-admin-access-runtime.sh
+          npm run verify:admin-access-foundation
+
+      - name: Prepare isolated Supabase project
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf tmp/admin-access-runtime
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
+            --workdir tmp/admin-access-runtime \
+            --force
+          mkdir -p tmp/admin-access-runtime/supabase/migrations
+          cp supabase/migrations/*_admin_access_foundation.sql \
+            tmp/admin-access-runtime/supabase/migrations/
+
+      - name: Start isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir tmp/admin-access-runtime \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 160 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Replay migration and verify role matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
+            --workdir tmp/admin-access-runtime \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 160 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+          bash scripts/verify-admin-access-runtime.sh tmp/admin-access-runtime
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BASE_SHA}" && -n "${HEAD_SHA}" ]]; then
+            git fetch --no-tags --depth=1 origin "${BASE_SHA}" "${HEAD_SHA}"
+            git diff --check "${BASE_SHA}" "${HEAD_SHA}"
+          else
+            git diff --check HEAD^
+          fi
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        run: |
+          if [[ -d tmp/admin-access-runtime/supabase ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir tmp/admin-access-runtime \
+              --no-backup
+          fi
