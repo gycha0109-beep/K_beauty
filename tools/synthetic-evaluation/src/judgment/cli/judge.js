@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { prepareBlindJudgmentAssignment } from "../prepare-assignment.js";
 import { finalizeJudgmentSubmission } from "../submission.js";
-import { registerJudgmentSubmission } from "../registrar.js";
+import { registerJudgmentSubmission } from "../blind-registrar.js";
 import { fail, parseArgs, printResult, readRequestJson, resolveDataRoot } from "./helpers.js";
 
 async function main() {
