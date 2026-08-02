@@ -141,6 +141,14 @@ test("T7 runtime performs no generation Provider, browser, DB, shell, image tran
   }
 });
 
+test("T7 public and CLI stage paths use slot-bound stage registration", async () => {
+  const cli = await fs.readFile(path.resolve(testDirectory, "../src/campaign/cli/campaign.js"), "utf8");
+  const index = await fs.readFile(path.resolve(testDirectory, "../src/campaign/index.js"), "utf8");
+  assert.match(cli, /from "\.\.\/stage-registration\.js"/);
+  assert.match(index, /registerPilotStage \} from "\.\/stage-registration\.js"/);
+  assert.doesNotMatch(index, /registerPilotStage[\s\S]*from "\.\/orchestrator\.js"/);
+});
+
 test("T7 CLI exposes single-boundary orchestration and no prohibited automation command", async () => {
   const source = await fs.readFile(path.resolve(testDirectory, "../src/campaign/cli/campaign.js"), "utf8");
   assert.match(source, /--compile/);
