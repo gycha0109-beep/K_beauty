@@ -99,7 +99,7 @@ export function compilePilotCampaignPlan({
     authoredBy,
     authoredAt
   };
-  const planDigest = sha256Hex(stableStringify(value));
+  const planDigest = sha256Hex(stableStringify(planSemantic(value)));
   const plan = deepFreeze({ ...value, planDigest });
   const validation = validatePilotCampaignPlan(plan);
   return validation.ok ? Object.freeze({ ok: true, plan }) : validation;
