@@ -7,6 +7,11 @@ import {
 } from "@bejewely/face-contracts";
 import { deepFreeze, sha256Hex, stableStringify } from "../generation/canonicalize-generation-spec.js";
 import { observationStorageLayout, relativeFromDataRoot } from "./storage-layout.js";
+import {
+  computeObservationRunManifestDigest,
+  verifyObservationObjectIntegrity,
+  verifyObservationRunManifestIntegrity
+} from "./artifact-integrity.js";
 
 async function writeExclusiveJson(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
@@ -114,7 +119,7 @@ export async function registerObservationRun({
     });
   }
 
-  const run = deepFreeze({
+  const runSemantic = {
     schemaVersion: SYNTHETIC_OBSERVATION_RUN_SCHEMA_VERSION,
     runId: preflight.identity.runId,
     runDigest: preflight.identity.runDigest,
@@ -138,7 +143,7 @@ export async function registerObservationRun({
       inputTokens: telemetry?.inputTokens ?? null,
       outputTokens: telemetry?.outputTokens ?? null,
       startedAt,
-      completedAt
+      completdAt
     },
     authority: preflight.modeProfile.authority,
     outcome,
@@ -149,6 +154,10 @@ export async function registerObservationRun({
       rawProviderResponsePersisted: false
     },
     registeredAt: now().toISOString()
+  };
+  const run = deepFreeze({
+    ...runSemantic,
+    manifestDigest: computeObservationRunManifestDigest(runSemantic)
   });
 
   try {
@@ -156,6 +165,9 @@ export async function registerObservationRun({
   } catch (error) {
     if (error?.code === "EEXIST") {
       const existing = JSON.parse(await readFile(preflight.layout.manifestPath, "utf8"));
+      if (!verifyObservationRunManifestIntegrity(existing)) {
+        throw Object.assign(new Error("run_manifest_integrity_invalid"), { code: "run_manifest_integrity_invalid" });
+      }
       if (existing.runDigest !== run.runDigest) throw Object.assign(new Error("run_manifest_conflict"), { code: "run_manifest_conflict" });
       return Object.freeze({ run: existing, idempotent: true });
     }
@@ -165,8 +177,36 @@ export async function registerObservationRun({
 }
 
 export async function readObservationObject(dataRoot, observationReference) {
-  const absolutePath = path.join(dataRoot, ...observationReference.objectRelativePath.split("/"));
-  const object = JSON.parse(await readFile(absolutePath, "utf8"));
-  if (object.observationDigest !== observationReference.digest) throw new Error("observation_object_conflict");
+  if (
+    !observationReference ||
+    observationReference.schemaVersion !== SYNTHETIC_OBSERVATION_OBJECT_SCHEMA_VERSION ||
+    !/^[a-f0-9]{64}$/.test(observationReference.digest || "")
+  ) {
+    throw Object.assign(new Error("observation_reference_invalid"), { code: "observation_reference_invalid" });
+  }
+  const expectedLayout = observationStorageLayout(dataRoot, "candidate", "run", observationReference.digest);
+  const expectedRelativePath = relativeFromDataRoot(dataRoot, expectedLayout.observationObjectPath);
+  if (observationReference.objectRelativePath !== expectedRelativePath) {
+    throw Object.assign(new Error("observation_reference_invalid"), { code: "observation_reference_invalid" });
+  }
+  const object = JSON.parse(await readFile(expectedLayout.observationObjectPath, "utf8"));
+  if (
+    !verifyObservationObjectIntegrity(object) ||
+    object.observationDigest !== observationReference.digest
+  ) {
+    throw Object.assign(new Error("observation_object_integrity_invalid"), { code: "observation_object_integrity_invalid" });
+  }
   return object;
+}
+
+export async function readObservationRun(dataRoot, candidateId, runId) {
+  if (!/^cand_[a-f0-9]{24}$/.test(candidateId || "") || !/^obs_[a-f0-9]{24}$/.test(runId || "")) {
+    throw Object.assign(new Error("observation_run_reference_invalid"), { code: "observation_run_reference_invalid" });
+  }
+  const layout = observationStorageLayout(dataRoot, candidateId, runId);
+  const run = JSON.parse(await readFile(layout.manifestPath, "utf8"));
+  if (!verifyObservationRunManifestIntegrity(run) || run.candidate?.candidateId !== candidateId || run.runId !== runId) {
+    throw Object.assign(new Error("run_manifest_integrity_invalid"), { code: "run_manifest_integrity_invalid" });
+  }
+  return run;
 }
