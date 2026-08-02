@@ -7,13 +7,15 @@ import {
   closePilotCampaign,
   compileAndStorePilotCampaign,
   getPilotCampaignStatus,
-  issuePilotWave,
   nextPilotSlotAction,
   registerPilotGenerationHandoff,
-  reservePilotGenerationRetry,
+  reservePilotGenerationRetry
+} from "../orchestrator.js";
+import {
+  issuePilotWave,
   resumePilotCampaign,
   submitPilotCheckpoint
-} from "../orchestrator.js";
+} from "../safe-operations.js";
 import { registerPilotStage } from "../stage-registration.js";
 import { recoverCampaignWriterClaim } from "../storage.js";
 
