@@ -163,7 +163,7 @@ export async function readCampaignBundle(dataRoot, runId) {
   if (!verifyPilotCampaignRunIntegrity(run, plan) || run.campaignRunId !== runId) throw Object.assign(new Error("campaign_bundle_invalid:run"), { code: "campaign_bundle_invalid", detail: "run" });
   if (slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) throw Object.assign(new Error("campaign_bundle_invalid:slots"), { code: "campaign_bundle_invalid", detail: `slots:${slots.length}` });
   if (!events.every(verifyPilotCampaignEventIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:events"), { code: "campaign_bundle_invalid", detail: "events" });
-  if (!checkpoints.every(verifyPilotCheckpointApprovalIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:checkpoints"), { code: "campaign_bundle_invalid", detail: "checkpoints" });
+  if (!checkpoints.every((approval) => verifyPilotCheckpointApprovalIntegrity(approval))) throw Object.assign(new Error("campaign_bundle_invalid:checkpoints"), { code: "campaign_bundle_invalid", detail: "checkpoints" });
   if (!packets.every(verifyGenerationWorkPacketIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:packets"), { code: "campaign_bundle_invalid", detail: "packets" });
   for (const handoff of handoffs) {
     const packet = packets.find((item) => item.attemptId === handoff.attemptId && item.slotId === handoff.slotId);
