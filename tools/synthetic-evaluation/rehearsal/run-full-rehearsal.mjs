@@ -334,7 +334,7 @@ async function runEvidenceDrill(roots, failures) {
     failures.push({ id: "current_g4_revocation_detected", status: revoked.ok && projection?.ok && projection.active === false ? "passed" : "failed", detail: revoked.errors?.[0]?.code || projection?.latestEvent?.event || null });
   }
 
-  check(results.length === 17, "rehearsal_evidence_probe_count_invalid", results.length);
+  check(results.length === 18, "rehearsal_evidence_probe_count_invalid", results.length);
   return results;
 }
 
