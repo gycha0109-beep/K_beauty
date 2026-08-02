@@ -1,8 +1,13 @@
+import { readJson } from "../judgment/artifact-store.js";
+import { sha256Hex, stableStringify } from "../shared/canonical-json.js";
 import {
   createPromotionStatusEvent,
   deriveG4GradeRecord,
-  derivePromotionDecision
+  derivePromotionDecision,
+  verifyG4GradeRecordIntegrity,
+  verifyPromotionStatusEventIntegrity
 } from "./decision.js";
+import { buildPromotionKey } from "./policy.js";
 import { policyReviewPreflight } from "./preflight.js";
 import { finalizePromotionReviewSubmission } from "./promotion-review.js";
 import { registerPromotionConfirmation, registerPromotionStatusEvent } from "./registrar.js";
@@ -13,6 +18,12 @@ import {
   finalizeUsageRightsReview
 } from "./reviews.js";
 import { assemblePromotionSourceSnapshot } from "./source-snapshot.js";
+import {
+  promotionActivationClaimRelativePath,
+  promotionG4GradeRelativePath,
+  promotionStatusEventRelativePath,
+  toNativePromotionPath
+} from "./storage-layout.js";
 
 function failure(code, path, detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) });
@@ -170,13 +181,43 @@ export async function confirmPromotion(input) {
 
 export async function revokePromotion({
   dataRoot,
+  candidateId,
   promotionKey,
   gradeRecordDigest,
   reasonCodes,
   predecessorEventDigest,
   recordedAt
 }) {
-  if (!Array.isArray(reasonCodes) || reasonCodes.length === 0) return failure("promotion_status_event_invalid", "reasonCodes");
+  if (!/^cand_[a-f0-9]{24}$/.test(candidateId || "") || !Array.isArray(reasonCodes) || reasonCodes.length === 0) return failure("promotion_status_event_invalid", "revocationRequest");
+  let gradeRecord;
+  let predecessorEvent;
+  let activationClaim;
+  try {
+    gradeRecord = await readJson(toNativePromotionPath(dataRoot, promotionG4GradeRelativePath(candidateId, gradeRecordDigest)));
+    predecessorEvent = await readJson(toNativePromotionPath(dataRoot, promotionStatusEventRelativePath(promotionKey, predecessorEventDigest)));
+    activationClaim = await readJson(toNativePromotionPath(dataRoot, promotionActivationClaimRelativePath(promotionKey)));
+  } catch {
+    return failure("promotion_status_event_invalid", "storedPromotion", "missing_authoritative_source");
+  }
+  const requiredAxesDigest = sha256Hex(stableStringify([...gradeRecord.scope?.claimAxes || []].sort()));
+  const expectedPromotionKey = buildPromotionKey(candidateId, gradeRecord.scope?.purpose, requiredAxesDigest);
+  if (
+    !verifyG4GradeRecordIntegrity(gradeRecord) ||
+    gradeRecord.candidateId !== candidateId ||
+    gradeRecord.gradeRecordDigest !== gradeRecordDigest ||
+    expectedPromotionKey !== promotionKey ||
+    !verifyPromotionStatusEventIntegrity(predecessorEvent) ||
+    predecessorEvent.event !== "activated" ||
+    predecessorEvent.promotionKey !== promotionKey ||
+    predecessorEvent.gradeRecordDigest !== gradeRecordDigest ||
+    predecessorEvent.eventDigest !== predecessorEventDigest ||
+    activationClaim?.schemaVersion !== "promotion-activation-claim-v1" ||
+    activationClaim.promotionKey !== promotionKey ||
+    activationClaim.gradeRecordDigest !== gradeRecordDigest ||
+    activationClaim.activationEventDigest !== predecessorEventDigest
+  ) {
+    return failure("promotion_status_event_invalid", "storedPromotion", "source_mismatch");
+  }
   const event = createPromotionStatusEvent({
     promotionKey,
     gradeRecordDigest,
