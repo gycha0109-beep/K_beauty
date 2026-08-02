@@ -26,6 +26,13 @@ function sortedUnique(values) {
   return [...new Set(values)].sort();
 }
 
+function exactKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+}
+
 function warningsFor(item) {
   const warnings = [];
   const slot = item.projection;
@@ -146,7 +153,6 @@ function failureGroups(rows) {
 function conditionSummary(rows, runId, providerProfileId, conditionId) {
   const subset = rows.filter((row) => row.campaignRunId === runId && row.conditionId === conditionId);
   if (subset.length !== 5) throw Object.assign(new Error("report_denominator_invalid"), { code: "report_denominator_invalid" });
-  const terminals = terminalCounts(subset);
   return deepFreeze({
     campaignRunId: runId,
     providerProfileId,
@@ -158,7 +164,7 @@ function conditionSummary(rows, runId, providerProfileId, conditionId) {
     promotedG4AsOfCloseout: rate(subset.filter((row) => row.promotion.terminalOutcome === "promoted_g4").length, 5),
     generationRetries: subset.reduce((sum, row) => sum + row.generation.retries, 0),
     observationRecoveryRuns: subset.reduce((sum, row) => sum + row.observation.recoveryRunCount, 0),
-    terminalOutcomes: terminals
+    terminalOutcomes: terminalCounts(subset)
   });
 }
 
@@ -198,7 +204,9 @@ function comparisonSummary(rows, sourceRuns) {
 export function deriveCampaignMetricSet({ sourceSnapshot, rows }) {
   const runCount = sourceSnapshot.sourceRuns.length;
   const denominator = 20 * runCount;
-  if (!Array.isArray(rows) || rows.length !== denominator) return failure("report_denominator_invalid", "rows");
+  if (!Array.isArray(rows) || rows.length !== denominator || !rows.every(verifyCampaignSlotRowIntegrity)) return failure("report_denominator_invalid", "rows");
+  const runIds = sourceSnapshot.sourceRuns.map((run) => run.campaignRunId).sort();
+  if (stableStringify(sortedUnique(rows.map((row) => row.campaignRunId))) !== stableStringify(runIds) || runIds.some((runId) => rows.filter((row) => row.campaignRunId === runId).length !== 20)) return failure("report_denominator_invalid", "rows.campaignRunId");
   const stageCounts = stageNumerators(rows);
   const stageMetrics = Object.fromEntries(T8_STAGE_METRICS.map((metric) => [metric, rate(stageCounts[metric], denominator)]));
   const summaries = [];
@@ -215,7 +223,7 @@ export function deriveCampaignMetricSet({ sourceSnapshot, rows }) {
     comparison: comparisonSummary(rows, sourceSnapshot.sourceRuns)
   };
   const metricSet = deepFreeze({ ...semantic, metricSetDigest: sha256Hex(stableStringify(semantic)) });
-  return validateCampaignMetricSet(metricSet).ok
+  return verifyCampaignMetricSetSemantics(metricSet)
     ? Object.freeze({ ok: true, metricSet })
     : failure("report_metric_set_invalid", "$", "contract");
 }
@@ -259,6 +267,62 @@ export function buildCampaignEvidenceSnapshot({ sources, rows, comparisonKey = n
     : failure("report_source_snapshot_invalid", "$", "contract");
 }
 
+function validDelta(value) {
+  return exactKeys(value, ["providerA", "providerB", "countDeltaAminusB", "percentagePointDeltaAminusB"]) &&
+    Number.isInteger(value.providerA) && value.providerA >= 0 && value.providerA <= 20 &&
+    Number.isInteger(value.providerB) && value.providerB >= 0 && value.providerB <= 20 &&
+    value.countDeltaAminusB === value.providerA - value.providerB &&
+    value.percentagePointDeltaAminusB === Math.round(((value.providerA - value.providerB) / 20) * 1000) / 10;
+}
+
+function verifyComparisonSemantics(metricSet) {
+  if (metricSet.runCount === 1) return metricSet.comparison === null;
+  const comparison = metricSet.comparison;
+  if (!exactKeys(comparison, ["providerA", "providerB", "stageDeltas", "terminalDeltas", "authority", "ranking", "significance", "causalAttribution"])) return false;
+  for (const provider of [comparison.providerA, comparison.providerB]) {
+    if (!exactKeys(provider, ["campaignRunId", "providerProfileId", "denominator"]) || !/^crun_[a-f0-9]{24}$/.test(provider.campaignRunId || "") || typeof provider.providerProfileId !== "string" || provider.providerProfileId.length === 0 || provider.denominator !== 20) return false;
+  }
+  if (comparison.providerA.campaignRunId === comparison.providerB.campaignRunId || comparison.providerA.providerProfileId === comparison.providerB.providerProfileId) return false;
+  if (!exactKeys(comparison.stageDeltas, T8_STAGE_METRICS) || Object.values(comparison.stageDeltas).some((value) => !validDelta(value))) return false;
+  if (!exactKeys(comparison.terminalDeltas, PILOT_TERMINAL_OUTCOMES) || Object.values(comparison.terminalDeltas).some((value) => !validDelta(value))) return false;
+  if (comparison.authority !== "descriptive_only" || comparison.ranking !== null || comparison.significance !== null || comparison.causalAttribution !== null) return false;
+  const summaryRuns = sortedUnique(metricSet.conditionSummaries.map((summary) => summary.campaignRunId));
+  if (stableStringify(summaryRuns) !== stableStringify([comparison.providerA.campaignRunId, comparison.providerB.campaignRunId].sort())) return false;
+  return true;
+}
+
+function verifyCampaignMetricSetSemantics(metricSet) {
+  if (!validateCampaignMetricSet(metricSet).ok) return false;
+  const denominator = 20 * metricSet.runCount;
+  const stage = Object.fromEntries(Object.entries(metricSet.stageMetrics).map(([key, value]) => [key, value.numerator]));
+  if (!(stage.issued_primary_slots >= stage.asset_ready_handoffs && stage.asset_ready_handoffs >= stage.registered_candidates && stage.registered_candidates >= stage.authoritative_observations && stage.authoritative_observations >= stage.valid_ineligible && stage.authoritative_observations >= stage.sealed_consensus && stage.sealed_consensus >= stage.alignment_records && stage.alignment_records >= stage.promotion_decisions && stage.promotion_decisions >= stage.promoted_g4_as_of_closeout)) return false;
+  if (Object.values(metricSet.terminalOutcomes).reduce((sum, value) => sum + value, 0) !== denominator) return false;
+  const terminalFromConditions = Object.fromEntries(PILOT_TERMINAL_OUTCOMES.map((outcome) => [outcome, metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.terminalOutcomes[outcome], 0)]));
+  if (stableStringify(terminalFromConditions) !== stableStringify(metricSet.terminalOutcomes)) return false;
+  const uniqueConditionKeys = new Set(metricSet.conditionSummaries.map((summary) => `${summary.campaignRunId}:${summary.conditionId}`));
+  if (uniqueConditionKeys.size !== 4 * metricSet.runCount) return false;
+  const aggregate = {
+    registered_candidates: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.registeredCandidates.numerator, 0),
+    authoritative_observations: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.authoritativeObservations.numerator, 0),
+    valid_ineligible: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.validIneligible.numerator, 0),
+    promoted_g4_as_of_closeout: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.promotedG4AsOfCloseout.numerator, 0)
+  };
+  for (const [key, value] of Object.entries(aggregate)) if (stage[key] !== value) return false;
+  const expectedFailureGroups = {
+    generation_technical: metricSet.terminalOutcomes.generation_failed_no_asset,
+    candidate_import_technical: metricSet.terminalOutcomes.candidate_import_failed,
+    observation_valid_ineligible: metricSet.terminalOutcomes.observation_valid_ineligible,
+    observation_technical: metricSet.terminalOutcomes.observation_failed,
+    judgment_incomplete: metricSet.terminalOutcomes.judgment_incomplete,
+    promotion_non_gold: metricSet.terminalOutcomes.retained_g3_negative_control,
+    promotion_hold: metricSet.terminalOutcomes.promotion_held,
+    promotion_reject: metricSet.terminalOutcomes.promotion_rejected,
+    campaign_cancelled: metricSet.terminalOutcomes.cancelled_budget_exhausted + metricSet.terminalOutcomes.cancelled_campaign_stop + metricSet.terminalOutcomes.cancelled_operator
+  };
+  if (stableStringify(expectedFailureGroups) !== stableStringify(metricSet.failureGroups)) return false;
+  return verifyComparisonSemantics(metricSet);
+}
+
 export function verifyCampaignSlotRowIntegrity(row) {
   if (!validateCampaignSlotEvidenceRow(row).ok) return false;
   return row.rowDigest === semanticDigest(row, ["rowDigest"]);
@@ -270,6 +334,6 @@ export function verifyCampaignEvidenceSnapshotIntegrity(snapshot) {
 }
 
 export function verifyCampaignMetricSetIntegrity(metricSet) {
-  if (!validateCampaignMetricSet(metricSet).ok) return false;
+  if (!verifyCampaignMetricSetSemantics(metricSet)) return false;
   return metricSet.metricSetDigest === semanticDigest(metricSet, ["metricSetDigest"]);
 }
