@@ -5,7 +5,7 @@ import {
 } from "../shared/canonical-json.js";
 import { buildJudgmentConsensus, verifyJudgmentConsensusIntegrity } from "./consensus.js";
 import { buildJudgmentExecutionClaim, finalizeJudgmentSubmission, verifyJudgmentSubmissionIntegrity } from "./submission.js";
-import { readJson, writeContentAddressedJson, writeExclusiveJson } from "./artifact-store.js";
+import { readJson, writeContentAddressedJson, writeExclusiveJson, writeSemanticAddressedJson } from "./artifact-store.js";
 import {
   judgmentClaimRelativePath,
   judgmentConsensusRelativePath,
@@ -14,14 +14,36 @@ import {
   toNativePath
 } from "./storage-layout.js";
 
+const MANIFEST_KEYS = Object.freeze([
+  "schemaVersion",
+  "assignmentId",
+  "assignmentDigest",
+  "candidateId",
+  "observationDigest",
+  "judgeId",
+  "submissionDigest",
+  "objectRelativePath",
+  "registeredAt",
+  "manifestDigest"
+]);
+
+function exactKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+}
+
 function submissionManifestSemantic(manifest) {
   const { registeredAt, manifestDigest, ...semantic } = manifest;
   return semantic;
 }
 
 function verifySubmissionManifest(manifest) {
-  if (!manifest || manifest.schemaVersion !== "judgment-submission-manifest-v1" || !/^[a-f0-9]{64}$/.test(manifest.manifestDigest || "")) return false;
-  return sha256Hex(stableStringify(submissionManifestSemantic(manifest))) === manifest.manifestDigest;
+  if (!exactKeys(manifest, MANIFEST_KEYS) || manifest.schemaVersion !== "judgment-submission-manifest-v1" || !/^[a-f0-9]{64}$/.test(manifest.manifestDigest || "")) return false;
+  const expectedObjectPath = judgmentSubmissionObjectRelativePath(manifest.submissionDigest || "");
+  return manifest.objectRelativePath === expectedObjectPath &&
+    sha256Hex(stableStringify(submissionManifestSemantic(manifest))) === manifest.manifestDigest;
 }
 
 async function readExistingSubmission(dataRoot, assignment, judgeId) {
@@ -36,7 +58,8 @@ async function readExistingSubmission(dataRoot, assignment, judgeId) {
   if (!verifySubmissionManifest(manifest) || manifest.assignmentId !== assignment.assignmentId || manifest.assignmentDigest !== assignment.assignmentDigest || manifest.judgeId !== judgeId) {
     throw Object.assign(new Error("judgment_submission_conflict"), { code: "judgment_submission_conflict" });
   }
-  const submission = await readJson(toNativePath(dataRoot, manifest.objectRelativePath));
+  const expectedObjectPath = judgmentSubmissionObjectRelativePath(manifest.submissionDigest);
+  const submission = await readJson(toNativePath(dataRoot, expectedObjectPath));
   if (!verifyJudgmentSubmissionIntegrity(submission) || submission.submissionDigest !== manifest.submissionDigest) {
     throw Object.assign(new Error("judgment_submission_conflict"), { code: "judgment_submission_conflict" });
   }
@@ -104,8 +127,12 @@ export async function registerJudgmentConsensus({ dataRoot, assignment, submissi
   if (!built.ok) return built;
   const consensus = built.consensus;
   const relativePath = judgmentConsensusRelativePath(consensus.candidateId, consensus.consensusDigest);
-  const result = await writeContentAddressedJson(toNativePath(dataRoot, relativePath), consensus);
-  return Object.freeze({ ok: true, state: result.created ? "registered" : "existing", consensus, objectRelativePath: relativePath, writesPerformed: result.created ? 1 : 0 });
+  const result = await writeSemanticAddressedJson(
+    toNativePath(dataRoot, relativePath),
+    consensus,
+    (existing, proposed) => verifyJudgmentConsensusIntegrity(existing) && existing.consensusDigest === proposed.consensusDigest
+  );
+  return Object.freeze({ ok: true, state: result.created ? "registered" : "existing", consensus: result.value, objectRelativePath: relativePath, writesPerformed: result.created ? 1 : 0 });
 }
 
 export async function readJudgmentSubmissionByDigest(dataRoot, submissionDigest) {
@@ -118,6 +145,9 @@ export async function readJudgmentSubmissionByDigest(dataRoot, submissionDigest)
 }
 
 export async function readJudgmentConsensus(dataRoot, candidateId, consensusDigest) {
+  if (!/^cand_[a-f0-9]{24}$/.test(candidateId || "") || !/^[a-f0-9]{64}$/.test(consensusDigest || "")) {
+    throw Object.assign(new Error("judgment_consensus_integrity_invalid"), { code: "judgment_consensus_integrity_invalid" });
+  }
   const consensus = await readJson(toNativePath(dataRoot, judgmentConsensusRelativePath(candidateId, consensusDigest)));
   if (!verifyJudgmentConsensusIntegrity(consensus) || consensus.candidateId !== candidateId || consensus.consensusDigest !== consensusDigest) {
     throw Object.assign(new Error("judgment_consensus_integrity_invalid"), { code: "judgment_consensus_integrity_invalid" });
