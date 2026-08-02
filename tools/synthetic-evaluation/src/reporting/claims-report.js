@@ -11,8 +11,10 @@ import {
 import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json.js";
 import { REPORT_LIMITATIONS, REPORT_POLICY } from "./policy.js";
 import { verifyCampaignEvidenceSnapshotIntegrity, verifyCampaignMetricSetIntegrity } from "./derive.js";
+import { verifyCampaignReviewPackageIntegrity } from "./review-package.js";
 
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+const REVIEW_CHECK_KEYS = Object.freeze(["sourceIntegrityReviewed", "denominatorReviewed", "claimsReviewed", "holdsVisible", "contactSheetsReviewed"]);
 
 function failure(code, path, detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) });
@@ -22,6 +24,12 @@ function semanticDigest(value, omitted) {
   const semantic = { ...value };
   for (const key of omitted) delete semantic[key];
   return sha256Hex(stableStringify(semantic));
+}
+
+function exactReviewChecks(checks) {
+  return checks && typeof checks === "object" && !Array.isArray(checks) &&
+    Object.keys(checks).sort().join(",") === [...REVIEW_CHECK_KEYS].sort().join(",") &&
+    REVIEW_CHECK_KEYS.every((key) => checks[key] === true);
 }
 
 function metricRecord(metricSet, metricId) {
@@ -110,21 +118,15 @@ export function verifyInterpretationClaimAgainstMetrics(claim, metricSet) {
   return claim.statement === directStatement(claim.subject, record);
 }
 
-export function createReportReviewSubmission({ sourceSnapshot, metricSet, reviewPackage, reviewerId, reviewedAt = new Date().toISOString() }) {
-  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !TOKEN.test(reviewerId || "") || !Number.isFinite(Date.parse(reviewedAt)) || new Date(reviewedAt).toISOString() !== reviewedAt || reviewPackage.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewPackage.packageDigest === undefined) return failure("report_review_submission_invalid", "$", null);
+export function createReportReviewSubmission({ sourceSnapshot, metricSet, reviewPackage, reviewerId, checks, reviewedAt = new Date().toISOString() }) {
+  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage) || !TOKEN.test(reviewerId || "") || !exactReviewChecks(checks) || !Number.isFinite(Date.parse(reviewedAt)) || new Date(reviewedAt).toISOString() !== reviewedAt || reviewPackage.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewPackage.slotTableDigest !== sourceSnapshot.slotEvidenceDigest || reviewPackage.artifactIndexDigest !== sourceSnapshot.artifactIndexDigest) return failure("report_review_submission_invalid", "$", null);
   const semantic = {
     schemaVersion: REPORT_REVIEW_SUBMISSION_SCHEMA_VERSION,
     sourceSnapshotDigest: sourceSnapshot.sourceSnapshotDigest,
     metricSetDigest: metricSet.metricSetDigest,
     reviewPackageDigest: reviewPackage.packageDigest,
     reviewerId,
-    checks: {
-      sourceIntegrityReviewed: true,
-      denominatorReviewed: true,
-      claimsReviewed: true,
-      holdsVisible: true,
-      contactSheetsReviewed: true
-    }
+    checks: { ...checks }
   };
   const submission = deepFreeze({ ...semantic, reviewedAt, submissionDigest: sha256Hex(stableStringify(semantic)) });
   return validateReportReviewSubmission(submission).ok ? Object.freeze({ ok: true, submission }) : failure("report_review_submission_invalid", "$", "contract");
@@ -136,7 +138,7 @@ export function verifyReportReviewSubmissionIntegrity(submission) {
 }
 
 export function buildCampaignReport({ sourceSnapshot, metricSet, reviewPackage, reviewSubmission, predecessorReportDigest = null }) {
-  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyReportReviewSubmissionIntegrity(reviewSubmission)) return failure("campaign_report_invalid", "source");
+  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage) || !verifyReportReviewSubmissionIntegrity(reviewSubmission)) return failure("campaign_report_invalid", "source");
   if (metricSet.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewPackage.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewSubmission.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewSubmission.metricSetDigest !== metricSet.metricSetDigest || reviewSubmission.reviewPackageDigest !== reviewPackage.packageDigest) return failure("campaign_report_invalid", "references");
   if (!(predecessorReportDigest === null || /^[a-f0-9]{64}$/.test(predecessorReportDigest))) return failure("campaign_report_invalid", "predecessorReportDigest");
   const claimsResult = deriveInterpretationClaims(metricSet);
@@ -158,11 +160,7 @@ export function buildCampaignReport({ sourceSnapshot, metricSet, reviewPackage, 
     reportReviewDigest: reviewSubmission.submissionDigest,
     interpretationClaims: claimsResult.claims,
     limitations: [...REPORT_LIMITATIONS],
-    g4TimeBoundary: {
-      mode: "as_of_closeout",
-      currentStatusAppendixIncluded: false,
-      statusVerifiedAt: null
-    },
+    g4TimeBoundary: { mode: "as_of_closeout", currentStatusAppendixIncluded: false, statusVerifiedAt: null },
     predecessorReportDigest,
     reportPolicy: REPORT_POLICY
   };
@@ -180,13 +178,7 @@ export function verifyCampaignReportIntegrity(report, metricSet = null) {
 
 export function createReportRevisionLink({ predecessorReport, successorReport, reasonCode, linkedAt = new Date().toISOString() }) {
   if (!verifyCampaignReportIntegrity(predecessorReport) || !verifyCampaignReportIntegrity(successorReport) || predecessorReport.sourceSnapshotDigest !== successorReport.sourceSnapshotDigest || successorReport.predecessorReportDigest !== predecessorReport.reportDigest || !Number.isFinite(Date.parse(linkedAt)) || new Date(linkedAt).toISOString() !== linkedAt) return failure("report_revision_link_invalid", "$", null);
-  const semantic = {
-    schemaVersion: REPORT_REVISION_LINK_SCHEMA_VERSION,
-    sourceSnapshotDigest: predecessorReport.sourceSnapshotDigest,
-    predecessorReportDigest: predecessorReport.reportDigest,
-    successorReportDigest: successorReport.reportDigest,
-    reasonCode
-  };
+  const semantic = { schemaVersion: REPORT_REVISION_LINK_SCHEMA_VERSION, sourceSnapshotDigest: predecessorReport.sourceSnapshotDigest, predecessorReportDigest: predecessorReport.reportDigest, successorReportDigest: successorReport.reportDigest, reasonCode };
   const link = deepFreeze({ ...semantic, linkedAt, linkDigest: sha256Hex(stableStringify(semantic)) });
   return validateReportRevisionLink(link).ok ? Object.freeze({ ok: true, link }) : failure("report_revision_link_invalid", "$", "contract");
 }
