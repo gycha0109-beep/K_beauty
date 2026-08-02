@@ -97,6 +97,7 @@ export {
   preflightDatasetLock,
   verifyCurrentDataset
 } from "./dataset/orchestrator.js";
+export { appendDatasetVersionStatus, appendG5Status } from "./dataset/status.js";
 export {
   activateRegressionBaseline,
   preflightRegressionBaseline,
