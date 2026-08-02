@@ -1,4 +1,8 @@
-export { buildPilotSourceFreeze, verifyPilotSourceFreeze } from "./source-freeze.js";
+export {
+  buildPilotSourceFreeze,
+  verifyPilotSourceFreeze,
+  verifyPilotSourceFreezeCurrent
+} from "./source-freeze.js";
 export {
   compilePilotCampaignPlan,
   createPilotCampaignRun,
@@ -30,10 +34,10 @@ export {
   issuePilotWave,
   registerPilotGenerationHandoff,
   reservePilotGenerationRetry,
-  registerPilotStage,
   submitPilotCheckpoint,
   resumePilotCampaign,
   closePilotCampaign,
   getPilotCampaignStatus,
   nextPilotSlotAction
 } from "./orchestrator.js";
+export { registerPilotStage } from "./stage-registration.js";
