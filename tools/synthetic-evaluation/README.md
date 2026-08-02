@@ -178,15 +178,44 @@ docs/adr/0009-axis-level-consensus-and-purpose-scoped-g3.md
 
 ADR 0009 supersedes earlier wording that makes blind consensus depend on purpose-specific critical axes.
 
+## Toolkit Track #T6
+
+Designed, not implemented:
+
+- stored T3/T4/T5 evidence revalidation before promotion review
+- full candidate promotion snapshot and operator re-attestation
+- separate internal-evaluation rights review
+- exact duplicate representative policy and manual perceptual leakage review
+- purpose- and claim-scoped `G4_SYNTHETIC_GOLD`
+- consensus values as the Gold-label source
+- `capture_control` and `skin_cue_control` G4 policy
+- conditional face-feature enum G4 with strength excluded
+- paired and mixed-control G4 prohibition
+- non-Gold retention for consensus-valid misaligned controls
+- append-only promotion, supersession, and revocation events
+- G5 and dataset split authority reserved for #T9
+
+T5 always leaves promotion eligibility pending. T6 must not treat `aligned` or G3 alone as Gold approval.
+
+Design and decisions:
+
+```text
+docs/promotion-policy-v1.md
+docs/adr/0010-purpose-scoped-g4-and-grade-authority.md
+docs/adr/0011-promotion-evidence-snapshot-and-revalidation.md
+docs/adr/0012-leakage-coupling-and-append-only-revocation.md
+```
+
 ## Not included
 
 - automatic image generation
-- batch import, observation, judgment, or alignment
+- batch import, observation, judgment, alignment, or promotion
 - browser automation
 - same-person verification
 - archetype scoring
 - actual human review execution or reviewed dataset
-- automatic G4/G5 promotion or dataset lock
+- implemented G4 promotion
+- G5 holdout lock or dataset split
 - database, API route, UI, or production integration
 
 ## Verification
