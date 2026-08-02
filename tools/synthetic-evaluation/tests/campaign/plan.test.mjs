@@ -7,7 +7,12 @@ import {
   verifyPilotCampaignRunIntegrity,
   verifyPilotSlotIntegrity
 } from "../../src/campaign/plan.js";
-import { buildPilotSourceFreeze, verifyPilotSourceFreeze } from "../../src/campaign/source-freeze.js";
+import {
+  buildPilotSourceFreeze,
+  verifyPilotSourceFreeze,
+  verifyPilotSourceFreezeCurrent
+} from "../../src/campaign/source-freeze.js";
+import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
 import { clone, makePlan, makeRun } from "./helpers.mjs";
 
 test("T7 plan compiles the exact fixed 20-slot denominator policy", () => {
@@ -37,6 +42,7 @@ test("source freeze covers fixtures, compiler, provider, observation, judgment, 
   assert.equal(built.ok, true);
   const freeze = built.sourceFreeze;
   assert.equal(verifyPilotSourceFreeze(freeze), true);
+  assert.equal(verifyPilotSourceFreezeCurrent(freeze), true);
   for (const field of [
     "compiledPromptSchemaVersion",
     "promptCompilerVersion",
@@ -59,6 +65,16 @@ test("source freeze drift fails closed even if outer digest is copied", () => {
   const tampered = clone(plan);
   tampered.sourceFreeze.providerTemplateVersion = "changed-template";
   assert.equal(verifyPilotCampaignPlanIntegrity(tampered), false);
+});
+
+test("historical source freeze remains intrinsically readable while current drift is explicit", () => {
+  const built = buildPilotSourceFreeze("gemini-image-manual-v1");
+  const historical = clone(built.sourceFreeze);
+  historical.providerTemplateVersion = "reference-portrait-prose-v0";
+  const { sourceFreezeDigest, ...semantic } = historical;
+  historical.sourceFreezeDigest = sha256Hex(stableStringify(semantic));
+  assert.equal(verifyPilotSourceFreeze(historical), true);
+  assert.equal(verifyPilotSourceFreezeCurrent(historical), false);
 });
 
 test("reference-only SDXL profile cannot become the primary pilot provider", () => {
