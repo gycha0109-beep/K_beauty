@@ -86,7 +86,7 @@ test("exact duplicate representative, alias, and conflict dispositions remain di
 
 test("perceptual neighbor stays held until explicit review is complete", async () => {
   const stored = await setupStoredPromotionCase({
-    perceptualNeighbors: [{ candidateId: "cand_bbbbbbbbbbbbbbbbbbbbbbbb", distance: 4 }]
+    perceptualNeighbors: [{ candidateId: "cand_bbbbbbbbbbbbbbbbbbbbbbbb", hammingDistance: 4 }]
   });
   const result = await preflight(stored, {
     leakageReview: {
