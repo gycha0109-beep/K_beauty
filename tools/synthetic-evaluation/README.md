@@ -109,32 +109,74 @@ docs/adr/0006-observation-execution-claim-and-authority.md
 
 ## Toolkit Track #T5
 
-Designed; runtime implementation is separate:
+Implemented:
 
-- process-level blind judgment assignments
-- immutable pseudonymous human-review submissions
-- minimum two independent reviewers with explicit blind adjudication
-- intent-free per-axis consensus that may be sealed partially
-- generation intent access only after consensus sealing
-- finalized `GenerationSpec` as the only intent source
-- purpose-required gate/target axis selection after intent join
-- no aggregate quality score
-- conservative absence/count/region handling
-- exact face-feature value alignment with strength left unverifiable
-- paired skin target assessment without same-person identity claims
-- append-only G2 and purpose-scoped G3 derivation
-- G4/G5 promotion excluded
+- authoritative T4 artifact verification before assignment issue
+- process-level blind assignment, submission, and consensus modules
+- strict pseudonymous human-review contracts with no free-text notes
+- immutable claim, content-addressed submission, and manifest-last registration
+- minimum two independent reviewers and explicit intent-blind adjudication
+- purpose-free per-axis consensus with `sealed_complete` and `sealed_partial`
+- finalized `GenerationSpec` and T3 candidate identity verification after sealing
+- purpose-required gate/target selection with no aggregate score
+- conservative absence, count, and region handling
+- exact face-feature value comparison with strength left diagnostic and unverifiable
+- paired skin assessment without same-person identity claims
+- append-only `G2_OBSERVED` and purpose-scoped `G3_CONSENSUS_VALIDATED`
+- G4/G5 creation excluded
+
+Commands:
+
+```bash
+npm run synthetic:judge -- \
+  --blind-candidate requests/blind-candidate-0001.json \
+  --observation-run-id obs_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --issue
+
+npm run synthetic:judge -- \
+  --assignment requests/judgment-assignment-0001.json \
+  --submission requests/judgment-submission-0001.json \
+  --preflight
+
+npm run synthetic:judge -- \
+  --assignment requests/judgment-assignment-0001.json \
+  --submission requests/judgment-submission-0001.json \
+  --submit
+
+npm run synthetic:consensus -- \
+  --assignment requests/judgment-assignment-0001.json \
+  --submission-digests <digest-1>,<digest-2> \
+  --preflight
+
+npm run synthetic:consensus -- \
+  --assignment requests/judgment-assignment-0001.json \
+  --submission-digests <digest-1>,<digest-2> \
+  --build
+
+npm run synthetic:align -- \
+  --candidate cand_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --consensus-digest <consensus-digest> \
+  --preflight
+
+npm run synthetic:align -- \
+  --candidate cand_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --consensus-digest <consensus-digest> \
+  --confirm
+```
+
+All request paths are relative to `.synthetic-local/requests/`. Judgment and consensus commands cannot read generation intent. Alignment resolves intent only after a sealed consensus artifact exists.
 
 Design and decisions:
 
 ```text
 docs/judgment-intent-alignment-v1.md
+docs/judgment-intent-alignment-implementation-v1.md
 docs/adr/0007-blind-judgment-sealing-and-intent-join.md
 docs/adr/0008-purpose-specific-alignment-and-grade-derivation.md
 docs/adr/0009-axis-level-consensus-and-purpose-scoped-g3.md
 ```
 
-ADR 0009 is the post-design review correction and supersedes any earlier wording that makes blind consensus depend on purpose-specific critical axes.
+ADR 0009 supersedes earlier wording that makes blind consensus depend on purpose-specific critical axes.
 
 ## Not included
 
@@ -143,8 +185,8 @@ ADR 0009 is the post-design review correction and supersedes any earlier wording
 - browser automation
 - same-person verification
 - archetype scoring
-- #T5 runtime judgment, consensus, or alignment implementation
-- dataset promotion or lock
+- actual human review execution or reviewed dataset
+- automatic G4/G5 promotion or dataset lock
 - database, API route, UI, or production integration
 
 ## Verification
