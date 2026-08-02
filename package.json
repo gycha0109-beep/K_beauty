@@ -42,6 +42,7 @@
     "synthetic:export": "npm run export --workspace @bejewely/synthetic-evaluation --",
     "synthetic:dataset": "npm run dataset --workspace @bejewely/synthetic-evaluation --",
     "synthetic:baseline": "npm run baseline --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:rehearsal": "npm run rehearsal --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint"
   },
   "dependencies": {
