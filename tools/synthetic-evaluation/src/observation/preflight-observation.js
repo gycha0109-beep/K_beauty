@@ -6,6 +6,7 @@ import { CANONICAL_OBSERVATION_SNAPSHOT, verifyCanonicalObservationSnapshot } fr
 import { resolveObservationAdapterProfile } from "./profiles.js";
 import { buildObservationRunIdentity } from "./run-identity.js";
 import { observationStorageLayout } from "./storage-layout.js";
+import { verifyObservationRunManifestIntegrity } from "./artifact-integrity.js";
 
 function isInside(root, target) {
   const relative = path.relative(root, target);
@@ -65,6 +66,9 @@ export async function preflightObservationRun({ request, dataRoot, snapshot = CA
   const existingManifest = await readJsonIfExists(layout.manifestPath);
   const existingClaim = await readJsonIfExists(layout.claimPath);
   if (existingManifest) {
+    if (!verifyObservationRunManifestIntegrity(existingManifest)) {
+      return Object.freeze({ ok: false, errors: [{ code: "run_manifest_integrity_invalid", path: "execution" }] });
+    }
     if (existingManifest.runDigest !== identity.runDigest) {
       return Object.freeze({ ok: false, errors: [{ code: "run_identity_conflict", path: "execution" }] });
     }
