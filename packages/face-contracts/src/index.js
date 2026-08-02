@@ -8,3 +8,4 @@ export * from "./synthetic-observation/observation-contract.js";
 export * from "./synthetic-judgment/index.js";
 export * from "./synthetic-promotion/index.js";
 export * from "./synthetic-campaign/index.js";
+export * from "./synthetic-reporting/index.js";
