@@ -1,7 +1,7 @@
 import { lstat, mkdir, open, readFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { sha256Hex, stableStringify } from "../shared/canonical-json.js";
-import { verifyCampaignEvidenceSnapshotIntegrity, verifyCampaignMetricSetIntegrity } from "./derive.js";
+import { verifyCampaignEvidenceSnapshotIntegrity, verifyCampaignMetricSetIntegrity, verifyCampaignSlotRowIntegrity } from "./derive.js";
 import { verifyCampaignReviewPackageIntegrity } from "./review-package.js";
 import { verifyCampaignReportIntegrity, verifyReportReviewSubmissionIntegrity, verifyReportRevisionLinkIntegrity } from "./claims-report.js";
 import { verifyCampaignExportManifestIntegrity } from "./render.js";
@@ -9,10 +9,7 @@ import { verifyCampaignExportManifestIntegrity } from "./render.js";
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 const SAFE_RELATIVE_PATH = /^(?![A-Za-z]:)(?!\\\\)(?!\/)(?!.*(?:^|[\\/])\.\.(?:[\\/]|$))(?!.*\0).+$/;
 
-function reportsRoot(dataRoot) {
-  return path.join(dataRoot, "reports");
-}
-
+function reportsRoot(dataRoot) { return path.join(dataRoot, "reports"); }
 function contained(root, relativePath) {
   if (!SAFE_RELATIVE_PATH.test(relativePath || "")) throw Object.assign(new Error("report_path_invalid"), { code: "report_path_invalid" });
   const absolute = path.join(root, ...relativePath.split("/"));
@@ -20,7 +17,6 @@ function contained(root, relativePath) {
   if (relative.startsWith(`..${path.sep}`) || relative === ".." || path.isAbsolute(relative)) throw Object.assign(new Error("report_path_invalid"), { code: "report_path_invalid" });
   return absolute;
 }
-
 async function assertNoSymlinkComponents(root, target) {
   const relative = path.relative(root, target);
   const parts = relative.split(path.sep).filter(Boolean);
@@ -37,19 +33,13 @@ async function assertNoSymlinkComponents(root, target) {
     }
   }
 }
-
 async function writeExclusiveBytes(root, relativePath, bytes) {
   const absolute = contained(root, relativePath);
   await assertNoSymlinkComponents(root, absolute);
   await mkdir(path.dirname(absolute), { recursive: true });
   try {
     const handle = await open(absolute, "wx", 0o600);
-    try {
-      await handle.writeFile(bytes);
-      await handle.sync();
-    } finally {
-      await handle.close();
-    }
+    try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
     return Object.freeze({ created: true, absolutePath: absolute });
   } catch (error) {
     if (error?.code !== "EEXIST") throw error;
@@ -58,7 +48,6 @@ async function writeExclusiveBytes(root, relativePath, bytes) {
     return Object.freeze({ created: false, absolutePath: absolute });
   }
 }
-
 async function writeSemanticJson(root, relativePath, value, verify, digestKey) {
   const bytes = Buffer.from(`${stableStringify(value)}\n`, "utf8");
   const absolute = contained(root, relativePath);
@@ -66,49 +55,44 @@ async function writeSemanticJson(root, relativePath, value, verify, digestKey) {
   await mkdir(path.dirname(absolute), { recursive: true });
   try {
     const handle = await open(absolute, "wx", 0o600);
-    try {
-      await handle.writeFile(bytes);
-      await handle.sync();
-    } finally {
-      await handle.close();
-    }
+    try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
     return Object.freeze({ created: true, value, relativePath });
   } catch (error) {
     if (error?.code !== "EEXIST") throw error;
     let existing;
-    try {
-      existing = JSON.parse(await readFile(absolute, "utf8"));
-    } catch {
-      throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" });
-    }
+    try { existing = JSON.parse(await readFile(absolute, "utf8")); }
+    catch { throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" }); }
     if (!verify(existing) || existing[digestKey] !== value[digestKey]) throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" });
     return Object.freeze({ created: false, value: existing, relativePath });
   }
 }
-
-function objectPath(type, digest) {
-  return `objects/${type}/${digest.slice(0, 2)}/${digest}.json`;
-}
+function objectPath(type, digest) { return `objects/${type}/${digest.slice(0, 2)}/${digest}.json`; }
 
 export async function saveReviewArtifacts({ dataRoot, sourceSnapshot, artifactIndex, rows, metricSet, reviewPackage, thumbnails, reviewFiles }) {
   const root = reportsRoot(dataRoot);
-  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage)) throw Object.assign(new Error("report_bundle_invalid"), { code: "report_bundle_invalid" });
+  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage) || !Array.isArray(artifactIndex) || sha256Hex(stableStringify(artifactIndex)) !== sourceSnapshot.artifactIndexDigest || !Array.isArray(rows) || rows.length !== 20 * sourceSnapshot.sourceRuns.length || !rows.every(verifyCampaignSlotRowIntegrity) || sha256Hex(stableStringify(rows)) !== sourceSnapshot.slotEvidenceDigest || !Array.isArray(thumbnails) || sha256Hex(stableStringify(thumbnails)) !== reviewPackage.thumbnailIndexDigest) throw Object.assign(new Error("report_bundle_invalid"), { code: "report_bundle_invalid" });
   const writes = [];
   writes.push(await writeSemanticJson(root, objectPath("source-snapshots", sourceSnapshot.sourceSnapshotDigest), sourceSnapshot, verifyCampaignEvidenceSnapshotIntegrity, "sourceSnapshotDigest"));
   const indexObject = { schemaVersion: "campaign-artifact-index-v1", sourceSnapshotDigest: sourceSnapshot.sourceSnapshotDigest, entries: artifactIndex, artifactIndexDigest: sourceSnapshot.artifactIndexDigest };
   writes.push(await writeSemanticJson(root, objectPath("artifact-indexes", sourceSnapshot.artifactIndexDigest), indexObject, (value) => value?.artifactIndexDigest === sha256Hex(stableStringify(value.entries)) && value.sourceSnapshotDigest === sourceSnapshot.sourceSnapshotDigest, "artifactIndexDigest"));
   const slotObject = { schemaVersion: "campaign-slot-table-v1", sourceSnapshotDigest: sourceSnapshot.sourceSnapshotDigest, rows, slotEvidenceDigest: sourceSnapshot.slotEvidenceDigest };
-  writes.push(await writeSemanticJson(root, objectPath("slot-tables", sourceSnapshot.slotEvidenceDigest), slotObject, (value) => value?.slotEvidenceDigest === sha256Hex(stableStringify(value.rows)) && value.sourceSnapshotDigest === sourceSnapshot.sourceSnapshotDigest, "slotEvidenceDigest"));
+  writes.push(await writeSemanticJson(root, objectPath("slot-tables", sourceSnapshot.slotEvidenceDigest), slotObject, (value) => Array.isArray(value?.rows) && value.rows.every(verifyCampaignSlotRowIntegrity) && value.slotEvidenceDigest === sha256Hex(stableStringify(value.rows)) && value.sourceSnapshotDigest === sourceSnapshot.sourceSnapshotDigest, "slotEvidenceDigest"));
+  const thumbnailObject = { schemaVersion: "campaign-thumbnail-index-v1", sourceSnapshotDigest: sourceSnapshot.sourceSnapshotDigest, reviewPackageDigest: reviewPackage.packageDigest, thumbnails, thumbnailIndexDigest: reviewPackage.thumbnailIndexDigest };
+  writes.push(await writeSemanticJson(root, objectPath("thumbnail-indexes", reviewPackage.thumbnailIndexDigest), thumbnailObject, (value) => value?.thumbnailIndexDigest === sha256Hex(stableStringify(value.thumbnails)) && value.sourceSnapshotDigest === sourceSnapshot.sourceSnapshotDigest && value.reviewPackageDigest === reviewPackage.packageDigest, "thumbnailIndexDigest"));
   writes.push(await writeSemanticJson(root, objectPath("metric-sets", metricSet.metricSetDigest), metricSet, verifyCampaignMetricSetIntegrity, "metricSetDigest"));
   writes.push(await writeSemanticJson(root, objectPath("review-packages", reviewPackage.packageDigest), reviewPackage, verifyCampaignReviewPackageIntegrity, "packageDigest"));
   for (const thumbnail of thumbnails) {
     const bytes = reviewFiles.get(thumbnail.relativePath);
-    if (!bytes || sha256Hex(bytes) !== thumbnail.sha256) throw Object.assign(new Error("report_thumbnail_invalid"), { code: "report_thumbnail_invalid" });
+    if (!bytes || sha256Hex(bytes) !== thumbnail.sha256 || bytes.length !== thumbnail.byteLength) throw Object.assign(new Error("report_thumbnail_invalid"), { code: "report_thumbnail_invalid" });
     writes.push(await writeExclusiveBytes(root, `objects/review-assets/${reviewPackage.packageDigest}/${thumbnail.relativePath}`, bytes));
   }
-  for (const relativePath of ["review/blind-contact-sheet.html", "review/annotated-contact-sheet.html"]) {
+  const htmlChecks = [
+    ["review/blind-contact-sheet.html", reviewPackage.blindContactSheetDigest],
+    ["review/annotated-contact-sheet.html", reviewPackage.annotatedContactSheetDigest]
+  ];
+  for (const [relativePath, expectedDigest] of htmlChecks) {
     const bytes = reviewFiles.get(relativePath);
-    if (!bytes) throw Object.assign(new Error("report_review_package_invalid"), { code: "report_review_package_invalid" });
+    if (!bytes || sha256Hex(bytes) !== expectedDigest) throw Object.assign(new Error("report_review_package_invalid"), { code: "report_review_package_invalid" });
     writes.push(await writeExclusiveBytes(root, `objects/review-assets/${reviewPackage.packageDigest}/${relativePath}`, bytes));
   }
   return Object.freeze({ createdCount: writes.filter((item) => item.created).length });
@@ -116,26 +100,43 @@ export async function saveReviewArtifacts({ dataRoot, sourceSnapshot, artifactIn
 
 export async function saveReviewedReport({ dataRoot, report, reviewSubmission, revisionLink = null }) {
   const root = reportsRoot(dataRoot);
-  if (!verifyCampaignReportIntegrity(report) || !verifyReportReviewSubmissionIntegrity(reviewSubmission) || report.reportReviewDigest !== reviewSubmission.submissionDigest) throw Object.assign(new Error("report_bundle_invalid"), { code: "report_bundle_invalid" });
-  if (revisionLink && !verifyReportRevisionLinkIntegrity(revisionLink)) throw Object.assign(new Error("report_revision_link_invalid"), { code: "report_revision_link_invalid" });
+  if (!verifyCampaignReportIntegrity(report) || !verifyReportReviewSubmissionIntegrity(reviewSubmission) || report.reportReviewDigest !== reviewSubmission.submissionDigest || report.sourceSnapshotDigest !== reviewSubmission.sourceSnapshotDigest) throw Object.assign(new Error("report_bundle_invalid"), { code: "report_bundle_invalid" });
+  if ((report.predecessorReportDigest === null) !== (revisionLink === null)) throw Object.assign(new Error("report_revision_link_invalid"), { code: "report_revision_link_invalid" });
+  if (revisionLink && (!verifyReportRevisionLinkIntegrity(revisionLink) || revisionLink.sourceSnapshotDigest !== report.sourceSnapshotDigest || revisionLink.predecessorReportDigest !== report.predecessorReportDigest || revisionLink.successorReportDigest !== report.reportDigest)) throw Object.assign(new Error("report_revision_link_invalid"), { code: "report_revision_link_invalid" });
   const writes = [];
+  if (revisionLink) {
+    const claimSemantic = { schemaVersion: "report-revision-successor-claim-v1", sourceSnapshotDigest: report.sourceSnapshotDigest, predecessorReportDigest: revisionLink.predecessorReportDigest, successorReportDigest: report.reportDigest, revisionLinkDigest: revisionLink.linkDigest };
+    const claim = { ...claimSemantic, claimDigest: sha256Hex(stableStringify(claimSemantic)) };
+    writes.push(await writeSemanticJson(root, `revision-successor-claims/${revisionLink.predecessorReportDigest}.json`, claim, (value) => {
+      const { claimDigest, ...semantic } = value || {};
+      return claimDigest === sha256Hex(stableStringify(semantic)) && value.successorReportDigest === report.reportDigest && value.revisionLinkDigest === revisionLink.linkDigest;
+    }, "claimDigest"));
+  }
   writes.push(await writeSemanticJson(root, objectPath("report-reviews", reviewSubmission.submissionDigest), reviewSubmission, verifyReportReviewSubmissionIntegrity, "submissionDigest"));
   writes.push(await writeSemanticJson(root, objectPath("reports", report.reportDigest), report, verifyCampaignReportIntegrity, "reportDigest"));
   if (revisionLink) writes.push(await writeSemanticJson(root, objectPath("revision-links", revisionLink.linkDigest), revisionLink, verifyReportRevisionLinkIntegrity, "linkDigest"));
-  const rootManifest = {
-    schemaVersion: "campaign-report-root-v1",
-    sourceSnapshotDigest: report.sourceSnapshotDigest,
-    reportDigest: report.reportDigest,
-    predecessorReportDigest: report.predecessorReportDigest,
-    reportReviewDigest: reviewSubmission.submissionDigest,
-    revisionLinkDigest: revisionLink?.linkDigest || null
-  };
-  rootManifest.rootDigest = sha256Hex(stableStringify(rootManifest));
+  const rootSemantic = { schemaVersion: "campaign-report-root-v1", sourceSnapshotDigest: report.sourceSnapshotDigest, reportDigest: report.reportDigest, predecessorReportDigest: report.predecessorReportDigest, reportReviewDigest: reviewSubmission.submissionDigest, revisionLinkDigest: revisionLink?.linkDigest || null };
+  const rootManifest = { ...rootSemantic, rootDigest: sha256Hex(stableStringify(rootSemantic)) };
   for (const runId of report.scope.campaignRunIds) writes.push(await writeSemanticJson(root, `runs/${runId}/report-roots/${report.reportDigest}.json`, rootManifest, (value) => {
-    const { rootDigest, ...semantic } = value;
-    return rootDigest === sha256Hex(stableStringify(semantic));
+    const { rootDigest, ...semantic } = value || {};
+    return rootDigest === sha256Hex(stableStringify(semantic)) && value.reportDigest === report.reportDigest && value.sourceSnapshotDigest === report.sourceSnapshotDigest;
   }, "rootDigest"));
   return Object.freeze({ createdCount: writes.filter((item) => item.created).length, report });
+}
+
+async function verifyExistingExport(final, exportManifest) {
+  let existing;
+  try { existing = JSON.parse(await readFile(path.join(final, "manifest.json"), "utf8")); }
+  catch { throw Object.assign(new Error("incomplete_export_conflict"), { code: "incomplete_export_conflict" }); }
+  if (!verifyCampaignExportManifestIntegrity(existing) || existing.exportDigest !== exportManifest.exportDigest) throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" });
+  for (const descriptor of existing.files) {
+    const absolute = contained(final, descriptor.relativePath);
+    let bytes;
+    try { bytes = await readFile(absolute); }
+    catch { throw Object.assign(new Error("incomplete_export_conflict"), { code: "incomplete_export_conflict" }); }
+    if (bytes.length !== descriptor.byteLength || sha256Hex(bytes) !== descriptor.sha256) throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" });
+  }
+  return existing;
 }
 
 export async function publishExport({ dataRoot, files, exportManifest }) {
@@ -145,6 +146,8 @@ export async function publishExport({ dataRoot, files, exportManifest }) {
   const staging = contained(root, `staging/${operationId}`);
   const final = contained(root, `exports/${exportManifest.exportDigest}`);
   await assertNoSymlinkComponents(root, staging);
+  await mkdir(path.dirname(staging), { recursive: true });
+  await mkdir(path.dirname(final), { recursive: true });
   await rm(staging, { recursive: true, force: true });
   await mkdir(staging, { recursive: false });
   try {
@@ -157,14 +160,11 @@ export async function publishExport({ dataRoot, files, exportManifest }) {
       const handle = await open(target, "wx", 0o600);
       try { await handle.writeFile(file.bytes); await handle.sync(); } finally { await handle.close(); }
     }
-    try {
-      await rename(staging, final);
-    } catch (error) {
+    try { await rename(staging, final); }
+    catch (error) {
       if (error?.code !== "EEXIST" && error?.code !== "ENOTEMPTY") throw error;
       await rm(staging, { recursive: true, force: true });
-      const existingManifestPath = path.join(final, "manifest.json");
-      const existing = JSON.parse(await readFile(existingManifestPath, "utf8"));
-      if (!verifyCampaignExportManifestIntegrity(existing) || existing.exportDigest !== exportManifest.exportDigest) throw Object.assign(new Error("immutable_report_artifact_conflict"), { code: "immutable_report_artifact_conflict" });
+      const existing = await verifyExistingExport(final, exportManifest);
       return Object.freeze({ state: "existing", exportManifest: existing, outputRelativePath: `reports/exports/${exportManifest.exportDigest}`, writesPerformed: 0 });
     }
     const manifestBytes = Buffer.from(`${stableStringify(exportManifest)}\n`, "utf8");
@@ -182,8 +182,8 @@ export async function withReportWriterClaim(dataRoot, scopeId, actorId, operatio
   const claimPath = contained(root, `claims/${scopeId}.lock`);
   await assertNoSymlinkComponents(root, claimPath);
   await mkdir(path.dirname(claimPath), { recursive: true });
-  const claim = { schemaVersion: "report-writer-claim-v1", scopeId, actorId, operation, claimedAt: new Date().toISOString() };
-  claim.claimDigest = sha256Hex(stableStringify(claim));
+  const claimSemantic = { schemaVersion: "report-writer-claim-v1", scopeId, actorId, operation, claimedAt: new Date().toISOString() };
+  const claim = { ...claimSemantic, claimDigest: sha256Hex(stableStringify(claimSemantic)) };
   let handle;
   try {
     handle = await open(claimPath, "wx", 0o600);
@@ -195,11 +195,8 @@ export async function withReportWriterClaim(dataRoot, scopeId, actorId, operatio
     throw error;
   }
   await handle.close();
-  try {
-    return await fn(claim);
-  } finally {
-    await rm(claimPath, { force: true });
-  }
+  try { return await fn(claim); }
+  finally { await rm(claimPath, { force: true }); }
 }
 
 export const reportingStorageLayout = Object.freeze({ reportsRoot, objectPath, contained });
