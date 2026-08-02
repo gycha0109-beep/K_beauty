@@ -9,7 +9,6 @@ on:
       - "supabase/migrations/**"
       - "scripts/prepare-local-supabase-replay.mjs"
       - "scripts/verify-local-supabase-replay-baseline.mjs"
-      - "docs/security/local-supabase-replay-baseline-20260719.md"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/local-supabase-replay-guard.yml"
