@@ -51,8 +51,10 @@ export { readAndResolveCandidateIntent } from "./judgment/read-intent-artifacts.
 export {
   readJudgmentConsensus,
   readJudgmentSubmissionByDigest,
-  registerDerivedGradeRecord,
-  registerIntentAlignment,
   registerJudgmentConsensus,
   registerJudgmentSubmission
-} from "./judgment/registrar.js";
+} from "./judgment/blind-registrar.js";
+export {
+  registerDerivedGradeRecord,
+  registerIntentAlignment
+} from "./judgment/alignment-registrar.js";
