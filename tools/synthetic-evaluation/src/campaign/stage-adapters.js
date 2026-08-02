@@ -7,10 +7,20 @@ import {
   verifyObservationRunManifestIntegrity
 } from "../observation/artifact-integrity.js";
 import {
-  verifyG4GradeRecordIntegrity,
+  derivePromotionDecision,
+  verifyG4GradeRecordAgainstSources,
   verifyPromotionDecisionIntegrity,
   verifyPromotionStatusEventIntegrity
 } from "../promotion/decision.js";
+import { verifyPromotionEvidenceBundleIntegrity } from "../promotion/evidence.js";
+import { verifyPromotionReviewSubmissionIntegrity } from "../promotion/promotion-review.js";
+import {
+  verifyPromotionAssetPolicyReviewIntegrity,
+  verifyPromotionLeakageReviewIntegrity,
+  verifyPromotionOperatorReattestationIntegrity,
+  verifyUsageRightsReviewIntegrity
+} from "../promotion/reviews.js";
+import { verifyPromotionSourceSnapshotIntegrity } from "../promotion/source-snapshot.js";
 import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json.js";
 
 function failure(code, path, detail = null) {
@@ -110,15 +120,73 @@ export function verifyAlignmentStageArtifact({ alignment, candidateId, consensus
   return Object.freeze({ ok: true, sourceRefs: Object.freeze([ref("T5", "intent-alignment", alignment.alignmentDigest)]) });
 }
 
-export function verifyPromotionStageArtifacts({ decision, gradeRecord = null, statusEvent = null, candidateId, alignmentDigest }) {
-  if (!verifyPromotionDecisionIntegrity(decision) || decision.candidateId !== candidateId || !Array.isArray(gradeRecord?.sourceDigests || []) && decision.outcome === "promoted_g4") return failure("source_artifact_integrity_invalid", "promotionDecision", null);
-  const sourceRefs = [ref("T6", "promotion-decision", decision.decisionDigest)];
+export function verifyPromotionStageArtifacts({
+  snapshot,
+  bundle,
+  preflight,
+  operatorReattestation,
+  rightsReview,
+  assetPolicyReview,
+  leakageReview,
+  promotionReview,
+  decision,
+  gradeRecord = null,
+  statusEvent = null,
+  candidateId,
+  alignmentDigest
+}) {
+  if (
+    !verifyPromotionSourceSnapshotIntegrity(snapshot) ||
+    !verifyPromotionEvidenceBundleIntegrity(bundle) ||
+    !verifyPromotionReviewSubmissionIntegrity(promotionReview) ||
+    !verifyPromotionOperatorReattestationIntegrity(operatorReattestation) ||
+    !verifyUsageRightsReviewIntegrity(rightsReview) ||
+    !verifyPromotionAssetPolicyReviewIntegrity(assetPolicyReview) ||
+    !verifyPromotionLeakageReviewIntegrity(leakageReview) ||
+    !verifyPromotionDecisionIntegrity(decision) ||
+    snapshot.candidate.candidateId !== candidateId ||
+    snapshot.judgment.alignmentDigest !== alignmentDigest ||
+    bundle.sourceSnapshotDigest !== snapshot.sourceSnapshotDigest ||
+    decision.candidateId !== candidateId ||
+    decision.promotionKey !== snapshot.promotionKey ||
+    decision.evidenceBundleDigest !== bundle.bundleDigest
+  ) return failure("source_artifact_integrity_invalid", "promotionDecision", null);
+
+  const rederived = derivePromotionDecision({
+    snapshot,
+    bundle,
+    preflight,
+    operatorReattestation,
+    rightsReview,
+    assetPolicyReview,
+    leakageReview,
+    promotionReview,
+    predecessorDecisionDigest: decision.predecessorDecisionDigest,
+    decidedAt: decision.decidedAt
+  });
+  if (!rederived.ok || rederived.decision.decisionDigest !== decision.decisionDigest) {
+    return failure("source_artifact_integrity_invalid", "promotionDecision", "decision_rederivation_mismatch");
+  }
+
+  const sourceRefs = [
+    ref("T6", "promotion-source-snapshot", snapshot.sourceSnapshotDigest),
+    ref("T6", "promotion-evidence-bundle", bundle.bundleDigest),
+    ref("T6", "promotion-decision", decision.decisionDigest)
+  ];
   const reasonCodes = [];
   if (decision.outcome === "promoted_g4") {
     if (
-      !verifyG4GradeRecordIntegrity(gradeRecord) ||
-      gradeRecord.candidateId !== candidateId ||
-      !gradeRecord.sourceDigests.includes(alignmentDigest) ||
+      !verifyG4GradeRecordAgainstSources({
+        gradeRecord,
+        snapshot,
+        bundle,
+        decision,
+        rightsReview,
+        assetPolicyReview,
+        leakageReview,
+        operatorReattestation,
+        promotionReview
+      }) ||
       !verifyPromotionStatusEventIntegrity(statusEvent) ||
       statusEvent.gradeRecordDigest !== gradeRecord.gradeRecordDigest ||
       statusEvent.promotionKey !== decision.promotionKey ||
