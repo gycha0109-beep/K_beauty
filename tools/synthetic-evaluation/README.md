@@ -1,6 +1,6 @@
 # @bejewely/synthetic-evaluation
 
-Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, observing, judging, promoting, and orchestrating synthetic evaluation assets for Bejewely Face Lab and Skin Match.
+Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, observing, judging, promoting, orchestrating, reviewing, and reporting synthetic evaluation assets for Bejewely Face Lab and Skin Match.
 
 ## Production boundary
 
@@ -315,18 +315,80 @@ docs/adr/0018-pilot-source-freeze-checkpoint-and-terminal-corrections.md
 
 ADR 0018 tightens the source freeze, makes valid-ineligible/no-asset outcomes explicit, defines wave checkpoint readiness, and requires T9 to revalidate current T6 G4 status.
 
+## Toolkit Track #T8
+
+Implemented:
+
+- stored T7 closeout, projection, event heads, checkpoints, and referenced T2–T6 evidence revalidation
+- canonical image SHA-256 verification before review rendering
+- exact 20-row slot evidence table with A/B/C/D five-slot denominators
+- technical failure, valid-ineligible, incomplete, non-Gold, held, rejected, and cancelled outcomes preserved
+- immutable evidence snapshot, metric set, review package, report review, report, revision, and export artifacts
+- Provider-only comparison gate with non-Provider drift rejection
+- descriptive count, rate, count-delta, and percentage-point-delta metrics only
+- blind contact sheet with non-linkable review item IDs and separate blind asset paths
+- annotated audit contact sheet with explicit warnings and source metadata
+- deterministic resize-only PNG thumbnails with no crop, retouch, recoloring, or mark removal
+- explicit human report-review checklist before report confirmation
+- source-linked typed report claims with winner, ranking, significance, causal, clinical, identity, and demographic claims prohibited
+- deterministic canonical JSON, LF CSV, and accessible HTML internal exports
+- append-only report revisions with one immutable successor per predecessor
+- staged export publication with manifest last and existing-file rehash
+- G4 status reported only as of campaign closeout
+- split, holdout, G5, public publishing, and production authority reserved for later tracks
+
+Commands:
+
+```bash
+npm run synthetic:report -- \
+  --campaign-run <campaignRunId> \
+  --source-preflight
+
+npm run synthetic:report -- \
+  --campaign-run <campaignRunId> \
+  --build-review-package
+
+npm run synthetic:report -- \
+  --campaign-run <campaignRunId> \
+  --review report-review.json \
+  --confirm
+
+npm run synthetic:report -- \
+  --compare <campaignRunIdA>,<campaignRunIdB> \
+  --source-preflight
+
+npm run synthetic:export -- \
+  --report <report-digest> \
+  --internal-review
+```
+
+The report-review request must provide a pseudonymous reviewer ID and explicitly confirm source integrity, denominator, claims, hold visibility, and contact-sheet review. T8 does not auto-approve these checks.
+
+Design and decisions:
+
+```text
+docs/review-export-report-v1.md
+docs/review-export-report-implementation-v1.md
+docs/adr/0019-report-source-snapshot-and-derived-metric-authority.md
+docs/adr/0020-fixed-denominator-and-non-causal-provider-comparison.md
+docs/adr/0021-blind-annotated-review-and-immutable-report-revisions.md
+docs/adr/0022-evidence-metric-render-layering-and-g4-time-boundaries.md
+```
+
+ADR 0022 separates frozen evidence identity from metric, review, renderer, report, and export identities. Historical G4 references remain an as-of-closeout snapshot; T9 must revalidate current T6 status before dataset placement.
+
 ## Not included
 
 - automatic image generation
-- actual pilot campaign execution
+- actual pilot campaign or report execution
 - browser automation
 - same-person verification
 - archetype scoring
 - actual human review execution or reviewed dataset
 - automatic legal or rights judgment
 - automatic T4 Provider execution
-- automatic T5/T6 review or approval
-- T8 report/export implementation
+- automatic T5/T6/T8 review or approval
+- public report upload or publishing
 - G5 holdout lock or dataset split
 - database, API route, UI, or production integration
 
