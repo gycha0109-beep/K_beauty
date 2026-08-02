@@ -18,6 +18,13 @@ function contained(root, relativePath) {
   return absolute;
 }
 async function assertNoSymlinkComponents(root, target) {
+  try {
+    const rootStat = await lstat(root);
+    if (rootStat.isSymbolicLink()) throw Object.assign(new Error("report_path_symlink_forbidden"), { code: "report_path_symlink_forbidden" });
+    if (!rootStat.isDirectory()) throw Object.assign(new Error("report_path_invalid"), { code: "report_path_invalid" });
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
   const relative = path.relative(root, target);
   const parts = relative.split(path.sep).filter(Boolean);
   let current = root;
@@ -82,9 +89,11 @@ export async function saveReviewArtifacts({ dataRoot, sourceSnapshot, artifactIn
   writes.push(await writeSemanticJson(root, objectPath("metric-sets", metricSet.metricSetDigest), metricSet, verifyCampaignMetricSetIntegrity, "metricSetDigest"));
   writes.push(await writeSemanticJson(root, objectPath("review-packages", reviewPackage.packageDigest), reviewPackage, verifyCampaignReviewPackageIntegrity, "packageDigest"));
   for (const thumbnail of thumbnails) {
-    const bytes = reviewFiles.get(thumbnail.relativePath);
-    if (!bytes || sha256Hex(bytes) !== thumbnail.sha256 || bytes.length !== thumbnail.byteLength) throw Object.assign(new Error("report_thumbnail_invalid"), { code: "report_thumbnail_invalid" });
-    writes.push(await writeExclusiveBytes(root, `objects/review-assets/${reviewPackage.packageDigest}/${thumbnail.relativePath}`, bytes));
+    for (const relativePath of [thumbnail.blindRelativePath, thumbnail.annotatedRelativePath]) {
+      const bytes = reviewFiles.get(relativePath);
+      if (!bytes || sha256Hex(bytes) !== thumbnail.sha256 || bytes.length !== thumbnail.byteLength) throw Object.assign(new Error("report_thumbnail_invalid"), { code: "report_thumbnail_invalid" });
+      writes.push(await writeExclusiveBytes(root, `objects/review-assets/${reviewPackage.packageDigest}/${relativePath}`, bytes));
+    }
   }
   const htmlChecks = [
     ["review/blind-contact-sheet.html", reviewPackage.blindContactSheetDigest],
