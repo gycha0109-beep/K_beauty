@@ -143,10 +143,10 @@ export async function makeFakeSource({ dataRoot = null, providerProfileId = "gem
 export async function makeDerivedBundle(options = {}) {
   const source = await makeFakeSource(options);
   const rowResult = deriveCampaignSlotRows(source);
-  if (!rowResult.ok) throw new Error(`rows_failed:${rowResult.errors[0]?.code}`);
+  if (!rowResult.ok) throw new Error(`rows_failed:${JSON.stringify(rowResult.errors)}`);
   const snapshotResult = buildCampaignEvidenceSnapshot({ sources: [source], rows: rowResult.rows, capturedAt: "2026-08-03T00:10:00.000Z" });
-  if (!snapshotResult.ok) throw new Error(`snapshot_failed:${snapshotResult.errors[0]?.code}`);
+  if (!snapshotResult.ok) throw new Error(`snapshot_failed:${JSON.stringify(snapshotResult.errors)}`);
   const metricResult = deriveCampaignMetricSet({ sourceSnapshot: snapshotResult.snapshot, rows: rowResult.rows });
-  if (!metricResult.ok) throw new Error(`metrics_failed:${metricResult.errors[0]?.code}`);
+  if (!metricResult.ok) throw new Error(`metrics_failed:${JSON.stringify(metricResult.errors)}`);
   return { source, rows: rowResult.rows, sourceSnapshot: snapshotResult.snapshot, artifactIndex: snapshotResult.artifactIndex, metricSet: metricResult.metricSet };
 }
