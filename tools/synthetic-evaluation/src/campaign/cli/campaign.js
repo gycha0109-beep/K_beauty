@@ -10,11 +10,11 @@ import {
   issuePilotWave,
   nextPilotSlotAction,
   registerPilotGenerationHandoff,
-  registerPilotStage,
   reservePilotGenerationRetry,
   resumePilotCampaign,
   submitPilotCheckpoint
 } from "../orchestrator.js";
+import { registerPilotStage } from "../stage-registration.js";
 import { recoverCampaignWriterClaim } from "../storage.js";
 
 function parseArgs(argv) {
