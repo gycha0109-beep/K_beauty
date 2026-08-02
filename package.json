@@ -2,6 +2,10 @@
   "name": "k-beauty-ai-skin-test",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
@@ -26,6 +30,20 @@
     "verify:premium-session-runtime-diagnostics": "node scripts/verify-premium-session-runtime-diagnostics.mjs",
     "verify:premium-image-sanitizer-capacity": "node scripts/verify-premium-image-sanitizer-capacity.mjs",
     "check:premium-browser-journey-local": "node scripts/check-premium-browser-journey-local.mjs",
+    "synthetic:test": "npm run test --workspace @bejewely/synthetic-evaluation",
+    "synthetic:verify": "npm run verify --workspace @bejewely/synthetic-evaluation",
+    "synthetic:import": "npm run import --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:observe": "npm run observe --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:judge": "npm run judge --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:consensus": "npm run consensus --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:align": "npm run align --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:promote": "npm run promote --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:campaign": "npm run campaign --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:report": "npm run report --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:export": "npm run export --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:dataset": "npm run dataset --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:baseline": "npm run baseline --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:rehearsal": "npm run rehearsal --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint"
   },
   "dependencies": {
