@@ -76,3 +76,17 @@ export {
 } from "./promotion/decision.js";
 
 export * from "./campaign/index.js";
+export {
+  buildAndStoreCampaignReviewPackage,
+  confirmCampaignReport,
+  exportCampaignReport,
+  preflightCampaignReport
+} from "./reporting/orchestrator.js";
+export {
+  verifyCampaignEvidenceSnapshotIntegrity,
+  verifyCampaignMetricSetIntegrity,
+  verifyCampaignSlotRowIntegrity
+} from "./reporting/derive.js";
+export { verifyCampaignReviewPackageIntegrity } from "./reporting/review-package.js";
+export { verifyCampaignReportIntegrity, verifyReportReviewSubmissionIntegrity, verifyReportRevisionLinkIntegrity } from "./reporting/claims-report.js";
+export { verifyCampaignExportManifestIntegrity } from "./reporting/render.js";
