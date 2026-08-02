@@ -31,6 +31,9 @@ current active G4
 - `tools/synthetic-evaluation/docs/adr/0024-leakage-components-sticky-splits-and-exposure-monotonicity.md`
 - `tools/synthetic-evaluation/docs/adr/0025-deterministic-component-splitting-and-immutable-dataset-versions.md`
 - `tools/synthetic-evaluation/docs/adr/0026-g5-holdout-lock-and-regression-baseline-boundaries.md`
+- `tools/synthetic-evaluation/docs/adr/0027-source-universe-lock-basis-and-two-stage-dataset-activation.md`
+
+ADR 0027은 독립 자체 리뷰에서 발견한 source cherry-picking과 content-addressed identity cycle을 해결하며, 주 설계 문서의 충돌하는 초기 ordering을 supersede한다.
 
 ## 핵심 결정
 
@@ -43,11 +46,14 @@ current active G4
 7. 새 edge가 prior cross-split components를 연결하면 자동 재배치하지 않고 dataset/baseline authority를 invalidation한다.
 8. caller seed를 금지하고 source/graph/plan digest 기반 deterministic assignment entropy를 사용한다.
 9. infeasible quota를 component 분리로 해결하지 않는다.
-10. human dataset-lock review가 완료된 뒤에만 manifest-last dataset version을 발행한다.
+10. human dataset-lock review가 완료된 뒤에만 locked version을 발행한다.
 11. G5는 `G5_LEAKAGE_LOCKED_HOLDOUT` usage lock이며 label-quality 승급이 아니다.
 12. dataset version, G5, regression baseline identity를 분리한다.
 13. default export에서 holdout identity와 asset reference를 제외한다.
 14. T9 v1은 model training/inference/scoring을 실행하지 않는다.
+15. v1 source request는 arbitrary candidate/G4 allowlist를 받지 않고 closed-run universe 전체의 current active G4를 검토한다.
+16. dataset member record, version manifest, exposure claim, G5 사이의 digest cycle을 `DatasetLockBasisV1`로 분리한다.
+17. locked version 이후 exposure/G5/status를 작성하고 `DatasetActivationManifestV1`을 최종 active-authority commit point로 발행한다.
 
 ## 자체 리뷰 수정
 
@@ -59,6 +65,10 @@ current active G4
 - source exclusions/quarantine을 dataset denominator에서 분리
 - holdout materialization을 별도 explicit authorization으로 분리
 - dataset lock과 model-specific baseline identity 분리
+- candidate-level source allowlist 제거 및 source-universe selection 추가
+- pre-manifest member/exposure/G5의 future dataset digest 참조 cycle 제거
+- locked version과 active dataset authority를 두 단계로 분리
+- partial G5/exposure publication이 active dataset으로 오인되지 않도록 activation manifest-last boundary 추가
 
 ## 비대상
 
