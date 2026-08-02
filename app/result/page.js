@@ -1660,11 +1660,6 @@ function buildFreeResultV2Evidence(form = {}, result = null, copy, locale = "ko"
     photoSignals.push(normalized.summary);
   }
 
-  // TODO: replace this display fallback once photo analysis always returns structured visible signals.
-  if (!photoSignals.length) {
-    photoSignals.push(locale === "en" ? "photo cues were limited" : "사진 신호는 제한적으로 확인됨");
-  }
-
   const surveySignals = buildSurveyEvidenceSignals(form, locale);
 
   return {
