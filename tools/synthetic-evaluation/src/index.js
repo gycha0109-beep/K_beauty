@@ -57,3 +57,20 @@ export {
   registerDerivedGradeRecord,
   registerIntentAlignment
 } from "./judgment/alignment-registrar.js";
+
+export {
+  confirmPromotion,
+  preparePromotionConfirmation,
+  preparePromotionPolicyReviewPreflight,
+  preparePromotionSourcePreflight,
+  revokePromotion
+} from "./promotion/orchestrator.js";
+export { verifyPromotionSourceSnapshotIntegrity } from "./promotion/source-snapshot.js";
+export { verifyPromotionEvidenceBundleIntegrity } from "./promotion/evidence.js";
+export { verifyPromotionReviewSubmissionIntegrity } from "./promotion/promotion-review.js";
+export {
+  projectPromotionStatus,
+  verifyG4GradeRecordIntegrity,
+  verifyPromotionDecisionIntegrity,
+  verifyPromotionStatusEventIntegrity
+} from "./promotion/decision.js";
