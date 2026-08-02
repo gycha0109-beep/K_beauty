@@ -107,15 +107,40 @@ docs/adr/0005-observation-contract-snapshot-and-blind-execution.md
 docs/adr/0006-observation-execution-claim-and-authority.md
 ```
 
+## Toolkit Track #T5
+
+Designed; runtime implementation is separate:
+
+- process-level blind judgment assignments
+- immutable pseudonymous human-review submissions
+- minimum two independent reviewers with explicit blind adjudication
+- sealed consensus before generation-intent access
+- finalized `GenerationSpec` as the only intent source
+- gate, target, and diagnostic axis separation
+- no aggregate quality score
+- conservative absence/count/region handling
+- exact face-feature value alignment with strength left unverifiable
+- paired skin target assessment without same-person identity claims
+- append-only G2/G3 derivation
+- G4/G5 promotion excluded
+
+Design and decisions:
+
+```text
+docs/judgment-intent-alignment-v1.md
+docs/adr/0007-blind-judgment-sealing-and-intent-join.md
+docs/adr/0008-purpose-specific-alignment-and-grade-derivation.md
+```
+
 ## Not included
 
 - automatic image generation
-- batch import or batch observation
+- batch import, observation, judgment, or alignment
 - browser automation
 - same-person verification
 - archetype scoring
-- intent alignment or consensus
-- dataset promotion
+- #T5 runtime judgment, consensus, or alignment implementation
+- dataset promotion or lock
 - database, API route, UI, or production integration
 
 ## Verification
