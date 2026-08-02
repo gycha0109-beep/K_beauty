@@ -1,6 +1,6 @@
 # @bejewely/synthetic-evaluation
 
-Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, judging, and promoting synthetic evaluation assets for Bejewely Face Lab and Skin Match.
+Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, observing, judging, and promoting synthetic evaluation assets for Bejewely Face Lab and Skin Match.
 
 ## Production boundary
 
@@ -65,56 +65,58 @@ npm run synthetic:import -- --request .synthetic-local/requests/import-0001.json
 npm run synthetic:import -- --request .synthetic-local/requests/import-0001.json --confirm
 ```
 
-Not included:
+## Toolkit Track #T4
 
-- Provider API or browser execution
-- image generation
-- batch confirm
-- face observation or same-person verification
-- archetype scoring
-- dataset promotion
-- database, API route, UI, or production integration
+Implemented:
+
+- source-addressed semantic observation contract snapshot
+- Toolkit-owned strict validator and normalizer for the pinned Vision/Face Lab contract
+- process-level blind candidate input
+- canonical asset path and SHA-256 preflight
+- explicit adapter profile and model allowlist
+- Provider-free fixture replay
+- bounded OpenAI transport with one image attempt and no retry
+- immutable execution claim before Provider dispatch
+- content-addressed observation object and manifest-last run publication
+- explicit replicate ordinals
+- valid ineligible observations separated from Provider/contract failures
+- fixture-only results blocked from judgment handoff
+- raw Provider response, image copy, base64 artifact, and absolute-path retention prohibited
+
+Commands:
+
+```bash
+npm run synthetic:observe -- \
+  --request .synthetic-local/requests/observe-0001.json \
+  --preflight
+
+npm run synthetic:observe -- \
+  --request .synthetic-local/requests/observe-0001.json \
+  --execute \
+  --api-key-env OPENAI_API_KEY
+```
+
+`--api-key-env` must be named explicitly for `provider_bounded` execution. The toolkit does not search for credentials automatically. Fixture replay requires no credential and is never authoritative for judgment or promotion.
 
 Design and decisions:
 
 ```text
-docs/candidate-import-provenance-v1.md
-docs/adr/0003-import-artifact-retention-and-registration-outcomes.md
-docs/adr/0004-import-implementation-resolution.md
-```
-
-ADR 0003 removes a committed quarantine state. ADR 0004 distinguishes logical artifact digests from full-envelope bytes, defines manifest-last publication, preserves retry timestamps, keeps mark provenance unverified, and defers batch confirm.
-
-## Toolkit Track #T4 design
-
-Defined:
-
-- blind candidate input as the only observation image boundary
-- pinned snapshot of the current canonical Vision/Face Lab observation contract
-- direct production runtime import prohibition
-- contract, Provider transport, and registration separation
-- preflight with zero Provider calls and zero writes
-- explicit execute with one image-bearing attempt and no automatic retry
-- immutable observation objects and manifest-last run publication
-- valid ineligible observation versus Provider/contract failure separation
-- replicate ordinal identity and idempotent retry
-- raw Provider response and image-copy retention prohibition
-- blind judgment handoff without generation intent
-
-Not implemented:
-
-- observation contract snapshot exporter
-- Provider transport
-- observation CLI
-- observation run storage
-- judgment, consensus, archetype scoring, or promotion
-
-Design and decision:
-
-```text
 docs/observation-adapter-v1.md
+docs/observation-adapter-implementation-v1.md
 docs/adr/0005-observation-contract-snapshot-and-blind-execution.md
+docs/adr/0006-observation-execution-claim-and-authority.md
 ```
+
+## Not included
+
+- automatic image generation
+- batch import or batch observation
+- browser automation
+- same-person verification
+- archetype scoring
+- intent alignment or consensus
+- dataset promotion
+- database, API route, UI, or production integration
 
 ## Verification
 

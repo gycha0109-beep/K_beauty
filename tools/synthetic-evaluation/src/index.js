@@ -22,3 +22,20 @@ export {
 } from "./import/image-processing.js";
 export { buildCandidateIdentity, buildCandidateManifest, buildAssetManifest } from "./import/build-candidate.js";
 export { readCandidateRegistry, findDuplicateReferences } from "./import/read-candidate-registry.js";
+
+export { observeCandidate } from "./observation/observe-candidate.js";
+export { preflightObservationRun } from "./observation/preflight-observation.js";
+export { normalizeObservationPayload } from "./observation/normalize-observation.js";
+export { createObservationExecutionClaim, readObservationObject, registerObservationRun } from "./observation/register-observation-run.js";
+export { executeBoundedOpenAIObservation, ObservationTransportError } from "./observation/openai-transport.js";
+export { ELIGIBLE_PARITY_FIXTURE, INELIGIBLE_PARITY_FIXTURE, INVALID_PARITY_FIXTURE } from "./observation/parity-fixtures.js";
+export { OBSERVATION_ADAPTER_PROFILE, resolveObservationAdapterProfile } from "./observation/profiles.js";
+export {
+  CANONICAL_OBSERVATION_SNAPSHOT,
+  OBSERVATION_PROMPT,
+  OBSERVATION_PROMPT_DIGEST,
+  OBSERVATION_SEMANTIC_EXPORT,
+  OBSERVATION_SEMANTIC_EXPORT_DIGEST,
+  verifyCanonicalObservationSnapshot
+} from "./observation/snapshot/canonical-v1.js";
+export { verifyObservationSourceCheckout } from "./observation/snapshot/verify-source-checkout.js";
