@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { sha256Hex, stableStringify } from "../shared/canonical-json.js";
 import { preflightCampaignReportSource } from "./source-preflight.js";
 import { buildProviderComparisonKey } from "./comparison.js";
 import {
@@ -7,7 +8,8 @@ import {
   deriveCampaignMetricSet,
   deriveCampaignSlotRows,
   verifyCampaignEvidenceSnapshotIntegrity,
-  verifyCampaignMetricSetIntegrity
+  verifyCampaignMetricSetIntegrity,
+  verifyCampaignSlotRowIntegrity
 } from "./derive.js";
 import { buildCampaignReviewPackage, verifyCampaignReviewPackageIntegrity } from "./review-package.js";
 import {
@@ -25,9 +27,7 @@ import {
   withReportWriterClaim
 } from "./storage.js";
 
-function failure(code, pathName, detail = null) {
-  return Object.freeze({ ok: false, errors: Object.freeze([{ code, path: pathName, detail }]) });
-}
+function failure(code, pathName, detail = null) { return Object.freeze({ ok: false, errors: Object.freeze([{ code, path: pathName, detail }]) }); }
 
 async function preflightSources({ dataRoot, campaignRunIds, closeoutDigests = [] }) {
   if (!Array.isArray(campaignRunIds) || ![1,2].includes(campaignRunIds.length) || new Set(campaignRunIds).size !== campaignRunIds.length) return failure("report_not_ready", "campaignRunIds");
@@ -49,32 +49,21 @@ export async function preflightCampaignReport({ dataRoot, campaignRunIds, closeo
     if (!compared.ok) return compared;
     comparisonKey = compared.comparisonKey;
   }
-  const rowGroups = [];
+  const rows = [];
   for (const source of sourceResult.sources) {
     const derived = deriveCampaignSlotRows(source);
     if (!derived.ok) return derived;
-    rowGroups.push(...derived.rows);
+    rows.push(...derived.rows);
   }
-  rowGroups.sort((left, right) => `${left.campaignRunId}:${left.conditionId}:${left.conditionOrdinal}:${left.slotId}`.localeCompare(`${right.campaignRunId}:${right.conditionId}:${right.conditionOrdinal}:${right.slotId}`));
-  const snapshotResult = buildCampaignEvidenceSnapshot({ sources: sourceResult.sources, rows: rowGroups, comparisonKey, capturedAt });
+  rows.sort((left, right) => `${left.campaignRunId}:${left.conditionId}:${left.conditionOrdinal}:${left.slotId}`.localeCompare(`${right.campaignRunId}:${right.conditionId}:${right.conditionOrdinal}:${right.slotId}`));
+  const snapshotResult = buildCampaignEvidenceSnapshot({ sources: sourceResult.sources, rows, comparisonKey, capturedAt });
   if (!snapshotResult.ok) return snapshotResult;
-  const metrics = deriveCampaignMetricSet({ sourceSnapshot: snapshotResult.snapshot, rows: rowGroups });
+  const metrics = deriveCampaignMetricSet({ sourceSnapshot: snapshotResult.snapshot, rows });
   if (!metrics.ok) return metrics;
-  return Object.freeze({
-    ok: true,
-    sources: sourceResult.sources,
-    sourceSnapshot: snapshotResult.snapshot,
-    artifactIndex: snapshotResult.artifactIndex,
-    rows: rowGroups,
-    metricSet: metrics.metricSet,
-    comparisonKey,
-    writesPerformed: 0
-  });
+  return Object.freeze({ ok: true, sources: sourceResult.sources, sourceSnapshot: snapshotResult.snapshot, artifactIndex: snapshotResult.artifactIndex, rows, metricSet: metrics.metricSet, comparisonKey, writesPerformed: 0 });
 }
 
-function scopeId(runIds) {
-  return runIds.length === 1 ? runIds[0] : `comparison-${runIds.slice().sort().join("-")}`;
-}
+function scopeId(runIds) { return runIds.length === 1 ? runIds[0] : `comparison-${runIds.slice().sort().join("-")}`; }
 
 export async function buildAndStoreCampaignReviewPackage({ dataRoot, campaignRunIds, closeoutDigests = [], actorId = "report_operator" }) {
   return withReportWriterClaim(dataRoot, scopeId(campaignRunIds), actorId, "build-review-package", async () => {
@@ -82,24 +71,14 @@ export async function buildAndStoreCampaignReviewPackage({ dataRoot, campaignRun
     if (!prepared.ok) return prepared;
     const review = await buildCampaignReviewPackage({ dataRoot, sourceSnapshot: prepared.sourceSnapshot, rows: prepared.rows, artifactIndex: prepared.artifactIndex });
     if (!review.ok) return review;
-    const stored = await saveReviewArtifacts({
-      dataRoot,
-      sourceSnapshot: prepared.sourceSnapshot,
-      artifactIndex: prepared.artifactIndex,
-      rows: prepared.rows,
-      metricSet: prepared.metricSet,
-      reviewPackage: review.reviewPackage,
-      thumbnails: review.thumbnails,
-      reviewFiles: review.files
-    });
+    const stored = await saveReviewArtifacts({ dataRoot, sourceSnapshot: prepared.sourceSnapshot, artifactIndex: prepared.artifactIndex, rows: prepared.rows, metricSet: prepared.metricSet, reviewPackage: review.reviewPackage, thumbnails: review.thumbnails, reviewFiles: review.files });
     return Object.freeze({ ok: true, ...prepared, reviewPackage: review.reviewPackage, thumbnails: review.thumbnails, reviewFiles: review.files, writesPerformed: stored.createdCount });
   });
 }
 
 async function readJsonObject(dataRoot, type, digest) {
   const root = reportingStorageLayout.reportsRoot(dataRoot);
-  const objectPath = reportingStorageLayout.objectPath(type, digest);
-  return JSON.parse(await readFile(reportingStorageLayout.contained(root, objectPath), "utf8"));
+  return JSON.parse(await readFile(reportingStorageLayout.contained(root, reportingStorageLayout.objectPath(type, digest)), "utf8"));
 }
 
 async function readReviewFiles(dataRoot, packageDigest) {
@@ -119,23 +98,14 @@ async function readReviewFiles(dataRoot, packageDigest) {
   return files;
 }
 
-export async function confirmCampaignReport({
-  dataRoot,
-  campaignRunIds,
-  closeoutDigests = [],
-  reviewerId,
-  reviewedAt = new Date().toISOString(),
-  predecessorReportDigest = null,
-  revisionReasonCode = null,
-  actorId = "report_operator"
-}) {
+export async function confirmCampaignReport({ dataRoot, campaignRunIds, closeoutDigests = [], reviewerId, reviewChecks, reviewedAt = new Date().toISOString(), predecessorReportDigest = null, revisionReasonCode = null, actorId = "report_operator" }) {
   return withReportWriterClaim(dataRoot, scopeId(campaignRunIds), actorId, "confirm-report", async () => {
     const prepared = await preflightCampaignReport({ dataRoot, campaignRunIds, closeoutDigests });
     if (!prepared.ok) return prepared;
     const review = await buildCampaignReviewPackage({ dataRoot, sourceSnapshot: prepared.sourceSnapshot, rows: prepared.rows, artifactIndex: prepared.artifactIndex });
     if (!review.ok) return review;
     await saveReviewArtifacts({ dataRoot, sourceSnapshot: prepared.sourceSnapshot, artifactIndex: prepared.artifactIndex, rows: prepared.rows, metricSet: prepared.metricSet, reviewPackage: review.reviewPackage, thumbnails: review.thumbnails, reviewFiles: review.files });
-    const reviewed = createReportReviewSubmission({ sourceSnapshot: prepared.sourceSnapshot, metricSet: prepared.metricSet, reviewPackage: review.reviewPackage, reviewerId, reviewedAt });
+    const reviewed = createReportReviewSubmission({ sourceSnapshot: prepared.sourceSnapshot, metricSet: prepared.metricSet, reviewPackage: review.reviewPackage, reviewerId, checks: reviewChecks, reviewedAt });
     if (!reviewed.ok) return reviewed;
     const built = buildCampaignReport({ sourceSnapshot: prepared.sourceSnapshot, metricSet: prepared.metricSet, reviewPackage: review.reviewPackage, reviewSubmission: reviewed.submission, predecessorReportDigest });
     if (!built.ok) return built;
@@ -153,28 +123,39 @@ export async function confirmCampaignReport({
   });
 }
 
+function verifyStoredExportBundle({ sourceSnapshot, metricSet, reviewPackage, report, indexObject, slotObject, thumbnailObject }) {
+  if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage) || !verifyCampaignReportIntegrity(report, metricSet)) return false;
+  if (metricSet.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || reviewPackage.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || report.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest) return false;
+  if (!indexObject || indexObject.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || indexObject.artifactIndexDigest !== sourceSnapshot.artifactIndexDigest || sha256Hex(stableStringify(indexObject.entries)) !== sourceSnapshot.artifactIndexDigest) return false;
+  if (!slotObject || slotObject.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || slotObject.slotEvidenceDigest !== sourceSnapshot.slotEvidenceDigest || !Array.isArray(slotObject.rows) || slotObject.rows.length !== 20 * sourceSnapshot.sourceRuns.length || !slotObject.rows.every(verifyCampaignSlotRowIntegrity) || sha256Hex(stableStringify(slotObject.rows)) !== sourceSnapshot.slotEvidenceDigest) return false;
+  if (!thumbnailObject || thumbnailObject.sourceSnapshotDigest !== sourceSnapshot.sourceSnapshotDigest || thumbnailObject.reviewPackageDigest !== reviewPackage.packageDigest || thumbnailObject.thumbnailIndexDigest !== reviewPackage.thumbnailIndexDigest || sha256Hex(stableStringify(thumbnailObject.thumbnails)) !== reviewPackage.thumbnailIndexDigest) return false;
+  return true;
+}
+
 export async function exportCampaignReport({ dataRoot, reportDigest, generatedAt = new Date().toISOString(), actorId = "report_operator" }) {
   if (!/^[a-f0-9]{64}$/.test(reportDigest || "")) return failure("campaign_export_invalid", "reportDigest");
   return withReportWriterClaim(dataRoot, `report-${reportDigest.slice(0, 24)}`, actorId, "publish-export", async () => {
-    let report;
-    let sourceSnapshot;
-    let metricSet;
-    let reviewPackage;
-    let indexObject;
-    let slotObject;
+    let report, sourceSnapshot, metricSet, reviewPackage, indexObject, slotObject, thumbnailObject;
     try {
       report = await readJsonObject(dataRoot, "reports", reportDigest);
-      if (!verifyCampaignReportIntegrity(report)) return failure("campaign_export_invalid", "report");
       sourceSnapshot = await readJsonObject(dataRoot, "source-snapshots", report.sourceSnapshotDigest);
       metricSet = await readJsonObject(dataRoot, "metric-sets", report.metricSetDigest);
       reviewPackage = await readJsonObject(dataRoot, "review-packages", report.reviewPackageDigest);
       indexObject = await readJsonObject(dataRoot, "artifact-indexes", sourceSnapshot.artifactIndexDigest);
       slotObject = await readJsonObject(dataRoot, "slot-tables", sourceSnapshot.slotEvidenceDigest);
-    } catch (error) {
-      return failure(error?.code || "source_artifact_missing", "reportBundle");
+      thumbnailObject = await readJsonObject(dataRoot, "thumbnail-indexes", reviewPackage.thumbnailIndexDigest);
+    } catch (error) { return failure(error?.code || "source_artifact_missing", "reportBundle"); }
+    if (!verifyStoredExportBundle({ sourceSnapshot, metricSet, reviewPackage, report, indexObject, slotObject, thumbnailObject })) return failure("campaign_export_invalid", "reportBundle", "integrity");
+    let reviewFiles;
+    try { reviewFiles = await readReviewFiles(dataRoot, reviewPackage.packageDigest); }
+    catch (error) { return failure(error?.code || "source_artifact_missing", "reviewAssets"); }
+    const blind = reviewFiles.get("review/blind-contact-sheet.html");
+    const annotated = reviewFiles.get("review/annotated-contact-sheet.html");
+    if (!blind || !annotated || sha256Hex(blind) !== reviewPackage.blindContactSheetDigest || sha256Hex(annotated) !== reviewPackage.annotatedContactSheetDigest) return failure("campaign_export_invalid", "reviewAssets", "html_digest");
+    for (const thumbnail of thumbnailObject.thumbnails) {
+      const bytes = reviewFiles.get(thumbnail.relativePath);
+      if (!bytes || bytes.length !== thumbnail.byteLength || sha256Hex(bytes) !== thumbnail.sha256) return failure("campaign_export_invalid", "reviewAssets", "thumbnail_digest");
     }
-    if (!verifyCampaignEvidenceSnapshotIntegrity(sourceSnapshot) || !verifyCampaignMetricSetIntegrity(metricSet) || !verifyCampaignReviewPackageIntegrity(reviewPackage) || !verifyCampaignReportIntegrity(report, metricSet) || indexObject.artifactIndexDigest !== sourceSnapshot.artifactIndexDigest || slotObject.slotEvidenceDigest !== sourceSnapshot.slotEvidenceDigest) return failure("campaign_export_invalid", "reportBundle", "integrity");
-    const reviewFiles = await readReviewFiles(dataRoot, reviewPackage.packageDigest);
     const rendered = buildExportFiles({ sourceSnapshot, artifactIndex: indexObject.entries, rows: slotObject.rows, metricSet, reviewPackage, reviewFiles, report, generatedAt });
     if (!rendered.ok) return rendered;
     const published = await publishExport({ dataRoot, files: rendered.files, exportManifest: rendered.exportManifest });
