@@ -113,9 +113,29 @@ test("T5 runtime has no Provider, browser, DB, or shell execution", async () => 
   }
 });
 
-test("T3 through T5 expose no batch or G4/G5 execution command", async () => {
+test("T6 runtime has no Provider, browser, DB, shell, or image transformation execution", async () => {
+  for (const file of await collectFiles(path.resolve(testDirectory, "../src/promotion"))) {
+    const source = await fs.readFile(file, "utf8");
+    assert.doesNotMatch(source, /\bfetch\s*\(|api\.openai\.com|gemini\.google|generativelanguage|playwright|puppeteer|webdriver|@supabase|child_process|execFile|spawn\s*\(/i, file);
+    assert.doesNotMatch(source, /sharp\s*\(|resize\s*\(|extract\s*\(|composite\s*\(/i, file);
+  }
+});
+
+test("public T6 API exposes authority-checked orchestration rather than raw promotion constructors", async () => {
+  const source = await fs.readFile(path.resolve(testDirectory, "../src/index.js"), "utf8");
+  assert.match(source, /preparePromotionSourcePreflight/);
+  assert.match(source, /preparePromotionPolicyReviewPreflight/);
+  assert.match(source, /confirmPromotion/);
+  assert.doesNotMatch(source, /export \{ assemblePromotionEvidenceBundle/);
+  assert.doesNotMatch(source, /export \{ deriveG4GradeRecord/);
+  assert.doesNotMatch(source, /export \{ derivePromotionDecision/);
+  assert.doesNotMatch(source, /export \{ finalizePromotionReviewSubmission/);
+});
+
+test("T3 through T6 expose no batch, G5, holdout, or split execution command", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.resolve(testDirectory, "../package.json"), "utf8"));
   const scripts = Object.keys(packageJson.scripts || {});
   assert.equal(scripts.some((name) => /batch/i.test(name)), false);
-  assert.equal(scripts.some((name) => /g4|g5|gold|holdout|promot/i.test(name)), false);
+  assert.equal(scripts.some((name) => /g5|holdout|split|lock/i.test(name)), false);
+  assert.equal(scripts.includes("promote"), true);
 });
