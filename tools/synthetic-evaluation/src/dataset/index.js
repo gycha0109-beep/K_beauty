@@ -4,10 +4,11 @@ export {
   preflightDatasetLock,
   verifyCurrentDataset
 } from "./orchestrator.js";
+export { appendDatasetVersionStatus, appendG5Status } from "./status.js";
 export { preflightDatasetSource, verifyDatasetSourceSnapshotIntegrity } from "./source.js";
 export { buildLeakageGraph, verifyLeakageGraphIntegrity } from "./leakage.js";
 export { readExposureRegistry, verifyDatasetExposureClaimIntegrity } from "./exposure.js";
-export { createDatasetSplitPlan, assignLeakageComponents, verifyDatasetSplitAssignmentIntegrity, verifyDatasetSplitPlanIntegrity } from "./split.js";
+export { verifyDatasetSplitAssignmentIntegrity, verifyDatasetSplitPlanIntegrity } from "./split.js";
 export { verifyDatasetLockReviewIntegrity } from "./review.js";
 export {
   verifyDatasetActivationManifestIntegrity,
