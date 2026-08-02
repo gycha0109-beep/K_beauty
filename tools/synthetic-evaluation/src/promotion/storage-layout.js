@@ -40,6 +40,10 @@ export function promotionStatusEventRelativePath(promotionKey, digest) {
   return path.posix.join("promotion", "status-events", promotionKey, `${digest}.json`);
 }
 
+export function promotionActivationClaimRelativePath(promotionKey) {
+  return path.posix.join("promotion", "activation-claims", `${promotionKey}.json`);
+}
+
 export function promotionStatusSuccessorClaimRelativePath(promotionKey, predecessorEventDigest) {
   return path.posix.join("promotion", "status-successor-claims", promotionKey, `${predecessorEventDigest}.json`);
 }
