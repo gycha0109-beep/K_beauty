@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { projectPromotionStatus } from "../../src/promotion/decision.js";
+import {
+  projectPromotionStatus,
+  verifyG4GradeRecordAgainstSources,
+  verifyG4GradeRecordIntegrity
+} from "../../src/promotion/decision.js";
 import {
   confirmPromotion,
+  preparePromotionConfirmation,
   preparePromotionSourcePreflight,
   revokePromotion
 } from "../../src/promotion/orchestrator.js";
+import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
 import {
   approvedPolicyReviewDrafts,
   approvedPromotionReviewDraft,
@@ -80,22 +86,71 @@ test("misaligned consensus-valid candidate records non-Gold disposition without 
   assert.equal(result.activationEvent, null);
 });
 
-test("revocation is append-only and deactivates status projection", async () => {
+test("a recomputed G4 digest cannot hide a source-scope mutation", async () => {
+  const stored = await setupStoredPromotionCase();
+  const input = await inputsFor(stored);
+  const prepared = await preparePromotionConfirmation(input);
+  assert.equal(prepared.ok, true);
+  const tampered = JSON.parse(JSON.stringify(prepared.gradeRecord));
+  tampered.scope.claimAxes = tampered.scope.claimAxes.slice(1);
+  const { gradeRecordId, recordedAt, gradeRecordDigest, ...semantic } = tampered;
+  const digest = sha256Hex(stableStringify(semantic));
+  tampered.gradeRecordDigest = digest;
+  tampered.gradeRecordId = `grd_${digest.slice(0, 24)}`;
+  assert.equal(verifyG4GradeRecordIntegrity(tampered), true);
+  assert.equal(verifyG4GradeRecordAgainstSources({
+    gradeRecord: tampered,
+    snapshot: prepared.snapshot,
+    bundle: prepared.bundle,
+    decision: prepared.decision,
+    ...prepared.reviews,
+    promotionReview: prepared.promotionReview
+  }), false);
+});
+
+test("revocation verifies stored G4 authority and deactivates status projection", async () => {
   const stored = await setupStoredPromotionCase();
   const input = await inputsFor(stored);
   const confirmed = await confirmPromotion(input);
   assert.equal(confirmed.ok, true);
-  const revoked = await revokePromotion({
+  const revocationInput = {
     dataRoot: stored.dataRoot,
+    candidateId: stored.candidateManifest.candidateId,
     promotionKey: confirmed.activationEvent.promotionKey,
     gradeRecordDigest: confirmed.gradeRecord.gradeRecordDigest,
     reasonCodes: ["newer_evidence_requires_review"],
     predecessorEventDigest: confirmed.activationEvent.eventDigest,
     recordedAt: "2026-08-03T07:00:00.000Z"
-  });
+  };
+  const revoked = await revokePromotion(revocationInput);
   assert.equal(revoked.ok, true);
   const projected = projectPromotionStatus([confirmed.activationEvent, revoked.statusEvent]);
   assert.equal(projected.ok, true);
   assert.equal(projected.active, false);
   assert.equal(projected.latestEvent.event, "revoked");
+
+  const conflicting = await revokePromotion({
+    ...revocationInput,
+    reasonCodes: ["artifact_integrity_invalid"],
+    recordedAt: "2026-08-03T08:00:00.000Z"
+  });
+  assert.equal(conflicting.ok, false);
+  assert.equal(conflicting.errors[0].code, "promotion_status_claim_conflict");
+});
+
+test("revocation rejects a caller-stated grade that is not stored authority", async () => {
+  const stored = await setupStoredPromotionCase();
+  const input = await inputsFor(stored);
+  const confirmed = await confirmPromotion(input);
+  const result = await revokePromotion({
+    dataRoot: stored.dataRoot,
+    candidateId: stored.candidateManifest.candidateId,
+    promotionKey: confirmed.activationEvent.promotionKey,
+    gradeRecordDigest: "f".repeat(64),
+    reasonCodes: ["artifact_integrity_invalid"],
+    predecessorEventDigest: confirmed.activationEvent.eventDigest,
+    recordedAt: "2026-08-03T07:00:00.000Z"
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.errors[0].code, "promotion_status_event_invalid");
 });
