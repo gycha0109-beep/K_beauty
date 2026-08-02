@@ -45,13 +45,14 @@ function resealGrade(value) {
   return { ...semantic, gradeRecordId: `grd_${digest.slice(0, 24)}`, recordedAt, gradeRecordDigest: digest };
 }
 
-test("skin-control exact consensus aligns and creates purpose-scoped G3", () => {
+test("skin-control exact consensus aligns and creates purpose-scoped G3 while T6 promotion remains pending", () => {
   const artifacts = createCandidateArtifacts({ fixture: "D" });
   const consensus = consensusFor(artifacts);
   const result = alignJudgmentToIntent({ consensus, ...artifacts, alignedAt: "2026-08-02T03:00:00.000Z" });
   assert.equal(result.ok, true);
   assert.equal(result.alignment.overallVerdict, "aligned");
-  assert.equal(result.alignment.promotionReviewEligible, true);
+  assert.equal(result.alignment.promotionReviewEligible, false);
+  assert.equal(result.alignment.promotionBlockReasons.includes("promotion_policy_pending_t6"), true);
   assert.equal(verifyIntentAlignmentIntegrity(result.alignment), true);
 
   const g3 = deriveG3ConsensusRecord({ consensus, alignment: result.alignment, recordedAt: "2026-08-02T04:00:00.000Z" });
@@ -120,6 +121,16 @@ test("recomputed outer digest cannot hide a forged required-axis digest", () => 
   const aligned = alignJudgmentToIntent({ consensus, ...artifacts });
   const tampered = clone(aligned.alignment);
   tampered.policy.requiredAxesDigest = "f".repeat(64);
+  assert.equal(verifyIntentAlignmentIntegrity(resealAlignment(tampered)), false);
+});
+
+test("recomputed outer digest cannot enable promotion before T6", () => {
+  const artifacts = createCandidateArtifacts({ fixture: "A" });
+  const consensus = consensusFor(artifacts);
+  const aligned = alignJudgmentToIntent({ consensus, ...artifacts });
+  const tampered = clone(aligned.alignment);
+  tampered.promotionReviewEligible = true;
+  tampered.promotionBlockReasons = [];
   assert.equal(verifyIntentAlignmentIntegrity(resealAlignment(tampered)), false);
 });
 
