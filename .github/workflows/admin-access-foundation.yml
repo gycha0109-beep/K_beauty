@@ -114,6 +114,45 @@ jobs:
       - name: Verify architecture boundaries
         run: npm run architecture:guard
 
+      - name: Resolve Next.js build cache scope
+        id: next-cache-scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            if [[ -z "${PR_NUMBER}" ]]; then
+              echo "Missing pull request number" >&2
+              exit 1
+            fi
+
+            scope="pr-${PR_NUMBER}"
+          else
+            safe_ref="$(printf '%s' "${REF_NAME}" | tr -c 'A-Za-z0-9_-' '-')"
+
+            if [[ -z "${safe_ref}" ]]; then
+              echo "Unable to resolve cache ref scope" >&2
+              exit 1
+            fi
+
+            scope="ref-${safe_ref}"
+          fi
+
+          echo "value=${scope}" >> "${GITHUB_OUTPUT}"
+
+      - name: Restore Next.js build cache
+        id: next-build-cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-node20-admin-access-admin-placeholder-env-v1-${{ hashFiles('package-lock.json') }}-${{ steps.next-cache-scope.outputs.value }}-${{ github.sha }}
+          restore-keys: |
+            next-${{ runner.os }}-node20-admin-access-admin-placeholder-env-v1-${{ hashFiles('package-lock.json') }}-${{ steps.next-cache-scope.outputs.value }}-
+
       - name: Build production application
         run: npm run build
 
