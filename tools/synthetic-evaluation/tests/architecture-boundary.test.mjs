@@ -95,6 +95,17 @@ test("T5 assignment CLI derives input from authoritative T4 artifacts", async ()
   assert.doesNotMatch(source, /--blind-input/);
 });
 
+test("public T5 API exposes authority-checked orchestration rather than raw alignment derivation", async () => {
+  const source = await fs.readFile(path.resolve(testDirectory, "../src/index.js"), "utf8");
+  assert.match(source, /prepareBlindJudgmentAssignment/);
+  assert.match(source, /prepareStoredJudgmentAlignment/);
+  assert.doesNotMatch(source, /export \{ createBlindJudgmentAssignment/);
+  assert.doesNotMatch(source, /export \{ buildJudgmentConsensus/);
+  assert.doesNotMatch(source, /export \{ resolveCandidateIntent/);
+  assert.doesNotMatch(source, /export \{ alignJudgmentToIntent/);
+  assert.doesNotMatch(source, /export \{ deriveG2ObservedRecord/);
+});
+
 test("T5 runtime has no Provider, browser, DB, or shell execution", async () => {
   for (const file of await collectFiles(path.resolve(testDirectory, "../src/judgment"))) {
     const source = await fs.readFile(file, "utf8");
