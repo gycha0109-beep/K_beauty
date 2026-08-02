@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "skin-quantization-calibration-fixtures-v1",
+  "declaredPurpose": "diagnostic_only_not_ground_truth",
+  "source": "recommendation_feature_v1_existing_contract_fixtures",
+  "fixtures": [
+    {
+      "id": "legacy-contract-positive-bundle-v1",
+      "referenceType": "legacy_provider_output",
+      "baselineConcernScores": {
+        "barrier": 0,
+        "dehydration": 0,
+        "oiliness": 0,
+        "redness": 0,
+        "acne": 0,
+        "pores": 0,
+        "uneven_tone": 0,
+        "uv": 0
+      },
+      "priorityTieBreaker": [
+        "uv",
+        "barrier",
+        "redness",
+        "dehydration",
+        "acne",
+        "pores",
+        "oiliness",
+        "uneven_tone"
+      ],
+      "observations": {
+        "barrier": { "status": "available", "level": "mild" },
+        "dehydration": { "status": "available", "level": "mild" },
+        "oiliness": { "status": "available", "level": "moderate" },
+        "redness": { "status": "available", "level": "mild" },
+        "acne": { "status": "available", "level": "moderate" },
+        "pores": { "status": "available", "level": "moderate" },
+        "uneven_tone": { "status": "available", "level": "mild" },
+        "uv": { "status": "unsupported", "level": null }
+      },
+      "referenceSignals": {
+        "barrier": 2,
+        "dehydration": 3,
+        "oiliness": 4,
+        "redness": 1,
+        "acne": 2,
+        "pores": 3,
+        "uneven_tone": 1,
+        "uv": 0
+      },
+      "downstreamReplay": {
+        "engine": false,
+        "product": false,
+        "routine": false,
+        "reason": "no_declared_product_and_routine_replay_corpus_on_current_stack"
+      }
+    },
+    {
+      "id": "observable-absence-contract-v1",
+      "referenceType": "contract_absence",
+      "baselineConcernScores": { "oiliness": 0 },
+      "priorityTieBreaker": ["oiliness"],
+      "observations": {
+        "oiliness": { "status": "available", "level": "none" }
+      },
+      "referenceSignals": { "oiliness": 0 },
+      "downstreamReplay": {
+        "engine": false,
+        "product": false,
+        "routine": false,
+        "reason": "absence_invariant_only"
+      }
+    },
+    {
+      "id": "unavailable-contract-v1",
+      "referenceType": "contract_status",
+      "baselineConcernScores": { "oiliness": 0 },
+      "priorityTieBreaker": ["oiliness"],
+      "observations": {
+        "oiliness": { "status": "unavailable", "level": null }
+      },
+      "referenceSignals": { "oiliness": 0 },
+      "downstreamReplay": {
+        "engine": false,
+        "product": false,
+        "routine": false,
+        "reason": "availability_invariant_only"
+      }
+    },
+    {
+      "id": "unsupported-uv-contract-v1",
+      "referenceType": "contract_status",
+      "baselineConcernScores": { "uv": 0 },
+      "priorityTieBreaker": ["uv"],
+      "observations": {
+        "uv": { "status": "unsupported", "level": null }
+      },
+      "referenceSignals": { "uv": 0 },
+      "downstreamReplay": {
+        "engine": false,
+        "product": false,
+        "routine": false,
+        "reason": "single_photo_uv_unsupported"
+      }
+    }
+  ]
+}

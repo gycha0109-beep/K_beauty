@@ -10,6 +10,7 @@ on:
       - "lib/face-lab-observation-projector.js"
       - "lib/openai-env-diagnostics.js"
       - "lib/recommendation-feature-*.js"
+      - "lib/skin-quantization-calibration.js"
       - "lib/server/vision-observation-service.js"
       - "lib/skin-observation-projector.js"
       - "lib/vision-observation-contract.js"
@@ -17,20 +18,27 @@ on:
       - "scripts/evaluate-face-lab-archetype-calibration*.mjs"
       - "scripts/face-lab-provider-e2e/**"
       - "scripts/fixtures/face-lab-archetype-calibration-*.json"
+      - "scripts/fixtures/skin-quantization-calibration-*.json"
       - "scripts/verify-analysis-request-guard.mjs"
       - "scripts/verify-anonymous-write-grant-v2.mjs"
       - "scripts/verify-analysis-rls-contract.mjs"
       - "scripts/verify-face-lab-*.mjs"
       - "scripts/verify-provider-runtime-log-sanitization.mjs"
       - "scripts/verify-recommendation-feature-*.mjs"
+      - "scripts/verify-skin-quantization-calibration.mjs"
       - "scripts/verify-unified-vision-pipeline.mjs"
       - "docs/domain/recommendation/**"
       - "docs/verification/recommendation-feature-*.json"
+      - "docs/verification/skin-quantization-*.json"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/face-lab-provider-e2e.yml"
       - ".github/workflows/unified-vision-static-guard.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -81,6 +89,9 @@ jobs:
 
       - name: Verify Recommendation Feature V1 adapters
         run: npm run verify:recommendation-feature-adapters
+
+      - name: Verify Skin quantization calibration governance
+        run: npm run verify:skin-quantization-calibration
 
       - name: Verify Face Lab evaluation contracts
         run: npm run face-lab:eval:verify
