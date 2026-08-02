@@ -67,7 +67,7 @@ The intent-aware process runs only after a sealed consensus artifact has been re
 - intent alignment shape
 - derived G2/G3 grade record shape
 
-Unknown keys, free-text authoritative notes, direct purpose/condition fields, invalid enum values, and inconsistent skin absence/count/region combinations fail closed.
+Unknown keys, free-text authoritative notes, direct purpose/condition fields, invalid enum values, and inconsistent skin absence/count/region combinations fail closed. An unreviewable submission cannot assert observed axis values.
 
 ## Consensus
 
@@ -76,9 +76,11 @@ Unknown keys, free-text authoritative notes, direct purpose/condition fields, in
 - model output is not counted as a reviewer
 - fixture observation cannot create the authoritative T4 blind input
 - per-axis result: `agreed | unresolved | unavailable | not_reviewed`
+- region arrays are canonicalized as sets before agreement comparison
 - disagreement remains `needs_adjudication`
 - a separate `human_adjudicator` may resolve only an existing disagreement
 - consensus identity excludes timestamps and contains no generation intent
+- status and per-axis results are semantically cross-validated, not accepted by digest alone
 
 ## Alignment
 
@@ -95,12 +97,15 @@ The alignment engine then selects purpose-required gate and target axes. It does
 
 Feature cue strength remains diagnostic and `unverifiable` in v1. `paired_skin_edit` cannot claim identity preservation and cannot become promotion-review eligible. `mixed_control_pilot` remains promotion blocked.
 
+Alignment verification recomputes the sorted required-axis digest, rejects duplicate axis results, requires every required axis to have a gate or target result, cross-checks required-axis verdicts against the overall verdict, and validates promotion-review eligibility constraints.
+
 ## Derived grades
 
 - `G2_OBSERVED`: authoritative, non-fixture T4 observation only
 - `G3_CONSENSUS_VALIDATED`: purpose-scoped required axes all have agreed blind consensus values
 - G3 does not mean the values match the generation intent
 - promotion review requires both purpose-scoped G3 and `overallVerdict = aligned`
+- grade verification recomputes the required-axis digest and checks G2/G3 scope semantics
 - no G4/G5 command exists
 
 ## Storage
@@ -120,12 +125,19 @@ Feature cue strength remains diagnostic and `unverifiable` in v1. `paired_skin_e
 
 Claims are written before submissions. Submission objects are content addressed and manifests are published last. Existing claims without a valid manifest block hidden resubmission. Candidate and observation artifacts remain unchanged.
 
+Stored relative paths are reconstructed from validated IDs and digests instead of trusted from manifests. Manifest extra fields, path redirection, and recomputed outer digests over semantically invalid artifacts fail closed. Consensus, alignment, and grade identities intentionally exclude timestamps; repeated writes with a different timestamp return the first valid immutable artifact rather than conflicting or replacing it.
+
 ## Review corrections applied during implementation
 
 1. Assignment issue originally accepted a caller-supplied blind bundle. It now reconstructs the bundle only from verified T4 run/object artifacts.
 2. A combined registrar caused blind commands to load intent-aware modules transitively. It was split into `blind-registrar.js` and `alignment-registrar.js`.
 3. Missing generation artifact references now fail before safe-path resolution.
 4. Architecture tests enforce that blind modules contain no purpose/spec/prompt/campaign/condition dependency.
+5. Region arrays are normalized as unordered sets before consensus comparison.
+6. Consensus status, required-axis scope, overall verdict, promotion eligibility, and G2/G3 scope are semantically checked in addition to digest verification.
+7. Submission and alignment manifest object paths are reconstructed from validated identifiers and digests.
+8. Timestamp-excluded identities preserve the first valid stored artifact on idempotent replay.
+9. Unreviewable submissions are prohibited from retaining observed axis claims.
 
 ## Verification scope
 
@@ -133,9 +145,13 @@ Claims are written before submissions. Submission objects are content addressed 
 - deterministic assignment/submission/consensus/alignment identities
 - independent reviewer and adjudication policy
 - partial consensus without purpose leakage
+- region-order equivalence
 - A/B/C/D skin alignment cases
 - feature strength limitation
 - visible-mark promotion hold
 - manifest-last registration and orphan-claim blocking
+- path-redirection rejection
+- semantic idempotency across timestamp changes
+- recomputed-digest semantic tamper rejection
 - production dependency boundary
 - no Provider, browser, DB, shell, batch, G4, or G5 execution path
