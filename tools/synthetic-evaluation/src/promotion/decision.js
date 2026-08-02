@@ -13,7 +13,12 @@ import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json
 import { verifyPromotionEvidenceBundleIntegrity } from "./evidence.js";
 import { PROMOTION_POLICY_DIGEST, splitCouplingKeysDigest } from "./policy.js";
 import { verifyPromotionReviewSubmissionIntegrity } from "./promotion-review.js";
-import { verifyPromotionLeakageReviewIntegrity } from "./reviews.js";
+import {
+  verifyPromotionAssetPolicyReviewIntegrity,
+  verifyPromotionLeakageReviewIntegrity,
+  verifyPromotionOperatorReattestationIntegrity,
+  verifyUsageRightsReviewIntegrity
+} from "./reviews.js";
 import { verifyPromotionSourceSnapshotIntegrity } from "./source-snapshot.js";
 
 function failure(code, path, detail = null) {
@@ -25,11 +30,42 @@ function semanticWithout(value, timestampKey, digestKey) {
   return semantic;
 }
 
+function gradeSemantic(value) {
+  const { gradeRecordId, recordedAt, gradeRecordDigest, ...semantic } = value;
+  return semantic;
+}
+
 function decisionOutcome(preflight, review) {
   if (preflight.status === "eligible_for_promotion_review" && review.decision === "approve_g4") return "promoted_g4";
   if (preflight.status === "retained_g3_negative_control" && review.decision === "reject") return "retained_g3_negative_control";
   if (review.decision === "hold") return "held";
   return "rejected";
+}
+
+function expectedSourceDigests({
+  snapshot,
+  bundle,
+  decision,
+  rightsReview,
+  assetPolicyReview,
+  leakageReview,
+  operatorReattestation,
+  promotionReview
+}) {
+  return [
+    snapshot.sourceSnapshotDigest,
+    bundle.bundleDigest,
+    snapshot.observation.g2RecordDigest,
+    snapshot.judgment.g3RecordDigest,
+    snapshot.judgment.consensusDigest,
+    snapshot.judgment.alignmentDigest,
+    rightsReview.reviewDigest,
+    assetPolicyReview.reviewDigest,
+    leakageReview.reviewDigest,
+    operatorReattestation.attestationDigest,
+    promotionReview.submissionDigest,
+    decision.decisionDigest
+  ].sort();
 }
 
 export function derivePromotionDecision({
@@ -38,6 +74,7 @@ export function derivePromotionDecision({
   preflight,
   operatorReattestation,
   rightsReview,
+  assetPolicyReview,
   leakageReview,
   promotionReview,
   predecessorDecisionDigest = null,
@@ -47,12 +84,19 @@ export function derivePromotionDecision({
     !verifyPromotionSourceSnapshotIntegrity(snapshot) ||
     !verifyPromotionEvidenceBundleIntegrity(bundle) ||
     !verifyPromotionReviewSubmissionIntegrity(promotionReview) ||
+    !verifyPromotionOperatorReattestationIntegrity(operatorReattestation) ||
+    !verifyUsageRightsReviewIntegrity(rightsReview) ||
+    !verifyPromotionAssetPolicyReviewIntegrity(assetPolicyReview) ||
     !verifyPromotionLeakageReviewIntegrity(leakageReview) ||
     !preflight?.ok ||
+    preflight.bundle?.bundleDigest !== bundle.bundleDigest ||
+    promotionReview.promotionKey !== snapshot.promotionKey ||
     promotionReview.evidenceBundleDigest !== bundle.bundleDigest ||
+    bundle.promotionKey !== snapshot.promotionKey ||
     bundle.sourceSnapshotDigest !== snapshot.sourceSnapshotDigest ||
     bundle.operatorReattestationDigest !== operatorReattestation.attestationDigest ||
     bundle.rightsReviewDigest !== rightsReview.reviewDigest ||
+    bundle.assetPolicyReviewDigest !== assetPolicyReview.reviewDigest ||
     bundle.leakageReviewDigest !== leakageReview.reviewDigest ||
     !(predecessorDecisionDigest === null || /^[a-f0-9]{64}$/.test(predecessorDecisionDigest)) ||
     !Number.isFinite(Date.parse(decidedAt))
@@ -101,26 +145,21 @@ export function deriveG4GradeRecord({
     !verifyPromotionSourceSnapshotIntegrity(snapshot) ||
     !verifyPromotionEvidenceBundleIntegrity(bundle) ||
     !verifyPromotionDecisionIntegrity(decision) ||
+    !verifyPromotionOperatorReattestationIntegrity(operatorReattestation) ||
+    !verifyUsageRightsReviewIntegrity(rightsReview) ||
+    !verifyPromotionAssetPolicyReviewIntegrity(assetPolicyReview) ||
+    !verifyPromotionLeakageReviewIntegrity(leakageReview) ||
+    !verifyPromotionReviewSubmissionIntegrity(promotionReview) ||
     decision.outcome !== "promoted_g4" ||
+    decision.promotionKey !== snapshot.promotionKey ||
+    decision.candidateId !== snapshot.candidate.candidateId ||
+    decision.purpose !== snapshot.generation.purpose ||
     decision.evidenceBundleDigest !== bundle.bundleDigest ||
+    promotionReview.decision !== "approve_g4" ||
     !Number.isFinite(Date.parse(recordedAt))
   ) {
     return failure("g4_grade_record_invalid", "sources");
   }
-  const sourceDigests = [
-    snapshot.sourceSnapshotDigest,
-    bundle.bundleDigest,
-    snapshot.observation.g2RecordDigest,
-    snapshot.judgment.g3RecordDigest,
-    snapshot.judgment.consensusDigest,
-    snapshot.judgment.alignmentDigest,
-    rightsReview.reviewDigest,
-    assetPolicyReview.reviewDigest,
-    leakageReview.reviewDigest,
-    operatorReattestation.attestationDigest,
-    promotionReview.submissionDigest,
-    decision.decisionDigest
-  ].sort();
   const semantic = {
     schemaVersion: G4_GRADE_RECORD_SCHEMA_VERSION,
     candidateId: snapshot.candidate.candidateId,
@@ -137,7 +176,16 @@ export function deriveG4GradeRecord({
       version: PROMOTION_POLICY_VERSION,
       digest: PROMOTION_POLICY_DIGEST
     },
-    sourceDigests,
+    sourceDigests: expectedSourceDigests({
+      snapshot,
+      bundle,
+      decision,
+      rightsReview,
+      assetPolicyReview,
+      leakageReview,
+      operatorReattestation,
+      promotionReview
+    }),
     splitCouplingKeysDigest: splitCouplingKeysDigest(leakageReview.splitCouplingKeys)
   };
   const gradeRecordDigest = sha256Hex(stableStringify(semantic));
@@ -147,15 +195,67 @@ export function deriveG4GradeRecord({
     recordedAt,
     gradeRecordDigest
   });
-  return verifyG4GradeRecordIntegrity(gradeRecord)
+  return verifyG4GradeRecordAgainstSources({
+    gradeRecord,
+    snapshot,
+    bundle,
+    decision,
+    rightsReview,
+    assetPolicyReview,
+    leakageReview,
+    operatorReattestation,
+    promotionReview
+  })
     ? Object.freeze({ ok: true, gradeRecord })
     : failure("g4_grade_record_invalid", "gradeRecord");
 }
 
 export function verifyG4GradeRecordIntegrity(value) {
   if (!validateG4GradeRecordShape(value).ok || value.policy.digest !== PROMOTION_POLICY_DIGEST) return false;
-  const digest = sha256Hex(stableStringify(semanticWithout(value, "recordedAt", "gradeRecordDigest")));
+  const digest = sha256Hex(stableStringify(gradeSemantic(value)));
   return value.gradeRecordDigest === digest && value.gradeRecordId === `grd_${digest.slice(0, 24)}`;
+}
+
+export function verifyG4GradeRecordAgainstSources({
+  gradeRecord,
+  snapshot,
+  bundle,
+  decision,
+  rightsReview,
+  assetPolicyReview,
+  leakageReview,
+  operatorReattestation,
+  promotionReview
+}) {
+  if (
+    !verifyG4GradeRecordIntegrity(gradeRecord) ||
+    !verifyPromotionSourceSnapshotIntegrity(snapshot) ||
+    !verifyPromotionEvidenceBundleIntegrity(bundle) ||
+    !verifyPromotionDecisionIntegrity(decision) ||
+    !verifyPromotionOperatorReattestationIntegrity(operatorReattestation) ||
+    !verifyUsageRightsReviewIntegrity(rightsReview) ||
+    !verifyPromotionAssetPolicyReviewIntegrity(assetPolicyReview) ||
+    !verifyPromotionLeakageReviewIntegrity(leakageReview) ||
+    !verifyPromotionReviewSubmissionIntegrity(promotionReview)
+  ) {
+    return false;
+  }
+  return gradeRecord.candidateId === snapshot.candidate.candidateId &&
+    gradeRecord.scope.purpose === snapshot.generation.purpose &&
+    stableStringify(gradeRecord.scope.claimAxes) === stableStringify([...snapshot.claims.requiredAxes].sort()) &&
+    gradeRecord.scope.claimValuesDigest === snapshot.claims.claimValuesDigest &&
+    stableStringify(gradeRecord.scope.excludedClaims) === stableStringify([...snapshot.claims.excludedClaims].sort()) &&
+    gradeRecord.splitCouplingKeysDigest === splitCouplingKeysDigest(leakageReview.splitCouplingKeys) &&
+    stableStringify(gradeRecord.sourceDigests) === stableStringify(expectedSourceDigests({
+      snapshot,
+      bundle,
+      decision,
+      rightsReview,
+      assetPolicyReview,
+      leakageReview,
+      operatorReattestation,
+      promotionReview
+    }));
 }
 
 export function createPromotionStatusEvent({
@@ -182,25 +282,44 @@ export function createPromotionStatusEvent({
 }
 
 export function verifyPromotionStatusEventIntegrity(value) {
-  return validatePromotionStatusEventShape(value).ok &&
-    value.eventDigest === sha256Hex(stableStringify(semanticWithout(value, "recordedAt", "eventDigest")));
+  if (!validatePromotionStatusEventShape(value).ok) return false;
+  if (value.event === "activated" && (value.predecessorEventDigest !== null || value.reasonCodes.length !== 0)) return false;
+  if (value.event !== "activated" && value.predecessorEventDigest === null) return false;
+  return value.eventDigest === sha256Hex(stableStringify(semanticWithout(value, "recordedAt", "eventDigest")));
 }
 
 export function projectPromotionStatus(events) {
   if (!Array.isArray(events) || events.length === 0 || !events.every(verifyPromotionStatusEventIntegrity)) {
-    return Object.freeze({ ok: false, errors: Object.freeze([{ code: "promotion_status_event_invalid", path: "events", detail: null }]) });
+    return failure("promotion_status_event_invalid", "events");
   }
+  const eventDigests = events.map((event) => event.eventDigest);
+  if (new Set(eventDigests).size !== eventDigests.length) return failure("promotion_status_event_invalid", "events", "duplicate_event");
+  const promotionKeys = new Set(events.map((event) => event.promotionKey));
+  const gradeDigests = new Set(events.map((event) => event.gradeRecordDigest));
+  if (promotionKeys.size !== 1 || gradeDigests.size !== 1) return failure("promotion_status_event_invalid", "events", "mixed_chain");
+
   const byDigest = new Map(events.map((event) => [event.eventDigest, event]));
-  const successors = new Set(events.map((event) => event.predecessorEventDigest).filter(Boolean));
-  const leaves = events.filter((event) => !successors.has(event.eventDigest));
-  if (leaves.length !== 1) return failure("promotion_status_event_invalid", "events", "ambiguous_event_chain");
-  let current = leaves[0];
-  const seen = new Set();
-  while (current.predecessorEventDigest) {
-    if (seen.has(current.eventDigest) || !byDigest.has(current.predecessorEventDigest)) return failure("promotion_status_event_invalid", "events", "broken_event_chain");
-    seen.add(current.eventDigest);
-    current = byDigest.get(current.predecessorEventDigest);
+  const roots = events.filter((event) => event.predecessorEventDigest === null);
+  if (roots.length !== 1 || roots[0].event !== "activated") return failure("promotion_status_event_invalid", "events", "invalid_root");
+  const childCounts = new Map();
+  for (const event of events) {
+    if (!event.predecessorEventDigest) continue;
+    if (!byDigest.has(event.predecessorEventDigest)) return failure("promotion_status_event_invalid", "events", "broken_event_chain");
+    childCounts.set(event.predecessorEventDigest, (childCounts.get(event.predecessorEventDigest) || 0) + 1);
   }
+  if ([...childCounts.values()].some((count) => count !== 1)) return failure("promotion_status_event_invalid", "events", "branched_event_chain");
+  const leaves = events.filter((event) => !childCounts.has(event.eventDigest));
+  if (leaves.length !== 1) return failure("promotion_status_event_invalid", "events", "ambiguous_event_chain");
+
+  const seen = new Set();
+  let current = leaves[0];
+  while (current) {
+    if (seen.has(current.eventDigest)) return failure("promotion_status_event_invalid", "events", "cyclic_event_chain");
+    seen.add(current.eventDigest);
+    current = current.predecessorEventDigest ? byDigest.get(current.predecessorEventDigest) : null;
+  }
+  if (seen.size !== events.length) return failure("promotion_status_event_invalid", "events", "disconnected_event_chain");
+
   const latest = leaves[0];
   return Object.freeze({
     ok: true,
