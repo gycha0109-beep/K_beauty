@@ -10,7 +10,9 @@ import {
   verifyDerivedGradeRecordIntegrity
 } from "../../src/judgment/grades.js";
 import { finalizeJudgmentSubmission } from "../../src/judgment/submission.js";
+import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
 import {
+  clone,
   createAssignment,
   createCandidateArtifacts,
   createSubmissionDraft
@@ -27,6 +29,20 @@ function consensusFor(artifacts, overrides = {}) {
     return result.submission;
   });
   return buildJudgmentConsensus({ assignment, submissions }).consensus;
+}
+
+function resealAlignment(value) {
+  const cloneValue = clone(value);
+  const { alignmentId, alignmentDigest, alignedAt, ...semantic } = cloneValue;
+  const digest = sha256Hex(stableStringify(semantic));
+  return { ...semantic, alignmentId: `aln_${digest.slice(0, 24)}`, alignedAt, alignmentDigest: digest };
+}
+
+function resealGrade(value) {
+  const cloneValue = clone(value);
+  const { gradeRecordId, gradeRecordDigest, recordedAt, ...semantic } = cloneValue;
+  const digest = sha256Hex(stableStringify(semantic));
+  return { ...semantic, gradeRecordId: `grd_${digest.slice(0, 24)}`, recordedAt, gradeRecordDigest: digest };
 }
 
 test("skin-control exact consensus aligns and creates purpose-scoped G3", () => {
@@ -96,4 +112,23 @@ test("external mark hold blocks promotion review without rewriting alignment tru
   assert.equal(result.alignment.overallVerdict, "aligned");
   assert.equal(result.alignment.promotionReviewEligible, false);
   assert.equal(result.alignment.promotionBlockReasons.includes("external_mark_provenance_unresolved"), true);
+});
+
+test("recomputed outer digest cannot hide a forged required-axis digest", () => {
+  const artifacts = createCandidateArtifacts({ fixture: "A" });
+  const consensus = consensusFor(artifacts);
+  const aligned = alignJudgmentToIntent({ consensus, ...artifacts });
+  const tampered = clone(aligned.alignment);
+  tampered.policy.requiredAxesDigest = "f".repeat(64);
+  assert.equal(verifyIntentAlignmentIntegrity(resealAlignment(tampered)), false);
+});
+
+test("recomputed outer digest cannot hide a forged G3 scope digest", () => {
+  const artifacts = createCandidateArtifacts({ fixture: "A" });
+  const consensus = consensusFor(artifacts);
+  const aligned = alignJudgmentToIntent({ consensus, ...artifacts });
+  const g3 = deriveG3ConsensusRecord({ consensus, alignment: aligned.alignment });
+  const tampered = clone(g3.gradeRecord);
+  tampered.scope.requiredAxesDigest = "e".repeat(64);
+  assert.equal(verifyDerivedGradeRecordIntegrity(resealGrade(tampered)), false);
 });
