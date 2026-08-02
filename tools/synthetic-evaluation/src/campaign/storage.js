@@ -1,11 +1,14 @@
-import { mkdir, open, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, readdir, rm } from "node:fs/promises";
 import path from "node:path";
+import { validatePilotProjection } from "@bejewely/face-contracts";
 import { sha256Hex, stableStringify } from "../shared/canonical-json.js";
 import { verifyPilotCampaignEventIntegrity } from "./events.js";
 import { verifyGenerationHandoffIntegrity, verifyGenerationWorkPacketIntegrity } from "./generation.js";
 import { verifyPilotCampaignPlanIntegrity, verifyPilotCampaignRunIntegrity, verifyPilotSlotIntegrity } from "./plan.js";
 import { verifyPilotCheckpointApprovalIntegrity } from "./checkpoint.js";
 import { verifyPilotCampaignCloseoutIntegrity } from "./closeout.js";
+
+const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 
 function text(value) {
   return `${stableStringify(value)}\n`;
@@ -110,8 +113,15 @@ export async function saveCheckpoint(dataRoot, approval) {
   return writeImmutableJson(nativePath(dataRoot, campaignCheckpointRelativePath(approval.campaignRunId, approval.approvalDigest)), approval, (existing) => verifyPilotCheckpointApprovalIntegrity(existing) && existing.approvalDigest === approval.approvalDigest);
 }
 
+function verifyProjectionIntegrity(projection) {
+  if (!validatePilotProjection(projection).ok) return false;
+  const { projectionDigest, ...semantic } = projection;
+  return projectionDigest === sha256Hex(stableStringify(semantic));
+}
+
 export async function saveProjection(dataRoot, projection) {
-  return writeImmutableJson(nativePath(dataRoot, campaignProjectionRelativePath(projection.campaignRunId, projection.projectionDigest)), projection, (existing) => existing?.projectionDigest === projection.projectionDigest);
+  if (!verifyProjectionIntegrity(projection)) throw Object.assign(new Error("campaign_projection_invalid"), { code: "campaign_projection_invalid" });
+  return writeImmutableJson(nativePath(dataRoot, campaignProjectionRelativePath(projection.campaignRunId, projection.projectionDigest)), projection, (existing) => verifyProjectionIntegrity(existing) && existing.projectionDigest === projection.projectionDigest);
 }
 
 export async function saveCloseout(dataRoot, closeout) {
@@ -138,21 +148,33 @@ async function readJsonFiles(directory) {
 
 export async function readCampaignBundle(dataRoot, runId) {
   const runRoot = nativePath(dataRoot, campaignRunRootRelativePath(runId));
-  const [plan, run, slots, events, checkpoints, packets, handoffs, closeouts] = await Promise.all([
+  const slotTree = await readJsonFiles(path.join(runRoot, "slots"));
+  const [plan, run, events, checkpoints, closeouts] = await Promise.all([
     readJson(path.join(runRoot, "plan.json")),
     readJson(path.join(runRoot, "run.json")),
-    readJsonFiles(path.join(runRoot, "slots")).then((values) => values.filter((value) => value?.schemaVersion === "pilot-slot-v1")),
     readJsonFiles(path.join(runRoot, "events")),
     readJsonFiles(path.join(runRoot, "checkpoints")),
-    readJsonFiles(path.join(runRoot, "slots")).then((values) => values.filter((value) => value?.schemaVersion === "generation-work-packet-v1")),
-    readJsonFiles(path.join(runRoot, "slots")).then((values) => values.filter((value) => value?.schemaVersion === "generation-handoff-v1")),
     readJsonFiles(path.join(runRoot, "closeouts"))
   ]);
-  if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || run.campaignRunId !== runId || slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) throw Object.assign(new Error("campaign_bundle_invalid"), { code: "campaign_bundle_invalid" });
+  const slots = slotTree.filter((value) => value?.schemaVersion === "pilot-slot-v1").sort((a,b) => a.slotId.localeCompare(b.slotId));
+  const packets = slotTree.filter((value) => value?.schemaVersion === "generation-work-packet-v1");
+  const handoffs = slotTree.filter((value) => value?.schemaVersion === "generation-handoff-v1");
+  if (!verifyPilotCampaignPlanIntegrity(plan)) throw Object.assign(new Error("campaign_bundle_invalid:plan"), { code: "campaign_bundle_invalid", detail: "plan" });
+  if (!verifyPilotCampaignRunIntegrity(run, plan) || run.campaignRunId !== runId) throw Object.assign(new Error("campaign_bundle_invalid:run"), { code: "campaign_bundle_invalid", detail: "run" });
+  if (slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) throw Object.assign(new Error("campaign_bundle_invalid:slots"), { code: "campaign_bundle_invalid", detail: `slots:${slots.length}` });
+  if (!events.every(verifyPilotCampaignEventIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:events"), { code: "campaign_bundle_invalid", detail: "events" });
+  if (!checkpoints.every(verifyPilotCheckpointApprovalIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:checkpoints"), { code: "campaign_bundle_invalid", detail: "checkpoints" });
+  if (!packets.every(verifyGenerationWorkPacketIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:packets"), { code: "campaign_bundle_invalid", detail: "packets" });
+  for (const handoff of handoffs) {
+    const packet = packets.find((item) => item.attemptId === handoff.attemptId && item.slotId === handoff.slotId);
+    if (!packet || !verifyGenerationHandoffIntegrity(handoff, packet)) throw Object.assign(new Error("campaign_bundle_invalid:handoffs"), { code: "campaign_bundle_invalid", detail: "handoffs" });
+  }
+  if (!closeouts.every(verifyPilotCampaignCloseoutIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:closeouts"), { code: "campaign_bundle_invalid", detail: "closeouts" });
   return Object.freeze({ plan, run, slots: Object.freeze(slots), events: Object.freeze(events), checkpoints: Object.freeze(checkpoints), packets: Object.freeze(packets), handoffs: Object.freeze(handoffs), closeouts: Object.freeze(closeouts) });
 }
 
 export async function withCampaignWriterClaim(dataRoot, runId, actorId, operation, fn) {
+  if (!TOKEN.test(actorId || "") || !TOKEN.test(operation || "")) throw Object.assign(new Error("campaign_writer_claim_invalid"), { code: "campaign_writer_claim_invalid" });
   const claimPath = nativePath(dataRoot, path.posix.join(campaignRunRootRelativePath(runId), "claims", "writer.lock"));
   await mkdir(path.dirname(claimPath), { recursive: true });
   const claim = { schemaVersion: "campaign-writer-claim-v1", runId, actorId, operation, claimedAt: new Date().toISOString() };
@@ -176,6 +198,7 @@ export async function withCampaignWriterClaim(dataRoot, runId, actorId, operatio
 }
 
 export async function recoverCampaignWriterClaim({ dataRoot, runId, expectedClaimDigest, recoveredBy, reasonCode }) {
+  if (!TOKEN.test(recoveredBy || "")) throw Object.assign(new Error("campaign_claim_recovery_invalid"), { code: "campaign_claim_recovery_invalid" });
   const claimPath = nativePath(dataRoot, path.posix.join(campaignRunRootRelativePath(runId), "claims", "writer.lock"));
   let claim;
   try {
@@ -184,7 +207,8 @@ export async function recoverCampaignWriterClaim({ dataRoot, runId, expectedClai
     if (error?.code === "ENOENT") return Object.freeze({ ok: true, state: "no_claim" });
     throw error;
   }
-  if (claim.claimDigest !== expectedClaimDigest || sha256Hex(stableStringify(Object.fromEntries(Object.entries(claim).filter(([key]) => key !== "claimDigest")))) !== expectedClaimDigest || reasonCode !== "stale_process_confirmed") throw Object.assign(new Error("campaign_claim_recovery_invalid"), { code: "campaign_claim_recovery_invalid" });
+  const { claimDigest, ...claimSemantic } = claim;
+  if (claimDigest !== expectedClaimDigest || sha256Hex(stableStringify(claimSemantic)) !== expectedClaimDigest || reasonCode !== "stale_process_confirmed") throw Object.assign(new Error("campaign_claim_recovery_invalid"), { code: "campaign_claim_recovery_invalid" });
   const recovery = {
     schemaVersion: "campaign-writer-claim-recovery-v1",
     runId,
