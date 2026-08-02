@@ -38,6 +38,8 @@
     "synthetic:align": "npm run align --workspace @bejewely/synthetic-evaluation --",
     "synthetic:promote": "npm run promote --workspace @bejewely/synthetic-evaluation --",
     "synthetic:campaign": "npm run campaign --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:report": "npm run report --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:export": "npm run export --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint"
   },
   "dependencies": {
