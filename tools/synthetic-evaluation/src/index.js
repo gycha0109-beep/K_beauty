@@ -26,7 +26,7 @@ export { readCandidateRegistry, findDuplicateReferences } from "./import/read-ca
 export { observeCandidate } from "./observation/observe-candidate.js";
 export { preflightObservationRun } from "./observation/preflight-observation.js";
 export { normalizeObservationPayload } from "./observation/normalize-observation.js";
-export { createObservationExecutionClaim, readObservationObject, registerObservationRun } from "./observation/register-observation-run.js";
+export { createObservationExecutionClaim, readObservationObject, readObservationRun, registerObservationRun } from "./observation/register-observation-run.js";
 export { executeBoundedOpenAIObservation, ObservationTransportError } from "./observation/openai-transport.js";
 export { ELIGIBLE_PARITY_FIXTURE, INELIGIBLE_PARITY_FIXTURE, INVALID_PARITY_FIXTURE } from "./observation/parity-fixtures.js";
 export { OBSERVATION_ADAPTER_PROFILE, resolveObservationAdapterProfile } from "./observation/profiles.js";
