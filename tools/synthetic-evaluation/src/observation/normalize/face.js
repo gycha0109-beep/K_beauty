@@ -95,14 +95,14 @@ export function normalizeFace(rawFace, eligibility, { provider, model, semanticE
   let status = "insufficient_evidence", failureReason = "observation_coverage_insufficient";
   if (!eligibility.faceLabEligible) { status = "unavailable"; failureReason = "eligibility_failed"; }
   else if (quality.status !== "available") failureReason = "quality_response_invalid";
-  else if (quality.value.structureSuitability === "unsuitable" || quality.value.faceVisibility === "poor") { status = "unavailae"; failureReason = "structure_quality_insufficient"; }
+  else if (quality.value.structureSuitability === "unsuitable" || quality.value.faceVisibility === "poor") { status = "unavailable"; failureReason = "structure_quality_insufficient"; }
   else if (core === 5) { status = "available"; failureReason = null; }
   else if (core >= 3) { status = "partial"; failureReason = null; }
   return {
     schemaVersion: versions.faceSchemaVersion,
     model: { provider, name: model, promptVersion: versions.facePromptVersion },
     status, failureReason, quality, observations, coverage,
-    warnings: quality.value?.colorSuitability === "unsuitable ? ["color_observations_unavailable"] : [],
+    warnings: quality.value?.colorSuitability === "unsuitable" ? ["color_observations_unavailable"] : [],
     privacy: { sourceImagePersisted: false }
   };
 }
