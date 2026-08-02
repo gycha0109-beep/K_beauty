@@ -5,6 +5,7 @@ import {
   preflightDatasetLock,
   verifyCurrentDataset
 } from "../orchestrator.js";
+import { appendDatasetVersionStatus, appendG5Status } from "../status.js";
 import { preflightDatasetSource } from "../source.js";
 import { readExposureRegistry } from "../exposure.js";
 import { dataRoot, fail, parseArgs, print, readRequest } from "./helpers.js";
@@ -26,6 +27,17 @@ async function main() {
     if (!datasetLineageId || !datasetVersionId || !requestPath) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
     const request = await readRequest(root, requestPath, "holdoutRequest");
     const result = await materializeHoldoutReferences({ dataRoot: root, datasetLineageId, datasetVersionId, request });
+    print(result); if (!result.ok) process.exitCode = 1; return;
+  }
+  if (args.flags.has("--dataset-status") || args.flags.has("--g5-status")) {
+    const datasetLineageId = args.values.get("--dataset-lineage");
+    const datasetVersionId = args.values.get("--dataset-version");
+    const statusPath = args.values.get("--status-request");
+    if (!datasetLineageId || !datasetVersionId || !statusPath) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
+    const request = await readRequest(root, statusPath, "statusRequest");
+    const result = args.flags.has("--dataset-status")
+      ? await appendDatasetVersionStatus({ dataRoot: root, datasetLineageId, datasetVersionId, event: request.event, reasonCodes: request.reasonCodes, recordedAt: request.recordedAt })
+      : await appendG5Status({ dataRoot: root, datasetLineageId, datasetVersionId, g5GradeRecordDigest: request.g5GradeRecordDigest, event: request.event, reasonCodes: request.reasonCodes, recordedAt: request.recordedAt });
     print(result); if (!result.ok) process.exitCode = 1; return;
   }
   const requestPath = args.values.get("--request");
