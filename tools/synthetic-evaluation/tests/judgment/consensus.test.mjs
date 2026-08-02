@@ -5,7 +5,9 @@ import {
   verifyJudgmentConsensusIntegrity
 } from "../../src/judgment/consensus.js";
 import { finalizeJudgmentSubmission } from "../../src/judgment/submission.js";
+import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
 import {
+  clone,
   createAssignment,
   createCandidateArtifacts,
   createSubmissionDraft
@@ -18,6 +20,13 @@ function finalized(assignment, spec, judgeId, overrides = {}, judgeType = "human
   });
   if (!result.ok) throw new Error(`submission_failed:${result.errors[0]?.code}`);
   return result.submission;
+}
+
+function resealConsensus(value) {
+  const cloneValue = clone(value);
+  const { consensusId, consensusDigest, sealedAt, ...semantic } = cloneValue;
+  const digest = sha256Hex(stableStringify(semantic));
+  return { ...semantic, consensusId: `jcon_${digest.slice(0, 24)}`, sealedAt, consensusDigest: digest };
 }
 
 test("two independent identical reviewers create intent-free complete consensus", () => {
@@ -94,4 +103,37 @@ test("irrelevant unavailable face axis seals partial consensus without purpose l
   assert.equal(result.ok, true);
   assert.equal(result.consensus.status, "sealed_partial");
   assert.equal(result.consensus.axes["face.featureContrast"].status, "unavailable");
+});
+
+test("region arrays are compared as canonical sets", () => {
+  const artifacts = createCandidateArtifacts({ fixture: "D" });
+  const assignment = createAssignment(artifacts.candidateManifest);
+  const regions = [...artifacts.finalizedSpec.skinIntent.redness.regions];
+  const result = buildJudgmentConsensus({
+    assignment,
+    submissions: [
+      finalized(assignment, artifacts.finalizedSpec, "judge_alpha"),
+      finalized(assignment, artifacts.finalizedSpec, "judge_beta", {
+        "skin.redness.regions": { value: regions.reverse() }
+      })
+    ]
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.consensus.status, "sealed_complete");
+  assert.deepEqual(result.consensus.axes["skin.redness.regions"].value, [...artifacts.finalizedSpec.skinIntent.redness.regions].sort());
+});
+
+test("recomputed digest cannot legitimize an impossible consensus status", () => {
+  const artifacts = createCandidateArtifacts({ fixture: "A" });
+  const assignment = createAssignment(artifacts.candidateManifest);
+  const built = buildJudgmentConsensus({
+    assignment,
+    submissions: [
+      finalized(assignment, artifacts.finalizedSpec, "judge_alpha"),
+      finalized(assignment, artifacts.finalizedSpec, "judge_beta")
+    ]
+  });
+  const tampered = clone(built.consensus);
+  tampered.status = "sealed_partial";
+  assert.equal(verifyJudgmentConsensusIntegrity(resealConsensus(tampered)), false);
 });
