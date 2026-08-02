@@ -180,11 +180,11 @@ ADR 0009 supersedes earlier wording that makes blind consensus depend on purpose
 
 ## Toolkit Track #T6
 
-Designed, not implemented:
+Implemented:
 
-- stored T3/T4/T5 evidence revalidation before promotion review
+- stored T3/T4/T5 evidence and canonical-image SHA revalidation
 - two-stage source snapshot and final evidence bundle
-- full candidate promotion snapshot and operator re-attestation
+- full candidate projection snapshot and operator re-attestation
 - separate internal-evaluation rights review
 - explicit canonical-image visual policy review
 - exact duplicate representative policy and manual perceptual leakage review
@@ -194,15 +194,44 @@ Designed, not implemented:
 - conditional face-feature enum G4 with strength excluded
 - paired and mixed-control G4 prohibition
 - non-Gold retention for consensus-valid misaligned controls
-- append-only promotion, supersession, and revocation events
+- independent promotion reviewer role separation
+- append-only decision, activation, and revocation artifacts
+- one activation root and one immutable status successor per predecessor
 - G5 and dataset split authority reserved for #T9
 
-T5 always leaves promotion eligibility pending. T6 must not treat `aligned` or G3 alone as Gold approval.
+T5 always leaves promotion eligibility pending. T6 does not treat `aligned` or G3 alone as Gold approval.
+
+Commands:
+
+```bash
+npm run synthetic:promote -- \
+  --candidate cand_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --alignment <alignment-digest> \
+  --source-preflight
+
+npm run synthetic:promote -- \
+  --candidate cand_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --alignment <alignment-digest> \
+  --policy-reviews promotion-policy-reviews.json \
+  --policy-review-preflight
+
+npm run synthetic:promote -- \
+  --candidate cand_xxxxxxxxxxxxxxxxxxxxxxxx \
+  --alignment <alignment-digest> \
+  --policy-reviews promotion-policy-reviews.json \
+  --promotion-review promotion-review.json \
+  --confirm
+
+npm run synthetic:promote -- \
+  --request promotion-revocation.json \
+  --revoke
+```
 
 Design and decisions:
 
 ```text
 docs/promotion-policy-v1.md
+docs/promotion-policy-implementation-v1.md
 docs/adr/0010-purpose-scoped-g4-and-grade-authority.md
 docs/adr/0011-promotion-evidence-snapshot-and-revalidation.md
 docs/adr/0012-leakage-coupling-and-append-only-revocation.md
@@ -219,7 +248,7 @@ ADR 0013 supersedes the single-bundle ordering in the main T6 design and require
 - same-person verification
 - archetype scoring
 - actual human review execution or reviewed dataset
-- implemented G4 promotion
+- automatic legal or rights judgment
 - G5 holdout lock or dataset split
 - database, API route, UI, or production integration
 
