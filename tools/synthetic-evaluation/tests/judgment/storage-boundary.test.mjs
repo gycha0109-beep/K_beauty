@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import {
   registerJudgmentSubmission
-} from "../../src/judgment/registrar.js";
+} from "../../src/judgment/blind-registrar.js";
 import {
   createAssignment,
   createCandidateArtifacts,
