@@ -163,3 +163,39 @@ test("existing claim without manifest blocks hidden retry", async () => {
     await asset.cleanup();
   }
 });
+
+
+test("tampered observation object and unsafe object reference fail closed", async () => {
+  const asset = await setup();
+  try {
+    const request = requestFor(asset);
+    const result = await observeCandidate({ request, action: "execute", dataRoot: asset.dataRoot, now: advancingClock() });
+    const unsafeReference = { ...result.run.observation, objectRelativePath: "../escape.json" };
+    await assert.rejects(() => readObservationObject(asset.dataRoot, unsafeReference), /observation_reference_invalid/);
+
+    const objectPath = path.join(asset.dataRoot, ...result.run.observation.objectRelativePath.split("/"));
+    const object = JSON.parse(await readFile(objectPath, "utf8"));
+    object.bundle.skin.signals.redness = 5;
+    await writeFile(objectPath, JSON.stringify(object));
+    await assert.rejects(() => readObservationObject(asset.dataRoot, result.run.observation), /observation_object_integrity_invalid/);
+  } finally {
+    await asset.cleanup();
+  }
+});
+
+test("tampered run manifest is not accepted as an idempotent existing run", async () => {
+  const asset = await setup();
+  try {
+    const request = requestFor(asset);
+    const result = await observeCandidate({ request, action: "execute", dataRoot: asset.dataRoot, now: advancingClock() });
+    const manifestPath = path.join(asset.dataRoot, "observation-runs", request.candidate.candidateId, result.run.runId, "manifest.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+    manifest.authority = "observed_image";
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    const replay = await observeCandidate({ request, action: "execute", dataRoot: asset.dataRoot, now: advancingClock() });
+    assert.equal(replay.ok, false);
+    assert.equal(replay.errors[0].code, "run_manifest_integrity_invalid");
+  } finally {
+    await asset.cleanup();
+  }
+});
