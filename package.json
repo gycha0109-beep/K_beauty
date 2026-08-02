@@ -36,6 +36,7 @@
     "synthetic:judge": "npm run judge --workspace @bejewely/synthetic-evaluation --",
     "synthetic:consensus": "npm run consensus --workspace @bejewely/synthetic-evaluation --",
     "synthetic:align": "npm run align --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:promote": "npm run promote --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint"
   },
   "dependencies": {
