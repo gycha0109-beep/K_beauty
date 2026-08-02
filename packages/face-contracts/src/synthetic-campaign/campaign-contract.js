@@ -1,8 +1,13 @@
 import {
   GENERATION_HANDOFF_OUTCOMES,
   GENERATION_HANDOFF_SCHEMA_VERSION,
+  GENERATION_RETRY_ALLOWED_REASONS,
+  GENERATION_RETRY_FORBIDDEN_REASONS,
   GENERATION_WORK_PACKET_SCHEMA_VERSION,
+  OBSERVATION_RECOVERY_ALLOWED_REASONS,
+  OBSERVATION_RECOVERY_FORBIDDEN_OUTCOMES,
   PILOT_ALLOWED_PROVIDER_PROFILES,
+  PILOT_BUDGET,
   PILOT_CAMPAIGN_CLOSEOUT_SCHEMA_VERSION,
   PILOT_CAMPAIGN_EVENT_SCHEMA_VERSION,
   PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION,
@@ -11,6 +16,8 @@ import {
   PILOT_CHECKPOINT_APPROVAL_SCHEMA_VERSION,
   PILOT_CONDITIONS,
   PILOT_EVENT_TYPES,
+  PILOT_IMMEDIATE_STOP_REASONS,
+  PILOT_PAUSE_REASONS,
   PILOT_REASON_CODES,
   PILOT_SLOT_SCHEMA_VERSION,
   PILOT_SOURCE_FREEZE_SCHEMA_VERSION,
@@ -39,12 +46,20 @@ function exactKeys(value, expected) {
   return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
 }
 
+function exactScalarObject(value, expected) {
+  return exactKeys(value, Object.keys(expected)) && Object.entries(expected).every(([key, item]) => value[key] === item);
+}
+
 function isIso(value) {
   return typeof value === "string" && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
 }
 
 function uniqueArray(value, allowed = null) {
   return Array.isArray(value) && new Set(value).size === value.length && (!allowed || value.every((item) => allowed.includes(item)));
+}
+
+function exactArray(value, expected) {
+  return Array.isArray(value) && value.length === expected.length && value.every((item, index) => item === expected[index]);
 }
 
 function error(code, path, detail = null) {
@@ -90,23 +105,18 @@ function validateSourceFreeze(value, errors) {
     !PILOT_ALLOWED_PROVIDER_PROFILES.includes(value.providerProfileId) ||
     value.providerProfileVersion !== "1.0.0" ||
     !HEX64.test(value.providerProfileDigest || "") ||
-    typeof value.providerTemplateVersion !== "string" ||
-    value.providerTemplateVersion.length === 0 ||
-    typeof value.t3ImportPolicyVersion !== "string" ||
-    typeof value.t4ObservationContractVersion !== "string" ||
-    typeof value.t4AdapterProfileId !== "string" ||
-    typeof value.t4AdapterProfileVersion !== "string" ||
-    typeof value.t5JudgmentPolicyVersion !== "string" ||
+    !SAFE_TOKEN.test(value.providerTemplateVersion || "") ||
+    !SAFE_TOKEN.test(value.t3ImportPolicyVersion || "") ||
+    !SAFE_TOKEN.test(value.t4ObservationContractVersion || "") ||
+    !SAFE_TOKEN.test(value.t4AdapterProfileId || "") ||
+    !SAFE_TOKEN.test(value.t4AdapterProfileVersion || "") ||
+    typeof value.t5JudgmentPolicyVersion !== "string" || value.t5JudgmentPolicyVersion.length < 1 || value.t5JudgmentPolicyVersion.length > 128 ||
     value.t6PromotionPolicyId !== "bejewely-promotion-policy-v1" ||
     value.t6PromotionPolicyVersion !== "1.0.0" ||
     !HEX64.test(value.sourceFreezeDigest || "")
-  ) {
-    errors.push(error("campaign_source_freeze_invalid", "sourceFreeze"));
-  }
+  ) errors.push(error("campaign_source_freeze_invalid", "sourceFreeze"));
   for (const field of ["fixtureObjectDigests", "finalizedSpecDigests"]) {
-    if (!exactKeys(value[field], ["A", "B", "C", "D"]) || !Object.values(value[field]).every((digest) => HEX64.test(digest || ""))) {
-      errors.push(error("campaign_source_freeze_invalid", `sourceFreeze.${field}`));
-    }
+    if (!exactKeys(value[field], ["A", "B", "C", "D"]) || !Object.values(value[field]).every((digest) => HEX64.test(digest || ""))) errors.push(error("campaign_source_freeze_invalid", `sourceFreeze.${field}`));
   }
 }
 
@@ -123,22 +133,28 @@ export function validatePilotCampaignPlan(value) {
     !isIso(value.authoredAt) ||
     !HEX64.test(value.planDigest || "")
   ) errors.push(error("campaign_plan_invalid", "$"));
-  if (!exactKeys(value.objective, ["questionId", "purpose", "primarySlotCount", "interpretationOwner"]) || value.objective.questionId !== "skin-control-abcd-e2e-v1" || value.objective.purpose !== "skin_cue_control" || value.objective.primarySlotCount !== 20 || value.objective.interpretationOwner !== "t8") errors.push(error("campaign_plan_invalid", "objective"));
+  if (!exactScalarObject(value.objective, { questionId: "skin-control-abcd-e2e-v1", purpose: "skin_cue_control", primarySlotCount: 20, interpretationOwner: "t8" })) errors.push(error("campaign_plan_invalid", "objective"));
   validateSourceFreeze(value.sourceFreeze, errors);
   if (!Array.isArray(value.matrix) || value.matrix.length !== 4) errors.push(error("campaign_matrix_invalid", "matrix"));
   else {
-    const ordered = ["A", "B", "C", "D"];
-    value.matrix.forEach((row, index) => {
-      const conditionId = ordered[index];
+    ["A", "B", "C", "D"].forEach((conditionId, index) => {
+      const row = value.matrix[index];
       const expected = PILOT_CONDITIONS[conditionId];
-      if (!exactKeys(row, ["conditionId", "fixtureId", "primarySlots", "waveAllocation"]) || row.conditionId !== conditionId || row.fixtureId !== expected.fixtureId || row.primarySlots !== 5 || JSON.stringify(row.waveAllocation) !== "[1,2,2]") errors.push(error("campaign_matrix_invalid", `matrix.${index}`));
+      if (!exactKeys(row, ["conditionId", "fixtureId", "primarySlots", "waveAllocation"]) || row.conditionId !== conditionId || row.fixtureId !== expected.fixtureId || row.primarySlots !== 5 || !exactArray(row.waveAllocation, [1,2,2])) errors.push(error("campaign_matrix_invalid", `matrix.${index}`));
     });
   }
-  if (!exactKeys(value.budgets, ["primaryGenerationSlots", "technicalGenerationRetryReserve", "maxGenerationAttemptsTotal", "maxGenerationAttemptsPerSlot", "maxAuthoritativeObservationRuns", "maxObservationRecoveryRuns", "maxObservationRunsTotal", "requiredPrimaryReviewersPerCandidate", "maxAdjudicationsPerCandidate", "maxPromotionReviewsPerEligibleCandidate"]) || JSON.stringify(Object.values(value.budgets)) !== JSON.stringify([20,10,30,2,20,10,30,2,1,1])) errors.push(error("campaign_budget_invalid", "budgets"));
-  if (!exactKeys(value.retryPolicy, ["generationRetryAllowedReasons", "generationRetryForbiddenReasons", "registeredCandidateReplacement", "observationRecoveryAllowedReasons", "observationRecoveryForbiddenOutcomes"]) || value.retryPolicy.registeredCandidateReplacement !== "forbidden") errors.push(error("campaign_retry_policy_invalid", "retryPolicy"));
-  if (!exactKeys(value.checkpointPolicy, ["waveCount", "wavePrimarySlotCounts", "manualApprovalRequired", "readinessBoundary"]) || value.checkpointPolicy.waveCount !== 3 || JSON.stringify(value.checkpointPolicy.wavePrimarySlotCounts) !== "[4,8,8]" || value.checkpointPolicy.manualApprovalRequired !== true || value.checkpointPolicy.readinessBoundary !== "authoritative_t4_or_technical_terminal") errors.push(error("campaign_checkpoint_policy_invalid", "checkpointPolicy"));
-  if (!exactKeys(value.stopPolicy, ["immediateStopReasons", "pauseReasons", "lowYieldAutomaticStop"]) || value.stopPolicy.lowYieldAutomaticStop !== false || !uniqueArray(value.stopPolicy.immediateStopReasons) || !uniqueArray(value.stopPolicy.pauseReasons)) errors.push(error("campaign_stop_policy_invalid", "stopPolicy"));
-  if (!exactKeys(value.outputPolicy, ["retainAllRegisteredCandidates", "retainAllTerminalOutcomes", "reportAuthority", "splitAuthority"]) || value.outputPolicy.retainAllRegisteredCandidates !== true || value.outputPolicy.retainAllTerminalOutcomes !== true || value.outputPolicy.reportAuthority !== "t8" || value.outputPolicy.splitAuthority !== "t9") errors.push(error("campaign_output_policy_invalid", "outputPolicy"));
+  if (!exactScalarObject(value.budgets, PILOT_BUDGET)) errors.push(error("campaign_budget_invalid", "budgets"));
+  if (
+    !exactKeys(value.retryPolicy, ["generationRetryAllowedReasons", "generationRetryForbiddenReasons", "registeredCandidateReplacement", "observationRecoveryAllowedReasons", "observationRecoveryForbiddenOutcomes"]) ||
+    !exactArray(value.retryPolicy?.generationRetryAllowedReasons, GENERATION_RETRY_ALLOWED_REASONS) ||
+    !exactArray(value.retryPolicy?.generationRetryForbiddenReasons, GENERATION_RETRY_FORBIDDEN_REASONS) ||
+    value.retryPolicy?.registeredCandidateReplacement !== "forbidden" ||
+    !exactArray(value.retryPolicy?.observationRecoveryAllowedReasons, OBSERVATION_RECOVERY_ALLOWED_REASONS) ||
+    !exactArray(value.retryPolicy?.observationRecoveryForbiddenOutcomes, OBSERVATION_RECOVERY_FORBIDDEN_OUTCOMES)
+  ) errors.push(error("campaign_retry_policy_invalid", "retryPolicy"));
+  if (!exactKeys(value.checkpointPolicy, ["waveCount", "wavePrimarySlotCounts", "manualApprovalRequired", "readinessBoundary"]) || value.checkpointPolicy.waveCount !== 3 || !exactArray(value.checkpointPolicy.wavePrimarySlotCounts, [4,8,8]) || value.checkpointPolicy.manualApprovalRequired !== true || value.checkpointPolicy.readinessBoundary !== "authoritative_t4_or_technical_terminal") errors.push(error("campaign_checkpoint_policy_invalid", "checkpointPolicy"));
+  if (!exactKeys(value.stopPolicy, ["immediateStopReasons", "pauseReasons", "lowYieldAutomaticStop"]) || !exactArray(value.stopPolicy?.immediateStopReasons, PILOT_IMMEDIATE_STOP_REASONS) || !exactArray(value.stopPolicy?.pauseReasons, PILOT_PAUSE_REASONS) || value.stopPolicy?.lowYieldAutomaticStop !== false) errors.push(error("campaign_stop_policy_invalid", "stopPolicy"));
+  if (!exactScalarObject(value.outputPolicy, { retainAllRegisteredCandidates: true, retainAllTerminalOutcomes: true, reportAuthority: "t8", splitAuthority: "t9" })) errors.push(error("campaign_output_policy_invalid", "outputPolicy"));
   return result(errors);
 }
 
@@ -161,8 +177,8 @@ export function validateGenerationWorkPacket(value) {
   const keys = ["schemaVersion", "packetId", "campaignRunId", "slotId", "attemptId", "attemptOrdinal", "providerProfileId", "providerProfileVersion", "finalizedSpecDigest", "compiledPromptDigest", "promptArtifactRef", "expectedOutput", "blindBoundary", "issuedAt", "packetDigest"];
   if (!exactKeys(value, keys)) return result([error("generation_packet_invalid", "$")]);
   if (value.schemaVersion !== GENERATION_WORK_PACKET_SCHEMA_VERSION || !PACKET_ID.test(value.packetId || "") || !RUN_ID.test(value.campaignRunId || "") || !SLOT_ID.test(value.slotId || "") || !ATTEMPT_ID.test(value.attemptId || "") || ![1,2].includes(value.attemptOrdinal) || !PILOT_ALLOWED_PROVIDER_PROFILES.includes(value.providerProfileId) || value.providerProfileVersion !== "1.0.0" || !HEX64.test(value.finalizedSpecDigest || "") || !HEX64.test(value.compiledPromptDigest || "") || typeof value.promptArtifactRef !== "string" || !SAFE_RELATIVE_PATH.test(value.promptArtifactRef) || !isIso(value.issuedAt) || !HEX64.test(value.packetDigest || "")) errors.push(error("generation_packet_invalid", "$"));
-  if (!exactKeys(value.expectedOutput, ["oneImageOnly", "allowedFormats", "requiredWidth", "requiredHeight"]) || value.expectedOutput.oneImageOnly !== true || JSON.stringify(value.expectedOutput.allowedFormats) !== '["png","jpeg","webp_static"]' || value.expectedOutput.requiredWidth !== 1024 || value.expectedOutput.requiredHeight !== 1024) errors.push(error("generation_packet_invalid", "expectedOutput"));
-  if (!exactKeys(value.blindBoundary, ["judgmentIntentDisclosure", "rawAccountMetadataRetention"]) || value.blindBoundary.judgmentIntentDisclosure !== "forbidden" || value.blindBoundary.rawAccountMetadataRetention !== "forbidden") errors.push(error("generation_packet_invalid", "blindBoundary"));
+  if (!exactKeys(value.expectedOutput, ["oneImageOnly", "allowedFormats", "requiredWidth", "requiredHeight"]) || value.expectedOutput.oneImageOnly !== true || !exactArray(value.expectedOutput.allowedFormats, ["png","jpeg","webp_static"]) || value.expectedOutput.requiredWidth !== 1024 || value.expectedOutput.requiredHeight !== 1024) errors.push(error("generation_packet_invalid", "expectedOutput"));
+  if (!exactScalarObject(value.blindBoundary, { judgmentIntentDisclosure: "forbidden", rawAccountMetadataRetention: "forbidden" })) errors.push(error("generation_packet_invalid", "blindBoundary"));
   return result(errors);
 }
 
@@ -173,7 +189,7 @@ export function validateGenerationHandoff(value) {
   if (value.schemaVersion !== GENERATION_HANDOFF_SCHEMA_VERSION || !HANDOFF_ID.test(value.handoffId || "") || !RUN_ID.test(value.campaignRunId || "") || !SLOT_ID.test(value.slotId || "") || !ATTEMPT_ID.test(value.attemptId || "") || !PILOT_ALLOWED_PROVIDER_PROFILES.includes(value.providerProfileId) || !HEX64.test(value.compiledPromptDigest || "") || !GENERATION_HANDOFF_OUTCOMES.includes(value.outcome) || !isIso(value.generatedAt) || !HEX64.test(value.handoffDigest || "")) errors.push(error("generation_handoff_invalid", "$"));
   const pathOk = value.localAssetRelativePath === null || (typeof value.localAssetRelativePath === "string" && SAFE_RELATIVE_PATH.test(value.localAssetRelativePath) && !SENSITIVE_PATTERN.test(value.localAssetRelativePath));
   if (!pathOk || (value.outcome === "asset_ready") !== (value.localAssetRelativePath !== null)) errors.push(error("generation_handoff_invalid", "localAssetRelativePath"));
-  if (!exactKeys(value.operator, ["operatorId", "syntheticOnlyConfirmed", "realPersonReferenceUsed", "termsAndRightsReviewedForImport"]) || !SAFE_TOKEN.test(value.operator?.operatorId || "") || value.operator.syntheticOnlyConfirmed !== true || value.operator.realPersonReferenceUsed !== false || value.operator.termsAndRightsReviewedForImport !== true) errors.push(error("generation_handoff_invalid", "operator"));
+  if (!exactScalarObject(value.operator, { operatorId: value.operator?.operatorId, syntheticOnlyConfirmed: true, realPersonReferenceUsed: false, termsAndRightsReviewedForImport: true }) || !SAFE_TOKEN.test(value.operator?.operatorId || "")) errors.push(error("generation_handoff_invalid", "operator"));
   if (SENSITIVE_PATTERN.test(JSON.stringify(value))) errors.push(error("generation_handoff_sensitive_data_forbidden", "$"));
   return result(errors);
 }
@@ -190,14 +206,19 @@ export function validatePilotCampaignEvent(value) {
 export function validatePilotCheckpointApproval(value) {
   const errors = [];
   if (!exactKeys(value, ["schemaVersion", "campaignRunId", "completedWaveOrdinal", "runProjectionDigest", "budgetSnapshotDigest", "checklist", "decision", "reasonCodes", "approvedBy", "approvedAt", "approvalDigest"])) return result([error("campaign_checkpoint_invalid", "$")]);
-  if (value.schemaVersion !== PILOT_CHECKPOINT_APPROVAL_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || ![1,2].includes(value.completedWaveOrdinal) || !HEX64.test(value.runProjectionDigest || "") || !HEX64.test(value.budgetSnapshotDigest || "") || !["continue","pause","stop"].includes(value.decision) || !uniqueArray(value.reasonCodes) || !SAFE_TOKEN.test(value.approvedBy || "") || !isIso(value.approvedAt) || !HEX64.test(value.approvalDigest || "")) errors.push(error("campaign_checkpoint_invalid", "$"));
-  if (!exactKeys(value.checklist, ["sourceFreezeStillValid", "providerProfileStillAllowed", "noRealPersonReferenceEvidence", "noSystemicExternalMarkIssue", "noCandidateReplacementOccurred", "allRegisteredOutcomesRetained", "unresolvedCriticalIntegrityFailureCount"]) || Object.entries(value.checklist).some(([key, item]) => key === "unresolvedCriticalIntegrityFailureCount" ? !Number.isInteger(item) || item < 0 : typeof item !== "boolean")) errors.push(error("campaign_checkpoint_invalid", "checklist"));
+  if (value.schemaVersion !== PILOT_CHECKPOINT_APPROVAL_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || ![1,2].includes(value.completedWaveOrdinal) || !HEX64.test(value.runProjectionDigest || "") || !HEX64.test(value.budgetSnapshotDigest || "") || !["continue","pause","stop"].includes(value.decision) || !uniqueArray(value.reasonCodes) || value.reasonCodes.some((code) => !["checkpoint_continue","checkpoint_pause","checkpoint_stop"].includes(code)) || !SAFE_TOKEN.test(value.approvedBy || "") || !isIso(value.approvedAt) || !HEX64.test(value.approvalDigest || "")) errors.push(error("campaign_checkpoint_invalid", "$"));
+  if (!exactKeys(value.checklist, ["sourceFreezeStillValid", "providerProfileStillAllowed", "noRealPersonReferenceEvidence", "noSystemicExternalMarkIssue", "noCandidateReplacementOccurred", "allRegisteredOutcomesRetained", "unresolvedCriticalIntegrityFailureCount"]) || Object.entries(value.checklist || {}).some(([key, item]) => key === "unresolvedCriticalIntegrityFailureCount" ? !Number.isInteger(item) || item < 0 : typeof item !== "boolean")) errors.push(error("campaign_checkpoint_invalid", "checklist"));
   return result(errors);
 }
 
 export function validatePilotProjection(value) {
   const errors = [];
-  if (!isObject(value) || value.schemaVersion !== PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || !HEX64.test(value.planDigest || "") || !HEX64.test(value.latestEventDigest || "") || !["active","paused","stopped","closed"].includes(value.runStatus) || !HEX64.test(value.projectionDigest || "")) errors.push(error("campaign_projection_invalid", "$"));
+  const keys = ["schemaVersion","campaignRunId","planDigest","latestEventDigest","runStatus","waveStatus","budget","denominators","terminalOutcomeCounts","reasonCodeCounts","activeG4Refs","slotProjections","projectionDigest"];
+  if (!exactKeys(value, keys)) return result([error("campaign_projection_invalid", "$")]);
+  if (value.schemaVersion !== PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || !HEX64.test(value.planDigest || "") || !HEX64.test(value.latestEventDigest || "") || !["active","paused","stopped","closed"].includes(value.runStatus) || !HEX64.test(value.projectionDigest || "")) errors.push(error("campaign_projection_invalid", "$"));
+  if (!Array.isArray(value.waveStatus) || value.waveStatus.length !== 3 || value.waveStatus.some((row, index) => !exactKeys(row, ["waveOrdinal","status"]) || row.waveOrdinal !== index + 1 || !["not_issued","active","awaiting_checkpoint","approved","complete","stopped"].includes(row.status))) errors.push(error("campaign_projection_invalid", "waveStatus"));
+  if (!exactKeys(value.budget, ["generationAttemptsUsed","generationRetryReserveUsed","observationRunsUsed","observationRecoveryRunsUsed"]) || Object.values(value.budget).some((item) => !Number.isInteger(item) || item < 0)) errors.push(error("campaign_projection_invalid", "budget"));
+  if (!Array.isArray(value.slotProjections) || value.slotProjections.length !== 20) errors.push(error("campaign_projection_invalid", "slotProjections"));
   return result(errors);
 }
 
@@ -205,7 +226,10 @@ export function validatePilotCloseout(value) {
   const errors = [];
   if (!exactKeys(value, ["schemaVersion", "campaignRunId", "planDigest", "finalProjectionDigest", "slotEventHeadDigests", "checkpointDigests", "activeG4Refs", "nonGoldDecisionRefs", "unresolvedHoldRefs", "splitCouplingKeyDigests", "closedBy", "closedAt", "closeoutDigest"])) return result([error("campaign_closeout_invalid", "$")]);
   if (value.schemaVersion !== PILOT_CAMPAIGN_CLOSEOUT_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || !HEX64.test(value.planDigest || "") || !HEX64.test(value.finalProjectionDigest || "") || !SAFE_TOKEN.test(value.closedBy || "") || !isIso(value.closedAt) || !HEX64.test(value.closeoutDigest || "")) errors.push(error("campaign_closeout_invalid", "$"));
-  for (const field of ["slotEventHeadDigests","checkpointDigests","activeG4Refs","nonGoldDecisionRefs","unresolvedHoldRefs","splitCouplingKeyDigests"]) if (!uniqueArray(value[field]) || value[field].some((item) => !HEX64.test(item || ""))) errors.push(error("campaign_closeout_invalid", field));
+  for (const field of ["slotEventHeadDigests","checkpointDigests","activeG4Refs","nonGoldDecisionRefs","unresolvedHoldRefs","splitCouplingKeyDigests"]) {
+    if (!uniqueArray(value[field]) || value[field].some((item) => !HEX64.test(item || "")) || !exactArray(value[field], [...value[field]].sort())) errors.push(error("campaign_closeout_invalid", field));
+  }
+  if (value.slotEventHeadDigests?.length !== 20) errors.push(error("campaign_closeout_invalid", "slotEventHeadDigests"));
   return result(errors);
 }
 
