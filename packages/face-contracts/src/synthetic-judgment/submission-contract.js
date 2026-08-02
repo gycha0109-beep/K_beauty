@@ -81,6 +81,9 @@ export function validateDraftBlindJudgmentSubmission(value) {
     errors.push(contractError("judgment_submission_invalid", "axes"));
   } else {
     for (const axis of JUDGMENT_AXIS_KEYS) validateAxisDecision(axis, value.axes[axis], errors);
+    if (value.reviewability?.status === "unreviewable" && JUDGMENT_AXIS_KEYS.some((axis) => value.axes[axis]?.status === "observed")) {
+      errors.push(contractError("judgment_submission_invalid", "axes", "unreviewable_submission_cannot_assert_observed_values"));
+    }
   }
   validateSkinCrossRules(value.axes, errors);
   if (!exactKeys(value.observationReview, ["agreement", "disputedObservationPaths", "reasons"]) || !["agree", "partial_disagreement", "disagree", "unreviewable"].includes(value.observationReview?.agreement)) {
