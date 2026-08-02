@@ -6,10 +6,13 @@
   "exports": "./src/index.js",
   "sideEffects": false,
   "scripts": {
-    "test": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs tests/import/cli.test.mjs tests/observation/snapshot-normalizer.test.mjs tests/observation/observation-run.test.mjs tests/observation/transport.test.mjs tests/observation/cli.test.mjs",
-    "verify": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs tests/import/cli.test.mjs tests/observation/snapshot-normalizer.test.mjs tests/observation/observation-run.test.mjs tests/observation/transport.test.mjs tests/observation/cli.test.mjs",
+    "test": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs tests/import/cli.test.mjs tests/observation/snapshot-normalizer.test.mjs tests/observation/observation-run.test.mjs tests/observation/transport.test.mjs tests/observation/cli.test.mjs tests/judgment/contracts.test.mjs tests/judgment/consensus.test.mjs tests/judgment/alignment.test.mjs tests/judgment/storage-boundary.test.mjs",
+    "verify": "node --test tests/workspace.test.mjs tests/generation-contract.test.mjs tests/prompt-compiler.test.mjs tests/architecture-boundary.test.mjs tests/import/request-contract.test.mjs tests/import/safe-path.test.mjs tests/import/image-processing.test.mjs tests/import/import-pipeline.test.mjs tests/import/cli.test.mjs tests/observation/snapshot-normalizer.test.mjs tests/observation/observation-run.test.mjs tests/observation/transport.test.mjs tests/observation/cli.test.mjs tests/judgment/contracts.test.mjs tests/judgment/consensus.test.mjs tests/judgment/alignment.test.mjs tests/judgment/storage-boundary.test.mjs",
     "import": "node src/import/cli/import-candidate.js",
-    "observe": "node src/observation/cli/observe-candidate.js"
+    "observe": "node src/observation/cli/observe-candidate.js",
+    "judge": "node src/judgment/cli/judge.js",
+    "consensus": "node src/judgment/cli/consensus.js",
+    "align": "node src/judgment/cli/align.js"
   },
   "dependencies": {
     "@bejewely/face-contracts": "0.0.0"
