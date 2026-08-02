@@ -62,6 +62,9 @@ stored T7 closeout
 10. Added staged manifest-last export, complete existing-export rehash, and incomplete-export rejection.
 11. Rejected symbolic-link report roots and nested path components.
 12. Restricted package-root exports to source-preflighted orchestration and integrity verification.
+13. Fixed contact-sheet image URLs to resolve relative to the review HTML documents.
+14. Added semantic metric verification so a recomputed outer digest cannot introduce ranking, significance, causal attribution, inconsistent funnel values, or inconsistent terminal aggregates.
+15. Added regressions for blind identifier leakage, review asset resolution, comparison-ranking tampering, and symbolic-link report roots.
 
 ## Verification
 
