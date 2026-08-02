@@ -1,5 +1,5 @@
 function scenario(id, kind, evidenceProbe, campaignTerminalOutcome = "candidate_import_failed") {
-  return Object.freeze({ id, kind, evidenceProbe, campaignTerminalOutcome });
+  return Object.freeze({ id, kind, evidenceProbe, campaignTerminalOutcome, terminalOutcome: campaignTerminalOutcome });
 }
 
 export const REHEARSAL_SCENARIO_MATRIX = Object.freeze([
