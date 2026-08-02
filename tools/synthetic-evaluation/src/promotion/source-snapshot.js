@@ -26,13 +26,64 @@ import {
   buildPromotionKey
 } from "./policy.js";
 
+const CANDIDATE_ID = /^cand_[a-f0-9]{24}$/;
+const MARK_STATUSES = new Set(["present", "absent", "unknown"]);
+const MARK_LOCATIONS = new Set(["bottom_right", "bottom_left", "top_right", "top_left", "other"]);
+
 function failure(code, path, detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) });
+}
+
+function exactKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
 }
 
 function semanticOf(snapshot) {
   const { assembledAt, sourceSnapshotDigest, ...semantic } = snapshot;
   return semantic;
+}
+
+function sortedUniqueStrings(value, pattern = null) {
+  if (!Array.isArray(value) || !value.every((item) => typeof item === "string" && (!pattern || pattern.test(item)))) return false;
+  const sorted = [...value].sort();
+  return new Set(value).size === value.length && stableStringify(value) === stableStringify(sorted);
+}
+
+function validPromotionCandidateProjection(manifest) {
+  const attestation = manifest.operatorAttestation;
+  const hints = manifest.operatorHints;
+  const mark = hints?.visibleExternalMark;
+  const duplicates = manifest.duplicateReferences;
+  if (
+    !exactKeys(attestation, ["syntheticOnly", "realPersonReferenceUsed", "termsAndRightsReviewed", "downloadedBy"]) ||
+    attestation.syntheticOnly !== true ||
+    attestation.realPersonReferenceUsed !== false ||
+    attestation.termsAndRightsReviewed !== true ||
+    attestation.downloadedBy !== "human_operator" ||
+    !exactKeys(hints, ["visibleExternalMark", "notes"]) ||
+    !exactKeys(mark, ["status", "location", "provenanceStatus"]) ||
+    !MARK_STATUSES.has(mark.status) ||
+    mark.provenanceStatus !== "unverified" ||
+    (mark.status === "present" ? !MARK_LOCATIONS.has(mark.location) : mark.location !== null) ||
+    !(hints.notes === null || typeof hints.notes === "string") ||
+    !exactKeys(duplicates, ["exactCanonicalDuplicateOf", "nearestPerceptualCandidates"]) ||
+    !sortedUniqueStrings(duplicates.exactCanonicalDuplicateOf, CANDIDATE_ID)
+  ) {
+    return false;
+  }
+  if (!Array.isArray(duplicates.nearestPerceptualCandidates)) return false;
+  const neighborKeys = [];
+  for (const item of duplicates.nearestPerceptualCandidates) {
+    if (!exactKeys(item, ["candidateId", "hammingDistance"]) || !CANDIDATE_ID.test(item.candidateId || "") || !Number.isInteger(item.hammingDistance) || item.hammingDistance < 0 || item.hammingDistance > 64) return false;
+    neighborKeys.push(item.candidateId);
+  }
+  if (new Set(neighborKeys).size !== neighborKeys.length) return false;
+  const sortedNeighbors = [...duplicates.nearestPerceptualCandidates]
+    .sort((left, right) => left.hammingDistance - right.hammingDistance || left.candidateId.localeCompare(right.candidateId));
+  return stableStringify(sortedNeighbors) === stableStringify(duplicates.nearestPerceptualCandidates);
 }
 
 async function readStoredAlignment(dataRoot, alignmentDigest) {
@@ -93,6 +144,7 @@ export async function assemblePromotionSourceSnapshot({
 
   const artifacts = await readAndResolveCandidateIntent({ dataRoot, candidateId });
   if (!artifacts.ok) return artifacts;
+  if (!validPromotionCandidateProjection(artifacts.candidateManifest)) return failure("artifact_integrity_invalid", "candidate.promotionProjection");
   if (!(await verifyCanonicalObject(dataRoot, artifacts.candidateManifest))) return failure("artifact_integrity_invalid", "candidate.canonicalAsset");
 
   let consensus;
@@ -166,7 +218,7 @@ export async function assemblePromotionSourceSnapshot({
       canonicalSha256: artifacts.candidateManifest.asset.canonicalSha256,
       campaignSeriesId: artifacts.candidateManifest.grouping.campaignSeriesId,
       lineage: artifacts.candidateManifest.grouping.lineage,
-      exactCanonicalDuplicateOf: [...artifacts.candidateManifest.duplicateReferences.exactCanonicalDuplicateOf].sort(),
+      exactCanonicalDuplicateOf: [...artifacts.candidateManifest.duplicateReferences.exactCanonicalDuplicateOf],
       nearestPerceptualCandidates: [...artifacts.candidateManifest.duplicateReferences.nearestPerceptualCandidates]
     },
     policy: {
@@ -188,17 +240,26 @@ export async function assemblePromotionSourceSnapshot({
 export function verifyPromotionSourceSnapshotIntegrity(snapshot) {
   if (!validatePromotionSourceSnapshotShape(snapshot).ok) return false;
   if (snapshot.policy.digest !== PROMOTION_POLICY_DIGEST) return false;
+  if (!validPromotionCandidateProjection(snapshot.provenanceProjection)) return false;
   if (snapshot.candidate.fullProjectionDigest !== sha256Hex(stableStringify(snapshot.provenanceProjection))) return false;
+  if (snapshot.candidate.candidateId !== snapshot.provenanceProjection.candidateId || snapshot.candidate.candidateDigest !== snapshot.provenanceProjection.candidateDigest || snapshot.candidate.canonicalSha256 !== snapshot.provenanceProjection.asset?.canonicalSha256) return false;
+
+  const submissionDigests = [...snapshot.judgment.submissionDigests].sort();
+  if (new Set(submissionDigests).size !== submissionDigests.length || stableStringify(submissionDigests) !== stableStringify(snapshot.judgment.submissionDigests)) return false;
   const actorIds = [...snapshot.judgment.judgmentActorIds].sort();
-  if (stableStringify(actorIds) !== stableStringify(snapshot.judgment.judgmentActorIds)) return false;
+  if (new Set(actorIds).size !== actorIds.length || stableStringify(actorIds) !== stableStringify(snapshot.judgment.judgmentActorIds)) return false;
   if (snapshot.judgment.judgmentActorSetDigest !== sha256Hex(stableStringify(actorIds))) return false;
+
   const requiredAxes = [...snapshot.claims.requiredAxes].sort();
-  if (stableStringify(requiredAxes) !== stableStringify(snapshot.claims.requiredAxes)) return false;
+  if (new Set(requiredAxes).size !== requiredAxes.length || stableStringify(requiredAxes) !== stableStringify(snapshot.claims.requiredAxes)) return false;
   const claimValues = [...snapshot.claims.claimValues].sort((left, right) => left.axis.localeCompare(right.axis));
-  if (stableStringify(claimValues) !== stableStringify(snapshot.claims.claimValues)) return false;
+  if (new Set(claimValues.map((item) => item.axis)).size !== claimValues.length || stableStringify(claimValues) !== stableStringify(snapshot.claims.claimValues)) return false;
+  if (stableStringify(claimValues.map((item) => item.axis)) !== stableStringify(requiredAxes)) return false;
   if (snapshot.claims.claimValuesDigest !== sha256Hex(stableStringify(claimValues))) return false;
-  if (snapshot.promotionKey !== buildPromotionKey(snapshot.candidate.candidateId, snapshot.generation.purpose, sha256Hex(stableStringify(requiredAxes)))) {
-    return false;
-  }
+  const excludedClaims = [...snapshot.claims.excludedClaims].sort();
+  if (new Set(excludedClaims).size !== excludedClaims.length || stableStringify(excludedClaims) !== stableStringify(snapshot.claims.excludedClaims)) return false;
+
+  const expectedRequiredAxesDigest = sha256Hex(stableStringify(requiredAxes));
+  if (snapshot.promotionKey !== buildPromotionKey(snapshot.candidate.candidateId, snapshot.generation.purpose, expectedRequiredAxesDigest)) return false;
   return snapshot.sourceSnapshotDigest === sha256Hex(stableStringify(semanticOf(snapshot)));
 }
