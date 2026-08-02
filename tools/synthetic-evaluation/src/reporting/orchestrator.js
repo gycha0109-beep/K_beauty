@@ -153,8 +153,10 @@ export async function exportCampaignReport({ dataRoot, reportDigest, generatedAt
     const annotated = reviewFiles.get("review/annotated-contact-sheet.html");
     if (!blind || !annotated || sha256Hex(blind) !== reviewPackage.blindContactSheetDigest || sha256Hex(annotated) !== reviewPackage.annotatedContactSheetDigest) return failure("campaign_export_invalid", "reviewAssets", "html_digest");
     for (const thumbnail of thumbnailObject.thumbnails) {
-      const bytes = reviewFiles.get(thumbnail.relativePath);
-      if (!bytes || bytes.length !== thumbnail.byteLength || sha256Hex(bytes) !== thumbnail.sha256) return failure("campaign_export_invalid", "reviewAssets", "thumbnail_digest");
+      for (const relativePath of [thumbnail.blindRelativePath, thumbnail.annotatedRelativePath]) {
+        const bytes = reviewFiles.get(relativePath);
+        if (!bytes || bytes.length !== thumbnail.byteLength || sha256Hex(bytes) !== thumbnail.sha256) return failure("campaign_export_invalid", "reviewAssets", "thumbnail_digest");
+      }
     }
     const rendered = buildExportFiles({ sourceSnapshot, artifactIndex: indexObject.entries, rows: slotObject.rows, metricSet, reviewPackage, reviewFiles, report, generatedAt });
     if (!rendered.ok) return rendered;
