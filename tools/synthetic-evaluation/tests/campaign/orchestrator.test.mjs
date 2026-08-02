@@ -94,7 +94,7 @@ test("technical retries consume reserve and checkpoint allows Wave 2 without T5 
   for (const slot of compiled.slots.filter((item) => item.waveOrdinal === 1)) await exhaustTechnicalSlot(dataRoot, runId, slot.slotId);
   const status = await getPilotCampaignStatus({ dataRoot, runId });
   assert.equal(status.ok, true);
-  assert.equal(status.projection.waveStatus.find((item) => item.waveOrdinal === 1).status, "awaiting_checkpoint");
+  assert.equal(status.projection.waveStatus.find((item) => item.waveOrdinal === 1).status, "complete");
   assert.equal(status.projection.budget.generationAttemptsUsed, 8);
   assert.equal(status.projection.budget.generationRetryReserveUsed, 4);
   assert.equal(status.projection.denominators.sealedConsensus, 0);
