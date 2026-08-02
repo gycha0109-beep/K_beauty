@@ -14,6 +14,11 @@ const TECHNICAL_TERMINALS = new Set([
   "cancelled_campaign_stop",
   "cancelled_operator"
 ]);
+const OBSERVATION_TECHNICAL_REASONS = new Set([
+  "provider_transport_failure",
+  "provider_contract_parse_failure",
+  "execution_claim_failed_before_observation_publication"
+]);
 
 function failure(code, path, detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) });
@@ -27,11 +32,20 @@ function refDigest(event, artifactType) {
   return event.sourceRefs.find((ref) => ref.artifactType === artifactType)?.artifactDigest || null;
 }
 
+function artifactToken(event, prefix) {
+  const type = event.sourceRefs.find((ref) => ref.artifactType.startsWith(prefix))?.artifactType;
+  return type ? type.slice(prefix.length) : null;
+}
+
 export function projectPilotSlot(slot, orderedEvents) {
   let state = "planned";
   let terminalOutcome = null;
+  let candidateId = null;
   let candidateDigest = null;
-  let observationDigest = null;
+  let canonicalSha256 = null;
+  let observationRunDigest = null;
+  let observationObjectDigest = null;
+  let observationRunId = null;
   let consensusDigest = null;
   let alignmentDigest = null;
   let promotionDecisionDigest = null;
@@ -39,6 +53,7 @@ export function projectPilotSlot(slot, orderedEvents) {
   let generationAttempts = 0;
   let generationRetries = 0;
   let observationRuns = 0;
+  let authoritativeObservationRuns = 0;
   let observationRecoveryRuns = 0;
 
   for (const event of orderedEvents) {
@@ -46,6 +61,7 @@ export function projectPilotSlot(slot, orderedEvents) {
     switch (event.eventType) {
       case "generation_packet_issued":
         if (!(state === "planned" || state === "generation_retry_reserved")) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "packet_transition");
+        if (generationAttempts >= 2) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "attempt_limit");
         generationAttempts += 1;
         state = "awaiting_generation_handoff";
         break;
@@ -57,35 +73,54 @@ export function projectPilotSlot(slot, orderedEvents) {
         break;
       }
       case "generation_retry_reserved":
-        if (state !== "generation_handoff_failed" || generationAttempts >= 2) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "retry_transition");
+        if (state !== "generation_handoff_failed" || generationAttempts !== 1 || candidateDigest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "retry_transition");
         generationRetries += 1;
         state = "generation_retry_reserved";
         break;
       case "candidate_registered": {
         if (state !== "import_preflight_ready") return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "candidate_transition");
         const digest = refDigest(event, "candidate-manifest");
-        if (!digest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "candidate_reference_missing");
-        if (candidateDigest && candidateDigest !== digest) return failure("registered_candidate_replacement_attempted", `slots.${slot.slotId}`, null);
+        const id = artifactToken(event, "candidate-id-");
+        const imageSha = refDigest(event, "canonical-image-sha");
+        if (!digest || !/^cand_[a-f0-9]{24}$/.test(id || "") || !/^[a-f0-9]{64}$/.test(imageSha || "")) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "candidate_reference_missing");
+        if (candidateDigest && (candidateDigest !== digest || candidateId !== id || canonicalSha256 !== imageSha)) return failure("registered_candidate_replacement_attempted", `slots.${slot.slotId}`, null);
         candidateDigest = digest;
+        candidateId = id;
+        canonicalSha256 = imageSha;
         state = "awaiting_observation_authorization";
         break;
       }
       case "observation_authorization_recorded":
         if (state !== "awaiting_observation_authorization") return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_authorization_transition");
-        if (event.reasonCodes.includes("observation_recovery_reserved")) observationRecoveryRuns += 1;
+        if (event.reasonCodes.includes("observation_recovery_reserved")) {
+          if (observationObjectDigest !== null) return failure("observation_recovery_not_allowed", `slots.${slot.slotId}`, "authoritative_observation_exists");
+          observationRecoveryRuns += 1;
+        }
         state = "awaiting_observation";
         break;
       case "observation_registered": {
-        if (!(state === "awaiting_observation" || state === "awaiting_observation_authorization")) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_transition");
-        const digest = refDigest(event, "observation-run");
-        if (!digest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_reference_missing");
-        observationDigest = digest;
+        if (state !== "awaiting_observation") return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_transition");
+        const runDigest = refDigest(event, "observation-run");
+        const objectDigest = refDigest(event, "observation-object");
+        const runId = artifactToken(event, "observation-run-id-");
+        if (!runDigest || !/^obs_[a-f0-9]{24}$/.test(runId || "")) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_reference_missing");
         observationRuns += 1;
+        observationRunDigest = runDigest;
+        observationRunId = runId;
+        const technicalReason = event.reasonCodes.find((code) => OBSERVATION_TECHNICAL_REASONS.has(code));
+        if (technicalReason) {
+          if (objectDigest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "technical_observation_has_object");
+          state = "awaiting_observation_authorization";
+          break;
+        }
+        if (!objectDigest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "observation_object_missing");
+        observationObjectDigest = objectDigest;
+        authoritativeObservationRuns += 1;
         state = event.reasonCodes.includes("observation_valid_ineligible") ? "observation_valid_ineligible" : "awaiting_blind_review";
         break;
       }
       case "judgment_assignment_issued":
-        if (state !== "awaiting_blind_review") return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "judgment_assignment_transition");
+        if (state !== "awaiting_blind_review" || !observationObjectDigest) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "judgment_assignment_transition");
         state = "awaiting_consensus";
         break;
       case "judgment_consensus_sealed":
@@ -121,10 +156,10 @@ export function projectPilotSlot(slot, orderedEvents) {
         const outcome = terminalReason(event);
         if (!outcome) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, "terminal_outcome_missing");
         const allowed =
-          (state === "generation_handoff_failed" && outcome === "generation_failed_no_asset") ||
+          (state === "generation_handoff_failed" && generationAttempts === 2 && outcome === "generation_failed_no_asset") ||
           (state === "import_preflight_ready" && outcome === "candidate_import_failed") ||
           (state === "observation_valid_ineligible" && outcome === "observation_valid_ineligible") ||
-          (["awaiting_observation_authorization", "awaiting_observation"].includes(state) && outcome === "observation_failed") ||
+          (["awaiting_observation_authorization", "awaiting_observation"].includes(state) && observationRuns > 0 && !observationObjectDigest && outcome === "observation_failed") ||
           (["awaiting_blind_review", "awaiting_consensus"].includes(state) && outcome === "judgment_incomplete") ||
           (state === "promotion_decision_registered" && ["promoted_g4", "retained_g3_negative_control", "promotion_held", "promotion_rejected"].includes(outcome)) ||
           (["planned", "generation_retry_reserved", "generation_handoff_failed"].includes(state) && ["cancelled_budget_exhausted", "cancelled_campaign_stop", "cancelled_operator"].includes(outcome));
@@ -147,12 +182,13 @@ export function projectPilotSlot(slot, orderedEvents) {
       waveOrdinal: slot.waveOrdinal,
       state,
       terminalOutcome,
-      checkpointReady: observationDigest !== null || (terminalOutcome !== null && TECHNICAL_TERMINALS.has(terminalOutcome)),
+      checkpointReady: observationObjectDigest !== null || (terminalOutcome !== null && TECHNICAL_TERMINALS.has(terminalOutcome)),
       generationAttempts,
       generationRetries,
       observationRuns,
+      authoritativeObservationRuns,
       observationRecoveryRuns,
-      refs: { candidateDigest, observationDigest, consensusDigest, alignmentDigest, promotionDecisionDigest },
+      refs: { candidateId, candidateDigest, canonicalSha256, observationRunId, observationRunDigest, observationObjectDigest, consensusDigest, alignmentDigest, promotionDecisionDigest },
       activeG4
     })
   });
@@ -172,31 +208,35 @@ function runProjection(events, slotProjections) {
       issuedWaves.add(wave);
     } else if (event.eventType === "checkpoint_approved") {
       const wave = Number(event.sourceRefs.find((ref) => ref.artifactType.startsWith("checkpoint-wave-"))?.artifactType.slice(16));
-      if (![1,2].includes(wave) || !issuedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "checkpoint_invalid");
+      if (![1,2].includes(wave) || !issuedWaves.has(wave) || approvedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "checkpoint_invalid");
       approvedWaves.add(wave);
     } else if (event.eventType === "checkpoint_stopped") {
       const wave = Number(event.sourceRefs.find((ref) => ref.artifactType.startsWith("checkpoint-wave-"))?.artifactType.slice(16));
+      if (![1,2].includes(wave) || !issuedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "checkpoint_stop_invalid");
       stoppedWaves.add(wave);
       runStatus = "stopped";
     } else if (event.eventType === "run_paused") runStatus = "paused";
     else if (event.eventType === "run_resumed") {
       if (runStatus !== "paused") return failure("campaign_event_chain_invalid", "run", "resume_without_pause");
       runStatus = "active";
-    } else if (event.eventType === "run_closed") runStatus = "closed";
+    } else if (event.eventType === "run_closed") {
+      if (runStatus === "closed") return failure("campaign_event_chain_invalid", "run", "duplicate_close");
+      runStatus = "closed";
+    }
   }
   const waveStatus = [1,2,3].map((waveOrdinal) => {
-    const slots = slotProjections.filter((slot) => slot.waveOrdinal === waveOrdinal);
+    const waveSlots = slotProjections.filter((slot) => slot.waveOrdinal === waveOrdinal);
     let status = "not_issued";
     if (stoppedWaves.has(waveOrdinal)) status = "stopped";
     else if (approvedWaves.has(waveOrdinal)) status = "approved";
     else if (issuedWaves.has(waveOrdinal)) {
-      if (slots.every((slot) => slot.terminalOutcome !== null)) status = "complete";
-      else if (slots.every((slot) => slot.checkpointReady) && waveOrdinal < 3) status = "awaiting_checkpoint";
+      if (waveSlots.every((slot) => slot.terminalOutcome !== null)) status = "complete";
+      else if (waveSlots.every((slot) => slot.checkpointReady) && waveOrdinal < 3) status = "awaiting_checkpoint";
       else status = "active";
     }
     return { waveOrdinal, status };
   });
-  return Object.freeze({ ok: true, runStatus, waveStatus: Object.freeze(waveStatus), issuedWaves, approvedWaves });
+  return Object.freeze({ ok: true, runStatus, waveStatus: Object.freeze(waveStatus) });
 }
 
 export function derivePilotCampaignProjection({ plan, run, slots, events }) {
@@ -218,14 +258,22 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
   for (const slot of slotProjections) if (slot.terminalOutcome) terminalOutcomeCounts[slot.terminalOutcome] += 1;
   const reasonCodeCounts = {};
   for (const event of events) for (const code of event.reasonCodes) reasonCodeCounts[code] = (reasonCodeCounts[code] || 0) + 1;
-  const latestEventDigest = sha256Hex(stableStringify(Object.values(ledger.heads).sort()));
   const budget = {
     generationAttemptsUsed: slotProjections.reduce((sum, slot) => sum + slot.generationAttempts, 0),
     generationRetryReserveUsed: slotProjections.reduce((sum, slot) => sum + slot.generationRetries, 0),
     observationRunsUsed: slotProjections.reduce((sum, slot) => sum + slot.observationRuns, 0),
     observationRecoveryRunsUsed: slotProjections.reduce((sum, slot) => sum + slot.observationRecoveryRuns, 0)
   };
-  if (budget.generationAttemptsUsed > plan.budgets.maxGenerationAttemptsTotal || budget.generationRetryReserveUsed > plan.budgets.technicalGenerationRetryReserve || budget.observationRunsUsed > plan.budgets.maxObservationRunsTotal || budget.observationRecoveryRunsUsed > plan.budgets.maxObservationRecoveryRuns) return failure("budget_hard_cap_exceeded", "budget");
+  const authoritativeObservationRuns = slotProjections.reduce((sum, slot) => sum + slot.authoritativeObservationRuns, 0);
+  if (
+    budget.generationAttemptsUsed > plan.budgets.maxGenerationAttemptsTotal ||
+    budget.generationRetryReserveUsed > plan.budgets.technicalGenerationRetryReserve ||
+    budget.observationRunsUsed > plan.budgets.maxObservationRunsTotal ||
+    budget.observationRecoveryRunsUsed > plan.budgets.maxObservationRecoveryRuns ||
+    authoritativeObservationRuns > plan.budgets.maxAuthoritativeObservationRuns
+  ) return failure("budget_hard_cap_exceeded", "budget");
+
+  const latestEventDigest = sha256Hex(stableStringify(Object.values(ledger.heads).sort()));
   const activeG4Refs = slotProjections.map((slot) => slot.activeG4).filter(Boolean).sort((a,b) => a.slotId.localeCompare(b.slotId));
   const semantic = {
     schemaVersion: PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
@@ -240,7 +288,7 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
       issuedPrimarySlots: slotProjections.filter((slot) => slot.generationAttempts > 0).length,
       generationHandoffs: events.filter((event) => event.eventType === "generation_handoff_registered").length,
       registeredCandidates: slotProjections.filter((slot) => slot.refs.candidateDigest).length,
-      authoritativeObservations: slotProjections.filter((slot) => slot.refs.observationDigest).length,
+      authoritativeObservations: authoritativeObservationRuns,
       sealedConsensus: slotProjections.filter((slot) => slot.refs.consensusDigest).length,
       alignments: slotProjections.filter((slot) => slot.refs.alignmentDigest).length,
       promotionDecisions: slotProjections.filter((slot) => slot.refs.promotionDecisionDigest).length,
@@ -253,5 +301,7 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
   };
   const projectionDigest = sha256Hex(stableStringify(semantic));
   const projection = deepFreeze({ ...semantic, projectionDigest });
-  return validatePilotProjection(projection).ok ? Object.freeze({ ok: true, projection, ledger }) : failure("campaign_projection_invalid", "$", null);
+  return validatePilotProjection(projection).ok
+    ? Object.freeze({ ok: true, projection, ledger })
+    : failure("campaign_projection_invalid", "$", null);
 }
