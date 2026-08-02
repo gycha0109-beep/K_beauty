@@ -1,6 +1,6 @@
 # @bejewely/synthetic-evaluation
 
-Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, observing, judging, and promoting synthetic evaluation assets for Bejewely Face Lab and Skin Match.
+Synthetic Evaluation Toolkit is the non-production workspace for generating, importing, observing, judging, promoting, and orchestrating synthetic evaluation assets for Bejewely Face Lab and Skin Match.
 
 ## Production boundary
 
@@ -244,28 +244,68 @@ ADR 0013 supersedes the single-bundle ordering in the main T6 design and require
 
 ## Toolkit Track #T7
 
-Designed, not implemented:
+Implemented:
 
-- fixed 20-slot A/B/C/D skin-control pilot matrix
+- exact 20-slot A/B/C/D skin-control plan with five slots per condition
+- deterministic plan, run, slot, attempt, packet, handoff, event, projection, checkpoint, and closeout identities
 - balanced 4/8/8 wave issue with explicit checkpoints
-- one manual generation provider profile per campaign run
-- generation work packet and safe manual handoff contract
-- hard generation/observation budgets and technical-only retry reserve
-- registered candidate replacement prohibition
-- single-slot T2–T6 advancement without new judgment authority
-- explicit T4 Provider authorization boundary
-- append-only run/slot event ledger
-- deterministic projection, resume, stop, and closeout contracts
-- all registered Gold, non-Gold, held, rejected, and failed outcomes retained
+- one active manual generation Provider profile per run
+- source freeze covering T2 fixtures/compiler, T3 import, T4 observation, T5 judgment/alignment, and T6 promotion policy
+- safe manual generation work packet and handoff boundary
+- technical-only generation retry reserve: 20 primary attempts plus 10 retries, two attempts maximum per slot
+- explicit T4 Provider authorization and technical recovery accounting
+- exact T7 packet/handoff binding before T3 candidate registration
+- candidate ID, canonical SHA, T4 run/object, T5 consensus/alignment, and T6 evidence chain binding
+- registered-candidate replacement prohibition
+- append-only linear run/slot event ledger with branch, cycle, and disconnection rejection
+- immutable local artifacts and explicit single-writer claim recovery
+- deterministic campaign projection, pause, resume, stop, checkpoint, and closeout
+- valid-ineligible, technical failure, misaligned, held, rejected, non-Gold, and G4 outcomes preserved separately
 - report/export interpretation reserved for #T8
 - split/G5/holdout/regression authority reserved for #T9
 
-The 20 primary slots are an experimental denominator, not a G4 quota. T7 does not generate images, fabricate human reviews, automatically promote candidates, or assign dataset splits.
+The 20 primary slots are an experimental denominator, not a G4 quota. T7 does not generate images, fabricate human reviews, automatically approve promotion, interpret campaign success, or assign dataset splits.
+
+Commands:
+
+```bash
+npm run synthetic:campaign -- \
+  --plan campaign-plan.json \
+  --run-nonce pilot-run-001 \
+  --started-by campaign_operator \
+  --compile
+
+npm run synthetic:campaign -- \
+  --run <campaignRunId> \
+  --issue-wave 1
+
+npm run synthetic:campaign -- \
+  --run <campaignRunId> \
+  --slot <slotId> \
+  --generation-handoff generation-handoff.json
+
+npm run synthetic:campaign -- \
+  --run <campaignRunId> \
+  --slot <slotId> \
+  --stage candidate \
+  --artifact candidate-stage.json
+
+npm run synthetic:campaign -- \
+  --run <campaignRunId> \
+  --checkpoint checkpoint.json
+
+npm run synthetic:campaign -- --run <campaignRunId> --status
+npm run synthetic:campaign -- --run <campaignRunId> --slot <slotId> --advance
+npm run synthetic:campaign -- --run <campaignRunId> --closed-by campaign_operator --close
+```
+
+All request files are resolved below `.synthetic-local/requests/`. Wave issue and resume revalidate the current source freeze before writing. Stored historical runs remain intrinsically verifiable even after later code versions change.
 
 Design and decisions:
 
 ```text
 docs/pilot-campaign-runner-v1.md
+docs/pilot-campaign-runner-implementation-v1.md
 docs/adr/0014-campaign-orchestration-without-new-judgment-authority.md
 docs/adr/0015-fixed-pilot-matrix-waves-and-anti-cherry-picking.md
 docs/adr/0016-manual-generation-handoff-and-single-provider-runs.md
@@ -278,13 +318,14 @@ ADR 0018 tightens the source freeze, makes valid-ineligible/no-asset outcomes ex
 ## Not included
 
 - automatic image generation
-- T7 campaign runner implementation
 - actual pilot campaign execution
 - browser automation
 - same-person verification
 - archetype scoring
 - actual human review execution or reviewed dataset
 - automatic legal or rights judgment
+- automatic T4 Provider execution
+- automatic T5/T6 review or approval
 - T8 report/export implementation
 - G5 holdout lock or dataset split
 - database, API route, UI, or production integration
