@@ -6,3 +6,4 @@ export * from "./synthetic-import/asset-record.js";
 export * from "./synthetic-import/candidate-manifest.js";
 export * from "./synthetic-observation/observation-contract.js";
 export * from "./synthetic-judgment/index.js";
+export * from "./synthetic-promotion/index.js";
