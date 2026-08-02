@@ -39,7 +39,8 @@ import {
   buildFreeResultV2RoutinePreview
 } from "@/lib/result/free-result-v2-static-builders";
 import {
-  getAvailableVisionFaceLabData
+  getAvailableVisionFaceLabData,
+  getFaceLabDisplayStatus
 } from "@/lib/face-lab-result-envelope";
 import { getRoutineStructureData } from "@/lib/routine-structure";
 import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
@@ -3163,9 +3164,15 @@ function ResultContent() {
   const photoUrl = submission?.imagePreviewDataUrl || submission?.imagePreview || "";
   const resultForm = submission?.form || {};
   const resultPhotoAlt = submission?.imageName || copy.resultPhotoFallback;
-  const faceLabDisplayData =
-    getAvailableVisionFaceLabData(faceLabFull) ||
-    getAvailableVisionFaceLabData(result?.faceLab);
+  const faceLabSources = [faceLabFull, result?.faceLab].filter(Boolean);
+  const faceLabDisplayData = faceLabSources
+    .map(getAvailableVisionFaceLabData)
+    .find(Boolean) || null;
+  const faceLabDisplayStatus = faceLabDisplayData
+    ? "available"
+    : faceLabSources.some((source) => getFaceLabDisplayStatus(source) === "photo_ineligible")
+      ? "photo_ineligible"
+      : "unavailable";
   const faceLabLaunch = faceLabDisplayData ? buildFaceLabLaunchData(faceLabDisplayData, locale) : null;
   const faceLabProfilePreview = faceLabLaunch ? getFaceLabProfilePreview(faceLabLaunch, locale) : null;
   const overviewMatchSummary = buildOverviewMatchSummary(resultForm, result, locale);
@@ -3290,6 +3297,7 @@ function ResultContent() {
           photoAlt={resultPhotoAlt}
           photoFallback={copy.resultPhotoFallback}
           faceLabPreview={freeResultV2FaceLabPreview}
+          faceLabDisplayStatus={faceLabDisplayStatus}
           locale={locale}
         />
       )

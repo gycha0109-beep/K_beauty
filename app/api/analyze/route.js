@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
+import { buildFallbackPhotoAnalysis } from "@/lib/photo-evidence";
+import { projectSkinObservation } from "@/lib/skin-observation-projector";
+import { projectFaceLabResult } from "@/lib/face-lab-observation-projector";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
+import { analyzeVisionObservation } from "@/lib/server/vision-observation-service";
 import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";
 import { buildPremiumSessionReportSource } from "@/lib/premium-session-payload";
 import {
@@ -41,6 +44,7 @@ import {
   issueAnonymousWriteGrants
 } from "@/lib/security/anonymous-write-grant";
 import { canonicalizeAnonymousResultForPersistence } from "@/lib/security/anonymous-write-grant-core";
+import { normalizeImageAnalysisEligibility } from "@/lib/image-analysis-eligibility";
 import {
   projectProductImage,
   sanitizeAnalyzeResultProductImages,
@@ -54,7 +58,11 @@ import {
 } from "@/lib/upload-validation";
 import { resolveOpenAiApiKey } from "@/lib/openai-env-diagnostics";
 import { resolveLocalShadowProviderStub } from "@/lib/local-shadow-provider-stub";
-import { sanitizePremiumFaceLabSummary } from "@/lib/premium-face-lab";
+import {
+  buildPremiumFaceLabSummary,
+  sanitizePremiumFaceLabSummary
+} from "@/lib/premium-face-lab";
+import { createFaceLabUnavailable } from "@/lib/face-lab-result-envelope";
 import {
   getTrustedDirectPurchaseUrl,
   projectProductPurchaseLink,
@@ -71,9 +79,8 @@ import {
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const FREE_OPENAI_MODEL = "gpt-4o-mini";
 const PREMIUM_OPENAI_MODEL = "gpt-4o";
-const PHOTO_ANALYSIS_MAX_TOKENS = 900;
 const PRODUCT_EXPLANATION_MAX_TOKENS = 1400;
-const ANALYZE_RESPONSE_SCHEMA_VERSION = 1;
+const ANALYZE_RESPONSE_SCHEMA_VERSION = 2;
 const PRODUCT_SOURCE_UNAVAILABLE_MESSAGE =
   "Recommendation products are temporarily unavailable. Please try again shortly.";
 const GENDER_PREFERENCE_VALUES = new Set(["female", "male", "unspecified"]);
@@ -287,7 +294,9 @@ function buildAnalyzeMeta({
   locale,
   photoNotice,
   explanationNotice,
-  apiKey
+  apiKey,
+  visionTelemetry,
+  imageProviderAttemptCount
 }) {
   return {
     schemaVersion: ANALYZE_RESPONSE_SCHEMA_VERSION,
@@ -297,7 +306,10 @@ function buildAnalyzeMeta({
     notice: [photoNotice, explanationNotice].filter(Boolean).join(" ").trim(),
     explanationSource: apiKey && !explanationNotice ? "openai" : "deterministic",
     photoEvidenceSource: apiKey && !photoNotice ? "openai" : "fallback",
-    photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback"
+    photoObservationsSource: apiKey && !photoNotice ? "openai" : "fallback",
+    visionObservationSchemaVersion: visionTelemetry?.schemaVersion || null,
+    visionObservationPromptVersion: visionTelemetry?.promptVersion || null,
+    imageProviderAttemptCount
   };
 }
 
@@ -1076,6 +1088,7 @@ function sanitizePremiumReport(report) {
       : [],
     routineStructure: sanitizeRoutineStructure(report.routineStructure),
     photoObservations: sanitizePhotoObservationsForPremium(report.photoObservations),
+    imageEligibility: normalizeImageAnalysisEligibility(report.imageEligibility),
     currentProducts: sanitizeCurrentProductsReportForPremium(report.currentProducts),
     currentProductVerdicts: sanitizeCurrentProductVerdictsForPremium(report.currentProductVerdicts),
     functionalDecisions: sanitizeFunctionalDecisionsForPremium(report.functionalDecisions),
@@ -1165,6 +1178,7 @@ function buildFreeDecisionPayload(decision) {
     warnings: Array.isArray(decision.warnings) ? decision.warnings.slice(0, 1) : [],
     photoEvidence: Array.isArray(decision.photoEvidence) ? decision.photoEvidence.slice(0, 3) : [],
     photoObservations: decision.photoObservations || null,
+    imageEligibility: normalizeImageAnalysisEligibility(decision.imageEligibility),
     surveyEvidence: Array.isArray(decision.surveyEvidence) ? decision.surveyEvidence.slice(0, 4) : [],
     scoring: sanitizeDecisionScoring(decision.scoring)
   };
@@ -1249,47 +1263,6 @@ async function fetchOpenAiJson({ apiKey, body, stage }) {
     });
     throw new Error("Provider returned invalid response.");
   }
-}
-
-async function extractPhotoAnalysis({ apiKey, imageDataUrl, locale, model, formInput }) {
-  if (!apiKey || !imageDataUrl) {
-    return buildFallbackPhotoAnalysis(locale);
-  }
-
-  const photoPrompt = createPhotoEvidencePrompt(locale, buildSurveyContextForLlm(formInput));
-  const parsed = await fetchOpenAiJson({
-    apiKey,
-    stage: "photo-evidence",
-    body: {
-      model,
-      max_tokens: PHOTO_ANALYSIS_MAX_TOKENS,
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: photoPrompt
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: photoPrompt
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageDataUrl
-              }
-            }
-          ]
-        }
-      ]
-    }
-  });
-
-  return normalizePhotoAnalysis(parsed, locale);
 }
 
 async function generateProductExplanations({ apiKey, locale, decision, formInput, model }) {
@@ -1539,31 +1512,43 @@ export async function POST(request) {
       );
     }
 
-    const canonicalDataUrl = canonicalImage.dataUrl;
-
     if (process.env.NODE_ENV !== "production") {
       logAnalyze("openai-env:diagnostic");
     }
 
     let photoAnalysis = buildFallbackPhotoAnalysis(locale);
+    let faceLabResult = createFaceLabUnavailable("vision_request_failed");
+    let visionTelemetry = null;
     let photoNotice = "";
+    const imageProviderAttemptCount = apiKey && canonicalImage.bytes ? 1 : 0;
 
-    if (apiKey && canonicalDataUrl) {
+    if (apiKey && canonicalImage.bytes) {
       try {
-        photoAnalysis = await extractPhotoAnalysis({
+        const observationResult = await analyzeVisionObservation({
           apiKey,
-          imageDataUrl: canonicalDataUrl,
+          imageBuffer: canonicalImage.bytes,
+          mimeType: canonicalImage.mimeType,
+          model
+        });
+        visionTelemetry = observationResult.telemetry;
+        photoAnalysis = projectSkinObservation(observationResult.bundle, {
           locale,
-          model,
           formInput
         });
+        faceLabResult = projectFaceLabResult(observationResult.bundle, { locale });
+
+        if (observationResult.bundle.skin?.status !== "available") {
+          photoNotice = copy.photoFallbackNotice;
+        }
       } catch {
         photoAnalysis = buildFallbackPhotoAnalysis(locale);
+        faceLabResult = createFaceLabUnavailable("vision_request_failed");
         photoNotice = copy.photoFallbackNotice;
         logAnalyze("photo-evidence:fallback");
       }
     } else {
       photoNotice = copy.photoFallbackNotice;
+      faceLabResult = createFaceLabUnavailable(apiKey ? "vision_request_failed" : "api_key_missing");
     }
 
     const currentProductSnapshots = await fetchCurrentProductSnapshotsByIds(
@@ -1580,6 +1565,16 @@ export async function POST(request) {
       includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
       includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
     });
+
+    if (decision.premiumReport) {
+      decision = {
+        ...decision,
+        premiumReport: {
+          ...decision.premiumReport,
+          faceLabSummary: buildPremiumFaceLabSummary(faceLabResult, { locale })
+        }
+      };
+    }
     logPremiumSessionDiagnosticStage(
       premiumDiagnosticContext,
       "S0_decision",
@@ -1596,7 +1591,7 @@ export async function POST(request) {
 
     let explanationNotice = "";
 
-    if (apiKey) {
+    if (apiKey && visionTelemetry) {
       try {
         const explanationItems = await generateProductExplanations({
           apiKey,
@@ -1614,7 +1609,9 @@ export async function POST(request) {
         logAnalyze("product-explanations:fallback");
       }
     } else {
-      explanationNotice = copy.missingApiKeyNotice;
+      explanationNotice = apiKey
+        ? copy.explanationFallbackNotice
+        : copy.missingApiKeyNotice;
     }
 
     decision = appendTopPickReviewEvidence(decision, locale);
@@ -1727,11 +1724,14 @@ export async function POST(request) {
     const responsePayload = sanitizeAnalyzeResultProductImages(
       sanitizeAnalyzeResultPurchaseLinks({
         ...publicDecision,
+        faceLab: faceLabResult,
         meta: buildAnalyzeMeta({
           locale,
           photoNotice,
           explanationNotice,
-          apiKey
+          apiKey,
+          visionTelemetry,
+          imageProviderAttemptCount
         }),
         ...(anonymousWriteGrant?.ok
           ? {

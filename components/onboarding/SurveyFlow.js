@@ -1137,7 +1137,9 @@ function SurveyFooterActions({
             ref={nextButtonRef}
             type="button"
             onClick={onNext}
+            data-testid={isFinalQuestion ? "analyze-submit" : undefined}
             disabled={isNextPending}
+            aria-busy={isFinalQuestion && isNextPending}
             className={`ui-button-primary relative z-10 w-full overflow-hidden px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.985] disabled:cursor-wait disabled:opacity-70 ${
               finalCtaEnabled
                 ? "border border-white/35 bg-[linear-gradient(100deg,#ec517e_0%,#ff735f_52%,#ff9873_100%)] shadow-[0_16px_36px_rgba(231,107,145,0.34),0_0_22px_rgba(255,128,102,0.16)] ring-1 ring-[#ff8066]/35 dark:bg-[linear-gradient(100deg,#ef6387_0%,#ff8068_54%,#ffa177_100%)] dark:shadow-[0_16px_38px_rgba(239,99,135,0.28),0_0_24px_rgba(255,128,104,0.14)] dark:ring-white/18"
