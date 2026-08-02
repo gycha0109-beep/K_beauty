@@ -1,0 +1,47 @@
+name: T7 Pilot Campaign Runner
+
+on:
+  pull_request:
+    paths:
+      - "packages/face-contracts/**"
+      - "tools/synthetic-evaluation/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/t7-pilot-campaign-runner.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: t7-campaign-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node20-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run synthetic:test
+      - run: npm run synthetic:verify
+      - run: npm run architecture:guard
+      - run: npm run build
+
+  node24-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run synthetic:test
+      - run: npm run synthetic:verify
