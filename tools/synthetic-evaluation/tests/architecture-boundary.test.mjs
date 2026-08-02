@@ -74,7 +74,37 @@ test("observation request and execution paths do not accept generation intent", 
   }
 });
 
-test("T3 and T4 expose no batch execution command", async () => {
+test("blind T5 judgment and consensus modules cannot load generation intent", async () => {
+  const files = [
+    path.resolve(testDirectory, "../src/judgment/assignment.js"),
+    path.resolve(testDirectory, "../src/judgment/submission.js"),
+    path.resolve(testDirectory, "../src/judgment/consensus.js"),
+    path.resolve(testDirectory, "../src/judgment/blind-registrar.js")
+  ];
+  for (const file of files) {
+    const source = await fs.readFile(file, "utf8");
+    assert.doesNotMatch(source, /(?:\.\.\/)?generation\/|intent-resolver|read-intent-artifacts|alignment(?:-registrar)?|grades\.js|candidate-manifest/i, file);
+    assert.doesNotMatch(source, /compiledPrompt|specDigest|promptDigest|campaignId|conditionId|intendedLabels|generationArtifact|\bpurpose\b/, file);
+  }
+});
+
+test("T5 assignment CLI derives input from authoritative T4 artifacts", async () => {
+  const source = await fs.readFile(path.resolve(testDirectory, "../src/judgment/cli/judge.js"), "utf8");
+  assert.match(source, /prepareBlindJudgmentAssignment/);
+  assert.doesNotMatch(source, /createBlindJudgmentAssignment/);
+  assert.doesNotMatch(source, /--blind-input/);
+});
+
+test("T5 runtime has no Provider, browser, DB, or shell execution", async () => {
+  for (const file of await collectFiles(path.resolve(testDirectory, "../src/judgment"))) {
+    const source = await fs.readFile(file, "utf8");
+    assert.doesNotMatch(source, /\bfetch\s*\(|api\.openai\.com|gemini\.google|generativelanguage|playwright|puppeteer|webdriver|@supabase|child_process|execFile|spawn\s*\(/i, file);
+  }
+});
+
+test("T3 through T5 expose no batch or G4/G5 execution command", async () => {
   const packageJson = JSON.parse(await fs.readFile(path.resolve(testDirectory, "../package.json"), "utf8"));
-  assert.equal(Object.keys(packageJson.scripts || {}).some((name) => /batch/i.test(name)), false);
+  const scripts = Object.keys(packageJson.scripts || {});
+  assert.equal(scripts.some((name) => /batch/i.test(name)), false);
+  assert.equal(scripts.some((name) => /g4|g5|gold|holdout|promot/i.test(name)), false);
 });
