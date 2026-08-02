@@ -41,6 +41,12 @@ test("blind sheet hides condition, outcomes, and cross-reference identifiers", a
   assert.equal(value.thumbnails.length > 0, true);
   assert.equal(value.thumbnails.every((thumbnail) => thumbnail.transformPolicyId === "t8-thumbnail-display-v1"), true);
   assert.equal(value.thumbnails.every((thumbnail) => thumbnail.blindRelativePath.includes(thumbnail.blindReviewItemId)), true);
+  for (const thumbnail of value.thumbnails) {
+    assert.match(blind, new RegExp(`src="blind-thumbnails/${thumbnail.blindReviewItemId}\\.png"`));
+    assert.match(annotated, new RegExp(`src="annotated-thumbnails/${thumbnail.campaignRunId}-${thumbnail.slotId}\\.png"`));
+    assert.equal(value.files.has(thumbnail.blindRelativePath), true);
+    assert.equal(value.files.has(thumbnail.annotatedRelativePath), true);
+  }
 });
 
 test("T8 JSON CSV and HTML rendering is deterministic and internal-only", async () => {
