@@ -1,17 +1,21 @@
+function scenario(id, kind, evidenceProbe, campaignTerminalOutcome = "candidate_import_failed") {
+  return Object.freeze({ id, kind, evidenceProbe, campaignTerminalOutcome });
+}
+
 export const REHEARSAL_SCENARIO_MATRIX = Object.freeze([
-  ...Array.from({ length: 8 }, (_, index) => Object.freeze({ id: `aligned_${index + 1}`, kind: "aligned_promotion_path", terminalOutcome: "promoted_g4", evidenceProbe: "promotion_prepare" })),
-  ...Array.from({ length: 3 }, (_, index) => Object.freeze({ id: `ineligible_${index + 1}`, kind: "observation_valid_ineligible", terminalOutcome: "observation_valid_ineligible", evidenceProbe: "observation_ineligible" })),
-  ...Array.from({ length: 2 }, (_, index) => Object.freeze({ id: `generation_failure_${index + 1}`, kind: "generation_technical_failure", terminalOutcome: "generation_failed_no_asset", evidenceProbe: "campaign_retry" })),
-  Object.freeze({ id: "observation_failure_1", kind: "observation_technical_failure", terminalOutcome: "observation_failed", evidenceProbe: "observation_failure" }),
-  ...Array.from({ length: 2 }, (_, index) => Object.freeze({ id: `misaligned_${index + 1}`, kind: "misaligned_negative_control", terminalOutcome: "retained_g3_negative_control", evidenceProbe: "promotion_negative_control" })),
-  Object.freeze({ id: "rights_hold_1", kind: "rights_hold", terminalOutcome: "promotion_held", evidenceProbe: "promotion_rights_hold" }),
-  Object.freeze({ id: "external_mark_block_1", kind: "external_mark_block", terminalOutcome: "promotion_rejected", evidenceProbe: "promotion_mark_block" }),
-  Object.freeze({ id: "exact_duplicate_alias_1", kind: "exact_duplicate_alias", terminalOutcome: "retained_g3_negative_control", evidenceProbe: "promotion_duplicate_alias" }),
-  Object.freeze({ id: "perceptual_hold_1", kind: "perceptual_leakage_hold", terminalOutcome: "promotion_held", evidenceProbe: "promotion_perceptual_hold" })
+  ...Array.from({ length: 8 }, (_, index) => scenario(`aligned_${index + 1}`, "aligned_promotion_path", "promotion_prepare")),
+  ...Array.from({ length: 3 }, (_, index) => scenario(`ineligible_${index + 1}`, "observation_valid_ineligible", "observation_ineligible")),
+  ...Array.from({ length: 2 }, (_, index) => scenario(`generation_failure_${index + 1}`, "generation_technical_failure", "campaign_retry", "generation_failed_no_asset")),
+  scenario("observation_failure_1", "observation_technical_failure", "observation_failure"),
+  ...Array.from({ length: 2 }, (_, index) => scenario(`misaligned_${index + 1}`, "misaligned_negative_control", "promotion_negative_control")),
+  scenario("rights_hold_1", "rights_hold", "promotion_rights_hold"),
+  scenario("external_mark_block_1", "external_mark_block", "promotion_mark_block"),
+  scenario("exact_duplicate_alias_1", "exact_duplicate_alias", "promotion_duplicate_alias"),
+  scenario("perceptual_hold_1", "perceptual_leakage_hold", "promotion_perceptual_hold")
 ]);
 
-export const EXPECTED_TERMINAL_COUNTS = Object.freeze(REHEARSAL_SCENARIO_MATRIX.reduce((counts, scenario) => {
-  counts[scenario.terminalOutcome] = (counts[scenario.terminalOutcome] || 0) + 1;
+export const EXPECTED_TERMINAL_COUNTS = Object.freeze(REHEARSAL_SCENARIO_MATRIX.reduce((counts, item) => {
+  counts[item.campaignTerminalOutcome] = (counts[item.campaignTerminalOutcome] || 0) + 1;
   return counts;
 }, {}));
 
