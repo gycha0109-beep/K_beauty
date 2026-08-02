@@ -114,14 +114,15 @@ Designed; runtime implementation is separate:
 - process-level blind judgment assignments
 - immutable pseudonymous human-review submissions
 - minimum two independent reviewers with explicit blind adjudication
-- sealed consensus before generation-intent access
+- intent-free per-axis consensus that may be sealed partially
+- generation intent access only after consensus sealing
 - finalized `GenerationSpec` as the only intent source
-- gate, target, and diagnostic axis separation
+- purpose-required gate/target axis selection after intent join
 - no aggregate quality score
 - conservative absence/count/region handling
 - exact face-feature value alignment with strength left unverifiable
 - paired skin target assessment without same-person identity claims
-- append-only G2/G3 derivation
+- append-only G2 and purpose-scoped G3 derivation
 - G4/G5 promotion excluded
 
 Design and decisions:
@@ -130,7 +131,10 @@ Design and decisions:
 docs/judgment-intent-alignment-v1.md
 docs/adr/0007-blind-judgment-sealing-and-intent-join.md
 docs/adr/0008-purpose-specific-alignment-and-grade-derivation.md
+docs/adr/0009-axis-level-consensus-and-purpose-scoped-g3.md
 ```
+
+ADR 0009 is the post-design review correction and supersedes any earlier wording that makes blind consensus depend on purpose-specific critical axes.
 
 ## Not included
 
