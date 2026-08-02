@@ -46,6 +46,7 @@ This is deliberately not one authoritative candidate lineage. Joining fake trans
 
 - stable semantic identity
 - timestamp excluded from identity
+- source checkout SHA included in identity
 - exact zero counters for external Provider calls, network attempts, production writes, actual human reviews, and persistent authoritative G4/G5
 - explicit `singleArtifactLineageEndToEnd: false`
 - explicit composed-rehearsal authority limitation
@@ -113,11 +114,7 @@ The authoritative report records ten passing probes:
 
 ## 5. Rehearsal report
 
-Authoritative report digest:
-
-`93ca9141c2fca4528956004333b10b2de062f1341b05f7335cd90a19a5e0cb13`
-
-Both Node 20 and Node 24 produced byte-equivalent JSON reports.
+Node 20 and Node 24 must produce byte-equivalent JSON reports for the same CI source checkout. The authoritative workflow run and its report digest are recorded in the implementation pull request because the report identity includes the source checkout SHA.
 
 Key values:
 
