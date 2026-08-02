@@ -31,13 +31,15 @@ export {
 export { createPilotCampaignCloseout, verifyPilotCampaignCloseoutIntegrity } from "./closeout.js";
 export {
   compileAndStorePilotCampaign,
-  issuePilotWave,
   registerPilotGenerationHandoff,
   reservePilotGenerationRetry,
-  submitPilotCheckpoint,
-  resumePilotCampaign,
   closePilotCampaign,
   getPilotCampaignStatus,
   nextPilotSlotAction
 } from "./orchestrator.js";
+export {
+  issuePilotWave,
+  submitPilotCheckpoint,
+  resumePilotCampaign
+} from "./safe-operations.js";
 export { registerPilotStage } from "./stage-registration.js";
