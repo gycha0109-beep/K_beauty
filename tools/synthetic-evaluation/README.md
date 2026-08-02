@@ -270,12 +270,15 @@ docs/adr/0014-campaign-orchestration-without-new-judgment-authority.md
 docs/adr/0015-fixed-pilot-matrix-waves-and-anti-cherry-picking.md
 docs/adr/0016-manual-generation-handoff-and-single-provider-runs.md
 docs/adr/0017-frozen-run-versions-and-t8-t9-handoff.md
+docs/adr/0018-pilot-source-freeze-checkpoint-and-terminal-corrections.md
 ```
+
+ADR 0018 tightens the source freeze, makes valid-ineligible/no-asset outcomes explicit, defines wave checkpoint readiness, and requires T9 to revalidate current T6 G4 status.
 
 ## Not included
 
-- actual automatic image generation
-- implemented batch import, observation, judgment, alignment, or promotion
+- automatic image generation
+- T7 campaign runner implementation
 - actual pilot campaign execution
 - browser automation
 - same-person verification
