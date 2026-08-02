@@ -108,7 +108,7 @@ export function deriveCampaignSlotRows(source) {
   }
   rows.sort((left, right) => stableStringify([left.campaignRunId, left.conditionId, left.conditionOrdinal, left.slotId]).localeCompare(stableStringify([right.campaignRunId, right.conditionId, right.conditionOrdinal, right.slotId])));
   const uniqueSlots = new Set(rows.map((row) => `${row.campaignRunId}:${row.slotId}`));
-  const conditionCounts = Object.fromEntries(["A","B","C","D"].map((condition) => [condition, rows.filter((row) => row.conditionId === condition).length]));
+  const conditionCounts = Object.fromEntries(["A", "B", "C", "D"].map((condition) => [condition, rows.filter((row) => row.conditionId === condition).length]));
   if (uniqueSlots.size !== 20 || Object.values(conditionCounts).some((count) => count !== 5)) return failure("report_denominator_invalid", "rows");
   return Object.freeze({ ok: true, rows: deepFreeze(rows), slotEvidenceDigest: sha256Hex(stableStringify(rows)) });
 }
@@ -210,7 +210,7 @@ export function deriveCampaignMetricSet({ sourceSnapshot, rows }) {
   const stageCounts = stageNumerators(rows);
   const stageMetrics = Object.fromEntries(T8_STAGE_METRICS.map((metric) => [metric, rate(stageCounts[metric], denominator)]));
   const summaries = [];
-  for (const run of sourceSnapshot.sourceRuns) for (const condition of ["A","B","C","D"]) summaries.push(conditionSummary(rows, run.campaignRunId, run.providerProfileId, condition));
+  for (const run of sourceSnapshot.sourceRuns) for (const condition of ["A", "B", "C", "D"]) summaries.push(conditionSummary(rows, run.campaignRunId, run.providerProfileId, condition));
   const semantic = {
     schemaVersion: CAMPAIGN_METRIC_SET_SCHEMA_VERSION,
     sourceSnapshotDigest: sourceSnapshot.sourceSnapshotDigest,
@@ -223,16 +223,17 @@ export function deriveCampaignMetricSet({ sourceSnapshot, rows }) {
     comparison: comparisonSummary(rows, sourceSnapshot.sourceRuns)
   };
   const metricSet = deepFreeze({ ...semantic, metricSetDigest: sha256Hex(stableStringify(semantic)) });
-  return verifyCampaignMetricSetSemantics(metricSet)
+  const semanticFailure = metricSetSemanticFailure(metricSet);
+  return semanticFailure === null
     ? Object.freeze({ ok: true, metricSet })
-    : failure("report_metric_set_invalid", "$", "contract");
+    : failure("report_metric_set_invalid", "$", semanticFailure);
 }
 
 export function buildCampaignEvidenceSnapshot({ sources, rows, comparisonKey = null, capturedAt = new Date().toISOString() }) {
-  if (!Array.isArray(sources) || ![1,2].includes(sources.length) || !Number.isFinite(Date.parse(capturedAt)) || new Date(capturedAt).toISOString() !== capturedAt) return failure("report_source_snapshot_invalid", "$", null);
+  if (!Array.isArray(sources) || ![1, 2].includes(sources.length) || !Number.isFinite(Date.parse(capturedAt)) || new Date(capturedAt).toISOString() !== capturedAt) return failure("report_source_snapshot_invalid", "$", null);
   const reportScope = sources.length === 1 ? "single_run" : "provider_comparison";
   if ((reportScope === "provider_comparison") !== Boolean(comparisonKey)) return failure("report_source_snapshot_invalid", "comparisonKey");
-  const artifactIndex = sources.flatMap((source) => source.artifactIndex).sort((a,b) => stableStringify(a).localeCompare(stableStringify(b)));
+  const artifactIndex = sources.flatMap((source) => source.artifactIndex).sort((a, b) => stableStringify(a).localeCompare(stableStringify(b)));
   const artifactIndexDigest = sha256Hex(stableStringify(artifactIndex));
   const slotEvidenceDigest = sha256Hex(stableStringify(rows));
   const sourceRuns = sources.map((source) => ({
@@ -243,7 +244,7 @@ export function buildCampaignEvidenceSnapshot({ sources, rows, comparisonKey = n
     comparisonGroupId: source.plan.comparisonGroupId,
     providerProfileId: source.run.providerProfileId,
     closedAt: source.closeout.closedAt
-  })).sort((a,b) => a.campaignRunId.localeCompare(b.campaignRunId));
+  })).sort((a, b) => a.campaignRunId.localeCompare(b.campaignRunId));
   const semantic = {
     schemaVersion: CAMPAIGN_EVIDENCE_SNAPSHOT_SCHEMA_VERSION,
     reportScope,
@@ -275,39 +276,40 @@ function validDelta(value) {
     value.percentagePointDeltaAminusB === Math.round(((value.providerA - value.providerB) / 20) * 1000) / 10;
 }
 
-function verifyComparisonSemantics(metricSet) {
-  if (metricSet.runCount === 1) return metricSet.comparison === null;
+function comparisonSemanticFailure(metricSet) {
+  if (metricSet.runCount === 1) return metricSet.comparison === null ? null : "comparison_present_for_single_run";
   const comparison = metricSet.comparison;
-  if (!exactKeys(comparison, ["providerA", "providerB", "stageDeltas", "terminalDeltas", "authority", "ranking", "significance", "causalAttribution"])) return false;
+  if (!exactKeys(comparison, ["providerA", "providerB", "stageDeltas", "terminalDeltas", "authority", "ranking", "significance", "causalAttribution"])) return "comparison_shape";
   for (const provider of [comparison.providerA, comparison.providerB]) {
-    if (!exactKeys(provider, ["campaignRunId", "providerProfileId", "denominator"]) || !/^crun_[a-f0-9]{24}$/.test(provider.campaignRunId || "") || typeof provider.providerProfileId !== "string" || provider.providerProfileId.length === 0 || provider.denominator !== 20) return false;
+    if (!exactKeys(provider, ["campaignRunId", "providerProfileId", "denominator"]) || !/^crun_[a-f0-9]{24}$/.test(provider.campaignRunId || "") || typeof provider.providerProfileId !== "string" || provider.providerProfileId.length === 0 || provider.denominator !== 20) return "comparison_provider_shape";
   }
-  if (comparison.providerA.campaignRunId === comparison.providerB.campaignRunId || comparison.providerA.providerProfileId === comparison.providerB.providerProfileId) return false;
-  if (!exactKeys(comparison.stageDeltas, T8_STAGE_METRICS) || Object.values(comparison.stageDeltas).some((value) => !validDelta(value))) return false;
-  if (!exactKeys(comparison.terminalDeltas, PILOT_TERMINAL_OUTCOMES) || Object.values(comparison.terminalDeltas).some((value) => !validDelta(value))) return false;
-  if (comparison.authority !== "descriptive_only" || comparison.ranking !== null || comparison.significance !== null || comparison.causalAttribution !== null) return false;
+  if (comparison.providerA.campaignRunId === comparison.providerB.campaignRunId || comparison.providerA.providerProfileId === comparison.providerB.providerProfileId) return "comparison_provider_not_varied";
+  if (!exactKeys(comparison.stageDeltas, T8_STAGE_METRICS) || Object.values(comparison.stageDeltas).some((value) => !validDelta(value))) return "comparison_stage_delta";
+  if (!exactKeys(comparison.terminalDeltas, PILOT_TERMINAL_OUTCOMES) || Object.values(comparison.terminalDeltas).some((value) => !validDelta(value))) return "comparison_terminal_delta";
+  if (comparison.authority !== "descriptive_only" || comparison.ranking !== null || comparison.significance !== null || comparison.causalAttribution !== null) return "comparison_authority";
   const summaryRuns = sortedUnique(metricSet.conditionSummaries.map((summary) => summary.campaignRunId));
-  if (stableStringify(summaryRuns) !== stableStringify([comparison.providerA.campaignRunId, comparison.providerB.campaignRunId].sort())) return false;
-  return true;
+  if (stableStringify(summaryRuns) !== stableStringify([comparison.providerA.campaignRunId, comparison.providerB.campaignRunId].sort())) return "comparison_summary_runs";
+  return null;
 }
 
-function verifyCampaignMetricSetSemantics(metricSet) {
-  if (!validateCampaignMetricSet(metricSet).ok) return false;
+function metricSetSemanticFailure(metricSet) {
+  const validation = validateCampaignMetricSet(metricSet);
+  if (!validation.ok) return `contract:${validation.errors.map((item) => `${item.path}:${item.detail ?? ""}`).join("|")}`;
   const denominator = 20 * metricSet.runCount;
   const stage = Object.fromEntries(Object.entries(metricSet.stageMetrics).map(([key, value]) => [key, value.numerator]));
-  if (!(stage.issued_primary_slots >= stage.asset_ready_handoffs && stage.asset_ready_handoffs >= stage.registered_candidates && stage.registered_candidates >= stage.authoritative_observations && stage.authoritative_observations >= stage.valid_ineligible && stage.authoritative_observations >= stage.sealed_consensus && stage.sealed_consensus >= stage.alignment_records && stage.alignment_records >= stage.promotion_decisions && stage.promotion_decisions >= stage.promoted_g4_as_of_closeout)) return false;
-  if (Object.values(metricSet.terminalOutcomes).reduce((sum, value) => sum + value, 0) !== denominator) return false;
+  if (!(stage.issued_primary_slots >= stage.asset_ready_handoffs && stage.asset_ready_handoffs >= stage.registered_candidates && stage.registered_candidates >= stage.authoritative_observations && stage.authoritative_observations >= stage.valid_ineligible && stage.authoritative_observations >= stage.sealed_consensus && stage.sealed_consensus >= stage.alignment_records && stage.alignment_records >= stage.promotion_decisions && stage.promotion_decisions >= stage.promoted_g4_as_of_closeout)) return "funnel_order";
+  if (Object.values(metricSet.terminalOutcomes).reduce((sum, value) => sum + value, 0) !== denominator) return "terminal_denominator";
   const terminalFromConditions = Object.fromEntries(PILOT_TERMINAL_OUTCOMES.map((outcome) => [outcome, metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.terminalOutcomes[outcome], 0)]));
-  if (stableStringify(terminalFromConditions) !== stableStringify(metricSet.terminalOutcomes)) return false;
+  if (stableStringify(terminalFromConditions) !== stableStringify(metricSet.terminalOutcomes)) return "condition_terminal_aggregate";
   const uniqueConditionKeys = new Set(metricSet.conditionSummaries.map((summary) => `${summary.campaignRunId}:${summary.conditionId}`));
-  if (uniqueConditionKeys.size !== 4 * metricSet.runCount) return false;
+  if (uniqueConditionKeys.size !== 4 * metricSet.runCount) return "condition_key_count";
   const aggregate = {
     registered_candidates: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.registeredCandidates.numerator, 0),
     authoritative_observations: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.authoritativeObservations.numerator, 0),
     valid_ineligible: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.validIneligible.numerator, 0),
     promoted_g4_as_of_closeout: metricSet.conditionSummaries.reduce((sum, summary) => sum + summary.promotedG4AsOfCloseout.numerator, 0)
   };
-  for (const [key, value] of Object.entries(aggregate)) if (stage[key] !== value) return false;
+  for (const [key, value] of Object.entries(aggregate)) if (stage[key] !== value) return `stage_condition_aggregate:${key}`;
   const expectedFailureGroups = {
     generation_technical: metricSet.terminalOutcomes.generation_failed_no_asset,
     candidate_import_technical: metricSet.terminalOutcomes.candidate_import_failed,
@@ -319,8 +321,8 @@ function verifyCampaignMetricSetSemantics(metricSet) {
     promotion_reject: metricSet.terminalOutcomes.promotion_rejected,
     campaign_cancelled: metricSet.terminalOutcomes.cancelled_budget_exhausted + metricSet.terminalOutcomes.cancelled_campaign_stop + metricSet.terminalOutcomes.cancelled_operator
   };
-  if (stableStringify(expectedFailureGroups) !== stableStringify(metricSet.failureGroups)) return false;
-  return verifyComparisonSemantics(metricSet);
+  if (stableStringify(expectedFailureGroups) !== stableStringify(metricSet.failureGroups)) return "failure_group_aggregate";
+  return comparisonSemanticFailure(metricSet);
 }
 
 export function verifyCampaignSlotRowIntegrity(row) {
@@ -334,6 +336,6 @@ export function verifyCampaignEvidenceSnapshotIntegrity(snapshot) {
 }
 
 export function verifyCampaignMetricSetIntegrity(metricSet) {
-  if (!verifyCampaignMetricSetSemantics(metricSet)) return false;
+  if (metricSetSemanticFailure(metricSet) !== null) return false;
   return metricSet.metricSetDigest === semanticDigest(metricSet, ["metricSetDigest"]);
 }
