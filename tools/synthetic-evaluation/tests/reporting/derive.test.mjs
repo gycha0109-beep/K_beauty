@@ -43,7 +43,7 @@ test("snapshot identity excludes capturedAt but binds rows and artifact index", 
 
 test("row and metric tampering fail integrity checks even with valid outer shape", async () => {
   const bundle = await makeDerivedBundle();
-  const row = clone(bundle.rows[9]);
+  const row = clone(bundle.rows.find((item) => item.promotion.terminalOutcome === "promoted_g4"));
   row.promotion.g4StatusAsOfCloseout = null;
   assert.equal(verifyCampaignSlotRowIntegrity(row), false);
 
