@@ -26,18 +26,21 @@ async function fixture() {
   return { dataRoot, ...bundle, ...review, report: report.report };
 }
 
-test("blind sheet hides condition and outcome while annotated sheet exposes audit metadata", async () => {
+test("blind sheet hides condition, outcomes, and cross-reference identifiers", async () => {
   const value = await fixture();
   assert.equal(verifyCampaignReviewPackageIntegrity(value.reviewPackage), true);
   const blind = value.files.get("review/blind-contact-sheet.html").toString("utf8");
   const annotated = value.files.get("review/annotated-contact-sheet.html").toString("utf8");
   assert.doesNotMatch(blind, /condition [ABCD]|terminal (?:promoted|promotion|observation|cancelled|generation|judgment|candidate)/i);
   assert.doesNotMatch(blind, /skin-control|redness|blemish|intent-alignment/i);
+  assert.doesNotMatch(blind, /crun_[a-f0-9]{24}|slot_[a-f0-9]{24}|cand_[a-f0-9]{24}/i);
+  assert.match(blind, /blind_[a-f0-9]{24}/i);
   assert.match(annotated, /condition [ABCD]/);
   assert.match(annotated, /terminal/);
   assert.match(annotated, /warnings:/);
   assert.equal(value.thumbnails.length > 0, true);
   assert.equal(value.thumbnails.every((thumbnail) => thumbnail.transformPolicyId === "t8-thumbnail-display-v1"), true);
+  assert.equal(value.thumbnails.every((thumbnail) => thumbnail.blindRelativePath.includes(thumbnail.blindReviewItemId)), true);
 });
 
 test("T8 JSON CSV and HTML rendering is deterministic and internal-only", async () => {
