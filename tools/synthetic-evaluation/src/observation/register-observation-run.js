@@ -120,7 +120,7 @@ export async function registerObservationRun({
     runDigest: preflight.identity.runDigest,
     candidate: {
       candidateId: request.candidate.candidateId,
-      canonicalSha256: request.candidate.candicalAsset.sha256,
+      canonicalSha256: request.candidate.canonicalAsset.sha256,
       canonicalTransformPolicyVersion: request.candidate.canonicalAsset.transformPolicyVersion
     },
     adapter: {
