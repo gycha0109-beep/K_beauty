@@ -9,10 +9,10 @@ import {
   getPilotCampaignStatus,
   issuePilotWave,
   registerPilotGenerationHandoff,
-  registerPilotStage,
   reservePilotGenerationRetry,
   submitPilotCheckpoint
 } from "../../src/campaign/orchestrator.js";
+import { registerPilotStage } from "../../src/campaign/stage-registration.js";
 import { readCampaignBundle } from "../../src/campaign/storage.js";
 
 const PLAN = Object.freeze({
