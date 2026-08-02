@@ -43,9 +43,11 @@ Implemented:
 7. Finalized reports only after actual temporary-root deletion and `.synthetic-local/` comparison.
 8. Recorded that the rehearsal is composed and does not claim one authoritative artifact lineage.
 
-## Verification
+## Verification contract
 
-Authoritative workflow run: `30762956161`
+The final implementation pull request records the authoritative workflow run and report digest because report identity includes the CI source checkout SHA.
+
+Required checks:
 
 - Node 20 rehearsal: PASS
 - Node 20 synthetic test: PASS
@@ -56,10 +58,7 @@ Authoritative workflow run: `30762956161`
 - Node 24 synthetic test: PASS
 - Node 24 synthetic verify: PASS
 - report artifact upload: PASS
-
-Node 20 and Node 24 report digest:
-
-`93ca9141c2fca4528956004333b10b2de062f1341b05f7335cd90a19a5e0cb13`
+- Node 20 and Node 24 report bytes: identical
 
 ## Boundaries
 
