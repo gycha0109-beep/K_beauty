@@ -7,6 +7,7 @@ import {
 } from "@bejewely/face-contracts";
 import { readJson } from "../campaign/storage.js";
 import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json.js";
+import { datasetStorageLayout, nativeDatasetPath } from "./storage-layout.js";
 
 function failure(code, pathName, detail = null) { return Object.freeze({ ok: false, errors: Object.freeze([{ code, path: pathName, detail }]) }); }
 function semantic(value) { const { firstExposedAt, claimDigest, ...rest } = value; return rest; }
@@ -60,11 +61,54 @@ function projectChain(claims) {
   return Object.freeze({ ok: true, head: leaves[0], claims: claims.slice().sort((a, b) => a.claimDigest.localeCompare(b.claimDigest)) });
 }
 
+async function readComponentMemberKeys(dataRoot, datasetLineageId, claims) {
+  const requiredVersions = new Set(claims.map((claim) => claim.datasetVersionDigest));
+  const keysByVersionAndFingerprint = new Map();
+  const lineageRoot = path.join(dataRoot, "datasets", datasetLineageId);
+  let versions;
+  try { versions = await readdir(lineageRoot, { withFileTypes: true }); }
+  catch (error) {
+    if (error?.code === "ENOENT" && requiredVersions.size === 0) return keysByVersionAndFingerprint;
+    throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+  }
+  for (const entry of versions) {
+    if (entry.isSymbolicLink()) throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+    if (!entry.isDirectory() || !entry.name.startsWith("dsv_")) continue;
+    let version;
+    let memberIndex;
+    try {
+      version = await readJson(path.join(lineageRoot, entry.name, "locked-manifest.json"));
+      if (!requiredVersions.has(version.datasetVersionDigest)) continue;
+      memberIndex = await readJson(path.join(lineageRoot, entry.name, "member-index.json"));
+    } catch {
+      throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+    }
+    if (!Array.isArray(memberIndex.memberDigests)) throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+    for (const digest of memberIndex.memberDigests) {
+      let member;
+      try { member = await readJson(nativeDatasetPath(dataRoot, datasetStorageLayout.member(digest))); }
+      catch { throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" }); }
+      if (member.memberDigest !== digest || member.sourceSnapshotDigest !== version.sourceSnapshotDigest || !/^[a-f0-9]{64}$/.test(member.componentFingerprint || "") || !/^[a-f0-9]{64}$/.test(member.canonicalSha256 || "") || !/^[a-f0-9]{64}$/.test(member.claimValuesDigest || "")) throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+      const mapKey = `${version.datasetVersionDigest}:${member.componentFingerprint}`;
+      if (!keysByVersionAndFingerprint.has(mapKey)) keysByVersionAndFingerprint.set(mapKey, new Set());
+      keysByVersionAndFingerprint.get(mapKey).add(sha256Hex(stableStringify([member.canonicalSha256, member.claimValuesDigest])));
+    }
+  }
+  for (const claim of claims) {
+    const keys = keysByVersionAndFingerprint.get(`${claim.datasetVersionDigest}:${claim.componentFingerprint}`);
+    if (!keys || keys.size === 0) throw Object.assign(new Error("exposure_registry_invalid"), { code: "exposure_registry_invalid" });
+  }
+  return keysByVersionAndFingerprint;
+}
+
 export async function readExposureRegistry(dataRoot, datasetLineageId) {
   let values;
   try { values = await readJsonTree(path.join(dataRoot, "objects", "exposure-claims", "sha256")); }
   catch (error) { return failure(error?.code || "exposure_registry_invalid", "exposureRegistry"); }
   const relevant = values.filter((claim) => claim.datasetLineageId === datasetLineageId);
+  let memberKeys;
+  try { memberKeys = await readComponentMemberKeys(dataRoot, datasetLineageId, relevant); }
+  catch (error) { return failure(error?.code || "exposure_registry_invalid", "exposureRegistry", "member_history"); }
   const byFingerprint = new Map();
   for (const claim of relevant) {
     if (!byFingerprint.has(claim.componentFingerprint)) byFingerprint.set(claim.componentFingerprint, []);
@@ -75,7 +119,11 @@ export async function readExposureRegistry(dataRoot, datasetLineageId) {
   for (const [fingerprint, claims] of byFingerprint) {
     const projected = projectChain(claims);
     if (!projected.ok) return projected;
-    heads.push({ componentFingerprint: fingerprint, assignedSplit: projected.head.assignedSplit, headClaimDigest: projected.head.claimDigest });
+    const keySet = new Set();
+    for (const claim of projected.claims) {
+      for (const key of memberKeys.get(`${claim.datasetVersionDigest}:${fingerprint}`) || []) keySet.add(key);
+    }
+    heads.push({ componentFingerprint: fingerprint, assignedSplit: projected.head.assignedSplit, headClaimDigest: projected.head.claimDigest, memberKeyDigests: [...keySet].sort() });
     allClaims.push(...projected.claims);
   }
   heads.sort((a, b) => a.componentFingerprint.localeCompare(b.componentFingerprint));
