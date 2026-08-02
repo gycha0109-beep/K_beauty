@@ -19,6 +19,7 @@ import { resolveProviderProfile } from "../generation/providers/provider-profile
 import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json.js";
 
 const CONDITIONS = Object.freeze(["A", "B", "C", "D"]);
+const HEX64 = /^[a-f0-9]{64}$/;
 
 function semantic(value) {
   const { sourceFreezeDigest, ...rest } = value;
@@ -69,8 +70,12 @@ export function buildPilotSourceFreeze(providerProfileId) {
 }
 
 export function verifyPilotSourceFreeze(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  if (!value || typeof value !== "object" || Array.isArray(value) || !HEX64.test(value.sourceFreezeDigest || "")) return false;
+  return value.sourceFreezeDigest === sha256Hex(stableStringify(semantic(value)));
+}
+
+export function verifyPilotSourceFreezeCurrent(value) {
+  if (!verifyPilotSourceFreeze(value)) return false;
   const rebuilt = buildPilotSourceFreeze(value.providerProfileId);
-  if (!rebuilt.ok) return false;
-  return value.sourceFreezeDigest === sha256Hex(stableStringify(semantic(value))) && stableStringify(value) === stableStringify(rebuilt.sourceFreeze);
+  return rebuilt.ok && stableStringify(value) === stableStringify(rebuilt.sourceFreeze);
 }
