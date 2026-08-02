@@ -92,6 +92,58 @@ function alignmentSemantic(alignment) {
   return semantic;
 }
 
+function hasValidAlignmentSemantics(alignment) {
+  const requiredAxes = alignment.policy.requiredAxes;
+  const sortedRequiredAxes = [...requiredAxes].sort();
+  if (
+    stableStringify(requiredAxes) !== stableStringify(sortedRequiredAxes) ||
+    new Set(requiredAxes).size !== requiredAxes.length ||
+    alignment.policy.requiredAxesDigest !== sha256Hex(stableStringify(requiredAxes))
+  ) {
+    return false;
+  }
+  const axisNames = alignment.axisResults.map((result) => result.axis);
+  if (new Set(axisNames).size !== axisNames.length) return false;
+  const resultByAxis = new Map(alignment.axisResults.map((result) => [result.axis, result]));
+  if (!requiredAxes.every((axis) => {
+    const result = resultByAxis.get(axis);
+    return result && (result.role === "gate" || result.role === "target");
+  })) {
+    return false;
+  }
+  const requiredResults = requiredAxes.map((axis) => resultByAxis.get(axis));
+  const hasMismatch = requiredResults.some((result) => result.verdict === "mismatched");
+  const hasUnverifiable = requiredResults.some((result) => result.verdict === "unverifiable");
+  if (hasMismatch && alignment.overallVerdict !== "misaligned") return false;
+  if (!hasMismatch && hasUnverifiable && alignment.overallVerdict !== "unverifiable") return false;
+  if (
+    !hasMismatch &&
+    !hasUnverifiable &&
+    alignment.generation.purpose === "paired_skin_edit" &&
+    alignment.overallVerdict !== "target_match_pair_unverified"
+  ) {
+    return false;
+  }
+  if (alignment.overallVerdict === "aligned" && requiredResults.some((result) => result.verdict !== "matched")) return false;
+  const sortedReasons = [...alignment.promotionBlockReasons].sort();
+  if (
+    stableStringify(alignment.promotionBlockReasons) !== stableStringify(sortedReasons) ||
+    new Set(alignment.promotionBlockReasons).size !== alignment.promotionBlockReasons.length
+  ) {
+    return false;
+  }
+  if (alignment.promotionReviewEligible) {
+    if (
+      alignment.overallVerdict !== "aligned" ||
+      !["capture_control", "skin_cue_control", "face_feature_control"].includes(alignment.generation.purpose) ||
+      alignment.promotionBlockReasons.length !== 0
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function alignJudgmentToIntent({
   consensus,
   candidateManifest,
@@ -186,7 +238,7 @@ export function alignJudgmentToIntent({
 }
 
 export function verifyIntentAlignmentIntegrity(alignment) {
-  if (!validateIntentAlignmentShape(alignment).ok) return false;
+  if (!validateIntentAlignmentShape(alignment).ok || !hasValidAlignmentSemantics(alignment)) return false;
   const digest = sha256Hex(stableStringify(alignmentSemantic(alignment)));
   return alignment.alignmentDigest === digest && alignment.alignmentId === `aln_${digest.slice(0, 24)}`;
 }
