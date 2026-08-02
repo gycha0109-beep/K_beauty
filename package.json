@@ -33,6 +33,9 @@
     "synthetic:verify": "npm run verify --workspace @bejewely/synthetic-evaluation",
     "synthetic:import": "npm run import --workspace @bejewely/synthetic-evaluation --",
     "synthetic:observe": "npm run observe --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:judge": "npm run judge --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:consensus": "npm run consensus --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:align": "npm run align --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint"
   },
   "dependencies": {
