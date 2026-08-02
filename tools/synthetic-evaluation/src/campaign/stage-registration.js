@@ -64,7 +64,10 @@ function currentSlotProjection(bundle, slotId) {
   const projected = projectionOf(bundle);
   if (!projected.ok) return projected;
   const slot = projected.projection.slotProjections.find((item) => item.slotId === slotId);
-  return slot ? Object.freeze({ ok: true, slot, projection: projected.projection }) : failure("campaign_slot_invalid", "slotId", null);
+  const slotDefinition = bundle.slots.find((item) => item.slotId === slotId);
+  return slot && slotDefinition
+    ? Object.freeze({ ok: true, slot, slotDefinition, projection: projected.projection })
+    : failure("campaign_slot_invalid", "slotId", null);
 }
 
 function requireCurrentCandidate(slot, candidateManifest) {
@@ -75,9 +78,43 @@ function requireCurrentCandidate(slot, candidateManifest) {
     candidateManifest?.asset?.canonicalSha256 === slot.refs.canonicalSha256;
 }
 
-function prepareStage({ stage, artifacts, slot, plan }) {
+function latestPacketAndHandoff(bundle, slotId) {
+  const packets = bundle.packets.filter((packet) => packet.slotId === slotId).sort((a,b) => b.attemptOrdinal - a.attemptOrdinal);
+  const packet = packets[0] || null;
+  const handoff = packet ? bundle.handoffs.find((item) => item.slotId === slotId && item.attemptId === packet.attemptId) || null : null;
+  return { packet, handoff };
+}
+
+function verifyCandidateSlotBinding(bundle, slotDefinition, artifacts) {
+  const verified = verifyCandidateStageArtifacts(artifacts);
+  if (!verified.ok) return verified;
+  const { packet, handoff } = latestPacketAndHandoff(bundle, slotDefinition.slotId);
+  const manifest = artifacts.candidateManifest;
+  if (
+    !packet ||
+    !handoff ||
+    handoff.outcome !== "asset_ready" ||
+    manifest.generation?.specDigest !== packet.finalizedSpecDigest ||
+    manifest.generation?.promptDigest !== packet.compiledPromptDigest ||
+    manifest.generation?.providerProfileId !== packet.providerProfileId ||
+    manifest.generation?.providerProfileVersion !== packet.providerProfileVersion ||
+    manifest.grouping?.conditionId !== slotDefinition.conditionId ||
+    artifacts.finalizedSpec?.specDigest !== packet.finalizedSpecDigest ||
+    artifacts.compiledPrompt?.promptDigest !== packet.compiledPromptDigest
+  ) return failure("source_artifact_integrity_invalid", "candidate", "slot_packet_binding_mismatch");
+  return Object.freeze({
+    ...verified,
+    sourceRefs: Object.freeze([
+      ...verified.sourceRefs,
+      { track: "T2", artifactType: "generation-work-packet", artifactDigest: packet.packetDigest },
+      { track: "T7", artifactType: "generation-handoff", artifactDigest: handoff.handoffDigest }
+    ])
+  });
+}
+
+function prepareStage({ stage, artifacts, slot, slotDefinition, bundle }) {
   if (stage === "candidate") {
-    const verified = verifyCandidateStageArtifacts(artifacts);
+    const verified = verifyCandidateSlotBinding(bundle, slotDefinition, artifacts);
     if (!verified.ok) return verified;
     if (slot.refs.candidateId && (slot.refs.candidateId !== verified.candidateId || slot.refs.canonicalSha256 !== verified.canonicalSha256)) return failure("registered_candidate_replacement_attempted", "candidate", null);
     return Object.freeze({ ok: true, eventType: "candidate_registered", sourceRefs: verified.sourceRefs, reasonCodes: ["candidate_registered_to_slot"] });
@@ -88,7 +125,7 @@ function prepareStage({ stage, artifacts, slot, plan }) {
     if (slot.refs.observationObjectDigest) return failure("observation_recovery_not_allowed", "artifacts", "authoritative_observation_exists");
     const recovery = artifacts.recovery === true;
     if (recovery) {
-      if (slot.observationRuns < 1 || slot.observationRecoveryRuns >= plan.budgets.maxObservationRecoveryRuns || slot.observationRuns >= plan.budgets.maxObservationRunsTotal) return failure("observation_recovery_not_allowed", "artifacts.recovery", null);
+      if (slot.observationRuns < 1 || slot.observationRecoveryRuns >= bundle.plan.budgets.maxObservationRecoveryRuns || slot.observationRuns >= bundle.plan.budgets.maxObservationRunsTotal) return failure("observation_recovery_not_allowed", "artifacts.recovery", null);
     } else if (slot.observationRuns > 0) return failure("observation_recovery_not_allowed", "artifacts.recovery", "recovery_flag_required");
     return Object.freeze({
       ok: true,
@@ -154,7 +191,7 @@ export async function registerPilotStage({ dataRoot, runId, slotId, stage, artif
     const bundle = await readCampaignBundle(dataRoot, runId);
     const current = currentSlotProjection(bundle, slotId);
     if (!current.ok) return current;
-    const prepared = prepareStage({ stage, artifacts, slot: current.slot, plan: bundle.plan });
+    const prepared = prepareStage({ stage, artifacts, slot: current.slot, slotDefinition: current.slotDefinition, bundle });
     if (!prepared.ok) return prepared;
     const appended = await appendBoundEvent(dataRoot, bundle, {
       campaignRunId: runId,
