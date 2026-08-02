@@ -183,8 +183,10 @@ ADR 0009 supersedes earlier wording that makes blind consensus depend on purpose
 Designed, not implemented:
 
 - stored T3/T4/T5 evidence revalidation before promotion review
+- two-stage source snapshot and final evidence bundle
 - full candidate promotion snapshot and operator re-attestation
 - separate internal-evaluation rights review
+- explicit canonical-image visual policy review
 - exact duplicate representative policy and manual perceptual leakage review
 - purpose- and claim-scoped `G4_SYNTHETIC_GOLD`
 - consensus values as the Gold-label source
@@ -204,7 +206,10 @@ docs/promotion-policy-v1.md
 docs/adr/0010-purpose-scoped-g4-and-grade-authority.md
 docs/adr/0011-promotion-evidence-snapshot-and-revalidation.md
 docs/adr/0012-leakage-coupling-and-append-only-revocation.md
+docs/adr/0013-two-stage-promotion-evidence-and-visual-review.md
 ```
+
+ADR 0013 supersedes the single-bundle ordering in the main T6 design and requires a source snapshot, explicit visual policy review, then a final evidence bundle.
 
 ## Not included
 
