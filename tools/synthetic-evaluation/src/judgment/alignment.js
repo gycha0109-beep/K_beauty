@@ -128,18 +128,11 @@ function hasValidAlignmentSemantics(alignment) {
   const sortedReasons = [...alignment.promotionBlockReasons].sort();
   if (
     stableStringify(alignment.promotionBlockReasons) !== stableStringify(sortedReasons) ||
-    new Set(alignment.promotionBlockReasons).size !== alignment.promotionBlockReasons.length
+    new Set(alignment.promotionBlockReasons).size !== alignment.promotionBlockReasons.length ||
+    !alignment.promotionBlockReasons.includes("promotion_policy_pending_t6") ||
+    alignment.promotionReviewEligible !== false
   ) {
     return false;
-  }
-  if (alignment.promotionReviewEligible) {
-    if (
-      alignment.overallVerdict !== "aligned" ||
-      !["capture_control", "skin_cue_control", "face_feature_control"].includes(alignment.generation.purpose) ||
-      alignment.promotionBlockReasons.length !== 0
-    ) {
-      return false;
-    }
   }
   return true;
 }
@@ -192,13 +185,11 @@ export function alignJudgmentToIntent({
   const overallVerdict = determineVerdict(spec, axisResults);
   const requiredAxes = [...new Set([...policy.gateAxes, ...policy.targetAxes.map(([axis]) => axis)])].sort();
   const requiredAxesDigest = sha256Hex(stableStringify(requiredAxes));
-  const promotionBlockReasons = [...intent.policyHolds];
+  const promotionBlockReasons = [...intent.policyHolds, "promotion_policy_pending_t6"];
   if (spec.purpose === "mixed_control_pilot") promotionBlockReasons.push("mixed_control_pilot_promotion_disabled");
   if (spec.purpose === "paired_skin_edit") promotionBlockReasons.push("paired_identity_verification_unavailable");
   if (overallVerdict !== "aligned") promotionBlockReasons.push(`overall_${overallVerdict}`);
-  const promotionReviewEligible = overallVerdict === "aligned" &&
-    ["capture_control", "skin_cue_control", "face_feature_control"].includes(spec.purpose) &&
-    promotionBlockReasons.length === 0;
+  const promotionReviewEligible = false;
 
   const semantic = {
     schemaVersion: INTENT_ALIGNMENT_SCHEMA_VERSION,
