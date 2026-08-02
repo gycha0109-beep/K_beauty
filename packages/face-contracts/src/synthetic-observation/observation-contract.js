@@ -110,8 +110,14 @@ export function createBlindJudgmentInput({ run, observationObject, blindCandidat
     run.execution?.mode !== "provider_bounded" ||
     !isObject(observationObject) ||
     observationObject.schemaVersion !== SYNTHETIC_OBSERVATION_OBJECT_SCHEMA_VERSION ||
+    run.observation?.schemaVersion !== SYNTHETIC_OBSERVATION_OBJECT_SCHEMA_VERSION ||
     run.observation?.digest !== observationObject.observationDigest ||
     observationObject.candidateId !== run.candidate?.candidateId ||
+    observationObject.canonicalSha256 !== run.candidate?.canonicalSha256 ||
+    observationObject.contractSnapshotDigest !== run.adapter?.contractSnapshotDigest ||
+    observationObject.bundle?.status !== "available" ||
+    observationObject.bundle?.privacy?.sourceImagePersisted !== false ||
+    observationObject.bundle?.privacy?.rawProviderResponsePersisted !== false ||
     !validateBlindCandidateInput(blindCandidate).ok ||
     blindCandidate.candidateId !== run.candidate?.candidateId ||
     blindCandidate.canonicalAsset.sha256 !== run.candidate?.canonicalSha256
