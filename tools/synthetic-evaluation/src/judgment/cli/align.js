@@ -2,11 +2,11 @@
 import { alignJudgmentToIntent } from "../alignment.js";
 import { deriveG3ConsensusRecord } from "../grades.js";
 import { readAndResolveCandidateIntent } from "../read-intent-artifacts.js";
+import { readJudgmentConsensus } from "../blind-registrar.js";
 import {
-  readJudgmentConsensus,
   registerDerivedGradeRecord,
   registerIntentAlignment
-} from "../registrar.js";
+} from "../alignment-registrar.js";
 import { fail, parseArgs, printResult, resolveDataRoot } from "./helpers.js";
 
 async function main() {
