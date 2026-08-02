@@ -26,15 +26,7 @@ async function main() {
   let result;
   if (actions[0] === "--source-preflight") {
     result = await preflightCampaignReport({ dataRoot, campaignRunIds: runs, closeoutDigests: closeouts });
-    if (result.ok) result = {
-      ok: true,
-      sourceSnapshotDigest: result.sourceSnapshot.sourceSnapshotDigest,
-      artifactIndexDigest: result.sourceSnapshot.artifactIndexDigest,
-      slotEvidenceDigest: result.sourceSnapshot.slotEvidenceDigest,
-      metricSetDigest: result.metricSet.metricSetDigest,
-      reportScope: result.sourceSnapshot.reportScope,
-      writesPerformed: 0
-    };
+    if (result.ok) result = { ok: true, sourceSnapshotDigest: result.sourceSnapshot.sourceSnapshotDigest, artifactIndexDigest: result.sourceSnapshot.artifactIndexDigest, slotEvidenceDigest: result.sourceSnapshot.slotEvidenceDigest, metricSetDigest: result.metricSet.metricSetDigest, reportScope: result.sourceSnapshot.reportScope, writesPerformed: 0 };
   } else if (actions[0] === "--build-review-package") {
     result = await buildAndStoreCampaignReviewPackage({ dataRoot, campaignRunIds: runs, closeoutDigests: closeouts, actorId: args.values.get("--actor") || "report_operator" });
     if (result.ok) result = { ok: true, sourceSnapshotDigest: result.sourceSnapshot.sourceSnapshotDigest, metricSetDigest: result.metricSet.metricSetDigest, reviewPackageDigest: result.reviewPackage.packageDigest, thumbnailCount: result.thumbnails.length, writesPerformed: result.writesPerformed };
@@ -42,13 +34,14 @@ async function main() {
     const reviewPath = args.values.get("--review");
     if (!reviewPath) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
     const review = await readRequest(dataRoot, reviewPath);
-    const allowed = ["reviewerId", "reviewedAt", "predecessorReportDigest", "revisionReasonCode"].sort();
+    const allowed = ["reviewerId", "checks", "reviewedAt", "predecessorReportDigest", "revisionReasonCode"].sort();
     if (!review || typeof review !== "object" || Array.isArray(review) || Object.keys(review).sort().join(",") !== allowed.join(",")) throw Object.assign(new Error("request_file_invalid"), { code: "request_file_invalid" });
     result = await confirmCampaignReport({
       dataRoot,
       campaignRunIds: runs,
       closeoutDigests: closeouts,
       reviewerId: review.reviewerId,
+      reviewChecks: review.checks,
       reviewedAt: review.reviewedAt,
       predecessorReportDigest: review.predecessorReportDigest,
       revisionReasonCode: review.revisionReasonCode,
