@@ -1,0 +1,229 @@
+name: Local Supabase Replay Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/local-replay-test/**"
+      - "supabase/migrations/**"
+      - "scripts/prepare-local-supabase-replay.mjs"
+      - "scripts/verify-local-supabase-replay-baseline.mjs"
+      - "docs/security/local-supabase-replay-baseline-20260719.md"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/local-supabase-replay-guard.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify replay contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          mkdir -p "${diagnostics_dir}"
+          npm run db:replay:verify 2>&1 | tee "${diagnostics_dir}/verifier.log"
+          rm -f "${diagnostics_dir}/verifier.log"
+
+      - name: Prepare isolated replay workspace
+        run: npm run db:replay:prepare
+
+      - name: Verify architecture guard
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BASE_SHA}" && -n "${HEAD_SHA}" ]]; then
+            git fetch --no-tags --depth=1 origin "${BASE_SHA}" "${HEAD_SHA}"
+            git diff --check "${BASE_SHA}" "${HEAD_SHA}"
+          else
+            git diff --check HEAD^
+          fi
+
+      - name: Start isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
+          }
+          if ! npx --yes supabase@2.82.0 start \
+            --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+            mkdir -p "${diagnostics_dir}"
+            sanitize_log <"${raw_log}" | tail -n 200 | tee "${diagnostics_dir}/start.log"
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Reset migration chain twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|access key|access key secret|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g' \
+              -e 's#[A-Za-z0-9_-]{96,}#[REDACTED_TOKEN]#g'
+          }
+          for attempt in 1 2; do
+            raw_log="$(mktemp)"
+            if ! npx --yes supabase@2.82.0 db reset \
+              --workdir tmp/local-supabase-replay >"${raw_log}" 2>&1; then
+              mkdir -p "${diagnostics_dir}"
+              sanitize_log <"${raw_log}" | tail -n 200 | tee "${diagnostics_dir}/reset-${attempt}.log"
+              rm -f "${raw_log}"
+              exit 1
+            fi
+            rm -f "${raw_log}"
+          done
+
+      - name: Lint local database
+        run: npx --yes supabase@2.82.0 db lint --local --workdir tmp/local-supabase-replay
+
+      - name: Verify anonymous product boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="tmp/local-supabase-replay-diagnostics"
+          boundary_failure() {
+            mkdir -p "${diagnostics_dir}"
+            printf '%s\n' "$1" | tee "${diagnostics_dir}/anonymous-boundary.log" >&2
+            exit 1
+          }
+
+          api_url=""
+          anon_key=""
+          while IFS='=' read -r name value; do
+            value="${value#\"}"
+            value="${value%\"}"
+            case "${name}" in
+              API_URL) api_url="${value}" ;;
+              ANON_KEY) anon_key="${value}" ;;
+            esac
+          done < <(npx --yes supabase@2.82.0 status -o env --workdir tmp/local-supabase-replay)
+          test -n "${api_url}"
+          test -n "${anon_key}"
+
+          response_file="$(mktemp)"
+          read_status="$(curl --silent --show-error \
+            --connect-timeout 5 \
+            --max-time 15 \
+            --output "${response_file}" \
+            --write-out '%{http_code}' \
+            "${api_url}/rest/v1/products?select=id,normalized_brand&normalized_brand=eq.replay%20lab&order=id.asc" \
+            -H "apikey: ${anon_key}" \
+            -H "Authorization: Bearer ${anon_key}")"
+          if [ "${read_status}" != "200" ]; then
+            rm -f "${response_file}"
+            boundary_failure "synthetic_read_unexpected_status:${read_status}"
+          fi
+          response="$(cat "${response_file}")"
+          rm -f "${response_file}"
+
+          read_count="$(printf '%s' "${response}" | jq 'length')"
+          if [ "${read_count}" -ne 5 ]; then
+            boundary_failure "synthetic_read_count:${read_count}"
+          fi
+          if [ "$(printf '%s' "${response}" | jq 'all(.[]; .normalized_brand == "replay lab")')" != "true" ]; then
+            boundary_failure "synthetic_read_brand_mismatch"
+          fi
+
+          assert_denied() {
+            method="$1"
+            url="$2"
+            payload="$3"
+            status="$(curl --silent --show-error \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              --request "${method}" \
+              "${url}" \
+              -H "apikey: ${anon_key}" \
+              -H "Authorization: Bearer ${anon_key}" \
+              -H "Content-Type: application/json" \
+              --data "${payload}")"
+            case "${status}" in
+              401|403) ;;
+              *) boundary_failure "anonymous_${method}_unexpected_status:${status}" ;;
+            esac
+          }
+
+          target="${api_url}/rest/v1/products?id=eq.00000000-0000-4000-8000-000000000101"
+          assert_denied POST "${api_url}/rest/v1/products" '{"name":"Denied Local Replay Write"}'
+          assert_denied PATCH "${target}" '{"name":"Denied Local Replay Update"}'
+          assert_denied DELETE "${target}" '{}'
+
+      - name: Stop isolated Supabase
+        if: success()
+        run: |
+          if [ -d tmp/local-supabase-replay ]; then
+            npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup
+          fi
+
+      - name: Best-effort stop after failure
+        if: failure() || cancelled()
+        continue-on-error: true
+        run: |
+          if [ -d tmp/local-supabase-replay ]; then
+            npx --yes supabase@2.82.0 stop \
+              --workdir tmp/local-supabase-replay \
+              --no-backup
+          fi
+
+      - name: Upload sanitized replay diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-supabase-replay-diagnostics
+          path: |
+            tmp/local-supabase-replay-diagnostics/*.log
+          if-no-files-found: ignore
+          retention-days: 1

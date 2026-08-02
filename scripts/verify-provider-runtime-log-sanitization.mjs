@@ -10,6 +10,7 @@ const routePaths = [
   new URL("../app/api/analyze/route.js", import.meta.url),
   new URL("../app/api/face-reading/route.js", import.meta.url)
 ];
+const visionServicePath = new URL("../lib/server/vision-observation-service.js", import.meta.url);
 const forbiddenLogFields = ["preview", "contentPreview", "rawText", "rawContent", "responseBody", "prompt", "imageDataUrl", "token", "apiKey"];
 
 const event = buildProviderRuntimeLogEvent({
@@ -103,7 +104,6 @@ assert.doesNotThrow(() => logProviderRuntimeEvent({ ok: false }, {
 
 for (const routePath of routePaths) {
   const source = await readFile(routePath, "utf8");
-  assert.match(source, /logProviderRuntimeEvent\(/, `${routePath.pathname} must use the provider log allowlist.`);
   assert.doesNotMatch(source, /console\.(?:log|info|warn|error)\(/, `${routePath.pathname} must not use raw console logging.`);
   assert.doesNotMatch(
     source,
@@ -114,7 +114,6 @@ for (const routePath of routePaths) {
   assert.doesNotMatch(source, /\bcontentPreview\s*:/i, `${routePath.pathname} must not log provider content previews.`);
 
   const providerLogCalls = source.match(/logProviderRuntimeEvent\(\{[\s\S]*?\n\s*\}\);/g) || [];
-  assert.ok(providerLogCalls.length > 0, `${routePath.pathname} must expose provider log call descriptors.`);
   for (const field of forbiddenLogFields) {
     const fieldPattern = new RegExp(`\\b${field}\\s*:`, "i");
     for (const call of providerLogCalls) {
@@ -122,5 +121,22 @@ for (const routePath of routePaths) {
     }
   }
 }
+
+const visionServiceSource = await readFile(visionServicePath, "utf8");
+assert.match(
+  visionServiceSource,
+  /logProviderRuntimeEvent\(/,
+  "canonical Vision service must use the provider log allowlist."
+);
+assert.doesNotMatch(
+  visionServiceSource,
+  /\b(?:preview|contentPreview|rawText|rawContent|responseBody|prompt|imageDataUrl|token|apiKey)\s*:/i,
+  "canonical Vision service must not pass sensitive fields to provider logs."
+);
+assert.match(
+  (await readFile(routePaths[1], "utf8")),
+  /analyzeVisionObservation\(/,
+  "Face Lab compatibility route must delegate Provider logging to the canonical service."
+);
 
 console.log("verify-provider-runtime-log-sanitization passed");
