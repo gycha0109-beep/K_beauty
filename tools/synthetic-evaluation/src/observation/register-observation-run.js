@@ -143,7 +143,7 @@ export async function registerObservationRun({
       inputTokens: telemetry?.inputTokens ?? null,
       outputTokens: telemetry?.outputTokens ?? null,
       startedAt,
-      completdAt
+      completedAt
     },
     authority: preflight.modeProfile.authority,
     outcome,
