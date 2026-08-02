@@ -954,6 +954,49 @@ test.describe("Visuali MVP E2E draft", () => {
     await answerRequiredSurvey(page);
   });
 
+  test("shows the mobile survey next shortcut only when the footer action is out of view", async ({
+    page,
+    context
+  }) => {
+    await interceptLocalSupabaseRequests(context);
+    await page.setViewportSize({ width: 390, height: 640 });
+    await page.goto("/en");
+
+    await uploadFixtureImage(page);
+    await goToSurvey(page);
+    await page.evaluate(() => window.scrollTo({ top: 0 }));
+
+    const floatingNext = page.getByRole("button", { name: "Next question" });
+    const footerNext = page.getByRole("button", { name: /^Next$/ }).last();
+
+    await expect(floatingNext).toHaveCount(0);
+    await page.getByRole("button", { name: "Oily" }).click();
+    await expect(floatingNext).toBeVisible();
+    await floatingNext.focus();
+    await expect(floatingNext).toBeFocused();
+    await expect(floatingNext).toHaveCSS("width", "44px");
+    await expect(floatingNext).toHaveCSS("height", "44px");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+
+    await page.setViewportSize({ width: 768, height: 844 });
+    await expect(floatingNext).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 640 });
+    await expect(floatingNext).toBeVisible();
+
+    await footerNext.scrollIntoViewIfNeeded();
+    await expect(footerNext).toBeVisible();
+    await expect(floatingNext).toHaveCount(0);
+
+    await page.evaluate(() => window.scrollTo({ top: 0 }));
+    await expect(floatingNext).toBeVisible();
+    await floatingNext.click();
+
+    await expect(
+      page.getByRole("heading", { name: "Does your skin become reactive easily?" })
+    ).toBeVisible();
+    await expect(floatingNext).toHaveCount(0);
+  });
+
   test("analysis, share save, shared link, stale cache cleanup, and full report entry @live", async ({
     page,
     context,
