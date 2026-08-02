@@ -10,8 +10,12 @@ import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json
 import { verifyBlindJudgmentAssignmentIntegrity } from "./assignment.js";
 import { verifyJudgmentSubmissionIntegrity } from "./submission.js";
 
+function normalizedAxisValue(value) {
+  return Array.isArray(value) ? [...value].sort() : value;
+}
+
 function canonicalValue(value) {
-  return stableStringify(value);
+  return stableStringify(normalizedAxisValue(value));
 }
 
 function baseReferences(submissions) {
@@ -48,7 +52,10 @@ function summarizeAxis(reviewerSubmissions, axis, adjudicatorSubmission) {
 
   if (observed.length === decisions.length) {
     const values = new Map();
-    for (const item of observed) values.set(canonicalValue(item.decision.value), item.decision.value);
+    for (const item of observed) {
+      const normalized = normalizedAxisValue(item.decision.value);
+      values.set(canonicalValue(normalized), normalized);
+    }
     result = values.size === 1
       ? { status: "agreed", value: [...values.values()][0] }
       : { status: "unresolved", value: null };
@@ -63,7 +70,7 @@ function summarizeAxis(reviewerSubmissions, axis, adjudicatorSubmission) {
 
   if (result.status === "unresolved" && adjudicatorSubmission) {
     const decision = adjudicatorSubmission.axes[axis];
-    if (decision.status === "observed") result = { status: "agreed", value: decision.value };
+    if (decision.status === "observed") result = { status: "agreed", value: normalizedAxisValue(decision.value) };
     else if (decision.status === "not_reviewed") result = { status: "not_reviewed", value: null };
     else result = { status: "unavailable", value: null };
   }
@@ -78,6 +85,22 @@ function summarizeAxis(reviewerSubmissions, axis, adjudicatorSubmission) {
 function consensusSemantic(consensus) {
   const { consensusId, consensusDigest, sealedAt, ...semantic } = consensus;
   return semantic;
+}
+
+function statusMatchesAxes(consensus) {
+  const statuses = Object.values(consensus.axes || {}).map((axis) => axis.status);
+  if (statuses.length !== JUDGMENT_AXIS_KEYS.length) return false;
+  if (consensus.status === "sealed_complete") return statuses.every((status) => status === "agreed");
+  if (consensus.status === "sealed_partial") {
+    return !statuses.includes("unresolved") && statuses.includes("agreed") && statuses.some((status) => status !== "agreed");
+  }
+  if (consensus.status === "needs_adjudication") {
+    return statuses.includes("unresolved") && consensus.adjudicatorSubmissionDigest === null;
+  }
+  if (consensus.status === "unreviewable") {
+    return statuses.every((status) => status === "unavailable" || status === "not_reviewed");
+  }
+  return false;
 }
 
 export function buildJudgmentConsensus({ assignment, submissions, adjudicatorSubmission = null, sealedAt = new Date().toISOString() }) {
@@ -165,7 +188,7 @@ export function buildJudgmentConsensus({ assignment, submissions, adjudicatorSub
 }
 
 export function verifyJudgmentConsensusIntegrity(consensus) {
-  if (!validateJudgmentConsensusShape(consensus).ok) return false;
+  if (!validateJudgmentConsensusShape(consensus).ok || !statusMatchesAxes(consensus)) return false;
   const digest = sha256Hex(stableStringify(consensusSemantic(consensus)));
   return consensus.consensusDigest === digest && consensus.consensusId === `jcon_${digest.slice(0, 24)}`;
 }
