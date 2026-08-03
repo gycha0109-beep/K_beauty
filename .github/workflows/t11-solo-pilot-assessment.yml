@@ -1,0 +1,101 @@
+name: T11 Solo Pilot Assessment
+
+on:
+  pull_request:
+    branches:
+      - design/T11-solo-pilot-assessment
+    paths:
+      - "packages/face-contracts/src/**"
+      - "tools/synthetic-evaluation/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/t11-solo-pilot-assessment.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  node20:
+    name: Node 20 full verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run synthetic tests
+        run: npm run synthetic:test
+
+      - name: Run synthetic verification
+        run: npm run synthetic:verify
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "${BASE_SHA}" "${HEAD_SHA}"
+          git diff --check "${BASE_SHA}" "${HEAD_SHA}"
+
+  node24:
+    name: Node 24 contract verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run synthetic tests
+        run: npm run synthetic:test
+
+      - name: Run synthetic verification
+        run: npm run synthetic:verify
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "${BASE_SHA}" "${HEAD_SHA}"
+          git diff --check "${BASE_SHA}" "${HEAD_SHA}"
