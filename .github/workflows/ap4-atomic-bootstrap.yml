@@ -1,0 +1,139 @@
+name: AP4 Atomic Commit Bootstrap
+
+on:
+  push:
+    branches:
+      - _tmp-noop-test
+    paths:
+      - ".github/workflows/ap4-atomic-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout immutable AP3 base
+        uses: actions/checkout@v4
+        with:
+          ref: e174f80f79fa9ce5d62c742f440c9e18e602929a
+          fetch-depth: 1
+
+      - name: Verify immutable base and target absence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "e174f80f79fa9ce5d62c742f440c9e18e602929a"
+          if git ls-remote --exit-code --heads origin refs/heads/feature/admin-product-review-import-ui >/dev/null 2>&1; then
+            echo "Target branch already exists" >&2
+            exit 1
+          fi
+
+      - name: Materialize reviewed payload
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          b64="$RUNNER_TEMP/ap4-payload.b64"
+          archive="$RUNNER_TEMP/ap4-payload.tar.gz"
+          : > "$b64"
+          for sha in \
+            14b15273193dfbb3349384a4a928ba3c37f73230 \
+            b795a1e13376065ce70f30c26fda0ef6eba4ca8a \
+            c0e9ec9e76b98b92356fa51693504f5b759f36fa \
+            e2e3c0adb5475709d493e08a47fc50be32722f13 \
+            b89acd8a76260c5cf336075329c5e386de027861 \
+            28e375946ad3aef64a7d012967c1fc23ad4c9cfe \
+            364ef250a3804189321801f1ed3b9a9e62a77af8 \
+            088dc182ba9e1b8f4dbd56f31b37a6e4f4273770 \
+            4a7a08206c386cdd3a49dbdb7689600582575bfe \
+            1d1536928923498f0c9526ddefec2d4d809887b8
+          do
+            gh api "repos/$GITHUB_REPOSITORY/git/blobs/$sha" --jq .content |
+              tr -d '\n' | base64 --decode >> "$b64"
+          done
+          base64 --decode "$b64" > "$archive"
+          echo "e59fbd23c8f65278fe975acdcc9c53de1940be460d5c1bae0396acabcdb1e503  $archive" | sha256sum --check
+          while IFS= read -r entry; do
+            case "$entry" in
+              /*|../*|*/../*|*/..) echo "Unsafe archive entry: $entry" >&2; exit 1 ;;
+            esac
+          done < <(tar -tzf "$archive")
+          tar -xzf "$archive" -C .
+          rm -f "$b64" "$archive"
+
+      - name: Verify exact change set
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$RUNNER_TEMP/expected-paths.txt"
+          actual="$RUNNER_TEMP/actual-paths.txt"
+          cat > "$expected" <<'EOF'
+          .github/workflows/admin-product-review-import-ui.yml
+          app/admin/AdminNavigation.js
+          app/admin/products/reviews/import/ProductReviewImportWorkbench.js
+          app/admin/products/reviews/import/page.js
+          app/api/admin/product-reviews/import/confirm/route.js
+          app/api/admin/product-reviews/import/dry-run/route.js
+          crawler/lib/reviews/reviewed-intake-parser.ts
+          crawler/package.json
+          crawler/test-admin-product-review-import-web.ts
+          docs/architecture/admin-product-review-import-ui-v1.md
+          docs/reports/admin-product-review-import-ui-implementation.md
+          lib/admin/product-review-import/domain.js
+          lib/admin/product-review-import/error-map.js
+          lib/admin/product-review-import/multipart-boundary.js
+          package.json
+          scripts/verify-admin-product-review-import-ui.mjs
+          EOF
+          sed -i 's/^          //' "$expected"
+          git status --porcelain=v1 | cut -c4- | sort > "$actual"
+          diff -u "$expected" "$actual"
+
+      - name: Run focused pre-commit verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-admin-product-review-import-ui.mjs
+          node --check lib/admin/product-review-import/multipart-boundary.js
+          node --check lib/admin/product-review-import/error-map.js
+          node --check lib/admin/product-review-import/domain.js
+          node --check app/api/admin/product-reviews/import/dry-run/route.js
+          node --check app/api/admin/product-reviews/import/confirm/route.js
+          git diff --check
+
+      - name: Create and push one final feature commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            .github/workflows/admin-product-review-import-ui.yml \
+            app/admin/AdminNavigation.js \
+            app/admin/products/reviews/import/ProductReviewImportWorkbench.js \
+            app/admin/products/reviews/import/page.js \
+            app/api/admin/product-reviews/import/confirm/route.js \
+            app/api/admin/product-reviews/import/dry-run/route.js \
+            crawler/lib/reviews/reviewed-intake-parser.ts \
+            crawler/package.json \
+            crawler/test-admin-product-review-import-web.ts \
+            docs/architecture/admin-product-review-import-ui-v1.md \
+            docs/reports/admin-product-review-import-ui-implementation.md \
+            lib/admin/product-review-import/domain.js \
+            lib/admin/product-review-import/error-map.js \
+            lib/admin/product-review-import/multipart-boundary.js \
+            package.json \
+            scripts/verify-admin-product-review-import-ui.mjs
+          git diff --cached --check
+          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" = "16"
+          git commit -m "feat(admin): add product review import workbench"
+          git push origin HEAD:refs/heads/feature/admin-product-review-import-ui
+
+      - name: Remove temporary bootstrap branch
+        if: success()
+        shell: bash
+        run: git push origin --delete _tmp-noop-test
