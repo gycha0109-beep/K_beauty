@@ -75,6 +75,14 @@ All artifacts are strict-shape, content-addressed, immutable, and local-only.
 
 A terminal `observation_failed` slot was valid but could remain checkpoint-unready. Checkpoint authorization now treats that exact terminal outcome as technical-ready without adding a Provider retry, checkpoint automation, or new terminal authority.
 
+## Implementation review corrections
+
+1. authoritative T7 fixture IDs preserve their exact source form, including condition prefixes
+2. T11 CLI helpers are isolated from the T5 judgment module path
+3. package-root exports expose orchestration and integrity verification, not raw assessment constructors
+4. architecture tests prohibit Provider, browser, database, shell, upload, production, T5/T6, T8-mutation, and T9-dataset execution paths
+5. caller-provided target relations, retry permission, and promotion fields remain ineffective or invalid
+
 ## CLI
 
 ```bash
@@ -94,19 +102,33 @@ Supported actions:
 
 Request files remain under `.synthetic-local/requests/`.
 
-## Verification scope
+## Authoritative verification
 
-- strict contract and digest verification
-- target-field withholding
-- caller target-relation override rejection
-- fake Gold/promotion field rejection
-- existing T5 consensus rejection
-- exact Wave denominator
-- append-only/idempotent storage
-- exhausted observation-failure checkpoint regression
-- full existing synthetic test and verify suites
-- Node 20 and Node 24
-- architecture guard and production build on Node 20
+Workflow run: `30775646864`
+
+Verified implementation head:
+
+`495539ed2e7988ddfc7f05a36e2a893169e3243a`
+
+### Node 20
+
+- synthetic tests: `187/187` PASS
+- synthetic verify: `185/185` PASS
+- architecture guard: PASS
+- production build: PASS
+- diff hygiene: PASS
+
+### Node 24
+
+- synthetic tests: `187/187` PASS
+- synthetic verify: `185/185` PASS
+- diff hygiene: PASS
+
+## Final review
+
+- Critical: 0 open
+- Important: 0 open
+- Minor: 0 open
 
 ## Non-goals
 
