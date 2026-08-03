@@ -6,6 +6,14 @@ on:
       - _tmp-noop-test
     paths:
       - ".github/workflows/ap4-atomic-bootstrap.yml"
+  pull_request:
+    branches:
+      - feature/admin-product-review-import-confirm
+    types:
+      - opened
+      - synchronize
+    paths:
+      - ".github/workflows/ap4-atomic-bootstrap.yml"
 
 permissions:
   contents: write
