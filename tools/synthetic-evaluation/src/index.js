@@ -118,3 +118,24 @@ export {
   verifyG5HoldoutRecordIntegrity,
   verifyG5StatusEventIntegrity
 } from "./dataset/lock.js";
+
+export {
+  claimSoloReviewItem,
+  confirmSoloWaveBrief,
+  linkSoloBriefToCheckpoint,
+  prepareSoloWave,
+  revealSoloIntent,
+  submitSoloIntentAssessment,
+  submitSoloScreening
+} from "./solo-assessment/orchestrator.js";
+export {
+  SOLO_ASSESSMENT_POLICY,
+  deriveSoloTargetRelation,
+  verifySoloCheckpointLinkIntegrity,
+  verifySoloIntentAssessmentIntegrity,
+  verifySoloIntentRevealReceiptIntegrity,
+  verifySoloTargetWithheldScreeningIntegrity,
+  verifySoloWaveAssessmentSetIntegrity,
+  verifySoloWaveBriefIntegrity,
+  verifySoloWaveSessionIntegrity
+} from "./solo-assessment/artifacts.js";

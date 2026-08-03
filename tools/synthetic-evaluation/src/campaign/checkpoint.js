@@ -15,6 +15,10 @@ function semantic(approval) {
   return rest;
 }
 
+function isCheckpointReadySlot(slot) {
+  return slot?.checkpointReady === true || slot?.terminalOutcome === "observation_failed";
+}
+
 export function createPilotCheckpointApproval({
   projection,
   completedWaveOrdinal,
@@ -26,10 +30,11 @@ export function createPilotCheckpointApproval({
 }) {
   if (![1,2].includes(completedWaveOrdinal) || !["continue","pause","stop"].includes(decision) || !TOKEN.test(approvedBy || "") || !Number.isFinite(Date.parse(approvedAt)) || new Date(approvedAt).toISOString() !== approvedAt) return failure("campaign_checkpoint_invalid", "$", null);
   const wave = projection?.waveStatus?.find((item) => item.waveOrdinal === completedWaveOrdinal);
-  if (!wave || !["awaiting_checkpoint", "complete"].includes(wave.status)) return failure("campaign_checkpoint_not_ready", "completedWaveOrdinal", wave?.status || null);
   const expectedSlotCount = completedWaveOrdinal === 1 ? 4 : 8;
-  const slots = projection.slotProjections?.filter((slot) => slot.waveOrdinal === completedWaveOrdinal) || [];
-  if (slots.length !== expectedSlotCount || !slots.every((slot) => slot.checkpointReady)) return failure("campaign_checkpoint_not_ready", "slotProjections", null);
+  const slots = projection?.slotProjections?.filter((slot) => slot.waveOrdinal === completedWaveOrdinal) || [];
+  const extendedReady = slots.length === expectedSlotCount && slots.every(isCheckpointReadySlot);
+  if (!wave || (! ["awaiting_checkpoint", "complete"].includes(wave.status) && !(wave.status === "active" && extendedReady))) return failure("campaign_checkpoint_not_ready", "completedWaveOrdinal", wave?.status || null);
+  if (!extendedReady) return failure("campaign_checkpoint_not_ready", "slotProjections", null);
   const normalizedChecklist = {
     sourceFreezeStillValid: checklist?.sourceFreezeStillValid === true,
     providerProfileStillAllowed: checklist?.providerProfileStillAllowed === true,
