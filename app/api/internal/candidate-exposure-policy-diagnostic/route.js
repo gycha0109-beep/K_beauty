@@ -3,6 +3,7 @@ import {
   HOSTED_DIAGNOSTIC_AUTH_HEADERS,
   HOSTED_DIAGNOSTIC_CONTENT_TYPE,
   HOSTED_DIAGNOSTIC_PATH,
+  normalizeDiagnosticHost,
   verifyDiagnosticAuthentication
 } from "../../../../lib/candidate-exposure-policy-hosted-diagnostic-auth.js";
 import {
@@ -84,12 +85,14 @@ function authenticatedFailure(code) {
   return jsonResponse({ error: safeCode }, 400);
 }
 
-function environmentReady(env) {
+function environmentReady(env, requireDeploymentHost) {
+  const deploymentHost = normalizeDiagnosticHost(env?.VERCEL_URL);
   return env?.VERCEL_ENV === "preview" &&
     env?.NODE_ENV === "production" &&
     SHA40.test(String(env?.VERCEL_GIT_COMMIT_SHA || "")) &&
     DEPLOYMENT_ID.test(String(env?.VERCEL_DEPLOYMENT_ID || "")) &&
     SHA64.test(String(env?.CANDIDATE_EXPOSURE_POLICY_DIAGNOSTIC_GRANT_DIGEST || "")) &&
+    (!requireDeploymentHost || deploymentHost !== null) &&
     typeof env?.VERCEL_AUTOMATION_BYPASS_SECRET === "string" &&
     env.VERCEL_AUTOMATION_BYPASS_SECRET.length >= 8;
 }
@@ -150,10 +153,14 @@ export function createHostedDiagnosticRouteHandler({
   nowMs = () => Date.now(),
   executeDiagnostic = executeHostedCandidatePolicyDiagnostic
 } = {}) {
+  const requireDeploymentHost = env === process.env;
   return async function POST(request) {
-    if (!environmentReady(env)) return notFound();
+    if (!environmentReady(env, requireDeploymentHost)) return notFound();
     if (!request || request.method !== "POST") return notFound();
     if (requestHasBrowserState(request)) return notFound();
+    const host = requestHost(request);
+    const deploymentHost = normalizeDiagnosticHost(env.VERCEL_URL);
+    if (!host || (deploymentHost !== null && host !== deploymentHost)) return notFound();
     const contentType = String(request.headers.get("content-type") || "").toLowerCase();
     if (contentType !== HOSTED_DIAGNOSTIC_CONTENT_TYPE) return notFound();
     const contentLength = Number(request.headers.get("content-length"));
@@ -172,7 +179,7 @@ export function createHostedDiagnosticRouteHandler({
     const auth = verifyDiagnosticAuthentication({
       method: request.method,
       path: HOSTED_DIAGNOSTIC_PATH,
-      host: requestHost(request),
+      host,
       contentType,
       timestamp,
       nonce,
