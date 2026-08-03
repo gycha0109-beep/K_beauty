@@ -98,7 +98,7 @@ jobs:
           scripts/verify-admin-product-review-import-ui.mjs
           EOF
           sed -i 's/^          //' "$expected"
-          git status --porcelain=v1 | cut -c4- | sort > "$actual"
+          { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u > "$actual"
           diff -u "$expected" "$actual"
 
       - name: Run focused pre-commit verification
