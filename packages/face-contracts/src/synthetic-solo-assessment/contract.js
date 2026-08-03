@@ -37,6 +37,7 @@ import {
 
 const HEX64 = /^[a-f0-9]{64}$/;
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+const FIXTURE_TOKEN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const SESSION_ID = /^solo_[a-f0-9]{24}$/;
 const REVIEW_ITEM_ID = /^sri_[a-f0-9]{24}$/;
 const RUN_ID = /^crun_[a-f0-9]{24}$/;
@@ -209,7 +210,7 @@ export function validateSoloIntentRevealReceipt(value) {
     HEX64.test(value.screeningDigest || "") &&
     SLOT_ID.test(value.slotId || "") &&
     ["A","B","C","D"].includes(value.conditionId) &&
-    TOKEN.test(value.fixtureId || "") &&
+    FIXTURE_TOKEN.test(value.fixtureId || "") &&
     HEX64.test(value.finalizedSpecDigest || "") &&
     HEX64.test(value.compiledPromptDigest || "") &&
     cueValid && isIso(value.revealedAt) && HEX64.test(value.revealDigest || "");
