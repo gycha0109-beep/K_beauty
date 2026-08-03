@@ -8,7 +8,7 @@ import {
   submitSoloIntentAssessment,
   submitSoloScreening
 } from "../orchestrator.js";
-import { fail, parseArgs, printResult, readRequestJson, resolveDataRoot } from "../../judgment/cli/helpers.js";
+import { fail, parseArgs, printResult, readRequestJson, resolveDataRoot } from "./helpers.js";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
