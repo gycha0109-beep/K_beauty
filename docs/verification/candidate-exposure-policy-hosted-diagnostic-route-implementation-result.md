@@ -4,11 +4,10 @@
 
 Stage 11K implements and reviews the temporary Preview-only synthetic CandidateExposurePolicy diagnostic route.
 
-Current implementation head:
+Implementation and verification branch:
 
 ```text
 branch: codex/candidate-exposure-policy-synthetic-diagnostic-route
-head: a65ce96db2fc477fc00e5a4ab46f5ad0033631e8
 Draft PR: #122
 ```
 
@@ -44,7 +43,7 @@ Resolved after the original implementation review:
 ```text
 JavaScript syntax checks for modified route and adapter: PASS
 Independent hardening smoke: PASS, 12 assertions
-Vercel exact-SHA Preview deployment: READY
+Exact code-head Vercel Preview deployment: READY
 Vercel Next.js build: PASS
 Build error log entries: 0
 GitHub Actions runs: 0
@@ -52,7 +51,7 @@ Hosted diagnostic POST requests: 0
 Production changes: 0
 ```
 
-Exact Preview evidence:
+Verified code deployment evidence:
 
 ```text
 deployment: dpl_8idAKVyfnZVyKxPioczfSQdrpaQy
