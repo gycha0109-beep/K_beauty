@@ -2,222 +2,116 @@
 
 ## Scope
 
-Stage 11K implements and reviews the temporary Preview-only synthetic diagnostic route designed in Stage 11J.
-
-Design base:
+Stage 11K implements and independently reviews the temporary Preview-only synthetic CandidateExposurePolicy diagnostic route designed in Stage 11J.
 
 ```text
-branch: codex/candidate-exposure-policy-synthetic-diagnostic-route-design
-head: 1aa3617a641a1650df2901346ccabcee32c95414
-Draft PR: #119
+branch: codex/candidate-exposure-policy-synthetic-diagnostic-route
+Draft PR: #122
+base: codex/candidate-exposure-policy-synthetic-diagnostic-route-design
 ```
 
-Implementation allowlist:
+The final diff remains limited to the approved ten-file boundary. `/api/analyze`, product recommendation assembly, UI, database, project configuration, workflow files, and Production files are unchanged.
+
+## Implemented route boundary
 
 ```text
-app/api/internal/candidate-exposure-policy-diagnostic/route.js
-lib/candidate-exposure-policy-hosted-diagnostic-auth.js
-lib/candidate-exposure-policy-hosted-diagnostic-contract.js
-lib/candidate-exposure-policy-hosted-diagnostic-execution.js
-lib/candidate-exposure-policy-read-only-hosted-adapter.js
-lib/candidate-exposure-policy-hosted-execution-v2.js
-scripts/check-candidate-exposure-policy-hosted-diagnostic-route.mjs
-scripts/check-candidate-exposure-policy-hosted-execution.mjs
-docs/reviews/candidate-exposure-policy-hosted-diagnostic-route-implementation-review.md
-docs/verification/candidate-exposure-policy-hosted-diagnostic-route-implementation-result.md
+POST /api/internal/candidate-exposure-policy-diagnostic
 ```
 
-No product route, UI, dependency, Vercel configuration, workflow, database, or Production file is in scope.
+The route:
 
-## Implemented boundary
+- is unavailable unless the real exported handler runs in Vercel Preview with Node production runtime;
+- requires valid Git SHA, deployment ID, execution-grant digest, Vercel automation material, and immutable `VERCEL_URL`;
+- rejects a request-host mismatch before reading the body;
+- authenticates method, path, host, content type, timestamp, nonce, and body digest with HMAC-SHA-256;
+- accepts only the strict internal scenario-selection request contract;
+- runs no evaluator in control mode;
+- runs the CandidateExposurePolicy evaluator exactly once in canary mode;
+- returns aggregate-only evidence;
+- performs no persistence, Provider, user-session, cookie, or external-network work.
 
-The implementation adds:
+## Follow-up independent findings
 
-- `POST /api/internal/candidate-exposure-policy-diagnostic`;
-- Preview-only and Node production-runtime hard-disable checks;
-- exact Hosted source SHA, system deployment ID, and execution-grant digest binding;
-- HMAC-SHA-256 request authentication with timing-safe comparison;
-- 8 KiB streaming request cap and 64 KiB response cap;
-- strict flat JSON parsing with duplicate-key rejection;
-- internal Stage 11F fixture lookup by scenario only;
-- control evaluator call count zero;
-- canary evaluator call count one;
-- aggregate-only response validation;
-- no cookies, logs, database, storage, Provider, external network, or user data;
-- adapter and runner renaming from analyze terminology to CandidatePolicy diagnostic terminology;
-- Hosted diagnostic plan v2 evidence mapping.
+### Critical — signed host was not bound to the runtime deployment host
 
-## Independent implementation review
-
-### Critical 1 — project bypass secret did not independently prove the approved execution grant
-
-Finding:
-
-- the Stage 11J design used the project-wide Vercel automation bypass secret as both transport access and HMAC key;
-- signing a caller-provided grant digest with the same project-scoped secret did not make that digest an independently trusted route authority.
+The original implementation authenticated the host contained in the request URL but did not separately compare it with the host owned by the executing deployment.
 
 Resolution:
 
-- require the Vercel system `VERCEL_DEPLOYMENT_ID` and exact request deployment ID to match;
-- require a non-secret, deployment-scoped `CANDIDATE_EXPOSURE_POLICY_DIAGNOSTIC_GRANT_DIGEST` and exact request grant digest to match;
-- retain HMAC for request integrity and possession proof;
-- retain the runner's execution-grant validation as the approval authority;
-- do not create or change either Preview deployment or environment configuration in Stage 11K.
-
-Status: resolved in code. Future manual Preview provisioning must supply the exact approved grant digest to both exact-SHA deployments.
-
-### Important 1 — request deployment ID was only echoed
-
-Finding:
-
-- hashing a signed request deployment ID proves correlation but not the runtime deployment identity by itself.
-
-Resolution:
-
-- bind the request deployment ID to Vercel's runtime `VERCEL_DEPLOYMENT_ID` before policy execution;
-- retain the adapter's read-only deployment metadata-to-host verification as the external identity proof.
+- require a valid runtime `VERCEL_URL` in the real exported route;
+- normalize it through the same immutable Vercel-host contract;
+- reject any request-host mismatch before request-body reads;
+- preserve dependency-injected local checker support without weakening the exported route.
 
 Status: resolved.
 
-### Important 2 — raw diagnostic bytes remained live after transport
+### Important — Preview branch aliases and Production aliases were conflated
 
-Finding:
-
-- the adapter retained request and canonical-signature buffers until function return.
+The earlier adapter rejected any alias array, although every normal Preview may have a branch alias.
 
 Resolution:
 
-- zero both buffers in a `finally` block after the transport capability returns or fails;
-- raw response bodies are normalized immediately and never enter final telemetry or evidence.
+- Preview aliases are permitted;
+- the metadata capability must provide the independent boolean `productionAliasPresent`;
+- missing or true Production-alias evidence fails closed;
+- `target=production` remains rejected.
 
 Status: resolved.
 
-### Important 3 — route-provided runtime match could become false authority
+### Important — response contamination could still reach a nominal probe result
 
-Finding:
-
-- a route boolean cannot attest recursive runtime bytes.
+The adapter previously counted and discarded `Set-Cookie`, but did not immediately reject the probe. It also did not require JSON and `no-store` response headers.
 
 Resolution:
 
-- the route aggregate contains no runtime implementation match field;
-- the v2 runner validates the local runtime closure attestation first;
-- only then does it inject `runtimeImplementationShaMatch=true` into normalized Hosted telemetry.
+- base Content-Type must be `application/json`;
+- `Cache-Control` must contain `no-store`;
+- any `Set-Cookie` increments the incident counter and immediately throws;
+- successful checker evidence requires zero cookie contamination.
 
 Status: resolved.
 
-### Important 4 — default-off evidence count was under-specified
-
-Finding:
-
-- the prior evidence builder counted only a default-off violation rather than successful control entries.
-
-Resolution:
-
-- `defaultOffExecutionCount` now counts the eight completed control records;
-- completed PASS requires exactly eight control and eight canary records.
-
-Status: resolved.
-
-### Important 5 — analyze-oriented transport naming was misleading
-
-Resolution:
+## Verification performed
 
 ```text
-postAnalyzeDiagnostic → postCandidatePolicyDiagnostic
-probeAnalyze → probeCandidatePolicyDiagnostic
-analyzeRequestCount → diagnosticRequestCount
+modified route syntax: PASS
+modified adapter syntax: PASS
+independent hardening smoke: PASS, 12 assertions
+exact code-head Vercel Preview: READY
+Next.js production build in Vercel: PASS
+build error entries: 0
+GitHub Actions runs: 0
+Hosted diagnostic requests: 0
+Production changes: 0
 ```
 
-The adapter's active route contract points only to the temporary CandidatePolicy diagnostic path.
-
-Status: resolved.
-
-## Local verification
+The original implementation checker result remains historical evidence:
 
 ```text
-JavaScript syntax checks: PASS
-Hosted diagnostic route checker: PASS, 63 assertions
-Hosted diagnostic execution checker: PASS, 107 assertions
-Total Stage 11K assertions: 170
+route checker: 63 assertions PASS
+execution checker: 107 assertions PASS
+total: 170 assertions PASS
 ```
 
-Verified properties include:
+The execution checker fixtures have now been aligned with the stricter Production-alias and cookie contracts. The final full repository checker and security-closeout suite were not executed through GitHub Actions.
 
-- environment rejection before body read;
-- missing source SHA, deployment ID, grant digest, or signing key rejection;
-- stale/future timestamp and invalid signature rejection;
-- timing-safe signature comparison;
-- duplicate JSON key, nested fixture, unknown field, matrix mismatch, source mismatch, deployment mismatch, and grant mismatch rejection;
-- control evaluator call count zero;
-- canary evaluator call count one;
-- aggregate and response exact schemas;
-- no Store/Set-Cookie/logging/browser state;
-- target `null` and `preview` compatibility;
-- Production target, alias, source conflict, project mismatch, and custom host rejection;
-- exact two metadata reads and sixteen diagnostic POST simulations;
-- control/canary 8/8;
-- retry, environment read, runtime-log read, deployment mutation, bypass mutation, and Production change counts zero;
-- final evidence uses `candidate-exposure-policy-hosted-diagnostic-plan-v2`.
-
-The previously retained Stage 11F authoritative readiness evidence already records the unchanged product runtime closure and real policy fixture replay as:
+## Final review result
 
 ```text
-runtime closure files: 16
-changed runtime files: 0
-completed entries: 16/16
-valid telemetry: 16/16
-unexpected divergence: 0
-unclassified divergence: 0
-exception/fallback/invalid context/mutation mismatch: 0
+Critical unresolved: 0
+Important unresolved: 0
+Blocking Minor unresolved: 0
 ```
 
-Stage 11K does not modify that policy runtime closure.
+## Claims explicitly prohibited
 
-## Verification limitation
+- Hosted CandidateExposurePolicy diagnostic execution PASS;
+- `/api/analyze` integration PASS;
+- end-to-end user analysis PASS;
+- runtime activation PASS;
+- public traffic authorization;
+- Production readiness.
 
-The local Stage 11K workspace used interface-compatible mirrors for unchanged repository dependencies because the full repository could not be cloned into the execution container.
+## Lifecycle
 
-Therefore the following remain pending until a separately approved final validation point on the exact repository HEAD:
-
-```text
-full-repository Stage 11K checker execution
-Next.js production build
-existing security-closeout suite
-architecture guard
-exact import-closure verifier against the complete checkout
-```
-
-This is a verification limitation, not authorization to run GitHub Actions or Vercel. No Hosted claim is made.
-
-## Review verdict
-
-```text
-Critical code findings unresolved: 0
-Important code findings unresolved: 0
-Blocking Minor code findings unresolved: 0
-Full repository validation pending: true
-```
-
-Machine status:
-
-```text
-temporary_synthetic_diagnostic_route_implemented_local_contract_pass_repository_validation_pending
-```
-
-## Authorization
-
-```text
-route implementation complete: true
-Preview provisioning authorized: false
-Hosted metadata read authorized: false
-Hosted diagnostic execution authorized: false
-Vercel deploy/redeploy/promote authorized: false
-GitHub Actions authorized: false
-/api/analyze modification authorized: false
-runtime activation authorized: false
-public traffic authorized: false
-Production activation authorized: false
-```
-
-The temporary route and route-only modules must be removed and their absence verified before integration toward `main`.
+The route remains a temporary stacked-branch verification asset. A separately reviewed cleanup branch must delete the route and route-only modules and prove their absence before integration toward `main`.
