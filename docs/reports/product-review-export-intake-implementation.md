@@ -17,9 +17,9 @@ Implemented:
 - fixed error codes and zero-write summary
 - fixture and local verifier coverage
 
-Not implemented:
+Not implemented in ADMIN-PRODUCT-2 itself:
 
-- reviewed import confirm
+- reviewed import confirm (implemented separately by ADMIN-PRODUCT-3)
 - product, candidate, review queue, audit, or confirmation-ledger writes
 - hosted Supabase migration or production batch
 - admin UI import
@@ -42,7 +42,8 @@ npm run verify:product-review-export
 npm run verify:product-review-intake-dry-run
 ```
 
-`--confirm` returns `review_import_confirm_not_implemented`.
+`--confirm` is now governed by the ADMIN-PRODUCT-3 contract; `--dry-run`
+retains the zero-write behavior documented here.
 
 ## Implementation
 

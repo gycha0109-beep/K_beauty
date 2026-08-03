@@ -2,6 +2,7 @@ export const EXPORT_BATCH_SCHEMA_VERSION = "product-review-export-v1";
 export const MANIFEST_SCHEMA_VERSION = "product-review-manifest-v1";
 export const EVIDENCE_SCHEMA_VERSION = "product-review-evidence-v1";
 export const REVIEWED_SCHEMA_VERSION = "product-review-reviewed-v1";
+export const IMPORT_CONFIRM_SCHEMA_VERSION = "product-review-import-confirm-v1";
 export const EXPORTED_BY_TOOL = "bejewely-product-review-export/1";
 
 export const EXPORT_STATUSES = ["queued", "reviewing", "deferred"] as const;
@@ -278,4 +279,92 @@ export interface IntakeDryRunResult {
   summary: IntakeSummary;
   rows: IntakeRowResult[];
   errors: IntakeRowError[];
+}
+
+export interface ReviewImportConfirmRow {
+  row_number: number;
+  candidate_id: string;
+  decision: ReviewDecision;
+  reason: string;
+  review_confidence: string;
+  reviewed_at: string;
+  review_source_urls: string[] | null;
+  canonical_brand: string | null;
+  canonical_name: string | null;
+  normalized_brand: string | null;
+  normalized_name: string | null;
+  canonical_category: string | null;
+  product_form: string | null;
+  skin_types: string[] | null;
+  concerns: string[] | null;
+  texture: string | null;
+  finish: string | null;
+  irritation_risk: string | null;
+  sensitivity_safe: boolean | null;
+  official_product_page_status: string | null;
+  ingredient_list_status: string | null;
+  duplicate_check_status: string | null;
+  existing_product_match_id: string | null;
+  field_evidence: Record<string, unknown> | null;
+  field_confidence: Record<string, unknown> | null;
+  contradictions: unknown[] | null;
+  review_note: string | null;
+  candidate_updated_at_expected: string;
+  review_queue_updated_at_expected: string;
+  evidence_version_expected: string;
+  row_integrity_hash: string;
+  evidence_integrity_hash: string;
+  expected_candidate: {
+    source_name: string;
+    external_type: string | null;
+    external_id: string | null;
+    source_url: string | null;
+    category_path: string | null;
+    brand_name_raw: string;
+    product_name_raw: string;
+    normalized_brand: string;
+    normalized_name: string;
+    review_status: string;
+    review_flags: string[];
+    matched_product_id: string | null;
+    duplicate_of_product_id: string | null;
+    promotion_version: string | null;
+    promotion_payload_sha256: string;
+  };
+  expected_review: {
+    status: string;
+    rule_version: string;
+  };
+}
+
+export interface ReviewImportConfirmPayload {
+  schema_version: typeof IMPORT_CONFIRM_SCHEMA_VERSION;
+  export_batch_id: string;
+  source_snapshot_version: string;
+  manifest_sha256: string;
+  evidence_sha256: string;
+  candidate_ids_sha256: string;
+  reviewed_file_sha256: string;
+  rows: ReviewImportConfirmRow[];
+}
+
+export interface ReviewImportConfirmResult {
+  status: "confirmed";
+  request_id: string;
+  export_batch_id: string;
+  actor_role: string;
+  total_rows: number;
+  approve_create_new: number;
+  approve_merge_existing: number;
+  defer: number;
+  block: number;
+  rows: Array<{
+    candidate_id: string;
+    decision: ReviewDecision;
+    candidate_review_status: string;
+    queue_status: string;
+    promotion_action: "inserted" | "merged" | "none";
+    product_id: string | null;
+    audit_id: string;
+  }>;
 }

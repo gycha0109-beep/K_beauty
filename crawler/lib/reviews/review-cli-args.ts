@@ -99,25 +99,48 @@ export function parseReviewExportArgs(argv: string[]): ReviewExportCliOptions {
   };
 }
 
-export interface ReviewedImportCliOptions {
+export type ReviewedImportCliOptions = {
   file: string;
-  dryRun: true;
-}
+  mode: "dry-run";
+} | {
+  file: string;
+  mode: "confirm";
+  actorUserId: string;
+  requestId: string;
+};
 
 export function parseReviewedImportArgs(argv: string[]): ReviewedImportCliOptions {
-  if (argv.includes("--confirm")) {
-    throw new ReviewCliArgumentError("review_import_confirm_not_implemented");
-  }
-
-  const values = parseTokens(argv, new Set(["file"]), new Set(["dry-run"]));
+  const values = parseTokens(
+    argv,
+    new Set(["file", "actor-user-id", "request-id"]),
+    new Set(["dry-run", "confirm"]),
+  );
   const file = String(values.get("file") ?? "");
 
   if (!file) {
     throw new ReviewCliArgumentError("review_import_file_required");
   }
-  if (values.get("dry-run") !== true) {
-    throw new ReviewCliArgumentError("review_import_dry_run_required");
+  const dryRun = values.get("dry-run") === true;
+  const confirm = values.get("confirm") === true;
+  if (dryRun === confirm) {
+    throw new ReviewCliArgumentError("review_import_mode_required");
   }
 
-  return { file, dryRun: true };
+  if (dryRun) {
+    if (values.has("actor-user-id") || values.has("request-id")) {
+      throw new ReviewCliArgumentError("review_import_dry_run_option_conflict");
+    }
+    return { file, mode: "dry-run" };
+  }
+
+  const actorUserId = String(values.get("actor-user-id") ?? "").trim();
+  const requestId = String(values.get("request-id") ?? "").trim();
+  if (!isUuid(actorUserId)) {
+    throw new ReviewCliArgumentError("review_import_actor_user_id_invalid");
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{7,119}$/.test(requestId)) {
+    throw new ReviewCliArgumentError("review_import_request_id_invalid");
+  }
+
+  return { file, mode: "confirm", actorUserId, requestId };
 }

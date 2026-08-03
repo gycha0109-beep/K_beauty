@@ -54,8 +54,8 @@ insert into public.products (
   'natural',
   'low',
   true,
-  'existingserum',
-  'existingbrand'
+  'existing serum',
+  'existing brand'
 );
 
 insert into public.product_candidates (

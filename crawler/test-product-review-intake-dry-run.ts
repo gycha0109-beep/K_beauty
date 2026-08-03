@@ -315,14 +315,32 @@ async function main(): Promise<void> {
         ]),
       (error: unknown) =>
         error instanceof ReviewCliArgumentError &&
-        error.code === "review_import_confirm_not_implemented",
+        error.code === "review_import_actor_user_id_invalid",
+    );
+
+    assert.deepEqual(
+      parseReviewedImportArgs([
+        "--file",
+        "data/reviewed.csv",
+        "--confirm",
+        "--actor-user-id",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "--request-id",
+        "review-import-test-001",
+      ]),
+      {
+        file: "data/reviewed.csv",
+        mode: "confirm",
+        actorUserId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        requestId: "review-import-test-001",
+      },
     );
   } finally {
     await fs.rm(temporaryRoot, { recursive: true, force: true });
   }
 
   process.stdout.write(
-    "verify:product-review-intake-dry-run PASS (parser, snapshots, decisions, identity, stale, negative fixtures, zero-write, confirm rejection)\n",
+    "verify:product-review-intake-dry-run PASS (parser, snapshots, decisions, identity, stale, negative fixtures, zero-write, confirm argument boundary)\n",
   );
 }
 

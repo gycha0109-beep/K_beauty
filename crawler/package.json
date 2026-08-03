@@ -22,6 +22,8 @@
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
     "verify:product-review-export": "tsx test-product-review-export.ts",
     "verify:product-review-intake-dry-run": "tsx test-product-review-intake-dry-run.ts",
+    "verify:product-review-intake-confirm": "tsx test-product-review-intake-confirm.ts",
+    "verify:product-review-intake-confirm:local-runtime": "tsx tests/verify-reviewed-intake-confirm-local-runtime.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

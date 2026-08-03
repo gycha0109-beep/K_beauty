@@ -14,6 +14,7 @@
     "architecture:guard": "node scripts/architecture-guard.mjs",
     "verify:admin-access-foundation": "node scripts/verify-admin-access-foundation.mjs",
     "verify:admin-product-candidate-reviews": "node scripts/verify-admin-product-candidate-reviews.mjs",
+    "verify:admin-product-review-import-confirm": "node scripts/verify-admin-product-review-import-confirm.mjs",
     "check:sec11-origin-normalization": "node scripts/check-sec11-site-origin-normalization.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
     "verify:premium-identical-retry": "node scripts/verify-premium-identical-retry.mjs",

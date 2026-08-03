@@ -1,10 +1,6 @@
 import { Buffer } from "node:buffer";
 
 import {
-  normalizeCanonicalBrandName,
-  normalizeCanonicalProductName,
-} from "../normalize.js";
-import {
   MAX_JSON_CELL_BYTES,
   MAX_JSON_DEPTH,
   REVIEW_DECISIONS,
@@ -21,6 +17,10 @@ import {
   isSha256,
   isUuid,
 } from "./review-batch-integrity.js";
+import {
+  normalizePromotionBrand,
+  normalizePromotionProduct,
+} from "./review-promotion-identity.js";
 
 const REVIEW_CONFIDENCE = new Set(["low", "medium", "high"]);
 const SERVICE_CATEGORIES = new Set([
@@ -703,12 +703,8 @@ export function validateReviewedRow(
     reviewSourceUrls,
     canonicalBrand,
     canonicalName,
-    normalizedBrand: canonicalBrand
-      ? normalizeCanonicalBrandName(canonicalBrand)
-      : null,
-    normalizedName: canonicalName
-      ? normalizeCanonicalProductName(canonicalName)
-      : null,
+    normalizedBrand: canonicalBrand ? normalizePromotionBrand(canonicalBrand) : null,
+    normalizedName: canonicalName ? normalizePromotionProduct(canonicalName) : null,
     canonicalCategory,
     productForm,
     skinTypes,

@@ -127,13 +127,13 @@ grant select, insert, update, delete on table public.products to service_role;
 grant select, insert, update, delete on table public.product_candidates to service_role;
 grant select, insert, update, delete on table public.candidate_promotion_reviews to service_role;
 
-create or replace function public.normalize_product_key(p_value text)
+create or replace function public.normalize_basic_text(p_value text)
 returns text
 language sql
 immutable
 set search_path = public, pg_temp
 as $$
-  select lower(regexp_replace(coalesce(p_value, ''), '[^[:alnum:]]+', '', 'g'));
+  select trim(regexp_replace(lower(coalesce(p_value, '')), '\s+', ' ', 'g'));
 $$;
 
 create or replace function public.normalize_brand_key(p_value text)
@@ -142,7 +142,58 @@ language sql
 immutable
 set search_path = public, pg_temp
 as $$
-  select lower(regexp_replace(coalesce(p_value, ''), '[^[:alnum:]]+', '', 'g'));
+  with normalized as (
+    select trim(
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(public.normalize_basic_text(p_value), '[._:+/&-]+', ' ', 'g'),
+          '[{}[\]()<>]+',
+          ' ',
+          'g'
+        ),
+        '\s+',
+        ' ',
+        'g'
+      )
+    ) as normalized_value
+  )
+  select case normalized_value
+    when 'laroche posay' then 'la roche posay'
+    when 'makep rem' then 'makep rem'
+    else normalized_value
+  end
+  from normalized;
+$$;
+
+create or replace function public.normalize_product_key(p_value text)
+returns text
+language sql
+immutable
+set search_path = public, pg_temp
+as $$
+  select trim(
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(
+            public.normalize_basic_text(p_value),
+            '\b\d+(\.\d+)?\s?(ml|g|kg|oz|ea|pcs?|ct|pack|sheet|sheets)\b',
+            ' ',
+            'gi'
+          ),
+          '\b(refill|limited|special|set|gift|option|bundle|edition|renewal|1\+1|리필|한정|기획|옵션)\b',
+          ' ',
+          'gi'
+        ),
+        '[._:+/&-]+',
+        ' ',
+        'g'
+      ),
+      '\s+',
+      ' ',
+      'g'
+    )
+  );
 $$;
 
 create or replace function public.promote_product_candidate(

@@ -12,12 +12,12 @@ product_candidates + candidate_promotion_reviews
   -> external human web review
   -> reviewed.csv
   -> strict import dry-run
-  -> later administrator confirmation
+  -> ADMIN-PRODUCT-3 batch confirmation
 ```
 
-This stage does not confirm a reviewed import, update a candidate or review
-queue row, write a product, write an audit event, or use an LLM/web automation
-service.
+The export and `--dry-run` paths remain zero-write. Batch confirmation is a
+separate ADMIN-PRODUCT-3 contract documented in
+`docs/architecture/product-review-import-confirm-v1.md`.
 
 ## Runtime boundary
 
@@ -42,11 +42,9 @@ service-role client in a read-only module; its query module contains only
 `select` operations. The service-role key and database URL are never printed
 or included in batch files.
 
-`--confirm` is not an alias for dry-run. It fails with:
-
-```text
-review_import_confirm_not_implemented
-```
+`--confirm` is not an alias for dry-run. It requires an administrator actor UUID
+and an operator-supplied idempotency request ID; it is governed by the
+ADMIN-PRODUCT-3 contract.
 
 ## Export selection
 
@@ -420,7 +418,7 @@ part of the public command contract.
 
 ## Non-targets
 
-- reviewed import confirm
+- confirmation behavior beyond the linked ADMIN-PRODUCT-3 v1 contract
 - products, review queue, audit, or confirmation-ledger mutation
 - hosted Supabase migration or production batch creation
 - administrator UI import or bulk approve

@@ -51,6 +51,7 @@ export class IntakeFileError extends Error {
 
 export interface ParsedReviewedBatch {
   directory: string;
+  reviewedFileSha256: string;
   batch: BatchMetadata;
   manifestRows: ManifestRow[];
   evidenceRows: EvidenceRow[];
@@ -463,6 +464,7 @@ export async function loadParsedReviewedBatch(
 
   return {
     directory,
+    reviewedFileSha256: sha256Utf8(reviewedText),
     batch,
     manifestRows,
     evidenceRows,
