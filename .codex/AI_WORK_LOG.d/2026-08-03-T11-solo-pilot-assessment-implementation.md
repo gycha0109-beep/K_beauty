@@ -18,7 +18,29 @@ Implement the reviewed T11 solo exploratory path on top of design PR #136 withou
 - authority-checked CLI and package exports
 - separate checkpoint digest link
 - narrow T7 exhausted-observation checkpoint correction
-- contract, authority, storage, denominator, and regression tests
+- contract, authority, storage, denominator, regression, and architecture-boundary tests
+
+## Review corrections
+
+1. accepted authoritative T7 fixture identifiers without rewriting their source identity
+2. removed T11 CLI dependency on the T5 judgment module path
+3. added explicit no-Provider/no-production/no-T5-T9-operation architecture checks
+4. preserved exact one-operator, no-consensus, no-Gold, and no-quality-retry boundaries
+
+## Verification
+
+Authoritative workflow run: `30775646864`
+
+Verified implementation head: `495539ed2e7988ddfc7f05a36e2a893169e3243a`
+
+- Node 20 synthetic tests: 187/187 PASS
+- Node 20 synthetic verify: 185/185 PASS
+- Node 20 architecture guard: PASS
+- Node 20 production build: PASS
+- Node 20 diff hygiene: PASS
+- Node 24 synthetic tests: 187/187 PASS
+- Node 24 synthetic verify: 185/185 PASS
+- Node 24 diff hygiene: PASS
 
 ## Boundaries
 
@@ -31,6 +53,8 @@ Implement the reviewed T11 solo exploratory path on top of design PR #136 withou
 - deployment: 0
 - merge: 0
 
-## Verification
+## Final review
 
-Pending authoritative Node 20/24 workflow verification and implementation review.
+- Critical: 0 open
+- Important: 0 open
+- Minor: 0 open
