@@ -2,140 +2,95 @@
 
 ## Result
 
+Stage 11K implements and reviews the temporary Preview-only synthetic CandidateExposurePolicy diagnostic route.
+
+Current implementation head:
+
 ```text
-status: temporary_synthetic_diagnostic_route_implemented_local_contract_pass_repository_validation_pending
-hostedPlanVersion: candidate-exposure-policy-hosted-diagnostic-plan-v2
-productAnalyzeRouteChanged: false
-HostedRequestRun: false
-VercelOperationRun: false
-GitHubActionsRun: false
-ProductionChanged: false
+branch: codex/candidate-exposure-policy-synthetic-diagnostic-route
+head: a65ce96db2fc477fc00e5a4ab46f5ad0033631e8
+Draft PR: #122
 ```
 
-## Local checks
+## Implemented and reviewed
+
+- temporary `POST /api/internal/candidate-exposure-policy-diagnostic` route;
+- `/api/analyze` remains unchanged and does not import the diagnostic route;
+- Preview and Node production-runtime hard-disable before request-body reads;
+- exact `VERCEL_GIT_COMMIT_SHA`, `VERCEL_DEPLOYMENT_ID`, execution-grant digest, and `VERCEL_URL` host binding;
+- HMAC-SHA-256 authentication over method, path, immutable host, content type, timestamp, nonce, and exact body digest;
+- 8 KiB request cap and 64 KiB response cap;
+- strict flat JSON parsing and duplicate-key rejection;
+- internal Stage 11F fixture selection only;
+- control evaluator execution count zero;
+- canary evaluator execution count one;
+- aggregate-only response;
+- explicit Production-alias absence evidence while Preview branch aliases remain permitted;
+- diagnostic response Content-Type and `Cache-Control: no-store` enforcement;
+- any `Set-Cookie` response fails closed;
+- no database, storage, Provider, user session, cookie jar, runtime-log read, retry, or deployment mutation.
+
+## Independent hardening review
+
+Resolved after the original implementation review:
+
+1. The signed request host is now bound to the runtime `VERCEL_URL` before body reads in the real exported route.
+2. Preview branch aliases no longer count as Production aliases; the metadata capability must provide `productionAliasPresent: false`.
+3. A response with an invalid content type, missing `no-store`, or any `Set-Cookie` cannot produce a successful diagnostic probe.
+4. The execution checker fixtures now provide explicit Production-alias evidence and assert zero cookie contamination.
+
+## Verification
 
 ```text
-route checker: PASS (63 assertions)
-execution checker: PASS (107 assertions)
-total: PASS (170 assertions)
-```
-
-## Implemented contracts
-
-```text
-route: POST /api/internal/candidate-exposure-policy-diagnostic
-runtime: nodejs
-maxDuration: 10 seconds
-request cap: 8 KiB
-response cap: 64 KiB
-matrix: KO/EN × 4 scenarios × control/canary = 16
-control evaluator calls: 0 per request
-canary evaluator calls: 1 per request
-full-pass evaluator calls: 8
-metadata reads: maximum 2
-diagnostic requests: maximum 16
-automatic retries: 0
-```
-
-## Route authority
-
-The route requires all of:
-
-```text
-VERCEL_ENV=preview
-NODE_ENV=production
-valid VERCEL_GIT_COMMIT_SHA
-valid VERCEL_DEPLOYMENT_ID
-valid CANDIDATE_EXPOSURE_POLICY_DIAGNOSTIC_GRANT_DIGEST
-VERCEL_AUTOMATION_BYPASS_SECRET
-valid HMAC request
-request deployment ID = VERCEL_DEPLOYMENT_ID
-request grant digest = configured diagnostic grant digest
-request source SHA = VERCEL_GIT_COMMIT_SHA
-```
-
-No deployment or environment value was created or modified during this stage.
-
-## Aggregate-only evidence
-
-The route response excludes:
-
-```text
-candidate references or IDs
-product names, brands, or URLs
-reason-code counts
-ordered candidate or exposure vectors
-canonical state or raw fixture
-raw request or raw Provider output
-cookies, sessions, accounts, reports
-secrets or tokens
-runtime byte-attestation claims
-```
-
-Runtime byte authority remains the external Stage 11F closure attestation.
-
-## Zero-operation results
-
-```text
-Provider calls: 0
-database writes: 0
-storage writes: 0
-file writes: 0
-cookies: 0
-application logs: 0
-external route network calls: 0
-runtime-log reads: 0
-environment API reads: 0
-deployment mutations: 0
-bypass creation/revocation: 0
+JavaScript syntax checks for modified route and adapter: PASS
+Independent hardening smoke: PASS, 12 assertions
+Vercel exact-SHA Preview deployment: READY
+Vercel Next.js build: PASS
+Build error log entries: 0
+GitHub Actions runs: 0
+Hosted diagnostic POST requests: 0
 Production changes: 0
 ```
 
-## Pending validation
+Exact Preview evidence:
 
 ```text
-full repository checker execution
-Next.js production build
-security-closeout suite
-architecture guard
-complete-checkout import closure verification
+deployment: dpl_8idAKVyfnZVyKxPioczfSQdrpaQy
+source SHA: a65ce96db2fc477fc00e5a4ab46f5ad0033631e8
+target: null
+state: READY
+branch alias only
 ```
 
-These pending items do not authorize Actions, Preview provisioning, Hosted calls, or Production work.
+The original Stage 11K implementation checkers recorded 170 passing assertions before the follow-up hardening. Their fixtures have been aligned with the new fail-closed metadata contract, but the full repository checker suite was not executed through GitHub Actions in this stage.
 
-## Cleanup obligation
+## Not claimed
 
-Before integration toward `main`, a separate cleanup branch must remove:
+- Hosted CandidateExposurePolicy diagnostic execution PASS;
+- `/api/analyze` integration PASS;
+- end-to-end user analysis PASS;
+- runtime activation;
+- public traffic authorization;
+- Production readiness;
+- full security-closeout suite PASS after the final hardening commit.
+
+## Current machine status
 
 ```text
-app/api/internal/candidate-exposure-policy-diagnostic/**
-lib/candidate-exposure-policy-hosted-diagnostic-auth.js
-lib/candidate-exposure-policy-hosted-diagnostic-execution.js
-route-only fixture transport and signing integration
+temporary_synthetic_diagnostic_route_hardened_exact_sha_preview_build_pass_full_checker_execution_pending
 ```
 
-The cleanup verifier must prove `/api/analyze` and the CandidateExposurePolicy product runtime closure remain unchanged.
-
-## Final markers
+## Authorization boundary
 
 ```text
-CANDIDATE_EXPOSURE_POLICY_SYNTHETIC_DIAGNOSTIC_ROUTE_IMPLEMENTED
-HOSTED_DIAGNOSTIC_PLAN_V2_IMPLEMENTED
-PRODUCT_ANALYZE_ROUTE_UNCHANGED
-PREVIEW_HARD_DISABLE_IMPLEMENTED
-SYSTEM_DEPLOYMENT_ID_BOUND
-EXECUTION_GRANT_DIGEST_BOUND
-HMAC_APPLICATION_AUTH_IMPLEMENTED
-TIMING_SAFE_SIGNATURE_COMPARE
-CONTROL_EVALUATOR_CALL_COUNT_ZERO
-CANARY_EVALUATOR_CALL_COUNT_ONE
-AGGREGATE_ONLY_RESPONSE
-EXACT_SIXTEEN_DIAGNOSTIC_REQUEST_BUDGET
-AUTOMATIC_RETRY_ZERO
-HOSTED_REQUEST_NOT_RUN
-VERCEL_OPERATION_NOT_RUN
-GITHUB_ACTIONS_NOT_USED
-PRODUCTION_NOT_CHANGED
-FULL_REPOSITORY_VALIDATION_PENDING
-ROUTE_REMOVAL_REQUIRED_BEFORE_MAIN
+Preview auto-deployment: authorized and completed
+Vercel deployment inspection: completed
+Hosted diagnostic execution: not performed
+GitHub Actions: not run
+/api/analyze modification: not authorized and not performed
+runtime activation: not authorized
+public traffic: not authorized
+Production activation: not authorized
 ```
+
+The route remains temporary and must be removed in a separately reviewed cleanup branch before integration toward `main`.
