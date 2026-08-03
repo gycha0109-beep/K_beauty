@@ -84,6 +84,7 @@ const runtimeAttestation = {
 const controlEnv = {
   VERCEL_ENV: "preview",
   NODE_ENV: "production",
+  VERCEL_URL: CONTROL_HOST,
   VERCEL_GIT_COMMIT_SHA: SOURCE_SHA,
   VERCEL_DEPLOYMENT_ID: CONTROL_ID,
   CANDIDATE_EXPOSURE_POLICY_DIAGNOSTIC_GRANT_DIGEST: grantReview.grantDigest,
@@ -93,6 +94,7 @@ const controlEnv = {
 };
 const canaryEnv = {
   ...controlEnv,
+  VERCEL_URL: CANARY_HOST,
   VERCEL_DEPLOYMENT_ID: CANARY_ID,
   DEV_ONLY_CANDIDATE_EXPOSURE_POLICY_SHADOW: "1"
 };
@@ -117,7 +119,8 @@ const capabilities = {
       readyState: "READY",
       target: null,
       url: control ? CONTROL_HOST : CANARY_HOST,
-      aliases: [],
+      aliases: [control ? "stage11k-control-branch.vercel.app" : "stage11k-canary-branch.vercel.app"],
+      productionAliasPresent: false,
       sourceSha: SOURCE_SHA
     };
   },
@@ -161,10 +164,10 @@ const capabilities = {
   }
 };
 
-
 const validNullTarget = normalizeDeploymentMetadata({
   id: CONTROL_ID, projectId: "prj_stage11k", teamId: null, readyState: "READY",
-  target: null, url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA
+  target: null, url: CONTROL_HOST, aliases: ["stage11k-control-branch.vercel.app"],
+  productionAliasPresent: false, sourceSha: SOURCE_SHA
 }, {
   expectedDeploymentId: CONTROL_ID, approvedSourceSha: SOURCE_SHA,
   expectedProjectId: "prj_stage11k", expectedTeamId: null
@@ -172,17 +175,19 @@ const validNullTarget = normalizeDeploymentMetadata({
 assert(validNullTarget.valid, "target_null_preview_valid");
 assert(normalizeDeploymentMetadata({
   id: CONTROL_ID, projectId: "prj_stage11k", teamId: null, readyState: "READY",
-  target: "preview", url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA
+  target: "preview", url: CONTROL_HOST, aliases: ["stage11k-control-branch.vercel.app"],
+  productionAliasPresent: false, sourceSha: SOURCE_SHA
 }, {
   expectedDeploymentId: CONTROL_ID, approvedSourceSha: SOURCE_SHA,
   expectedProjectId: "prj_stage11k", expectedTeamId: null
 }).valid, "target_preview_valid");
 for (const [name, raw] of [
-  ["production_target", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: "production", url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA }],
-  ["alias", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: CONTROL_HOST, aliases: ["production.example.com"], sourceSha: SOURCE_SHA }],
-  ["source_conflict", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA, gitSourceSha: "f".repeat(40) }],
-  ["project", { id: CONTROL_ID, projectId: "prj_wrong", readyState: "READY", target: null, url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA }],
-  ["host", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: "example.com", aliases: [], sourceSha: SOURCE_SHA }]
+  ["production_target", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: "production", url: CONTROL_HOST, aliases: [], productionAliasPresent: false, sourceSha: SOURCE_SHA }],
+  ["production_alias", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: CONTROL_HOST, aliases: ["production.example.com"], productionAliasPresent: true, sourceSha: SOURCE_SHA }],
+  ["alias_evidence_missing", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: CONTROL_HOST, aliases: [], sourceSha: SOURCE_SHA }],
+  ["source_conflict", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: CONTROL_HOST, aliases: [], productionAliasPresent: false, sourceSha: SOURCE_SHA, gitSourceSha: "f".repeat(40) }],
+  ["project", { id: CONTROL_ID, projectId: "prj_wrong", readyState: "READY", target: null, url: CONTROL_HOST, aliases: [], productionAliasPresent: false, sourceSha: SOURCE_SHA }],
+  ["host", { id: CONTROL_ID, projectId: "prj_stage11k", readyState: "READY", target: null, url: "example.com", aliases: [], productionAliasPresent: false, sourceSha: SOURCE_SHA }]
 ]) {
   const review = normalizeDeploymentMetadata(raw, {
     expectedDeploymentId: CONTROL_ID, approvedSourceSha: SOURCE_SHA,
@@ -240,6 +245,7 @@ assert(result.cleanup.projectEnvironmentMutationCount === 0, "project_mutations_
 assert(result.cleanup.productionChangeCount === 0, "production_changes_zero");
 assert(result.cleanup.temporaryBypassCreatedCount === 0, "bypass_create_zero");
 assert(result.cleanup.temporaryBypassRevokedCount === 0, "bypass_revoke_zero");
+assert(result.cleanup.setCookieDiscardCount === 0, "set_cookie_zero");
 assert(!JSON.stringify(result).includes(CONTROL_HOST), "raw_host_not_serialized");
 assert(!JSON.stringify(result).includes(SECRET), "secret_not_serialized");
 assert(!JSON.stringify(result).includes("candidateRef"), "candidate_ref_not_serialized");
@@ -255,6 +261,7 @@ const evidenceReview = validateEvidence(evidence);
 assert(evidenceReview.valid, `evidence_valid:${evidenceReview.errors.join(",")}`);
 assert(evidence.planVersion === "candidate-exposure-policy-hosted-diagnostic-plan-v2", "evidence_plan_v2");
 assert(evidence.diagnosticRequestCount === 16, "evidence_diagnostic_16");
+assert(evidence.setCookieDiscardCount === 0, "evidence_set_cookie_zero");
 assert(!Object.hasOwn(evidence, "analyzeRequestCount"), "analyze_counter_removed");
 
 await expectThrow(
