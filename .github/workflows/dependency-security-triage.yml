@@ -1,4 +1,4 @@
-name: Dependency security remediation candidate
+name: Dependency security final-head validation
 
 on:
   pull_request:
@@ -6,17 +6,17 @@ on:
       - codex/dependency-security-triage-validation-base
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  remediate:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout exact Stage 11M final head
+      - name: Checkout exact PR 147 final head
         uses: actions/checkout@v4
         with:
-          ref: 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
+          ref: ce882aa2057a06d39d86f99a09f4264725b4161b
           fetch-depth: 0
 
       - name: Restore verifier local refs
@@ -24,46 +24,39 @@ jobs:
           git branch -f codex/stage10-hosted-preview-user-flow origin/codex/stage10-hosted-preview-user-flow
           git branch -f codex/candidate-policy-runtime-reevaluation origin/codex/candidate-policy-runtime-reevaluation
 
+      - name: Verify exact three-file boundary
+        shell: bash
+        run: |
+          git diff --name-status 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20 HEAD | sort > /tmp/actual.txt
+          cat > /tmp/expected.txt <<'EOF'
+          A	docs/verification/dependency-security-triage-and-remediation-result.md
+          M	package-lock.json
+          M	package.json
+          EOF
+          sort /tmp/expected.txt -o /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/actual.txt
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Generate minimal remediation lockfile
-        run: |
-          npm pkg set dependencies.next=15.5.22
-          npm pkg set dependencies.sharp=0.35.3
-          npm pkg set devDependencies.postcss='^8.5.25'
-          npm pkg set overrides.next.postcss=8.5.25
-          npm pkg set overrides.next.sharp=0.35.3
-          npm install --package-lock-only
-          npm audit fix --package-lock-only
-
-      - name: Enforce two-file candidate boundary
-        shell: bash
-        run: |
-          git diff --name-only | sort > /tmp/changed.txt
-          printf 'package-lock.json\npackage.json\n' > /tmp/expected.txt
-          diff -u /tmp/expected.txt /tmp/changed.txt
-
-      - name: Commit candidate locally for clean-tree verifiers
-        run: |
-          git config user.name stage11n-validator
-          git config user.email stage11n-validator@users.noreply.github.com
-          git add package.json package-lock.json
-          git commit -m 'chore(security): remediate dependency advisories'
-
-      - name: Install remediated lockfile
+      - name: Install exact lockfile
         run: npm ci
 
-      - name: Verify resolved dependency graph
+      - name: Verify zero audit findings and resolved graph
         run: |
-          mkdir -p /tmp/dependency-security-remediation
-          npm audit --json > /tmp/dependency-security-remediation/npm-audit.json
-          npm ls next sharp postcss picomatch --all > /tmp/dependency-security-remediation/npm-ls.txt
-          cat /tmp/dependency-security-remediation/npm-audit.json
-          cat /tmp/dependency-security-remediation/npm-ls.txt
+          mkdir -p /tmp/dependency-security-final
+          npm audit --json > /tmp/dependency-security-final/npm-audit.json
+          npm ls next sharp postcss picomatch --all > /tmp/dependency-security-final/npm-ls.txt
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const audit = JSON.parse(readFileSync('/tmp/dependency-security-final/npm-audit.json', 'utf8'));
+          if (audit.metadata?.vulnerabilities?.total !== 0) throw new Error('npm audit is not clean');
+          console.log('DEPENDENCY_AUDIT=PASS total=0');
+          NODE
+          cat /tmp/dependency-security-final/npm-ls.txt
 
       - name: Security closeout verifier suite
         run: node scripts/run-security-closeout-verifier-suite.mjs
@@ -91,29 +84,18 @@ jobs:
           cat /tmp/optimized-image.headers
           cat /tmp/next-start.log
 
-      - name: Capture package diff
+      - name: Collect final-head evidence
         run: |
-          mkdir -p tmp/dependency-security-remediation
-          cp /tmp/dependency-security-remediation/npm-audit.json tmp/dependency-security-remediation/
-          cp /tmp/dependency-security-remediation/npm-ls.txt tmp/dependency-security-remediation/
-          git show --format= --binary HEAD -- package.json package-lock.json > tmp/dependency-security-remediation/package-diff.patch
-          cp package.json package-lock.json tmp/dependency-security-remediation/
-          cp /tmp/optimized-image.headers tmp/dependency-security-remediation/
+          mkdir -p tmp/dependency-security-final
+          cp /tmp/dependency-security-final/npm-audit.json tmp/dependency-security-final/
+          cp /tmp/dependency-security-final/npm-ls.txt tmp/dependency-security-final/
+          cp /tmp/optimized-image.headers tmp/dependency-security-final/
+          cp tmp/security-closeout-verifier-suite.json tmp/dependency-security-final/
+          git diff --stat 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20 HEAD > tmp/dependency-security-final/diff-stat.txt
 
-      - name: Upload remediation candidate
+      - name: Upload final-head evidence
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-security-remediation-candidate-published
-          path: tmp/dependency-security-remediation
+          name: dependency-security-final-head-evidence
+          path: tmp/dependency-security-final
           if-no-files-found: error
-
-      - name: Publish validated two-file commit
-        shell: bash
-        run: |
-          EXPECTED_BASE=87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
-          TARGET_REF=refs/heads/codex/dependency-security-triage
-          REMOTE_HEAD=$(git ls-remote origin "$TARGET_REF" | cut -f1)
-          test "$REMOTE_HEAD" = "$EXPECTED_BASE"
-          test -z "$(git status --short)"
-          test "$(git diff-tree --no-commit-id --name-only -r HEAD | sort)" = $'package-lock.json\npackage.json'
-          git push origin HEAD:"$TARGET_REF"
