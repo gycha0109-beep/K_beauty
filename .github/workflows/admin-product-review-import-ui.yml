@@ -1,6 +1,9 @@
 name: Admin Product Review Import UI
 
 on:
+  push:
+    branches:
+      - feature/admin-product-review-import-ui
   pull_request:
     branches:
       - feature/admin-product-review-import-confirm
@@ -84,7 +87,7 @@ jobs:
           if [[ -n "${BASE_SHA:-}" ]]; then
             git diff --check "${BASE_SHA}..${GITHUB_SHA}"
           else
-            git diff --check
+            git diff --check HEAD^..HEAD
           fi
 
   isolated-confirm-runtime:
