@@ -32,7 +32,23 @@ text = text
   .replaceAll('exact source blobs: 62', 'exact source blobs: 61')
   .replaceAll('semantic merges: 6', 'semantic merges: 7')
   .replaceAll('exact_source_blobs: 62/62', 'exact_source_blobs: 61/61')
-  .replaceAll('semantic_contracts: 6/6', 'semantic_contracts: 7/7');
+  .replaceAll('semantic_contracts: 6/6', 'semantic_contracts: 7/7')
+  .replace('  scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs\n', '');
+const marker = 'done\n\nstep "security closeout"';
+const historical = [
+  'done',
+  '',
+  'step "Stage 11F historical import boundary"',
+  'STAGE11F_WORKTREE="$RUNNER_TEMP/stage11f-boundary"',
+  'rm -rf "$STAGE11F_WORKTREE"',
+  'git worktree add --detach "$STAGE11F_WORKTREE" codex/candidate-exposure-policy-isolated-preview-canary-harness',
+  'node "$STAGE11F_WORKTREE/scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs" 2>&1 | tee "$EVIDENCE_DIR/stage11f-import-boundary.log"',
+  'git worktree remove --force "$STAGE11F_WORKTREE"',
+  '',
+  'step "security closeout"'
+].join('\n');
+if (!text.includes(marker)) throw new Error('security closeout marker missing');
+text = text.replace(marker, historical);
 fs.writeFileSync(file, text);
 NODE
 
