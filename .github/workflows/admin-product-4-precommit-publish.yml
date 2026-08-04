@@ -1,0 +1,179 @@
+name: ADMIN PRODUCT 4 Precommit Publish
+
+on:
+  push:
+    branches:
+      - automation/admin-product-4-implement
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      BASE_SHA: e174f80f79fa9ce5d62c742f440c9e18e602929a
+      BASE_BRANCH: feature/admin-product-review-import-confirm
+      TARGET_BRANCH: feature/admin-product-review-import-ui
+      SUPABASE_CLI_VERSION: 2.109.1
+      ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-ui-precommit
+      REVIEW_IMPORT_PACKAGE_DIR: data/review-batches/admin-product-review-import-ui-precommit
+    steps:
+      - name: Checkout clean base
+        uses: actions/checkout@v4
+        with:
+          ref: feature/admin-product-review-import-confirm
+          fetch-depth: 20
+          token: ${{ github.token }}
+
+      - name: Assert authoritative base
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          test -z "$(git status --short)"
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
+
+      - name: Apply validated implementation overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/admin-product-4-overlay.b64" <<'OVERLAY'
+          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
+          OVERLAY
+          base64 -d "$RUNNER_TEMP/admin-product-4-overlay.b64" > "$RUNNER_TEMP/admin-product-4-overlay.tar.gz"
+          tar -xzf "$RUNNER_TEMP/admin-product-4-overlay.tar.gz" -C "$GITHUB_WORKSPACE"
+          cat > "$RUNNER_TEMP/admin-product-4-worklog.b64" <<'WORKLOG'
+          CiMjIyAyMDI2LTA4LTA0IC8gQURNSU4tUFJPRFVDVC00IEFkbWluIFJldmlldyBJbXBvcnQgVUkKCi0gVGFzayB0eXBlOiBIaWdoLXJpc2sgYm91bmRlZCBpbXBsZW1lbnRhdGlvbiBvbiBgZmVhdHVyZS9hZG1pbi1wcm9kdWN0LXJldmlldy1pbXBvcnQtdWlgLCBzdGFja2VkIG9uIGNsZWFuIGBmZWF0dXJlL2FkbWluLXByb2R1Y3QtcmV2aWV3LWltcG9ydC1jb25maXJtYCBTSEEgYGUxNzRmODBmNzlmYTljZTVkNjJjNzQyZjQ0MGM5ZTE4ZTYwMjkyOWFgLiBNZXJnZSwgaG9zdGVkIFN1cGFiYXNlIG1pZ3JhdGlvbiwgUHJvZHVjdGlvbiBkYXRhL3NlY3JldHMsIFZlcmNlbCBQcm9kdWN0aW9uIGRlcGxveW1lbnQsIGFjdHVhbCBvcGVyYXRpbmcgYmF0Y2ggY29uZmlybWF0aW9uLCBhbmQgYWRtaW5pc3RyYXRvciBhY2NvdW50IGNoYW5nZXMgd2VyZSBleGNsdWRlZC4KLSBCb3VuZGFyeTogYWRkZWQgYSBjYXBhYmlsaXR5LWdhdGVkIGZvdXItZmlsZSBhZG1pbmlzdHJhdG9yIHdvcmtiZW5jaCwgTm9kZS1vbmx5IGNhcHBlZCBtdWx0aXBhcnQgcm91dGVzLCBpbi1tZW1vcnkgcGFja2FnZSBwYXJzaW5nLCB6ZXJvLXdyaXRlIGRyeS1ydW4gcHJvamVjdGlvbiwgc2Vzc2lvbi1ib3VuZCBhY3RvciBjb25maXJtYXRpb24sIGV4YWN0IHJlcXVlc3QgcmV0cnksIGZpeGVkIHNhZmUgZXJyb3JzLCBhbmQgbm8tc3RvcmUgcmVzcG9uc2VzLiBUaGUgZXhpc3RpbmcgcmV2aWV3ZWQgcGFyc2VyL2RyeS1ydW4vY29uZmlybSBkb21haW4gYW5kIGF0b21pYyBSUEMgcmVtYWluIGF1dGhvcml0YXRpdmU7IG5vIENMSSBzcGF3biBvciBicm93c2VyIFJQQyBwYXRoIHdhcyBhZGRlZC4KLSBTZWN1cml0eTogYWN0dWFsIHN0cmVhbSBieXRlcyBhbmQgZGVjbGFyZWQgbGVuZ3RoIGFyZSBjYXBwZWQsIGR1cGxpY2F0ZS91bmV4cGVjdGVkIGZpZWxkcyBhbmQgaW52YWxpZCBVVEYtOC9OVUwgYXJlIHJlamVjdGVkLCBmaWxlbmFtZXMgYXJlIGlnbm9yZWQsIG5vIHVwbG9hZGVkIGZpbGUgaXMgcGVyc2lzdGVkLCBjbGllbnQgc3RvcmFnZS9xdWVyeSBhbmFseXRpY3MgYXJlIHVudXNlZCwgYWN0b3Igc3Bvb2YgZmllbGRzIGFyZSByZWplY3RlZCwgYW5kIHJhdyBkYXRhYmFzZS9maWxlIGVycm9ycyBhcmUgbm90IHByb2plY3RlZC4KLSBWZXJpZmljYXRpb24gYXNzZXRzOiBhZGRlZCBhY3R1YWwgbXVsdGlwYXJ0IFJlcXVlc3QgYW5kIFVJIHN0YXRlIHZlcmlmaWVycywgc2hhcmVkIGJ5dGUgcGFyc2VyIHJlZ3Jlc3Npb24sIGlzb2xhdGVkIGRhdGFiYXNlIHNlZWQvcm9sbGJhY2sgZml4dHVyZXMsIGFuZCB0aGUgYEFkbWluIFByb2R1Y3QgUmV2aWV3IEltcG9ydCBVSWAgd29ya2Zsb3cgdXNpbmcgYCR7eyBydW5uZXIudGVtcCB9fWAgZm9yIFN1cGFiYXNlIHdpdGggYWx3YXlzLXJ1biBjbGVhbnVwLiBMb2NhbCBjb250YWluZXIgbnBtIGluc3RhbGxhdGlvbiB3YXMgYmxvY2tlZCBieSB0aGUgZXhlY3V0aW9uIGVudmlyb25tZW50IHJlZ2lzdHJ5IG1pcnJvcjsgYXV0aG9yaXRhdGl2ZSBkZXBlbmRlbmN5LCBidWlsZCwgYW5kIGlzb2xhdGVkIHJ1bnRpbWUgdmFsaWRhdGlvbiBpcyBwZXJmb3JtZWQgaW4gdGhlIGNsZWFuIEdpdEh1YiBydW5uZXIgYmVmb3JlIHRhcmdldC1icmFuY2ggcHVibGljYXRpb24gYW5kIGFnYWluIG9uIHRoZSBEcmFmdCBQUiBTSEEuCg==
+          WORKLOG
+          base64 -d "$RUNNER_TEMP/admin-product-4-worklog.b64" >> .codex/AI_WORK_LOG.md
+          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
+          app/admin/AdminNavigation.js
+          app/admin/products/reviews/import/page.js
+          app/admin/products/reviews/import/ProductReviewImportWorkbench.js
+          app/admin/products/reviews/import/workbench-state.js
+          app/api/admin/product-reviews/import/dry-run/route.js
+          app/api/admin/product-reviews/import/confirm/route.js
+          lib/admin/product-review-import/multipart-boundary.js
+          lib/admin/product-review-import/import-error-map.js
+          lib/admin/product-review-import/import-package.js
+          lib/admin/product-review-import/import-dry-run.js
+          lib/admin/product-review-import/import-confirm.js
+          lib/admin/product-review-import/http-handlers.js
+          crawler/lib/reviews/reviewed-intake-parser.ts
+          crawler/test-product-review-intake-bytes.ts
+          scripts/verify-admin-product-review-import-routes.mjs
+          scripts/verify-admin-product-review-import-ui.mjs
+          scripts/verify-admin-product-review-import-isolated.sh
+          tests/fixtures/admin-product-review-import/seed_review_import_runtime.sql
+          tests/fixtures/admin-product-review-import/setup_review_import_rollback.sql
+          tests/fixtures/admin-product-review-import/verify_review_import_rollback.sql
+          docs/architecture/admin-product-review-import-ui-v1.md
+          docs/reports/admin-product-review-import-ui-implementation.md
+          .github/workflows/admin-product-review-import-ui.yml
+          package.json
+          crawler/package.json
+          .codex/AI_WORK_LOG.md
+          FILES
+          actual="$RUNNER_TEMP/admin-product-4-actual.txt"
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > "$actual"
+          sort "$RUNNER_TEMP/admin-product-4-intended.txt" -o "$RUNNER_TEMP/admin-product-4-intended.txt"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$actual"
+          git diff --check
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify web import boundaries
+        run: |
+          bash -n scripts/verify-admin-product-review-import-isolated.sh
+          npm run verify:admin-product-review-import-ui
+          npm run verify:admin-product-review-import-routes
+          npm run verify:admin-product-review-import-confirm
+
+      - name: Verify crawler domain regressions
+        working-directory: crawler
+        run: |
+          npm run typecheck
+          npm run verify:product-review-export
+          npm run verify:product-review-intake-dry-run
+          npm run verify:product-review-intake-bytes
+          npm run verify:product-review-intake-confirm
+
+      - name: Verify isolated transaction and SQL regressions
+        run: npm run verify:admin-product-review-import-isolated
+
+      - name: Verify administrator regressions
+        run: |
+          npm run verify:admin-access-foundation
+          npm run verify:admin-product-candidate-reviews
+          npm run architecture:guard
+
+      - name: JavaScript syntax gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Stage exact implementation delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t intended < "$RUNNER_TEMP/admin-product-4-intended.txt"
+          git add -- "${intended[@]}"
+          git diff --cached --check
+          staged="$RUNNER_TEMP/admin-product-4-staged.txt"
+          git diff --cached --name-only | sort > "$staged"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$staged"
+          test -z "$(git diff --name-only)"
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Publish one feature commit
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(admin): add product review import workbench"
+          feature_sha="$(git rev-parse HEAD)"
+          git push origin "HEAD:${TARGET_BRANCH}"
+          echo "feature_sha=$feature_sha" >> "$GITHUB_OUTPUT"
+          echo "FEATURE_SHA=$feature_sha" >> "$GITHUB_ENV"
+
+      - name: Comment precommit result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          for attempt in 1 2 3 4 5 6; do
+            pr="$(gh pr list --repo "$GITHUB_REPOSITORY" --head automation/admin-product-4-implement --state open --json number --jq '.[0].number // empty')"
+            if [[ -n "$pr" ]]; then
+              gh pr comment "$pr" --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 precommit run: $GITHUB_RUN_ID\nBase: $BASE_SHA\nPublished feature SHA: ${{ env.FEATURE_SHA || 'not-published' }}\nResult: ${{ job.status }}"
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 0
