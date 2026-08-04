@@ -33,11 +33,7 @@ jobs:
 
           workflow = Path('.github/workflows/admin-product-4-precommit-publish.yml').read_text(encoding='utf-8')
           encoded = next(line.strip() for line in workflow.splitlines() if line.strip().startswith('H4sI'))
-          padding = encoded.find('==')
-          if padding < 0:
-              raise RuntimeError('implementation overlay padding not found')
-          encoded = encoded[:padding + 2]
-          payload = base64.b64decode(encoded, validate=True)
+          payload = base64.b64decode(encoded, validate=False)
           destination = Path('/tmp/admin-product-4-export')
           destination.mkdir(parents=True, exist_ok=True)
           with tarfile.open(fileobj=io.BytesIO(payload), mode='r:gz') as archive:
