@@ -67,8 +67,10 @@ post_comment "ADMIN-PRODUCT-4 exact-head CI started.
 set_status pending "ADMIN-PRODUCT-4 validation running"
 
 CURRENT_STAGE="checkout_exact_target"
-git fetch origin "$TARGET_BRANCH" --depth=200
-git fetch origin feature/admin-product-review-import-confirm --depth=200
+git fetch origin \
+  "+refs/heads/${TARGET_BRANCH}:refs/remotes/origin/${TARGET_BRANCH}" \
+  "+refs/heads/feature/admin-product-review-import-confirm:refs/remotes/origin/feature/admin-product-review-import-confirm" \
+  --no-tags
 git checkout --detach "$TARGET_SHA"
 test "$(git rev-parse HEAD)" = "$TARGET_SHA"
 test -z "$(git status --short)"
@@ -206,7 +208,7 @@ post_comment "ADMIN-PRODUCT-4 exact-head CI passed.
 CURRENT_STAGE="close_helper_pull_requests"
 for pr in 142 146 165; do
   gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${pr}" -f state=closed >/dev/null
- done
+done
 
 CURRENT_STAGE="delete_helper_branches"
 delete_branch() {
