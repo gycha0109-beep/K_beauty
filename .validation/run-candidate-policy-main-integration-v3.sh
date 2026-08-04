@@ -33,10 +33,18 @@ text = text
   .replaceAll('semantic merges: 6', 'semantic merges: 7')
   .replaceAll('exact_source_blobs: 62/62', 'exact_source_blobs: 61/61')
   .replaceAll('semantic_contracts: 6/6', 'semantic_contracts: 7/7')
-  .replace('  scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs\n', '');
+  .replace('  scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs\n', '')
+  .replace('  scripts/check-candidate-exposure-policy-isolated-preview-canary-harness-design.mjs\n', '');
 const marker = 'done\n\nstep "security closeout"';
 const historical = [
   'done',
+  '',
+  'step "Stage 11E historical design boundary"',
+  'STAGE11E_WORKTREE="$RUNNER_TEMP/stage11e-design"',
+  'rm -rf "$STAGE11E_WORKTREE"',
+  'git worktree add --detach "$STAGE11E_WORKTREE" codex/candidate-exposure-policy-isolated-preview-canary-harness-design',
+  'node "$STAGE11E_WORKTREE/scripts/check-candidate-exposure-policy-isolated-preview-canary-harness-design.mjs" 2>&1 | tee "$EVIDENCE_DIR/stage11e-design-boundary.log"',
+  'git worktree remove --force "$STAGE11E_WORKTREE"',
   '',
   'step "Stage 11F historical import boundary"',
   'STAGE11F_WORKTREE="$RUNNER_TEMP/stage11f-boundary"',
