@@ -19,6 +19,11 @@ jobs:
           ref: 31fd7468ea898014c3cf6b5a21917386034c3040
           fetch-depth: 0
 
+      - name: Restore verifier local refs
+        run: |
+          git branch -f codex/stage10-hosted-preview-user-flow origin/codex/stage10-hosted-preview-user-flow
+          git branch -f codex/candidate-policy-runtime-reevaluation origin/codex/candidate-policy-runtime-reevaluation
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
