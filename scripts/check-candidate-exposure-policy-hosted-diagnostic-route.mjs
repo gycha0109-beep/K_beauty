@@ -24,6 +24,9 @@ import {
   validateHostedDiagnosticFixtureManifest
 } from "../lib/candidate-exposure-policy-hosted-diagnostic-execution.js";
 import {
+  CANDIDATE_EXPOSURE_POLICY_VERSION
+} from "../lib/candidate-exposure-policy-contract.js";
+import {
   createHostedDiagnosticRouteHandler
 } from "../app/api/internal/candidate-exposure-policy-diagnostic/route.js";
 
@@ -53,6 +56,7 @@ function env(mode = "control", overrides = {}) {
   return {
     VERCEL_ENV: "preview",
     NODE_ENV: "production",
+    VERCEL_URL: mode === "canary" ? CANARY_HOST : CONTROL_HOST,
     VERCEL_GIT_COMMIT_SHA: SOURCE_SHA,
     VERCEL_DEPLOYMENT_ID: mode === "canary" ? "dpl_canary12345678" : "dpl_control12345678",
     CANDIDATE_EXPOSURE_POLICY_DIAGNOSTIC_GRANT_DIGEST: "b".repeat(64),
@@ -266,12 +270,25 @@ const canaryHandler = createHostedDiagnosticRouteHandler({
     ...input,
     evaluator: (args) => {
       canaryCalls += 1;
-      const decisions = args.candidates.map((candidate, index) => ({
-        candidateRef: String(candidate.id),
-        exposure: index === 0 ? "primary" : "contextual",
-        laneEligibility: { topPick: true, supporting: true, budget: false, routine: true, treatment: false },
-        reasonCodes: candidate.expectedReasonCodes || manifest.scenarios[0].expectedReasonCodes
-      }));
+      const decisions = args.candidates.map((candidate, index) => {
+        const exposure = index === 0 ? "primary" : "contextual";
+        return {
+          policyVersion: CANDIDATE_EXPOSURE_POLICY_VERSION,
+          candidateRef: String(candidate.id),
+          exposure,
+          laneEligibility: { topPick: true, supporting: true, budget: false, routine: true, treatment: false },
+          reasonCodes: candidate.expectedReasonCodes || manifest.scenarios[0].expectedReasonCodes,
+          currentProductRelation: "none",
+          evidenceState: "complete",
+          provenance: {
+            policy: CANDIDATE_EXPOSURE_POLICY_VERSION,
+            adapterExposure: exposure,
+            contextVersion: "stage11k-checker-v1",
+            functionalPolicyVersion: "stage11k-checker-v1",
+            consistencyVersion: "stage11k-checker-v1"
+          }
+        };
+      });
       return { status: "evaluated", decisions, evaluatorExecution: { receivers: decisions.map((d) => ({ productId: d.candidateRef })) } };
     }
   })
