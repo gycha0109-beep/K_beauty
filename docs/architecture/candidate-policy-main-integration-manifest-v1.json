@@ -1,0 +1,232 @@
+{
+  "version": "candidate-policy-main-integration-manifest-v1",
+  "status": "final_design_complete",
+  "additionalDesignStageRequired": false,
+  "strategy": "curated_tree_transplant",
+  "integration": {
+    "designBranch": "codex/candidate-policy-main-integration-final-design",
+    "implementationBranch": "codex/candidate-policy-main-integration",
+    "baseBranch": "main",
+    "baseSha": "RESOLVE_FROM_DESIGN_PR_BASE_AND_FREEZE",
+    "pullRequestCount": 1,
+    "mergeMethod": "squash",
+    "sequentialStackMergeAllowed": false,
+    "cherryPickChainAllowed": false,
+    "historyOnlyMergeAllowed": false
+  },
+  "authorities": {
+    "durableFinalSource": {
+      "branch": "codex/dependency-security-triage",
+      "sha": "ce882aa2057a06d39d86f99a09f4264725b4161b",
+      "pullRequest": 147
+    },
+    "routeCleanup": {
+      "branch": "codex/candidate-exposure-policy-synthetic-diagnostic-route-cleanup",
+      "sha": "87e3c6b8028b50b84a8bff7f2fc43087b2b78a20",
+      "pullRequest": 143
+    },
+    "temporaryRouteHistoryOnly": {
+      "branch": "codex/candidate-exposure-policy-synthetic-diagnostic-route",
+      "sha": "51b186d21a0a6ece911fc2016985945c34ac7ee8",
+      "pullRequest": 122,
+      "copyAuthority": false
+    }
+  },
+  "dispositions": [
+    "include_exact",
+    "merge_semantic",
+    "exclude"
+  ],
+  "requiredExactExclusions": [
+    "app/api/internal/candidate-exposure-policy-diagnostic/route.js",
+    "lib/candidate-exposure-policy-hosted-diagnostic-auth.js",
+    "lib/candidate-exposure-policy-hosted-diagnostic-contract.js",
+    "lib/candidate-exposure-policy-hosted-diagnostic-execution.js",
+    "scripts/check-candidate-exposure-policy-hosted-diagnostic-route.mjs"
+  ],
+  "forbiddenRuntimeTokens": [
+    "/api/internal/candidate-exposure-policy-diagnostic",
+    "x-bejewely-diagnostic-timestamp",
+    "x-bejewely-diagnostic-nonce",
+    "x-bejewely-diagnostic-signature",
+    "CURRENT_CANDIDATE_POLICY_DIAGNOSTIC_ROUTE_CAPABILITY",
+    "postCandidatePolicyDiagnostic",
+    "probeCandidatePolicyDiagnostic"
+  ],
+  "semanticMergePaths": [
+    {
+      "path": "app/api/analyze/route.js",
+      "mainOwns": [
+        "request parsing",
+        "provider execution",
+        "security",
+        "persistence",
+        "response contract"
+      ],
+      "sourceOwns": [
+        "approved post-canonical default-off shadow hook",
+        "aggregate-only CandidateExposurePolicy observability"
+      ]
+    },
+    {
+      "path": "package.json",
+      "mainOwns": [
+        "current scripts",
+        "workspaces",
+        "unrelated dependencies"
+      ],
+      "sourceOwns": [
+        "CandidatePolicy verifier scripts",
+        "fixed dependency versions",
+        "next postcss/sharp overrides"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "resolution": "regenerate_from_merged_package_json",
+      "wholesaleSourceCopyAllowed": false
+    },
+    {
+      "path": "scripts/run-security-closeout-verifier-suite.mjs",
+      "resolution": "deduplicated_union",
+      "mainVerifierRemovalAllowed": false,
+      "sourceVerifierRemovalAllowed": false
+    },
+    {
+      "pathClass": "shared skin decision context and premium caller",
+      "resolution": "preserve_current_main_behavior_and_import_v4_candidate_context_delta"
+    },
+    {
+      "pathClass": "current product snapshot mapper",
+      "resolution": "preserve_current_main_snapshot_contract_and_import_protection_metadata_delta"
+    },
+    {
+      "pathClass": "github workflows",
+      "resolution": "current_main_wins_temporary_source_workflows_excluded"
+    }
+  ],
+  "sourceOwnedCandidatePrefixes": [
+    "lib/candidate-policy-",
+    "lib/candidate-exposure-policy-",
+    "scripts/verify-candidate-",
+    "docs/architecture/candidate-",
+    "docs/reviews/candidate-",
+    "docs/verification/candidate-"
+  ],
+  "mainOwnedDomains": [
+    "admin",
+    "mobile-survey",
+    "camera",
+    "mediapipe",
+    "auth",
+    "payment",
+    "rls",
+    "storage",
+    "unrelated-api-routes",
+    "unrelated-ui",
+    "current-ci-trigger-and-permissions"
+  ],
+  "runtimeInvariants": {
+    "candidateExposurePolicyContractPresent": true,
+    "shadowRuntimePresent": true,
+    "defaultEnabled": false,
+    "productionHardDisabled": true,
+    "runtimeFilterConnected": false,
+    "recommendationOutputChanged": false,
+    "candidateOrderChanged": false,
+    "responseSchemaChanged": false,
+    "storageSchemaChanged": false,
+    "databaseChanged": false,
+    "productionChanged": false
+  },
+  "dependencyMinimums": {
+    "next": "15.5.22",
+    "sharp": "0.35.3",
+    "postcss": "8.5.25",
+    "picomatch2": "2.3.2",
+    "picomatch4": "4.0.5",
+    "nanoid3": "3.3.17"
+  },
+  "requiredImplementationArtifacts": [
+    "docs/architecture/candidate-policy-main-integration-manifest-v1.json",
+    "scripts/verify-candidate-policy-main-integration.mjs",
+    "docs/verification/candidate-policy-main-integration-result.md"
+  ],
+  "validationGates": [
+    "exact_main_base_frozen",
+    "exact_source_sha_frozen",
+    "all_source_paths_classified_once",
+    "unknown_overlap_zero",
+    "temporary_route_files_absent",
+    "temporary_route_runtime_tokens_absent",
+    "include_exact_blob_parity",
+    "semantic_merge_expected_digest_match",
+    "npm_ci_pass",
+    "npm_audit_total_zero",
+    "dependency_tree_fixed",
+    "candidate_policy_focused_verifiers_pass",
+    "security_closeout_expected_equals_executed_equals_passed",
+    "architecture_guard_pass",
+    "ghost_code_audit_pass",
+    "production_build_pass",
+    "deleted_route_absent_from_build_manifest",
+    "default_off_invariance_pass",
+    "response_snapshot_order_invariance_pass",
+    "current_main_regression_suite_pass",
+    "exact_head_vercel_preview_ready",
+    "production_alias_absent"
+  ],
+  "sourcePullRequestsToSupersedeAfterMerge": [
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    88,
+    91,
+    92,
+    93,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    107,
+    112,
+    114,
+    115,
+    117,
+    119,
+    122,
+    141,
+    143,
+    147
+  ],
+  "postMerge": {
+    "closeStackedPullRequestsBeforeMerge": false,
+    "addSupersededComment": true,
+    "closeUnmergedAfterIntegrationMerge": true,
+    "branchRetentionDaysMinimum": 30
+  },
+  "stopConditions": [
+    "main_base_drift_unresolved",
+    "unknown_overlap",
+    "temporary_route_residue",
+    "runtime_default_changed",
+    "production_hard_disable_weakened",
+    "recommendation_or_response_mutation",
+    "dependency_audit_nonzero",
+    "security_verifier_failure_or_skip",
+    "current_main_regression",
+    "build_failure",
+    "preview_source_sha_mismatch",
+    "preview_production_target_or_alias",
+    "secret_or_raw_evidence_detected"
+  ],
+  "machineStatus": "ready_for_single_pr_implementation"
+}
