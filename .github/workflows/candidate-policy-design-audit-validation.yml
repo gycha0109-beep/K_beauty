@@ -1,0 +1,62 @@
+name: CandidatePolicy Design Audit Validation
+
+on:
+  pull_request:
+    branches:
+      - codex/candidate-policy-design-audit-validation-base
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact design head
+        uses: actions/checkout@v4
+        with:
+          ref: 8193b29ab962a50a8d6007ae9ca6eed3913eb492
+          fetch-depth: 0
+
+      - name: Fetch exact authorities
+        run: |
+          git fetch --no-tags origin main codex/dependency-security-triage codex/candidate-exposure-policy-synthetic-diagnostic-route-cleanup
+          git cat-file -e 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf^{commit}
+          git cat-file -e ce882aa2057a06d39d86f99a09f4264725b4161b^{commit}
+          git cat-file -e a30970b78ff2fb3f5784d947b746223a66954e44^{commit}
+          git cat-file -e 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20^{commit}
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate JSON artifacts
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-manifest-v1.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-path-ledger-v1.json','utf8'))"
+
+      - name: Verify exhaustive path ledger
+        run: |
+          node scripts/verify-candidate-policy-main-integration-path-ledger.mjs | tee path-ledger-result.txt
+
+      - name: Verify final design
+        run: |
+          node scripts/verify-candidate-policy-main-integration-final-design.mjs | tee final-design-result.txt
+
+      - name: Verify design diff hygiene
+        run: |
+          git diff --check 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf 8193b29ab962a50a8d6007ae9ca6eed3913eb492
+
+      - name: Publish evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-policy-design-audit-evidence
+          path: |
+            path-ledger-result.txt
+            final-design-result.txt
+            docs/architecture/candidate-policy-main-integration-manifest-v1.json
+            docs/architecture/candidate-policy-main-integration-path-ledger-v1.json
+            docs/architecture/candidate-policy-main-integration-exhaustiveness-audit-v1.md
+          retention-days: 30
