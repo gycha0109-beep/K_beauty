@@ -36,11 +36,13 @@ export function hasAllProductReviewImportFiles(files) {
 }
 
 export function canConfirmProductReviewImport(state, confirmation) {
+  const readyState =
+    state.status === PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY ||
+    (state.status === PRODUCT_REVIEW_IMPORT_STATES.FAILED &&
+      state.error?.retryable === true);
+
   return Boolean(
-    (
-      state.status === PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY ||
-      state.status === PRODUCT_REVIEW_IMPORT_STATES.FAILED
-    ) &&
+    readyState &&
       state.dryRun?.status === "ready" &&
       state.requestId &&
       state.reviewedFileSha256 &&
@@ -59,6 +61,11 @@ export function productReviewImportReducer(state, action) {
           : PRODUCT_REVIEW_IMPORT_STATES.IDLE,
         filesRevision: state.filesRevision + 1
       };
+    case "reset":
+      return {
+        ...INITIAL_PRODUCT_REVIEW_IMPORT_STATE,
+        filesRevision: state.filesRevision + 1
+      };
     case "dry_run_started":
       return {
         ...INITIAL_PRODUCT_REVIEW_IMPORT_STATE,
@@ -68,15 +75,25 @@ export function productReviewImportReducer(state, action) {
     case "dry_run_completed":
       return {
         ...state,
-        status: action.payload.status === "ready"
-          ? PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY
-          : PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_INVALID,
+        status:
+          action.payload.status === "ready"
+            ? PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY
+            : PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_INVALID,
         dryRun: action.payload,
         requestId: action.payload.requestId || null,
         reviewedFileSha256: action.payload.reviewedFileSha256 || null,
-        canonicalPayloadSha256: action.payload.canonicalPayloadSha256 || null,
+        canonicalPayloadSha256:
+          action.payload.canonicalPayloadSha256 || null,
         result: null,
-        error: action.payload.status === "invalid" ? action.payload.error || null : null
+        error:
+          action.payload.status === "invalid"
+            ? {
+                code: action.payload.error || "dry_run_failed",
+                message: action.payload.message || null,
+                requestId: action.payload.requestId || null,
+                retryable: action.payload.retryable === true
+              }
+            : null
       };
     case "dry_run_failed":
       return {
@@ -98,9 +115,11 @@ export function productReviewImportReducer(state, action) {
     case "confirm_completed":
       return {
         ...state,
-        status: action.payload.status === "already_confirmed"
-          ? PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
-          : PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED,
+        status:
+          action.payload.status === "already_confirmed"
+            ? PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
+            : PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED,
+        requestId: action.payload.requestId || state.requestId,
         result: action.payload,
         error: null
       };
