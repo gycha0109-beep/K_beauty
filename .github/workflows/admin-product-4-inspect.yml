@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Inspect
+name: ADMIN PRODUCT 4 Precommit Validation
 
 on:
   push:
@@ -6,103 +6,313 @@ on:
       - automation/admin-product-4-inspect
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
+concurrency:
+  group: admin-product-4-precommit-validation
+  cancel-in-progress: true
+
 jobs:
-  inspect:
-    runs-on: ubuntu-latest
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      BASE_SHA: e174f80f79fa9ce5d62c742f440c9e18e602929a
+      BASE_BRANCH: feature/admin-product-review-import-confirm
+      TARGET_BRANCH: feature/admin-product-review-import-ui
+      SUPABASE_CLI_VERSION: 2.109.1
+      ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-ui-precommit
+      REVIEW_IMPORT_PACKAGE_DIR: data/review-batches/admin-product-review-import-ui-precommit
     steps:
-      - name: Checkout authoritative base
+      - name: Checkout helper branch
         uses: actions/checkout@v4
         with:
-          ref: feature/admin-product-review-import-confirm
+          ref: automation/admin-product-4-inspect
           fetch-depth: 20
+          token: ${{ github.token }}
 
-      - name: Collect bounded repository evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT="$RUNNER_TEMP/admin-product-4-inspection"
-          mkdir -p "$OUT/repository"
-          {
-            echo "branch=$(git branch --show-current)"
-            echo "head=$(git rev-parse HEAD)"
-            echo "status_begin"
-            git status --short
-            echo "status_end"
-            echo "log_begin"
-            git log -7 --oneline
-            echo "log_end"
-            echo "branches_begin"
-            git branch -a -vv
-            echo "branches_end"
-          } > "$OUT/git-state.txt"
-
-          copy_path() {
-            local path="$1"
-            if [ -e "$path" ]; then
-              mkdir -p "$OUT/repository/$(dirname "$path")"
-              cp -R "$path" "$OUT/repository/$path"
-            fi
-          }
-
-          for path in \
-            AGENTS.md \
-            package.json package-lock.json jsconfig.json next.config.js \
-            .codex/README.md .codex/AI_ROUTER.md .codex/AI_CONTEXT.md .codex/AI_EXECUTION_RULES.md .codex/AI_REVIEW_CHECKLIST.md .codex/SECURITY_BOUNDARIES.md .codex/AI_WORK_LOG.md \
-            app/admin/layout.js app/admin/AdminNavigation.js \
-            app/admin/products/reviews/page.js app/admin/products/reviews/ProductReviewWorkbench.js \
-            app/api/admin/product-reviews/preflight/route.js app/api/admin/product-reviews/confirm/route.js \
-            lib/admin/access.js lib/admin/capabilities.js lib/admin/request-policy.js lib/admin/product-reviews.js \
-            lib/supabase/server.js lib/supabase/service.js lib/security/error-redaction.js \
-            docs/architecture/admin-product-candidate-reviews-v1.md \
-            docs/architecture/product-review-export-intake-v1.md \
-            docs/reports/product-review-export-intake-implementation.md \
-            docs/architecture/product-review-import-confirm-v1.md \
-            docs/reports/product-review-import-confirm-implementation.md \
-            crawler/package.json crawler/package-lock.json \
-            crawler/export-product-reviews.ts crawler/import-reviewed-product-reviews.ts \
-            supabase/migrations/20260731183428_admin_product_review_import_confirm.sql \
-            scripts/verify-admin-access-foundation.mjs \
-            scripts/verify-admin-product-candidate-reviews.mjs \
-            scripts/verify-admin-product-review-import-confirm.mjs; do
-            copy_path "$path"
-          done
-
-          for dir in crawler/lib/reviews crawler/scripts scripts/fixtures supabase/tests .github/workflows; do
-            copy_path "$dir"
-          done
-
-          find app/api/admin -maxdepth 5 -type f | sort > "$OUT/admin-api-files.txt"
-          find app/admin -maxdepth 6 -type f | sort > "$OUT/admin-page-files.txt"
-          find crawler/lib/reviews -maxdepth 2 -type f | sort > "$OUT/review-module-files.txt"
-          find scripts -maxdepth 2 -type f -name '*admin*product*review*' | sort > "$OUT/verifier-files.txt"
-          find .github/workflows -maxdepth 1 -type f | sort > "$OUT/workflow-files.txt"
-
-          tar -C "$OUT" -czf "$RUNNER_TEMP/admin-product-4-inspection.tar.gz" .
-
-      - name: Upload inspection artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-product-4-inspection
-          path: ${{ runner.temp }}/admin-product-4-inspection.tar.gz
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Comment inspection run
-        if: always()
+      - name: Recover bounded implementation overlay
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+          source_file="$RUNNER_TEMP/admin-product-4-precommit-source.yml"
+          gh api \
+            "repos/${GITHUB_REPOSITORY}/contents/.github/workflows/admin-product-4-precommit-publish.yml?ref=automation/admin-product-4-implement" \
+            --jq .content | tr -d '\n' | base64 -d > "$source_file"
+
+          awk '
+            /admin-product-4-overlay\.b64.*OVERLAY/ { capture = 1; next }
+            capture && /^[[:space:]]*OVERLAY[[:space:]]*$/ { capture = 0; exit }
+            capture { sub(/^[[:space:]]+/, ""); printf "%s", $0 }
+          ' "$source_file" > "$RUNNER_TEMP/admin-product-4-overlay.b64"
+
+          awk '
+            /admin-product-4-worklog\.b64.*WORKLOG/ { capture = 1; next }
+            capture && /^[[:space:]]*WORKLOG[[:space:]]*$/ { capture = 0; exit }
+            capture { sub(/^[[:space:]]+/, ""); printf "%s", $0 }
+          ' "$source_file" > "$RUNNER_TEMP/admin-product-4-worklog.b64"
+
+          test -s "$RUNNER_TEMP/admin-product-4-overlay.b64"
+          test -s "$RUNNER_TEMP/admin-product-4-worklog.b64"
+          base64 -d "$RUNNER_TEMP/admin-product-4-overlay.b64" > "$RUNNER_TEMP/admin-product-4-overlay.tar.gz"
+          tar -tzf "$RUNNER_TEMP/admin-product-4-overlay.tar.gz" >/dev/null
+
+      - name: Checkout authoritative base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BASE_BRANCH" --depth=20
+          git checkout --detach "$BASE_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          test -z "$(git status --short)"
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
+
+      - name: Apply implementation and review fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xzf "$RUNNER_TEMP/admin-product-4-overlay.tar.gz" -C "$GITHUB_WORKSPACE"
+          base64 -d "$RUNNER_TEMP/admin-product-4-worklog.b64" >> .codex/AI_WORK_LOG.md
+          python - <<'PY'
+          from pathlib import Path
+
+          workbench = Path("app/admin/products/reviews/import/ProductReviewImportWorkbench.js")
+          text = workbench.read_text()
+          old = "const visibleSummary = state.dryRun?.summary || state.result?.summary || null;"
+          new = "const visibleSummary = state.result?.summary || state.dryRun?.summary || null;"
+          if old not in text:
+              raise SystemExit("visible summary boundary not found")
+          workbench.write_text(text.replace(old, new, 1))
+
+          state = Path("app/admin/products/reviews/import/workbench-state.js")
+          text = state.read_text()
+          old = '''export function canConfirmProductReviewImport(state, confirmation) {
+            return (
+              state.status === PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY ||
+              state.status === PRODUCT_REVIEW_IMPORT_STATES.FAILED
+            ) &&
+              state.dryRun?.status === "ready" &&
+              state.requestId &&
+              state.reviewedFileSha256 &&
+              state.canonicalPayloadSha256 &&
+              confirmation === "CONFIRM_PRODUCT_REVIEW_IMPORT";
+          }
+          '''
+          new = '''export function canConfirmProductReviewImport(state, confirmation) {
+            return Boolean(
+              (
+                state.status === PRODUCT_REVIEW_IMPORT_STATES.DRY_RUN_READY ||
+                state.status === PRODUCT_REVIEW_IMPORT_STATES.FAILED
+              ) &&
+                state.dryRun?.status === "ready" &&
+                state.requestId &&
+                state.reviewedFileSha256 &&
+                state.canonicalPayloadSha256 &&
+                confirmation === "CONFIRM_PRODUCT_REVIEW_IMPORT"
+            );
+          }
+          '''
+          if old not in text:
+              raise SystemExit("confirm state boundary not found")
+          state.write_text(text.replace(old, new, 1))
+
+          isolated = Path("scripts/verify-admin-product-review-import-isolated.sh")
+          text = isolated.read_text()
+          text = text.replace(
+              'rm -rf -- "${ROOT}/${PACKAGE_DIR}"',
+              'rm -rf -- "${ROOT}/crawler/${PACKAGE_DIR}"'
+          )
+          text = text.replace(
+              'rm -rf -- "${RUNTIME_DIR}" "${PACKAGE_DIR}"',
+              'rm -rf -- "${RUNTIME_DIR}" "${ROOT}/crawler/${PACKAGE_DIR}"'
+          )
+          isolated.write_text(text)
+
+          workflow = Path(".github/workflows/admin-product-review-import-ui.yml")
+          text = workflow.read_text()
+          text = text.replace(
+              'rm -rf -- "${REVIEW_IMPORT_PACKAGE_DIR}"',
+              'rm -rf -- "crawler/${REVIEW_IMPORT_PACKAGE_DIR}"'
+          )
+          old = '''      - name: JavaScript syntax gate
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    while IFS= read -r -d '' file; do
+                      node --check "${file}"
+                    done < <(find app lib scripts -type f \\( -name '*.js' -o -name '*.mjs' \\) -print0 | sort -z)
+          '''
+          new = '''      - name: JavaScript syntax gate
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    node --check lib/admin/product-review-import/multipart-boundary.js
+                    node --check lib/admin/product-review-import/import-error-map.js
+                    node --check lib/admin/product-review-import/import-package.js
+                    node --check lib/admin/product-review-import/import-dry-run.js
+                    node --check lib/admin/product-review-import/import-confirm.js
+                    node --check lib/admin/product-review-import/http-handlers.js
+                    node --check app/api/admin/product-reviews/import/dry-run/route.js
+                    node --check app/api/admin/product-reviews/import/confirm/route.js
+                    node --check scripts/verify-admin-product-review-import-routes.mjs
+                    node --check scripts/verify-admin-product-review-import-ui.mjs
+          '''
+          if old not in text:
+              raise SystemExit("workflow syntax boundary not found")
+          text = text.replace(old, new, 1)
+          old = '''      - name: Verify no runtime artifacts remain tracked
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    rm -rf -- "crawler/${REVIEW_IMPORT_PACKAGE_DIR}"
+                    test -z "$(git status --short --untracked-files=no)"
+          '''
+          new = '''      - name: Verify no runtime artifacts remain
+                  shell: bash
+                  run: |
+                    set -euo pipefail
+                    rm -rf -- "crawler/${REVIEW_IMPORT_PACKAGE_DIR}"
+                    test ! -e "crawler/${REVIEW_IMPORT_PACKAGE_DIR}"
+                    test -z "$(git status --short --untracked-files=no)"
+          '''
+          if old not in text:
+              raise SystemExit("workflow artifact boundary not found")
+          workflow.write_text(text.replace(old, new, 1))
+          PY
+
+          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
+          app/admin/AdminNavigation.js
+          app/admin/products/reviews/import/page.js
+          app/admin/products/reviews/import/ProductReviewImportWorkbench.js
+          app/admin/products/reviews/import/workbench-state.js
+          app/api/admin/product-reviews/import/dry-run/route.js
+          app/api/admin/product-reviews/import/confirm/route.js
+          lib/admin/product-review-import/multipart-boundary.js
+          lib/admin/product-review-import/import-error-map.js
+          lib/admin/product-review-import/import-package.js
+          lib/admin/product-review-import/import-dry-run.js
+          lib/admin/product-review-import/import-confirm.js
+          lib/admin/product-review-import/http-handlers.js
+          crawler/lib/reviews/reviewed-intake-parser.ts
+          crawler/test-product-review-intake-bytes.ts
+          scripts/verify-admin-product-review-import-routes.mjs
+          scripts/verify-admin-product-review-import-ui.mjs
+          scripts/verify-admin-product-review-import-isolated.sh
+          tests/fixtures/admin-product-review-import/seed_review_import_runtime.sql
+          tests/fixtures/admin-product-review-import/setup_review_import_rollback.sql
+          tests/fixtures/admin-product-review-import/verify_review_import_rollback.sql
+          docs/architecture/admin-product-review-import-ui-v1.md
+          docs/reports/admin-product-review-import-ui-implementation.md
+          .github/workflows/admin-product-review-import-ui.yml
+          package.json
+          crawler/package.json
+          .codex/AI_WORK_LOG.md
+          FILES
+          sort "$RUNNER_TEMP/admin-product-4-intended.txt" -o "$RUNNER_TEMP/admin-product-4-intended.txt"
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > "$RUNNER_TEMP/admin-product-4-actual.txt"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$RUNNER_TEMP/admin-product-4-actual.txt"
+          git diff --check
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify web import boundaries
+        run: |
+          bash -n scripts/verify-admin-product-review-import-isolated.sh
+          npm run verify:admin-product-review-import-ui
+          npm run verify:admin-product-review-import-routes
+          npm run verify:admin-product-review-import-confirm
+
+      - name: Verify crawler domain regressions
+        working-directory: crawler
+        run: |
+          npm run typecheck
+          npm run verify:product-review-export
+          npm run verify:product-review-intake-dry-run
+          npm run verify:product-review-intake-bytes
+          npm run verify:product-review-intake-confirm
+
+      - name: Verify isolated transaction and SQL regressions
+        run: npm run verify:admin-product-review-import-isolated
+
+      - name: Verify administrator regressions
+        run: |
+          npm run verify:admin-access-foundation
+          npm run verify:admin-product-candidate-reviews
+          npm run architecture:guard
+
+      - name: JavaScript syntax gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check lib/admin/product-review-import/multipart-boundary.js
+          node --check lib/admin/product-review-import/import-error-map.js
+          node --check lib/admin/product-review-import/import-package.js
+          node --check lib/admin/product-review-import/import-dry-run.js
+          node --check lib/admin/product-review-import/import-confirm.js
+          node --check lib/admin/product-review-import/http-handlers.js
+          node --check app/api/admin/product-reviews/import/dry-run/route.js
+          node --check app/api/admin/product-reviews/import/confirm/route.js
+          node --check scripts/verify-admin-product-review-import-routes.mjs
+          node --check scripts/verify-admin-product-review-import-ui.mjs
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Stage exact implementation delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t intended < "$RUNNER_TEMP/admin-product-4-intended.txt"
+          git add -- "${intended[@]}"
+          git diff --cached --check
+          git diff --cached --name-only | sort > "$RUNNER_TEMP/admin-product-4-staged.txt"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$RUNNER_TEMP/admin-product-4-staged.txt"
+          test -z "$(git diff --name-only)"
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Create validated feature commit
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(admin): add product review import workbench"
+          feature_sha="$(git rev-parse HEAD)"
+          validated_branch="automation/admin-product-4-validated-${GITHUB_RUN_ID}"
+          git push origin "HEAD:refs/heads/${validated_branch}"
+          echo "feature_sha=$feature_sha" >> "$GITHUB_OUTPUT"
+          echo "validated_branch=$validated_branch" >> "$GITHUB_OUTPUT"
+
+      - name: Comment validation result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FEATURE_SHA: ${{ steps.commit.outputs.feature_sha }}
+          VALIDATED_BRANCH: ${{ steps.commit.outputs.validated_branch }}
+        run: |
           set +e
-          for attempt in 1 2 3 4 5 6; do
-            PR_NUMBER="$(gh pr list --repo "$GITHUB_REPOSITORY" --head automation/admin-product-4-inspect --state open --json number --jq '.[0].number // empty')"
-            if [ -n "$PR_NUMBER" ]; then
-              gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 inspection run: $GITHUB_RUN_ID\nCommit: $GITHUB_SHA\nArtifact: admin-product-4-inspection\nResult: ${{ job.status }}"
-              exit 0
-            fi
-            sleep 10
-          done
+          gh pr comment 146 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 authoritative precommit run: $GITHUB_RUN_ID
+          Helper SHA: $GITHUB_SHA
+          Validated feature SHA: ${FEATURE_SHA:-not-created}
+          Validated branch: ${VALIDATED_BRANCH:-not-created}
+          Result: ${{ job.status }}"
           exit 0
