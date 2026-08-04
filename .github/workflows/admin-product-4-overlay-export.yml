@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Hidden Source Export
+name: ADMIN PRODUCT 4 Recovery Source Export
 
 on:
   pull_request:
@@ -9,31 +9,29 @@ permissions:
   contents: read
 
 jobs:
-  export-hidden-source:
+  export-recovery-source:
     if: github.head_ref == 'automation/admin-product-4-implement'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout authoritative base
+      - name: Checkout helper head
         uses: actions/checkout@v4
         with:
-          ref: feature/admin-product-review-import-confirm
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
 
-      - name: Collect hidden source
+      - name: Collect recovery source
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/admin-product-4-hidden-source"
+          out="$RUNNER_TEMP/admin-product-4-recovery-source"
           mkdir -p "$out"
-          cp -a .github "$out/.github"
-          cp -a .codex "$out/.codex"
+          cp .github/workflows/admin-product-4-precommit-publish.yml "$out/"
 
-      - name: Upload hidden source
+      - name: Upload recovery source
         uses: actions/upload-artifact@v4
         with:
-          name: admin-product-4-hidden-source
-          path: ${{ runner.temp }}/admin-product-4-hidden-source
-          include-hidden-files: true
+          name: admin-product-4-recovery-source
+          path: ${{ runner.temp }}/admin-product-4-recovery-source
           if-no-files-found: error
           retention-days: 1
