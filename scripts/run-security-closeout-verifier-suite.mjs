@@ -47,6 +47,7 @@ const EXPECTED_VERIFIERS = [
   "verify-premium-snapshot-diff.mjs",
   "verify-premium-snapshot-replay-diagnostics.mjs",
   "verify-production-env-preview-readiness-probe.mjs",
+  "verify-recommendation-metadata-transport-shadow.mjs",
   "verify-sec06-saved-report-boundary.mjs",
   "verify-sec08-image-upload-boundary.mjs",
   "verify-sec09-public-result-read-boundary.mjs",
