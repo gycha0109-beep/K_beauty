@@ -1,0 +1,24 @@
+name: ADMIN PRODUCT 4 Run Status
+
+on:
+  push:
+    branches:
+      - automation/admin-product-4-inspect
+
+permissions:
+  actions: read
+  pull-requests: write
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report validation workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow 'ADMIN PRODUCT 4 Precommit Publish' --branch automation/admin-product-4-implement --limit 5 --json databaseId,headSha,status,conclusion,createdAt,updatedAt,url)"
+          gh pr comment 146 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 validation status snapshot:\n\`\`\`json\n${result}\n\`\`\`"
