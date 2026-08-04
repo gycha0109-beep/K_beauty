@@ -125,7 +125,12 @@ assert.equal(reset.requestId, null);
 ].forEach((value) => includes(workbenchSource, value, "workbench"));
 
 includes(pageSource, "ADMIN_CAPABILITIES.PRODUCTS_REVIEW", "page capability");
-includes(pageSource, "redirect(\"/admin\")", "page denial");
+includes(
+  pageSource,
+  'redirect("/?auth_required=admin")',
+  "page authentication redirect",
+);
+includes(pageSource, "notFound()", "page capability denial");
 includes(navigationSource, "/admin/products/reviews/import", "admin navigation");
 
 process.stdout.write(
