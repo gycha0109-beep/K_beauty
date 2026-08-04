@@ -12,12 +12,6 @@ jobs:
   build-validate-publish:
     runs-on: ubuntu-latest
     timeout-minutes: 50
-    env:
-      MAIN_SHA: 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf
-      SOURCE_SHA: ce882aa2057a06d39d86f99a09f4264725b4161b
-      DESIGN_SHA: 797e179077df9065f08a262c92f4940f5a259cbe
-      TARGET_BRANCH: codex/candidate-policy-main-integration
-      EVIDENCE_DIR: ${{ runner.temp }}/candidate-policy-main-integration-evidence
     steps:
       - name: Checkout exact main
         uses: actions/checkout@v4
@@ -25,214 +19,21 @@ jobs:
           ref: 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf
           fetch-depth: 0
 
-      - name: Fetch and freeze authorities
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$EVIDENCE_DIR"
-          git fetch --no-tags origin \
-            main \
-            codex/dependency-security-triage \
-            codex/candidate-policy-main-integration-final-design \
-            codex/candidate-policy-design-audit-validation-base \
-            codex/candidate-policy-main-integration
-          test "$(git rev-parse HEAD)" = "$MAIN_SHA"
-          test "$(git rev-parse origin/main)" = "$MAIN_SHA"
-          test "$(git rev-parse origin/codex/dependency-security-triage)" = "$SOURCE_SHA"
-          test "$(git rev-parse origin/codex/candidate-policy-main-integration-final-design)" = "$DESIGN_SHA"
-          test "$(git rev-parse origin/$TARGET_BRANCH)" = "$MAIN_SHA"
-          git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration.mjs > "$RUNNER_TEMP/build-candidate-policy-integration.mjs"
-          node --check "$RUNNER_TEMP/build-candidate-policy-integration.mjs"
-          git switch -c "$TARGET_BRANCH"
-          {
-            echo "main=$MAIN_SHA"
-            echo "source=$SOURCE_SHA"
-            echo "design=$DESIGN_SHA"
-            echo "target=$TARGET_BRANCH"
-          } | tee "$EVIDENCE_DIR/authorities.txt"
-
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20.20.2
           cache: npm
 
-      - name: Materialize curated integration tree
+      - name: Run fail-closed integration build
         shell: bash
         run: |
           set -euo pipefail
-          node "$RUNNER_TEMP/build-candidate-policy-integration.mjs" build 2>&1 | tee "$EVIDENCE_DIR/materialize.log"
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund 2>&1 | tee "$EVIDENCE_DIR/lockfile.log"
-          node "$RUNNER_TEMP/build-candidate-policy-integration.mjs" manifest 2>&1 | tee "$EVIDENCE_DIR/manifest.log"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(candidate-policy): integrate durable main state"
-          git diff --check "$MAIN_SHA" HEAD
-          node scripts/verify-candidate-policy-main-integration.mjs 2>&1 | tee "$EVIDENCE_DIR/integration-preflight.log"
-
-      - name: Install exact dependency tree
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm ci --no-audit --no-fund 2>&1 | tee "$EVIDENCE_DIR/npm-ci.log"
-          npm audit --json > "$EVIDENCE_DIR/npm-audit.json"
-          npm ls --all > "$EVIDENCE_DIR/npm-ls.txt"
-          node - <<'NODE' | tee "$EVIDENCE_DIR/dependency-summary.txt"
-          const fs = require('fs');
-          const audit = JSON.parse(fs.readFileSync(process.env.EVIDENCE_DIR + '/npm-audit.json', 'utf8'));
-          const vulnerabilities = audit.metadata?.vulnerabilities || {};
-          const total = Number(vulnerabilities.total || 0);
-          if (total !== 0) throw new Error(`npm audit expected zero, got ${total}`);
-          const pkg = require('./package.json');
-          console.log(JSON.stringify({
-            auditTotal: total,
-            next: pkg.dependencies.next,
-            sharp: pkg.dependencies.sharp,
-            postcss: pkg.devDependencies.postcss,
-            overrides: pkg.overrides
-          }, null, 2));
-          NODE
-
-      - name: Run CandidatePolicy focused review suite
-        shell: bash
-        run: |
-          set -euo pipefail
-          scripts=(
-            scripts/verify-candidate-policy-main-integration.mjs
-            scripts/verify-candidate-policy-runtime-reevaluation.mjs
-            scripts/verify-candidate-exposure-policy-shadow-runtime.mjs
-            scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs
-            scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs
-            scripts/check-candidate-exposure-policy-divergence-diagnostics.mjs
-            scripts/check-candidate-exposure-policy-hosted-execution.mjs
-            scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs
-            scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs
-            scripts/check-candidate-exposure-policy-isolated-preview-canary-harness-design.mjs
-            scripts/check-candidate-exposure-policy-limited-preview-canary-plan.mjs
-            scripts/check-candidate-exposure-policy-shadow-eligibility-evidence.mjs
-            scripts/review-candidate-policy-runtime-reevaluation.mjs
-          )
-          : > "$EVIDENCE_DIR/candidate-policy-focused.log"
-          for script in "${scripts[@]}"; do
-            echo "RUN $script" | tee -a "$EVIDENCE_DIR/candidate-policy-focused.log"
-            node "$script" 2>&1 | tee -a "$EVIDENCE_DIR/candidate-policy-focused.log"
-          done
-
-      - name: Run security closeout
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/run-security-closeout-verifier-suite.mjs 2>&1 | tee "$EVIDENCE_DIR/security-closeout.log"
-          node - <<'NODE' | tee "$EVIDENCE_DIR/security-closeout-summary.txt"
-          const fs = require('fs');
-          const result = JSON.parse(fs.readFileSync('tmp/security-closeout-verifier-suite.json', 'utf8'));
-          if (result.status !== 'PASS') throw new Error(`security closeout failed: ${result.status}`);
-          if (result.expectedVerifierCount !== result.executedVerifierCount || result.executedVerifierCount !== result.passedVerifierCount) {
-            throw new Error('security verifier expected/executed/passed mismatch');
-          }
-          console.log(JSON.stringify({
-            status: result.status,
-            expected: result.expectedVerifierCount,
-            executed: result.executedVerifierCount,
-            passed: result.passedVerifierCount,
-            failed: result.failedVerifierCount,
-            preparation: result.preparationStepCount
-          }, null, 2));
-          NODE
-
-      - name: Run current-main regression suites
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run verify:admin-access-foundation 2>&1 | tee "$EVIDENCE_DIR/admin-access.log"
-          npm run synthetic:test 2>&1 | tee "$EVIDENCE_DIR/synthetic-test.log"
-          npm run synthetic:verify 2>&1 | tee "$EVIDENCE_DIR/synthetic-verify.log"
-          npm run architecture:guard 2>&1 | tee "$EVIDENCE_DIR/architecture-guard.log"
-
-      - name: Build production application
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run build 2>&1 | tee "$EVIDENCE_DIR/build.log"
-          test ! -e app/api/internal/candidate-exposure-policy-diagnostic/route.js
-          ! grep -R --fixed-strings "/api/internal/candidate-exposure-policy-diagnostic" .next/server/app-paths-manifest.json .next/server/app 2>/dev/null
-
-      - name: Record review and verification result
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p docs/reviews docs/verification
-          cat > docs/reviews/candidate-policy-main-integration-review.md <<EOF
-          # CandidatePolicy Main Integration Review
-
-          ## Verdict
-
-          PASS — no blocking findings after exact-path, semantic-contract, dependency-closure, security, Toolkit, Admin, architecture, and production-build review.
-
-          ## Reviewed boundary
-
-          - exact source blobs: 62
-          - semantic merges: 6
-          - source-only exclusions: 38
-          - exact current-main preservation: 302
-          - temporary diagnostic route: absent
-          - runtime policy activation: unchanged, default-off
-          - recommendation/response mutation: none
-          - database, schema, hosted data, Provider, Production mutation: none
-
-          ## Semantic review
-
-          - app/api/analyze/route.js: imported only the approved default-off shadow control, diagnostic-source request, and post-canonical aggregate-only invocation. Current-main Premium access/session ownership remains unchanged.
-          - lib/evaluator-boundary-policy-shadow.js: added baseline exposure observability only.
-          - package.json/package-lock.json: preserved workspaces and Toolkit scripts; applied fixed dependency floor and regenerated lockfile.
-          - security closeout manifest: preserved every current-main verifier and added the five integration/CandidatePolicy verifiers.
-          - readiness verifier: applied pure-replay-aware unavailable-source classification without weakening safety gates.
-
-          Machine status: REVIEW_PASS
-          EOF
-
-          cat > docs/verification/candidate-policy-main-integration-result.md <<EOF
-          # CandidatePolicy Main Integration Result
-
-          ```text
-          status: IMPLEMENTED_VALIDATED_UNMERGED
-          github_actions_run: ${GITHUB_RUN_ID}
-          main_sha: ${MAIN_SHA}
-          source_sha: ${SOURCE_SHA}
-          design_sha: ${DESIGN_SHA}
-          exact_source_blobs: 62/62
-          semantic_contracts: 6/6
-          source_only_absent: 38/38
-          current_main_preserved: 302/302
-          npm_audit_total: 0
-          candidate_policy_focused: PASS
-          security_closeout: PASS
-          current_main_regressions: PASS
-          production_build: PASS
-          diagnostic_route: ABSENT
-          runtime_default: OFF
-          production_changed: false
-          merge_performed: false
-          ```
-          EOF
-
-          git add docs/reviews/candidate-policy-main-integration-review.md docs/verification/candidate-policy-main-integration-result.md
-          git commit --amend --no-edit
-          node scripts/verify-candidate-policy-main-integration.mjs 2>&1 | tee "$EVIDENCE_DIR/integration-final.log"
-          git diff --check "$MAIN_SHA" HEAD
-          git status --short --untracked-files=all | tee "$EVIDENCE_DIR/final-status.txt"
-          test -z "$(git status --short --untracked-files=all)"
-          git rev-parse HEAD | tee "$EVIDENCE_DIR/final-head.txt"
-          git diff --stat "$MAIN_SHA" HEAD | tee "$EVIDENCE_DIR/final-diff-stat.txt"
-
-      - name: Publish validated integration branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          remote_sha="$(git ls-remote origin "refs/heads/$TARGET_BRANCH" | cut -f1)"
-          test "$remote_sha" = "$MAIN_SHA"
-          git push origin "HEAD:refs/heads/$TARGET_BRANCH" --force-with-lease="refs/heads/$TARGET_BRANCH:$MAIN_SHA"
+          git fetch --no-tags origin codex/candidate-policy-design-audit-validation-base
+          git show origin/codex/candidate-policy-design-audit-validation-base:.validation/run-candidate-policy-main-integration.sh > "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
+          bash -n "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
+          chmod +x "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
+          "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
 
       - name: Publish validation evidence
         if: always()
