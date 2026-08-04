@@ -7,7 +7,7 @@
     "designBranch": "codex/candidate-policy-main-integration-final-design",
     "implementationBranch": "codex/candidate-policy-main-integration",
     "baseBranch": "main",
-    "baseSha": "RESOLVE_FROM_DESIGN_PR_BASE_AND_FREEZE",
+    "baseSha": "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf",
     "pullRequestCount": 1,
     "mergeMethod": "squash",
     "sequentialStackMergeAllowed": false,
