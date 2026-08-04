@@ -20,5 +20,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          result="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow 'ADMIN PRODUCT 4 Precommit Publish' --branch automation/admin-product-4-implement --limit 5 --json databaseId,headSha,status,conclusion,createdAt,updatedAt,url)"
+          result="$(gh run list --repo "$GITHUB_REPOSITORY" --branch automation/admin-product-4-implement --limit 50 --json databaseId,name,headSha,status,conclusion,createdAt,updatedAt,url | jq '[.[] | select(.name == "ADMIN PRODUCT 4 Precommit Publish")]')"
           gh pr comment 146 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 validation status snapshot:\n\`\`\`json\n${result}\n\`\`\`"
