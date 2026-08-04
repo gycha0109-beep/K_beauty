@@ -1,0 +1,84 @@
+name: Dependency security triage
+
+on:
+  pull_request:
+    branches:
+      - codex/dependency-security-triage-validation-base
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact Stage 11M final head
+        uses: actions/checkout@v4
+        with:
+          ref: 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install exact lockfile
+        run: npm ci
+
+      - name: Capture npm audit evidence
+        shell: bash
+        run: |
+          mkdir -p tmp/dependency-security-triage
+          set +e
+          npm audit --json > tmp/dependency-security-triage/npm-audit.json
+          echo $? > tmp/dependency-security-triage/npm-audit-exit-code.txt
+          npm audit fix --dry-run --json > tmp/dependency-security-triage/npm-audit-fix-dry-run.json
+          echo $? > tmp/dependency-security-triage/npm-audit-fix-dry-run-exit-code.txt
+          npm ls --all --json > tmp/dependency-security-triage/npm-ls.json
+          echo $? > tmp/dependency-security-triage/npm-ls-exit-code.txt
+          npm outdated --json > tmp/dependency-security-triage/npm-outdated.json
+          echo $? > tmp/dependency-security-triage/npm-outdated-exit-code.txt
+          set -e
+
+      - name: Print normalized audit summary
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const audit = JSON.parse(readFileSync('tmp/dependency-security-triage/npm-audit.json', 'utf8'));
+          const vulnerabilities = Object.entries(audit.vulnerabilities || {}).map(([name, value]) => ({
+            name,
+            severity: value.severity,
+            isDirect: value.isDirect,
+            range: value.range,
+            nodes: value.nodes,
+            via: (value.via || []).map((item) => typeof item === 'string' ? item : {
+              source: item.source,
+              name: item.name,
+              title: item.title,
+              url: item.url,
+              severity: item.severity,
+              range: item.range,
+              cvss: item.cvss
+            }),
+            effects: value.effects,
+            fixAvailable: value.fixAvailable
+          }));
+          const summary = {
+            lockfileVersion: audit.metadata?.lockfileVersion ?? null,
+            counts: audit.metadata?.vulnerabilities ?? null,
+            dependencies: audit.metadata?.dependencies ?? null,
+            vulnerabilities
+          };
+          writeFileSync('tmp/dependency-security-triage/normalized-summary.json', JSON.stringify(summary, null, 2));
+          console.log(JSON.stringify(summary, null, 2));
+          NODE
+
+      - name: Upload dependency audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-triage-evidence
+          path: tmp/dependency-security-triage
+          if-no-files-found: error
