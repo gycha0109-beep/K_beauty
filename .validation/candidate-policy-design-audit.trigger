@@ -1,1 +1,1 @@
-candidate-policy-semantic-inspection-v1
+candidate-policy-main-integration-build-v1
