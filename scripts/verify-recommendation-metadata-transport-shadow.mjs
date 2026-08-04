@@ -78,6 +78,9 @@ eq(envelope.metadata.cleansing_profile, "deep_clean", "cleanser metadata transpo
 eq(envelope.metadata.is_primary_moisturizer, false, "false preserved");
 eq(envelope.metadata.balm_caution_tags, [], "empty array distinct from null");
 eq(envelope.metadata.water_resistant_minutes, 80, "number transported");
+ok(Object.isFrozen(envelope), "transport envelope deep boundary frozen");
+ok(Object.isFrozen(envelope.metadata), "metadata object frozen");
+ok(Object.isFrozen(envelope.metadata.balm_functional_tags), "metadata arrays frozen");
 ok(!Object.keys(projected).includes("cleansing_profile"), "transport non-enumerable");
 const publicHash = hash(projected);
 const spread = { ...projected };
@@ -141,6 +144,7 @@ const balm = buildRecommendationMetadataTransportShadow({ candidates: balmProduc
 eq(balm.map((scenario) => scenario.candidateTop1), ["primary", "primary"], "balm candidates A/B simulated");
 ok(balm[0].products.find((row) => row.productId === "unknown").candidatePrimaryEligible, "unknown balm not rejected");
 eq(balm[0].products.find((row) => row.productId === "unknown").classification, "metadata_unknown", "unknown balm classified");
+ok(balm[0].products.find((row) => row.productId === "local").classifications.includes("review_required"), "review-required remains an additive classification");
 
 const sunscreens = [
   fixture({ id: "none", category: "sunscreen", slot: "sunscreen", score: 100 }),
