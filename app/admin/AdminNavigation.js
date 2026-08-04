@@ -13,7 +13,13 @@ const NAVIGATION = Object.freeze([
   {
     label: "Product reviews",
     href: "/admin/products/reviews",
-    capability: ADMIN_CAPABILITIES.PRODUCTS_READ
+    capability: ADMIN_CAPABILITIES.PRODUCTS_READ,
+    exact: true
+  },
+  {
+    label: "Review import",
+    href: "/admin/products/reviews/import",
+    capability: ADMIN_CAPABILITIES.PRODUCTS_REVIEW
   },
   { label: "Skin Match", href: null },
   { label: "Face Lab", href: null },
@@ -22,8 +28,8 @@ const NAVIGATION = Object.freeze([
   { label: "System", href: null }
 ]);
 
-function isActivePath(pathname, href) {
-  if (href === "/admin") {
+function isActivePath(pathname, href, exact = false) {
+  if (href === "/admin" || exact) {
     return pathname === href;
   }
 
@@ -63,7 +69,7 @@ export default function AdminNavigation({ capabilities = [] }) {
           );
         }
 
-        const active = isActivePath(pathname, item.href);
+        const active = isActivePath(pathname, item.href, item.exact);
 
         return (
           <Link
