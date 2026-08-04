@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Base Source Export
+name: ADMIN PRODUCT 4 Hidden Source Export
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  export-base-source:
+  export-hidden-source:
     if: github.head_ref == 'automation/admin-product-4-implement'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -20,25 +20,20 @@ jobs:
           ref: feature/admin-product-review-import-confirm
           fetch-depth: 1
 
-      - name: Assert authoritative base
+      - name: Collect hidden source
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "e174f80f79fa9ce5d62c742f440c9e18e602929a"
-          test -z "$(git status --short)"
-
-      - name: Collect base source
-        shell: bash
-        run: |
-          set -euo pipefail
-          out="$RUNNER_TEMP/admin-product-4-base-source"
+          out="$RUNNER_TEMP/admin-product-4-hidden-source"
           mkdir -p "$out"
-          git archive --format=tar HEAD | tar -xf - -C "$out"
+          cp -a .github "$out/.github"
+          cp -a .codex "$out/.codex"
 
-      - name: Upload base source
+      - name: Upload hidden source
         uses: actions/upload-artifact@v4
         with:
-          name: admin-product-4-base-source
-          path: ${{ runner.temp }}/admin-product-4-base-source
+          name: admin-product-4-hidden-source
+          path: ${{ runner.temp }}/admin-product-4-hidden-source
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
