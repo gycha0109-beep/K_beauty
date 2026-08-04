@@ -38,10 +38,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --name-only 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf ce882aa2057a06d39d86f99a09f4264725b4161b | sort > actual-tree-diff-paths.txt
+          BASE=647051f7feff8e23dc7b563cb7b58ffcba7e6eaf
+          SOURCE=ce882aa2057a06d39d86f99a09f4264725b4161b
+          git diff --name-only "$BASE" "$SOURCE" | sort > actual-tree-diff-paths.txt
+          git diff --name-status --no-renames "$BASE" "$SOURCE" | sort -k2,2 > actual-tree-diff-name-status.txt
+          git diff --raw --no-renames "$BASE" "$SOURCE" > actual-tree-diff-raw.txt
           printf 'ACTUAL_TREE_DIFF_COUNT=%s\n' "$(wc -l < actual-tree-diff-paths.txt)"
-          cat actual-tree-diff-paths.txt
-          git rev-list --left-right --count 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf...ce882aa2057a06d39d86f99a09f4264725b4161b > actual-relation.txt
+          printf 'ACTUAL_STATUS_COUNTS\n'
+          cut -f1 actual-tree-diff-name-status.txt | sort | uniq -c
+          git rev-list --left-right --count "$BASE...$SOURCE" > actual-relation.txt
           printf 'ACTUAL_RELATION='
           cat actual-relation.txt
 
@@ -77,6 +82,8 @@ jobs:
           name: candidate-policy-design-audit-evidence
           path: |
             actual-tree-diff-paths.txt
+            actual-tree-diff-name-status.txt
+            actual-tree-diff-raw.txt
             actual-relation.txt
             path-ledger-result.txt
             final-design-result.txt
