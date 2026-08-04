@@ -16,7 +16,7 @@ jobs:
       - name: Checkout exact design head
         uses: actions/checkout@v4
         with:
-          ref: 8193b29ab962a50a8d6007ae9ca6eed3913eb492
+          ref: 797e179077df9065f08a262c92f4940f5a259cbe
           fetch-depth: 0
 
       - name: Fetch exact authorities
@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --check 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf 8193b29ab962a50a8d6007ae9ca6eed3913eb492
+          git diff --check 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf 797e179077df9065f08a262c92f4940f5a259cbe
 
       - name: Publish evidence
         if: always()
@@ -89,5 +89,6 @@ jobs:
             final-design-result.txt
             docs/architecture/candidate-policy-main-integration-manifest-v1.json
             docs/architecture/candidate-policy-main-integration-path-ledger-v1.json
+            docs/architecture/candidate-policy-main-integration-ledger/*.txt
             docs/architecture/candidate-policy-main-integration-exhaustiveness-audit-v1.md
           retention-days: 30
