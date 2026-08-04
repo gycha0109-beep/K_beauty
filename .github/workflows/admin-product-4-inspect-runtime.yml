@@ -6,19 +6,159 @@ on:
       - automation/admin-product-4-inspect
 
 permissions:
-  actions: read
-  contents: read
+  contents: write
   pull-requests: write
 
+concurrency:
+  group: admin-product-4-authoritative-runtime
+  cancel-in-progress: false
+
 jobs:
-  inspect:
-    runs-on: ubuntu-latest
+  validate-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      BASE_SHA: e174f80f79fa9ce5d62c742f440c9e18e602929a
+      BASE_BRANCH: feature/admin-product-review-import-confirm
+      TARGET_BRANCH: feature/admin-product-review-import-ui
+      SUPABASE_CLI_VERSION: 2.109.1
+      ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-ui-precommit
+      REVIEW_IMPORT_PACKAGE_DIR: data/review-batches/admin-product-review-import-ui-precommit
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Query status validator runs
+      - name: Checkout registered helper
+        uses: actions/checkout@v4
+        with:
+          ref: automation/admin-product-4-inspect
+          fetch-depth: 20
+          token: ${{ github.token }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Prepare reviewed validator
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          result="$(gh run list --repo "$GITHUB_REPOSITORY" --branch automation/admin-product-4-status --limit 20 --json databaseId,name,headSha,status,conclusion,createdAt,updatedAt,url,jobs)"
-          gh pr comment 142 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 status validator snapshot:\n\`\`\`json\n${result}\n\`\`\`"
+          cp .github/scripts/admin-product-4-run-validation.sh "$RUNNER_TEMP/admin-product-4-run-validation.sh"
+          python - <<'PY'
+          from pathlib import Path
+
+          runner = Path("/tmp") / "admin-product-4-run-validation.sh"
+          text = runner.read_text()
+          marker = '''PY
+
+          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
+          '''
+          insertion = '''PY
+
+          python - <<'PY'
+          from pathlib import Path
+
+          handlers = Path("lib/admin/product-review-import/http-handlers.js")
+          text = handlers.read_text()
+          access_old = '''    const access = await resolveAccess();
+              const denied = accessError(access);
+          '''
+          access_new = '''    let access;
+              try {
+                access = await resolveAccess();
+              } catch {
+                return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+              }
+              const denied = accessError(access);
+          '''
+          if text.count(access_old) != 2:
+              raise SystemExit("access exception boundary not found twice")
+          text = text.replace(access_old, access_new, 2)
+          origin_old = '''    if (!isAllowedOrigin(request)) {
+                return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+              }
+          '''
+          origin_new = '''    try {
+                if (!isAllowedOrigin(request)) {
+                  return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+                }
+              } catch {
+                return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+              }
+          '''
+          if text.count(origin_old) != 2:
+              raise SystemExit("origin exception boundary not found twice")
+          handlers.write_text(text.replace(origin_old, origin_new, 2))
+
+          verifier = Path("scripts/verify-admin-product-review-import-routes.mjs")
+          text = verifier.read_text()
+          anchor = '''assert.equal((await payload(await originHandler(new Request(URL)))).error, "invalid_origin");
+          '''
+          addition = '''assert.equal((await payload(await originHandler(new Request(URL)))).error, "invalid_origin");
+
+          const accessFailureHandler = createProductReviewImportDryRunHandler({
+            resolveAccess: async () => {
+              throw new Error("session provider raw failure");
+            },
+            isAllowedOrigin: () => true,
+            parseMultipart: () => {
+              throw new Error("must_not_parse");
+            },
+            parsePackage,
+            executeDryRun: async () => ({})
+          });
+          const accessFailureResponse = await accessFailureHandler(new Request(URL));
+          assert.equal(accessFailureResponse.status, 500);
+          assert.equal(accessFailureResponse.headers.get("cache-control"), "private, no-store, max-age=0");
+          assert.deepEqual(await payload(accessFailureResponse), {
+            ok: false,
+            status: "invalid",
+            error: "unexpected_error",
+            message: "관리자 import 작업을 완료하지 못했습니다."
+          });
+
+          const originFailureHandler = createProductReviewImportDryRunHandler({
+            resolveAccess: allowedAccess,
+            isAllowedOrigin: () => {
+              throw new Error("origin policy raw failure");
+            },
+            parseMultipart: () => {
+              throw new Error("must_not_parse");
+            },
+            parsePackage,
+            executeDryRun: async () => ({})
+          });
+          const originFailureResponse = await originFailureHandler(new Request(URL));
+          assert.equal(originFailureResponse.status, 500);
+          assert.equal((await payload(originFailureResponse)).error, "unexpected_error");
+          '''
+          if text.count(anchor) != 1:
+              raise SystemExit("route verifier origin anchor not found once")
+          verifier.write_text(text.replace(anchor, addition, 1))
+          PY
+
+          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
+          '''
+          if marker not in text:
+              raise SystemExit("validator insertion marker not found")
+          runner.write_text(text.replace(marker, insertion, 1))
+          PY
+          chmod +x "$RUNNER_TEMP/admin-product-4-run-validation.sh"
+
+      - name: Validate implementation and create feature commit
+        run: bash "$RUNNER_TEMP/admin-product-4-run-validation.sh"
+
+      - name: Publish validated target branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "${BASE_SHA}"
+          test "$(git log -1 --pretty=%s)" = "feat(admin): add product review import workbench"
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "${remote_target}" = "${BASE_SHA}"
+          feature_sha="$(git rev-parse HEAD)"
+          git push origin "HEAD:refs/heads/${TARGET_BRANCH}"
+          gh pr comment 146 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 feature commit published after authoritative validation.
+          Run ID: $GITHUB_RUN_ID
+          Feature SHA: ${feature_sha}
+          Target: ${TARGET_BRANCH}"
