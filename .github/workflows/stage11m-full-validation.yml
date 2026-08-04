@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout exact PR 143 head
+      - name: Checkout exact PR 143 final head
         uses: actions/checkout@v4
         with:
-          ref: c2c6584ebad45b15ce0a36185c5f474ce2a32b40
+          ref: 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
           fetch-depth: 0
 
       - name: Restore verifier local refs
@@ -93,6 +93,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stage11m-security-closeout-evidence
+          name: stage11m-final-security-closeout-evidence
           path: tmp/security-closeout-verifier-suite.json
           if-no-files-found: warn
