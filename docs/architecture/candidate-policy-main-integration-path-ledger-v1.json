@@ -1,0 +1,880 @@
+{
+  "version": "candidate-policy-main-integration-path-ledger-v1",
+  "status": "exhaustive_tree_diff_classified",
+  "compare": {
+    "baseSha": "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf",
+    "sourceSha": "ce882aa2057a06d39d86f99a09f4264725b4161b",
+    "mergeBaseSha": "a30970b78ff2fb3f5784d947b746223a66954e44",
+    "status": "diverged",
+    "mainAheadBy": 521,
+    "sourceAheadBy": 263,
+    "treeDiffPathCount": 127
+  },
+  "counts": {
+    "include_exact": 62,
+    "merge_semantic": 6,
+    "exclude": 59,
+    "total": 127
+  },
+  "contracts": {
+    "everyPathExactlyOnce": true,
+    "unknownPathCount": 0,
+    "duplicatePathCount": 0,
+    "includeExactSourceBlobParityRequired": true,
+    "excludeCurrentMainBlobParityRequired": true,
+    "semanticMergeContractRequired": true,
+    "literalImportClosureRequired": true,
+    "packageScriptTargetClosureRequired": true,
+    "securityVerifierManifestClosureRequired": true
+  },
+  "entries": [
+    {
+      "path": ".codex/AI_WORK_LOG.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-17-premium-hosted-preview-verification.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-18-premium-hosted-preview-harness-hardening.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-authoritative-api-cli.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-live-readiness.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-target-normalization.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-user-hash-contract.md",
+      "disposition": "exclude",
+      "reasonCode": "history_only_work_log_current_main_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".github/workflows/stage11c-shadow-evaluation.yml",
+      "disposition": "exclude",
+      "reasonCode": "source_branch_workflow_excluded_current_main_ci_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": ".github/workflows/stage11d-candidate-policy-canary-plan.yml",
+      "disposition": "exclude",
+      "reasonCode": "source_branch_workflow_excluded_current_main_ci_owns",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "app/api/analyze/route.js",
+      "disposition": "merge_semantic",
+      "reasonCode": "merge_candidate_shadow_hook_into_current_main_route",
+      "baseAuthority": [
+        "request parsing",
+        "Vision/Provider flow",
+        "security guards",
+        "Premium session creation",
+        "persistence",
+        "response schema",
+        "current Face Lab/mobile behavior"
+      ],
+      "sourceAuthority": [
+        "CandidateExposurePolicy shadow imports",
+        "post-canonical shadow invocation",
+        "aggregate-only observability"
+      ],
+      "prohibitions": [
+        "wholesale source copy",
+        "diagnostic fixture injection",
+        "temporary diagnostic route",
+        "response mutation",
+        "candidate filtering",
+        "Production activation"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "app/api/auth/signout/route.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "app/api/full-report/route.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "app/api/full-report/session/route.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "components/auth/LoginButtons.jsx",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "components/result/SaveReportCTA.jsx",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-hosted-execution-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-isolated-preview-canary-harness-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-isolated-preview-canary-harness-implementation-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-limited-preview-canary-plan-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-read-only-hosted-adapter-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-shadow-runtime-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-synthetic-diagnostic-route-cleanup-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-exposure-policy-synthetic-diagnostic-route-design-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/architecture/candidate-policy-runtime-reevaluation-v1.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-hosted-diagnostic-route-cleanup-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-hosted-diagnostic-route-implementation-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-isolated-canary-implementation-design-independent-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-isolated-canary-implementation-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-isolated-preview-canary-harness-design-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-limited-preview-canary-plan-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-exposure-policy-shadow-evaluation-20260802.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/reviews/candidate-policy-runtime-reevaluation-review.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-hosted-diagnostic-route-cleanup-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-hosted-diagnostic-route-implementation-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-isolated-canary-implementation-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-isolated-preview-canary-harness-design-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-isolated-preview-canary-harness-design.json",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-limited-preview-canary-plan-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-limited-preview-canary-plan.json",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-shadow-eligibility-evidence.json",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-shadow-evaluation-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/candidate-exposure-policy-shadow-runtime-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/dependency-security-triage-and-remediation-result.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "docs/verification/examples/premium-hosted-preview/browser-conflict-body.example.json",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/examples/premium-hosted-preview/manifest.example.json",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/examples/premium-hosted-preview/ui-case.example.json",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/premium-hosted-preview-harness-hardening-design-v2.1.md",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/premium-hosted-preview-live-runbook.md",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/premium-hosted-preview-verification-v1.md",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "docs/verification/stage10-hosted-preview-user-flow-result.md",
+      "disposition": "exclude",
+      "reasonCode": "premium_hosted_evidence_outside_candidate_integration_scope",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "fixtures/candidate-exposure-policy-isolated-canary/README.md",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "fixtures/candidate-exposure-policy-isolated-canary/manifest.v1.json",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/auth/oauth-return-origin.mjs",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-contract.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-divergence-diagnostics.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-evaluator-adapter.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-hosted-execution-contract.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-hosted-execution-grant.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-hosted-execution-v2.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-hosted-execution.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-isolated-canary-control.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-isolated-canary-evidence.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-isolated-canary-telemetry.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-isolated-preview-canary-harness-design.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-isolated-projection.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-limited-preview-canary-plan.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-observability.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-read-only-hosted-adapter.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-shadow-eligibility.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy-shadow.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/candidate-exposure-policy.js",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "lib/evaluator-boundary-policy-shadow.js",
+      "disposition": "merge_semantic",
+      "reasonCode": "merge_baseline_exposure_observability_field",
+      "baseAuthority": [
+        "current evaluator behavior",
+        "current candidate hint receiver behavior"
+      ],
+      "sourceAuthority": [
+        "baselineExposureGroup observability field"
+      ],
+      "prohibitions": [
+        "ranking change",
+        "exposure change",
+        "runtime activation"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "lib/premium-report-session-owner.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "lib/premium-report-session.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "lib/supabase/browser-client.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "lib/supabase/middleware.js",
+      "disposition": "exclude",
+      "reasonCode": "current_main_runtime_authoritative_unrelated_to_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "package-lock.json",
+      "disposition": "merge_semantic",
+      "reasonCode": "regenerate_from_merged_package_json",
+      "baseAuthority": [
+        "current main package graph",
+        "Toolkit workspace links",
+        "current safe dependency graph"
+      ],
+      "sourceAuthority": [],
+      "prohibitions": [
+        "wholesale source copy",
+        "manual lock editing",
+        "dependency downgrade"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "package.json",
+      "disposition": "merge_semantic",
+      "reasonCode": "union_candidate_scripts_preserve_current_main_dependencies",
+      "baseAuthority": [
+        "workspaces",
+        "Toolkit T1-T11 scripts",
+        "Admin/mobile/Face scripts",
+        "current dependency and override strategy"
+      ],
+      "sourceAuthority": [
+        "verify:candidate-exposure-policy-shadow",
+        "verify:candidate-exposure-policy-shadow-evaluation"
+      ],
+      "prohibitions": [
+        "wholesale source copy",
+        "workspace removal",
+        "script removal",
+        "dependency downgrade"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "scripts/bootstrap-premium-e2e-auth.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/candidate-exposure-policy-hosted-execution.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/capture-premium-hosted-preview-google-login.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-divergence-diagnostics.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-hosted-execution.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-isolated-canary-import-boundary.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-isolated-preview-canary-harness-design.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-limited-preview-canary-plan.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-candidate-exposure-policy-shadow-eligibility-evidence.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/check-premium-browser-journey-local.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/cleanup-premium-browser-journey.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/cleanup-premium-hosted-preview-run.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/generate-premium-hosted-preview-attestation.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-browser-journey-core.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-browser-journey-local-auth.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-e2e-session-capture.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-e2e-system-browser.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-authoritative-api.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-contract-core.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-core-v2.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-core.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-security.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/premium-hosted-preview-vercel-target.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/review-candidate-policy-runtime-reevaluation.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/run-premium-browser-journey.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/run-security-closeout-verifier-suite.mjs",
+      "disposition": "merge_semantic",
+      "reasonCode": "deduplicated_union_candidate_verifiers",
+      "baseAuthority": [
+        "current verifier inventory",
+        "current preparation steps",
+        "current discovery semantics"
+      ],
+      "sourceAuthority": [
+        "four CandidatePolicy verifier entries"
+      ],
+      "prohibitions": [
+        "existing verifier removal",
+        "skip list expansion for CandidatePolicy",
+        "externally-gated substitution",
+        "count-only validation"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/verify-candidate-policy-runtime-reevaluation.mjs",
+      "disposition": "include_exact",
+      "reasonCode": "durable_candidate_policy_source_owned",
+      "finalTreeContract": "blob_equals_exact_source"
+    },
+    {
+      "path": "scripts/verify-evaluator-boundary-readiness-review.mjs",
+      "disposition": "merge_semantic",
+      "reasonCode": "reconcile_source_availability_status_contract",
+      "baseAuthority": [
+        "current readiness evidence and leakage checks"
+      ],
+      "sourceAuthority": [
+        "pure-replay-aware source-unavailability classification"
+      ],
+      "prohibitions": [
+        "weakened safety gate",
+        "runtime mutation authorization",
+        "data-source substitution"
+      ],
+      "finalTreeContract": "path_specific_semantic_contract"
+    },
+    {
+      "path": "scripts/verify-full-report-auth-origin-contract.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-authoritative-api.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-contract.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-db-evidence.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-error-boundaries.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-gate.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-preflight.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-ui-journey.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-hosted-preview-user-hash-contract.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-report-ownership-boundary.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-report-reentry-contract.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-route-storage-reentry.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-run-scoped-cleanup.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-premium-security-evidence-closure.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-preview-oauth-origin.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    },
+    {
+      "path": "scripts/verify-sec06-saved-report-boundary.mjs",
+      "disposition": "exclude",
+      "reasonCode": "premium_or_security_tooling_current_main_authoritative_outside_candidate_delta",
+      "finalTreeContract": "blob_equals_exact_main_or_absent_if_main_absent"
+    }
+  ]
+}
