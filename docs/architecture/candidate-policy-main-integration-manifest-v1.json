@@ -1,6 +1,6 @@
 {
   "version": "candidate-policy-main-integration-manifest-v1",
-  "status": "final_design_complete_exhaustive_path_ledger_verified",
+  "status": "final_design_complete_exhaustive_408_path_ledger_verified",
   "additionalDesignStageRequired": false,
   "strategy": "curated_tree_transplant",
   "integration": {
@@ -37,23 +37,26 @@
     "status": "diverged",
     "mainAheadBy": 521,
     "sourceAheadBy": 263,
-    "treeDiffPathCount": 127,
+    "treeDiffPathCount": 408,
+    "gitStatusCounts": {
+      "sourceOnlyA": 100,
+      "mainOnlyD": 278,
+      "modifiedM": 30
+    },
     "ledgerPath": "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json",
     "ledgerVerifier": "scripts/verify-candidate-policy-main-integration-path-ledger.mjs",
     "dispositionCounts": {
-      "include_exact": 62,
-      "merge_semantic": 6,
-      "exclude": 59
+      "includeExact": 62,
+      "mergeSemantic": 6,
+      "excludeSourceOnly": 38,
+      "excludeMainPresent": 302,
+      "excludeTotal": 340,
+      "total": 408
     },
     "everyPathExactlyOnceRequired": true,
     "unknownPathCountRequired": 0,
     "duplicatePathCountRequired": 0
   },
-  "dispositions": [
-    "include_exact",
-    "merge_semantic",
-    "exclude"
-  ],
   "requiredExactExclusions": [
     "app/api/internal/candidate-exposure-policy-diagnostic/route.js",
     "lib/candidate-exposure-policy-hosted-diagnostic-auth.js",
@@ -71,104 +74,18 @@
     "probeCandidatePolicyDiagnostic"
   ],
   "semanticMergePaths": [
-    {
-      "path": "app/api/analyze/route.js",
-      "mainOwns": [
-        "request parsing",
-        "Vision/Provider execution",
-        "security guards",
-        "Premium session creation",
-        "persistence",
-        "response contract",
-        "current Face Lab and mobile behavior"
-      ],
-      "sourceOwns": [
-        "CandidateExposurePolicy shadow imports",
-        "post-canonical default-off shadow invocation",
-        "aggregate-only observability"
-      ],
-      "wholeSourceCopyAllowed": false
-    },
-    {
-      "path": "lib/evaluator-boundary-policy-shadow.js",
-      "mainOwns": [
-        "current evaluator and hint-receiver behavior"
-      ],
-      "sourceOwns": [
-        "baselineExposureGroup observability field"
-      ],
-      "wholeSourceCopyAllowed": false
-    },
-    {
-      "path": "package.json",
-      "mainOwns": [
-        "current scripts",
-        "workspaces",
-        "Toolkit T1-T11",
-        "Admin/mobile/Face scripts",
-        "current safe dependency and override strategy"
-      ],
-      "sourceOwns": [
-        "verify:candidate-exposure-policy-shadow",
-        "verify:candidate-exposure-policy-shadow-evaluation"
-      ],
-      "wholeSourceCopyAllowed": false,
-      "dependencyDowngradeAllowed": false
-    },
-    {
-      "path": "package-lock.json",
-      "resolution": "regenerate_from_merged_package_json",
-      "wholesaleSourceCopyAllowed": false,
-      "manualEditingAllowed": false
-    },
-    {
-      "path": "scripts/run-security-closeout-verifier-suite.mjs",
-      "resolution": "current_main_manifest_plus_four_candidate_verifiers",
-      "candidateVerifierEntries": [
-        "verify-candidate-exposure-policy-diagnostic-route-absence.mjs",
-        "verify-candidate-exposure-policy-shadow-evaluation.mjs",
-        "verify-candidate-exposure-policy-shadow-runtime.mjs",
-        "verify-candidate-policy-runtime-reevaluation.mjs"
-      ],
-      "mainVerifierRemovalAllowed": false,
-      "candidateVerifierSkipAllowed": false
-    },
-    {
-      "path": "scripts/verify-evaluator-boundary-readiness-review.mjs",
-      "resolution": "preserve_current_main_checks_and_reconcile_pure_replay_aware_source_unavailability",
-      "wholeSourceCopyAllowed": false,
-      "safetyGateWeakeningAllowed": false
-    }
+    "app/api/analyze/route.js",
+    "lib/evaluator-boundary-policy-shadow.js",
+    "package-lock.json",
+    "package.json",
+    "scripts/run-security-closeout-verifier-suite.mjs",
+    "scripts/verify-evaluator-boundary-readiness-review.mjs"
   ],
-  "sourceOwnedCandidatePrefixes": {
-    "role": "advisory_only_path_ledger_is_authoritative",
-    "values": [
-      "lib/candidate-policy-",
-      "lib/candidate-exposure-policy-",
-      "scripts/verify-candidate-",
-      "docs/architecture/candidate-",
-      "docs/reviews/candidate-",
-      "docs/verification/candidate-"
-    ]
-  },
-  "mainOwnedDomains": [
-    "admin",
-    "mobile-survey",
-    "camera",
-    "mediapipe",
-    "auth",
-    "payment",
-    "rls",
-    "storage",
-    "unrelated-api-routes",
-    "unrelated-ui",
-    "current-ci-trigger-and-permissions"
-  ],
-  "excludedSourceDeltaPolicy": {
-    "sourceOnlyExcludedPathMustRemainAbsent": true,
-    "mainExistingExcludedPathMustRetainExactMainBlob": true,
-    "excludedPremiumHostedAndAuthDeltaIsNotCandidatePolicyAuthority": true,
-    "excludedPathMayNotBeImportedByIncludedOrSemanticCandidateClosure": true
+  "finalTreeContracts": {
+    "includeExact": "final blob equals exact durable-source blob",
+    "mergeSemantic": "path-specific main/source authority contract passes",
+    "excludeSourceOnly": "path remains absent from final tree",
+    "excludeMainPresent": "final blob equals exact current-main blob"
   },
   "closureRequirements": {
     "literalStaticImportsResolve": true,
@@ -209,6 +126,14 @@
   "requiredImplementationArtifacts": [
     "docs/architecture/candidate-policy-main-integration-manifest-v1.json",
     "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json",
+    "docs/architecture/candidate-policy-main-integration-ledger/include-exact.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/merge-semantic.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-source-only.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-main-platform.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-main-toolkit-root-packages.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-main-toolkit-docs.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-main-toolkit-src.txt",
+    "docs/architecture/candidate-policy-main-integration-ledger/exclude-main-toolkit-tests.txt",
     "scripts/verify-candidate-policy-main-integration-path-ledger.mjs",
     "scripts/verify-candidate-policy-main-integration.mjs",
     "docs/verification/candidate-policy-main-integration-result.md"
@@ -217,16 +142,18 @@
     "exact_main_base_frozen",
     "exact_source_sha_frozen",
     "authoritative_merge_base_frozen",
-    "authoritative_tree_diff_equals_ledger_127_of_127",
+    "authoritative_tree_diff_equals_ledger_408_of_408",
+    "git_status_counts_equal_100_278_30",
+    "path_disposition_counts_equal_62_6_38_302",
     "all_source_paths_classified_once",
-    "path_disposition_counts_62_6_59",
-    "unknown_overlap_zero",
+    "unknown_path_zero",
     "duplicate_path_zero",
     "temporary_route_files_absent",
     "temporary_route_runtime_tokens_absent",
-    "include_exact_blob_parity",
-    "exclude_exact_main_blob_or_absence_parity",
-    "semantic_merge_expected_digest_match",
+    "include_exact_blob_parity_62_of_62",
+    "exclude_source_only_absence_38_of_38",
+    "exclude_main_present_blob_parity_302_of_302",
+    "semantic_merge_contracts_6_of_6",
     "literal_import_closure_pass",
     "package_script_target_closure_pass",
     "spawned_script_target_closure_pass",
@@ -247,37 +174,6 @@
     "exact_head_vercel_preview_ready",
     "production_alias_absent"
   ],
-  "sourcePullRequestsToSupersedeAfterMerge": [
-    78,
-    79,
-    80,
-    81,
-    82,
-    83,
-    84,
-    85,
-    88,
-    91,
-    92,
-    93,
-    96,
-    97,
-    98,
-    99,
-    100,
-    101,
-    102,
-    107,
-    112,
-    114,
-    115,
-    117,
-    119,
-    122,
-    141,
-    143,
-    147
-  ],
   "postMerge": {
     "closeStackedPullRequestsBeforeMerge": false,
     "addSupersededComment": true,
@@ -289,7 +185,6 @@
     "source_sha_drift",
     "tree_diff_ledger_mismatch",
     "unclassified_or_duplicate_path",
-    "unknown_overlap",
     "include_exact_blob_mismatch",
     "excluded_main_blob_mismatch",
     "excluded_source_only_path_present",
@@ -306,5 +201,5 @@
     "preview_production_target_or_alias",
     "secret_or_raw_evidence_detected"
   ],
-  "machineStatus": "ready_for_single_pr_implementation_after_exhaustive_127_path_design_audit"
+  "machineStatus": "ready_for_single_pr_implementation_after_exhaustive_408_path_design_audit"
 }
