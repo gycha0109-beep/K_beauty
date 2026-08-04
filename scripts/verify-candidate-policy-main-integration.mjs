@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = path.join(ROOT, "docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json");
+const VERCEL_CONFIG_PATH = path.join(ROOT, "vercel.json");
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const CI_PORTABILITY_SEMANTIC_PATH = "scripts/verify-candidate-policy-runtime-reevaluation.mjs";
 const CI_PORTABILITY_SOURCE_BLOB = "15f5cc94e2a2673ba36ef73a2cdb7a6a690ffc6c";
@@ -73,6 +74,19 @@ check(pkg.devDependencies.postcss === "^8.5.25", "postcss remediation drift");
 check(pkg.overrides?.next?.postcss === "8.5.25", "Next postcss override drift");
 check(pkg.overrides?.next?.sharp === "0.35.3", "Next sharp override drift");
 
+check(existsSync(VERCEL_CONFIG_PATH), "vercel deployment policy missing");
+const vercelConfig = JSON.parse(readFileSync(VERCEL_CONFIG_PATH, "utf8"));
+check(vercelConfig.$schema === "https://openapi.vercel.sh/vercel.json", "vercel schema drift");
+check(vercelConfig.git?.deploymentEnabled === false, "automatic Vercel Git deployments must remain disabled");
+check(vercelConfig.github?.autoAlias === false, "automatic Vercel Git aliasing must remain disabled");
+const workflowsDir = path.join(ROOT, ".github", "workflows");
+if (existsSync(workflowsDir)) {
+  for (const workflowName of readdirSync(workflowsDir).filter((name) => /\.ya?ml$/.test(name))) {
+    const workflow = readFileSync(path.join(workflowsDir, workflowName), "utf8");
+    check(!/(?:^|\s)vercel(?:\s+deploy|\s+--prod)(?:\s|$)/m.test(workflow), `automatic Vercel deploy command forbidden in workflow: ${workflowName}`);
+  }
+}
+
 const securitySuite = readFileSync(path.join(ROOT, "scripts/run-security-closeout-verifier-suite.mjs"), "utf8");
 for (const verifier of manifest.preservedMainSecurityVerifiers) {
   check(securitySuite.includes(`"${verifier}"`), `main security verifier removed: ${verifier}`);
@@ -113,4 +127,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; automatic Vercel Git deployments disabled; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
