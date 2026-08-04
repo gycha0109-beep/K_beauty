@@ -14,6 +14,7 @@ const CI_PORTABILITY_RESULT_BLOB = "4eea1f845c7a20a819a2189a3956b724b1d631ea";
 const METADATA_SHADOW_SEMANTIC_PATH = "lib/candidate-exposure-policy-shadow.js";
 const METADATA_SHADOW_SOURCE_BLOB = "329c79c1e22597f98fc0cfacd63fa174b2789e24";
 const METADATA_SHADOW_RESULT_BLOB = "f8b48df766bc2cc8c984dfc5fee438cae2476e0f";
+const METADATA_SHADOW_VERIFIER_PATH = "scripts/check-recommendation-metadata-transport-shadow.mjs";
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
@@ -114,7 +115,15 @@ for (const verifier of manifest.requiredCandidateSecurityVerifiers) {
   check(occurrences === 1, `candidate security verifier count mismatch: ${verifier}`);
   check(existsSync(path.join(ROOT, "scripts", verifier)), `candidate verifier file missing: ${verifier}`);
 }
-check(securitySuite.includes('"verify-recommendation-metadata-transport-shadow.mjs"'), "metadata transport shadow verifier missing from security suite");
+
+check(existsSync(path.join(ROOT, METADATA_SHADOW_VERIFIER_PATH)), "metadata transport shadow verifier missing");
+const metadataVerifierOutput = execFileSync(process.execPath, [path.join(ROOT, METADATA_SHADOW_VERIFIER_PATH)], {
+  cwd: ROOT,
+  encoding: "utf8",
+  maxBuffer: 16 * 1024 * 1024,
+  env: { ...process.env, CI: "1", NODE_ENV: "test" }
+});
+check(metadataVerifierOutput.includes("verify-recommendation-metadata-transport-shadow: PASS"), "metadata transport shadow verifier failed");
 
 const readiness = readFileSync(path.join(ROOT, "scripts/verify-evaluator-boundary-readiness-review.mjs"), "utf8");
 check(readiness.includes("output.pureReplayEvidenceSummary.productRowsLoaded > 0"), "readiness semantic delta missing");
