@@ -1,1 +1,3 @@
 Temporary helper branch for ADMIN-PRODUCT-4 precommit validation. Do not merge.
+
+Trigger note: the precommit workflow already exists on the prior helper commit; this substantive helper update starts the clean-base validation and only publishes the target branch after every required check passes.
