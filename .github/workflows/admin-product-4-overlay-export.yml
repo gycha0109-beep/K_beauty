@@ -28,16 +28,22 @@ jobs:
           python - <<'PY'
           import base64
           import io
+          import re
           import tarfile
           from pathlib import Path
 
           workflow = Path('.github/workflows/admin-product-4-precommit-publish.yml').read_text(encoding='utf-8')
-          encoded = next(line.strip() for line in workflow.splitlines() if line.strip().startswith('H4sI'))
-          payload = base64.b64decode(encoded, validate=False)
+          encoded_line = next(line.strip() for line in workflow.splitlines() if line.strip().startswith('H4sI'))
+          chunks = re.findall(r'H4sI[A-Za-z0-9+/]+={1,2}', encoded_line)
+          if not chunks:
+              raise RuntimeError('implementation overlay chunks not found')
           destination = Path('/tmp/admin-product-4-export')
           destination.mkdir(parents=True, exist_ok=True)
-          with tarfile.open(fileobj=io.BytesIO(payload), mode='r:gz') as archive:
-              archive.extractall(destination)
+          for index, encoded in enumerate(chunks, start=1):
+              payload = base64.b64decode(encoded, validate=True)
+              with tarfile.open(fileobj=io.BytesIO(payload), mode='r:gz') as archive:
+                  archive.extractall(destination)
+              print(f'extracted overlay chunk {index}/{len(chunks)}')
           PY
           cp -a /tmp/admin-product-4-export/. "$RUNNER_TEMP/admin-product-4-export/"
           find "$RUNNER_TEMP/admin-product-4-export" -type f -print | sort
