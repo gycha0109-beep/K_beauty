@@ -1,0 +1,98 @@
+name: Stage 11M full validation
+
+on:
+  pull_request:
+    branches:
+      - codex/stage11m-validation-base
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact PR 143 head
+        uses: actions/checkout@v4
+        with:
+          ref: c2c6584ebad45b15ce0a36185c5f474ce2a32b40
+          fetch-depth: 0
+
+      - name: Restore verifier local refs
+        run: |
+          git branch -f codex/stage10-hosted-preview-user-flow origin/codex/stage10-hosted-preview-user-flow
+          git branch -f codex/candidate-policy-runtime-reevaluation origin/codex/candidate-policy-runtime-reevaluation
+
+      - name: Verify exact twelve-file boundary
+        shell: bash
+        run: |
+          cat > /tmp/expected-stage11m-files.txt <<'EOF'
+          D	app/api/internal/candidate-exposure-policy-diagnostic/route.js
+          A	docs/reviews/candidate-exposure-policy-hosted-diagnostic-route-cleanup-review.md
+          A	docs/verification/candidate-exposure-policy-hosted-diagnostic-route-cleanup-result.md
+          D	lib/candidate-exposure-policy-hosted-diagnostic-auth.js
+          D	lib/candidate-exposure-policy-hosted-diagnostic-contract.js
+          D	lib/candidate-exposure-policy-hosted-diagnostic-execution.js
+          M	lib/candidate-exposure-policy-hosted-execution-v2.js
+          M	lib/candidate-exposure-policy-read-only-hosted-adapter.js
+          D	scripts/check-candidate-exposure-policy-hosted-diagnostic-route.mjs
+          M	scripts/check-candidate-exposure-policy-hosted-execution.mjs
+          M	scripts/run-security-closeout-verifier-suite.mjs
+          A	scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs
+          EOF
+          git diff --name-status 9b0ab2ac01d8df840f13fd89a0a1283182b97d3b HEAD | sort > /tmp/actual-stage11m-files.txt
+          sort /tmp/expected-stage11m-files.txt -o /tmp/expected-stage11m-files.txt
+          diff -u /tmp/expected-stage11m-files.txt /tmp/actual-stage11m-files.txt
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Changed retained-file syntax
+        run: |
+          node --check lib/candidate-exposure-policy-hosted-execution-v2.js
+          node --check lib/candidate-exposure-policy-read-only-hosted-adapter.js
+          node --check scripts/check-candidate-exposure-policy-hosted-execution.mjs
+          node --check scripts/run-security-closeout-verifier-suite.mjs
+          node --check scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs
+
+      - name: Stage 11M route absence verifier
+        run: node scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs
+
+      - name: Restored Hosted execution checker
+        run: node scripts/check-candidate-exposure-policy-hosted-execution.mjs
+
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify deleted route absent from build manifest
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          const manifest = JSON.parse(readFileSync(".next/server/app-paths-manifest.json", "utf8"));
+          const serialized = JSON.stringify(manifest);
+          if (serialized.includes("/api/internal/candidate-exposure-policy-diagnostic")) {
+            throw new Error("deleted diagnostic route remains in app paths manifest");
+          }
+          console.log(`STAGE11M_ROUTE_TABLE_ABSENCE=PASS routes=${Object.keys(manifest).length}`);
+          NODE
+
+      - name: Upload security closeout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11m-security-closeout-evidence
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: warn
