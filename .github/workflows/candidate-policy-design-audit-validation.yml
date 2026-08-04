@@ -20,7 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch exact authorities
+        shell: bash
         run: |
+          set -euo pipefail
           git fetch --no-tags origin main codex/dependency-security-triage codex/candidate-exposure-policy-synthetic-diagnostic-route-cleanup
           git cat-file -e 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf^{commit}
           git cat-file -e ce882aa2057a06d39d86f99a09f4264725b4161b^{commit}
@@ -32,28 +34,50 @@ jobs:
         with:
           node-version: 20
 
-      - name: Validate JSON artifacts
+      - name: Capture authoritative tree diff
+        shell: bash
         run: |
+          set -euo pipefail
+          git diff --name-only 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf ce882aa2057a06d39d86f99a09f4264725b4161b | sort > actual-tree-diff-paths.txt
+          printf 'ACTUAL_TREE_DIFF_COUNT=%s\n' "$(wc -l < actual-tree-diff-paths.txt)"
+          cat actual-tree-diff-paths.txt
+          git rev-list --left-right --count 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf...ce882aa2057a06d39d86f99a09f4264725b4161b > actual-relation.txt
+          printf 'ACTUAL_RELATION='
+          cat actual-relation.txt
+
+      - name: Validate JSON artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
           node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-manifest-v1.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-path-ledger-v1.json','utf8'))"
 
       - name: Verify exhaustive path ledger
+        shell: bash
         run: |
-          node scripts/verify-candidate-policy-main-integration-path-ledger.mjs | tee path-ledger-result.txt
+          set -euo pipefail
+          node scripts/verify-candidate-policy-main-integration-path-ledger.mjs 2>&1 | tee path-ledger-result.txt
 
       - name: Verify final design
+        shell: bash
         run: |
-          node scripts/verify-candidate-policy-main-integration-final-design.mjs | tee final-design-result.txt
+          set -euo pipefail
+          node scripts/verify-candidate-policy-main-integration-final-design.mjs 2>&1 | tee final-design-result.txt
 
       - name: Verify design diff hygiene
+        shell: bash
         run: |
+          set -euo pipefail
           git diff --check 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf 8193b29ab962a50a8d6007ae9ca6eed3913eb492
 
       - name: Publish evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: candidate-policy-design-audit-evidence
           path: |
+            actual-tree-diff-paths.txt
+            actual-relation.txt
             path-ledger-result.txt
             final-design-result.txt
             docs/architecture/candidate-policy-main-integration-manifest-v1.json
