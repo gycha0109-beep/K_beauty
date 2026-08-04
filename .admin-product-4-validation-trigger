@@ -1,1 +1,1 @@
-The registered ADMIN PRODUCT 4 Inspect workflow and read-only local commit runner exist on the prior helper commit. This marker triggers the authoritative validation without changing the target feature branch.
+The runtime inspection workflow now queries the active ADMIN-PRODUCT-4 status validator. This marker triggers that read-only state collection.
