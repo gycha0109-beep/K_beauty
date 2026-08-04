@@ -44,104 +44,114 @@ jobs:
         run: |
           set -euo pipefail
           cp .github/scripts/admin-product-4-run-validation.sh "$RUNNER_TEMP/admin-product-4-run-validation.sh"
+          cat > "$RUNNER_TEMP/admin-product-4-latest.patch" <<'PATCH'
+          diff --git a/lib/admin/product-review-import/http-handlers.js b/lib/admin/product-review-import/http-handlers.js
+          --- a/lib/admin/product-review-import/http-handlers.js
+          +++ b/lib/admin/product-review-import/http-handlers.js
+          @@ -64,11 +64,20 @@ export function createProductReviewImportDryRunHandler({
+             executeDryRun
+           }) {
+             return async function POST(request) {
+          -    const access = await resolveAccess();
+          +    let access;
+          +    try {
+          +      access = await resolveAccess();
+          +    } catch {
+          +      return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+          +    }
+               const denied = accessError(access);
+               if (denied) return denied;
+          -    if (!isAllowedOrigin(request)) {
+          -      return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+          +    try {
+          +      if (!isAllowedOrigin(request)) {
+          +        return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+          +      }
+          +    } catch {
+          +      return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+               }
+           
+               try {
+          @@ -89,11 +98,20 @@ export function createProductReviewImportConfirmHandler({
+             executeConfirm
+           }) {
+             return async function POST(request) {
+          -    const access = await resolveAccess();
+          +    let access;
+          +    try {
+          +      access = await resolveAccess();
+          +    } catch {
+          +      return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+          +    }
+               const denied = accessError(access);
+               if (denied) return denied;
+          -    if (!isAllowedOrigin(request)) {
+          -      return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+          +    try {
+          +      if (!isAllowedOrigin(request)) {
+          +        return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
+          +      }
+          +    } catch {
+          +      return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
+               }
+           
+               try {
+          diff --git a/scripts/verify-admin-product-review-import-routes.mjs b/scripts/verify-admin-product-review-import-routes.mjs
+          --- a/scripts/verify-admin-product-review-import-routes.mjs
+          +++ b/scripts/verify-admin-product-review-import-routes.mjs
+          @@ -180,6 +180,42 @@ const originHandler = createProductReviewImportDryRunHandler({
+           });
+           assert.equal((await payload(await originHandler(new Request(URL)))).error, "invalid_origin");
+           
+          +const accessFailureHandler = createProductReviewImportDryRunHandler({
+          +  resolveAccess: async () => {
+          +    throw new Error("session provider raw failure");
+          +  },
+          +  isAllowedOrigin: () => true,
+          +  parseMultipart: () => {
+          +    throw new Error("must_not_parse");
+          +  },
+          +  parsePackage,
+          +  executeDryRun: async () => ({})
+          +});
+          +const accessFailureResponse = await accessFailureHandler(new Request(URL));
+          +assert.equal(accessFailureResponse.status, 500);
+          +assert.equal(accessFailureResponse.headers.get("cache-control"), "private, no-store, max-age=0");
+          +assert.deepEqual(await payload(accessFailureResponse), {
+          +  ok: false,
+          +  status: "invalid",
+          +  error: "unexpected_error",
+          +  message: "관리자 import 작업을 완료하지 못했습니다."
+          +});
+          +
+          +const originFailureHandler = createProductReviewImportDryRunHandler({
+          +  resolveAccess: allowedAccess,
+          +  isAllowedOrigin: () => {
+          +    throw new Error("origin policy raw failure");
+          +  },
+          +  parseMultipart: () => {
+          +    throw new Error("must_not_parse");
+          +  },
+          +  parsePackage,
+          +  executeDryRun: async () => ({})
+          +});
+          +const originFailureResponse = await originFailureHandler(new Request(URL));
+          +assert.equal(originFailureResponse.status, 500);
+          +assert.equal((await payload(originFailureResponse)).error, "unexpected_error");
+          +
+           let boundActor = null;
+           const confirmHandler = createProductReviewImportConfirmHandler({
+             resolveAccess: allowedAccess,
+          PATCH
           python - <<'PY'
           from pathlib import Path
-
-          runner = Path("/tmp") / "admin-product-4-run-validation.sh"
-          text = runner.read_text()
-          marker = '''PY
-
-          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
-          '''
-          insertion = '''PY
-
-          python - <<'PY'
-          from pathlib import Path
-
-          handlers = Path("lib/admin/product-review-import/http-handlers.js")
-          text = handlers.read_text()
-          access_old = '''    const access = await resolveAccess();
-              const denied = accessError(access);
-          '''
-          access_new = '''    let access;
-              try {
-                access = await resolveAccess();
-              } catch {
-                return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
-              }
-              const denied = accessError(access);
-          '''
-          if text.count(access_old) != 2:
-              raise SystemExit("access exception boundary not found twice")
-          text = text.replace(access_old, access_new, 2)
-          origin_old = '''    if (!isAllowedOrigin(request)) {
-                return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
-              }
-          '''
-          origin_new = '''    try {
-                if (!isAllowedOrigin(request)) {
-                  return failure({ code: "invalid_origin", status: 403 }, "invalid_origin");
-                }
-              } catch {
-                return failure({ code: "unexpected_error", status: 500 }, "unexpected_error");
-              }
-          '''
-          if text.count(origin_old) != 2:
-              raise SystemExit("origin exception boundary not found twice")
-          handlers.write_text(text.replace(origin_old, origin_new, 2))
-
-          verifier = Path("scripts/verify-admin-product-review-import-routes.mjs")
-          text = verifier.read_text()
-          anchor = '''assert.equal((await payload(await originHandler(new Request(URL)))).error, "invalid_origin");
-          '''
-          addition = '''assert.equal((await payload(await originHandler(new Request(URL)))).error, "invalid_origin");
-
-          const accessFailureHandler = createProductReviewImportDryRunHandler({
-            resolveAccess: async () => {
-              throw new Error("session provider raw failure");
-            },
-            isAllowedOrigin: () => true,
-            parseMultipart: () => {
-              throw new Error("must_not_parse");
-            },
-            parsePackage,
-            executeDryRun: async () => ({})
-          });
-          const accessFailureResponse = await accessFailureHandler(new Request(URL));
-          assert.equal(accessFailureResponse.status, 500);
-          assert.equal(accessFailureResponse.headers.get("cache-control"), "private, no-store, max-age=0");
-          assert.deepEqual(await payload(accessFailureResponse), {
-            ok: false,
-            status: "invalid",
-            error: "unexpected_error",
-            message: "관리자 import 작업을 완료하지 못했습니다."
-          });
-
-          const originFailureHandler = createProductReviewImportDryRunHandler({
-            resolveAccess: allowedAccess,
-            isAllowedOrigin: () => {
-              throw new Error("origin policy raw failure");
-            },
-            parseMultipart: () => {
-              throw new Error("must_not_parse");
-            },
-            parsePackage,
-            executeDryRun: async () => ({})
-          });
-          const originFailureResponse = await originFailureHandler(new Request(URL));
-          assert.equal(originFailureResponse.status, 500);
-          assert.equal((await payload(originFailureResponse)).error, "unexpected_error");
-          '''
-          if text.count(anchor) != 1:
-              raise SystemExit("route verifier origin anchor not found once")
-          verifier.write_text(text.replace(anchor, addition, 1))
-          PY
-
-          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
-          '''
-          if marker not in text:
-              raise SystemExit("validator insertion marker not found")
-          runner.write_text(text.replace(marker, insertion, 1))
+          path = Path("/tmp/admin-product-4-run-validation.sh")
+          text = path.read_text()
+          marker = 'cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<\'FILES\''
+          replacement = 'git apply "$RUNNER_TEMP/admin-product-4-latest.patch"\n\n' + marker
+          if text.count(marker) != 1:
+              raise SystemExit("validator insertion marker not found once")
+          path.write_text(text.replace(marker, replacement, 1))
           PY
           chmod +x "$RUNNER_TEMP/admin-product-4-run-validation.sh"
 
