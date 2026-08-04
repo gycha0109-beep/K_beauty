@@ -1,4 +1,4 @@
-name: CandidatePolicy Design Audit Validation
+name: CandidatePolicy Semantic Merge Inspection
 
 on:
   pull_request:
@@ -9,86 +9,50 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - name: Checkout exact design head
+      - name: Checkout exact main
         uses: actions/checkout@v4
         with:
-          ref: 797e179077df9065f08a262c92f4940f5a259cbe
+          ref: 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf
           fetch-depth: 0
 
-      - name: Fetch exact authorities
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin main codex/dependency-security-triage codex/candidate-exposure-policy-synthetic-diagnostic-route-cleanup
-          git cat-file -e 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf^{commit}
-          git cat-file -e ce882aa2057a06d39d86f99a09f4264725b4161b^{commit}
-          git cat-file -e a30970b78ff2fb3f5784d947b746223a66954e44^{commit}
-          git cat-file -e 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20^{commit}
-
-      - name: Setup Node 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Capture authoritative tree diff
+      - name: Capture semantic authorities
         shell: bash
         run: |
           set -euo pipefail
           BASE=647051f7feff8e23dc7b563cb7b58ffcba7e6eaf
           SOURCE=ce882aa2057a06d39d86f99a09f4264725b4161b
-          git diff --name-only "$BASE" "$SOURCE" | sort > actual-tree-diff-paths.txt
-          git diff --name-status --no-renames "$BASE" "$SOURCE" | sort -k2,2 > actual-tree-diff-name-status.txt
-          git diff --raw --no-renames "$BASE" "$SOURCE" > actual-tree-diff-raw.txt
-          printf 'ACTUAL_TREE_DIFF_COUNT=%s\n' "$(wc -l < actual-tree-diff-paths.txt)"
-          printf 'ACTUAL_STATUS_COUNTS\n'
-          cut -f1 actual-tree-diff-name-status.txt | sort | uniq -c
-          git rev-list --left-right --count "$BASE...$SOURCE" > actual-relation.txt
-          printf 'ACTUAL_RELATION='
-          cat actual-relation.txt
+          DESIGN=797e179077df9065f08a262c92f4940f5a259cbe
+          git fetch --no-tags origin codex/dependency-security-triage codex/candidate-policy-main-integration-final-design
+          mkdir -p semantic/main semantic/source semantic/diff design
+          paths=(
+            app/api/analyze/route.js
+            lib/evaluator-boundary-policy-shadow.js
+            package.json
+            package-lock.json
+            scripts/run-security-closeout-verifier-suite.mjs
+            scripts/verify-evaluator-boundary-readiness-review.mjs
+          )
+          for path in "${paths[@]}"; do
+            mkdir -p "semantic/main/$(dirname "$path")" "semantic/source/$(dirname "$path")" "semantic/diff/$(dirname "$path")"
+            git show "$BASE:$path" > "semantic/main/$path"
+            git show "$SOURCE:$path" > "semantic/source/$path"
+            git diff --no-ext-diff --unified=120 "$BASE" "$SOURCE" -- "$path" > "semantic/diff/$path.diff" || true
+          done
+          git show "$DESIGN:docs/architecture/candidate-policy-main-integration-path-ledger-v1.json" > design/ledger.json
+          git show "$DESIGN:docs/architecture/candidate-policy-main-integration-ledger/include-exact.txt" > design/include-exact.txt
+          git show "$DESIGN:docs/architecture/candidate-policy-main-integration-ledger/exclude-source-only.txt" > design/exclude-source-only.txt
+          printf '%s\n' "$BASE" > design/main-sha.txt
+          printf '%s\n' "$SOURCE" > design/source-sha.txt
 
-      - name: Validate JSON artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-          node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-manifest-v1.json','utf8'))"
-          node -e "JSON.parse(require('fs').readFileSync('docs/architecture/candidate-policy-main-integration-path-ledger-v1.json','utf8'))"
-
-      - name: Verify exhaustive path ledger
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/verify-candidate-policy-main-integration-path-ledger.mjs 2>&1 | tee path-ledger-result.txt
-
-      - name: Verify final design
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/verify-candidate-policy-main-integration-final-design.mjs 2>&1 | tee final-design-result.txt
-
-      - name: Verify design diff hygiene
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --check 647051f7feff8e23dc7b563cb7b58ffcba7e6eaf 797e179077df9065f08a262c92f4940f5a259cbe
-
-      - name: Publish evidence
-        if: always()
+      - name: Publish inspection evidence
         uses: actions/upload-artifact@v4
         with:
-          name: candidate-policy-design-audit-evidence
+          name: candidate-policy-semantic-authorities
           path: |
-            actual-tree-diff-paths.txt
-            actual-tree-diff-name-status.txt
-            actual-tree-diff-raw.txt
-            actual-relation.txt
-            path-ledger-result.txt
-            final-design-result.txt
-            docs/architecture/candidate-policy-main-integration-manifest-v1.json
-            docs/architecture/candidate-policy-main-integration-path-ledger-v1.json
-            docs/architecture/candidate-policy-main-integration-ledger/*.txt
-            docs/architecture/candidate-policy-main-integration-exhaustiveness-audit-v1.md
-          retention-days: 30
+            semantic/**
+            design/**
+          retention-days: 7
