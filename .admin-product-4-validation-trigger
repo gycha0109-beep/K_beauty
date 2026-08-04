@@ -1,1 +1,1 @@
-The runtime inspection workflow now queries the active ADMIN-PRODUCT-4 status validator. This marker triggers that read-only state collection.
+The registered runtime workflow now performs the reviewed authoritative ADMIN-PRODUCT-4 validation and publishes the target branch only after all checks pass. This marker executes that definition.
