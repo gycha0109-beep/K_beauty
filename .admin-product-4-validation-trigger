@@ -1,1 +1,1 @@
-The simplified authoritative validation workflow and external runner script exist on the prior helper commit. This marker executes that exact definition without changing the target feature branch.
+The read-only authoritative validation workflow and local commit runner exist on the prior helper commit. This marker executes that exact definition without changing the target feature branch.
