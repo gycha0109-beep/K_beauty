@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 const steps = [
   ["route-checker", ["node", "scripts/check-candidate-exposure-policy-hosted-diagnostic-route.mjs"]],
   ["execution-checker", ["node", "scripts/check-candidate-exposure-policy-hosted-execution.mjs"]],
+  ["runtime-reevaluation-verifier", ["node", "scripts/verify-candidate-policy-runtime-reevaluation.mjs"]],
   ["security-closeout", ["node", "scripts/run-security-closeout-verifier-suite.mjs"]],
   ["architecture-guard", ["npm", "run", "architecture:guard"]],
   ["production-build", ["npm", "run", "build"]]
