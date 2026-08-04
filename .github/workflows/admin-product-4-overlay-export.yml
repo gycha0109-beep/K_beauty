@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Recovered Core Export
+name: ADMIN PRODUCT 4 Base Source Export
 
 on:
   pull_request:
@@ -9,49 +9,36 @@ permissions:
   contents: read
 
 jobs:
-  export-recovered-core:
+  export-base-source:
     if: github.head_ref == 'automation/admin-product-4-implement'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout recovered core
+      - name: Checkout authoritative base
         uses: actions/checkout@v4
         with:
-          ref: automation/admin-product-4-recovered-core
+          ref: feature/admin-product-review-import-confirm
           fetch-depth: 1
 
-      - name: Collect recovered files
+      - name: Assert authoritative base
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/admin-product-4-recovered-core"
-          mkdir -p "$out"
-          files=(
-            app/admin/AdminNavigation.js
-            app/admin/products/reviews/import/ProductReviewImportWorkbench.js
-            app/admin/products/reviews/import/page.js
-            app/admin/products/reviews/import/workbench-state.js
-            app/api/admin/product-reviews/import/confirm/route.js
-            app/api/admin/product-reviews/import/dry-run/route.js
-            crawler/test-product-review-intake-bytes.ts
-            lib/admin/product-review-import/http-handlers.js
-            lib/admin/product-review-import/import-confirm.js
-            lib/admin/product-review-import/import-dry-run.js
-            lib/admin/product-review-import/import-error-map.js
-            lib/admin/product-review-import/import-package.js
-            lib/admin/product-review-import/multipart-boundary.js
-          )
-          for file in "${files[@]}"; do
-            test -f "$file"
-            mkdir -p "$out/$(dirname "$file")"
-            cp "$file" "$out/$file"
-          done
-          find "$out" -type f -print | sort
+          test "$(git rev-parse HEAD)" = "e174f80f79fa9ce5d62c742f440c9e18e602929a"
+          test -z "$(git status --short)"
 
-      - name: Upload recovered core
+      - name: Collect base source
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/admin-product-4-base-source"
+          mkdir -p "$out"
+          git archive --format=tar HEAD | tar -xf - -C "$out"
+
+      - name: Upload base source
         uses: actions/upload-artifact@v4
         with:
-          name: admin-product-4-recovered-core
-          path: ${{ runner.temp }}/admin-product-4-recovered-core
+          name: admin-product-4-base-source
+          path: ${{ runner.temp }}/admin-product-4-base-source
           if-no-files-found: error
           retention-days: 1
