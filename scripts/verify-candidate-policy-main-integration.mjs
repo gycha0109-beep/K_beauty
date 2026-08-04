@@ -11,6 +11,9 @@ const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const CI_PORTABILITY_SEMANTIC_PATH = "scripts/verify-candidate-policy-runtime-reevaluation.mjs";
 const CI_PORTABILITY_SOURCE_BLOB = "15f5cc94e2a2673ba36ef73a2cdb7a6a690ffc6c";
 const CI_PORTABILITY_RESULT_BLOB = "4eea1f845c7a20a819a2189a3956b724b1d631ea";
+const METADATA_SHADOW_SEMANTIC_PATH = "lib/candidate-exposure-policy-shadow.js";
+const METADATA_SHADOW_SOURCE_BLOB = "329c79c1e22597f98fc0cfacd63fa174b2789e24";
+const METADATA_SHADOW_RESULT_BLOB = "f8b48df766bc2cc8c984dfc5fee438cae2476e0f";
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
@@ -29,6 +32,11 @@ for (const entry of manifest.includeExact) {
   if (entry.path === CI_PORTABILITY_SEMANTIC_PATH) {
     check(entry.sourceBlob === CI_PORTABILITY_SOURCE_BLOB, "historical reevaluation source blob drift");
     check(hash(entry.path) === CI_PORTABILITY_RESULT_BLOB, "reevaluation CI portability result drift");
+    continue;
+  }
+  if (entry.path === METADATA_SHADOW_SEMANTIC_PATH) {
+    check(entry.sourceBlob === METADATA_SHADOW_SOURCE_BLOB, "historical CandidatePolicy shadow source blob drift");
+    check(hash(entry.path) === METADATA_SHADOW_RESULT_BLOB, "metadata transport shadow semantic result drift");
     continue;
   }
   check(hash(entry.path) === entry.sourceBlob, `source blob mismatch: ${entry.path}`);
@@ -65,6 +73,12 @@ check(!route.includes(diagnosticRouteToken), "temporary diagnostic route token l
 const evaluator = readFileSync(path.join(ROOT, "lib/evaluator-boundary-policy-shadow.js"), "utf8");
 check(evaluator.includes("baselineExposureGroup: currentExposureDecision.exposureStatus"), "baseline exposure field missing");
 
+const metadataShadowRuntime = readFileSync(path.join(ROOT, METADATA_SHADOW_SEMANTIC_PATH), "utf8");
+check(metadataShadowRuntime.includes("buildRecommendationMetadataTransportShadow"), "metadata transport shadow runtime hook missing");
+check(metadataShadowRuntime.includes("metadataTransportShadow"), "metadata transport shadow internal result missing");
+check(!metadataShadowRuntime.includes("responseValue.metadataTransportShadow"), "metadata shadow leaked into response");
+check(!metadataShadowRuntime.includes("snapshotValue.metadataTransportShadow"), "metadata shadow leaked into snapshot");
+
 const pkg = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
 check(Array.isArray(pkg.workspaces) && pkg.workspaces.includes("packages/*") && pkg.workspaces.includes("tools/*"), "workspace contract lost");
 check(pkg.scripts["verify:candidate-exposure-policy-shadow"], "shadow script missing");
@@ -100,6 +114,7 @@ for (const verifier of manifest.requiredCandidateSecurityVerifiers) {
   check(occurrences === 1, `candidate security verifier count mismatch: ${verifier}`);
   check(existsSync(path.join(ROOT, "scripts", verifier)), `candidate verifier file missing: ${verifier}`);
 }
+check(securitySuite.includes('"verify-recommendation-metadata-transport-shadow.mjs"'), "metadata transport shadow verifier missing from security suite");
 
 const readiness = readFileSync(path.join(ROOT, "scripts/verify-evaluator-boundary-readiness-review.mjs"), "utf8");
 check(readiness.includes("output.pureReplayEvidenceSummary.productRowsLoaded > 0"), "readiness semantic delta missing");
@@ -131,4 +146,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 59 exact, 2 registered exact-to-semantic amendments, 7 integration semantic, 38 absent, 302 main preserved)`);
