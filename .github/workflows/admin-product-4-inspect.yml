@@ -1,0 +1,108 @@
+name: ADMIN PRODUCT 4 Inspect
+
+on:
+  push:
+    branches:
+      - automation/admin-product-4-inspect
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout authoritative base
+        uses: actions/checkout@v4
+        with:
+          ref: feature/admin-product-review-import-confirm
+          fetch-depth: 20
+
+      - name: Collect bounded repository evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$RUNNER_TEMP/admin-product-4-inspection"
+          mkdir -p "$OUT/repository"
+          {
+            echo "branch=$(git branch --show-current)"
+            echo "head=$(git rev-parse HEAD)"
+            echo "status_begin"
+            git status --short
+            echo "status_end"
+            echo "log_begin"
+            git log -7 --oneline
+            echo "log_end"
+            echo "branches_begin"
+            git branch -a -vv
+            echo "branches_end"
+          } > "$OUT/git-state.txt"
+
+          copy_path() {
+            local path="$1"
+            if [ -e "$path" ]; then
+              mkdir -p "$OUT/repository/$(dirname "$path")"
+              cp -R "$path" "$OUT/repository/$path"
+            fi
+          }
+
+          for path in \
+            AGENTS.md \
+            package.json package-lock.json jsconfig.json next.config.js \
+            .codex/README.md .codex/AI_ROUTER.md .codex/AI_CONTEXT.md .codex/AI_EXECUTION_RULES.md .codex/AI_REVIEW_CHECKLIST.md .codex/SECURITY_BOUNDARIES.md .codex/AI_WORK_LOG.md \
+            app/admin/layout.js app/admin/AdminNavigation.js \
+            app/admin/products/reviews/page.js app/admin/products/reviews/ProductReviewWorkbench.js \
+            app/api/admin/product-reviews/preflight/route.js app/api/admin/product-reviews/confirm/route.js \
+            lib/admin/access.js lib/admin/capabilities.js lib/admin/request-policy.js lib/admin/product-reviews.js \
+            lib/supabase/server.js lib/supabase/service.js lib/security/error-redaction.js \
+            docs/architecture/admin-product-candidate-reviews-v1.md \
+            docs/architecture/product-review-export-intake-v1.md \
+            docs/reports/product-review-export-intake-implementation.md \
+            docs/architecture/product-review-import-confirm-v1.md \
+            docs/reports/product-review-import-confirm-implementation.md \
+            crawler/package.json crawler/package-lock.json \
+            crawler/export-product-reviews.ts crawler/import-reviewed-product-reviews.ts \
+            supabase/migrations/20260731183428_admin_product_review_import_confirm.sql \
+            scripts/verify-admin-access-foundation.mjs \
+            scripts/verify-admin-product-candidate-reviews.mjs \
+            scripts/verify-admin-product-review-import-confirm.mjs; do
+            copy_path "$path"
+          done
+
+          for dir in crawler/lib/reviews crawler/scripts scripts/fixtures supabase/tests .github/workflows; do
+            copy_path "$dir"
+          done
+
+          find app/api/admin -maxdepth 5 -type f | sort > "$OUT/admin-api-files.txt"
+          find app/admin -maxdepth 6 -type f | sort > "$OUT/admin-page-files.txt"
+          find crawler/lib/reviews -maxdepth 2 -type f | sort > "$OUT/review-module-files.txt"
+          find scripts -maxdepth 2 -type f -name '*admin*product*review*' | sort > "$OUT/verifier-files.txt"
+          find .github/workflows -maxdepth 1 -type f | sort > "$OUT/workflow-files.txt"
+
+          tar -C "$OUT" -czf "$RUNNER_TEMP/admin-product-4-inspection.tar.gz" .
+
+      - name: Upload inspection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-product-4-inspection
+          path: ${{ runner.temp }}/admin-product-4-inspection.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Comment inspection run
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          for attempt in 1 2 3 4 5 6; do
+            PR_NUMBER="$(gh pr list --repo "$GITHUB_REPOSITORY" --head automation/admin-product-4-inspect --state open --json number --jq '.[0].number // empty')"
+            if [ -n "$PR_NUMBER" ]; then
+              gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 inspection run: $GITHUB_RUN_ID\nCommit: $GITHUB_SHA\nArtifact: admin-product-4-inspection\nResult: ${{ job.status }}"
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 0
