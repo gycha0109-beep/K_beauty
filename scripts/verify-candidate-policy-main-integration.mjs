@@ -79,8 +79,8 @@ const vercelConfig = JSON.parse(readFileSync(VERCEL_CONFIG_PATH, "utf8"));
 check(vercelConfig.$schema === "https://openapi.vercel.sh/vercel.json", "vercel schema drift");
 const deploymentEnabled = vercelConfig.git?.deploymentEnabled;
 check(deploymentEnabled && typeof deploymentEnabled === "object" && !Array.isArray(deploymentEnabled), "Vercel deployment policy must be branch-scoped");
-check(JSON.stringify(Object.keys(deploymentEnabled).sort()) === JSON.stringify(["*", "main"]), "only wildcard deny and main allow rules are permitted");
-check(deploymentEnabled["*"] === false, "all non-main Vercel Git deployments must remain disabled");
+check(JSON.stringify(Object.keys(deploymentEnabled).sort()) === JSON.stringify(["**", "main"]), "only globstar deny and main allow rules are permitted");
+check(deploymentEnabled["**"] === false, "all non-main Vercel Git deployments, including slash-named branches, must remain disabled");
 check(deploymentEnabled.main === true, "main automatic Vercel Production deployment must remain enabled");
 check(vercelConfig.github?.autoAlias !== false, "main automatic Vercel aliasing must remain enabled");
 const workflowsDir = path.join(ROOT, ".github", "workflows");
@@ -131,4 +131,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
