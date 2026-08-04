@@ -30,10 +30,10 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin codex/candidate-policy-design-audit-validation-base
-          git show origin/codex/candidate-policy-design-audit-validation-base:.validation/run-candidate-policy-main-integration.sh > "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
-          bash -n "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
-          chmod +x "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
-          "$RUNNER_TEMP/run-candidate-policy-main-integration.sh"
+          git show origin/codex/candidate-policy-design-audit-validation-base:.validation/run-candidate-policy-main-integration-v2.sh > "$RUNNER_TEMP/run-candidate-policy-main-integration-v2.sh"
+          bash -n "$RUNNER_TEMP/run-candidate-policy-main-integration-v2.sh"
+          chmod +x "$RUNNER_TEMP/run-candidate-policy-main-integration-v2.sh"
+          "$RUNNER_TEMP/run-candidate-policy-main-integration-v2.sh"
 
       - name: Publish validation evidence
         if: always()
