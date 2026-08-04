@@ -30,6 +30,7 @@ const dryRunRoute = await read(
 const confirmRoute = await read(
   "app/api/admin/product-reviews/import/confirm/route.js",
 );
+const nextConfigSource = await read("next.config.js");
 
 const multipart = await import(
   `data:text/javascript;base64,${Buffer.from(multipartSource).toString("base64")}`
@@ -239,6 +240,10 @@ for (const [source, label] of [
   includes(source, "isAllowedAdminMutationRequest", label);
 }
 
+includes(nextConfigSource, "extensionAlias", "Next NodeNext resolution");
+includes(nextConfigSource, '".js"', "Next JavaScript alias");
+includes(nextConfigSource, '".ts"', "Next TypeScript alias");
+
 process.stdout.write(
-  "verify:admin-product-review-import-routes PASS (exact multipart, actual bytes, UTF-8/NUL, origin, capability, actor binding, no-store)\n",
+  "verify:admin-product-review-import-routes PASS (exact multipart, actual bytes, UTF-8/NUL, origin, capability, actor binding, no-store, NodeNext build resolution)\n",
 );
