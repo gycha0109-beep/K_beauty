@@ -6,6 +6,7 @@ on:
       - automation/admin-product-4-inspect
 
 permissions:
+  actions: read
   contents: read
   pull-requests: write
 
@@ -13,39 +14,11 @@ jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feature/admin-product-review-import-confirm
-      - name: Collect runtime assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT="$RUNNER_TEMP/admin-product-4-runtime-inspection"
-          mkdir -p "$OUT/repository"
-          for path in crawler/tests crawler/test-product-review-intake-dry-run.ts crawler/test-product-review-intake-confirm.ts tests/fixtures/admin-product-reviews supabase/migrations scripts/verify-admin-access-runtime.sh scripts/run-security-closeout-verifier-suite.mjs; do
-            if [[ -e "$path" ]]; then
-              mkdir -p "$OUT/repository/$(dirname "$path")"
-              cp -R "$path" "$OUT/repository/$path"
-            fi
-          done
-          tar -C "$OUT" -czf "$RUNNER_TEMP/admin-product-4-runtime-inspection.tar.gz" .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: admin-product-4-runtime-inspection
-          path: ${{ runner.temp }}/admin-product-4-runtime-inspection.tar.gz
-          retention-days: 1
-      - name: Comment run
-        if: always()
+      - name: Query status validator runs
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set +e
-          for attempt in 1 2 3 4 5; do
-            PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --head automation/admin-product-4-inspect --state open --json number --jq '.[0].number // empty')"
-            if [[ -n "$PR" ]]; then
-              gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 runtime inspection run: $GITHUB_RUN_ID\nCommit: $GITHUB_SHA\nArtifact: admin-product-4-runtime-inspection\nResult: ${{ job.status }}"
-              exit 0
-            fi
-            sleep 10
-          done
+          set -euo pipefail
+          result="$(gh run list --repo "$GITHUB_REPOSITORY" --branch automation/admin-product-4-status --limit 20 --json databaseId,name,headSha,status,conclusion,createdAt,updatedAt,url,jobs)"
+          gh pr comment 142 --repo "$GITHUB_REPOSITORY" --body "ADMIN-PRODUCT-4 status validator snapshot:\n\`\`\`json\n${result}\n\`\`\`"
