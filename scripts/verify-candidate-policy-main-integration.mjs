@@ -15,6 +15,13 @@ let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
 const hash = (filePath) => git("hash-object", "--", filePath);
+const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
+  ".codex/AI_WORK_LOG.md",
+  "app/admin/layout.js",
+  "lib/admin/access.js",
+  "package.json",
+  "scripts/run-security-closeout-verifier-suite.mjs"
+]);
 
 check(manifest.version === "candidate-policy-main-integration-blob-manifest-v1", "manifest version drift");
 check(manifest.baseSha === "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf", "main authority drift");
@@ -35,6 +42,7 @@ for (const entry of manifest.includeExact) {
 }
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
   check(hash(entry.path) === entry.mainBlob, `current-main blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
@@ -42,8 +50,41 @@ for (const entry of manifest.excludeSourceOnly) {
 }
 for (const entry of manifest.mergeSemantic) {
   check(existsSync(path.join(ROOT, entry.path)), `missing semantic path: ${entry.path}`);
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
   check(hash(entry.path) === entry.resultBlob, `semantic result blob mismatch: ${entry.path}`);
 }
+const candidateManifestProtectedPaths = new Set([
+  ...manifest.preserveMain.map((entry) => entry.path),
+  ...manifest.mergeSemantic.map((entry) => entry.path)
+]);
+for (const filePath of ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS) {
+  check(candidateManifestProtectedPaths.has(filePath), `unregistered admin semantic exception: ${filePath}`);
+}
+const adminIntegrationWorkLog = readFileSync(path.join(ROOT, ".codex/AI_WORK_LOG.md"), "utf8");
+check(adminIntegrationWorkLog.includes("ADMIN-PRODUCT-INTEGRATION-1"), "admin integration work log missing");
+const adminIntegrationLayout = readFileSync(path.join(ROOT, "app/admin/layout.js"), "utf8");
+check(adminIntegrationLayout.includes("AdminNavigation"), "admin navigation semantic delta missing");
+check(adminIntegrationLayout.includes("capabilities={access.capabilities}"), "admin capability projection lost");
+const adminIntegrationAccess = readFileSync(path.join(ROOT, "lib/admin/access.js"), "utf8");
+check(adminIntegrationAccess.includes("userId: null"), "denied admin actor binding missing");
+check(adminIntegrationAccess.includes("userId: user.id"), "authenticated admin actor binding missing");
+check(adminIntegrationAccess.includes("requireAdminCapability"), "admin capability guard lost");
+const adminIntegrationPackage = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
+for (const scriptName of [
+  "verify:admin-product-candidate-reviews",
+  "verify:admin-product-review-import-confirm",
+  "verify:admin-product-review-import-ui",
+  "verify:admin-product-review-import-routes",
+  "verify:admin-product-current-main-integration"
+]) {
+  check(Boolean(adminIntegrationPackage.scripts?.[scriptName]), `admin integration package script missing: ${scriptName}`);
+}
+const adminIntegrationSecuritySuite = readFileSync(path.join(ROOT, "scripts/run-security-closeout-verifier-suite.mjs"), "utf8");
+check(
+  adminIntegrationSecuritySuite.split('"verify-admin-product-candidate-reviews.mjs"').length - 1 === 1,
+  "admin product verifier manifest count mismatch"
+);
+
 for (const filePath of manifest.temporaryRouteFiles) {
   check(!existsSync(path.join(ROOT, filePath)), `temporary diagnostic route residue: ${filePath}`);
 }
@@ -131,4 +172,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved with 5 approved admin semantic deltas)`);
