@@ -58,6 +58,13 @@ export interface ParsedReviewedBatch {
   reviewedRows: ReviewedCsvRow[];
 }
 
+export interface ReviewedBatchFileBytes {
+  batch: Uint8Array;
+  manifest: Uint8Array;
+  evidence: Uint8Array;
+  reviewed: Uint8Array;
+}
+
 function parseJsonStrict(text: string, code: string): unknown {
   let value: unknown;
   try {
@@ -75,7 +82,30 @@ function parseJsonStrict(text: string, code: string): unknown {
   return value;
 }
 
-async function readUtf8File(filePath: string, maxBytes: number, code: string): Promise<string> {
+function decodeUtf8Bytes(
+  bytes: Uint8Array,
+  maxBytes: number,
+  code: string,
+): string {
+  if (!(bytes instanceof Uint8Array) || bytes.byteLength > maxBytes) {
+    throw new IntakeFileError(code, "Batch file exceeds the configured size limit.");
+  }
+  if (bytes.includes(0)) {
+    throw new IntakeFileError(code, "Batch file contains a NUL byte.");
+  }
+
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    throw new IntakeFileError(code, "Batch file is not valid UTF-8.");
+  }
+}
+
+async function readUtf8File(
+  filePath: string,
+  maxBytes: number,
+  code: string,
+): Promise<string> {
   const stat = await fs.lstat(filePath).catch(() => null);
 
   if (!stat || !stat.isFile() || stat.isSymbolicLink()) {
@@ -86,12 +116,7 @@ async function readUtf8File(filePath: string, maxBytes: number, code: string): P
     throw new IntakeFileError(code, "Batch file exceeds the configured size limit.");
   }
 
-  const bytes = await fs.readFile(filePath);
-  try {
-    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-  } catch {
-    throw new IntakeFileError(code, "Batch file is not valid UTF-8.");
-  }
+  return decodeUtf8Bytes(await fs.readFile(filePath), maxBytes, code);
 }
 
 function validateBatchMetadata(value: unknown): BatchMetadata {
@@ -250,40 +275,17 @@ function parseEvidenceJsonl(text: string): EvidenceRow[] {
   });
 }
 
-export async function loadParsedReviewedBatch(
-  reviewedFilePath: string,
-): Promise<ParsedReviewedBatch> {
-  const reviewedAbsolute = path.resolve(reviewedFilePath);
-  const directory = path.dirname(reviewedAbsolute);
-  const directoryStat = await fs.lstat(directory).catch(() => null);
-
-  if (!directoryStat?.isDirectory() || directoryStat.isSymbolicLink()) {
-    throw new IntakeFileError("review_batch_directory_unsafe", "Batch directory is unsafe.");
-  }
-
-  const batchText = await readUtf8File(
-    path.join(directory, "batch.json"),
-    MAX_BATCH_FILE_BYTES,
-    "review_batch_unreadable",
+function parseReviewedBatchTexts(input: {
+  directory: string;
+  batchText: string;
+  manifestText: string;
+  evidenceText: string;
+  reviewedText: string;
+}): ParsedReviewedBatch {
+  const { directory, batchText, manifestText, evidenceText, reviewedText } = input;
+  const batch = validateBatchMetadata(
+    parseJsonStrict(batchText, "review_batch_invalid"),
   );
-  const batch = validateBatchMetadata(parseJsonStrict(batchText, "review_batch_invalid"));
-  const [manifestText, evidenceText, reviewedText] = await Promise.all([
-    readUtf8File(
-      path.join(directory, batch.manifest_file),
-      MAX_MANIFEST_FILE_BYTES,
-      "review_manifest_unreadable",
-    ),
-    readUtf8File(
-      path.join(directory, batch.evidence_file),
-      MAX_EVIDENCE_FILE_BYTES,
-      "review_evidence_unreadable",
-    ),
-    readUtf8File(
-      reviewedAbsolute,
-      MAX_REVIEWED_FILE_BYTES,
-      "reviewed_csv_unreadable",
-    ),
-  ]);
 
   if (!hashesEqual(batch.manifest_sha256, sha256Utf8(manifestText))) {
     throw new IntakeFileError(
@@ -385,6 +387,7 @@ export async function loadParsedReviewedBatch(
         `evidence.jsonl candidate snapshot does not match manifest row ${index + 2}.`,
       );
     }
+
     const calculatedRowHash = buildRowIntegrityHash({
       schema_version: manifest.schema_version,
       export_batch_id: manifest.export_batch_id,
@@ -397,7 +400,9 @@ export async function loadParsedReviewedBatch(
           ? candidateSnapshot.external_id
           : null,
       source_product_url:
-        typeof candidateSnapshot.source_url === "string" ? candidateSnapshot.source_url : null,
+        typeof candidateSnapshot.source_url === "string"
+          ? candidateSnapshot.source_url
+          : null,
       normalized_brand: String(candidateSnapshot.normalized_brand ?? ""),
       normalized_name: String(candidateSnapshot.normalized_name ?? ""),
       existing_product_match_id: existingMatch?.id ?? null,
@@ -470,4 +475,81 @@ export async function loadParsedReviewedBatch(
     evidenceRows,
     reviewedRows,
   };
+}
+
+export function parseReviewedBatchFiles(
+  files: ReviewedBatchFileBytes,
+): ParsedReviewedBatch {
+  return parseReviewedBatchTexts({
+    directory: "<memory>",
+    batchText: decodeUtf8Bytes(
+      files.batch,
+      MAX_BATCH_FILE_BYTES,
+      "review_batch_unreadable",
+    ),
+    manifestText: decodeUtf8Bytes(
+      files.manifest,
+      MAX_MANIFEST_FILE_BYTES,
+      "review_manifest_unreadable",
+    ),
+    evidenceText: decodeUtf8Bytes(
+      files.evidence,
+      MAX_EVIDENCE_FILE_BYTES,
+      "review_evidence_unreadable",
+    ),
+    reviewedText: decodeUtf8Bytes(
+      files.reviewed,
+      MAX_REVIEWED_FILE_BYTES,
+      "reviewed_csv_unreadable",
+    ),
+  });
+}
+
+export async function loadParsedReviewedBatch(
+  reviewedFilePath: string,
+): Promise<ParsedReviewedBatch> {
+  const reviewedAbsolute = path.resolve(reviewedFilePath);
+  const directory = path.dirname(reviewedAbsolute);
+  const directoryStat = await fs.lstat(directory).catch(() => null);
+
+  if (!directoryStat?.isDirectory() || directoryStat.isSymbolicLink()) {
+    throw new IntakeFileError(
+      "review_batch_directory_unsafe",
+      "Batch directory is unsafe.",
+    );
+  }
+
+  const batchText = await readUtf8File(
+    path.join(directory, "batch.json"),
+    MAX_BATCH_FILE_BYTES,
+    "review_batch_unreadable",
+  );
+  const batch = validateBatchMetadata(
+    parseJsonStrict(batchText, "review_batch_invalid"),
+  );
+  const [manifestText, evidenceText, reviewedText] = await Promise.all([
+    readUtf8File(
+      path.join(directory, batch.manifest_file),
+      MAX_MANIFEST_FILE_BYTES,
+      "review_manifest_unreadable",
+    ),
+    readUtf8File(
+      path.join(directory, batch.evidence_file),
+      MAX_EVIDENCE_FILE_BYTES,
+      "review_evidence_unreadable",
+    ),
+    readUtf8File(
+      reviewedAbsolute,
+      MAX_REVIEWED_FILE_BYTES,
+      "reviewed_csv_unreadable",
+    ),
+  ]);
+
+  return parseReviewedBatchTexts({
+    directory,
+    batchText,
+    manifestText,
+    evidenceText,
+    reviewedText,
+  });
 }
