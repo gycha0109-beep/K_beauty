@@ -6,7 +6,7 @@ on:
       - codex/dependency-security-triage-validation-base
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   remediate:
@@ -103,6 +103,17 @@ jobs:
       - name: Upload remediation candidate
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-security-remediation-candidate
+          name: dependency-security-remediation-candidate-published
           path: tmp/dependency-security-remediation
           if-no-files-found: error
+
+      - name: Publish validated two-file commit
+        shell: bash
+        run: |
+          EXPECTED_BASE=87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
+          TARGET_REF=refs/heads/codex/dependency-security-triage
+          REMOTE_HEAD=$(git ls-remote origin "$TARGET_REF" | cut -f1)
+          test "$REMOTE_HEAD" = "$EXPECTED_BASE"
+          test -z "$(git status --short)"
+          test "$(git diff-tree --no-commit-id --name-only -r HEAD | sort)" = $'package-lock.json\npackage.json'
+          git push origin HEAD:"$TARGET_REF"
