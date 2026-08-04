@@ -1,4 +1,4 @@
-name: Dependency security triage
+name: Dependency security remediation candidate
 
 on:
   pull_request:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  audit:
+  remediate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout exact Stage 11M final head
         uses: actions/checkout@v4
@@ -19,66 +19,61 @@ jobs:
           ref: 87e3c6b8028b50b84a8bff7f2fc43087b2b78a20
           fetch-depth: 0
 
+      - name: Restore verifier local refs
+        run: |
+          git branch -f codex/stage10-hosted-preview-user-flow origin/codex/stage10-hosted-preview-user-flow
+          git branch -f codex/candidate-policy-runtime-reevaluation origin/codex/candidate-policy-runtime-reevaluation
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install exact lockfile
-        run: npm ci
+      - name: Generate minimal remediation lockfile
+        run: |
+          npm pkg set dependencies.next=15.5.22
+          npm pkg set dependencies.sharp=0.35.3
+          npm pkg set devDependencies.postcss='^8.5.25'
+          npm pkg set overrides.next.postcss=8.5.25
+          npm install --package-lock-only
+          npm audit fix --package-lock-only
 
-      - name: Capture npm audit evidence
+      - name: Enforce two-file candidate boundary
         shell: bash
         run: |
-          mkdir -p tmp/dependency-security-triage
-          set +e
-          npm audit --json > tmp/dependency-security-triage/npm-audit.json
-          echo $? > tmp/dependency-security-triage/npm-audit-exit-code.txt
-          npm audit fix --dry-run --json > tmp/dependency-security-triage/npm-audit-fix-dry-run.json
-          echo $? > tmp/dependency-security-triage/npm-audit-fix-dry-run-exit-code.txt
-          npm ls --all --json > tmp/dependency-security-triage/npm-ls.json
-          echo $? > tmp/dependency-security-triage/npm-ls-exit-code.txt
-          npm outdated --json > tmp/dependency-security-triage/npm-outdated.json
-          echo $? > tmp/dependency-security-triage/npm-outdated-exit-code.txt
-          set -e
+          git diff --name-only | sort > /tmp/changed.txt
+          printf 'package-lock.json\npackage.json\n' > /tmp/expected.txt
+          diff -u /tmp/expected.txt /tmp/changed.txt
 
-      - name: Print normalized audit summary
+      - name: Install remediated lockfile
+        run: npm ci
+
+      - name: Verify resolved dependency graph
         run: |
-          node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const audit = JSON.parse(readFileSync('tmp/dependency-security-triage/npm-audit.json', 'utf8'));
-          const vulnerabilities = Object.entries(audit.vulnerabilities || {}).map(([name, value]) => ({
-            name,
-            severity: value.severity,
-            isDirect: value.isDirect,
-            range: value.range,
-            nodes: value.nodes,
-            via: (value.via || []).map((item) => typeof item === 'string' ? item : {
-              source: item.source,
-              name: item.name,
-              title: item.title,
-              url: item.url,
-              severity: item.severity,
-              range: item.range,
-              cvss: item.cvss
-            }),
-            effects: value.effects,
-            fixAvailable: value.fixAvailable
-          }));
-          const summary = {
-            lockfileVersion: audit.metadata?.lockfileVersion ?? null,
-            counts: audit.metadata?.vulnerabilities ?? null,
-            dependencies: audit.metadata?.dependencies ?? null,
-            vulnerabilities
-          };
-          writeFileSync('tmp/dependency-security-triage/normalized-summary.json', JSON.stringify(summary, null, 2));
-          console.log(JSON.stringify(summary, null, 2));
-          NODE
+          mkdir -p tmp/dependency-security-remediation
+          npm audit --json > tmp/dependency-security-remediation/npm-audit.json
+          npm ls next sharp postcss picomatch --all > tmp/dependency-security-remediation/npm-ls.txt
+          cat tmp/dependency-security-remediation/npm-audit.json
+          cat tmp/dependency-security-remediation/npm-ls.txt
 
-      - name: Upload dependency audit evidence
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Capture package diff
+        run: |
+          git diff -- package.json package-lock.json > tmp/dependency-security-remediation/package-diff.patch
+          cp package.json package-lock.json tmp/dependency-security-remediation/
+
+      - name: Upload remediation candidate
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-security-triage-evidence
-          path: tmp/dependency-security-triage
+          name: dependency-security-remediation-candidate
+          path: tmp/dependency-security-remediation
           if-no-files-found: error
