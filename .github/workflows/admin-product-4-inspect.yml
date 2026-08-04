@@ -6,7 +6,7 @@ on:
       - automation/admin-product-4-inspect
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 concurrency:
@@ -39,5 +39,5 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Validate implementation and publish isolated commit
+      - name: Validate implementation and create local commit
         run: bash .github/scripts/admin-product-4-run-validation.sh
