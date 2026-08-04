@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { createPhotoEvidencePrompt, buildFallbackPhotoAnalysis, normalizePhotoAnalysis } from "@/lib/photo-evidence";
 import { buildSkinMatchDecisionBundle } from "@/lib/skin-match-decision-engine";
 import { rebuildPremiumDecisionState } from "@/lib/premium-decision-state";
+import {
+  resolveCandidateExposurePolicyShadowControl,
+  runCandidateExposurePolicyShadow
+} from "@/lib/candidate-exposure-policy-shadow";
 import { buildPremiumSessionReportSource } from "@/lib/premium-session-payload";
 import {
   applyPremiumSessionDiagnosticHeaders,
@@ -1516,6 +1520,8 @@ export async function POST(request) {
       process.env.DEV_ONLY_SHADOW_BOUNDARY_DRY_RUN === "1" &&
       process.env.DEV_ONLY_BOUNDARY_POLICY_SHADOW === "1" &&
       localShadowProviderStub.enabled;
+    const candidateExposurePolicyShadowControl =
+      resolveCandidateExposurePolicyShadowControl(process.env);
     const localActualRuntimeEvidenceEnabled =
       process.env.NODE_ENV === "development" &&
       process.env.LOCAL_SHADOW_RECOMMENDATION_EVIDENCE === "1" &&
@@ -1577,8 +1583,14 @@ export async function POST(request) {
       photoAnalysis,
       currentProducts,
       currentProductSnapshots,
-      includeCandidateSourceDiagnostics: functionalShadowCaptureEnabled || evaluatorBoundaryPolicyShadowEnabled || localActualRuntimeEvidenceEnabled,
-      includeEvaluatorBoundaryPolicyShadow: evaluatorBoundaryPolicyShadowEnabled
+      includeCandidateSourceDiagnostics:
+        functionalShadowCaptureEnabled ||
+        evaluatorBoundaryPolicyShadowEnabled ||
+        localActualRuntimeEvidenceEnabled ||
+        candidateExposurePolicyShadowControl.enabled,
+      includeEvaluatorBoundaryPolicyShadow:
+        evaluatorBoundaryPolicyShadowEnabled ||
+        candidateExposurePolicyShadowControl.enabled
     });
     logPremiumSessionDiagnosticStage(
       premiumDiagnosticContext,
@@ -1668,6 +1680,16 @@ export async function POST(request) {
           source: "api_analyze_initial_session"
         })
       : null;
+    if (candidateExposurePolicyShadowControl.enabled && rebuiltPremiumReport) {
+      runCandidateExposurePolicyShadow({
+        control: candidateExposurePolicyShadowControl,
+        canonicalState: rebuiltPremiumReport,
+        candidates: decision?.diagnostics?.candidateSource?.products || [],
+        legacyExecution: decision?.diagnostics?.evaluatorBoundaryPolicyShadow || null,
+        responseValue: publicDecision,
+        snapshotValue: rebuiltPremiumReport
+      });
+    }
     logPremiumSessionDiagnosticStage(
       premiumDiagnosticContext,
       "S3_rebuilt_report",

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "candidate-exposure-policy-limited-preview-canary-plan-evidence-v1",
+  "eligibility": {
+    "status": "eligible_for_limited_preview_canary_plan",
+    "blockers": [],
+    "implementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "runtimeActivationAuthorized": false,
+    "productionActivationAuthorized": false
+  },
+  "plan": {
+    "version": "candidate-exposure-policy-limited-preview-canary-plan-v1",
+    "implementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "environment": "preview",
+    "deploymentScope": "two_deployment_exact_sha_pair",
+    "trafficSource": "authorized_diagnostic_fixture_only",
+    "runtimeConnectionMode": "isolated_candidate_projection_only",
+    "maxAnalyzeRequests": 16,
+    "maxDurationMinutes": 60,
+    "locales": [
+      "ko",
+      "en"
+    ],
+    "scenarios": [
+      "standard_goal_alignment",
+      "stabilization_active_block",
+      "current_product_semantics",
+      "metadata_incomplete"
+    ],
+    "pairedRequestsPerScenario": 2,
+    "defaultOffControlRequired": true,
+    "deploymentScopedOptInRequired": true,
+    "killSwitchRequired": true,
+    "syntheticOrAuthorizedFixtureOnly": true,
+    "aggregateTelemetryOnly": true,
+    "isolatedCandidateProjectionOnly": true,
+    "publicTrafficAllowed": false,
+    "candidateLevelTelemetryAllowed": false,
+    "runtimeFilterConnectionAllowed": false,
+    "recommendationMutationAllowed": false,
+    "responseMutationAllowed": false,
+    "storageMutationAllowed": false,
+    "uiMutationAllowed": false,
+    "projectEnvironmentMutationAllowed": false,
+    "productionAllowed": false,
+    "stopConditions": {
+      "runtimeShaMismatch": true,
+      "defaultOffShadowExecution": true,
+      "unexpectedDivergence": true,
+      "unclassifiedDivergence": true,
+      "shadowException": true,
+      "fallback": true,
+      "invalidContext": true,
+      "responseFingerprintMismatch": true,
+      "snapshotFingerprintMismatch": true,
+      "candidateOrderMismatch": true,
+      "candidateLevelTelemetryDetected": true,
+      "productionOrProjectConfigurationChange": true
+    }
+  },
+  "authorization": {
+    "planDesign": true,
+    "isolatedHarnessImplementation": false,
+    "runtimeFilterConnection": false,
+    "publicTraffic": false,
+    "production": false
+  }
+}

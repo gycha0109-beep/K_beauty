@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "candidate-exposure-policy-isolated-preview-canary-harness-design-evidence-v1",
+  "stage11d": {
+    "status": "plan_ready",
+    "blockers": [],
+    "implementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d"
+  },
+  "design": {
+    "version": "candidate-exposure-policy-isolated-preview-canary-harness-design-v1",
+    "status": "design_ready_for_implementation_review",
+    "runtimeImplementationSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+    "harnessImplementationShaResolution": "stage11f_head_at_execution",
+    "controlStates": [
+      "disabled",
+      "eligible",
+      "running",
+      "stopped",
+      "completed",
+      "invalid_configuration"
+    ],
+    "controlTransitions": [
+      "disabled>eligible",
+      "eligible>running",
+      "running>completed",
+      "running>stopped",
+      "disabled>invalid_configuration",
+      "eligible>invalid_configuration"
+    ],
+    "maxAnalyzeRequests": 16,
+    "maxDurationMinutes": 60,
+    "locales": ["ko", "en"],
+    "scenarios": [
+      "standard_goal_alignment",
+      "stabilization_active_block",
+      "current_product_semantics",
+      "metadata_incomplete"
+    ],
+    "modes": ["control", "canary"],
+    "execution": {
+      "hostedLane": "exact_runtime_sha_response_invariance_and_shadow_aggregate",
+      "projectionLane": "harness_head_with_runtime_module_digest_attestation",
+      "lanesShareFixtureSemanticFingerprint": true,
+      "hostedLaneExposesPolicyDecisions": false,
+      "projectionLaneUsesActualUserData": false,
+      "automaticRetryAllowed": false,
+      "warmupRequestsAllowed": false,
+      "quotaProbeAllowed": false,
+      "exploratoryRequestsAllowed": false
+    },
+    "runtimeModuleAttestation": {
+      "baselineRuntimeSha": "1bc119347a2f8d3387a935163e24849ceebe349d",
+      "harnessHeadResolvedAtExecution": true,
+      "runtimeSensitivePaths": [
+        "app/api/analyze/route.js",
+        "app/api/full-report/route.js",
+        "lib/skin-match-decision-engine.js",
+        "lib/candidate-exposure-policy.js",
+        "lib/candidate-exposure-policy-contract.js",
+        "lib/candidate-exposure-policy-evaluator-adapter.js",
+        "lib/candidate-exposure-policy-shadow.js",
+        "lib/candidate-exposure-policy-observability.js"
+      ],
+      "unchangedPathDiffRequired": true,
+      "contentDigestAttestationRequired": true,
+      "mismatchStopsBeforeExecution": true
+    },
+    "requestMatrix": [
+      {"sequence": 1, "locale": "ko", "scenario": "standard_goal_alignment", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 2, "locale": "ko", "scenario": "standard_goal_alignment", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 3, "locale": "ko", "scenario": "stabilization_active_block", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 4, "locale": "ko", "scenario": "stabilization_active_block", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 5, "locale": "ko", "scenario": "current_product_semantics", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 6, "locale": "ko", "scenario": "current_product_semantics", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 7, "locale": "ko", "scenario": "metadata_incomplete", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 8, "locale": "ko", "scenario": "metadata_incomplete", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 9, "locale": "en", "scenario": "standard_goal_alignment", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 10, "locale": "en", "scenario": "standard_goal_alignment", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 11, "locale": "en", "scenario": "stabilization_active_block", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 12, "locale": "en", "scenario": "stabilization_active_block", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 13, "locale": "en", "scenario": "current_product_semantics", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 14, "locale": "en", "scenario": "current_product_semantics", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false},
+      {"sequence": 15, "locale": "en", "scenario": "metadata_incomplete", "mode": "control", "deploymentRole": "default_off", "expectedShadowExecution": "disabled", "expectedEvidenceCategory": "hosted_control_invariance", "executeAfterStop": false},
+      {"sequence": 16, "locale": "en", "scenario": "metadata_incomplete", "mode": "canary", "deploymentRole": "deployment_scoped_opt_in", "expectedShadowExecution": "executed", "expectedEvidenceCategory": "hosted_canary_and_projection_replay", "executeAfterStop": false}
+    ],
+    "fixtures": [
+      {
+        "scenario": "standard_goal_alignment",
+        "purpose": "Verify canonical goal alignment without stabilization, current-product, or metadata hardening dominating the result.",
+        "canonicalConditions": ["planMode is not HOLD", "recommendationSuppressed is false", "functional direction is evaluable", "current-product findings are valid and non-blocking"],
+        "allowedInputFields": ["synthetic image", "survey skin type", "sensitivity", "primary concern", "texture", "cleansing", "environment exposure", "locale"],
+        "forbiddenInputs": ["real user image", "account identifier", "session cookie", "saved report", "raw provider payload"],
+        "currentProductsState": "valid_empty_or_non_blocking",
+        "expectedReasonCategories": ["canonical_goal_match", "protection_maintained"],
+        "forbiddenErrors": ["invalid_context", "adapter_execution_failed", "observability_serialization_failed"],
+        "localeInvariantProperties": ["candidate count", "exposure counts", "lane counts", "divergence categories", "projection fingerprint inputs"],
+        "localeVariableProperties": ["provider-generated explanation text", "localized labels"],
+        "actualUserDataAllowed": false
+      },
+      {
+        "scenario": "stabilization_active_block",
+        "purpose": "Verify that stabilization and active-expansion constraints produce aggregate hidden exposure without mutating recommendation output.",
+        "canonicalConditions": ["planMode is HOLD or recommendationSuppressed is true", "activeExpansionAllowed is false", "active candidates are present", "canonical context remains valid"],
+        "allowedInputFields": ["synthetic image", "high-sensitivity survey state", "recent skin change", "active concern", "locale"],
+        "forbiddenInputs": ["real user image", "account identifier", "session cookie", "saved report", "raw provider payload"],
+        "currentProductsState": "valid_empty_or_non_blocking",
+        "expectedReasonCategories": ["stabilization_active_block", "expansion_prohibited"],
+        "forbiddenErrors": ["invalid_context", "adapter_execution_failed", "fallback"],
+        "localeInvariantProperties": ["hidden exposure count", "candidate order", "mutation fingerprints", "stop-condition outcome"],
+        "localeVariableProperties": ["provider-generated explanation text", "localized labels"],
+        "actualUserDataAllowed": false
+      },
+      {
+        "scenario": "current_product_semantics",
+        "purpose": "Verify same-product, duplicate-axis, replacement-intent, and usage-state semantics through aggregate policy outcomes.",
+        "canonicalConditions": ["current-product findings object is valid", "at least one selected synthetic product relation exists", "replacement intent is explicit or unknown by fixture contract", "metadata is evaluable"],
+        "allowedInputFields": ["synthetic image", "survey fields", "synthetic currentProducts fixture", "locale"],
+        "forbiddenInputs": ["real user product history", "saved report products", "account identifier", "session cookie", "raw provider payload"],
+        "currentProductsState": "synthetic_selected_and_or_not_using",
+        "expectedReasonCategories": ["already_using", "duplicate_axis", "replacement_intent_unknown", "missing_step"],
+        "forbiddenErrors": ["current_findings_invalid", "current_findings_missing", "adapter_execution_failed"],
+        "localeInvariantProperties": ["current-product relation counts", "exposure counts", "candidate order", "projection fingerprint inputs"],
+        "localeVariableProperties": ["provider-generated explanation text", "localized labels"],
+        "actualUserDataAllowed": false
+      },
+      {
+        "scenario": "metadata_incomplete",
+        "purpose": "Verify insufficient-evidence hardening when functional or protection metadata is incomplete.",
+        "canonicalConditions": ["canonical context is valid", "at least one synthetic candidate has incomplete functional or sunscreen metadata", "protection requirement remains explicit when applicable"],
+        "allowedInputFields": ["synthetic image", "survey fields", "synthetic candidate metadata fixture", "locale"],
+        "forbiddenInputs": ["real user image", "production catalog mutation", "account identifier", "session cookie", "raw provider payload"],
+        "currentProductsState": "valid_empty_or_non_blocking",
+        "expectedReasonCategories": ["metadata_incomplete", "protection_evidence_incomplete"],
+        "forbiddenErrors": ["invalid_context", "adapter_execution_failed", "comparison_failed"],
+        "localeInvariantProperties": ["insufficient-evidence count", "divergence categories", "candidate order", "projection fingerprint inputs"],
+        "localeVariableProperties": ["provider-generated explanation text", "localized labels"],
+        "actualUserDataAllowed": false
+      }
+    ],
+    "projection": {
+      "functionShape": "buildIsolatedCandidateProjection({ candidates, decisions })",
+      "input": "immutable_candidates_and_policy_decisions",
+      "output": "memory_only_aggregate_and_fingerprint",
+      "sourceCandidatesCloned": true,
+      "sourceCandidateMutationAllowed": false,
+      "sourceCandidateReorderAllowed": false,
+      "recommendationPoolReplacementAllowed": false,
+      "responseConsumptionAllowed": false,
+      "storageConsumptionAllowed": false,
+      "uiConsumptionAllowed": false,
+      "candidateReferencesMemoryOnly": true,
+      "candidateReferencesTelemetryAllowed": false,
+      "orderedExposureVectorMemoryOnly": true,
+      "orderedExposureVectorEvidenceAllowed": false,
+      "aggregateCountsAllowed": true,
+      "aggregateFingerprintAllowed": true,
+      "allowedExposureStates": ["primary", "contextual", "collapsed", "hidden", "insufficient_evidence"],
+      "stableOrdering": "source candidate order with duplicate candidate references rejected before projection",
+      "laneEligibility": "exact five-lane boolean vector preserved only in memory and reduced to aggregate counts before evidence serialization",
+      "backflowPrevention": ["runner-only import direction", "no route import", "no response-builder import", "no storage import", "no UI import", "projection object not returned from production modules"]
+    },
+    "fingerprints": {
+      "types": ["response_pre_post", "snapshot_pre_post", "candidate_order_pre_post", "isolated_projection", "runtime_implementation_sha", "harness_implementation_sha", "runtime_module_digest_attestation", "fixture_semantic"],
+      "sameRequestMutationChecks": true,
+      "independentProviderResponseEqualityRequired": false,
+      "controlCanaryComparisonUsesAggregateProjection": true,
+      "excludedNondeterministicFields": ["analysisRunId", "generatedAt", "provider-generated explanation text", "diagnostic request ID", "request duration"],
+      "neverExcludedMutationSensitiveFields": ["candidate sequence", "candidate count", "exposure counts", "lane eligibility counts", "divergence counts", "response structural keys", "snapshot structural keys"],
+      "normalizationNegativeControlsRequired": true,
+      "fixtureSemanticFingerprintInputs": ["scenario", "locale-independent survey semantics", "synthetic current-product state", "synthetic candidate metadata state", "expected canonical condition set"]
+    },
+    "telemetry": {
+      "allowedFields": ["schemaVersion", "planVersion", "runtimeImplementationShaMatch", "fixtureScenario", "locale", "mode", "executionStatus", "candidateCount", "exposureCounts", "laneEligibilityCounts", "divergenceCategoryCounts", "responseFingerprintMatch", "snapshotFingerprintMatch", "candidateOrderMatch", "projectionFingerprintPresent", "unexpectedDivergenceCount", "unclassifiedDivergenceCount", "shadowExceptionCount", "fallbackCount", "invalidContextCount", "stopCondition"],
+      "forbiddenFields": ["candidateRef", "candidateId", "productId", "productName", "brand", "productUrl", "userId", "accountId", "email", "sessionId", "reportId", "cookie", "token", "secret", "rawRequest", "rawResponse", "providerPrompt", "providerOutput"],
+      "unknownFieldsRejected": true,
+      "missingRequiredFieldsRejected": true,
+      "invalidCountTotalsRejected": true,
+      "negativeCountsRejected": true,
+      "contradictoryExecutionStateRejected": true,
+      "candidateLevelRecordsAllowed": false,
+      "rawRequestAllowed": false,
+      "rawResponseAllowed": false
+    },
+    "stopConditions": {
+      "runtimeShaMismatch": {"detectionLocation": "deployment preflight, runtime module attestation, and response headers", "detectionTiming": "before first request and after every response", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["runtimeShaMatchCount", "runtimeModuleDigestAttestation", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "defaultOffShadowExecution": {"detectionLocation": "default-off deployment aggregate runtime logs", "detectionTiming": "after each control request", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["defaultOffExecutionCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "unexpectedDivergence": {"detectionLocation": "canary aggregate telemetry", "detectionTiming": "after each canary request and projection replay", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["unexpectedDivergenceCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "unclassifiedDivergence": {"detectionLocation": "canary aggregate telemetry", "detectionTiming": "after each canary request and projection replay", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["unclassifiedDivergenceCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "shadowException": {"detectionLocation": "canary execution aggregate telemetry", "detectionTiming": "after each canary request", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["shadowExceptionCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "fallback": {"detectionLocation": "canary execution aggregate telemetry", "detectionTiming": "after each canary request", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["fallbackCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "invalidContext": {"detectionLocation": "policy and projection aggregate telemetry", "detectionTiming": "after canonical state validation", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["invalidContextCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "responseFingerprintMismatch": {"detectionLocation": "same canary request pre/post mutation check", "detectionTiming": "immediately after policy shadow execution", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["responseFingerprintMatch", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "snapshotFingerprintMismatch": {"detectionLocation": "same canary request pre/post mutation check", "detectionTiming": "immediately after policy shadow execution", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["snapshotFingerprintMatch", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "candidateOrderMismatch": {"detectionLocation": "same canary request pre/post order check", "detectionTiming": "immediately after policy shadow execution and projection replay", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["candidateOrderMatch", "stopCondition"], "finalStatus": "stopped_on_contract_violation"},
+      "candidateLevelTelemetryDetected": {"detectionLocation": "telemetry and evidence schema validator", "detectionTiming": "before serialization and before artifact upload", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["candidateLevelTelemetryIncidentCount", "stopCondition"], "finalStatus": "evidence_invalid"},
+      "productionOrProjectConfigurationChange": {"detectionLocation": "Vercel project and deployment preflight plus postflight", "detectionTiming": "before deployment, before requests, and during cleanup", "stopRemainingRequests": true, "automaticRetryAllowed": false, "cleanupRequired": true, "aggregateEvidenceFields": ["projectEnvironmentMutationCount", "productionChangeCount", "stopCondition"], "finalStatus": "stopped_on_contract_violation"}
+    },
+    "cleanup": {
+      "finallyRequired": true,
+      "temporaryResources": ["automation bypass", "runner-local fixture files", "deployment locator", "aggregate evidence working file", "masked environment material"],
+      "bypassResidueRequired": 0,
+      "temporaryFileResidueRequired": 0,
+      "projectEnvironmentMutationRequired": 0,
+      "productionChangeRequired": 0,
+      "cleanupFailureStatus": "cleanup_failed",
+      "cleanupFailureCanPass": false,
+      "secretMaskingRequired": true
+    },
+    "evidence": {
+      "requiredFields": ["schemaVersion", "planVersion", "runtimeImplementationSha", "harnessImplementationSha", "runtimeModuleDigestAttestation", "controlDeploymentId", "canaryDeploymentId", "startedAt", "completedAt", "plannedRequestCount", "completedRequestCount", "http200Count", "runtimeShaMatchCount", "defaultOffExecutionCount", "canaryExecutionCount", "scenarioResults", "aggregateDivergenceCounts", "aggregateMutationChecks", "cleanup", "stopCondition", "status", "authorization"],
+      "statuses": ["completed_pass", "stopped_on_contract_violation", "blocked_before_execution", "cleanup_failed", "evidence_invalid"],
+      "deploymentUrlStored": false,
+      "bypassSecretStored": false,
+      "candidateIdentifiersStored": false,
+      "productIdentifiersStored": false,
+      "userIdentifiersStored": false,
+      "rawRequestStored": false,
+      "rawResponseStored": false,
+      "cleanupFailureCanPass": false
+    },
+    "stage11fFilePlan": [
+      {"path": "lib/candidate-exposure-policy-isolated-canary-control.js", "responsibility": "Pure state machine, environment authority, request and time budget, runtime attestation, and stop-condition transitions."},
+      {"path": "lib/candidate-exposure-policy-isolated-projection.js", "responsibility": "Immutable candidate and decision projection with memory-only vectors and aggregate fingerprint output."},
+      {"path": "lib/candidate-exposure-policy-isolated-canary-telemetry.js", "responsibility": "Exact allowlisted aggregate telemetry validation and serialization."},
+      {"path": "lib/candidate-exposure-policy-isolated-canary-evidence.js", "responsibility": "Aggregate evidence state, cleanup result, final status, and authorization schema."},
+      {"path": "scripts/run-candidate-exposure-policy-isolated-preview-canary.mjs", "responsibility": "Runner-only orchestration of exact runtime SHA hosted lane and harness-head deterministic projection replay lane."},
+      {"path": "scripts/check-candidate-exposure-policy-isolated-canary-contract.mjs", "responsibility": "Positive and negative controls for the implementation contract without invoking public traffic or Production."}
+    ],
+    "dependencyDirection": {
+      "allowed": ["harness runner -> existing canonical read-only modules", "harness runner -> CandidateExposurePolicy", "harness runner -> isolated projection", "harness runner -> aggregate telemetry and evidence"],
+      "forbidden": ["recommendation runtime -> canary harness", "response builder -> canary harness", "storage layer -> canary harness", "UI -> canary harness", "production route -> canary design contract"]
+    },
+    "authorization": {
+      "designOnly": true,
+      "harnessImplementationAuthorized": false,
+      "runtimeActivationAuthorized": false,
+      "runtimeFilterConnectionAuthorized": false,
+      "recommendationMutationAuthorized": false,
+      "responseMutationAuthorized": false,
+      "storageMutationAuthorized": false,
+      "uiMutationAuthorized": false,
+      "publicTrafficAuthorized": false,
+      "projectEnvironmentMutationAuthorized": false,
+      "productionActivationAuthorized": false
+    },
+    "runtimeImportsAllowed": false,
+    "hostedDeploymentExecutionAllowed": false,
+    "hostedAnalyzeExecutionAllowed": false,
+    "vercelMutationAllowed": false,
+    "productionMutationAllowed": false
+  }
+}

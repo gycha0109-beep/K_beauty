@@ -10,6 +10,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
+    "verify:candidate-exposure-policy-shadow": "node scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
+    "verify:candidate-exposure-policy-shadow-evaluation": "node scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs",
     "promo:generate": "node scripts/generate-promo-content.mjs",
     "hwahae:prepare": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
     "hwahae:override": "python -X utf8 scripts/hwahae-import/prepare_hwahae_batch.py",
@@ -62,11 +64,13 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "playwright": "^1.59.1",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.25",
     "tailwindcss": "^3.4.14"
   },
   "overrides": {
-    "postcss": "$postcss",
-    "sharp": "$sharp"
+    "next": {
+      "postcss": "8.5.25",
+      "sharp": "0.35.3"
+    }
   }
 }
