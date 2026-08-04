@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Recovery Source Export
+name: ADMIN PRODUCT 4 Finalize
 
 on:
   pull_request:
@@ -6,32 +6,309 @@ on:
       - feature/admin-product-review-import-confirm
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
-  export-recovery-source:
+  validate-and-publish:
     if: github.head_ref == 'automation/admin-product-4-implement'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 60
+    env:
+      BASE_SHA: e174f80f79fa9ce5d62c742f440c9e18e602929a
+      TARGET_BRANCH: feature/admin-product-review-import-ui
+      SUPABASE_CLI_VERSION: 2.109.1
+      ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-ui-finalize
     steps:
-      - name: Checkout helper head
+      - name: Checkout recovery source
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          path: helper
           fetch-depth: 1
 
-      - name: Collect recovery source
+      - name: Checkout authoritative base
+        uses: actions/checkout@v4
+        with:
+          ref: feature/admin-product-review-import-confirm
+          path: feature
+          fetch-depth: 20
+          token: ${{ github.token }}
+
+      - name: Assert authoritative base
         shell: bash
         run: |
           set -euo pipefail
-          out="$RUNNER_TEMP/admin-product-4-recovery-source"
-          mkdir -p "$out"
-          cp .github/workflows/admin-product-4-precommit-publish.yml "$out/"
+          cd feature
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          test -z "$(git status --short)"
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
 
-      - name: Upload recovery source
-        uses: actions/upload-artifact@v4
+      - name: Apply recovered implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd feature
+          python - <<'PY'
+          import base64
+          import io
+          import tarfile
+          from pathlib import Path
+
+          source = Path("../helper/.github/workflows/admin-product-4-precommit-publish.yml").read_text(encoding="utf-8")
+
+          def heredoc(marker):
+              start_token = f"<<'{marker}'\n"
+              start = source.index(start_token) + len(start_token)
+              end = source.index(f"\n          {marker}", start)
+              return "".join(line.strip() for line in source[start:end].splitlines())
+
+          overlay = base64.b64decode(heredoc("OVERLAY"), validate=True)
+          with tarfile.open(fileobj=io.BytesIO(overlay), mode="r:gz") as archive:
+              archive.extractall(Path.cwd())
+
+          worklog = base64.b64decode(heredoc("WORKLOG"), validate=True)
+          with Path(".codex/AI_WORK_LOG.md").open("ab") as output:
+              output.write(worklog)
+
+          stacked_base = "feature/admin-product-review-import-confirm"
+          branch_patches = [
+              (".github/workflows/admin-access-foundation.yml", "      - main\n"),
+              (".github/workflows/admin-product-candidate-reviews.yml", "      - main\n"),
+              (".github/workflows/security-closeout-verifiers.yml", "      - feature/premium-beta-flow\n"),
+          ]
+          for path, anchor in branch_patches:
+              file = Path(path)
+              text = file.read_text(encoding="utf-8")
+              branch_line = f"      - {stacked_base}\n"
+              if branch_line not in text:
+                  text = text.replace(anchor, anchor + branch_line, 1)
+              file.write_text(text, encoding="utf-8")
+
+          workflow = Path(".github/workflows/admin-product-review-import-ui.yml")
+          lines = workflow.read_text(encoding="utf-8").splitlines()
+          target = '          git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"'
+          index = lines.index(target)
+          lines[index - 2:index + 3] = [
+              "        env:",
+              "          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}",
+              "          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}",
+              "        run: |",
+              "          set -euo pipefail",
+              '          if [[ -n "${PR_BASE_SHA}" && -n "${PR_HEAD_SHA}" ]]; then',
+              '            git diff --check "${PR_BASE_SHA}..${PR_HEAD_SHA}"',
+              "          else",
+              "            git diff --check HEAD^..HEAD",
+              "          fi",
+              "          git diff --exit-code",
+              '          test -z "$(git status --short)"',
+          ]
+          workflow.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+          cat > "$RUNNER_TEMP/admin-product-4-intended.txt" <<'FILES'
+          .codex/AI_WORK_LOG.md
+          .github/workflows/admin-access-foundation.yml
+          .github/workflows/admin-product-candidate-reviews.yml
+          .github/workflows/admin-product-review-import-ui.yml
+          .github/workflows/security-closeout-verifiers.yml
+          app/admin/AdminNavigation.js
+          app/admin/products/reviews/import/ProductReviewImportWorkbench.js
+          app/admin/products/reviews/import/page.js
+          app/admin/products/reviews/import/workbench-state.js
+          app/api/admin/product-reviews/import/confirm/route.js
+          app/api/admin/product-reviews/import/dry-run/route.js
+          crawler/lib/reviews/reviewed-intake-parser.ts
+          crawler/package.json
+          crawler/test-product-review-intake-bytes.ts
+          docs/architecture/admin-product-review-import-ui-v1.md
+          docs/reports/admin-product-review-import-ui-implementation.md
+          lib/admin/product-review-import/http-handlers.js
+          lib/admin/product-review-import/import-confirm.js
+          lib/admin/product-review-import/import-dry-run.js
+          lib/admin/product-review-import/import-error-map.js
+          lib/admin/product-review-import/import-package.js
+          lib/admin/product-review-import/multipart-boundary.js
+          package.json
+          scripts/verify-admin-product-review-import-isolated.sh
+          scripts/verify-admin-product-review-import-routes.mjs
+          scripts/verify-admin-product-review-import-ui.mjs
+          tests/fixtures/admin-product-review-import/seed_review_import_runtime.sql
+          tests/fixtures/admin-product-review-import/setup_review_import_rollback.sql
+          tests/fixtures/admin-product-review-import/verify_review_import_rollback.sql
+          FILES
+          sort "$RUNNER_TEMP/admin-product-4-intended.txt" -o "$RUNNER_TEMP/admin-product-4-intended.txt"
+          git status --porcelain=v1 --untracked-files=all | sed -E 's/^.. //' | sort > "$RUNNER_TEMP/admin-product-4-actual.txt"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$RUNNER_TEMP/admin-product-4-actual.txt"
+          git diff --check
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          name: admin-product-4-recovery-source
-          path: ${{ runner.temp }}/admin-product-4-recovery-source
-          if-no-files-found: error
-          retention-days: 1
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            feature/package-lock.json
+            feature/crawler/package-lock.json
+
+      - name: Install application dependencies
+        working-directory: feature
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: feature/crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify import boundaries
+        working-directory: feature
+        run: |
+          bash -n scripts/verify-admin-product-review-import-isolated.sh
+          npm run verify:admin-product-review-import-ui
+          npm run verify:admin-product-review-import-routes
+          npm run verify:admin-product-review-import-confirm
+
+      - name: Verify crawler regressions
+        working-directory: feature/crawler
+        run: |
+          npm run typecheck
+          npm run verify:product-review-export
+          npm run verify:product-review-intake-dry-run
+          npm run verify:product-review-intake-bytes
+          npm run verify:product-review-intake-confirm
+
+      - name: Prepare isolated Supabase project
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf -- "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
+            --workdir "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}" \
+            --force
+          migrations="${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations"
+          mkdir -p "$migrations"
+          cp tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql "$migrations/"
+          cp supabase/migrations/*_admin_access_foundation.sql "$migrations/"
+          cp supabase/migrations/*_admin_product_candidate_reviews*.sql "$migrations/"
+          cp supabase/migrations/*_admin_product_review_import_confirm.sql "$migrations/"
+          cp tests/fixtures/admin-product-review-import/seed_review_import_runtime.sql \
+            "$migrations/20260731190000_seed_review_import_runtime.sql"
+
+      - name: Start isolated Supabase
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 180 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Replay isolated migrations
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
+            --workdir "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}" \
+            >"${raw_log}" 2>&1; then
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              <"${raw_log}" | tail -n 200 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Verify isolated transaction
+        working-directory: feature
+        run: npm run verify:admin-product-review-import-isolated
+
+      - name: Verify administrator and security regressions
+        working-directory: feature
+        run: |
+          npm run verify:admin-access-foundation
+          npm run verify:admin-product-candidate-reviews
+          npm run architecture:guard
+          node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Verify JavaScript syntax
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
+
+      - name: Build production application
+        working-directory: feature
+        run: npm run build
+
+      - name: Stage exact feature delta
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t intended < "$RUNNER_TEMP/admin-product-4-intended.txt"
+          git add -- "${intended[@]}"
+          git diff --cached --check
+          git diff --cached --name-only | sort > "$RUNNER_TEMP/admin-product-4-staged.txt"
+          diff -u "$RUNNER_TEMP/admin-product-4-intended.txt" "$RUNNER_TEMP/admin-product-4-staged.txt"
+          test -z "$(git diff --name-only)"
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Publish one feature commit
+        working-directory: feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_target="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "$remote_target" = "$BASE_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(admin): add product review import workbench"
+          feature_sha="$(git rev-parse HEAD)"
+          git push origin "HEAD:${TARGET_BRANCH}"
+          echo "FEATURE_SHA=${feature_sha}" >> "$GITHUB_ENV"
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        working-directory: feature
+        shell: bash
+        run: |
+          if [[ -d "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}" \
+              --no-backup
+          fi
+          rm -rf -- "${ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR}"
+          rm -rf -- crawler/data/admin-product-review-import-runtime
+
+      - name: Report finalizer result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --body "ADMIN-PRODUCT-4 finalizer run: $GITHUB_RUN_ID\nBase: $BASE_SHA\nPublished feature SHA: ${FEATURE_SHA:-not-published}\nResult: ${{ job.status }}"
