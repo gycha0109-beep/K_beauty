@@ -118,6 +118,27 @@ await expectCode(
 await expectCode(
   () =>
     multipart.parseProductReviewImportRequest(
+      requestFor(
+        body(boundary, [
+          ...fileEntries,
+          ["actorUserId", Buffer.from("spoof")],
+        ]),
+        boundary,
+      ),
+      {
+        allowedTextFields: [
+          "requestId",
+          "expectedReviewedFileSha256",
+          "expectedCanonicalPayloadSha256",
+          "confirmation",
+        ],
+      },
+    ),
+  "unexpected_file",
+);
+await expectCode(
+  () =>
+    multipart.parseProductReviewImportRequest(
       requestFor(body(boundary, fileEntries.slice(0, 3)), boundary),
     ),
   "missing_file",
@@ -169,6 +190,18 @@ await expectCode(
   "request_too_large",
 );
 
+const oversizedRequest = Buffer.alloc(
+  multipart.PRODUCT_REVIEW_IMPORT_MAX_REQUEST_BYTES + 1,
+  0x61,
+);
+await expectCode(
+  () =>
+    multipart.parseProductReviewImportRequest(
+      requestFor(oversizedRequest, boundary, 1),
+    ),
+  "request_too_large",
+);
+
 [
   "evaluateOrigin(",
   "evaluateAccess(",
@@ -190,6 +223,7 @@ assert.ok(
   "PUBLIC_CODES",
   "RETRYABLE_CODES",
   "SAFE_STATUSES",
+  "415",
   "payload_hash_mismatch",
   "request_conflict",
 ].forEach((value) => includes(errorSource, value, "error map"));
@@ -201,8 +235,8 @@ for (const [source, label] of [
 ]) {
   includes(source, 'export const runtime = "nodejs"', label);
   includes(source, 'export const dynamic = "force-dynamic"', label);
-  includes(source, "resolveAdminAccess", label);
-  includes(source, "isAllowedAdminRequestOrigin", label);
+  includes(source, "requireAdminCapability", label);
+  includes(source, "isAllowedAdminMutationRequest", label);
 }
 
 process.stdout.write(
