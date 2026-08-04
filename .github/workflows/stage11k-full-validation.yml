@@ -1,0 +1,52 @@
+name: Stage 11K full validation
+
+on:
+  pull_request:
+    branches:
+      - codex/stage11k-validation-base
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact PR 122 head
+        uses: actions/checkout@v4
+        with:
+          ref: 31fd7468ea898014c3cf6b5a21917386034c3040
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Stage 11K route checker
+        run: node scripts/check-candidate-exposure-policy-hosted-diagnostic-route.mjs
+
+      - name: Stage 11K execution checker
+        run: node scripts/check-candidate-exposure-policy-hosted-execution.mjs
+
+      - name: Security closeout verifier suite
+        run: node scripts/run-security-closeout-verifier-suite.mjs
+
+      - name: Architecture guard
+        run: npm run architecture:guard
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload security closeout evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage11k-security-closeout-evidence
+          path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: warn
