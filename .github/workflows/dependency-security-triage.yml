@@ -59,11 +59,11 @@ jobs:
 
       - name: Verify resolved dependency graph
         run: |
-          mkdir -p tmp/dependency-security-remediation
-          npm audit --json > tmp/dependency-security-remediation/npm-audit.json
-          npm ls next sharp postcss picomatch --all > tmp/dependency-security-remediation/npm-ls.txt
-          cat tmp/dependency-security-remediation/npm-audit.json
-          cat tmp/dependency-security-remediation/npm-ls.txt
+          mkdir -p /tmp/dependency-security-remediation
+          npm audit --json > /tmp/dependency-security-remediation/npm-audit.json
+          npm ls next sharp postcss picomatch --all > /tmp/dependency-security-remediation/npm-ls.txt
+          cat /tmp/dependency-security-remediation/npm-audit.json
+          cat /tmp/dependency-security-remediation/npm-ls.txt
 
       - name: Security closeout verifier suite
         run: node scripts/run-security-closeout-verifier-suite.mjs
@@ -93,8 +93,12 @@ jobs:
 
       - name: Capture package diff
         run: |
+          mkdir -p tmp/dependency-security-remediation
+          cp /tmp/dependency-security-remediation/npm-audit.json tmp/dependency-security-remediation/
+          cp /tmp/dependency-security-remediation/npm-ls.txt tmp/dependency-security-remediation/
           git show --format= --binary HEAD -- package.json package-lock.json > tmp/dependency-security-remediation/package-diff.patch
           cp package.json package-lock.json tmp/dependency-security-remediation/
+          cp /tmp/optimized-image.headers tmp/dependency-security-remediation/
 
       - name: Upload remediation candidate
         uses: actions/upload-artifact@v4
