@@ -1,0 +1,7 @@
+app/api/analyze/route.js
+lib/evaluator-boundary-policy-shadow.js
+package-lock.json
+package.json
+scripts/run-security-closeout-verifier-suite.mjs
+scripts/verify-candidate-exposure-policy-diagnostic-route-absence.mjs
+scripts/verify-evaluator-boundary-readiness-review.mjs
