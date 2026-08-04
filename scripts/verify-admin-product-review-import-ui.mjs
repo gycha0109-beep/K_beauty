@@ -118,7 +118,7 @@ assert.equal(reset.requestId, null);
   "/api/admin/product-reviews/import/dry-run",
   "/api/admin/product-reviews/import/confirm",
   "state.result?.summary || state.dryRun?.summary",
-  "state.error.retryable",
+  "state.error?.retryable",
   "request ID:",
   "Reset",
   "inFlight.current",
