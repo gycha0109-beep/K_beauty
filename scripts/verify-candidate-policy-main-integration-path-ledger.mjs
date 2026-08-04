@@ -22,68 +22,66 @@ const git = (...args) =>
   execFileSync("git", args, {
     cwd: root,
     encoding: "utf8",
-    maxBuffer: 16 * 1024 * 1024
+    maxBuffer: 32 * 1024 * 1024
   }).trim();
+
+function readPathList(relativePath) {
+  return fs
+    .readFileSync(path.join(root, relativePath), "utf8")
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+const includeExact = readPathList(ledger.pathSets.includeExact);
+const mergeSemantic = readPathList(ledger.pathSets.mergeSemantic);
+const excludeSourceOnly = readPathList(ledger.pathSets.excludeSourceOnly);
+const excludeMainPresent = ledger.pathSets.excludeMainPresent.flatMap(readPathList);
+const classifiedPaths = [
+  ...includeExact,
+  ...mergeSemantic,
+  ...excludeSourceOnly,
+  ...excludeMainPresent
+];
 
 check(
   ledger.version === "candidate-policy-main-integration-path-ledger-v1",
   "ledger version must be exact"
 );
 check(
-  ledger.status === "exhaustive_tree_diff_classified",
-  "ledger status must be exhaustive"
+  ledger.status === "exhaustive_tree_diff_408_classified",
+  "ledger status must record the exhaustive 408-path comparison"
 );
 check(ledger.compare.status === "diverged", "authority refs must be recorded as diverged");
-check(ledger.compare.treeDiffPathCount === 127, "tree diff path count must remain 127");
-check(ledger.counts.total === 127, "ledger total must remain 127");
+check(ledger.compare.treeDiffPathCount === 408, "tree diff path count must remain 408");
+check(ledger.compare.gitStatusCounts.sourceOnlyA === 100, "source-only count must remain 100");
+check(ledger.compare.gitStatusCounts.mainOnlyD === 278, "main-only count must remain 278");
+check(ledger.compare.gitStatusCounts.modifiedM === 30, "modified count must remain 30");
+check(ledger.counts.total === 408, "ledger total must remain 408");
+check(ledger.counts.includeExact === 62, "include-exact count must remain 62");
+check(ledger.counts.mergeSemantic === 6, "semantic count must remain 6");
+check(ledger.counts.excludeSourceOnly === 38, "source-only exclusion count must remain 38");
+check(ledger.counts.excludeMainPresent === 302, "main-present exclusion count must remain 302");
+check(ledger.counts.excludeTotal === 340, "total exclusion count must remain 340");
 check(ledger.contracts.everyPathExactlyOnce === true, "every path must be classified once");
 check(ledger.contracts.unknownPathCount === 0, "unknown path count must be zero");
 check(ledger.contracts.duplicatePathCount === 0, "duplicate path count must be zero");
 
-const entries = ledger.entries;
-check(Array.isArray(entries), "ledger entries must be an array");
-check(entries.length === ledger.counts.total, "entry count must equal ledger total");
-
-const paths = entries.map((entry) => entry.path);
-const uniquePaths = new Set(paths);
-check(uniquePaths.size === paths.length, "ledger paths must be unique");
+check(includeExact.length === ledger.counts.includeExact, "include-exact list count mismatch");
+check(mergeSemantic.length === ledger.counts.mergeSemantic, "semantic list count mismatch");
 check(
-  paths.every((value) => typeof value === "string" && value.length > 0),
-  "every ledger path must be non-empty"
+  excludeSourceOnly.length === ledger.counts.excludeSourceOnly,
+  "source-only exclusion list count mismatch"
 );
 check(
-  [...paths].sort().every((value, index) => value === [...uniquePaths].sort()[index]),
-  "ledger path ordering comparison must be deterministic"
+  excludeMainPresent.length === ledger.counts.excludeMainPresent,
+  "main-present exclusion list count mismatch"
 );
-
-const allowedDispositions = new Set(["include_exact", "merge_semantic", "exclude"]);
-const dispositionCounts = Object.fromEntries(
-  [...allowedDispositions].map((value) => [value, 0])
-);
-for (const entry of entries) {
-  check(allowedDispositions.has(entry.disposition), `invalid disposition: ${entry.path}`);
-  dispositionCounts[entry.disposition] += 1;
-  check(typeof entry.reasonCode === "string" && entry.reasonCode.length > 0, `missing reason: ${entry.path}`);
-  check(
-    typeof entry.finalTreeContract === "string" && entry.finalTreeContract.length > 0,
-    `missing final-tree contract: ${entry.path}`
-  );
-}
+check(classifiedPaths.length === ledger.counts.total, "classified path total mismatch");
 check(
-  dispositionCounts.include_exact === ledger.counts.include_exact,
-  "include_exact count mismatch"
+  new Set(classifiedPaths).size === classifiedPaths.length,
+  "a path is classified more than once"
 );
-check(
-  dispositionCounts.merge_semantic === ledger.counts.merge_semantic,
-  "merge_semantic count mismatch"
-);
-check(
-  dispositionCounts.exclude === ledger.counts.exclude,
-  "exclude count mismatch"
-);
-check(dispositionCounts.include_exact === 62, "include_exact count must remain 62");
-check(dispositionCounts.merge_semantic === 6, "merge_semantic count must remain 6");
-check(dispositionCounts.exclude === 59, "exclude count must remain 59");
 
 const actualMergeBase = git("merge-base", baseSha, sourceSha);
 check(actualMergeBase === mergeBaseSha, "merge-base authority drift");
@@ -99,22 +97,52 @@ const [baseOnly, sourceOnly] = git(
 check(baseOnly === ledger.compare.mainAheadBy, "main ahead count drift");
 check(sourceOnly === ledger.compare.sourceAheadBy, "source ahead count drift");
 
-const actualDiffPaths = git("diff", "--name-only", baseSha, sourceSha)
+const actualNameStatus = git("diff", "--name-status", "--no-renames", baseSha, sourceSha)
   .split(/\r?\n/)
   .filter(Boolean)
-  .sort();
-const ledgerPaths = [...paths].sort();
-check(actualDiffPaths.length === 127, "actual tree diff path count drift");
+  .map((line) => {
+    const [status, pathValue] = line.split("\t");
+    return { status, path: pathValue };
+  });
+const actualStatusByPath = new Map(actualNameStatus.map((entry) => [entry.path, entry.status]));
+const actualDiffPaths = actualNameStatus.map((entry) => entry.path).sort();
+const ledgerPaths = [...classifiedPaths].sort();
+check(actualDiffPaths.length === 408, "actual tree diff path count drift");
 check(
   actualDiffPaths.length === ledgerPaths.length &&
     actualDiffPaths.every((value, index) => value === ledgerPaths[index]),
-  "ledger does not exactly equal the authoritative tree diff"
+  "ledger does not exactly equal the authoritative 408-path tree diff"
 );
 
-const semanticPaths = entries
-  .filter((entry) => entry.disposition === "merge_semantic")
-  .map((entry) => entry.path)
-  .sort();
+const statusCounts = actualNameStatus.reduce(
+  (counts, entry) => ({ ...counts, [entry.status]: (counts[entry.status] ?? 0) + 1 }),
+  {}
+);
+check(statusCounts.A === 100, "actual source-only status count drift");
+check(statusCounts.D === 278, "actual main-only status count drift");
+check(statusCounts.M === 30, "actual modified status count drift");
+
+for (const pathValue of includeExact) {
+  check(actualStatusByPath.get(pathValue) === "A", `include-exact path is not source-only: ${pathValue}`);
+  git("cat-file", "-e", `${sourceSha}:${pathValue}`);
+}
+for (const pathValue of mergeSemantic) {
+  check(actualStatusByPath.get(pathValue) === "M", `semantic path is not modified on both sides: ${pathValue}`);
+  git("cat-file", "-e", `${baseSha}:${pathValue}`);
+  git("cat-file", "-e", `${sourceSha}:${pathValue}`);
+}
+for (const pathValue of excludeSourceOnly) {
+  check(actualStatusByPath.get(pathValue) === "A", `source-only exclusion has wrong status: ${pathValue}`);
+  git("cat-file", "-e", `${sourceSha}:${pathValue}`);
+}
+for (const pathValue of excludeMainPresent) {
+  check(
+    ["D", "M"].includes(actualStatusByPath.get(pathValue)),
+    `main-present exclusion has wrong status: ${pathValue}`
+  );
+  git("cat-file", "-e", `${baseSha}:${pathValue}`);
+}
+
 const expectedSemanticPaths = [
   "app/api/analyze/route.js",
   "lib/evaluator-boundary-policy-shadow.js",
@@ -124,20 +152,29 @@ const expectedSemanticPaths = [
   "scripts/verify-evaluator-boundary-readiness-review.mjs"
 ].sort();
 check(
-  semanticPaths.length === expectedSemanticPaths.length &&
-    semanticPaths.every((value, index) => value === expectedSemanticPaths[index]),
+  [...mergeSemantic].sort().every((value, index) => value === expectedSemanticPaths[index]),
   "semantic merge path set drift"
 );
+check(
+  Object.keys(ledger.semanticContracts).sort().every(
+    (value, index) => value === expectedSemanticPaths[index]
+  ),
+  "semantic contract key set drift"
+);
 
-for (const entry of entries.filter((item) => item.disposition === "include_exact")) {
-  git("cat-file", "-e", `${sourceSha}:${entry.path}`);
+for (const pathValue of classifiedPaths) {
+  check(
+    !pathValue.startsWith("app/api/internal/candidate-exposure-policy-diagnostic/"),
+    "temporary diagnostic route must not be a classified durable source path"
+  );
 }
-for (const entry of entries.filter((item) => item.disposition === "exclude")) {
-  if (entry.path.startsWith("lib/candidate-exposure-policy")) {
-    throw new Error(`candidate runtime path cannot be excluded: ${entry.path}`);
-  }
+for (const pathValue of excludeSourceOnly) {
+  check(
+    !pathValue.startsWith("lib/candidate-exposure-policy"),
+    `CandidateExposurePolicy runtime path cannot be excluded: ${pathValue}`
+  );
 }
 
 console.log(
-  `verify-candidate-policy-main-integration-path-ledger: ok (${assertions} assertions, 127/127 paths)`
+  `verify-candidate-policy-main-integration-path-ledger: ok (${assertions} assertions, 408/408 paths, 62 exact + 6 semantic + 340 excluded)`
 );
