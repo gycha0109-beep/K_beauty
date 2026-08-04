@@ -1,4 +1,4 @@
-name: ADMIN PRODUCT 4 Inspect
+name: ADMIN PRODUCT 4 Exact Head Validation
 
 on:
   push:
@@ -6,31 +6,30 @@ on:
       - automation/admin-product-4-inspect
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+  issues: write
+  statuses: write
 
 concurrency:
   group: admin-product-4-precommit-validation
   cancel-in-progress: true
 
 jobs:
-  inspect:
+  validate-and-clean:
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 70
     env:
       BASE_SHA: e174f80f79fa9ce5d62c742f440c9e18e602929a
-      BASE_BRANCH: feature/admin-product-review-import-confirm
       TARGET_BRANCH: feature/admin-product-review-import-ui
       SUPABASE_CLI_VERSION: 2.109.1
-      ADMIN_PRODUCT_REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-ui-precommit
-      REVIEW_IMPORT_PACKAGE_DIR: data/review-batches/admin-product-review-import-ui-precommit
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout helper branch
+      - name: Checkout registered helper runner
         uses: actions/checkout@v4
         with:
-          ref: automation/admin-product-4-inspect
-          fetch-depth: 20
+          ref: ${{ github.sha }}
+          fetch-depth: 200
           token: ${{ github.token }}
 
       - name: Set up Node.js
@@ -39,5 +38,5 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Validate implementation and create local commit
+      - name: Validate exact feature SHA and clean helpers
         run: bash .github/scripts/admin-product-4-run-validation.sh
