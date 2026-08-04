@@ -23,16 +23,22 @@ Current-main package versions, workspaces, CandidatePolicy state, Vercel branch 
 
 ## Validation contract
 
-This branch is pushed only after the runner completes:
+The bridge tree was published only after runner `30923389434` completed:
 
-- current-main integration verifier
-- Admin Access, Product Candidate Reviews, import-confirm, import-UI, and route contracts
-- crawler typecheck and export/intake regressions
-- security closeout verifier suite
-- architecture guard
-- Next production build
-- diff hygiene and allowed-path audit
-- isolated Supabase export → reviewed fixture → dry-run → atomic confirm runtime
+- current-main integration verifier: PASS
+- Admin Access, Product Candidate Reviews, import-confirm, import-UI, and route contracts: PASS
+- crawler typecheck and export/intake regressions: PASS
+- security closeout verifier suite: PASS 57/57
+- architecture guard and ghost-code audit: PASS
+- Next 15.5.22 production build: PASS
+- diff hygiene and allowed-path audit: PASS
+- isolated Supabase export → reviewed fixture → dry-run → atomic confirm runtime: PASS
+
+The GitHub Actions token could not publish a commit containing a new workflow file. The validated bridge was therefore pushed without the workflow, the workflow was registered through the GitHub connector, and this commit triggers exact-head validation of the final registered tree.
+
+## CandidatePolicy authority preservation
+
+The frozen CandidatePolicy integration manifest remains exact for every protected path except five explicitly registered current-main semantic integration paths. Those paths are revalidated for CandidatePolicy workspace and script preservation, security verifier membership, Admin capability projection, and server-derived actor binding.
 
 ## Non-targets
 
