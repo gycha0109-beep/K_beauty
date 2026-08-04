@@ -9,7 +9,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARCHITECTURE =
   "docs/architecture/candidate-policy-runtime-reevaluation-v1.md";
 const REVIEW = "docs/reviews/candidate-policy-runtime-reevaluation-review.md";
-const REVIEW_BASE_REF = "codex/stage10-hosted-preview-user-flow";
+const REVIEW_BASE_CANDIDATES = [
+  "codex/stage10-hosted-preview-user-flow",
+  "origin/codex/stage10-hosted-preview-user-flow"
+];
 const REVIEW_HEAD_CANDIDATES = [
   "codex/candidate-policy-runtime-reevaluation",
   "origin/codex/candidate-policy-runtime-reevaluation"
@@ -166,11 +169,12 @@ for (const section of [
   check(review.includes(section), `review section is required: ${section}`);
 }
 
+const reviewBaseRef = resolveRef(REVIEW_BASE_CANDIDATES);
 const reviewHeadRef = resolveRef(REVIEW_HEAD_CANDIDATES);
 const changedFiles = git(
   "diff",
   "--name-only",
-  `${REVIEW_BASE_REF}...${reviewHeadRef}`
+  `${reviewBaseRef}...${reviewHeadRef}`
 )
   .split(/\r?\n/)
   .filter(Boolean);
