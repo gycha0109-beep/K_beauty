@@ -7,6 +7,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = path.join(ROOT, "docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json");
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+const CI_PORTABILITY_SEMANTIC_PATH = "scripts/verify-candidate-policy-runtime-reevaluation.mjs";
+const CI_PORTABILITY_SOURCE_BLOB = "15f5cc94e2a2673ba36ef73a2cdb7a6a690ffc6c";
+const CI_PORTABILITY_RESULT_BLOB = "4eea1f845c7a20a819a2189a3956b724b1d631ea";
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
@@ -22,6 +25,11 @@ check(manifest.counts.preserveMain === 302, "main preservation count drift");
 
 for (const entry of manifest.includeExact) {
   check(existsSync(path.join(ROOT, entry.path)), `missing exact source path: ${entry.path}`);
+  if (entry.path === CI_PORTABILITY_SEMANTIC_PATH) {
+    check(entry.sourceBlob === CI_PORTABILITY_SOURCE_BLOB, "historical reevaluation source blob drift");
+    check(hash(entry.path) === CI_PORTABILITY_RESULT_BLOB, "reevaluation CI portability result drift");
+    continue;
+  }
   check(hash(entry.path) === entry.sourceBlob, `source blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.preserveMain) {
@@ -78,6 +86,12 @@ for (const verifier of manifest.requiredCandidateSecurityVerifiers) {
 const readiness = readFileSync(path.join(ROOT, "scripts/verify-evaluator-boundary-readiness-review.mjs"), "utf8");
 check(readiness.includes("output.pureReplayEvidenceSummary.productRowsLoaded > 0"), "readiness semantic delta missing");
 
+const reevaluation = readFileSync(path.join(ROOT, CI_PORTABILITY_SEMANTIC_PATH), "utf8");
+check(reevaluation.includes("const REVIEW_BASE_CANDIDATES = ["), "reevaluation base candidate contract missing");
+check(reevaluation.includes('"origin/codex/stage10-hosted-preview-user-flow"'), "reevaluation origin base fallback missing");
+check(reevaluation.includes("const reviewBaseRef = resolveRef(REVIEW_BASE_CANDIDATES);"), "reevaluation base resolution missing");
+check(reevaluation.includes("`${reviewBaseRef}...${reviewHeadRef}`"), "reevaluation resolved diff boundary missing");
+
 const closurePaths = [...manifest.includeExact.map((entry) => entry.path), ...manifest.mergeSemantic.map((entry) => entry.path)]
   .filter((value) => /\.(?:m?js|jsx)$/.test(value));
 const candidates = (filePath) => [filePath, `${filePath}.js`, `${filePath}.mjs`, path.join(filePath, "index.js")];
@@ -99,4 +113,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; 61 exact, 7 semantic, 38 absent, 302 main preserved)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved)`);
