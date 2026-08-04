@@ -76,7 +76,7 @@ async function main(): Promise<void> {
           ...files,
           evidence: Buffer.alloc(0),
         }),
-      "review_evidence_empty",
+      "review_evidence_hash_mismatch",
     );
     expectCode(
       () =>
