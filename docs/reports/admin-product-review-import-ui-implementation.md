@@ -41,7 +41,7 @@ This branch is stacked on `feature/admin-product-review-import-confirm`. It is n
 - fatal UTF-8 and NUL rejection
 - no upload persistence
 - no-store responses
-- allowlisted error codes and messages
+- allowlisted error codes, HTTP statuses, and messages
 - no raw auth, parser, file, database, or RPC errors
 
 ### Domain adapter
@@ -75,7 +75,23 @@ No Production or hosted protected execution is part of this implementation.
 
 ## Validation status
 
-At document creation, the implementation is committed on the target feature branch and the dedicated Draft PR CI has not yet completed. Only completed current-feature-SHA checks may be promoted to PASS in the final handoff report.
+Current verdict: `BLOCKED_BY_CI`.
+
+The target feature branch and Draft PR exist, but no GitHub Actions run associated with the current target SHA was created through the available connector-origin push or PR event path. A temporary probe and validation PR produced no authoritative target-SHA workflow run and were removed or closed. The only external commit status observed was a Vercel deployment-rate-limit failure; it is not an ADMIN-PRODUCT-4 contract, build, or isolated-Supabase result and no Preview was created.
+
+Therefore none of the following are promoted to PASS for the current feature SHA:
+
+- UI verifier
+- route verifier
+- AP3 import-confirm verifier
+- admin access/product review verifier
+- crawler typecheck and AP2/AP3 regression verifiers
+- architecture guard
+- production build
+- isolated Supabase dry-run/confirm/rollback runtime
+- diff hygiene
+
+The committed workflow remains available for an explicit GitHub Actions run. Only completed current-feature-SHA results may change the verdict.
 
 ## Remaining integration risk
 
