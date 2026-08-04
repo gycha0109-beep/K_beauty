@@ -1,0 +1,204 @@
+name: Admin Product Review Import UI
+
+on:
+  pull_request:
+    branches:
+      - feature/admin-product-review-import-confirm
+    paths:
+      - "app/admin/**"
+      - "app/api/admin/product-reviews/import/**"
+      - "lib/admin/product-review-import/**"
+      - "crawler/lib/reviews/**"
+      - "crawler/test-product-review-intake-bytes.ts"
+      - "crawler/package.json"
+      - "scripts/verify-admin-product-review-import-*.mjs"
+      - "tests/fixtures/admin-product-review-import/**"
+      - "docs/architecture/admin-product-review-import-ui-v1.md"
+      - "docs/reports/admin-product-review-import-ui-implementation.md"
+      - "package.json"
+      - ".github/workflows/admin-product-review-import-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+
+jobs:
+  contracts-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify admin import contracts
+        run: |
+          npm run verify:admin-product-review-import-ui
+          npm run verify:admin-product-review-import-routes
+          npm run verify:admin-product-review-import-confirm
+          npm run verify:admin-access-foundation
+          npm run verify:admin-product-candidate-reviews
+
+      - name: Verify crawler contracts
+        working-directory: crawler
+        run: |
+          npm run typecheck
+          npm run verify:product-review-export
+          npm run verify:product-review-intake-dry-run
+          npm run verify:product-review-intake-bytes
+          npm run verify:product-review-intake-confirm
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BASE_SHA:-}" ]]; then
+            git diff --check "${BASE_SHA}..${GITHUB_SHA}"
+          else
+            git diff --check
+          fi
+
+  isolated-confirm-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-review-import-runtime
+      REVIEW_IMPORT_BATCH_DIR: tmp/admin-product-review-import-ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare isolated Supabase project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
+            --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
+            --force
+          mkdir -p "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations"
+          cp tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+          cp supabase/migrations/*_admin_access_foundation.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+          cp supabase/migrations/*_admin_product_candidate_reviews*.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+          cp tests/fixtures/product-review-export-intake/20260731170000_product_review_export_intake_fixture.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+          cp supabase/migrations/20260731183428_admin_product_review_import_confirm.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+          cp tests/fixtures/admin-product-review-import/20260731190000_review_import_runtime_seed.sql \
+            "${REVIEW_IMPORT_RUNTIME_DIR}/supabase/migrations/"
+
+      - name: Start and reset isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_log="$(mktemp)"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 160 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
+            --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
+            >"${raw_log}" 2>&1; then
+            sanitize_log <"${raw_log}" | tail -n 180 >&2
+            rm -f "${raw_log}"
+            exit 1
+          fi
+          rm -f "${raw_log}"
+
+      - name: Export, review, dry-run, and confirm isolated batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="${RUNNER_TEMP}/review-import-supabase.env"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" status \
+            --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
+            -o env >"${env_file}"
+          set -a
+          source "${env_file}"
+          set +a
+          export NEXT_PUBLIC_SUPABASE_URL="${API_URL}"
+          export SUPABASE_SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY}"
+          rm -f "${env_file}"
+
+          rm -rf -- "${REVIEW_IMPORT_BATCH_DIR}"
+          (
+            cd crawler
+            npm run reviews:export -- \
+              --status queued \
+              --out-dir "${REVIEW_IMPORT_BATCH_DIR}" \
+              --limit 5
+            npx tsx tests/prepare-reviewed-intake-local-fixture.ts \
+              "${REVIEW_IMPORT_BATCH_DIR}"
+            npm run reviews:import-reviewed -- \
+              --file "${REVIEW_IMPORT_BATCH_DIR}/reviewed.csv" \
+              --dry-run
+            npm run verify:product-review-intake-confirm:local-runtime -- \
+              "${REVIEW_IMPORT_BATCH_DIR}/reviewed.csv" \
+              "30000000-0000-4000-8000-000000000001" \
+              "30000000-0000-4000-8000-000000000003" \
+              "ap4-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          )
+
+      - name: Stop isolated Supabase and remove fixtures
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -d "${REVIEW_IMPORT_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
+              --no-backup
+          fi
+          rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
