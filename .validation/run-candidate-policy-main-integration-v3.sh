@@ -21,8 +21,10 @@ let text = fs.readFileSync(file, 'utf8');
 const oldBuilder = 'git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration.mjs > "$BUILDER"';
 const newBuilder = [
   'export ORIGINAL_BUILDER_PATH="$RUNNER_TEMP/build-candidate-policy-integration-v1.mjs"',
+  'export AMENDED_BUILDER_PATH="$RUNNER_TEMP/build-candidate-policy-integration-v2.mjs"',
   'git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration.mjs > "$ORIGINAL_BUILDER_PATH"',
-  'git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration-v2.mjs > "$BUILDER"'
+  'git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration-v2.mjs > "$AMENDED_BUILDER_PATH"',
+  'git show origin/codex/candidate-policy-design-audit-validation-base:.validation/build-candidate-policy-integration-v3.mjs > "$BUILDER"'
 ].join('\n');
 if (!text.includes(oldBuilder)) throw new Error('core builder marker missing');
 text = text.replace(oldBuilder, newBuilder);
