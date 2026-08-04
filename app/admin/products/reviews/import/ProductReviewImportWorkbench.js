@@ -35,6 +35,23 @@ function errorMessage(code) {
   );
 }
 
+function normalizeImportError(error, fallback = "unexpected_error") {
+  const code =
+    typeof error?.code === "string" && error.code
+      ? error.code
+      : fallback;
+  return {
+    code,
+    message:
+      typeof error?.safeMessage === "string" && error.safeMessage
+        ? error.safeMessage
+        : errorMessage(code),
+    requestId:
+      typeof error?.requestId === "string" ? error.requestId : null,
+    retryable: error?.retryable === true
+  };
+}
+
 function makeFormData(files, fields = {}) {
   const formData = new FormData();
   for (const [field] of FILES) {
@@ -55,9 +72,16 @@ async function requestImport(url, formData) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload || typeof payload !== "object") {
-    const code = typeof payload?.error === "string" ? payload.error : "unexpected_error";
-    const error = new Error(code);
-    error.code = code;
+    const error = new Error("product_review_import_request_failed");
+    error.code =
+      typeof payload?.error === "string"
+        ? payload.error
+        : "unexpected_error";
+    error.safeMessage =
+      typeof payload?.message === "string" ? payload.message : null;
+    error.requestId =
+      typeof payload?.requestId === "string" ? payload.requestId : null;
+    error.retryable = payload?.retryable === true;
     throw error;
   }
   return payload;
@@ -142,11 +166,18 @@ export default function ProductReviewImportWorkbench() {
     INITIAL_PRODUCT_REVIEW_IMPORT_STATE
   );
   const inFlight = useRef(false);
-  const complete = useMemo(() => hasAllProductReviewImportFiles(files), [files]);
+  const complete = useMemo(
+    () => hasAllProductReviewImportFiles(files),
+    [files]
+  );
   const canConfirm = canConfirmProductReviewImport(state, confirmation);
   const busy = [
     PRODUCT_REVIEW_IMPORT_STATES.VALIDATING,
     PRODUCT_REVIEW_IMPORT_STATES.CONFIRMING
+  ].includes(state.status);
+  const finished = [
+    PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED,
+    PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
   ].includes(state.status);
   const visibleSummary = state.result?.summary || state.dryRun?.summary || null;
 
@@ -162,6 +193,13 @@ export default function ProductReviewImportWorkbench() {
     });
   }
 
+  function resetWorkbench() {
+    if (inFlight.current) return;
+    setFiles({});
+    setConfirmation("");
+    dispatch({ type: "reset" });
+  }
+
   async function runDryRun() {
     if (inFlight.current || !complete) return;
     inFlight.current = true;
@@ -173,7 +211,10 @@ export default function ProductReviewImportWorkbench() {
       );
       dispatch({ type: "dry_run_completed", payload });
     } catch (error) {
-      dispatch({ type: "dry_run_failed", error: error.code || "unexpected_error" });
+      dispatch({
+        type: "dry_run_failed",
+        error: normalizeImportError(error, "dry_run_failed")
+      });
     } finally {
       inFlight.current = false;
     }
@@ -195,7 +236,10 @@ export default function ProductReviewImportWorkbench() {
       );
       dispatch({ type: "confirm_completed", payload });
     } catch (error) {
-      dispatch({ type: "confirm_failed", error: error.code || "confirm_failed" });
+      dispatch({
+        type: "confirm_failed",
+        error: normalizeImportError(error, "confirm_failed")
+      });
     } finally {
       inFlight.current = false;
     }
@@ -226,7 +270,7 @@ export default function ProductReviewImportWorkbench() {
             const file = files[field];
             return (
               <label
-                key={field}
+                key={`${field}-${state.filesRevision}`}
                 className="rounded-xl border border-[#dfe3e9] p-4 dark:border-[#303640]"
               >
                 <span className="text-sm font-semibold">{label}</span>
@@ -235,30 +279,56 @@ export default function ProductReviewImportWorkbench() {
                   type="file"
                   accept={accept}
                   disabled={busy}
-                  onChange={(event) => selectFile(field, event.target.files?.[0] || null)}
+                  onChange={(event) =>
+                    selectFile(field, event.target.files?.[0] || null)
+                  }
                 />
                 <span className="mt-2 block break-all text-xs text-[#747c88]">
-                  {file ? `${file.name} · ${formatBytes(file.size)}` : "선택되지 않음"}
+                  {file
+                    ? `${file.name} · ${formatBytes(file.size)}`
+                    : "선택되지 않음"}
                 </span>
               </label>
             );
           })}
         </div>
-        <button
-          type="button"
-          onClick={runDryRun}
-          disabled={!complete || busy}
-          className="mt-5 rounded-xl bg-[#171a20] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#f2f4f7] dark:text-[#171a20]"
-        >
-          {state.status === PRODUCT_REVIEW_IMPORT_STATES.VALIDATING
-            ? "검증 중..."
-            : "Dry-run 실행"}
-        </button>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={runDryRun}
+            disabled={!complete || busy}
+            className="rounded-xl bg-[#171a20] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 dark:bg-[#f2f4f7] dark:text-[#171a20]"
+          >
+            {state.status === PRODUCT_REVIEW_IMPORT_STATES.VALIDATING
+              ? "검증 중..."
+              : "Dry-run 실행"}
+          </button>
+          <button
+            type="button"
+            onClick={resetWorkbench}
+            disabled={busy}
+            className="rounded-xl border border-[#d9dde4] px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#343a44]"
+          >
+            Reset
+          </button>
+        </div>
       </section>
 
       {state.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
-          {errorMessage(state.error)}
+          <p className="font-semibold">
+            {state.error.message || errorMessage(state.error.code)}
+          </p>
+          {state.error.requestId ? (
+            <p className="mt-2 break-all text-xs">
+              request ID: {state.error.requestId}
+            </p>
+          ) : null}
+          <p className="mt-1 text-xs">
+            {state.error.retryable
+              ? "동일 파일과 동일 request ID로 다시 시도할 수 있습니다."
+              : "파일 또는 상태를 확인한 뒤 새 dry-run을 실행해 주세요."}
+          </p>
         </div>
       ) : null}
 
@@ -282,10 +352,7 @@ export default function ProductReviewImportWorkbench() {
             <input
               type="text"
               value={confirmation}
-              disabled={busy || [
-                PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED,
-                PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
-              ].includes(state.status)}
+              disabled={busy || finished}
               onChange={(event) => setConfirmation(event.target.value)}
               autoComplete="off"
               className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-3 text-sm outline-none focus:border-amber-600 dark:border-amber-800 dark:bg-[#171a20]"
@@ -294,20 +361,20 @@ export default function ProductReviewImportWorkbench() {
           <button
             type="button"
             onClick={confirmImport}
-            disabled={!canConfirm || busy || [
-              PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED,
-              PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
-            ].includes(state.status)}
+            disabled={!canConfirm || busy || finished}
             className="mt-4 rounded-xl bg-amber-900 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             {state.status === PRODUCT_REVIEW_IMPORT_STATES.CONFIRMING
               ? "반영 중..."
-              : "Reviewed batch 반영"}
+              : state.status === PRODUCT_REVIEW_IMPORT_STATES.FAILED &&
+                  state.error?.retryable
+                ? "동일 요청 다시 시도"
+                : "Reviewed batch 반영"}
           </button>
         </section>
       ) : null}
 
-      {[PRODUCT_REVIEW_IMPORT_STATES.CONFIRMED, PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED].includes(state.status) ? (
+      {finished ? (
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950/30">
           <h2 className="font-semibold text-emerald-900 dark:text-emerald-100">
             {state.status === PRODUCT_REVIEW_IMPORT_STATES.ALREADY_CONFIRMED
@@ -315,7 +382,7 @@ export default function ProductReviewImportWorkbench() {
               : "Reviewed batch 반영이 완료되었습니다."}
           </h2>
           <p className="mt-2 break-all text-xs text-emerald-800 dark:text-emerald-200">
-            request ID: {state.requestId}
+            request ID: {state.result?.requestId || state.requestId}
           </p>
         </section>
       ) : null}
