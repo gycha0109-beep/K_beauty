@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,14 +9,26 @@ const designPath = path.join(
   root,
   "docs/architecture/candidate-policy-main-integration-final-design-v1.md"
 );
+const auditPath = path.join(
+  root,
+  "docs/architecture/candidate-policy-main-integration-exhaustiveness-audit-v1.md"
+);
 const manifestPath = path.join(
   root,
   "docs/architecture/candidate-policy-main-integration-manifest-v1.json"
 );
+const ledgerPath = path.join(
+  root,
+  "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json"
+);
 
 const design = fs.readFileSync(designPath, "utf8");
+const audit = fs.readFileSync(auditPath, "utf8");
 const manifestText = fs.readFileSync(manifestPath, "utf8");
+const ledgerText = fs.readFileSync(ledgerPath, "utf8");
 const manifest = JSON.parse(manifestText);
+const ledger = JSON.parse(ledgerText);
+const combinedDesign = `${design}\n${audit}`;
 
 let assertions = 0;
 const check = (condition, message) => {
@@ -27,7 +40,10 @@ check(
   manifest.version === "candidate-policy-main-integration-manifest-v1",
   "manifest version must be exact"
 );
-check(manifest.status === "final_design_complete", "design must be final");
+check(
+  manifest.status === "final_design_complete_exhaustive_path_ledger_verified",
+  "design status must include exhaustive ledger verification"
+);
 check(
   manifest.additionalDesignStageRequired === false,
   "additional design stages must be prohibited"
@@ -45,6 +61,11 @@ check(
   manifest.authorities.durableFinalSource.sha ===
     "ce882aa2057a06d39d86f99a09f4264725b4161b",
   "durable source SHA must be exact"
+);
+check(
+  manifest.authoritativeTreeComparison.mergeBaseSha ===
+    "a30970b78ff2fb3f5784d947b746223a66954e44",
+  "merge base must be exact"
 );
 check(
   manifest.authorities.routeCleanup.sha ===
@@ -66,6 +87,41 @@ check(
   "cherry-pick chains must be prohibited"
 );
 
+const comparison = manifest.authoritativeTreeComparison;
+check(comparison.status === "diverged", "tree authority must record divergence");
+check(comparison.mainAheadBy === 521, "main ahead count must be exact");
+check(comparison.sourceAheadBy === 263, "source ahead count must be exact");
+check(comparison.treeDiffPathCount === 127, "tree diff path count must be exact");
+check(
+  comparison.ledgerPath ===
+    "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json",
+  "ledger path must be exact"
+);
+check(
+  comparison.ledgerVerifier ===
+    "scripts/verify-candidate-policy-main-integration-path-ledger.mjs",
+  "ledger verifier path must be exact"
+);
+check(comparison.dispositionCounts.include_exact === 62, "include_exact count must be 62");
+check(comparison.dispositionCounts.merge_semantic === 6, "merge_semantic count must be 6");
+check(comparison.dispositionCounts.exclude === 59, "exclude count must be 59");
+
+check(ledger.compare.baseSha === manifest.integration.baseSha, "ledger base SHA mismatch");
+check(
+  ledger.compare.sourceSha === manifest.authorities.durableFinalSource.sha,
+  "ledger source SHA mismatch"
+);
+check(
+  ledger.compare.mergeBaseSha === comparison.mergeBaseSha,
+  "ledger merge-base mismatch"
+);
+check(ledger.counts.total === 127, "ledger total must be 127");
+check(ledger.counts.include_exact === 62, "ledger include_exact must be 62");
+check(ledger.counts.merge_semantic === 6, "ledger merge_semantic must be 6");
+check(ledger.counts.exclude === 59, "ledger exclude must be 59");
+check(ledger.entries.length === 127, "ledger entry count must be 127");
+check(new Set(ledger.entries.map((entry) => entry.path)).size === 127, "ledger paths must be unique");
+
 const dispositions = new Set(manifest.dispositions);
 check(dispositions.size === 3, "exactly three dispositions are required");
 for (const disposition of ["include_exact", "merge_semantic", "exclude"]) {
@@ -85,19 +141,20 @@ for (const exclusion of expectedExclusions) {
   check(actualExclusions.has(exclusion), `missing exact exclusion: ${exclusion}`);
 }
 
-const semanticPaths = new Set(
-  manifest.semanticMergePaths
-    .map((entry) => entry.path)
-    .filter((value) => typeof value === "string")
-);
-for (const requiredPath of [
+const semanticPaths = manifest.semanticMergePaths.map((entry) => entry.path).sort();
+const expectedSemanticPaths = [
   "app/api/analyze/route.js",
-  "package.json",
+  "lib/evaluator-boundary-policy-shadow.js",
   "package-lock.json",
-  "scripts/run-security-closeout-verifier-suite.mjs"
-]) {
-  check(semanticPaths.has(requiredPath), `missing semantic merge path: ${requiredPath}`);
-}
+  "package.json",
+  "scripts/run-security-closeout-verifier-suite.mjs",
+  "scripts/verify-evaluator-boundary-readiness-review.mjs"
+].sort();
+check(
+  semanticPaths.length === expectedSemanticPaths.length &&
+    semanticPaths.every((value, index) => value === expectedSemanticPaths[index]),
+  "semantic merge paths must be exact"
+);
 
 const invariants = manifest.runtimeInvariants;
 check(invariants.candidateExposurePolicyContractPresent, "policy contract must remain present");
@@ -112,10 +169,31 @@ check(invariants.storageSchemaChanged === false, "storage schema must remain unc
 check(invariants.databaseChanged === false, "database must remain unchanged");
 check(invariants.productionChanged === false, "Production must remain unchanged");
 
+const closure = manifest.closureRequirements;
+check(closure.literalStaticImportsResolve, "static import closure must be required");
+check(closure.literalDynamicImportsResolve, "dynamic import closure must be required");
+check(closure.packageScriptTargetsResolve, "package script closure must be required");
+check(closure.spawnedScriptTargetsResolve, "spawned script closure must be required");
+check(closure.securityVerifierManifestFilesResolve, "security manifest closure must be required");
+check(
+  closure.includedOrSemanticPathMayNotDependOnExcludedSourceOnlyPath,
+  "included paths must not depend on excluded source-only paths"
+);
+
 const gates = new Set(manifest.validationGates);
 for (const gate of [
+  "authoritative_tree_diff_equals_ledger_127_of_127",
   "all_source_paths_classified_once",
+  "path_disposition_counts_62_6_59",
   "unknown_overlap_zero",
+  "duplicate_path_zero",
+  "include_exact_blob_parity",
+  "exclude_exact_main_blob_or_absence_parity",
+  "semantic_merge_expected_digest_match",
+  "literal_import_closure_pass",
+  "package_script_target_closure_pass",
+  "security_manifest_file_closure_pass",
+  "excluded_source_only_dependency_count_zero",
   "temporary_route_files_absent",
   "npm_audit_total_zero",
   "candidate_policy_focused_verifiers_pass",
@@ -134,21 +212,38 @@ for (const marker of [
   "추가 설계 PR",
   "READY_FOR_SINGLE_PR_IMPLEMENTATION",
   "NO_ADDITIONAL_DESIGN_STAGE",
-  "TEMPORARY_DIAGNOSTIC_ROUTE_ABSENT",
-  "DEPENDENCY_AUDIT_ZERO",
-  "RUNTIME_DEFAULT_OFF",
-  "PRODUCTION_HARD_DISABLED"
+  "TREE_DIFF_127_OF_127_CLASSIFIED",
+  "INCLUDE_EXACT_62",
+  "MERGE_SEMANTIC_6",
+  "EXCLUDE_59",
+  "TRANSITIVE_CLOSURE_REQUIRED"
 ]) {
-  check(design.includes(marker), `missing design marker: ${marker}`);
+  check(combinedDesign.includes(marker), `missing design marker: ${marker}`);
 }
 
 check(!manifestText.includes("RESOLVE_"), "manifest must not contain unresolved placeholders");
 check(!manifestText.includes("__CURRENT_MAIN_SHA__"), "manifest must not contain SHA placeholders");
+check(!ledgerText.includes("RESOLVE_"), "ledger must not contain unresolved placeholders");
 check(
-  manifest.machineStatus === "ready_for_single_pr_implementation",
-  "machine status must authorize direct implementation"
+  manifest.machineStatus ===
+    "ready_for_single_pr_implementation_after_exhaustive_127_path_design_audit",
+  "machine status must authorize direct implementation after exhaustive audit"
+);
+
+const ledgerVerifierOutput = execFileSync(
+  process.execPath,
+  ["scripts/verify-candidate-policy-main-integration-path-ledger.mjs"],
+  {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024
+  }
+);
+check(
+  ledgerVerifierOutput.includes("127/127 paths"),
+  "authoritative ledger verifier must pass"
 );
 
 console.log(
-  `verify-candidate-policy-main-integration-final-design: ok (${assertions} assertions)`
+  `verify-candidate-policy-main-integration-final-design: ok (${assertions} assertions, exhaustive ledger PASS)`
 );
