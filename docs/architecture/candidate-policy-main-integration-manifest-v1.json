@@ -1,6 +1,6 @@
 {
   "version": "candidate-policy-main-integration-manifest-v1",
-  "status": "final_design_complete",
+  "status": "final_design_complete_exhaustive_path_ledger_verified",
   "additionalDesignStageRequired": false,
   "strategy": "curated_tree_transplant",
   "integration": {
@@ -32,6 +32,23 @@
       "copyAuthority": false
     }
   },
+  "authoritativeTreeComparison": {
+    "mergeBaseSha": "a30970b78ff2fb3f5784d947b746223a66954e44",
+    "status": "diverged",
+    "mainAheadBy": 521,
+    "sourceAheadBy": 263,
+    "treeDiffPathCount": 127,
+    "ledgerPath": "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json",
+    "ledgerVerifier": "scripts/verify-candidate-policy-main-integration-path-ledger.mjs",
+    "dispositionCounts": {
+      "include_exact": 62,
+      "merge_semantic": 6,
+      "exclude": 59
+    },
+    "everyPathExactlyOnceRequired": true,
+    "unknownPathCountRequired": 0,
+    "duplicatePathCountRequired": 0
+  },
   "dispositions": [
     "include_exact",
     "merge_semantic",
@@ -58,61 +75,82 @@
       "path": "app/api/analyze/route.js",
       "mainOwns": [
         "request parsing",
-        "provider execution",
-        "security",
+        "Vision/Provider execution",
+        "security guards",
+        "Premium session creation",
         "persistence",
-        "response contract"
+        "response contract",
+        "current Face Lab and mobile behavior"
       ],
       "sourceOwns": [
-        "approved post-canonical default-off shadow hook",
-        "aggregate-only CandidateExposurePolicy observability"
-      ]
+        "CandidateExposurePolicy shadow imports",
+        "post-canonical default-off shadow invocation",
+        "aggregate-only observability"
+      ],
+      "wholeSourceCopyAllowed": false
+    },
+    {
+      "path": "lib/evaluator-boundary-policy-shadow.js",
+      "mainOwns": [
+        "current evaluator and hint-receiver behavior"
+      ],
+      "sourceOwns": [
+        "baselineExposureGroup observability field"
+      ],
+      "wholeSourceCopyAllowed": false
     },
     {
       "path": "package.json",
       "mainOwns": [
         "current scripts",
         "workspaces",
-        "unrelated dependencies"
+        "Toolkit T1-T11",
+        "Admin/mobile/Face scripts",
+        "current safe dependency and override strategy"
       ],
       "sourceOwns": [
-        "CandidatePolicy verifier scripts",
-        "fixed dependency versions",
-        "next postcss/sharp overrides"
-      ]
+        "verify:candidate-exposure-policy-shadow",
+        "verify:candidate-exposure-policy-shadow-evaluation"
+      ],
+      "wholeSourceCopyAllowed": false,
+      "dependencyDowngradeAllowed": false
     },
     {
       "path": "package-lock.json",
       "resolution": "regenerate_from_merged_package_json",
-      "wholesaleSourceCopyAllowed": false
+      "wholesaleSourceCopyAllowed": false,
+      "manualEditingAllowed": false
     },
     {
       "path": "scripts/run-security-closeout-verifier-suite.mjs",
-      "resolution": "deduplicated_union",
+      "resolution": "current_main_manifest_plus_four_candidate_verifiers",
+      "candidateVerifierEntries": [
+        "verify-candidate-exposure-policy-diagnostic-route-absence.mjs",
+        "verify-candidate-exposure-policy-shadow-evaluation.mjs",
+        "verify-candidate-exposure-policy-shadow-runtime.mjs",
+        "verify-candidate-policy-runtime-reevaluation.mjs"
+      ],
       "mainVerifierRemovalAllowed": false,
-      "sourceVerifierRemovalAllowed": false
+      "candidateVerifierSkipAllowed": false
     },
     {
-      "pathClass": "shared skin decision context and premium caller",
-      "resolution": "preserve_current_main_behavior_and_import_v4_candidate_context_delta"
-    },
-    {
-      "pathClass": "current product snapshot mapper",
-      "resolution": "preserve_current_main_snapshot_contract_and_import_protection_metadata_delta"
-    },
-    {
-      "pathClass": "github workflows",
-      "resolution": "current_main_wins_temporary_source_workflows_excluded"
+      "path": "scripts/verify-evaluator-boundary-readiness-review.mjs",
+      "resolution": "preserve_current_main_checks_and_reconcile_pure_replay_aware_source_unavailability",
+      "wholeSourceCopyAllowed": false,
+      "safetyGateWeakeningAllowed": false
     }
   ],
-  "sourceOwnedCandidatePrefixes": [
-    "lib/candidate-policy-",
-    "lib/candidate-exposure-policy-",
-    "scripts/verify-candidate-",
-    "docs/architecture/candidate-",
-    "docs/reviews/candidate-",
-    "docs/verification/candidate-"
-  ],
+  "sourceOwnedCandidatePrefixes": {
+    "role": "advisory_only_path_ledger_is_authoritative",
+    "values": [
+      "lib/candidate-policy-",
+      "lib/candidate-exposure-policy-",
+      "scripts/verify-candidate-",
+      "docs/architecture/candidate-",
+      "docs/reviews/candidate-",
+      "docs/verification/candidate-"
+    ]
+  },
   "mainOwnedDomains": [
     "admin",
     "mobile-survey",
@@ -126,6 +164,21 @@
     "unrelated-ui",
     "current-ci-trigger-and-permissions"
   ],
+  "excludedSourceDeltaPolicy": {
+    "sourceOnlyExcludedPathMustRemainAbsent": true,
+    "mainExistingExcludedPathMustRetainExactMainBlob": true,
+    "excludedPremiumHostedAndAuthDeltaIsNotCandidatePolicyAuthority": true,
+    "excludedPathMayNotBeImportedByIncludedOrSemanticCandidateClosure": true
+  },
+  "closureRequirements": {
+    "literalStaticImportsResolve": true,
+    "literalDynamicImportsResolve": true,
+    "packageScriptTargetsResolve": true,
+    "spawnedScriptTargetsResolve": true,
+    "securityVerifierManifestFilesResolve": true,
+    "includedOrSemanticPathMayNotDependOnExcludedSourceOnlyPath": true,
+    "productionBuildModuleClosurePass": true
+  },
   "runtimeInvariants": {
     "candidateExposurePolicyContractPresent": true,
     "shadowRuntimePresent": true,
@@ -147,20 +200,38 @@
     "picomatch4": "4.0.5",
     "nanoid3": "3.3.17"
   },
+  "currentMainDependencyObservation": {
+    "nextAlreadyAtMinimum": true,
+    "sharpAlreadyAtMinimum": true,
+    "workspaceAndToolkitAlreadyPresent": true,
+    "dependencyChangeRequiredOnlyIfFinalAuditOrClosureFails": true
+  },
   "requiredImplementationArtifacts": [
     "docs/architecture/candidate-policy-main-integration-manifest-v1.json",
+    "docs/architecture/candidate-policy-main-integration-path-ledger-v1.json",
+    "scripts/verify-candidate-policy-main-integration-path-ledger.mjs",
     "scripts/verify-candidate-policy-main-integration.mjs",
     "docs/verification/candidate-policy-main-integration-result.md"
   ],
   "validationGates": [
     "exact_main_base_frozen",
     "exact_source_sha_frozen",
+    "authoritative_merge_base_frozen",
+    "authoritative_tree_diff_equals_ledger_127_of_127",
     "all_source_paths_classified_once",
+    "path_disposition_counts_62_6_59",
     "unknown_overlap_zero",
+    "duplicate_path_zero",
     "temporary_route_files_absent",
     "temporary_route_runtime_tokens_absent",
     "include_exact_blob_parity",
+    "exclude_exact_main_blob_or_absence_parity",
     "semantic_merge_expected_digest_match",
+    "literal_import_closure_pass",
+    "package_script_target_closure_pass",
+    "spawned_script_target_closure_pass",
+    "security_manifest_file_closure_pass",
+    "excluded_source_only_dependency_count_zero",
     "npm_ci_pass",
     "npm_audit_total_zero",
     "dependency_tree_fixed",
@@ -215,7 +286,14 @@
   },
   "stopConditions": [
     "main_base_drift_unresolved",
+    "source_sha_drift",
+    "tree_diff_ledger_mismatch",
+    "unclassified_or_duplicate_path",
     "unknown_overlap",
+    "include_exact_blob_mismatch",
+    "excluded_main_blob_mismatch",
+    "excluded_source_only_path_present",
+    "excluded_dependency_referenced",
     "temporary_route_residue",
     "runtime_default_changed",
     "production_hard_disable_weakened",
@@ -228,5 +306,5 @@
     "preview_production_target_or_alias",
     "secret_or_raw_evidence_detected"
   ],
-  "machineStatus": "ready_for_single_pr_implementation"
+  "machineStatus": "ready_for_single_pr_implementation_after_exhaustive_127_path_design_audit"
 }
