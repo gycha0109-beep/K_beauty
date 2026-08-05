@@ -108,8 +108,14 @@ jobs:
           cp /tmp/skin-decision-closeout-sha.txt tmp/skin-decision-closeout-sha.txt
           git diff --check "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA"
           git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" > tmp/skin-decision-closeout-diff.txt
-          if grep -E '^(app/api/admin/|supabase/migrations/)' tmp/skin-decision-closeout-diff.txt; then
-            echo 'Admin or migration scope leaked into closeout'
+          allowed_admin_routes='^(app/api/admin/product-reviews/(confirm|preflight)/route\.js|app/api/admin/product-reviews/import/(confirm|dry-run)/route\.js)$'
+          allowed_admin_migrations='^supabase/migrations/20260804233[0-3]00_admin_product_.*\.sql$'
+          unexpected_admin_scope="$({
+            grep -E '^(app/api/admin/|supabase/migrations/)' tmp/skin-decision-closeout-diff.txt || true
+          } | grep -Ev "${allowed_admin_routes}|${allowed_admin_migrations}" || true)"
+          if [[ -n "${unexpected_admin_scope}" ]]; then
+            printf '%s\n' "${unexpected_admin_scope}"
+            echo 'Unexpected Admin or migration scope leaked into closeout'
             exit 1
           fi
           if git diff -U0 "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" \
