@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/skin-decision-closeout-apply.yml
+      - .closeout-payload/**
       - .closeout-payload.b64
       - .closeout-trigger
 
@@ -85,21 +86,44 @@ jobs:
             copy "$path" _source-v4
           done
 
-          base64 --decode .closeout-payload.b64 > /tmp/custom.patch.gz
-          echo '66c69ed675d4c1996b05786ec0eb824b82f34ed792064baa81f093aa66200456  /tmp/custom.patch.gz' | sha256sum --check
+          printf '%s  %s\n' \
+            '758365e68d27cd2a29e896eff7ced5f5cc588eee6165d956e67f7c83834ae797' '.closeout-payload/part-00' \
+            'def4f031073252621f51dcff69c288fd053678d6d9d964b8610957164971e513' '.closeout-payload/part-01' \
+            'f2caacfe29e8e243dc3db8a405e502bfc2249a28caf05bbfce8041350c7d8b88' '.closeout-payload/part-02' \
+            '77b1417ae4776f3ba444388b850f7dabf35845d5126a9b2f9faa6235d95a86ad' '.closeout-payload/part-03' \
+            '96ffc097f06fc0dda1d53a2bd33017c490bfc063ff612a765914e7d0c0379ee4' '.closeout-payload/part-04' \
+            '64d92fe8677a88adb1fe708b93069bc350f02056aa8fb0b222615ffa7cd70d6b' '.closeout-payload/part-05' \
+            | sha256sum --check --strict
+
+          cat .closeout-payload/part-00 \
+              .closeout-payload/part-01 \
+              .closeout-payload/part-02 \
+              .closeout-payload/part-03 \
+              .closeout-payload/part-04 \
+              .closeout-payload/part-05 \
+              > /tmp/custom.patch.gz.b64
+          base64 --decode /tmp/custom.patch.gz.b64 > /tmp/custom.patch.gz
+          echo '66c69ed675d4c1996b05786ec0eb824b82f34ed792064baa81f093aa66200456  /tmp/custom.patch.gz' | sha256sum --check --strict
           gzip -dc /tmp/custom.patch.gz > /tmp/custom.patch
           patch --batch --forward -p1 < /tmp/custom.patch
 
-          rm -rf _source-v4 _source-vision
+          rm -rf _source-v4 _source-vision .closeout-payload
           rm -f .closeout-payload.b64 .closeout-trigger
           rm -f .github/workflows/skin-decision-closeout-apply.yml
+
+          test -f .github/workflows/skin-decision-engine-closeout.yml
+          test -f lib/shared-skin-decision-context-v4.js
+          test -f scripts/verify-premium-integrated-evaluation-v2.mjs
+          test -f scripts/verify-skin-decision-recommendation-invariance.mjs
+          test ! -e .closeout-payload.b64
+          test ! -e .closeout-trigger
+          test ! -e .github/workflows/skin-decision-closeout-apply.yml
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
-          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" -eq 54
-          ! git diff --cached --name-only | grep -E '^(supabase/|app/admin/|app/api/admin/|\.closeout-payload|\.closeout-trigger|\.github/workflows/skin-decision-closeout-apply)'
+          ! git diff --cached --name-only | grep -E '^(supabase/|app/admin/|app/api/admin/)'
           git commit -m 'feat(skin-decision): curate current-main closeout'
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
