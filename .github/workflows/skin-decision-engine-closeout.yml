@@ -73,6 +73,12 @@ jobs:
           node scripts/verify-anonymous-write-grant-v2.mjs
       - name: Frozen #167 recommendation invariance
         run: npm run verify:skin-decision-recommendation-invariance
+      - name: Remove frozen reference before repository-wide guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference
+          test ! -e _reference
       - name: CandidateExposurePolicy compatibility
         run: |
           npm run verify:candidate-exposure-policy-shadow
