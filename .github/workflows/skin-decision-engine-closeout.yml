@@ -1,0 +1,130 @@
+name: Skin Decision Engine Closeout
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CLOSEOUT_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CLOSEOUT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+    steps:
+      - name: Checkout exact closeout SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Checkout frozen #167 recommendation reference
+        uses: actions/checkout@v4
+        with:
+          repository: gycha0109-beep/K_beauty
+          ref: 783afb91a964f5d762f46846f9ef854902b48e95
+          path: _reference/recommendation
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Record exact SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CLOSEOUT_HEAD_SHA"
+          printf '%s\n' "$CLOSEOUT_HEAD_SHA" > tmp-closeout-sha.txt
+      - name: Install dependencies
+        run: npm ci
+      - name: SharedSkinDecisionContext v4
+        run: npm run verify:shared-skin-decision-context
+      - name: Functional, Routine, and Condition contracts
+        run: |
+          node scripts/verify-functional-policy-single-source.mjs
+          node scripts/verify-routine-policy-single-source.mjs
+          node scripts/verify-condition-policy-single-source.mjs
+          node scripts/verify-cross-domain-consistency.mjs
+          node scripts/verify-premium-decision-state.mjs
+      - name: Unified Vision and Face Lab contracts
+        run: |
+          npm run verify:unified-vision-pipeline
+          node scripts/verify-image-analysis-eligibility.mjs
+          node scripts/verify-face-lab-observation-contract.mjs
+          node scripts/verify-face-lab-failure-and-legacy-contract.mjs
+          node scripts/verify-provider-runtime-log-sanitization.mjs
+      - name: Integrated Evaluation Pack v2
+        run: npm run verify:premium-integrated-evaluation-v2
+      - name: Persistence and reentry
+        run: |
+          npm run verify:skin-decision-persistence-reentry
+          node scripts/verify-premium-identical-retry.mjs
+          node scripts/verify-premium-report-reentry-contract.mjs
+          node scripts/verify-premium-snapshot-diff.mjs
+          node scripts/verify-premium-route-storage-reentry.mjs
+          node scripts/verify-anonymous-write-grant-v2.mjs
+      - name: Frozen #167 recommendation invariance
+        run: npm run verify:skin-decision-recommendation-invariance
+      - name: CandidateExposurePolicy compatibility
+        run: |
+          npm run verify:candidate-exposure-policy-shadow
+          node scripts/verify-candidate-policy-main-integration.mjs
+      - name: Security closeout
+        run: |
+          node scripts/run-security-closeout-verifier-suite.mjs
+          npm run check:sec11-origin-normalization
+      - name: Current-main closeout contract
+        run: npm run verify:skin-decision-engine-closeout
+      - name: JavaScript syntax gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
+      - name: Architecture guard
+        run: npm run architecture:guard
+      - name: Production build
+        run: npm run build
+      - name: Diff and secret hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA"
+          git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" > tmp/skin-decision-closeout-diff.txt
+          if grep -E '^(app/api/admin/|supabase/migrations/)' tmp/skin-decision-closeout-diff.txt; then
+            echo 'Admin or migration scope leaked into closeout'
+            exit 1
+          fi
+          if git diff -U0 "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" \
+            | grep '^+' \
+            | grep -Ev '^\+\+\+' \
+            | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
+            echo 'Potential credential literal detected'
+            exit 1
+          fi
+          if git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" \
+            | grep -Ei '\.(jpe?g|png|webp|heic|gif)$'; then
+            echo 'Image fixture added to closeout'
+            exit 1
+          fi
+      - name: Upload exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skin-decision-engine-closeout-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            tmp/skin-decision-engine-closeout.json
+            tmp/skin-decision-closeout-diff.txt
+            tmp/security-closeout-verifier-suite.json
+            tmp-closeout-sha.txt
+          if-no-files-found: warn
+          retention-days: 7
