@@ -20,12 +20,15 @@
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
     "typecheck": "tsc --noEmit",
     "reviews:export": "tsx export-product-reviews.ts",
+    "reviews:export-v2": "tsx export-product-reviews-v2.ts",
     "reviews:import-reviewed": "tsx import-reviewed-product-reviews.ts",
     "verify:product-review-export": "tsx test-product-review-export.ts",
     "verify:product-review-intake-dry-run": "tsx test-product-review-intake-dry-run.ts",
     "verify:product-review-intake-bytes": "tsx test-product-review-intake-bytes.ts",
     "verify:product-review-intake-confirm": "tsx test-product-review-intake-confirm.ts",
-    "verify:product-review-intake-confirm:local-runtime": "tsx tests/verify-reviewed-intake-confirm-local-runtime.ts"
+    "verify:product-review-intake-confirm:local-runtime": "tsx tests/verify-reviewed-intake-confirm-local-runtime.ts",
+    "verify:product-review-cleanser-metadata-v2": "tsx tests/verify-cleanser-metadata-v2-contract.ts",
+    "verify:product-review-cleanser-metadata-v2:local-runtime": "tsx tests/verify-cleanser-metadata-v2-local-runtime.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
