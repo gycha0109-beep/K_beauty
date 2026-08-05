@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - integration/admin-product-current-main
+      - feature/admin-product-review-cleanser-metadata-v2
   workflow_dispatch:
 
 concurrency:
@@ -114,7 +115,8 @@ jobs:
             test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
             git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
           else
-            git diff --check HEAD^
+            test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+            git diff --check origin/integration/admin-product-current-main..HEAD
           fi
 
   isolated-confirm-runtime:
@@ -198,7 +200,7 @@ jobs:
           rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
 
   isolated-v2-runtime:
-    if: github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main'
+    if: (github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main') || (github.event_name == 'push' && github.ref_name == 'feature/admin-product-review-cleanser-metadata-v2')
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
@@ -215,7 +217,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
