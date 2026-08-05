@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - integration/admin-product-current-main
     paths:
       - "app/admin/**"
       - "app/api/admin/product-reviews/**"
