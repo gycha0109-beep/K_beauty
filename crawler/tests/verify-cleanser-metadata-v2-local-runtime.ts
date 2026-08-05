@@ -273,7 +273,8 @@ async function main(): Promise<void> {
   assert.equal(retry.error, null);
   assert.deepEqual(retry.data, result);
   const conflictPayload = structuredClone(confirmation.payload) as Record<string, unknown>;
-  conflictPayload.reviewed_file_sha256 = "f".repeat(64);
+  (conflictPayload.rows as Array<Record<string, unknown>>)[0]
+    .structured_metadata_review_complete = false;
   await rpcFail(client, actorId, requestId, conflictPayload, "review_v2_request_id_conflict");
   await rpcFail(client, actorId, `${requestId}-second`, confirmation.payload,
     "review_v2_batch_already_confirmed");
