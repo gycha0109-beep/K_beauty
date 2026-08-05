@@ -44,11 +44,20 @@ export async function runCleanserMetadataV2DryRun(
   metadataLoader: MetadataTargetSnapshotLoader,
 ): Promise<CleanserMetadataV2DryRunResult> {
   const v1 = await runReviewedIntakeDryRun(parsed.v1Parsed, snapshotLoader);
-  const productIds = parsed.manifestRows.map((row) => row.existing_product_match_id).filter(Boolean);
+  const manifestByCandidate = new Map(
+    parsed.manifestRows.map((row) => [row.candidate_id, row]),
+  );
+  const productIds = parsed.manifestRows
+    .map((row) => row.existing_product_match_id)
+    .filter(Boolean);
   const metadataSnapshot = await metadataLoader({ productIds });
   const rows = parsed.reviewedRows.map((row, index) => {
     const validation = validateCleanserMetadataV2Row(row, index + 2);
-    const productId = parsed.manifestRows[index].existing_product_match_id || null;
+    const manifest = manifestByCandidate.get(row.candidate_id);
+    if (!manifest) {
+      throw new CleanserMetadataV2Error("review_v2_candidate_set_mismatch");
+    }
+    const productId = manifest.existing_product_match_id || null;
     return {
       row_number: index + 2,
       candidate_id: row.candidate_id || null,
