@@ -87,7 +87,8 @@ jobs:
           done
 
           printf '%s  %s\n' \
-            '758365e68d27cd2a29e896eff7ced5f5cc588eee6165d956e67f7c83834ae797' '.closeout-payload/part-00' \
+            '7ece80a61e6a5f4979121b9d13b89fcb5218e96aefc3da7bf1e188b363af2114' '.closeout-payload/part-00a' \
+            '517a8d360240d81f56de18749c3dfe14b351f07727b2fb622d1df14f3fb847fc' '.closeout-payload/part-00b' \
             'def4f031073252621f51dcff69c288fd053678d6d9d964b8610957164971e513' '.closeout-payload/part-01' \
             'f2caacfe29e8e243dc3db8a405e502bfc2249a28caf05bbfce8041350c7d8b88' '.closeout-payload/part-02' \
             '77b1417ae4776f3ba444388b850f7dabf35845d5126a9b2f9faa6235d95a86ad' '.closeout-payload/part-03' \
@@ -95,7 +96,8 @@ jobs:
             '64d92fe8677a88adb1fe708b93069bc350f02056aa8fb0b222615ffa7cd70d6b' '.closeout-payload/part-05' \
             | sha256sum --check --strict
 
-          cat .closeout-payload/part-00 \
+          cat .closeout-payload/part-00a \
+              .closeout-payload/part-00b \
               .closeout-payload/part-01 \
               .closeout-payload/part-02 \
               .closeout-payload/part-03 \
