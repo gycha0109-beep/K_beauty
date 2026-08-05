@@ -23,7 +23,7 @@ import {
   formatFaceLabDisplayText
 } from "@/lib/face-lab-launch";
 import { buildProductFitGauges } from "@/lib/product-fit-gauges";
-import { getAvailableVisionFaceLabData } from "@/lib/face-lab-result-envelope";
+import { isFaceLabResultEnvelope } from "@/lib/face-lab-result-envelope";
 import { buildPremiumFaceLabSummary, buildUnavailablePremiumFaceLab } from "@/lib/premium-face-lab";
 import { getResultSection } from "@/lib/product-category-normalizer";
 import { resolveProductPurchaseLink } from "@/lib/product-purchase-link";
@@ -6347,11 +6347,12 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
       } catch {
         parsedFaceLab = null;
       }
-      const parsedFaceLabData = getAvailableVisionFaceLabData(parsedFaceLab);
-
+      const parsedFaceLabEnvelope = isFaceLabResultEnvelope(parsedFaceLab)
+        ? parsedFaceLab
+        : null;
       const developmentFallbackReport =
         process.env.NODE_ENV !== "production"
-          ? buildDevelopmentReport(parsedResult, parsedFaceLabData, locale)
+          ? buildDevelopmentReport(parsedResult, parsedFaceLabEnvelope, locale)
           : null;
 
       if (isTestFullReport && developmentFallbackReport) {
@@ -6373,7 +6374,7 @@ function FullReportPageContent({ functionalPlanDevScenarios = [] }) {
           body: JSON.stringify({
             savedReportId: savedReportId || undefined,
             locale,
-            faceLab: parsedFaceLabData,
+            faceLab: parsedFaceLabEnvelope,
             imageUrl: parsedSubmission?.imagePreviewDataUrl || "",
             imageAlt: locale === "en" ? "Face Lab analysis image" : "Face Lab 분석 이미지",
             topPick: parsedResult?.topPick || null,

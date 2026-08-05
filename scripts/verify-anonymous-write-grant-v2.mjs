@@ -206,7 +206,27 @@ const anonymousPersistenceSource = {
   topPick: { id: "product-1", name: "Product", buy_link: "https://example.test/product" },
   morning: ["cleanse"],
   night: ["cleanse"],
-  photoObservations: { source: "photo" }
+  photoObservations: { source: "photo" },
+  photoEvidenceState: {
+    status: "unavailable",
+    source: "vision",
+    failureReason: "provider_timeout",
+    failureClass: "provider_failure",
+    analysisEligible: false,
+    rawProviderResponse: "must-not-persist"
+  },
+  imageEligibility: {
+    status: "eligible",
+    source: "vision",
+    imageType: "photorealistic_human",
+    humanFaceCount: 1,
+    faceLabEligible: true,
+    skinAnalysisEligible: true,
+    faceLabFailureReason: null,
+    skinFailureReason: null,
+    confidence: 0.95,
+    evidence: ["one face"]
+  }
 };
 const anonymousPersistencePayload = createAnonymousResultPersistencePayload({
   ...anonymousPersistenceSource,
@@ -226,6 +246,11 @@ assert(
   ANONYMOUS_RESULT_PERSISTENCE_FIELDS.every((field) => Object.hasOwn(canonicalPersistenceResult, field)),
   "canonical result must define every persisted fingerprint field"
 );
+assert(canonicalPersistenceResult.photoEvidenceState.status === "unavailable", "photo state must persist");
+assert(canonicalPersistenceResult.photoEvidenceState.failureClass === "provider_failure", "failure class must persist");
+assert(canonicalPersistenceResult.photoEvidenceState.analysisEligible === false, "explicit false must persist");
+assert(!Object.hasOwn(canonicalPersistenceResult.photoEvidenceState, "rawProviderResponse"), "raw provider response must not persist");
+assert(canonicalPersistenceResult.imageEligibility.skinAnalysisEligible === true, "eligibility must persist");
 assert(
   canonicalizeAnonymousResultForPersistence({ ...anonymousPersistencePayload, meta: { source: "changed" } }) === null,
   "meta must be rejected from anonymous result persistence"

@@ -11,10 +11,15 @@ const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const CI_PORTABILITY_SEMANTIC_PATH = "scripts/verify-candidate-policy-runtime-reevaluation.mjs";
 const CI_PORTABILITY_SOURCE_BLOB = "15f5cc94e2a2673ba36ef73a2cdb7a6a690ffc6c";
 const CI_PORTABILITY_RESULT_BLOB = "4eea1f845c7a20a819a2189a3956b724b1d631ea";
-let assertions = 0;
-const check = (value, message) => { assertions += 1; assert.ok(value, message); };
-const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
-const hash = (filePath) => git("hash-object", "--", filePath);
+const CLOSEOUT_SEMANTIC_BLOBS = Object.freeze({
+  "lib/candidate-exposure-policy-observability.js": "1c108be104d020e80a7c571d586a27013bb9d646",
+  "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs": "3a02dc8a47e2d9bf037f44f349ba87884206bb2d",
+  "app/api/analyze/route.js": "cc059eba680034d28e1ade0b1a8147d43a8b30f7",
+  "package.json": "53eb387437edb818e80d901f1bb92803fb48d219",
+  "scripts/run-security-closeout-verifier-suite.mjs": "3885fc4676170b80b81dfe354f40ee52fd7b43f8",
+  "components/onboarding/SurveyFlow.js": "95a7edeb33d2bf2b7cee094e38c18554674c6778",
+  "scripts/verify-sec06-saved-report-boundary.mjs": "32410c3dab260ef861e0fbc687cf30dde998719c"
+});
 const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   ".codex/AI_WORK_LOG.md",
   "app/admin/layout.js",
@@ -22,6 +27,11 @@ const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   "package.json",
   "scripts/run-security-closeout-verifier-suite.mjs"
 ]);
+const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
+let assertions = 0;
+const check = (value, message) => { assertions += 1; assert.ok(value, message); };
+const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
+const hash = (filePath) => git("hash-object", "--", filePath);
 
 check(manifest.version === "candidate-policy-main-integration-blob-manifest-v1", "manifest version drift");
 check(manifest.baseSha === "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf", "main authority drift");
@@ -38,12 +48,12 @@ for (const entry of manifest.includeExact) {
     check(hash(entry.path) === CI_PORTABILITY_RESULT_BLOB, "reevaluation CI portability result drift");
     continue;
   }
-  check(hash(entry.path) === entry.sourceBlob, `source blob mismatch: ${entry.path}`);
+  check(hash(entry.path) === expectedBlob(entry, "sourceBlob"), `source/closeout blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
   if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
-  check(hash(entry.path) === entry.mainBlob, `current-main blob mismatch: ${entry.path}`);
+  check(hash(entry.path) === expectedBlob(entry, "mainBlob"), `current-main/closeout blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
   check(!existsSync(path.join(ROOT, entry.path)), `excluded source-only path present: ${entry.path}`);
@@ -51,7 +61,7 @@ for (const entry of manifest.excludeSourceOnly) {
 for (const entry of manifest.mergeSemantic) {
   check(existsSync(path.join(ROOT, entry.path)), `missing semantic path: ${entry.path}`);
   if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
-  check(hash(entry.path) === entry.resultBlob, `semantic result blob mismatch: ${entry.path}`);
+  check(hash(entry.path) === expectedBlob(entry, "resultBlob"), `semantic/closeout result blob mismatch: ${entry.path}`);
 }
 const candidateManifestProtectedPaths = new Set([
   ...manifest.preserveMain.map((entry) => entry.path),
@@ -60,6 +70,7 @@ const candidateManifestProtectedPaths = new Set([
 for (const filePath of ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS) {
   check(candidateManifestProtectedPaths.has(filePath), `unregistered admin semantic exception: ${filePath}`);
 }
+
 const adminIntegrationWorkLog = readFileSync(path.join(ROOT, ".codex/AI_WORK_LOG.md"), "utf8");
 check(adminIntegrationWorkLog.includes("ADMIN-PRODUCT-INTEGRATION-1"), "admin integration work log missing");
 const adminIntegrationLayout = readFileSync(path.join(ROOT, "app/admin/layout.js"), "utf8");
@@ -102,7 +113,13 @@ check(route.includes("const { access: premiumAccess } = await resolvePremiumAcce
 check(!route.includes("userId: premiumUser?.id"), "source-only premium ownership leaked");
 const diagnosticRouteToken = ["/api/internal", "candidate-exposure-policy-diagnostic"].join("/");
 check(!route.includes(diagnosticRouteToken), "temporary diagnostic route token leaked");
+check(route.includes("analyzeVisionObservation"), "closeout Vision producer missing");
+check(route.includes("photoEvidenceState"), "closeout bounded photo state missing");
+check(route.includes("imageEligibility"), "closeout image eligibility missing");
 
+const observability = readFileSync(path.join(ROOT, "lib/candidate-exposure-policy-observability.js"), "utf8");
+check(observability.includes("ENUMERATED_AGGREGATE_COUNT_MAPS"), "aggregate count-map privacy boundary missing");
+check(observability.includes("function validateCountMap"), "aggregate enum validation missing");
 const evaluator = readFileSync(path.join(ROOT, "lib/evaluator-boundary-policy-shadow.js"), "utf8");
 check(evaluator.includes("baselineExposureGroup: currentExposureDecision.exposureStatus"), "baseline exposure field missing");
 
@@ -172,4 +189,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; main-only automatic Vercel deployment with globstar preview deny enforced; 60 exact, 1 CI portability semantic, 7 integration semantic, 38 absent, 302 main preserved with 5 approved admin semantic deltas)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas)`);
