@@ -1,0 +1,208 @@
+{
+  "canonicalScenarioSha256": "7aa02ed3f1a264a67aee3d97c916b4a955a713fdbb173844d1727e9cfb1c918e",
+  "scenarioCount": 12,
+  "scenarios": [
+    {
+      "answers": {
+        "afternoonSkinChange": "more_oily",
+        "mainConcern": "oiliness",
+        "mainConcerns": [
+          "oiliness",
+          "pores"
+        ],
+        "postWashFeeling": "still_oily",
+        "preferredTexture": "gel",
+        "sensitivity": "low",
+        "skinType": "oily"
+      },
+      "id": "U1",
+      "label": "oily_sebum"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "more_oily",
+        "mainConcern": "dehydration",
+        "mainConcerns": [
+          "dehydration",
+          "oiliness"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "gel",
+        "sensitivity": "medium",
+        "skinType": "oily"
+      },
+      "id": "U2",
+      "label": "oily_dehydration"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "more_oily",
+        "mainConcern": "dehydration",
+        "mainConcerns": [
+          "dehydration",
+          "pores"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "lotion",
+        "sensitivity": "medium",
+        "skinType": "combination"
+      },
+      "id": "U3",
+      "label": "combination_dehydration"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "more_dry",
+        "mainConcern": "barrier",
+        "mainConcerns": [
+          "barrier",
+          "dehydration"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "cream",
+        "sensitivity": "medium",
+        "skinType": "dry"
+      },
+      "id": "U4",
+      "label": "dry_barrier"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "red_or_irritated",
+        "mainConcern": "redness",
+        "mainConcerns": [
+          "redness",
+          "barrier"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "lotion",
+        "sensitivity": "high",
+        "skinType": "combination",
+        "verySensitivePeriod": true
+      },
+      "id": "U5",
+      "label": "sensitive_redness"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "red_or_irritated",
+        "cleansingFrequency": "3_plus",
+        "mainConcern": "barrier",
+        "mainConcerns": [
+          "barrier",
+          "redness"
+        ],
+        "postWashFeeling": "tight",
+        "sensitivity": "high",
+        "skinType": "not_sure",
+        "verySensitivePeriod": true
+      },
+      "id": "U6",
+      "label": "recent_instability"
+    },
+    {
+      "answers": {
+        "explicitCategoryIntent": "sunscreen",
+        "mainConcern": "pores",
+        "mainConcerns": [
+          "pores",
+          "dehydration"
+        ],
+        "makeupUse": true,
+        "preferredTexture": "watery",
+        "sensitivity": "medium",
+        "skinType": "combination",
+        "sunscreenIntent": true,
+        "toneUpWanted": false,
+        "whiteCastHate": true
+      },
+      "id": "U7",
+      "label": "makeup_use"
+    },
+    {
+      "answers": {
+        "explicitCategoryIntent": "sunscreen",
+        "eyeSensitive": true,
+        "mainConcern": "uv",
+        "mainConcerns": [
+          "uv",
+          "redness"
+        ],
+        "outdoorExposure": true,
+        "sensitivity": "high",
+        "skinType": "combination",
+        "sunscreenIntent": true,
+        "toneUpWanted": false,
+        "whiteCastHate": true
+      },
+      "id": "U8",
+      "label": "eye_sensitive"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "more_dry",
+        "mainConcern": "redness",
+        "mainConcerns": [
+          "redness",
+          "dehydration"
+        ],
+        "postWashFeeling": "tight",
+        "sensitivity": "high",
+        "skinType": "dry",
+        "verySensitivePeriod": true
+      },
+      "id": "U9",
+      "label": "sensitive_redness_dehydration"
+    },
+    {
+      "answers": {
+        "mainConcern": "dehydration",
+        "mainConcerns": [
+          "dehydration",
+          "barrier"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "cream",
+        "sensitivity": "medium",
+        "skinType": "combination"
+      },
+      "id": "U10",
+      "label": "local_moisture_need"
+    },
+    {
+      "answers": {
+        "afternoonSkinChange": "more_dry",
+        "mainConcern": "dehydration",
+        "mainConcerns": [
+          "dehydration",
+          "barrier"
+        ],
+        "postWashFeeling": "tight",
+        "preferredTexture": "cream",
+        "sensitivity": "low",
+        "skinType": "dry"
+      },
+      "id": "U11",
+      "label": "primary_moisturizer_need"
+    },
+    {
+      "answers": {
+        "explicitCategoryIntent": "sunscreen",
+        "eyeSensitive": false,
+        "mainConcern": "uv",
+        "mainConcerns": [
+          "uv",
+          "uneven_tone"
+        ],
+        "outdoorExposure": true,
+        "skinType": "combination",
+        "sunscreenIntent": true,
+        "toneUpWanted": false,
+        "whiteCastHate": false
+      },
+      "id": "U12",
+      "label": "sunscreen_protection_priority"
+    }
+  ],
+  "schemaVersion": "recommendation-metadata-user-scenarios-v1"
+}
