@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { buildConditionPolicy, CONDITION_POLICY_VERSION } from "../lib/condition-policy.js";
 import { buildPremiumConditionProjection } from "../lib/premium-condition-projection.js";
 import { buildPremiumDecisionState } from "../lib/premium-decision-state.js";
+import { SHARED_SKIN_DECISION_CONTEXT_VERSION } from "../lib/shared-skin-decision-context-v4.js";
 
 function context(overrides = {}) {
   return {
@@ -165,7 +166,7 @@ assert.equal(decisionState.conditionPlan.version, "premium-condition-projection-
 assert.deepEqual(decisionState.decisionBundle.conditionResponses, decisionState.conditionResponses);
 assert.equal(decisionState.decisionBundle.dependencies.functionalPolicyResult, false);
 assert.equal(decisionState.decisionBundle.dependencies.routinePolicyResult, false);
-assert.equal(decisionState.decisionBundle.context.version, "shared-skin-decision-context-v3");
+assert.equal(decisionState.decisionBundle.context.version, SHARED_SKIN_DECISION_CONTEXT_VERSION);
 assert.equal(decisionState.decisionBundle.context.conditionSignalState.rednessOrIrritation, "yes");
 assert.equal(decisionState.conditionPlan.source, "canonical");
 

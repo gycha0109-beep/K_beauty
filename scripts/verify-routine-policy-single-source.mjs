@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildRoutinePolicy, ROUTINE_POLICY_VERSION } from "../lib/routine-policy.js";
+import { SHARED_SKIN_DECISION_CONTEXT_VERSION } from "../lib/shared-skin-decision-context-v4.js";
 
 function context(overrides = {}) {
   return {
@@ -143,11 +144,12 @@ assert.match(componentSource, /canonicalSteps \|\| buildSteps/);
 assert.match(componentSource, /data-routine-source=/);
 
 const sharedContextSource = readFileSync(
-  new URL("../lib/shared-skin-decision-context.js", import.meta.url),
+  new URL("../lib/shared-skin-decision-context-v4.js", import.meta.url),
   "utf8"
 );
 assert.ok(!/routineStructure:\s*report\?\.routineStructure/.test(sharedContextSource));
 assert.ok(!/routineState:\s*\{/.test(sharedContextSource));
-assert.match(sharedContextSource, /shared-skin-decision-context-v3/);
+assert.ok(sharedContextSource.includes(SHARED_SKIN_DECISION_CONTEXT_VERSION));
+assert.match(sharedContextSource, /buildSharedSkinDecisionContextV3/);
 
 console.log("verify-routine-policy-single-source: PASS");
