@@ -9,7 +9,6 @@ const KEYWORDS = /(security|analysis|premium|image|face|result|saved|candidate|s
 const STEP_TIMEOUT_MS = 180_000;
 
 const EXPECTED_VERIFIERS = [
-  "verify-admin-product-candidate-reviews.mjs",
   "verify-analysis-request-guard.mjs",
   "verify-analysis-result-response-boundary.mjs",
   "verify-analysis-rls-contract.mjs",
@@ -22,7 +21,9 @@ const EXPECTED_VERIFIERS = [
   "verify-candidate-policy-runtime-reevaluation.mjs",
   "verify-evaluator-boundary-policy-production-observability.mjs",
   "verify-existing-recommendation-candidate-source.mjs",
+  "verify-face-lab-failure-and-legacy-contract.mjs",
   "verify-face-lab-keyword-summary.mjs",
+  "verify-face-lab-observation-contract.mjs",
   "verify-first-disabled-shadow-dry-run-minimal-patch.mjs",
   "verify-first-disabled-shadow-dry-run-patch-plan.mjs",
   "verify-first-disabled-shadow-dry-run-plan.mjs",
@@ -32,6 +33,7 @@ const EXPECTED_VERIFIERS = [
   "verify-functional-candidate-policy.mjs",
   "verify-functional-shadow-capture.mjs",
   "verify-functional-shadow-comparison.mjs",
+  "verify-image-analysis-eligibility.mjs",
   "verify-isolated-shadow-route-comparison.mjs",
   "verify-isolated-shadow-route-readiness.mjs",
   "verify-local-shadow-runtime-readiness.mjs",
@@ -39,6 +41,7 @@ const EXPECTED_VERIFIERS = [
   "verify-premium-decision-state.mjs",
   "verify-premium-identical-retry.mjs",
   "verify-premium-image-sanitizer-capacity.mjs",
+  "verify-premium-integrated-evaluation-v2.mjs",
   "verify-premium-integrated-evaluation.mjs",
   "verify-premium-release-mode.mjs",
   "verify-premium-report-reentry-contract.mjs",
