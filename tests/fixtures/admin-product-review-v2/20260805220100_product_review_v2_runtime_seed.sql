@@ -1,5 +1,41 @@
 begin;
 
+insert into auth.users (
+  id,
+  aud,
+  role,
+  email,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at,
+  is_sso_user,
+  is_anonymous
+) values (
+  '30000000-0000-4000-8000-000000000004',
+  'authenticated',
+  'authenticated',
+  'inactive-review-v2@example.test',
+  '{}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now(),
+  false,
+  false
+);
+
+insert into public.admin_memberships (
+  user_id,
+  role,
+  is_active,
+  granted_by
+) values (
+  '30000000-0000-4000-8000-000000000004',
+  'admin_owner',
+  false,
+  '30000000-0000-4000-8000-000000000001'
+);
+
 insert into public.products (
   id,
   name,
