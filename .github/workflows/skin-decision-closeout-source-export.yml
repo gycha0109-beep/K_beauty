@@ -1,0 +1,43 @@
+name: Skin Decision Closeout Source Export
+
+on:
+  push:
+    branches:
+      - integration/skin-decision-engine-current-main-closeout
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - name: Record exact source SHA
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD > CLOSEOUT_SOURCE_SHA.txt
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: skin-decision-closeout-source-${{ github.sha }}
+          path: |
+            .github
+            app
+            components
+            docs
+            lib
+            scripts
+            tests
+            package.json
+            package-lock.json
+            next.config.js
+            jsconfig.json
+            vercel.json
+            CLOSEOUT_SOURCE_SHA.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
