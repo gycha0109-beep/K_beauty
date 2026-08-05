@@ -16,7 +16,7 @@ const CLOSEOUT_SEMANTIC_BLOBS = Object.freeze({
   "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs": "3a02dc8a47e2d9bf037f44f349ba87884206bb2d",
   "app/api/analyze/route.js": "cc059eba680034d28e1ade0b1a8147d43a8b30f7",
   "package.json": "53eb387437edb818e80d901f1bb92803fb48d219",
-  "scripts/run-security-closeout-verifier-suite.mjs": "14d7a918cb2e9db38f53c78f8de82a95e7668465",
+  "scripts/run-security-closeout-verifier-suite.mjs": "3885fc4676170b80b81dfe354f40ee52fd7b43f8",
   "components/onboarding/SurveyFlow.js": "95a7edeb33d2bf2b7cee094e38c18554674c6778",
   "scripts/verify-sec06-saved-report-boundary.mjs": "32410c3dab260ef861e0fbc687cf30dde998719c"
 });
