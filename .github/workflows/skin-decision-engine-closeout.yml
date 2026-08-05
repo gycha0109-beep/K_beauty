@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$CLOSEOUT_HEAD_SHA"
-          printf '%s\n' "$CLOSEOUT_HEAD_SHA" > tmp-closeout-sha.txt
+          printf '%s\n' "$CLOSEOUT_HEAD_SHA" > /tmp/skin-decision-closeout-sha.txt
       - name: Install dependencies
         run: npm ci
       - name: SharedSkinDecisionContext v4
@@ -104,6 +104,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p tmp
+          cp /tmp/skin-decision-closeout-sha.txt tmp/skin-decision-closeout-sha.txt
           git diff --check "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA"
           git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" > tmp/skin-decision-closeout-diff.txt
           if grep -E '^(app/api/admin/|supabase/migrations/)' tmp/skin-decision-closeout-diff.txt; then
@@ -131,6 +133,6 @@ jobs:
             tmp/skin-decision-engine-closeout.json
             tmp/skin-decision-closeout-diff.txt
             tmp/security-closeout-verifier-suite.json
-            tmp-closeout-sha.txt
+            tmp/skin-decision-closeout-sha.txt
           if-no-files-found: warn
           retention-days: 7
