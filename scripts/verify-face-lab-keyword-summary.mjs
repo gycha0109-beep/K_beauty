@@ -1,8 +1,14 @@
 import { readFileSync } from "node:fs";
 
-function loadExports(path, names) {
-  const source = readFileSync(path, "utf8").replace(/export function /g, "function ");
-  return Function(`${source}\nreturn { ${names.join(", ")} };`)();
+function loadExports(path, names, dependencies = {}) {
+  const source = readFileSync(path, "utf8")
+    .replace(/^import[\s\S]*?;\r?\n/gm, "")
+    .replace(/export function /g, "function ");
+  const dependencyNames = Object.keys(dependencies);
+  return Function(
+    ...dependencyNames,
+    `${source}\nreturn { ${names.join(", ")} };`
+  )(...dependencyNames.map((name) => dependencies[name]));
 }
 
 function assertEqual(actual, expected, name) {
@@ -17,7 +23,8 @@ const { formatFaceLabKeywordList, buildFaceLabLaunchData } = loadExports(
 );
 const { getAvailableVisionFaceLabData } = loadExports(
   "lib/face-lab-result-envelope.js",
-  ["getAvailableVisionFaceLabData"]
+  ["getAvailableVisionFaceLabData"],
+  { getCanonicalFaceLabObservationAnalysis: () => null }
 );
 
 assertEqual(

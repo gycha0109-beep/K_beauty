@@ -313,7 +313,7 @@ defineCase("P10_ANALYZE_ROUTE_ORDER", async () => {
   const requestGuard = source.indexOf("await guardAnalysisRequest(");
   const byteRead = source.indexOf("const buffer = Buffer.from(await image.arrayBuffer())");
   const canonicalize = source.indexOf("await canonicalizeImageFile(image, buffer)");
-  const providerPrep = source.indexOf("extractPhotoAnalysis({");
+  const providerPrep = source.indexOf("analyzeVisionObservation({");
   assert(contentGuard >= 0 && contentGuard < formData);
   assert(requestGuard >= 0 && requestGuard < byteRead);
   assert(byteRead >= 0 && byteRead < canonicalize && canonicalize < providerPrep);
@@ -325,9 +325,9 @@ defineCase("P11_FACE_READING_ROUTE_ORDER", async () => {
   const contentGuard = source.indexOf("validateImageRequestContentLength(request)");
   const formData = source.indexOf("await request.formData()");
   const requestGuard = source.indexOf("await guardAnalysisRequest(");
-  const byteRead = source.indexOf("const buffer = Buffer.from(await image.arrayBuffer())");
-  const canonicalize = source.indexOf("await canonicalizeImageFile(image, buffer)");
-  const providerCall = source.indexOf("await fetch(OPENAI_URL");
+  const byteRead = source.indexOf("const imageBuffer = Buffer.from(await image.arrayBuffer())");
+  const canonicalize = source.indexOf("await canonicalizeImageFile(image, imageBuffer)");
+  const providerCall = source.indexOf("analyzeVisionObservation({");
   assert(contentGuard >= 0 && contentGuard < formData);
   assert(requestGuard >= 0 && requestGuard < byteRead);
   assert(byteRead >= 0 && byteRead < canonicalize && canonicalize < providerCall);
