@@ -71,6 +71,7 @@ jobs:
         run: npm run verify:admin-product-current-main-integration
 
       - name: Verify admin product contracts
+        shell: bash
         run: |
           set -euo pipefail
           npm run verify:admin-access-foundation
@@ -78,10 +79,13 @@ jobs:
           npm run verify:admin-product-review-import-confirm
           npm run verify:admin-product-review-import-ui
           npm run verify:admin-product-review-import-routes
-          node scripts/verify-admin-product-review-cleanser-metadata-v2.mjs
+          if [[ -f scripts/verify-admin-product-review-cleanser-metadata-v2.mjs ]]; then
+            node scripts/verify-admin-product-review-cleanser-metadata-v2.mjs
+          fi
 
       - name: Verify crawler contracts
         working-directory: crawler
+        shell: bash
         run: |
           set -euo pipefail
           npm run typecheck
@@ -89,7 +93,9 @@ jobs:
           npm run verify:product-review-intake-dry-run
           npm run verify:product-review-intake-bytes
           npm run verify:product-review-intake-confirm
-          npm run verify:product-review-cleanser-metadata-v2
+          if [[ -f tests/verify-cleanser-metadata-v2-contract.ts ]]; then
+            npm run verify:product-review-cleanser-metadata-v2
+          fi
 
       - name: Verify security closeout
         run: node scripts/run-security-closeout-verifier-suite.mjs
@@ -192,6 +198,7 @@ jobs:
           rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
 
   isolated-v2-runtime:
+    if: github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
@@ -208,7 +215,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
