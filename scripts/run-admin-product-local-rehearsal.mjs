@@ -15,11 +15,11 @@ const RUNTIME_DIR = path.join(
   "tmp",
   `admin-product-local-runtime-${RUN_ID}`,
 );
-const BATCH_DIR = path.join(
-  ROOT,
+const BATCH_RELATIVE_DIR = path.posix.join(
   "tmp",
   `admin-product-local-batch-${RUN_ID}`,
 );
+const BATCH_DIR = path.resolve(ROOT, BATCH_RELATIVE_DIR);
 const DOCKER = process.platform === "win32" ? "docker.exe" : "docker";
 const KEEP = process.argv.includes("--keep");
 const NPM_CLI = process.env.npm_execpath;
@@ -264,7 +264,6 @@ async function prepareRuntime() {
   await rm(RUNTIME_DIR, { recursive: true, force: true });
   await rm(BATCH_DIR, { recursive: true, force: true });
   await mkdir(RUNTIME_DIR, { recursive: true });
-  await mkdir(BATCH_DIR, { recursive: true });
 
   await runSupabase(
     ["init", "--workdir", RUNTIME_DIR, "--force"],
@@ -323,7 +322,10 @@ async function runtimeEnvironment() {
 }
 
 async function runRuntimeChecks(env) {
-  const reviewedCsv = path.join(BATCH_DIR, "reviewed.csv");
+  const reviewedCsvRelative = path.posix.join(
+    BATCH_RELATIVE_DIR,
+    "reviewed.csv",
+  );
   const requestId = `local-${RUN_ID}`;
 
   step("검수 대상 export");
@@ -335,7 +337,7 @@ async function runRuntimeChecks(env) {
       "--status",
       "queued",
       "--out-dir",
-      BATCH_DIR,
+      BATCH_RELATIVE_DIR,
       "--limit",
       "5",
     ],
@@ -349,7 +351,7 @@ async function runRuntimeChecks(env) {
       "--",
       "tsx",
       "tests/prepare-reviewed-intake-local-fixture.ts",
-      BATCH_DIR,
+      BATCH_RELATIVE_DIR,
     ],
     { cwd: CRAWLER_ROOT, env },
   );
@@ -361,7 +363,7 @@ async function runRuntimeChecks(env) {
       "reviews:import-reviewed",
       "--",
       "--file",
-      reviewedCsv,
+      reviewedCsvRelative,
       "--dry-run",
     ],
     { cwd: CRAWLER_ROOT, env },
@@ -373,7 +375,7 @@ async function runRuntimeChecks(env) {
       "run",
       "verify:product-review-intake-confirm:local-runtime",
       "--",
-      reviewedCsv,
+      reviewedCsvRelative,
       "30000000-0000-4000-8000-000000000001",
       "30000000-0000-4000-8000-000000000003",
       requestId,
