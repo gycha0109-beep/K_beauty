@@ -41,6 +41,7 @@ const EXPECTED_VERIFIERS = [
   "verify-premium-decision-state.mjs",
   "verify-premium-identical-retry.mjs",
   "verify-premium-image-sanitizer-capacity.mjs",
+  "verify-premium-integrated-evaluation-v2.mjs",
   "verify-premium-integrated-evaluation.mjs",
   "verify-premium-release-mode.mjs",
   "verify-premium-report-reentry-contract.mjs",
