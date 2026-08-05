@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/skin-decision-closeout-apply.yml
       - .closeout-payload.b64
+      - .closeout-trigger
 
 permissions:
   contents: write
@@ -90,7 +91,7 @@ jobs:
           patch --batch --forward -p1 < /tmp/custom.patch
 
           rm -rf _source-v4 _source-vision
-          rm -f .closeout-payload.b64
+          rm -f .closeout-payload.b64 .closeout-trigger
           rm -f .github/workflows/skin-decision-closeout-apply.yml
 
           git config user.name 'github-actions[bot]'
@@ -99,6 +100,6 @@ jobs:
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
           test "$(git diff --cached --name-only | wc -l | tr -d ' ')" -eq 54
-          ! git diff --cached --name-only | grep -E '^(supabase/|app/admin/|app/api/admin/|\.closeout-payload|\.github/workflows/skin-decision-closeout-apply)'
+          ! git diff --cached --name-only | grep -E '^(supabase/|app/admin/|app/api/admin/|\.closeout-payload|\.closeout-trigger|\.github/workflows/skin-decision-closeout-apply)'
           git commit -m 'feat(skin-decision): curate current-main closeout'
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
