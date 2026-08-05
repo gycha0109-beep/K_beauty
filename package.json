@@ -18,6 +18,12 @@
     "review_prepare": "node scripts/review-signals/review-prepare.mjs",
     "review_in_supabase": "node scripts/review-signals/review-in-supabase.mjs",
     "architecture:guard": "node scripts/architecture-guard.mjs",
+    "verify:shared-skin-decision-context": "node scripts/verify-shared-skin-decision-context-v4.mjs",
+    "verify:premium-integrated-evaluation-v2": "node scripts/verify-premium-integrated-evaluation-v2.mjs",
+    "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs",
+    "verify:skin-decision-persistence-reentry": "node scripts/verify-skin-decision-persistence-reentry.mjs",
+    "verify:skin-decision-recommendation-invariance": "node scripts/verify-skin-decision-recommendation-invariance.mjs",
+    "verify:skin-decision-engine-closeout": "node scripts/verify-skin-decision-engine-current-main-closeout.mjs",
     "verify:admin-access-foundation": "node scripts/verify-admin-access-foundation.mjs",
     "check:sec11-origin-normalization": "node scripts/check-sec11-site-origin-normalization.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
@@ -47,12 +53,7 @@
     "synthetic:baseline": "npm run baseline --workspace @bejewely/synthetic-evaluation --",
     "synthetic:rehearsal": "npm run rehearsal --workspace @bejewely/synthetic-evaluation --",
     "synthetic:solo": "npm run solo --workspace @bejewely/synthetic-evaluation --",
-    "lint": "next lint",
-    "verify:admin-product-candidate-reviews": "node scripts/verify-admin-product-candidate-reviews.mjs",
-    "verify:admin-product-review-import-confirm": "node scripts/verify-admin-product-review-import-confirm.mjs",
-    "verify:admin-product-review-import-ui": "node scripts/verify-admin-product-review-import-ui.mjs",
-    "verify:admin-product-review-import-routes": "node scripts/verify-admin-product-review-import-routes.mjs",
-    "verify:admin-product-current-main-integration": "node scripts/verify-admin-product-current-main-integration.mjs"
+    "lint": "next lint"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
