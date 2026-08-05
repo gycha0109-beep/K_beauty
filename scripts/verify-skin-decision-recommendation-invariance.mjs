@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { register } from "node:module";
 import path from "node:path";
-import { buildRecommendationProductFromSource } from "../lib/product-source.js";
-import { buildSkinMatchDecisionBundle } from "../lib/skin-match-decision-engine.js";
-import { fingerprintCandidateExposureShadowValue } from "../lib/candidate-exposure-policy-shadow.js";
+
+register("./node-next-alias-loader.mjs", import.meta.url);
+
+const [
+  { buildRecommendationProductFromSource },
+  { buildSkinMatchDecisionBundle },
+  { fingerprintCandidateExposureShadowValue }
+] = await Promise.all([
+  import("../lib/product-source.js"),
+  import("../lib/skin-match-decision-engine.js"),
+  import("../lib/candidate-exposure-policy-shadow.js")
+]);
 
 const referenceRoot = path.resolve(
   process.env.RECOMMENDATION_REFERENCE_ROOT || "_reference/recommendation"
