@@ -6,7 +6,7 @@ const checkedFiles = [];
 
 function read(path) {
   checkedFiles.push(path);
-  return readFileSync(resolve(root, path), "utf8");
+  return readFileSync(resolve(root, path), "utf8").replace(/\r\n?/g, "\n");
 }
 
 function assert(condition, message) {

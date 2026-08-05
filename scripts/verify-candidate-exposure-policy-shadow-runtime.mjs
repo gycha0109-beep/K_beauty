@@ -479,6 +479,21 @@ check.equal(shadowResult.comparison.unexpectedDivergenceCount, 0);
 check.equal(shadowResult.comparison.unclassifiedDivergenceCount, 0);
 check.equal(emitted.length, 1, "aggregate telemetry emitted once");
 check.ok(validateCandidateExposurePolicyShadowTelemetry(shadowResult.telemetry).valid);
+const currentProductSemanticTelemetry = structuredClone(shadowResult.telemetry);
+currentProductSemanticTelemetry.divergenceCategoryCounts = {
+  expected_current_product_semantics: currentProductSemanticTelemetry.candidateCount
+};
+check.ok(
+  validateCandidateExposurePolicyShadowTelemetry(currentProductSemanticTelemetry).valid,
+  "enumerated aggregate category names must not be mistaken for identifier fields"
+);
+const identifierLeakTelemetry = structuredClone(currentProductSemanticTelemetry);
+identifierLeakTelemetry.productId = "forbidden";
+check.equal(
+  validateCandidateExposurePolicyShadowTelemetry(identifierLeakTelemetry).valid,
+  false,
+  "actual product identifiers remain forbidden"
+);
 check.ok(
   Object.keys(shadowResult.telemetry).every((key) =>
     !/(productId|productName|brand|url|userId|survey|cookie|jwt|sessionId|reportId|token)/i.test(key)
