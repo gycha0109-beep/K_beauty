@@ -76,8 +76,8 @@ check(route.includes("photoEvidenceState"), "closeout bounded photo state missin
 check(route.includes("imageEligibility"), "closeout image eligibility missing");
 
 const observability = readFileSync(path.join(ROOT, "lib/candidate-exposure-policy-observability.js"), "utf8");
-check(observability.includes("AGGREGATE_COUNT_MAP_KEYS"), "aggregate count-map privacy boundary missing");
-check(observability.includes("isSafeAggregateCountMap"), "aggregate enum validation missing");
+check(observability.includes("ENUMERATED_AGGREGATE_COUNT_MAPS"), "aggregate count-map privacy boundary missing");
+check(observability.includes("function validateCountMap"), "aggregate enum validation missing");
 const evaluator = readFileSync(path.join(ROOT, "lib/evaluator-boundary-policy-shadow.js"), "utf8");
 check(evaluator.includes("baselineExposureGroup: currentExposureDecision.exposureStatus"), "baseline exposure field missing");
 
