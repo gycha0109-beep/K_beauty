@@ -44,20 +44,19 @@ export async function runCleanserMetadataV2DryRun(
   metadataLoader: MetadataTargetSnapshotLoader,
 ): Promise<CleanserMetadataV2DryRunResult> {
   const v1 = await runReviewedIntakeDryRun(parsed.v1Parsed, snapshotLoader);
-  const manifestByCandidate = new Map(
-    parsed.manifestRows.map((row) => [row.candidate_id, row]),
+  const v1Rows = v1.summary.status === "PASS" && v1.errors.length === 0
+    ? (buildReviewImportConfirmPayload(parsed.v1Parsed, v1).payload as ReviewImportConfirmPayload).rows
+    : [];
+  const targetProductIdByCandidate = new Map(
+    v1Rows.map((row) => [row.candidate_id, row.existing_product_match_id]),
   );
-  const productIds = parsed.manifestRows
+  const productIds = v1Rows
     .map((row) => row.existing_product_match_id)
-    .filter(Boolean);
+    .filter((value): value is string => Boolean(value));
   const metadataSnapshot = await metadataLoader({ productIds });
   const rows = parsed.reviewedRows.map((row, index) => {
     const validation = validateCleanserMetadataV2Row(row, index + 2);
-    const manifest = manifestByCandidate.get(row.candidate_id);
-    if (!manifest) {
-      throw new CleanserMetadataV2Error("review_v2_candidate_set_mismatch");
-    }
-    const productId = manifest.existing_product_match_id || null;
+    const productId = targetProductIdByCandidate.get(row.candidate_id) || null;
     return {
       row_number: index + 2,
       candidate_id: row.candidate_id || null,
