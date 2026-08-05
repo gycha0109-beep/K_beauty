@@ -111,15 +111,14 @@ jobs:
 
           rm -rf _source-v4 _source-vision .closeout-payload
           rm -f .closeout-payload.b64 .closeout-trigger
-          rm -f .github/workflows/skin-decision-closeout-apply.yml
+          rm -f .github/workflows/skin-decision-engine-closeout.yml
 
-          test -f .github/workflows/skin-decision-engine-closeout.yml
           test -f lib/shared-skin-decision-context-v4.js
           test -f scripts/verify-premium-integrated-evaluation-v2.mjs
           test -f scripts/verify-skin-decision-recommendation-invariance.mjs
           test ! -e .closeout-payload.b64
           test ! -e .closeout-trigger
-          test ! -e .github/workflows/skin-decision-closeout-apply.yml
+          test ! -e .github/workflows/skin-decision-engine-closeout.yml
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
