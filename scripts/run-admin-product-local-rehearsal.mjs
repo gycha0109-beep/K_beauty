@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { copyFile, mkdir, rm, stat } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import net from "node:net";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -34,7 +35,7 @@ const MIGRATION_SOURCES = [
   "tests/fixtures/admin-product-review-import/20260731190000_review_import_runtime_seed.sql",
 ];
 
-let stackStarted = false;
+let startAttempted = false;
 
 function sanitize(value) {
   return value
@@ -167,6 +168,70 @@ function step(message) {
   process.stdout.write(`[AHR-3L] ${message}\n`);
 }
 
+function canBind(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.once("error", () => resolve(false));
+    server.listen(
+      {
+        host: "127.0.0.1",
+        port,
+        exclusive: true,
+      },
+      () => server.close(() => resolve(true)),
+    );
+  });
+}
+
+async function allocateSupabasePorts() {
+  for (let shadowPort = 15420; shadowPort <= 25420; shadowPort += 10) {
+    const apiPort = shadowPort + 1;
+    const dbPort = shadowPort + 2;
+    const results = await Promise.all([
+      canBind(shadowPort),
+      canBind(apiPort),
+      canBind(dbPort),
+    ]);
+    if (results.every(Boolean)) {
+      return { shadowPort, apiPort, dbPort };
+    }
+  }
+  throw new Error("AHR-3L용 빈 로컬 포트 3개를 찾지 못했습니다.");
+}
+
+function setTomlNumber(source, section, key, value) {
+  const lineEnding = source.includes("\r\n") ? "\r\n" : "\n";
+  let activeSection = null;
+  let replaced = false;
+  const keyPattern = new RegExp(`^(\\s*)${key}\\s*=`);
+  const lines = source.split(/\r?\n/).map((line) => {
+    const sectionMatch = line.trim().match(/^\[([^\]]+)\]$/);
+    if (sectionMatch) activeSection = sectionMatch[1];
+    if (activeSection !== section || !keyPattern.test(line)) return line;
+    replaced = true;
+    const indent = line.match(/^\s*/)?.[0] || "";
+    return `${indent}${key} = ${value}`;
+  });
+  if (!replaced) {
+    throw new Error(`Supabase config에서 [${section}] ${key}를 찾지 못했습니다.`);
+  }
+  return lines.join(lineEnding);
+}
+
+async function configureRuntimePorts() {
+  const configPath = path.join(RUNTIME_DIR, "supabase", "config.toml");
+  const ports = await allocateSupabasePorts();
+  let config = await readFile(configPath, "utf8");
+  config = setTomlNumber(config, "api", "port", ports.apiPort);
+  config = setTomlNumber(config, "db", "port", ports.dbPort);
+  config = setTomlNumber(config, "db", "shadow_port", ports.shadowPort);
+  await writeFile(configPath, config, "utf8");
+  step(
+    `격리 포트 배정: API ${ports.apiPort}, DB ${ports.dbPort}, shadow ${ports.shadowPort}`,
+  );
+}
+
 async function ensureDocker() {
   step("Docker 확인");
   try {
@@ -205,6 +270,7 @@ async function prepareRuntime() {
     ["init", "--workdir", RUNTIME_DIR, "--force"],
     { capture: true },
   );
+  await configureRuntimePorts();
 
   const migrationDir = path.join(RUNTIME_DIR, "supabase", "migrations");
   await mkdir(migrationDir, { recursive: true });
@@ -219,6 +285,7 @@ async function prepareRuntime() {
 
 async function startAndReset() {
   step("로컬 Supabase 시작");
+  startAttempted = true;
   await runSupabase(
     [
       "start",
@@ -229,7 +296,6 @@ async function startAndReset() {
     ],
     { capture: true },
   );
-  stackStarted = true;
 
   step("migration 전체 재생");
   await runSupabase(
@@ -322,7 +388,8 @@ async function cleanup() {
     return;
   }
 
-  if (stackStarted) {
+  const configPath = path.join(RUNTIME_DIR, "supabase", "config.toml");
+  if (startAttempted && (await exists(configPath))) {
     step("로컬 Supabase 종료 및 데이터 삭제");
     await runSupabase(
       ["stop", "--workdir", RUNTIME_DIR, "--no-backup"],
