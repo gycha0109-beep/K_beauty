@@ -19,6 +19,14 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const MERGE_CANDIDATE = "51000000-0000-4000-8000-000000000002";
 const MERGE_PRODUCT = "52000000-0000-4000-8000-000000000001";
+const INACTIVE_ADMIN = "30000000-0000-4000-8000-000000000004";
+const CANDIDATE_IDS = [
+  "51000000-0000-4000-8000-000000000001",
+  "51000000-0000-4000-8000-000000000002",
+  "51000000-0000-4000-8000-000000000003",
+  "51000000-0000-4000-8000-000000000004",
+  "51000000-0000-4000-8000-000000000005",
+];
 let phase = "init";
 
 function errorText(error: unknown): string {
@@ -74,6 +82,37 @@ async function metadataSnapshot(client: SupabaseClient, productIds: string[]) {
   return { products, reviews };
 }
 
+async function candidateStateSnapshot(client: SupabaseClient) {
+  const candidates = await client.from("product_candidates")
+    .select("id,review_status,matched_product_id,reviewed_at,reviewed_by,updated_at")
+    .in("id", CANDIDATE_IDS)
+    .order("id");
+  if (candidates.error) throw new Error("review_v2_candidate_state_snapshot_failed");
+  const reviews = await client.from("candidate_promotion_reviews")
+    .select("candidate_id,status,approved_product_id,reviewed_at,review_note,updated_at")
+    .in("candidate_id", CANDIDATE_IDS)
+    .order("candidate_id");
+  if (reviews.error) throw new Error("review_v2_queue_state_snapshot_failed");
+  return { candidates: candidates.data, reviews: reviews.data };
+}
+
+async function mutationSnapshot(client: SupabaseClient) {
+  const products = await client.from("products")
+    .select("id,cleansing_profile,updated_at")
+    .order("id");
+  if (products.error) throw new Error("review_v2_product_mutation_snapshot_failed");
+  const metadata = await client.from("product_metadata_field_reviews")
+    .select("product_id,request_id,canonical_payload_digest,updated_at")
+    .order("product_id");
+  if (metadata.error) throw new Error("review_v2_metadata_mutation_snapshot_failed");
+  return {
+    products: products.data,
+    metadata: metadata.data,
+    candidates: await candidateStateSnapshot(client),
+    auditCount: await count(client, "admin_audit_logs"),
+  };
+}
+
 function addSecond(value: string): string {
   return new Date(new Date(value).getTime() + 1000).toISOString();
 }
@@ -114,6 +153,8 @@ async function main(): Promise<void> {
   phase = "permission_and_spoof";
   await rpcFail(client, viewerId, "viewer-v2-test", confirmation.payload,
     "admin_product_review_capability_required");
+  await rpcFail(client, INACTIVE_ADMIN, "inactive-admin-v2", confirmation.payload,
+    "admin_product_review_access_required");
   const actorSpoof = structuredClone(confirmation.payload) as Record<string, unknown>;
   actorSpoof.actor = actorId;
   await rpcFail(client, actorId, "actor-spoof-v2", actorSpoof, "review_v2_payload_schema_invalid");
@@ -214,11 +255,13 @@ async function main(): Promise<void> {
   const productsBefore = await count(client, "products");
   const metadataBefore = await count(client, "product_metadata_field_reviews", "product_id");
   const auditsBefore = await count(client, "admin_audit_logs");
+  const stateBeforeRollback = await candidateStateSnapshot(client);
   await rpcFail(client, actorId, "rollback-v2-test", confirmation.payload,
     "review_v2_test_partial_failure");
   assert.equal(await count(client, "products"), productsBefore);
   assert.equal(await count(client, "product_metadata_field_reviews", "product_id"), metadataBefore);
   assert.equal(await count(client, "admin_audit_logs"), auditsBefore);
+  assert.deepEqual(await candidateStateSnapshot(client), stateBeforeRollback);
   const v1Lookup = await client.rpc("admin_get_product_review_import_confirmation", {
     p_actor_user_id: actorId,
     p_request_id: "rollback-v2-test",
@@ -227,6 +270,14 @@ async function main(): Promise<void> {
   });
   assert.equal(v1Lookup.error, null);
   assert.equal(v1Lookup.data, null);
+  const v2Lookup = await client.rpc("admin_get_product_review_import_v2_confirmation", {
+    p_actor_user_id: actorId,
+    p_request_id: "rollback-v2-test",
+    p_export_batch_id: parsed.batch.export_batch_id,
+    p_payload_hash: confirmation.payloadHash,
+  });
+  assert.equal(v2Lookup.error, null);
+  assert.equal(v2Lookup.data, null);
 
   phase = "browser_roles_and_storage";
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -264,6 +315,7 @@ async function main(): Promise<void> {
       result.approve_merge_existing, result.metadata_writes],
     ["confirmed", 5, 4, 1, 5],
   );
+  const beforeRetry = await mutationSnapshot(client);
   const retry = await client.rpc("admin_confirm_product_review_import_v2_batch", {
     p_actor_user_id: actorId,
     p_request_id: requestId,
@@ -272,6 +324,7 @@ async function main(): Promise<void> {
   });
   assert.equal(retry.error, null);
   assert.deepEqual(retry.data, result);
+  assert.deepEqual(await mutationSnapshot(client), beforeRetry);
   const conflictPayload = structuredClone(confirmation.payload) as Record<string, unknown>;
   (conflictPayload.rows as Array<Record<string, unknown>>)[0]
     .structured_metadata_review_complete = false;
