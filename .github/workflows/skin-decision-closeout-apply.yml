@@ -1,0 +1,39 @@
+name: Skin Decision Closeout Apply
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/skin-decision-closeout-apply.yml
+      - .closeout-payload.b64
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout closeout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Apply credential-free curated payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode .closeout-payload.b64 > /tmp/closeout-payload.tar.gz
+          echo 'c33bbceeb20cd1d81400e52c7d1602e1872f6652a7311ce3ee0f7d36ed34899c  /tmp/closeout-payload.tar.gz' | sha256sum --check
+          tar -xzf /tmp/closeout-payload.tar.gz
+          rm -f .closeout-payload.b64
+          rm -f .github/workflows/skin-decision-engine-closeout.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          test -n "$(git diff --cached --name-only)"
+          git commit -m 'feat(skin-decision): curate current-main closeout'
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
