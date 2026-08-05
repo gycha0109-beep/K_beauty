@@ -1,0 +1,40 @@
+name: Skin Decision Closeout Base Export
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/skin-decision-closeout-base-export.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout #133 base without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: a2b67db32239278c1b8d23658fefadc902f1fac2
+          path: source-base
+          persist-credentials: false
+      - name: Remove repository metadata
+        run: rm -rf source-base/.git
+      - name: Upload credential-free base source
+        uses: actions/upload-artifact@v4
+        with:
+          name: skin-decision-closeout-vision-base-${{ github.event.pull_request.head.sha }}
+          path: |
+            source-base/app
+            source-base/components
+            source-base/docs
+            source-base/lib
+            source-base/scripts
+            source-base/tests
+            source-base/package.json
+            source-base/package-lock.json
+          if-no-files-found: error
+          retention-days: 1
