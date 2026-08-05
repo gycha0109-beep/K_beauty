@@ -1,0 +1,532 @@
+{
+  "adminDependency": {
+    "activationBlockedBy": [
+      "BLOCKED_ADMIN_CONTRACT",
+      "BLOCKED_CATALOG_REVIEW",
+      "BLOCKED_PENALTY_CALIBRATION"
+    ],
+    "catalogReviewStatus": "NOT_AVAILABLE",
+    "cleanserAdminV2Observed": false,
+    "recommendationMustNotConsume": [
+      "reviewer_identity",
+      "reviewer_email",
+      "raw_evidence_url",
+      "raw_evidence_body",
+      "full_admin_audit"
+    ],
+    "requiredBeforeCleanserActivation": [
+      "cleansing_profile",
+      "review_state",
+      "schema_version",
+      "review_policy_version",
+      "metadata_review_completeness",
+      "conflict_unknown_state",
+      "existing_catalog_re_review"
+    ]
+  },
+  "balmPrimaryRoleReview": {
+    "activationVerdict": "DO_NOT_ACTIVATE",
+    "balmCount": 20,
+    "candidateA": {
+      "eligibilityChangedRows": 156,
+      "rule": "is_primary_moisturizer_false_excludes_primary_slot_only",
+      "top3ChangedScenarios": 2,
+      "topPickChangedScenarios": 2
+    },
+    "candidateB": {
+      "eligibilityChangedRows": 84,
+      "multiAreaNonPrimaryStillTop3": true,
+      "rule": "local_area_or_eye_lip_excludes_primary_slot_only",
+      "top3ChangedScenarios": 2,
+      "topPickChangedScenarios": 2
+    },
+    "contractNotes": [
+      "scope_does_not_authorize_primary_role",
+      "false_primary_excludes_only_primary_moisturizer_slot",
+      "supporting_and_local_use_remain_available",
+      "balm_contract_is_separate_from_cleanser_admin_v2"
+    ],
+    "dependencyVerdicts": [
+      "NEEDS_BALM_ADMIN_CONTRACT",
+      "NEEDS_ROLE_SCHEMA_REVIEW"
+    ],
+    "legacyLocalOrEyeLipPrimaryTopPickCaseCount": 1,
+    "legacyNonPrimaryExposedProductCount": 2,
+    "primaryFalseCount": 13,
+    "primaryTrueCount": 7,
+    "scopeCounts": {
+      "body_possible": 3,
+      "eye_lip": 1,
+      "full_face": 9,
+      "local_area": 6,
+      "multi_area": 1
+    },
+    "semanticVerdict": "BALM_CANDIDATE_A_REVIEWABLE"
+  },
+  "canonicalEvidenceSha256": "7d88adc4ec5e44d891808dadc7f8a8743bf5b5997474e11499e37ee22b3874a8",
+  "cleanserPenaltyCalibration": {
+    "activationAllowed": false,
+    "adversarialMarginFixtures": [
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 0.2,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -7.8,
+            "topPick": "safe_cleanser"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -11.8,
+            "topPick": "safe_cleanser"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -17.8,
+            "topPick": "safe_cleanser"
+          }
+        ],
+        "deepLeadMargin": 0.2,
+        "fixtureId": "M1",
+        "legacyTopPick": "deep_clean"
+      },
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 8,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": true,
+            "postPenaltyMarginDeepMinusSafe": 0,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -4,
+            "topPick": "safe_cleanser"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -10,
+            "topPick": "safe_cleanser"
+          }
+        ],
+        "deepLeadMargin": 8,
+        "fixtureId": "M2",
+        "legacyTopPick": "deep_clean"
+      },
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 12,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 4,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": true,
+            "postPenaltyMarginDeepMinusSafe": 0,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -6,
+            "topPick": "safe_cleanser"
+          }
+        ],
+        "deepLeadMargin": 12,
+        "fixtureId": "M3",
+        "legacyTopPick": "deep_clean"
+      },
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 16,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 8,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 4,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": -2,
+            "topPick": "safe_cleanser"
+          }
+        ],
+        "deepLeadMargin": 16,
+        "fixtureId": "M4",
+        "legacyTopPick": "deep_clean"
+      },
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 18,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 10,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 6,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": true,
+            "postPenaltyMarginDeepMinusSafe": 0,
+            "topPick": "deep_clean"
+          }
+        ],
+        "deepLeadMargin": 18,
+        "fixtureId": "M5",
+        "legacyTopPick": "deep_clean"
+      },
+      {
+        "candidateOutcomes": [
+          {
+            "candidateId": "P0",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 18.1,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P8",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 10.1,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P12",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 6.1,
+            "topPick": "deep_clean"
+          },
+          {
+            "candidateId": "P18",
+            "exactTie": false,
+            "postPenaltyMarginDeepMinusSafe": 0.1,
+            "topPick": "deep_clean"
+          }
+        ],
+        "deepLeadMargin": 18.1,
+        "fixtureId": "M6",
+        "legacyTopPick": "deep_clean"
+      }
+    ],
+    "candidateResults": [
+      {
+        "candidateId": "P0",
+        "deepCleanProductsRemainingTop3InRednessScenarioCount": 0,
+        "largestPenalizedProductRankDrop": 0,
+        "maxAbsoluteRankMovementAllProducts": 0,
+        "maxAdverseScoreDelta": 0,
+        "meanScoreDeltaAllCleanserRows": 0.0,
+        "nonRednessScoreDeltaRows": 0,
+        "penaltyAppliedRows": 0,
+        "penaltyRowsRankUnchanged": 0,
+        "penaltyValue": 0,
+        "top3ChangedScenarios": 0,
+        "topPickChangedScenarios": 0
+      },
+      {
+        "candidateId": "P8",
+        "deepCleanProductsRemainingTop3InRednessScenarioCount": 0,
+        "largestPenalizedProductRankDrop": 2,
+        "maxAbsoluteRankMovementAllProducts": 3,
+        "maxAdverseScoreDelta": -8,
+        "meanScoreDeltaAllCleanserRows": -0.9231,
+        "nonRednessScoreDeltaRows": 0,
+        "penaltyAppliedRows": 36,
+        "penaltyRowsRankUnchanged": 27,
+        "penaltyValue": -8,
+        "top3ChangedScenarios": 0,
+        "topPickChangedScenarios": 0
+      },
+      {
+        "candidateId": "P12",
+        "deepCleanProductsRemainingTop3InRednessScenarioCount": 0,
+        "largestPenalizedProductRankDrop": 2,
+        "maxAbsoluteRankMovementAllProducts": 3,
+        "maxAdverseScoreDelta": -12,
+        "meanScoreDeltaAllCleanserRows": -1.3846,
+        "nonRednessScoreDeltaRows": 0,
+        "penaltyAppliedRows": 36,
+        "penaltyRowsRankUnchanged": 27,
+        "penaltyValue": -12,
+        "top3ChangedScenarios": 0,
+        "topPickChangedScenarios": 0
+      },
+      {
+        "candidateId": "P18",
+        "deepCleanProductsRemainingTop3InRednessScenarioCount": 0,
+        "largestPenalizedProductRankDrop": 2,
+        "maxAbsoluteRankMovementAllProducts": 3,
+        "maxAdverseScoreDelta": -18,
+        "meanScoreDeltaAllCleanserRows": -2.0769,
+        "nonRednessScoreDeltaRows": 0,
+        "penaltyAppliedRows": 36,
+        "penaltyRowsRankUnchanged": 27,
+        "penaltyValue": -18,
+        "top3ChangedScenarios": 0,
+        "topPickChangedScenarios": 0
+      }
+    ],
+    "cleanserCount": 26,
+    "detectionPolicy": "structured_positive_plus_legacy_fallback",
+    "legacyHeuristicDeepCount": 0,
+    "reasonCodes": [
+      "current_catalog_does_not_separate_candidates",
+      "deep_clean_products_already_below_top3_in_all_redness_scenarios",
+      "no_approved_required_demotion_margin",
+      "exact_tie_preserves_legacy_order",
+      "penalty_18_exceeds_priority_slot_hero_boost"
+    ],
+    "rednessScenarioIds": [
+      "U5",
+      "U6",
+      "U8",
+      "U9"
+    ],
+    "rednessTop3Distance": [
+      {
+        "bestDeepLegacyRank": 16,
+        "bestDeepLegacyScore": 26.0,
+        "gapToTop3Cutoff": 47.3,
+        "legacyTop3CutoffScore": 73.3,
+        "scenarioId": "U5"
+      },
+      {
+        "bestDeepLegacyRank": 16,
+        "bestDeepLegacyScore": 17.1,
+        "gapToTop3Cutoff": 51.0,
+        "legacyTop3CutoffScore": 68.1,
+        "scenarioId": "U6"
+      },
+      {
+        "bestDeepLegacyRank": 16,
+        "bestDeepLegacyScore": 4.3,
+        "gapToTop3Cutoff": 26.8,
+        "legacyTop3CutoffScore": 31.1,
+        "scenarioId": "U8"
+      },
+      {
+        "bestDeepLegacyRank": 16,
+        "bestDeepLegacyScore": 13.5,
+        "gapToTop3Cutoff": 47.0,
+        "legacyTop3CutoffScore": 60.5,
+        "scenarioId": "U9"
+      }
+    ],
+    "scoreScale": {
+      "candidateHeroOffsets": [
+        {
+          "candidateId": "P8",
+          "perfectWhipResidual": 6,
+          "prioritySlotResidual": 8
+        },
+        {
+          "candidateId": "P12",
+          "perfectWhipResidual": 2,
+          "prioritySlotResidual": 4
+        },
+        {
+          "candidateId": "P18",
+          "perfectWhipResidual": -4,
+          "prioritySlotResidual": -2
+        }
+      ],
+      "existingSafetyPenalties": [
+        -22,
+        -16,
+        -14,
+        -18
+      ],
+      "otherCleanserHeroBoost": 6,
+      "perfectWhipHeroBoost": 14,
+      "prioritySlotHeroBoost": 16
+    },
+    "structuredDeepCount": 9,
+    "verdict": "PENALTY_REQUIRES_MORE_EVIDENCE"
+  },
+  "crossCategoryBacklog": {
+    "fabricatedFallback": {
+      "currentValues": {
+        "concerns": [
+          "dehydration"
+        ],
+        "finish": "natural",
+        "irritation_risk": "medium",
+        "sensitivity_safe": false,
+        "skin_types": [
+          "combination"
+        ],
+        "texture": "watery"
+      },
+      "nextWork": [
+        "fallback_observability",
+        "nullable_canonical_contract",
+        "historical_snapshot_compatibility",
+        "admin_missing_data_policy"
+      ],
+      "priority": "P0",
+      "productionMassChangeAllowed": false
+    },
+    "scoreDuplication": {
+      "nextWork": "category_level_attribution_and_semantic_overlap_measurement",
+      "priority": "P1",
+      "sources": [
+        "concern_match",
+        "ingredient_signal",
+        "review_signal",
+        "hero_boost",
+        "derived_metadata",
+        "market_signal"
+      ]
+    },
+    "tonerPad": {
+      "missingAxes": [
+        "physical_friction",
+        "embossing",
+        "wipe_off_use",
+        "exfoliation_frequency"
+      ],
+      "nextWork": "metadata_contract_and_admin_review_before_scoring",
+      "priority": "P1",
+      "productCount": 24
+    },
+    "treatment": {
+      "missingAxes": [
+        "active_identity",
+        "active_strength",
+        "recommended_frequency",
+        "leave_on_or_rinse_off",
+        "current_product_active_overlap"
+      ],
+      "priority": "P1",
+      "productCount": 18,
+      "risk": "concern_match_and_ingredient_signal_double_count"
+    }
+  },
+  "integrationDependencies": {
+    "adminPr166": {
+      "headSha": "4efa74c8ce4c89b03cc592e7edbf93b20c6fd687",
+      "providesCleanserAdminV2": false
+    },
+    "faceVisionPr133": {
+      "headSha": "c88d3c89801d5de73c307a925bf811f21c5198ff",
+      "mustIntegrateBeforeActivation": true,
+      "semanticConflictPaths": [
+        "app/api/analyze/route.js",
+        "lib/skin-match-decision-engine.js",
+        "package.json",
+        "scripts/run-security-closeout-verifier-suite.mjs"
+      ]
+    }
+  },
+  "overallStatus": "RECOMMENDATION_SIDE_READY_WAITING_ADMIN_CONTRACT",
+  "schemaVersion": "recommendation-follow-up-policy-review-v1",
+  "scope": {
+    "actualEligibilityMutation": 0,
+    "actualScoreMutation": 0,
+    "adminMutation": 0,
+    "databaseWrite": 0,
+    "deployment": 0,
+    "migrationMutation": 0,
+    "persistenceMutation": 0,
+    "productionActivation": 0,
+    "publicApiMutation": 0,
+    "recommendationRuntimeMutation": 0
+  },
+  "source": {
+    "cleanserAuthorityEvidenceSha256": "ac546073cba02318a8fc8a2365b16f1372b4f2f6e96a2574dd997fed1afb0aa5",
+    "mainSha": "4202bd2c9a83f276436e226aee9d9bbc9ace2a8f",
+    "productCount": 164,
+    "productDeltaEvidenceSha256": "7330a1bb52c1e756cb5ea71ba90a0632d8db6914ba9e4742ac2a09a4c45cc093",
+    "productDeltaRowCount": 1908,
+    "productsFixtureSha256": "e4788383a21ac4207d553fbfb5300dc629b8eab5ad200ffd1313d43e94e0c856",
+    "reviewBaseHeadSha": "f569e983ad700c07c0957f2a6ae09074ea483ff0",
+    "scenarioCount": 12,
+    "scenarioFixtureSha256": "7aa02ed3f1a264a67aee3d97c916b4a955a713fdbb173844d1727e9cfb1c918e",
+    "scenarioSummarySha256": "a9d730deeccbcefc096c375224c9437f808ab9e879c99ca3b8f3cc0348abc931"
+  },
+  "sunscreenCompletenessReview": {
+    "activationVerdict": "DO_NOT_ACTIVATE",
+    "contractNotes": [
+      "spf_uva_filter_are_protection_completeness",
+      "water_resistance_is_separate_optional_capability",
+      "preference_metadata_unknown_is_not_protection_incomplete",
+      "admin_v1_does_not_prevent_incomplete_new_rows_from_normal_candidacy"
+    ],
+    "currentCatalog": {
+      "eligibilityChangedRows": 0,
+      "gateNoop": true,
+      "top3ChangedScenarios": 0,
+      "topPickChangedScenarios": 0
+    },
+    "dependencyVerdicts": [
+      "ADMIN_V2_REQUIRED",
+      "NEEDS_SUNSCREEN_COMPLETENESS_CONTRACT"
+    ],
+    "fieldKnownCounts": {
+      "eye_sting": 11,
+      "pilling_risk": 11,
+      "spf_value": 11,
+      "tone_up": 11,
+      "uv_filter_type": 11,
+      "uva_label": 11,
+      "water_resistant_minutes": 1,
+      "white_cast": 11
+    },
+    "protectionCompleteCount": 11,
+    "semanticVerdict": "CURRENT_CATALOG_NOOP_POLICY_REVIEWABLE",
+    "sunscreenCount": 11,
+    "virtualIncompleteFixture": {
+      "candidateTop1": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "incompleteCandidateEligible": false,
+      "legacyTop1": "virtual-incomplete-sunscreen",
+      "passed": true
+    },
+    "waterResistanceUnknownCount": 10
+  }
+}
