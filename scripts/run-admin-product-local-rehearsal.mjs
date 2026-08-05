@@ -9,32 +9,48 @@ const ROOT = path.resolve(SCRIPT_DIR, "..");
 const CRAWLER_ROOT = path.join(ROOT, "crawler");
 const SUPABASE_CLI_VERSION = process.env.SUPABASE_CLI_VERSION || "2.109.1";
 const RUN_ID = `${Date.now()}-${process.pid}`;
-const RUNTIME_DIR = path.join(ROOT, "tmp", `admin-product-local-runtime-${RUN_ID}`);
-const BATCH_DIR = path.join(ROOT, "tmp", `admin-product-local-batch-${RUN_ID}`);
-const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
-const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
+const RUNTIME_DIR = path.join(
+  ROOT,
+  "tmp",
+  `admin-product-local-runtime-${RUN_ID}`,
+);
+const BATCH_DIR = path.join(
+  ROOT,
+  "tmp",
+  `admin-product-local-batch-${RUN_ID}`,
+);
 const DOCKER = process.platform === "win32" ? "docker.exe" : "docker";
 const KEEP = process.argv.includes("--keep");
+const NPM_CLI = process.env.npm_execpath;
 
 const MIGRATION_SOURCES = [
   "tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql",
   "supabase/migrations/20260730152900_admin_access_foundation.sql",
-  "tests/fixtures/product-review-export-intake/20260731170000_product_review_export_intake_fixture.sql",
-  "tests/fixtures/admin-product-review-import/20260731190000_review_import_runtime_seed.sql",
   "supabase/migrations/20260804233000_admin_product_candidate_reviews.sql",
   "supabase/migrations/20260804233100_admin_product_candidate_reviews_hardening.sql",
   "supabase/migrations/20260804233200_admin_product_candidate_reviews_security_hardening.sql",
+  "tests/fixtures/product-review-export-intake/20260731170000_product_review_export_intake_fixture.sql",
   "supabase/migrations/20260804233300_admin_product_review_import_confirm.sql",
+  "tests/fixtures/admin-product-review-import/20260731190000_review_import_runtime_seed.sql",
 ];
 
 let stackStarted = false;
 
 function sanitize(value) {
   return value
-    .replace(/(ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)=([^\r\n]+)/gi, "$1=[REDACTED]")
+    .replace(
+      /(ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)=([^\r\n]+)/gi,
+      "$1=[REDACTED]",
+    )
     .replace(/(Bearer\s+)[A-Za-z0-9._-]+/gi, "$1[REDACTED]")
-    .replace(/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g, "[REDACTED_JWT]")
-    .replace(/(postgres(?:ql)?:\/\/[^:/\s]+:)[^@\s]+@/gi, "$1[REDACTED]@");
+    .replace(
+      /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}/g,
+      "[REDACTED_JWT]",
+    )
+    .replace(
+      /(postgres(?:ql)?:\/\/[^:/\s]+:)[^@\s]+@/gi,
+      "$1[REDACTED]@",
+    );
 }
 
 function commandString(command, args) {
@@ -97,6 +113,29 @@ function run(command, args, options = {}) {
   });
 }
 
+function runNpm(args, options = {}) {
+  if (!NPM_CLI) {
+    throw new Error(
+      "npm 실행 경로를 확인하지 못했습니다. npm run verify:admin-product-local-rehearsal 명령으로 실행하세요.",
+    );
+  }
+  return run(process.execPath, [NPM_CLI, ...args], options);
+}
+
+function runSupabase(args, options = {}) {
+  return runNpm(
+    [
+      "exec",
+      "--yes",
+      `--package=supabase@${SUPABASE_CLI_VERSION}`,
+      "--",
+      "supabase",
+      ...args,
+    ],
+    options,
+  );
+}
+
 async function exists(target) {
   try {
     await stat(target);
@@ -140,16 +179,17 @@ async function ensureDocker() {
 }
 
 async function ensureCrawlerDependencies() {
-  const tsxBinary = path.join(
+  const tsxCli = path.join(
     CRAWLER_ROOT,
     "node_modules",
-    ".bin",
-    process.platform === "win32" ? "tsx.cmd" : "tsx",
+    "tsx",
+    "dist",
+    "cli.mjs",
   );
-  if (await exists(tsxBinary)) return;
+  if (await exists(tsxCli)) return;
 
   step("crawler 의존성 설치");
-  await run(NPM, ["ci", "--no-audit", "--no-fund"], {
+  await runNpm(["ci", "--no-audit", "--no-fund"], {
     cwd: CRAWLER_ROOT,
   });
 }
@@ -161,16 +201,8 @@ async function prepareRuntime() {
   await mkdir(RUNTIME_DIR, { recursive: true });
   await mkdir(BATCH_DIR, { recursive: true });
 
-  await run(
-    NPX,
-    [
-      "--yes",
-      `supabase@${SUPABASE_CLI_VERSION}`,
-      "init",
-      "--workdir",
-      RUNTIME_DIR,
-      "--force",
-    ],
+  await runSupabase(
+    ["init", "--workdir", RUNTIME_DIR, "--force"],
     { capture: true },
   );
 
@@ -181,17 +213,14 @@ async function prepareRuntime() {
     if (!(await exists(source))) {
       throw new Error(`필수 파일이 없습니다: ${relativeSource}`);
     }
-    await copyFile(source, path.join(migrationDir, path.basename(relativeSource)));
+    await copyFile(source, path.join(migrationDir, path.basename(source)));
   }
 }
 
 async function startAndReset() {
   step("로컬 Supabase 시작");
-  await run(
-    NPX,
+  await runSupabase(
     [
-      "--yes",
-      `supabase@${SUPABASE_CLI_VERSION}`,
       "start",
       "--workdir",
       RUNTIME_DIR,
@@ -203,32 +232,15 @@ async function startAndReset() {
   stackStarted = true;
 
   step("migration 전체 재생");
-  await run(
-    NPX,
-    [
-      "--yes",
-      `supabase@${SUPABASE_CLI_VERSION}`,
-      "db",
-      "reset",
-      "--workdir",
-      RUNTIME_DIR,
-    ],
+  await runSupabase(
+    ["db", "reset", "--workdir", RUNTIME_DIR],
     { capture: true },
   );
 }
 
 async function runtimeEnvironment() {
-  const status = await run(
-    NPX,
-    [
-      "--yes",
-      `supabase@${SUPABASE_CLI_VERSION}`,
-      "status",
-      "--workdir",
-      RUNTIME_DIR,
-      "-o",
-      "env",
-    ],
+  const status = await runSupabase(
+    ["status", "--workdir", RUNTIME_DIR, "-o", "env"],
     { capture: true },
   );
   const values = parseEnv(status.stdout);
@@ -249,8 +261,7 @@ async function runRuntimeChecks(env) {
   const requestId = `local-${RUN_ID}`;
 
   step("검수 대상 export");
-  await run(
-    NPM,
+  await runNpm(
     [
       "run",
       "reviews:export",
@@ -266,15 +277,19 @@ async function runRuntimeChecks(env) {
   );
 
   step("검수 파일 fixture 작성");
-  await run(
-    NPX,
-    ["tsx", "tests/prepare-reviewed-intake-local-fixture.ts", BATCH_DIR],
+  await runNpm(
+    [
+      "exec",
+      "--",
+      "tsx",
+      "tests/prepare-reviewed-intake-local-fixture.ts",
+      BATCH_DIR,
+    ],
     { cwd: CRAWLER_ROOT, env },
   );
 
   step("dry-run 검증");
-  await run(
-    NPM,
+  await runNpm(
     [
       "run",
       "reviews:import-reviewed",
@@ -287,8 +302,7 @@ async function runRuntimeChecks(env) {
   );
 
   step("권한·stale·atomic confirm·retry·conflict 검증");
-  await run(
-    NPM,
+  await runNpm(
     [
       "run",
       "verify:product-review-intake-confirm:local-runtime",
@@ -310,16 +324,8 @@ async function cleanup() {
 
   if (stackStarted) {
     step("로컬 Supabase 종료 및 데이터 삭제");
-    await run(
-      NPX,
-      [
-        "--yes",
-        `supabase@${SUPABASE_CLI_VERSION}`,
-        "stop",
-        "--workdir",
-        RUNTIME_DIR,
-        "--no-backup",
-      ],
+    await runSupabase(
+      ["stop", "--workdir", RUNTIME_DIR, "--no-backup"],
       { capture: true, allowFailure: true },
     );
   }
@@ -328,6 +334,7 @@ async function cleanup() {
 }
 
 async function main() {
+  let failure = null;
   try {
     await ensureDocker();
     await ensureCrawlerDependencies();
@@ -336,9 +343,24 @@ async function main() {
     const env = await runtimeEnvironment();
     await runRuntimeChecks(env);
     step("PASS: Production 변경 없이 AHR-3L 로컬 검증 완료");
-  } finally {
-    await cleanup();
+  } catch (error) {
+    failure = error;
   }
+
+  try {
+    await cleanup();
+  } catch (cleanupError) {
+    if (!failure) failure = cleanupError;
+    else {
+      const cleanupMessage =
+        cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+      process.stderr.write(
+        `[AHR-3L] 정리 경고: ${sanitize(cleanupMessage)}\n`,
+      );
+    }
+  }
+
+  if (failure) throw failure;
 }
 
 main().catch((error) => {
