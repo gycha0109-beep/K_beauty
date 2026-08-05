@@ -21,19 +21,84 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Apply credential-free curated payload
+      - name: Checkout v4 source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: 3f697f3e5c2ae607c9d86af3f16bdfe2cdb43037
+          path: _source-v4
+          persist-credentials: false
+      - name: Checkout Unified Vision source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: c88d3c89801d5de73c307a925bf811f21c5198ff
+          path: _source-vision
+          persist-credentials: false
+      - name: Reconstruct curated closeout
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode .closeout-payload.b64 > /tmp/closeout-payload.tar.gz
-          echo 'c33bbceeb20cd1d81400e52c7d1602e1872f6652a7311ce3ee0f7d36ed34899c  /tmp/closeout-payload.tar.gz' | sha256sum --check
-          tar -xzf /tmp/closeout-payload.tar.gz
+          copy() { mkdir -p "$(dirname "$1")"; cp "$2/$1" "$1"; }
+
+          for path in \
+            app/api/face-reading/route.js \
+            app/page.js \
+            app/result/full-report/page.js \
+            app/result/page.js \
+            components/onboarding/SurveyFlow.js \
+            components/result/free-v2/FreeResultV2DiagnosisStep.jsx \
+            docs/domain/facelab/unified-vision-observation-contract-v1.md \
+            lib/face-lab-analysis-bundle.js \
+            lib/face-lab-observation-contract.js \
+            lib/face-lab-observation-projector.js \
+            lib/face-lab-result-envelope.js \
+            lib/image-analysis-eligibility.js \
+            lib/photo-evidence.js \
+            lib/premium-face-lab.js \
+            lib/provider-runtime-log.js \
+            lib/server/vision-observation-service.js \
+            lib/skin-observation-projector.js \
+            lib/vision-observation-contract.js \
+            lib/vision-observation-normalizer.js \
+            playwright.mobile-analyze.config.ts \
+            scripts/verify-analysis-request-guard.mjs \
+            scripts/verify-face-lab-failure-and-legacy-contract.mjs \
+            scripts/verify-face-lab-keyword-summary.mjs \
+            scripts/verify-face-lab-observation-contract.mjs \
+            scripts/verify-image-analysis-eligibility.mjs \
+            scripts/verify-provider-runtime-log-sanitization.mjs \
+            scripts/verify-sec06-saved-report-boundary.mjs \
+            scripts/verify-sec08-image-upload-boundary.mjs \
+            scripts/verify-unified-vision-pipeline.mjs \
+            tests/e2e/mobile-analyze-browser-flow.spec.ts
+          do
+            copy "$path" _source-vision
+          done
+
+          for path in \
+            lib/premium-decision-state.js \
+            scripts/verify-condition-policy-single-source.mjs \
+            scripts/verify-routine-policy-single-source.mjs
+          do
+            copy "$path" _source-v4
+          done
+
+          base64 --decode .closeout-payload.b64 > /tmp/custom.patch.gz
+          echo '66c69ed675d4c1996b05786ec0eb824b82f34ed792064baa81f093aa66200456  /tmp/custom.patch.gz' | sha256sum --check
+          gzip -dc /tmp/custom.patch.gz > /tmp/custom.patch
+          patch --batch --forward -p1 < /tmp/custom.patch
+
+          rm -rf _source-v4 _source-vision
           rm -f .closeout-payload.b64
-          rm -f .github/workflows/skin-decision-engine-closeout.yml
+          rm -f .github/workflows/skin-decision-closeout-apply.yml
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
           test -n "$(git diff --cached --name-only)"
+          test "$(git diff --cached --name-only | wc -l | tr -d ' ')" -eq 54
+          ! git diff --cached --name-only | grep -E '^(supabase/|app/admin/|app/api/admin/|\.closeout-payload|\.github/workflows/skin-decision-closeout-apply)'
           git commit -m 'feat(skin-decision): curate current-main closeout'
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
