@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -28,6 +29,8 @@ jobs:
         run: node scripts/run-security-closeout-verifier-suite.mjs
       - name: SEC-11 site origin normalization
         run: npm run check:sec11-origin-normalization
+      - name: Recommendation metadata offline evidence
+        run: node scripts/verify-recommendation-metadata-offline-evidence.mjs
       - name: JavaScript syntax gate
         shell: bash
         run: |
@@ -45,5 +48,16 @@ jobs:
         with:
           name: security-closeout-verifier-evidence
           path: tmp/security-closeout-verifier-suite.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload recommendation metadata offline evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recommendation-metadata-offline-evidence
+          path: |
+            fixtures/recommendation-metadata
+            evidence/recommendation-metadata-shadow
+            docs/architecture/recommendation-metadata-shadow-evidence-v1.md
           if-no-files-found: error
           retention-days: 7
