@@ -1,4 +1,4 @@
-name: Skin Decision Closeout Source Export
+name: Skin Decision Closeout Artifact Cleanup
 
 on:
   pull_request:
@@ -9,60 +9,27 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
-  export:
+  cleanup:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout current closeout head
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: current
-      - name: Checkout SharedSkinDecisionContext v4 source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: 3f697f3e5c2ae607c9d86af3f16bdfe2cdb43037
-          path: source-v4
-      - name: Checkout Integrated Evaluation Pack v2 source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: 697c7314ff52e16b9254bc8693e2f5fce7030009
-          path: source-eval-v2
-      - name: Checkout Unified Vision source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: c88d3c89801d5de73c307a925bf811f21c5198ff
-          path: source-vision
-      - name: Record source SHAs
+      - name: Delete temporary source artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          git -C current rev-parse HEAD > SOURCE_SHAS.txt
-          git -C source-v4 rev-parse HEAD >> SOURCE_SHAS.txt
-          git -C source-eval-v2 rev-parse HEAD >> SOURCE_SHAS.txt
-          git -C source-vision rev-parse HEAD >> SOURCE_SHAS.txt
-      - name: Upload source lineage snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: skin-decision-closeout-lineage-${{ github.event.pull_request.head.sha }}
-          path: |
-            current/app
-            current/components
-            current/docs
-            current/lib
-            current/scripts
-            current/tests
-            current/package.json
-            current/package-lock.json
-            current/vercel.json
-            source-v4
-            source-eval-v2
-            source-vision
-            SOURCE_SHAS.txt
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 1
+          for artifact_id in 8946925895 8946970252; do
+            code=$(curl --silent --show-error --output /tmp/delete-response.json --write-out '%{http_code}' \
+              --request DELETE \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${REPOSITORY}/actions/artifacts/${artifact_id}")
+            if [ "$code" != "204" ] && [ "$code" != "404" ]; then
+              cat /tmp/delete-response.json
+              exit 1
+            fi
+          done
