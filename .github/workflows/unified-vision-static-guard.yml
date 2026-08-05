@@ -1,0 +1,125 @@
+name: Unified Vision Static Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/api/analyze/**"
+      - "app/api/face-reading/**"
+      - "app/api/full-report/**"
+      - "app/page.js"
+      - "app/result/**"
+      - "components/onboarding/SurveyFlow.js"
+      - "components/result/free-v2/FreeResultV2DiagnosisStep.jsx"
+      - "playwright.mobile-analyze.config.ts"
+      - "tests/e2e/mobile-analyze-browser-flow.spec.ts"
+      - "lib/face-lab-analysis-bundle.js"
+      - "lib/face-lab-observation-contract.js"
+      - "lib/face-lab-observation-projector.js"
+      - "lib/face-lab-result-envelope.js"
+      - "lib/image-analysis-eligibility.js"
+      - "lib/openai-env-diagnostics.js"
+      - "lib/photo-evidence.js"
+      - "lib/premium-face-lab.js"
+      - "lib/provider-runtime-log.js"
+      - "lib/security/anonymous-write-grant-core.js"
+      - "lib/server/vision-observation-service.js"
+      - "lib/skin-observation-projector.js"
+      - "lib/skin-match-decision-engine.js"
+      - "lib/vision-observation-contract.js"
+      - "lib/vision-observation-normalizer.js"
+      - "scripts/face-lab-provider-e2e/**"
+      - "scripts/verify-analysis-request-guard.mjs"
+      - "scripts/verify-anonymous-write-grant-v2.mjs"
+      - "scripts/verify-analysis-rls-contract.mjs"
+      - "scripts/verify-face-lab-*.mjs"
+      - "scripts/verify-provider-runtime-log-sanitization.mjs"
+      - "scripts/verify-sec06-saved-report-boundary.mjs"
+      - "scripts/verify-sec08-image-upload-boundary.mjs"
+      - "scripts/verify-unified-vision-pipeline.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/face-lab-provider-e2e.yml"
+      - ".github/workflows/unified-vision-static-guard.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify unified Vision pipeline
+        run: npm run verify:unified-vision-pipeline
+
+      - name: Verify image eligibility
+        run: node scripts/verify-image-analysis-eligibility.mjs
+
+      - name: Verify Face Lab observation contract
+        run: node scripts/verify-face-lab-observation-contract.mjs
+
+      - name: Verify Face Lab failure and legacy boundary
+        run: node scripts/verify-face-lab-failure-and-legacy-contract.mjs
+
+      - name: Verify Face Lab Provider E2E package
+        run: npm run face-lab:e2e:verify
+
+      - name: Verify analysis request guard
+        run: node scripts/verify-analysis-request-guard.mjs
+
+      - name: Verify Provider log sanitization
+        run: node scripts/verify-provider-runtime-log-sanitization.mjs
+
+      - name: Verify anonymous write grant
+        run: node scripts/verify-anonymous-write-grant-v2.mjs
+
+      - name: Verify analysis RLS contract
+        run: node scripts/verify-analysis-rls-contract.mjs
+
+      - name: Verify architecture guard
+        run: npm run architecture:guard
+
+      - name: Install Chromium for provider-free mobile verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify provider-free mobile analyze flow
+        run: npm run test:e2e:mobile-analyze
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Check changed-file whitespace
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BASE_SHA}" && -n "${HEAD_SHA}" ]]; then
+            git fetch --no-tags --depth=1 origin "${BASE_SHA}" "${HEAD_SHA}"
+            git diff --check "${BASE_SHA}" "${HEAD_SHA}"
+          else
+            git diff --check HEAD^
+          fi
