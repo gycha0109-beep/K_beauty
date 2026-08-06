@@ -38,8 +38,24 @@ function errorText(error: unknown): string {
 }
 
 function boundedErrorCode(error: unknown): string {
-  const match = errorText(error).match(/\b(?:review|admin)_[a-z0-9_]+\b/);
+  const text = errorText(error);
+  const match = text.match(/\b(?:review|admin)_[a-z0-9_]+\b/);
   if (match) return match[0];
+  if (/invalid input syntax for type timestamp/i.test(text)) {
+    return "timestamp_input_invalid";
+  }
+  if (/permission denied/i.test(text)) {
+    return "permission_denied";
+  }
+  if (/could not serialize/i.test(text)) {
+    return "serialization_failure";
+  }
+  if (error && typeof error === "object") {
+    const code = (error as Record<string, unknown>).code;
+    if (typeof code === "string" && /^[a-z0-9_]+$/i.test(code)) {
+      return `rpc_${code.toLowerCase()}`;
+    }
+  }
   return error ? "unexpected_rpc_error" : "no_error";
 }
 
