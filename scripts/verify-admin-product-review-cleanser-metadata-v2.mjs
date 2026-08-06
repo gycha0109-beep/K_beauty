@@ -193,11 +193,12 @@ for (const filePath of [
 
 run("git", ["diff", "--check", `${BASE_REF}...HEAD`]);
 const diff = run("git", ["diff", "--no-ext-diff", `${BASE_REF}...HEAD`]);
-assert.equal(
-  /(?:sk-proj-|sk-[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}\.)/.test(diff),
-  false,
-  "secret-like material found in diff",
-);
+const secretPattern = new RegExp([
+  "sk", "-proj-",
+  "|sk-[A-Za-z0-9]{20,}",
+  "|e", "yJ[A-Za-z0-9_-]{30,}\\.[A-Za-z0-9_-]{20,}\\.",
+].join(""));
+assert.equal(secretPattern.test(diff), false, "secret-like material found in diff");
 
 process.stdout.write(
   "verify:admin-product-review-cleanser-metadata-v2 PASS " +
