@@ -242,8 +242,8 @@ begin
         or v_expected_product = 'null'::jsonb
         or v_expected_product ->> 'id' <> v_product.id::text
         or v_expected_product ->> 'category' <> v_product.category::text
-        or v_expected_product ->> 'updated_at' <>
-          (to_jsonb(v_product.updated_at) #>> '{}')
+        or (v_expected_product ->> 'updated_at')::timestamptz is distinct from
+          v_product.updated_at
         or v_expected_product ->> 'cleansing_profile' is distinct from
           to_jsonb(v_product) ->> 'cleansing_profile'
       then
@@ -262,8 +262,8 @@ begin
             v_review_before.candidate_id::text
           or v_expected_review ->> 'canonical_payload_digest' <>
             v_review_before.canonical_payload_digest
-          or v_expected_review ->> 'updated_at' <>
-            (to_jsonb(v_review_before.updated_at) #>> '{}')
+          or (v_expected_review ->> 'updated_at')::timestamptz is distinct from
+            v_review_before.updated_at
         then
           raise exception 'review_v2_stale_metadata_review' using errcode = '40001';
         end if;
