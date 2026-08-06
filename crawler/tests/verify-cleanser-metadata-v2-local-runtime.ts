@@ -266,23 +266,25 @@ async function main(): Promise<void> {
   assert.ok(mergeRow);
   const target = mergeRow.expected_target_product as Record<string, unknown>;
   const staleTargetAt = addSecond(String(target.updated_at));
-  const staleTargetMutation = await client.from("products")
-    .update({ updated_at: staleTargetAt })
-    .eq("id", target.id)
-    .select("id,updated_at")
-    .single();
+  const staleTargetMutation = await client.rpc("test_admin_product_review_v2_set_product_updated_at", {
+    p_product_id: target.id,
+    p_updated_at: staleTargetAt,
+  });
   assertNoError(staleTargetMutation.error, "review_v2_stale_target_mutation_failed");
-  if (!staleTargetMutation.data) throw new Error("review_v2_stale_target_mutation_missing");
-  assert.equal(new Date(staleTargetMutation.data.updated_at).toISOString(), staleTargetAt);
+  const staleTargetRead = await client.from("products")
+    .select("id,updated_at")
+    .eq("id", target.id)
+    .single();
+  assertNoError(staleTargetRead.error, "review_v2_stale_target_readback_failed");
+  if (!staleTargetRead.data) throw new Error("review_v2_stale_target_mutation_missing");
+  assert.equal(new Date(staleTargetRead.data.updated_at).toISOString(), staleTargetAt);
   await rpcFail(client, actorId, "stale-target-v2", confirmation.payload,
     "review_v2_stale_target_product");
-  const restoreTarget = await client.from("products")
-    .update({ updated_at: target.updated_at })
-    .eq("id", target.id)
-    .select("id,updated_at")
-    .single();
+  const restoreTarget = await client.rpc("test_admin_product_review_v2_set_product_updated_at", {
+    p_product_id: target.id,
+    p_updated_at: target.updated_at,
+  });
   assertNoError(restoreTarget.error, "review_v2_stale_target_restore_failed");
-  if (!restoreTarget.data) throw new Error("review_v2_stale_target_restore_missing");
 
   const oldReview = mergeRow.expected_existing_metadata_review as Record<string, unknown>;
   const staleMetadataReview = await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
