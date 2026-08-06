@@ -83,25 +83,33 @@ export const REGRESSION_PAIRS = Object.freeze({
     base: "9cf90f4a464c9885c4cad647a14786ebc502e2cd",
     head: "c7aefdd13d3344a203e0ea38178b607ec97a51b0",
     expectedClassification: "NON_ENGINE_ONLY",
-    expectedEngineScopeChanged: false
+    expectedEngineScopeChanged: false,
+    expectedAdminScopeChanged: true,
+    expectedMigrationScopeChanged: true
   }),
   adminV2CurrentAtFixStart: Object.freeze({
     base: "9cf90f4a464c9885c4cad647a14786ebc502e2cd",
     head: "a670212434c56b0578654623ab4d75709d83984b",
     expectedClassification: "NON_ENGINE_ONLY",
-    expectedEngineScopeChanged: false
+    expectedEngineScopeChanged: false,
+    expectedAdminScopeChanged: true,
+    expectedMigrationScopeChanged: true
   }),
   adminV2MergedMain: Object.freeze({
     base: "9cf90f4a464c9885c4cad647a14786ebc502e2cd",
     head: "2c4edce5065b6d274ab26ca52e18f123ffd1fcfa",
     expectedClassification: "NON_ENGINE_ONLY",
-    expectedEngineScopeChanged: false
+    expectedEngineScopeChanged: false,
+    expectedAdminScopeChanged: true,
+    expectedMigrationScopeChanged: true
   }),
   engineCloseout171: Object.freeze({
     base: "6604ca37087eb063e793218d0b734e89c36f228d",
     head: "89985538ffa7391bca2a216974c0b8d22ba8f46d",
     expectedClassification: "ENGINE_ONLY",
-    expectedEngineScopeChanged: true
+    expectedEngineScopeChanged: true,
+    expectedAdminScopeChanged: false,
+    expectedMigrationScopeChanged: false
   })
 });
 
@@ -283,6 +291,8 @@ function runRepositoryPairRegressions(requirePairs) {
       { addedLines: readGitAddedLines(pair.base, pair.head) }
     );
     assert.equal(result.engineScopeChanged, pair.expectedEngineScopeChanged, `${name} engineScopeChanged`);
+    assert.equal(result.adminScopeChanged, pair.expectedAdminScopeChanged, `${name} adminScopeChanged`);
+    assert.equal(result.migrationScopeChanged, pair.expectedMigrationScopeChanged, `${name} migrationScopeChanged`);
     assert.equal(result.classification, pair.expectedClassification, `${name} classification`);
     assert.equal(result.pass, true, `${name} pass`);
     results.push({ name, available: true, base: pair.base, head: pair.head, ...result });
