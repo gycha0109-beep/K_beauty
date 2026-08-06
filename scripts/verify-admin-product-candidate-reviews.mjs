@@ -247,7 +247,9 @@ includes(
 [
   "Admin Product Current Main Integration",
   "npm run verify:admin-product-candidate-reviews",
-  "REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime",
+  "Initialize isolated runtime path",
+  'REVIEW_IMPORT_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-current-main-runtime',
+  '>>"${GITHUB_ENV}"',
   "--workdir \"${REVIEW_IMPORT_RUNTIME_DIR}\"",
   "20260804233000_admin_product_candidate_reviews.sql",
   "20260804233300_admin_product_review_import_confirm.sql",
@@ -258,6 +260,10 @@ includes(
 assert(
   !workflow.includes("tmp/admin-product-current-main-runtime"),
   "product review workflow must not create a repository-local Supabase workdir"
+);
+assert(
+  !workflow.includes("REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}"),
+  "product review workflow must not use runner context in job-level env"
 );
 includes(
   workflow,
