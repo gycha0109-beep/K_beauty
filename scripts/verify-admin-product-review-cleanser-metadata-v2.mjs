@@ -28,6 +28,7 @@ const requiredFiles = [
   "tests/fixtures/admin-product-review-v2/20260805215900_product_review_v2_column_adapter.sql",
   "tests/fixtures/admin-product-review-v2/20260805220100_product_review_v2_runtime_seed.sql",
   "tests/fixtures/admin-product-review-v2/20260805220200_product_review_v2_rollback_probe.sql",
+  "scripts/verify-admin-product-current-main-integration.mjs",
   "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
   "docs/architecture/admin-product-review-cleanser-metadata-v2.md",
   ".codex/AI_WORK_LOG.d/2026-08-05-admin-product-review-cleanser-metadata-v2.md",
