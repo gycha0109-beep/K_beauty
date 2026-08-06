@@ -24,7 +24,6 @@ on:
   push:
     branches:
       - integration/admin-product-current-main
-      - feature/admin-product-review-cleanser-metadata-v2
   workflow_dispatch:
 
 concurrency:
@@ -235,7 +234,7 @@ jobs:
           rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
 
   isolated-v2-runtime:
-    if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main') || (github.event_name == 'push' && github.ref_name == 'feature/admin-product-review-cleanser-metadata-v2') }}
+    if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
