@@ -210,6 +210,18 @@ export function runAdminV2ScopeRegressionMatrix() {
       pass: true,
     },
     {
+      label: "Admin workflow only",
+      files: [".github/workflows/admin-product-current-main-integration.yml"],
+      classification: ADMIN_V2_SCOPE_CLASSIFICATIONS.NOT_APPLICABLE,
+      pass: true,
+    },
+    {
+      label: "Admin integration verifier only",
+      files: ["scripts/verify-admin-product-current-main-integration.mjs"],
+      classification: ADMIN_V2_SCOPE_CLASSIFICATIONS.NOT_APPLICABLE,
+      pass: true,
+    },
+    {
       label: "Engine workflow plus package.json",
       files: [".github/workflows/skin-decision-engine-closeout.yml", "package.json"],
       classification: ADMIN_V2_SCOPE_CLASSIFICATIONS.NOT_APPLICABLE,
