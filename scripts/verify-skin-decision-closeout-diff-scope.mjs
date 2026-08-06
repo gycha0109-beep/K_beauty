@@ -91,6 +91,12 @@ export const REGRESSION_PAIRS = Object.freeze({
     expectedClassification: "NON_ENGINE_ONLY",
     expectedEngineScopeChanged: false
   }),
+  adminV2MergedMain: Object.freeze({
+    base: "9cf90f4a464c9885c4cad647a14786ebc502e2cd",
+    head: "2c4edce5065b6d274ab26ca52e18f123ffd1fcfa",
+    expectedClassification: "NON_ENGINE_ONLY",
+    expectedEngineScopeChanged: false
+  }),
   engineCloseout171: Object.freeze({
     base: "6604ca37087eb063e793218d0b734e89c36f228d",
     head: "89985538ffa7391bca2a216974c0b8d22ba8f46d",
