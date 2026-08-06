@@ -183,9 +183,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+          start_log="${RUNNER_TEMP}/admin-product-current-main-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
             --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
-            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${REVIEW_IMPORT_RUNTIME_DIR}"
 
       - name: Export, dry-run, and confirm isolated v1 batch
@@ -194,6 +200,10 @@ jobs:
           set -euo pipefail
           env_file="${RUNNER_TEMP}/admin-product-current-main.env"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" status --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" -o env >"${env_file}"
+          anon_key="$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          service_key="$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          echo "::add-mask::${anon_key}"
+          echo "::add-mask::${service_key}"
           set -a
           source "${env_file}"
           set +a
@@ -290,15 +300,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+          start_log="${RUNNER_TEMP}/admin-product-v2-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
             --workdir "${REVIEW_V2_RUNTIME_DIR}" \
-            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
           env_file="${RUNNER_TEMP}/admin-product-v2.env"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" status --workdir "${REVIEW_V2_RUNTIME_DIR}" -o env >"${env_file}"
+          api_url="$(grep '^API_URL=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          anon_key="$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          service_key="$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          echo "::add-mask::${anon_key}"
+          echo "::add-mask::${service_key}"
           {
-            echo "NEXT_PUBLIC_SUPABASE_URL=$(grep '^API_URL=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
-            echo "SUPABASE_SERVICE_ROLE_KEY=$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+            echo "NEXT_PUBLIC_SUPABASE_URL=${api_url}"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${anon_key}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${service_key}"
           } >>"${GITHUB_ENV}"
           rm -f "${env_file}"
 
