@@ -18,7 +18,14 @@
     "jobs:matrix": "tsx jobs-matrix.ts",
     "test:ranking-review-rules": "tsx test-ranking-review-rules.ts",
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "reviews:export": "tsx export-product-reviews.ts",
+    "reviews:import-reviewed": "tsx import-reviewed-product-reviews.ts",
+    "verify:product-review-export": "tsx test-product-review-export.ts",
+    "verify:product-review-intake-dry-run": "tsx test-product-review-intake-dry-run.ts",
+    "verify:product-review-intake-bytes": "tsx test-product-review-intake-bytes.ts",
+    "verify:product-review-intake-confirm": "tsx test-product-review-intake-confirm.ts",
+    "verify:product-review-intake-confirm:local-runtime": "tsx tests/verify-reviewed-intake-confirm-local-runtime.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",

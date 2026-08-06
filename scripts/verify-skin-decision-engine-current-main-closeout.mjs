@@ -14,6 +14,18 @@ const SOURCE_LINEAGE = Object.freeze({
   unifiedVisionBase: "a2b67db32239278c1b8d23658fefadc902f1fac2",
   recommendationReference: "783afb91a964f5d762f46846f9ef854902b48e95"
 });
+const ADMIN_V1_ROUTES = new Set([
+  "app/api/admin/product-reviews/preflight/route.js",
+  "app/api/admin/product-reviews/confirm/route.js",
+  "app/api/admin/product-reviews/import/dry-run/route.js",
+  "app/api/admin/product-reviews/import/confirm/route.js"
+]);
+const ADMIN_V1_MIGRATIONS = new Set([
+  "supabase/migrations/20260804233000_admin_product_candidate_reviews.sql",
+  "supabase/migrations/20260804233100_admin_product_candidate_reviews_hardening.sql",
+  "supabase/migrations/20260804233200_admin_product_candidate_reviews_security_hardening.sql",
+  "supabase/migrations/20260804233300_admin_product_review_import_confirm.sql"
+]);
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const equal = (actual, expected, message) => { assertions += 1; assert.equal(actual, expected, message); };
@@ -103,6 +115,8 @@ check(!existsSync(path.join(ROOT, ".github/workflows/skin-decision-closeout-base
 check(existsSync(path.join(ROOT, ".github/workflows/skin-decision-engine-closeout.yml")), "durable closeout workflow present");
 
 let diffPaths = [];
+let adminRouteDiffPaths = [];
+let adminMigrationDiffPaths = [];
 const diffBase = process.env.CLOSEOUT_BASE_SHA || "";
 if (diffBase && existsSync(path.join(ROOT, ".git"))) {
   diffPaths = execFileSync("git", ["diff", "--name-only", `${diffBase}..HEAD`], {
@@ -111,9 +125,17 @@ if (diffBase && existsSync(path.join(ROOT, ".git"))) {
     maxBuffer: 16 * 1024 * 1024
   }).split(/\r?\n/).filter(Boolean);
   check(diffPaths.length > 0, "closeout diff is non-empty");
+  adminRouteDiffPaths = diffPaths.filter((file) => file.startsWith("app/api/admin/"));
+  adminMigrationDiffPaths = diffPaths.filter((file) => file.startsWith("supabase/migrations/"));
+  for (const file of adminRouteDiffPaths) {
+    check(ADMIN_V1_ROUTES.has(file), `unexpected Admin route in closeout-preservation diff: ${file}`);
+  }
+  for (const file of adminMigrationDiffPaths) {
+    check(ADMIN_V1_MIGRATIONS.has(file), `unexpected migration in closeout-preservation diff: ${file}`);
+  }
+  check(adminRouteDiffPaths.length === ADMIN_V1_ROUTES.size, "Admin v1 route set incomplete");
+  check(adminMigrationDiffPaths.length === ADMIN_V1_MIGRATIONS.size, "Admin v1 migration set incomplete");
   for (const file of diffPaths) {
-    check(!file.startsWith("app/api/admin/"), `Admin route unchanged: ${file}`);
-    check(!file.startsWith("supabase/migrations/"), `migration unchanged: ${file}`);
     check(!file.includes("recommendation-metadata-transport"), `#167 not copied: ${file}`);
     check(!file.includes("cleanser-structured-authority-activation"), `activation absent: ${file}`);
   }
@@ -122,7 +144,7 @@ if (diffBase && existsSync(path.join(ROOT, ".git"))) {
 mkdirSync(path.join(ROOT, "tmp"), { recursive: true });
 const result = {
   version: "skin-decision-engine-current-main-closeout-v1",
-  status: "ENGINE_CLOSEOUT_READY_FOR_MERGE",
+  status: "ENGINE_CLOSEOUT_PRESERVED_WITH_ADMIN_V1_INTEGRATION",
   baseSha: BASE_SHA,
   headSha: process.env.CLOSEOUT_HEAD_SHA || null,
   sourceLineage: SOURCE_LINEAGE,
@@ -130,8 +152,10 @@ const result = {
   evaluationVersion: "premium-integrated-evaluation-pack-v2",
   analyzeResponseSchemaVersion: 2,
   recommendationActivation: false,
-  adminMutation: false,
-  migrationMutation: false,
+  adminMutation: adminRouteDiffPaths.length > 0,
+  migrationMutation: adminMigrationDiffPaths.length > 0,
+  adminRouteDiffPaths,
+  adminMigrationDiffPaths,
   candidateExposureActivation: false,
   vercelPolicy: vercel.git.deploymentEnabled,
   assertions,

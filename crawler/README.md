@@ -190,6 +190,31 @@ npm run test:ranking-ingest
 npm run typecheck
 ```
 
+Product review export and reviewed intake dry-run run from this package. Relative
+paths are resolved against the repository root; absolute paths, repository
+escapes, and symlinks are rejected.
+
+```powershell
+npm run reviews:export -- `
+  --status queued `
+  --out-dir data/review-batches/sample-batch
+
+npm run reviews:import-reviewed -- `
+  --file data/review-batches/sample-batch/reviewed.csv `
+  --dry-run
+
+npm run verify:product-review-export
+npm run verify:product-review-intake-dry-run
+```
+
+Export writes `manifest.csv`, `evidence.jsonl`, `batch.json`, and
+`reviewed-template.csv`. Copy the template to `reviewed.csv`, preserve its
+protected columns, and fill the review columns. Intake verifies the file,
+hashes, current DB snapshots, enums, evidence, and identity without writing the
+database. `--confirm` is deliberately rejected with
+`review_import_confirm_not_implemented`. The complete contract is in
+`docs/architecture/product-review-export-intake-v1.md`.
+
 The smoke test covers:
 
 - same snapshot replay does not increase candidate observations
