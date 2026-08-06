@@ -45,6 +45,13 @@ jobs:
           printf '%s\n' "$CLOSEOUT_HEAD_SHA" > /tmp/skin-decision-closeout-sha.txt
       - name: Install dependencies
         run: npm ci
+      - name: Closeout diff scope classification
+        run: |
+          npm run verify:skin-decision-closeout-diff-scope -- \
+            --base "$CLOSEOUT_BASE_SHA" \
+            --head "$CLOSEOUT_HEAD_SHA" \
+            --evidence tmp/skin-decision-closeout-diff-scope.json \
+            --require-repository-pairs
       - name: SharedSkinDecisionContext v4
         run: npm run verify:shared-skin-decision-context
       - name: Functional, Routine, and Condition contracts
@@ -108,16 +115,6 @@ jobs:
           cp /tmp/skin-decision-closeout-sha.txt tmp/skin-decision-closeout-sha.txt
           git diff --check "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA"
           git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" > tmp/skin-decision-closeout-diff.txt
-          allowed_admin_routes='^(app/api/admin/product-reviews/(confirm|preflight)/route\.js|app/api/admin/product-reviews/import/(confirm|dry-run)/route\.js)$'
-          allowed_admin_migrations='^supabase/migrations/20260804233[0-3]00_admin_product_.*\.sql$'
-          unexpected_admin_scope="$({
-            grep -E '^(app/api/admin/|supabase/migrations/)' tmp/skin-decision-closeout-diff.txt || true
-          } | grep -Ev "${allowed_admin_routes}|${allowed_admin_migrations}" || true)"
-          if [[ -n "${unexpected_admin_scope}" ]]; then
-            printf '%s\n' "${unexpected_admin_scope}"
-            echo 'Unexpected Admin or migration scope leaked into closeout'
-            exit 1
-          fi
           if git diff -U0 "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" \
             | grep '^+' \
             | grep -Ev '^\+\+\+' \
@@ -137,6 +134,7 @@ jobs:
           name: skin-decision-engine-closeout-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             tmp/skin-decision-engine-closeout.json
+            tmp/skin-decision-closeout-diff-scope.json
             tmp/skin-decision-closeout-diff.txt
             tmp/security-closeout-verifier-suite.json
             tmp/skin-decision-closeout-sha.txt
