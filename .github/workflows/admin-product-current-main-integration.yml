@@ -52,6 +52,16 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
+
       - name: Fetch durable Admin base
         run: git fetch origin integration/admin-product-current-main:refs/remotes/origin/integration/admin-product-current-main
 
@@ -123,13 +133,26 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime
       REVIEW_IMPORT_BATCH_DIR: tmp/admin-product-current-main-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Initialize isolated runtime path
+        shell: bash
+        run: echo "REVIEW_IMPORT_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-current-main-runtime" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -200,11 +223,10 @@ jobs:
           rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
 
   isolated-v2-runtime:
-    if: (github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main') || (github.event_name == 'push' && github.ref_name == 'feature/admin-product-review-cleanser-metadata-v2')
+    if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main') || (github.event_name == 'push' && github.ref_name == 'feature/admin-product-review-cleanser-metadata-v2') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
-      REVIEW_V2_RUNTIME_DIR: ${{ runner.temp }}/admin-product-v2-runtime
       REVIEW_V2_BATCH_ROOT: tmp/admin-product-v2-${{ github.run_id }}-${{ github.run_attempt }}
       REVIEW_V2_EXPORT_BATCH_ID: 70000000-0000-4000-8000-000000000001
       REVIEW_V2_EXPORTED_AT: 2026-08-05T12:00:00.000Z
@@ -218,6 +240,20 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Initialize isolated runtime path
+        shell: bash
+        run: echo "REVIEW_V2_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-v2-runtime" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
