@@ -144,7 +144,7 @@ export function buildCleanserMetadataV2ExportBatch(
   reviewedTemplateCsv: string;
 } {
   const base = buildReviewExportBatch(records, options);
-  const evidenceRows = base.evidenceRows.map((source) => {
+  const evidenceRows: Array<Record<string, unknown>> = base.evidenceRows.map((source) => {
     const withoutDigest = {
       ...source,
       schema_version: EVIDENCE_SCHEMA_VERSION_V2,
@@ -158,6 +158,7 @@ export function buildCleanserMetadataV2ExportBatch(
   });
   const manifestRows = base.manifestRows.map((source, index) => {
     const evidence = evidenceRows[index];
+    if (!evidence) throw new CleanserMetadataV2Error("review_v2_evidence_row_missing");
     const snapshot = evidence.candidate_snapshot as Record<string, unknown>;
     const existing = evidence.existing_product_match as { id?: string } | null;
     return {
