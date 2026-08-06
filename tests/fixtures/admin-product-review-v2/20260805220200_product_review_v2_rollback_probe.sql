@@ -17,6 +17,30 @@ create trigger test_admin_product_review_v2_rollback_probe
   after insert on public.product_metadata_field_reviews
   for each row execute function public.test_admin_product_review_v2_rollback_probe();
 
+create or replace function public.test_admin_product_review_v2_set_product_updated_at(
+  p_product_id uuid,
+  p_updated_at timestamptz
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  update public.products
+  set updated_at = p_updated_at
+  where id = p_product_id;
+  if not found then
+    raise exception 'review_v2_test_product_not_found';
+  end if;
+end;
+$$;
+
+revoke all on function public.test_admin_product_review_v2_set_product_updated_at(uuid, timestamptz)
+  from public, anon, authenticated;
+grant execute on function public.test_admin_product_review_v2_set_product_updated_at(uuid, timestamptz)
+  to service_role;
+
 create or replace function public.test_admin_product_review_v2_set_review_updated_at(
   p_product_id uuid,
   p_updated_at timestamptz
