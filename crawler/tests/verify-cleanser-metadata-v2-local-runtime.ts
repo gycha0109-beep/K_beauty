@@ -41,15 +41,9 @@ function boundedErrorCode(error: unknown): string {
   const text = errorText(error);
   const match = text.match(/\b(?:review|admin)_[a-z0-9_]+\b/);
   if (match) return match[0];
-  if (/invalid input syntax for type timestamp/i.test(text)) {
-    return "timestamp_input_invalid";
-  }
-  if (/permission denied/i.test(text)) {
-    return "permission_denied";
-  }
-  if (/could not serialize/i.test(text)) {
-    return "serialization_failure";
-  }
+  if (/invalid input syntax for type timestamp/i.test(text)) return "timestamp_input_invalid";
+  if (/permission denied/i.test(text)) return "permission_denied";
+  if (/could not serialize/i.test(text)) return "serialization_failure";
   if (error && typeof error === "object") {
     const code = (error as Record<string, unknown>).code;
     if (typeof code === "string" && /^[a-z0-9_]+$/i.test(code)) {
@@ -265,40 +259,28 @@ async function main(): Promise<void> {
   const mergeRow = rows.find((row) => row.candidate_id === MERGE_CANDIDATE);
   assert.ok(mergeRow);
   const target = mergeRow.expected_target_product as Record<string, unknown>;
-  const staleTargetAt = addSecond(String(target.updated_at));
-  const staleTargetMutation = await client.rpc("test_admin_product_review_v2_set_product_updated_at", {
+  const staleProductGuard = await client.rpc("test_admin_product_review_v2_assert_stale_product", {
+    p_actor_user_id: actorId,
+    p_request_id: "stale-target-v2",
+    p_payload: confirmation.payload,
+    p_payload_hash: confirmation.payloadHash,
     p_product_id: target.id,
-    p_updated_at: staleTargetAt,
+    p_changed_at: addSecond(String(target.updated_at)),
   });
-  assertNoError(staleTargetMutation.error, "review_v2_stale_target_mutation_failed");
-  const staleTargetRead = await client.from("products")
-    .select("id,updated_at")
-    .eq("id", target.id)
-    .single();
-  assertNoError(staleTargetRead.error, "review_v2_stale_target_readback_failed");
-  if (!staleTargetRead.data) throw new Error("review_v2_stale_target_mutation_missing");
-  assert.equal(new Date(staleTargetRead.data.updated_at).toISOString(), staleTargetAt);
-  await rpcFail(client, actorId, "stale-target-v2", confirmation.payload,
-    "review_v2_stale_target_product");
-  const restoreTarget = await client.rpc("test_admin_product_review_v2_set_product_updated_at", {
-    p_product_id: target.id,
-    p_updated_at: target.updated_at,
-  });
-  assertNoError(restoreTarget.error, "review_v2_stale_target_restore_failed");
+  assertNoError(staleProductGuard.error, "review_v2_stale_target_guard_failed");
+  assert.equal(staleProductGuard.data, "review_v2_stale_target_product");
 
   const oldReview = mergeRow.expected_existing_metadata_review as Record<string, unknown>;
-  const staleMetadataReview = await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
+  const staleReviewGuard = await client.rpc("test_admin_product_review_v2_assert_stale_review", {
+    p_actor_user_id: actorId,
+    p_request_id: "stale-review-v2",
+    p_payload: confirmation.payload,
+    p_payload_hash: confirmation.payloadHash,
     p_product_id: MERGE_PRODUCT,
-    p_updated_at: addSecond(String(oldReview.updated_at)),
+    p_changed_at: addSecond(String(oldReview.updated_at)),
   });
-  assertNoError(staleMetadataReview.error, "review_v2_stale_metadata_mutation_failed");
-  await rpcFail(client, actorId, "stale-review-v2", confirmation.payload,
-    "review_v2_stale_metadata_review");
-  const restoreMetadataReview = await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
-    p_product_id: MERGE_PRODUCT,
-    p_updated_at: oldReview.updated_at,
-  });
-  assertNoError(restoreMetadataReview.error, "review_v2_stale_metadata_restore_failed");
+  assertNoError(staleReviewGuard.error, "review_v2_stale_metadata_guard_failed");
+  assert.equal(staleReviewGuard.data, "review_v2_stale_metadata_review");
   assert.equal((await dryRun()).summary.status, "PASS");
 
   phase = "rollback";
