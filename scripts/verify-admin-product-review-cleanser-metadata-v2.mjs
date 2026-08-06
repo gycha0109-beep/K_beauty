@@ -3,10 +3,19 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 
-const BASE_REF = "origin/integration/admin-product-current-main";
+import {
+  ADMIN_V2_SCOPE_CLASSIFICATIONS,
+  assertAdminV2ScopeResult,
+  classifyAdminV2Diff,
+  runAdminV2ScopeRegressionMatrix,
+} from "./verify-admin-product-review-v2-diff-scope.mjs";
+
 const read = (filePath) => fs.readFileSync(filePath, "utf8");
 const run = (command, args) => execFileSync(command, args, { encoding: "utf8" });
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
+
+const baseSha = process.env.ADMIN_VERIFY_BASE_SHA;
+const headSha = process.env.ADMIN_VERIFY_HEAD_SHA;
 
 const requiredFiles = [
   ".github/workflows/admin-product-current-main-integration.yml",
@@ -30,6 +39,7 @@ const requiredFiles = [
   "tests/fixtures/admin-product-review-v2/20260805220200_product_review_v2_rollback_probe.sql",
   "scripts/verify-admin-product-current-main-integration.mjs",
   "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
+  "scripts/verify-admin-product-review-v2-diff-scope.mjs",
   "docs/architecture/admin-product-review-cleanser-metadata-v2.md",
   ".codex/AI_WORK_LOG.d/2026-08-05-admin-product-review-cleanser-metadata-v2.md",
 ];
@@ -124,6 +134,8 @@ for (const forbidden of ["isDeepCleanser", "getHardPenalty", "-18"]) {
 for (const token of [
   "integration/admin-product-current-main",
   "github.event.pull_request.head.sha",
+  "ADMIN_VERIFY_BASE_SHA",
+  "ADMIN_VERIFY_HEAD_SHA",
   "verify:product-review-cleanser-metadata-v2",
   "isolated-v2-runtime",
   "Local Supabase v2 reset and runtime cycle 1",
@@ -139,19 +151,9 @@ assert.equal(
 );
 assert.equal(/supabase\s+db\s+push|supabase\s+migration\s+up|vercel\s+deploy/i.test(workflow), false);
 
-const changed = run("git", ["diff", "--name-only", `${BASE_REF}...HEAD`])
-  .trim()
-  .split("\n")
-  .filter(Boolean);
-const allowed = new Set([...requiredFiles, "crawler/package.json"]);
-const unexpected = changed.filter((filePath) => !allowed.has(filePath));
-assert.deepEqual(unexpected, [], `unexpected changed files: ${unexpected.join(", ")}`);
-
-const forbiddenPaths = changed.filter((filePath) =>
-  /^(lib\/skin-match-decision-engine|lib\/candidate-exposure-policy|lib\/functional-candidate-policy|lib\/evaluator-boundary-policy|lib\/product-source|app\/result|components\/result|app\/api\/analyze|app\/api\/full-report)/.test(filePath) ||
-  /recommendation-scoring|candidate-exposure-policy-shadow/.test(filePath),
-);
-assert.deepEqual(forbiddenPaths, [], `production invariance path violation: ${forbiddenPaths.join(", ")}`);
+const regressionMatrix = runAdminV2ScopeRegressionMatrix();
+const scopeResult = classifyAdminV2Diff({ baseSha, headSha });
+assertAdminV2ScopeResult(scopeResult, "current Admin v2 verifier pair");
 
 const tree = (ref) => run("git", ["ls-tree", "-r", "--full-tree", ref]);
 const criticalCodeFingerprint = (ref) => {
@@ -161,11 +163,18 @@ const criticalCodeFingerprint = (ref) => {
     .sort();
   return sha256(lines.join("\n"));
 };
-assert.equal(
-  criticalCodeFingerprint(BASE_REF),
-  criticalCodeFingerprint("HEAD"),
-  "score/ranking/result/Premium/reentry/CandidatePolicy source fingerprint changed",
-);
+
+let productionFingerprint = "not-applicable";
+if (scopeResult.classification === ADMIN_V2_SCOPE_CLASSIFICATIONS.APPLICABLE) {
+  const baseFingerprint = criticalCodeFingerprint(baseSha);
+  const headFingerprint = criticalCodeFingerprint(headSha);
+  assert.equal(
+    baseFingerprint,
+    headFingerprint,
+    "score/ranking/result/Premium/reentry/CandidatePolicy source fingerprint changed",
+  );
+  productionFingerprint = headFingerprint.slice(0, 12);
+}
 
 const runtimeFiles = [
   ...contractFiles,
@@ -191,21 +200,24 @@ for (const filePath of [
   "lib/admin/product-review-import-v2/import-confirm.js",
   "lib/admin/product-review-import-v2/import-dry-run.js",
   "lib/admin/product-review-import-v2/import-package.js",
+  "scripts/verify-admin-product-review-v2-diff-scope.mjs",
   "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
 ]) {
   run(process.execPath, ["--check", filePath]);
 }
 
-run("git", ["diff", "--check", `${BASE_REF}...HEAD`]);
-const diff = run("git", ["diff", "--no-ext-diff", `${BASE_REF}...HEAD`]);
+run("git", ["diff", "--check", `${baseSha}...${headSha}`]);
+const diff = run("git", ["diff", "--no-ext-diff", `${baseSha}...${headSha}`]);
 const secretPattern = new RegExp([
   "sk", "-proj-",
   "|sk-[A-Za-z0-9]{20,}",
   "|e", "yJ[A-Za-z0-9_-]{30,}\\.[A-Za-z0-9_-]{20,}\\.",
 ].join(""));
 assert.equal(secretPattern.test(diff), false, "secret-like material found in diff");
+assert.equal(secretPattern.test(["sk", "-", "A".repeat(25)].join("")), true, "secret negative control drift");
 
 process.stdout.write(
   "verify:admin-product-review-cleanser-metadata-v2 PASS " +
-  `(v1 boundary, explicit v2, atomic SQL, security, no activation, production fingerprint ${criticalCodeFingerprint("HEAD").slice(0, 12)})\n`,
+  `(classification ${scopeResult.classification}, regression ${regressionMatrix.length}, ` +
+  `v1 boundary, explicit v2, atomic SQL, security, no activation, production fingerprint ${productionFingerprint})\n`,
 );
