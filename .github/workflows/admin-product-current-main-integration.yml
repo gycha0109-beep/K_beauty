@@ -152,7 +152,9 @@ jobs:
 
       - name: Initialize isolated runtime path
         shell: bash
-        run: echo "REVIEW_IMPORT_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-current-main-runtime" >>"${GITHUB_ENV}"
+        env:
+          REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime
+        run: echo "REVIEW_IMPORT_RUNTIME_DIR=${REVIEW_IMPORT_RUNTIME_DIR}" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
