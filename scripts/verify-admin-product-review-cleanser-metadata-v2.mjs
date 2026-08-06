@@ -127,10 +127,11 @@ for (const token of [
   "isolated-v2-runtime",
   "Local Supabase v2 reset and runtime cycle 1",
   "Local Supabase v2 reset and runtime cycle 2",
+  "feature/admin-product-review-cleanser-metadata-v2",
+  "github.event_name == 'push'",
 ]) {
   assert.ok(workflow.includes(token), `missing natural workflow token: ${token}`);
 }
-assert.equal(workflow.includes("feature/admin-product-review-cleanser-metadata-v2"), false);
 assert.equal(/supabase\s+db\s+push|supabase\s+migration\s+up|vercel\s+deploy/i.test(workflow), false);
 
 const changed = run("git", ["diff", "--name-only", `${BASE_REF}...HEAD`])
