@@ -110,4 +110,67 @@ check(workflow.includes("integration/admin-product-current-main"), "integration 
 check(workflow.includes("isolated-confirm-runtime"), "isolated runtime job missing");
 check(workflow.includes("20260804233300_admin_product_review_import_confirm.sql"), "rebased confirm migration missing from workflow");
 
+const pushStart = workflow.indexOf("  push:\n");
+const dispatchStart = workflow.indexOf("  workflow_dispatch:", pushStart);
+check(pushStart >= 0 && dispatchStart > pushStart, "push trigger block missing");
+const pushBlock = workflow.slice(pushStart, dispatchStart);
+check(pushBlock.includes("      - main\n"), "main push trigger missing");
+check(
+  pushBlock.includes("      - integration/admin-product-current-main\n"),
+  "integration push trigger missing from push block"
+);
+
+const expectedPushPaths = [
+  '"app/admin/**"',
+  '"app/api/admin/product-reviews/**"',
+  '"crawler/**"',
+  '"lib/admin/**"',
+  '"supabase/migrations/*_admin_product_*.sql"',
+  '"tests/fixtures/admin-product-review*/**"',
+  '"tests/fixtures/product-review-export-intake/**"',
+  '"scripts/verify-admin-product-*.mjs"',
+  '"scripts/run-security-closeout-verifier-suite.mjs"',
+  '"docs/architecture/*product-review*.md"',
+  '"docs/reports/admin-product-current-main-integration.md"',
+  '"next.config.js"',
+  '"package.json"',
+  '"crawler/package.json"',
+  '".github/workflows/admin-product-current-main-integration.yml"'
+];
+for (const path of expectedPushPaths) {
+  check(pushBlock.includes(`      - ${path}`), `main push path missing: ${path}`);
+}
+
+const expectedV2Condition =
+  "if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') || (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'main') }}";
+check(workflow.includes(expectedV2Condition), "isolated-v2-runtime event condition drift");
+
+function shouldRunV2({ eventName, baseRef = "", refName = "" }) {
+  return (
+    (eventName === "pull_request" && baseRef === "main") ||
+    (eventName === "push" && refName === "main") ||
+    (eventName === "workflow_dispatch" && refName === "main")
+  );
+}
+
+const eventMatrix = [
+  [{ eventName: "pull_request", baseRef: "main" }, true, "main pull request"],
+  [{ eventName: "push", refName: "main" }, true, "main push"],
+  [
+    { eventName: "push", refName: "integration/admin-product-current-main" },
+    false,
+    "integration push"
+  ],
+  [{ eventName: "workflow_dispatch", refName: "main" }, true, "main workflow dispatch"],
+  [
+    { eventName: "workflow_dispatch", refName: "feature/admin-product-review-cleanser-metadata-v2" },
+    false,
+    "non-main workflow dispatch"
+  ],
+  [{ eventName: "pull_request", baseRef: "integration/admin-product-current-main" }, false, "stacked pull request"]
+];
+for (const [event, expected, label] of eventMatrix) {
+  check(shouldRunV2(event) === expected, `isolated-v2-runtime event matrix mismatch: ${label}`);
+}
+
 console.log(`verify-admin-product-current-main-integration: PASS (${assertions} assertions)`);
