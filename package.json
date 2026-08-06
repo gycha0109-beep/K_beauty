@@ -24,6 +24,7 @@
     "verify:skin-decision-persistence-reentry": "node scripts/verify-skin-decision-persistence-reentry.mjs",
     "verify:skin-decision-recommendation-invariance": "node scripts/verify-skin-decision-recommendation-invariance.mjs",
     "verify:skin-decision-engine-closeout": "node scripts/verify-skin-decision-engine-current-main-closeout.mjs",
+    "verify:skin-decision-closeout-diff-scope": "node scripts/verify-skin-decision-closeout-diff-scope.mjs",
     "verify:admin-access-foundation": "node scripts/verify-admin-access-foundation.mjs",
     "check:sec11-origin-normalization": "node scripts/check-sec11-site-origin-normalization.mjs",
     "verify:premium-browser-journey": "node scripts/run-premium-browser-journey.mjs",
