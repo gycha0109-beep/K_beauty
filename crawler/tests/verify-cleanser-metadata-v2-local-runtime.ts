@@ -14,6 +14,7 @@ import {
   buildCleanserMetadataV2ConfirmPayload,
   parseCleanserMetadataV2Package,
   runCleanserMetadataV2DryRun,
+  type MetadataTargetSnapshot,
 } from "../lib/reviews/review-cleanser-metadata-v2.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -155,7 +156,7 @@ async function main(): Promise<void> {
   const dryRun = () => runCleanserMetadataV2DryRun(
     parsed,
     (request) => loadIntakeDatabaseSnapshot(readClient, request),
-    ({ productIds }) => metadataSnapshot(readClient, productIds),
+    ({ productIds }) => metadataSnapshot(readClient, productIds) as Promise<MetadataTargetSnapshot>,
   );
 
   phase = "dry_run";
@@ -233,6 +234,7 @@ async function main(): Promise<void> {
     .update({ updated_at: staleCandidateAt }).eq("id", candidateId)
     .select("id,updated_at").single();
   assertNoError(staleCandidateMutation.error, "review_v2_stale_candidate_mutation_failed");
+  if (!staleCandidateMutation.data) throw new Error("review_v2_stale_candidate_mutation_missing");
   assert.equal(new Date(staleCandidateMutation.data.updated_at).toISOString(), staleCandidateAt);
   await rpcFail(client, actorId, "stale-candidate-v2", confirmation.payload, "review_import_stale_candidate");
   const restoreCandidate = await client.from("product_candidates")
