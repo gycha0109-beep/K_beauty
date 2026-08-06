@@ -50,7 +50,7 @@ jobs:
           npm run verify:skin-decision-closeout-diff-scope -- \
             --base "$CLOSEOUT_BASE_SHA" \
             --head "$CLOSEOUT_HEAD_SHA" \
-            --evidence tmp/skin-decision-closeout-diff-scope.json \
+            --evidence /tmp/skin-decision-closeout-diff-scope.json \
             --require-repository-pairs
       - name: SharedSkinDecisionContext v4
         run: npm run verify:shared-skin-decision-context
@@ -113,6 +113,7 @@ jobs:
           set -euo pipefail
           mkdir -p tmp
           cp /tmp/skin-decision-closeout-sha.txt tmp/skin-decision-closeout-sha.txt
+          cp /tmp/skin-decision-closeout-diff-scope.json tmp/skin-decision-closeout-diff-scope.json
           git diff --check "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA"
           git diff --name-only "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" > tmp/skin-decision-closeout-diff.txt
           if git diff -U0 "$CLOSEOUT_BASE_SHA..$CLOSEOUT_HEAD_SHA" \
