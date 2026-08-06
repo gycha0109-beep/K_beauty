@@ -23,7 +23,24 @@ on:
       - ".github/workflows/admin-product-current-main-integration.yml"
   push:
     branches:
+      - main
       - integration/admin-product-current-main
+    paths:
+      - "app/admin/**"
+      - "app/api/admin/product-reviews/**"
+      - "crawler/**"
+      - "lib/admin/**"
+      - "supabase/migrations/*_admin_product_*.sql"
+      - "tests/fixtures/admin-product-review*/**"
+      - "tests/fixtures/product-review-export-intake/**"
+      - "scripts/verify-admin-product-*.mjs"
+      - "scripts/run-security-closeout-verifier-suite.mjs"
+      - "docs/architecture/*product-review*.md"
+      - "docs/reports/admin-product-current-main-integration.md"
+      - "next.config.js"
+      - "package.json"
+      - "crawler/package.json"
+      - ".github/workflows/admin-product-current-main-integration.yml"
   workflow_dispatch:
 
 concurrency:
@@ -50,6 +67,16 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
 
       - name: Fetch durable Admin base
         run: git fetch origin integration/admin-product-current-main:refs/remotes/origin/integration/admin-product-current-main
@@ -114,20 +141,36 @@ jobs:
             test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
             git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
           else
-            git diff --check HEAD^
+            test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+            git diff --check origin/integration/admin-product-current-main..HEAD
           fi
 
   isolated-confirm-runtime:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime
       REVIEW_IMPORT_BATCH_DIR: tmp/admin-product-current-main-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout exact head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Initialize isolated runtime path
+        shell: bash
+        env:
+          REVIEW_IMPORT_RUNTIME_DIR: ${{ runner.temp }}/admin-product-current-main-runtime
+        run: echo "REVIEW_IMPORT_RUNTIME_DIR=${REVIEW_IMPORT_RUNTIME_DIR}" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -158,9 +201,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+          start_log="${RUNNER_TEMP}/admin-product-current-main-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
             --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" \
-            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${REVIEW_IMPORT_RUNTIME_DIR}"
 
       - name: Export, dry-run, and confirm isolated v1 batch
@@ -169,6 +218,10 @@ jobs:
           set -euo pipefail
           env_file="${RUNNER_TEMP}/admin-product-current-main.env"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" status --workdir "${REVIEW_IMPORT_RUNTIME_DIR}" -o env >"${env_file}"
+          anon_key="$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          service_key="$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          echo "::add-mask::${anon_key}"
+          echo "::add-mask::${service_key}"
           set -a
           source "${env_file}"
           set +a
@@ -198,11 +251,10 @@ jobs:
           rm -rf -- "${REVIEW_IMPORT_RUNTIME_DIR}" "${REVIEW_IMPORT_BATCH_DIR}"
 
   isolated-v2-runtime:
-    if: github.event_name == 'pull_request' && github.base_ref == 'integration/admin-product-current-main'
+    if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') || (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'main') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
-      REVIEW_V2_RUNTIME_DIR: ${{ runner.temp }}/admin-product-v2-runtime
       REVIEW_V2_BATCH_ROOT: tmp/admin-product-v2-${{ github.run_id }}-${{ github.run_attempt }}
       REVIEW_V2_EXPORT_BATCH_ID: 70000000-0000-4000-8000-000000000001
       REVIEW_V2_EXPORTED_AT: 2026-08-05T12:00:00.000Z
@@ -215,7 +267,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          echo "checkout_sha=${actual_sha}"
+          test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Initialize isolated runtime path
+        shell: bash
+        run: echo "REVIEW_V2_RUNTIME_DIR=${RUNNER_TEMP}/admin-product-v2-runtime" >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -252,15 +318,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+          start_log="${RUNNER_TEMP}/admin-product-v2-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
             --workdir "${REVIEW_V2_RUNTIME_DIR}" \
-            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
           env_file="${RUNNER_TEMP}/admin-product-v2.env"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" status --workdir "${REVIEW_V2_RUNTIME_DIR}" -o env >"${env_file}"
+          api_url="$(grep '^API_URL=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          anon_key="$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          service_key="$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+          echo "::add-mask::${anon_key}"
+          echo "::add-mask::${service_key}"
           {
-            echo "NEXT_PUBLIC_SUPABASE_URL=$(grep '^API_URL=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep '^ANON_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
-            echo "SUPABASE_SERVICE_ROLE_KEY=$(grep '^SERVICE_ROLE_KEY=' "${env_file}" | cut -d= -f2- | tr -d '\"')"
+            echo "NEXT_PUBLIC_SUPABASE_URL=${api_url}"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${anon_key}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${service_key}"
           } >>"${GITHUB_ENV}"
           rm -f "${env_file}"
 
