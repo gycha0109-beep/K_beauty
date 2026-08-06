@@ -37,6 +37,16 @@ function errorText(error: unknown): string {
     .join(" ");
 }
 
+function boundedErrorCode(error: unknown): string {
+  const match = errorText(error).match(/\b(?:review|admin)_[a-z0-9_]+\b/);
+  if (match) return match[0];
+  return error ? "unexpected_rpc_error" : "no_error";
+}
+
+function assertNoError(error: unknown, code: string): void {
+  if (error) throw new Error(code);
+}
+
 async function rpcFail(
   client: SupabaseClient,
   actorId: string,
@@ -51,7 +61,7 @@ async function rpcFail(
     p_payload_hash: sha256Utf8(canonicalJson(payload)),
   });
   if (!error || !errorText(error).includes(expected)) {
-    throw new Error(`review_v2_expected_${expected}_not_rejected`);
+    throw new Error(`review_v2_expected_${expected}_received_${boundedErrorCode(error)}`);
   }
 }
 
@@ -208,47 +218,69 @@ async function main(): Promise<void> {
   const candidateRead = await client.from("product_candidates")
     .select("id,updated_at").eq("id", candidateId).single();
   if (candidateRead.error || !candidateRead.data) throw new Error("review_v2_candidate_read_failed");
-  await client.from("product_candidates")
-    .update({ updated_at: addSecond(candidateRead.data.updated_at) }).eq("id", candidateId);
+  const staleCandidateAt = addSecond(candidateRead.data.updated_at);
+  const staleCandidateMutation = await client.from("product_candidates")
+    .update({ updated_at: staleCandidateAt }).eq("id", candidateId)
+    .select("id,updated_at").single();
+  assertNoError(staleCandidateMutation.error, "review_v2_stale_candidate_mutation_failed");
+  assert.equal(new Date(staleCandidateMutation.data.updated_at).toISOString(), staleCandidateAt);
   await rpcFail(client, actorId, "stale-candidate-v2", confirmation.payload, "review_import_stale_candidate");
-  await client.from("product_candidates")
+  const restoreCandidate = await client.from("product_candidates")
     .update({ updated_at: candidateRead.data.updated_at }).eq("id", candidateId);
+  assertNoError(restoreCandidate.error, "review_v2_stale_candidate_restore_failed");
 
   const reviewRead = await client.from("candidate_promotion_reviews")
     .select("candidate_id,evidence_snapshot,updated_at").eq("candidate_id", candidateId).single();
   if (reviewRead.error || !reviewRead.data) throw new Error("review_v2_review_read_failed");
-  await client.from("candidate_promotion_reviews").update({
+  const staleReviewQueue = await client.from("candidate_promotion_reviews").update({
     evidence_snapshot: { ...(reviewRead.data.evidence_snapshot as Record<string, unknown>), stale: true },
     updated_at: addSecond(reviewRead.data.updated_at),
   }).eq("candidate_id", candidateId);
+  assertNoError(staleReviewQueue.error, "review_v2_stale_queue_mutation_failed");
   await rpcFail(client, actorId, "stale-evidence-v2", confirmation.payload,
     "review_import_stale_review_queue");
-  await client.from("candidate_promotion_reviews").update({
+  const restoreReviewQueue = await client.from("candidate_promotion_reviews").update({
     evidence_snapshot: reviewRead.data.evidence_snapshot,
     updated_at: reviewRead.data.updated_at,
   }).eq("candidate_id", candidateId);
+  assertNoError(restoreReviewQueue.error, "review_v2_stale_queue_restore_failed");
 
   phase = "stale_target_and_review";
   const mergeRow = rows.find((row) => row.candidate_id === MERGE_CANDIDATE);
   assert.ok(mergeRow);
   const target = mergeRow.expected_target_product as Record<string, unknown>;
-  await client.from("products").update({ updated_at: addSecond(String(target.updated_at)) })
-    .eq("id", target.id);
+  const staleTargetAt = addSecond(String(target.updated_at));
+  const staleTargetMutation = await client.from("products")
+    .update({ updated_at: staleTargetAt })
+    .eq("id", target.id)
+    .select("id,updated_at")
+    .single();
+  assertNoError(staleTargetMutation.error, "review_v2_stale_target_mutation_failed");
+  if (!staleTargetMutation.data) throw new Error("review_v2_stale_target_mutation_missing");
+  assert.equal(new Date(staleTargetMutation.data.updated_at).toISOString(), staleTargetAt);
   await rpcFail(client, actorId, "stale-target-v2", confirmation.payload,
     "review_v2_stale_target_product");
-  await client.from("products").update({ updated_at: target.updated_at }).eq("id", target.id);
+  const restoreTarget = await client.from("products")
+    .update({ updated_at: target.updated_at })
+    .eq("id", target.id)
+    .select("id,updated_at")
+    .single();
+  assertNoError(restoreTarget.error, "review_v2_stale_target_restore_failed");
+  if (!restoreTarget.data) throw new Error("review_v2_stale_target_restore_missing");
 
   const oldReview = mergeRow.expected_existing_metadata_review as Record<string, unknown>;
-  await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
+  const staleMetadataReview = await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
     p_product_id: MERGE_PRODUCT,
     p_updated_at: addSecond(String(oldReview.updated_at)),
   });
+  assertNoError(staleMetadataReview.error, "review_v2_stale_metadata_mutation_failed");
   await rpcFail(client, actorId, "stale-review-v2", confirmation.payload,
     "review_v2_stale_metadata_review");
-  await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
+  const restoreMetadataReview = await client.rpc("test_admin_product_review_v2_set_review_updated_at", {
     p_product_id: MERGE_PRODUCT,
     p_updated_at: oldReview.updated_at,
   });
+  assertNoError(restoreMetadataReview.error, "review_v2_stale_metadata_restore_failed");
   assert.equal((await dryRun()).summary.status, "PASS");
 
   phase = "rollback";
