@@ -1,8 +1,8 @@
 # Product Evidence & Decision Axis Architecture v1
 
-Status: Phase 1 architecture + offline cleanser POC specification  
-Production status: not implemented, not activated  
-Baseline: `main@b7c7275317b72df14835f2ed1da8c1e9737cb7d3`  
+Status: Phase 1 architecture + offline cleanser POC specification
+Production status: not implemented, not activated
+Baseline: `main@b7c7275317b72df14835f2ed1da8c1e9737cb7d3`
 Frozen cleanser input: `cleanser-catalog-field-review-v1` / `9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f`
 
 ## 1. Purpose and non-goals
@@ -25,7 +25,7 @@ The existing eight concern axes remain user-side concern semantics:
 
 ```text
 barrier
-dehydration
+dehydation
 oiliness
 redness
 acne
