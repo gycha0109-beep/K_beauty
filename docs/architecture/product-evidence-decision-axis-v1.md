@@ -5,9 +5,9 @@ Production status: not implemented, not activated
 Baseline: `main@b7c7275317b72df14835f2ed1da8c1e9737cb7d3`
 Frozen cleanser input: `cleanser-catalog-field-review-v1` / `9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f`
 
-## 1. Purpose and non-goals
+## 1. Direction and scope
 
-This architecture replaces the assumption that a product must be represented by one mutually exclusive profile with a layered evidence model:
+Target architecture:
 
 ```text
 Raw Evidence
@@ -19,13 +19,15 @@ Raw Evidence
 → Recommendation
 ```
 
-Phase 1 defines contracts and an offline cleanser POC specification only. It does **not** change Production scoring, ranking, Top Pick/Top3, `isDeepCleanser()`, `getHardPenalty()`, the current `-18` behavior, CandidatePolicy, Admin v2 runtime, the `products` schema, Hosted Supabase, catalog rows, PR #167, or PR #177.
+Phase 1 defines architecture and an offline cleanser POC specification only.
 
-The existing eight concern axes remain user-side concern semantics:
+Out of scope: Production scoring/ranking/Top Pick/Top3 changes, `isDeepCleanser()`, `getHardPenalty()`, the current `-18` behavior, CandidatePolicy activation, Admin v2 runtime, `products` schema migrations, Hosted migration, Production DB writes, catalog re-review/backfill, PR #167 changes, PR #177 changes, and frozen corpus changes.
+
+The existing user concern axes remain exactly:
 
 ```text
 barrier
-dehydation
+dehydration
 oiliness
 redness
 acne
@@ -34,19 +36,19 @@ uneven_tone
 uv
 ```
 
-They are not Product Decision Axes and are not rewritten by this design.
+These are user-side need axes. They are not Product Decision Axes.
 
 ## 2. Existing architecture audit
 
-### 2.1 Recommendation engine
+### Runtime scoring
 
-Current `lib/skin-match-decision-engine.js` consumes the existing concern model and combines multiple product-side pathways, including product concerns, review signals, market signals, ingredient signals, irritation risk, boosts, and penalties. It also contains active cleanser/deep-clean behavior that is explicitly outside this phase.
+`lib/skin-match-decision-engine.js` consumes the existing concern model and combines multiple product-side pathways including `product.concerns`, review signals, market signals, ingredient signals, `irritation_risk`, hero/priority boosts, and hard penalties. Cleanser/deep-clean logic is active Production behavior and is frozen for this phase.
 
-Current `lib/recommendation-scoring.ts` is the canonical scoring module present on `main` even though earlier design references sometimes use the `.js` suffix. The existing scorer is concern-oriented and additive. Phase 1 does not modify it.
+The current canonical scorer on `main` is `lib/recommendation-scoring.ts`. It remains unchanged.
 
-### 2.2 Review signals
+### Review signals
 
-`lib/review-signals.js` currently maps review observations into tags and then scores them. Its confidence baseline is a step multiplier based on each normalized review-signal entry count:
+`lib/review-signals.js` maps review observations to tags and scores them. The current confidence baseline is a step multiplier based on each normalized review-signal entry count:
 
 | signal entry count | multiplier |
 |---:|---:|
@@ -55,48 +57,50 @@ Current `lib/recommendation-scoring.ts` is the canonical scoring module present 
 | `>= 1000` | `1.2` |
 | `>= 5000` | `1.4` |
 
-The current implementation therefore does not represent a posterior distribution. More importantly, the count attached to a signal entry is not automatically a trustworthy denominator for prevalence, and overall `review_count` must not be substituted as the extraction population without provenance proving that equivalence.
+This is a heuristic multiplier, not a calibrated posterior probability. A signal entry count is also not automatically a valid prevalence denominator.
 
-### 2.3 Product source and schema boundary
+### Product source and schema boundary
 
-`lib/product-source.js` transports product fields used by the current runtime, including `concerns`, `ingredient_signals`, `review_signals`, `market_signals`, `irritation_risk`, and cleanser metadata. Existing source normalization also contains fallback/default behavior for missing legacy fields; this makes absence semantics unsuitable as a Product Fact authority layer.
+On current `main`, `lib/product-source.js` is the active product source file audited for this phase. `lib/product-source-core.js` is not present on current `main`; it belongs to parked PR #167 and is not consumed here.
 
-The current Admin v2 cleanser migration (`supabase/migrations/20260805220000_admin_product_review_cleanser_metadata_v2.sql`) confirms a field-level review contract centered on the existing `products.cleansing_profile` column. Its review values are the scalar enum-like set `low_ph | balanced | deep_clean`, with review states such as `reviewed_valid`, `reviewed_unknown`, and `reviewed_conflict`.
+The runtime transports legacy product metadata including `concerns`, `ingredient_signals`, `review_signals`, `market_signals`, `irritation_risk`, and cleanser metadata. Existing source normalization can also synthesize fallback values for missing legacy fields, so absence in the runtime object cannot be treated as Product Fact authority.
 
-That contract remains intact and parked. It is not generalized into the Product Fact model in this phase.
+The current Admin v2 migration `supabase/migrations/20260805220000_admin_product_review_cleanser_metadata_v2.sql` confirms a field-level review contract centered on the pre-existing scalar `products.cleansing_profile` field. Its value space is `low_ph | balanced | deep_clean`, with review states such as `reviewed_valid`, `reviewed_unknown`, and `reviewed_conflict`.
 
-### 2.4 Frozen 26-cleanser corpus
+That scalar contract is not the long-term Product Fact model.
 
-The immutable offline input is:
+### Frozen cleanser corpus
+
+POC input is immutable:
 
 ```text
 version: cleanser-catalog-field-review-v1
+products: 26
 canonical SHA-256:
 9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f
-products: 26
 ```
 
-The corpus is evidence for this POC; it is not a Production import bundle and is not modified.
+The corpus remains offline evidence and is not rewritten or imported.
 
-## 3. Layer authority and responsibility
+## 3. Layer authority
 
-| Layer | Owns | Must not own |
+| Layer | Authority / responsibility | Forbidden responsibility |
 |---|---|---|
-| Raw Evidence | source-observed material and provenance | inferred product truth, recommendation score |
-| Product Facts | atomic product attributes and per-fact state | user preference, one whole-product class |
-| Evidence Fusion | support/opposition, authority, uncertainty, provenance-aware aggregation | arbitrary score stacking, user utility |
-| Product Decision Axes | decision-relevant product estimates with uncertainty/coverage | raw claim storage, user concern state |
-| User Concern / Condition | the existing user-side need/risk state | product evidence truth |
-| Constraint + Utility | hard/soft eligibility boundaries and user-specific trade-offs | evidence provenance mutation |
-| Recommendation | final ordering/explanation after constraints and utility | rewriting upstream evidence |
+| Raw Evidence | source-observed material and provenance | inferred product truth or recommendation score |
+| Product Facts | atomic product attributes and per-fact state | one whole-product class or user preference |
+| Evidence Fusion | support/opposition, authority, uncertainty, provenance-aware aggregation | arbitrary additive recommendation scoring |
+| Product Decision Axes | decision-relevant product estimates with uncertainty/coverage | raw evidence storage or user concern state |
+| User Concern / Condition | existing user-side need/risk state | product evidence truth |
+| Constraint + Utility | eligibility boundaries and user-specific trade-offs | mutating evidence provenance |
+| Recommendation | final ordering/explanation | rewriting upstream evidence |
 
-Authority flows downward. A lower layer may consume but must not silently rewrite the semantics of an upstream layer.
+Authority flows downward. Downstream layers may consume upstream output but must not silently upgrade evidence authority or reinterpret absence as truth.
 
 ## 4. Product Fact contract
 
-A product is not one profile. A product can have any number of independent facts at the same time.
+A product is a set of independent facts, not one profile.
 
-Minimum fact contract:
+Minimum contract:
 
 ```json
 {
@@ -107,7 +111,7 @@ Minimum fact contract:
 }
 ```
 
-POC extension:
+POC state extension:
 
 ```json
 {
@@ -120,22 +124,27 @@ POC extension:
 }
 ```
 
-`fact_key` is semantic and stable. `value_type` prevents stringly typed ambiguity. `domain` scopes interpretation without requiring a new `products` column for every future attribute.
+Required semantics:
 
-Facts that appear mutually exclusive in a legacy scalar field are not conflicts unless they are semantically contradictory facts. For example:
+- `fact_key`: stable semantic identifier.
+- `value`: atomic value.
+- `value_type`: explicit type such as boolean/string/number.
+- `domain`: category/domain scope without requiring a dedicated `products` column.
+
+Independent facts can coexist:
 
 ```text
 low_ph = true
 deep_cleansing = true
 ```
 
-is a valid two-fact state.
+This is not a conflict. A conflict exists only when evidence disagrees about the same semantic proposition.
 
-No Production Fact table or migration is defined in Phase 1.
+No Production Fact table/migration is created in Phase 1.
 
 ## 5. Evidence contract
 
-Fact and Evidence are separate records. Evidence describes what a source supports; Product Facts describe the current fused state.
+Fact and Evidence are distinct. Evidence says what a source supports; Evidence Fusion determines fact state.
 
 Supported evidence type candidates:
 
@@ -148,7 +157,7 @@ review_observation
 manual_adjudication
 ```
 
-Minimum evidence contract:
+Minimum evidence record:
 
 ```json
 {
@@ -168,38 +177,36 @@ Minimum evidence contract:
 
 Rules:
 
-1. `source` preserves platform/provider provenance, for example `hwahae`. Future platforms remain separate evidence records.
-2. `source_reference` identifies the reviewed source, not an inferred source family.
-3. `support_direction` is one of `supports`, `opposes`, `context_only`, or `does_not_establish`.
-4. `numeric_value` and `unit` are stored only when the source provides a meaningful numeric value.
-5. `sample_size` means the sample size actually associated with that evidence.
-6. `analyzed_sample_size` means the population actually processed by signal extraction when known.
-7. `evidence_authority` represents source authority separately from whether the observation supports a fact.
-8. `confidence` is evidence confidence, not a recommendation score.
-9. `evidence_digest` locks the normalized evidence record for audit/replay.
+1. `source` preserves provider/platform provenance such as `hwahae`.
+2. `source_reference` identifies the reviewed source.
+3. `support_direction` is `supports`, `opposes`, `context_only`, or `does_not_establish`.
+4. `numeric_value`/`unit` exist only when the source provides a meaningful numeric value.
+5. `sample_size` belongs to the evidence itself.
+6. `analyzed_sample_size` is the population actually processed by signal extraction when known.
+7. `evidence_authority` is separate from support direction.
+8. `confidence` is evidence confidence, not recommendation utility.
+9. `evidence_digest` supports dedupe, replay, and lineage audit.
 
-An `official_claim` remains a claim. It does not become an `official_measurement`, a measured effect size, or a clinical strength estimate merely because the language is strong or contains a product benefit statement.
+An `official_claim` never becomes an `official_measurement` merely because wording is strong. A stated numeric claim can retain its numeric value while remaining `official_claim` unless the source establishes a measurement/test result.
 
-A numeric value stated on an official page may be retained as a stated numeric claim while its evidence type remains `official_claim` unless the source establishes that it is a measurement/test result.
-
-`manual_adjudication` can resolve mapping or semantic disputes but cannot, by itself, prove a physical product attribute.
+`manual_adjudication` may record a mapping decision but does not itself prove a physical product attribute.
 
 ## 6. Unknown and absence semantics
 
-The model rejects a single state such as:
+Whole-product state is not modeled as:
 
 ```text
 product = unknown
 ```
 
-Fact state is per fact:
+Fact status is per fact:
 
-| State | Meaning |
+| status | meaning |
 |---|---|
 | `supported` | evidence establishes the fact at the current authority threshold |
 | `reviewed_not_established` | relevant evidence was reviewed but did not establish the fact |
-| `not_reviewed` | the fact has not been reviewed |
-| `evidence_insufficient` | evidence exists but is insufficient to establish or reject the fact |
+| `not_reviewed` | this fact has not been reviewed |
+| `evidence_insufficient` | evidence exists but cannot establish/reject the fact |
 
 Therefore:
 
@@ -208,31 +215,29 @@ absence of a fact != false
 absence of a fact != unknown product
 ```
 
-`false` is allowed only when evidence establishes the negative proposition or the fact contract defines an explicit negative value. Missing evidence is never converted to `false`.
+`false` is used only when evidence establishes the negative proposition or the fact contract explicitly models a negative value.
 
 ## 7. Evidence Fusion contract
 
-Evidence Fusion operates per `fact_key`, not per whole product.
+Evidence Fusion operates per `fact_key`.
 
-Fusion responsibilities:
+It must:
 
-- retain every evidence record and its provenance;
+- retain all evidence and provenance;
 - group evidence by semantic fact;
-- distinguish support from opposition and non-establishing evidence;
-- weight source authority without erasing lower-authority corroboration;
-- keep qualitative claims separate from measurements/tests;
-- surface conflicts only inside the same semantic proposition;
-- output fact status plus reasons and uncertainty.
+- distinguish support, opposition, context, and non-establishing review;
+- preserve authority ceilings;
+- keep claim evidence separate from measurement/test evidence;
+- surface conflicts only within the same proposition;
+- produce per-fact status, confidence, authority, and reason codes.
 
-Independent facts are never collapsed to force a legacy enum.
-
-A recommended fused-fact output is:
+Recommended fused output:
 
 ```json
 {
   "fact_key": "deep_cleansing",
-  "status": "supported",
   "value": true,
+  "status": "supported",
   "authority_ceiling": "product_specific_primary",
   "confidence": "high",
   "supporting_evidence": ["..."],
@@ -241,24 +246,22 @@ A recommended fused-fact output is:
 }
 ```
 
-The `authority_ceiling` is the strongest valid authority present; it is not inferred upward from multiple weak sources.
+Multiple weak sources do not automatically promote `authority_ceiling` to a stronger class.
 
 ## 8. Review reliability architecture
 
-### 8.1 Baseline
+### Current baseline
 
-The existing runtime step multiplier is preserved as the documented baseline only:
+The current entry-count step multiplier remains a documented baseline only:
 
 ```text
-count < 300   → 0.8
-count >= 300  → 1.0
-count >= 1000 → 1.2
-count >= 5000 → 1.4
+<300 → 0.8
+>=300 → 1.0
+>=1000 → 1.2
+>=5000 → 1.4
 ```
 
-It is not treated as a calibrated probability.
-
-### 8.2 Proposed model
+### Proposed POC statistical contract
 
 Future review fusion separates:
 
@@ -269,30 +272,29 @@ observation
 + uncertainty
 ```
 
-A Beta-Binomial posterior is a valid initial POC candidate for binary observations:
+Beta-Binomial is an acceptable initial POC candidate for binary observations:
 
 ```text
 prior: Beta(alpha0, beta0)
-observed positives: k
+positive observations: k
 analyzed population: n
-
-posterior:
-Beta(alpha0 + k, beta0 + n - k)
+posterior: Beta(alpha0 + k, beta0 + n - k)
 ```
 
-This is a candidate statistical contract, not a calibrated Production prior.
+This is a candidate model, not a calibrated Production prior.
 
-Illustrative acceptance fixture with `Beta(1,1)`:
+Illustrative `Beta(1,1)` acceptance case:
 
-- `3 / 5` and `3000 / 5000` have the same observed ratio `0.6`.
-- Small sample posterior: `Beta(4,3)`, much wider uncertainty.
-- Large sample posterior: `Beta(3001,2001)`, much narrower uncertainty.
+```text
+3 / 5
+3000 / 5000
+```
 
-The POC verifier checks the variance ordering; it does not claim these priors are calibrated for skincare reviews.
+Both observed ratios are `0.6`, but the `n=5` posterior must be much wider than the `n=5000` posterior.
 
-### 8.3 Missing denominator
+### Denominator unavailable
 
-If a signal count exists but `analyzed_sample_size` is unavailable:
+Fixture:
 
 ```text
 signal_count = 27
@@ -300,51 +302,48 @@ review_count = 10000
 analyzed_sample_size = null
 ```
 
-then:
+Required result:
 
 ```text
 prevalence estimate = forbidden
-review_count as denominator = forbidden
+review_count as extraction denominator = forbidden
 confidence = capped/limited
-reason = denominator_unavailable
 ```
 
-The raw count can still be preserved as an observation.
+The raw signal count can be preserved. It cannot be converted into fake prevalence.
 
-### 8.4 Source provenance
+### Provenance
 
-Review observations are stored per source:
+Review evidence remains source-specific:
 
 ```text
 source = hwahae
 source = future_source_x
 ```
 
-Cross-platform fusion occurs after storage. Two platforms are not merged into one synthetic population unless their sampling/extraction contracts justify it.
+Storage does not merge platform populations. Cross-source fusion occurs only after provenance is retained and sampling/extraction compatibility is evaluated.
 
 ## 9. Product Decision Axis model
 
 Product Facts are not directly added to recommendation score.
 
-The axis mapper converts fused evidence into decision-relevant product estimates.
-
-POC cleanser axes:
+Cleanser POC axes:
 
 ### `cleansing_burden`
 
-Estimated cleansing/removal intensity or burden. `deep_cleansing = true` can be evidence for the axis, but a qualitative deep-cleansing claim does not by itself establish a numeric magnitude.
+Estimated cleansing/removal intensity or burden. A `deep_cleansing` claim can support the axis qualitatively but does not establish numeric magnitude.
 
 ### `hydration_preservation`
 
-Estimated preservation of hydration/comfort after cleansing. `low_ph = true` is not equivalent to measured hydration preservation and cannot be used as a one-step ground-truth label.
+Estimated preservation of hydration/comfort after cleansing. `low_ph = true` is not equivalent to measured hydration preservation.
 
 ### `irritation_burden`
 
-Estimated irritation/drying/stinging burden from available evidence. This is a recommendation decision axis, not a diagnosis or clinical adverse-event probability unless evidence supports that interpretation.
+Estimated irritation/drying/stinging burden from evidence. It is not a diagnosis or clinical adverse-event probability unless evidence supports that interpretation.
 
 ### `sebum_pore_control`
 
-Estimated evidence-supported ability relevant to sebum/pore cleansing/control. A pore/deep-clean claim establishes claim presence, not effect size.
+Estimated evidence-supported sebum/pore cleansing/control. Claim presence is not effect size.
 
 Axis output contract:
 
@@ -355,17 +354,17 @@ Axis output contract:
   "coverage": "claim_only",
   "evidence_reasons": [
     "official claim exists",
-    "no corroborating measured/review denominator"
+    "no corroborating measurement or denominator-valid review evidence"
   ],
   "mapper_version": "cleanser-axis-mapper-poc-v1"
 }
 ```
 
-`estimate` may be `null`. Lack of enough evidence is represented through `uncertainty` and `coverage`; the mapper must not invent separation between products.
+`estimate` may be null. Weak evidence is represented through uncertainty and coverage, not invented differences.
 
-If a future numeric estimate is used, it is a model estimate, not a manually entered low/medium/high ground-truth product label.
+A future numeric estimate is a model output, never a manually entered low/medium/high Product DB ground-truth label.
 
-## 10. Constraints vs utility
+## 10. Constraint + Utility boundary
 
 Long-term recommendation composition is:
 
@@ -375,29 +374,28 @@ constraints
 utility
 ```
 
-Constraints determine whether a product is ineligible, conditionally eligible, or requires caution. Utility then ranks eligible candidates by user fit.
+Constraints determine eligibility/caution first; utility ranks eligible candidates by user fit.
 
-Risk and benefit are not assumed to be symmetric. A sufficiently strong risk/constraint signal must not be completely canceled by unrelated positive utility through unrestricted arithmetic addition.
+Risk and benefit are not symmetric by default. A strong risk/constraint signal must not be fully canceled by unrelated positive utility through unrestricted addition.
 
-Phase 1 defines only the boundary. It changes no Production constraint or penalty.
+No Production constraint or penalty is implemented in Phase 1.
 
-## 11. 26-cleanser offline mapping specification
+## 11. Frozen 26-cleanser mapping specification
 
-The immutable source corpus remains the source of truth for the POC. The mapping fixture references original `product_id` and `catalog_evidence_id` values instead of rewriting the frozen corpus.
+Mapping input remains the immutable frozen corpus. The POC fixture references original `product_id` and `catalog_evidence_id` values rather than editing the source corpus.
 
-Mapping rules:
+Rules:
 
-1. Preserve source evidence records.
-2. Translate supported scalar values into independent fact keys where semantics allow:
-   - `low_ph` → `fact_key=low_ph, value=true`
-   - `deep_clean` → `fact_key=deep_cleansing, value=true`
-3. A legacy `reviewed_conflict` caused only by `low_ph + deep_clean` becomes two supported facts, not a Product Fact conflict.
-4. `reviewed_unknown` is not copied as whole-product unknown; candidate facts become `reviewed_not_established` when the frozen evidence review covered them without establishment.
-5. Evidence authority limits survive mapping.
-6. Manual conflict records remain adjudication provenance and do not prove physical facts.
-7. Decision-axis estimates remain nullable when the corpus lacks sufficient evidence for magnitude.
+1. Preserve source evidence.
+2. `low_ph` support maps to independent `fact_key=low_ph`.
+3. `deep_clean` support maps to independent `fact_key=deep_cleansing`.
+4. Legacy `reviewed_conflict` caused only by simultaneous low-pH and deep-cleansing support becomes two supported facts.
+5. `reviewed_unknown` does not become whole-product unknown.
+6. Evidence authority limitations survive mapping.
+7. Manual conflict records remain adjudication-only evidence.
+8. Decision-axis estimates remain nullable when magnitude evidence is insufficient.
 
-POC fixture:
+Fixture:
 
 ```text
 evidence/product-evidence-decision-axis-v1/cleanser-poc-fixtures.json
@@ -407,28 +405,28 @@ evidence/product-evidence-decision-axis-v1/cleanser-poc-fixtures.json
 
 ### beplain
 
-Frozen evidence supports both `low_ph` and `deep_clean` on the exact official product page. New representation:
+Frozen `cfrv1-10-01` supports low pH and `cfrv1-10-02` supports deep cleansing for the exact official product page.
+
+Required Fact state:
 
 ```text
 low_ph = supported(true)
 deep_cleansing = supported(true)
 ```
 
-No conflict exists at Product Fact layer.
-
 ### BRMUD
 
-Official evidence supports `low_ph`; Hwahae review-corpus evidence supports `deep_clean`. New representation preserves both source records and both supported facts. The two sources are not collapsed into one platform.
+Frozen official evidence supports low pH; frozen Hwahae review-corpus evidence supports deep cleansing. Both facts coexist and source provenance remains separate.
 
 ### Jumiso
 
-The exact official page independently supports both `low_ph` and `deep_clean`. Both facts coexist.
+The frozen exact official page supports both low pH and deep cleansing. Both facts coexist.
 
 ### La Roche-Posay
 
-The exact official product source was reviewed but did not establish an allowed legacy cleansing profile. The product is not globally unknown.
+The exact official product source was reviewed but did not establish an allowed legacy `cleansing_profile`. The whole product is not unknown.
 
-POC representation can simultaneously hold:
+POC state:
 
 ```text
 product_identity_match = supported(exact_official_product)
@@ -438,21 +436,19 @@ deep_cleansing = reviewed_not_established
 
 ### Mediheal
 
-Deep/pore-cleansing evidence is preserved. The frozen corpus explicitly limits authority because the official evidence is a brand-site root listing and corroboration is an exact-product retailer page rather than a frozen product-specific official/manufacturer evidence address.
+Deep-cleansing support is preserved. The frozen corpus explicitly records that evidence authority is limited: an official brand-site root listing plus retailer corroboration, without a frozen product-specific high-authority official/manufacturer evidence address.
 
-The Fact can therefore be supported while its authority ceiling prevents promotion to high product-specific authority.
+The Fact can be supported while its authority ceiling remains limited.
 
 ### beplain vs Senka Perfect Whip
 
-Both can carry a `deep_cleansing` fact. That fact does not force equal `sebum_pore_control` or `cleansing_burden` estimates.
+Both may have `deep_cleansing = supported(true)`. That shared claim does not force the same Decision Axis estimate.
 
-If future product-specific measured evidence or denominator-valid review evidence differs, the axis estimate may differ.
+If future product-specific measurement or denominator-valid review evidence differs, axis estimates may differ. With current claim-level evidence alone, the POC must not invent a numeric difference; uncertainty/coverage carry the limitation.
 
-With the current frozen claim-level evidence alone, the POC does **not** invent a numeric difference. It carries the limitation in `uncertainty` and `coverage`.
+## 13. Score duplication boundary
 
-## 13. Signal duplication and aggregation boundary
-
-Current or near-current recommendation inputs can semantically overlap:
+Potentially overlapping pathways include:
 
 ```text
 product.concerns
@@ -464,20 +460,20 @@ hard penalty
 derived metadata
 ```
 
-Future Product Decision Axis mapping must not let the same underlying signal family produce unlimited additive reinforcement simply because it appears through several transports.
+Future axis mapping forbids unlimited additive stacking of the same underlying signal family.
 
-Required aggregation contract:
+Aggregation contract:
 
-1. Assign evidence to a semantic `signal_family`.
-2. Deduplicate exact evidence by `evidence_digest`.
-3. Preserve independent provenance but detect derivative evidence lineage.
-4. Aggregate within a family before combining families.
-5. Apply family saturation/cap or an equivalent bounded transform.
-6. Cross-family corroboration may increase coverage/confidence, but duplicated claims must not multiply effect size.
-7. Market popularity is not physical efficacy evidence.
-8. Hero policy and hard penalties are recommendation policy, not Product Facts.
+1. assign evidence to a semantic `signal_family`;
+2. deduplicate exact evidence by `evidence_digest`;
+3. retain independent provenance and derivative lineage;
+4. aggregate within a family before combining families;
+5. use signal-family saturation/cap or an equivalent bounded transform;
+6. let independent cross-family corroboration improve coverage/confidence without multiplying duplicate effect size;
+7. never treat market popularity as physical efficacy;
+8. keep hero boosts/hard penalties as recommendation policy, not Product Facts.
 
-Candidate families include:
+Candidate families:
 
 ```text
 official_efficacy_claim
@@ -491,22 +487,17 @@ derived_metadata
 recommendation_policy
 ```
 
-No Production score weights or caps are selected in Phase 1.
+No Production weight, cap, or score formula changes in Phase 1.
 
 ## 14. Cross-category extension plan
 
-The contract must generalize without adding one `products` column per new capability.
-
-Follow-up POCs should sample a small number of products, not migrate the whole catalog.
-
-Candidate facts:
+Validate the same Fact/Evidence contract on small later POCs only.
 
 ### Sunscreen
 - labeled SPF/UVA values
 - filter identity/type
 - water-resistance claim/test
-- white-cast observation
-- eye-sting review observation
+- white-cast/eye-sting observations
 
 ### Serum / treatment
 - active identity
@@ -516,10 +507,10 @@ Candidate facts:
 - human-test outcome when available
 
 ### Moisturizer
-- occlusive/richness observations
+- richness/occlusivity observations
 - barrier-support claim/test
 - fragrance presence
-- hydration measurement/test when available
+- hydration test/measurement when available
 
 ### Toner / pad
 - wipe-off/pad format
@@ -527,36 +518,36 @@ Candidate facts:
 - active/exfoliation claims
 - hydration/irritation observations
 
-The same `fact_key/value/value_type/domain + evidence` model must represent these without a schema migration for every fact.
+The same `fact_key/value/value_type/domain + evidence` model must extend without adding a new `products` column for every product attribute.
 
-## 15. Parked lineage and adoption boundary
+## 15. Parked PR boundary
 
-PR #167 remains a recommendation metadata transport shadow. It is not modified or activated.
+PR #167 remains Draft and unchanged. Its recommendation metadata transport shadow is not activated.
 
-PR #177 remains the parked scalar Catalog Review Adoption design. It is not modified, readied, or merged by this phase.
+PR #177 remains Draft and unchanged. Its scalar Catalog Review Adoption design is not implemented or merged.
 
-Any later catalog adoption proposal must be re-evaluated against this evidence/fact/axis architecture rather than assuming `cleansing_profile` is the long-term product truth model.
+Any later catalog adoption proposal must be re-evaluated against this Evidence → Facts → Fusion → Axes architecture rather than assuming `cleansing_profile` is the long-term product truth model.
 
-## 16. Phase 1 acceptance and verification
+## 16. Verification contract
 
-Required verifier:
+Verifier:
 
 ```text
 node scripts/verify-product-evidence-decision-axis-v1.mjs
 ```
 
-It must verify:
+It validates:
 
-- architecture contract markers;
-- frozen corpus verifier still passes;
-- frozen canonical SHA remains `9c2472...`;
-- six mandatory cleanser cases reference real frozen product/evidence IDs;
-- beplain, BRMUD, and Jumiso hold simultaneous `low_ph` and `deep_cleansing` facts;
-- La Roche-Posay demonstrates partial knowledge rather than whole-product unknown;
-- Mediheal preserves support with authority limitation;
-- beplain and Senka do not receive invented numeric axis separation from claim presence alone;
-- Beta-Binomial illustrative uncertainty for `n=5` is wider than for `n=5000`;
-- missing denominator forbids prevalence;
-- fixture files do not import or mutate Production paths.
+- architecture markers and contracts;
+- the existing frozen corpus verifier;
+- frozen canonical SHA invariance;
+- real frozen product/evidence IDs for the six mandatory cases;
+- simultaneous `low_ph` + `deep_cleansing` facts for beplain/BRMUD/Jumiso;
+- partial-knowledge semantics for La Roche-Posay;
+- authority limitation for Mediheal;
+- no invented beplain/Senka numeric axis split;
+- wider posterior uncertainty at `n=5` than `n=5000`;
+- no prevalence when denominator is unavailable;
+- three-file architecture/fixture/verifier-only branch delta when the baseline commit is available.
 
-Phase 1 success is architecture/specification success only. It must not be reported as Production Product Fact implementation or statistical calibration.
+Phase 1 success is architecture/specification success only. It must not be reported as Product Fact Production implementation, Bayesian calibration, schema migration, Catalog Adoption readiness, or recommendation activation.
