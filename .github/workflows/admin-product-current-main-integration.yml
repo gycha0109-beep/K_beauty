@@ -78,8 +78,52 @@ jobs:
           echo "checkout_sha=${actual_sha}"
           test "${actual_sha}" = "${EXPECTED_HEAD_SHA}"
 
-      - name: Fetch durable Admin base
-        run: git fetch origin integration/admin-product-current-main:refs/remotes/origin/integration/admin-product-current-main
+      - name: Resolve Admin verifier base and head
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          EVENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          case "${EVENT_NAME}" in
+            pull_request)
+              base="${PR_BASE_SHA}"
+              head="${PR_HEAD_SHA}"
+              ;;
+            push)
+              base="${PUSH_BEFORE_SHA}"
+              head="${EVENT_SHA}"
+              ;;
+            workflow_dispatch)
+              head="${EVENT_SHA}"
+              base="$(git rev-parse "${head}^")"
+              ;;
+            *)
+              echo "unsupported Admin verifier event: ${EVENT_NAME}" >&2
+              exit 1
+              ;;
+          esac
+          if [[ ! "${base}" =~ ^[0-9a-f]{40}$ ]] || [[ "${base}" == "0000000000000000000000000000000000000000" ]]; then
+            echo "invalid Admin verifier base SHA: ${base}" >&2
+            exit 1
+          fi
+          if [[ ! "${head}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "invalid Admin verifier head SHA: ${head}" >&2
+            exit 1
+          fi
+          test "${base}" != "${head}"
+          git cat-file -e "${base}^{commit}"
+          git cat-file -e "${head}^{commit}"
+          test "$(git rev-parse HEAD)" = "${head}"
+          echo "admin_verify_base_sha=${base}"
+          echo "admin_verify_head_sha=${head}"
+          {
+            echo "ADMIN_VERIFY_BASE_SHA=${base}"
+            echo "ADMIN_VERIFY_HEAD_SHA=${head}"
+          } >>"${GITHUB_ENV}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -137,13 +181,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
-            git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
-          else
-            test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
-            git diff --check origin/integration/admin-product-current-main..HEAD
-          fi
+          test "$(git rev-parse HEAD)" = "${ADMIN_VERIFY_HEAD_SHA}"
+          git diff --check "${ADMIN_VERIFY_BASE_SHA}...${ADMIN_VERIFY_HEAD_SHA}"
 
   isolated-confirm-runtime:
     runs-on: ubuntu-24.04

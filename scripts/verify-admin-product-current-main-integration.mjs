@@ -1,6 +1,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
+import {
+  ADMIN_V2_SCOPE_CLASSIFICATIONS,
+  classifyAdminV2ChangedFiles,
+} from "./verify-admin-product-review-v2-diff-scope.mjs";
+
 const ROOT = process.cwd();
 let assertions = 0;
 
@@ -32,6 +37,8 @@ const requiredFiles = [
   "scripts/verify-admin-product-review-import-confirm.mjs",
   "scripts/verify-admin-product-review-import-routes.mjs",
   "scripts/verify-admin-product-review-import-ui.mjs",
+  "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
+  "scripts/verify-admin-product-review-v2-diff-scope.mjs",
   "docs/reports/admin-product-current-main-integration.md"
 ];
 requiredFiles.forEach((path) => read(path));
@@ -106,6 +113,8 @@ check(vercel.git?.deploymentEnabled?.["**"] === false, "non-main Vercel deployme
 check(vercel.git?.deploymentEnabled?.main === true, "main Vercel deployment allow lost");
 
 const workflow = read(".github/workflows/admin-product-current-main-integration.yml");
+const v2Verifier = read("scripts/verify-admin-product-review-cleanser-metadata-v2.mjs");
+const v2ScopeVerifier = read("scripts/verify-admin-product-review-v2-diff-scope.mjs");
 check(workflow.includes("integration/admin-product-current-main"), "integration push trigger missing");
 check(workflow.includes("isolated-confirm-runtime"), "isolated runtime job missing");
 check(workflow.includes("20260804233300_admin_product_review_import_confirm.sql"), "rebased confirm migration missing from workflow");
@@ -140,6 +149,100 @@ const expectedPushPaths = [
 for (const path of expectedPushPaths) {
   check(pushBlock.includes(`      - ${path}`), `main push path missing: ${path}`);
 }
+
+for (const token of [
+  "Resolve Admin verifier base and head",
+  "ADMIN_VERIFY_BASE_SHA",
+  "ADMIN_VERIFY_HEAD_SHA",
+  "github.event.pull_request.base.sha",
+  "github.event.pull_request.head.sha",
+  "github.event.before",
+  'git rev-parse "${head}^"',
+  'git cat-file -e "${base}^{commit}"',
+  'git diff --check "${ADMIN_VERIFY_BASE_SHA}...${ADMIN_VERIFY_HEAD_SHA}"'
+]) {
+  check(workflow.includes(token), `event-aware Admin verifier contract missing: ${token}`);
+}
+check(
+  !workflow.includes("git fetch origin integration/admin-product-current-main"),
+  "stale durable-base fetch retained in Admin workflow"
+);
+check(
+  !workflow.includes("git diff --check origin/integration/admin-product-current-main..HEAD"),
+  "stale durable-base diff retained in Admin workflow"
+);
+check(
+  !v2Verifier.includes("origin/integration/admin-product-current-main"),
+  "fixed integration BASE_REF retained in Admin v2 verifier"
+);
+check(
+  v2Verifier.includes('from "./verify-admin-product-review-v2-diff-scope.mjs"'),
+  "Admin v2 verifier does not consume the ownership classifier"
+);
+for (const token of [
+  "ADMIN_V2_SCOPE_NOT_APPLICABLE",
+  "ADMIN_V2_SCOPE_APPLICABLE",
+  "ADMIN_V2_WITH_UNAPPROVED_SCOPE",
+  "ADMIN_V2_WITH_PRODUCTION_RUNTIME_SCOPE",
+  "app/api/admin/product-reviews/import-v2/",
+  "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
+  "2c4edce5065b6d274ab26ca52e18f123ffd1fcfa",
+  "b7e301293e3accf9348ead9472bfe21d44d0b7dd",
+  "a670212434c56b0578654623ab4d75709d83984b"
+]) {
+  check(v2ScopeVerifier.includes(token), `Admin v2 scope contract token missing: ${token}`);
+}
+
+const packageOnly = classifyAdminV2ChangedFiles(["package.json"]);
+check(
+  packageOnly.classification === ADMIN_V2_SCOPE_CLASSIFICATIONS.NOT_APPLICABLE && packageOnly.pass,
+  "package-only diff must not activate Admin v2 scope"
+);
+const verifierOnly = classifyAdminV2ChangedFiles([
+  "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs"
+]);
+check(
+  verifierOnly.classification === ADMIN_V2_SCOPE_CLASSIFICATIONS.APPLICABLE && verifierOnly.pass,
+  "Admin v2 verifier-only maintenance must activate bounded scope"
+);
+const mixedEngine = classifyAdminV2ChangedFiles([
+  "scripts/verify-admin-product-review-cleanser-metadata-v2.mjs",
+  ".github/workflows/skin-decision-engine-closeout.yml"
+]);
+check(
+  mixedEngine.classification === ADMIN_V2_SCOPE_CLASSIFICATIONS.UNAPPROVED && !mixedEngine.pass,
+  "Admin v2 plus Engine must fail closed"
+);
+
+function resolveAdminVerifierRefs({ eventName, prBase = "", prHead = "", before = "", sha = "", parent = "" }) {
+  if (eventName === "pull_request") return { base: prBase, head: prHead };
+  if (eventName === "push") return { base: before, head: sha };
+  if (eventName === "workflow_dispatch") return { base: parent, head: sha };
+  return null;
+}
+
+const refMatrix = [
+  [
+    { eventName: "pull_request", prBase: "base", prHead: "head", sha: "merge" },
+    { base: "base", head: "head" },
+    "pull request"
+  ],
+  [
+    { eventName: "push", before: "before", sha: "head" },
+    { base: "before", head: "head" },
+    "push"
+  ],
+  [
+    { eventName: "workflow_dispatch", parent: "parent", sha: "head" },
+    { base: "parent", head: "head" },
+    "workflow dispatch"
+  ]
+];
+for (const [event, expected, label] of refMatrix) {
+  const actual = resolveAdminVerifierRefs(event);
+  check(actual?.base === expected.base && actual?.head === expected.head, `Admin verifier ref mismatch: ${label}`);
+}
+check(resolveAdminVerifierRefs({ eventName: "schedule" }) === null, "unsupported event must fail closed");
 
 const expectedV2Condition =
   "if: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') || (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'workflow_dispatch' && github.ref_name == 'main') }}";
