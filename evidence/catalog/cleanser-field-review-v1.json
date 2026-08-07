@@ -28,6 +28,12 @@
       "deep_clean": 12,
       "null": 4
     },
+    "confidence_counts": {
+      "high": 20,
+      "medium": 1,
+      "low": 1,
+      "unknown": 4
+    },
     "legacy_comparison": {
       "legacy_unchanged": 17,
       "legacy_changed": 5,
@@ -103,7 +109,7 @@
     "score_ranking_delta": 0,
     "pr_167_delta": 0
   },
-  "canonical_sha256": "73645cbcd9bfecdb559297ed2a7bab3e50d9be560dee33460071eadba09b1241",
+  "canonical_sha256": "9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f",
   "product_parts": [
     "evidence/catalog/cleanser-field-review-v1.part-1.json",
     "evidence/catalog/cleanser-field-review-v1.part-2.json",
@@ -111,8 +117,11 @@
     "evidence/catalog/cleanser-field-review-v1.part-4.json"
   ],
   "historical_pre_taxonomy_correction_sha256": "2cfa18b985ae76ebd50b7d471f7b242efb633a4e5cbec7cff8e1b8ab823e1f27",
+  "historical_pre_confidence_finalization_sha256": "73645cbcd9bfecdb559297ed2a7bab3e50d9be560dee33460071eadba09b1241",
   "taxonomy_corrected_at": "2026-08-07T12:59:00+09:00",
+  "confidence_finalized_at": "2026-08-07T13:53:00+09:00",
   "offline_source_taxonomy_version": "cleanser-catalog-source-taxonomy-v1",
+  "confidence_rubric_version": "cleanser-catalog-confidence-rubric-v1",
   "allowed_source_classes": [
     "official_product_page",
     "manufacturer_documentation",
