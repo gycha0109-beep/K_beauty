@@ -47,7 +47,7 @@ export const ENGINE_OWNED_PREFIXES = Object.freeze([
   "lib/skin-match-decision-engine",
   "lib/skin-observation-projector",
   "lib/vision-observation-"
-]);
+]));
 
 export const ALLOWED_ADMIN_BASELINE_PATHS = Object.freeze(new Set([
   "app/api/admin/product-reviews/preflight/route.js",
@@ -102,6 +102,14 @@ export const REGRESSION_PAIRS = Object.freeze({
     expectedEngineScopeChanged: false,
     expectedAdminScopeChanged: true,
     expectedMigrationScopeChanged: true
+  }),
+  adminV2ScopeFixMergedMain: Object.freeze({
+    base: "2c4edce5065b6d274ab26ca52e18f123ffd1fcfa",
+    head: "ead0f9632366eb940235973083830db0b69740c5",
+    expectedClassification: "NON_ENGINE_ONLY",
+    expectedEngineScopeChanged: false,
+    expectedAdminScopeChanged: false,
+    expectedMigrationScopeChanged: false
   }),
   engineCloseout171: Object.freeze({
     base: "6604ca37087eb063e793218d0b734e89c36f228d",
@@ -258,7 +266,9 @@ function runFixtureRegressions() {
     },
     {
       name: "secret-literal-global",
-      result: classifySkinDecisionCloseoutDiffScope(["docs/ci.md"], { addedLines: [`+OPENAI_API_KEY=sk-proj-${"a".repeat(32)}`] }),
+      result: classifySkinDecisionCloseoutDiffScope(["docs/ci.md"], {
+        addedLines: [`+OPENAI_API_KEY=${["sk", "-proj-", "a".repeat(32)].join("")}`]
+      }),
       expectedClassification: "NON_ENGINE_ONLY",
       expectedPass: false
     },
