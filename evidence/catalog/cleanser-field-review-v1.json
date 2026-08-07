@@ -5,7 +5,7 @@
   "cleansing_profile_schema_version": "cleanser-metadata-v1",
   "review_policy_version": "cleanser-metadata-review-policy-v1",
   "field_evidence_schema_version": "product-review-field-evidence-v1",
-  "accessed_at": "2026-08-07T11:45:00+09:00",
+  "accessed_at": "2026-08-07T12:59:00+09:00",
   "product_count": 26,
   "legacy_seed_policy": "not_used",
   "admin_v2_import_bundle": false,
@@ -68,12 +68,29 @@
         "not_applicable": 0
       }
     },
-    "evidence_type_counts": {
-      "official_product_page": 25,
-      "manufacturer_documentation": 4,
+    "source_class_counts": {
+      "official_product_page": 27,
+      "manufacturer_documentation": 0,
+      "official_brand_site_listing": 1,
+      "retailer_product_page": 1,
+      "marketplace_product_page": 0,
+      "price_comparison_product_page": 0,
       "ingredient_list": 0,
       "review_corpus": 3,
       "manual_conflict_record": 3
+    },
+    "admin_v2_evidence_type_candidate_counts": {
+      "official_product_page": 27,
+      "manufacturer_documentation": 0,
+      "ingredient_list": 0,
+      "review_corpus": 3,
+      "manual_conflict_record": 3,
+      "null": 2
+    },
+    "admin_v2_ingestion_readiness_counts": {
+      "eligible_from_current_evidence": 22,
+      "evidence_upgrade_required": 1,
+      "schema_mapping_required": 3
     },
     "external_url_count": 35,
     "unique_external_url_count": 31
@@ -86,11 +103,32 @@
     "score_ranking_delta": 0,
     "pr_167_delta": 0
   },
-  "canonical_sha256": "2cfa18b985ae76ebd50b7d471f7b242efb633a4e5cbec7cff8e1b8ab823e1f27",
+  "canonical_sha256": "73645cbcd9bfecdb559297ed2a7bab3e50d9be560dee33460071eadba09b1241",
   "product_parts": [
     "evidence/catalog/cleanser-field-review-v1.part-1.json",
     "evidence/catalog/cleanser-field-review-v1.part-2.json",
     "evidence/catalog/cleanser-field-review-v1.part-3.json",
     "evidence/catalog/cleanser-field-review-v1.part-4.json"
+  ],
+  "historical_pre_taxonomy_correction_sha256": "2cfa18b985ae76ebd50b7d471f7b242efb633a4e5cbec7cff8e1b8ab823e1f27",
+  "taxonomy_corrected_at": "2026-08-07T12:59:00+09:00",
+  "offline_source_taxonomy_version": "cleanser-catalog-source-taxonomy-v1",
+  "allowed_source_classes": [
+    "official_product_page",
+    "manufacturer_documentation",
+    "official_brand_site_listing",
+    "retailer_product_page",
+    "marketplace_product_page",
+    "price_comparison_product_page",
+    "ingredient_list",
+    "review_corpus",
+    "manual_conflict_record"
+  ],
+  "allowed_admin_v2_evidence_type_candidates": [
+    "official_product_page",
+    "manufacturer_documentation",
+    "ingredient_list",
+    "review_corpus",
+    "manual_conflict_record"
   ]
 }
