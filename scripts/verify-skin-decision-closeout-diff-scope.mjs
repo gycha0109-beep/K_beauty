@@ -47,7 +47,7 @@ export const ENGINE_OWNED_PREFIXES = Object.freeze([
   "lib/skin-match-decision-engine",
   "lib/skin-observation-projector",
   "lib/vision-observation-"
-]));
+]);
 
 export const ALLOWED_ADMIN_BASELINE_PATHS = Object.freeze(new Set([
   "app/api/admin/product-reviews/preflight/route.js",
