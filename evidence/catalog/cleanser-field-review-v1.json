@@ -1,0 +1,96 @@
+{
+  "version": "cleanser-catalog-field-review-v1",
+  "repository_base_sha": "2fe2b1f8f629b06a65103964a2414aaaeb963fab",
+  "review_contract_version": "admin-product-review-v2",
+  "cleansing_profile_schema_version": "cleanser-metadata-v1",
+  "review_policy_version": "cleanser-metadata-review-policy-v1",
+  "field_evidence_schema_version": "product-review-field-evidence-v1",
+  "accessed_at": "2026-08-07T11:45:00+09:00",
+  "product_count": 26,
+  "legacy_seed_policy": "not_used",
+  "admin_v2_import_bundle": false,
+  "summary": {
+    "legacy_profile_counts": {
+      "low_ph": 10,
+      "balanced": 7,
+      "deep_clean": 9,
+      "null": 0
+    },
+    "review_state_counts": {
+      "reviewed_valid": 21,
+      "reviewed_unknown": 1,
+      "reviewed_conflict": 4,
+      "not_applicable": 0
+    },
+    "reviewed_profile_counts": {
+      "low_ph": 10,
+      "balanced": 0,
+      "deep_clean": 11,
+      "null": 5
+    },
+    "legacy_comparison": {
+      "legacy_unchanged": 17,
+      "legacy_changed": 4,
+      "legacy_to_null": 5,
+      "null_to_valid": 0
+    },
+    "transition_matrix": {
+      "low_ph": {
+        "low_ph": 9,
+        "balanced": 0,
+        "deep_clean": 0,
+        "reviewed_unknown": 0,
+        "reviewed_conflict": 1,
+        "not_applicable": 0
+      },
+      "balanced": {
+        "low_ph": 1,
+        "balanced": 0,
+        "deep_clean": 3,
+        "reviewed_unknown": 1,
+        "reviewed_conflict": 2,
+        "not_applicable": 0
+      },
+      "deep_clean": {
+        "low_ph": 0,
+        "balanced": 0,
+        "deep_clean": 8,
+        "reviewed_unknown": 0,
+        "reviewed_conflict": 1,
+        "not_applicable": 0
+      },
+      "null": {
+        "low_ph": 0,
+        "balanced": 0,
+        "deep_clean": 0,
+        "reviewed_unknown": 0,
+        "reviewed_conflict": 0,
+        "not_applicable": 0
+      }
+    },
+    "evidence_type_counts": {
+      "official_product_page": 25,
+      "manufacturer_documentation": 4,
+      "ingredient_list": 0,
+      "review_corpus": 3,
+      "manual_conflict_record": 4
+    },
+    "external_url_count": 36,
+    "unique_external_url_count": 31
+  },
+  "production_invariance": {
+    "db_writes": 0,
+    "hosted_migrations": 0,
+    "admin_activation": 0,
+    "recommendation_activation": 0,
+    "score_ranking_delta": 0,
+    "pr_167_delta": 0
+  },
+  "canonical_sha256": "02f5c3f6909dd8e0d51a4e13bc798379d9839f1560d8b60dac54585a04a41658",
+  "product_parts": [
+    "evidence/catalog/cleanser-field-review-v1.part-1.json",
+    "evidence/catalog/cleanser-field-review-v1.part-2.json",
+    "evidence/catalog/cleanser-field-review-v1.part-3.json",
+    "evidence/catalog/cleanser-field-review-v1.part-4.json"
+  ]
+}
