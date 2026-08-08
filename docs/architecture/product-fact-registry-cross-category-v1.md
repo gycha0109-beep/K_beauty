@@ -1,6 +1,6 @@
 # Product Fact Registry Cross-Category v1
 
-Status: **offline executable architecture POC / no Production activation**
+Status: **offline executable architecture POC / semantic-finalized / no Production activation**
 
 Baseline: `main@e371d5bc037fb80d1edd3876f0c7d1d94a2c1461`
 
@@ -8,99 +8,63 @@ Registry version: `product-fact-registry-cross-category-v1`
 
 ## 1. Purpose
 
-Phase 3A tests whether the Product Evidence architecture proven for cleanser facts can extend across structurally different product domains without either:
+Phase 3A tests whether Product Evidence architecture can extend beyond cleanser without either adding a `products` column for every product property or degrading into an arbitrary tag warehouse.
 
-1. adding a new `products` column for every product property, or
-2. degrading into an arbitrary string-tag warehouse.
+The semantic-finalization pass closes three contract gaps only:
 
-This phase does **not** review real cross-category product claims, define a Production schema, activate Product Facts in recommendation, or finalize Decision Axes. It defines and executes a governed registry contract against synthetic but realistic sunscreen, treatment, moisturizer, and toner/pad cases.
+1. storage `fact_instance_id` is separated from canonical semantic proposition identity;
+2. scope overlap and relationship-bound scope compatibility are explicit;
+3. evidence records are separated from fused Product Facts, including conflict and explicit-negative provenance.
 
-The intended boundary remains:
+This phase does **not** review new real-product claims, define a Production Product Fact schema, activate recommendation consumption, or finalize Decision Axes.
+
+The boundary is:
 
 ```text
-Evidence
-→ governed Product Fact instances
+EvidenceRecord[]
+→ governed proposition-level fusion
+→ Fused Product Fact
 → future separately governed Decision Axis mapping
-→ existing user/condition/constraint/utility layers
-→ Recommendation
+→ Recommendation policy
 ```
-
-A Product Fact says what may be asserted about a product and under what evidence/scope. It does not contain recommendation weights.
 
 ## 2. Non-goals
 
-Phase 3A intentionally excludes:
+Phase 3A excludes:
 
-- new official-site / Hwahae / Olive Young product research;
-- review scraping or manual product re-review;
-- new canonical cross-category Product Fact truth for real products;
-- Product Fact DB migrations or Hosted writes;
-- Admin adoption or operation;
-- recommendation scoring, penalties, hero boosts, or user-concern coefficients;
-- Decision Axis Production definitions or runtime consumers;
-- refactoring the Phase 2 cleanser POC onto the generic core;
-- activation or modification of PR #167 or PR #177.
+- new official-site, Hwahae, Olive Young, review-scraping, or manual product research;
+- Product Fact DB migrations or Hosted/Production writes;
+- Admin runtime adoption;
+- recommendation score, penalty, hero boost, or user-concern coefficients;
+- Product Fact or Decision Axis runtime consumers;
+- Phase 2 cleanser refactoring;
+- modification or activation of PR #167 or PR #177.
 
-Real product evidence is a separate Phase 3B concern.
+Phase 3B is the separate real-evidence pilot.
 
-## 3. Current catalog inventory is not Product Fact authority
+## 3. Current catalog inventory is audit-only
 
-The current codebase and frozen recommendation reference provide useful structural inventory, but they do not provide proposition-level Product Fact authority for these domains.
-
-The inventory boundary is explicit:
+Current catalog/runtime/fixture values are structural inventory, not proposition-level Product Fact authority.
 
 ```text
-current catalog / adapter / fixture value
+current catalog value
 != reviewed Product Fact authority
 ```
 
-Examples:
+Reference inventory used for architecture stress testing:
 
-- an `spf_value` field does not prove the label was reviewed against scoped product evidence;
-- `ingredient_signals` do not establish a specific active identity or concentration;
-- `is_primary_moisturizer` is role metadata, not physical efficacy;
-- `review_signals` label counts are not prevalence when the analyzed denominator is absent;
-- adapter-derived `barrier_support`, `hydration_level`, or `irritation_risk` are not measurements.
+| Domain | Reference count |
+| --- | ---: |
+| Sunscreen | 11 |
+| Treatment | 18 |
+| Moisturizer family | 61 |
+| Toner / pad family | 48 |
 
-The current recommendation adapter also contains fallbacks and sunscreen overrides. Phase 3A records those as provenance risks rather than treating them as evidence.
+The detailed audit remains in `current-catalog-inventory-audit-v1.json` and is intentionally not rewritten by this semantic-finalization pass.
 
-The executable audit is stored in:
+## 4. Governed Fact Registry
 
-`evidence/product-evidence-decision-axis-v1/current-catalog-inventory-audit-v1.json`
-
-### 3.1 Reference inventory counts
-
-The frozen 164-product recommendation reference used by current-main invariance contains:
-
-| Domain | Count | Structural detail |
-| --- | ---: | --- |
-| Sunscreen | 11 | SPF/UVA/filter fields present on 11; water resistance on 1 |
-| Treatment | 18 | canonical `treatment`, `product_form` present on 18 |
-| Moisturizer | 61 | balm 20, cream 10, gel 10, lotion/emulsion 21 |
-| Toner / pad | 48 | toner/essence 24, toner pad 24 |
-
-These counts describe the reference inventory. They do not assert Hosted DB row counts or reviewed Product Fact completeness.
-
-### 3.2 Current fallback/default risk
-
-Current adapter behavior includes fallback or derivation paths such as:
-
-- `skin_types → ["combination"]`;
-- `concerns → ["dehydration"]`;
-- `texture → "watery"`;
-- `finish → "natural"`;
-- `irritation_risk → "medium"`;
-- Boolean coercion that can turn missing `sensitivity_safe` into `false`;
-- sunscreen-specific null-filling overrides;
-- derived barrier/hydration/sebum values.
-
-These behaviors may be valid recommendation adapter behavior, but they are disqualified as automatic Product Fact authority.
-
-## 4. Governed Fact Registry contract
-
-A new fact key is admissible only through the versioned registry. Arbitrary unknown keys fail closed.
-
-Each registry definition supports at least:
+Every admitted Fact definition is versioned and contains at least:
 
 ```text
 fact_key
@@ -113,354 +77,327 @@ cardinality
 qualifier_schema
 relationship_schema
 scope_schema
+proposition_identity_schema
 semantic_definition
 positive_evidence_requirement
 negative_evidence_requirement
 conflict_semantics
+permitted_evidence_classes
 deprecated
 superseded_by
 ```
 
-The registry contains **no** recommendation `weight`, `score`, `penalty`, `hero_boost`, or `user_concern_coefficient`.
+Unknown keys fail closed. Marketing phrases do not become keys merely because a source contains them.
 
-### 4.1 Key admission rule
+Registry definitions do not contain recommendation `weight`, `score`, `penalty`, `hero_boost`, generic `intensity`, or generic `strength`.
 
-A new key requires all of the following:
+## 5. Proposition identity
 
-1. clear semantic definition;
-2. structurally queryable product knowledge;
-3. an evidence-verifiable proposition;
-4. no semantic duplication of an existing key;
-5. not merely a one-off marketing phrase;
-6. durable product-knowledge value even if Recommendation never consumes it;
-7. defined value and conflict semantics.
+`fact_instance_id` is a storage/lineage identifier. It is **not** semantic proposition identity.
 
-Marketing copy does not create a key by itself. A claim may instead use a governed semantic key, such as `barrier_support_claim`, with the original evidence/provenance retained outside the key name.
+Canonical proposition identity is derived from each Fact definition's `proposition_identity_schema`.
 
-## 5. Value types
-
-The POC registry proves support for:
-
-- `boolean`;
-- `enum`;
-- `number`;
-- `number_unit`;
-- `range_unit`;
-- `entity_identifier`.
-
-Repeatability, scope, and relationships are orthogonal to value type.
-
-Examples:
-
-- `uv_filter_type`: enum;
-- `water_resistance_duration`: number + `minutes`;
-- `recommended_use_frequency`: number/range + `times_per_week`;
-- `contains_active`: entity identifier;
-- `active_concentration`: number + `%`, `ppm`, or `mg_per_g`;
-- `tewl_change`: signed numeric measurement with a declared unit and method context.
-
-Invalid enum values and units fail closed.
-
-## 6. Fact instance identity and cardinality
-
-A Product Fact instance has its own `fact_instance_id`. Registry definitions specify:
+The schema may include:
 
 ```text
-cardinality = one | many
+fact_key
+subject_ref
+value identity when the value names the proposition
+relevant scope dimensions
+semantically required qualifier dimensions
 ```
 
-This is necessary for products containing several actives:
+The asserted value itself is excluded when it is an answer to the proposition rather than part of the proposition identity.
+
+### 5.1 Active concentration
 
 ```text
-contains_active
-  fact_instance_id = active-niacinamide-1
-  value = niacinamide
-
-contains_active
-  fact_instance_id = active-retinal-1
-  value = retinal
+fact_key = active_concentration
+subject_ref = active-niacinamide-1
+scope = market/formulation/etc. when present
 ```
 
-Two supported independent facts are not a conflict. Cardinality `many` permits both instances. Cardinality `one` rejects duplicate same-key instances in the same proposition scope.
+`5%` and `10%` for the same active subject and overlapping effective scope are two incompatible answers to the **same** proposition, not two independent concentration Facts.
 
-## 7. Relationship-bound facts
+### 5.2 Contains-active
 
-Related properties cannot lose their subject identity.
+For `contains_active`, ingredient identity is itself part of proposition identity. Therefore niacinamide and retinal are independent propositions.
 
-The chosen POC relationship contract is an explicit `subject_ref`:
+Evidence records use `proposition_value_identity` when value identity is needed to bind evidence to the correct semantic proposition without copying fused truth into the evidence layer.
+
+### 5.3 Measurement Facts
+
+For `tewl_change` and `hydration_change`, `timepoint` is part of proposition identity. A 4-hour outcome and an 8-hour outcome are not silently treated as contradictory answers to one proposition.
+
+## 6. Cardinality semantics
+
+`cardinality = one | many` remains a registry property, but enforcement is proposition-aware rather than `fact_key + exact JSON scope` aware.
+
+For two assertions of the same Fact key:
+
+- different proposition identity or disjoint scope → independent;
+- same/overlapping proposition + same supported value → dedupe/corroboration required;
+- same/overlapping proposition + incompatible supported values → unresolved conflict required;
+- `cardinality=many` does not authorize contradictory values for the same semantic proposition.
+
+Thus:
 
 ```text
-contains_active
-  fact_instance_id = active-niacinamide-1
-  value = niacinamide
-
-active_concentration
-  subject_ref = active-niacinamide-1
-  value = 5
-  unit = percent
+niacinamide 5%
+retinal 0.1%
 ```
 
-A retinal concentration must reference the retinal active instance, not an unqualified product-level concentration field.
+is valid because `subject_ref` differs, while:
 
-The verifier rejects:
+```text
+same niacinamide subject + same effective scope + 5%
+same niacinamide subject + same effective scope + 10%
+```
 
-- orphan `subject_ref` values;
-- subject references to the wrong fact type;
-- concentration instances that cannot identify their active subject.
+cannot silently coexist as two supported Facts.
 
-Active identity evidence and concentration evidence remain separate provenance records. Establishing one does not establish the other.
+## 7. Scope relation semantics
 
-## 8. Product, market, variant, and formulation scope
+Scope comparison is not exact JSON equality.
 
-Product Fact truth is not assumed to apply forever to all markets and formulations sharing a display name.
+The executable model recognizes:
 
-The scope envelope can preserve:
+```text
+equivalent
+narrower
+broader
+disjoint
+overlapping
+```
+
+Example:
+
+```text
+A: market=KR
+B: market=KR, region=KR
+```
+
+B is narrower than A. They overlap and cannot evade contradiction handling merely because their serialized JSON differs.
+
+Conflicting values on an overlapping cardinality-one proposition require review/conflict handling. No precedence rule is invented in Phase 3A.
+
+Validity intervals using `valid_from` / `valid_to` are also checked for clear disjointness.
+
+## 8. Relationship-bound scope compatibility
+
+A child Fact such as `active_concentration` must be compatible with its referenced `contains_active` subject.
+
+Inherited constraints:
 
 ```text
 market
 region
-locale
 variant
 formulation_version
-valid_from
-valid_to
 ```
 
-These fields are optional unless the fact definition or evidence requires them, but they remain part of proposition identity when present.
+If the subject specifies one of these, the child must carry the same value. The child may add narrower scope dimensions.
 
-A Korea sunscreen label and a US label for the same named product therefore remain distinct scoped facts. The fusion layer must not collapse them into one global proposition merely because the canonical product identity matches.
-
-## 9. Evidence class separation
-
-Phase 3A explicitly separates:
-
-### 9.1 Product claim
-
-A producer/label assertion, for example `24h hydration` or a barrier-support claim. It establishes that the claim exists when evidence is sufficient; it does not automatically establish measured magnitude.
-
-### 9.2 Measurement / test outcome
-
-A numeric or categorical test result that requires the declared metric, unit where applicable, and method context. Measurement-shaped numeric facts fail if method/metric context is absent.
-
-### 9.3 User/review observation
-
-An observation such as white cast, stickiness, or eye sting. Aggregate counts without an analyzed denominator cannot be converted to prevalence.
-
-### 9.4 Usage instruction
-
-A direction such as `use twice weekly`. It is not a physical efficacy fact and does not imply effect magnitude.
-
-Additional classes include composition identity, physical characteristic, role declaration, and legacy catalog observation. These remain semantically distinct rather than being collapsed into a generic “fact strength.”
-
-## 10. Evidence authority and confidence are different dimensions
-
-`evidence_authority` describes source/provenance class. `confidence` describes how strongly the reviewed proposition is established within the contract.
-
-Several lower-authority observations do not become high-authority evidence by count alone. Conversely, a primary source can still yield limited confidence if wording or product/variant binding is ambiguous.
-
-The POC carries the two fields separately and does not derive one numerically from the other.
-
-## 11. Fact status and negative semantics
-
-The cross-category model preserves Phase 2 statuses:
+Allowed:
 
 ```text
-supported
-reviewed_not_established
-not_reviewed
-evidence_insufficient
-evidence_conflict
+subject: market=KR
+child:   market=KR, formulation_version=v2
 ```
 
-Rules:
-
-- absence is not `false`;
-- not reviewed is not `false`;
-- reviewed-but-not-established is not `false`;
-- independent supported facts coexist;
-- only meaningful support/opposition to the same scoped proposition produces `evidence_conflict`;
-- unresolved conflict has authoritative `value = null`;
-- explicit negative Boolean truth requires negative-proposition evidence permitted by that fact definition.
-
-For example, an official “fragrance-free” marketing statement must not be silently reinterpreted as the stronger composition proposition “no fragrance ingredient exists” unless the registry definition and evidence actually support that proposition.
-
-## 12. No generic intensity
-
-The registry intentionally rejects universal fields such as:
+Rejected:
 
 ```text
-intensity = low | medium | high
+subject: market=US
+child:   market=KR
+```
+
+and:
+
+```text
+subject: formulation_version=v1
+child:   formulation_version=v2
+```
+
+Clearly disjoint validity intervals are also rejected.
+
+## 9. EvidenceRecord and Fused Product Fact are separate layers
+
+Synthetic fixtures now use:
+
+```text
+product:
+  evidence_records: [...]
+  facts: [...]
+```
+
+### 9.1 EvidenceRecord
+
+Minimum semantic fields:
+
+```text
+evidence_id
+fact_key
+subject_ref when applicable
+proposition_value_identity when applicable
+evidence_class
+evidence_authority
+confidence
+support_direction
+negative_admissibility
+source_provenance
+scope
+qualifier_context when applicable
+```
+
+Evidence classes remain distinct:
+
+```text
+product_claim
+measurement
+observation
+usage_instruction
+composition_identity
+physical_characteristic
+role_declaration
+legacy_catalog_observation
+```
+
+### 9.2 Fused Product Fact
+
+Minimum semantic fields:
+
+```text
+fact_instance_id
+fact_key
+subject_ref when applicable
+scope
+qualifier_context when proposition identity requires it
+status
+value
+supporting_evidence_refs
+opposing_evidence_refs
+authority_ceiling
+fused_confidence
+```
+
+A fused Fact must **not** carry a single `evidence_class`, `evidence_authority`, `confidence`, or generic `evidence_refs` truth field.
+
+One Fact may be supported by heterogeneous evidence classes, for example an official product claim plus a measurement record. The evidence classes remain attached to their EvidenceRecords.
+
+## 10. Evidence authority and confidence
+
+`authority_ceiling` and `fused_confidence` are separate summaries.
+
+Many weak-authority records do not become high authority by count. A primary source can coexist with low confidence when wording or proposition binding remains ambiguous.
+
+Phase 3A does not calibrate an authority aggregation formula or confidence model.
+
+## 11. Conflict provenance
+
+A valid `evidence_conflict` Fact requires all of:
+
+```text
+status = evidence_conflict
+value = null
+supporting_evidence_refs.length > 0
+opposing_evidence_refs.length > 0
+```
+
+Referenced support and opposition must bind to the same or overlapping semantic proposition. Conflict provenance cannot be synthesized from an unqualified ID array.
+
+## 12. Explicit negative safety
+
+Absence, not-reviewed state, and ambiguous/context-only opposition do not establish `false`.
+
+A `supported(false)` boolean Fact requires:
+
+1. evidence bound to the same proposition;
+2. `support_direction = opposes`;
+3. the Fact definition permits explicit-negative semantics;
+4. the evidence record is explicitly admissible as `explicit_negative`.
+
+`ambiguous`, `context_only`, or bare opposition cannot authorize false truth.
+
+## 13. Claim / measurement / observation / usage separation
+
+The architecture continues to distinguish:
+
+```text
+product claim
+measurement/test outcome
+user/review observation
+usage instruction
+```
+
+They are EvidenceRecord classes, not one generic Fact-strength field.
+
+Examples:
+
+- labeled SPF is not wear experience;
+- instrument hydration change is measurement evidence;
+- white-cast reports are observations and do not become prevalence without analyzed denominator;
+- recommended twice-weekly use is usage instruction, not efficacy magnitude.
+
+## 14. Cross-category synthetic stress set
+
+Existing cases remain:
+
+- S1–S4 sunscreen;
+- T1–T5 treatment;
+- M1–M4 moisturizer;
+- P1–P6 toner/pad.
+
+Semantic-finalization cases add:
+
+| Case | Contract |
+| --- | --- |
+| R1 | different active subjects permit independent concentrations |
+| R2 | same active subject/scope contradictory concentrations require conflict handling |
+| R3 | KR vs KR+region overlapping scope contradiction is detected |
+| R4 | subject US / child KR relationship scope mismatch rejected |
+| R5 | child may narrow KR subject with formulation version |
+| R6 | claim + measurement may support one fused Fact without one evidence_class truth field |
+| R7 | support + opposition produces provenance-complete conflict with null value |
+| R8 | ambiguous/bare opposition cannot establish false |
+| R9 | admissible explicit negative may establish false |
+
+Additional negative controls cover incompatible formulation and disjoint validity relationships.
+
+## 15. No generic intensity and no arbitrary tag warehouse
+
+The registry continues to reject generic fields such as:
+
+```text
+intensity = low|medium|high
 strength = 1..3
 ```
 
-Quantification must be attribute-specific. Examples include:
+Quantitative properties use attribute-specific Facts and units such as SPF, water-resistance minutes, active concentration, TEWL change, or hydration change.
 
-- SPF label value;
-- water resistance minutes;
-- active concentration;
-- TEWL change;
-- hydration change.
+Unknown marketing keys fail closed.
 
-If no valid magnitude evidence exists, the fact remains qualitative, null, insufficient, or otherwise uncertainty-bounded. A marketing adjective never becomes a synthetic numeric intensity.
-
-## 13. Sunscreen stress result contract
-
-Synthetic cases prove:
-
-- SPF numeric/label information, UVA label, and UV filter type can coexist as distinct facts;
-- the same product name may hold different market-scoped protection labels without collapse;
-- water resistance can carry numeric duration + minutes independently of protection completeness;
-- white-cast and eye-sting observations remain observations;
-- observation prevalence is forbidden without analyzed denominator;
-- tone-up or white-cast metadata never becomes protection magnitude.
-
-Missing water-resistance evidence therefore means “water resistance not established/reviewed,” not “sunscreen protection incomplete.”
-
-## 14. Treatment / serum stress result contract
-
-Synthetic cases prove:
-
-- one or many active identities can coexist;
-- each concentration is explicitly tied to its active via `subject_ref`;
-- missing concentration does not mean zero concentration;
-- active identity does not imply efficacy magnitude;
-- product treatment claims do not become measured clinical outcomes;
-- use-frequency instructions do not become physical efficacy;
-- multiple actives do not imply additive Recommendation score.
-
-## 15. Moisturizer stress result contract
-
-Synthetic cases prove:
-
-- full-face and local/spot-use role declarations are structured without new product columns;
-- primary/local role is not Recommendation weight;
-- a barrier-support claim is distinct from measured barrier improvement;
-- TEWL/hydration measurements can carry numeric outcomes only with metric/unit/method context;
-- balm-specific role information can coexist with generic cross-category facts.
-
-## 16. Toner / pad stress result contract
-
-Synthetic cases prove:
-
-- liquid toner and pad are product-format facts, not skin effects;
-- wipe-off use is a usage property;
-- embossed/textured pad surface is a physical characteristic and does not automatically establish irritation magnitude;
-- exfoliating active identity does not establish exfoliation intensity;
-- recommended frequency is a usage instruction, not efficacy;
-- pad-specific facts coexist with generic active/composition facts without special columns.
-
-## 17. Shared facts across categories
-
-A fact key is shared across categories only when its semantic proposition is actually the same. For example, `contains_active` can apply to treatment, toner/pad, moisturizer, or sunscreen without creating category-prefixed duplicates.
-
-When meanings differ, the registry must use separate semantic definitions rather than forcing lexical similarity into a universal key.
-
-`domain_scope` constrains where a fact is valid; it does not change its meaning.
-
-## 18. Product Fact Registry is not Decision Axis Registry
-
-Phase 3A defines only Product Facts and **mapping eligibility boundaries**.
-
-Conceptual future axes may include names such as:
+## 16. Decision Axis isolation and anti-feature inflation
 
 ```text
-photo_protection
-cleansing_burden
-hydration_support
-barrier_support
-irritation_burden
-exfoliation_load
-sebum_control
+Product Fact Registry
+!= Decision Axis Registry
+!= Recommendation scoring policy
 ```
 
-None is approved as a new Production axis by this phase.
+New Fact keys do not create new Decision Axes automatically.
 
-Invariants:
+Future consumption must account for signal family, lineage dedupe, correlation grouping, and saturation/caps so correlated Product Facts cannot each add an independent recommendation bonus by default.
 
-- creating a Product Fact does not create a Decision Axis;
-- Product Fact count does not determine recommendation dimensionality;
-- the generic registry core has no automatic axis-generation method;
-- Product Fact instances have no scoring weights.
+## 17. Phase 2 preservation
 
-## 19. Anti-feature-inflation boundary
+The Phase 2 cleanser POC and frozen cleanser corpus remain unchanged and are regression baselines only.
 
-Future consumption must not independently add score for every correlated Product Fact.
+Phase 3A does not declare `PRODUCT_EVIDENCE_POC_VERIFIER_PASS`; the pre-existing focused-verifier execution debt remains separate and non-blocking for this architecture phase.
 
-For correlated families such as:
+## 18. Production invariance
 
-```text
-deep_cleansing
-pore_cleansing
-sebum_removal
-clay_adsorption
-```
-
-or:
-
-```text
-barrier_support_claim
-ceramide_presence
-hydration_claim
-```
-
-a downstream policy layer must support at least:
-
-- signal-family grouping;
-- lineage deduplication;
-- correlation grouping;
-- saturation/capping.
-
-This phase does not implement those score mechanics. It only forbids encoding them as registry weights and records the required architectural boundary.
-
-## 20. Phase 2 preservation
-
-The Phase 2 cleanser implementation remains an immutable regression baseline for this phase:
-
-```text
-26 products
-52 propositions
-low_ph supported = 13
-deep_cleansing supported = 15
-real numeric axis invention = 0
-```
-
-Phase 3A does not refactor or import the generic core into:
-
-- `scripts/product-evidence/cleanser-poc-core.mjs`;
-- `scripts/build-product-evidence-cleanser-poc-v1.mjs`;
-- `scripts/verify-product-evidence-cleanser-poc-v1.mjs`;
-- `evidence/product-evidence-decision-axis-v1/cleanser-poc-output-v1.json`.
-
-The existing `PRODUCT_EVIDENCE_POC_FOCUSED_VERIFIER_EXECUTION_DEBT` remains recorded but is not a Phase 3A blocker. Phase 3A does not newly declare `PRODUCT_EVIDENCE_POC_VERIFIER_PASS`.
-
-## 21. Executable verifier contract
-
-`scripts/verify-product-fact-registry-cross-category-v1.mjs` directly verifies at least:
-
-1. unique registry keys and fixed version;
-2. unknown key rejection;
-3. typed values, enums, units, and one/many cardinality;
-4. repeated active identities;
-5. subject-linked concentrations and orphan rejection;
-6. retained market/variant scope and non-collapse of sunscreen market facts;
-7. claim / measurement / observation / usage separation;
-8. no review prevalence without analyzed denominator;
-9. absence/not-reviewed semantics;
-10. same-proposition conflict vs independent multi-fact coexistence;
-11. role vs Recommendation weight separation;
-12. no generic intensity or scoring fields in the Registry;
-13. no automatic Decision Axis generation;
-14. measurement metric/unit/context requirements;
-15. marketing-key rejection;
-16. prohibition on automatically upgrading legacy catalog observations to authoritative supported facts;
-17. exact Phase 2 file blob preservation when full Git history is available;
-18. exact offline-only changed-path allowlist and `git diff --check` when the baseline commit object is available.
-
-If a runtime lacks the actual baseline Git object, the semantic verifier reports Git scope as not evaluated rather than fabricating a reconstructed full-history PASS. Remote Git compare and natural PR CI remain independent provenance evidence.
-
-## 22. Production / Hosted invariance
-
-Phase 3A must preserve:
+This PR remains offline-only.
 
 ```text
 Production recommendation delta = 0
@@ -470,33 +407,28 @@ Admin runtime delta = 0
 DB migration = 0
 Hosted write = 0
 Production DB write = 0
-CandidatePolicy activation = 0
-PR #167 activation = 0
-legacy cleansing_profile removal = 0
 Product Fact runtime consumer = 0
 Decision Axis runtime consumer = 0
+CandidatePolicy activation = 0
+#167 activation = 0
+#177 activation = 0
 ```
 
-The implementation is restricted to architecture documentation, offline registry/fixture/audit evidence, and offline verification scripts.
+## 19. Success meaning
 
-## 23. Phase 3A success meaning
+Successful Phase 3A semantic finalization means the offline contract can express and validate:
 
-A successful Phase 3A means only that the generic contract can represent and validate:
+- governed cross-category Fact keys;
+- proposition identity distinct from storage identity;
+- proposition-aware cardinality;
+- repeatable and relationship-bound Facts;
+- overlap-aware product/market/formulation scope;
+- evidence records separate from fused Facts;
+- heterogeneous evidence support;
+- provenance-complete conflict;
+- safe explicit-negative fusion;
+- authority ceiling separate from fused confidence;
+- boolean, enum, number/unit, range/unit and entity values;
+- no arbitrary tags, generic intensity, or recommendation weights.
 
-- non-Boolean typed facts;
-- repeatable facts;
-- linked facts;
-- numeric/unit facts;
-- category/domain scope;
-- market/variant/formulation scope;
-- evidence provenance independently from fact values;
-- claim/measurement/observation/usage distinctions;
-- Product Facts without new product columns;
-- governed keys without arbitrary tags;
-- strict separation from Recommendation scoring.
-
-It does **not** mean cross-category facts have been reviewed against real evidence or that the registry/schema is Production-ready.
-
-## 24. Next boundary
-
-Phase 3B may define a small frozen, reviewed real-evidence pilot using the approved registry contract. That phase must independently establish product identity, evidence provenance, scope, and fact truth. Existing legacy catalog values cannot serve as a shortcut to `supported` Product Facts.
+It does **not** mean cross-category real Product Facts are reviewed or that the registry/schema is Production-ready.
