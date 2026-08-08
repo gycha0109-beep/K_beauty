@@ -82,7 +82,7 @@ ok(corpus.evidence_records.some(e=>e.pilot_id==="T3"&&e.evidence_class==="produc
 const obs=corpus.evidence_records.filter(e=>e.evidence_class==="observation");ok(new Set(obs.map(e=>e.pilot_id)).size>=2,"two review products");for(const e of obs)if(e.qualifier_context?.analyzed_sample_size==null)eq(e.qualifier_context?.prevalence,"forbidden","no denominator prevalence");
 
 const unm=mapping.products.flatMap(p=>p.unmapped_evidence_refs);for(const r of unm)ok(ev.has(r),"unmapped retained");eq(unm.length,mapping.summary.unmapped_evidence_count,"unmapped count");
-for(const g of gaps.gaps){ok(TAX.has(g.taxonomy),"gap taxonomy");ok(SEV.has(g.severity),"gap severity")}
+for(const g of gaps.gaps){ok(TAX.has(g.taxonomy),"gap taxonomy");ok(SEV.has(g.severity),"gap severity");for(const r of g.evidence_refs||[])ok(ev.has(r),"gap evidence retained")}
 eq(gaps.severity_summary.S2_STRUCTURAL,0,"S2=0");eq(gaps.severity_summary.S1_VOCABULARY_ONLY,mapping.summary.gap_severity_counts.S1_VOCABULARY_ONLY,"S1 consistent");eq(gaps.severity_summary.S3_RESEARCH_OR_IDENTITY,mapping.summary.gap_severity_counts.S3_RESEARCH_OR_IDENTITY,"S3 consistent");
 eq(mapping.architecture_outcome,"ARCHITECTURE_SURVIVES_REAL_EVIDENCE_PILOT","architecture");eq(gaps.architecture_outcome,mapping.architecture_outcome,"architecture consistent");
 
@@ -91,7 +91,7 @@ eq(acts.length,2,"multi-active");eq(conc.length,1,"one concentration established
 const s1=mapping.products.find(p=>p.pilot_id==="S1");ok(s1.mapped_facts.filter(f=>f.fact_key==="spf_value").every(f=>f.scope?.market==="KR"),"market scope");ok(s1.unmapped_evidence_refs.some(r=>ev.get(r)?.registry_gap_candidate==="uva_broad_spectrum_label"),"US label retained");
 const m2=mapping.products.find(p=>p.pilot_id==="M2");ok(m2.mapped_facts.some(f=>f.fact_key==="primary_use_role")&&m2.mapped_facts.some(f=>f.fact_key==="barrier_support_claim"),"role vs claim");
 const p3=mapping.products.find(p=>p.pilot_id==="P3");for(const k of ["product_format","wipe_off_use","pad_surface_texture"])ok(p3.mapped_facts.some(f=>f.fact_key===k),"pad semantic");ok(!p3.mapped_facts.some(f=>/intensity|strength|score|weight/.test(f.fact_key)),"pad != magnitude");
-for(const v of Object.values(mapping.mandatory_acceptance_questions))eq(v.status,"PASS","acceptance A-F");
+for(const v of Object.values(mapping.mandatory_acceptance_questions)){eq(v.status,"PASS","acceptance A-F");for(const r of v.evidence_refs||[])ok(ev.has(r),"acceptance evidence retained")}
 
 eq(sha(P.corpus),mapping.corpus_sha256,"corpus digest mapping");eq(sha(P.corpus),gaps.corpus_sha256,"corpus digest gaps");eq(sha(P.mapping),gaps.mapping_sha256,"mapping digest gaps");
 

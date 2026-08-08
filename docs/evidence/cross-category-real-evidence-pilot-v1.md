@@ -198,8 +198,8 @@ Reason: `S2_STRUCTURAL=0` and `forced_mapping_count=0`. S1 vocabulary and S3 res
 ## 14. Frozen artifact digests
 
 - corpus SHA-256: `9f0f12d01b444ead5df09b3bfda8dd4f86bfb71b65f9bf741aa0d760f97dbc8e`
-- mapping SHA-256: `d06a64ba7c2fef9a9c8ff1b92e4bfbe102dbb27746794b1319e0f661d982effe`
-- gap report SHA-256: `5685aed575e35782c394dbc8a8e3e3accafe48f6ba06177da30d1b5134121cd1`
+- mapping SHA-256: `8d64dc9948e0c5d83455d636d2cef7d3a857a6fd19186d932d92b0b27b7b8e04`
+- gap report SHA-256: `eb71f7f72e51c016d4687b20048d85c5b5b189185031c19a2c7e64a0afabc096`
 
 ## 15. Focused verifier
 
@@ -209,7 +209,7 @@ products=12
 sources=15
 evidence_records=27
 mapped_facts=21
-assertions=461
+assertions=483
 measurement_evidence_count=0
 forced_mapping_count=0
 S1=4
@@ -217,8 +217,8 @@ S2=0
 S3=5
 architecture_outcome=ARCHITECTURE_SURVIVES_REAL_EVIDENCE_PILOT
 corpus_sha256=9f0f12d01b444ead5df09b3bfda8dd4f86bfb71b65f9bf741aa0d760f97dbc8e
-mapping_sha256=d06a64ba7c2fef9a9c8ff1b92e4bfbe102dbb27746794b1319e0f661d982effe
-gap_report_sha256=5685aed575e35782c394dbc8a8e3e3accafe48f6ba06177da30d1b5134121cd1
+mapping_sha256=8d64dc9948e0c5d83455d636d2cef7d3a857a6fd19186d932d92b0b27b7b8e04
+gap_report_sha256=eb71f7f72e51c016d4687b20048d85c5b5b189185031c19a2c7e64a0afabc096
 git_scope=NOT_EVALUATED_NO_GIT_BASELINE
 ```
 
