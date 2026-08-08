@@ -84,12 +84,17 @@ const s2 = byCase.get("S2");
 const s2Spf = s2.facts.filter((item) => item.fact_key === "spf_value");
 check(s2Spf.length === 2, "S2 two scoped SPF facts");
 check(new Set(s2Spf.map((item) => item.scope.market)).size === 2, "S2 market scope retained");
+check(new Set(s2Spf.map((item) => item.scope.region)).size === 2, "S2 region scope retained");
+check(new Set(s2Spf.map((item) => item.scope.formulation_version)).size === 2, "S2 formulation version retained");
 check(new Set(s2Spf.map((item) => item.value)).size === 2, "S2 distinct scoped values retained");
 
 // S3/S4: water-resistance units are explicit; observations without denominator cannot become prevalence.
 const s3 = byCase.get("S3");
 equal(s3.facts[0].value, { amount: 80, unit: "minutes" }, "S3 duration + unit");
 const s4 = byCase.get("S4");
+check(s4.facts.every((item) => item.evidence_class === "observation"), "S4 observation class");
+check(s1.facts[0].evidence_class !== byCase.get("M4").facts[0].evidence_class, "claim != measurement");
+check(s4.facts[0].evidence_class !== byCase.get("M4").facts[0].evidence_class, "observation != measurement");
 for (const observed of s4.facts) {
   const prevalence = observationPrevalence({
     positive_count: 1,
@@ -160,6 +165,22 @@ const conflict = fuseSameProposition({ support: ["ev-support"], opposition: ["ev
 equal({ status: conflict.status, value: conflict.value }, { status: "evidence_conflict", value: null }, "same-fact conflict null");
 const independentKeys = ["product_format", "wipe_off_use", "contains_active"];
 check(new Set(independentKeys).size === independentKeys.length, "independent multi-facts coexist without conflict");
+
+// Authority and confidence are independent dimensions: primary authority does not force high confidence.
+validateFactInstance(registry, {
+  fact_instance_id: "authority-confidence-probe",
+  fact_key: "treatment_claim",
+  value: "brightening",
+  status: "supported",
+  evidence_class: "product_claim",
+  evidence_authority: "product_specific_primary",
+  confidence: "low",
+  evidence_refs: ["synthetic-ambiguous-primary-wording"],
+  scope: {}
+}, { domain: "treatment" });
+assertions += 1;
+const roleDefinition = getFactDefinition(registry, "primary_use_role");
+check(!Object.keys(roleDefinition).some((key) => /score|weight|penalty|hero/i.test(key)), "role != recommendation weight");
 
 // Registry admits shared semantics only once and does not contain generic intensity/scoring controls.
 check(registry.facts.filter((item) => item.fact_key === "contains_active").length === 1, "shared contains_active key not duplicated by category");
