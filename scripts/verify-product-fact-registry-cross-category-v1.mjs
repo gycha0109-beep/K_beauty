@@ -10,6 +10,7 @@ import {
   assertNoAutomaticDecisionAxisCreation,
   expectErrorCode,
   fuseSameProposition,
+  getFactDefinition,
   missingFactState,
   observationPrevalence,
   validateFactInstance,
@@ -73,16 +74,19 @@ for (const product of fixtures.products) {
   assertions += 1;
 }
 
+// S1: label protection components are separate, not a generic magnitude.
 const s1 = byCase.get("S1");
 equal(s1.facts.map((item) => item.fact_key).sort(), ["spf_value", "uv_filter_type", "uva_label"], "S1 protection label facts");
 check(s1.facts.every((item) => item.evidence_class === "product_claim"), "S1 claim class");
 
+// S2: same named product can carry distinct market-scoped values without collapse.
 const s2 = byCase.get("S2");
 const s2Spf = s2.facts.filter((item) => item.fact_key === "spf_value");
 check(s2Spf.length === 2, "S2 two scoped SPF facts");
 check(new Set(s2Spf.map((item) => item.scope.market)).size === 2, "S2 market scope retained");
 check(new Set(s2Spf.map((item) => item.value)).size === 2, "S2 distinct scoped values retained");
 
+// S3/S4: water-resistance units are explicit; observations without denominator cannot become prevalence.
 const s3 = byCase.get("S3");
 equal(s3.facts[0].value, { amount: 80, unit: "minutes" }, "S3 duration + unit");
 const s4 = byCase.get("S4");
@@ -95,6 +99,7 @@ for (const observed of s4.facts) {
   equal(prevalence, { status: "forbidden", prevalence: null }, "S4 missing denominator prevalence forbidden");
 }
 
+// T1/T2/T3: repeatable active identity and subject-bound concentration.
 const t1 = byCase.get("T1");
 check(t1.facts.some((item) => item.fact_key === "contains_active"), "T1 active identity");
 check(t1.facts.find((item) => item.fact_key === "active_concentration").subject_ref === "t1-active-niacinamide", "T1 concentration subject_ref");
@@ -110,10 +115,12 @@ const t3 = byCase.get("T3");
 check(!t3.facts.some((item) => item.fact_key === "active_concentration"), "T3 missing concentration remains absent");
 equal(missingFactState(), { status: "not_reviewed", value: null }, "missing concentration is not zero/false");
 
+// T4/T5: claim and usage semantics stay distinct from measurement/efficacy.
 check(byCase.get("T4").facts[0].evidence_class === "product_claim", "T4 claim class");
 check(byCase.get("T5").facts[0].evidence_class === "usage_instruction", "T5 usage class");
 check(byCase.get("T4").facts[0].fact_key !== byCase.get("T5").facts[0].fact_key, "claim != usage instruction");
 
+// Moisturizer: role, claim, and measurement are structurally different.
 check(byCase.get("M1").facts[0].evidence_class === "role_declaration", "M1 role declaration");
 check(byCase.get("M2").facts[0].value === "local_area", "M2 local balm role");
 check(byCase.get("M3").facts[0].evidence_class === "product_claim", "M3 barrier claim");
@@ -122,6 +129,7 @@ for (const measured of byCase.get("M4").facts) {
   check(Boolean(measured.qualifier_context.metric && measured.qualifier_context.method_context && measured.qualifier_context.timepoint), "M4 metric/method/timepoint");
 }
 
+// Toner/pad: physical format, usage, surface, active identity and frequency coexist without generic intensity.
 check(byCase.get("P1").facts[0].value === "liquid", "P1 liquid format");
 check(byCase.get("P2").facts[0].value === "pad", "P2 pad format");
 check(byCase.get("P3").facts[0].evidence_class === "usage_instruction", "P3 wipe usage");
@@ -129,6 +137,7 @@ check(byCase.get("P4").facts[0].evidence_class === "physical_characteristic", "P
 check(byCase.get("P5").facts[0].fact_key === "contains_active", "P5 exfoliating active identity only");
 check(byCase.get("P6").facts[0].fact_key === "recommended_use_frequency", "P6 frequency instruction");
 
+// Negative controls.
 const negatives = new Map(fixtures.negative_controls.map((item) => [item.id, item]));
 expectErrorCode(() => validateFactInstance(registry, negatives.get("N1-unknown-marketing-key").mutation, { domain: "sunscreen" }), "unknown_fact_key"); assertions += 1;
 expectErrorCode(() => validateFactInstance(registry, negatives.get("N2-invalid-enum").mutation, { domain: "sunscreen" }), "invalid_enum"); assertions += 1;
@@ -152,6 +161,7 @@ equal({ status: conflict.status, value: conflict.value }, { status: "evidence_co
 const independentKeys = ["product_format", "wipe_off_use", "contains_active"];
 check(new Set(independentKeys).size === independentKeys.length, "independent multi-facts coexist without conflict");
 
+// Registry admits shared semantics only once and does not contain generic intensity/scoring controls.
 check(registry.facts.filter((item) => item.fact_key === "contains_active").length === 1, "shared contains_active key not duplicated by category");
 check(!registry.facts.some((item) => ["intensity", "strength"].includes(item.fact_key)), "no generic intensity fact");
 check(!registry.facts.some((item) => /score|weight|penalty|hero/i.test(item.fact_key)), "no recommendation control in fact keys");
@@ -160,6 +170,7 @@ check(registry.downstream_consumption_boundary.requires_lineage_dedupe === true,
 check(registry.downstream_consumption_boundary.requires_correlation_grouping === true, "anti-feature-inflation correlation boundary");
 check(registry.downstream_consumption_boundary.requires_saturation_or_cap === true, "anti-feature-inflation saturation boundary");
 
+// Inventory is audit-only and must not be promoted to authority.
 check(inventory.authority_boundary === "inventory_only_no_product_fact_authority", "inventory authority boundary");
 equal(inventory.domains.sunscreen.current_product_count, 11, "sunscreen count");
 equal(inventory.domains.treatment_serum.current_product_count, 18, "treatment count");
