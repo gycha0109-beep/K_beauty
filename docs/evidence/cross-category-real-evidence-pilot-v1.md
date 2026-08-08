@@ -32,7 +32,7 @@ Current-catalog metadata was used only for membership and hard-case selection. I
 | M3 | `4cbd41f3-1357-42c6-a6c7-6df0e90d54a7` | Dr.G | R.E.D BLEMISH Clear Soothing Cream EX / 레드 블레미쉬 클리어 수딩 크림 EX | moisturizer_cream | Exact EX review identity without an exact official physical-Fact source. | `Legacy concern/ingredient/review fields; NOT_EVIDENCE_AUTHORITY.` |
 | P1 | `d9e40ddb-b1e2-46e4-92db-82744227dfe3` | Anua | 어성초 77 히알루론산 수분 진정 토너 350ml | toner_essence | Liquid-toner current row with exact-size vs official size-variant tension. | `Catalog category/name and legacy signals; NOT_EVIDENCE_AUTHORITY.` |
 | P2 | `38dc094e-4148-4566-a743-a09815265f44` | NEEDLY | Daily Toner Pad / 데일리 토너 패드 | toner_pad | Renewed pad with unresolved frozen-catalog formulation lineage. | `Legacy pad category/review aggregates; NOT_EVIDENCE_AUTHORITY.` |
-| P3 | `230f1c9c-cbf8-4458-aaac-ea1010a21e8c` | Medicube | Zero Pore Pad 2.0 / 제로 모공 패드 2.0 | toner_pad | Pad format/wipe/surface facts plus acid-family marketing language. | `Legacy concerns/review aggregates; NOT_EVIDENCE_AUTHORITY.` |
+| P3 | `230f1c9c-cbf8-4458-aaac-ea1010a21e8c` | Medicube | Zero Pore Pad 2.0 / 제로 모공 패드 2.0 | toner_pad | Pad format/wipe/surface facts plus exact lactic and salicylic acid composition identities. | `Legacy concerns/review aggregates; NOT_EVIDENCE_AUTHORITY.` |
 
 ## 3. Research discipline
 
@@ -73,13 +73,13 @@ Source records preserve URL, publisher, kind, language, market, exact-product-ma
 
 ## 6. Evidence and Fact outcome
 
-- evidence records: **27**
-- fused mapped Facts: **21**
+- evidence records: **29**
+- fused mapped Facts: **23**
 - measurement evidence: **0** (intentional; no marketing/test number was upgraded just to satisfy coverage)
 
 Evidence-class distribution:
 
-- `composition_identity`: 5
+- `composition_identity`: 7
 - `observation`: 2
 - `physical_characteristic`: 2
 - `product_claim`: 14
@@ -87,12 +87,12 @@ Evidence-class distribution:
 - `usage_instruction`: 3
 
 Reviewed proposition outcomes:
-- `evidence_insufficient`: 2
+- `evidence_insufficient`: 1
 - `identity_blocked`: 3
 - `registry_gap`: 5
-- `reviewed_not_established`: 4
+- `reviewed_not_established`: 6
 - `source_blocked`: 6
-- `supported`: 19
+- `supported`: 21
 
 No real-sample `evidence_conflict` was found. This is not a claim of product completeness; it means the reviewed propositions in this 12-product sample did not produce a provenance-complete contradiction.
 
@@ -101,6 +101,7 @@ No real-sample `evidence_conflict` was found. This is not a claim of product com
 - **T1 Derma Factory:** `contains_active=niacinamide` plus `active_concentration=20%` bound by `subject_ref`.
 - **T2 The Ordinary:** `mandelic_acid` and `sodium_hyaluronate_crosspolymer` are independent active propositions; only mandelic acid receives 10%. Missing HA concentration remains `reviewed_not_established`, not zero.
 - **M2 Cicaplast:** `panthenol` plus subject-bound 5% concentration; the ingredient/concentration relationship is separate from the balm role and barrier-support claim.
+- **P3 Medicube:** `lactic_acid` and `salicylic_acid` are separate composition identities from the exact official ingredient list. Neither acid receives a concentration Fact; both concentration propositions remain `reviewed_not_established`.
 
 ## 8. Market / variant scoped real cases
 
@@ -125,14 +126,14 @@ No real-sample `evidence_conflict` was found. This is not a claim of product com
 - forced mappings: **0**
 
 - `IDENTITY_GAP`: 1
-- `SOURCE_GAP`: 4
+- `SOURCE_GAP`: 3
 - `VALUE_OR_UNIT_GAP`: 1
 - `VOCABULARY_GAP`: 3
 
 Severity:
 - `S1_VOCABULARY_ONLY`: 4
 - `S2_STRUCTURAL`: 0
-- `S3_RESEARCH_OR_IDENTITY`: 5
+- `S3_RESEARCH_OR_IDENTITY`: 4
 
 ### S1 vocabulary expansion candidates
 
@@ -178,7 +179,6 @@ Severity:
 - `gap-m3-official-source` — SOURCE_GAP: Exact EX identity/reviews were available, but no exact official EX product page was acquired; primary physical claims remain source-blocked.
 - `gap-p1-physical-source` — SOURCE_GAP: Exact 350mL retailer identity is resolved, but the acquired exact-size source does not independently establish governed physical/usage Facts without relying on product-category inference.
 - `gap-p2-version-lineage` — IDENTITY_GAP: Current official page is explicitly a renewed 80-pad product, while the frozen catalog row lacks formulation/version lineage. Evidence is retained but authoritative fusion is blocked.
-- `gap-p3-exact-acid-identity` — SOURCE_GAP: Official page names AHA·BHA·PHA as a family but the acquired content does not establish exact ingredient identities/concentrations; no contains_active or intensity Fact is inferred.
 
 ## 12. Mandatory real-world acceptance questions
 
@@ -186,7 +186,7 @@ Severity:
 - **B_market_variant_scope — PASS**: KR RoundLab supported facts remain scoped to the KR renewed product, while the US UVLock derivative is retained as a partial-match linked variant and not collapsed/fused. ANESSA facts retain JP + NA scope.
 - **C_claim_vs_measurement — PASS**: Numeric or instrumental marketing/test statements were not promoted to measurement because metric/method/outcome/timepoint context was incomplete. measurement_evidence_count remains 0.
 - **D_balm_role_not_efficacy — PASS**: Cicaplast multi-area role and barrier-support claim are separate Facts. Role is not efficacy magnitude or recommendation weight.
-- **E_pad_property_not_effect — PASS**: Pad format, wipe-off usage, and embossed surface are represented independently. AHA/BHA/PHA family language is not converted to exfoliation intensity or unsupported exact active identities.
+- **E_pad_property_not_effect — PASS**: Pad format, wipe-off usage, and embossed surface are represented independently. Exact official ingredients support lactic and salicylic acid composition identities; AHA/BHA/PHA family language is not converted to exfoliation intensity.
 - **F_source_shortage_fail_closed — PASS**: Source/identity limitations are represented as source_blocked, identity_blocked, or registry_gap outcomes. No missing proposition is converted to false or global product-unknown.
 
 ## 13. Architecture outcome
@@ -197,9 +197,9 @@ Reason: `S2_STRUCTURAL=0` and `forced_mapping_count=0`. S1 vocabulary and S3 res
 
 ## 14. Frozen artifact digests
 
-- corpus SHA-256: `9f0f12d01b444ead5df09b3bfda8dd4f86bfb71b65f9bf741aa0d760f97dbc8e`
-- mapping SHA-256: `8d64dc9948e0c5d83455d636d2cef7d3a857a6fd19186d932d92b0b27b7b8e04`
-- gap report SHA-256: `eb71f7f72e51c016d4687b20048d85c5b5b189185031c19a2c7e64a0afabc096`
+- corpus SHA-256: `47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d`
+- mapping SHA-256: `c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f`
+- gap report SHA-256: `5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215`
 
 ## 15. Focused verifier
 
@@ -207,19 +207,19 @@ Reason: `S2_STRUCTURAL=0` and `forced_mapping_count=0`. S1 vocabulary and S3 res
 PASS verify-cross-category-real-evidence-pilot-v1
 products=12
 sources=15
-evidence_records=27
-mapped_facts=21
-assertions=483
+evidence_records=29
+mapped_facts=23
+assertions=547
 measurement_evidence_count=0
 forced_mapping_count=0
 S1=4
 S2=0
-S3=5
+S3=4
 architecture_outcome=ARCHITECTURE_SURVIVES_REAL_EVIDENCE_PILOT
-corpus_sha256=9f0f12d01b444ead5df09b3bfda8dd4f86bfb71b65f9bf741aa0d760f97dbc8e
-mapping_sha256=8d64dc9948e0c5d83455d636d2cef7d3a857a6fd19186d932d92b0b27b7b8e04
-gap_report_sha256=eb71f7f72e51c016d4687b20048d85c5b5b189185031c19a2c7e64a0afabc096
-git_scope=NOT_EVALUATED_NO_GIT_BASELINE
+corpus_sha256=47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d
+mapping_sha256=c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f
+gap_report_sha256=5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215
+git_scope=PASS
 ```
 
 Local Git scope remains not evaluated because the baseline Git object is absent. Remote exact-head scope is verified separately.

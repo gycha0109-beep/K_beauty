@@ -36,7 +36,7 @@ let n=0;
 const ok=(x,m)=>{assert.ok(x,m);n++}; const eq=(a,b,m)=>{assert.deepEqual(a,b,m);n++};
 const J=p=>JSON.parse(fs.readFileSync(p,"utf8"));
 const sha=p=>crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
-const blob=p=>{const b=fs.readFileSync(p);return crypto.createHash("sha1").update(Buffer.concat([Buffer.from(`blob ${b.length}\0`),b])).digest("hex")};
+const blob=p=>execFileSync("git",["hash-object",p],{cwd:root,encoding:"utf8",stdio:["ignore","pipe","pipe"]}).trim();
 const git=a=>execFileSync("git",a,{cwd:root,encoding:"utf8",stdio:["ignore","pipe","pipe"]}).trim();
 const has=o=>{try{execFileSync("git",["cat-file","-e",o],{cwd:root,stdio:"ignore"});return true}catch{return false}};
 
@@ -91,6 +91,22 @@ eq(acts.length,2,"multi-active");eq(conc.length,1,"one concentration established
 const s1=mapping.products.find(p=>p.pilot_id==="S1");ok(s1.mapped_facts.filter(f=>f.fact_key==="spf_value").every(f=>f.scope?.market==="KR"),"market scope");ok(s1.unmapped_evidence_refs.some(r=>ev.get(r)?.registry_gap_candidate==="uva_broad_spectrum_label"),"US label retained");
 const m2=mapping.products.find(p=>p.pilot_id==="M2");ok(m2.mapped_facts.some(f=>f.fact_key==="primary_use_role")&&m2.mapped_facts.some(f=>f.fact_key==="barrier_support_claim"),"role vs claim");
 const p3=mapping.products.find(p=>p.pilot_id==="P3");for(const k of ["product_format","wipe_off_use","pad_surface_texture"])ok(p3.mapped_facts.some(f=>f.fact_key===k),"pad semantic");ok(!p3.mapped_facts.some(f=>/intensity|strength|score|weight/.test(f.fact_key)),"pad != magnitude");
+eq(p3.mapped_facts.length,5,"P3 five supported facts");
+const p3ActiveFacts=p3.mapped_facts.filter(f=>f.fact_key==="contains_active"&&f.status==="supported");
+eq(p3ActiveFacts.length,2,"P3 two supported active identities");
+for(const [identity,evidenceId] of [["lactic_acid","e31"],["salicylic_acid","e32"]]){
+ const fact=p3ActiveFacts.find(f=>f.value===identity);ok(Boolean(fact),`P3 ${identity} supported`);ok(/^f\d+$/.test(fact.fact_instance_id),`P3 ${identity} distinct fact id`);
+ const refs=fact.supporting_evidence_refs||[];eq(refs,[evidenceId],`P3 ${identity} exact evidence ref`);for(const ref of refs){ok(ev.has(ref),`P3 ${identity} evidence exists`);const record=ev.get(ref);eq(record.evidence_class,"composition_identity",`P3 ${identity} composition identity`);eq(record.source_id,"s16",`P3 ${identity} s16 source`);eq(record.proposition_value_identity,identity,`P3 ${identity} exact identity`)}
+}
+ok(p3ActiveFacts[0].fact_instance_id!==p3ActiveFacts[1].fact_instance_id,"P3 active fact ids distinct");
+const p3ActiveFactIds=new Set(p3ActiveFacts.map(f=>f.fact_instance_id));
+eq(p3.mapped_facts.filter(f=>f.fact_key==="active_concentration"&&p3ActiveFactIds.has(f.subject_ref)).length,0,"P3 acid concentration facts 0");
+eq(p3.mapped_facts.filter(f=>f.fact_key==="active_concentration"&&p3ActiveFactIds.has(f.subject_ref)&&typeof f.value?.amount==="number").length,0,"P3 acid numeric concentration 0");
+ok(p3.review_coverage.some(r=>r.candidate_concept==="lactic acid active_concentration"&&r.outcome==="reviewed_not_established"),"P3 lactic concentration reviewed not established");
+ok(p3.review_coverage.some(r=>r.candidate_concept==="salicylic acid active_concentration"&&r.outcome==="reviewed_not_established"),"P3 salicylic concentration reviewed not established");
+ok(!p3.registry_gaps.includes("gap-p3-exact-acid-identity"),"P3 obsolete gap absent");
+ok(!gaps.gaps.some(g=>g.gap_id==="gap-p3-exact-acid-identity"),"gap report obsolete P3 gap absent");
+eq(mapping.products.flatMap(p=>p.mapped_facts).filter(f=>/intensity|strength|score|weight/.test(f.fact_key)).length,0,"no generic magnitude facts");
 for(const v of Object.values(mapping.mandatory_acceptance_questions)){eq(v.status,"PASS","acceptance A-F");for(const r of v.evidence_refs||[])ok(ev.has(r),"acceptance evidence retained")}
 
 eq(sha(P.corpus),mapping.corpus_sha256,"corpus digest mapping");eq(sha(P.corpus),gaps.corpus_sha256,"corpus digest gaps");eq(sha(P.mapping),gaps.mapping_sha256,"mapping digest gaps");
