@@ -1,0 +1,162 @@
+{
+  "baseline_version": "product-fact-local-replay-baseline-v1",
+  "scope": "local-test-only governed replay-equivalent migration prerequisite contract",
+  "authoritative_main": "4e7d660ffb9c47d0a31576e3835a5e16f420b106",
+  "pre_pf2_repository_sha": "0a0c11b0ee8c64766b730f70a859f2348b79cb5e",
+  "compatible_first_migration": "20260410_safe_review_and_promotion_layer.sql",
+  "compatible_last_pre_pf2_migration": "20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql",
+  "predecessor_objects": [
+    "public.products",
+    "public.product_candidates",
+    "public.source_rankings",
+    "public.recommendation_logs"
+  ],
+  "infrastructure_prerequisites": [
+    "local Supabase auth schema and roles",
+    "extensions schema",
+    "pgcrypto extension"
+  ],
+  "predecessor_fixture_paths": [
+    "predecessor/00000000_predecessor.sql"
+  ],
+  "ordered_compatibility_bridges": [
+    {
+      "path": "bridges/20260524054048_category_mapper_preconditions.sql",
+      "anchor_migration": "20260524054049_reclassify_existing_moisturizers.sql",
+      "placement": "immediately_before",
+      "semantics": [
+        "add product_category labels toner_pad, ampoule, essence",
+        "drop map_product_category(text) before parameter-name replacement"
+      ]
+    },
+    {
+      "path": "bridges/20260525000000_untracked_product_columns.sql",
+      "anchor_migration": "20260526_moisturizer_lotion_emulsion_insert.sql",
+      "placement": "immediately_before",
+      "semantics": [
+        "add only the nine product columns consumed by the tracked insert"
+      ]
+    },
+    {
+      "bridge_id": "admin-v2-cleansing-profile-precondition-v1",
+      "path": "bridges/20260805215900_admin_v2_cleansing_profile_precondition.sql",
+      "classification": "repository-owned mid-chain compatibility bridge",
+      "known_non_historical": true,
+      "source_commit": "3af4c99cc30b4632922e52fd2fd7acf916895c89",
+      "source_path": "tests/fixtures/admin-product-review-v2/20260805215900_product_review_v2_column_adapter.sql",
+      "source_blob": "972b0825f4ef798887796028dd332b29106c2770",
+      "anchor_migration": "20260805220000_admin_product_review_cleanser_metadata_v2.sql",
+      "anchor_before_migration": "20260805220000_admin_product_review_cleanser_metadata_v2.sql",
+      "placement": "immediately_before",
+      "governed_objects": [
+        {
+          "name": "public.cleansing_profile_type",
+          "classification": "EXECUTION_REQUIRED",
+          "enum_labels": [
+            "low_ph",
+            "balanced",
+            "deep_clean"
+          ]
+        },
+        {
+          "name": "public.products.cleansing_profile",
+          "classification": "EXECUTION_REQUIRED",
+          "type": "public.cleansing_profile_type",
+          "nullable": true
+        }
+      ],
+      "mutation_guards": [
+        "A1-M1:bridge omitted",
+        "A1-M2:enum label removed",
+        "A1-M3:wrong column type",
+        "A1-M4:wrong anchor"
+      ],
+      "semantics": [
+        "create cleansing_profile_type with exactly low_ph, balanced, deep_clean",
+        "add nullable products.cleansing_profile with exact cleansing_profile_type"
+      ]
+    }
+  ],
+  "sentinel_paths": [
+    "sentinels/legacy-sentinels.json"
+  ],
+  "materialization_contract_paths": [
+    "materialization/pre-pf2-contract.json"
+  ],
+  "package_file_allowlist": [
+    "bridges/20260524054048_category_mapper_preconditions.sql",
+    "bridges/20260525000000_untracked_product_columns.sql",
+    "bridges/20260805215900_admin_v2_cleansing_profile_precondition.sql",
+    "manifest.json",
+    "materialization/pre-pf2-contract.json",
+    "predecessor/00000000_predecessor.sql",
+    "sentinels/legacy-sentinels.json"
+  ],
+  "source_evidence": [
+    {
+      "commit": "8c1f093c1b9fc2a9af9c86174093759bcdd700a5",
+      "path": "supabase/local-replay-test/adapters/00000000_local_replay_predecessor.sql",
+      "role": "honest replay-equivalent four-relation design input"
+    },
+    {
+      "commit": "a3cb2c1a923974e4e448a3bc4e1ea0c53381b20e",
+      "path": "supabase/local-replay-test/adapters/20260524054048_local_replay_category_mapper_preconditions.sql",
+      "role": "category and function compatibility design input"
+    },
+    {
+      "commit": "a3cb2c1a923974e4e448a3bc4e1ea0c53381b20e",
+      "path": "supabase/local-replay-test/adapters/20260525_local_replay_untracked_product_columns.sql",
+      "role": "untracked product-column compatibility design input"
+    },
+    {
+      "commit": "3af4c99cc30b4632922e52fd2fd7acf916895c89",
+      "path": "tests/fixtures/admin-product-review-v2/20260805215900_product_review_v2_column_adapter.sql",
+      "blob": "972b0825f4ef798887796028dd332b29106c2770",
+      "role": "repository-owned Admin v2 cleansing_profile prerequisite evidence"
+    }
+  ],
+  "source_git_blob_ids": {
+    "authority_contract": "eea6ab84db0595319f42ccff7af72e2cc091ac2f",
+    "historical_predecessor_input": "1f183d04c24d5273dfcc1ef90ebb805bd4b02bd6",
+    "historical_category_bridge_input": "3bf435e6c72114e45f007f46df362ce2885d5f03",
+    "historical_product_columns_bridge_input": "e80269a3a4c4e0411036f883f37afa8506dec1db",
+    "admin_v2_cleansing_profile_bridge_input": "972b0825f4ef798887796028dd332b29106c2770",
+    "pre_pf2_last_migration": "bb33c36788252453ec4fed8a4c2b108acc89be96",
+    "pf2_migration": "676afbc56bf90443a1198f93427382f067d19407"
+  },
+  "pf2_migration": {
+    "path": "supabase/migrations/20260809115932_product_fact_storage_v1.sql",
+    "raw_sha256": "1d23c706efa220d65cba98983636dd3d0ebb26a035593267a4a7c72cc52c8b4a",
+    "git_blob_id": "676afbc56bf90443a1198f93427382f067d19407"
+  },
+  "known_non_historical": [
+    "exact original types, defaults, constraints, indexes, RLS, grants, and creation order are unavailable",
+    "compatibility bridges are test authority and are not predecessor history",
+    "the package is not historical Production DDL or Hosted schema identity"
+  ],
+  "forbidden_components": [
+    "supabase/local-replay-test/adapters/99999999_local_replay_runtime_contract.sql",
+    "Product Fact tables or seed rows",
+    "post-migration predecessor columns"
+  ],
+  "canonical_digest_contract": {
+    "algorithm": "sha256",
+    "path_order": "repository-package-relative POSIX byte order",
+    "text_encoding": "UTF-8",
+    "line_endings": "CRLF and bare CR normalized to LF",
+    "manifest_rule": "recursive-key-sorted compact JSON with canonical_sha256 omitted",
+    "entry_encoding": "uint64be(path_byte_length) + path_bytes + uint64be(content_byte_length) + normalized_content_bytes",
+    "reject": [
+      "BOM",
+      "symlink",
+      "duplicate path",
+      "path escape",
+      "unexpected file"
+    ]
+  },
+  "canonical_sha256": "aa2e877cbcd3d40d0cbda4a959b8befcc2879c7b43cfdc5faf1ba7035489f158",
+  "historical_identity_claimed": false,
+  "hosted_identity_claimed": false,
+  "production_identity_claimed": false,
+  "last_reviewed_main": "4e7d660ffb9c47d0a31576e3835a5e16f420b106"
+}

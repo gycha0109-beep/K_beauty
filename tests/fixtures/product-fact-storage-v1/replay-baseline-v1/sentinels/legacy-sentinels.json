@@ -1,0 +1,153 @@
+{
+  "schema_version": "product-fact-local-replay-sentinels-v1",
+  "synthetic_only": true,
+  "external_urls_allowed": false,
+  "serialization": "recursive-key-sorted compact JSON, UTF-8, LF",
+  "lifecycle": [
+    {
+      "stage": "after_predecessor_before_first_tracked_migration",
+      "rows": [
+        {
+          "table": "public.products",
+          "values": {
+            "id": "00000000-0000-4000-8000-000000000301",
+            "name": "PF3B Synthetic Legacy Cleanser",
+            "brand": "PF3B Replay Lab",
+            "category": "cleanser",
+            "price_min": 11000,
+            "price_max": 13000,
+            "buy_link": null,
+            "image_url": null,
+            "created_at": "2026-04-01T00:00:00.000Z",
+            "skin_types": "dry,sensitive",
+            "concerns": "dryness,barrier",
+            "texture": "gel",
+            "finish": "fresh",
+            "irritation_risk": "low",
+            "sensitivity_safe": false
+          }
+        },
+        {
+          "table": "public.products",
+          "values": {
+            "id": "00000000-0000-4000-8000-000000000305",
+            "name": "PF3B Synthetic Nullable Cleanser",
+            "brand": "PF3B Replay Lab",
+            "category": "cleanser",
+            "price_min": 9000,
+            "price_max": 10000,
+            "buy_link": null,
+            "image_url": null,
+            "created_at": "2026-04-01T00:04:00.000Z",
+            "skin_types": "normal",
+            "concerns": "cleansing",
+            "texture": "foam",
+            "finish": "clean",
+            "irritation_risk": "low",
+            "sensitivity_safe": true
+          }
+        },
+        {
+          "table": "public.product_candidates",
+          "values": {
+            "id": "00000000-0000-4000-8000-000000000302",
+            "source_name": "pf3b-synthetic-source",
+            "category_path": "skincare/cleanser",
+            "product_name_raw": "PF3B Synthetic Legacy Cleanser",
+            "brand_name_raw": "PF3B Replay Lab",
+            "normalized_name": "pf3b synthetic legacy cleanser",
+            "normalized_brand": "pf3b replay lab",
+            "status": "new",
+            "created_at": "2026-04-01T00:01:00.000Z",
+            "updated_at": "2026-04-01T00:01:00.000Z"
+          }
+        },
+        {
+          "table": "public.source_rankings",
+          "values": {
+            "id": "00000000-0000-4000-8000-000000000303",
+            "source_name": "pf3b-synthetic-source",
+            "category_path": "skincare/cleanser",
+            "rank_position": 1,
+            "product_name": "PF3B Synthetic Legacy Cleanser",
+            "brand_name": "PF3B Replay Lab",
+            "rating": "4.50",
+            "review_count": 7,
+            "thumbnail_url": null,
+            "source_url": null,
+            "collected_at": "2026-04-01T00:02:00.000Z"
+          }
+        },
+        {
+          "table": "public.recommendation_logs",
+          "values": {
+            "id": "00000000-0000-4000-8000-000000000304",
+            "event_name": "pf3b_synthetic_legacy_event",
+            "timestamp": "2026-04-01T00:03:00.000Z",
+            "product_id": "00000000-0000-4000-8000-000000000301",
+            "is_top_pick": false,
+            "question_id": "pf3b-q1",
+            "answer": "synthetic",
+            "session_id": "pf3b-local-session",
+            "feature_name": "pf3b-local-replay",
+            "result_type": "synthetic",
+            "meta_json": {
+              "authority": "local-replay-only"
+            },
+            "user_id": null
+          }
+        }
+      ]
+    },
+    {
+      "stage": "after_admin_v2_cleansing_profile_migrations_before_pre_pf2_fingerprints",
+      "updates": [
+        {
+          "table": "public.products",
+          "key": {
+            "id": "00000000-0000-4000-8000-000000000301"
+          },
+          "values": {
+            "cleansing_profile": "balanced"
+          }
+        }
+      ],
+      "expected_rows": [
+        {
+          "table": "public.products",
+          "key": {
+            "id": "00000000-0000-4000-8000-000000000301"
+          },
+          "values": {
+            "cleansing_profile": "balanced"
+          }
+        },
+        {
+          "table": "public.products",
+          "key": {
+            "id": "00000000-0000-4000-8000-000000000305"
+          },
+          "values": {
+            "cleansing_profile": null
+          }
+        }
+      ]
+    }
+  ],
+  "pre_pf2_preservation_surface": {
+    "row_sentinels": [
+      "public.products:00000000-0000-4000-8000-000000000301",
+      "public.products:00000000-0000-4000-8000-000000000305",
+      "public.product_candidates:00000000-0000-4000-8000-000000000302",
+      "public.source_rankings:00000000-0000-4000-8000-000000000303",
+      "public.recommendation_logs:00000000-0000-4000-8000-000000000304"
+    ],
+    "schema_and_zero_row_sentinels": [
+      "public.product_metadata_field_reviews",
+      "public.admin_product_review_confirmations",
+      "public.admin_product_review_import_confirmations",
+      "public.admin_product_review_import_v2_confirmations"
+    ],
+    "product_fact_table_count": 0
+  }
+}
