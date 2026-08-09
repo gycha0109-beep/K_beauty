@@ -546,3 +546,194 @@ PF-3B — Implement Governed Local Replay Baseline v1
 ```
 
 That task may implement only the approved local/test package, manifest, digest verifier, mutation guards, and deterministic pre-PF2 contract. It must not automatically execute PF-3 full replay or start PF-4.
+
+---
+
+## Amendment A1 — Admin v2 `cleansing_profile` compatibility bridge
+
+Status: **authority approved; bridge implementation and replay evidence remain absent**
+
+PF-3B bounded materialization reached every tracked migration through
+`20260804233300_admin_product_review_import_confirm.sql` and then stopped at
+`20260805220000_admin_product_review_cleanser_metadata_v2.sql` with:
+
+```text
+exception: admin_v2_products_cleansing_profile_missing
+SQLSTATE: P0001
+missing prerequisite: public.products.cleansing_profile
+```
+
+No tracked migration before that consumer creates the prerequisite. A1 does
+not reinterpret this runtime result as historical schema evidence. It relies
+on the following repository-owned sources in the authoritative pre-PF2 tree:
+
+```text
+source commit:
+3af4c99cc30b4632922e52fd2fd7acf916895c89
+
+source path:
+tests/fixtures/admin-product-review-v2/
+20260805215900_product_review_v2_column_adapter.sql
+
+source Git blob:
+972b0825f4ef798887796028dd332b29106c2770
+
+consumer Git blob at pre-PF2 tree:
+4cc2e7f2ca3c6dba726cbf344b46214c1bea53b4
+
+workflow Git blob at pre-PF2 tree:
+dd26c59fcbdb3bc0d214741d3ad78ab5ae03d847
+```
+
+The source adapter blob is present unchanged at authoritative pre-PF2 SHA
+`0a0c11b0ee8c64766b730f70a859f2348b79cb5e`. The same tree's
+`.github/workflows/admin-product-current-main-integration.yml` copies it after
+`20260804233300_admin_product_review_import_confirm.sql` and immediately before
+the three Admin v2 migrations beginning at `20260805220000`. The repository
+work record from that lineage states that Admin v2 reuses
+`products.cleansing_profile` and performs no legacy cleanser backfill.
+
+### A1.1 Classification decision
+
+| Question | Decision | Evidence and limitation |
+| --- | --- | --- |
+| A. Required by a tracked production migration? | YES | The consumer fails explicitly when the column is absent and later discovers its type for a dynamic cast. |
+| B. Absent from prior tracked migrations? | YES | The authoritative pre-PF2 migration tree contains no earlier creator for the type or column. |
+| C. Repository-owned out-of-chain materialization evidence? | YES | The tracked test fixture contains the exact enum and column DDL. |
+| D. Deterministic historical local anchor? | YES | The authoritative workflow places the fixture immediately before `20260805220000`. |
+| E. Semantic scope can be bounded honestly? | YES | The exact blob governs one enum, its three labels, and one nullable typed column only. |
+| F. Risk of masking a tracked migration defect? | CONTROLLED | The consumer intentionally requires and reuses an external predecessor; A1 does not claim the tracked chain is self-bootstrapping or historically complete. |
+
+Frozen classification:
+
+```text
+TRACKED_CHAIN_GAP_REQUIRES_GOVERNED_BRIDGE
+```
+
+The Admin v2 migration is not classified as defective for failing to create
+this column. Its explicit precondition, implementation lineage, fixture, and
+workflow ordering consistently describe an external predecessor contract.
+This approval is limited to local replay authority and does not repair or
+recharacterize the production migration history.
+
+### A1.2 Approved bridge identity and ordering
+
+```text
+classification: PF3_COMPATIBILITY_BRIDGE
+bridge_id: admin-v2-cleansing-profile-precondition-v1
+anchor: immediately before
+        20260805220000_admin_product_review_cleanser_metadata_v2.sql
+known_non_historical: true
+```
+
+Governed order is amended to:
+
+```text
+governed predecessor
+→ category mapper preconditions bridge
+→ untracked product columns bridge
+→ tracked migrations through 20260804233300
+→ admin-v2-cleansing-profile-precondition-v1
+→ 20260805220000, 20260805220005, 20260805220010
+```
+
+The existing predecessor and first two compatibility bridges are unchanged.
+The third bridge must remain a separately manifested, digested local/test
+artifact. PF-3B must still stop if any later unapproved prerequisite appears.
+
+### A1.3 Governed semantic ownership
+
+| Property | Classification | Governed A1 contract |
+| --- | --- | --- |
+| `public.cleansing_profile_type` existence | `EXECUTION_REQUIRED` | The type exists before the column is added. |
+| enum labels | `EXECUTION_REQUIRED` | Exact set and order: `low_ph`, `balanced`, `deep_clean`. |
+| `public.products.cleansing_profile` existence | `EXECUTION_REQUIRED` | The column exists before the anchor migration starts. |
+| column type | `EXECUTION_REQUIRED` | Exactly `public.cleansing_profile_type`. |
+| column nullability | `PRESERVATION_REQUIRED` | Nullable; the source adapter has no `NOT NULL`, and the consumer accepts `p_value is null`. |
+| column values at materialization | `PRESERVATION_REQUIRED` | Existing governed sentinel value, including null, is fingerprinted and preserved across PF-2 Upgrade. |
+| default | `INCIDENTAL` | No default is created; no historical default claim is permitted. |
+| additional constraint | `INCIDENTAL` | None is created or governed beyond the enum type. |
+| index | `INCIDENTAL` | No index is created or governed. |
+| RLS, policy, and grants | `INCIDENTAL` | The bridge changes none and governs none. |
+| `products.updated_at` | outside bridge ownership | The consumer updates it when setting the profile; A1 does not create or redefine it. |
+| Admin v2 completeness view | outside bridge ownership | The anchor migration owns the view and its review-table semantics. |
+
+The consumer accepts only null or `low_ph`, `balanced`, and `deep_clean` at its
+public setter boundary. It discovers the column's actual PostgreSQL type and
+casts the input to that type before updating `products` and `updated_at`.
+Consequently, admitting an arbitrary text column would weaken the
+repository-owned contract; the exact enum type is governed.
+
+### A1.4 Historical honesty boundary
+
+The approved artifact is a **repository-owned mid-chain compatibility
+bridge**. It is:
+
+- local/test authority only;
+- repository-owned compatibility evidence;
+- not a tracked production migration;
+- not historical Production DDL;
+- not historical Hosted schema;
+- not proof of when or how the column originally entered Production;
+- used solely to reproduce the repository-owned Admin v2 prerequisite.
+
+No PF-3 report may call it a historical migration or promote it into
+`supabase/migrations`.
+
+### A1.5 Required mutation guards
+
+Future PF-3B acceptance must add all four guards without mutating tracked
+production migrations:
+
+| Guard | Mutation | Deterministic expected result |
+| --- | --- | --- |
+| `A1-M1` | Omit the entire bridge | `20260805220000` raises `admin_v2_products_cleansing_profile_missing` (`P0001`). |
+| `A1-M2` | Remove any one governed enum label | Static bridge verification rejects a label set other than exactly `low_ph`, `balanced`, `deep_clean`. |
+| `A1-M3` | Replace the column type with an incompatible type | Static ownership/type verification rejects before replay acceptance. |
+| `A1-M4` | Place the bridge after its consumer | Manifest/order verification rejects before DB execution. |
+
+The bridge source blob, implemented bridge content, manifest anchor, package
+digest, or anchor migration changing is `HARD_INVALIDATE`. A prose-only
+clarification that changes none of those is `NO_REVIEW`. A Supabase CLI or
+PostgreSQL major-version change remains `REVIEW_REQUIRED` under the original
+matrix.
+
+### A1.6 PF-2 verifier scope applicability
+
+The PF-2 static verifier retains PF-2-era Git-delta enforcement against base
+`0a0c11b0ee8c64766b730f70a859f2348b79cb5e`. When invoked on current main, it
+rejects legitimate later integrated files before its migration semantic audit
+can serve as a current-main scope gate.
+
+```text
+PF2_VERIFIER_CURRENT_MAIN_SCOPE_APPLICABILITY = NO
+```
+
+This is not a PF-2 migration semantic failure and does not revoke:
+
+```text
+PRODUCT_FACT_MIGRATION_STATIC_VERIFIED = YES
+PF2_STATIC_VERIFIER_CRLF_COMPATIBILITY_MAIN_INTEGRATED = YES
+```
+
+Subsequent PF-3B validation must either run that verifier at its historically
+valid exact integration SHA, or independently bind the exact PF-2 migration
+raw SHA-256, Git blob, and the PF-3B-required semantic invariants. A1 does not
+modify or redesign the PF-2 verifier.
+
+### A1.7 State boundary
+
+```text
+PF3_BASELINE_AUTHORITY_A1_DECIDED = YES
+PF3_CLEANSING_PROFILE_BRIDGE_AUTHORITY_APPROVED = YES
+PF3_APPROVED_COMPATIBILITY_BRIDGE_COUNT = 3
+
+PF3_REPLAY_BASELINE_IMPLEMENTED = NO
+PF3_REPLAY_BASELINE_STATIC_VERIFIED = NO
+PF3_REPLAY_PRECONDITIONS_REPAIRED = NO
+PF3_LOCAL_DB_REPLAY_VERIFIED = NO
+```
+
+This amendment authorizes a later PF-3B continuation to implement and test the
+third bridge after A1 is integrated. It does not itself modify a fixture,
+manifest, verifier, materializer, production migration, or database.
