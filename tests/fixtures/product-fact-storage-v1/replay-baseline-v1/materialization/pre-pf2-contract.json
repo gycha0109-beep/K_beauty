@@ -1,0 +1,68 @@
+{
+  "schema_version": "product-fact-pre-pf2-materialization-contract-v1",
+  "authority_tier": "UPGRADE",
+  "pre_pf2_repository_sha": "0a0c11b0ee8c64766b730f70a859f2348b79cb5e",
+  "last_tracked_migration": "20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql",
+  "stages": [
+    "governed_predecessor",
+    "synthetic_predecessor_sentinels",
+    "tracked_pre_pf2_migrations_with_ordered_bridges",
+    "a1_cleansing_profile_sentinel_lifecycle",
+    "pre_pf2_fingerprints"
+  ],
+  "migration_ledger": {
+    "source": "git tree at pre_pf2_repository_sha",
+    "path": "supabase/migrations",
+    "ordering": "repository-relative POSIX path byte order",
+    "entry_digest": "raw SHA-256",
+    "ledger_digest": "length-delimited path and raw content SHA-256"
+  },
+  "schema_fingerprint": {
+    "algorithm": "SHA-256 of recursive-key-sorted compact JSON, UTF-8",
+    "catalog_surface": [
+      "public.products",
+      "public.product_candidates",
+      "public.source_rankings",
+      "public.recommendation_logs",
+      "public.product_metadata_field_reviews",
+      "public.admin_product_review_confirmations",
+      "public.admin_product_review_import_confirmations",
+      "public.admin_product_review_import_v2_confirmations"
+    ],
+    "catalog_fields": [
+      "relation kind and RLS flags",
+      "ordered columns with formatted types, nullability, and defaults",
+      "constraints with normalized definitions",
+      "indexes with normalized definitions",
+      "direct table privileges for public, anon, authenticated, and service_role"
+    ]
+  },
+  "data_fingerprint": {
+    "algorithm": "SHA-256 of recursive-key-sorted compact JSON, UTF-8",
+    "rows": "the fixed UUID rows declared in sentinels/legacy-sentinels.json",
+    "zero_row_relations": [
+      "public.product_metadata_field_reviews",
+      "public.admin_product_review_confirmations",
+      "public.admin_product_review_import_confirmations",
+      "public.admin_product_review_import_v2_confirmations"
+    ]
+  },
+  "absence_contract": {
+    "product_fact_tables": [
+      "product_fact_registry_versions",
+      "product_fact_definition_snapshots",
+      "product_fact_subjects",
+      "product_evidence_sources",
+      "product_evidence_source_subject_bindings",
+      "product_evidence_records",
+      "product_fact_instances",
+      "product_fact_evidence_links",
+      "product_fact_confirmations",
+      "product_fact_current",
+      "product_fact_review_assignments",
+      "product_fact_review_events"
+    ],
+    "expected_present_count": 0
+  },
+  "historical_identity_claimed": false
+}
