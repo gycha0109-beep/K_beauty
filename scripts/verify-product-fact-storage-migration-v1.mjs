@@ -11,6 +11,10 @@ const migrationsRoot = path.join(root, "supabase", "migrations");
 const baseline = "0a0c11b0ee8c64766b730f70a859f2348b79cb5e";
 const verifierPath = "scripts/verify-product-fact-storage-migration-v1.mjs";
 
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n?/g, "\n");
+}
+
 const requiredTables = Object.freeze([
   "product_fact_registry_versions",
   "product_fact_definition_snapshots",
@@ -32,7 +36,9 @@ assert.equal(migrationNames.length, 1, "expected exactly one Product Fact storag
 
 const migrationName = migrationNames[0];
 const migrationPath = `supabase/migrations/${migrationName}`;
-const migrationSql = readFileSync(path.join(migrationsRoot, migrationName), "utf8");
+const migrationSql = normalizeLineEndings(
+  readFileSync(path.join(migrationsRoot, migrationName), "utf8")
+);
 
 function fail(code, detail = code) {
   const error = new Error(detail);
@@ -451,7 +457,7 @@ function expectAuditFailure(name, sql, code) {
     auditSql(sql);
   } catch (error) {
     assert.equal(error.code, code, `${name}: expected ${code}, received ${error.code || error.message}`);
-    return;
+    return true;
   }
   assert.fail(`${name}: expected verifier failure`);
 }
@@ -463,6 +469,24 @@ function injectBeforeCommit(sql, statement) {
 }
 
 const assertions = auditSql(migrationSql, { checkGitScope: true });
+
+const lfMigrationSql = migrationSql;
+const crlfMigrationSql = migrationSql.replace(/\n/g, "\r\n");
+const normalizedCrlfMigrationSql = normalizeLineEndings(crlfMigrationSql);
+assert.equal(normalizedCrlfMigrationSql, lfMigrationSql, "LF and CRLF SQL must normalize identically");
+
+const lfAssertions = auditSql(lfMigrationSql);
+const crlfAssertions = auditSql(normalizedCrlfMigrationSql);
+assert.ok(lfAssertions > 0, "LF audit did not execute assertions");
+assert.equal(crlfAssertions, lfAssertions, "LF and CRLF audit assertion counts differ");
+
+const crlfNamedConstraintMutationDetected = expectAuditFailure(
+  "crlf_validity_check_removed",
+  removeNamedConstraint(normalizedCrlfMigrationSql, "product_fact_subjects_validity_check"),
+  "subject_validity_check_missing"
+);
+assert.equal(crlfNamedConstraintMutationDetected, true, "CRLF named constraint mutation was not detected");
+const portabilityAssertions = 4;
 
 const negativeCases = [
   [
@@ -525,6 +549,10 @@ console.log("PASS verify-product-fact-storage-migration-v1");
 console.log(`migration=${migrationPath}`);
 console.log(`required_tables=${requiredTables.length}`);
 console.log(`assertions=${assertions}`);
+console.log(`portability_assertions=${portabilityAssertions}`);
+console.log("lf_audit=PASS");
+console.log("crlf_audit=PASS");
+console.log("crlf_named_constraint_mutation=PASS");
 console.log(`negative_cases=${negativeCases.length}`);
 for (const [name] of negativeCases) console.log(`negative:${name}=PASS`);
 console.log("git_scope=PASS");
