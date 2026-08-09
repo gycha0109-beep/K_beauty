@@ -2792,3 +2792,10 @@ Medium 이상 작업 또는 문제가 발생한 작업만 기록한다.
 - Migration handling: historical unmerged migration versions were rebased to `20260804233000`–`20260804233300` to prevent out-of-order migration history.
 - Non-targets: hosted/production execution, main merge, real batch confirm, owner bootstrap, Provider, payment, secrets, CandidatePolicy activation.
 - Validation: exact committed tree is pushed only after runner `30923389434` passes focused contracts, crawler regressions, security closeout, architecture guard, production build, diff hygiene, allowed-path audit, and isolated Supabase confirm runtime.
+
+## 2026-08-09 — PF-2 Product Fact storage migration
+
+- Type: High-risk protected-surface execution limited to an additive PostgreSQL/Supabase migration artifact and a static verifier. DB and RLS design impact were `Y`; Auth schema references were `Y`; Storage, Provider, Payment, Secret, Hosted, Production execution, and Recommendation runtime impact were `N`.
+- Delta: added the 12 named Product Fact persistence entities, subject/current collision guards, Registry/definition version binding, source-to-subject evidence gate, immutable Evidence/Fact lineage, typed Fact sum values, current proposition pointers, operational review storage, RLS, and fail-closed browser privileges. Existing `products.cleansing_profile`, `product_metadata_field_reviews`, and Admin v1/v2 storage remain untouched; no Registry seed, catalog backfill, Phase 3B import, or runtime consumer was added.
+- Verification: `node scripts/verify-product-fact-storage-migration-v1.mjs` passed 165 static assertions and all 8 required mutation negatives; `git diff --check` passed. The migration was intentionally not applied to local, Hosted, or Production databases; replay, upgrade, and rollback remain PF-3 work.
+- Git boundary: isolated worktree branch `feature/product-fact-storage-migration-v1` starts at exact `origin/main` `0a0c11b0ee8c64766b730f70a859f2348b79cb5e`; the original checkout's pre-existing work-log edit was not modified, staged, or moved.
