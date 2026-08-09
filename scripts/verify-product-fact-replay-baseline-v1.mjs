@@ -472,21 +472,33 @@ function classifyMissingDependency(providerSql, requiredFragment, ownerSql, owne
   return code;
 }
 
+function mutationSqlWithLineEnding(sqlInputs, lineEnding) {
+  return Object.fromEntries(
+    Object.entries(sqlInputs).map(([name, value]) => [
+      name,
+      normalizeLineEndings(value).replaceAll("\n", lineEnding)
+    ])
+  );
+}
+
 function runMutationGuards({
   manifest,
-  predecessor,
-  categoryBridge,
-  productBridge,
-  cleansingBridge,
-  firstMigration,
-  categoryAnchor,
-  productAnchor,
-  cleansingAnchor,
-  sourceCleansing,
-  sec05,
+  sqlInputs,
   actualFiles,
   computedDigest
 }) {
+  const {
+    predecessor,
+    categoryBridge,
+    productBridge,
+    cleansingBridge,
+    firstMigration,
+    categoryAnchor,
+    productAnchor,
+    cleansingAnchor,
+    sourceCleansing,
+    sec05
+  } = mutationSqlWithLineEnding(sqlInputs, "\n");
   const results = [];
   const validateBridgeSet = (
     candidateManifest = manifest,
@@ -834,8 +846,7 @@ async function main() {
   assert(sha256(Buffer.from(predecessor, "utf8")) !== sha256(historicalPredecessor), "predecessor_copied_unchanged");
   assert(!manifest.package_file_allowlist.some((name) => name.includes("99999999")), "runtime_adapter_in_allowlist");
 
-  const mutations = runMutationGuards({
-    manifest,
+  const mutationSqlInputs = {
     predecessor,
     categoryBridge,
     productBridge,
@@ -845,7 +856,27 @@ async function main() {
     productAnchor,
     cleansingAnchor,
     sourceCleansing,
-    sec05,
+    sec05
+  };
+  const lfMutationSqlInputs = mutationSqlWithLineEnding(mutationSqlInputs, "\n");
+  const crlfMutationSqlInputs = mutationSqlWithLineEnding(mutationSqlInputs, "\r\n");
+  assert(
+    Object.values(lfMutationSqlInputs).every((value) => !value.includes("\r")),
+    "lf_mutation_inputs_not_canonical"
+  );
+  assert(
+    Object.values(crlfMutationSqlInputs).every((value) => value.includes("\r\n")),
+    "crlf_mutation_inputs_not_derived"
+  );
+  const lfMutations = runMutationGuards({
+    manifest,
+    sqlInputs: lfMutationSqlInputs,
+    actualFiles,
+    computedDigest
+  });
+  const crlfMutations = runMutationGuards({
+    manifest,
+    sqlInputs: crlfMutationSqlInputs,
     actualFiles,
     computedDigest
   });
@@ -873,7 +904,9 @@ async function main() {
     assertions: assertionCount,
     predecessor_sentinel_rows: sentinels.lifecycle[0].rows.length,
     a1_sentinel_updates: sentinels.lifecycle[1].updates.length,
-    mutation_guards: `${mutations.length}/17`,
+    mutation_guards: `${lfMutations.length}/17`,
+    lf_mutation_guards: `${lfMutations.length}/17`,
+    crlf_mutation_guards: `${crlfMutations.length}/17`,
     materialized_checked: Boolean(materializedArgument),
     historical_identity_claimed: false,
     hosted_or_production_access: false
