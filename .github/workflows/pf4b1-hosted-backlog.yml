@@ -103,8 +103,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin "${AUTHORITY_MAIN_ANCHOR}" refs/heads/main
-          current_main="$(git rev-parse FETCH_HEAD)"
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf4b1-main
           current_main="$(git rev-parse refs/remotes/origin/pf4b1-main)"
 
@@ -172,8 +170,10 @@ jobs:
             "${raw}" >"${clean}"
           cat "${clean}"
 
-          grep -oE 'Would push migration [^[:space:]]+\.sql' "${clean}" \
-            | sed 's/^Would push migration //' \
+          grep -q '^Would push these migrations:$' "${clean}"
+          grep -q '^Finished supabase db push\.$' "${clean}"
+          sed -n '/^Would push these migrations:$/,/^Finished supabase db push\.$/p' "${clean}" \
+            | grep -oE '[0-9]{14}_[A-Za-z0-9_]+\.sql' \
             >"${actual}" || true
 
           cat >"${expected}" <<'EOF'
