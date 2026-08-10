@@ -98,6 +98,8 @@ export async function saveSoloIntentAssessment({ dataRoot, session, assessment }
 
 export async function saveSoloWaveAssessmentSet({ dataRoot, session, assessmentSet }) {
   if (!verifySoloWaveSessionIntegrity(session) || !verifySoloWaveAssessmentSetIntegrity(assessmentSet) || assessmentSet.sessionDigest !== session.sessionDigest) throw Object.assign(new Error("solo_wave_set_invalid"), { code: "solo_wave_set_invalid" });
+  if ((session.waveShape?.shapeDigest ?? null) !== (assessmentSet.waveShape?.shapeDigest ?? null)) throw Object.assign(new Error("solo_wave_set_invalid"), { code: "solo_wave_set_invalid" });
+  if ((session.slotSetDigest ?? null) !== (assessmentSet.slotSetDigest ?? null)) throw Object.assign(new Error("solo_wave_set_invalid"), { code: "solo_wave_set_invalid" });
   const layout = soloStorageLayout(session);
   const writes = [];
   for (const row of assessmentSet.rows) {

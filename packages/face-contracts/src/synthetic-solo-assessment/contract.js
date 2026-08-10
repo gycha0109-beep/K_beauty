@@ -11,6 +11,8 @@ import {
   SOLO_INTENT_REVEAL_RECEIPT_SCHEMA_VERSION,
   SOLO_LIMITATIONS,
   SOLO_OPERATIONAL_DISPOSITIONS,
+  SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION,
+  SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION,
   SOLO_POLICY_ID,
   SOLO_POLICY_VERSION,
   SOLO_PRESENCE,
@@ -30,6 +32,7 @@ import {
   SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION,
   SOLO_WAVE_BRIEF_SCHEMA_VERSION,
   SOLO_WAVE_CONDITION_COUNTS,
+  SOLO_WAVE_SHAPE_SCHEMA_VERSION,
   SOLO_WAVE_SESSION_SCHEMA_VERSION,
   SOLO_WAVE_SLOT_COUNTS,
   TARGET_WITHHELD_REVIEW_ITEM_SCHEMA_VERSION
@@ -114,17 +117,41 @@ export function validateSoloAssessmentPolicy(value) {
   return result(valid ? [] : [error("solo_policy_invalid", "$")]);
 }
 
-export function validateSoloWaveSession(value) {
-  const keys = ["schemaVersion","sessionId","campaignRunId","campaignPlanDigest","sourceProjectionDigest","waveOrdinal","expectedSlotCount","operatorId","actorCount","policyDigest","privateReviewMapDigest","createdAt","sessionDigest"];
-  if (!exactKeys(value, keys)) return result([error("solo_session_invalid", "$")]);
+export function validateSoloWaveShape(value) {
+  const keys = ["schemaVersion","campaignPlanDigest","waveOrdinal","expectedSlotCount","conditionCounts","shapeSource","shapeDigest"];
+  if (!exactKeys(value, keys)) return result([error("solo_wave_shape_invalid", "$")]);
+  const conditionCountsValid = countMap(value.conditionCounts, ["A","B","C","D"], value.expectedSlotCount);
   const valid =
-    value.schemaVersion === SOLO_WAVE_SESSION_SCHEMA_VERSION &&
+    value.schemaVersion === SOLO_WAVE_SHAPE_SCHEMA_VERSION &&
+    HEX64.test(value.campaignPlanDigest || "") &&
+    [1,2,3].includes(value.waveOrdinal) &&
+    Number.isInteger(value.expectedSlotCount) && value.expectedSlotCount > 0 &&
+    conditionCountsValid &&
+    value.shapeSource === "campaign_plan" &&
+    HEX64.test(value.shapeDigest || "");
+  return result(valid ? [] : [error("solo_wave_shape_invalid", "$")]);
+}
+
+export function validateSoloWaveSession(value) {
+  const planDerived = value?.schemaVersion === SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION;
+  const keys = ["schemaVersion","sessionId","campaignRunId","campaignPlanDigest","sourceProjectionDigest","waveOrdinal","expectedSlotCount",...(planDerived ? ["waveShape","slotSetDigest"] : []),"operatorId","actorCount","policyDigest","privateReviewMapDigest","createdAt","sessionDigest"];
+  if (!exactKeys(value, keys)) return result([error("solo_session_invalid", "$")]);
+  const expectedSlotCount = planDerived ? value.waveShape?.expectedSlotCount : SOLO_WAVE_SLOT_COUNTS[value.waveOrdinal];
+  const shapeValid = !planDerived || (
+    validateSoloWaveShape(value.waveShape).ok &&
+    value.waveShape.campaignPlanDigest === value.campaignPlanDigest &&
+    value.waveShape.waveOrdinal === value.waveOrdinal
+  );
+  const valid =
+    [SOLO_WAVE_SESSION_SCHEMA_VERSION, SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION].includes(value.schemaVersion) &&
     SESSION_ID.test(value.sessionId || "") &&
     RUN_ID.test(value.campaignRunId || "") &&
     HEX64.test(value.campaignPlanDigest || "") &&
     HEX64.test(value.sourceProjectionDigest || "") &&
     [1,2,3].includes(value.waveOrdinal) &&
-    value.expectedSlotCount === SOLO_WAVE_SLOT_COUNTS[value.waveOrdinal] &&
+    value.expectedSlotCount === expectedSlotCount &&
+    shapeValid &&
+    (!planDerived || HEX64.test(value.slotSetDigest || "")) &&
     TOKEN.test(value.operatorId || "") &&
     value.actorCount === 1 &&
     HEX64.test(value.policyDigest || "") &&
@@ -254,16 +281,18 @@ export function validateSoloWaveAssessmentRow(value) {
 }
 
 export function validateSoloWaveAssessmentSet(value) {
-  const keys = ["schemaVersion","sessionDigest","campaignRunId","waveOrdinal","expectedSlotCount","rows","conditionCounts","exactDenominatorVerified","assessmentSetDigest"];
+  const planDerived = value?.schemaVersion === SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION;
+  const keys = ["schemaVersion","sessionDigest","campaignRunId","waveOrdinal","expectedSlotCount",...(planDerived ? ["waveShape","slotSetDigest"] : []),"rows","conditionCounts","exactDenominatorVerified","assessmentSetDigest"];
   if (!exactKeys(value, keys)) return result([error("solo_wave_set_invalid", "$")]);
-  const expected = SOLO_WAVE_SLOT_COUNTS[value.waveOrdinal];
-  const expectedConditions = SOLO_WAVE_CONDITION_COUNTS[value.waveOrdinal];
+  const shapeValid = !planDerived || validateSoloWaveShape(value.waveShape).ok && value.waveShape.waveOrdinal === value.waveOrdinal;
+  const expected = planDerived ? value.waveShape?.expectedSlotCount : SOLO_WAVE_SLOT_COUNTS[value.waveOrdinal];
+  const expectedConditions = planDerived ? value.waveShape?.conditionCounts : SOLO_WAVE_CONDITION_COUNTS[value.waveOrdinal];
   const rowsValid = Array.isArray(value.rows) && value.rows.length === expected && value.rows.every((row) => validateSoloWaveAssessmentRow(row).ok) && new Set(value.rows.map((row) => row.slotId)).size === value.rows.length && value.rows.every((row) => row.campaignRunId === value.campaignRunId && row.waveOrdinal === value.waveOrdinal);
   const countsValid = exactKeys(value.conditionCounts, ["A","B","C","D"]) && Object.entries(expectedConditions || {}).every(([key, count]) => value.conditionCounts[key] === count) && value.rows.every((row) => value.conditionCounts[row.conditionId] > 0);
   const recomputed = { A: 0, B: 0, C: 0, D: 0 };
   if (Array.isArray(value.rows)) for (const row of value.rows) if (Object.hasOwn(recomputed, row.conditionId)) recomputed[row.conditionId] += 1;
   const exactCounts = Object.entries(recomputed).every(([key, count]) => value.conditionCounts?.[key] === count);
-  const valid = value.schemaVersion === SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION && HEX64.test(value.sessionDigest || "") && RUN_ID.test(value.campaignRunId || "") && [1,2,3].includes(value.waveOrdinal) && value.expectedSlotCount === expected && rowsValid && countsValid && exactCounts && value.exactDenominatorVerified === true && HEX64.test(value.assessmentSetDigest || "");
+  const valid = [SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION, SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION].includes(value.schemaVersion) && shapeValid && (!planDerived || HEX64.test(value.slotSetDigest || "")) && HEX64.test(value.sessionDigest || "") && RUN_ID.test(value.campaignRunId || "") && [1,2,3].includes(value.waveOrdinal) && value.expectedSlotCount === expected && rowsValid && countsValid && exactCounts && value.exactDenominatorVerified === true && HEX64.test(value.assessmentSetDigest || "");
   return result(valid ? [] : [error("solo_wave_set_invalid", "$")]);
 }
 

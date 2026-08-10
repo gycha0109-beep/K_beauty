@@ -1,5 +1,7 @@
 export const SOLO_ASSESSMENT_POLICY_SCHEMA_VERSION = "solo-assessment-policy-v1";
 export const SOLO_WAVE_SESSION_SCHEMA_VERSION = "solo-wave-session-v1";
+export const SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION = "solo-wave-session-v2";
+export const SOLO_WAVE_SHAPE_SCHEMA_VERSION = "solo-wave-shape-v1";
 export const TARGET_WITHHELD_REVIEW_ITEM_SCHEMA_VERSION = "target-withheld-review-item-v1";
 export const SOLO_SCREENING_CLAIM_SCHEMA_VERSION = "solo-screening-claim-v1";
 export const SOLO_TARGET_WITHHELD_SCREENING_SCHEMA_VERSION = "solo-target-withheld-screening-v1";
@@ -7,6 +9,7 @@ export const SOLO_INTENT_REVEAL_RECEIPT_SCHEMA_VERSION = "solo-intent-reveal-rec
 export const SOLO_INTENT_ASSESSMENT_SCHEMA_VERSION = "solo-intent-assessment-v1";
 export const SOLO_WAVE_ASSESSMENT_ROW_SCHEMA_VERSION = "solo-wave-assessment-row-v1";
 export const SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION = "solo-wave-assessment-set-v1";
+export const SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION = "solo-wave-assessment-set-v2";
 export const SOLO_WAVE_BRIEF_SCHEMA_VERSION = "solo-wave-brief-v1";
 export const SOLO_CHECKPOINT_LINK_SCHEMA_VERSION = "solo-checkpoint-link-v1";
 

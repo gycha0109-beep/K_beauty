@@ -6,6 +6,7 @@ import { derivePilotCampaignProjection } from "../campaign/projection.js";
 import { resolveSafeContainedFile } from "../import/resolve-safe-path.js";
 import { finalizeGenerationSpec, sha256Hex, stableStringify } from "../generation/canonicalize-generation-spec.js";
 import { readObservationObject, readObservationRun } from "../observation/register-observation-run.js";
+import { deriveSoloWaveShape, verifySoloWaveSlotShape } from "./wave-shape.js";
 
 const HEX64 = /^[a-f0-9]{64}$/;
 
@@ -148,9 +149,15 @@ export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal }) 
   const projection = projected.projection;
   const waveStatus = projection.waveStatus.find((item) => item.waveOrdinal === waveOrdinal)?.status;
   if (!waveStatus || waveStatus === "not_issued" || waveStatus === "stopped") return failure("solo_wave_not_issued", "waveOrdinal", waveStatus || null);
+  const derivedShape = deriveSoloWaveShape(bundle.plan, waveOrdinal);
+  if (!derivedShape.ok) return failure("solo_wave_shape_invalid", "plan", derivedShape.errors);
+  const waveShape = derivedShape.waveShape;
   const slots = bundle.slots.filter((slot) => slot.waveOrdinal === waveOrdinal);
-  const expected = waveOrdinal === 1 ? 4 : 8;
-  if (slots.length !== expected) return failure("solo_wave_slot_count_invalid", "slots", slots.length);
+  if (!verifySoloWaveSlotShape(waveShape, slots)) return failure("solo_wave_slot_count_invalid", "slots", {
+    actualSlotCount: slots.length,
+    expectedSlotCount: waveShape.expectedSlotCount,
+    conditionCounts: waveShape.conditionCounts
+  });
 
   const sourceRows = [];
   for (const slot of slots) {
@@ -210,6 +217,7 @@ export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal }) 
     plan: bundle.plan,
     run: bundle.run,
     projection,
+    waveShape,
     sourceRows: Object.freeze(sourceRows),
     writesPerformed: 0
   });
