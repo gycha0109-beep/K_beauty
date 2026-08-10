@@ -47,3 +47,116 @@ jobs:
           path: tmp/security-closeout-verifier-suite.json
           if-no-files-found: error
           retention-days: 7
+
+  pf5-controlled-write-runtime:
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'feat/product-fact-controlled-write-v1' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_CLI_VERSION: 2.109.1
+      PF5_RUNTIME_DIR: ${{ runner.temp }}/pf5-controlled-write-runtime
+    steps:
+      - name: Checkout exact PF5 head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Verify exact PF5 checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+          test -z "$(git status --short)"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run focused PF5 static verifier
+        run: node scripts/verify-product-fact-controlled-write-v1.mjs
+
+      - name: Record Supabase CLI provenance
+        run: npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version
+
+      - name: Prepare isolated PF5 migration chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "${PF5_RUNTIME_DIR}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init \
+            --workdir "${PF5_RUNTIME_DIR}" \
+            --force
+          migration_dir="${PF5_RUNTIME_DIR}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/admin-product-reviews/20260730140000_product_review_foundation.sql "${migration_dir}/"
+          cp supabase/migrations/20260730152900_admin_access_foundation.sql "${migration_dir}/"
+          cp supabase/migrations/20260804233000_admin_product_candidate_reviews.sql "${migration_dir}/"
+          cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql "${migration_dir}/"
+          cp tests/fixtures/product-fact-controlled-write/20260810174500_product_fact_controlled_write_runtime.sql "${migration_dir}/"
+          find "${migration_dir}" -maxdepth 1 -type f -printf '%f\n' | sort
+          test "$(find "${migration_dir}" -maxdepth 1 -type f | wc -l | tr -d ' ')" = "6"
+
+      - name: Start isolated PF5 Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/pf5-supabase-start.log"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${PF5_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sanitize_log <"${start_log}" | tail -n 180 >&2
+            rm -f "${start_log}"
+            exit 1
+          fi
+          rm -f "${start_log}"
+
+      - name: Replay PF5 controlled-write runtime contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          reset_log="${RUNNER_TEMP}/pf5-supabase-reset.log"
+          sanitize_log() {
+            sed -E \
+              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
+          }
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset \
+            --workdir "${PF5_RUNTIME_DIR}" \
+            >"${reset_log}" 2>&1; then
+            sanitize_log <"${reset_log}" | tail -n 260 >&2
+            rm -f "${reset_log}"
+            exit 1
+          fi
+          sanitize_log <"${reset_log}" | tail -n 140
+          rm -f "${reset_log}"
+          echo "PF5_CONTROLLED_WRITE_DISPOSABLE_RUNTIME=PASS"
+
+      - name: PF5 diff hygiene
+        shell: bash
+        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+      - name: Stop isolated PF5 Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -d "${PF5_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop \
+              --workdir "${PF5_RUNTIME_DIR}" \
+              --no-backup
+          fi
+          rm -rf -- "${PF5_RUNTIME_DIR}"
