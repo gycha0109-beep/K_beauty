@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { PILOT_TERMINAL_OUTCOMES } from "@bejewely/face-contracts";
 import {
   buildCampaignEvidenceSnapshot,
   deriveCampaignMetricSet,
@@ -16,7 +17,7 @@ test("T8 derives exactly 20 rows with five slots per condition and preserves eve
   for (const condition of ["A", "B", "C", "D"]) assert.equal(bundle.rows.filter((row) => row.conditionId === condition).length, 5);
   assert.equal(bundle.rows.every(verifyCampaignSlotRowIntegrity), true);
   assert.equal(Object.values(bundle.metricSet.terminalOutcomes).reduce((sum, count) => sum + count, 0), 20);
-  assert.equal(Object.keys(bundle.metricSet.terminalOutcomes).length, 12);
+  assert.equal(Object.keys(bundle.metricSet.terminalOutcomes).length, PILOT_TERMINAL_OUTCOMES.length);
   assert.equal(bundle.metricSet.stageMetrics.issued_primary_slots.denominator, 20);
   assert.equal(bundle.metricSet.conditionSummaries.every((summary) => summary.denominator === 5), true);
   assert.equal(verifyCampaignMetricSetIntegrity(bundle.metricSet), true);

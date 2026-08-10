@@ -7,10 +7,16 @@ import {
   PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION,
   PILOT_CAMPAIGN_RUN_SCHEMA_VERSION,
   PILOT_CONDITIONS,
+  PILOT_DIVERSIFIED_BUDGET,
+  PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION,
+  PILOT_DIVERSIFIED_SLOT_SCHEMA_VERSION,
   PILOT_IMMEDIATE_STOP_REASONS,
   PILOT_PAUSE_REASONS,
   PILOT_QUESTION_ID,
   PILOT_SLOT_SCHEMA_VERSION,
+  PILOT_SUBJECT_AGE_BANDS,
+  PILOT_SUBJECT_PRESENTATIONS,
+  PILOT_SUBJECT_REGIONAL_APPEARANCE_HINTS,
   validatePilotCampaignPlan,
   validatePilotCampaignRun,
   validatePilotSlot
@@ -19,6 +25,7 @@ import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json
 import { buildPilotSourceFreeze, verifyPilotSourceFreeze } from "./source-freeze.js";
 
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+const SUBJECT_VARIANT_KEYS = Object.freeze(["conditionId", "conditionOrdinal", "adultAgeBand", "presentation", "regionalAppearanceHint"]);
 
 function failure(code, path, detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]) });
@@ -39,39 +46,76 @@ function slotSemantic(slot) {
   return semantic;
 }
 
+function exactKeys(value, expected) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  return actual.length === wanted.length && actual.every((key, index) => key === wanted[index]);
+}
+
+function subjectVariantSemantic(value) {
+  return Object.fromEntries(SUBJECT_VARIANT_KEYS.map((key) => [key, value[key]]));
+}
+
+export function createPilotSubjectVariant(value) {
+  if (!exactKeys(value, SUBJECT_VARIANT_KEYS) || !["A", "B", "C", "D"].includes(value.conditionId) || ![1, 2].includes(value.conditionOrdinal) || !PILOT_SUBJECT_AGE_BANDS.includes(value.adultAgeBand) || !PILOT_SUBJECT_PRESENTATIONS.includes(value.presentation) || !PILOT_SUBJECT_REGIONAL_APPEARANCE_HINTS.includes(value.regionalAppearanceHint)) return failure("campaign_subject_matrix_invalid", "subjectVariants");
+  const semantic = subjectVariantSemantic(value);
+  return Object.freeze({ ok: true, variant: deepFreeze({ ...semantic, subjectVariantDigest: sha256Hex(stableStringify(semantic)) }) });
+}
+
+function normalizeSubjectVariants(values) {
+  if (!Array.isArray(values) || values.length !== 8) return failure("campaign_subject_matrix_invalid", "subjectVariants");
+  const variants = [];
+  for (const value of values) {
+    const created = createPilotSubjectVariant(value);
+    if (!created.ok) return created;
+    variants.push(created.variant);
+  }
+  variants.sort((left, right) => left.conditionId.localeCompare(right.conditionId) || left.conditionOrdinal - right.conditionOrdinal);
+  const expected = [];
+  for (const conditionId of ["A", "B", "C", "D"]) for (const conditionOrdinal of [1, 2]) expected.push(`${conditionId}:${conditionOrdinal}`);
+  if (variants.map((variant) => `${variant.conditionId}:${variant.conditionOrdinal}`).some((key, index) => key !== expected[index])) return failure("campaign_subject_matrix_invalid", "subjectVariants");
+  return Object.freeze({ ok: true, variants: Object.freeze(variants) });
+}
+
 export function compilePilotCampaignPlan({
   campaignId,
   campaignVersion,
   comparisonGroupId = null,
   providerProfileId,
   authoredBy,
-  authoredAt = new Date().toISOString()
+  authoredAt = new Date().toISOString(),
+  subjectVariants
 }) {
   if (!TOKEN.test(campaignId || "") || !TOKEN.test(campaignVersion || "") || !(comparisonGroupId === null || TOKEN.test(comparisonGroupId || "")) || !TOKEN.test(authoredBy || "") || !Number.isFinite(Date.parse(authoredAt)) || new Date(authoredAt).toISOString() !== authoredAt) {
     return failure("campaign_plan_invalid", "$");
   }
   const freeze = buildPilotSourceFreeze(providerProfileId);
   if (!freeze.ok) return freeze;
+  const diversified = subjectVariants !== undefined;
+  const normalized = diversified ? normalizeSubjectVariants(subjectVariants) : null;
+  if (normalized && !normalized.ok) return normalized;
   const matrix = Object.entries(PILOT_CONDITIONS).map(([conditionId, row]) => ({
     conditionId,
     fixtureId: row.fixtureId,
-    primarySlots: row.primarySlots,
-    waveAllocation: [...row.waveAllocation]
+    primarySlots: diversified ? 2 : row.primarySlots,
+    waveAllocation: diversified ? [2] : [...row.waveAllocation]
   }));
   const value = {
-    schemaVersion: PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION,
+    schemaVersion: diversified ? PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION : PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION,
     campaignId,
     campaignVersion,
     comparisonGroupId,
     objective: {
       questionId: PILOT_QUESTION_ID,
       purpose: "skin_cue_control",
-      primarySlotCount: 20,
+      primarySlotCount: diversified ? 8 : 20,
       interpretationOwner: "t8"
     },
     sourceFreeze: freeze.sourceFreeze,
     matrix,
-    budgets: { ...PILOT_BUDGET },
+    ...(diversified ? { subjectVariants: normalized.variants } : {}),
+    budgets: { ...(diversified ? PILOT_DIVERSIFIED_BUDGET : PILOT_BUDGET) },
     retryPolicy: {
       generationRetryAllowedReasons: [...GENERATION_RETRY_ALLOWED_REASONS],
       generationRetryForbiddenReasons: [...GENERATION_RETRY_FORBIDDEN_REASONS],
@@ -80,8 +124,8 @@ export function compilePilotCampaignPlan({
       observationRecoveryForbiddenOutcomes: [...OBSERVATION_RECOVERY_FORBIDDEN_OUTCOMES]
     },
     checkpointPolicy: {
-      waveCount: 3,
-      wavePrimarySlotCounts: [4, 8, 8],
+      waveCount: diversified ? 1 : 3,
+      wavePrimarySlotCounts: diversified ? [8] : [4, 8, 8],
       manualApprovalRequired: true,
       readinessBoundary: "authoritative_t4_or_technical_terminal"
     },
@@ -107,14 +151,24 @@ export function compilePilotCampaignPlan({
 
 export function verifyPilotCampaignPlanIntegrity(plan) {
   if (!validatePilotCampaignPlan(plan).ok || !verifyPilotSourceFreeze(plan.sourceFreeze)) return false;
+  if (plan.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION) {
+    for (const variant of plan.subjectVariants) {
+      const semantic = subjectVariantSemantic(variant);
+      if (variant.subjectVariantDigest !== sha256Hex(stableStringify(semantic))) return false;
+    }
+  }
   const digest = sha256Hex(stableStringify(planSemantic(plan)));
   return digest === plan.planDigest;
 }
 
-function waveForConditionOrdinal(ordinal) {
-  if (ordinal === 1) return 1;
-  if (ordinal <= 3) return 2;
-  return 3;
+function waveForConditionOrdinal(plan, conditionId, ordinal) {
+  const row = plan.matrix.find((item) => item.conditionId === conditionId);
+  let upper = 0;
+  for (let index = 0; index < row.waveAllocation.length; index += 1) {
+    upper += row.waveAllocation[index];
+    if (ordinal <= upper) return index + 1;
+  }
+  return null;
 }
 
 export function createPilotCampaignRun({ plan, runNonce, startedBy, startedAt = new Date().toISOString() }) {
@@ -138,15 +192,26 @@ export function createPilotCampaignRun({ plan, runNonce, startedBy, startedAt = 
   if (!validatePilotCampaignRun(run).ok) return failure("campaign_run_invalid", "$", null);
 
   const slots = [];
+  const diversified = plan.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION;
   for (const conditionId of ["A", "B", "C", "D"]) {
-    for (let conditionOrdinal = 1; conditionOrdinal <= 5; conditionOrdinal += 1) {
+    const row = plan.matrix.find((item) => item.conditionId === conditionId);
+    for (let conditionOrdinal = 1; conditionOrdinal <= row.primarySlots; conditionOrdinal += 1) {
+      const variant = diversified ? plan.subjectVariants.find((item) => item.conditionId === conditionId && item.conditionOrdinal === conditionOrdinal) : null;
       const slotValue = {
-        schemaVersion: PILOT_SLOT_SCHEMA_VERSION,
+        schemaVersion: diversified ? PILOT_DIVERSIFIED_SLOT_SCHEMA_VERSION : PILOT_SLOT_SCHEMA_VERSION,
         campaignRunId: run.campaignRunId,
         conditionId,
         conditionOrdinal,
-        waveOrdinal: waveForConditionOrdinal(conditionOrdinal),
-        fixtureDigest: plan.sourceFreeze.fixtureObjectDigests[conditionId]
+        waveOrdinal: waveForConditionOrdinal(plan, conditionId, conditionOrdinal),
+        fixtureDigest: plan.sourceFreeze.fixtureObjectDigests[conditionId],
+        ...(variant ? {
+          subjectVariant: {
+            adultAgeBand: variant.adultAgeBand,
+            presentation: variant.presentation,
+            regionalAppearanceHint: variant.regionalAppearanceHint
+          },
+          subjectVariantDigest: variant.subjectVariantDigest
+        } : {})
       };
       const slotIdentityDigest = sha256Hex(stableStringify(slotValue));
       const slot = deepFreeze({
@@ -171,5 +236,10 @@ export function verifyPilotCampaignRunIntegrity(run, plan) {
 export function verifyPilotSlotIntegrity(slot, run, plan) {
   if (!validatePilotSlot(slot).ok || !verifyPilotCampaignRunIntegrity(run, plan)) return false;
   const digest = sha256Hex(stableStringify(slotSemantic(slot)));
-  return slot.campaignRunId === run.campaignRunId && slot.fixtureDigest === plan.sourceFreeze.fixtureObjectDigests[slot.conditionId] && slot.waveOrdinal === waveForConditionOrdinal(slot.conditionOrdinal) && slot.slotIdentityDigest === digest && slot.slotId === `slot_${digest.slice(0, 24)}`;
+  const diversified = plan.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION;
+  const variant = diversified ? plan.subjectVariants.find((item) => item.conditionId === slot.conditionId && item.conditionOrdinal === slot.conditionOrdinal) : null;
+  const subjectMatches = diversified
+    ? variant && slot.subjectVariantDigest === variant.subjectVariantDigest && stableStringify(slot.subjectVariant) === stableStringify({ adultAgeBand: variant.adultAgeBand, presentation: variant.presentation, regionalAppearanceHint: variant.regionalAppearanceHint })
+    : slot.subjectVariant === undefined && slot.subjectVariantDigest === undefined;
+  return slot.campaignRunId === run.campaignRunId && slot.fixtureDigest === plan.sourceFreeze.fixtureObjectDigests[slot.conditionId] && slot.waveOrdinal === waveForConditionOrdinal(plan, slot.conditionId, slot.conditionOrdinal) && subjectMatches && slot.slotIdentityDigest === digest && slot.slotId === `slot_${digest.slice(0, 24)}`;
 }

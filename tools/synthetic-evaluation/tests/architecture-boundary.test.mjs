@@ -153,6 +153,7 @@ test("T7 CLI exposes single-boundary orchestration and no prohibited automation 
   const source = await fs.readFile(path.resolve(testDirectory, "../src/campaign/cli/campaign.js"), "utf8");
   assert.match(source, /--compile/);
   assert.match(source, /--issue-wave/);
+  assert.match(source, /--cancel-wave/);
   assert.match(source, /--generation-handoff/);
   assert.match(source, /--checkpoint/);
   assert.match(source, /--advance/);

@@ -1,4 +1,5 @@
 import {
+  cancelPilotUngeneratedWave as cancelPilotUngeneratedWaveUnsafe,
   issuePilotWave as issuePilotWaveUnsafe,
   resumePilotCampaign as resumePilotCampaignUnsafe,
   submitPilotCheckpoint as submitPilotCheckpointUnsafe
@@ -29,6 +30,10 @@ export async function issuePilotWave(input) {
     ...result,
     packetsIssued: after.packets.length - beforePacketCount
   });
+}
+
+export async function cancelPilotUngeneratedWave(input) {
+  return cancelPilotUngeneratedWaveUnsafe(input);
 }
 
 export async function submitPilotCheckpoint(input) {

@@ -23,6 +23,7 @@ const SLOT_EVENT_TYPES = new Set([
 const RUN_EVENT_TYPES = new Set([
   "run_started",
   "wave_issued",
+  "wave_cancelled",
   "checkpoint_requested",
   "checkpoint_approved",
   "checkpoint_stopped",

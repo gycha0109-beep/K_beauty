@@ -16,7 +16,7 @@ function clone(value) {
 }
 
 async function readSnapshot(name) {
-  return fs.readFile(path.join(testDirectory, "snapshots", name), "utf8");
+  return (await fs.readFile(path.join(testDirectory, "snapshots", name), "utf8")).replaceAll("\r\n", "\n");
 }
 
 test("Gemini manual A/B/C/D prompts match frozen snapshots", async () => {

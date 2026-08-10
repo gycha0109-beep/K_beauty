@@ -12,6 +12,7 @@ import {
   reservePilotGenerationRetry
 } from "../orchestrator.js";
 import {
+  cancelPilotUngeneratedWave,
   issuePilotWave,
   resumePilotCampaign,
   submitPilotCheckpoint
@@ -67,6 +68,11 @@ async function main() {
     if (!requestPath || !runNonce || !startedBy) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
     const planDraft = await requestJson(root, requestPath, "plan");
     result = await compileAndStorePilotCampaign({ dataRoot: root, planDraft, runNonce, startedBy });
+  } else if (args.values.has("--cancel-wave")) {
+    const reason = args.values.get("--reason");
+    const cancelledBy = args.values.get("--cancelled-by");
+    if (!runId || !reason || !cancelledBy) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
+    result = await cancelPilotUngeneratedWave({ dataRoot: root, runId, waveOrdinal: Number(args.values.get("--cancel-wave")), reason, cancelledBy, actorId: args.values.get("--actor") || cancelledBy });
   } else if (args.values.has("--issue-wave")) {
     if (!runId) throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
     result = await issuePilotWave({ dataRoot: root, runId, waveOrdinal: Number(args.values.get("--issue-wave")), actorId: args.values.get("--actor") || "campaign_operator" });

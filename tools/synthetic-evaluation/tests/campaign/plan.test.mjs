@@ -13,7 +13,7 @@ import {
   verifyPilotSourceFreezeCurrent
 } from "../../src/campaign/source-freeze.js";
 import { sha256Hex, stableStringify } from "../../src/shared/canonical-json.js";
-import { clone, makePlan, makeRun } from "./helpers.mjs";
+import { clone, DIVERSIFIED_SUBJECT_VARIANTS, makePlan, makeRun } from "./helpers.mjs";
 
 test("T7 plan compiles the exact fixed 20-slot denominator policy", () => {
   const plan = makePlan();
@@ -27,6 +27,57 @@ test("T7 plan compiles the exact fixed 20-slot denominator policy", () => {
   ]);
   assert.equal(plan.outputPolicy.reportAuthority, "t8");
   assert.equal(plan.outputPolicy.splitAuthority, "t9");
+});
+
+test("legacy plan without subjectVariants preserves the exact v1 digest", () => {
+  const plan = makePlan();
+  assert.equal(plan.schemaVersion, "pilot-campaign-plan-v1");
+  assert.equal(plan.planDigest, "f72f69dcb0d41a11e3287986ab0908ca6a239c0ac934f53915879c3c19aa03c7");
+  assert.equal(Object.hasOwn(plan, "subjectVariants"), false);
+});
+
+test("diversified plan compiles deterministically into one balanced eight-slot wave", () => {
+  const one = makePlan({ subjectVariants: DIVERSIFIED_SUBJECT_VARIANTS });
+  const two = makePlan({ subjectVariants: [...DIVERSIFIED_SUBJECT_VARIANTS].reverse() });
+  assert.equal(one.schemaVersion, "pilot-campaign-plan-v2");
+  assert.equal(one.planDigest, two.planDigest);
+  assert.deepEqual(one.subjectVariants, two.subjectVariants);
+  assert.deepEqual(one.matrix.map((row) => [row.conditionId, row.primarySlots, row.waveAllocation]), [
+    ["A", 2, [2]], ["B", 2, [2]], ["C", 2, [2]], ["D", 2, [2]]
+  ]);
+  assert.deepEqual(one.checkpointPolicy.wavePrimarySlotCounts, [8]);
+  const { run, slots } = makeRun(one);
+  assert.equal(slots.length, 8);
+  assert.equal(slots.every((slot) => slot.waveOrdinal === 1 && slot.schemaVersion === "pilot-slot-v2" && verifyPilotSlotIntegrity(slot, run, one)), true);
+  assert.deepEqual(slots.map((slot) => [slot.conditionId, slot.conditionOrdinal, slot.subjectVariant.adultAgeBand, slot.subjectVariant.presentation, slot.subjectVariant.regionalAppearanceHint]),
+    DIVERSIFIED_SUBJECT_VARIANTS.map((variant) => [variant.conditionId, variant.conditionOrdinal, variant.adultAgeBand, variant.presentation, variant.regionalAppearanceHint]));
+});
+
+test("diversified plan rejects invalid subject enums and slot count mismatch", () => {
+  for (const [field, value] of [["adultAgeBand", "60s"], ["presentation", "unknown"], ["regionalAppearanceHint", "unsupported_hint"]]) {
+    const variants = clone(DIVERSIFIED_SUBJECT_VARIANTS);
+    variants[0][field] = value;
+    const result = compilePilotCampaignPlan({
+      campaignId: "diversified-invalid",
+      campaignVersion: "1.0.0",
+      providerProfileId: "gemini-image-manual-v1",
+      authoredBy: "campaign_planner",
+      authoredAt: "2026-08-02T10:00:00.000Z",
+      subjectVariants: variants
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.errors[0].code, "campaign_subject_matrix_invalid");
+  }
+  const mismatch = compilePilotCampaignPlan({
+    campaignId: "diversified-mismatch",
+    campaignVersion: "1.0.0",
+    providerProfileId: "gemini-image-manual-v1",
+    authoredBy: "campaign_planner",
+    authoredAt: "2026-08-02T10:00:00.000Z",
+    subjectVariants: DIVERSIFIED_SUBJECT_VARIANTS.slice(0, 7)
+  });
+  assert.equal(mismatch.ok, false);
+  assert.equal(mismatch.errors[0].code, "campaign_subject_matrix_invalid");
 });
 
 test("plan identity excludes authoredAt but includes provider and policy freeze", () => {

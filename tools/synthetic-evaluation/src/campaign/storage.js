@@ -7,6 +7,7 @@ import { verifyGenerationHandoffIntegrity, verifyGenerationWorkPacketIntegrity }
 import { verifyPilotCampaignPlanIntegrity, verifyPilotCampaignRunIntegrity, verifyPilotSlotIntegrity } from "./plan.js";
 import { verifyPilotCheckpointApprovalIntegrity } from "./checkpoint.js";
 import { verifyPilotCampaignCloseoutIntegrity } from "./closeout.js";
+import { verifyPilotWaveCancellationIntegrity } from "./cancellation.js";
 
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 
@@ -47,6 +48,9 @@ export function campaignProjectionRelativePath(runId, projectionDigest) {
 export function campaignCloseoutRelativePath(runId, closeoutDigest) {
   return path.posix.join(campaignRunRootRelativePath(runId), "closeouts", `${closeoutDigest}.json`);
 }
+export function campaignWaveCancellationRelativePath(runId, cancellationDigest) {
+  return path.posix.join(campaignRunRootRelativePath(runId), "cancellations", `${cancellationDigest}.json`);
+}
 
 export function nativePath(dataRoot, relativePath) {
   return path.join(dataRoot, ...relativePath.split("/"));
@@ -83,7 +87,7 @@ export async function writeImmutableJson(filePath, value, verifyExisting = null)
 }
 
 export async function saveCompiledCampaign({ dataRoot, plan, run, slots, initialEvent }) {
-  if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan)) || !verifyPilotCampaignEventIntegrity(initialEvent)) throw Object.assign(new Error("campaign_bundle_invalid"), { code: "campaign_bundle_invalid" });
+  if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || slots.length !== plan.objective.primarySlotCount || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan)) || !verifyPilotCampaignEventIntegrity(initialEvent)) throw Object.assign(new Error("campaign_bundle_invalid"), { code: "campaign_bundle_invalid" });
   const writes = [];
   writes.push(await writeImmutableJson(nativePath(dataRoot, campaignPlanRelativePath(plan)), plan, (existing) => verifyPilotCampaignPlanIntegrity(existing) && existing.planDigest === plan.planDigest));
   writes.push(await writeImmutableJson(nativePath(dataRoot, campaignRunPlanRelativePath(run.campaignRunId)), plan, (existing) => verifyPilotCampaignPlanIntegrity(existing) && existing.planDigest === plan.planDigest));
@@ -129,6 +133,11 @@ export async function saveCloseout(dataRoot, closeout) {
   return writeImmutableJson(nativePath(dataRoot, campaignCloseoutRelativePath(closeout.campaignRunId, closeout.closeoutDigest)), closeout, (existing) => verifyPilotCampaignCloseoutIntegrity(existing) && existing.closeoutDigest === closeout.closeoutDigest);
 }
 
+export async function saveWaveCancellation(dataRoot, cancellation) {
+  if (!verifyPilotWaveCancellationIntegrity(cancellation)) throw Object.assign(new Error("campaign_wave_cancellation_invalid"), { code: "campaign_wave_cancellation_invalid" });
+  return writeImmutableJson(nativePath(dataRoot, campaignWaveCancellationRelativePath(cancellation.campaignRunId, cancellation.cancellationDigest)), cancellation, (existing) => verifyPilotWaveCancellationIntegrity(existing) && existing.cancellationDigest === cancellation.cancellationDigest);
+}
+
 async function readJsonFiles(directory) {
   let entries;
   try {
@@ -149,28 +158,39 @@ async function readJsonFiles(directory) {
 export async function readCampaignBundle(dataRoot, runId) {
   const runRoot = nativePath(dataRoot, campaignRunRootRelativePath(runId));
   const slotTree = await readJsonFiles(path.join(runRoot, "slots"));
-  const [plan, run, events, checkpoints, closeouts] = await Promise.all([
+  const [plan, run, events, checkpoints, cancellations, closeouts] = await Promise.all([
     readJson(path.join(runRoot, "plan.json")),
     readJson(path.join(runRoot, "run.json")),
     readJsonFiles(path.join(runRoot, "events")),
     readJsonFiles(path.join(runRoot, "checkpoints")),
+    readJsonFiles(path.join(runRoot, "cancellations")),
     readJsonFiles(path.join(runRoot, "closeouts"))
   ]);
-  const slots = slotTree.filter((value) => value?.schemaVersion === "pilot-slot-v1").sort((a,b) => a.slotId.localeCompare(b.slotId));
+  const slots = slotTree.filter((value) => ["pilot-slot-v1", "pilot-slot-v2"].includes(value?.schemaVersion)).sort((a,b) => a.slotId.localeCompare(b.slotId));
   const packets = slotTree.filter((value) => value?.schemaVersion === "generation-work-packet-v1");
   const handoffs = slotTree.filter((value) => value?.schemaVersion === "generation-handoff-v1");
   if (!verifyPilotCampaignPlanIntegrity(plan)) throw Object.assign(new Error("campaign_bundle_invalid:plan"), { code: "campaign_bundle_invalid", detail: "plan" });
   if (!verifyPilotCampaignRunIntegrity(run, plan) || run.campaignRunId !== runId) throw Object.assign(new Error("campaign_bundle_invalid:run"), { code: "campaign_bundle_invalid", detail: "run" });
-  if (slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) throw Object.assign(new Error("campaign_bundle_invalid:slots"), { code: "campaign_bundle_invalid", detail: `slots:${slots.length}` });
+  if (slots.length !== plan.objective.primarySlotCount || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) throw Object.assign(new Error("campaign_bundle_invalid:slots"), { code: "campaign_bundle_invalid", detail: `slots:${slots.length}` });
   if (!events.every(verifyPilotCampaignEventIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:events"), { code: "campaign_bundle_invalid", detail: "events" });
   if (!checkpoints.every((approval) => verifyPilotCheckpointApprovalIntegrity(approval))) throw Object.assign(new Error("campaign_bundle_invalid:checkpoints"), { code: "campaign_bundle_invalid", detail: "checkpoints" });
+  if (!cancellations.every(verifyPilotWaveCancellationIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:cancellations"), { code: "campaign_bundle_invalid", detail: "cancellations" });
   if (!packets.every(verifyGenerationWorkPacketIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:packets"), { code: "campaign_bundle_invalid", detail: "packets" });
+  for (const cancellation of cancellations) {
+    const expectedBindings = packets
+      .filter((packet) => slots.some((slot) => slot.slotId === packet.slotId && slot.waveOrdinal === cancellation.waveOrdinal))
+      .map((packet) => ({ slotId: packet.slotId, attemptId: packet.attemptId, packetId: packet.packetId, packetDigest: packet.packetDigest }))
+      .sort((left, right) => left.slotId.localeCompare(right.slotId));
+    const cancellationEvent = events.find((event) => event.eventType === "wave_cancelled" && event.sourceRefs.some((ref) => ref.artifactDigest === cancellation.cancellationDigest));
+    const terminalSlots = new Set(events.filter((event) => event.eventType === "slot_terminal" && event.reasonCodes.includes("cancelled_ungenerated_wave") && event.sourceRefs.some((ref) => ref.artifactDigest === cancellation.cancellationDigest)).map((event) => event.slotId));
+    if (cancellation.campaignRunId !== runId || stableStringify(cancellation.slotBindings) !== stableStringify(expectedBindings) || !cancellationEvent || terminalSlots.size !== expectedBindings.length || expectedBindings.some((binding) => !terminalSlots.has(binding.slotId))) throw Object.assign(new Error("campaign_bundle_invalid:cancellations"), { code: "campaign_bundle_invalid", detail: "cancellation_binding" });
+  }
   for (const handoff of handoffs) {
     const packet = packets.find((item) => item.attemptId === handoff.attemptId && item.slotId === handoff.slotId);
     if (!packet || !verifyGenerationHandoffIntegrity(handoff, packet)) throw Object.assign(new Error("campaign_bundle_invalid:handoffs"), { code: "campaign_bundle_invalid", detail: "handoffs" });
   }
   if (!closeouts.every(verifyPilotCampaignCloseoutIntegrity)) throw Object.assign(new Error("campaign_bundle_invalid:closeouts"), { code: "campaign_bundle_invalid", detail: "closeouts" });
-  return Object.freeze({ plan, run, slots: Object.freeze(slots), events: Object.freeze(events), checkpoints: Object.freeze(checkpoints), packets: Object.freeze(packets), handoffs: Object.freeze(handoffs), closeouts: Object.freeze(closeouts) });
+  return Object.freeze({ plan, run, slots: Object.freeze(slots), events: Object.freeze(events), checkpoints: Object.freeze(checkpoints), cancellations: Object.freeze(cancellations), packets: Object.freeze(packets), handoffs: Object.freeze(handoffs), closeouts: Object.freeze(closeouts) });
 }
 
 export async function withCampaignWriterClaim(dataRoot, runId, actorId, operation, fn) {

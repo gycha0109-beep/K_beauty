@@ -4,6 +4,17 @@ import {
 } from "../../src/campaign/plan.js";
 import { createPilotCampaignEvent } from "../../src/campaign/events.js";
 
+export const DIVERSIFIED_SUBJECT_VARIANTS = Object.freeze([
+  Object.freeze({ conditionId: "A", conditionOrdinal: 1, adultAgeBand: "20s", presentation: "feminine", regionalAppearanceHint: "korean_appearance_hint" }),
+  Object.freeze({ conditionId: "A", conditionOrdinal: 2, adultAgeBand: "40s", presentation: "masculine", regionalAppearanceHint: null }),
+  Object.freeze({ conditionId: "B", conditionOrdinal: 1, adultAgeBand: "30s", presentation: "masculine", regionalAppearanceHint: "korean_appearance_hint" }),
+  Object.freeze({ conditionId: "B", conditionOrdinal: 2, adultAgeBand: "50s", presentation: "feminine", regionalAppearanceHint: null }),
+  Object.freeze({ conditionId: "C", conditionOrdinal: 1, adultAgeBand: "20s", presentation: "androgynous", regionalAppearanceHint: null }),
+  Object.freeze({ conditionId: "C", conditionOrdinal: 2, adultAgeBand: "50s", presentation: "masculine", regionalAppearanceHint: "korean_appearance_hint" }),
+  Object.freeze({ conditionId: "D", conditionOrdinal: 1, adultAgeBand: "30s", presentation: "feminine", regionalAppearanceHint: null }),
+  Object.freeze({ conditionId: "D", conditionOrdinal: 2, adultAgeBand: "40s", presentation: "androgynous", regionalAppearanceHint: "korean_appearance_hint" })
+]);
+
 export function makePlan(overrides = {}) {
   const result = compilePilotCampaignPlan({
     campaignId: "skin-control-pilot-001",

@@ -171,7 +171,8 @@ export async function publishExport({ dataRoot, files, exportManifest }) {
     }
     try { await rename(staging, final); }
     catch (error) {
-      if (error?.code !== "EEXIST" && error?.code !== "ENOTEMPTY") throw error;
+      const destinationExists = await lstat(final).then((value) => value.isDirectory()).catch(() => false);
+      if (!["EEXIST", "ENOTEMPTY", "EPERM"].includes(error?.code) || !destinationExists) throw error;
       await rm(staging, { recursive: true, force: true });
       const existing = await verifyExistingExport(final, exportManifest);
       return Object.freeze({ state: "existing", exportManifest: existing, outputRelativePath: `reports/exports/${exportManifest.exportDigest}`, writesPerformed: 0 });
