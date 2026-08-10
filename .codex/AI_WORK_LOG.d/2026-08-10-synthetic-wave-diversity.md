@@ -1,0 +1,6 @@
+# 2026-08-10 / Synthetic ungenerated-wave cancellation and subject diversity
+
+- Task type: Medium-risk contract execution. Local synthetic Campaign storage was `Y`; DB, Auth, RLS, Hosted, Production, Provider, Payment, Secret, and image generation were `N`.
+- Added an immutable, digest-verified `cancel-wave` transition for active issued waves whose slots have exactly one issued packet and no handoff, candidate, or observation evidence. Cancellation preserves packet/spec/prompt artifacts, records actor/time/reason, produces a `cancelled_ungenerated_wave` terminal outcome, and fails closed after downstream progress.
+- Added a backward-compatible v2 Campaign plan/slot/projection contract for a deterministic single-wave A2/B2/C2/D2 subject matrix. Legacy plans without `subjectVariants` retain the exact v1 shape and digest. Subject variants bind age, presentation, and regional appearance into slot identity, finalized spec, compiled prompt, packet digests, and projection integrity without changing A/B/C/D skin cues.
+- Verification: `npm run synthetic:verify` passed with 193 tests, 190 passed, 3 platform skips, and 0 failures. The verifier also now normalizes snapshot line endings and treats Windows rename `EPERM` as an idempotent export collision only when the immutable destination directory already exists.
