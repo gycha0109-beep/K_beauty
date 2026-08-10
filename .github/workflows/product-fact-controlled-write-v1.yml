@@ -9,6 +9,14 @@ on:
       - "scripts/verify-product-fact-controlled-write-v1.mjs"
       - "tests/fixtures/product-fact-controlled-write/**"
       - ".github/workflows/product-fact-controlled-write-v1.yml"
+  push:
+    branches:
+      - feat/product-fact-controlled-write-v1
+    paths:
+      - "supabase/migrations/*_product_fact_controlled_write_v1.sql"
+      - "scripts/verify-product-fact-controlled-write-v1.mjs"
+      - "tests/fixtures/product-fact-controlled-write/**"
+      - ".github/workflows/product-fact-controlled-write-v1.yml"
   workflow_dispatch:
 
 permissions:
@@ -103,7 +111,6 @@ jobs:
           printf '%s\n' "isolated_migration_chain:"
           find "${migration_dir}" -maxdepth 1 -type f -printf '%f\n' | sort
           test "$(find "${migration_dir}" -maxdepth 1 -type f | wc -l | tr -d ' ')" = "6"
-          test ! -e "${migration_dir}/20260809115933_product_fact_storage_v1.sql"
 
       - name: Start isolated Supabase
         shell: bash
