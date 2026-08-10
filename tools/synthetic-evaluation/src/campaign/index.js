@@ -4,12 +4,14 @@ export {
   verifyPilotSourceFreezeCurrent
 } from "./source-freeze.js";
 export {
+  createPilotSubjectVariant,
   compilePilotCampaignPlan,
   createPilotCampaignRun,
   verifyPilotCampaignPlanIntegrity,
   verifyPilotCampaignRunIntegrity,
   verifyPilotSlotIntegrity
 } from "./plan.js";
+export { createPilotWaveCancellation, verifyPilotWaveCancellationIntegrity } from "./cancellation.js";
 export {
   issueGenerationWorkPacket,
   finalizeGenerationHandoff,
@@ -38,6 +40,7 @@ export {
   nextPilotSlotAction
 } from "./orchestrator.js";
 export {
+  cancelPilotUngeneratedWave,
   issuePilotWave,
   submitPilotCheckpoint,
   resumePilotCampaign

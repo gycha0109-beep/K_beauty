@@ -31,11 +31,22 @@ export function issueGenerationWorkPacket({ plan, run, slot, attemptOrdinal, iss
   if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || !verifyPilotSlotIntegrity(slot, run, plan)) return failure("campaign_source_freeze_drift", "source");
   if (![1, 2].includes(attemptOrdinal) || !Number.isFinite(Date.parse(issuedAt)) || new Date(issuedAt).toISOString() !== issuedAt) return failure("generation_packet_invalid", "$", null);
   const fixture = SKIN_CONTROL_FIXTURES[slot.conditionId];
-  const compiled = compileGenerationPrompt({ draftSpec: fixture.spec, providerProfileId: run.providerProfileId });
+  const draftSpec = slot.subjectVariant
+    ? {
+        ...fixture.spec,
+        subject: {
+          ...fixture.spec.subject,
+          adultAgeBand: slot.subjectVariant.adultAgeBand,
+          presentation: slot.subjectVariant.presentation,
+          regionalAppearanceHint: slot.subjectVariant.regionalAppearanceHint
+        }
+      }
+    : fixture.spec;
+  const compiled = compileGenerationPrompt({ draftSpec, providerProfileId: run.providerProfileId });
   if (!compiled.ok) return failure("campaign_source_freeze_drift", `fixtures.${slot.conditionId}`, compiled.errors?.[0]?.code || null);
   if (
     sha256Hex(stableStringify(fixture)) !== plan.sourceFreeze.fixtureObjectDigests[slot.conditionId] ||
-    compiled.canonicalSpec.finalizedSpec.specDigest !== plan.sourceFreeze.finalizedSpecDigests[slot.conditionId] ||
+    (!slot.subjectVariant && compiled.canonicalSpec.finalizedSpec.specDigest !== plan.sourceFreeze.finalizedSpecDigests[slot.conditionId]) ||
     compiled.compiledPrompt.providerProfile.id !== run.providerProfileId ||
     compiled.compiledPrompt.providerProfile.version !== plan.sourceFreeze.providerProfileVersion
   ) return failure("campaign_source_freeze_drift", "sourceFreeze");

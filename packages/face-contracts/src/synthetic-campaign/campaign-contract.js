@@ -15,14 +15,23 @@ import {
   PILOT_CAMPAIGN_RUN_SCHEMA_VERSION,
   PILOT_CHECKPOINT_APPROVAL_SCHEMA_VERSION,
   PILOT_CONDITIONS,
+  PILOT_DIVERSIFIED_BUDGET,
+  PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION,
+  PILOT_DIVERSIFIED_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
+  PILOT_DIVERSIFIED_SLOT_SCHEMA_VERSION,
   PILOT_EVENT_TYPES,
   PILOT_IMMEDIATE_STOP_REASONS,
   PILOT_PAUSE_REASONS,
   PILOT_REASON_CODES,
   PILOT_SLOT_SCHEMA_VERSION,
+  PILOT_SUBJECT_AGE_BANDS,
+  PILOT_SUBJECT_PRESENTATIONS,
+  PILOT_SUBJECT_REGIONAL_APPEARANCE_HINTS,
   PILOT_SOURCE_FREEZE_SCHEMA_VERSION,
   PILOT_TERMINAL_OUTCOMES,
-  PILOT_TRACKS
+  PILOT_TRACKS,
+  PILOT_WAVE_CANCELLATION_REASONS,
+  PILOT_WAVE_CANCELLATION_SCHEMA_VERSION
 } from "./constants.js";
 
 const HEX64 = /^[a-f0-9]{64}$/;
@@ -32,6 +41,7 @@ const SLOT_ID = /^slot_[a-f0-9]{24}$/;
 const ATTEMPT_ID = /^att_[a-f0-9]{24}$/;
 const PACKET_ID = /^pkt_[a-f0-9]{24}$/;
 const HANDOFF_ID = /^hnd_[a-f0-9]{24}$/;
+const WAVE_CANCELLATION_ID = /^wcan_[a-f0-9]{24}$/;
 const SAFE_RELATIVE_PATH = /^(?![A-Za-z]:)(?!\\\\)(?!\/)(?!.*(?:^|[\\/])\.\.(?:[\\/]|$))(?!.*\0).+$/;
 const SENSITIVE_PATTERN = /(bearer\s+[a-z0-9._-]+|api[_ -]?key|session[_ -]?token|cookie\s*=|authorization|sk-[a-z0-9_-]{8,}|https?:\/\/|[\w.+-]+@[\w.-]+\.[a-z]{2,})/i;
 
@@ -122,10 +132,11 @@ function validateSourceFreeze(value, errors) {
 
 export function validatePilotCampaignPlan(value) {
   const errors = [];
-  const keys = ["schemaVersion", "campaignId", "campaignVersion", "comparisonGroupId", "objective", "sourceFreeze", "matrix", "budgets", "retryPolicy", "checkpointPolicy", "stopPolicy", "outputPolicy", "authoredBy", "authoredAt", "planDigest"];
+  const diversified = value?.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION;
+  const keys = ["schemaVersion", "campaignId", "campaignVersion", "comparisonGroupId", "objective", "sourceFreeze", "matrix", ...(diversified ? ["subjectVariants"] : []), "budgets", "retryPolicy", "checkpointPolicy", "stopPolicy", "outputPolicy", "authoredBy", "authoredAt", "planDigest"];
   if (!exactKeys(value, keys)) return result([error("campaign_plan_invalid", "$")]);
   if (
-    value.schemaVersion !== PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION ||
+    ![PILOT_CAMPAIGN_PLAN_SCHEMA_VERSION, PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION].includes(value.schemaVersion) ||
     !SAFE_TOKEN.test(value.campaignId || "") ||
     !SAFE_TOKEN.test(value.campaignVersion || "") ||
     !(value.comparisonGroupId === null || SAFE_TOKEN.test(value.comparisonGroupId || "")) ||
@@ -133,17 +144,37 @@ export function validatePilotCampaignPlan(value) {
     !isIso(value.authoredAt) ||
     !HEX64.test(value.planDigest || "")
   ) errors.push(error("campaign_plan_invalid", "$"));
-  if (!exactScalarObject(value.objective, { questionId: "skin-control-abcd-e2e-v1", purpose: "skin_cue_control", primarySlotCount: 20, interpretationOwner: "t8" })) errors.push(error("campaign_plan_invalid", "objective"));
+  const primarySlotCount = diversified ? 8 : 20;
+  if (!exactScalarObject(value.objective, { questionId: "skin-control-abcd-e2e-v1", purpose: "skin_cue_control", primarySlotCount, interpretationOwner: "t8" })) errors.push(error("campaign_plan_invalid", "objective"));
   validateSourceFreeze(value.sourceFreeze, errors);
   if (!Array.isArray(value.matrix) || value.matrix.length !== 4) errors.push(error("campaign_matrix_invalid", "matrix"));
   else {
     ["A", "B", "C", "D"].forEach((conditionId, index) => {
       const row = value.matrix[index];
       const expected = PILOT_CONDITIONS[conditionId];
-      if (!exactKeys(row, ["conditionId", "fixtureId", "primarySlots", "waveAllocation"]) || row.conditionId !== conditionId || row.fixtureId !== expected.fixtureId || row.primarySlots !== 5 || !exactArray(row.waveAllocation, [1,2,2])) errors.push(error("campaign_matrix_invalid", `matrix.${index}`));
+      const expectedSlots = diversified ? 2 : 5;
+      const expectedAllocation = diversified ? [2] : [1,2,2];
+      if (!exactKeys(row, ["conditionId", "fixtureId", "primarySlots", "waveAllocation"]) || row.conditionId !== conditionId || row.fixtureId !== expected.fixtureId || row.primarySlots !== expectedSlots || !exactArray(row.waveAllocation, expectedAllocation)) errors.push(error("campaign_matrix_invalid", `matrix.${index}`));
     });
   }
-  if (!exactScalarObject(value.budgets, PILOT_BUDGET)) errors.push(error("campaign_budget_invalid", "budgets"));
+  if (diversified) {
+    if (!Array.isArray(value.subjectVariants) || value.subjectVariants.length !== 8) errors.push(error("campaign_subject_matrix_invalid", "subjectVariants"));
+    else {
+      const expectedKeys = [];
+      for (const conditionId of ["A", "B", "C", "D"]) for (const conditionOrdinal of [1, 2]) expectedKeys.push(`${conditionId}:${conditionOrdinal}`);
+      const actualKeys = [];
+      value.subjectVariants.forEach((variant, index) => {
+        if (!exactKeys(variant, ["conditionId", "conditionOrdinal", "adultAgeBand", "presentation", "regionalAppearanceHint", "subjectVariantDigest"])) {
+          errors.push(error("campaign_subject_matrix_invalid", `subjectVariants.${index}`));
+          return;
+        }
+        actualKeys.push(`${variant.conditionId}:${variant.conditionOrdinal}`);
+        if (!["A", "B", "C", "D"].includes(variant.conditionId) || ![1,2].includes(variant.conditionOrdinal) || !PILOT_SUBJECT_AGE_BANDS.includes(variant.adultAgeBand) || !PILOT_SUBJECT_PRESENTATIONS.includes(variant.presentation) || !PILOT_SUBJECT_REGIONAL_APPEARANCE_HINTS.includes(variant.regionalAppearanceHint) || !HEX64.test(variant.subjectVariantDigest || "")) errors.push(error("campaign_subject_matrix_invalid", `subjectVariants.${index}`));
+      });
+      if (!exactArray(actualKeys, expectedKeys)) errors.push(error("campaign_subject_matrix_invalid", "subjectVariants"));
+    }
+  }
+  if (!exactScalarObject(value.budgets, diversified ? PILOT_DIVERSIFIED_BUDGET : PILOT_BUDGET)) errors.push(error("campaign_budget_invalid", "budgets"));
   if (
     !exactKeys(value.retryPolicy, ["generationRetryAllowedReasons", "generationRetryForbiddenReasons", "registeredCandidateReplacement", "observationRecoveryAllowedReasons", "observationRecoveryForbiddenOutcomes"]) ||
     !exactArray(value.retryPolicy?.generationRetryAllowedReasons, GENERATION_RETRY_ALLOWED_REASONS) ||
@@ -152,7 +183,9 @@ export function validatePilotCampaignPlan(value) {
     !exactArray(value.retryPolicy?.observationRecoveryAllowedReasons, OBSERVATION_RECOVERY_ALLOWED_REASONS) ||
     !exactArray(value.retryPolicy?.observationRecoveryForbiddenOutcomes, OBSERVATION_RECOVERY_FORBIDDEN_OUTCOMES)
   ) errors.push(error("campaign_retry_policy_invalid", "retryPolicy"));
-  if (!exactKeys(value.checkpointPolicy, ["waveCount", "wavePrimarySlotCounts", "manualApprovalRequired", "readinessBoundary"]) || value.checkpointPolicy.waveCount !== 3 || !exactArray(value.checkpointPolicy.wavePrimarySlotCounts, [4,8,8]) || value.checkpointPolicy.manualApprovalRequired !== true || value.checkpointPolicy.readinessBoundary !== "authoritative_t4_or_technical_terminal") errors.push(error("campaign_checkpoint_policy_invalid", "checkpointPolicy"));
+  const expectedWaveCount = diversified ? 1 : 3;
+  const expectedWaveSlots = diversified ? [8] : [4,8,8];
+  if (!exactKeys(value.checkpointPolicy, ["waveCount", "wavePrimarySlotCounts", "manualApprovalRequired", "readinessBoundary"]) || value.checkpointPolicy.waveCount !== expectedWaveCount || !exactArray(value.checkpointPolicy.wavePrimarySlotCounts, expectedWaveSlots) || value.checkpointPolicy.manualApprovalRequired !== true || value.checkpointPolicy.readinessBoundary !== "authoritative_t4_or_technical_terminal") errors.push(error("campaign_checkpoint_policy_invalid", "checkpointPolicy"));
   if (!exactKeys(value.stopPolicy, ["immediateStopReasons", "pauseReasons", "lowYieldAutomaticStop"]) || !exactArray(value.stopPolicy?.immediateStopReasons, PILOT_IMMEDIATE_STOP_REASONS) || !exactArray(value.stopPolicy?.pauseReasons, PILOT_PAUSE_REASONS) || value.stopPolicy?.lowYieldAutomaticStop !== false) errors.push(error("campaign_stop_policy_invalid", "stopPolicy"));
   if (!exactScalarObject(value.outputPolicy, { retainAllRegisteredCandidates: true, retainAllTerminalOutcomes: true, reportAuthority: "t8", splitAuthority: "t9" })) errors.push(error("campaign_output_policy_invalid", "outputPolicy"));
   return result(errors);
@@ -167,8 +200,13 @@ export function validatePilotCampaignRun(value) {
 
 export function validatePilotSlot(value) {
   const errors = [];
-  if (!exactKeys(value, ["schemaVersion", "campaignRunId", "slotId", "conditionId", "conditionOrdinal", "waveOrdinal", "fixtureDigest", "slotIdentityDigest"])) return result([error("campaign_slot_invalid", "$")]);
-  if (value.schemaVersion !== PILOT_SLOT_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || !SLOT_ID.test(value.slotId || "") || !["A","B","C","D"].includes(value.conditionId) || !Number.isInteger(value.conditionOrdinal) || value.conditionOrdinal < 1 || value.conditionOrdinal > 5 || ![1,2,3].includes(value.waveOrdinal) || !HEX64.test(value.fixtureDigest || "") || !HEX64.test(value.slotIdentityDigest || "")) errors.push(error("campaign_slot_invalid", "$"));
+  const diversified = value?.schemaVersion === PILOT_DIVERSIFIED_SLOT_SCHEMA_VERSION;
+  const keys = ["schemaVersion", "campaignRunId", "slotId", "conditionId", "conditionOrdinal", "waveOrdinal", "fixtureDigest", ...(diversified ? ["subjectVariant", "subjectVariantDigest"] : []), "slotIdentityDigest"];
+  if (!exactKeys(value, keys)) return result([error("campaign_slot_invalid", "$")]);
+  if (![PILOT_SLOT_SCHEMA_VERSION, PILOT_DIVERSIFIED_SLOT_SCHEMA_VERSION].includes(value.schemaVersion) || !RUN_ID.test(value.campaignRunId || "") || !SLOT_ID.test(value.slotId || "") || !["A","B","C","D"].includes(value.conditionId) || !Number.isInteger(value.conditionOrdinal) || value.conditionOrdinal < 1 || value.conditionOrdinal > (diversified ? 2 : 5) || !Number.isInteger(value.waveOrdinal) || value.waveOrdinal < 1 || value.waveOrdinal > (diversified ? 1 : 3) || !HEX64.test(value.fixtureDigest || "") || !HEX64.test(value.slotIdentityDigest || "")) errors.push(error("campaign_slot_invalid", "$"));
+  if (diversified) {
+    if (!exactKeys(value.subjectVariant, ["adultAgeBand", "presentation", "regionalAppearanceHint"]) || !PILOT_SUBJECT_AGE_BANDS.includes(value.subjectVariant?.adultAgeBand) || !PILOT_SUBJECT_PRESENTATIONS.includes(value.subjectVariant?.presentation) || !PILOT_SUBJECT_REGIONAL_APPEARANCE_HINTS.includes(value.subjectVariant?.regionalAppearanceHint) || !HEX64.test(value.subjectVariantDigest || "")) errors.push(error("campaign_slot_invalid", "subjectVariant"));
+  }
   return result(errors);
 }
 
@@ -215,10 +253,22 @@ export function validatePilotProjection(value) {
   const errors = [];
   const keys = ["schemaVersion","campaignRunId","planDigest","latestEventDigest","runStatus","waveStatus","budget","denominators","terminalOutcomeCounts","reasonCodeCounts","activeG4Refs","slotProjections","projectionDigest"];
   if (!exactKeys(value, keys)) return result([error("campaign_projection_invalid", "$")]);
-  if (value.schemaVersion !== PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION || !RUN_ID.test(value.campaignRunId || "") || !HEX64.test(value.planDigest || "") || !HEX64.test(value.latestEventDigest || "") || !["active","paused","stopped","closed"].includes(value.runStatus) || !HEX64.test(value.projectionDigest || "")) errors.push(error("campaign_projection_invalid", "$"));
-  if (!Array.isArray(value.waveStatus) || value.waveStatus.length !== 3 || value.waveStatus.some((row, index) => !exactKeys(row, ["waveOrdinal","status"]) || row.waveOrdinal !== index + 1 || !["not_issued","active","awaiting_checkpoint","approved","complete","stopped"].includes(row.status))) errors.push(error("campaign_projection_invalid", "waveStatus"));
+  const diversified = value.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PROJECTION_SCHEMA_VERSION;
+  if (![PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION, PILOT_DIVERSIFIED_CAMPAIGN_PROJECTION_SCHEMA_VERSION].includes(value.schemaVersion) || !RUN_ID.test(value.campaignRunId || "") || !HEX64.test(value.planDigest || "") || !HEX64.test(value.latestEventDigest || "") || !["active","paused","stopped","closed"].includes(value.runStatus) || !HEX64.test(value.projectionDigest || "")) errors.push(error("campaign_projection_invalid", "$"));
+  const expectedWaveCount = diversified ? 1 : 3;
+  if (!Array.isArray(value.waveStatus) || value.waveStatus.length !== expectedWaveCount || value.waveStatus.some((row, index) => !exactKeys(row, ["waveOrdinal","status"]) || row.waveOrdinal !== index + 1 || !["not_issued","active","awaiting_checkpoint","approved","complete","stopped","cancelled"].includes(row.status))) errors.push(error("campaign_projection_invalid", "waveStatus"));
   if (!exactKeys(value.budget, ["generationAttemptsUsed","generationRetryReserveUsed","observationRunsUsed","observationRecoveryRunsUsed"]) || Object.values(value.budget).some((item) => !Number.isInteger(item) || item < 0)) errors.push(error("campaign_projection_invalid", "budget"));
-  if (!Array.isArray(value.slotProjections) || value.slotProjections.length !== 20) errors.push(error("campaign_projection_invalid", "slotProjections"));
+  if (!Array.isArray(value.slotProjections) || value.slotProjections.length !== (diversified ? 8 : 20)) errors.push(error("campaign_projection_invalid", "slotProjections"));
+  return result(errors);
+}
+
+export function validatePilotWaveCancellation(value) {
+  const errors = [];
+  if (!exactKeys(value, ["schemaVersion", "cancellationId", "campaignRunId", "waveOrdinal", "runProjectionDigest", "slotBindings", "reason", "cancelledBy", "cancelledAt", "cancellationDigest"])) return result([error("campaign_wave_cancellation_invalid", "$")]);
+  if (value.schemaVersion !== PILOT_WAVE_CANCELLATION_SCHEMA_VERSION || !WAVE_CANCELLATION_ID.test(value.cancellationId || "") || !RUN_ID.test(value.campaignRunId || "") || !Number.isInteger(value.waveOrdinal) || value.waveOrdinal < 1 || value.waveOrdinal > 3 || !HEX64.test(value.runProjectionDigest || "") || !PILOT_WAVE_CANCELLATION_REASONS.includes(value.reason) || !SAFE_TOKEN.test(value.cancelledBy || "") || !isIso(value.cancelledAt) || !HEX64.test(value.cancellationDigest || "")) errors.push(error("campaign_wave_cancellation_invalid", "$"));
+  if (!Array.isArray(value.slotBindings) || value.slotBindings.length < 1 || value.slotBindings.some((binding) => !exactKeys(binding, ["slotId", "attemptId", "packetId", "packetDigest"]) || !SLOT_ID.test(binding.slotId || "") || !ATTEMPT_ID.test(binding.attemptId || "") || !PACKET_ID.test(binding.packetId || "") || !HEX64.test(binding.packetDigest || ""))) errors.push(error("campaign_wave_cancellation_invalid", "slotBindings"));
+  const sorted = [...(value.slotBindings || [])].sort((a, b) => a.slotId.localeCompare(b.slotId));
+  if (!Array.isArray(value.slotBindings) || value.slotBindings.some((binding, index) => binding.slotId !== sorted[index]?.slotId) || new Set(value.slotBindings?.map((binding) => binding.slotId)).size !== value.slotBindings?.length) errors.push(error("campaign_wave_cancellation_invalid", "slotBindings"));
   return result(errors);
 }
 
@@ -229,8 +279,8 @@ export function validatePilotCloseout(value) {
   for (const field of ["slotEventHeadDigests","checkpointDigests","activeG4Refs","nonGoldDecisionRefs","unresolvedHoldRefs","splitCouplingKeyDigests"]) {
     if (!uniqueArray(value[field]) || value[field].some((item) => !HEX64.test(item || "")) || !exactArray(value[field], [...value[field]].sort())) errors.push(error("campaign_closeout_invalid", field));
   }
-  if (value.slotEventHeadDigests?.length !== 20) errors.push(error("campaign_closeout_invalid", "slotEventHeadDigests"));
+  if (![8,20].includes(value.slotEventHeadDigests?.length)) errors.push(error("campaign_closeout_invalid", "slotEventHeadDigests"));
   return result(errors);
 }
 
-export const PILOT_ID_PATTERNS = Object.freeze({ HEX64, RUN_ID, SLOT_ID, ATTEMPT_ID, PACKET_ID, HANDOFF_ID });
+export const PILOT_ID_PATTERNS = Object.freeze({ HEX64, RUN_ID, SLOT_ID, ATTEMPT_ID, PACKET_ID, HANDOFF_ID, WAVE_CANCELLATION_ID });

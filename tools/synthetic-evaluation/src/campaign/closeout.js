@@ -26,12 +26,12 @@ export function createPilotCampaignCloseout({
 }) {
   if (!TOKEN.test(closedBy || "") || !Number.isFinite(Date.parse(closedAt)) || new Date(closedAt).toISOString() !== closedAt) return failure("campaign_closeout_invalid", "$", null);
   if (projection.campaignRunId !== run.campaignRunId || projection.planDigest !== plan.planDigest) return failure("campaign_closeout_invalid", "projection", "source_mismatch");
-  if (projection.denominators.terminalSlots !== 20) return failure("campaign_closeout_not_ready", "projection.denominators.terminalSlots", projection.denominators.terminalSlots);
+  if (projection.denominators.terminalSlots !== plan.objective.primarySlotCount) return failure("campaign_closeout_not_ready", "projection.denominators.terminalSlots", projection.denominators.terminalSlots);
   const slotHeads = Object.entries(ledger.heads)
     .filter(([key]) => key !== "__run__")
     .map(([, digest]) => digest)
     .sort();
-  if (slotHeads.length !== 20) return failure("campaign_closeout_invalid", "slotEventHeadDigests", "head_count");
+  if (slotHeads.length !== plan.objective.primarySlotCount) return failure("campaign_closeout_invalid", "slotEventHeadDigests", "head_count");
   const decisionRefs = [];
   const holdRefs = [];
   const nonGoldRefs = [];

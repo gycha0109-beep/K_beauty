@@ -5,6 +5,7 @@ import { issueGenerationWorkPacket, finalizeGenerationHandoff, verifyGenerationH
 import { derivePilotCampaignProjection } from "./projection.js";
 import { authorizeWaveIssue, createPilotCheckpointApproval, verifyPilotCheckpointApprovalIntegrity } from "./checkpoint.js";
 import { createPilotCampaignCloseout } from "./closeout.js";
+import { createPilotWaveCancellation, verifyPilotWaveCancellationIntegrity } from "./cancellation.js";
 import {
   campaignPacketRelativePath,
   nativePath,
@@ -16,6 +17,7 @@ import {
   saveGenerationHandoff,
   saveGenerationPacket,
   saveProjection,
+  saveWaveCancellation,
   withCampaignWriterClaim,
   writeImmutableJson
 } from "./storage.js";
@@ -154,6 +156,72 @@ export async function issuePilotWave({ dataRoot, runId, waveOrdinal, actorId = "
     if (!after.ok) return after;
     await saveProjection(dataRoot, after.projection);
     return Object.freeze({ ok: true, waveOrdinal, packetsIssued: slots.length, projection: after.projection });
+  });
+}
+
+export async function cancelPilotUngeneratedWave({ dataRoot, runId, waveOrdinal, reason, cancelledBy, cancelledAt = new Date().toISOString(), actorId = cancelledBy }) {
+  return withCampaignWriterClaim(dataRoot, runId, actorId, `cancel-wave-${waveOrdinal}`, async () => {
+    const bundle = await readCampaignBundle(dataRoot, runId);
+    const before = currentProjection(bundle);
+    if (!before.ok) return before;
+    const wave = before.projection.waveStatus.find((item) => item.waveOrdinal === waveOrdinal);
+    if (wave?.status === "cancelled") {
+      const existing = bundle.cancellations.find((item) => item.waveOrdinal === waveOrdinal && item.reason === reason);
+      return existing && verifyPilotWaveCancellationIntegrity(existing)
+        ? Object.freeze({ ok: true, state: "existing", cancellation: existing, projection: before.projection, writesPerformed: 0 })
+        : failure("campaign_wave_cancellation_invalid", "waveOrdinal", waveOrdinal);
+    }
+    if (before.projection.runStatus !== "active" || wave?.status !== "active") return failure("campaign_wave_cancellation_not_allowed", "waveOrdinal", wave?.status || null);
+    const slots = bundle.slots.filter((slot) => slot.waveOrdinal === waveOrdinal);
+    if (slots.length < 1) return failure("campaign_wave_invalid", "waveOrdinal", waveOrdinal);
+    const packets = [];
+    for (const slot of slots) {
+      const projected = before.projection.slotProjections.find((item) => item.slotId === slot.slotId);
+      const slotPackets = bundle.packets.filter((packet) => packet.slotId === slot.slotId);
+      const hasHandoff = bundle.handoffs.some((handoff) => handoff.slotId === slot.slotId);
+      const refs = projected?.refs || {};
+      if (!projected || projected.state !== "awaiting_generation_handoff" || projected.generationAttempts !== 1 || projected.generationRetries !== 0 || hasHandoff || refs.candidateId || refs.candidateDigest || refs.observationRunId || refs.observationRunDigest || refs.observationObjectDigest || slotPackets.length !== 1 || slotPackets[0].attemptOrdinal !== 1) return failure("campaign_wave_cancellation_not_allowed", `slots.${slot.slotId}`, projected?.state || null);
+      packets.push(slotPackets[0]);
+    }
+    const created = createPilotWaveCancellation({ campaignRunId: runId, waveOrdinal, runProjectionDigest: before.projection.projectionDigest, packets, reason, cancelledBy, cancelledAt });
+    if (!created.ok) return created;
+
+    let events = [...bundle.events];
+    const newEvents = [];
+    const appendPlanned = (input) => {
+      const appended = appendPilotCampaignEvent(events, input, { campaignRunId: runId, slotIds: bundle.slots.map((slot) => slot.slotId) });
+      if (!appended.ok) return appended;
+      events = [...appended.events];
+      newEvents.push(appended.event);
+      const projected = currentProjection(bundle, events);
+      return projected.ok ? Object.freeze({ ok: true, projection: projected.projection }) : projected;
+    };
+    let planned = appendPlanned({
+      campaignRunId: runId,
+      slotId: null,
+      eventType: "wave_cancelled",
+      sourceRefs: [{ track: "T7", artifactType: `wave-cancellation-${waveOrdinal}`, artifactDigest: created.cancellation.cancellationDigest }],
+      reasonCodes: [reason, "cancelled_ungenerated_wave"],
+      recordedAt: cancelledAt
+    });
+    if (!planned.ok) return planned;
+    for (const slot of slots) {
+      planned = appendPlanned({
+        campaignRunId: runId,
+        slotId: slot.slotId,
+        eventType: "slot_terminal",
+        sourceRefs: [{ track: "T7", artifactType: `wave-cancellation-${waveOrdinal}`, artifactDigest: created.cancellation.cancellationDigest }],
+        reasonCodes: [reason, "cancelled_ungenerated_wave", "slot_terminal_recorded"],
+        recordedAt: cancelledAt
+      });
+      if (!planned.ok) return planned;
+    }
+    const finalProjection = currentProjection(bundle, events);
+    if (!finalProjection.ok) return finalProjection;
+    await saveWaveCancellation(dataRoot, created.cancellation);
+    for (const event of newEvents) await saveCampaignEvent(dataRoot, event);
+    await saveProjection(dataRoot, finalProjection.projection);
+    return Object.freeze({ ok: true, state: "cancelled", cancellation: created.cancellation, projection: finalProjection.projection, writesPerformed: newEvents.length + 2 });
   });
 }
 
@@ -368,7 +436,7 @@ export async function closePilotCampaign({ dataRoot, runId, closedBy, actorId = 
     const bundle = await readCampaignBundle(dataRoot, runId);
     const before = currentProjection(bundle);
     if (!before.ok) return before;
-    if (before.projection.denominators.terminalSlots !== 20) return failure("campaign_closeout_not_ready", "terminalSlots", before.projection.denominators.terminalSlots);
+    if (before.projection.denominators.terminalSlots !== bundle.plan.objective.primarySlotCount) return failure("campaign_closeout_not_ready", "terminalSlots", before.projection.denominators.terminalSlots);
     const appended = await appendEventValidated({
       dataRoot, bundle, events: [...bundle.events],
       input: { campaignRunId: runId, slotId: null, eventType: "run_closed", sourceRefs: [{ track: "T7", artifactType: "final-projection", artifactDigest: before.projection.projectionDigest }], reasonCodes: [before.projection.runStatus === "stopped" ? "campaign_closed_stopped" : "campaign_closed_complete"], recordedAt: new Date().toISOString() }

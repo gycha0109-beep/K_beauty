@@ -1,5 +1,7 @@
 import {
   PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
+  PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION,
+  PILOT_DIVERSIFIED_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
   PILOT_TERMINAL_OUTCOMES,
   validatePilotProjection
 } from "@bejewely/face-contracts";
@@ -12,7 +14,8 @@ const TECHNICAL_TERMINALS = new Set([
   "candidate_import_failed",
   "cancelled_budget_exhausted",
   "cancelled_campaign_stop",
-  "cancelled_operator"
+  "cancelled_operator",
+  "cancelled_ungenerated_wave"
 ]);
 const OBSERVATION_TECHNICAL_REASONS = new Set([
   "provider_transport_failure",
@@ -162,7 +165,8 @@ export function projectPilotSlot(slot, orderedEvents) {
           (["awaiting_observation_authorization", "awaiting_observation"].includes(state) && observationRuns > 0 && !observationObjectDigest && outcome === "observation_failed") ||
           (["awaiting_blind_review", "awaiting_consensus"].includes(state) && outcome === "judgment_incomplete") ||
           (state === "promotion_decision_registered" && ["promoted_g4", "retained_g3_negative_control", "promotion_held", "promotion_rejected"].includes(outcome)) ||
-          (["planned", "generation_retry_reserved", "generation_handoff_failed"].includes(state) && ["cancelled_budget_exhausted", "cancelled_campaign_stop", "cancelled_operator"].includes(outcome));
+          (["planned", "generation_retry_reserved", "generation_handoff_failed"].includes(state) && ["cancelled_budget_exhausted", "cancelled_campaign_stop", "cancelled_operator"].includes(outcome)) ||
+          (state === "awaiting_generation_handoff" && generationAttempts === 1 && generationRetries === 0 && outcome === "cancelled_ungenerated_wave");
         if (!allowed) return failure("campaign_event_chain_invalid", `slots.${slot.slotId}`, `terminal_transition:${state}:${outcome}`);
         terminalOutcome = outcome;
         state = "terminal";
@@ -180,6 +184,7 @@ export function projectPilotSlot(slot, orderedEvents) {
       conditionId: slot.conditionId,
       conditionOrdinal: slot.conditionOrdinal,
       waveOrdinal: slot.waveOrdinal,
+      ...(slot.subjectVariant ? { subjectVariant: slot.subjectVariant, subjectVariantDigest: slot.subjectVariantDigest } : {}),
       state,
       terminalOutcome,
       checkpointReady: observationObjectDigest !== null || (terminalOutcome !== null && TECHNICAL_TERMINALS.has(terminalOutcome)),
@@ -194,18 +199,23 @@ export function projectPilotSlot(slot, orderedEvents) {
   });
 }
 
-function runProjection(events, slotProjections) {
+function runProjection(events, slotProjections, waveCount) {
   let runStatus = "active";
   const issuedWaves = new Set();
   const approvedWaves = new Set();
   const stoppedWaves = new Set();
+  const cancelledWaves = new Set();
   for (const event of events) {
     if (event.eventType === "run_started") continue;
     if (event.eventType === "wave_issued") {
       const wave = Number(event.sourceRefs.find((ref) => ref.artifactType.startsWith("wave-"))?.artifactType.slice(5));
-      if (![1,2,3].includes(wave) || issuedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "wave_issue_invalid");
+      if (!Number.isInteger(wave) || wave < 1 || wave > waveCount || issuedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "wave_issue_invalid");
       if (wave > 1 && !approvedWaves.has(wave - 1)) return failure("campaign_event_chain_invalid", "run", "wave_without_checkpoint");
       issuedWaves.add(wave);
+    } else if (event.eventType === "wave_cancelled") {
+      const wave = Number(event.sourceRefs.find((ref) => ref.artifactType.startsWith("wave-cancellation-"))?.artifactType.slice(18));
+      if (!Number.isInteger(wave) || wave < 1 || wave > waveCount || !issuedWaves.has(wave) || approvedWaves.has(wave) || stoppedWaves.has(wave) || cancelledWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "wave_cancellation_invalid");
+      cancelledWaves.add(wave);
     } else if (event.eventType === "checkpoint_approved") {
       const wave = Number(event.sourceRefs.find((ref) => ref.artifactType.startsWith("checkpoint-wave-"))?.artifactType.slice(16));
       if (![1,2].includes(wave) || !issuedWaves.has(wave) || approvedWaves.has(wave)) return failure("campaign_event_chain_invalid", "run", "checkpoint_invalid");
@@ -224,10 +234,11 @@ function runProjection(events, slotProjections) {
       runStatus = "closed";
     }
   }
-  const waveStatus = [1,2,3].map((waveOrdinal) => {
+  const waveStatus = Array.from({ length: waveCount }, (_, index) => index + 1).map((waveOrdinal) => {
     const waveSlots = slotProjections.filter((slot) => slot.waveOrdinal === waveOrdinal);
     let status = "not_issued";
-    if (stoppedWaves.has(waveOrdinal)) status = "stopped";
+    if (cancelledWaves.has(waveOrdinal)) status = "cancelled";
+    else if (stoppedWaves.has(waveOrdinal)) status = "stopped";
     else if (approvedWaves.has(waveOrdinal)) status = "approved";
     else if (issuedWaves.has(waveOrdinal)) {
       if (waveSlots.every((slot) => slot.terminalOutcome !== null)) status = "complete";
@@ -240,7 +251,7 @@ function runProjection(events, slotProjections) {
 }
 
 export function derivePilotCampaignProjection({ plan, run, slots, events }) {
-  if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || !Array.isArray(slots) || slots.length !== 20 || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) return failure("campaign_projection_invalid", "source");
+  if (!verifyPilotCampaignPlanIntegrity(plan) || !verifyPilotCampaignRunIntegrity(run, plan) || !Array.isArray(slots) || slots.length !== plan.objective.primarySlotCount || !slots.every((slot) => verifyPilotSlotIntegrity(slot, run, plan))) return failure("campaign_projection_invalid", "source");
   const ledger = validateCampaignEventLedger(events, { campaignRunId: run.campaignRunId, slotIds: slots.map((slot) => slot.slotId) });
   if (!ledger.ok) return ledger;
   const runEvents = ledger.orderedByChain.__run__ || [];
@@ -251,7 +262,7 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
     if (!projected.ok) return projected;
     slotProjections.push(projected.slot);
   }
-  const runProjected = runProjection(runEvents, slotProjections);
+  const runProjected = runProjection(runEvents, slotProjections, plan.checkpointPolicy.waveCount);
   if (!runProjected.ok) return runProjected;
 
   const terminalOutcomeCounts = Object.fromEntries(PILOT_TERMINAL_OUTCOMES.map((outcome) => [outcome, 0]));
@@ -276,7 +287,7 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
   const latestEventDigest = sha256Hex(stableStringify(Object.values(ledger.heads).sort()));
   const activeG4Refs = slotProjections.map((slot) => slot.activeG4).filter(Boolean).sort((a,b) => a.slotId.localeCompare(b.slotId));
   const semantic = {
-    schemaVersion: PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
+    schemaVersion: plan.schemaVersion === PILOT_DIVERSIFIED_CAMPAIGN_PLAN_SCHEMA_VERSION ? PILOT_DIVERSIFIED_CAMPAIGN_PROJECTION_SCHEMA_VERSION : PILOT_CAMPAIGN_PROJECTION_SCHEMA_VERSION,
     campaignRunId: run.campaignRunId,
     planDigest: plan.planDigest,
     latestEventDigest,
@@ -284,7 +295,7 @@ export function derivePilotCampaignProjection({ plan, run, slots, events }) {
     waveStatus: runProjected.waveStatus,
     budget,
     denominators: {
-      plannedPrimarySlots: 20,
+      plannedPrimarySlots: plan.objective.primarySlotCount,
       issuedPrimarySlots: slotProjections.filter((slot) => slot.generationAttempts > 0).length,
       generationHandoffs: events.filter((event) => event.eventType === "generation_handoff_registered").length,
       registeredCandidates: slotProjections.filter((slot) => slot.refs.candidateDigest).length,

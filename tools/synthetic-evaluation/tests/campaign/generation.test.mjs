@@ -6,7 +6,8 @@ import {
   verifyGenerationHandoffIntegrity,
   verifyGenerationWorkPacketIntegrity
 } from "../../src/campaign/generation.js";
-import { makePlan, makeRun } from "./helpers.mjs";
+import { clone } from "./helpers.mjs";
+import { DIVERSIFIED_SUBJECT_VARIANTS, makePlan, makeRun } from "./helpers.mjs";
 
 test("generation packet is deterministic across issue timestamps", () => {
   const plan = makePlan();
@@ -29,6 +30,41 @@ test("provider profile is frozen for every packet in a run", () => {
     assert.equal(packet.ok, true);
     assert.equal(packet.packet.providerProfileId, "gpt-image-manual-v1");
   }
+});
+
+test("subject variants bind finalized specs, prompts, packets, and distinct digests", () => {
+  const plan = makePlan({ providerProfileId: "gpt-image-manual-v1", subjectVariants: DIVERSIFIED_SUBJECT_VARIANTS });
+  const { run, slots } = makeRun(plan);
+  const results = slots.map((slot) => issueGenerationWorkPacket({ plan, run, slot, attemptOrdinal: 1, issuedAt: "2026-08-02T11:00:00.000Z" }));
+  assert.equal(results.every((result) => result.ok), true);
+  for (let index = 0; index < results.length; index += 1) {
+    const result = results[index];
+    const variant = DIVERSIFIED_SUBJECT_VARIANTS[index];
+    assert.deepEqual(result.finalizedSpec.subject, {
+      syntheticPersonOnly: true,
+      adultAgeBand: variant.adultAgeBand,
+      presentation: variant.presentation,
+      regionalAppearanceHint: variant.regionalAppearanceHint,
+      personCount: 1
+    });
+    assert.equal(result.packet.finalizedSpecDigest, result.finalizedSpec.specDigest);
+    assert.equal(result.packet.compiledPromptDigest, result.compiledPrompt.promptDigest);
+    assert.match(result.compiledPrompt.content.positivePrompt, new RegExp(`in their ${variant.adultAgeBand}`));
+    assert.match(result.compiledPrompt.content.positivePrompt, new RegExp(`with ${variant.presentation} presentation`));
+    if (variant.regionalAppearanceHint === null) assert.doesNotMatch(result.compiledPrompt.content.positivePrompt, /Korean appearance hint/);
+    else assert.match(result.compiledPrompt.content.positivePrompt, /Korean appearance hint/);
+  }
+  assert.equal(new Set(results.map((result) => result.finalizedSpec.specDigest)).size, 8);
+  assert.equal(new Set(results.map((result) => result.compiledPrompt.promptDigest)).size, 8);
+});
+
+test("issued packet mutation remains invalid", () => {
+  const plan = makePlan({ subjectVariants: DIVERSIFIED_SUBJECT_VARIANTS });
+  const { run, slots } = makeRun(plan);
+  const packet = issueGenerationWorkPacket({ plan, run, slot: slots[0], attemptOrdinal: 1 }).packet;
+  const mutated = clone(packet);
+  mutated.compiledPromptDigest = "f".repeat(64);
+  assert.equal(verifyGenerationWorkPacketIntegrity(mutated), false);
 });
 
 test("manual handoff stores no account, session, response, or absolute path fields", () => {
