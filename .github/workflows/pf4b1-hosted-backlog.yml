@@ -1,0 +1,264 @@
+name: PF-4B1 Hosted Pre-PF2 Backlog
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Choose dry-run first; execute re-runs the same dry-run gate before push"
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - execute
+      confirm:
+        description: "For execute only, enter APPLY_PF4B1_8_ONLY"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pf4b1-hosted-pre-pf2-backlog
+  cancel-in-progress: false
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+  TARGET_PROJECT_REF: bygrczggxfuisupcevaz
+  EXECUTION_SHA: 0a0c11b0ee8c64766b730f70a859f2348b79cb5e
+  AUTHORITY_MAIN_ANCHOR: 4bd6c8b82d409c319759e88aa79158999828a4f8
+  PF2_PATH: supabase/migrations/20260809115932_product_fact_storage_v1.sql
+  PF2_BLOB: 676afbc56bf90443a1198f93427382f067d19407
+
+jobs:
+  guarded-backlog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - name: Validate dispatch authorization and credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ inputs.mode }}" == "execute" && "${{ inputs.confirm }}" != "APPLY_PF4B1_8_ONLY" ]]; then
+            echo "execute mode requires confirm=APPLY_PF4B1_8_ONLY" >&2
+            exit 1
+          fi
+          if [[ -z "${SUPABASE_ACCESS_TOKEN}" ]]; then
+            echo "Missing GitHub Actions secret: SUPABASE_ACCESS_TOKEN" >&2
+            exit 1
+          fi
+          if [[ -z "${SUPABASE_DB_PASSWORD}" ]]; then
+            echo "Missing GitHub Actions secret: SUPABASE_DB_PASSWORD" >&2
+            exit 1
+          fi
+
+      - name: Checkout exact pre-PF2 deployment tree
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXECUTION_SHA }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify exact execution tree and migration identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXECUTION_SHA}"
+          test -z "$(git status --porcelain)"
+
+          count="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d ' ')"
+          test "${count}" = "35"
+          test ! -e "${PF2_PATH}"
+
+          last="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | LC_ALL=C sort | tail -n 1)"
+          test "${last}" = "20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql"
+
+          while read -r file expected_blob; do
+            actual_blob="$(git rev-parse "HEAD:supabase/migrations/${file}")"
+            if [[ "${actual_blob}" != "${expected_blob}" ]]; then
+              echo "Blob mismatch: ${file}: ${actual_blob} != ${expected_blob}" >&2
+              exit 1
+            fi
+          done <<'EOF'
+          20260730152900_admin_access_foundation.sql 3568c5dd9365ed9cdf07c2adb5a14a61f4d97722
+          20260804233000_admin_product_candidate_reviews.sql d0603dbae85de792777d271d70315bc3f331220b
+          20260804233100_admin_product_candidate_reviews_hardening.sql bd6aaac68719552df0f904c6d3301b91f6745550
+          20260804233200_admin_product_candidate_reviews_security_hardening.sql cc36486dc9a95dd035af30ac9688e5c31c62bd51
+          20260804233300_admin_product_review_import_confirm.sql 50ec01882cf66fdc98f9463b249719f9073f8eb0
+          20260805220000_admin_product_review_cleanser_metadata_v2.sql 4cc2e7f2ca3c6dba726cbf344b46214c1bea53b4
+          20260805220005_admin_product_review_cleanser_metadata_v2_validate.sql 18a92b3ca77fa8d2dd41b738a835e656daa4be68
+          20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql bb33c36788252453ec4fed8a4c2b108acc89be96
+          EOF
+
+      - name: Verify current main has no migration authority drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "${AUTHORITY_MAIN_ANCHOR}" refs/heads/main
+          current_main="$(git rev-parse FETCH_HEAD)"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf4b1-main
+          current_main="$(git rev-parse refs/remotes/origin/pf4b1-main)"
+
+          git merge-base --is-ancestor "${AUTHORITY_MAIN_ANCHOR}" "${current_main}"
+
+          migration_delta="$(git diff --name-only "${AUTHORITY_MAIN_ANCHOR}" "${current_main}" -- supabase/migrations)"
+          if [[ -n "${migration_delta}" ]]; then
+            echo "Migration authority drift since PF-4A1 anchor:" >&2
+            printf '%s\n' "${migration_delta}" >&2
+            exit 1
+          fi
+
+          current_pf2_blob="$(git rev-parse "${current_main}:${PF2_PATH}")"
+          test "${current_pf2_blob}" = "${PF2_BLOB}"
+          echo "current_main=${current_main}"
+
+      - name: Verify Supabase CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version)"
+          echo "Supabase CLI ${actual}"
+
+      - name: Link exact Hosted project
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" link \
+            --project-ref "${TARGET_PROJECT_REF}" \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >/tmp/pf4b1-link.log 2>&1 || {
+              sed -E 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' /tmp/pf4b1-link.log >&2
+              exit 1
+            }
+          rm -f /tmp/pf4b1-link.log
+
+      - name: Dry-run and enforce exact eight-migration scope
+        id: dryrun
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(mktemp)"
+          clean="$(mktemp)"
+          actual="$(mktemp)"
+          expected="$(mktemp)"
+
+          cleanup() { rm -f "${raw}" "${clean}" "${actual}" "${expected}"; }
+          trap cleanup EXIT
+
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
+            --linked \
+            --dry-run \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >"${raw}" 2>&1; then
+            sed -E \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              "${raw}" >&2
+            exit 1
+          fi
+
+          sed -E \
+            -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+            -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+            "${raw}" >"${clean}"
+          cat "${clean}"
+
+          grep -oE 'Would push migration [^[:space:]]+\.sql' "${clean}" \
+            | sed 's/^Would push migration //' \
+            >"${actual}" || true
+
+          cat >"${expected}" <<'EOF'
+          20260730152900_admin_access_foundation.sql
+          20260804233000_admin_product_candidate_reviews.sql
+          20260804233100_admin_product_candidate_reviews_hardening.sql
+          20260804233200_admin_product_candidate_reviews_security_hardening.sql
+          20260804233300_admin_product_review_import_confirm.sql
+          20260805220000_admin_product_review_cleanser_metadata_v2.sql
+          20260805220005_admin_product_review_cleanser_metadata_v2_validate.sql
+          20260805220010_admin_product_review_cleanser_metadata_v2_confirm.sql
+          EOF
+
+          if ! diff -u "${expected}" "${actual}"; then
+            echo "Dry-run scope is not the exact authorized eight migrations." >&2
+            exit 1
+          fi
+
+          if grep -q '20260809115932_product_fact_storage_v1.sql' "${clean}"; then
+            echo "PF-2 appeared in dry-run output; refusing execution." >&2
+            exit 1
+          fi
+
+          test "$(wc -l <"${actual}" | tr -d ' ')" = "8"
+          echo "Exact PF-4B1 dry-run scope verified: 8 migrations, PF-2 absent."
+
+      - name: Recheck authority immediately before Hosted write
+        if: ${{ inputs.mode == 'execute' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf4b1-main-final
+          current_main="$(git rev-parse refs/remotes/origin/pf4b1-main-final)"
+          git merge-base --is-ancestor "${AUTHORITY_MAIN_ANCHOR}" "${current_main}"
+          test -z "$(git diff --name-only "${AUTHORITY_MAIN_ANCHOR}" "${current_main}" -- supabase/migrations)"
+          test "$(git rev-parse "${current_main}:${PF2_PATH}")" = "${PF2_BLOB}"
+          test "$(git rev-parse HEAD)" = "${EXECUTION_SHA}"
+          test ! -e "${PF2_PATH}"
+
+      - name: Apply exactly the pre-PF2 backlog
+        if: ${{ inputs.mode == 'execute' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(mktemp)"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >"${raw}" 2>&1; then
+            sed -E \
+              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+              "${raw}" >&2
+            rm -f "${raw}"
+            exit 1
+          fi
+          sed -E \
+            -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+            -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+            "${raw}"
+          rm -f "${raw}"
+
+      - name: Show migration history after execution
+        if: ${{ inputs.mode == 'execute' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}"
+
+      - name: Confirm exact pre-PF2 tree is now up to date
+        if: ${{ inputs.mode == 'execute' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(mktemp)"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
+            --linked \
+            --dry-run \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >"${raw}" 2>&1
+          sed -E \
+            -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
+            -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
+            "${raw}"
+          grep -q 'Remote database is up to date' "${raw}"
+          rm -f "${raw}"
