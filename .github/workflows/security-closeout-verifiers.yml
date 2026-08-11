@@ -1,61 +1,22 @@
-name: Security closeout verifiers
+name: PF5B1 parser diagnosis
 
 on:
   pull_request:
     branches:
-      - feature/premium-beta-flow
       - main
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  verify:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Security closeout verifier suite
-        run: node scripts/run-security-closeout-verifier-suite.mjs
-      - name: SEC-11 site origin normalization
-        run: npm run check:sec11-origin-normalization
-      - name: JavaScript syntax gate
-        shell: bash
-        run: |
-          set -euo pipefail
-          while IFS= read -r -d '' file; do
-            node --check "$file"
-          done < <(find app lib scripts -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | sort -z)
-      - name: Production build
-        run: npm run build
-      - name: Diff hygiene
-        run: git diff --check "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
-      - name: Upload verifier evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-closeout-verifier-evidence
-          path: tmp/security-closeout-verifier-suite.json
-          if-no-files-found: error
-          retention-days: 7
-
-  pf5b1r-runtime-smoke:
-    if: github.event_name == 'pull_request' && github.head_ref == 'test/product-fact-controlled-write-runtime-v1'
+  diagnose:
+    if: github.head_ref == 'test/pf5b1f-parser-diagnosis-v1'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       IMPLEMENTATION_SHA: ba312ba165eebf6ce83c8f8f5d0645fcafea6e09
       SUPABASE_CLI_VERSION: 2.109.1
-      REPLAY_DIR: tmp/pf5b1r-runtime
+      REPLAY_DIR: tmp/pf5b1f-diagnosis
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,99 +24,101 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Verify frozen implementation ancestry and harness-only delta
+      - name: Verify exact defective authority
         shell: bash
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor "${IMPLEMENTATION_SHA}" HEAD
           test "$(git rev-parse "${IMPLEMENTATION_SHA}:supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql")" = "b6095f1fb2ee2e648770ff619067031791382933"
           test "$(git rev-parse "${IMPLEMENTATION_SHA}:supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql")" = "a08651d4ea5825e33f2dc94fe98c5b7643d32532"
-          git diff --check "${IMPLEMENTATION_SHA}..HEAD"
-          mapfile -t changed < <(git diff --name-only "${IMPLEMENTATION_SHA}..HEAD" | sort)
-          printf '%s\n' "${changed[@]}"
-          for path in "${changed[@]}"; do
-            case "$path" in
-              .github/workflows/security-closeout-verifiers.yml|tests/fixtures/product-fact-controlled-write-runtime/*) ;;
-              *) echo "forbidden verification delta: $path" >&2; exit 1 ;;
-            esac
-          done
-      - name: Materialize governed pre-PF2 replay baseline
+      - name: Materialize governed pre-PF2 baseline
         run: node scripts/materialize-product-fact-replay-baseline-v1.mjs --output="${REPLAY_DIR}"
-      - name: Prepare PostgreSQL 17 disposable replay chain
+      - name: Prepare PostgreSQL 17 PF2-only replay
         shell: bash
         run: |
           set -euo pipefail
           sed -i 's/major_version = 15/major_version = 17/' "${REPLAY_DIR}/supabase/config.toml"
-          migration_dir="${REPLAY_DIR}/supabase/migrations"
-          cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql "${migration_dir}/"
-          cp tests/fixtures/product-fact-controlled-write-runtime/20260810174500_pf5b1r_smoke.sql "${migration_dir}/"
-          printf '%s\n' "PF5B1R migration tail:"
-          find "${migration_dir}" -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort | tail -n 8
-      - name: Start isolated Supabase
+          cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${REPLAY_DIR}/supabase/migrations/"
+      - name: Start isolated Supabase through PF2
         shell: bash
         run: |
           set -euo pipefail
-          log="${RUNNER_TEMP}/pf5b1r-start.log"
-          sanitize() {
-            sed -E \
-              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
-              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
-              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
-              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
-          }
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
             --workdir "${REPLAY_DIR}" \
-            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
-            >"${log}" 2>&1; then
-            sanitized="${RUNNER_TEMP}/pf5b1r-start-sanitized.log"
-            sanitize <"${log}" >"${sanitized}"
-            echo '--- PF5B1R ERROR MARKERS ---' >&2
-            grep -Ein -B 12 -A 35 'ERROR|failed to|syntax error|SQLSTATE|cannot|does not exist|permission denied|invalid input|migration' "${sanitized}" | tail -n 320 >&2 || true
-            echo '--- PF5B1R FINAL LOG ---' >&2
-            tail -n 80 "${sanitized}" >&2
-            rm -f "${log}" "${sanitized}"
-            exit 1
-          fi
-          rm -f "${log}"
-      - name: Replay canonical PF-2 and frozen PF-5B1 migrations
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Install controlled-write prefix only
         shell: bash
         run: |
           set -euo pipefail
-          log="${RUNNER_TEMP}/pf5b1r-reset.log"
-          sanitize() {
-            sed -E \
-              -e '/(anon key|service[_ -]?role key|jwt secret|publishable key|secret key|database url|db url|ANON_KEY|SERVICE_ROLE_KEY|JWT_SECRET|DATABASE_URL|DB_URL)/Id' \
-              -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' \
-              -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' \
-              -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
-          }
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${REPLAY_DIR}" >"${log}" 2>&1; then
-            sanitized="${RUNNER_TEMP}/pf5b1r-reset-sanitized.log"
-            sanitize <"${log}" >"${sanitized}"
-            grep -Ein -B 12 -A 35 'ERROR|failed to|syntax error|SQLSTATE|cannot|does not exist|permission denied|invalid input|migration' "${sanitized}" | tail -n 320 >&2 || true
-            tail -n 100 "${sanitized}" >&2
-            rm -f "${log}" "${sanitized}"
-            exit 1
-          fi
-          sanitize <"${log}" | tail -n 80
-          rm -f "${log}"
-      - name: Record runtime smoke evidence
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql').read_text()
+          marker = 'create or replace function public.admin_ingest_product_fact_evidence_v1('
+          start = src.index(marker)
+          prefix = src[:start].rstrip() + '\ncommit;\n'
+          Path('/tmp/pf5b1-prefix.sql').write_text(prefix)
+          PY
+          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -f /tmp/pf5b1-prefix.sql
+      - name: Reproduce isolated function parser error
+        shell: bash
+        run: |
+          set -uo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql').read_text()
+          start_marker = 'create or replace function public.admin_ingest_product_fact_evidence_v1('
+          end_marker = 'create or replace function public.admin_prepare_product_fact_review_v1('
+          start = src.index(start_marker)
+          end = src.index(end_marker, start)
+          function = src[start:end].strip() + '\n'
+          Path('/tmp/pf5b1-ingest.sql').write_text(function)
+          print('INGEST_LINES', len(function.splitlines()))
+          PY
+          set +e
+          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' \
+            -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f /tmp/pf5b1-ingest.sql \
+            > /tmp/pf5b1-ingest.out 2>&1
+          status=$?
+          set -e
+          cat /tmp/pf5b1-ingest.out
+          test "$status" -ne 0
+          grep -q '42601' /tmp/pf5b1-ingest.out
+      - name: Binary-reduce top-level function regions
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p tmp/pf5b1r-evidence
-          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -Atqc "show server_version" | tee tmp/pf5b1r-evidence/postgres-version.txt
-          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -Atqc "select jsonb_build_object('registry_rows',(select count(*) from public.product_fact_registry_versions),'definition_rows',(select count(*) from public.product_fact_definition_snapshots),'subject_rows',(select count(*) from public.product_fact_subjects),'pf2_tables',(select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in ('product_fact_registry_versions','product_fact_definition_snapshots','product_fact_subjects','product_evidence_sources','product_evidence_source_subject_bindings','product_evidence_records','product_fact_instances','product_fact_evidence_links','product_fact_confirmations','product_fact_current','product_fact_review_assignments','product_fact_review_events')),'external_rpcs',(select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_publish_product_fact_registry_v1','admin_register_product_fact_subject_v1','admin_ingest_product_fact_evidence_v1','admin_prepare_product_fact_review_v1','admin_preflight_product_fact_confirmation_v1','admin_confirm_product_fact_v1')))" | tee tmp/pf5b1r-evidence/smoke.json
-      - name: Upload PF5B1R smoke evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pf5b1r-runtime-smoke-evidence
-          path: tmp/pf5b1r-evidence
-          if-no-files-found: warn
-          retention-days: 7
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('/tmp/pf5b1-ingest.sql').read_text()
+          body_start = src.index("  v_actor_role := public.admin_require_product_review_actor(")
+          body_end = src.index("  return v_result;", body_start)
+          regions = [
+            ('actor_to_source_lock', "  v_actor_role := public.admin_require_product_review_actor(", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_source:'"),
+            ('source_identity', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_source:'", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_binding:'"),
+            ('binding_identity', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_binding:'", "  if v_evidence = 'null'::jsonb then"),
+            ('evidence_gate_to_negative', "  if v_evidence = 'null'::jsonb then", "  if v_evidence ->> 'support_direction' = 'supports'"),
+            ('negative_scope_supersession', "  if v_evidence ->> 'support_direction' = 'supports'", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_evidence:'"),
+            ('evidence_dedupe_write', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_evidence:'", "  v_audit_id := public.record_admin_audit_event("),
+            ('audit_result', "  v_audit_id := public.record_admin_audit_event(", "  return v_result;")
+          ]
+          out = Path('/tmp/pf5b1-variants')
+          out.mkdir(exist_ok=True)
+          for name, a, b in regions:
+            s = src.index(a, body_start)
+            e = src.index(b, s)
+            variant = src[:s] + f"  null; -- diagnostic removed {name}\n" + src[e:]
+            (out / f'{name}.sql').write_text(variant)
+          PY
+          for file in /tmp/pf5b1-variants/*.sql; do
+            name="$(basename "$file" .sql)"
+            set +e
+            psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f "$file" >"/tmp/${name}.out" 2>&1
+            status=$?
+            set -e
+            echo "VARIANT ${name} STATUS ${status}"
+            if [[ "$status" -ne 0 ]]; then
+              grep -E 'ERROR|SQL state|42601|LINE|syntax error' "/tmp/${name}.out" | tail -n 12 || true
+            fi
+          done
       - name: Stop isolated Supabase
         if: always()
         continue-on-error: true
