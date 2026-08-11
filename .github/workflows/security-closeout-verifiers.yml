@@ -69,17 +69,14 @@ jobs:
           end_marker = 'create or replace function public.admin_prepare_product_fact_review_v1('
           start = src.index(start_marker)
           end = src.index(end_marker, start)
-          function = src[start:end].strip() + '\n'
-          Path('/tmp/pf5b1-ingest.sql').write_text(function)
+          Path('/tmp/pf5b1-ingest.sql').write_text(src[start:end].strip() + '\n')
           PY
       - name: Reproduce isolated function parser error
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' \
-            -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f /tmp/pf5b1-ingest.sql \
-            > /tmp/pf5b1-ingest.out 2>&1
+          psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f /tmp/pf5b1-ingest.sql > /tmp/pf5b1-ingest.out 2>&1
           status=$?
           set -e
           cat /tmp/pf5b1-ingest.out
@@ -93,15 +90,17 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           src = Path('/tmp/pf5b1-ingest.sql').read_text()
-          broken = """      or v_source_row.published_at is distinct from
-        case when v_source -> 'published_at' = 'null'::jsonb
-          then null else (v_source ->> 'published_at')::timestamptz end
-"""
-          grouped = """      or v_source_row.published_at is distinct from (
-        case when v_source -> 'published_at' = 'null'::jsonb
-          then null else (v_source ->> 'published_at')::timestamptz end
-      )
-"""
+          broken = (
+              "      or v_source_row.published_at is distinct from\n"
+              "        case when v_source -> 'published_at' = 'null'::jsonb\n"
+              "          then null else (v_source ->> 'published_at')::timestamptz end\n"
+          )
+          grouped = (
+              "      or v_source_row.published_at is distinct from (\n"
+              "        case when v_source -> 'published_at' = 'null'::jsonb\n"
+              "          then null else (v_source ->> 'published_at')::timestamptz end\n"
+              "      )\n"
+          )
           if src.count(broken) != 1:
               raise SystemExit(f'expected one broken predicate, got {src.count(broken)}')
           Path('/tmp/pf5b1-ingest-grouped.sql').write_text(src.replace(broken, grouped))
@@ -110,15 +109,14 @@ jobs:
           for variant in grouped predicate-removed; do
             file="/tmp/pf5b1-ingest-${variant}.sql"
             set +e
-            psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' \
-              -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f "$file" >"/tmp/${variant}.out" 2>&1
+            psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f "$file" >"/tmp/${variant}.out" 2>&1
             status=$?
             set -e
             echo "FOCUSED_VARIANT ${variant} STATUS ${status}"
             cat "/tmp/${variant}.out"
             test "$status" -eq 0
           done
-      - name: Confirm semantic-only grouping delta
+      - name: Confirm grouping-only delta
         shell: bash
         run: |
           set -euo pipefail
