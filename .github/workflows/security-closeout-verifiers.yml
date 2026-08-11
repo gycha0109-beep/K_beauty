@@ -58,10 +58,10 @@ jobs:
           Path('/tmp/pf5b1-prefix.sql').write_text(prefix)
           PY
           psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -f /tmp/pf5b1-prefix.sql
-      - name: Reproduce isolated function parser error
+      - name: Extract exact failing function
         shell: bash
         run: |
-          set -uo pipefail
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           src = Path('supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql').read_text()
@@ -71,8 +71,11 @@ jobs:
           end = src.index(end_marker, start)
           function = src[start:end].strip() + '\n'
           Path('/tmp/pf5b1-ingest.sql').write_text(function)
-          print('INGEST_LINES', len(function.splitlines()))
           PY
+      - name: Reproduce isolated function parser error
+        shell: bash
+        run: |
+          set -euo pipefail
           set +e
           psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' \
             -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f /tmp/pf5b1-ingest.sql \
@@ -82,43 +85,44 @@ jobs:
           cat /tmp/pf5b1-ingest.out
           test "$status" -ne 0
           grep -q '42601' /tmp/pf5b1-ingest.out
-      - name: Binary-reduce top-level function regions
+          grep -q "case when v_source -> 'published_at' = 'null'::jsonb" /tmp/pf5b1-ingest.out
+      - name: Focus published_at IS DISTINCT FROM CASE variants
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           src = Path('/tmp/pf5b1-ingest.sql').read_text()
-          body_start = src.index("  v_actor_role := public.admin_require_product_review_actor(")
-          body_end = src.index("  return v_result;", body_start)
-          regions = [
-            ('actor_to_source_lock', "  v_actor_role := public.admin_require_product_review_actor(", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_source:'"),
-            ('source_identity', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_source:'", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_binding:'"),
-            ('binding_identity', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_binding:'", "  if v_evidence = 'null'::jsonb then"),
-            ('evidence_gate_to_negative', "  if v_evidence = 'null'::jsonb then", "  if v_evidence ->> 'support_direction' = 'supports'"),
-            ('negative_scope_supersession', "  if v_evidence ->> 'support_direction' = 'supports'", "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_evidence:'"),
-            ('evidence_dedupe_write', "  perform pg_advisory_xact_lock(\n    hashtextextended(\n      'bejewely_product_fact_evidence:'", "  v_audit_id := public.record_admin_audit_event("),
-            ('audit_result', "  v_audit_id := public.record_admin_audit_event(", "  return v_result;")
-          ]
-          out = Path('/tmp/pf5b1-variants')
-          out.mkdir(exist_ok=True)
-          for name, a, b in regions:
-            s = src.index(a, body_start)
-            e = src.index(b, s)
-            variant = src[:s] + f"  null; -- diagnostic removed {name}\n" + src[e:]
-            (out / f'{name}.sql').write_text(variant)
+          broken = """      or v_source_row.published_at is distinct from
+        case when v_source -> 'published_at' = 'null'::jsonb
+          then null else (v_source ->> 'published_at')::timestamptz end
+"""
+          grouped = """      or v_source_row.published_at is distinct from (
+        case when v_source -> 'published_at' = 'null'::jsonb
+          then null else (v_source ->> 'published_at')::timestamptz end
+      )
+"""
+          if src.count(broken) != 1:
+              raise SystemExit(f'expected one broken predicate, got {src.count(broken)}')
+          Path('/tmp/pf5b1-ingest-grouped.sql').write_text(src.replace(broken, grouped))
+          Path('/tmp/pf5b1-ingest-predicate-removed.sql').write_text(src.replace(broken, "      or false\n"))
           PY
-          for file in /tmp/pf5b1-variants/*.sql; do
-            name="$(basename "$file" .sql)"
+          for variant in grouped predicate-removed; do
+            file="/tmp/pf5b1-ingest-${variant}.sql"
             set +e
-            psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f "$file" >"/tmp/${name}.out" 2>&1
+            psql 'postgresql://postgres:postgres@127.0.0.1:57422/postgres' \
+              -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f "$file" >"/tmp/${variant}.out" 2>&1
             status=$?
             set -e
-            echo "VARIANT ${name} STATUS ${status}"
-            if [[ "$status" -ne 0 ]]; then
-              grep -E 'ERROR|SQL state|42601|LINE|syntax error' "/tmp/${name}.out" | tail -n 12 || true
-            fi
+            echo "FOCUSED_VARIANT ${variant} STATUS ${status}"
+            cat "/tmp/${variant}.out"
+            test "$status" -eq 0
           done
+      - name: Confirm semantic-only grouping delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          diff -u /tmp/pf5b1-ingest.sql /tmp/pf5b1-ingest-grouped.sql || true
       - name: Stop isolated Supabase
         if: always()
         continue-on-error: true
