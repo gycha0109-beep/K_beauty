@@ -109,8 +109,13 @@ jobs:
             --workdir "${REPLAY_DIR}" \
             --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
             >"${log}" 2>&1; then
-            sanitize <"${log}" | tail -n 220 >&2
-            rm -f "${log}"
+            sanitized="${RUNNER_TEMP}/pf5b1r-start-sanitized.log"
+            sanitize <"${log}" >"${sanitized}"
+            echo '--- PF5B1R ERROR MARKERS ---' >&2
+            grep -Ein -B 12 -A 35 'ERROR|failed to|syntax error|SQLSTATE|cannot|does not exist|permission denied|invalid input|migration' "${sanitized}" | tail -n 320 >&2 || true
+            echo '--- PF5B1R FINAL LOG ---' >&2
+            tail -n 80 "${sanitized}" >&2
+            rm -f "${log}" "${sanitized}"
             exit 1
           fi
           rm -f "${log}"
@@ -127,8 +132,11 @@ jobs:
               -e 's#eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}#[REDACTED_JWT]#g'
           }
           if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${REPLAY_DIR}" >"${log}" 2>&1; then
-            sanitize <"${log}" | tail -n 260 >&2
-            rm -f "${log}"
+            sanitized="${RUNNER_TEMP}/pf5b1r-reset-sanitized.log"
+            sanitize <"${log}" >"${sanitized}"
+            grep -Ein -B 12 -A 35 'ERROR|failed to|syntax error|SQLSTATE|cannot|does not exist|permission denied|invalid input|migration' "${sanitized}" | tail -n 320 >&2 || true
+            tail -n 100 "${sanitized}" >&2
+            rm -f "${log}" "${sanitized}"
             exit 1
           fi
           sanitize <"${log}" | tail -n 80
