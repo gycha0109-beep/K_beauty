@@ -1,0 +1,107 @@
+name: PF5B1I-S Exact-Head Static Closeout
+
+on:
+  push:
+    branches:
+      - verify/pf5b1i-s-static-closeout
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact target SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 9ea460e44b85c9c2b94dacfb8624b42af74f0b92
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify repository prerequisite and exact authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=9ea460e44b85c9c2b94dacfb8624b42af74f0b92
+          test "$(git rev-parse --is-inside-work-tree)" = "true"
+          ORIGIN="$(git remote get-url origin)"
+          printf 'origin=%s\n' "$ORIGIN"
+          printf 'git_dir=%s\n' "$(git rev-parse --git-dir)"
+          test "$(git rev-parse HEAD)" = "$TARGET"
+          git cat-file -e "$TARGET^{commit}"
+          git log --oneline -3
+          {
+            printf 'inside_work_tree=%s\n' "$(git rev-parse --is-inside-work-tree)"
+            printf 'origin=%s\n' "$ORIGIN"
+            printf 'head=%s\n' "$(git rev-parse HEAD)"
+            printf 'git_dir=%s\n' "$(git rev-parse --git-dir)"
+          } > "$RUNNER_TEMP/repository-prerequisite.txt"
+
+      - name: Verify exact blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=9ea460e44b85c9c2b94dacfb8624b42af74f0b92
+          check_blob() {
+            local path="$1"
+            local expected="$2"
+            local actual
+            actual="$(git rev-parse "$TARGET:$path")"
+            printf '%s=%s\n' "$path" "$actual" | tee -a "$RUNNER_TEMP/blob-verification.txt"
+            test "$actual" = "$expected"
+          }
+          check_blob scripts/verify-product-fact-controlled-write-v1.mjs 5a80a16b9d9a2b221ccffad0b385edd012b92cf2
+          check_blob scripts/verify-product-fact-subject-registration-v1.mjs cf470e9d0150ededef012fbbbb2d936e689447ae
+          check_blob supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql 03523a01322170e6b0fca2ff4cc77b8be581f19e
+          check_blob supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql a08651d4ea5825e33f2dc94fe98c5b7643d32532
+          check_blob supabase/migrations/20260809115932_product_fact_storage_v1.sql 676afbc56bf90443a1198f93427382f067d19407
+          check_blob docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json 37d60570f5a79cbc0baad114cfc1f7b4ca9e7440
+
+      - name: Run controlled-write static verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-controlled-write-v1.mjs | tee "$RUNNER_TEMP/controlled-write-static.json"
+          node - "$RUNNER_TEMP/controlled-write-static.json" <<'NODE'
+          const fs = require('fs');
+          const p = process.argv[2];
+          const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (j.status !== 'PASS' || j.assertions !== 117 || j.negative_mutation_cases !== 12) process.exit(1);
+          NODE
+
+      - name: Run subject-registration static verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-subject-registration-v1.mjs | tee "$RUNNER_TEMP/subject-registration-static.json"
+          node - "$RUNNER_TEMP/subject-registration-static.json" <<'NODE'
+          const fs = require('fs');
+          const p = process.argv[2];
+          const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+          if (j.status !== 'PASS' || j.assertions !== 38 || j.negative_mutation_cases !== 7) process.exit(1);
+          NODE
+
+      - name: Post-run repository hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET=9ea460e44b85c9c2b94dacfb8624b42af74f0b92
+          STATUS="$(git status --short)"
+          printf '%s' "$STATUS" | tee "$RUNNER_TEMP/git-status-short.txt"
+          test -z "$STATUS"
+          test "$(git rev-parse HEAD)" = "$TARGET"
+          printf '%s\n' "$(git rev-parse HEAD)" > "$RUNNER_TEMP/post-run-head.txt"
+
+      - name: Upload exact-head static evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pf5b1i-s-exact-head-static-evidence
+          path: |
+            ${{ runner.temp }}/repository-prerequisite.txt
+            ${{ runner.temp }}/blob-verification.txt
+            ${{ runner.temp }}/controlled-write-static.json
+            ${{ runner.temp }}/subject-registration-static.json
+            ${{ runner.temp }}/git-status-short.txt
+            ${{ runner.temp }}/post-run-head.txt
+          if-no-files-found: error
