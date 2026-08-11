@@ -178,6 +178,10 @@ function auditSql(sql) {
   const evidence = functionBlock(clean, "admin_ingest_product_fact_evidence_v1").toLowerCase();
   check(evidence.includes("'admin.products.review'"), "evidence_operation_capability_missing");
   check(
+    /v_source_row\.published_at\s+is\s+distinct\s+from\s*\(\s*case\s+when\s+v_source\s*->\s*'published_at'\s*=\s*'null'::jsonb\s+then\s+null\s+else\s+\(v_source\s*->>\s*'published_at'\)::timestamptz\s+end\s*\)/i.test(evidence),
+    "evidence_source_published_at_case_grouping_missing"
+  );
+  check(
     evidence.includes("exact_subject_match")
       && evidence.includes("equivalent_presentation_match")
       && evidence.includes("scope_relation not in ('equivalent', 'narrower')"),
@@ -403,6 +407,13 @@ const assertions = auditSql(migrationSql);
 
 const mutations = [
   {
+    code: "evidence_source_published_at_case_grouping_missing",
+    sql: migrationSql.replace(
+      "      or v_source_row.published_at is distinct from (\n        case when v_source -> 'published_at' = 'null'::jsonb\n          then null else (v_source ->> 'published_at')::timestamptz end\n      )",
+      "      or v_source_row.published_at is distinct from\n        case when v_source -> 'published_at' = 'null'::jsonb\n          then null else (v_source ->> 'published_at')::timestamptz end"
+    )
+  },
+  {
     code: "external_rpc_security_definer_missing",
     sql: migrationSql.replace(
       /(create or replace function public\.admin_confirm_product_fact_v1[\s\S]*?language plpgsql\s+)security definer/i,
@@ -481,6 +492,8 @@ console.log(JSON.stringify({
   migration: migrationName,
   assertions,
   negative_mutation_cases: mutations.length,
+  static_verification_scope: "TEXTUAL_CONTRACT_ONLY",
+  postgres_compile_verification: "NOT_PERFORMED_BY_STATIC_VERIFIER",
   runtime_database_replay: "NOT_PERFORMED_BY_STATIC_VERIFIER",
   guarantees: [
     "pf2_table_invariance",

@@ -640,9 +640,10 @@ begin
         nullif(btrim(coalesce(v_source ->> 'region', '')), '')
       or v_source_row.locale is distinct from
         nullif(btrim(coalesce(v_source ->> 'locale', '')), '')
-      or v_source_row.published_at is distinct from
+      or v_source_row.published_at is distinct from (
         case when v_source -> 'published_at' = 'null'::jsonb
           then null else (v_source ->> 'published_at')::timestamptz end
+      )
     then
       raise exception 'product_fact_source_identity_conflict' using errcode = '23505';
     end if;
