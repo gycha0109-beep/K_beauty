@@ -1,0 +1,192 @@
+name: CI Recovery 1D Byte Repair Helper
+
+on:
+  push:
+    branches:
+      - ops/ci-recovery-1d-byte-repair-helper
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout authoritative main
+        uses: actions/checkout@v4
+        with:
+          ref: a557592c53f6888bac9841cbd2c1fe3487284b5c
+          fetch-depth: 0
+
+      - name: Byte-preserving preflight and repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAIN_SHA='a557592c53f6888bac9841cbd2c1fe3487284b5c'
+          TARGET_BRANCH='fix/candidate-policy-current-main-baseline-reconciliation-v2'
+          MANIFEST='docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json'
+          ORIGINAL_BLOB='df4d4de7c8a331bdafe718a9b06434639f86fd22'
+
+          git fetch origin main "$TARGET_BRANCH"
+          test "$(git rev-parse origin/main)" = "$MAIN_SHA"
+          test "$(git rev-parse origin/$TARGET_BRANCH)" = "$MAIN_SHA"
+          test "$(git rev-parse HEAD)" = "$MAIN_SHA"
+          test "$(git hash-object "$MANIFEST")" = "$ORIGINAL_BLOB"
+
+          git switch -C ci-recovery-1d-candidate "origin/$TARGET_BRANCH"
+          test "$(git rev-parse HEAD)" = "$MAIN_SHA"
+          test -z "$(git status --short)"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, subprocess, sys
+
+          manifest = Path('docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json')
+          mappings = [
+              ('packages/face-contracts/src/synthetic-campaign/campaign-contract.js','06d679bee518d15b446bd292ae89f953fa3b7422','24f2aee734e4dab756d66e67ef067dfddbe60b70'),
+              ('packages/face-contracts/src/synthetic-campaign/constants.js','2aae1b4bcd43496e0729b5ed14cc725b8e6f794b','20267de01a9b2af5b8c6005604cb3e1578dd7aa2'),
+              ('tools/synthetic-evaluation/src/campaign/cli/campaign.js','6c0e0459ccea92a546c437871954ee23d3d3396f','85719f5a59c10e9ce192e8074aefc8287d7c2f42'),
+              ('tools/synthetic-evaluation/src/campaign/closeout.js','8bd980cb622fa17d75ec375fa62e28378d17d0d2','db848dd315ebf16db48dc1aeea98492fcab674e1'),
+              ('tools/synthetic-evaluation/src/campaign/events.js','05479034b70ee328cfafd02f824279f46d154054','38e2348afde1de8cdeeaa824f877793fc18d288f'),
+              ('tools/synthetic-evaluation/src/campaign/generation.js','bf63e185b11122b0b93ffdaca901a16410b139ff','6da965db48a67841e64172bafad6e8b747c3be54'),
+              ('tools/synthetic-evaluation/src/campaign/index.js','e5acbbf352a81e4ddfa720c1ceff1f4cc278281c','c802a7b72a45b01376935be7434af16f47952e1e'),
+              ('tools/synthetic-evaluation/src/campaign/orchestrator.js','1c870e2cb0693d27c46c1444f3a1cf2cf8889dca','b9f748383f80592fca393e16811e4cf121d67e3b'),
+              ('tools/synthetic-evaluation/src/campaign/plan.js','a19215f8c0e974b7497c3eb315b8be60babf437e','b052b1a1459a645f95cd41d8afa75434b3ff68c5'),
+              ('tools/synthetic-evaluation/src/campaign/projection.js','699428ff736116bc3f078374a052027c0df7831a','173857d9a7b8d76409ddca20dc763a907d1b5a8b'),
+              ('tools/synthetic-evaluation/src/campaign/safe-operations.js','1cc29be26ca252222632f03bb40271a100eb8f81','922474b3b362c48358c11f8ba82fbc868651c93e'),
+              ('tools/synthetic-evaluation/src/campaign/storage.js','b3107d6b09f87a0d8b49e4856948cd8e0c93f22a','3788f4f9e3c978e80d03d689a4ee82e2951cefc2'),
+              ('tools/synthetic-evaluation/src/reporting/storage.js','722eeb4519e8d2a373e9f29594c67cfe661e8500','0a13a0c93af3c07fbb6635743c361a2284f07c7f'),
+              ('tools/synthetic-evaluation/tests/architecture-boundary.test.mjs','fc9c06fbec26d46fb254bcd56f36aad57418efe6','ab581810a5cf2b475e8339851cb54449977d2319'),
+              ('tools/synthetic-evaluation/tests/campaign/generation.test.mjs','ca70659e8be07e4b353cf07ac328ebf0c498c21c','48e58052a8995c552733f79db43e8dc4ac764bbf'),
+              ('tools/synthetic-evaluation/tests/campaign/helpers.mjs','60571e55629f5f7c935561fdc180746ee5bce598','a7e7bb9ac1ca020a907f1b25d95a7b63b8f8e3ac'),
+              ('tools/synthetic-evaluation/tests/campaign/orchestrator.test.mjs','69aab490c24202076a49dbe3b5aaa10d786d738f','56f0c0eaf374bbf3fb36521653f80d3cba9300ae'),
+              ('tools/synthetic-evaluation/tests/campaign/plan.test.mjs','2126745b599d629dda7c345639331ae8489ce7b0','389d3418299a587d85077790049ae0ae9411855c'),
+              ('tools/synthetic-evaluation/tests/prompt-compiler.test.mjs','40f2abeef49656df12645a33c295b976daeb2ff8','667394d3a0705c4bc2e6a946ce07c29d8ca6494d'),
+              ('tools/synthetic-evaluation/tests/reporting/derive.test.mjs','385f3674e7c0b720c2f68f4070815a92338ea69a','570e9b261aae149692670baa1ead69a32365c088'),
+          ]
+          b11 = [
+              '.codex/AI_WORK_LOG.md','app/admin/layout.js','lib/admin/access.js','components/onboarding/SurveyFlow.js',
+              'scripts/verify-sec06-saved-report-boundary.mjs','lib/candidate-exposure-policy-observability.js',
+              'scripts/verify-candidate-exposure-policy-shadow-runtime.mjs','scripts/verify-candidate-policy-runtime-reevaluation.mjs',
+              'app/api/analyze/route.js','package.json','scripts/run-security-closeout-verifier-suite.mjs'
+          ]
+
+          original = manifest.read_bytes()
+          if hashlib.sha1(b'blob ' + str(len(original)).encode() + b'\0' + original).hexdigest() != 'df4d4de7c8a331bdafe718a9b06434639f86fd22':
+              raise SystemExit('ORIGINAL_MANIFEST_AUTHORITY_DRIFT')
+          candidate = original
+
+          for path, old, new in mappings:
+              actual = subprocess.check_output(['git','hash-object',path], text=True).strip()
+              if actual != new:
+                  raise SystemExit(f'APPROVED_MAPPING_DRIFT {path} expected={new} actual={actual}')
+              pat = re.compile(rb'("path":\s*"' + re.escape(path.encode()) + rb'",\r?\n\s*"mainBlob":\s*")' + old.encode() + rb'(")')
+              matches = list(pat.finditer(candidate))
+              if len(matches) != 1:
+                  raise SystemExit(f'RAW_REPLACEMENT_PRECONDITION_FAILED {path} count={len(matches)}')
+              candidate, count = pat.subn(lambda m, n=new.encode(): m.group(1) + n + m.group(2), candidate, count=1)
+              if count != 1:
+                  raise SystemExit(f'RAW_REPLACEMENT_FAILED {path}')
+
+          if len(candidate) != len(original):
+              raise SystemExit('BYTE_LENGTH_CHANGED')
+          if original.count(b'\n') != candidate.count(b'\n'):
+              raise SystemExit('LINE_COUNT_CHANGED')
+
+          orig_obj = json.loads(original.decode('utf-8'))
+          cand_obj = json.loads(candidate.decode('utf-8'))
+          for key in ('version','baseSha','sourceSha','designSha','counts'):
+              if orig_obj[key] != cand_obj[key]:
+                  raise SystemExit(f'HEADER_OR_COUNTS_CHANGED {key}')
+          for section in ('includeExact','mergeSemantic','excludeSourceOnly','preserveMain'):
+              op = [x.get('path') for x in orig_obj[section]]
+              cp = [x.get('path') for x in cand_obj[section]]
+              if op != cp:
+                  raise SystemExit(f'MEMBERSHIP_CHANGED {section}')
+
+          def entries(obj, wanted):
+              found=[]
+              for section in ('includeExact','mergeSemantic','excludeSourceOnly','preserveMain'):
+                  for row in obj[section]:
+                      if row.get('path') == wanted:
+                          found.append((section,row))
+              return found
+          for p in b11:
+              if entries(orig_obj,p) != entries(cand_obj,p):
+                  raise SystemExit(f'B11_CHANGED {p}')
+
+          guard_path='.codex/AI_WORK_LOG.d/2026-08-02-T7-pilot-campaign-runner-design.md'
+          rows=entries(cand_obj,guard_path)
+          if len(rows) != 1 or rows[0][1].get('mainBlob') != 'd7a6f619946feac0141d370913dddc957b610f8d':
+              raise SystemExit('NON_A_CORRUPTION_GUARD_FAILED')
+
+          # Reverse the exact path-scoped changes and require byte-identical original.
+          reverted = candidate
+          for path, old, new in mappings:
+              pat = re.compile(rb'("path":\s*"' + re.escape(path.encode()) + rb'",\r?\n\s*"mainBlob":\s*")' + new.encode() + rb'(")')
+              matches=list(pat.finditer(reverted))
+              if len(matches) != 1:
+                  raise SystemExit(f'REVERSE_PRECONDITION_FAILED {path} count={len(matches)}')
+              reverted=pat.sub(lambda m, o=old.encode(): m.group(1)+o+m.group(2), reverted, count=1)
+          if reverted != original:
+              raise SystemExit('NON_APPROVED_BYTES_CHANGED')
+
+          expected = hashlib.sha1(b'blob ' + str(len(candidate)).encode() + b'\0' + candidate).hexdigest()
+          print(f'ORIGINAL_BYTE_LENGTH={len(original)}')
+          print(f'REPAIRED_BYTE_LENGTH={len(candidate)}')
+          print(f'ORIGINAL_LINE_COUNT={original.count(bytes([10])) + 1}')
+          print(f'REPAIRED_LINE_COUNT={candidate.count(bytes([10])) + 1}')
+          print(f'EXPECTED_REPAIRED_MANIFEST_BLOB={expected}')
+          print('A20_PATH_SCOPED_OLD_PRECONDITIONS=20/20')
+          print('A20_CURRENT_MAIN_NEW_BLOBS=20/20')
+          print('B11_UNCHANGED=11/11')
+          print('NON_A_CORRUPTION_GUARD=PASS')
+          print('STRUCTURAL_INVARIANTS=PASS')
+          manifest.write_bytes(candidate)
+          Path('/tmp/expected-blob').write_text(expected)
+          PY
+
+          EXPECTED_BLOB="$(cat /tmp/expected-blob)"
+          ACTUAL_WORKTREE_BLOB="$(git hash-object "$MANIFEST")"
+          test "$ACTUAL_WORKTREE_BLOB" = "$EXPECTED_BLOB"
+
+          NUMSTAT="$(git diff --numstat -- "$MANIFEST")"
+          echo "NUMSTAT=$NUMSTAT"
+          test "$NUMSTAT" = $'20\t20\tdocs/architecture/candidate-policy-main-integration-blob-manifest-v1.json'
+
+          git diff --unified=0 -- "$MANIFEST" > /tmp/manifest.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/manifest.patch').read_text()
+          removed=[line for line in p.splitlines() if line.startswith('-') and not line.startswith('---')]
+          added=[line for line in p.splitlines() if line.startswith('+') and not line.startswith('+++')]
+          if len(removed) != 20 or len(added) != 20:
+              raise SystemExit(f'PATCH_LINE_COUNT_INVALID removed={len(removed)} added={len(added)}')
+          if any('"mainBlob":' not in line for line in removed + added):
+              raise SystemExit('PATCH_NON_MAINBLOB_LINE_CHANGED')
+          print('PATCH_EXACT_20_REMOVED_20_ADDED=PASS')
+          PY
+
+          test "$(git status --short | wc -l)" -eq 1
+          test "$(git status --short)" = " M $MANIFEST"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$MANIFEST"
+          git commit -m 'fix(ci): reconcile CandidatePolicy closeout baseline with current main'
+
+          REPAIR_HEAD="$(git rev-parse HEAD)"
+          ACTUAL_COMMIT_BLOB="$(git rev-parse "HEAD:$MANIFEST")"
+          test "$ACTUAL_COMMIT_BLOB" = "$EXPECTED_BLOB"
+          test "$(git diff --name-only "$MAIN_SHA"..HEAD)" = "$MANIFEST"
+
+          # Final concurrent-authority guard immediately before remote write.
+          git fetch origin main "$TARGET_BRANCH"
+          test "$(git rev-parse origin/main)" = "$MAIN_SHA"
+          test "$(git rev-parse origin/$TARGET_BRANCH)" = "$MAIN_SHA"
+
+          echo "REPAIR_HEAD=$REPAIR_HEAD"
+          echo "ACTUAL_REPAIRED_MANIFEST_BLOB=$ACTUAL_COMMIT_BLOB"
+          echo "EXPECTED_REPAIRED_MANIFEST_BLOB=$EXPECTED_BLOB"
+          echo 'REMOTE_WRITE_SCOPE=TARGET_BRANCH_ONLY'
+          git push origin "HEAD:refs/heads/$TARGET_BRANCH"
