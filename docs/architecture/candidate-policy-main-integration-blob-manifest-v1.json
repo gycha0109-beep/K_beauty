@@ -287,1330 +287,348 @@
     }
   ],
   "excludeSourceOnly": [
-    {
-      "path": ".codex/work-logs/2026-07-17-premium-hosted-preview-verification.md"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-18-premium-hosted-preview-harness-hardening.md"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-authoritative-api-cli.md"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-live-readiness.md"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-target-normalization.md"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-19-premium-hosted-preview-user-hash-contract.md"
-    },
-    {
-      "path": ".github/workflows/stage11c-shadow-evaluation.yml"
-    },
-    {
-      "path": ".github/workflows/stage11d-candidate-policy-canary-plan.yml"
-    },
-    {
-      "path": "docs/verification/examples/premium-hosted-preview/browser-conflict-body.example.json"
-    },
-    {
-      "path": "docs/verification/examples/premium-hosted-preview/manifest.example.json"
-    },
-    {
-      "path": "docs/verification/examples/premium-hosted-preview/ui-case.example.json"
-    },
-    {
-      "path": "docs/verification/premium-hosted-preview-harness-hardening-design-v2.1.md"
-    },
-    {
-      "path": "docs/verification/premium-hosted-preview-live-runbook.md"
-    },
-    {
-      "path": "docs/verification/premium-hosted-preview-verification-v1.md"
-    },
-    {
-      "path": "docs/verification/stage10-hosted-preview-user-flow-result.md"
-    },
-    {
-      "path": "lib/auth/oauth-return-origin.mjs"
-    },
-    {
-      "path": "lib/premium-report-session-owner.js"
-    },
-    {
-      "path": "scripts/capture-premium-hosted-preview-google-login.mjs"
-    },
-    {
-      "path": "scripts/cleanup-premium-hosted-preview-run.mjs"
-    },
-    {
-      "path": "scripts/generate-premium-hosted-preview-attestation.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-authoritative-api.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-contract-core.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-core-v2.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-core.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-security.mjs"
-    },
-    {
-      "path": "scripts/premium-hosted-preview-vercel-target.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-authoritative-api.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-contract.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-db-evidence.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-error-boundaries.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-gate.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-preflight.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-ui-journey.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-hosted-preview-user-hash-contract.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-report-ownership-boundary.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-run-scoped-cleanup.mjs"
-    },
-    {
-      "path": "scripts/verify-premium-security-evidence-closure.mjs"
-    },
-    {
-      "path": "scripts/verify-preview-oauth-origin.mjs"
-    }
+    {"path": ".codex/work-logs/2026-07-17-premium-hosted-preview-verification.md"},
+    {"path": ".codex/work-logs/2026-07-18-premium-hosted-preview-harness-hardening.md"},
+    {"path": ".codex/work-logs/2026-07-19-premium-hosted-preview-authoritative-api-cli.md"},
+    {"path": ".codex/work-logs/2026-07-19-premium-hosted-preview-live-readiness.md"},
+    {"path": ".codex/work-logs/2026-07-19-premium-hosted-preview-target-normalization.md"},
+    {"path": ".codex/work-logs/2026-07-19-premium-hosted-preview-user-hash-contract.md"},
+    {"path": ".github/workflows/stage11c-shadow-evaluation.yml"},
+    {"path": ".github/workflows/stage11d-candidate-policy-canary-plan.yml"},
+    {"path": "docs/verification/examples/premium-hosted-preview/browser-conflict-body.example.json"},
+    {"path": "docs/verification/examples/premium-hosted-preview/manifest.example.json"},
+    {"path": "docs/verification/examples/premium-hosted-preview/ui-case.example.json"},
+    {"path": "docs/verification/premium-hosted-preview-harness-hardening-design-v2.1.md"},
+    {"path": "docs/verification/premium-hosted-preview-live-runbook.md"},
+    {"path": "docs/verification/premium-hosted-preview-verification-v1.md"},
+    {"path": "docs/verification/stage10-hosted-preview-user-flow-result.md"},
+    {"path": "lib/auth/oauth-return-origin.mjs"},
+    {"path": "lib/premium-report-session-owner.js"},
+    {"path": "scripts/capture-premium-hosted-preview-google-login.mjs"},
+    {"path": "scripts/cleanup-premium-hosted-preview-run.mjs"},
+    {"path": "scripts/generate-premium-hosted-preview-attestation.mjs"},
+    {"path": "scripts/premium-hosted-preview-authoritative-api.mjs"},
+    {"path": "scripts/premium-hosted-preview-contract-core.mjs"},
+    {"path": "scripts/premium-hosted-preview-core-v2.mjs"},
+    {"path": "scripts/premium-hosted-preview-core.mjs"},
+    {"path": "scripts/premium-hosted-preview-security.mjs"},
+    {"path": "scripts/premium-hosted-preview-vercel-target.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-authoritative-api.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-contract.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-db-evidence.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-error-boundaries.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-gate.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-preflight.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-ui-journey.mjs"},
+    {"path": "scripts/verify-premium-hosted-preview-user-hash-contract.mjs"},
+    {"path": "scripts/verify-premium-report-ownership-boundary.mjs"},
+    {"path": "scripts/verify-premium-run-scoped-cleanup.mjs"},
+    {"path": "scripts/verify-premium-security-evidence-closure.mjs"},
+    {"path": "scripts/verify-preview-oauth-origin.mjs"}
   ],
   "preserveMain": [
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-02-T6-promotion-policy.md",
-      "mainBlob": "ce5af6e883572361fb4c6ab5cbe9fefa8381aa7a"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-02-T7-pilot-campaign-runner-design.md",
-      "mainBlob": "d7a6f619946feac0141d370913dddc957b610f8d"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-02-T7-pilot-campaign-runner-implementation.md",
-      "mainBlob": "453ff49838a28542b5e0809cda4f5ce51f03c4ae"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T10-full-rehearsal.md",
-      "mainBlob": "997a62fec9bb317c05fc1d0b2c317d4d15822296"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T11-solo-pilot-assessment-design.md",
-      "mainBlob": "5c36ef97a255876959b464446b3ed901b7f760e2"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T11-solo-pilot-assessment-implementation.md",
-      "mainBlob": "608b9c93a796dc2f7919c0a5d3e411990540fefd"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T8-review-export-report-design.md",
-      "mainBlob": "173188f11dabda5e609763b9a5ac3e9575a4e0b0"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T8-review-export-report-implementation.md",
-      "mainBlob": "cda6b5bce7846ff8da6428baccae81e75eb73bd9"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-implementation-review.md",
-      "mainBlob": "f0dd12164f1b5f0119851fb7b959b1b295693829"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-implementation-start.md",
-      "mainBlob": "1d5ed7ec4de7fd2639555017a5238a5535ea8f12"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-leakage-aware-dataset-lock-design.md",
-      "mainBlob": "b897893185513cf691fe528a5eec45763ffef838"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-preimplementation-review.md",
-      "mainBlob": "6d1965fc72be51d26d9cacd7c8f350e4907ab7be"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.d/2026-08-03-synthetic-toolkit-main-integration.md",
-      "mainBlob": "0e5f563a12414b57f059bf86976adc57f3cbba43"
-    },
-    {
-      "path": ".codex/AI_WORK_LOG.md",
-      "mainBlob": "1534faa51adde14877327d041e698c4a9419c27c"
-    },
-    {
-      "path": ".codex/work-logs/2026-07-30-admin-access-foundation.md",
-      "mainBlob": "4f74f72d6091f5d0a7786d9a3b2068ec952574c7"
-    },
-    {
-      "path": ".github/workflows/admin-access-foundation.yml",
-      "mainBlob": "8c9f6e0513fa4dbfbdb08f68b149d700f9e24920"
-    },
-    {
-      "path": ".gitignore",
-      "mainBlob": "e0ac40b8dd776d38d2eae80f1e64d37c015b1d55"
-    },
-    {
-      "path": "app/admin/layout.js",
-      "mainBlob": "cfd180adaed4991a8fc335441d8bac5cfaa3f482"
-    },
-    {
-      "path": "app/admin/page.js",
-      "mainBlob": "bc8120ed6b41fb808de4b09057663a14992ef2c6"
-    },
-    {
-      "path": "app/api/auth/signout/route.js",
-      "mainBlob": "2ccb0356e3d61128d5f44c855326a5778812f75d"
-    },
-    {
-      "path": "app/api/full-report/route.js",
-      "mainBlob": "37deae24b4233bd1ecf62b57b5168c99b85bc7f6"
-    },
-    {
-      "path": "app/api/full-report/session/route.js",
-      "mainBlob": "5bf7b3abd3ad44710951ede65dc8c3ac009c94f3"
-    },
-    {
-      "path": "components/auth/LoginButtons.jsx",
-      "mainBlob": "f885aefc503bcd51615ade46d2f980553da6b7c5"
-    },
-    {
-      "path": "components/onboarding/SurveyFlow.js",
-      "mainBlob": "3138b2747aaadedfb7d325cee81ba2e3b655b4ce"
-    },
-    {
-      "path": "components/result/SaveReportCTA.jsx",
-      "mainBlob": "d8a6d8f9b86614e78b2411f8203577b9e4e820db"
-    },
-    {
-      "path": "docs/architecture/admin-access-foundation-v1.md",
-      "mainBlob": "29a2ede8d918fd0f7b13a6725c58c44d2e3ee463"
-    },
-    {
-      "path": "fixture-bundle-v3.tar.gz.enc",
-      "mainBlob": "3f8caa6224e8b6b86f16e1d217aac8075dba1ddd"
-    },
-    {
-      "path": "lib/admin/access.js",
-      "mainBlob": "35ce40f1de23c2b16b64ac1529f1c091db67b77f"
-    },
-    {
-      "path": "lib/admin/capabilities.js",
-      "mainBlob": "805d6cff3d454c55e9e0cbbcb9a0dd1c03dccdb3"
-    },
-    {
-      "path": "lib/premium-report-session.js",
-      "mainBlob": "39a29dea3fa195b1e6c73c3e585e68a6ccd6e148"
-    },
-    {
-      "path": "lib/supabase/browser-client.js",
-      "mainBlob": "9c34e22acf7b960cb8108678daac4f8c629fd929"
-    },
-    {
-      "path": "lib/supabase/middleware.js",
-      "mainBlob": "8b00c426dfde70e8466568cc370a949f7fb79b32"
-    },
-    {
-      "path": "scripts/bootstrap-premium-e2e-auth.mjs",
-      "mainBlob": "9961658ce8054a9164ac6cb05a5e20bb2958fc99"
-    },
-    {
-      "path": "scripts/check-premium-browser-journey-local.mjs",
-      "mainBlob": "aa92109864b534ff28519a506e9cc3298f4259e0"
-    },
-    {
-      "path": "scripts/cleanup-premium-browser-journey.mjs",
-      "mainBlob": "c2204564a2358caedde0a0983f176730a075c1a4"
-    },
-    {
-      "path": "scripts/premium-browser-journey-core.mjs",
-      "mainBlob": "adc2f004225924d3dd76c0d70a04a516e9ae8003"
-    },
-    {
-      "path": "scripts/premium-browser-journey-local-auth.mjs",
-      "mainBlob": "455a20109b2504b453abc2e7086e5422dcbcfffb"
-    },
-    {
-      "path": "scripts/premium-e2e-session-capture.mjs",
-      "mainBlob": "3928e32814df45aab528cd6af0f08e5ea83a516b"
-    },
-    {
-      "path": "scripts/premium-e2e-system-browser.mjs",
-      "mainBlob": "826c573700a666bbeab062dc9297144ac5962581"
-    },
-    {
-      "path": "scripts/run-premium-browser-journey.mjs",
-      "mainBlob": "305a422ddc1b07679a70b6bbf2785022ce6afa2b"
-    },
-    {
-      "path": "scripts/verify-admin-access-foundation.mjs",
-      "mainBlob": "14753b978c92fd0cf22c1a957f460610a5cf30be"
-    },
-    {
-      "path": "scripts/verify-admin-access-runtime.sh",
-      "mainBlob": "05237940aa9aa752139cbdd75b618edb60c14289"
-    },
-    {
-      "path": "scripts/verify-full-report-auth-origin-contract.mjs",
-      "mainBlob": "a2aafad5526cb989a18009001fc985341453f779"
-    },
-    {
-      "path": "scripts/verify-premium-report-reentry-contract.mjs",
-      "mainBlob": "dff99b8f9be83d96f3131d716abb3151f7c385c7"
-    },
-    {
-      "path": "scripts/verify-premium-route-storage-reentry.mjs",
-      "mainBlob": "283a499c2cea6f90ae90fa02fcc19dfcc8d24f02"
-    },
-    {
-      "path": "scripts/verify-sec06-saved-report-boundary.mjs",
-      "mainBlob": "f650b7193af7ee371afc77efd523c11831977e8f"
-    },
-    {
-      "path": "supabase/migrations/20260730152900_admin_access_foundation.sql",
-      "mainBlob": "3568c5dd9365ed9cdf07c2adb5a14a61f4d97722"
-    },
-    {
-      "path": "tests/e2e/visuali-mvp.spec.ts",
-      "mainBlob": "547adbdcc25e10c504693f182c87fe16b38bb8f1"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0001-generation-spec-identity-and-policy-registries.md",
-      "mainBlob": "3e9bf327e12e69ae4a9086383b5fdbfe7d82cb13"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0002-generation-compiler-implementation-resolution.md",
-      "mainBlob": "67287937331b37084ff34add2f5a21688c8f346f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0003-import-artifact-retention-and-registration-outcomes.md",
-      "mainBlob": "e81e338a6308cde065acada7c8d5b283dc9b3d08"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0004-import-implementation-resolution.md",
-      "mainBlob": "40bb336465fc8773d5d9b55f6d3005261c09f87a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0005-observation-contract-snapshot-and-blind-execution.md",
-      "mainBlob": "ddca3a1f39b94c6a3fb5fdabff6a6adc80810d6c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0006-observation-execution-claim-and-authority.md",
-      "mainBlob": "cf344bc7ad6e26483b70e517fc096dde9b72458d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0007-blind-judgment-sealing-and-intent-join.md",
-      "mainBlob": "62efda145f32f981053e97229813f798b5567e02"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0008-purpose-specific-alignment-and-grade-derivation.md",
-      "mainBlob": "4b18a7daa4d08d976075a11b7e5c30bb9f9c519e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0009-axis-level-consensus-and-purpose-scoped-g3.md",
-      "mainBlob": "d0375eb5229fbf6fcdeae47d4b2af9ae7214888d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0010-purpose-scoped-g4-and-grade-authority.md",
-      "mainBlob": "9bd22311ae61e09c4e63ce133b92ebed68754f2d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0011-promotion-evidence-snapshot-and-revalidation.md",
-      "mainBlob": "4aee92c026ae51cb1475f42705a6d2d2b6e013fc"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0012-leakage-coupling-and-append-only-revocation.md",
-      "mainBlob": "76cbce21bfb8fd6f81c01c6b32ef4450808bf698"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0013-two-stage-promotion-evidence-and-visual-review.md",
-      "mainBlob": "82d44b3eb2420f5b0d57a800fac999493b1e3d86"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0014-campaign-orchestration-without-new-judgment-authority.md",
-      "mainBlob": "ad3f812ccc7ba33938023081e9eb0e2f3b7adad3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0015-fixed-pilot-matrix-waves-and-anti-cherry-picking.md",
-      "mainBlob": "daffb21078557cf9a87d290ff6761ce535d088d4"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0016-manual-generation-handoff-and-single-provider-runs.md",
-      "mainBlob": "6014f1eabb8f0fe834fa963dba36ca7c44d5e061"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0017-frozen-run-versions-and-t8-t9-handoff.md",
-      "mainBlob": "1f1c6a588863c88e9b3757414b1bac91e2c58a9f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0018-pilot-source-freeze-checkpoint-and-terminal-corrections.md",
-      "mainBlob": "838a88a27b2c52386bbcfee869a4cdc386aec055"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0019-report-source-snapshot-and-derived-metric-authority.md",
-      "mainBlob": "d1ff6ed087edf012a000943f3641ebdf9decba77"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0020-fixed-denominator-and-non-causal-provider-comparison.md",
-      "mainBlob": "d28296781844a4366cb1d99d54ae0e4b2b204fb3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0021-blind-annotated-review-and-immutable-report-revisions.md",
-      "mainBlob": "5f866735b1abada0bca4e56f1ea51a8b6b8eba08"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0022-evidence-metric-render-layering-and-g4-time-boundaries.md",
-      "mainBlob": "7e344738a5c991e110fa2a743d881a625f03481d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0023-current-g4-authority-and-dataset-source-snapshot.md",
-      "mainBlob": "303385ec2f9cd61bd215b71cf4cb652ef7f8cc7c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0024-leakage-components-sticky-splits-and-exposure-monotonicity.md",
-      "mainBlob": "138fa383532a198bb045f350b1a28669a198aa62"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0025-deterministic-component-splitting-and-immutable-dataset-versions.md",
-      "mainBlob": "0f8139e1173d91fd988d7df9073871a1f6093efe"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0026-g5-holdout-lock-and-regression-baseline-boundaries.md",
-      "mainBlob": "573146477af243a46c5bc8968b76f0264c2e0ac7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0027-source-universe-lock-basis-and-two-stage-dataset-activation.md",
-      "mainBlob": "b307f553760945745776a7424e06090160710728"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0028-review-corrections-source-universe-exposure-and-activation.md",
-      "mainBlob": "af50ad98ad9ffba9733219a4de0d9bf17446625c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0029-dataset-lock-implementation-review.md",
-      "mainBlob": "c2687b2af5d89acfc6d22e217cfc23e74e02e16d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0030-isolated-rehearsal-authority-and-cleanup.md",
-      "mainBlob": "151c46af697b735d23a6413ca5e91970f6977c42"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0031-composed-rehearsal-and-multi-checkpoint-correction.md",
-      "mainBlob": "0086b067ee6cfa7d52528cefd21afafedea2bbdb"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0032-solo-assessment-authority-without-fake-consensus.md",
-      "mainBlob": "11831b831802c2d4b575a3ff2c8a6478594d0392"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0033-target-withheld-screening-before-intent-reveal.md",
-      "mainBlob": "66095ba17ccc6ba068018e7fbbffebd556caf817"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0034-fixed-wave-denominator-and-checkpoint-link.md",
-      "mainBlob": "db0f8f9d009e1303763f8a597f9feede8d3035b7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0035-t7-terminal-compatibility-and-observation-failure-checkpoint.md",
-      "mainBlob": "388f928c4f98993501926c0fef02b376bf4fa4a0"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/adr/0036-solo-assessment-source-and-phase-corrections.md",
-      "mainBlob": "b2674648d0c1efd80c3298f3462fc4f7c6b3fe6a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/candidate-import-provenance-v1.md",
-      "mainBlob": "6bc42359238b323681b9209ed6fef7e082fa7475"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/full-pipeline-rehearsal-implementation-v1.md",
-      "mainBlob": "6878d4af9b2e53c4ad34f4dcf975bb3aa0c0eb00"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/full-pipeline-rehearsal-v1.md",
-      "mainBlob": "a61a42e6af4f0139e925006d650db9d26798ce9b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/generation-contract-prompt-compiler-v1.md",
-      "mainBlob": "75852a66b1588e8c54485f60f2e97ed53fb89346"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/judgment-intent-alignment-implementation-v1.md",
-      "mainBlob": "a1610d8f2183450665af0ddcd96ccb67c10324d3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/judgment-intent-alignment-v1.md",
-      "mainBlob": "9787f85f48505440281ed356ccb1b5ab0e0dde35"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/leakage-aware-dataset-lock-implementation-v1.md",
-      "mainBlob": "21bf713caee46c13c7650d4293bd8f1e0c802024"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/leakage-aware-dataset-lock-v1.md",
-      "mainBlob": "f07de3526a03a8919daab3e29ad4f5a9fcf4b4ef"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/observation-adapter-implementation-v1.md",
-      "mainBlob": "5ada891fb52b28eecf1d4c1f7ed4703123e74078"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/observation-adapter-v1.md",
-      "mainBlob": "c260d66a9cd869d413e3bf06ccc6fee4e9021ea7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/pilot-campaign-runner-implementation-v1.md",
-      "mainBlob": "b8d4a630411712848a47451f039422da5e233890"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/pilot-campaign-runner-v1.md",
-      "mainBlob": "9abd5ed1e97b156516a983e653cd44bf50097b83"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/promotion-policy-implementation-v1.md",
-      "mainBlob": "f204d35ebf15c9b5c99c914674baff87049b02b8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/promotion-policy-v1.md",
-      "mainBlob": "7dd1dd75ef15b3cf1fb7f2250506e058b5823207"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/review-export-report-implementation-v1.md",
-      "mainBlob": "79c18416e43c8e09b533fde3a3b54328176a79a9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/review-export-report-v1.md",
-      "mainBlob": "8d4b82ad3419215e1d84da382c09ad8d68505ba8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/solo-pilot-assessment-implementation-v1.md",
-      "mainBlob": "6ca79ef28d3eff084e1aae39c31db283319d3d83"
-    },
-    {
-      "path": "tools/synthetic-evaluation/docs/solo-pilot-assessment-v1.md",
-      "mainBlob": "f21bdd4b9d36f9824cb5666abe4256f3011cfbac"
-    },
-    {
-      "path": "packages/face-contracts/README.md",
-      "mainBlob": "e883ae3bf573e78a36902b289d0c7389a279566d"
-    },
-    {
-      "path": "packages/face-contracts/package.json",
-      "mainBlob": "e77d8d9e69209c72fcad1840077fa038a3cff383"
-    },
-    {
-      "path": "packages/face-contracts/src/index.js",
-      "mainBlob": "8015b0390c66a2c4cb4b78752196aa5f8bcc82ff"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-campaign/campaign-contract.js",
-      "mainBlob": "06d679bee518d15b446bd292ae89f953fa3b7422"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-campaign/constants.js",
-      "mainBlob": "2aae1b4bcd43496e0729b5ed14cc725b8e6f794b"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-campaign/index.js",
-      "mainBlob": "b8239bb032847f7e1de6e8b8b76139a3a64984ed"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-dataset/constants.js",
-      "mainBlob": "c7881675f8e68e5d8c10eb7c7e632557375dcbad"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-dataset/dataset-contract.js",
-      "mainBlob": "2d9c37a676e5fe3859044552e7ae6c42af35189d"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-dataset/index.js",
-      "mainBlob": "dc9f10befd7128fd21db06e0bf4bd186a3225f3d"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-generation/compiled-prompt.js",
-      "mainBlob": "493561bdb8f09a19ae6d4ed2452cb89c3cf53f0f"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-generation/generation-spec.js",
-      "mainBlob": "60d4dcf4e3ce460fb0c8eb2e60483f18032328ae"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-import/asset-record.js",
-      "mainBlob": "6f463b6d9035dd2cfadda309b4b7568b80f48163"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-import/candidate-manifest.js",
-      "mainBlob": "2b5fe076c0da2b1135d94b3bb334ee0646f9d3bf"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-import/import-errors.js",
-      "mainBlob": "49ea792c6e0f6ac93eca350c763d3d88558a80b7"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-import/import-request.js",
-      "mainBlob": "18d0374c6924b577337d48350c90ed6a29c340f7"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-judgment/artifact-contract.js",
-      "mainBlob": "8773ee6b2983c5e5f9ef80739c9c56a57fac8213"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-judgment/constants.js",
-      "mainBlob": "bc1371dcc31753ee2b729815d040b6bb5a2d38a4"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-judgment/helpers.js",
-      "mainBlob": "b2e78efbd2b1cb731467acf9adcab3fb99d79e4f"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-judgment/index.js",
-      "mainBlob": "ff30fe91d209741ee737a3070158a2f41a8b8e2c"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-judgment/submission-contract.js",
-      "mainBlob": "ad7fa7a39373007ea6be29e74da42eb87467f485"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-observation/observation-contract.js",
-      "mainBlob": "ee622fb2c96e22b44b37b7a4504308a92ec60278"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-promotion/constants.js",
-      "mainBlob": "e091162b60ba82e1e00848ad69e4566d66a00ff9"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-promotion/index.js",
-      "mainBlob": "fdf9168c8e57f344bb642beabf4e73314a69837c"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-promotion/promotion-contract.js",
-      "mainBlob": "42a262c7753b50e8d5778526d32262041ac07c79"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-reporting/constants.js",
-      "mainBlob": "512bdbe3d27c6b97dc9bcbdc750d463ede4fc831"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-reporting/index.js",
-      "mainBlob": "5b6944d8427aaa5d429042b4ee9442d22bee2b4a"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-reporting/reporting-contract.js",
-      "mainBlob": "ca156913d90d666f440784e8903bb05cafb500cf"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-solo-assessment/constants.js",
-      "mainBlob": "397d62d89c41ab7c309485cdb0a7430772699e55"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-solo-assessment/contract.js",
-      "mainBlob": "fcaa52f01f16b1a587f986aa44a79ddfd783bcda"
-    },
-    {
-      "path": "packages/face-contracts/src/synthetic-solo-assessment/index.js",
-      "mainBlob": "c0d76233866d9fcb9d338991558a56e96b336fc3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/README.md",
-      "mainBlob": "ab0e6577d50564e1f8486825567d94d3304b78d0"
-    },
-    {
-      "path": "tools/synthetic-evaluation/package.json",
-      "mainBlob": "0d408776c06845e651f733fd433b2a3360b80d82"
-    },
-    {
-      "path": "tools/synthetic-evaluation/rehearsal/report.mjs",
-      "mainBlob": "7a7e806d28e2c401ecadbf3d6148045018d3ac0a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/rehearsal/run-full-rehearsal.mjs",
-      "mainBlob": "dc3e318e59371a1b7410abb438e3b000dcc9ca84"
-    },
-    {
-      "path": "tools/synthetic-evaluation/rehearsal/scenario-matrix.mjs",
-      "mainBlob": "61bc1dacb94b4c4a2d247fe6e1bb13b036b6a022"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/checkpoint.js",
-      "mainBlob": "3c6ab82d02c43aaa6ca3aa4fe2b47e5afd407a88"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/cli/campaign.js",
-      "mainBlob": "6c0e0459ccea92a546c437871954ee23d3d3396f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/closeout.js",
-      "mainBlob": "8bd980cb622fa17d75ec375fa62e28378d17d0d2"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/events.js",
-      "mainBlob": "05479034b70ee328cfafd02f824279f46d154054"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/generation.js",
-      "mainBlob": "bf63e185b11122b0b93ffdaca901a16410b139ff"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/index.js",
-      "mainBlob": "e5acbbf352a81e4ddfa720c1ceff1f4cc278281c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/orchestrator.js",
-      "mainBlob": "1c870e2cb0693d27c46c1444f3a1cf2cf8889dca"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/plan.js",
-      "mainBlob": "a19215f8c0e974b7497c3eb315b8be60babf437e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/projection.js",
-      "mainBlob": "699428ff736116bc3f078374a052027c0df7831a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/safe-operations.js",
-      "mainBlob": "1cc29be26ca252222632f03bb40271a100eb8f81"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/source-freeze.js",
-      "mainBlob": "5b0fa45ef8355501bec19b6699c8e64b1f4c7328"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/stage-adapters.js",
-      "mainBlob": "20f86ef65eb9e2cffe2e12b2c231e7b91f716a8e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/stage-registration.js",
-      "mainBlob": "7d4cb8a9eaa91a768c6957a8a8a8e236c643d855"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/campaign/storage.js",
-      "mainBlob": "b3107d6b09f87a0d8b49e4856948cd8e0c93f22a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/baseline.js",
-      "mainBlob": "5305d074e578f1aa862e493fbb1a76827632e3d5"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/cli/baseline.js",
-      "mainBlob": "a9ab2c7c65d36c0f36cecb145cd458d6d6753c2b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/cli/dataset.js",
-      "mainBlob": "afaf3f20acfc1f5439c6b494fe5349ad577a68d5"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/cli/helpers.js",
-      "mainBlob": "1d2a11021601e142392f17c30a5e4fbc200d5a05"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/current-authority.js",
-      "mainBlob": "f5b66d215fbf95cd623c281421752dd48b832b7d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/exposure.js",
-      "mainBlob": "b5930caa12c37ecc35eaa0356c75de9e6f32bec0"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/index.js",
-      "mainBlob": "56e0457bdaa70667d0ba6e8f99ae19a1966106fe"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/leakage.js",
-      "mainBlob": "6ada9012159c9195cad122667c9ca19acdf7c7c2"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/lock.js",
-      "mainBlob": "7899d89684c28bc33a4e6f89d8353a7caf63a3d3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/orchestrator.js",
-      "mainBlob": "87ea19aa0f9e6b7f598110461c78dead8f2b1531"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/policy.js",
-      "mainBlob": "bc8e2f4b8c4acfce3edc94ecff2b611af8fc6f84"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/review.js",
-      "mainBlob": "894d4d5882e1894286791f0c8924b55ea2a60bc9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/source.js",
-      "mainBlob": "3be13d420fb7aa90fd33472364ee472b505590fb"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/split.js",
-      "mainBlob": "a345e7339db2b9689c376717a6d4b43fcb154e2d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/status.js",
-      "mainBlob": "5c04419dee6974536bdf1c056628917ae1b84699"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/storage-layout.js",
-      "mainBlob": "2a1f30e6b483565ec2fa9c703113fe33ed0eaafd"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/dataset/storage.js",
-      "mainBlob": "e998e5f0eadc8007b1b0a507f437507c36b08c91"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/generation/canonicalize-generation-spec.js",
-      "mainBlob": "e53135de69df1827a82da6bcd6daf0bcc64d1774"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/generation/compile-prompt.js",
-      "mainBlob": "3ebcab1b51ee4fb34f6800aabedccf61f187a011"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/generation/fixtures/skin-control-fixtures.js",
-      "mainBlob": "5cec6aca68bbeb21da91fdbf61dd66e1011fec71"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/generation/providers/provider-profiles.js",
-      "mainBlob": "1c0b1ccf1d9680c4864cbf9d6176d94ee4a63e92"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/generation/registries/exclusions-v1.js",
-      "mainBlob": "c8896c604865c865a913e67b1f81ff208a467b18"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/build-candidate.js",
-      "mainBlob": "5df61a5968a82eb79e855fc3cdd460146a6fcab3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/cli/import-candidate.js",
-      "mainBlob": "a2c304ad2b54341dfb79fd65d5e33de2caaf02e7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/commit-import-transaction.js",
-      "mainBlob": "2000c9459d75a3b7de3e5859f3c94c0b0f80d0e3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/image-processing.js",
-      "mainBlob": "36734d8327d1884992803d19dac245bcc2ac29dc"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/import-candidate.js",
-      "mainBlob": "09df47fcd3fb03211bc0d116fd0deccbbf1ca141"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/read-candidate-registry.js",
-      "mainBlob": "dc2e5ec78a4cd465f27ec9ddd89d3a2ce7ef5db3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/read-generation-artifacts.js",
-      "mainBlob": "146bc4ca61ad98fb94aba9e894c1856d95458601"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/resolve-safe-path.js",
-      "mainBlob": "17b2daaff5856f086e46bf7577320ccf8e0d4654"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/import/storage-layout.js",
-      "mainBlob": "6402c3686a2273b60dd6f070e4094b10ad3b83e7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/index.js",
-      "mainBlob": "50c34431658be5430d0086c8e9e015def7454af4"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/alignment-registrar.js",
-      "mainBlob": "89ea802c10a914e4f6d340122162dec18cb56f4f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/alignment.js",
-      "mainBlob": "66c648404791bdfef57243f2dcbc7daa3170d964"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/artifact-store.js",
-      "mainBlob": "534674966fb82175381f6c96f7ce493394678d0c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/assignment.js",
-      "mainBlob": "389254fd2b031ac2e8afcd6d8828ffc05a58801e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/blind-registrar.js",
-      "mainBlob": "ee25e79fc85cd10200ab2d925d235cf72cd0f84b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/cli/align.js",
-      "mainBlob": "8b96f1a96c2cd250733e031b4e7da8a629e84c13"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/cli/consensus.js",
-      "mainBlob": "d7fb83d5eec5648203f3e1c1d749d465624dbfab"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/cli/helpers.js",
-      "mainBlob": "74da554019cdb18bc0007ad6936e651318ac1634"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/cli/judge.js",
-      "mainBlob": "71d0042946af342e53157fead7053f956dd8f729"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/consensus.js",
-      "mainBlob": "5a4122673385dd459583cd39b7ac4a325dcfe16f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/grades.js",
-      "mainBlob": "2bfe6eef92290ff151a1650331dc851c8fe68a3b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/intent-resolver.js",
-      "mainBlob": "b4a33b5552f9da82dfc1e426b3e1ecdcceb45932"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/prepare-assignment.js",
-      "mainBlob": "81ec7c4af1c858a35dd3b3978badb12dd073e2a4"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/read-intent-artifacts.js",
-      "mainBlob": "cae922a66106ce074dd7174027b3a7f8fd6e0be2"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/storage-layout.js",
-      "mainBlob": "b24ec594fad4ef7a7e42e9de3acdaedabee30c69"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/stored-alignment.js",
-      "mainBlob": "f1648c0eac9b21aa3249376718240cfc8e5ce00f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/judgment/submission.js",
-      "mainBlob": "a4ea32dbf0938643e73f512f537b9af4765c4b60"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/artifact-integrity.js",
-      "mainBlob": "a2d2bfbff5d4c97ffb6c19c3928b751d3254bdec"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/cli/observe-candidate.js",
-      "mainBlob": "4013fa79d01ab2b8f562f5bd9542f86ae2991280"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/normalize-observation.js",
-      "mainBlob": "bf50c5cb994090539835e9660f8f827632c8163f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/normalize/eligibility-skin.js",
-      "mainBlob": "844a8d73ff538abc70722e1a38cda5e64464e399"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/normalize/face.js",
-      "mainBlob": "9d78525ae3b93a315682339897a7613a528868d8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/normalize/helpers.js",
-      "mainBlob": "e257a5eaabd6d25c1d9d69d3533c11f5aa947dff"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/observe-candidate.js",
-      "mainBlob": "3428a028564fbf633eeabd46ee630a6f0be9ec8c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/openai-transport.js",
-      "mainBlob": "a5051df617dbdbfb41f3e8c4fc1e0cc79ab19a8a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/parity-fixtures.js",
-      "mainBlob": "7889a43869187997f8f8f486021ae317bf3dae05"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/preflight-observation.js",
-      "mainBlob": "1e4a2ef36d9c976ec0d22409ca3c96c344b505bd"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/profiles.js",
-      "mainBlob": "f5510fc285cb07cd87f12a6cfce96001f4a41d96"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/register-observation-run.js",
-      "mainBlob": "196b5c436e811e644f2eaeb35c782b0953ddeb9e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/run-identity.js",
-      "mainBlob": "c62c970646ca9639550b73d83b8238ee36cf043f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/snapshot/canonical-v1.js",
-      "mainBlob": "3b708c225e5b98507af74822797a7d508e641ef2"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/snapshot/verify-source-checkout.js",
-      "mainBlob": "d7e6b6f0cf9b461997ed509e8f090fea70939d8c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/observation/storage-layout.js",
-      "mainBlob": "3d59c4b964e18bd1ab98ce77f43218239ca96a8a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/cli/promote.js",
-      "mainBlob": "9a381f458bfa3f37a462270540449c2ba4cf9538"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/decision.js",
-      "mainBlob": "661383c92b06473baf60e26eed504dbeb58d7f34"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/evidence.js",
-      "mainBlob": "df4ed910217c6dfaa986b48026f683c5f498188c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/orchestrator.js",
-      "mainBlob": "7c89952d91ffedbd475bbad898eb9679680449b3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/policy.js",
-      "mainBlob": "4089c9fe7783cb49c545904c2cc62ed6479b2d5e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/preflight.js",
-      "mainBlob": "54cb3c0711338df59ab486141a98db9b5ed8ee78"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/promotion-review.js",
-      "mainBlob": "f14728e5d0b75666a905c94c313c91d2e86802b0"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/registrar.js",
-      "mainBlob": "8816e11b169884121189d414328b758effdb8965"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/reviews.js",
-      "mainBlob": "95e63f4ac3b7919ab680f5e7cccf7e0081038882"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/source-snapshot.js",
-      "mainBlob": "7e27cbaa7006cabea2eaeecf7f1385a785c2feeb"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/promotion/storage-layout.js",
-      "mainBlob": "0e2e2e3bb15457aa212adb174115571c417c8ba9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/claims-report.js",
-      "mainBlob": "9cf0bd77315f333a0bb06afc39102e5c24837cbb"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/cli/export.js",
-      "mainBlob": "69632f687e3d71ca74847fe4bcf68d763d0b8997"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/cli/helpers.js",
-      "mainBlob": "69a4b41fdc19bd0194f853e15c447fde533c06f6"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/cli/report.js",
-      "mainBlob": "d27546b8d2dff815caa902fe55cf24747f4b6d34"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/comparison.js",
-      "mainBlob": "7773bd1a65080672f77bc652ce6ebbec8b6b5fb9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/derive.js",
-      "mainBlob": "26e1b39aaa534936233c9790e35fa70c9576544f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/index.js",
-      "mainBlob": "4fa5fd771aac2f4e434baec6c5f6a7c15dccd7ad"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/orchestrator.js",
-      "mainBlob": "6269fa59f3b03417cf02cf119f957b48a6d48b1a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/policy.js",
-      "mainBlob": "17d1c8b2c12f709e7b1bb03a6ed00ba8fb42368a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/render.js",
-      "mainBlob": "5cfdb5ed27bd8cbeda479c91d0d9d06b2cfa095b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/review-package.js",
-      "mainBlob": "492ca5d0dc8512900ad1c0ea50e1bb506faf8649"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/source-preflight.js",
-      "mainBlob": "69a14ef745cb7a18b2f323d16248972e60679b49"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/reporting/storage.js",
-      "mainBlob": "722eeb4519e8d2a373e9f29594c67cfe661e8500"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/shared/canonical-json.js",
-      "mainBlob": "6e908ba586f0a832417d8d0e9deb12676c48ccb7"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/artifacts.js",
-      "mainBlob": "33286814a187940ebbfc6944f5759d7ff7d84955"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/cli/helpers.js",
-      "mainBlob": "74da554019cdb18bc0007ad6936e651318ac1634"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js",
-      "mainBlob": "c318a8791cbbc0834639af9ebcbbdccd963de90e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/index.js",
-      "mainBlob": "89e11ff23e0e69c64b0464cfd3da627a1c3b47bf"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js",
-      "mainBlob": "17e24100ab5aa394f29bdc4d5bffd5898b299980"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js",
-      "mainBlob": "46bac0360dfe61d089aa0065338bef8fe4df29cd"
-    },
-    {
-      "path": "tools/synthetic-evaluation/src/solo-assessment/storage.js",
-      "mainBlob": "eed9e5d8dd59af7653985ea479377ccf3fffae9b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/architecture-boundary.test.mjs",
-      "mainBlob": "fc9c06fbec26d46fb254bcd56f36aad57418efe6"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/generation.test.mjs",
-      "mainBlob": "ca70659e8be07e4b353cf07ac328ebf0c498c21c"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/helpers.mjs",
-      "mainBlob": "60571e55629f5f7c935561fdc180746ee5bce598"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/ledger.test.mjs",
-      "mainBlob": "ce9cb7d0ecb4936d5327447507bb12a60e04cc4a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/orchestrator.test.mjs",
-      "mainBlob": "69aab490c24202076a49dbe3b5aaa10d786d738f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/plan.test.mjs",
-      "mainBlob": "2126745b599d629dda7c345639331ae8489ce7b0"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/campaign/stage-binding.test.mjs",
-      "mainBlob": "576aa870589b3955c06ad897187dfa8a140ffda2"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/architecture-boundary.test.mjs",
-      "mainBlob": "09cf0676156fd5f184e13189ed30f59e62ccd84e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/baseline.test.mjs",
-      "mainBlob": "afbee4e137b6ed5831ab5b58f9f021465ee0b939"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/contracts.test.mjs",
-      "mainBlob": "f5b868ac238935efa56e1578a72f217e992460ed"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/graph-split.test.mjs",
-      "mainBlob": "2d6c05d5a7d9c06482bede7e5803c67470c798a1"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/helpers.mjs",
-      "mainBlob": "c4e081b9f19c4ef7b6d708f3c29965586783008b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/dataset/lock-storage.test.mjs",
-      "mainBlob": "68e0763eb815430d67c81b5d69fb7b7b1da50cb3"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/generation-contract.test.mjs",
-      "mainBlob": "ab7b34977dc1da4888624ce33087683515c3b839"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/cli.test.mjs",
-      "mainBlob": "6d36e4f43de876a229a1cb328ac51bba7c26440e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/helpers.mjs",
-      "mainBlob": "9322722d74ae6bdda24a9bab753ee30519ed07a6"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/image-processing.test.mjs",
-      "mainBlob": "b98336e5f0723d06b2d2f0541d2c3dc51cb3431b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/import-pipeline.test.mjs",
-      "mainBlob": "96529a7dd354337ec27cb4483e54420cfdf6f433"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/request-contract.test.mjs",
-      "mainBlob": "659685755a331a3e9fc09b4ab0ddf612c37f29f9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/import/safe-path.test.mjs",
-      "mainBlob": "6074f157c9708b8939dae5ccc56616f0685bb9be"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/alignment.test.mjs",
-      "mainBlob": "3d987bc5fcd1fa6956f0fc44c71d323d924a804b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/consensus.test.mjs",
-      "mainBlob": "527cd4c45f57d35d5f9626fa7870a87b8c3a1c77"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/contracts.test.mjs",
-      "mainBlob": "94fd0315308096659f914952574561cbb9d2cc45"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/helpers.mjs",
-      "mainBlob": "eb5f7f22c2f0038d691ec3104d56ea4afa1f2368"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/storage-boundary.test.mjs",
-      "mainBlob": "5847e571df1dd7f927988004c76f01fbeba7b9ac"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/judgment/stored-alignment.test.mjs",
-      "mainBlob": "278b01b5237692f219d6ee6c9d30b05e90a4ac0b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/observation/cli.test.mjs",
-      "mainBlob": "b56c1e4080a6161937764835ece43465d4384128"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/observation/observation-run.test.mjs",
-      "mainBlob": "35eae2752af928ee2060b655c9fce6bd50db8237"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/observation/snapshot-normalizer.test.mjs",
-      "mainBlob": "56baff587a54544cb53430f34714c3512be11de8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/observation/transport.test.mjs",
-      "mainBlob": "fae8ab8e859a28355730c1bdba7c3a1776439d39"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/promotion/confirmation.test.mjs",
-      "mainBlob": "7664cfa8e601b1168b29b3566a7ec1c2d6604c12"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/promotion/helpers.mjs",
-      "mainBlob": "c2af3fbdde80d859ed9a1ec9a612186a64e84697"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/promotion/policy.test.mjs",
-      "mainBlob": "b1e02090c1f5ed513d42c2bdbac76334f8fbdefb"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/promotion/source-snapshot.test.mjs",
-      "mainBlob": "fee4633ffa77145b8825c205c05ab3da0b4626e4"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/prompt-compiler.test.mjs",
-      "mainBlob": "40f2abeef49656df12645a33c295b976daeb2ff8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/rehearsal/full-pipeline-rehearsal.test.mjs",
-      "mainBlob": "405f923d26b465095b6bd32b82be504fe8c6b072"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/architecture-boundary.test.mjs",
-      "mainBlob": "409d55bde166e030941572a5b662aff17ecd3ad8"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/claims.test.mjs",
-      "mainBlob": "761e05725fa8703f5a80ccbb162007984b034106"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/comparison.test.mjs",
-      "mainBlob": "44e51062e86c10ed2908744811cde952ec122486"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/derive.test.mjs",
-      "mainBlob": "385f3674e7c0b720c2f68f4070815a92338ea69a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/helpers.mjs",
-      "mainBlob": "9802d09a7637d2fd859cde5fc48286ead7b629dc"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/review-render.test.mjs",
-      "mainBlob": "0884c1fc4a7312b7fc707720d6b1cd70e7ebf50a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/source-preflight.test.mjs",
-      "mainBlob": "51f9acdc7204d1f9c5f4ad78b39a527778ef7b09"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/reporting/storage.test.mjs",
-      "mainBlob": "7fec25f68917f88ac2145de70ac43e8f0369390f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/snapshots/gemini-A.txt",
-      "mainBlob": "a2e32017d891aca3c9c25a0eb8fbc65158a1aa6b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/snapshots/gemini-B.txt",
-      "mainBlob": "897ee9d4850db74301d8ab3504d10755c5431b4e"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/snapshots/gemini-C.txt",
-      "mainBlob": "9937fdfdbffb1eee69cda16649c99f719b54accc"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/snapshots/gemini-D.txt",
-      "mainBlob": "2ff10de3384219b36275024b83b7c345f2247ee6"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs",
-      "mainBlob": "8e8435d5c4bc38f82fd82b5484893e0270c06e7f"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/solo-assessment/authority-boundary.test.mjs",
-      "mainBlob": "92323f649211d9c3361f1d5db859f7ee04ebab5b"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/solo-assessment/checkpoint-regression.test.mjs",
-      "mainBlob": "88ccece01fa54bd0e5d2798a6659d1caeecd6df9"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs",
-      "mainBlob": "c6c396a798bca1cfa507daae946603db9ee93f4a"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs",
-      "mainBlob": "222a88e5b6eef4dcf4a684ff76510b6a3376a22d"
-    },
-    {
-      "path": "tools/synthetic-evaluation/tests/workspace.test.mjs",
-      "mainBlob": "769b1a528c70bba47081e928dad8e5e95cfde438"
-    }
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-02-T6-promotion-policy.md", "mainBlob": "ce5af6e883572361fb4c6ab5cbe9fefa8381aa7a"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-02-T7-pilot-campaign-runner-design.md", "mainBlob": "d7a6f619946ac0141d370913dddc957b610f8d"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-02-T7-pilot-campaign-runner-implementation.md", "mainBlob": "453ff49838a28542b5e0809cda4f5ce51f03c4ae"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T10-full-rehearsal.md", "mainBlob": "997a62fec9bb317c05fc1d0b2c317d4d15822296"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T11-solo-pilot-assessment-design.md", "mainBlob": "5c36ef97a255876959b464446b3ed901b7f760e2"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T11-solo-pilot-assessment-implementation.md", "mainBlob": "608b9c93a796dc2f7919c0a5d3e411990540fefd"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T8-review-export-report-design.md", "mainBlob": "173188f11dabda5e609763b9a5ac3e9575a4e0b0"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T8-review-export-report-implementation.md", "mainBlob": "cda6b5bce7846ff8da6428baccae81e75eb73bd9"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-implementation-review.md", "mainBlob": "f0dd12164f1b5f0119851fb7b959b1b295693829"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-implementation-start.md", "mainBlob": "1d5ed7ec4de7fd2639555017a5238a5535ea8f12"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-leakage-aware-dataset-lock-design.md", "mainBlob": "b897893185513cf691fe528a5eec45763ffef838"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-T9-preimplementation-review.md", "mainBlob": "6d1965fc72be51d26d9cacd7c8f350e4907ab7be"},
+    {"path": ".codex/AI_WORK_LOG.d/2026-08-03-synthetic-toolkit-main-integration.md", "mainBlob": "0e5f563a12414b57f059bf86976adc57f3cbba43"},
+    {"path": ".codex/AI_WORK_LOG.md", "mainBlob": "1534faa51adde14877327d041e698c4a9419c27c"},
+    {"path": ".codex/work-logs/2026-07-30-admin-access-foundation.md", "mainBlob": "4f74f72d6091f5d0a7786d9a3b2068ec952574c7"},
+    {"path": ".github/workflows/admin-access-foundation.yml", "mainBlob": "8c9f6e0513fa4dbfbdb08f68b149d700f9e24920"},
+    {"path": ".gitignore", "mainBlob": "e0ac40b8dd776d38d2eae80f1e64d37c015b1d55"},
+    {"path": "app/admin/layout.js", "mainBlob": "cfd180adaed4991a8fc335441d8bac5cfaa3f482"},
+    {"path": "app/admin/page.js", "mainBlob": "bc8120ed6b41fb808de4b09057663a14992ef2c6"},
+    {"path": "app/api/auth/signout/route.js", "mainBlob": "2ccb0356e3d61128d5f44c855326a5778812f75d"},
+    {"path": "app/api/full-report/route.js", "mainBlob": "37deae24b4233bd1ecf62b57b5168c99b85bc7f6"},
+    {"path": "app/api/full-report/session/route.js", "mainBlob": "5bf7b3abd3ad44710951ede65dc8c3ac009c94f3"},
+    {"path": "components/auth/LoginButtons.jsx", "mainBlob": "f885aefc503bcd51615ade46d2f980553da6b7c5"},
+    {"path": "components/onboarding/SurveyFlow.js", "mainBlob": "3138b2747aaadedfb7d325cee81ba2e3b655b4ce"},
+    {"path": "components/result/SaveReportCTA.jsx", "mainBlob": "d8a6d8f9b86614e78b2411f8203577b9e4e820db"},
+    {"path": "docs/architecture/admin-access-foundation-v1.md", "mainBlob": "29a2ede8d918fd0f7b13a6725c58c44d2e3ee463"},
+    {"path": "fixture-bundle-v3.tar.gz.enc", "mainBlob": "3f8caa6224e8b6b86f16e1d217aac8075dba1ddd"},
+    {"path": "lib/admin/access.js", "mainBlob": "35ce40f1de23c2b16b64ac1529f1c091db67b77f"},
+    {"path": "lib/admin/capabilities.js", "mainBlob": "805d6cff3d454c55e9e0cbbcb9a0dd1c03dccdb3"},
+    {"path": "lib/premium-report-session.js", "mainBlob": "39a29dea3fa195b1e6c73c3e585e68a6ccd6e148"},
+    {"path": "lib/supabase/browser-client.js", "mainBlob": "9c34e22acf7b960cb8108678daac4f8c629fd929"},
+    {"path": "lib/supabase/middleware.js", "mainBlob": "8b00c426dfde70e8466568cc370a949f7fb79b32"},
+    {"path": "scripts/bootstrap-premium-e2e-auth.mjs", "mainBlob": "9961658ce8054a9164ac6cb05a5e20bb2958fc99"},
+    {"path": "scripts/check-premium-browser-journey-local.mjs", "mainBlob": "aa92109864b534ff28519a506e9cc3298f4259e0"},
+    {"path": "scripts/cleanup-premium-browser-journey.mjs", "mainBlob": "c2204564a2358caedde0a0983f176730a075c1a4"},
+    {"path": "scripts/premium-browser-journey-core.mjs", "mainBlob": "adc2f004225924d3dd76c0d70a04a516e9ae8003"},
+    {"path": "scripts/premium-browser-journey-local-auth.mjs", "mainBlob": "455a20109b2504b453abc2e7086e5422dcbcfffb"},
+    {"path": "scripts/premium-e2e-session-capture.mjs", "mainBlob": "3928e32814df45aab528cd6af0f08e5ea83a516b"},
+    {"path": "scripts/premium-e2e-system-browser.mjs", "mainBlob": "826c573700a666bbeab062dc9297144ac5962581"},
+    {"path": "scripts/run-premium-browser-journey.mjs", "mainBlob": "305a422ddc1b07679a70b6bbf2785022ce6afa2b"},
+    {"path": "scripts/verify-admin-access-foundation.mjs", "mainBlob": "14753b978c92fd0cf22c1a957f460610a5cf30be"},
+    {"path": "scripts/verify-admin-access-runtime.sh", "mainBlob": "05237940aa9aa752139cbdd75b618edb60c14289"},
+    {"path": "scripts/verify-full-report-auth-origin-contract.mjs", "mainBlob": "a2aafad5526cb989a18009001fc985341453f779"},
+    {"path": "scripts/verify-premium-report-reentry-contract.mjs", "mainBlob": "dff99b8f9be83d96f3131d716abb3151f7c385c7"},
+    {"path": "scripts/verify-premium-route-storage-reentry.mjs", "mainBlob": "283a499c2cea6f90ae90fa02fcc19dfcc8d24f02"},
+    {"path": "scripts/verify-sec06-saved-report-boundary.mjs", "mainBlob": "f650b7193af7ee371afc77efd523c11831977e8f"},
+    {"path": "supabase/migrations/20260730152900_admin_access_foundation.sql", "mainBlob": "3568c5dd9365ed9cdf07c2adb5a14a61f4d97722"},
+    {"path": "tests/e2e/visuali-mvp.spec.ts", "mainBlob": "547adbdcc25e10c504693f182c87fe16b38bb8f1"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0001-generation-spec-identity-and-policy-registries.md", "mainBlob": "3e9bf327e12e69ae4a9086383b5fdbfe7d82cb13"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0002-generation-compiler-implementation-resolution.md", "mainBlob": "67287937331b37084ff34add2f5a21688c8f346f"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0003-import-artifact-retention-and-registration-outcomes.md", "mainBlob": "e81e338a6308cde065acada7c8d5b283dc9b3d08"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0004-import-implementation-resolution.md", "mainBlob": "40bb336465fc8773d5d9b55f6d3005261c09f87a"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0005-observation-contract-snapshot-and-blind-execution.md", "mainBlob": "ddca3a1f39b94c6a3fb5fdabff6a6adc80810d6c"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0006-observation-execution-claim-and-authority.md", "mainBlob": "cf344bc7ad6e26483b70e517fc096dde9b72458d"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0007-blind-judgment-sealing-and-intent-join.md", "mainBlob": "62efda145f32f981053e97229813f798b5567e02"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0008-purpose-specific-alignment-and-grade-derivation.md", "mainBlob": "4b18a7daa4d08d976075a11b7e5c30bb9f9c519e"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0009-axis-level-consensus-and-purpose-scoped-g3.md", "mainBlob": "d0375eb5229fbf6fcdeae47d4b2af9ae7214888d"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0010-purpose-scoped-g4-and-grade-authority.md", "mainBlob": "9bd22311ae61e09c4e63ce133b92ebed68754f2d"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0011-promotion-evidence-snapshot-and-revalidation.md", "mainBlob": "4aee92c026ae51cb1475f42705a6d2d2b6e013fc"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0012-leakage-coupling-and-append-only-revocation.md", "mainBlob": "76cbce21bfb8fd6f81c01c6b32ef4450808bf698"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0013-two-stage-promotion-evidence-and-visual-review.md", "mainBlob": "82d44b3eb2420f5b0d57a800fac999493b1e3d86"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0014-campaign-orchestration-without-new-judgment-authority.md", "mainBlob": "ad3f812ccc7ba33938023081e9eb0e2f3b7adad3"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0015-fixed-pilot-matrix-waves-and-anti-cherry-picking.md", "mainBlob": "daffb21078557cf9a87d290ff6761ce535d088d4"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0016-manual-generation-handoff-and-single-provider-runs.md", "mainBlob": "6014f1eabb8f0fe834fa963dba36ca7c44d5e061"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0017-frozen-run-versions-and-t8-t9-handoff.md", "mainBlob": "1f1c6a588863c88e9b3757414b1bac91e2c58a9f"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0018-pilot-source-freeze-checkpoint-and-terminal-corrections.md", "mainBlob": "838a88a27b2c52386bbcfee869a4cdc386aec055"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0019-report-source-snapshot-and-derived-metric-authority.md", "mainBlob": "d1ff6ed087edf012a000943f3641ebdf9decba77"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0020-fixed-denominator-and-non-causal-provider-comparison.md", "mainBlob": "d28296781844a4366cb1d99d54ae0e4b2b204fb3"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0021-blind-annotated-review-and-immutable-report-revisions.md", "mainBlob": "5f866735b1abada0bca4e56f1ea51a8b6b8eba08"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0022-evidence-metric-render-layering-and-g4-time-boundaries.md", "mainBlob": "7e344738a5c991e110fa2a743d881a625f03481d"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0023-current-g4-authority-and-dataset-source-snapshot.md", "mainBlob": "303385ec2f9cd61bd215b71cf4cb652ef7f8cc7c"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0024-leakage-components-sticky-splits-and-exposure-monotonicity.md", "mainBlob": "138fa383532a198bb045f350b1a28669a198aa62"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0025-deterministic-component-splitting-and-immutable-dataset-versions.md", "mainBlob": "0f8139e1173d91fd988d7df9073871a1f6093efe"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0026-g5-holdout-lock-and-regression-baseline-boundaries.md", "mainBlob": "573146477af243a46c5bc8968b76f0264c2e0ac7"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0027-source-universe-lock-basis-and-two-stage-dataset-activation.md", "mainBlob": "b307f553760945745776a7424e06090160710728"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0028-review-corrections-source-universe-exposure-and-activation.md", "mainBlob": "af50ad98ad9ffba9733219a4de0d9bf17446625c"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0029-dataset-lock-implementation-review.md", "mainBlob": "c2687b2af5d89acfc6d22e217cfc23e74e02e16d"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0030-isolated-rehearsal-authority-and-cleanup.md", "mainBlob": "151c46af697b735d23a6413ca5e91970f6977c42"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0031-composed-rehearsal-and-multi-checkpoint-correction.md", "mainBlob": "0086b067ee6cfa7d52528cefd21afafedea2bbdb"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0032-solo-assessment-authority-without-fake-consensus.md", "mainBlob": "11831b831802c2d4b575a3ff2c8a6478594d0392"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0033-target-withheld-screening-before-intent-reveal.md", "mainBlob": "66095ba17ccc6ba068018e7fbbffebd556caf817"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0034-fixed-wave-denominator-and-checkpoint-link.md", "mainBlob": "db0f8f9d009e1303763f8a597f9feede8d3035b7"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0035-t7-terminal-compatibility-and-observation-failure-checkpoint.md", "mainBlob": "388f928c4f98993501926c0fef02b376bf4fa4a0"},
+    {"path": "tools/synthetic-evaluation/docs/adr/0036-solo-assessment-source-and-phase-corrections.md", "mainBlob": "b2674648d0c1efd80c3298f3462fc4f7c6b3fe6a"},
+    {"path": "tools/synthetic-evaluation/docs/candidate-import-provenance-v1.md", "mainBlob": "6bc42359238b323681b9209ed6fef7e082fa7475"},
+    {"path": "tools/synthetic-evaluation/docs/full-pipeline-rehearsal-implementation-v1.md", "mainBlob": "6878d4af9b2e53c4ad34f4dcf975bb3aa0c0eb00"},
+    {"path": "tools/synthetic-evaluation/docs/full-pipeline-rehearsal-v1.md", "mainBlob": "a61a42e6af4f0139e925006d650db9d26798ce9b"},
+    {"path": "tools/synthetic-evaluation/docs/generation-contract-prompt-compiler-v1.md", "mainBlob": "75852a66b1588e8c54485f60f2e97ed53fb89346"},
+    {"path": "tools/synthetic-evaluation/docs/judgment-intent-alignment-implementation-v1.md", "mainBlob": "a1610d8f2183450665af0ddcd96ccb67c10324d3"},
+    {"path": "tools/synthetic-evaluation/docs/judgment-intent-alignment-v1.md", "mainBlob": "9787f85f48505440281ed356ccb1b5ab0e0dde35"},
+    {"path": "tools/synthetic-evaluation/docs/leakage-aware-dataset-lock-implementation-v1.md", "mainBlob": "21bf713caee46c13c7650d4293bd8f1e0c802024"},
+    {"path": "tools/synthetic-evaluation/docs/leakage-aware-dataset-lock-v1.md", "mainBlob": "f07de3526a03a8919daab3e29ad4f5a9fcf4b4ef"},
+    {"path": "tools/synthetic-evaluation/docs/observation-adapter-implementation-v1.md", "mainBlob": "5ada891fb52b28eecf1d4c1f7ed4703123e74078"},
+    {"path": "tools/synthetic-evaluation/docs/observation-adapter-v1.md", "mainBlob": "c260d66a9cd869d413e3bf06ccc6fee4e9021ea7"},
+    {"path": "tools/synthetic-evaluation/docs/pilot-campaign-runner-implementation-v1.md", "mainBlob": "b8d4a630411712848a47451f039422da5e233890"},
+    {"path": "tools/synthetic-evaluation/docs/pilot-campaign-runner-v1.md", "mainBlob": "9abd5ed1e97b156516a983e653cd44bf50097b83"},
+    {"path": "tools/synthetic-evaluation/docs/promotion-policy-implementation-v1.md", "mainBlob": "f204d35ebf15c9b5c99c914674baff87049b02b8"},
+    {"path": "tools/synthetic-evaluation/docs/promotion-policy-v1.md", "mainBlob": "7dd1dd75ef15b3cf1fb7f2250506e058b5823207"},
+    {"path": "tools/synthetic-evaluation/docs/review-export-report-implementation-v1.md", "mainBlob": "79c18416e43c8e09b533fde3a3b54328176a79a9"},
+    {"path": "tools/synthetic-evaluation/docs/review-export-report-v1.md", "mainBlob": "8d4b82ad3419215e1d84da382c09ad8d68505ba8"},
+    {"path": "tools/synthetic-evaluation/docs/solo-pilot-assessment-implementation-v1.md", "mainBlob": "6ca79ef28d3eff084e1aae39c31db283319d3d83"},
+    {"path": "tools/synthetic-evaluation/docs/solo-pilot-assessment-v1.md", "mainBlob": "f21bdd4b9d36f9824cb5666abe4256f3011cfbac"},
+    {"path": "packages/face-contracts/README.md", "mainBlob": "e883ae3bf573e78a36902b289d0c7389a279566d"},
+    {"path": "packages/face-contracts/package.json", "mainBlob": "e77d8d9e69209c72fcad1840077fa038a3cff383"},
+    {"path": "packages/face-contracts/src/index.js", "mainBlob": "8015b0390c66a2c4cb4b78752196aa5f8bcc82ff"},
+    {"path": "packages/face-contracts/src/synthetic-campaign/campaign-contract.js", "mainBlob": "24f2aee734e4dab756d66e67ef067dfddbe60b70"},
+    {"path": "packages/face-contracts/src/synthetic-campaign/constants.js", "mainBlob": "20267de01a9b2af5b8c6005604cb3e1578dd7aa2"},
+    {"path": "packages/face-contracts/src/synthetic-campaign/index.js", "mainBlob": "b8239bb032847f7e1de6e8b8b76139a3a64984ed"},
+    {"path": "packages/face-contracts/src/synthetic-dataset/constants.js", "mainBlob": "c7881675f8e68e5d8c10eb7c7e632557375dcbad"},
+    {"path": "packages/face-contracts/src/synthetic-dataset/dataset-contract.js", "mainBlob": "2d9c37a676e5fe3859044552e7ae6c42af35189d"},
+    {"path": "packages/face-contracts/src/synthetic-dataset/index.js", "mainBlob": "dc9f10befd7128fd21db06e0bf4bd186a3225f3d"},
+    {"path": "packages/face-contracts/src/synthetic-generation/compiled-prompt.js", "mainBlob": "493561bdb8f09a19ae6d4ed2452cb89c3cf53f0f"},
+    {"path": "packages/face-contracts/src/synthetic-generation/generation-spec.js", "mainBlob": "60d4dcf4e3ce460fb0c8eb2e60483f18032328ae"},
+    {"path": "packages/face-contracts/src/synthetic-import/asset-record.js", "mainBlob": "6f463b6d9035dd2cfadda309b4b7568b80f48163"},
+    {"path": "packages/face-contracts/src/synthetic-import/candidate-manifest.js", "mainBlob": "2b5fe076c0da2b1135d94b3bb334ee0646f9d3bf"},
+    {"path": "packages/face-contracts/src/synthetic-import/import-errors.js", "mainBlob": "49ea792c6e0f6ac93eca350c763d3d88558a80b7"},
+    {"path": "packages/face-contracts/src/synthetic-import/import-request.js", "mainBlob": "18d0374c6924b577337d48350c90ed6a29c340f7"},
+    {"path": "packages/face-contracts/src/synthetic-judgment/artifact-contract.js", "mainBlob": "8773ee6b2983c5e5f9ef80739c9c56a57fac8213"},
+    {"path": "packages/face-contracts/src/synthetic-judgment/constants.js", "mainBlob": "bc1371dcc31753ee2b729815d040b6bb5a2d38a4"},
+    {"path": "packages/face-contracts/src/synthetic-judgment/helpers.js", "mainBlob": "b2e78efbd2b1cb731467acf9adcab3fb99d79e4f"},
+    {"path": "packages/face-contracts/src/synthetic-judgment/index.js", "mainBlob": "ff30fe91d209741ee737a3070158a2f41a8b8e2c"},
+    {"path": "packages/face-contracts/src/synthetic-judgment/submission-contract.js", "mainBlob": "ad7fa7a39373007ea6be29e74da42eb87467f485"},
+    {"path": "packages/face-contracts/src/synthetic-observation/observation-contract.js", "mainBlob": "ee622fb2c96e22b44b37b7a4504308a92ec60278"},
+    {"path": "packages/face-contracts/src/synthetic-promotion/constants.js", "mainBlob": "e091162b60ba82e1e00848ad69e4566d66a00ff9"},
+    {"path": "packages/face-contracts/src/synthetic-promotion/index.js", "mainBlob": "fdf9168c8e57f344bb642beabf4e73314a69837c"},
+    {"path": "packages/face-contracts/src/synthetic-promotion/promotion-contract.js", "mainBlob": "42a262c7753b50e8d5778526d32262041ac07c79"},
+    {"path": "packages/face-contracts/src/synthetic-reporting/constants.js", "mainBlob": "512bdbe3d27c6b97dc9bcbdc750d463ede4fc831"},
+    {"path": "packages/face-contracts/src/synthetic-reporting/index.js", "mainBlob": "5b6944d8427aaa5d429042b4ee9442d22bee2b4a"},
+    {"path": "packages/face-contracts/src/synthetic-reporting/reporting-contract.js", "mainBlob": "ca156913d90d666f440784e8903bb05cafb500cf"},
+    {"path": "packages/face-contracts/src/synthetic-solo-assessment/constants.js", "mainBlob": "397d62d89c41ab7c309485cdb0a7430772699e55"},
+    {"path": "packages/face-contracts/src/synthetic-solo-assessment/contract.js", "mainBlob": "fcaa52f01f16b1a587f986aa44a79ddfd783bcda"},
+    {"path": "packages/face-contracts/src/synthetic-solo-assessment/index.js", "mainBlob": "c0d76233866d9fcb9d338991558a56e96b336fc3"},
+    {"path": "tools/synthetic-evaluation/README.md", "mainBlob": "ab0e6577d50564e1f8486825567d94d3304b78d0"},
+    {"path": "tools/synthetic-evaluation/package.json", "mainBlob": "0d408776c06845e651f733fd433b2a3360b80d82"},
+    {"path": "tools/synthetic-evaluation/rehearsal/report.mjs", "mainBlob": "7a7e806d28e2c401ecadbf3d6148045018d3ac0a"},
+    {"path": "tools/synthetic-evaluation/rehearsal/run-full-rehearsal.mjs", "mainBlob": "dc3e318e59371a1b7410abb438e3b000dcc9ca84"},
+    {"path": "tools/synthetic-evaluation/rehearsal/scenario-matrix.mjs", "mainBlob": "61bc1dacb94b4c4a2d247fe6e1bb13b036b6a022"},
+    {"path": "tools/synthetic-evaluation/src/campaign/checkpoint.js", "mainBlob": "3c6ab82d02c43aaa6ca3aa4fe2b47e5afd407a88"},
+    {"path": "tools/synthetic-evaluation/src/campaign/cli/campaign.js", "mainBlob": "85719f5a59c10e9ce192e8074aefc8287d7c2f42"},
+    {"path": "tools/synthetic-evaluation/src/campaign/closeout.js", "mainBlob": "db848dd315ebf16db48dc1aeea98492fcab674e1"},
+    {"path": "tools/synthetic-evaluation/src/campaign/events.js", "mainBlob": "38e2348afde1de8cdeeaa824f877793fc18d288f"},
+    {"path": "tools/synthetic-evaluation/src/campaign/generation.js", "mainBlob": "6da965db48a67841e64172bafad6e8b747c3be54"},
+    {"path": "tools/synthetic-evaluation/src/campaign/index.js", "mainBlob": "c802a7b72a45b01376935be7434af16f47952e1e"},
+    {"path": "tools/synthetic-evaluation/src/campaign/orchestrator.js", "mainBlob": "b9f748383f80592fca393e16811e4cf121d67e3b"},
+    {"path": "tools/synthetic-evaluation/src/campaign/plan.js", "mainBlob": "b052b1a1459a645f95cd41d8afa75434b3ff68c5"},
+    {"path": "tools/synthetic-evaluation/src/campaign/projection.js", "mainBlob": "173857d9a7b8d76409ddca20dc763a907d1b5a8b"},
+    {"path": "tools/synthetic-evaluation/src/campaign/safe-operations.js", "mainBlob": "922474b3b362c48358c11f8ba82fbc868651c93e"},
+    {"path": "tools/synthetic-evaluation/src/campaign/source-freeze.js", "mainBlob": "5b0fa45ef8355501bec19b6699c8e64b1f4c7328"},
+    {"path": "tools/synthetic-evaluation/src/campaign/stage-adapters.js", "mainBlob": "20f86ef65eb9e2cffe2e12b2c231e7b91f716a8e"},
+    {"path": "tools/synthetic-evaluation/src/campaign/stage-registration.js", "mainBlob": "7d4cb8a9eaa91a768c6957a8a8a8e236c643d855"},
+    {"path": "tools/synthetic-evaluation/src/campaign/storage.js", "mainBlob": "3788f4f9e3c978e80d03d689a4ee82e2951cefc2"},
+    {"path": "tools/synthetic-evaluation/src/dataset/baseline.js", "mainBlob": "5305d074e578f1aa862e493fbb1a76827632e3d5"},
+    {"path": "tools/synthetic-evaluation/src/dataset/cli/baseline.js", "mainBlob": "a9ab2c7c65d36c0f36cecb145cd458d6d6753c2b"},
+    {"path": "tools/synthetic-evaluation/src/dataset/cli/dataset.js", "mainBlob": "afaf3f20acfc1f5439c6b494fe5349ad577a68d5"},
+    {"path": "tools/synthetic-evaluation/src/dataset/cli/helpers.js", "mainBlob": "1d2a11021601e142392f17c30a5e4fbc200d5a05"},
+    {"path": "tools/synthetic-evaluation/src/dataset/current-authority.js", "mainBlob": "f5b66d215fbf95cd623c281421752dd48b832b7d"},
+    {"path": "tools/synthetic-evaluation/src/dataset/exposure.js", "mainBlob": "b5930caa12c37ecc35eaa0356c75de9e6f32bec0"},
+    {"path": "tools/synthetic-evaluation/src/dataset/index.js", "mainBlob": "56e0457bdaa70667d0ba6e8f99ae19a1966106fe"},
+    {"path": "tools/synthetic-evaluation/src/dataset/leakage.js", "mainBlob": "6ada9012159c9195cad122667c9ca19acdf7c7c2"},
+    {"path": "tools/synthetic-evaluation/src/dataset/lock.js", "mainBlob": "7899d89684c28bc33a4e6f89d8353a7caf63a3d3"},
+    {"path": "tools/synthetic-evaluation/src/dataset/orchestrator.js", "mainBlob": "87ea19aa0f9e6b7f598110461c78dead8f2b1531"},
+    {"path": "tools/synthetic-evaluation/src/dataset/policy.js", "mainBlob": "bc8e2f4b8c4acfce3edc94ecff2b611af8fc6f84"},
+    {"path": "tools/synthetic-evaluation/src/dataset/review.js", "mainBlob": "894d4d5882e1894286791f0c8924b55ea2a60bc9"},
+    {"path": "tools/synthetic-evaluation/src/dataset/source.js", "mainBlob": "3be13d420fb7aa90fd33472364ee472b505590fb"},
+    {"path": "tools/synthetic-evaluation/src/dataset/split.js", "mainBlob": "a345e7339db2b9689c376717a6d4b43fcb154e2d"},
+    {"path": "tools/synthetic-evaluation/src/dataset/status.js", "mainBlob": "5c04419dee6974536bdf1c056628917ae1b84699"},
+    {"path": "tools/synthetic-evaluation/src/dataset/storage-layout.js", "mainBlob": "2a1f30e6b483565ec2fa9c703113fe33ed0eaafd"},
+    {"path": "tools/synthetic-evaluation/src/dataset/storage.js", "mainBlob": "e998e5f0eadc8007b1b0a507f437507c36b08c91"},
+    {"path": "tools/synthetic-evaluation/src/generation/canonicalize-generation-spec.js", "mainBlob": "e53135de69df1827a82da6bcd6daf0bcc64d1774"},
+    {"path": "tools/synthetic-evaluation/src/generation/compile-prompt.js", "mainBlob": "3ebcab1b51ee4fb34f6800aabedccf61f187a011"},
+    {"path": "tools/synthetic-evaluation/src/generation/fixtures/skin-control-fixtures.js", "mainBlob": "5cec6aca68bbeb21da91fdbf61dd66e1011fec71"},
+    {"path": "tools/synthetic-evaluation/src/generation/providers/provider-profiles.js", "mainBlob": "1c0b1ccf1d9680c4864cbf9d6176d94ee4a63e92"},
+    {"path": "tools/synthetic-evaluation/src/generation/registries/exclusions-v1.js", "mainBlob": "c8896c604865c865a913e67b1f81ff208a467b18"},
+    {"path": "tools/synthetic-evaluation/src/import/build-candidate.js", "mainBlob": "5df61a5968a82eb79e855fc3cdd460146a6fcab3"},
+    {"path": "tools/synthetic-evaluation/src/import/cli/import-candidate.js", "mainBlob": "a2c304ad2b54341dfb79fd65d5e33de2caaf02e7"},
+    {"path": "tools/synthetic-evaluation/src/import/commit-import-transaction.js", "mainBlob": "2000c9459d75a3b7de3e5859f3c94c0b0f80d0e3"},
+    {"path": "tools/synthetic-evaluation/src/import/image-processing.js", "mainBlob": "36734d8327d1884992803d19dac245bcc2ac29dc"},
+    {"path": "tools/synthetic-evaluation/src/import/import-candidate.js", "mainBlob": "09df47fcd3fb03211bc0d116fd0deccbbf1ca141"},
+    {"path": "tools/synthetic-evaluation/src/import/read-candidate-registry.js", "mainBlob": "dc2e5ec78a4cd465f27ec9ddd89d3a2ce7ef5db3"},
+    {"path": "tools/synthetic-evaluation/src/import/read-generation-artifacts.js", "mainBlob": "146bc4ca61ad98fb94aba9e894c1856d95458601"},
+    {"path": "tools/synthetic-evaluation/src/import/resolve-safe-path.js", "mainBlob": "17b2daaff5856f086e46bf7577320ccf8e0d4654"},
+    {"path": "tools/synthetic-evaluation/src/import/storage-layout.js", "mainBlob": "6402c3686a2273b60dd6f070e4094b10ad3b83e7"},
+    {"path": "tools/synthetic-evaluation/src/index.js", "mainBlob": "50c34431658be5430d0086c8e9e015def7454af4"},
+    {"path": "tools/synthetic-evaluation/src/judgment/alignment-registrar.js", "mainBlob": "89ea802c10a914e4f6d340122162dec18cb56f4f"},
+    {"path": "tools/synthetic-evaluation/src/judgment/alignment.js", "mainBlob": "66c648404791bdfef57243f2dcbc7daa3170d964"},
+    {"path": "tools/synthetic-evaluation/src/judgment/artifact-store.js", "mainBlob": "534674966fb82175381f6c96f7ce493394678d0c"},
+    {"path": "tools/synthetic-evaluation/src/judgment/assignment.js", "mainBlob": "389254fd2b031ac2e8afcd6d8828ffc05a58801e"},
+    {"path": "tools/synthetic-evaluation/src/judgment/blind-registrar.js", "mainBlob": "ee25e79fc85cd10200ab2d925d235cf72cd0f84b"},
+    {"path": "tools/synthetic-evaluation/src/judgment/cli/align.js", "mainBlob": "8b96f1a96c2cd250733e031b4e7da8a629e84c13"},
+    {"path": "tools/synthetic-evaluation/src/judgment/cli/consensus.js", "mainBlob": "d7fb83d5eec5648203f3e1c1d749d465624dbfab"},
+    {"path": "tools/synthetic-evaluation/src/judgment/cli/helpers.js", "mainBlob": "74da554019cdb18bc0007ad6936e651318ac1634"},
+    {"path": "tools/synthetic-evaluation/src/judgment/cli/judge.js", "mainBlob": "71d0042946af342e53157fead7053f956dd8f729"},
+    {"path": "tools/synthetic-evaluation/src/judgment/consensus.js", "mainBlob": "5a4122673385dd459583cd39b7ac4a325dcfe16f"},
+    {"path": "tools/synthetic-evaluation/src/judgment/grades.js", "mainBlob": "2bfe6eef92290ff151a1650331dc851c8fe68a3b"},
+    {"path": "tools/synthetic-evaluation/src/judgment/intent-resolver.js", "mainBlob": "b4a33b5552f9da82dfc1e426b3e1ecdcceb45932"},
+    {"path": "tools/synthetic-evaluation/src/judgment/prepare-assignment.js", "mainBlob": "81ec7c4af1c858a35dd3b3978badb12dd073e2a4"},
+    {"path": "tools/synthetic-evaluation/src/judgment/read-intent-artifacts.js", "mainBlob": "cae922a66106ce074dd7174027b3a7f8fd6e0be2"},
+    {"path": "tools/synthetic-evaluation/src/judgment/storage-layout.js", "mainBlob": "b24ec594fad4ef7a7e42e9de3acdaedabee30c69"},
+    {"path": "tools/synthetic-evaluation/src/judgment/stored-alignment.js", "mainBlob": "f1648c0eac9b21aa3249376718240cfc8e5ce00f"},
+    {"path": "tools/synthetic-evaluation/src/judgment/submission.js", "mainBlob": "a4ea32dbf0938643e73f512f537b9af4765c4b60"},
+    {"path": "tools/synthetic-evaluation/src/observation/artifact-integrity.js", "mainBlob": "a2d2bfbff5d4c97ffb6c19c3928b751d3254bdec"},
+    {"path": "tools/synthetic-evaluation/src/observation/cli/observe-candidate.js", "mainBlob": "4013fa79d01ab2b8f562f5bd9542f86ae2991280"},
+    {"path": "tools/synthetic-evaluation/src/observation/normalize-observation.js", "mainBlob": "bf50c5cb994090539835e9660f8f827632c8163f"},
+    {"path": "tools/synthetic-evaluation/src/observation/normalize/eligibility-skin.js", "mainBlob": "844a8d73ff538abc70722e1a38cda5e64464e399"},
+    {"path": "tools/synthetic-evaluation/src/observation/normalize/face.js", "mainBlob": "9d78525ae3b93a315682339897a7613a528868d8"},
+    {"path": "tools/synthetic-evaluation/src/observation/normalize/helpers.js", "mainBlob": "e257a5eaabd6d25c1d9d69d3533c11f5aa947dff"},
+    {"path": "tools/synthetic-evaluation/src/observation/observe-candidate.js", "mainBlob": "3428a028564fbf633eeabd46ee630a6f0be9ec8c"},
+    {"path": "tools/synthetic-evaluation/src/observation/openai-transport.js", "mainBlob": "a5051df617dbdbfb41f3e8c4fc1e0cc79ab19a8a"},
+    {"path": "tools/synthetic-evaluation/src/observation/parity-fixtures.js", "mainBlob": "7889a43869187997f8f8f486021ae317bf3dae05"},
+    {"path": "tools/synthetic-evaluation/src/observation/preflight-observation.js", "mainBlob": "1e4a2ef36d9c976ec0d22409ca3c96c344b505bd"},
+    {"path": "tools/synthetic-evaluation/src/observation/profiles.js", "mainBlob": "f5510fc285cb07cd87f12a6cfce96001f4a41d96"},
+    {"path": "tools/synthetic-evaluation/src/observation/register-observation-run.js", "mainBlob": "196b5c436e811e644f2eaeb35c782b0953ddeb9e"},
+    {"path": "tools/synthetic-evaluation/src/observation/run-identity.js", "mainBlob": "c62c970646ca9639550b73d83b8238ee36cf043f"},
+    {"path": "tools/synthetic-evaluation/src/observation/snapshot/canonical-v1.js", "mainBlob": "3b708c225e5b98507af74822797a7d508e641ef2"},
+    {"path": "tools/synthetic-evaluation/src/observation/snapshot/verify-source-checkout.js", "mainBlob": "d7e6b6f0cf9b461997ed509e8f090fea70939d8c"},
+    {"path": "tools/synthetic-evaluation/src/observation/storage-layout.js", "mainBlob": "3d59c4b964e18bd1ab98ce77f43218239ca96a8a"},
+    {"path": "tools/synthetic-evaluation/src/promotion/cli/promote.js", "mainBlob": "9a381f458bfa3f37a462270540449c2ba4cf9538"},
+    {"path": "tools/synthetic-evaluation/src/promotion/decision.js", "mainBlob": "661383c92b06473baf60e26eed504dbeb58d7f34"},
+    {"path": "tools/synthetic-evaluation/src/promotion/evidence.js", "mainBlob": "df4ed910217c6dfaa986b48026f683c5f498188c"},
+    {"path": "tools/synthetic-evaluation/src/promotion/orchestrator.js", "mainBlob": "7c89952d91ffedbd475bbad898eb9679680449b3"},
+    {"path": "tools/synthetic-evaluation/src/promotion/policy.js", "mainBlob": "4089c9fe7783cb49c545904c2cc62ed6479b2d5e"},
+    {"path": "tools/synthetic-evaluation/src/promotion/preflight.js", "mainBlob": "54cb3c0711338df59ab486141a98db9b5ed8ee78"},
+    {"path": "tools/synthetic-evaluation/src/promotion/promotion-review.js", "mainBlob": "f14728e5d0b75666a905c94c313c91d2e86802b0"},
+    {"path": "tools/synthetic-evaluation/src/promotion/registrar.js", "mainBlob": "8816e11b169884121189d414328b758effdb8965"},
+    {"path": "tools/synthetic-evaluation/src/promotion/reviews.js", "mainBlob": "95e63f4ac3b7919ab680f5e7cccf7e0081038882"},
+    {"path": "tools/synthetic-evaluation/src/promotion/source-snapshot.js", "mainBlob": "7e27cbaa7006cabea2eaeecf7f1385a785c2feeb"},
+    {"path": "tools/synthetic-evaluation/src/promotion/storage-layout.js", "mainBlob": "0e2e2e3bb15457aa212adb174115571c417c8ba9"},
+    {"path": "tools/synthetic-evaluation/src/reporting/claims-report.js", "mainBlob": "9cf0bd77315f333a0bb06afc39102e5c24837cbb"},
+    {"path": "tools/synthetic-evaluation/src/reporting/cli/export.js", "mainBlob": "69632f687e3d71ca74847fe4bcf68d763d0b8997"},
+    {"path": "tools/synthetic-evaluation/src/reporting/cli/helpers.js", "mainBlob": "69a4b41fdc19bd0194f853e15c447fde533c06f6"},
+    {"path": "tools/synthetic-evaluation/src/reporting/cli/report.js", "mainBlob": "d27546b8d2dff815caa902fe55cf24747f4b6d34"},
+    {"path": "tools/synthetic-evaluation/src/reporting/comparison.js", "mainBlob": "7773bd1a65080672f77bc652ce6ebbec8b6b5fb9"},
+    {"path": "tools/synthetic-evaluation/src/reporting/derive.js", "mainBlob": "26e1b39aaa534936233c9790e35fa70c9576544f"},
+    {"path": "tools/synthetic-evaluation/src/reporting/index.js", "mainBlob": "4fa5fd771aac2f4e434baec6c5f6a7c15dccd7ad"},
+    {"path": "tools/synthetic-evaluation/src/reporting/orchestrator.js", "mainBlob": "6269fa59f3b03417cf02cf119f957b48a6d48b1a"},
+    {"path": "tools/synthetic-evaluation/src/reporting/policy.js", "mainBlob": "17d1c8b2c12f709e7b1bb03a6ed00ba8fb42368a"},
+    {"path": "tools/synthetic-evaluation/src/reporting/render.js", "mainBlob": "5cfdb5ed27bd8cbeda479c91d0d9d06b2cfa095b"},
+    {"path": "tools/synthetic-evaluation/src/reporting/review-package.js", "mainBlob": "492ca5d0dc8512900ad1c0ea50e1bb506faf8649"},
+    {"path": "tools/synthetic-evaluation/src/reporting/source-preflight.js", "mainBlob": "69a14ef745cb7a18b2f323d16248972e60679b49"},
+    {"path": "tools/synthetic-evaluation/src/reporting/storage.js", "mainBlob": "0a13a0c93af3c07fbb6635743c361a2284f07c7f"},
+    {"path": "tools/synthetic-evaluation/src/shared/canonical-json.js", "mainBlob": "6e908ba586f0a832417d8d0e9deb12676c48ccb7"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/artifacts.js", "mainBlob": "33286814a187940ebbfc6944f5759d7ff7d84955"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/cli/helpers.js", "mainBlob": "74da554019cdb18bc0007ad6936e651318ac1634"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js", "mainBlob": "c318a8791cbbc0834639af9ebcbbdccd963de90e"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/index.js", "mainBlob": "89e11ff23e0e69c64b0464cfd3da627a1c3b47bf"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js", "mainBlob": "17e24100ab5aa394f29bdc4d5bffd5898b299980"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js", "mainBlob": "46bac0360dfe61d089aa0065338bef8fe4df29cd"},
+    {"path": "tools/synthetic-evaluation/src/solo-assessment/storage.js", "mainBlob": "eed9e5d8dd59af7653985ea479377ccf3fffae9b"},
+    {"path": "tools/synthetic-evaluation/tests/architecture-boundary.test.mjs", "mainBlob": "ab581810a5cf2b475e8339851cb54449977d2319"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/generation.test.mjs", "mainBlob": "48e58052a8995c552733f79db43e8dc4ac764bbf"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/helpers.mjs", "mainBlob": "a7e7bb9ac1ca020a907f1b25d95a7b63b8f8e3ac"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/ledger.test.mjs", "mainBlob": "ce9cb7d0ecb4936d5327447507bb12a60e04cc4a"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/orchestrator.test.mjs", "mainBlob": "56f0c0eaf374bbf3fb36521653f80d3cba9300ae"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/plan.test.mjs", "mainBlob": "389d3418299a587d85077790049ae0ae9411855c"},
+    {"path": "tools/synthetic-evaluation/tests/campaign/stage-binding.test.mjs", "mainBlob": "576aa870589b3955c06ad897187dfa8a140ffda2"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/architecture-boundary.test.mjs", "mainBlob": "09cf0676156fd5f184e13189ed30f59e62ccd84e"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/baseline.test.mjs", "mainBlob": "afbee4e137b6ed5831ab5b58f9f021465ee0b939"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/contracts.test.mjs", "mainBlob": "f5b868ac238935efa56e1578a72f217e992460ed"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/graph-split.test.mjs", "mainBlob": "2d6c05d5a7d9c06482bede7e5803c67470c798a1"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/helpers.mjs", "mainBlob": "c4e081b9f19c4ef7b6d708f3c29965586783008b"},
+    {"path": "tools/synthetic-evaluation/tests/dataset/lock-storage.test.mjs", "mainBlob": "68e0763eb815430d67c81b5d69fb7b7b1da50cb3"},
+    {"path": "tools/synthetic-evaluation/tests/generation-contract.test.mjs", "mainBlob": "ab7b34977dc1da4888624ce33087683515c3b839"},
+    {"path": "tools/synthetic-evaluation/tests/import/cli.test.mjs", "mainBlob": "6d36e4f43de876a229a1cb328ac51bba7c26440e"},
+    {"path": "tools/synthetic-evaluation/tests/import/helpers.mjs", "mainBlob": "9322722d74ae6bdda24a9bab753ee30519ed07a6"},
+    {"path": "tools/synthetic-evaluation/tests/import/image-processing.test.mjs", "mainBlob": "b98336e5f0723d06b2d2f0541d2c3dc51cb3431b"},
+    {"path": "tools/synthetic-evaluation/tests/import/import-pipeline.test.mjs", "mainBlob": "96529a7dd354337ec27cb4483e54420cfdf6f433"},
+    {"path": "tools/synthetic-evaluation/tests/import/request-contract.test.mjs", "mainBlob": "659685755a331a3e9fc09b4ab0ddf612c37f29f9"},
+    {"path": "tools/synthetic-evaluation/tests/import/safe-path.test.mjs", "mainBlob": "6074f157c9708b8939dae5ccc56616f0685bb9be"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/alignment.test.mjs", "mainBlob": "3d987bc5fcd1fa6956f0fc44c71d323d924a804b"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/consensus.test.mjs", "mainBlob": "527cd4c45f57d35d5f9626fa7870a87b8c3a1c77"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/contracts.test.mjs", "mainBlob": "94fd0315308096659f914952574561cbb9d2cc45"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/helpers.mjs", "mainBlob": "eb5f7f22c2f0038d691ec3104d56ea4afa1f2368"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/storage-boundary.test.mjs", "mainBlob": "5847e571df1dd7f927988004c76f01fbeba7b9ac"},
+    {"path": "tools/synthetic-evaluation/tests/judgment/stored-alignment.test.mjs", "mainBlob": "278b01b5237692f219d6ee6c9d30b05e90a4ac0b"},
+    {"path": "tools/synthetic-evaluation/tests/observation/cli.test.mjs", "mainBlob": "b56c1e4080a6161937764835ece43465d4384128"},
+    {"path": "tools/synthetic-evaluation/tests/observation/observation-run.test.mjs", "mainBlob": "35eae2752af928ee2060b655c9fce6bd50db8237"},
+    {"path": "tools/synthetic-evaluation/tests/observation/snapshot-normalizer.test.mjs", "mainBlob": "56baff587a54544cb53430f34714c3512be11de8"},
+    {"path": "tools/synthetic-evaluation/tests/observation/transport.test.mjs", "mainBlob": "fae8ab8e859a28355730c1bdba7c3a1776439d39"},
+    {"path": "tools/synthetic-evaluation/tests/promotion/confirmation.test.mjs", "mainBlob": "7664cfa8e601b1168b29b3566a7ec1c2d6604c12"},
+    {"path": "tools/synthetic-evaluation/tests/promotion/helpers.mjs", "mainBlob": "c2af3fbdde80d859ed9a1ec9a612186a64e84697"},
+    {"path": "tools/synthetic-evaluation/tests/promotion/policy.test.mjs", "mainBlob": "b1e02090c1f5ed513d42c2bdbac76334f8fbdefb"},
+    {"path": "tools/synthetic-evaluation/tests/promotion/source-snapshot.test.mjs", "mainBlob": "fee4633ffa77145b8825c205c05ab3da0b4626e4"},
+    {"path": "tools/synthetic-evaluation/tests/prompt-compiler.test.mjs", "mainBlob": "667394d3a0705c4bc2e6a946ce07c29d8ca6494d"},
+    {"path": "tools/synthetic-evaluation/tests/rehearsal/full-pipeline-rehearsal.test.mjs", "mainBlob": "405f923d26b465095b6bd32b82be504fe8c6b072"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/architecture-boundary.test.mjs", "mainBlob": "409d55bde166e030941572a5b662aff17ecd3ad8"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/claims.test.mjs", "mainBlob": "761e05725fa8703f5a80ccbb162007984b034106"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/comparison.test.mjs", "mainBlob": "44e51062e86c10ed2908744811cde952ec122486"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/derive.test.mjs", "mainBlob": "570e9b261aae149692670baa1ead69a32365c088"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/helpers.mjs", "mainBlob": "9802d09a7637d2fd859cde5fc48286ead7b629dc"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/review-render.test.mjs", "mainBlob": "0884c1fc4a7312b7fc707720d6b1cd70e7ebf50a"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/source-preflight.test.mjs", "mainBlob": "51f9acdc7204d1f9c5f4ad78b39a527778ef7b09"},
+    {"path": "tools/synthetic-evaluation/tests/reporting/storage.test.mjs", "mainBlob": "7fec25f68917f88ac2145de70ac43e8f0369390f"},
+    {"path": "tools/synthetic-evaluation/tests/snapshots/gemini-A.txt", "mainBlob": "a2e32017d891aca3c9c25a0eb8fbc65158a1aa6b"},
+    {"path": "tools/synthetic-evaluation/tests/snapshots/gemini-B.txt", "mainBlob": "897ee9d4850db74301d8ab3504d10755c5431b4e"},
+    {"path": "tools/synthetic-evaluation/tests/snapshots/gemini-C.txt", "mainBlob": "9937fdfdbffb1eee69cda16649c99f719b54accc"},
+    {"path": "tools/synthetic-evaluation/tests/snapshots/gemini-D.txt", "mainBlob": "2ff10de3384219b36275024b83b7c345f2247ee6"},
+    {"path": "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs", "mainBlob": "8e8435d5c4bc38f82fd82b5484893e0270c06e7f"},
+    {"path": "tools/synthetic-evaluation/tests/solo-assessment/authority-boundary.test.mjs", "mainBlob": "92323f649211d9c3361f1d5db859f7ee04ebab5b"},
+    {"path": "tools/synthetic-evaluation/tests/solo-assessment/checkpoint-regression.test.mjs", "mainBlob": "88ccece01fa54bd0e5d2798a6659d1caeecd6df9"},
+    {"path": "tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs", "mainBlob": "c6c396a798bca1cfa507daae946603db9ee93f4a"},
+    {"path": "tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs", "mainBlob": "222a88e5b6eef4dcf4a684ff76510b6a3376a22d"},
+    {"path": "tools/synthetic-evaluation/tests/workspace.test.mjs", "mainBlob": "769b1a528c70bba47081e928dad8e5e95cfde438"}
   ],
   "temporaryRouteFiles": [
     "app/api/internal/candidate-exposure-policy-diagnostic/route.js",
