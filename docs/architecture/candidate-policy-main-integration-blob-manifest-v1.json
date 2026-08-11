@@ -825,11 +825,11 @@
     },
     {
       "path": "packages/face-contracts/src/synthetic-campaign/campaign-contract.js",
-      "mainBlob": "06d679bee518d15b446bd292ae89f953fa3b7422"
+      "mainBlob": "24f2aee734e4dab756d66e67ef067dfddbe60b70"
     },
     {
       "path": "packages/face-contracts/src/synthetic-campaign/constants.js",
-      "mainBlob": "2aae1b4bcd43496e0729b5ed14cc725b8e6f794b"
+      "mainBlob": "20267de01a9b2af5b8c6005604cb3e1578dd7aa2"
     },
     {
       "path": "packages/face-contracts/src/synthetic-campaign/index.js",
@@ -957,39 +957,39 @@
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/cli/campaign.js",
-      "mainBlob": "6c0e0459ccea92a546c437871954ee23d3d3396f"
+      "mainBlob": "85719f5a59c10e9ce192e8074aefc8287d7c2f42"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/closeout.js",
-      "mainBlob": "8bd980cb622fa17d75ec375fa62e28378d17d0d2"
+      "mainBlob": "db848dd315ebf16db48dc1aeea98492fcab674e1"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/events.js",
-      "mainBlob": "05479034b70ee328cfafd02f824279f46d154054"
+      "mainBlob": "38e2348afde1de8cdeeaa824f877793fc18d288f"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/generation.js",
-      "mainBlob": "bf63e185b11122b0b93ffdaca901a16410b139ff"
+      "mainBlob": "6da965db48a67841e64172bafad6e8b747c3be54"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/index.js",
-      "mainBlob": "e5acbbf352a81e4ddfa720c1ceff1f4cc278281c"
+      "mainBlob": "c802a7b72a45b01376935be7434af16f47952e1e"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/orchestrator.js",
-      "mainBlob": "1c870e2cb0693d27c46c1444f3a1cf2cf8889dca"
+      "mainBlob": "b9f748383f80592fca393e16811e4cf121d67e3b"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/plan.js",
-      "mainBlob": "a19215f8c0e974b7497c3eb315b8be60babf437e"
+      "mainBlob": "b052b1a1459a645f95cd41d8afa75434b3ff68c5"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/projection.js",
-      "mainBlob": "699428ff736116bc3f078374a052027c0df7831a"
+      "mainBlob": "173857d9a7b8d76409ddca20dc763a907d1b5a8b"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/safe-operations.js",
-      "mainBlob": "1cc29be26ca252222632f03bb40271a100eb8f81"
+      "mainBlob": "922474b3b362c48358c11f8ba82fbc868651c93e"
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/source-freeze.js",
@@ -1005,7 +1005,7 @@
     },
     {
       "path": "tools/synthetic-evaluation/src/campaign/storage.js",
-      "mainBlob": "b3107d6b09f87a0d8b49e4856948cd8e0c93f22a"
+      "mainBlob": "3788f4f9e3c978e80d03d689a4ee82e2951cefc2"
     },
     {
       "path": "tools/synthetic-evaluation/src/dataset/baseline.js",
@@ -1361,7 +1361,7 @@
     },
     {
       "path": "tools/synthetic-evaluation/src/reporting/storage.js",
-      "mainBlob": "722eeb4519e8d2a373e9f29594c67cfe661e8500"
+      "mainBlob": "0a13a0c93af3c07fbb6635743c361a2284f07c7f"
     },
     {
       "path": "tools/synthetic-evaluation/src/shared/canonical-json.js",
@@ -1397,15 +1397,15 @@
     },
     {
       "path": "tools/synthetic-evaluation/tests/architecture-boundary.test.mjs",
-      "mainBlob": "fc9c06fbec26d46fb254bcd56f36aad57418efe6"
+      "mainBlob": "ab581810a5cf2b475e8339851cb54449977d2319"
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/generation.test.mjs",
-      "mainBlob": "ca70659e8be07e4b353cf07ac328ebf0c498c21c"
+      "mainBlob": "48e58052a8995c552733f79db43e8dc4ac764bbf"
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/helpers.mjs",
-      "mainBlob": "60571e55629f5f7c935561fdc180746ee5bce598"
+      "mainBlob": "a7e7bb9ac1ca020a907f1b25d95a7b63b8f8e3ac"
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/ledger.test.mjs",
@@ -1413,11 +1413,11 @@
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/orchestrator.test.mjs",
-      "mainBlob": "69aab490c24202076a49dbe3b5aaa10d786d738f"
+      "mainBlob": "56f0c0eaf374bbf3fb36521653f80d3cba9300ae"
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/plan.test.mjs",
-      "mainBlob": "2126745b599d629dda7c345639331ae8489ce7b0"
+      "mainBlob": "389d3418299a587d85077790049ae0ae9411855c"
     },
     {
       "path": "tools/synthetic-evaluation/tests/campaign/stage-binding.test.mjs",
@@ -1533,7 +1533,7 @@
     },
     {
       "path": "tools/synthetic-evaluation/tests/prompt-compiler.test.mjs",
-      "mainBlob": "40f2abeef49656df12645a33c295b976daeb2ff8"
+      "mainBlob": "667394d3a0705c4bc2e6a946ce07c29d8ca6494d"
     },
     {
       "path": "tools/synthetic-evaluation/tests/rehearsal/full-pipeline-rehearsal.test.mjs",
@@ -1553,7 +1553,7 @@
     },
     {
       "path": "tools/synthetic-evaluation/tests/reporting/derive.test.mjs",
-      "mainBlob": "385f3674e7c0b720c2f68f4070815a92338ea69a"
+      "mainBlob": "570e9b261aae149692670baa1ead69a32365c088"
     },
     {
       "path": "tools/synthetic-evaluation/tests/reporting/helpers.mjs",
