@@ -4,7 +4,7 @@
 
 ## Authority
 
-- execution authority main: `92432c9c111fa2cbbab9d0a62e27ace2d1f28add`
+- execution authority main: `22c20146192e9075c9d9cb36be7e5f49f83d3119`
 - frozen pilot head: `596493154b74548187ed71f8d522bb41c7ad1900`
 - registry blob: `32fdaa2d3a181c9d18888fc48c1343e083ad20f7`
 - corpus SHA-256: `47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d`

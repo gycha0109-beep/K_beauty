@@ -13,7 +13,7 @@ const OUTPUT_JSON=path.join(OUTPUT_DIR,"cross-category-pilot-materialization-dry
 const OUTPUT_MD=path.join(ROOT,"docs/evidence/cross-category-pilot-materialization-dry-run-v1.md");
 
 export const C={
-  main_sha:"92432c9c111fa2cbbab9d0a62e27ace2d1f28add",
+  main_sha:"22c20146192e9075c9d9cb36be7e5f49f83d3119",
   pilot_head:"596493154b74548187ed71f8d522bb41c7ad1900",
   dry_run_version:"cross-category-pilot-materialization-dry-run-v1",
   registry_blob:"32fdaa2d3a181c9d18888fc48c1343e083ad20f7",
