@@ -39,7 +39,10 @@ test("public T11 exports authority-checked orchestration and integrity verificat
   assert.match(source, /submitSoloScreening/);
   assert.match(source, /submitSoloIntentAssessment/);
   assert.match(source, /confirmSoloWaveBrief/);
+  assert.match(source, /deriveSoloAlignmentReport/);
   assert.doesNotMatch(source, /createSoloWaveAssessmentRow/);
   assert.doesNotMatch(source, /createSoloIntentRevealReceipt/);
   assert.doesNotMatch(source, /finalizeSoloTargetWithheldScreening/);
+  assert.doesNotMatch(source, /createSoloCueAlignment/);
+  assert.doesNotMatch(source, /createSoloWaveAlignmentReport/);
 });
