@@ -1,0 +1,263 @@
+name: V21-7 Shadow Recommendation v1
+
+on:
+  push:
+    branches:
+      - research/product-decision-axis-shadow-recommendation-v1
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+      BRANCH_NAME: research/product-decision-axis-shadow-recommendation-v1
+      RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+      OUT_JSON: evidence/product-recommendation-shadow-v1/legacy-vs-decision-axis-shadow-v1.json
+      OUT_MD: docs/evidence/product-decision-axis-shadow-recommendation-v1.md
+    steps:
+      - name: Checkout exact V2.1-7 head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Checkout frozen #167 recommendation reference
+        uses: actions/checkout@v4
+        with:
+          repository: gycha0109-beep/K_beauty
+          ref: 783afb91a964f5d762f46846f9ef854902b48e95
+          path: _reference/recommendation
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout historical V2.1-6
+        uses: actions/checkout@v4
+        with:
+          repository: gycha0109-beep/K_beauty
+          ref: bd04f0924a74c8d36a935da8a4137dd3cf497117
+          path: _historical/v21-6
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout historical V2.1-5
+        uses: actions/checkout@v4
+        with:
+          repository: gycha0109-beep/K_beauty
+          ref: 4cb69354c3919f40c2b00acc070bcd0fb142f042
+          path: _historical/v21-5
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout historical V2.1-4
+        uses: actions/checkout@v4
+        with:
+          repository: gycha0109-beep/K_beauty
+          ref: c471f5ae82acc36a7c29b9ec8158b4ca2d595ec9
+          path: _historical/v21-4
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install current dependencies
+        run: npm ci
+
+      - name: Freeze repository authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
+          git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-7-authority.txt
+
+      - name: Freeze Decision Axis authority hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json | awk '{print $1}')" = "fbddc761328f2caa5025a5867061866d17f16d24cb6566fe82d0796c20a4a0b4"
+          test "$(sha256sum evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json | awk '{print $1}')" = "5dc5c7975be7474bf0767951ea63074ed60968faabee5fdb8734153ff698ab5e"
+          node --input-type=module <<'NODE' | tee /tmp/v21-7-axis-authority.txt
+          import fs from 'node:fs';
+          const cleanser=JSON.parse(fs.readFileSync('evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json','utf8'));
+          const cross=JSON.parse(fs.readFileSync('evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json','utf8'));
+          if (!cleanser.products.every((p)=>p.hosted_current===false && p.axes.every((a)=>a.estimate===null))) throw new Error('cleanser fixture/estimate authority mismatch');
+          if (cross.summary.numeric_estimates!==0 || cross.summary.null_estimates!==12 || cross.summary.identity_blocked_products!==1) throw new Error('V2.1-6 summary mismatch');
+          if (!cross.products.every((p)=>p.hosted_current===false && p.axis.estimate===null)) throw new Error('cross fixture/estimate authority mismatch');
+          console.log('decision_axis_authority=PASS cleanser_numeric=0 cross_numeric=0 fixture_only=YES hosted_current=NO');
+          NODE
+
+      - name: Freeze legacy fixture authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' | tee /tmp/v21-7-legacy-authority.txt
+          import fs from 'node:fs';
+          const products=JSON.parse(fs.readFileSync('_reference/recommendation/fixtures/recommendation-metadata/products-v1.json','utf8'));
+          const scenarios=JSON.parse(fs.readFileSync('_reference/recommendation/fixtures/recommendation-metadata/user-scenarios-v1.json','utf8'));
+          if (products.productCount!==164 || products.canonicalFixtureSha256!=='e4788383a21ac4207d553fbfb5300dc629b8eab5ad200ffd1313d43e94e0c856') throw new Error('legacy product authority mismatch');
+          if (scenarios.scenarioCount!==12 || scenarios.canonicalScenarioSha256!=='7aa02ed3f1a264a67aee3d97c916b4a955a713fdbb173844d1727e9cfb1c918e') throw new Error('legacy scenario authority mismatch');
+          console.log('legacy_authority=PASS products=164 scenarios=12 reference=783afb91a964f5d762f46846f9ef854902b48e95');
+          NODE
+
+      - name: Syntax check V2.1-7
+        run: |
+          node --check scripts/product-evidence/product-decision-axis-shadow-recommendation-v1.mjs
+          node --check scripts/build-product-decision-axis-shadow-recommendation-v1.mjs
+          node --check scripts/verify-product-decision-axis-comparator-v1.mjs
+
+      - name: Build A
+        shell: bash
+        env:
+          V21_7_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
+        run: |
+          set -euo pipefail
+          node scripts/build-product-decision-axis-shadow-recommendation-v1.mjs | tee /tmp/v21-7-build-a.txt
+          cp "$OUT_JSON" /tmp/v21-7-a.json
+          cp "$OUT_MD" /tmp/v21-7-a.md
+          sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-7-hash-a.txt
+
+      - name: Build B and byte determinism
+        shell: bash
+        env:
+          V21_7_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
+        run: |
+          set -euo pipefail
+          rm -f "$OUT_JSON" "$OUT_MD"
+          node scripts/build-product-decision-axis-shadow-recommendation-v1.mjs | tee /tmp/v21-7-build-b.txt
+          cmp -s /tmp/v21-7-a.json "$OUT_JSON"
+          cmp -s /tmp/v21-7-a.md "$OUT_MD"
+          sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-7-hash-b.txt
+
+      - name: Focused V2.1-7 verifier
+        env:
+          V21_7_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
+        run: node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-7-verifier.txt
+
+      - name: Historical V2.1-6 acceptance replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd _historical/v21-6
+          git update-ref refs/remotes/origin/main 45628d2c859ab0ba875b66f30b4c47c150ef3162
+          node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-7-v21-6.txt
+
+      - name: Historical V2.1-5 acceptance replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd _historical/v21-5
+          git update-ref refs/remotes/origin/main 4dce99057ca44adb14dac549e8df6d468cf7f5e2
+          node scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-7-v21-5.txt
+
+      - name: Historical V2.1-4 uncertainty replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd _historical/v21-4
+          git update-ref refs/remotes/origin/main a38df682ebc686cb076dfc40b432ae714fdfd6da
+          node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-7-v21-4.txt
+
+      - name: Current legacy 164 x 12 recommendation replay
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-7-legacy-replay.txt
+
+      - name: Product Fact static contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/v21-7-pf-write.json
+          node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/v21-7-pf-subject.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          for (const file of ['/tmp/v21-7-pf-write.json','/tmp/v21-7-pf-subject.json']) {
+            const result=JSON.parse(fs.readFileSync(file,'utf8'));
+            if (result.status!=='PASS') throw new Error(`${file}: static Product Fact verifier failed`);
+          }
+          console.log('product_fact_static_contracts=PASS');
+          NODE
+
+      - name: Production import and diff invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference _historical
+          test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          if grep -R -n --include='*.js' --include='*.mjs' 'product-decision-axis-shadow-recommendation-v1' app lib components 2>/dev/null; then
+            echo 'Production runtime imports V2.1-7 shadow module'
+            exit 1
+          fi
+          git diff --check "$BASE_MAIN_SHA..HEAD"
+          git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort | tee /tmp/v21-7-changed.txt
+          printf 'production_score_delta=0\nproduction_ranking_delta=0\nproduction_top1_delta=0\nproduction_top3_delta=0\nproduction_eligibility_delta=0\npublic_response_delta=0\npersistence_delta=0\ncandidate_policy_fingerprint_delta=0\nhosted_writes=0\n' | tee /tmp/v21-7-production-invariance.txt
+
+      - name: Secret hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff -U0 "$BASE_MAIN_SHA..HEAD" \
+            | grep '^+' \
+            | grep -Ev '^\+\+\+' \
+            | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
+            echo 'Potential credential literal detected'
+            exit 1
+          fi
+
+      - name: Freeze generated outputs on branch
+        if: github.event_name == 'push' && github.ref_name == 'research/product-decision-axis-shadow-recommendation-v1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_JSON" "$OUT_MD"
+          if git diff --cached --quiet; then
+            echo 'Generated outputs already frozen.'
+          else
+            git commit -m 'research(recommendation): freeze V2.1-7 shadow evidence'
+            git push origin HEAD:"$BRANCH_NAME"
+          fi
+
+      - name: Record exact evaluated head
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'evaluated_head=%s\n' "${{ github.event.pull_request.head.sha || github.sha }}" | tee /tmp/v21-7-evaluated-head.txt
+
+      - name: Upload V2.1-7 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-7-shadow-recommendation-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/v21-7-authority.txt
+            /tmp/v21-7-axis-authority.txt
+            /tmp/v21-7-legacy-authority.txt
+            /tmp/v21-7-build-a.txt
+            /tmp/v21-7-build-b.txt
+            /tmp/v21-7-hash-a.txt
+            /tmp/v21-7-hash-b.txt
+            /tmp/v21-7-verifier.txt
+            /tmp/v21-7-v21-6.txt
+            /tmp/v21-7-v21-5.txt
+            /tmp/v21-7-v21-4.txt
+            /tmp/v21-7-legacy-replay.txt
+            /tmp/v21-7-pf-write.json
+            /tmp/v21-7-pf-subject.json
+            /tmp/v21-7-changed.txt
+            /tmp/v21-7-production-invariance.txt
+            /tmp/v21-7-evaluated-head.txt
+            evidence/product-recommendation-shadow-v1/legacy-vs-decision-axis-shadow-v1.json
+            docs/evidence/product-decision-axis-shadow-recommendation-v1.md
+          if-no-files-found: warn
+          retention-days: 14
