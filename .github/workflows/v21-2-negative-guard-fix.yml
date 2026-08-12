@@ -1,0 +1,39 @@
+name: V21-2 Negative Guard Fix
+
+on:
+  push:
+    branches:
+      - research/product-fact-cross-category-materialization-dry-run-v1
+    paths:
+      - .github/workflows/v21-2-negative-guard-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/product-fact-cross-category-materialization-dry-run-v1
+          fetch-depth: 0
+      - name: Harden identity-blocked semantic validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p='scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          const old='  for(const b of o.blocked_materialization)eq(b.forced_mapping,false,`blocked item not forced ${b.block_ref}`);';
+          const replacement='  for(const b of o.blocked_materialization){eq(b.forced_mapping,false,`blocked item not forced ${b.block_ref}`);if(["identity_blocked","identity_gap"].includes(b.kind))eq(b.semantic_status,null,`identity block never semantic supported ${b.block_ref}`);}';
+          if(!s.includes(old)) throw new Error('expected blocked-materialization guard not found');
+          fs.writeFileSync(p,s.replace(old,replacement));
+          NODE
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
+          git commit -m 'test(storage): reject semantic promotion of identity-blocked items'
+          git push origin HEAD:research/product-fact-cross-category-materialization-dry-run-v1
