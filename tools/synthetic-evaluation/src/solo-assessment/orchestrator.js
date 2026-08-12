@@ -28,8 +28,10 @@ import {
   saveSoloReveal,
   saveSoloScreening,
   saveSoloWaveAssessmentSet,
-  saveSoloWaveBrief
+  saveSoloWaveBrief,
+  saveSoloAlignmentReport
 } from "./storage.js";
+import { createSoloCueAlignment, createSoloWaveAlignmentReport } from "./alignment-diagnostic.js";
 
 function failure(code, path = "$", detail = null) {
   return Object.freeze({ ok: false, errors: Object.freeze([{ code, path, detail }]), writesPerformed: 0 });
@@ -210,4 +212,44 @@ export async function linkSoloBriefToCheckpoint({ dataRoot, sessionRef, briefDig
   if (!confirm) return Object.freeze({ ok: true, state: "preflight", link: created.link, writesPerformed: 0 });
   const saved = await saveSoloCheckpointLink({ dataRoot, session: bundle.session, link: created.link });
   return Object.freeze({ ok: true, state: saved.created ? "linked" : "existing", link: saved.value, writesPerformed: saved.created ? 1 : 0 });
+}
+
+export async function deriveSoloAlignmentReport({ dataRoot, sessionRef, itemRefs, limitations, confirm = false, now = () => new Date() }) {
+  const bundle = await loadSession(dataRoot, sessionRef);
+  if (!bundle) return failure("solo_source_not_ready");
+  const source = await preflightSoloWaveSource({ dataRoot, runId: bundle.session.campaignRunId, waveOrdinal: bundle.session.waveOrdinal, includeObservationObjects: true });
+  if (!source.ok) return source;
+  if (source.projection.projectionDigest !== bundle.session.sourceProjectionDigest || source.plan.planDigest !== bundle.session.campaignPlanDigest) return failure("solo_alignment_source_conflict", "campaign");
+  const refs = new Map();
+  for (const item of itemRefs || []) {
+    if (!item || refs.has(item.reviewItemId)) return failure("solo_alignment_source_conflict", "itemRefs", "duplicate_review_item");
+    refs.set(item.reviewItemId, item);
+  }
+  if (refs.size !== bundle.session.expectedSlotCount) return failure("solo_alignment_reveal_required", "itemRefs");
+  const alignments = [];
+  const derivedAt = now().toISOString();
+  for (const entry of bundle.privateMap.entries) {
+    const ref = refs.get(entry.reviewItemId);
+    if (!ref) return failure("solo_alignment_reveal_required", entry.reviewItemId);
+    let screening;
+    let reveal;
+    try {
+      [screening, reveal] = await Promise.all([
+        readSoloArtifact({ dataRoot, session: bundle.session, kind: "screening", reviewItemId: entry.reviewItemId, digest: ref.screeningDigest }),
+        readSoloArtifact({ dataRoot, session: bundle.session, kind: "reveal", reviewItemId: entry.reviewItemId, digest: ref.revealDigest })
+      ]);
+    } catch {
+      return failure("solo_alignment_reveal_required", entry.reviewItemId);
+    }
+    const sourceRow = source.sourceRows.find((row) => row.slotId === entry.slotId);
+    if (!sourceRow?.observationObject) return failure("solo_alignment_observation_required", entry.reviewItemId);
+    const created = createSoloCueAlignment({ session: bundle.session, entry, screening, reveal, observationObject: sourceRow.observationObject, derivedAt });
+    if (!created.ok) return created;
+    alignments.push(created.alignment);
+  }
+  const reportResult = createSoloWaveAlignmentReport({ session: bundle.session, alignments, limitations, derivedAt });
+  if (!reportResult.ok) return reportResult;
+  if (!confirm) return Object.freeze({ ok: true, state: "preflight", alignments: Object.freeze(alignments), report: reportResult.report, writesPerformed: 0 });
+  const saved = await saveSoloAlignmentReport({ dataRoot, session: bundle.session, alignments, report: reportResult.report });
+  return Object.freeze({ ok: true, state: saved.createdCount > 0 ? "alignment_report_confirmed" : "existing", alignments: Object.freeze(alignments), report: reportResult.report, writesPerformed: saved.createdCount });
 }

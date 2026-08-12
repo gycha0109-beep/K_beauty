@@ -15,6 +15,7 @@ import {
   verifySoloWaveSessionIntegrity,
   verifyTargetWithheldReviewItemIntegrity
 } from "./artifacts.js";
+import { verifySoloCueAlignmentIntegrity, verifySoloWaveAlignmentReportIntegrity } from "./alignment-diagnostic.js";
 
 function root(runId, waveOrdinal, sessionDigest) {
   return path.posix.join("solo-assessment", "runs", runId, `wave-${waveOrdinal}`, "sessions", sessionDigest);
@@ -35,7 +36,9 @@ export function soloStorageLayout(session) {
     row: (slotId, digest) => path.posix.join(base, "rows", slotId, `${digest}.json`),
     assessmentSet: (digest) => path.posix.join(base, "sets", `${digest}.json`),
     brief: (digest) => path.posix.join(base, "briefs", `${digest}.json`),
-    checkpointLink: (digest) => path.posix.join(base, "checkpoint-links", `${digest}.json`)
+    checkpointLink: (digest) => path.posix.join(base, "checkpoint-links", `${digest}.json`),
+    alignment: (reviewItemId, digest) => path.posix.join(base, "alignment-diagnostics", "rows", reviewItemId, `${digest}.json`),
+    alignmentReport: (digest) => path.posix.join(base, "alignment-diagnostics", "reports", `${digest}.json`)
   });
 }
 
@@ -122,6 +125,20 @@ export async function saveSoloCheckpointLink({ dataRoot, session, link }) {
   return writeImmutableJson(nativePath(dataRoot, target), link, (existing) => verifySoloCheckpointLinkIntegrity(existing) && existing.linkDigest === link.linkDigest);
 }
 
+export async function saveSoloAlignmentReport({ dataRoot, session, alignments, report }) {
+  if (!verifySoloWaveSessionIntegrity(session) || !Array.isArray(alignments) || alignments.length !== session.expectedSlotCount ||
+      alignments.some((item) => !verifySoloCueAlignmentIntegrity(item) || item.sessionDigest !== session.sessionDigest) ||
+      !verifySoloWaveAlignmentReportIntegrity(report, alignments) || report.sessionDigest !== session.sessionDigest ||
+      report.alignmentRows.some((ref) => !alignments.some((item) => item.alignmentDigest === ref.alignmentDigest && item.reviewItemId === ref.reviewItemId && item.slotId === ref.slotId))) {
+    throw Object.assign(new Error("solo_alignment_report_invalid"), { code: "solo_alignment_report_invalid" });
+  }
+  const layout = soloStorageLayout(session);
+  const writes = [];
+  for (const alignment of alignments) writes.push(await writeImmutableJson(nativePath(dataRoot, layout.alignment(alignment.reviewItemId, alignment.alignmentDigest)), alignment, (existing) => verifySoloCueAlignmentIntegrity(existing) && existing.alignmentDigest === alignment.alignmentDigest));
+  writes.push(await writeImmutableJson(nativePath(dataRoot, layout.alignmentReport(report.reportDigest)), report, (existing) => verifySoloWaveAlignmentReportIntegrity(existing) && existing.reportDigest === report.reportDigest));
+  return Object.freeze({ createdCount: writes.filter((write) => write.created).length });
+}
+
 export async function readSoloArtifact({ dataRoot, session, kind, reviewItemId = null, digest }) {
   const layout = soloStorageLayout(session);
   const relativePath = kind === "claim" ? layout.claim(reviewItemId, digest)
@@ -131,6 +148,8 @@ export async function readSoloArtifact({ dataRoot, session, kind, reviewItemId =
           : kind === "set" ? layout.assessmentSet(digest)
             : kind === "brief" ? layout.brief(digest)
               : kind === "checkpoint-link" ? layout.checkpointLink(digest)
+                : kind === "alignment" ? layout.alignment(reviewItemId, digest)
+                  : kind === "alignment-report" ? layout.alignmentReport(digest)
                 : null;
   if (!relativePath) throw Object.assign(new Error("solo_artifact_kind_invalid"), { code: "solo_artifact_kind_invalid" });
   return readJson(dataRoot, relativePath);

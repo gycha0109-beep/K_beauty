@@ -122,12 +122,17 @@ export {
 export {
   claimSoloReviewItem,
   confirmSoloWaveBrief,
+  deriveSoloAlignmentReport,
   linkSoloBriefToCheckpoint,
   prepareSoloWave,
   revealSoloIntent,
   submitSoloIntentAssessment,
   submitSoloScreening
 } from "./solo-assessment/orchestrator.js";
+export {
+  verifySoloCueAlignmentIntegrity,
+  verifySoloWaveAlignmentReportIntegrity
+} from "./solo-assessment/alignment-diagnostic.js";
 export {
   SOLO_ASSESSMENT_POLICY,
   deriveSoloTargetRelation,

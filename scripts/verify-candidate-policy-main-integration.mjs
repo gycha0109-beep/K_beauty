@@ -27,11 +27,32 @@ const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   "package.json",
   "scripts/run-security-closeout-verifier-suite.mjs"
 ]);
+const SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
+  "packages/face-contracts/src/synthetic-solo-assessment/constants.js",
+  "packages/face-contracts/src/synthetic-solo-assessment/contract.js",
+  "tools/synthetic-evaluation/package.json",
+  "tools/synthetic-evaluation/src/index.js",
+  "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js",
+  "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js",
+  "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js",
+  "tools/synthetic-evaluation/src/solo-assessment/storage.js",
+  "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs"
+]);
 const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
 const hash = (filePath) => git("hash-object", "--", filePath);
+const resolveCurrentMainRef = () => {
+  for (const ref of ["origin/main", "main"]) {
+    try {
+      if (/^[a-f0-9]{40}$/.test(git("rev-parse", "--verify", ref))) return ref;
+    } catch {}
+  }
+  throw new Error("current_main_ref_unavailable");
+};
+const CURRENT_MAIN_REF = resolveCurrentMainRef();
+const currentMainBlob = (filePath) => git("rev-parse", `${CURRENT_MAIN_REF}:${filePath}`);
 
 check(manifest.version === "candidate-policy-main-integration-blob-manifest-v1", "manifest version drift");
 check(manifest.baseSha === "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf", "main authority drift");
@@ -40,6 +61,7 @@ check(manifest.counts.includeExact === 61, "include exact count drift");
 check(manifest.counts.mergeSemantic === 7, "semantic count drift");
 check(manifest.counts.excludeSourceOnly === 38, "source-only exclusion count drift");
 check(manifest.counts.preserveMain === 302, "main preservation count drift");
+check(/^[a-f0-9]{40}$/.test(git("rev-parse", "--verify", CURRENT_MAIN_REF)), "current main authority unavailable");
 
 for (const entry of manifest.includeExact) {
   check(existsSync(path.join(ROOT, entry.path)), `missing exact source path: ${entry.path}`);
@@ -52,15 +74,15 @@ for (const entry of manifest.includeExact) {
 }
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
-  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
-  check(hash(entry.path) === expectedBlob(entry, "mainBlob"), `current-main/closeout blob mismatch: ${entry.path}`);
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
+  check(hash(entry.path) === currentMainBlob(entry.path), `current-main/head blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
   check(!existsSync(path.join(ROOT, entry.path)), `excluded source-only path present: ${entry.path}`);
 }
 for (const entry of manifest.mergeSemantic) {
   check(existsSync(path.join(ROOT, entry.path)), `missing semantic path: ${entry.path}`);
-  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
   check(hash(entry.path) === expectedBlob(entry, "resultBlob"), `semantic/closeout result blob mismatch: ${entry.path}`);
 }
 const candidateManifestProtectedPaths = new Set([
@@ -69,6 +91,9 @@ const candidateManifestProtectedPaths = new Set([
 ]);
 for (const filePath of ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS) {
   check(candidateManifestProtectedPaths.has(filePath), `unregistered admin semantic exception: ${filePath}`);
+}
+for (const filePath of SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS) {
+  check(candidateManifestProtectedPaths.has(filePath), `unregistered Solo alignment semantic exception: ${filePath}`);
 }
 
 const adminIntegrationWorkLog = readFileSync(path.join(ROOT, ".codex/AI_WORK_LOG.md"), "utf8");
@@ -95,6 +120,98 @@ check(
   adminIntegrationSecuritySuite.split('"verify-admin-product-candidate-reviews.mjs"').length - 1 === 1,
   "admin product verifier manifest count mismatch"
 );
+
+const soloAlignmentConstants = readFileSync(
+  path.join(ROOT, "packages/face-contracts/src/synthetic-solo-assessment/constants.js"),
+  "utf8"
+);
+for (const token of [
+  'SOLO_INTENT_ASSESSMENT_SCHEMA_VERSION = "solo-intent-assessment-v1"',
+  'SOLO_WAVE_BRIEF_SCHEMA_VERSION = "solo-wave-brief-v1"',
+  'SOLO_CUE_ALIGNMENT_SCHEMA_VERSION = "solo-cue-alignment-v1"',
+  'SOLO_WAVE_ALIGNMENT_REPORT_SCHEMA_VERSION = "solo-wave-alignment-report-v1"',
+  '"exact_match", "under_target", "over_target", "contradictory", "unverifiable"',
+  '"human_redness_color_discrimination_reliability_limited"',
+  '"blemish_visual_cue_not_dermatological_diagnosis"'
+]) check(soloAlignmentConstants.includes(token), `Solo alignment constants semantic delta missing: ${token}`);
+const soloAlignmentContract = readFileSync(
+  path.join(ROOT, "packages/face-contracts/src/synthetic-solo-assessment/contract.js"),
+  "utf8"
+);
+for (const token of [
+  "export function validateSoloIntentAssessment(value)",
+  "export function validateSoloWaveBrief(value)",
+  "export function validateSoloCueAlignment(value)",
+  "export function validateSoloWaveAlignmentReport(value)",
+  "value.sameSlotQualityRegenerationAllowed === false",
+  'value[axis] === "not_available"'
+]) check(soloAlignmentContract.includes(token), `Solo alignment contract semantic delta missing: ${token}`);
+
+const soloToolkitPackage = JSON.parse(readFileSync(path.join(ROOT, "tools/synthetic-evaluation/package.json"), "utf8"));
+check(soloToolkitPackage.scripts?.solo === "node src/solo-assessment/cli/solo.js", "Solo CLI script drift");
+for (const scriptName of ["test", "verify"]) {
+  check(String(soloToolkitPackage.scripts?.[scriptName] || "").includes("tests/solo-assessment/alignment-diagnostic.test.mjs"), `Solo alignment test wiring missing: ${scriptName}`);
+}
+
+const soloToolkitIndex = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/index.js"), "utf8");
+for (const token of [
+  "prepareSoloWave",
+  "revealSoloIntent",
+  "submitSoloIntentAssessment",
+  "confirmSoloWaveBrief",
+  "linkSoloBriefToCheckpoint",
+  "deriveSoloAlignmentReport",
+  "verifySoloCueAlignmentIntegrity",
+  "verifySoloWaveAlignmentReportIntegrity"
+]) check(soloToolkitIndex.includes(token), `Solo public export semantic delta missing: ${token}`);
+
+const soloCli = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js"), "utf8");
+for (const action of ["prepare_wave", "claim", "screen", "reveal", "assess", "brief", "link_checkpoint", "derive_alignment_report"]) {
+  check(soloCli.includes(`request.action === "${action}"`), `Solo CLI action missing: ${action}`);
+}
+check(soloCli.includes("deriveSoloAlignmentReport"), "Solo alignment CLI orchestration missing");
+
+const soloOrchestrator = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js"), "utf8");
+for (const token of [
+  "export async function revealSoloIntent",
+  "export async function submitSoloIntentAssessment",
+  "export async function confirmSoloWaveBrief",
+  "export async function linkSoloBriefToCheckpoint",
+  "export async function deriveSoloAlignmentReport",
+  "createSoloCueAlignment",
+  "createSoloWaveAlignmentReport",
+  "saveSoloAlignmentReport",
+  "solo_alignment_reveal_required"
+]) check(soloOrchestrator.includes(token), `Solo orchestrator semantic delta missing: ${token}`);
+
+const soloSourcePreflight = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js"), "utf8");
+for (const token of [
+  "export async function preflightSoloWaveSource",
+  "includeObservationObjects = false",
+  "verifyObservationSource",
+  "observationObject",
+  "writesPerformed: 0"
+]) check(soloSourcePreflight.includes(token), `Solo source preflight semantic delta missing: ${token}`);
+
+const soloStorage = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/storage.js"), "utf8");
+for (const token of [
+  "saveSoloReveal",
+  "saveSoloIntentAssessment",
+  "saveSoloWaveBrief",
+  "saveSoloCheckpointLink",
+  "saveSoloAlignmentReport",
+  "alignment-diagnostics",
+  "writeImmutableJson"
+]) check(soloStorage.includes(token), `Solo storage semantic delta missing: ${token}`);
+
+const soloArchitectureBoundary = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs"), "utf8");
+for (const token of [
+  "T11 has no Provider, browser, DB, shell, upload, or production execution path",
+  "T11 does not import T5 consensus, T6 promotion, T8 mutation, or T9 dataset operations",
+  "deriveSoloAlignmentReport",
+  "createSoloCueAlignment",
+  "createSoloWaveAlignmentReport"
+]) check(soloArchitectureBoundary.includes(token), `Solo architecture boundary semantic delta missing: ${token}`);
 
 for (const filePath of manifest.temporaryRouteFiles) {
   check(!existsSync(path.join(ROOT, filePath)), `temporary diagnostic route residue: ${filePath}`);
@@ -189,4 +306,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated)`);
