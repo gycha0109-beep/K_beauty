@@ -27,6 +27,10 @@ const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   "package.json",
   "scripts/run-security-closeout-verifier-suite.mjs"
 ]);
+const SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
+  "packages/face-contracts/src/synthetic-solo-assessment/constants.js",
+  "packages/face-contracts/src/synthetic-solo-assessment/contract.js"
+]);
 const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
@@ -52,7 +56,7 @@ for (const entry of manifest.includeExact) {
 }
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
-  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
   check(hash(entry.path) === expectedBlob(entry, "mainBlob"), `current-main/closeout blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
@@ -60,7 +64,7 @@ for (const entry of manifest.excludeSourceOnly) {
 }
 for (const entry of manifest.mergeSemantic) {
   check(existsSync(path.join(ROOT, entry.path)), `missing semantic path: ${entry.path}`);
-  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
+  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
   check(hash(entry.path) === expectedBlob(entry, "resultBlob"), `semantic/closeout result blob mismatch: ${entry.path}`);
 }
 const candidateManifestProtectedPaths = new Set([
@@ -69,6 +73,9 @@ const candidateManifestProtectedPaths = new Set([
 ]);
 for (const filePath of ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS) {
   check(candidateManifestProtectedPaths.has(filePath), `unregistered admin semantic exception: ${filePath}`);
+}
+for (const filePath of SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS) {
+  check(candidateManifestProtectedPaths.has(filePath), `unregistered Solo alignment semantic exception: ${filePath}`);
 }
 
 const adminIntegrationWorkLog = readFileSync(path.join(ROOT, ".codex/AI_WORK_LOG.md"), "utf8");
@@ -95,6 +102,32 @@ check(
   adminIntegrationSecuritySuite.split('"verify-admin-product-candidate-reviews.mjs"').length - 1 === 1,
   "admin product verifier manifest count mismatch"
 );
+
+const soloAlignmentConstants = readFileSync(
+  path.join(ROOT, "packages/face-contracts/src/synthetic-solo-assessment/constants.js"),
+  "utf8"
+);
+for (const token of [
+  'SOLO_INTENT_ASSESSMENT_SCHEMA_VERSION = "solo-intent-assessment-v1"',
+  'SOLO_WAVE_BRIEF_SCHEMA_VERSION = "solo-wave-brief-v1"',
+  'SOLO_CUE_ALIGNMENT_SCHEMA_VERSION = "solo-cue-alignment-v1"',
+  'SOLO_WAVE_ALIGNMENT_REPORT_SCHEMA_VERSION = "solo-wave-alignment-report-v1"',
+  '"exact_match", "under_target", "over_target", "contradictory", "unverifiable"',
+  '"human_redness_color_discrimination_reliability_limited"',
+  '"blemish_visual_cue_not_dermatological_diagnosis"'
+]) check(soloAlignmentConstants.includes(token), `Solo alignment constants semantic delta missing: ${token}`);
+const soloAlignmentContract = readFileSync(
+  path.join(ROOT, "packages/face-contracts/src/synthetic-solo-assessment/contract.js"),
+  "utf8"
+);
+for (const token of [
+  "export function validateSoloIntentAssessment(value)",
+  "export function validateSoloWaveBrief(value)",
+  "export function validateSoloCueAlignment(value)",
+  "export function validateSoloWaveAlignmentReport(value)",
+  "value.sameSlotQualityRegenerationAllowed === false",
+  'value[axis] === "not_available"'
+]) check(soloAlignmentContract.includes(token), `Solo alignment contract semantic delta missing: ${token}`);
 
 for (const filePath of manifest.temporaryRouteFiles) {
   check(!existsSync(path.join(ROOT, filePath)), `temporary diagnostic route residue: ${filePath}`);
@@ -189,4 +222,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic exception verified)`);
