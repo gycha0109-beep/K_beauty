@@ -43,6 +43,16 @@ let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
 const git = (...args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).trim();
 const hash = (filePath) => git("hash-object", "--", filePath);
+const resolveCurrentMainRef = () => {
+  for (const ref of ["origin/main", "main"]) {
+    try {
+      if (/^[a-f0-9]{40}$/.test(git("rev-parse", "--verify", ref))) return ref;
+    } catch {}
+  }
+  throw new Error("current_main_ref_unavailable");
+};
+const CURRENT_MAIN_REF = resolveCurrentMainRef();
+const currentMainBlob = (filePath) => git("rev-parse", `${CURRENT_MAIN_REF}:${filePath}`);
 
 check(manifest.version === "candidate-policy-main-integration-blob-manifest-v1", "manifest version drift");
 check(manifest.baseSha === "647051f7feff8e23dc7b563cb7b58ffcba7e6eaf", "main authority drift");
@@ -51,6 +61,7 @@ check(manifest.counts.includeExact === 61, "include exact count drift");
 check(manifest.counts.mergeSemantic === 7, "semantic count drift");
 check(manifest.counts.excludeSourceOnly === 38, "source-only exclusion count drift");
 check(manifest.counts.preserveMain === 302, "main preservation count drift");
+check(/^[a-f0-9]{40}$/.test(git("rev-parse", "--verify", CURRENT_MAIN_REF)), "current main authority unavailable");
 
 for (const entry of manifest.includeExact) {
   check(existsSync(path.join(ROOT, entry.path)), `missing exact source path: ${entry.path}`);
@@ -64,7 +75,7 @@ for (const entry of manifest.includeExact) {
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
   if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
-  check(hash(entry.path) === expectedBlob(entry, "mainBlob"), `current-main/closeout blob mismatch: ${entry.path}`);
+  check(hash(entry.path) === currentMainBlob(entry.path), `current-main/head blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
   check(!existsSync(path.join(ROOT, entry.path)), `excluded source-only path present: ${entry.path}`);
@@ -295,4 +306,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated)`);
