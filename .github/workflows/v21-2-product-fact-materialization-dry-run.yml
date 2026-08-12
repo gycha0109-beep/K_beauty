@@ -170,3 +170,5 @@ jobs:
             /tmp/v21-2-final-head.txt
             evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
             docs/evidence/cross-category-pilot-materialization-dry-run-v1.md
+
+# final replay trigger after verifier-only corrections
