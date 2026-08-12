@@ -2,11 +2,9 @@ name: V21-6 Acceptance Cross-category Extension v1
 
 on:
   push:
-    branches:
-      - research/product-decision-axis-cross-category-v1
+    branches: [research/product-decision-axis-cross-category-v1]
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'scripts/product-evidence/product-fact-current-group-resolver-v1.mjs'
       - 'scripts/product-evidence/product-fact-cross-category-fixture-adapter-v1.mjs'
@@ -36,12 +34,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.ref }}
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Freeze repository authority
         shell: bash
         run: |
@@ -54,7 +49,6 @@ jobs:
           test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-evidence-decision-axis-v1/cross-category-real-fact-mapping-pilot-v1.json")" = 20d211c70f6ba44ca4f9205942cb5e0387d74b7e
           test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-evidence-decision-axis-v1/cross-category-real-pilot-gap-report-v1.json")" = 60b53f49cbac2021a47e50f4e1a0a79760ab7874
           test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260809115932_product_fact_storage_v1.sql")" = 676afbc56bf90443a1198f93427382f067d19407
-
       - name: Verify frozen semantic artifacts
         shell: bash
         run: |
@@ -64,7 +58,6 @@ jobs:
           echo '5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215  evidence/product-evidence-decision-axis-v1/cross-category-real-pilot-gap-report-v1.json' | sha256sum -c -
           echo 'b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2  evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json' | sha256sum -c -
           echo 'fbddc761328f2caa5025a5867061866d17f16d24cb6566fe82d0796c20a4a0b4  evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json' | sha256sum -c -
-
       - name: Syntax check
         shell: bash
         run: |
@@ -74,7 +67,6 @@ jobs:
           node --check scripts/product-evidence/product-decision-axis-cross-category-v1.mjs
           node --check scripts/build-product-decision-axis-cross-category-v1.mjs
           node --check scripts/verify-product-decision-axis-cross-category-v1.mjs
-
       - name: Build A
         shell: bash
         run: |
@@ -83,7 +75,6 @@ jobs:
           cp "${OUT_JSON}" /tmp/v21-6-a.json
           cp "${OUT_MD}" /tmp/v21-6-a.md
           sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-6-hash-a.txt
-
       - name: Build B determinism
         shell: bash
         run: |
@@ -93,7 +84,6 @@ jobs:
           cmp -s /tmp/v21-6-a.json "${OUT_JSON}"
           cmp -s /tmp/v21-6-a.md "${OUT_MD}"
           sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-6-hash-b.txt
-
       - name: Freeze generated outputs locally
         shell: bash
         run: |
@@ -101,10 +91,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add "${OUT_JSON}" "${OUT_MD}"
-          if ! git diff --cached --quiet; then
-            git commit -m 'research(evidence): freeze V2.1-6 cross-category axis output'
-          fi
-
+          if ! git diff --cached --quiet; then git commit -m 'research(evidence): freeze V2.1-6 cross-category axis output'; fi
       - name: Verify V2.1-6 contract
         shell: bash
         run: |
@@ -112,7 +99,6 @@ jobs:
           node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-6.txt
           grep -q 'PASS verify-product-decision-axis-cross-category-v1' /tmp/v21-6.txt
           grep -q 'decision_axis_consumption=NO recommendation_activation=NO hosted_writes=0' /tmp/v21-6.txt
-
       - name: Replay mandatory cleanser and uncertainty acceptance
         shell: bash
         run: |
@@ -122,7 +108,6 @@ jobs:
           node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4.txt
           grep -q 'PASS verify-product-fact-evidence-fusion-review-uncertainty-v1' /tmp/v21-4.txt
           grep -q 'missing_denominator_prevalence=FORBIDDEN' /tmp/v21-4.txt
-
       - name: Verify Product Fact contracts unchanged
         shell: bash
         run: |
@@ -136,7 +121,6 @@ jobs:
             if (parsed.status !== 'PASS') throw new Error(`${file} not PASS`);
           }
           NODE
-
       - name: Cross-category frozen pilot replay
         shell: bash
         run: |
@@ -144,40 +128,32 @@ jobs:
           node scripts/verify-cross-category-real-evidence-pilot-v1.mjs | tee /tmp/cross-pilot.txt
           grep -q 'PASS' /tmp/cross-pilot.txt
           grep -q 'forced_mapping_count=0' /tmp/cross-pilot.txt
-
       - name: Final scope and production invariance gate
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t changed < <(git diff --name-only "${BASE_MAIN_SHA}" HEAD | sort)
-          printf '%s\n' "${changed[@]}"
-          expected=$(cat <<'EOF'
-.github/workflows/v21-6-acceptance-cross-category-extension-v1.yml
-docs/evidence/product-decision-axis-cross-category-v1.md
-evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json
-scripts/build-product-decision-axis-cross-category-v1.mjs
-scripts/product-evidence/product-decision-axis-cross-category-v1.mjs
-scripts/product-evidence/product-fact-cross-category-fixture-adapter-v1.mjs
-scripts/product-evidence/product-fact-current-group-resolver-v1.mjs
-scripts/verify-product-decision-axis-cross-category-v1.mjs
-EOF
-)
-          actual=$(printf '%s\n' "${changed[@]}")
+          actual=$(git diff --name-only "${BASE_MAIN_SHA}" HEAD | sort)
+          expected=$(printf '%s\n' \
+            '.github/workflows/v21-6-acceptance-cross-category-extension-v1.yml' \
+            'docs/evidence/product-decision-axis-cross-category-v1.md' \
+            'evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json' \
+            'scripts/build-product-decision-axis-cross-category-v1.mjs' \
+            'scripts/product-evidence/product-decision-axis-cross-category-v1.mjs' \
+            'scripts/product-evidence/product-fact-cross-category-fixture-adapter-v1.mjs' \
+            'scripts/product-evidence/product-fact-current-group-resolver-v1.mjs' \
+            'scripts/verify-product-decision-axis-cross-category-v1.mjs')
+          printf '%s\n' "${actual}"
           test "${actual}" = "${expected}"
-          if printf '%s\n' "${changed[@]}" | grep -Eq '^(app/|components/|lib/|supabase/migrations/|package\.json$)'; then exit 1; fi
+          if printf '%s\n' "${actual}" | grep -Eq '^(app/|components/|lib/|supabase/migrations/|package\.json$)'; then exit 1; fi
           if grep -R --line-number --exclude='*.md' --exclude='*.json' --exclude='*.yml' 'product-decision-axis-cross-category-v1' app components lib 2>/dev/null; then exit 1; fi
           git diff --check "${BASE_MAIN_SHA}" HEAD
-
       - name: Push generated-output commit
         if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
           remote_head=$(git rev-parse "origin/${BRANCH_NAME}")
-          if test "$(git rev-parse HEAD)" != "${remote_head}"; then
-            git push origin "HEAD:${BRANCH_NAME}"
-          fi
-
+          if test "$(git rev-parse HEAD)" != "${remote_head}"; then git push origin "HEAD:${BRANCH_NAME}"; fi
       - uses: actions/upload-artifact@v4
         with:
           name: v21-6-acceptance-cross-category-extension
