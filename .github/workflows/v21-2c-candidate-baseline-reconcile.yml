@@ -1,0 +1,168 @@
+name: V21-2C Candidate Baseline Reconcile
+
+on:
+  push:
+    branches:
+      - verify/v21-2c-candidate-baseline-reconcile
+    paths:
+      - .github/workflows/v21-2c-candidate-baseline-reconcile.yml
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/candidate-policy-baseline-synthetic-solo-v1
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Freeze authority and enumerate manifest intersection
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "92432c9c111fa2cbbab9d0a62e27ace2d1f28add"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/v21-2c-main
+          test "$(git rev-parse refs/remotes/origin/v21-2c-main)" = "92432c9c111fa2cbbab9d0a62e27ace2d1f28add"
+          python - <<'PY' | tee /tmp/v21-2c-manifest-intersection.txt
+          import json, subprocess
+          from pathlib import Path
+          p=Path('docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json')
+          m=json.loads(p.read_text())
+          changed=[
+            '.codex/AI_WORK_LOG.md',
+            'packages/face-contracts/src/synthetic-solo-assessment/constants.js',
+            'packages/face-contracts/src/synthetic-solo-assessment/contract.js',
+            'tools/synthetic-evaluation/src/solo-assessment/artifacts.js',
+            'tools/synthetic-evaluation/src/solo-assessment/orchestrator.js',
+            'tools/synthetic-evaluation/src/solo-assessment/source-preflight.js',
+            'tools/synthetic-evaluation/src/solo-assessment/storage.js',
+            'tools/synthetic-evaluation/src/solo-assessment/wave-shape.js',
+            'tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs',
+            'tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs',
+          ]
+          classes=['includeExact','mergeSemantic','excludeSourceOnly','preserveMain']
+          membership={c:{x['path']:x for x in m[c]} for c in classes}
+          for c in classes:
+            hits=[x for x in changed if x in membership[c]]
+            print(f'{c}_intersection={len(hits)}')
+            for x in hits: print(f'  {x}')
+          assert not [x for x in changed if x in membership['includeExact']]
+          assert not [x for x in changed if x in membership['mergeSemantic']]
+          assert not [x for x in changed if x in membership['excludeSourceOnly']]
+          preserve=[x for x in changed if x in membership['preserveMain']]
+          assert preserve == [
+            'packages/face-contracts/src/synthetic-solo-assessment/constants.js',
+            'packages/face-contracts/src/synthetic-solo-assessment/contract.js',
+            'tools/synthetic-evaluation/src/solo-assessment/artifacts.js',
+            'tools/synthetic-evaluation/src/solo-assessment/orchestrator.js',
+            'tools/synthetic-evaluation/src/solo-assessment/source-preflight.js',
+            'tools/synthetic-evaluation/src/solo-assessment/storage.js',
+            'tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs',
+            'tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs',
+          ]
+          untracked=[x for x in changed if not any(x in membership[c] for c in classes)]
+          assert untracked == ['.codex/AI_WORK_LOG.md','tools/synthetic-evaluation/src/solo-assessment/wave-shape.js']
+          print('untracked_by_manifest=2')
+          for x in untracked: print(f'  {x}')
+          print('manifest_counts='+json.dumps(m['counts'],sort_keys=True))
+          PY
+
+      - name: Reconcile only verified preserveMain blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' | tee /tmp/v21-2c-reconciliation.txt
+          import json, subprocess
+          from pathlib import Path
+          p=Path('docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json')
+          m=json.loads(p.read_text())
+          expected={
+            'packages/face-contracts/src/synthetic-solo-assessment/constants.js':('397d62d89c41ab7c309485cdb0a7430772699e55','52654c38ae5cc4e4829bfd3f516e4b745283820b'),
+            'packages/face-contracts/src/synthetic-solo-assessment/contract.js':('fcaa52f01f16b1a587f986aa44a79ddfd783bcda','54ff04cc5502150e8e38418a187b851bc91e3178'),
+            'tools/synthetic-evaluation/src/solo-assessment/artifacts.js':('33286814a187940ebbfc6944f5759d7ff7d84955','e23d38efbaae81331d8c8a7f333b09314978787d'),
+            'tools/synthetic-evaluation/src/solo-assessment/orchestrator.js':('17e24100ab5aa394f29bdc4d5bffd5898b299980','300e08a2a18fdcac6e6c40f9dc934fc6d126a915'),
+            'tools/synthetic-evaluation/src/solo-assessment/source-preflight.js':('46bac0360dfe61d089aa0065338bef8fe4df29cd','53848b15d8be79b49781c0cdb1efaa4d314eb974'),
+            'tools/synthetic-evaluation/src/solo-assessment/storage.js':('eed9e5d8dd59af7653985ea479377ccf3fffae9b','a0bb529b4d28f1e559a6f3bcf1af6927dc81cd76'),
+            'tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs':('c6c396a798bca1cfa507daae946603db9ee93f4a','3310526a19282b87a4f0efa16b3dec8511033a82'),
+            'tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs':('222a88e5b6eef4dcf4a684ff76510b6a3376a22d','5d27f37700fd7d85a998ae2ff60354fd03b07f34'),
+          }
+          original_counts=dict(m['counts'])
+          original_paths={k:[x['path'] for x in m[k]] for k in ['includeExact','mergeSemantic','excludeSourceOnly','preserveMain']}
+          by_path={x['path']:x for x in m['preserveMain']}
+          for path,(old,new) in expected.items():
+            assert by_path[path]['mainBlob']==old,(path,by_path[path]['mainBlob'],old)
+            actual=subprocess.check_output(['git','rev-parse',f'HEAD:{path}'],text=True).strip()
+            assert actual==new,(path,actual,new)
+            by_path[path]['mainBlob']=new
+            print(f'{path}\tpreserveMain\t{old}\t{new}\tUPDATE')
+          assert m['counts']==original_counts
+          for k,paths in original_paths.items(): assert [x['path'] for x in m[k]]==paths
+          p.write_text(json.dumps(m,ensure_ascii=False,indent=2)+'\n')
+          PY
+          test "$(git diff --name-only)" = "docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json"
+          git diff --check
+
+      - name: Verify merged synthetic #198 behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run synthetic:verify | tee /tmp/v21-2c-synthetic-verify.txt
+          npm run architecture:guard | tee /tmp/v21-2c-architecture-guard.txt
+          for f in \
+            packages/face-contracts/src/synthetic-solo-assessment/constants.js \
+            packages/face-contracts/src/synthetic-solo-assessment/contract.js \
+            tools/synthetic-evaluation/src/solo-assessment/artifacts.js \
+            tools/synthetic-evaluation/src/solo-assessment/orchestrator.js \
+            tools/synthetic-evaluation/src/solo-assessment/source-preflight.js \
+            tools/synthetic-evaluation/src/solo-assessment/storage.js \
+            tools/synthetic-evaluation/src/solo-assessment/wave-shape.js \
+            tools/synthetic-evaluation/tests/solo-assessment/contracts.test.mjs \
+            tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs; do
+              node --check "$f"
+          done
+
+      - name: Verify CandidatePolicy and security closeout
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-candidate-policy-main-integration.mjs | tee /tmp/v21-2c-candidate-main.txt
+          npm run verify:candidate-exposure-policy-shadow | tee /tmp/v21-2c-candidate-shadow.txt
+          node scripts/run-security-closeout-verifier-suite.mjs | tee /tmp/v21-2c-security.txt
+          grep -q 'SECURITY_CLOSEOUT_VERIFIERS=PASS 61/61' /tmp/v21-2c-security.txt
+
+      - name: Commit manifest-only repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only)" = "docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json"
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json
+          git commit -m 'fix(ci): reconcile CandidatePolicy baseline after synthetic solo update'
+          git push origin HEAD:fix/candidate-policy-baseline-synthetic-solo-v1
+          printf 'repair_head=%s\n' "$(git rev-parse HEAD)" | tee /tmp/v21-2c-repair-head.txt
+
+      - name: Upload reconciliation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-2c-candidate-baseline-reconciliation
+          retention-days: 90
+          path: |
+            /tmp/v21-2c-manifest-intersection.txt
+            /tmp/v21-2c-reconciliation.txt
+            /tmp/v21-2c-synthetic-verify.txt
+            /tmp/v21-2c-architecture-guard.txt
+            /tmp/v21-2c-candidate-main.txt
+            /tmp/v21-2c-candidate-shadow.txt
+            /tmp/v21-2c-security.txt
+            /tmp/v21-2c-repair-head.txt
