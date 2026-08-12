@@ -1,0 +1,206 @@
+name: PF5B1HR Hosted Migration History Reconciliation
+
+on:
+  push:
+    branches:
+      - verify/pf5b1hr-migration-history-reconcile
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pf5b1hr-hosted-history-reconcile
+  cancel-in-progress: false
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+  TARGET_PROJECT_REF: bygrczggxfuisupcevaz
+  TARGET_MAIN_SHA: 92432c9c111fa2cbbab9d0a62e27ace2d1f28add
+  PF5B1_MERGE_SHA: ab3da7b1cd3fb1bbaeec5f38f16b1518b45cd73b
+  GENERATED_VERSION: '20260812090959'
+  CANONICAL_CONTROLLED_VERSION: '20260810174400'
+  CANONICAL_SUBJECT_VERSION: '20260810174410'
+  CONTROLLED_PATH: supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql
+  SUBJECT_PATH: supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql
+  PF2_PATH: supabase/migrations/20260809115932_product_fact_storage_v1.sql
+  CONTROLLED_BLOB: 03523a01322170e6b0fca2ff4cc77b8be581f19e
+  SUBJECT_BLOB: a08651d4ea5825e33f2dc94fe98c5b7643d32532
+  PF2_BLOB: 676afbc56bf90443a1198f93427382f067d19407
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - name: Validate credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN}" || { echo 'Missing SUPABASE_ACCESS_TOKEN' >&2; exit 1; }
+          test -n "${SUPABASE_DB_PASSWORD}" || { echo 'Missing SUPABASE_DB_PASSWORD' >&2; exit 1; }
+
+      - name: Checkout frozen current main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_MAIN_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify new-main authority and Product Fact byte invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1hr-main
+          current_main="$(git rev-parse refs/remotes/origin/pf5b1hr-main)"
+          test "${current_main}" = "${TARGET_MAIN_SHA}"
+          git merge-base --is-ancestor "${PF5B1_MERGE_SHA}" "${TARGET_MAIN_SHA}"
+          test -z "$(git diff --name-only "${PF5B1_MERGE_SHA}" "${TARGET_MAIN_SHA}" -- supabase/migrations)"
+          test "$(git rev-parse "${TARGET_MAIN_SHA}:${CONTROLLED_PATH}")" = "${CONTROLLED_BLOB}"
+          test "$(git rev-parse "${TARGET_MAIN_SHA}:${SUBJECT_PATH}")" = "${SUBJECT_BLOB}"
+          test "$(git rev-parse "${TARGET_MAIN_SHA}:${PF2_PATH}")" = "${PF2_BLOB}"
+          {
+            echo "target_main=${TARGET_MAIN_SHA}"
+            echo "current_main=${current_main}"
+            echo "controlled_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${CONTROLLED_PATH}")"
+            echo "subject_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${SUBJECT_PATH}")"
+            echo "pf2_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${PF2_PATH}")"
+          } > /tmp/pf5b1hr-authority.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify Supabase CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version)"
+          echo "Supabase CLI ${actual}"
+          echo "${actual}" > /tmp/pf5b1hr-cli-version.txt
+
+      - name: Link exact Hosted project
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(mktemp)"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" link \
+            --project-ref "${TARGET_PROJECT_REF}" \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >"${raw}" 2>&1; then
+            sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
+            exit 1
+          fi
+          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" > /tmp/pf5b1hr-link.txt
+          rm -f "${raw}"
+
+      - name: Capture migration list before repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            | tee /tmp/pf5b1hr-migration-list-before.txt
+
+      - name: Recheck authority immediately before repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1hr-main-final
+          test "$(git rev-parse refs/remotes/origin/pf5b1hr-main-final)" = "${TARGET_MAIN_SHA}"
+          test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
+          test "$(git rev-parse "HEAD:${CONTROLLED_PATH}")" = "${CONTROLLED_BLOB}"
+          test "$(git rev-parse "HEAD:${SUBJECT_PATH}")" = "${SUBJECT_BLOB}"
+
+      - name: Mark connector-generated history row reverted
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration repair "${GENERATED_VERSION}" \
+            --status reverted \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            | tee /tmp/pf5b1hr-repair-reverted.txt
+
+      - name: Mark canonical controlled-write migration applied
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration repair "${CANONICAL_CONTROLLED_VERSION}" \
+            --status applied \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            | tee /tmp/pf5b1hr-repair-applied.txt
+
+      - name: Capture migration list after repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
+            --linked \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            | tee /tmp/pf5b1hr-migration-list-after.txt
+
+      - name: Dry-run and require only subject-registration pending
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="$(mktemp)"
+          clean="$(mktemp)"
+          actual="$(mktemp)"
+          expected="$(mktemp)"
+          cleanup() { rm -f "${raw}" "${clean}" "${actual}" "${expected}"; }
+          trap cleanup EXIT
+
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
+            --linked \
+            --dry-run \
+            --password "${SUPABASE_DB_PASSWORD}" \
+            >"${raw}" 2>&1; then
+            sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
+            exit 1
+          fi
+
+          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" > "${clean}"
+          cat "${clean}" | tee /tmp/pf5b1hr-db-push-dry-run.txt
+
+          awk '/Would push these migrations:/{capture=1; next} /Finished supabase db push\./{capture=0} capture' "${clean}" \
+            | grep -oE '[0-9]{14}_[[:alnum:]_]+\.sql' \
+            > "${actual}" || true
+          printf '%s\n' '20260810174410_product_fact_subject_registration_v1.sql' > "${expected}"
+          diff -u "${expected}" "${actual}"
+          test "$(wc -l < "${actual}" | tr -d ' ')" = '1'
+
+      - name: Final authority recheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1hr-main-post
+          final_main="$(git rev-parse refs/remotes/origin/pf5b1hr-main-post)"
+          echo "${final_main}" > /tmp/pf5b1hr-final-main.txt
+          test "${final_main}" = "${TARGET_MAIN_SHA}"
+          test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
+          test -z "$(git status --porcelain)"
+
+      - name: Upload reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pf5b1hr-hosted-migration-history-reconciliation
+          path: |
+            /tmp/pf5b1hr-authority.txt
+            /tmp/pf5b1hr-cli-version.txt
+            /tmp/pf5b1hr-link.txt
+            /tmp/pf5b1hr-migration-list-before.txt
+            /tmp/pf5b1hr-repair-reverted.txt
+            /tmp/pf5b1hr-repair-applied.txt
+            /tmp/pf5b1hr-migration-list-after.txt
+            /tmp/pf5b1hr-db-push-dry-run.txt
+            /tmp/pf5b1hr-final-main.txt
+          if-no-files-found: warn
+          retention-days: 90
