@@ -18,7 +18,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BASE_MAIN_SHA: 92432c9c111fa2cbbab9d0a62e27ace2d1f28add
+  BASE_MAIN_SHA: 22c20146192e9075c9d9cb36be7e5f49f83d3119
+  OLD_MAIN_SHA: 92432c9c111fa2cbbab9d0a62e27ace2d1f28add
+  OLD_V21_2_HEAD: 4058c3f2679103c3646b623c1c763620f9ec26fe
   PILOT_HEAD: 596493154b74548187ed71f8d522bb41c7ad1900
   BRANCH_NAME: research/product-fact-cross-category-materialization-dry-run-v1
   OUT_JSON: evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
@@ -36,6 +38,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Reconcile V2.1-2 builder authority in runner checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const p="scripts/build-product-fact-cross-category-materialization-dry-run-v1.mjs";
+          const oldSha=process.env.OLD_MAIN_SHA;
+          const newSha=process.env.BASE_MAIN_SHA;
+          let s=fs.readFileSync(p,"utf8");
+          const oldCount=s.split(oldSha).length-1;
+          const newCount=s.split(newSha).length-1;
+          if(oldCount===1){
+            s=s.replace(oldSha,newSha);
+            fs.writeFileSync(p,s);
+            console.log("builder_authority_reconciled=YES");
+          }else if(oldCount===0 && newCount===1){
+            console.log("builder_authority_already_reconciled=YES");
+          }else{
+            throw new Error(`unexpected builder authority refs old=${oldCount} new=${newCount}`);
+          }
+          NODE
 
       - name: Freeze current-main authority and protected surfaces
         shell: bash
@@ -116,6 +141,59 @@ jobs:
           test "$(awk '{print $1}' /tmp/v21-2-hash-a.txt)" = "$(awk '{print $1}' /tmp/v21-2-hash-b.txt)"
           test "$(awk '{print $1}' /tmp/v21-2-doc-hash-a.txt)" = "$(awk '{print $1}' /tmp/v21-2-doc-hash-b.txt)"
 
+      - name: Verify #204 semantic carry-forward
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show "${OLD_V21_2_HEAD}:${OUT_JSON}" > /tmp/v21-2-old.json
+          git show "${OLD_V21_2_HEAD}:${OUT_MD}" > /tmp/v21-2-old.md
+          test "$(sha256sum /tmp/v21-2-old.json | awk '{print $1}')" = a009e0e601155fc4b473e19adce1adaa924c6ff48b155d1b822b3908fff23c06
+          test "$(sha256sum /tmp/v21-2-old.md | awk '{print $1}')" = e93d5dd21adb458d4be12360701d2fc6c266eba347e77a1c07b5f6ed4c03b60b
+          git grep -n "${OLD_MAIN_SHA}" "${OLD_V21_2_HEAD}" -- \
+            '.github/workflows/v21-2-product-fact-materialization-dry-run.yml' \
+            'docs/evidence/cross-category-pilot-materialization-dry-run-v1.md' \
+            'evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json' \
+            'scripts/build-product-fact-cross-category-materialization-dry-run-v1.mjs' \
+            'scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs' \
+            | tee /tmp/v21-2r2-old-authority-refs.txt
+          test "$(wc -l < /tmp/v21-2r2-old-authority-refs.txt | tr -d ' ')" = 4
+          node --input-type=module <<'NODE' | tee /tmp/v21-2r2-semantic-carry-forward.txt
+          import fs from "node:fs";
+          import assert from "node:assert/strict";
+          const oldJson=JSON.parse(fs.readFileSync('/tmp/v21-2-old.json','utf8'));
+          const newJson=JSON.parse(fs.readFileSync(process.env.OUT_JSON,'utf8'));
+          assert.equal(oldJson.authority.current_main_sha,process.env.OLD_MAIN_SHA);
+          assert.equal(newJson.authority.current_main_sha,process.env.BASE_MAIN_SHA);
+          oldJson.authority.current_main_sha='<MAIN>';
+          newJson.authority.current_main_sha='<MAIN>';
+          assert.deepStrictEqual(newJson,oldJson);
+          const normalizeMd=(s)=>{
+            let hits=0;
+            const lines=s.split('\n').map(line=>{
+              if(line.startsWith('- execution authority main: `')){
+                hits++;
+                return '- execution authority main: `<MAIN>`';
+              }
+              return line;
+            });
+            assert.equal(hits,1);
+            return lines.join('\n');
+          };
+          const oldMd=normalizeMd(fs.readFileSync('/tmp/v21-2-old.md','utf8'));
+          const newMd=normalizeMd(fs.readFileSync(process.env.OUT_MD,'utf8'));
+          assert.equal(newMd,oldMd);
+          console.log('json_semantic_normalized_equality=PASS');
+          console.log('md_authority_line_normalized_equality=PASS');
+          NODE
+          printf 'old_json_sha256=%s\nnew_json_a_sha256=%s\nnew_json_b_sha256=%s\nold_md_sha256=%s\nnew_md_a_sha256=%s\nnew_md_b_sha256=%s\n' \
+            "$(sha256sum /tmp/v21-2-old.json | awk '{print $1}')" \
+            "$(awk '{print $1}' /tmp/v21-2-hash-a.txt)" \
+            "$(awk '{print $1}' /tmp/v21-2-hash-b.txt)" \
+            "$(sha256sum /tmp/v21-2-old.md | awk '{print $1}')" \
+            "$(awk '{print $1}' /tmp/v21-2-doc-hash-a.txt)" \
+            "$(awk '{print $1}' /tmp/v21-2-doc-hash-b.txt)" \
+            | tee -a /tmp/v21-2r2-semantic-carry-forward.txt
+
       - name: Verify materialization contract and negative mutations
         shell: bash
         run: |
@@ -131,12 +209,15 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add "${OUT_JSON}" "${OUT_MD}"
+          git add \
+            'scripts/build-product-fact-cross-category-materialization-dry-run-v1.mjs' \
+            "${OUT_JSON}" \
+            "${OUT_MD}"
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'Generated outputs already frozen.'
           else
-            git commit -m 'research(storage): freeze V2.1-2 materialization dry-run outputs'
+            git commit -m 'research(storage): freeze V2.1-2 #204 authority carry-forward'
             git push origin "HEAD:${BRANCH_NAME}"
           fi
           git diff --check "${BASE_MAIN_SHA}" HEAD
@@ -168,7 +249,9 @@ jobs:
             /tmp/v21-2-verifier.txt
             /tmp/v21-2-final-diff.txt
             /tmp/v21-2-final-head.txt
+            /tmp/v21-2r2-old-authority-refs.txt
+            /tmp/v21-2r2-semantic-carry-forward.txt
             evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
             docs/evidence/cross-category-pilot-materialization-dry-run-v1.md
 
-# final replay trigger after hardened negative mutation guard
+# V2.1-2R2 #204 reconciliation generation pass
