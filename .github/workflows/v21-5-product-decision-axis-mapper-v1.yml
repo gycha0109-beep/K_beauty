@@ -1,0 +1,269 @@
+name: V21-5 Product Decision Axis Mapper v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/product-decision-axis-cleanser-v1
+    paths:
+      - .github/workflows/v21-5-product-decision-axis-mapper-v1.yml
+      - scripts/product-evidence/product-fact-current-resolver-v1.mjs
+      - scripts/product-evidence/product-fact-current-resolver-v1-fixture-adapter.mjs
+      - scripts/product-evidence/product-decision-axis-cleanser-v1.mjs
+      - scripts/build-product-decision-axis-cleanser-v1.mjs
+      - scripts/verify-product-decision-axis-cleanser-v1.mjs
+      - evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json
+      - docs/evidence/product-decision-axis-cleanser-v1.md
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/v21-5-product-decision-axis-mapper-v1.yml
+      - scripts/product-evidence/product-fact-current-resolver-v1.mjs
+      - scripts/product-evidence/product-fact-current-resolver-v1-fixture-adapter.mjs
+      - scripts/product-evidence/product-decision-axis-cleanser-v1.mjs
+      - scripts/build-product-decision-axis-cleanser-v1.mjs
+      - scripts/verify-product-decision-axis-cleanser-v1.mjs
+      - evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json
+      - docs/evidence/product-decision-axis-cleanser-v1.md
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v21-5-product-decision-axis-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BASE_MAIN_SHA: 4dce99057ca44adb14dac549e8df6d468cf7f5e2
+  V21_4_BASE_SHA: a38df682ebc686cb076dfc40b432ae714fdfd6da
+  HISTORICAL_POC_HEAD: e371d5bc037fb80d1edd3876f0c7d1d94a2c1461
+  BRANCH_NAME: research/product-decision-axis-cleanser-v1
+  FUSION_JSON: evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json
+  FUSION_MD: docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md
+  FUSION_JSON_SHA256: 86332b78ec38d79f8dfa12c5879cee46f4a22979d69945ee2f5a9dcc7038b802
+  FUSION_MD_SHA256: fae4ab5c840d2008d276b4bb12b9a363eb1f70a048eb24166edcdde3871cbcd9
+  OUT_JSON: evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json
+  OUT_MD: docs/evidence/product-decision-axis-cleanser-v1.md
+
+jobs:
+  verify-and-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact task head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Freeze current repository authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "${BASE_MAIN_SHA}"
+          git merge-base --is-ancestor "${BASE_MAIN_SHA}" HEAD
+          printf 'main=%s\nhead=%s\n' "$(git rev-parse refs/remotes/origin/main)" "$(git rev-parse HEAD)" | tee /tmp/v21-5-authority.txt
+
+      - name: Verify Product Fact source authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260809115932_product_fact_storage_v1.sql")" = 676afbc56bf90443a1198f93427382f067d19407
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql")" = 03523a01322170e6b0fca2ff4cc77b8be581f19e
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql")" = a08651d4ea5825e33f2dc94fe98c5b7643d32532
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/verify-product-fact-controlled-write-v1.mjs")" = 5a80a16b9d9a2b221ccffad0b385edd012b92cf2
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/verify-product-fact-subject-registration-v1.mjs")" = cf470e9d0150ededef012fbbbb2d936e689447ae
+          printf 'product_fact_source_authority=PASS\n' | tee /tmp/v21-5-pf-authority.txt
+
+      - name: Verify V2.1-4 fusion authority and artifact integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs")" = e12d4c57ac2b4e580bfc1e0016bdb27ced1583ed
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs")" = 0121e86f57d9741e98541a26f7f0f1a6c7bc970b
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs")" = bf4ad667a859a42d869aa1873f1f8c354b3a0679
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs")" = 58c50fc8ccd36e6637ae9096116369138eb87540
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json")" = f1563196d39277b1f133c8acd4a15e52d1e59d0b
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json")" = 7e6928214f7c633047739fe46749b2f51c22110e
+          test "$(git rev-parse "${BASE_MAIN_SHA}:docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md")" = 239f31b97aeff1d41a74b9df1742cbc0d3eba1d7
+          test "$(sha256sum "${FUSION_JSON}" | awk '{print $1}')" = "${FUSION_JSON_SHA256}"
+          test "$(sha256sum "${FUSION_MD}" | awk '{print $1}')" = "${FUSION_MD_SHA256}"
+          printf 'v21_4_fusion_authority=PASS\n' | tee /tmp/v21-5-fusion-authority.txt
+
+      - name: Verify historical cleanser POC authority and replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/catalog/cleanser-field-review-v1.json")" = 34e154c8ce3da08df1ee93a42a86e8755d1022e7
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-evidence-decision-axis-v1/cleanser-poc-output-v1.json")" = be3724b513a11a6521585950e79e21296550ecdc
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/product-evidence/cleanser-poc-core.mjs")" = 61ff2d517a963ec302a52781f2a98669c40d4af2
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/build-product-evidence-cleanser-poc-v1.mjs")" = 48d933f6cc8c8a3437c12036342015840af03423
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/verify-product-evidence-cleanser-poc-v1.mjs")" = 128b85d42406b49ac90cc655055fbb3f4918e117
+          tmp=$(mktemp -d)
+          git worktree add --detach "$tmp" "${HISTORICAL_POC_HEAD}" >/dev/null
+          trap 'git worktree remove --force "$tmp" >/dev/null 2>&1 || true; rm -rf "$tmp"' EXIT
+          node "$tmp/scripts/verify-product-evidence-cleanser-poc-v1.mjs" | tee /tmp/v21-5-historical-poc.txt
+          git worktree remove --force "$tmp" >/dev/null
+          rm -rf "$tmp"
+          trap - EXIT
+
+      - name: Syntax check V2.1-5
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/product-fact-current-resolver-v1.mjs
+          node --check scripts/product-evidence/product-fact-current-resolver-v1-fixture-adapter.mjs
+          node --check scripts/product-evidence/product-decision-axis-cleanser-v1.mjs
+          node --check scripts/build-product-decision-axis-cleanser-v1.mjs
+          node --check scripts/verify-product-decision-axis-cleanser-v1.mjs
+
+      - name: Build A
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-5-build-a.txt
+          cp "${OUT_JSON}" /tmp/v21-5-a.json
+          cp "${OUT_MD}" /tmp/v21-5-a.md
+          sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-5-hash-a.txt
+
+      - name: Build B and byte determinism
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f "${OUT_JSON}" "${OUT_MD}"
+          node scripts/build-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-5-build-b.txt
+          cmp -s /tmp/v21-5-a.json "${OUT_JSON}"
+          cmp -s /tmp/v21-5-a.md "${OUT_MD}"
+          sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-5-hash-b.txt
+          git add "${OUT_JSON}" "${OUT_MD}"
+
+      - name: Verify Product Decision Axis contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-5-verifier.txt
+
+      - name: Verify Product Fact static contracts unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/v21-5-pf-write.json
+          node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/v21-5-pf-subject.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          for (const file of ['/tmp/v21-5-pf-write.json','/tmp/v21-5-pf-subject.json']) {
+            const value = JSON.parse(fs.readFileSync(file,'utf8'));
+            assert.equal(value.status, 'PASS');
+          }
+          console.log('product_fact_static_contracts=PASS');
+          NODE
+
+      - name: Replay V2.1-4 fusion verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          original_remote_main=$(git rev-parse refs/remotes/origin/main)
+          tmp=$(mktemp -d)
+          git worktree add --detach "$tmp" "${BASE_MAIN_SHA}" >/dev/null
+          cleanup() {
+            git update-ref refs/remotes/origin/main "$original_remote_main" >/dev/null 2>&1 || true
+            git worktree remove --force "$tmp" >/dev/null 2>&1 || true
+            rm -rf "$tmp"
+          }
+          trap cleanup EXIT
+          git update-ref refs/remotes/origin/main "${V21_4_BASE_SHA}"
+          node "$tmp/scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs" | tee /tmp/v21-5-v21-4-replay.txt
+          git update-ref refs/remotes/origin/main "$original_remote_main"
+          git worktree remove --force "$tmp" >/dev/null
+          rm -rf "$tmp"
+          trap - EXIT
+
+      - name: Production runtime and exact-scope invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "${BASE_MAIN_SHA}" | sort)
+          test "${#changed[@]}" -eq 8
+          printf '%s\n' "${changed[@]}" | tee /tmp/v21-5-changed.txt
+          expected="$(printf '%s\n' \
+            '.github/workflows/v21-5-product-decision-axis-mapper-v1.yml' \
+            'docs/evidence/product-decision-axis-cleanser-v1.md' \
+            'evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json' \
+            'scripts/build-product-decision-axis-cleanser-v1.mjs' \
+            'scripts/product-evidence/product-decision-axis-cleanser-v1.mjs' \
+            'scripts/product-evidence/product-fact-current-resolver-v1-fixture-adapter.mjs' \
+            'scripts/product-evidence/product-fact-current-resolver-v1.mjs' \
+            'scripts/verify-product-decision-axis-cleanser-v1.mjs')"
+          test "$(printf '%s\n' "${changed[@]}")" = "$expected"
+          test -z "$(git diff --name-only "${BASE_MAIN_SHA}" -- app components lib supabase/migrations package.json)"
+          if git grep -n -E 'product-decision-axis-cleanser-v1|product-fact-current-resolver-v1' -- app components lib; then
+            echo 'Production code consumes V2.1-5 Decision Axis/resolver output'
+            exit 1
+          fi
+          git diff --check "${BASE_MAIN_SHA}"
+          if git diff -U0 "${BASE_MAIN_SHA}" \
+            | grep '^+' \
+            | grep -Ev '^\+\+\+' \
+            | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
+            echo 'Potential credential literal detected'
+            exit 1
+          fi
+          printf 'production_runtime_delta=0\ndecision_axis_consumption=NO\nrecommendation_activation=NO\nhosted_product_fact_writes=0\n' | tee /tmp/v21-5-production-invariance.txt
+
+      - name: Freeze generated outputs on branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if ! git diff --cached --quiet; then
+            git commit -m "research(evidence): freeze V2.1-5 Decision Axis output"
+          fi
+          mapfile -t changed < <(git diff --name-only "${BASE_MAIN_SHA}"..HEAD | sort)
+          test "${#changed[@]}" -eq 8
+          git push origin "HEAD:${BRANCH_NAME}"
+          printf 'final_head=%s\n' "$(git rev-parse HEAD)" | tee /tmp/v21-5-final-head.txt
+
+      - name: Record exact PR head
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          git diff --quiet
+          git diff --cached --quiet
+          printf 'final_head=%s\n' "$(git rev-parse HEAD)" | tee /tmp/v21-5-final-head.txt
+
+      - name: Upload V2.1-5 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-5-product-decision-axis-mapper-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/v21-5-authority.txt
+            /tmp/v21-5-pf-authority.txt
+            /tmp/v21-5-fusion-authority.txt
+            /tmp/v21-5-historical-poc.txt
+            /tmp/v21-5-build-a.txt
+            /tmp/v21-5-build-b.txt
+            /tmp/v21-5-hash-a.txt
+            /tmp/v21-5-hash-b.txt
+            /tmp/v21-5-verifier.txt
+            /tmp/v21-5-pf-write.json
+            /tmp/v21-5-pf-subject.json
+            /tmp/v21-5-v21-4-replay.txt
+            /tmp/v21-5-changed.txt
+            /tmp/v21-5-production-invariance.txt
+            /tmp/v21-5-final-head.txt
+            ${{ env.OUT_JSON }}
+            ${{ env.OUT_MD }}
+          if-no-files-found: warn
+          retention-days: 14
