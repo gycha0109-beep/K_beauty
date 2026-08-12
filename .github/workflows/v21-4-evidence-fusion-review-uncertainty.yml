@@ -1,0 +1,157 @@
+name: V21-4 Evidence Fusion Review Uncertainty
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/product-fact-evidence-fusion-review-uncertainty-v1
+    paths:
+      - .github/workflows/v21-4-evidence-fusion-review-uncertainty.yml
+      - scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs
+      - scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+      - scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: v21-4-evidence-fusion-review-uncertainty
+  cancel-in-progress: false
+
+env:
+  BASE_MAIN_SHA: a38df682ebc686cb076dfc40b432ae714fdfd6da
+  BRANCH_NAME: research/product-fact-evidence-fusion-review-uncertainty-v1
+  HISTORICAL_POC_HEAD: e371d5bc037fb80d1edd3876f0c7d1d94a2c1461
+  CORPUS_SHA256: 9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f
+  OUT_JSON: evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json
+  OUT_MD: docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md
+
+jobs:
+  verify-and-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.BRANCH_NAME }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Freeze repository authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "${BASE_MAIN_SHA}"
+          git merge-base --is-ancestor "${BASE_MAIN_SHA}" HEAD
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/catalog/cleanser-field-review-v1.json")" = 34e154c8ce3da08df1ee93a42a86e8755d1022e7
+          test "$(git rev-parse "${BASE_MAIN_SHA}:evidence/product-evidence-decision-axis-v1/cleanser-poc-output-v1.json")" = be3724b513a11a6521585950e79e21296550ecdc
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/product-evidence/cleanser-poc-core.mjs")" = 61ff2d517a963ec302a52781f2a98669c40d4af2
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/build-product-evidence-cleanser-poc-v1.mjs")" = 48d933f6cc8c8a3437c12036342015840af03423
+          test "$(git rev-parse "${BASE_MAIN_SHA}:scripts/verify-product-evidence-cleanser-poc-v1.mjs")" = 128b85d42406b49ac90cc655055fbb3f4918e117
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260809115932_product_fact_storage_v1.sql")" = 676afbc56bf90443a1198f93427382f067d19407
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql")" = 03523a01322170e6b0fca2ff4cc77b8be581f19e
+          test "$(git rev-parse "${BASE_MAIN_SHA}:supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql")" = a08651d4ea5825e33f2dc94fe98c5b7643d32532
+
+      - name: Verify frozen cleanser corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-cleanser-catalog-field-review-v1.mjs | tee /tmp/v21-4-corpus.txt
+          grep -q "canonical_sha256=${CORPUS_SHA256}" /tmp/v21-4-corpus.txt
+
+      - name: Syntax check
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs
+          node --check scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+          node --check scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+
+      - name: Build A
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4-build-a.txt
+          cp "${OUT_JSON}" /tmp/v21-4-a.json
+          cp "${OUT_MD}" /tmp/v21-4-a.md
+          sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-4-hash-a.txt
+
+      - name: Build B determinism
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f "${OUT_JSON}" "${OUT_MD}"
+          node scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4-build-b.txt
+          cmp -s /tmp/v21-4-a.json "${OUT_JSON}"
+          cmp -s /tmp/v21-4-a.md "${OUT_MD}"
+          sha256sum "${OUT_JSON}" "${OUT_MD}" | tee /tmp/v21-4-hash-b.txt
+
+      - name: Freeze generated outputs on branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "${OUT_JSON}" "${OUT_MD}"
+          if ! git diff --cached --quiet; then
+            git commit -m "research(evidence): freeze V2.1-4 fusion uncertainty output"
+          fi
+
+      - name: Verify V2.1-4 contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4-verifier.txt
+          grep -q 'PASS verify-product-fact-evidence-fusion-review-uncertainty-v1' /tmp/v21-4-verifier.txt
+          grep -q 'missing_denominator_prevalence=FORBIDDEN' /tmp/v21-4-verifier.txt
+          grep -q 'supported_false_distinct_from_reviewed_not_established=PASS' /tmp/v21-4-verifier.txt
+          grep -q 'historical_cleanser_poc_replay=PASS' /tmp/v21-4-verifier.txt
+          grep -q 'decision_axis_consumption=NO recommendation_activation=NO' /tmp/v21-4-verifier.txt
+
+      - name: Verify Product Fact storage contract unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-controlled-write-v1.mjs | tee /tmp/v21-4-pf-write.txt
+          node scripts/verify-product-fact-subject-registration-v1.mjs | tee /tmp/v21-4-pf-subject.txt
+          grep -q 'PASS verify-product-fact-controlled-write-v1' /tmp/v21-4-pf-write.txt
+          grep -q 'PASS verify-product-fact-subject-registration-v1' /tmp/v21-4-pf-subject.txt
+
+      - name: Final path and production invariance gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "${BASE_MAIN_SHA}"..HEAD)
+          test "${#changed[@]}" -eq 6
+          printf '%s\n' "${changed[@]}" | tee /tmp/v21-4-changed.txt
+          test -z "$(git diff --name-only "${BASE_MAIN_SHA}"..HEAD -- app components lib supabase/migrations)"
+          test -z "$(git diff --name-only "${BASE_MAIN_SHA}"..HEAD -- evidence/catalog evidence/product-evidence-decision-axis-v1/cleanser-poc-output-v1.json)"
+          git diff --check "${BASE_MAIN_SHA}"..HEAD
+
+      - name: Push generated-output commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin "HEAD:${BRANCH_NAME}"
+          printf 'final_head=%s\n' "$(git rev-parse HEAD)" | tee /tmp/v21-4-head.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v21-4-evidence-fusion-review-uncertainty
+          path: |
+            /tmp/v21-4-corpus.txt
+            /tmp/v21-4-build-a.txt
+            /tmp/v21-4-build-b.txt
+            /tmp/v21-4-hash-a.txt
+            /tmp/v21-4-hash-b.txt
+            /tmp/v21-4-verifier.txt
+            /tmp/v21-4-pf-write.txt
+            /tmp/v21-4-pf-subject.txt
+            /tmp/v21-4-changed.txt
+            /tmp/v21-4-head.txt
+            ${{ env.OUT_JSON }}
+            ${{ env.OUT_MD }}
