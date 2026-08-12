@@ -112,7 +112,7 @@ function validate(o,expected,{strict=true}={}){
 
   eq(o.invariants.missing_not_false,true,"missing != false");eq(o.invariants.supported_false_distinct_from_reviewed_not_established,true,"supported(false) separated");eq(o.invariants.registry_expansion,false,"no registry expansion");eq(o.invariants.fusion_recalibration,false,"no fusion recalibration");eq(o.invariants.decision_axis_output,false,"no Decision Axis output");eq(o.invariants.recommendation_output,false,"no recommendation output");eq(o.invariants.cleanser_corpus_adoption,false,"no cleanser adoption");eq(o.invariants.catalog_wide_backfill,false,"no catalog-wide backfill");
   eq(o.invariants.frozen_gap_taxonomy,{S1_VOCABULARY_ONLY:4,S2_STRUCTURAL:0,S3_RESEARCH_OR_IDENTITY:4},"gap taxonomy preserved");
-  for(const b of o.blocked_materialization)eq(b.forced_mapping,false,`blocked item not forced ${b.block_ref}`);
+  for(const b of o.blocked_materialization){eq(b.forced_mapping,false,`blocked item not forced ${b.block_ref}`);if(["identity_blocked","identity_gap"].includes(b.kind))eq(b.semantic_status,null,`identity block never semantic supported ${b.block_ref}`);}
   walkKeys(o);
 
   const approved=new Set(["admin_publish_product_fact_registry_v1","admin_register_product_fact_subject_v1","admin_ingest_product_fact_evidence_v1","admin_prepare_product_fact_review_v1","admin_preflight_product_fact_confirmation_v1","admin_confirm_product_fact_v1"]);
