@@ -1,0 +1,4778 @@
+{
+  "dry_run_version": "cross-category-pilot-materialization-dry-run-v1",
+  "authority": {
+    "current_main_sha": "e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f",
+    "frozen_pilot_head": "596493154b74548187ed71f8d522bb41c7ad1900",
+    "architecture_source": "비주얼리_추천_엔진_v2.1(1).md#V2.1-2",
+    "product_fact_storage_contract": "PF-2 + PF-5B1 controlled write + subject registration",
+    "execution_mode": "offline_deterministic_dry_run"
+  },
+  "input_freeze": {
+    "registry": {
+      "path": "evidence/product-evidence-decision-axis-v1/cross-category-registry-v1.json",
+      "git_blob": "32fdaa2d3a181c9d18888fc48c1343e083ad20f7",
+      "governed_key_count": 20,
+      "registry_version": "product-fact-registry-cross-category-v1"
+    },
+    "corpus": {
+      "path": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json",
+      "git_blob": "c68e26daf3d3295c9f669362851383dd9997c21c",
+      "sha256": "47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d"
+    },
+    "mapping": {
+      "path": "evidence/product-evidence-decision-axis-v1/cross-category-real-fact-mapping-pilot-v1.json",
+      "git_blob": "20d211c70f6ba44ca4f9205942cb5e0387d74b7e",
+      "sha256": "c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f"
+    },
+    "gap_report": {
+      "path": "evidence/product-evidence-decision-axis-v1/cross-category-real-pilot-gap-report-v1.json",
+      "git_blob": "60b53f49cbac2021a47e50f4e1a0a79760ab7874",
+      "sha256": "5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215"
+    },
+    "frozen_verifier": {
+      "path": "scripts/verify-cross-category-real-evidence-pilot-v1.mjs",
+      "git_blob": "9056eb4b95e46e6afc58158da50d5c6c27e579a9"
+    },
+    "protected_pf_blobs": {
+      "pf2": "676afbc56bf90443a1198f93427382f067d19407",
+      "controlled_write": "03523a01322170e6b0fca2ff4cc77b8be581f19e",
+      "subject_registration": "a08651d4ea5825e33f2dc94fe98c5b7643d32532"
+    },
+    "candidate_policy_manifest_blob": "37d60570f5a79cbc0baad114cfc1f7b4ca9e7440"
+  },
+  "summary": {
+    "input_products": 12,
+    "input_sources": 15,
+    "input_evidence_records": 29,
+    "input_fused_facts": 23,
+    "resolved_subjects": 11,
+    "ambiguous_subjects": 1,
+    "eligible_subjects": 11,
+    "identity_blocked_subjects": 1,
+    "source_proposals": 15,
+    "binding_proposals": 15,
+    "eligible_bindings": 13,
+    "blocked_bindings": 2,
+    "blocked_bindings_by_reason": {
+      "identity_ambiguous": 1,
+      "variant_ambiguous": 1
+    },
+    "evidence_proposals": 29,
+    "evidence_materializable": 23,
+    "evidence_blocked": 6,
+    "fact_proposals": 26,
+    "fact_proposal_status_counts": {
+      "supported": 23,
+      "reviewed_not_established": 2,
+      "evidence_insufficient": 1,
+      "evidence_conflict": 0
+    },
+    "confirmation_eligible_facts": 23,
+    "confirmation_blocked_facts": 3,
+    "frozen_review_coverage_outcomes": {
+      "evidence_insufficient": 1,
+      "identity_blocked": 3,
+      "registry_gap": 5,
+      "reviewed_not_established": 6,
+      "source_blocked": 6,
+      "supported": 21
+    },
+    "registry_gaps": 5,
+    "source_blocked": 6,
+    "identity_blocked": 3,
+    "forced_mapping_count": 0,
+    "measurement_evidence_count": 0,
+    "frozen_gap_severity": {
+      "S1_VOCABULARY_ONLY": 4,
+      "S2_STRUCTURAL": 0,
+      "S3_RESEARCH_OR_IDENTITY": 4
+    },
+    "materialization_contract_gap_count": 0,
+    "hosted_write_count": 0
+  },
+  "registry_proposal": {
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "definition_count": 20,
+    "source_registry_blob": "32fdaa2d3a181c9d18888fc48c1343e083ad20f7",
+    "registry_definition_keys": [
+      "active_concentration",
+      "barrier_support_claim",
+      "contains_active",
+      "deep_cleansing",
+      "eye_sting_observed",
+      "fragrance_declared",
+      "hydration_change",
+      "low_ph",
+      "pad_surface_texture",
+      "primary_use_role",
+      "product_format",
+      "recommended_use_frequency",
+      "spf_value",
+      "tewl_change",
+      "treatment_claim",
+      "uv_filter_type",
+      "uva_label",
+      "water_resistance_duration",
+      "white_cast_observed",
+      "wipe_off_use"
+    ],
+    "expansion_attempted": false
+  },
+  "subjects": [
+    {
+      "subject_ref": "subject:M1",
+      "pilot_id": "M1",
+      "catalog_product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "product_identity_input": {
+        "pilot_id": "M1",
+        "catalog_product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+        "canonical_brand": "ILLIYOON",
+        "canonical_product_name": "Ceramide Ato Concentrate Cream 150mL / 세라마이드 아토 집중크림",
+        "identity_evidence_refs": [
+          "s10"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+        "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-eaa1452f7abd275fb4d096089a03e4b2",
+        "formulation_label": "Ceramide Ato Concentrate Cream 150mL / 세라마이드 아토 집중크림",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": []
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Exact 150mL retailer identity.",
+      "identity_provenance_refs": [
+        "s10"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:M2",
+      "pilot_id": "M2",
+      "catalog_product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+      "product_identity_input": {
+        "pilot_id": "M2",
+        "catalog_product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+        "canonical_brand": "La Roche-Posay",
+        "canonical_product_name": "Cicaplast Baume B5+",
+        "identity_evidence_refs": [
+          "s11"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "ZA"
+      },
+      "proposed_subject_identity": {
+        "product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+        "subject_semantic_key": "d5f218a69f25308636cabd9c1e889e26586c5ca6986140fa6342700468d0de48",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-c1558369847dd76d15851abdbe646069",
+        "formulation_label": "Cicaplast Baume B5+",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "ZA",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "ZA",
+        "subject_market_applicability": "ZA",
+        "evidence_market_scopes": [
+          "ZA"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Official exact balm.",
+      "identity_provenance_refs": [
+        "s11"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:M3",
+      "pilot_id": "M3",
+      "catalog_product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "product_identity_input": {
+        "pilot_id": "M3",
+        "catalog_product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+        "canonical_brand": "Dr.G",
+        "canonical_product_name": "R.E.D BLEMISH Clear Soothing Cream EX / 레드 블레미쉬 클리어 수딩 크림 EX",
+        "identity_evidence_refs": [
+          "s12"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+        "subject_semantic_key": "59020699f4d80a9dcc58de01cf471ff752970e91c995b2e970d81ef84037b70e",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-ad4c2d45826eeb640d59faca7f64da7c",
+        "formulation_label": "R.E.D BLEMISH Clear Soothing Cream EX / 레드 블레미쉬 클리어 수딩 크림 EX",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": []
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Exact EX review identity; official source absent.",
+      "identity_provenance_refs": [
+        "s12"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:P1",
+      "pilot_id": "P1",
+      "catalog_product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+      "product_identity_input": {
+        "pilot_id": "P1",
+        "catalog_product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+        "canonical_brand": "Anua",
+        "canonical_product_name": "어성초 77 히알루론산 수분 진정 토너 350ml",
+        "identity_evidence_refs": [
+          "s13"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+        "subject_semantic_key": "638d2f0acd26df1402acc35cde88c26c960554faa2c8849a92a510adf07ed4e6",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-76dd6a68790f007a46c5346406b170da",
+        "formulation_label": "어성초 77 히알루론산 수분 진정 토너 350ml",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": []
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Exact 350mL retailer identity.",
+      "identity_provenance_refs": [
+        "s13"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:P2",
+      "pilot_id": "P2",
+      "catalog_product_id": "38dc094e-4148-4566-a743-a09815265f44",
+      "product_identity_input": {
+        "pilot_id": "P2",
+        "catalog_product_id": "38dc094e-4148-4566-a743-a09815265f44",
+        "canonical_brand": "NEEDLY",
+        "canonical_product_name": "Daily Toner Pad / 데일리 토너 패드",
+        "identity_evidence_refs": [
+          "s14"
+        ],
+        "identity_status": "ambiguous",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "38dc094e-4148-4566-a743-a09815265f44",
+        "subject_semantic_key": "6fb8566a149ddba0f3c28c6b1832200e8c4d2302a9d9be149541b6e99e3b757c",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-c8f2c1eed916e32de48f647762ed89c3",
+        "formulation_label": "Daily Toner Pad / 데일리 토너 패드",
+        "identity_status": "ambiguous",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "provisional",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": []
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "ambiguous",
+      "identity_reasoning": "Renewed 80-pad lineage ambiguous.",
+      "identity_provenance_refs": [
+        "s14"
+      ],
+      "materialization_eligibility": "identity_blocked",
+      "current_creation_eligibility": false,
+      "confirmation_eligibility": false,
+      "block_reason": "frozen_identity_status_ambiguous"
+    },
+    {
+      "subject_ref": "subject:P3",
+      "pilot_id": "P3",
+      "catalog_product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+      "product_identity_input": {
+        "pilot_id": "P3",
+        "catalog_product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+        "canonical_brand": "Medicube",
+        "canonical_product_name": "Zero Pore Pad 2.0 / 제로 모공 패드 2.0",
+        "identity_evidence_refs": [
+          "s16"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+        "subject_semantic_key": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-86d7acacdd2a8ae52b233fb87cac8cb5",
+        "formulation_label": "Zero Pore Pad 2.0 / 제로 모공 패드 2.0",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "KR",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": "KR",
+        "evidence_market_scopes": [
+          "KR"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Official exact 2.0.",
+      "identity_provenance_refs": [
+        "s16"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:S1",
+      "pilot_id": "S1",
+      "catalog_product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "product_identity_input": {
+        "pilot_id": "S1",
+        "catalog_product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+        "canonical_brand": "ROUND LAB",
+        "canonical_product_name": "자작나무 수분 선크림",
+        "identity_evidence_refs": [
+          "s01"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+        "subject_semantic_key": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": "renewed_KR",
+        "formulation_revision_key": "pilot-freeze-9aba73ebdc1f56e6041286efa04eb74f",
+        "formulation_label": "자작나무 수분 선크림",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "KR",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": "KR",
+        "evidence_market_scopes": [
+          "KR"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "KR exact; US linked variant separate.",
+      "identity_provenance_refs": [
+        "s01"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:S2",
+      "pilot_id": "S2",
+      "catalog_product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "product_identity_input": {
+        "pilot_id": "S2",
+        "catalog_product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "canonical_brand": "Beauty of Joseon",
+        "canonical_product_name": "맑은쌀 선크림 / Relief Sun : Rice + Probiotics",
+        "identity_evidence_refs": [
+          "s03",
+          "s04"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "formulation_label": "맑은쌀 선크림 / Relief Sun : Rice + Probiotics",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": [
+          "GLOBAL"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Alias bridged to official exact product.",
+      "identity_provenance_refs": [
+        "s03",
+        "s04"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:S3",
+      "pilot_id": "S3",
+      "catalog_product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "product_identity_input": {
+        "pilot_id": "S3",
+        "catalog_product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+        "canonical_brand": "ANESSA",
+        "canonical_product_name": "Perfect UV Skincare Milk NA / 퍼펙트 UV 선스크린 스킨케어 밀크 NA",
+        "identity_evidence_refs": [
+          "s05"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "JP"
+      },
+      "proposed_subject_identity": {
+        "product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+        "subject_semantic_key": "065020799c2bf4ee31e9284ffea445af6ee3bcf08bd6a547a0a106ef069aeec6",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": "NA",
+        "formulation_revision_key": "pilot-freeze-81e7ff0bf60b506d8c326970f8d930ea",
+        "formulation_label": "Perfect UV Skincare Milk NA / 퍼펙트 UV 선스크린 스킨케어 밀크 NA",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "JP",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "JP",
+        "subject_market_applicability": "JP",
+        "evidence_market_scopes": [
+          "JP"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Official JP NA exact.",
+      "identity_provenance_refs": [
+        "s05"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:T1",
+      "pilot_id": "T1",
+      "catalog_product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "product_identity_input": {
+        "pilot_id": "T1",
+        "catalog_product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+        "canonical_brand": "Derma Factory",
+        "canonical_product_name": "Niacinamide 20% Serum / 나이아신아마이드 20% 세럼",
+        "identity_evidence_refs": [
+          "s06"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+        "subject_semantic_key": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+        "formulation_label": "Niacinamide 20% Serum / 나이아신아마이드 20% 세럼",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": null,
+        "evidence_market_scopes": []
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Official exact.",
+      "identity_provenance_refs": [
+        "s06"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:T2",
+      "pilot_id": "T2",
+      "catalog_product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "product_identity_input": {
+        "pilot_id": "T2",
+        "catalog_product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+        "canonical_brand": "The Ordinary",
+        "canonical_product_name": "Mandelic Acid 10% + HA",
+        "identity_evidence_refs": [
+          "s08"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "KR"
+      },
+      "proposed_subject_identity": {
+        "product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+        "subject_semantic_key": "686431e49f6ee9255bad448bb78778e67c3905e6a223e72a81e8090aca93ecb4",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-06e08bafc734b5e897d77db4bc5cae4a",
+        "formulation_label": "Mandelic Acid 10% + HA",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "KR",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "KR",
+        "subject_market_applicability": "KR",
+        "evidence_market_scopes": [
+          "KR"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "Official KR exact.",
+      "identity_provenance_refs": [
+        "s08"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    },
+    {
+      "subject_ref": "subject:T3",
+      "pilot_id": "T3",
+      "catalog_product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+      "product_identity_input": {
+        "pilot_id": "T3",
+        "catalog_product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+        "canonical_brand": "Anua",
+        "canonical_product_name": "PDRN Hyaluronic Acid Capsule 100 Serum",
+        "identity_evidence_refs": [
+          "s09"
+        ],
+        "identity_status": "resolved",
+        "selected_market": "US"
+      },
+      "proposed_subject_identity": {
+        "product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+        "subject_semantic_key": "39e39ef34ec2eb65b8e4833a9a2418f598be453d66a733b0bc9e13d64b97275f",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-d131707cbd635ccff965adffac13c96b",
+        "formulation_label": "PDRN Hyaluronic Acid Capsule 100 Serum",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "US",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "market_scope": {
+        "selected_market": "US",
+        "subject_market_applicability": "US",
+        "evidence_market_scopes": [
+          "US"
+        ]
+      },
+      "region_scope": null,
+      "locale_scope": null,
+      "identity_status": "resolved",
+      "identity_reasoning": "'100' is naming, not concentration.",
+      "identity_provenance_refs": [
+        "s09"
+      ],
+      "materialization_eligibility": "eligible",
+      "current_creation_eligibility": true,
+      "confirmation_eligibility": true,
+      "block_reason": null
+    }
+  ],
+  "sources": [
+    {
+      "source_ref": "source:s01",
+      "frozen_source_id": "s01",
+      "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+      "publisher": "ROUND LAB",
+      "source_kind": "official_brand_page",
+      "content_digest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s01",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "ko",
+        "source_notes": "KR exact.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s01"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s02",
+      "frozen_source_id": "s02",
+      "canonical_locator": "https://roundlab.com/products/birch-moisturizing-uv-sunscreen?variant=43645688021206",
+      "publisher": "ROUND LAB US",
+      "source_kind": "official_product_page",
+      "content_digest": "52fed69948555d3a501d0626cfe6af6a58c41657b8ae73d789b82b9d962c9003",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s02",
+        "exact_product_match": "partial",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "US linked variant.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s02"
+      },
+      "market": "US",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s03",
+      "frozen_source_id": "s03",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "content_digest": "cca19ddb32d09d2995995bbe8a8591882bc9cc29367cc5030b78ea726b2adadd",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s03",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "Exact product.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s03"
+      },
+      "market": "GLOBAL",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s04",
+      "frozen_source_id": "s04",
+      "canonical_locator": "https://www.coupang.com/vp/products/7649395489?itemId=20348971780&vendorItemId=84851785471",
+      "publisher": "Coupang",
+      "source_kind": "retailer_product_page",
+      "content_digest": "e23fbfeab186030e3a995f9a362c1d8fcd1859c5280e8c840f0fadc5285d49ba",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s04",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "limited_non_product_specific",
+        "source_language": "ko",
+        "source_notes": "Alias bridge.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s04"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s05",
+      "frozen_source_id": "s05",
+      "canonical_locator": "https://www.shiseido.co.jp/anessa/products/suncare/perfect_uv_sm/?an_campaign=an24ss_an_HDY&an_content=tu_add_0522_1&an_medium=display&an_source=attocosme",
+      "publisher": "Shiseido / ANESSA",
+      "source_kind": "official_product_page",
+      "content_digest": "d1d64c8ecca756c63edf8ea740e2bac51918297dc815278d9945f2ae5cd139ab",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s05",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "ja",
+        "source_notes": "JP NA exact.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s05"
+      },
+      "market": "JP",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s06",
+      "frozen_source_id": "s06",
+      "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+      "publisher": "Derma Factory",
+      "source_kind": "official_product_page",
+      "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s06",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "Exact product.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06"
+      },
+      "market": "KR_US",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s07",
+      "frozen_source_id": "s07",
+      "canonical_locator": "https://www.hwahae.com/en/products/DERMAFACTORY-NIACINAMIDE-20PERCENT-SERUM/2169823/reviews?skin_concerns=2",
+      "publisher": "Hwahae",
+      "source_kind": "review_platform",
+      "content_digest": "48b4e38b86f9bf4a069af97f3dd23fece57c2117d679a3269c1f7981c74b9e08",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s07",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "review_observation",
+        "source_language": "en",
+        "source_notes": "Review; no denominator.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s07"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s08",
+      "frozen_source_id": "s08",
+      "canonical_locator": "https://theordinary.com/en-kr/mandelic-acid-10-ha-exfoliator-100429.html",
+      "publisher": "The Ordinary / DECIEM",
+      "source_kind": "official_product_page",
+      "content_digest": "80aa78f3e1b46b88eabcf9809119ec4da817b0b4ff948c022055c3d9dc4d2924",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s08",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "Exact product.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s08"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s09",
+      "frozen_source_id": "s09",
+      "canonical_locator": "https://anua.com/products/pdrn-hyaluronic-acid-capsule-100-serum",
+      "publisher": "Anua",
+      "source_kind": "official_product_page",
+      "content_digest": "6606c5ed3ee2821d57bfb7b015ebdd0d87f465c8599f43b7d1c7710defcea6bc",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s09",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "'100' naming; test incomplete.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s09"
+      },
+      "market": "US",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s10",
+      "frozen_source_id": "s10",
+      "canonical_locator": "https://global.oliveyoung.com/product/detail?prdtNo=GA250127973",
+      "publisher": "Olive Young",
+      "source_kind": "retailer_product_page",
+      "content_digest": "39fc1f8ecf52e09814eb8873b6141fa2117aa45f15d9247fd38cd39756102cc9",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s10",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "limited_non_product_specific",
+        "source_language": "en",
+        "source_notes": "150mL identity only.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s10"
+      },
+      "market": "GLOBAL",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s11",
+      "frozen_source_id": "s11",
+      "canonical_locator": "https://africa.laroche-posay.com/en-za/cicaplast/cicaplast-baume-b5-plus",
+      "publisher": "La Roche-Posay",
+      "source_kind": "official_product_page",
+      "content_digest": "f2b52b2573332f8e0a416e2c7cb9a0801bcd1d3e7ea17b40116b6de826cfa8fa",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s11",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "en",
+        "source_notes": "Exact balm.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s11"
+      },
+      "market": "ZA",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s12",
+      "frozen_source_id": "s12",
+      "canonical_locator": "https://www.hwahae.com/en/products/%E8%92%82%E8%BF%A9%E8%82%8C-%E7%BA%A2%E7%97%98%E5%8D%B0%E8%88%92%E7%BC%93%E4%BF%AE%E6%8A%A4%E9%9C%9C-EX/2195805/reviews?topic_id=5a3e7c62-04a8-4292-b95f-5ac789d23426",
+      "publisher": "Hwahae",
+      "source_kind": "review_platform",
+      "content_digest": "7224b46fd1278ec377e02244492e1b8f929768b34193aa9e8fd906d674951e12",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s12",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "review_observation",
+        "source_language": "en",
+        "source_notes": "EX review identity.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s12"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s13",
+      "frozen_source_id": "s13",
+      "canonical_locator": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000252696",
+      "publisher": "Olive Young",
+      "source_kind": "retailer_product_page",
+      "content_digest": "4b0d4d20797fc94ed95eeb4e8562c589a6c62e35faf4a79655a2ea36fcb56777",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s13",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "limited_non_product_specific",
+        "source_language": "ko",
+        "source_notes": "350mL identity.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s13"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s14",
+      "frozen_source_id": "s14",
+      "canonical_locator": "https://needly.co.kr/product/size-up-%EB%8D%B0%EC%9D%BC%EB%A6%AC-%ED%86%A0%EB%84%88-%ED%8C%A8%EB%93%9C-80%EB%A7%A4/78/",
+      "publisher": "NEEDLY",
+      "source_kind": "official_product_page",
+      "content_digest": "08e1db0212a5f530d9454c0db1590bd17d4f17d0b5a9913b0812040e956462bf",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s14",
+        "exact_product_match": "uncertain",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "ko",
+        "source_notes": "80-pad; lineage uncertain.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s14"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    },
+    {
+      "source_ref": "source:s16",
+      "frozen_source_id": "s16",
+      "canonical_locator": "https://m.themedicube.co.kr/product/%EC%A0%9C%EB%A1%9C%EB%AA%A8%EA%B3%B5%ED%8C%A8%EB%93%9C-20-%EB%A7%88%EC%9D%BC%EB%93%9C/102",
+      "publisher": "Medicube",
+      "source_kind": "official_product_page",
+      "content_digest": "ed45ccf801ac86d93f24200d4c064d37be427f72e1bce3793a4a1adcee7941cf",
+      "content_digest_basis": "sha256(canonical frozen source provenance record); NOT live-page byte snapshot",
+      "external_snapshot_reference": null,
+      "source_metadata": {
+        "frozen_source_id": "s16",
+        "exact_product_match": "yes",
+        "source_authority_candidate": "product_specific_primary",
+        "source_language": "ko",
+        "source_notes": "2.0 exact.",
+        "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s16"
+      },
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-08-08",
+      "observed_at": null,
+      "materialization_eligibility": "eligible",
+      "provenance_preserved": true
+    }
+  ],
+  "source_subject_bindings": [
+    {
+      "binding_ref": "binding:s01:S1",
+      "source_ref": "source:s01",
+      "frozen_source_id": "s01",
+      "pilot_id": "S1",
+      "catalog_product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "proposed_subject_ref": "subject:S1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "KR exact."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s02:S1",
+      "source_ref": "source:s02",
+      "frozen_source_id": "s02",
+      "pilot_id": "S1",
+      "catalog_product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "proposed_subject_ref": null,
+      "binding_state": "variant_ambiguous",
+      "scope_relation": "disjoint",
+      "market_compatibility": "disjoint_or_variant_specific",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "variant_ambiguous",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "partial",
+        "source_market": "US",
+        "selected_product_market": "KR",
+        "source_notes": "US linked variant."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "blocked",
+      "block_reason": "variant_ambiguous"
+    },
+    {
+      "binding_ref": "binding:s03:S2",
+      "source_ref": "source:s03",
+      "frozen_source_id": "s03",
+      "pilot_id": "S2",
+      "catalog_product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "proposed_subject_ref": "subject:S2",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "broader",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "GLOBAL",
+        "selected_product_market": "KR",
+        "source_notes": "Exact product."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s04:S2",
+      "source_ref": "source:s04",
+      "frozen_source_id": "s04",
+      "pilot_id": "S2",
+      "catalog_product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "proposed_subject_ref": "subject:S2",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "Alias bridge."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s05:S3",
+      "source_ref": "source:s05",
+      "frozen_source_id": "s05",
+      "pilot_id": "S3",
+      "catalog_product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "proposed_subject_ref": "subject:S3",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "JP",
+        "selected_product_market": "JP",
+        "source_notes": "JP NA exact."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s06:T1",
+      "source_ref": "source:s06",
+      "frozen_source_id": "s06",
+      "pilot_id": "T1",
+      "catalog_product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "proposed_subject_ref": "subject:T1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "overlapping",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR_US",
+        "selected_product_market": "KR",
+        "source_notes": "Exact product."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s07:T1",
+      "source_ref": "source:s07",
+      "frozen_source_id": "s07",
+      "pilot_id": "T1",
+      "catalog_product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "proposed_subject_ref": "subject:T1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "Review; no denominator."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s08:T2",
+      "source_ref": "source:s08",
+      "frozen_source_id": "s08",
+      "pilot_id": "T2",
+      "catalog_product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "proposed_subject_ref": "subject:T2",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "Exact product."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s09:T3",
+      "source_ref": "source:s09",
+      "frozen_source_id": "s09",
+      "pilot_id": "T3",
+      "catalog_product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+      "proposed_subject_ref": "subject:T3",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "US",
+        "selected_product_market": "US",
+        "source_notes": "'100' naming; test incomplete."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s10:M1",
+      "source_ref": "source:s10",
+      "frozen_source_id": "s10",
+      "pilot_id": "M1",
+      "catalog_product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "proposed_subject_ref": "subject:M1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "broader",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "GLOBAL",
+        "selected_product_market": "KR",
+        "source_notes": "150mL identity only."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s11:M2",
+      "source_ref": "source:s11",
+      "frozen_source_id": "s11",
+      "pilot_id": "M2",
+      "catalog_product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+      "proposed_subject_ref": "subject:M2",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "ZA",
+        "selected_product_market": "ZA",
+        "source_notes": "Exact balm."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s12:M3",
+      "source_ref": "source:s12",
+      "frozen_source_id": "s12",
+      "pilot_id": "M3",
+      "catalog_product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "proposed_subject_ref": "subject:M3",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "EX review identity."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s13:P1",
+      "source_ref": "source:s13",
+      "frozen_source_id": "s13",
+      "pilot_id": "P1",
+      "catalog_product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+      "proposed_subject_ref": "subject:P1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "350mL identity."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    },
+    {
+      "binding_ref": "binding:s14:P2",
+      "source_ref": "source:s14",
+      "frozen_source_id": "s14",
+      "pilot_id": "P2",
+      "catalog_product_id": "38dc094e-4148-4566-a743-a09815265f44",
+      "proposed_subject_ref": null,
+      "binding_state": "formulation_ambiguous",
+      "scope_relation": "overlapping",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "formulation_ambiguous",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "uncertain",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "80-pad; lineage uncertain."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "blocked",
+      "block_reason": "identity_ambiguous"
+    },
+    {
+      "binding_ref": "binding:s16:P3",
+      "source_ref": "source:s16",
+      "frozen_source_id": "s16",
+      "pilot_id": "P3",
+      "catalog_product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+      "proposed_subject_ref": "subject:P3",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent",
+      "market_compatibility": "equivalent",
+      "region_compatibility": "not_asserted",
+      "variant_compatibility": "exact_subject_match",
+      "presentation_metadata": {
+        "frozen_exact_product_match": "yes",
+        "source_market": "KR",
+        "selected_product_market": "KR",
+        "source_notes": "2.0 exact."
+      },
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "reviewed_at": "2026-08-08",
+      "evidence_admissibility": "eligible",
+      "block_reason": null
+    }
+  ],
+  "evidence_records": [
+    {
+      "evidence_ref": "evidence:e01",
+      "frozen_evidence_id": "e01",
+      "pilot_id": "S1",
+      "source_ref": "source:s01",
+      "binding_ref": "binding:s01:S1",
+      "proposed_subject_ref": "subject:S1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR",
+        "variant": "renewed_KR"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_provenance": "s01",
+      "evidence_summary": "KR SPF50+.",
+      "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e02",
+      "frozen_evidence_id": "e02",
+      "pilot_id": "S1",
+      "source_ref": "source:s01",
+      "binding_ref": "binding:s01:S1",
+      "proposed_subject_ref": "subject:S1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:uva_label",
+      "fact_key": "uva_label",
+      "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR",
+        "variant": "renewed_KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s01",
+      "evidence_summary": "KR PA++++.",
+      "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e03",
+      "frozen_evidence_id": "e03",
+      "pilot_id": "S1",
+      "source_ref": "source:s02",
+      "binding_ref": "binding:s02:S1",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": null,
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "US",
+        "variant": "UVLock_US"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s02",
+      "evidence_summary": "US linked variant: Broad Spectrum.",
+      "canonical_evidence_digest": "5e3e508ff29a7eec8be253bc832397b331ac89a33387fb33cd18d8d9015278de",
+      "materialization_eligibility": "blocked",
+      "block_reason": "registry_gap",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e04",
+      "frozen_evidence_id": "e04",
+      "pilot_id": "S2",
+      "source_ref": "source:s03",
+      "binding_ref": "binding:s03:S2",
+      "proposed_subject_ref": "subject:S2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "GLOBAL",
+        "variant": "Relief_Sun_Rice_Probiotics"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_provenance": "s03",
+      "evidence_summary": "Relief Sun SPF50+.",
+      "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e05",
+      "frozen_evidence_id": "e05",
+      "pilot_id": "S3",
+      "source_ref": "source:s05",
+      "binding_ref": "binding:s05:S3",
+      "proposed_subject_ref": "subject:S3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "proposition_key": "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "JP",
+        "variant": "NA"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_provenance": "s05",
+      "evidence_summary": "JP NA SPF50+.",
+      "canonical_evidence_digest": "af3bede09496c98ba187007769ba68641ae5bede0b03a339dd27d26a4f599111",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e06",
+      "frozen_evidence_id": "e06",
+      "pilot_id": "S3",
+      "source_ref": "source:s05",
+      "binding_ref": "binding:s05:S3",
+      "proposed_subject_ref": "subject:S3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:uva_label",
+      "fact_key": "uva_label",
+      "proposition_key": "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "JP",
+        "variant": "NA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s05",
+      "evidence_summary": "JP NA PA++++.",
+      "canonical_evidence_digest": "e25393f972af8eee4d4410bbed2382d73f4cb9fb7fce0b00305a0a3648ae68fb",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e07",
+      "frozen_evidence_id": "e07",
+      "pilot_id": "S3",
+      "source_ref": "source:s05",
+      "binding_ref": "binding:s05:S3",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": null,
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "JP",
+        "variant": "NA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s05",
+      "evidence_summary": "JP NA UV耐水性★★; no minutes.",
+      "canonical_evidence_digest": "5e2326777fa3fc1b30b1b761e30ad9ae321805917e55c9b57794d89d06259fc9",
+      "materialization_eligibility": "blocked",
+      "block_reason": "registry_gap",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e08",
+      "frozen_evidence_id": "e08",
+      "pilot_id": "T1",
+      "source_ref": "source:s06",
+      "binding_ref": "binding:s06:T1",
+      "proposed_subject_ref": "subject:T1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "niacinamide",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {},
+      "qualifier_context": {},
+      "source_provenance": "s06",
+      "evidence_summary": "Ingredients contain niacinamide.",
+      "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e09",
+      "frozen_evidence_id": "e09",
+      "pilot_id": "T1",
+      "source_ref": "source:s06",
+      "binding_ref": "binding:s06:T1",
+      "proposed_subject_ref": "subject:T1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {},
+      "qualifier_context": {},
+      "source_provenance": "s06",
+      "evidence_summary": "Name binds 20% to niacinamide.",
+      "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e10",
+      "frozen_evidence_id": "e10",
+      "pilot_id": "T1",
+      "source_ref": "source:s07",
+      "binding_ref": "binding:s07:T1",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": null,
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "observation",
+      "evidence_authority": "review_observation",
+      "confidence": "low",
+      "support_direction": "context_only",
+      "negative_admissibility": "not_applicable",
+      "scope": {},
+      "qualifier_context": {
+        "analyzed_denominator": null,
+        "prevalence": "forbidden",
+        "raw_source_review_count": 256
+      },
+      "source_provenance": "s07",
+      "evidence_summary": "Individual review: tingling.",
+      "canonical_evidence_digest": "30c2cf49c0bf1a5e35ac9b526c833c00075753f9bdf518bfa34337da4d3747dd",
+      "materialization_eligibility": "blocked",
+      "block_reason": "registry_gap",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e11",
+      "frozen_evidence_id": "e11",
+      "pilot_id": "T2",
+      "source_ref": "source:s08",
+      "binding_ref": "binding:s08:T2",
+      "proposed_subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "mandelic_acid",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s08",
+      "evidence_summary": "Ingredients contain mandelic acid.",
+      "canonical_evidence_digest": "ef0b7025765d7556b975d80bec3ef4179a45389866e5bcddd14846ba42d77356",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e12",
+      "frozen_evidence_id": "e12",
+      "pilot_id": "T2",
+      "source_ref": "source:s08",
+      "binding_ref": "binding:s08:T2",
+      "proposed_subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "proposition_key": "7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s08",
+      "evidence_summary": "Name binds 10% to mandelic acid.",
+      "canonical_evidence_digest": "14d3bf6f5eb2b662a3663171a79b52ad03cb2c460d5c1895272ea8dcf5ec2c6a",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e13",
+      "frozen_evidence_id": "e13",
+      "pilot_id": "T2",
+      "source_ref": "source:s08",
+      "binding_ref": "binding:s08:T2",
+      "proposed_subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "8178abcf346b1779b649fa935b0dec0d5ea874c9394081dc898debe1172d9c18",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "sodium_hyaluronate_crosspolymer",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s08",
+      "evidence_summary": "Ingredients contain sodium hyaluronate crosspolymer.",
+      "canonical_evidence_digest": "3e079a48644e81dd6e3b91ed16bccee60dcf6033af321593e1d70a72996b6349",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e14",
+      "frozen_evidence_id": "e14",
+      "pilot_id": "T2",
+      "source_ref": "source:s08",
+      "binding_ref": "binding:s08:T2",
+      "proposed_subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+      "fact_key": "recommended_use_frequency",
+      "proposition_key": "f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "usage_instruction",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s08",
+      "evidence_summary": "Directions: once daily.",
+      "canonical_evidence_digest": "1311258d1f7126500fce279d5b2667b23cd9e017923a96d5aa8c8581e3c8c873",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e15",
+      "frozen_evidence_id": "e15",
+      "pilot_id": "T3",
+      "source_ref": "source:s09",
+      "binding_ref": "binding:s09:T3",
+      "proposed_subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "sodium_dna",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s09",
+      "evidence_summary": "PDRN identified as sodium DNA.",
+      "canonical_evidence_digest": "3dcdb17423e590ba8040e8a1b20973ed7d66d23899050476448b71d3af805137",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e16",
+      "frozen_evidence_id": "e16",
+      "pilot_id": "T3",
+      "source_ref": "source:s09",
+      "binding_ref": "binding:s09:T3",
+      "proposed_subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "hyaluronic_acid",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s09",
+      "evidence_summary": "Ingredients include hyaluronic acid.",
+      "canonical_evidence_digest": "2e60bac1158be7483daa213830ae34bf649d33b5b89143e60cf3b5cd0d7f4a17",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e17",
+      "frozen_evidence_id": "e17",
+      "pilot_id": "T3",
+      "source_ref": "source:s09",
+      "binding_ref": "binding:s09:T3",
+      "proposed_subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+      "fact_key": "recommended_use_frequency",
+      "proposition_key": "6a251131fe601a73b41f4112231423346ba6198dfded3cabf09fffd010b23a1b",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "usage_instruction",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s09",
+      "evidence_summary": "Directions: morning and night.",
+      "canonical_evidence_digest": "8906dc9676806b7a7375279dc338a56f557232442f7fafa5326d776361cff0ed",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e18",
+      "frozen_evidence_id": "e18",
+      "pilot_id": "T3",
+      "source_ref": "source:s09",
+      "binding_ref": "binding:s09:T3",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": "hydration_change",
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "medium",
+      "support_direction": "context_only",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {
+        "method_context": null,
+        "metric": null,
+        "reported_outcomes": [
+          "8.93% after 1 use",
+          "24.64% after 1 use"
+        ],
+        "timepoint": "after 1 use"
+      },
+      "source_provenance": "s09",
+      "evidence_summary": "Numeric hydration claim; method context incomplete.",
+      "canonical_evidence_digest": "8f22a5ef4c9691fedfc324dedfef654b909db38f452f194d8ed42ea654cf2707",
+      "materialization_eligibility": "blocked",
+      "block_reason": "not_linked_to_frozen_mapped_fact",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e20",
+      "frozen_evidence_id": "e20",
+      "pilot_id": "M2",
+      "source_ref": "source:s11",
+      "binding_ref": "binding:s11:M2",
+      "proposed_subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:primary_use_role",
+      "fact_key": "primary_use_role",
+      "proposition_key": "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "role_declaration",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s11",
+      "evidence_summary": "Face/body/lips multi-purpose use.",
+      "canonical_evidence_digest": "602a1d9ff0eba8bdc234e247953681a2487ea80027109e9578b16dfec42660f6",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e21",
+      "frozen_evidence_id": "e21",
+      "pilot_id": "M2",
+      "source_ref": "source:s11",
+      "binding_ref": "binding:s11:M2",
+      "proposed_subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:barrier_support_claim",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s11",
+      "evidence_summary": "barrier-support claim.",
+      "canonical_evidence_digest": "a0b281dfe852b804a1239ff194fced891cbc98a6692575abe6b637928412b5e7",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e22",
+      "frozen_evidence_id": "e22",
+      "pilot_id": "M2",
+      "source_ref": "source:s11",
+      "binding_ref": "binding:s11:M2",
+      "proposed_subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "panthenol",
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s11",
+      "evidence_summary": "identifies panthenol.",
+      "canonical_evidence_digest": "18dfac56d79e1f9773b19a4066d85ca39f8ae7ee30882c997769043b533ebe48",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e23",
+      "frozen_evidence_id": "e23",
+      "pilot_id": "M2",
+      "source_ref": "source:s11",
+      "binding_ref": "binding:s11:M2",
+      "proposed_subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "proposition_key": "0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s11",
+      "evidence_summary": "states 5% panthenol.",
+      "canonical_evidence_digest": "3d12d4a16098acaef711d67992358816ab0123fa6f48ed6dea2f1509f1871794",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e25",
+      "frozen_evidence_id": "e25",
+      "pilot_id": "M3",
+      "source_ref": "source:s12",
+      "binding_ref": "binding:s12:M3",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": null,
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "observation",
+      "evidence_authority": "review_observation",
+      "confidence": "low",
+      "support_direction": "context_only",
+      "negative_admissibility": "not_applicable",
+      "scope": {},
+      "qualifier_context": {
+        "analyzed_denominator": null,
+        "prevalence": "forbidden"
+      },
+      "source_provenance": "s12",
+      "evidence_summary": "Individual review: soothing/hydration.",
+      "canonical_evidence_digest": "3ce6feec17c07dc659238508676e149fe4ea41f8307bd93d4a7983540d22ce2c",
+      "materialization_eligibility": "blocked",
+      "block_reason": "registry_gap",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e27",
+      "frozen_evidence_id": "e27",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:product_format",
+      "fact_key": "product_format",
+      "proposition_key": "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "physical_characteristic",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "Exact product is a pad.",
+      "canonical_evidence_digest": "caafc988c3d78dd3491256a7e34dc8b34a0d61c647baf6db618ede95649c608b",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e28",
+      "frozen_evidence_id": "e28",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:wipe_off_use",
+      "fact_key": "wipe_off_use",
+      "proposition_key": "5a48189d6158fb9bc8f994779e766adba162c3e9d13b5ff73dfccdf1fe4757db",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "usage_instruction",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "Directions instruct wiping.",
+      "canonical_evidence_digest": "be140a6c74656983fc9a664a37a4eaccd8dfdba13b04740af425e998c03bd00f",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e29",
+      "frozen_evidence_id": "e29",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:pad_surface_texture",
+      "fact_key": "pad_surface_texture",
+      "proposition_key": "4ab8ddaeb4b84042635fa47846946b09bf202972b87eeaff694049c93752e06a",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "physical_characteristic",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "Directions identify embossed side.",
+      "canonical_evidence_digest": "5c81c2b3cd4926164942453cb3ca042f117f86842f7b0e283e581d4646040dd7",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e30",
+      "frozen_evidence_id": "e30",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": null,
+      "registry_version": null,
+      "registry_definition_ref": null,
+      "fact_key": null,
+      "proposition_key": null,
+      "proposition_serializer_version": null,
+      "proposition_value_identity": null,
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "medium",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "AHA·BHA·PHA family wording only.",
+      "canonical_evidence_digest": "4a99915babbfe708abe3e35405527a56596c7e2fa52c4a382df61c7421090e97",
+      "materialization_eligibility": "blocked",
+      "block_reason": "registry_gap",
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e31",
+      "frozen_evidence_id": "e31",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "lactic_acid",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "Ingredients contain lactic acid.",
+      "canonical_evidence_digest": "76d8e1e8ffdc475bf46dd20fadaa63378f792485a428e97454ce1b2a0a9487c4",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    },
+    {
+      "evidence_ref": "evidence:e32",
+      "frozen_evidence_id": "e32",
+      "pilot_id": "P3",
+      "source_ref": "source:s16",
+      "binding_ref": "binding:s16:P3",
+      "proposed_subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "proposition_key": "b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "salicylic_acid",
+      "parent_proposition_key": null,
+      "evidence_class": "composition_identity",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_provenance": "s16",
+      "evidence_summary": "Ingredients contain salicylic acid.",
+      "canonical_evidence_digest": "b5a1f17042cbaf30613a0dc43cd83f25c5fd9baca96966da2d412ed60686cba4",
+      "materialization_eligibility": "eligible",
+      "block_reason": null,
+      "provenance_preserved": true,
+      "forced_mapping": false
+    }
+  ],
+  "fact_proposals": [
+    {
+      "proposal_ref": "fact:f01",
+      "frozen_fact_instance_id": "f01",
+      "pilot_id": "S1",
+      "subject_ref": "subject:S1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": 50,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e01"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR",
+        "variant": "renewed_KR"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:spf_value",
+        "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+        "fact_key": "spf_value",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e01",
+            "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR",
+          "variant": "renewed_KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "e07e6af2c2dcb2a3834d2fb97ab363b77fee7303933eaff6dc560d8bf15e1f00",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 50,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f02",
+      "frozen_fact_instance_id": "f02",
+      "pilot_id": "S1",
+      "subject_ref": "subject:S1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:uva_label",
+      "fact_key": "uva_label",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "PA++++",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e02"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR",
+        "variant": "renewed_KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:uva_label",
+        "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+        "fact_key": "uva_label",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e02",
+            "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR",
+          "variant": "renewed_KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "8b8ccad74c734c0bb336c94c858dd59e3af2ba5a68b855640bab75ce411f3b8c",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "enum",
+        "value_boolean": null,
+        "value_enum": "PA++++",
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f03",
+      "frozen_fact_instance_id": "f03",
+      "pilot_id": "S2",
+      "subject_ref": "subject:S2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": 50,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e04"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "GLOBAL",
+        "variant": "Relief_Sun_Rice_Probiotics"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:spf_value",
+        "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+        "fact_key": "spf_value",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e04",
+            "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "GLOBAL",
+          "variant": "Relief_Sun_Rice_Probiotics"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "4d53bd3d73204fa8e003d1c78b223e6476c520211d03b7d3254ffd6f67ce96c4",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 50,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f04",
+      "frozen_fact_instance_id": "f04",
+      "pilot_id": "S3",
+      "subject_ref": "subject:S3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:spf_value",
+      "fact_key": "spf_value",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": 50,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e05"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "JP",
+        "variant": "NA"
+      },
+      "qualifier_context": {
+        "plus_modifier": "plus"
+      },
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "065020799c2bf4ee31e9284ffea445af6ee3bcf08bd6a547a0a106ef069aeec6",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:spf_value",
+        "proposition_key": "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+        "fact_key": "spf_value",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e05",
+            "canonical_evidence_digest": "af3bede09496c98ba187007769ba68641ae5bede0b03a339dd27d26a4f599111"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "JP",
+          "variant": "NA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "1ddc8637aeeb69a7e6f68f3749400c3ec9495d1df675ce1dd3de4c6cfc9a04cc",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 50,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f05",
+      "frozen_fact_instance_id": "f05",
+      "pilot_id": "S3",
+      "subject_ref": "subject:S3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:uva_label",
+      "fact_key": "uva_label",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "PA++++",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e06"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "JP",
+        "variant": "NA"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "065020799c2bf4ee31e9284ffea445af6ee3bcf08bd6a547a0a106ef069aeec6",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:uva_label",
+        "proposition_key": "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+        "fact_key": "uva_label",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e06",
+            "canonical_evidence_digest": "e25393f972af8eee4d4410bbed2382d73f4cb9fb7fce0b00305a0a3648ae68fb"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "JP",
+          "variant": "NA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "5ed319585cb75298ac01350ca61caa7ccc93daedf69d24cb82403a9dc28cbade",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "enum",
+        "value_boolean": null,
+        "value_enum": "PA++++",
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f06",
+      "frozen_fact_instance_id": "f06",
+      "pilot_id": "T1",
+      "subject_ref": "subject:T1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "niacinamide",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e08"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {},
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e08",
+            "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {},
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "5a25658a1d783d039cc80066380d2be9949d192c88c412a27dff3b14b6542f53",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "niacinamide"
+      }
+    },
+    {
+      "proposal_ref": "fact:f07",
+      "frozen_fact_instance_id": "f07",
+      "pilot_id": "T1",
+      "subject_ref": "subject:T1",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "frozen_parent_fact_instance_id": "f06",
+      "typed_value": {
+        "amount": 20,
+        "unit": "percent"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e09"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {},
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+      "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:active_concentration",
+        "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+        "fact_key": "active_concentration",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e09",
+            "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {},
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "74b5ba08982b2f75540f22af05dba81ce904f4212ae5b9c6673aa2e18a26d967",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 20,
+        "value_unit": "percent",
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f08",
+      "frozen_fact_instance_id": "f08",
+      "pilot_id": "T2",
+      "subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "mandelic_acid",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e11"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "686431e49f6ee9255bad448bb78778e67c3905e6a223e72a81e8090aca93ecb4",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e11",
+            "canonical_evidence_digest": "ef0b7025765d7556b975d80bec3ef4179a45389866e5bcddd14846ba42d77356"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "c081c40301025592203fb629dfa90cddfed0649aeaf5ffa7460d01000ed6b085",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "mandelic_acid"
+      }
+    },
+    {
+      "proposal_ref": "fact:f09",
+      "frozen_fact_instance_id": "f09",
+      "pilot_id": "T2",
+      "subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "frozen_parent_fact_instance_id": "f08",
+      "typed_value": {
+        "amount": 10,
+        "unit": "percent"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e12"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2",
+      "parent_proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "686431e49f6ee9255bad448bb78778e67c3905e6a223e72a81e8090aca93ecb4",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:active_concentration",
+        "proposition_key": "7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2",
+        "fact_key": "active_concentration",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e12",
+            "canonical_evidence_digest": "14d3bf6f5eb2b662a3663171a79b52ad03cb2c460d5c1895272ea8dcf5ec2c6a"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "a09ce3d90a2df29d60f60b006ef7755f8d1aa987e297cffda37831ff77c12123",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 10,
+        "value_unit": "percent",
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f10",
+      "frozen_fact_instance_id": "f10",
+      "pilot_id": "T2",
+      "subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "sodium_hyaluronate_crosspolymer",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e13"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "8178abcf346b1779b649fa935b0dec0d5ea874c9394081dc898debe1172d9c18",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "686431e49f6ee9255bad448bb78778e67c3905e6a223e72a81e8090aca93ecb4",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "8178abcf346b1779b649fa935b0dec0d5ea874c9394081dc898debe1172d9c18",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e13",
+            "canonical_evidence_digest": "3e079a48644e81dd6e3b91ed16bccee60dcf6033af321593e1d70a72996b6349"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "8e4aae0311483db8f7011d231a4ceef187d88cf474e6bf964d1fcd308bef129e",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "sodium_hyaluronate_crosspolymer"
+      }
+    },
+    {
+      "proposal_ref": "fact:f11",
+      "frozen_fact_instance_id": "f11",
+      "pilot_id": "T2",
+      "subject_ref": "subject:T2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+      "fact_key": "recommended_use_frequency",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": {
+        "min": 1,
+        "max": 1,
+        "unit": "times_per_day"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e14"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "686431e49f6ee9255bad448bb78778e67c3905e6a223e72a81e8090aca93ecb4",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+        "proposition_key": "f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d",
+        "fact_key": "recommended_use_frequency",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e14",
+            "canonical_evidence_digest": "1311258d1f7126500fce279d5b2667b23cd9e017923a96d5aa8c8581e3c8c873"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "9c66c4c1df839447d904cd607ab249f1cf88792d0f4052319342b2c9560cdbdb",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "range_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": "times_per_day",
+        "value_range_min": 1,
+        "value_range_max": 1,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f12",
+      "frozen_fact_instance_id": "f12",
+      "pilot_id": "T3",
+      "subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "sodium_dna",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e15"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "39e39ef34ec2eb65b8e4833a9a2418f598be453d66a733b0bc9e13d64b97275f",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e15",
+            "canonical_evidence_digest": "3dcdb17423e590ba8040e8a1b20973ed7d66d23899050476448b71d3af805137"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "US"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "7257589ea2c172bb6b6491c1da80e7e75ce9a73c93d11f7d8374e969e49047e5",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "sodium_dna"
+      }
+    },
+    {
+      "proposal_ref": "fact:f13",
+      "frozen_fact_instance_id": "f13",
+      "pilot_id": "T3",
+      "subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "hyaluronic_acid",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e16"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "39e39ef34ec2eb65b8e4833a9a2418f598be453d66a733b0bc9e13d64b97275f",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e16",
+            "canonical_evidence_digest": "2e60bac1158be7483daa213830ae34bf649d33b5b89143e60cf3b5cd0d7f4a17"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "US"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "018a3357054fb7f4093aef177a94f6fa83a53be2a83196e382ad92a907816b7c",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "hyaluronic_acid"
+      }
+    },
+    {
+      "proposal_ref": "fact:f14",
+      "frozen_fact_instance_id": "f14",
+      "pilot_id": "T3",
+      "subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+      "fact_key": "recommended_use_frequency",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": {
+        "min": 2,
+        "max": 2,
+        "unit": "times_per_day"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e17"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "6a251131fe601a73b41f4112231423346ba6198dfded3cabf09fffd010b23a1b",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "39e39ef34ec2eb65b8e4833a9a2418f598be453d66a733b0bc9e13d64b97275f",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:recommended_use_frequency",
+        "proposition_key": "6a251131fe601a73b41f4112231423346ba6198dfded3cabf09fffd010b23a1b",
+        "fact_key": "recommended_use_frequency",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e17",
+            "canonical_evidence_digest": "8906dc9676806b7a7375279dc338a56f557232442f7fafa5326d776361cff0ed"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "US"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "1476ec89e95f7cb60866a7f8d46ddad04929e7d3e7559f5576b54eeda7dfd1c5",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "range_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": "times_per_day",
+        "value_range_min": 2,
+        "value_range_max": 2,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f15",
+      "frozen_fact_instance_id": "f15",
+      "pilot_id": "M2",
+      "subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:primary_use_role",
+      "fact_key": "primary_use_role",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "multi_area",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e20"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "d5f218a69f25308636cabd9c1e889e26586c5ca6986140fa6342700468d0de48",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:primary_use_role",
+        "proposition_key": "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+        "fact_key": "primary_use_role",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e20",
+            "canonical_evidence_digest": "602a1d9ff0eba8bdc234e247953681a2487ea80027109e9578b16dfec42660f6"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "ZA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "8b383cf5310d4c6202af6fdfa1603f1a590b8384850117bf2c1466202aef3c3a",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "enum",
+        "value_boolean": null,
+        "value_enum": "multi_area",
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f16",
+      "frozen_fact_instance_id": "f16",
+      "pilot_id": "M2",
+      "subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:barrier_support_claim",
+      "fact_key": "barrier_support_claim",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": true,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e21"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "d5f218a69f25308636cabd9c1e889e26586c5ca6986140fa6342700468d0de48",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:barrier_support_claim",
+        "proposition_key": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+        "fact_key": "barrier_support_claim",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e21",
+            "canonical_evidence_digest": "a0b281dfe852b804a1239ff194fced891cbc98a6692575abe6b637928412b5e7"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "ZA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "12922e39fa1e910e604aee92b185c14b61ccfde9cb9dfb26d9df7935b29792e4",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "boolean",
+        "value_boolean": true,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f17",
+      "frozen_fact_instance_id": "f17",
+      "pilot_id": "M2",
+      "subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "panthenol",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e22"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "d5f218a69f25308636cabd9c1e889e26586c5ca6986140fa6342700468d0de48",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e22",
+            "canonical_evidence_digest": "18dfac56d79e1f9773b19a4066d85ca39f8ae7ee30882c997769043b533ebe48"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "ZA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "054a8d864b686871484f5e44ae4748025a6dc57fe108223176571587ccb8eb76",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "panthenol"
+      }
+    },
+    {
+      "proposal_ref": "fact:f18",
+      "frozen_fact_instance_id": "f18",
+      "pilot_id": "M2",
+      "subject_ref": "subject:M2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:active_concentration",
+      "fact_key": "active_concentration",
+      "frozen_parent_fact_instance_id": "f17",
+      "typed_value": {
+        "amount": 5,
+        "unit": "percent"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e23"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "ZA"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee",
+      "parent_proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "d5f218a69f25308636cabd9c1e889e26586c5ca6986140fa6342700468d0de48",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:active_concentration",
+        "proposition_key": "0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee",
+        "fact_key": "active_concentration",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e23",
+            "canonical_evidence_digest": "3d12d4a16098acaef711d67992358816ab0123fa6f48ed6dea2f1509f1871794"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "ZA"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "8f4c117d276cfefda51d5af0c2c69ce5efd07a87c8c59041d1b7a52ff5f29e1d",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "number_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 5,
+        "value_unit": "percent",
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f19",
+      "frozen_fact_instance_id": "f19",
+      "pilot_id": "P3",
+      "subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:product_format",
+      "fact_key": "product_format",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "pad",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e27"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:product_format",
+        "proposition_key": "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+        "fact_key": "product_format",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e27",
+            "canonical_evidence_digest": "caafc988c3d78dd3491256a7e34dc8b34a0d61c647baf6db618ede95649c608b"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "6622411a3d2f3d409b61bdc1a3a90593df07cb43604c3f3d364cbdcf1215c64c",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "enum",
+        "value_boolean": null,
+        "value_enum": "pad",
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f20",
+      "frozen_fact_instance_id": "f20",
+      "pilot_id": "P3",
+      "subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:wipe_off_use",
+      "fact_key": "wipe_off_use",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": true,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e28"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "5a48189d6158fb9bc8f994779e766adba162c3e9d13b5ff73dfccdf1fe4757db",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:wipe_off_use",
+        "proposition_key": "5a48189d6158fb9bc8f994779e766adba162c3e9d13b5ff73dfccdf1fe4757db",
+        "fact_key": "wipe_off_use",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e28",
+            "canonical_evidence_digest": "be140a6c74656983fc9a664a37a4eaccd8dfdba13b04740af425e998c03bd00f"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "9300e0c94614bb5ec67a4b89b5d966fb10b3e9d125197df5f9bcc5fa785e31f0",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "boolean",
+        "value_boolean": true,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f21",
+      "frozen_fact_instance_id": "f21",
+      "pilot_id": "P3",
+      "subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:pad_surface_texture",
+      "fact_key": "pad_surface_texture",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "embossed",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e29"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "4ab8ddaeb4b84042635fa47846946b09bf202972b87eeaff694049c93752e06a",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:pad_surface_texture",
+        "proposition_key": "4ab8ddaeb4b84042635fa47846946b09bf202972b87eeaff694049c93752e06a",
+        "fact_key": "pad_surface_texture",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e29",
+            "canonical_evidence_digest": "5c81c2b3cd4926164942453cb3ca042f117f86842f7b0e283e581d4646040dd7"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "518273f7c7da06550965d6c537e8c225e1018225327209ea5d425db0acd8e7a1",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "enum",
+        "value_boolean": null,
+        "value_enum": "embossed",
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:f22",
+      "frozen_fact_instance_id": "f22",
+      "pilot_id": "P3",
+      "subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "lactic_acid",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e31"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e31",
+            "canonical_evidence_digest": "76d8e1e8ffdc475bf46dd20fadaa63378f792485a428e97454ce1b2a0a9487c4"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "9efa6cddb66b59ef440a1bc2c904fa1e84d6fb47c27589d5ba81b0ef4c40b60e",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "lactic_acid"
+      }
+    },
+    {
+      "proposal_ref": "fact:f23",
+      "frozen_fact_instance_id": "f23",
+      "pilot_id": "P3",
+      "subject_ref": "subject:P3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:contains_active",
+      "fact_key": "contains_active",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": "salicylic_acid",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [
+        "e32"
+      ],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {},
+      "source_kind": "mapped_fact",
+      "confirmation_eligibility": "eligible",
+      "block_reason": null,
+      "proposition_key": "b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "5a9d4098d562c776485a9e776575737ce05837982029da10ba0dc2351eef2814",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:contains_active",
+        "proposition_key": "b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348",
+        "fact_key": "contains_active",
+        "supporting_evidence": [
+          {
+            "evidence_ref": "evidence:e32",
+            "canonical_evidence_digest": "b5a1f17042cbaf30613a0dc43cd83f25c5fd9baca96966da2d412ed60686cba4"
+          }
+        ],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "supported",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "795dddd672d5618d2b089f5ffe4d35da9166f1c2cdcda301e9c3eab63f1979ab",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [
+        "product_specific_primary"
+      ],
+      "typed_columns": {
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "salicylic_acid"
+      }
+    },
+    {
+      "proposal_ref": "fact:review:S2:uv_filter_type:reviewed_not_established",
+      "frozen_fact_instance_id": null,
+      "pilot_id": "S2",
+      "subject_ref": "subject:S2",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:uv_filter_type",
+      "fact_key": "uv_filter_type",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": null,
+      "semantic_status": "reviewed_not_established",
+      "authority_ceiling": "none",
+      "fused_confidence": "unknown",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "KR"
+      },
+      "qualifier_context": {
+        "review_status": "reviewed",
+        "source": "frozen_review_coverage"
+      },
+      "source_kind": "review_coverage",
+      "confirmation_eligibility": "blocked",
+      "block_reason": "requires_future_adjudication_before_confirmation",
+      "proposition_key": "492e51e6be88e3c76f427a8e21ca25ea1f8d661b895e1a6d2013df7b35d3a054",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:uv_filter_type",
+        "proposition_key": "492e51e6be88e3c76f427a8e21ca25ea1f8d661b895e1a6d2013df7b35d3a054",
+        "fact_key": "uv_filter_type",
+        "supporting_evidence": [],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "KR"
+        },
+        "semantic_status": "reviewed_not_established",
+        "authority_ceiling": "none",
+        "fused_confidence": "unknown",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "60931593671ecd3922bdbfc5918c00d90b6aa090eb50202ca02e2014b5736b68",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [],
+      "typed_columns": {
+        "value_type": null,
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:review:S3:water_resistance_duration:reviewed_not_established",
+      "frozen_fact_instance_id": null,
+      "pilot_id": "S3",
+      "subject_ref": "subject:S3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:water_resistance_duration",
+      "fact_key": "water_resistance_duration",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": null,
+      "semantic_status": "reviewed_not_established",
+      "authority_ceiling": "none",
+      "fused_confidence": "unknown",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [],
+      "scope": {
+        "market": "JP"
+      },
+      "qualifier_context": {
+        "review_status": "reviewed",
+        "source": "frozen_review_coverage"
+      },
+      "source_kind": "review_coverage",
+      "confirmation_eligibility": "blocked",
+      "block_reason": "requires_future_adjudication_before_confirmation",
+      "proposition_key": "d99ed4a94b9b76103a4afa2c754c584b0ff0b4ef59bb639d19f050891e5ff94c",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "065020799c2bf4ee31e9284ffea445af6ee3bcf08bd6a547a0a106ef069aeec6",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:water_resistance_duration",
+        "proposition_key": "d99ed4a94b9b76103a4afa2c754c584b0ff0b4ef59bb639d19f050891e5ff94c",
+        "fact_key": "water_resistance_duration",
+        "supporting_evidence": [],
+        "opposing_evidence": [],
+        "context_evidence": [],
+        "scope": {
+          "market": "JP"
+        },
+        "semantic_status": "reviewed_not_established",
+        "authority_ceiling": "none",
+        "fused_confidence": "unknown",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "1496df24fff15fbdb79c88d69b8b3fa10dcbf00272d67c7fe5002ffd5bea167a",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [],
+      "typed_columns": {
+        "value_type": null,
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    },
+    {
+      "proposal_ref": "fact:review:T3:hydration_change:evidence_insufficient",
+      "frozen_fact_instance_id": null,
+      "pilot_id": "T3",
+      "subject_ref": "subject:T3",
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_definition_ref": "product-fact-registry-cross-category-v1:hydration_change",
+      "fact_key": "hydration_change",
+      "frozen_parent_fact_instance_id": null,
+      "typed_value": null,
+      "semantic_status": "evidence_insufficient",
+      "authority_ceiling": "none",
+      "fused_confidence": "unknown",
+      "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+      "supporting_evidence_refs": [],
+      "opposing_evidence_refs": [],
+      "context_evidence_refs": [
+        "e18"
+      ],
+      "scope": {
+        "market": "US"
+      },
+      "qualifier_context": {
+        "review_status": "reviewed",
+        "source": "frozen_review_coverage"
+      },
+      "source_kind": "review_coverage",
+      "confirmation_eligibility": "blocked",
+      "block_reason": "context_evidence_not_directly_admissible_for_confirmation",
+      "proposition_key": "8a4ec63c3e664d4f054f184728949c9b3f38fbc8a45dbe9b8e5a3ee8e1b9a60c",
+      "parent_proposition_key": null,
+      "fusion_digest_inputs": {
+        "digest_contract": "offline-frozen-semantic-identities-v1",
+        "subject_identity": "39e39ef34ec2eb65b8e4833a9a2418f598be453d66a733b0bc9e13d64b97275f",
+        "registry_definition_identity": "product-fact-registry-cross-category-v1:hydration_change",
+        "proposition_key": "8a4ec63c3e664d4f054f184728949c9b3f38fbc8a45dbe9b8e5a3ee8e1b9a60c",
+        "fact_key": "hydration_change",
+        "supporting_evidence": [],
+        "opposing_evidence": [],
+        "context_evidence": [
+          {
+            "evidence_ref": "evidence:e18",
+            "canonical_evidence_digest": "8f22a5ef4c9691fedfc324dedfef654b909db38f452f194d8ed42ea654cf2707",
+            "materialization_eligibility": "blocked"
+          }
+        ],
+        "scope": {
+          "market": "US"
+        },
+        "semantic_status": "evidence_insufficient",
+        "authority_ceiling": "none",
+        "fused_confidence": "unknown",
+        "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration"
+      },
+      "fusion_input_digest": "efc307d250ffb15e3abbd71c1dbaec80b614ad3438e128821fbec3a94c50853a",
+      "runtime_fusion_input_digest": {
+        "status": "deferred_until_hosted_ids_are_allocated",
+        "reason": "PF runtime digest includes Hosted UUID evidence/subject identities; V2.1-2 performs zero Hosted writes"
+      },
+      "admissible_evidence_authorities": [],
+      "typed_columns": {
+        "value_type": null,
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null
+      }
+    }
+  ],
+  "blocked_materialization": [
+    {
+      "block_ref": "evidence-block:e03",
+      "kind": "evidence_blocked",
+      "pilot_id": "S1",
+      "evidence_ref": "evidence:e03",
+      "fact_key": null,
+      "candidate_concept": "uva_broad_spectrum_label",
+      "semantic_status": null,
+      "reason": "registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "evidence-block:e07",
+      "kind": "evidence_blocked",
+      "pilot_id": "S3",
+      "evidence_ref": "evidence:e07",
+      "fact_key": null,
+      "candidate_concept": "uv_water_resistance_rating",
+      "semantic_status": null,
+      "reason": "registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "evidence-block:e10",
+      "kind": "evidence_blocked",
+      "pilot_id": "T1",
+      "evidence_ref": "evidence:e10",
+      "fact_key": null,
+      "candidate_concept": "subjective_irritation_observation",
+      "semantic_status": null,
+      "reason": "registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "evidence-block:e18",
+      "kind": "evidence_blocked",
+      "pilot_id": "T3",
+      "evidence_ref": "evidence:e18",
+      "fact_key": "hydration_change",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "not_linked_to_frozen_mapped_fact",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "evidence-block:e25",
+      "kind": "evidence_blocked",
+      "pilot_id": "M3",
+      "evidence_ref": "evidence:e25",
+      "fact_key": null,
+      "candidate_concept": "subjective_soothing_observation",
+      "semantic_status": null,
+      "reason": "registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "evidence-block:e30",
+      "kind": "evidence_blocked",
+      "pilot_id": "P3",
+      "evidence_ref": "evidence:e30",
+      "fact_key": null,
+      "candidate_concept": "multi_acid_family_marketing_identity",
+      "semantic_status": null,
+      "reason": "registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-m1-primary-source",
+      "kind": "source_gap",
+      "pilot_id": "M1",
+      "gap_id": "gap-m1-primary-source",
+      "evidence_refs": [],
+      "semantic_status": null,
+      "reason": "Exact 150mL identity is resolved through a retailer, but this research pass did not acquire an exact official product page sufficient to establish role/barrier/measurement Facts.",
+      "severity": "S3_RESEARCH_OR_IDENTITY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-m3-official-source",
+      "kind": "source_gap",
+      "pilot_id": "M3",
+      "gap_id": "gap-m3-official-source",
+      "evidence_refs": [
+        "evidence:e25"
+      ],
+      "semantic_status": null,
+      "reason": "Exact EX identity/reviews were available, but no exact official EX product page was acquired; primary physical claims remain source-blocked.",
+      "severity": "S3_RESEARCH_OR_IDENTITY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-m3-review-soothing",
+      "kind": "registry_gap",
+      "pilot_id": "M3",
+      "gap_id": "gap-m3-review-soothing",
+      "evidence_refs": [
+        "evidence:e25"
+      ],
+      "semantic_status": null,
+      "reason": "Exact-product review observations discuss soothing/hydration, but no governed observation key represents that proposition.",
+      "severity": "S1_VOCABULARY_ONLY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-p1-physical-source",
+      "kind": "source_gap",
+      "pilot_id": "P1",
+      "gap_id": "gap-p1-physical-source",
+      "evidence_refs": [],
+      "semantic_status": null,
+      "reason": "Exact 350mL retailer identity is resolved, but the acquired exact-size source does not independently establish governed physical/usage Facts without relying on product-category inference.",
+      "severity": "S3_RESEARCH_OR_IDENTITY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-p2-version-lineage",
+      "kind": "identity_gap",
+      "pilot_id": "P2",
+      "gap_id": "gap-p2-version-lineage",
+      "evidence_refs": [],
+      "semantic_status": null,
+      "reason": "Current official page is explicitly a renewed 80-pad product, while the frozen catalog row lacks formulation/version lineage. Evidence is retained but authoritative fusion is blocked.",
+      "severity": "S3_RESEARCH_OR_IDENTITY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-s1-us-broad-spectrum",
+      "kind": "registry_gap",
+      "pilot_id": "S1",
+      "gap_id": "gap-s1-us-broad-spectrum",
+      "evidence_refs": [
+        "evidence:e03"
+      ],
+      "semantic_status": null,
+      "reason": "Frozen uva_label enum contains PA grades and UVA-PF-declared but not the US Broad Spectrum regulatory label. The linked US variant evidence is retained, not force-mapped.",
+      "severity": "S1_VOCABULARY_ONLY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-s3-water-rating",
+      "kind": "registry_gap",
+      "pilot_id": "S3",
+      "gap_id": "gap-s3-water-rating",
+      "evidence_refs": [
+        "evidence:e07"
+      ],
+      "semantic_status": null,
+      "reason": "Official ANESSA evidence is UV耐水性★★, while water_resistance_duration accepts minutes only. Converting stars to minutes would fabricate a value.",
+      "severity": "S1_VOCABULARY_ONLY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "gap:gap-t1-review-irritation",
+      "kind": "registry_gap",
+      "pilot_id": "T1",
+      "gap_id": "gap-t1-review-irritation",
+      "evidence_refs": [
+        "evidence:e10"
+      ],
+      "semantic_status": null,
+      "reason": "Frozen registry has sunscreen-specific eye_sting_observed but no cross-category/general irritation observation Fact. Individual review evidence is retained without prevalence.",
+      "severity": "S1_VOCABULARY_ONLY",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "relationship-block:T3:4b899ff7c8439109",
+      "kind": "relationship_identity_blocked",
+      "pilot_id": "T3",
+      "fact_key": "active_concentration",
+      "candidate_concept": null,
+      "semantic_status": "reviewed_not_established",
+      "reason": "parent_proposition_identity_not_explicit_in_frozen_review_coverage",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:M1:c8fa3be1820b9814",
+      "kind": "source_blocked",
+      "pilot_id": "M1",
+      "fact_key": "primary_use_role",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:M1:ca2659c5c2250fa1",
+      "kind": "source_blocked",
+      "pilot_id": "M1",
+      "fact_key": "barrier_support_claim",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:M3:7b3375b35a30f374",
+      "kind": "registry_gap",
+      "pilot_id": "M3",
+      "fact_key": null,
+      "candidate_concept": "subjective_soothing_observation",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:M3:c8fa3be1820b9814",
+      "kind": "source_blocked",
+      "pilot_id": "M3",
+      "fact_key": "primary_use_role",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:M3:ca2659c5c2250fa1",
+      "kind": "source_blocked",
+      "pilot_id": "M3",
+      "fact_key": "barrier_support_claim",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:P1:594e2ce5446466a6",
+      "kind": "source_blocked",
+      "pilot_id": "P1",
+      "fact_key": "contains_active",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:P1:ae9d733af0d7e4fd",
+      "kind": "source_blocked",
+      "pilot_id": "P1",
+      "fact_key": "product_format",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_source_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:P2:1cf5f76f2b556e2b",
+      "kind": "identity_blocked",
+      "pilot_id": "P2",
+      "fact_key": "product_format",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_identity_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:P2:500dc754cb0fe93b",
+      "kind": "identity_blocked",
+      "pilot_id": "P2",
+      "fact_key": "recommended_use_frequency",
+      "candidate_concept": null,
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_identity_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:S1:3717524480de276b",
+      "kind": "registry_gap",
+      "pilot_id": "S1",
+      "fact_key": null,
+      "candidate_concept": "UVA Broad Spectrum",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:S1:813d31e05456266b",
+      "kind": "identity_blocked",
+      "pilot_id": "S1",
+      "fact_key": null,
+      "candidate_concept": "US UVLock linked variant",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_identity_blocked",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:S3:04f6688fc4d380eb",
+      "kind": "registry_gap",
+      "pilot_id": "S3",
+      "fact_key": null,
+      "candidate_concept": "uv_water_resistance_rating",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:T1:e48298580914142e",
+      "kind": "registry_gap",
+      "pilot_id": "T1",
+      "fact_key": null,
+      "candidate_concept": "subjective_irritation_observation",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-block:T3:c44da926d06f2503",
+      "kind": "registry_gap",
+      "pilot_id": "T3",
+      "fact_key": null,
+      "candidate_concept": "subjective_hydration_observation",
+      "semantic_status": null,
+      "reason": "frozen_review_outcome_registry_gap",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-nonfact:P3:d7a4b0871e0b26ab",
+      "kind": "semantic_outcome_not_materializable",
+      "pilot_id": "P3",
+      "fact_key": null,
+      "candidate_concept": "lactic acid active_concentration",
+      "semantic_status": "reviewed_not_established",
+      "reason": "canonical_fact_key_missing",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-nonfact:P3:ffe0d50f7fbfe35c",
+      "kind": "semantic_outcome_not_materializable",
+      "pilot_id": "P3",
+      "fact_key": null,
+      "candidate_concept": "salicylic acid active_concentration",
+      "semantic_status": "reviewed_not_established",
+      "reason": "canonical_fact_key_missing",
+      "forced_mapping": false
+    },
+    {
+      "block_ref": "review-nonfact:T2:22fa30c75de3ed3c",
+      "kind": "semantic_outcome_not_materializable",
+      "pilot_id": "T2",
+      "fact_key": null,
+      "candidate_concept": "sodium_hyaluronate_crosspolymer concentration",
+      "semantic_status": "reviewed_not_established",
+      "reason": "canonical_fact_key_missing",
+      "forced_mapping": false
+    }
+  ],
+  "review_assignment_proposals": {
+    "representable_blocked": [
+      {
+        "pilot_id": "M3",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "0fb7071e45172c240b497e411879607b81b02c7b629b63d8dd50f6e4548f0efb",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:M3"
+      },
+      {
+        "pilot_id": "P1",
+        "fact_key": "contains_active",
+        "proposition_key": "19f364d911259cd78b8aedda33e53b6f869ed945094026f9c6712f141d0f2a48",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:P1"
+      },
+      {
+        "pilot_id": "M1",
+        "fact_key": "primary_use_role",
+        "proposition_key": "2012c7fa0f30390a6eaf9cbc1ddab5da99fdad07f4bfcc42ed57a568e385b276",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:M1"
+      },
+      {
+        "pilot_id": "M3",
+        "fact_key": "primary_use_role",
+        "proposition_key": "32c66f176f9fdfe552958a357ecc3698a0619483d0d0668d12611d2f47b86597",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:M3"
+      },
+      {
+        "pilot_id": "P2",
+        "fact_key": "recommended_use_frequency",
+        "proposition_key": "5edb3ce63f7397caafa3654da3f6d00ac80612f71077cf371b7c6ded8e3e116f",
+        "operational_state": "identity_blocked",
+        "subject_ref": null
+      },
+      {
+        "pilot_id": "M1",
+        "fact_key": "barrier_support_claim",
+        "proposition_key": "ca7c12d1e329c87daa135fc2742a0a537704401267e67cbb37e0c01432b75f67",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:M1"
+      },
+      {
+        "pilot_id": "P1",
+        "fact_key": "product_format",
+        "proposition_key": "daefc8637899f460d96ec8f9ca1b6f41bbd33922bc9f96f2b1a8bdbc3248a1a0",
+        "operational_state": "source_blocked",
+        "subject_ref": "subject:P1"
+      },
+      {
+        "pilot_id": "P2",
+        "fact_key": "product_format",
+        "proposition_key": "de0fe93964efee71cdb3dcd1e35c32729dde4ee6f971473262f58e1b8be6407a",
+        "operational_state": "identity_blocked",
+        "subject_ref": null
+      }
+    ],
+    "initial_assignment_count": 34,
+    "ready_for_confirm_transition_count": 23
+  },
+  "expected_operations": [
+    {
+      "operation": "admin_publish_product_fact_registry_v1",
+      "expected_calls_full_plan": 1,
+      "v21_2_executed_calls": 0,
+      "purpose": "publish frozen governed Registry v1 + 20 definitions"
+    },
+    {
+      "operation": "admin_register_product_fact_subject_v1",
+      "expected_calls_full_plan": 12,
+      "v21_2_executed_calls": 0,
+      "purpose": "register 11 resolved/current + 1 ambiguous/provisional subjects"
+    },
+    {
+      "operation": "admin_ingest_product_fact_evidence_v1",
+      "expected_calls_full_plan": 30,
+      "v21_2_executed_calls": 0,
+      "purpose": "23 EvidenceRecord calls + 7 source/binding-only calls"
+    },
+    {
+      "operation": "admin_prepare_product_fact_review_v1",
+      "expected_calls_full_plan": 57,
+      "v21_2_executed_calls": 0,
+      "purpose": "34 initial assignments + 23 ready_for_confirm transitions"
+    },
+    {
+      "operation": "admin_preflight_product_fact_confirmation_v1",
+      "expected_calls_full_plan": 23,
+      "v21_2_executed_calls": 0,
+      "purpose": "read-only confirmation preflight for full deterministic eligible set; future approval still required"
+    },
+    {
+      "operation": "admin_confirm_product_fact_v1",
+      "expected_calls_full_plan": 23,
+      "v21_2_executed_calls": 0,
+      "purpose": "full-eligible-set planning envelope only; NOT AUTHORIZED/EXECUTED in V2.1-2"
+    }
+  ],
+  "expected_writes": {
+    "product_fact_registry_versions": {
+      "expected_insert_count": 1,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "registry_publish",
+      "reason": "one frozen governed Registry version",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_definition_snapshots": {
+      "expected_insert_count": 20,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "registry_publish",
+      "reason": "one snapshot per 20 governed keys",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_subjects": {
+      "expected_insert_count": 12,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "subject_registration",
+      "reason": "11 resolved/current + 1 ambiguous/provisional",
+      "v21_2_actual_write_count": 0
+    },
+    "product_evidence_sources": {
+      "expected_insert_count": 15,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "evidence_ingest",
+      "reason": "15 frozen source identities",
+      "v21_2_actual_write_count": 0
+    },
+    "product_evidence_source_subject_bindings": {
+      "expected_insert_count": 15,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "evidence_ingest",
+      "reason": "one deterministic source-product binding per frozen source",
+      "v21_2_actual_write_count": 0
+    },
+    "product_evidence_records": {
+      "expected_insert_count": 23,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "evidence_ingest",
+      "reason": "29 proposals minus 6 fail-closed blocked evidence records",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_instances": {
+      "expected_insert_count": 23,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "future_full_eligible_confirmation_envelope",
+      "reason": "one Fact Instance per confirmation-eligible proposal; V2.1-3 will select a smaller approved subset",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_evidence_links": {
+      "expected_insert_count": 23,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "future_full_eligible_confirmation_envelope",
+      "reason": "support/opposition links for eligible confirmed Facts",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_review_assignments": {
+      "expected_insert_count": 34,
+      "expected_update_count": 46,
+      "expected_delete_count": 0,
+      "phase": "review_then_future_confirmation",
+      "reason": "34 initial assignments; 23 eligible transition under_review→ready_for_confirm→confirmed",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_review_events": {
+      "expected_insert_count": 115,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "subject/evidence/review/future_confirmation",
+      "reason": "subject_registered + evidence_ingested + initial review + ready transition + fact_confirmed",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_confirmations": {
+      "expected_insert_count": 23,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "future_full_eligible_confirmation_envelope",
+      "reason": "not executed in V2.1-2; full eligible-set envelope only",
+      "v21_2_actual_write_count": 0
+    },
+    "product_fact_current": {
+      "expected_insert_count": 23,
+      "expected_update_count": 0,
+      "expected_delete_count": 0,
+      "phase": "future_full_eligible_confirmation_envelope",
+      "reason": "empty Hosted baseline means full eligible envelope would insert 23 Current pointers; V2.1-3 selection remains pending",
+      "v21_2_actual_write_count": 0
+    }
+  },
+  "invariants": {
+    "product_not_subject": true,
+    "evidence_not_fact": true,
+    "fact_instance_not_current": true,
+    "missing_not_false": true,
+    "supported_false_distinct_from_reviewed_not_established": true,
+    "resolved_only_confirmation": true,
+    "ambiguous_subject_current_forbidden": true,
+    "authority_ceiling_not_above_admissible_evidence": true,
+    "source_quality_not_identity_compatibility": true,
+    "registry_expansion": false,
+    "fusion_recalibration": false,
+    "decision_axis_output": false,
+    "user_concern_output": false,
+    "recommendation_output": false,
+    "cleanser_corpus_adoption": false,
+    "catalog_wide_backfill": false,
+    "frozen_forced_mapping_count": 0,
+    "frozen_gap_taxonomy": {
+      "S1_VOCABULARY_ONLY": 4,
+      "S2_STRUCTURAL": 0,
+      "S3_RESEARCH_OR_IDENTITY": 4
+    },
+    "lifecycle": {
+      "PRODUCT_FACT_CATALOG_ADOPTED": "NO",
+      "CATALOG_ADOPTED": "NO",
+      "EVIDENCE_FUSION_PRODUCTION_CALIBRATED": "NO",
+      "REVIEW_BAYESIAN_MODEL_CALIBRATED": "NO",
+      "DECISION_AXIS_PRODUCTION_READY": "NO",
+      "DECISION_AXIS_CONSUMPTION": "NO",
+      "CONSTRAINT_UTILITY_RECOMMENDER_ACTIVE": "NO",
+      "ADMIN_PRODUCT_FACT_OPERATIONAL": "NO",
+      "RECOMMENDATION_ACTIVATED": "NO"
+    }
+  },
+  "hosted_write_count": 0
+}
