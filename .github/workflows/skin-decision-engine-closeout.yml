@@ -64,6 +64,7 @@ jobs:
       - name: Unified Vision and Face Lab contracts
         run: |
           npm run verify:unified-vision-pipeline
+          npm run verify:face-lab-archetype-scoring
           node scripts/verify-image-analysis-eligibility.mjs
           node scripts/verify-face-lab-observation-contract.mjs
           node scripts/verify-face-lab-failure-and-legacy-contract.mjs
