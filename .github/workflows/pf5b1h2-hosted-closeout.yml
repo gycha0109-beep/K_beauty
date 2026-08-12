@@ -1,4 +1,4 @@
-name: PF5B1H2 Hosted 174410 Closeout
+name: PF5B1H2 Hosted Post-Apply Closeout
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pf5b1h2-hosted-174410-closeout
+  group: pf5b1h2-hosted-post-apply-closeout
   cancel-in-progress: false
 
 env:
@@ -26,9 +26,9 @@ env:
   GENERATED_VERSION: '20260812090959'
 
 jobs:
-  hosted-174410:
+  post-apply-closeout:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -37,8 +37,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${SUPABASE_ACCESS_TOKEN}" || { echo 'Missing SUPABASE_ACCESS_TOKEN' >&2; exit 1; }
-          test -n "${SUPABASE_DB_PASSWORD}" || { echo 'Missing SUPABASE_DB_PASSWORD' >&2; exit 1; }
+          test -n "${SUPABASE_ACCESS_TOKEN}"
+          test -n "${SUPABASE_DB_PASSWORD}"
 
       - name: Checkout frozen authoritative main
         uses: actions/checkout@v4
@@ -47,26 +47,26 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Verify exact authority and Product Fact blobs
+      - name: Verify final authority and Product Fact blobs
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
-          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1h2-main
-          current_main="$(git rev-parse refs/remotes/origin/pf5b1h2-main)"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1h2-post-main
+          current_main="$(git rev-parse refs/remotes/origin/pf5b1h2-post-main)"
           test "${current_main}" = "${TARGET_MAIN_SHA}"
           git merge-base --is-ancestor "${PF5B1_MERGE_SHA}" "${TARGET_MAIN_SHA}"
-          test "$(git rev-parse "${TARGET_MAIN_SHA}:${PF2_PATH}")" = "${PF2_BLOB}"
-          test "$(git rev-parse "${TARGET_MAIN_SHA}:${CONTROLLED_PATH}")" = "${CONTROLLED_BLOB}"
-          test "$(git rev-parse "${TARGET_MAIN_SHA}:${SUBJECT_PATH}")" = "${SUBJECT_BLOB}"
           test -z "$(git diff --name-only "${PF5B1_MERGE_SHA}" "${TARGET_MAIN_SHA}" -- supabase/migrations)"
+          test "$(git rev-parse "HEAD:${PF2_PATH}")" = "${PF2_BLOB}"
+          test "$(git rev-parse "HEAD:${CONTROLLED_PATH}")" = "${CONTROLLED_BLOB}"
+          test "$(git rev-parse "HEAD:${SUBJECT_PATH}")" = "${SUBJECT_BLOB}"
           {
             echo "target_main=${TARGET_MAIN_SHA}"
             echo "current_main=${current_main}"
-            echo "pf2_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${PF2_PATH}")"
-            echo "controlled_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${CONTROLLED_PATH}")"
-            echo "subject_blob=$(git rev-parse "${TARGET_MAIN_SHA}:${SUBJECT_PATH}")"
-          } > /tmp/pf5b1h2-authority.txt
+            echo "pf2_blob=$(git rev-parse "HEAD:${PF2_PATH}")"
+            echo "controlled_blob=$(git rev-parse "HEAD:${CONTROLLED_PATH}")"
+            echo "subject_blob=$(git rev-parse "HEAD:${SUBJECT_PATH}")"
+          } > /tmp/pf5b1h2-post-authority.txt
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -78,119 +78,38 @@ jobs:
         run: |
           set -euo pipefail
           actual="$(npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version)"
-          echo "Supabase CLI ${actual}"
-          echo "${actual}" > /tmp/pf5b1h2-cli-version.txt
+          echo "${actual}" | tee /tmp/pf5b1h2-post-cli-version.txt
 
       - name: Link exact Hosted project
         shell: bash
         run: |
           set -euo pipefail
           raw="$(mktemp)"
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" link \
-            --project-ref "${TARGET_PROJECT_REF}" \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            >"${raw}" 2>&1; then
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" link --project-ref "${TARGET_PROJECT_REF}" --password "${SUPABASE_DB_PASSWORD}" >"${raw}" 2>&1; then
             sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
             rm -f "${raw}"
             exit 1
           fi
-          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" > /tmp/pf5b1h2-link.txt
+          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" > /tmp/pf5b1h2-post-link.txt
           rm -f "${raw}"
 
-      - name: Capture canonical migration list before push
+      - name: Verify canonical migration history aligned
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
-            --linked \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            | tee /tmp/pf5b1h2-migration-list-before.txt
-          ! grep -q "${GENERATED_VERSION}" /tmp/pf5b1h2-migration-list-before.txt
-
-      - name: Pre-apply dry-run and require exactly 174410
-        shell: bash
-        run: |
-          set -euo pipefail
-          raw="$(mktemp)"
-          clean="$(mktemp)"
-          actual="$(mktemp)"
-          expected="$(mktemp)"
-          cleanup() { rm -f "${raw}" "${clean}" "${actual}" "${expected}"; }
-          trap cleanup EXIT
-
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
-            --linked \
-            --dry-run \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            >"${raw}" 2>&1; then
-            sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
-            exit 1
-          fi
-          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" > "${clean}"
-          cat "${clean}" | tee /tmp/pf5b1h2-pre-dry-run.txt
-          awk '/Would push these migrations:/{capture=1; next} /Finished supabase db push\./{capture=0} capture' "${clean}" \
-            | grep -oE '[0-9]{14}_[[:alnum:]_]+\.sql' > "${actual}" || true
-          printf '%s\n' '20260810174410_product_fact_subject_registration_v1.sql' > "${expected}"
-          diff -u "${expected}" "${actual}"
-          test "$(wc -l < "${actual}" | tr -d ' ')" = '1'
-
-      - name: Immediate pre-write authority and ledger recheck
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1h2-main-prewrite
-          current_main="$(git rev-parse refs/remotes/origin/pf5b1h2-main-prewrite)"
-          test "${current_main}" = "${TARGET_MAIN_SHA}"
-          test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
-          test "$(git rev-parse "HEAD:${PF2_PATH}")" = "${PF2_BLOB}"
-          test "$(git rev-parse "HEAD:${CONTROLLED_PATH}")" = "${CONTROLLED_BLOB}"
-          test "$(git rev-parse "HEAD:${SUBJECT_PATH}")" = "${SUBJECT_BLOB}"
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
-            --linked \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            | tee /tmp/pf5b1h2-migration-list-prewrite.txt
-          ! grep -q "${GENERATED_VERSION}" /tmp/pf5b1h2-migration-list-prewrite.txt
-
-      - name: Apply canonical 174410 only
-        shell: bash
-        run: |
-          set -euo pipefail
-          raw="$(mktemp)"
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
-            --linked \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            >"${raw}" 2>&1; then
-            sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
-            rm -f "${raw}"
-            exit 1
-          fi
-          sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" | tee /tmp/pf5b1h2-db-push.txt
-          grep -q '20260810174410_product_fact_subject_registration_v1.sql' /tmp/pf5b1h2-db-push.txt
-          rm -f "${raw}"
-
-      - name: Verify canonical migration history after push
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list \
-            --linked \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            | tee /tmp/pf5b1h2-migration-list-after.txt
-          grep -Eq '20260809115932[[:space:]]*\|[[:space:]]*20260809115932' /tmp/pf5b1h2-migration-list-after.txt
-          grep -Eq '20260810174400[[:space:]]*\|[[:space:]]*20260810174400' /tmp/pf5b1h2-migration-list-after.txt
-          grep -Eq '20260810174410[[:space:]]*\|[[:space:]]*20260810174410' /tmp/pf5b1h2-migration-list-after.txt
-          ! grep -q "${GENERATED_VERSION}" /tmp/pf5b1h2-migration-list-after.txt
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" migration list --linked --password "${SUPABASE_DB_PASSWORD}" | tee /tmp/pf5b1h2-post-migration-list.txt
+          tr -d '`' < /tmp/pf5b1h2-post-migration-list.txt > /tmp/pf5b1h2-post-migration-list-normalized.txt
+          grep -Eq '20260809115932[[:space:]]*\|[[:space:]]*20260809115932' /tmp/pf5b1h2-post-migration-list-normalized.txt
+          grep -Eq '20260810174400[[:space:]]*\|[[:space:]]*20260810174400' /tmp/pf5b1h2-post-migration-list-normalized.txt
+          grep -Eq '20260810174410[[:space:]]*\|[[:space:]]*20260810174410' /tmp/pf5b1h2-post-migration-list-normalized.txt
+          ! grep -q "${GENERATED_VERSION}" /tmp/pf5b1h2-post-migration-list-normalized.txt
 
       - name: Post-apply dry-run requires zero pending
         shell: bash
         run: |
           set -euo pipefail
           raw="$(mktemp)"
-          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push \
-            --linked \
-            --dry-run \
-            --password "${SUPABASE_DB_PASSWORD}" \
-            >"${raw}" 2>&1; then
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" db push --linked --dry-run --password "${SUPABASE_DB_PASSWORD}" >"${raw}" 2>&1; then
             sed -E -e 's#(postgres(ql)?://[^:/[:space:]]+:)[^@[:space:]]+@#\1[REDACTED]@#g' -e 's#(Bearer )[A-Za-z0-9._-]+#\1[REDACTED]#g' "${raw}" >&2
             rm -f "${raw}"
             exit 1
@@ -199,32 +118,29 @@ jobs:
           grep -q 'Remote database is up to date' /tmp/pf5b1h2-post-dry-run.txt
           rm -f "${raw}"
 
-      - name: Final authority recheck
+      - name: Final remote main recheck
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1h2-main-final
-          final_main="$(git rev-parse refs/remotes/origin/pf5b1h2-main-final)"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf5b1h2-post-main-final
+          final_main="$(git rev-parse refs/remotes/origin/pf5b1h2-post-main-final)"
           test "${final_main}" = "${TARGET_MAIN_SHA}"
           test "$(git rev-parse HEAD)" = "${TARGET_MAIN_SHA}"
           test -z "$(git status --porcelain)"
-          echo "${final_main}" > /tmp/pf5b1h2-final-main.txt
+          echo "${final_main}" > /tmp/pf5b1h2-post-final-main.txt
 
-      - name: Upload PF5B1H2 CLI evidence
+      - name: Upload PF5B1H2 post-apply evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pf5b1h2-hosted-174410-cli-evidence
+          name: pf5b1h2-hosted-post-apply-cli-evidence
           path: |
-            /tmp/pf5b1h2-authority.txt
-            /tmp/pf5b1h2-cli-version.txt
-            /tmp/pf5b1h2-link.txt
-            /tmp/pf5b1h2-migration-list-before.txt
-            /tmp/pf5b1h2-pre-dry-run.txt
-            /tmp/pf5b1h2-migration-list-prewrite.txt
-            /tmp/pf5b1h2-db-push.txt
-            /tmp/pf5b1h2-migration-list-after.txt
+            /tmp/pf5b1h2-post-authority.txt
+            /tmp/pf5b1h2-post-cli-version.txt
+            /tmp/pf5b1h2-post-link.txt
+            /tmp/pf5b1h2-post-migration-list.txt
+            /tmp/pf5b1h2-post-migration-list-normalized.txt
             /tmp/pf5b1h2-post-dry-run.txt
-            /tmp/pf5b1h2-final-main.txt
+            /tmp/pf5b1h2-post-final-main.txt
           if-no-files-found: warn
           retention-days: 90
