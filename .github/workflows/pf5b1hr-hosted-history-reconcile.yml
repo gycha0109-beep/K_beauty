@@ -47,7 +47,7 @@ jobs:
         with:
           ref: ${{ env.TARGET_MAIN_SHA }}
           fetch-depth: 0
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Verify new-main authority and Product Fact byte invariance
         shell: bash
