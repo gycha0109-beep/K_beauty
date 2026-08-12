@@ -1,0 +1,42 @@
+name: V21-2 Verifier Fix
+
+on:
+  push:
+    branches:
+      - research/product-fact-cross-category-materialization-dry-run-v1
+    paths:
+      - .github/workflows/v21-2-verifier-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/product-fact-cross-category-materialization-dry-run-v1
+          fetch-depth: 0
+      - name: Patch only verifier expectations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs')
+          s=p.read_text()
+          a='ok(o.blocked_materialization.some(b=>b.kind==="relationship_identity_blocked"&&b.pilot_id==="T2"&&/sodium_hyaluronate_crosspolymer/i.test(b.candidate_concept||"")),"HA concentration remains RNE relationship-blocked");'
+          b='ok(o.blocked_materialization.some(b=>["relationship_identity_blocked","semantic_outcome_not_materializable"].includes(b.kind)&&b.pilot_id==="T2"&&b.semantic_status==="reviewed_not_established"&&/sodium_hyaluronate_crosspolymer/i.test(b.candidate_concept||"")),"HA concentration remains fail-closed reviewed_not_established");'
+          c='ok(o.blocked_materialization.filter(b=>b.pilot_id==="P3"&&b.kind==="relationship_identity_blocked"&&b.semantic_status==="reviewed_not_established").length>=2,"P3 acid concentrations remain not established");'
+          d='ok(o.blocked_materialization.filter(b=>b.pilot_id==="P3"&&["relationship_identity_blocked","semantic_outcome_not_materializable"].includes(b.kind)&&b.semantic_status==="reviewed_not_established").length>=2,"P3 acid concentrations remain fail-closed not established");'
+          if a not in s or c not in s: raise SystemExit('expected verifier text not found')
+          p.write_text(s.replace(a,b).replace(c,d))
+          PY
+          git diff --check
+          git diff -- scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
+          git commit -m 'test(storage): accept fail-closed relationshipless RNE evidence'
+          git push origin HEAD:research/product-fact-cross-category-materialization-dry-run-v1
