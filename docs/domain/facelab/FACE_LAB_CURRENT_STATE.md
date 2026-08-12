@@ -27,7 +27,7 @@ Face Style final engine               ❌ not implemented
 Look Composer                         ❌ not implemented
 Final canonical Free/Premium result   ❌ incomplete
 Synthetic evaluation infrastructure   ✅ implemented
-Controlled skin-cue pilot             ✅ operationally completed
+Controlled skin-cue pilot             ✅ official alignment complete / closeout pending
 Real human archetype calibration set  ❌ not established
 ```
 
@@ -200,9 +200,9 @@ The core authority boundary is preserved:
 generation intent ≠ observation ≠ judgment ≠ promotion
 ```
 
-## 8. Completed controlled skin-cue pilot
+## 8. Controlled skin-cue pilot status
 
-The diversified skin-cue pilot was completed operationally in the local synthetic-data workspace. These artifacts are intentionally not tracked as production application data.
+The diversified skin-cue pilot's official reveal/alignment phase was completed operationally in the local synthetic-data workspace. These artifacts are intentionally not tracked as production application data. Operator decision, checkpoint, and campaign closeout remain pending.
 
 Campaign:
 
@@ -231,7 +231,7 @@ Final official alignment state reported by the operator:
 - One human-reviewable positive case exposed a possible T4 observation miss.
 - The pilot demonstrated that the evaluation machinery can preserve uncertainty instead of forcing a success/failure label.
 
-This pilot validates the evaluation process, not the production archetype taxonomy.
+This pilot alignment validates the evaluation process, not the production archetype taxonomy. Administrative/operational closeout is still separate.
 
 ## 9. Historical documents and authority
 
