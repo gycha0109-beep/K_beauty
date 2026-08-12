@@ -32,7 +32,7 @@ jobs:
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/v21-2c-main
           test "$(git rev-parse refs/remotes/origin/v21-2c-main)" = "92432c9c111fa2cbbab9d0a62e27ace2d1f28add"
           python - <<'PY' | tee /tmp/v21-2c-manifest-intersection.txt
-          import json, subprocess
+          import json
           from pathlib import Path
           p=Path('docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json')
           m=json.loads(p.read_text())
@@ -59,6 +59,7 @@ jobs:
           assert not [x for x in changed if x in membership['excludeSourceOnly']]
           preserve=[x for x in changed if x in membership['preserveMain']]
           assert preserve == [
+            '.codex/AI_WORK_LOG.md',
             'packages/face-contracts/src/synthetic-solo-assessment/constants.js',
             'packages/face-contracts/src/synthetic-solo-assessment/contract.js',
             'tools/synthetic-evaluation/src/solo-assessment/artifacts.js',
@@ -69,8 +70,8 @@ jobs:
             'tools/synthetic-evaluation/tests/solo-assessment/storage.test.mjs',
           ]
           untracked=[x for x in changed if not any(x in membership[c] for c in classes)]
-          assert untracked == ['.codex/AI_WORK_LOG.md','tools/synthetic-evaluation/src/solo-assessment/wave-shape.js']
-          print('untracked_by_manifest=2')
+          assert untracked == ['tools/synthetic-evaluation/src/solo-assessment/wave-shape.js']
+          print('untracked_by_manifest=1')
           for x in untracked: print(f'  {x}')
           print('manifest_counts='+json.dumps(m['counts'],sort_keys=True))
           PY
@@ -85,6 +86,7 @@ jobs:
           p=Path('docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json')
           m=json.loads(p.read_text())
           expected={
+            '.codex/AI_WORK_LOG.md':('1534faa51adde14877327d041e698c4a9419c27c','545d8b7af795e0a9befea6a5d5b918c38392a1fb'),
             'packages/face-contracts/src/synthetic-solo-assessment/constants.js':('397d62d89c41ab7c309485cdb0a7430772699e55','52654c38ae5cc4e4829bfd3f516e4b745283820b'),
             'packages/face-contracts/src/synthetic-solo-assessment/contract.js':('fcaa52f01f16b1a587f986aa44a79ddfd783bcda','54ff04cc5502150e8e38418a187b851bc91e3178'),
             'tools/synthetic-evaluation/src/solo-assessment/artifacts.js':('33286814a187940ebbfc6944f5759d7ff7d84955','e23d38efbaae81331d8c8a7f333b09314978787d'),
@@ -110,7 +112,7 @@ jobs:
           test "$(git diff --name-only)" = "docs/architecture/candidate-policy-main-integration-blob-manifest-v1.json"
           git diff --check
 
-      - name: Verify merged synthetic #198 behavior
+      - name: Verify merged synthetic
         shell: bash
         run: |
           set -euo pipefail
