@@ -115,7 +115,7 @@ jobs:
         run: |
           node --check scripts/product-evidence/product-decision-axis-shadow-recommendation-v1.mjs
           node --check scripts/build-product-decision-axis-shadow-recommendation-v1.mjs
-          node --check scripts/verify-product-decision-axis-shadow-recommendation-v1.mjs
+          node --check scripts/verify-product-decision-axis-comparator-v1.mjs
 
       - name: Build A
         shell: bash
@@ -143,7 +143,7 @@ jobs:
       - name: Focused V2.1-7 verifier
         env:
           V21_7_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
-        run: node scripts/verify-product-decision-axis-shadow-recommendation-v1.mjs | tee /tmp/v21-7-verifier.txt
+        run: node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-7-verifier.txt
 
       - name: Historical V2.1-6 acceptance replay
         shell: bash
