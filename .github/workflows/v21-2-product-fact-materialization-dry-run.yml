@@ -18,9 +18,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BASE_MAIN_SHA: 22c20146192e9075c9d9cb36be7e5f49f83d3119
-  OLD_MAIN_SHA: 92432c9c111fa2cbbab9d0a62e27ace2d1f28add
-  OLD_V21_2_HEAD: 4058c3f2679103c3646b623c1c763620f9ec26fe
+  BASE_MAIN_SHA: e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f
+  OLD_MAIN_SHA: 22c20146192e9075c9d9cb36be7e5f49f83d3119
+  OLD_V21_2_HEAD: 62b5494d037a67d350ad44531a98e3a27a3ca768
   PILOT_HEAD: 596493154b74548187ed71f8d522bb41c7ad1900
   BRANCH_NAME: research/product-fact-cross-category-materialization-dry-run-v1
   OUT_JSON: evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
@@ -141,23 +141,23 @@ jobs:
           test "$(awk '{print $1}' /tmp/v21-2-hash-a.txt)" = "$(awk '{print $1}' /tmp/v21-2-hash-b.txt)"
           test "$(awk '{print $1}' /tmp/v21-2-doc-hash-a.txt)" = "$(awk '{print $1}' /tmp/v21-2-doc-hash-b.txt)"
 
-      - name: Verify #204 semantic carry-forward
+      - name: Verify current-main semantic carry-forward
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse "${OLD_V21_2_HEAD}:${OUT_JSON}")" = 5325824c378ce6262de34a686500912646ad927e
+          test "$(git rev-parse "${OLD_V21_2_HEAD}:${OUT_MD}")" = e347720661ace2ce427a7260090f89b5ef60667f
           git show "${OLD_V21_2_HEAD}:${OUT_JSON}" > /tmp/v21-2-old.json
           git show "${OLD_V21_2_HEAD}:${OUT_MD}" > /tmp/v21-2-old.md
-          test "$(sha256sum /tmp/v21-2-old.json | awk '{print $1}')" = a009e0e601155fc4b473e19adce1adaa924c6ff48b155d1b822b3908fff23c06
-          test "$(sha256sum /tmp/v21-2-old.md | awk '{print $1}')" = e93d5dd21adb458d4be12360701d2fc6c266eba347e77a1c07b5f6ed4c03b60b
           git grep -n "${OLD_MAIN_SHA}" "${OLD_V21_2_HEAD}" -- \
             '.github/workflows/v21-2-product-fact-materialization-dry-run.yml' \
             'docs/evidence/cross-category-pilot-materialization-dry-run-v1.md' \
             'evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json' \
             'scripts/build-product-fact-cross-category-materialization-dry-run-v1.mjs' \
             'scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs' \
-            | tee /tmp/v21-2r2-old-authority-refs.txt
-          test "$(wc -l < /tmp/v21-2r2-old-authority-refs.txt | tr -d ' ')" = 4
-          node --input-type=module <<'NODE' | tee /tmp/v21-2r2-semantic-carry-forward.txt
+            | tee /tmp/v21-2r3-old-authority-refs.txt
+          test "$(wc -l < /tmp/v21-2r3-old-authority-refs.txt | tr -d ' ')" = 4
+          node --input-type=module <<'NODE' | tee /tmp/v21-2r3-semantic-carry-forward.txt
           import fs from "node:fs";
           import assert from "node:assert/strict";
           const oldJson=JSON.parse(fs.readFileSync('/tmp/v21-2-old.json','utf8'));
@@ -192,13 +192,14 @@ jobs:
             "$(sha256sum /tmp/v21-2-old.md | awk '{print $1}')" \
             "$(awk '{print $1}' /tmp/v21-2-doc-hash-a.txt)" \
             "$(awk '{print $1}' /tmp/v21-2-doc-hash-b.txt)" \
-            | tee -a /tmp/v21-2r2-semantic-carry-forward.txt
+            | tee -a /tmp/v21-2r3-semantic-carry-forward.txt
 
       - name: Verify materialization contract and negative mutations
         shell: bash
         run: |
           set -euo pipefail
           node scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs | tee /tmp/v21-2-verifier.txt
+          grep -q 'assertions=5813' /tmp/v21-2-verifier.txt
           grep -q 'negative_mutations=12' /tmp/v21-2-verifier.txt
           grep -q 'forced_mapping=0' /tmp/v21-2-verifier.txt
           grep -q 'hosted_writes=0' /tmp/v21-2-verifier.txt
@@ -217,7 +218,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'Generated outputs already frozen.'
           else
-            git commit -m 'research(storage): freeze V2.1-2 #204 authority carry-forward'
+            git commit -m 'research(storage): freeze V2.1-2 current-main authority carry-forward'
             git push origin "HEAD:${BRANCH_NAME}"
           fi
           git diff --check "${BASE_MAIN_SHA}" HEAD
@@ -249,9 +250,9 @@ jobs:
             /tmp/v21-2-verifier.txt
             /tmp/v21-2-final-diff.txt
             /tmp/v21-2-final-head.txt
-            /tmp/v21-2r2-old-authority-refs.txt
-            /tmp/v21-2r2-semantic-carry-forward.txt
+            /tmp/v21-2r3-old-authority-refs.txt
+            /tmp/v21-2r3-semantic-carry-forward.txt
             evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
             docs/evidence/cross-category-pilot-materialization-dry-run-v1.md
 
-# V2.1-2R2 exact-head replay marker
+# V2.1-2R3 current-main reconciliation generation pass
