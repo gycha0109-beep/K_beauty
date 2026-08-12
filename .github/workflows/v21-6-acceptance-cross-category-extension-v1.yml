@@ -31,8 +31,11 @@ jobs:
       OUT_JSON: evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json
       OUT_MD: docs/evidence/product-decision-axis-cross-category-v1.md
       V21_5_HEAD: 4cb69354c3919f40c2b00acc070bcd0fb142f042
+      V21_5_MAIN: 4dce99057ca44adb14dac549e8df6d468cf7f5e2
       V21_4_HEAD: c471f5ae82acc36a7c29b9ec8158b4ca2d595ec9
+      V21_4_MAIN: a38df682ebc686cb076dfc40b432ae714fdfd6da
       CROSS_PILOT_HEAD: 596493154b74548187ed71f8d522bb41c7ad1900
+      CROSS_PILOT_MAIN: e1c9af6ad69e54a6a8d2e614de545e48f4e749b1
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,21 +105,28 @@ jobs:
           node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-6.txt
           grep -q 'PASS verify-product-decision-axis-cross-category-v1' /tmp/v21-6.txt
           grep -q 'decision_axis_consumption=NO recommendation_activation=NO hosted_writes=0' /tmp/v21-6.txt
-      - name: Replay mandatory cleanser and uncertainty acceptance at frozen exact heads
+      - name: Replay mandatory cleanser and uncertainty acceptance at historical authorities
         shell: bash
         run: |
           set -euo pipefail
+          restore_main_ref() { git update-ref refs/remotes/origin/main "${BASE_MAIN_SHA}"; }
+          trap restore_main_ref EXIT
           git worktree add --detach /tmp/v21-5 "${V21_5_HEAD}"
+          git update-ref refs/remotes/origin/main "${V21_5_MAIN}"
           (cd /tmp/v21-5 && node scripts/verify-product-decision-axis-cleanser-v1.mjs) | tee /tmp/v21-5.txt
           grep -q 'PASS verify-product-decision-axis-cleanser-v1' /tmp/v21-5.txt
           git worktree add --detach /tmp/v21-4 "${V21_4_HEAD}"
+          git update-ref refs/remotes/origin/main "${V21_4_MAIN}"
           (cd /tmp/v21-4 && node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs) | tee /tmp/v21-4.txt
           grep -q 'PASS verify-product-fact-evidence-fusion-review-uncertainty-v1' /tmp/v21-4.txt
           grep -q 'missing_denominator_prevalence=FORBIDDEN' /tmp/v21-4.txt
+          restore_main_ref
+          trap - EXIT
       - name: Verify Product Fact contracts unchanged
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse refs/remotes/origin/main)" = "${BASE_MAIN_SHA}"
           node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/pf-write.json
           node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/pf-subject.json
           node --input-type=module <<'NODE'
@@ -126,18 +136,24 @@ jobs:
             if (parsed.status !== 'PASS') throw new Error(`${file} not PASS`);
           }
           NODE
-      - name: Cross-category frozen pilot replay at frozen exact head
+      - name: Cross-category frozen pilot replay at historical authority
         shell: bash
         run: |
           set -euo pipefail
+          restore_main_ref() { git update-ref refs/remotes/origin/main "${BASE_MAIN_SHA}"; }
+          trap restore_main_ref EXIT
           git worktree add --detach /tmp/cross-pilot "${CROSS_PILOT_HEAD}"
+          git update-ref refs/remotes/origin/main "${CROSS_PILOT_MAIN}"
           (cd /tmp/cross-pilot && node scripts/verify-cross-category-real-evidence-pilot-v1.mjs) | tee /tmp/cross-pilot.txt
           grep -q 'PASS' /tmp/cross-pilot.txt
           grep -q 'forced_mapping_count=0' /tmp/cross-pilot.txt
+          restore_main_ref
+          trap - EXIT
       - name: Final scope and production invariance gate
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse refs/remotes/origin/main)" = "${BASE_MAIN_SHA}"
           actual=$(git diff --name-only "${BASE_MAIN_SHA}" HEAD | sort)
           expected=$(printf '%s\n' \
             '.github/workflows/v21-6-acceptance-cross-category-extension-v1.yml' \
