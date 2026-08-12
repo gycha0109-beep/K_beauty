@@ -1,7 +1,7 @@
 {
   "dry_run_version": "cross-category-pilot-materialization-dry-run-v1",
   "authority": {
-    "current_main_sha": "22c20146192e9075c9d9cb36be7e5f49f83d3119",
+    "current_main_sha": "e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f",
     "frozen_pilot_head": "596493154b74548187ed71f8d522bb41c7ad1900",
     "architecture_source": "비주얼리_추천_엔진_v2.1(1).md#V2.1-2",
     "product_fact_storage_contract": "PF-2 + PF-5B1 controlled write + subject registration",
