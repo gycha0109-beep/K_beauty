@@ -1,6 +1,7 @@
 name: V21-2 Product Fact Materialization Dry-run
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - research/product-fact-cross-category-materialization-dry-run-v1
