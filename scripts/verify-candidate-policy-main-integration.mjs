@@ -29,7 +29,14 @@ const ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
 ]);
 const SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   "packages/face-contracts/src/synthetic-solo-assessment/constants.js",
-  "packages/face-contracts/src/synthetic-solo-assessment/contract.js"
+  "packages/face-contracts/src/synthetic-solo-assessment/contract.js",
+  "tools/synthetic-evaluation/package.json",
+  "tools/synthetic-evaluation/src/index.js",
+  "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js",
+  "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js",
+  "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js",
+  "tools/synthetic-evaluation/src/solo-assessment/storage.js",
+  "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs"
 ]);
 const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
 let assertions = 0;
@@ -129,6 +136,72 @@ for (const token of [
   'value[axis] === "not_available"'
 ]) check(soloAlignmentContract.includes(token), `Solo alignment contract semantic delta missing: ${token}`);
 
+const soloToolkitPackage = JSON.parse(readFileSync(path.join(ROOT, "tools/synthetic-evaluation/package.json"), "utf8"));
+check(soloToolkitPackage.scripts?.solo === "node src/solo-assessment/cli/solo.js", "Solo CLI script drift");
+for (const scriptName of ["test", "verify"]) {
+  check(String(soloToolkitPackage.scripts?.[scriptName] || "").includes("tests/solo-assessment/alignment-diagnostic.test.mjs"), `Solo alignment test wiring missing: ${scriptName}`);
+}
+
+const soloToolkitIndex = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/index.js"), "utf8");
+for (const token of [
+  "prepareSoloWave",
+  "revealSoloIntent",
+  "submitSoloIntentAssessment",
+  "confirmSoloWaveBrief",
+  "linkSoloBriefToCheckpoint",
+  "deriveSoloAlignmentReport",
+  "verifySoloCueAlignmentIntegrity",
+  "verifySoloWaveAlignmentReportIntegrity"
+]) check(soloToolkitIndex.includes(token), `Solo public export semantic delta missing: ${token}`);
+
+const soloCli = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/cli/solo.js"), "utf8");
+for (const action of ["prepare_wave", "claim", "screen", "reveal", "assess", "brief", "link_checkpoint", "derive_alignment_report"]) {
+  check(soloCli.includes(`request.action === "${action}"`), `Solo CLI action missing: ${action}`);
+}
+check(soloCli.includes("deriveSoloAlignmentReport"), "Solo alignment CLI orchestration missing");
+
+const soloOrchestrator = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/orchestrator.js"), "utf8");
+for (const token of [
+  "export async function revealSoloIntent",
+  "export async function submitSoloIntentAssessment",
+  "export async function confirmSoloWaveBrief",
+  "export async function linkSoloBriefToCheckpoint",
+  "export async function deriveSoloAlignmentReport",
+  "createSoloCueAlignment",
+  "createSoloWaveAlignmentReport",
+  "saveSoloAlignmentReport",
+  "solo_alignment_reveal_required"
+]) check(soloOrchestrator.includes(token), `Solo orchestrator semantic delta missing: ${token}`);
+
+const soloSourcePreflight = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/source-preflight.js"), "utf8");
+for (const token of [
+  "export async function preflightSoloWaveSource",
+  "includeObservationObjects = false",
+  "verifyObservationSource",
+  "observationObject",
+  "writesPerformed: 0"
+]) check(soloSourcePreflight.includes(token), `Solo source preflight semantic delta missing: ${token}`);
+
+const soloStorage = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/src/solo-assessment/storage.js"), "utf8");
+for (const token of [
+  "saveSoloReveal",
+  "saveSoloIntentAssessment",
+  "saveSoloWaveBrief",
+  "saveSoloCheckpointLink",
+  "saveSoloAlignmentReport",
+  "alignment-diagnostics",
+  "writeImmutableJson"
+]) check(soloStorage.includes(token), `Solo storage semantic delta missing: ${token}`);
+
+const soloArchitectureBoundary = readFileSync(path.join(ROOT, "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs"), "utf8");
+for (const token of [
+  "T11 has no Provider, browser, DB, shell, upload, or production execution path",
+  "T11 does not import T5 consensus, T6 promotion, T8 mutation, or T9 dataset operations",
+  "deriveSoloAlignmentReport",
+  "createSoloCueAlignment",
+  "createSoloWaveAlignmentReport"
+]) check(soloArchitectureBoundary.includes(token), `Solo architecture boundary semantic delta missing: ${token}`);
+
 for (const filePath of manifest.temporaryRouteFiles) {
   check(!existsSync(path.join(ROOT, filePath)), `temporary diagnostic route residue: ${filePath}`);
 }
@@ -222,4 +295,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic exception verified)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated)`);
