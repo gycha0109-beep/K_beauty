@@ -141,8 +141,8 @@ jobs:
           set -euo pipefail
           node scripts/verify-product-fact-controlled-write-v1.mjs | tee /tmp/v21-4-pf-write.txt
           node scripts/verify-product-fact-subject-registration-v1.mjs | tee /tmp/v21-4-pf-subject.txt
-          grep -q 'PASS verify-product-fact-controlled-write-v1' /tmp/v21-4-pf-write.txt
-          grep -q 'PASS verify-product-fact-subject-registration-v1' /tmp/v21-4-pf-subject.txt
+          grep -q '"status": "PASS"' /tmp/v21-4-pf-write.txt
+          grep -q '"status": "PASS"' /tmp/v21-4-pf-subject.txt
 
       - name: Final path and production invariance gate
         shell: bash
