@@ -18,7 +18,7 @@ function walkKeys(v,at="$"){
   if(Array.isArray(v)){v.forEach((x,i)=>walkKeys(x,`${at}[${i}]`));return;}
   if(!v||typeof v!=="object")return;
   for(const [k,x] of Object.entries(v)){
-    if(forbiddenKey.test(k)&&![/recommendation_output/i,/recommendation_activated/i].some(r=>r.test(k))) throw new Error(`forbidden scope field ${at}.${k}`);
+    if(forbiddenKey.test(k)&&!((at==="$.invariants"&&["decision_axis_output","user_concern_output","recommendation_output"].includes(k)&&x===false)||(at==="$.invariants.lifecycle"&&["DECISION_AXIS_PRODUCTION_READY","DECISION_AXIS_CONSUMPTION","RECOMMENDATION_ACTIVATED"].includes(k)&&x==="NO"))) throw new Error(`forbidden scope field ${at}.${k}`);
     walkKeys(x,`${at}.${k}`);
   }
 }
