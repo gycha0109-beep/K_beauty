@@ -30,6 +30,9 @@ jobs:
       BRANCH_NAME: research/product-decision-axis-cross-category-v1
       OUT_JSON: evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json
       OUT_MD: docs/evidence/product-decision-axis-cross-category-v1.md
+      V21_5_HEAD: 4cb69354c3919f40c2b00acc070bcd0fb142f042
+      V21_4_HEAD: c471f5ae82acc36a7c29b9ec8158b4ca2d595ec9
+      CROSS_PILOT_HEAD: 596493154b74548187ed71f8d522bb41c7ad1900
     steps:
       - uses: actions/checkout@v4
         with:
@@ -99,13 +102,15 @@ jobs:
           node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-6.txt
           grep -q 'PASS verify-product-decision-axis-cross-category-v1' /tmp/v21-6.txt
           grep -q 'decision_axis_consumption=NO recommendation_activation=NO hosted_writes=0' /tmp/v21-6.txt
-      - name: Replay mandatory cleanser and uncertainty acceptance
+      - name: Replay mandatory cleanser and uncertainty acceptance at frozen exact heads
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-5.txt
+          git worktree add --detach /tmp/v21-5 "${V21_5_HEAD}"
+          (cd /tmp/v21-5 && node scripts/verify-product-decision-axis-cleanser-v1.mjs) | tee /tmp/v21-5.txt
           grep -q 'PASS verify-product-decision-axis-cleanser-v1' /tmp/v21-5.txt
-          node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4.txt
+          git worktree add --detach /tmp/v21-4 "${V21_4_HEAD}"
+          (cd /tmp/v21-4 && node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs) | tee /tmp/v21-4.txt
           grep -q 'PASS verify-product-fact-evidence-fusion-review-uncertainty-v1' /tmp/v21-4.txt
           grep -q 'missing_denominator_prevalence=FORBIDDEN' /tmp/v21-4.txt
       - name: Verify Product Fact contracts unchanged
@@ -121,11 +126,12 @@ jobs:
             if (parsed.status !== 'PASS') throw new Error(`${file} not PASS`);
           }
           NODE
-      - name: Cross-category frozen pilot replay
+      - name: Cross-category frozen pilot replay at frozen exact head
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/verify-cross-category-real-evidence-pilot-v1.mjs | tee /tmp/cross-pilot.txt
+          git worktree add --detach /tmp/cross-pilot "${CROSS_PILOT_HEAD}"
+          (cd /tmp/cross-pilot && node scripts/verify-cross-category-real-evidence-pilot-v1.mjs) | tee /tmp/cross-pilot.txt
           grep -q 'PASS' /tmp/cross-pilot.txt
           grep -q 'forced_mapping_count=0' /tmp/cross-pilot.txt
       - name: Final scope and production invariance gate
