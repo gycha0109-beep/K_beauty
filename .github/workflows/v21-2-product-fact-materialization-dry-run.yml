@@ -171,4 +171,4 @@ jobs:
             evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
             docs/evidence/cross-category-pilot-materialization-dry-run-v1.md
 
-# final replay trigger after verifier-only corrections
+# final replay trigger after hardened negative mutation guard
