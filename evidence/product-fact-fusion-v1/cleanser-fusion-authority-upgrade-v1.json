@@ -1,0 +1,28 @@
+{
+  "version": "cleanser-fusion-authority-upgrade-v1",
+  "frozen_at": "2026-08-12",
+  "retrieval_verification": "official BRMUD product page and official BRMUD category page independently expose deep/pore-cleansing language on 2026-08-12; only the product page is admitted as the frozen fact-support record",
+  "purpose": "Close the BRMUD deep_cleansing authority gap without changing the frozen 26-cleanser corpus or promoting review observations into Product Fact truth.",
+  "records": [
+    {
+      "catalog_evidence_id": "v21-4-brmud-official-deep-clean-001",
+      "product_id": "5448b8c3-cf87-4561-a699-3baf3dcb3dab",
+      "brand": "BRMUD",
+      "product_name": "Recovery / Relief Mud Pack to Foam Cleanser",
+      "source_reference": "https://en.brmudkorea.com/product/relief-mud-pack-to-foam-cleanser-110ml/13/",
+      "source_class": "official_product_page",
+      "source_language": "en",
+      "supported_value": "deep_clean",
+      "fact_key": "deep_cleansing",
+      "evidence_summary": "Current official BRMUD product page states that the Relief Mud Pack to Foam Cleanser removes dead skin cells and impurities and deeply cleanses skin.",
+      "accessed_at": "2026-08-12",
+      "confidence": "high",
+      "identity_relation": "equivalent_presentation_match",
+      "scope_relation": "equivalent",
+      "identity_basis": "Frozen cleanser corpus records Recovery vs Relief as renewal/alias drift; this supplement binds the current official Relief presentation to the same cleanser lineage without treating package size as a different formulation.",
+      "snapshot_basis": "frozen provenance record referencing the official page; not a byte snapshot of the live webpage",
+      "review_observation_superseded_as_fact_authority": false,
+      "notes": "The historical Hwahae review record remains context-only. This official record is the admissible product-claim authority for deep_cleansing in V2.1-4 acceptance replay."
+    }
+  ]
+}
