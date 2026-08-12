@@ -255,4 +255,4 @@ jobs:
             evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json
             docs/evidence/cross-category-pilot-materialization-dry-run-v1.md
 
-# V2.1-2R3 current-main reconciliation generation pass
+# V2.1-2R3 exact-head replay marker
