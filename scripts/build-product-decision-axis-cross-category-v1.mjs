@@ -20,7 +20,7 @@ export const OUT_MD = path.join(ROOT, "docs/evidence/product-decision-axis-cross
 export const FROZEN = Object.freeze({
   materialization_sha256: "b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2",
   registry_blob: "32fdaa2d3a181c9d18888fc48c1343e083ad20f7",
-  mapping_sha256: "c746c5d02f6547f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f",
+  mapping_sha256: "c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f",
   cleanser_axis_sha256: "fbddc761328f2caa5025a5867061866d17f16d24cb6566fe82d0796c20a4a0b4",
 });
 
@@ -42,7 +42,6 @@ export function buildArtifact() {
   invariant(sha256(materializationRaw) === FROZEN.materialization_sha256, "V2.1-2 materialization artifact SHA drift");
   invariant(sha256(mappingRaw) === FROZEN.mapping_sha256, "frozen cross-category mapping SHA drift");
   invariant(sha256(cleanserRaw) === FROZEN.cleanser_axis_sha256, "V2.1-5 cleanser axis SHA drift");
-
   const materialization = JSON.parse(materializationRaw);
   const registry = readJson(REGISTRY_PATH);
   const mapping = JSON.parse(mappingRaw);
@@ -73,7 +72,6 @@ export function buildArtifact() {
       axis,
     };
   });
-
   const axes = products.map((product) => product.axis);
   const coverageCounts = Object.fromEntries([...new Set(axes.map((axis) => axis.coverage))].sort().map((key) => [key, axes.filter((axis) => axis.coverage === key).length]));
   const rawSignalFacts = axes.flatMap((axis) => axis.signal_families).reduce((sum, item) => sum + item.raw_fact_count, 0);
@@ -82,13 +80,7 @@ export function buildArtifact() {
   return {
     version: MAPPER_VERSION,
     stage: "V2.1-6 Acceptance & Cross-category Extension",
-    authority: {
-      main_sha: BASE_MAIN_SHA,
-      materialization_sha256: FROZEN.materialization_sha256,
-      registry_blob: FROZEN.registry_blob,
-      mapping_sha256: FROZEN.mapping_sha256,
-      cleanser_axis_sha256: FROZEN.cleanser_axis_sha256,
-    },
+    authority: { main_sha: BASE_MAIN_SHA, materialization_sha256: FROZEN.materialization_sha256, registry_blob: FROZEN.registry_blob, mapping_sha256: FROZEN.mapping_sha256, cleanser_axis_sha256: FROZEN.cleanser_axis_sha256 },
     resolver_contract: {
       grouped_resolver_version: GROUP_RESOLVER_VERSION,
       fixture_adapter_version: FIXTURE_ADAPTER_VERSION,
@@ -101,12 +93,7 @@ export function buildArtifact() {
     },
     axis_contract: {
       axis_keys: AXIS_KEYS,
-      domain_axis_map: {
-        sunscreen: "photo_protection",
-        treatment: "exfoliation_load",
-        moisturizer_family: "barrier_support",
-        toner_pad_family: "exfoliation_load",
-      },
+      domain_axis_map: { sunscreen: "photo_protection", treatment: "exfoliation_load", moisturizer_family: "barrier_support", toner_pad_family: "exfoliation_load" },
       numeric_estimate_calibrated: false,
       signal_family_dedupe: true,
       fact_registry_auto_axis_creation: false,
@@ -145,63 +132,31 @@ export function buildArtifact() {
 function markdown(output) {
   const s = output.summary;
   return [
-    "# Product Decision Axis Cross-category v1",
-    "",
-    "> V2.1-6 offline acceptance and small-sample extension. No Hosted Product Fact writes, catalog adoption, recommendation consumption, or activation.",
-    "",
-    "## Scope",
-    "",
-    "- sunscreen → photo_protection",
-    "- treatment → exfoliation_load",
-    "- moisturizer family → barrier_support",
-    "- toner/pad family → exfoliation_load",
-    "- three shared axes cover four domains; Fact growth does not automatically create axis growth.",
-    "",
-    "## Resolver extension",
-    "",
+    "# Product Decision Axis Cross-category v1", "",
+    "> V2.1-6 offline acceptance and small-sample extension. No Hosted Product Fact writes, catalog adoption, recommendation consumption, or activation.", "",
+    "## Scope", "",
+    "- sunscreen → photo_protection", "- treatment → exfoliation_load", "- moisturizer family → barrier_support", "- toner/pad family → exfoliation_load",
+    "- three shared axes cover four domains; Fact growth does not automatically create axis growth.", "",
+    "## Resolver extension", "",
     "- preserves cardinality-many Current propositions instead of selecting one Fact by fact_key.",
     "- preserves market/region/locale/validity plus Subject variant/formulation scope.",
     "- ambiguous Subject identity is blocked from Current-like projection.",
-    "- missing/source-blocked facts remain missing/not-established context, never false.",
-    "",
-    "## Frozen output",
-    "",
-    `- products: ${s.products}`,
-    `- category families: ${s.categories}`,
-    `- distinct cross-category axes: ${s.axis_keys}`,
-    `- axis outputs: ${s.axis_outputs}`,
-    `- numeric estimates: ${s.numeric_estimates}`,
-    `- null estimates: ${s.null_estimates}`,
-    `- identity-blocked products: ${s.identity_blocked_products}`,
-    `- raw signal Fact references: ${s.raw_signal_fact_references}`,
-    `- deduped signal-family contribution units: ${s.signal_family_contribution_units}`,
-    "",
-    "## Lifecycle",
-    "",
-    "```text",
+    "- missing/source-blocked facts remain missing/not-established context, never false.", "",
+    "## Frozen output", "",
+    `- products: ${s.products}`, `- category families: ${s.categories}`, `- distinct cross-category axes: ${s.axis_keys}`, `- axis outputs: ${s.axis_outputs}`,
+    `- numeric estimates: ${s.numeric_estimates}`, `- null estimates: ${s.null_estimates}`, `- identity-blocked products: ${s.identity_blocked_products}`,
+    `- raw signal Fact references: ${s.raw_signal_fact_references}`, `- deduped signal-family contribution units: ${s.signal_family_contribution_units}`, "",
+    "## Lifecycle", "", "```text",
     "V21_6_ACCEPTANCE_CROSS_CATEGORY_OFFLINE_VERIFIED = YES",
     "PRODUCT_DECISION_AXIS_CROSS_CATEGORY_PRODUCTION_CALIBRATED = NO",
-    "PRODUCT_FACT_CATALOG_ADOPTED = NO",
-    "CATALOG_ADOPTED = NO",
-    "DECISION_AXIS_CONSUMPTION = NO",
-    "RECOMMENDATION_ACTIVATED = NO",
-    "HOSTED_PRODUCT_FACT_WRITES = 0",
-    "```",
-    "",
+    "PRODUCT_FACT_CATALOG_ADOPTED = NO", "CATALOG_ADOPTED = NO", "DECISION_AXIS_CONSUMPTION = NO", "RECOMMENDATION_ACTIVATED = NO", "HOSTED_PRODUCT_FACT_WRITES = 0", "```", "",
   ].join("\n");
 }
-
-export function buildTexts() {
-  const output = buildArtifact();
-  return { output, json: canonicalJson(output), markdown: markdown(output) };
-}
+export function buildTexts() { const output = buildArtifact(); return { output, json: canonicalJson(output), markdown: markdown(output) }; }
 export function writeOutputs() {
   const texts = buildTexts();
-  fs.mkdirSync(path.dirname(OUT_JSON), { recursive: true });
-  fs.mkdirSync(path.dirname(OUT_MD), { recursive: true });
-  fs.writeFileSync(OUT_JSON, texts.json, "utf8");
-  fs.writeFileSync(OUT_MD, texts.markdown, "utf8");
-  return texts;
+  fs.mkdirSync(path.dirname(OUT_JSON), { recursive: true }); fs.mkdirSync(path.dirname(OUT_MD), { recursive: true });
+  fs.writeFileSync(OUT_JSON, texts.json, "utf8"); fs.writeFileSync(OUT_MD, texts.markdown, "utf8"); return texts;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { output } = writeOutputs();
