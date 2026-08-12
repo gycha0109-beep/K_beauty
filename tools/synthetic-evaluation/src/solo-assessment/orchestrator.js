@@ -58,6 +58,7 @@ export async function prepareSoloWave({ dataRoot, runId, waveOrdinal, operatorId
     waveOrdinal,
     operatorId,
     sourceRows: source.sourceRows,
+    waveShape: source.waveShape,
     createdAt: now().toISOString()
   });
   if (!prepared.ok) return prepared;

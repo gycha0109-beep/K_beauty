@@ -7,6 +7,8 @@ import {
   SOLO_INTENT_ASSESSMENT_SCHEMA_VERSION,
   SOLO_INTENT_REVEAL_RECEIPT_SCHEMA_VERSION,
   SOLO_LIMITATIONS,
+  SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION,
+  SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION,
   SOLO_POLICY_ID,
   SOLO_POLICY_VERSION,
   SOLO_REASON_CODES,
@@ -34,8 +36,10 @@ import {
   validateTargetWithheldReviewItem
 } from "@bejewely/face-contracts";
 import { deepFreeze, sha256Hex, stableStringify } from "../shared/canonical-json.js";
+import { isLegacySoloWaveShape, verifySoloWaveShapeIntegrity } from "./wave-shape.js";
 
 const PRIVATE_MAP_SCHEMA_VERSION = "solo-private-review-map-v1";
+const PLAN_DERIVED_PRIVATE_MAP_SCHEMA_VERSION = "solo-private-review-map-v2";
 const TOKEN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 const HEX64 = /^[a-f0-9]{64}$/;
 const SLOT_ID = /^slot_[a-f0-9]{24}$/;
@@ -51,6 +55,10 @@ function omit(value, keys) {
 
 function digestOf(value) {
   return sha256Hex(stableStringify(value));
+}
+
+function slotSetDigest(values) {
+  return digestOf(values.map((value) => value.slotId).sort());
 }
 
 function isIso(value) {
@@ -107,7 +115,7 @@ function validateSourceRow(row, waveOrdinal) {
   return true;
 }
 
-function createPrivateMap({ campaignRunId, sourceProjectionDigest, waveOrdinal, operatorId, sourceRows }) {
+function createPrivateMap({ campaignRunId, sourceProjectionDigest, waveOrdinal, operatorId, sourceRows, waveShape = null }) {
   const entries = sourceRows.map((row) => {
     const reviewItemSeed = digestOf({ campaignRunId, sourceProjectionDigest, waveOrdinal, operatorId, policyDigest: SOLO_ASSESSMENT_POLICY.policyDigest, slotId: row.slotId });
     return {
@@ -125,33 +133,48 @@ function createPrivateMap({ campaignRunId, sourceProjectionDigest, waveOrdinal, 
       intendedSkinCue: row.intendedSkinCue ?? null
     };
   }).sort((left, right) => left.slotId.localeCompare(right.slotId));
+  const planDerived = waveShape !== null && !isLegacySoloWaveShape(waveShape);
   const semantic = {
-    schemaVersion: PRIVATE_MAP_SCHEMA_VERSION,
+    schemaVersion: planDerived ? PLAN_DERIVED_PRIVATE_MAP_SCHEMA_VERSION : PRIVATE_MAP_SCHEMA_VERSION,
     campaignRunId,
     sourceProjectionDigest,
     waveOrdinal,
     operatorId,
     policyDigest: SOLO_ASSESSMENT_POLICY.policyDigest,
+    ...(planDerived ? { waveShape } : {}),
     entries
   };
   return deepFreeze({ ...semantic, mapDigest: digestOf(semantic) });
 }
 
 export function verifySoloPrivateReviewMapIntegrity(map) {
-  if (!map || map.schemaVersion !== PRIVATE_MAP_SCHEMA_VERSION || !HEX64.test(map.mapDigest || "") || !Array.isArray(map.entries)) return false;
+  const planDerived = map?.schemaVersion === PLAN_DERIVED_PRIVATE_MAP_SCHEMA_VERSION;
+  if (!map || ![PRIVATE_MAP_SCHEMA_VERSION, PLAN_DERIVED_PRIVATE_MAP_SCHEMA_VERSION].includes(map.schemaVersion) || !HEX64.test(map.mapDigest || "") || !Array.isArray(map.entries)) return false;
   if (!verifyDigest(map, "mapDigest")) return false;
-  if (map.entries.length !== SOLO_WAVE_SLOT_COUNTS[map.waveOrdinal] || new Set(map.entries.map((entry) => entry.slotId)).size !== map.entries.length || new Set(map.entries.map((entry) => entry.reviewItemId)).size !== map.entries.length) return false;
+  if (planDerived && (!verifySoloWaveShapeIntegrity(map.waveShape) || map.waveShape.waveOrdinal !== map.waveOrdinal)) return false;
+  const expectedSlotCount = planDerived ? map.waveShape.expectedSlotCount : SOLO_WAVE_SLOT_COUNTS[map.waveOrdinal];
+  if (map.entries.length !== expectedSlotCount || new Set(map.entries.map((entry) => entry.slotId)).size !== map.entries.length || new Set(map.entries.map((entry) => entry.reviewItemId)).size !== map.entries.length) return false;
+  if (planDerived) {
+    const counts = { A: 0, B: 0, C: 0, D: 0 };
+    for (const entry of map.entries) {
+      if (!Object.hasOwn(counts, entry.conditionId)) return false;
+      counts[entry.conditionId] += 1;
+    }
+    if (Object.entries(map.waveShape.conditionCounts).some(([conditionId, count]) => counts[conditionId] !== count)) return false;
+  }
   return true;
 }
 
-function createSession({ campaignRunId, campaignPlanDigest, sourceProjectionDigest, waveOrdinal, operatorId, privateReviewMapDigest, createdAt }) {
+function createSession({ campaignRunId, campaignPlanDigest, sourceProjectionDigest, waveOrdinal, operatorId, privateReviewMapDigest, createdAt, waveShape = null, sourceSlotSetDigest = null }) {
+  const planDerived = waveShape !== null && !isLegacySoloWaveShape(waveShape);
   const semantic = {
-    schemaVersion: SOLO_WAVE_SESSION_SCHEMA_VERSION,
+    schemaVersion: planDerived ? SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION : SOLO_WAVE_SESSION_SCHEMA_VERSION,
     campaignRunId,
     campaignPlanDigest,
     sourceProjectionDigest,
     waveOrdinal,
-    expectedSlotCount: SOLO_WAVE_SLOT_COUNTS[waveOrdinal],
+    expectedSlotCount: waveShape?.expectedSlotCount ?? SOLO_WAVE_SLOT_COUNTS[waveOrdinal],
+    ...(planDerived ? { waveShape, slotSetDigest: sourceSlotSetDigest } : {}),
     operatorId,
     actorCount: 1,
     policyDigest: SOLO_ASSESSMENT_POLICY.policyDigest,
@@ -187,18 +210,21 @@ export function prepareSoloWaveArtifacts({
   waveOrdinal,
   operatorId,
   sourceRows,
+  waveShape = null,
   createdAt = new Date().toISOString()
 }) {
   if (!/^crun_[a-f0-9]{24}$/.test(campaignRunId || "") || !HEX64.test(campaignPlanDigest || "") || !HEX64.test(sourceProjectionDigest || "") || ![1,2,3].includes(waveOrdinal) || !TOKEN.test(operatorId || "") || !isIso(createdAt)) return failure("solo_source_not_ready");
-  const expected = SOLO_WAVE_SLOT_COUNTS[waveOrdinal];
+  if (waveShape !== null && (!verifySoloWaveShapeIntegrity(waveShape) || waveShape.campaignPlanDigest !== campaignPlanDigest || waveShape.waveOrdinal !== waveOrdinal)) return failure("solo_wave_shape_invalid", "waveShape");
+  const expected = waveShape?.expectedSlotCount ?? SOLO_WAVE_SLOT_COUNTS[waveOrdinal];
   if (!Array.isArray(sourceRows) || sourceRows.length !== expected || sourceRows.some((row) => !validateSourceRow(row, waveOrdinal))) return failure("solo_wave_slot_count_invalid", "sourceRows");
   const uniqueSlots = new Set(sourceRows.map((row) => row.slotId));
   if (uniqueSlots.size !== expected) return failure("solo_wave_slot_count_invalid", "sourceRows.slotId");
   const counts = { A: 0, B: 0, C: 0, D: 0 };
   for (const row of sourceRows) counts[row.conditionId] += 1;
-  if (Object.entries(SOLO_WAVE_CONDITION_COUNTS[waveOrdinal]).some(([key, count]) => counts[key] !== count)) return failure("solo_wave_slot_count_invalid", "sourceRows.conditionId");
-  const privateMap = createPrivateMap({ campaignRunId, sourceProjectionDigest, waveOrdinal, operatorId, sourceRows });
-  const sessionResult = createSession({ campaignRunId, campaignPlanDigest, sourceProjectionDigest, waveOrdinal, operatorId, privateReviewMapDigest: privateMap.mapDigest, createdAt });
+  const expectedConditions = waveShape?.conditionCounts ?? SOLO_WAVE_CONDITION_COUNTS[waveOrdinal];
+  if (Object.entries(expectedConditions).some(([key, count]) => counts[key] !== count)) return failure("solo_wave_slot_count_invalid", "sourceRows.conditionId");
+  const privateMap = createPrivateMap({ campaignRunId, sourceProjectionDigest, waveOrdinal, operatorId, sourceRows, waveShape });
+  const sessionResult = createSession({ campaignRunId, campaignPlanDigest, sourceProjectionDigest, waveOrdinal, operatorId, privateReviewMapDigest: privateMap.mapDigest, createdAt, waveShape, sourceSlotSetDigest: slotSetDigest(privateMap.entries) });
   if (!sessionResult.ok) return sessionResult;
   const reviewItems = privateMap.entries.map(createReviewItem);
   if (reviewItems.some((item) => item === null)) return failure("solo_target_withholding_invalid");
@@ -208,7 +234,12 @@ export function prepareSoloWaveArtifacts({
 export function verifySoloWaveSessionIntegrity(session, privateMap = null) {
   if (!validateSoloWaveSession(session).ok || !verifyDigest(session, "sessionDigest", ["sessionId","createdAt"])) return false;
   if (session.sessionId !== `solo_${session.sessionDigest.slice(0, 24)}`) return false;
+  const planDerived = session.schemaVersion === SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION;
+  if (planDerived && !verifySoloWaveShapeIntegrity(session.waveShape)) return false;
   if (privateMap && (!verifySoloPrivateReviewMapIntegrity(privateMap) || privateMap.mapDigest !== session.privateReviewMapDigest || privateMap.campaignRunId !== session.campaignRunId || privateMap.waveOrdinal !== session.waveOrdinal || privateMap.operatorId !== session.operatorId)) return false;
+  if (privateMap && planDerived && (privateMap.schemaVersion !== PLAN_DERIVED_PRIVATE_MAP_SCHEMA_VERSION || privateMap.waveShape.shapeDigest !== session.waveShape.shapeDigest)) return false;
+  if (privateMap && planDerived && slotSetDigest(privateMap.entries) !== session.slotSetDigest) return false;
+  if (privateMap && !planDerived && privateMap.schemaVersion !== PRIVATE_MAP_SCHEMA_VERSION) return false;
   return true;
 }
 
@@ -379,15 +410,18 @@ export function verifySoloWaveAssessmentRowIntegrity(row) {
 
 export function createSoloWaveAssessmentSet({ session, rows }) {
   if (!verifySoloWaveSessionIntegrity(session) || !Array.isArray(rows) || rows.length !== session.expectedSlotCount || rows.some((row) => !verifySoloWaveAssessmentRowIntegrity(row))) return failure("solo_wave_slot_count_invalid");
+  const planDerived = session.schemaVersion === SOLO_PLAN_DERIVED_WAVE_SESSION_SCHEMA_VERSION;
+  if (planDerived && slotSetDigest(rows) !== session.slotSetDigest) return failure("solo_wave_slot_count_invalid", "rows.slotId");
   const sorted = [...rows].sort((left, right) => left.slotId.localeCompare(right.slotId));
   const counts = { A: 0, B: 0, C: 0, D: 0 };
   for (const row of sorted) counts[row.conditionId] += 1;
   const semantic = {
-    schemaVersion: SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION,
+    schemaVersion: planDerived ? SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION : SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION,
     sessionDigest: session.sessionDigest,
     campaignRunId: session.campaignRunId,
     waveOrdinal: session.waveOrdinal,
     expectedSlotCount: session.expectedSlotCount,
+    ...(planDerived ? { waveShape: session.waveShape, slotSetDigest: session.slotSetDigest } : {}),
     rows: sorted,
     conditionCounts: counts,
     exactDenominatorVerified: true
@@ -397,7 +431,8 @@ export function createSoloWaveAssessmentSet({ session, rows }) {
 }
 
 export function verifySoloWaveAssessmentSetIntegrity(set) {
-  return validateSoloWaveAssessmentSet(set).ok && verifyDigest(set, "assessmentSetDigest");
+  const planDerived = set?.schemaVersion === SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION;
+  return validateSoloWaveAssessmentSet(set).ok && (!planDerived || verifySoloWaveShapeIntegrity(set.waveShape) && slotSetDigest(set.rows) === set.slotSetDigest) && verifyDigest(set, "assessmentSetDigest");
 }
 
 function emptyCounts(keys) {
