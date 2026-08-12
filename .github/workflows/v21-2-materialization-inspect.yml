@@ -1,0 +1,54 @@
+name: V21-2 Materialization Inspect
+
+on:
+  push:
+    branches:
+      - research/product-fact-cross-category-materialization-dry-run-v1
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Inspect frozen pilot structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+          const J=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const base='evidence/product-evidence-decision-axis-v1';
+          const corpus=J(`${base}/cross-category-real-evidence-pilot-v1.json`);
+          const mapping=J(`${base}/cross-category-real-fact-mapping-pilot-v1.json`);
+          const gaps=J(`${base}/cross-category-real-pilot-gap-report-v1.json`);
+          const registry=J(`${base}/cross-category-registry-v1.json`);
+          console.log('CORPUS_KEYS',JSON.stringify(Object.keys(corpus).sort()));
+          console.log('PRODUCT_KEYS',JSON.stringify([...new Set(corpus.products.flatMap(x=>Object.keys(x)))].sort()));
+          console.log('SOURCE_KEYS',JSON.stringify([...new Set(corpus.sources.flatMap(x=>Object.keys(x)))].sort()));
+          console.log('EVIDENCE_KEYS',JSON.stringify([...new Set(corpus.evidence_records.flatMap(x=>Object.keys(x)))].sort()));
+          console.log('MAPPING_KEYS',JSON.stringify(Object.keys(mapping).sort()));
+          console.log('MAPPING_PRODUCT_KEYS',JSON.stringify([...new Set(mapping.products.flatMap(x=>Object.keys(x)))].sort()));
+          console.log('MAPPED_FACT_KEYS',JSON.stringify([...new Set(mapping.products.flatMap(p=>p.mapped_facts).flatMap(x=>Object.keys(x)))].sort()));
+          console.log('SUMMARY',JSON.stringify({products:corpus.products.length,sources:corpus.sources.length,evidence:corpus.evidence_records.length,mapped:mapping.products.flatMap(p=>p.mapped_facts).length,mappingSummary:mapping.summary,gapSeverity:gaps.severity_summary,taxonomy:gaps.taxonomy_summary,registryFacts:registry.facts.length,forced:mapping.forced_mapping_count}));
+          console.log('PRODUCTS',JSON.stringify(corpus.products));
+          console.log('SOURCES',JSON.stringify(corpus.sources));
+          console.log('MAPPING_PRODUCTS',JSON.stringify(mapping.products));
+          console.log('GAPS',JSON.stringify(gaps.gaps));
+          console.log('DIGESTS',JSON.stringify({corpus:sha(`${base}/cross-category-real-evidence-pilot-v1.json`),mapping:sha(`${base}/cross-category-real-fact-mapping-pilot-v1.json`),gaps:sha(`${base}/cross-category-real-pilot-gap-report-v1.json`)}));
+          NODE
+          printf 'registry_blob='; git hash-object evidence/product-evidence-decision-axis-v1/cross-category-registry-v1.json
+          printf 'corpus_blob='; git hash-object evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json
+          printf 'mapping_blob='; git hash-object evidence/product-evidence-decision-axis-v1/cross-category-real-fact-mapping-pilot-v1.json
+          printf 'gap_blob='; git hash-object evidence/product-evidence-decision-axis-v1/cross-category-real-pilot-gap-report-v1.json
+          printf 'verifier_blob='; git hash-object scripts/verify-cross-category-real-evidence-pilot-v1.mjs
