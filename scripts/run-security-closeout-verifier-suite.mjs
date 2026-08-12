@@ -22,6 +22,7 @@ const EXPECTED_VERIFIERS = [
   "verify-candidate-policy-runtime-reevaluation.mjs",
   "verify-evaluator-boundary-policy-production-observability.mjs",
   "verify-existing-recommendation-candidate-source.mjs",
+  "verify-face-lab-archetype-scoring.mjs",
   "verify-face-lab-failure-and-legacy-contract.mjs",
   "verify-face-lab-keyword-summary.mjs",
   "verify-face-lab-observation-contract.mjs",
