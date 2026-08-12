@@ -12,6 +12,8 @@ export const SOLO_WAVE_ASSESSMENT_SET_SCHEMA_VERSION = "solo-wave-assessment-set
 export const SOLO_PLAN_DERIVED_WAVE_ASSESSMENT_SET_SCHEMA_VERSION = "solo-wave-assessment-set-v2";
 export const SOLO_WAVE_BRIEF_SCHEMA_VERSION = "solo-wave-brief-v1";
 export const SOLO_CHECKPOINT_LINK_SCHEMA_VERSION = "solo-checkpoint-link-v1";
+export const SOLO_CUE_ALIGNMENT_SCHEMA_VERSION = "solo-cue-alignment-v1";
+export const SOLO_WAVE_ALIGNMENT_REPORT_SCHEMA_VERSION = "solo-wave-alignment-report-v1";
 
 export const SOLO_ASSESSMENT_AUTHORITY = "operator_exploratory_assessment";
 export const SOLO_REPORT_AUTHORITY = "t11_solo_exploratory";
@@ -41,6 +43,31 @@ export const SOLO_PRESENCE = Object.freeze(["none", "mild", "moderate_or_higher"
 export const SOLO_BLEMISH_COUNT_BANDS = Object.freeze(["none", "one_to_two", "three_to_five", "six_plus", "uncertain"]);
 export const SOLO_ARTIFACT_STATES = Object.freeze(["absent", "present", "uncertain"]);
 export const SOLO_TARGET_RELATIONS = Object.freeze(["exact_match", "under_target", "over_target", "contradictory", "unverifiable"]);
+export const SOLO_EVIDENCE_AGREEMENTS = Object.freeze(["agree", "disagree", "unverifiable", "not_comparable"]);
+export const SOLO_T4_RELATION_INPUTS = Object.freeze(["none", "low", "mild", "moderate", "high", "unverifiable"]);
+export const SOLO_ALIGNMENT_AXES = Object.freeze(["redness", "blemishPresence", "blemishCount"]);
+export const SOLO_ALIGNMENT_DIAGNOSTIC_FLAGS = Object.freeze([
+  "generation_side_signal_weak_possible",
+  "observation_side_miss_possible",
+  "ambiguous_visual_cue"
+]);
+export const SOLO_ALIGNMENT_LIMITATION_CODES = Object.freeze([
+  "human_redness_color_discrimination_reliability_limited",
+  "blemish_visual_cue_not_dermatological_diagnosis",
+  "subtle_mark_identity_ambiguous",
+  "single_operator",
+  "prior_target_knowledge_possible",
+  "not_independent_consensus",
+  "not_gold_evidence",
+  "not_population_evidence"
+]);
+export const SOLO_ALIGNMENT_REQUIRED_LIMITATIONS = Object.freeze([
+  "single_operator",
+  "prior_target_knowledge_possible",
+  "not_independent_consensus",
+  "not_gold_evidence",
+  "not_population_evidence"
+]);
 export const SOLO_USABILITY = Object.freeze(["usable", "usable_with_caution", "unusable", "not_assessable"]);
 export const SOLO_OPERATIONAL_DISPOSITIONS = Object.freeze([
   "retain_exploratory",

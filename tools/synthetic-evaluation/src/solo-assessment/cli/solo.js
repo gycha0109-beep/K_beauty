@@ -2,6 +2,7 @@
 import {
   claimSoloReviewItem,
   confirmSoloWaveBrief,
+  deriveSoloAlignmentReport,
   linkSoloBriefToCheckpoint,
   prepareSoloWave,
   revealSoloIntent,
@@ -33,6 +34,8 @@ async function main() {
     result = await confirmSoloWaveBrief({ dataRoot, sessionRef: request.sessionRef, itemRefs: request.itemRefs, decisionDraft: request.decisionDraft, confirm });
   } else if (request.action === "link_checkpoint") {
     result = await linkSoloBriefToCheckpoint({ dataRoot, sessionRef: request.sessionRef, briefDigest: request.briefDigest, checkpointApprovalDigest: request.checkpointApprovalDigest, confirm });
+  } else if (request.action === "derive_alignment_report") {
+    result = await deriveSoloAlignmentReport({ dataRoot, sessionRef: request.sessionRef, itemRefs: request.itemRefs, limitations: request.limitations, confirm });
   } else {
     throw Object.assign(new Error("cli_argument_invalid"), { code: "cli_argument_invalid" });
   }

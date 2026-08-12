@@ -5,7 +5,9 @@ import {
   SOLO_BLEMISH_COUNT_BANDS,
   SOLO_BLEMISH_REGIONS,
   SOLO_CHECKPOINT_LINK_SCHEMA_VERSION,
+  SOLO_CUE_ALIGNMENT_SCHEMA_VERSION,
   SOLO_DECISIONS,
+  SOLO_EVIDENCE_AGREEMENTS,
   SOLO_EXCLUDED_FIELDS,
   SOLO_INTENT_ASSESSMENT_SCHEMA_VERSION,
   SOLO_INTENT_REVEAL_RECEIPT_SCHEMA_VERSION,
@@ -25,6 +27,11 @@ import {
   SOLO_SLOT_READINESS,
   SOLO_T5_STATUS,
   SOLO_TARGET_RELATIONS,
+  SOLO_T4_RELATION_INPUTS,
+  SOLO_ALIGNMENT_AXES,
+  SOLO_ALIGNMENT_DIAGNOSTIC_FLAGS,
+  SOLO_ALIGNMENT_LIMITATION_CODES,
+  SOLO_ALIGNMENT_REQUIRED_LIMITATIONS,
   SOLO_TARGET_WITHHELD_SCREENING_SCHEMA_VERSION,
   SOLO_TRI_STATE,
   SOLO_USABILITY,
@@ -35,6 +42,7 @@ import {
   SOLO_WAVE_SHAPE_SCHEMA_VERSION,
   SOLO_WAVE_SESSION_SCHEMA_VERSION,
   SOLO_WAVE_SLOT_COUNTS,
+  SOLO_WAVE_ALIGNMENT_REPORT_SCHEMA_VERSION,
   TARGET_WITHHELD_REVIEW_ITEM_SCHEMA_VERSION
 } from "./constants.js";
 
@@ -320,4 +328,111 @@ export function validateSoloCheckpointLink(value) {
   if (!exactKeys(value, keys)) return result([error("solo_checkpoint_link_invalid", "$")]);
   const valid = value.schemaVersion === SOLO_CHECKPOINT_LINK_SCHEMA_VERSION && RUN_ID.test(value.campaignRunId || "") && [1,2].includes(value.waveOrdinal) && HEX64.test(value.soloWaveBriefDigest || "") && HEX64.test(value.t7CheckpointApprovalDigest || "") && SOLO_DECISIONS.includes(value.soloDecision) && SOLO_DECISIONS.includes(value.t7Decision) && value.soloDecision === value.t7Decision && value.decisionMatch === true && isIso(value.linkedAt) && HEX64.test(value.linkDigest || "");
   return result(valid ? [] : [error("solo_checkpoint_link_invalid", "$")]);
+}
+
+function validateIntendedCue(value) {
+  return exactKeys(value, ["redness","blemishes","blemishCountBand"]) &&
+    ["none","mild"].includes(value.redness) &&
+    ["none","mild"].includes(value.blemishes) &&
+    ["none","three_to_five"].includes(value.blemishCountBand);
+}
+
+function validateHumanObservation(value) {
+  return exactKeys(value, ["redness","blemishes","blemishCountBand"]) &&
+    SOLO_PRESENCE.includes(value.redness) && SOLO_PRESENCE.includes(value.blemishes) &&
+    SOLO_BLEMISH_COUNT_BANDS.includes(value.blemishCountBand);
+}
+
+function validateT4Axis(value) {
+  return exactKeys(value, ["signalScore","observationLevels","relationInput"]) &&
+    Number.isInteger(value.signalScore) && value.signalScore >= 0 && value.signalScore <= 5 &&
+    uniqueEnumArray(value.observationLevels, ["low","mild","moderate","high"]) &&
+    SOLO_T4_RELATION_INPUTS.includes(value.relationInput);
+}
+
+function validateRelationSet(value, allowNotAvailable = false) {
+  if (!exactKeys(value, SOLO_ALIGNMENT_AXES)) return false;
+  return SOLO_ALIGNMENT_AXES.every((axis) =>
+    SOLO_TARGET_RELATIONS.includes(value[axis]) || (allowNotAvailable && axis === "blemishCount" && value[axis] === "not_available")
+  );
+}
+
+export function validateSoloCueAlignment(value) {
+  const keys = [
+    "schemaVersion","campaignRunId","waveOrdinal","sessionDigest","reviewItemId","slotId","conditionId","candidateId",
+    "screeningDigest","revealDigest","observationDigest","intendedCue","humanObservation","t4Observation",
+    "humanTargetRelation","t4TargetRelation","humanT4Relation","diagnosticFlags","derivedAt","alignmentDigest"
+  ];
+  if (!exactKeys(value, keys)) return result([error("solo_cue_alignment_invalid", "$")]);
+  const t4Valid = exactKeys(value.t4Observation, ["skinStatus","redness","blemishPresence","blemishCount"]) &&
+    ["available","insufficient_evidence","unavailable"].includes(value.t4Observation?.skinStatus) &&
+    validateT4Axis(value.t4Observation?.redness) && validateT4Axis(value.t4Observation?.blemishPresence) &&
+    exactKeys(value.t4Observation?.blemishCount, ["support","value"]) &&
+    value.t4Observation.blemishCount.support === "not_available" && value.t4Observation.blemishCount.value === null;
+  const comparisonValid = exactKeys(value.humanT4Relation, SOLO_ALIGNMENT_AXES) &&
+    Object.values(value.humanT4Relation || {}).every((item) => SOLO_EVIDENCE_AGREEMENTS.includes(item));
+  const flagsValid = Array.isArray(value.diagnosticFlags) && value.diagnosticFlags.every((item) =>
+    exactKeys(item, ["code","axis"]) && SOLO_ALIGNMENT_DIAGNOSTIC_FLAGS.includes(item.code) && SOLO_ALIGNMENT_AXES.includes(item.axis)
+  ) && new Set(value.diagnosticFlags.map((item) => `${item.code}:${item.axis}`)).size === value.diagnosticFlags.length;
+  const valid = value.schemaVersion === SOLO_CUE_ALIGNMENT_SCHEMA_VERSION && RUN_ID.test(value.campaignRunId || "") &&
+    [1,2,3].includes(value.waveOrdinal) && HEX64.test(value.sessionDigest || "") && REVIEW_ITEM_ID.test(value.reviewItemId || "") &&
+    SLOT_ID.test(value.slotId || "") && ["A","B","C","D"].includes(value.conditionId) && CANDIDATE_ID.test(value.candidateId || "") &&
+    HEX64.test(value.screeningDigest || "") && HEX64.test(value.revealDigest || "") && HEX64.test(value.observationDigest || "") &&
+    validateIntendedCue(value.intendedCue) && validateHumanObservation(value.humanObservation) && t4Valid &&
+    validateRelationSet(value.humanTargetRelation) && validateRelationSet(value.t4TargetRelation, true) && comparisonValid && flagsValid &&
+    isIso(value.derivedAt) && HEX64.test(value.alignmentDigest || "");
+  return result(valid ? [] : [error("solo_cue_alignment_invalid", "$")]);
+}
+
+function validateTargetSummary(value, { t4 = false } = {}) {
+  const keys = t4
+    ? ["total","supported","evaluable","unverifiable","notAvailable","exactMatch","underTarget","overTarget","contradictory"]
+    : ["total","evaluable","unverifiable","exactMatch","underTarget","overTarget","contradictory"];
+  if (!exactKeys(value, keys) || !Object.values(value).every((item) => Number.isInteger(item) && item >= 0)) return false;
+  const buckets = value.exactMatch + value.underTarget + value.overTarget + value.contradictory;
+  if (buckets !== value.evaluable) return false;
+  return t4
+    ? value.total === value.supported + value.notAvailable && value.supported === value.evaluable + value.unverifiable
+    : value.total === value.evaluable + value.unverifiable;
+}
+
+function validateAgreementSummary(value) {
+  return exactKeys(value, ["total","comparable","agree","disagree","unverifiable","notComparable"]) &&
+    Object.values(value).every((item) => Number.isInteger(item) && item >= 0) &&
+    value.comparable === value.agree + value.disagree &&
+    value.total === value.comparable + value.unverifiable + value.notComparable;
+}
+
+export function validateSoloWaveAlignmentReport(value) {
+  const keys = [
+    "schemaVersion","campaignRunId","waveOrdinal","sessionDigest","campaignPlanDigest","sourceProjectionDigest",
+    "waveShape","slotSetDigest","alignmentRows","sample","humanTargetAlignment","t4TargetAlignment","humanT4Agreement",
+    "diagnostics","limitations","derivedAt","reportDigest"
+  ];
+  if (!exactKeys(value, keys)) return result([error("solo_wave_alignment_report_invalid", "$")]);
+  const rowsValid = Array.isArray(value.alignmentRows) && value.alignmentRows.length === value.sample?.assessedSlots &&
+    value.alignmentRows.every((item) => exactKeys(item, ["reviewItemId","slotId","alignmentDigest"]) && REVIEW_ITEM_ID.test(item.reviewItemId || "") && SLOT_ID.test(item.slotId || "") && HEX64.test(item.alignmentDigest || "")) &&
+    new Set(value.alignmentRows.map((item) => item.reviewItemId)).size === value.alignmentRows.length &&
+    new Set(value.alignmentRows.map((item) => item.slotId)).size === value.alignmentRows.length &&
+    new Set(value.alignmentRows.map((item) => item.alignmentDigest)).size === value.alignmentRows.length;
+  const sampleValid = exactKeys(value.sample, ["expectedSlots","assessedSlots"]) &&
+    Number.isInteger(value.sample.expectedSlots) && value.sample.expectedSlots > 0 && value.sample.assessedSlots === value.sample.expectedSlots;
+  const humanValid = exactKeys(value.humanTargetAlignment, SOLO_ALIGNMENT_AXES) && Object.values(value.humanTargetAlignment).every((item) => validateTargetSummary(item));
+  const t4Valid = exactKeys(value.t4TargetAlignment, SOLO_ALIGNMENT_AXES) && Object.values(value.t4TargetAlignment).every((item) => validateTargetSummary(item, { t4: true }));
+  const agreementValid = exactKeys(value.humanT4Agreement, SOLO_ALIGNMENT_AXES) && Object.values(value.humanT4Agreement).every(validateAgreementSummary);
+  const diagnosticKeys = ["generationSideSignalWeakPossible","observationSideMissPossible","ambiguousVisualCue"];
+  const diagnosticsValid = exactKeys(value.diagnostics, diagnosticKeys) && Object.values(value.diagnostics).every((item) =>
+    exactKeys(item, ["count","rowDigests"]) && Number.isInteger(item.count) && item.count >= 0 && Array.isArray(item.rowDigests) &&
+    item.rowDigests.length === item.count && item.rowDigests.every((digest) => HEX64.test(digest || "")) && new Set(item.rowDigests).size === item.rowDigests.length
+  );
+  const limitationsValid = Array.isArray(value.limitations) && value.limitations.every((item) =>
+    exactKeys(item, ["code","affectedAxes"]) && SOLO_ALIGNMENT_LIMITATION_CODES.includes(item.code) && item.affectedAxes.length > 0 && uniqueEnumArray(item.affectedAxes, SOLO_ALIGNMENT_AXES)
+  ) && new Set(value.limitations.map((item) => item.code)).size === value.limitations.length &&
+    SOLO_ALIGNMENT_REQUIRED_LIMITATIONS.every((code) => value.limitations.some((item) => item.code === code));
+  const valid = value.schemaVersion === SOLO_WAVE_ALIGNMENT_REPORT_SCHEMA_VERSION && RUN_ID.test(value.campaignRunId || "") &&
+    [1,2,3].includes(value.waveOrdinal) && HEX64.test(value.sessionDigest || "") && HEX64.test(value.campaignPlanDigest || "") &&
+    HEX64.test(value.sourceProjectionDigest || "") && validateSoloWaveShape(value.waveShape).ok && value.waveShape.waveOrdinal === value.waveOrdinal && value.waveShape.campaignPlanDigest === value.campaignPlanDigest &&
+    value.waveShape.expectedSlotCount === value.sample?.expectedSlots && HEX64.test(value.slotSetDigest || "") && rowsValid && sampleValid &&
+    humanValid && t4Valid && agreementValid && diagnosticsValid && limitationsValid && isIso(value.derivedAt) && HEX64.test(value.reportDigest || "");
+  return result(valid ? [] : [error("solo_wave_alignment_report_invalid", "$")]);
 }

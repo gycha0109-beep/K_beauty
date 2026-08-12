@@ -129,14 +129,15 @@ async function verifyObservationSource(dataRoot, slotProjection, candidateId, ca
     try {
       const object = await readObservationObject(dataRoot, run.observation);
       if (object.observationDigest !== objectDigest || object.candidateId !== candidateId || object.canonicalSha256 !== canonicalSha256) return failure("solo_observation_source_invalid", slotProjection.slotId, "object_binding");
+      return Object.freeze({ ok: true, observationDigest: objectDigest, observationObject: object });
     } catch (error) {
       return failure("solo_observation_source_invalid", slotProjection.slotId, error?.code || "object_read");
     }
   }
-  return Object.freeze({ ok: true, observationDigest: objectDigest ?? null });
+  return Object.freeze({ ok: true, observationDigest: objectDigest ?? null, observationObject: null });
 }
 
-export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal }) {
+export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal, includeObservationObjects = false }) {
   if (typeof dataRoot !== "string" || dataRoot.length < 1 || !/^crun_[a-f0-9]{24}$/.test(runId || "") || ![1,2,3].includes(waveOrdinal)) return failure("solo_source_not_ready");
   let bundle;
   try {
@@ -189,10 +190,12 @@ export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal }) 
     const candidate = await verifyCandidateSource(dataRoot, slot, slotProjection);
     if (!candidate.ok) return candidate;
     let observationDigest = null;
+    let observationObject = null;
     if (slotProjection.refs?.observationRunId) {
       const observation = await verifyObservationSource(dataRoot, slotProjection, candidate.manifest.candidateId, candidate.canonicalAsset.sha256);
       if (!observation.ok) return observation;
       observationDigest = observation.observationDigest;
+      observationObject = observation.observationObject;
     } else if (readiness !== "technical_observation_failure") {
       return failure("solo_observation_source_invalid", slot.slotId, "observation_missing");
     }
@@ -204,6 +207,7 @@ export async function preflightSoloWaveSource({ dataRoot, runId, waveOrdinal }) 
       candidateId: candidate.manifest.candidateId,
       canonicalAsset: candidate.canonicalAsset,
       observationDigest,
+      ...(includeObservationObjects ? { observationObject } : {}),
       authoritativeT5Status,
       fixtureId,
       finalizedSpecDigest: candidate.finalizedSpecDigest,
