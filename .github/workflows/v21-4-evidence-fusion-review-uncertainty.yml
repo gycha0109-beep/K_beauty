@@ -7,7 +7,9 @@ on:
       - research/product-fact-evidence-fusion-review-uncertainty-v1
     paths:
       - .github/workflows/v21-4-evidence-fusion-review-uncertainty.yml
+      - evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json
       - scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs
+      - scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs
       - scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs
       - scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
 
@@ -25,6 +27,7 @@ env:
   CORPUS_SHA256: 9c2472cecc720e420467d2bef0808dc47cdbcff31dad118c2d28933ca7bbde9f
   OUT_JSON: evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json
   OUT_MD: docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md
+  SUPPLEMENT: evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json
 
 jobs:
   verify-and-freeze:
@@ -63,11 +66,30 @@ jobs:
           node scripts/verify-cleanser-catalog-field-review-v1.mjs | tee /tmp/v21-4-corpus.txt
           grep -q "canonical_sha256=${CORPUS_SHA256}" /tmp/v21-4-corpus.txt
 
+      - name: Verify authority-upgrade fixture scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' | tee /tmp/v21-4-authority-upgrade.txt
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const x=JSON.parse(fs.readFileSync(process.env.SUPPLEMENT,'utf8'));
+          assert.equal(x.version,'cleanser-fusion-authority-upgrade-v1');
+          assert.equal(x.records.length,1);
+          assert.equal(x.records[0].product_id,'5448b8c3-cf87-4561-a699-3baf3dcb3dab');
+          assert.equal(x.records[0].source_class,'official_product_page');
+          assert.equal(x.records[0].fact_key,'deep_cleansing');
+          assert.equal(x.records[0].identity_relation,'equivalent_presentation_match');
+          assert.equal(x.records[0].review_observation_superseded_as_fact_authority,false);
+          console.log('authority_upgrade_scope=PASS records=1 target=BRMUD');
+          NODE
+
       - name: Syntax check
         shell: bash
         run: |
           set -euo pipefail
           node --check scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs
+          node --check scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs
           node --check scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs
           node --check scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
 
@@ -108,6 +130,7 @@ jobs:
           node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-4-verifier.txt
           grep -q 'PASS verify-product-fact-evidence-fusion-review-uncertainty-v1' /tmp/v21-4-verifier.txt
           grep -q 'missing_denominator_prevalence=FORBIDDEN' /tmp/v21-4-verifier.txt
+          grep -q 'brmud_authority_upgrade=PASS review_observation_context_only=PASS' /tmp/v21-4-verifier.txt
           grep -q 'supported_false_distinct_from_reviewed_not_established=PASS' /tmp/v21-4-verifier.txt
           grep -q 'historical_cleanser_poc_replay=PASS' /tmp/v21-4-verifier.txt
           grep -q 'decision_axis_consumption=NO recommendation_activation=NO' /tmp/v21-4-verifier.txt
@@ -126,7 +149,7 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only "${BASE_MAIN_SHA}"..HEAD)
-          test "${#changed[@]}" -eq 6
+          test "${#changed[@]}" -eq 8
           printf '%s\n' "${changed[@]}" | tee /tmp/v21-4-changed.txt
           test -z "$(git diff --name-only "${BASE_MAIN_SHA}"..HEAD -- app components lib supabase/migrations)"
           test -z "$(git diff --name-only "${BASE_MAIN_SHA}"..HEAD -- evidence/catalog evidence/product-evidence-decision-axis-v1/cleanser-poc-output-v1.json)"
@@ -144,6 +167,7 @@ jobs:
           name: v21-4-evidence-fusion-review-uncertainty
           path: |
             /tmp/v21-4-corpus.txt
+            /tmp/v21-4-authority-upgrade.txt
             /tmp/v21-4-build-a.txt
             /tmp/v21-4-build-b.txt
             /tmp/v21-4-hash-a.txt
@@ -153,5 +177,6 @@ jobs:
             /tmp/v21-4-pf-subject.txt
             /tmp/v21-4-changed.txt
             /tmp/v21-4-head.txt
+            ${{ env.SUPPLEMENT }}
             ${{ env.OUT_JSON }}
             ${{ env.OUT_MD }}

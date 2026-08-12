@@ -15,21 +15,30 @@ import {
   HISTORICAL_POC_HEAD,
   PF_AUTHORITIES,
   PF_CONFIDENCE,
-  buildFusionArtifact,
   evaluateReviewUncertainty,
   fuseProductFact,
-  normalizeCleanserEvidence,
 } from "./product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs";
+import {
+  buildFusionArtifactWithAuthorityUpgrade,
+  validateFusionAuthorityUpgrade,
+} from "./product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SUPPLEMENT_PATH = path.join(ROOT, "evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json");
 const ALLOWED = new Set([
   ".github/workflows/v21-4-evidence-fusion-review-uncertainty.yml",
   "docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md",
   "evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json",
+  "evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json",
   "scripts/build-product-fact-evidence-fusion-review-uncertainty-v1.mjs",
   "scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs",
+  "scripts/product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs",
   "scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs",
 ]);
+const BRMUD_ID = "5448b8c3-cf87-4561-a699-3baf3dcb3dab";
+const BEPLAIN_ID = "cd3b66be-cddc-47e1-906f-a871dea84412";
+const JUMISO_ID = "3f83bb85-cc53-4aa0-a0f0-e08535288749";
+const BRMUD_SUPPLEMENT_ID = "v21-4-brmud-official-deep-clean-001";
 
 function productById(products, id) {
   const value = products.find((item) => item.product_id === id);
@@ -47,7 +56,6 @@ function replayHistoricalPoc() {
     execFileSync("git", ["worktree", "add", "--detach", worktree, HISTORICAL_POC_HEAD], { cwd: ROOT, stdio: "ignore" });
     const output = execFileSync(process.execPath, ["scripts/verify-product-evidence-cleanser-poc-v1.mjs"], { cwd: worktree, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
     assert.match(output, /PASS verify-product-evidence-cleanser-poc-v1/);
-    return output;
   } finally {
     try { execFileSync("git", ["worktree", "remove", "--force", worktree], { cwd: ROOT, stdio: "ignore" }); } catch {}
     try { fs.rmSync(worktree, { recursive: true, force: true }); } catch {}
@@ -61,15 +69,25 @@ assert.equal(execFileSync("git", ["rev-parse", `HEAD:evidence/product-evidence-d
 const changed = execFileSync("git", ["diff", "--name-only", `${BASE_MAIN_SHA}..HEAD`], { cwd: ROOT, encoding: "utf8" }).split(/\r?\n/).filter(Boolean);
 assert.equal(changed.length, ALLOWED.size, `V2.1-4 must change exactly ${ALLOWED.size} files`);
 for (const name of changed) assert.ok(ALLOWED.has(name), `unexpected V2.1-4 path ${name}`);
-assert.equal(changed.some((name) => name.startsWith("app/") || name.startsWith("components/") || name.startsWith("supabase/migrations/") || name.startsWith("lib/")), false, "Production/runtime path changed");
+assert.equal(changed.some((name) => name.startsWith("app/") || name.startsWith("components/") || name.startsWith("lib/") || name.startsWith("supabase/migrations/")), false, "Production/runtime path changed");
 execFileSync("git", ["diff", "--check", `${BASE_MAIN_SHA}..HEAD`], { cwd: ROOT, stdio: "pipe" });
 
 const { index, corpus } = loadFrozenCorpus();
 assert.equal(index.canonical_sha256, CORPUS_SHA256);
 assert.equal(corpus.products.length, 26);
-const artifact = buildFusionArtifact(corpus);
+const supplement = JSON.parse(fs.readFileSync(SUPPLEMENT_PATH, "utf8"));
+const supplementRecord = validateFusionAuthorityUpgrade(supplement);
+assert.equal(supplementRecord.identity_relation, "equivalent_presentation_match");
+assert.equal(supplementRecord.scope_relation, "equivalent");
+assert.equal(supplementRecord.source_class, "official_product_page");
+
+const artifact = buildFusionArtifactWithAuthorityUpgrade(corpus, supplement);
 assert.equal(artifact.products.length, 26);
 assert.equal(artifact.products.every((item) => !Object.hasOwn(item, "decision_axes")), true, "Decision Axis belongs to V2.1-5");
+assert.equal(artifact.summary.fact_propositions, 52);
+assert.equal(artifact.summary.supported, 27, "PF-admissible replay plus one BRMUD official authority upgrade must yield 27 supported facts");
+assert.equal(artifact.summary.supplemental_product_claim_evidence, 1);
+assert.equal(artifact.summary.review_observation_promotions, 0);
 assert.equal(artifact.summary.real_review_prevalence_estimates_emitted, 0);
 assert.equal(artifact.review_uncertainty_contract.raw_review_count_substitution, "forbidden");
 assert.equal(artifact.review_uncertainty_contract.production_calibrated, false);
@@ -88,25 +106,25 @@ for (const product of artifact.products) {
   for (const evidence of product.normalized_evidence) {
     if (evidence.source_class === "review_corpus" || evidence.source_class === "ingredient_list" || evidence.source_class === "manual_conflict_record") {
       assert.equal(evidence.admissible_for_fact, false, `${evidence.source_class} cannot establish cleanser fact under current Registry`);
+      assert.equal(evidence.support_direction, "context_only", `${evidence.source_class} must stay context-only in V2.1-4 fact fusion`);
     }
-    if (evidence.source_class === "manual_conflict_record") {
-      assert.equal(evidence.evidence_authority, "none");
-      assert.equal(evidence.support_direction, "context_only");
-    }
+    if (evidence.source_class === "manual_conflict_record") assert.equal(evidence.evidence_authority, "none");
   }
 }
 
-for (const id of [
-  "5448b8c3-cf87-4561-a699-3baf3dcb3dab",
-  "cd3b66be-cddc-47e1-906f-a871dea84412",
-  "3f83bb85-cc53-4aa0-a0f0-e08535288749",
-]) {
+for (const id of [BEPLAIN_ID, BRMUD_ID, JUMISO_ID]) {
   const product = productById(artifact.products, id);
   assert.equal(fact(product, "low_ph").semantic_status, "supported");
   assert.equal(fact(product, "low_ph").value, true);
   assert.equal(fact(product, "deep_cleansing").semantic_status, "supported");
   assert.equal(fact(product, "deep_cleansing").value, true);
 }
+const brmud = productById(artifact.products, BRMUD_ID);
+const brmudDeep = fact(brmud, "deep_cleansing");
+assert.deepEqual(brmudDeep.supporting_evidence, [BRMUD_SUPPLEMENT_ID]);
+assert.ok(brmudDeep.context_evidence.includes("cfrv1-09-02"), "historical Hwahae evidence must remain context evidence");
+assert.equal(brmudDeep.authority_ceiling, "product_specific_primary");
+assert.equal(brmudDeep.fused_confidence, "high");
 
 const laroche = productById(artifact.products, "cb04b777-9a57-4246-9431-3018638354db");
 assert.equal(laroche.identity_state.status, "resolved");
@@ -169,11 +187,6 @@ assert.equal(sourceA.source, "hwahae");
 assert.equal(sourceB.source, "other_platform");
 assert.equal(Object.hasOwn(sourceA, "cross_source_estimate"), false);
 
-const rawProduct = corpus.products[0];
-const normalizedProbe = normalizeCleanserEvidence(rawProduct, { catalog_evidence_id: "review-probe", source_reference: "fixture", source_class: "review_corpus", supported_value: "deep_clean", evidence_summary: "fixture", accessed_at: "2026-08-12" });
-assert.equal(normalizedProbe.evidence_authority, "review_observation");
-assert.equal(normalizedProbe.admissible_for_fact, false);
-
 const { json, markdown } = buildTexts();
 assert.equal(fs.readFileSync(OUT_JSON, "utf8"), json, "committed JSON drift");
 assert.equal(fs.readFileSync(OUT_MD, "utf8"), markdown, "committed markdown drift");
@@ -185,9 +198,10 @@ console.log("PASS verify-product-fact-evidence-fusion-review-uncertainty-v1");
 console.log(`main=${BASE_MAIN_SHA}`);
 console.log(`frozen_corpus_sha256=${CORPUS_SHA256}`);
 console.log(`products=${artifact.summary.products} facts=${artifact.summary.fact_propositions} supported=${artifact.summary.supported}`);
-console.log(`review_evidence=${artifact.summary.review_corpus_evidence} real_prevalence_estimates=0`);
+console.log(`supplemental_official=${artifact.summary.supplemental_product_claim_evidence} review_observation_promotions=0`);
 console.log(`variance_n5=${small.uncertainty.value} variance_n5000=${large.uncertainty.value} variance_effective_n100=${reduced.uncertainty.value}`);
 console.log("missing_denominator_prevalence=FORBIDDEN");
+console.log("brmud_authority_upgrade=PASS review_observation_context_only=PASS");
 console.log("supported_false_distinct_from_reviewed_not_established=PASS");
 console.log("historical_cleanser_poc_replay=PASS");
 console.log("decision_axis_consumption=NO recommendation_activation=NO");

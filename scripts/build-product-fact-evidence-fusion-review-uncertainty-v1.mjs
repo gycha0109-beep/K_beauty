@@ -4,15 +4,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadFrozenCorpus } from "./build-product-evidence-cleanser-poc-v1.mjs";
 import {
-  buildFusionArtifact,
+  buildFusionArtifactWithAuthorityUpgrade,
   canonicalJson,
   CORPUS_SHA256,
   VERSION,
-} from "./product-evidence/product-fact-evidence-fusion-review-uncertainty-v1.mjs";
+} from "./product-evidence/product-fact-evidence-fusion-review-uncertainty-v1-adapter.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SUPPLEMENT_PATH = path.join(ROOT, "evidence/product-fact-fusion-v1/cleanser-fusion-authority-upgrade-v1.json");
 export const OUT_JSON = path.join(ROOT, "evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json");
 export const OUT_MD = path.join(ROOT, "docs/evidence/product-fact-evidence-fusion-review-uncertainty-v1.md");
+
+function loadSupplement() {
+  return JSON.parse(fs.readFileSync(SUPPLEMENT_PATH, "utf8"));
+}
 
 function markdown(output) {
   const a = output.review_uncertainty_acceptance;
@@ -32,6 +37,7 @@ function markdown(output) {
     `- frozen cleanser corpus: \`${output.authority.frozen_corpus_version}\``,
     `- corpus SHA-256: \`${CORPUS_SHA256}\``,
     `- historical cleanser POC oracle: \`${output.authority.historical_cleanser_poc_head}\``,
+    `- V2.1-4 official authority upgrade: \`${output.authority.authority_upgrade_version}\` (${output.authority.authority_upgrade_records} record)`,
     "",
     "## Fusion contract",
     "",
@@ -41,6 +47,7 @@ function markdown(output) {
     "- authority_ceiling never exceeds admissible evidence authority.",
     "- review_corpus and ingredient_list cannot establish low_ph/deep_cleansing when the current Registry does not permit those evidence classes.",
     "- manual conflict records remain adjudication context and cannot select physical truth.",
+    "- BRMUD deep_cleansing uses one separately frozen current official-product claim with equivalent-presentation binding; its historical review observation remains context-only.",
     "",
     "## Real cleanser replay",
     "",
@@ -52,6 +59,8 @@ function markdown(output) {
     `- evidence_conflict: ${s.evidence_conflict}`,
     `- not_reviewed: ${s.not_reviewed}`,
     `- review-corpus evidence records: ${s.review_corpus_evidence}`,
+    `- supplemental official product-claim evidence: ${s.supplemental_product_claim_evidence}`,
+    `- review observations promoted into Fact authority: ${s.review_observation_promotions}`,
     `- real review prevalence estimates emitted: ${s.real_review_prevalence_estimates_emitted}`,
     "",
     "## Review uncertainty acceptance",
@@ -82,7 +91,8 @@ function markdown(output) {
 
 export function buildTexts() {
   const { corpus } = loadFrozenCorpus();
-  const output = buildFusionArtifact(corpus);
+  const supplement = loadSupplement();
+  const output = buildFusionArtifactWithAuthorityUpgrade(corpus, supplement);
   return { output, json: canonicalJson(output), markdown: markdown(output) };
 }
 
@@ -97,5 +107,5 @@ export function writeOutputs() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { output } = writeOutputs();
-  console.log(`PASS build-product-fact-evidence-fusion-review-uncertainty-v1 products=${output.summary.products} facts=${output.summary.fact_propositions} supported=${output.summary.supported} real_review_prevalence=0`);
+  console.log(`PASS build-product-fact-evidence-fusion-review-uncertainty-v1 products=${output.summary.products} facts=${output.summary.fact_propositions} supported=${output.summary.supported} supplemental_official=${output.summary.supplemental_product_claim_evidence} real_review_prevalence=0`);
 }
