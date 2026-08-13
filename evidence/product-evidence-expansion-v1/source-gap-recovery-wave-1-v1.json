@@ -1,0 +1,56 @@
+{
+  "version": "source-gap-recovery-wave-1-v1",
+  "stage": "V2.1-8D",
+  "authority": {
+    "source_main_sha": "118152c40d76d2956d85c5bbc56ecdbe725b5ee7",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "fusion_policy_hash": "c62005755697758213d62288720fcd30e2dae7c0afc407d4d6bf23246abe69c9",
+    "hosted_product_fact_writes": 0
+  },
+  "frozen_authority": {
+    "corpus_sha256": "47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d",
+    "mapping_sha256": "c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f",
+    "gap_sha256": "5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215",
+    "supported_confirmation_eligible_total": 23,
+    "hosted_adopted_supported_total": 23
+  },
+  "research_scope": {
+    "target_pilots": ["M1","M3","P1"],
+    "excluded_pilots": ["P2"],
+    "targeted_source_gap_families": 6
+  },
+  "research_decision": {
+    "recovered_supported_propositions": 2,
+    "recovered_product_count": 1,
+    "per_target_slot": {"RECOVERED_SUPPORTED":2,"VARIANT_SCOPE_CONFLICT":2,"FORMULATION_SCOPE_CONFLICT":2,"REMAINS_SOURCE_BLOCKED":0},
+    "product_status": {"M1":"RECOVERED_SUPPORTED","M3":"VARIANT_SCOPE_CONFLICT","P1":"FORMULATION_SCOPE_CONFLICT"}
+  },
+  "accepted_sources": [{
+    "pilot_id":"M1","ref":"source:wave1:M1:amorepacific","url":"https://www.apgroup.com/int/ko/news/2026-03-27-2.html","observed":"https://www.apgroup.com/int/ko/news/2026-03-27-2.html?utm_source=chatgpt.com","publisher":"Amorepacific","kind":"official_brand_page","page":"일리윤, '몬치치' 협업 기획세트 출시","exact":true,"size":true,"variant":"compatible","formulation":"compatible_for_exact_named_150ml_product","observations":["exact Ceramide Ato Concentrate Cream 150mL configuration","body moisturization plus facial barrier-cream use","positive skin-barrier improvement claim"],"market":"KR","locale":"ko-KR","accessed_at":"2026-08-14","authority":"product_specific_primary","confidence":"high","content_digest":"7d55b0abec16834882d0b6632815ef76ead155e65e117d1cb5a61b1581ecb0a0"
+  }],
+  "rejected_or_blocked_sources": [
+    {"pilot_id":"M3","ref":"source:wave1:M3:drg-9826","url":"https://www.dr-g.co.kr/item/9826","observed":"https://www.dr-g.co.kr/item/9826?utm_source=chatgpt.com","publisher":"Dr.G","kind":"official_product_page","page":"레드 블레미쉬 클리어 수딩 크림 70mL","exact":false,"variant":"conflict_non_EX_vs_frozen_EX","formulation":"not_established","observations":["selected official page is non-EX","frozen subject is EX; equivalence not established"],"market":"KR","locale":"ko-KR","accessed_at":"2026-08-14","authority":"product_specific_primary","confidence":"high","content_digest":"80e3d7357c1271f7a52b7a356790040604eb87d290a1d7082b90de8d4840efc3","rejection_reason":"wrong_variant"},
+    {"pilot_id":"P1","ref":"source:wave1:P1:anua-496","url":"https://m.anua.kr/product/detail.html?product_no=496","observed":"https://m.anua.kr/product/detail.html?product_no=496&utm_source=chatgpt.com","publisher":"Anua","kind":"official_product_page","page":"[NEW/리뉴얼] 어성초 77 히알루론산 수분 진정 토너 250ml","exact":false,"size":"conflict_250ml_vs_frozen_350ml","variant":"renewed_current_vs_frozen_350ml","formulation":"not_established","observations":["selected official product is renewed 250mL","frozen subject is 350mL; formulation equivalence not established"],"market":"KR","locale":"ko-KR","accessed_at":"2026-08-14","authority":"product_specific_primary","confidence":"high","content_digest":"031e06cb67059b5d70509e4a08b291a2e37bee9065d6e7610c704b937c09dd88","rejection_reason":"wrong_formulation"}
+  ],
+  "evidence_records": [
+    {"evidence_ref":"evidence:wave1:M1:barrier_support_claim","source_ref":"source:wave1:M1:amorepacific","product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"barrier_support_claim","typed_value":true,"evidence_class":"product_claim","evidence_authority":"product_specific_primary","confidence":"high","support_direction":"supports","scope":{"market":"KR"},"qualifier_context":{},"proposition_serializer_version":"product-fact-proposition-pilot-v1","proposition_identity":{"fact_key":"barrier_support_claim","parent_proposition_key":null,"qualifier":{},"registry_version":"product-fact-registry-cross-category-v1","scope":{"market":"KR"},"serializer_version":"product-fact-proposition-pilot-v1","subject_semantic_key":"d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810","value_identity":true},"proposition_key":"bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd","canonical_evidence_digest":"da5b96ebe73fd5ffbcf4d53ae0a802f5cf7ad2e4fce09a4f087a3d5312ab0bad"},
+    {"evidence_ref":"evidence:wave1:M1:primary_use_role","source_ref":"source:wave1:M1:amorepacific","product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"primary_use_role","typed_value":"multi_area","evidence_class":"role_declaration","evidence_authority":"product_specific_primary","confidence":"high","support_direction":"supports","scope":{"market":"KR"},"qualifier_context":{},"proposition_serializer_version":"product-fact-proposition-pilot-v1","proposition_identity":{"fact_key":"primary_use_role","parent_proposition_key":null,"qualifier":{},"registry_version":"product-fact-registry-cross-category-v1","scope":{"market":"KR"},"serializer_version":"product-fact-proposition-pilot-v1","subject_semantic_key":"d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810","value_identity":"multi_area"},"proposition_key":"00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4","canonical_evidence_digest":"b7ec18be4f271bdad3be58421004a8a244e376fd06fab70036d73c918a161f67"}
+  ],
+  "fact_proposals": [
+    {"product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"barrier_support_claim","typed_value":true,"proposition_serializer_version":"product-fact-proposition-pilot-v1","proposition_identity":{"fact_key":"barrier_support_claim","parent_proposition_key":null,"qualifier":{},"registry_version":"product-fact-registry-cross-category-v1","scope":{"market":"KR"},"serializer_version":"product-fact-proposition-pilot-v1","subject_semantic_key":"d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810","value_identity":true},"proposition_key":"bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd","parent_proposition_key":null,"semantic_status":"supported","authority_ceiling":"product_specific_primary","fused_confidence":"high","support_direction":"supports","supporting_evidence_refs":["evidence:wave1:M1:barrier_support_claim"],"opposing_evidence_refs":[],"scope":{"market":"KR"},"qualifier_context":{},"fusion_policy_version":"v2.1-4-product-fact-evidence-fusion-v1","fusion_policy_hash":"c62005755697758213d62288720fcd30e2dae7c0afc407d4d6bf23246abe69c9","fusion_input_digest":"d9189e8d89758b105a782fa093b5b1f9c8e4129c07d32fb48ff71b8610cd4a21"},
+    {"product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"primary_use_role","typed_value":"multi_area","proposition_serializer_version":"product-fact-proposition-pilot-v1","proposition_identity":{"fact_key":"primary_use_role","parent_proposition_key":null,"qualifier":{},"registry_version":"product-fact-registry-cross-category-v1","scope":{"market":"KR"},"serializer_version":"product-fact-proposition-pilot-v1","subject_semantic_key":"d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810","value_identity":"multi_area"},"proposition_key":"00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4","parent_proposition_key":null,"semantic_status":"supported","authority_ceiling":"product_specific_primary","fused_confidence":"high","support_direction":"supports","supporting_evidence_refs":["evidence:wave1:M1:primary_use_role"],"opposing_evidence_refs":[],"scope":{"market":"KR"},"qualifier_context":{},"fusion_policy_version":"v2.1-4-product-fact-evidence-fusion-v1","fusion_policy_hash":"c62005755697758213d62288720fcd30e2dae7c0afc407d4d6bf23246abe69c9","fusion_input_digest":"b053687e19b53c36af83266c3eeee4ba8dc0b594d73c319bcec322cdf569ff6a"}
+  ],
+  "recovery_outcomes": [
+    {"pilot_id":"M1","product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"primary_use_role","historical_state":"source_blocked","outcome":"RECOVERED_SUPPORTED","proposition_key":"00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4"},
+    {"pilot_id":"M1","product_id":"4aa41038-de5b-4125-97b0-a50e7575cc00","fact_key":"barrier_support_claim","historical_state":"source_blocked","outcome":"RECOVERED_SUPPORTED","proposition_key":"bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd"},
+    {"pilot_id":"M3","product_id":"4cbd41f3-1357-42c6-a6c7-6df0e90d54a7","fact_key":"primary_use_role","historical_state":"source_blocked","outcome":"VARIANT_SCOPE_CONFLICT","proposition_key":null},
+    {"pilot_id":"M3","product_id":"4cbd41f3-1357-42c6-a6c7-6df0e90d54a7","fact_key":"barrier_support_claim","historical_state":"source_blocked","outcome":"VARIANT_SCOPE_CONFLICT","proposition_key":null},
+    {"pilot_id":"P1","product_id":"d9e40ddb-b1e2-46e4-92db-82744227dfe3","fact_key":"product_format","historical_state":"source_blocked","outcome":"FORMULATION_SCOPE_CONFLICT","proposition_key":null},
+    {"pilot_id":"P1","product_id":"d9e40ddb-b1e2-46e4-92db-82744227dfe3","fact_key":"contains_active","historical_state":"source_blocked","outcome":"FORMULATION_SCOPE_CONFLICT","proposition_key":null}
+  ],
+  "registry_gaps": [{"pilot_id":"M3","concept":"subjective_soothing_observation","outcome":"REGISTRY_GAP","registry_mutation":false}],
+  "invariants": {"registry_expansion":false,"missing_as_false":false,"scope_conflict_promoted_to_supported":false,"authority_inflation":false,"p2_identity_resolution":false,"production_consumption":false,"recommendation_scorer_changed":false,"recommendation_activated":false},
+  "hosted_write_intent": {"register_subject":0,"ingest_evidence":0,"prepare_review":0,"preflight":0,"confirm":0,"hosted_product_fact_writes":0}
+}
