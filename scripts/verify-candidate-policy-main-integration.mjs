@@ -40,6 +40,10 @@ const SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
 ]);
 const FACE_EVAL_B_EXPORT_PATH = "packages/face-contracts/src/index.js";
 const FACE_EVAL_B_EXPORT_LINE = 'export * from "./archetype-human-evaluation/index.js";';
+const FACE_EVAL_CG_SEMANTIC_BLOBS = Object.freeze({
+  "packages/face-contracts/src/synthetic-generation/generation-spec.js": "b219f758ef5cbb097af0086861c70522d482cbef",
+  "tools/synthetic-evaluation/src/generation/compile-prompt.js": "9dc24e2d860344a4ef6bfd20cb160fb33aa2dd5f"
+});
 const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
@@ -80,6 +84,7 @@ for (const entry of manifest.preserveMain) {
     ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)
     || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)
     || entry.path === FACE_EVAL_B_EXPORT_PATH
+    || Object.hasOwn(FACE_EVAL_CG_SEMANTIC_BLOBS, entry.path)
   ) continue;
   check(hash(entry.path) === currentMainBlob(entry.path), `current-main/head blob mismatch: ${entry.path}`);
 }
@@ -102,6 +107,14 @@ for (const filePath of SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS) {
   check(candidateManifestProtectedPaths.has(filePath), `unregistered Solo alignment semantic exception: ${filePath}`);
 }
 check(candidateManifestProtectedPaths.has(FACE_EVAL_B_EXPORT_PATH), `unregistered FACE-EVAL-B export path: ${FACE_EVAL_B_EXPORT_PATH}`);
+for (const [filePath, resultBlob] of Object.entries(FACE_EVAL_CG_SEMANTIC_BLOBS)) {
+  check(candidateManifestProtectedPaths.has(filePath), `unregistered FACE-EVAL-CG semantic path: ${filePath}`);
+  const actualBlob = hash(filePath);
+  check(
+    actualBlob === currentMainBlob(filePath) || actualBlob === resultBlob,
+    `FACE-EVAL-CG exact semantic blob mismatch: ${filePath}`
+  );
+}
 
 const faceEvalBCurrentMainIndex = git("show", `${CURRENT_MAIN_REF}:${FACE_EVAL_B_EXPORT_PATH}`);
 const faceEvalBHeadIndex = readFileSync(path.join(ROOT, FACE_EVAL_B_EXPORT_PATH), "utf8").replaceAll("\r\n", "\n").trimEnd();
@@ -325,4 +338,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated; FACE-EVAL-CG exact generation blobs gated)`);
