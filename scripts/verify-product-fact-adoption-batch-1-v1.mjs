@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import { buildBatchPlan, stableJson, sha256JsonBytes, KNOWN_HOSTED_PRODUCT_IDS, KNOWN_HOSTED_PROPOSITION_KEYS } from './product-evidence/product-fact-adoption-batch-v1.mjs';
 
-const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || '91078d537abfc7779c3988326697539038904b6b';
+const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || 'eb933621fd1320dc8270b86192d72e7636990c3f';
 const read = (p) => fs.readFileSync(p, 'utf8');
 const sourcePaths = {
   materialization: 'evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json',
