@@ -7,6 +7,14 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/v21-7-shadow-recommendation-v1.yml'
+      - 'scripts/product-evidence/product-decision-axis-shadow-recommendation-v1.mjs'
+      - 'scripts/build-product-decision-axis-shadow-recommendation-v1.mjs'
+      - 'scripts/verify-product-decision-axis-comparator-v1.mjs'
+      - 'evidence/product-decision-axis-v1/**'
+      - 'evidence/product-recommendation-shadow-v1/**'
+      - 'docs/evidence/product-decision-axis-shadow-recommendation-v1.md'
   workflow_dispatch:
 
 permissions:
@@ -78,9 +86,17 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
-          test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
-          git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
-          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-7-authority.txt
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            diff_base="${{ github.event.pull_request.base.sha }}"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" "$diff_base"
+            git merge-base --is-ancestor "$diff_base" HEAD
+          else
+            diff_base="$BASE_MAIN_SHA"
+            test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          fi
+          echo "DIFF_BASE_SHA=$diff_base" >> "$GITHUB_ENV"
+          printf 'base_main=%s\ndiff_base=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$diff_base" "$(git rev-parse HEAD)" | tee /tmp/v21-7-authority.txt
 
       - name: Freeze Decision Axis authority hashes
         shell: bash
@@ -192,20 +208,20 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf _reference _historical
-          test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          test -z "$(git diff --name-only "$DIFF_BASE_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
           if grep -R -n --include='*.js' --include='*.mjs' 'product-decision-axis-shadow-recommendation-v1' app lib components 2>/dev/null; then
             echo 'Production runtime imports V2.1-7 shadow module'
             exit 1
           fi
-          git diff --check "$BASE_MAIN_SHA..HEAD"
-          git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort | tee /tmp/v21-7-changed.txt
+          git diff --check "$DIFF_BASE_SHA..HEAD"
+          git diff --name-only "$DIFF_BASE_SHA..HEAD" | sort | tee /tmp/v21-7-changed.txt
           printf 'production_score_delta=0\nproduction_ranking_delta=0\nproduction_top1_delta=0\nproduction_top3_delta=0\nproduction_eligibility_delta=0\npublic_response_delta=0\npersistence_delta=0\ncandidate_policy_fingerprint_delta=0\nhosted_writes=0\n' | tee /tmp/v21-7-production-invariance.txt
 
       - name: Secret hygiene
         shell: bash
         run: |
           set -euo pipefail
-          if git diff -U0 "$BASE_MAIN_SHA..HEAD" \
+          if git diff -U0 "$DIFF_BASE_SHA..HEAD" \
             | grep '^+' \
             | grep -Ev '^\+\+\+' \
             | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
