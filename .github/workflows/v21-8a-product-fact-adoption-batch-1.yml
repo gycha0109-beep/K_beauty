@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
-      BASE_MAIN_SHA: 91078d537abfc7779c3988326697539038904b6b
+      BASE_MAIN_SHA: eb933621fd1320dc8270b86192d72e7636990c3f
       BRANCH_NAME: research/product-fact-catalog-adoption-batch-1-v1
       RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
       OUT_JSON: evidence/product-fact-adoption-v1/cross-category-adoption-batch-1-v1.json
