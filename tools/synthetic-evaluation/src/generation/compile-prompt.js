@@ -1,6 +1,6 @@
 import {
   COMPILED_PROMPT_SCHEMA_VERSION,
-  FACE_FEATURE_CUE_PROFILE_VERSION,
+  FACE_FEATURE_CUE_REGISTRIES,
   PROMPT_COMPILER_VERSION
 } from "@bejewely/face-contracts";
 import { deepFreeze, finalizeGenerationSpec, sha256Hex, stableStringify } from "./canonicalize-generation-spec.js";
@@ -28,30 +28,72 @@ const EXCLUSION_PROSE = Object.freeze({
 });
 
 const FEATURE_PROMPT = Object.freeze({
-  eyeDirection: Object.freeze({
-    upturned: "an upturned visible eye direction",
-    level: "a level visible eye direction",
-    downturned: "a downturned visible eye direction"
-  }),
-  eyeOpenness: Object.freeze({
-    narrow: "narrow visible eye openness",
-    medium: "medium visible eye openness",
-    wide: "wide visible eye openness"
-  }),
-  faceLengthBalance: Object.freeze({
-    short: "a visibly short face-length balance",
-    balanced: "a balanced face-length proportion",
-    long: "a visibly long face-length balance"
+  faceShape: Object.freeze({
+    oval: "an oval visible face outline",
+    round: "a round visible face outline",
+    square: "a square visible face outline",
+    oblong: "an oblong visible face outline",
+    heart: "a heart-shaped visible face outline",
+    diamond: "a diamond-shaped visible face outline",
+    triangle: "a triangular visible face outline",
+    mixed: "a visibly mixed face-outline shape without one dominant canonical shape"
   }),
   jawlineAngularity: Object.freeze({
     soft: "a soft jawline contour",
     moderate: "a moderately defined jawline contour",
     angular: "an angular jawline contour"
   }),
+  jawTaper: Object.freeze({
+    tapered: "a visibly tapered jaw toward the chin",
+    balanced: "a balanced jaw taper",
+    broad: "a visibly broad jaw taper toward the lower face"
+  }),
+  cheekboneProminence: Object.freeze({
+    subtle: "subtle visible cheekbone prominence",
+    moderate: "moderate visible cheekbone prominence",
+    prominent: "prominent visible cheekbones"
+  }),
+  faceLengthBalance: Object.freeze({
+    short: "a visibly short face-length balance",
+    balanced: "a balanced face-length proportion",
+    long: "a visibly long face-length balance"
+  }),
+  eyeDirection: Object.freeze({
+    upturned: "an upturned visible eye direction",
+    level: "a level visible eye direction",
+    downturned: "a downturned visible eye direction",
+    mixed: "a visibly mixed eye direction between the two eyes"
+  }),
+  eyeLength: Object.freeze({
+    short: "visibly short horizontal eye length",
+    medium: "medium horizontal eye length",
+    long: "visibly long horizontal eye length"
+  }),
+  eyeOpenness: Object.freeze({
+    narrow: "narrow visible eye openness",
+    medium: "medium visible eye openness",
+    wide: "wide visible eye openness"
+  }),
+  featureScale: Object.freeze({
+    small: "predominantly small visible facial feature scale",
+    medium: "predominantly medium visible facial feature scale",
+    large: "predominantly large visible facial feature scale",
+    mixed: "a visibly mixed facial feature scale without one dominant size"
+  }),
+  featureConcentration: Object.freeze({
+    spread: "facial features visibly distributed toward a spread layout",
+    balanced: "a balanced visible facial feature layout",
+    centered: "facial features visibly concentrated toward the center"
+  }),
   straightCurveBalance: Object.freeze({
     curved: "a predominantly curved facial line balance",
     balanced: "a balanced straight-and-curved facial line mix",
     straight: "a predominantly straight facial line balance"
+  }),
+  contourDefinition: Object.freeze({
+    soft: "soft visible facial contour definition",
+    moderate: "moderate visible facial contour definition",
+    defined: "clearly defined visible facial contours"
   }),
   featureContrast: Object.freeze({
     low: "low visible feature contrast",
@@ -85,7 +127,7 @@ function compileFeatureSection(featureIntent) {
   if (!featureIntent) {
     return null;
   }
-  if (featureIntent.cueProfileVersion !== FACE_FEATURE_CUE_PROFILE_VERSION) {
+  if (!FACE_FEATURE_CUE_REGISTRIES[featureIntent.cueProfileVersion]) {
     return null;
   }
   const phrases = Object.keys(featureIntent.cues)
