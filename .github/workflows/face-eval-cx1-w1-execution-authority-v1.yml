@@ -1,0 +1,71 @@
+name: FACE-EVAL-CX1 W1 Execution Authority v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'evidence/facelab/archetype-stress-w1-operator-checkpoint-v1.json'
+      - 'scripts/export-face-lab-archetype-stress-w1-manual-packet-v1.mjs'
+      - '.github/workflows/face-eval-cx1-w1-execution-authority-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Freeze operator authority
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          checkpoint_sha="$(node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("evidence/facelab/archetype-stress-w1-operator-checkpoint-v1.json","utf8")); process.stdout.write(x.authority.sourceMainSha)')"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test "$checkpoint_sha" = "$PR_BASE_SHA"
+          fi
+          git merge-base --is-ancestor "$checkpoint_sha" HEAD
+
+      - name: Export exact manual execution packet
+        run: node scripts/export-face-lab-archetype-stress-w1-manual-packet-v1.mjs > /tmp/w1-manual-packet.json
+
+      - name: Verify exported packet shape
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('/tmp/w1-manual-packet.json','utf8'));
+          if (p.schemaVersion !== 'face-lab-archetype-stress-w1-manual-execution-packet-v1') process.exit(1);
+          if (!Array.isArray(p.slots) || p.slots.length !== 7) process.exit(1);
+          if (!/^[a-f0-9]{64}$/.test(p.packetDigest)) process.exit(1);
+          if (p.executionPolicy.copyPromptExactly !== true) process.exit(1);
+          if (p.executionPolicy.freeTextAdditionsAllowed !== false) process.exit(1);
+          NODE
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$PR_BASE_SHA..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi
