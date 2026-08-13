@@ -3,7 +3,7 @@
   "stage": "V2.1-8D",
   "authority": {
     "source_main_sha": "118152c40d76d2956d85c5bbc56ecdbe725b5ee7",
-    "evidence_overlay_sha256": "76d0d67fd2badbdf5988aa195e0bf49843be2af3cb60198496ed51cc5467338e",
+    "evidence_overlay_sha256": "587afd259b12b93f11bb0ebae65370e12d07cf2b623c35c962ba4cf1ee72c3bc",
     "hosted_product_fact_writes_v21_8d": 0
   },
   "hosted_prestate": {
@@ -24,33 +24,97 @@
     "future_new_fact_instances": 2,
     "future_new_evidence_links": 2,
     "future_new_review_assignments": 2,
-    "future_new_review_events": 8,
     "future_new_confirmations": 2,
     "future_new_current": 2,
-    "projected_after_8e": {"products": 9,"current": 25},
-    "actual_v21_8d": {"products": 8,"current": 23}
+    "projected_after_8e": {
+      "products": 9,
+      "current": 25
+    },
+    "actual_v21_8d": {
+      "products": 8,
+      "current": 23
+    }
   },
   "source_reuse_assessment": {
     "canonical_locator": "https://www.apgroup.com/int/ko/news/2026-03-27-2.html",
-    "exact_source_already_hosted": false
+    "exact_source_already_hosted_at_r2_precheck": false,
+    "projected_source_insert_if_prestate_unchanged": 1
   },
   "candidate": {
     "pilot_id": "M1",
     "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
     "future_subject_registration_required": true,
-    "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
-    "formulation_revision_key": "pilot-freeze-eaa1452f7abd275fb4d096089a03e4b2",
+    "historical_subject_identity": {
+      "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
+      "formulation_revision_key": "pilot-freeze-eaa1452f7abd275fb4d096089a03e4b2",
+      "variant_key": null,
+      "selected_market": "KR",
+      "market_applicability": null,
+      "region_applicability": null
+    },
+    "source_binding_plan": {
+      "source_ref": "source:wave1:M1:amorepacific",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "subject_identity_change_required": false
+    },
+    "evidence_plan_count": 2,
+    "fact_plan_count": 2,
+    "review_plan": {
+      "assignments": 2,
+      "review_events": "derive_from_controlled_lifecycle_at_future_execution",
+      "executed_calls_v21_8d": 0
+    },
+    "confirmation_eligible_fact_count": 2,
+    "current_eligible_fact_count": 2,
     "facts": [
-      {"fact_key":"barrier_support_claim","typed_value":true,"proposition_key":"bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd","evidence_refs":["evidence:wave1:M1:barrier_support_claim"],"source_authority":"product_specific_primary","confidence":"high","parent_dependency":null},
-      {"fact_key":"primary_use_role","typed_value":"multi_area","proposition_key":"00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4","evidence_refs":["evidence:wave1:M1:primary_use_role"],"source_authority":"product_specific_primary","confidence":"high","parent_dependency":null}
+      {
+        "fact_key": "barrier_support_claim",
+        "typed_value": true,
+        "scope": {
+          "market": "KR"
+        },
+        "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+        "evidence_refs": [
+          "evidence:wave1:M1:barrier_support_claim"
+        ],
+        "source_authority": "product_specific_primary",
+        "confidence": "high",
+        "parent_dependency": null
+      },
+      {
+        "fact_key": "primary_use_role",
+        "typed_value": "multi_area",
+        "scope": {
+          "market": "KR"
+        },
+        "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+        "evidence_refs": [
+          "evidence:wave1:M1:primary_use_role"
+        ],
+        "source_authority": "product_specific_primary",
+        "confidence": "high",
+        "parent_dependency": null
+      }
     ]
   },
   "non_candidates": [
-    {"pilot_id":"M3","future_subject_registration_required":false},
-    {"pilot_id":"P1","future_subject_registration_required":false},
-    {"pilot_id":"P2","future_subject_registration_required":false}
+    {
+      "pilot_id": "M3",
+      "future_subject_registration_required": false,
+      "future_current": 0
+    },
+    {
+      "pilot_id": "P1",
+      "future_subject_registration_required": false,
+      "future_current": 0
+    },
+    {
+      "pilot_id": "P2",
+      "future_subject_registration_required": false,
+      "future_current": 0
+    }
   ],
-  "review_event_projection": {"per_fact":4,"total":8,"executed_calls_v21_8d":0},
   "hosted_write_intent": 0,
   "production_consumption": false,
   "recommendation_activation": false
