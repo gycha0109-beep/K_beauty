@@ -48,4 +48,3 @@ The rows below are read-only authority corrections. Historical Batch 2 artifacts
 - No Subject registration is planned.
 - No production Decision Axis consumption or recommendation activation.
 - Source-blocked / ambiguous / RNE / insufficient candidates remain unadopted.
-
