@@ -22,6 +22,7 @@
     "verify:premium-integrated-evaluation-v2": "node scripts/verify-premium-integrated-evaluation-v2.mjs",
     "verify:unified-vision-pipeline": "node scripts/verify-unified-vision-pipeline.mjs",
     "verify:face-lab-archetype-scoring": "node scripts/verify-face-lab-archetype-scoring.mjs",
+    "verify:face-lab-archetype-human-evaluation": "node scripts/verify-face-lab-archetype-human-evaluation-contract-v1.mjs",
     "verify:skin-decision-persistence-reentry": "node scripts/verify-skin-decision-persistence-reentry.mjs",
     "verify:skin-decision-recommendation-invariance": "node scripts/verify-skin-decision-recommendation-invariance.mjs",
     "verify:skin-decision-engine-closeout": "node scripts/verify-skin-decision-engine-current-main-closeout.mjs",

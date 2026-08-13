@@ -11,3 +11,4 @@ export * from "./synthetic-campaign/index.js";
 export * from "./synthetic-reporting/index.js";
 export * from "./synthetic-dataset/index.js";
 export * from "./synthetic-solo-assessment/index.js";
+export * from "./archetype-human-evaluation/index.js";
