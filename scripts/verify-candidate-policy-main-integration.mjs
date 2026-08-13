@@ -38,6 +38,8 @@ const SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS = new Set([
   "tools/synthetic-evaluation/src/solo-assessment/storage.js",
   "tools/synthetic-evaluation/tests/solo-assessment/architecture-boundary.test.mjs"
 ]);
+const FACE_EVAL_B_EXPORT_PATH = "packages/face-contracts/src/index.js";
+const FACE_EVAL_B_EXPORT_LINE = 'export * from "./archetype-human-evaluation/index.js";';
 const expectedBlob = (entry, legacyKey) => CLOSEOUT_SEMANTIC_BLOBS[entry.path] || entry[legacyKey];
 let assertions = 0;
 const check = (value, message) => { assertions += 1; assert.ok(value, message); };
@@ -74,7 +76,11 @@ for (const entry of manifest.includeExact) {
 }
 for (const entry of manifest.preserveMain) {
   check(existsSync(path.join(ROOT, entry.path)), `missing current-main path: ${entry.path}`);
-  if (ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path) || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)) continue;
+  if (
+    ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)
+    || SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS.has(entry.path)
+    || entry.path === FACE_EVAL_B_EXPORT_PATH
+  ) continue;
   check(hash(entry.path) === currentMainBlob(entry.path), `current-main/head blob mismatch: ${entry.path}`);
 }
 for (const entry of manifest.excludeSourceOnly) {
@@ -95,6 +101,19 @@ for (const filePath of ADMIN_PRODUCT_CURRENT_MAIN_SEMANTIC_PATHS) {
 for (const filePath of SOLO_ALIGNMENT_CURRENT_MAIN_SEMANTIC_PATHS) {
   check(candidateManifestProtectedPaths.has(filePath), `unregistered Solo alignment semantic exception: ${filePath}`);
 }
+check(candidateManifestProtectedPaths.has(FACE_EVAL_B_EXPORT_PATH), `unregistered FACE-EVAL-B export path: ${FACE_EVAL_B_EXPORT_PATH}`);
+
+const faceEvalBCurrentMainIndex = git("show", `${CURRENT_MAIN_REF}:${FACE_EVAL_B_EXPORT_PATH}`);
+const faceEvalBHeadIndex = readFileSync(path.join(ROOT, FACE_EVAL_B_EXPORT_PATH), "utf8").replaceAll("\r\n", "\n").trimEnd();
+const faceEvalBExpectedIndex = `${faceEvalBCurrentMainIndex.trimEnd()}\n${FACE_EVAL_B_EXPORT_LINE}`;
+check(
+  faceEvalBHeadIndex === faceEvalBCurrentMainIndex.trimEnd() || faceEvalBHeadIndex === faceEvalBExpectedIndex,
+  "FACE-EVAL-B face-contract export surface contains an unregistered change"
+);
+check(
+  faceEvalBHeadIndex.split(FACE_EVAL_B_EXPORT_LINE).length - 1 === 1,
+  "FACE-EVAL-B face-contract export missing or duplicated"
+);
 
 const adminIntegrationWorkLog = readFileSync(path.join(ROOT, ".codex/AI_WORK_LOG.md"), "utf8");
 check(adminIntegrationWorkLog.includes("ADMIN-PRODUCT-INTEGRATION-1"), "admin integration work log missing");
