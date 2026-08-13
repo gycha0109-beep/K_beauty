@@ -21,10 +21,12 @@ const P = {
   batch2: 'evidence/product-fact-adoption-v1/cross-category-adoption-batch-2-v1.json',
   json: 'evidence/product-fact-adoption-v1/cross-category-adoption-batch-3-v1.json',
   md: 'docs/evidence/product-fact-adoption-batch-3-v1.md',
+  core: 'scripts/product-evidence/product-fact-adoption-batch-3-v1.mjs',
+  builder: 'scripts/build-product-fact-adoption-batch-3-v1.mjs',
 };
 const read = p => fs.readFileSync(p, 'utf8');
 const parse = p => JSON.parse(read(p));
-const hashes = {
+const inputHashes = {
   materialization_sha256: sha256Text(read(P.materialization)),
   corpus_sha256: sha256Text(read(P.corpus)),
   mapping_sha256: sha256Text(read(P.mapping)),
@@ -34,34 +36,38 @@ const hashes = {
 };
 const materialization = parse(P.materialization);
 const mapping = parse(P.mapping);
-const expected = buildBatch3Plan({ materialization, mapping, baseMainSha: BASE_MAIN_SHA, inputHashes: hashes });
+const expected = buildBatch3Plan({ materialization, mapping, baseMainSha: BASE_MAIN_SHA, inputHashes });
 const frozenText = read(P.json);
 const frozen = JSON.parse(frozenText);
 const frozenMd = read(P.md);
 
 let assertions = 0;
-const check = (v, m) => { assertions += 1; assert.ok(v, m); };
-const eq = (a, b, m) => { assertions += 1; assert.deepStrictEqual(a, b, m); };
+const check = (value, message) => { assertions += 1; assert.ok(value, message); };
+const eq = (actual, wanted, message) => { assertions += 1; assert.deepStrictEqual(actual, wanted, message); };
 
-// Frozen authority + deterministic bytes.
+// Frozen authority and deterministic rebuild.
 eq(frozen, expected, 'Batch 3 deterministic rebuild mismatch');
-check(stableJson(expected) === frozenText, 'Batch 3 JSON bytes mismatch');
+check(stableJson(expected) === frozenText, 'Batch 3 canonical JSON bytes mismatch');
 check(frozen.source_main_sha === BASE_MAIN_SHA, 'source main SHA mismatch');
-check(hashes.materialization_sha256 === 'b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2', 'materialization authority drift');
-check(hashes.corpus_sha256 === FROZEN_AUTHORITY.corpus_sha256, 'corpus hash drift');
-check(hashes.mapping_sha256 === FROZEN_AUTHORITY.mapping_sha256, 'mapping hash drift');
-check(hashes.gap_sha256 === FROZEN_AUTHORITY.gap_sha256, 'gap hash drift');
-eq([materialization.summary.input_products, materialization.summary.resolved_subjects, materialization.summary.ambiguous_subjects, materialization.summary.confirmation_eligible_facts], [12, 11, 1, 23], 'frozen materialization summary drift');
-check(mapping.summary.fused_fact_count === 23, 'frozen mapping supported total drift');
+check(inputHashes.materialization_sha256 === 'b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2', 'materialization authority drift');
+check(inputHashes.corpus_sha256 === FROZEN_AUTHORITY.corpus_sha256, 'corpus hash drift');
+check(inputHashes.mapping_sha256 === FROZEN_AUTHORITY.mapping_sha256, 'mapping hash drift');
+check(inputHashes.gap_sha256 === FROZEN_AUTHORITY.gap_sha256, 'gap hash drift');
+eq(
+  [materialization.summary.input_products, materialization.summary.resolved_subjects, materialization.summary.ambiguous_subjects, materialization.summary.confirmation_eligible_facts],
+  [12, 11, 1, 23],
+  'frozen materialization summary drift',
+);
+check(mapping.summary.fused_fact_count === 23, 'frozen supported total drift');
 
-// Independent set difference: frozen supported+eligible 23 MINUS Hosted Current 13 = exact 10.
-const supported = materialization.fact_proposals.filter(x => x.semantic_status === 'supported' && x.confirmation_eligibility === 'eligible');
-const hosted = new Set(HOSTED_CURRENT_PROPOSITION_KEYS);
-const remaining = supported.map(x => x.proposition_key).filter(x => !hosted.has(x)).sort();
+// Independent set difference: supported+eligible 23 MINUS Hosted Current 13 = exact remaining 10.
+const supported = materialization.fact_proposals.filter(row => row.semantic_status === 'supported' && row.confirmation_eligibility === 'eligible');
+const hostedCurrent = new Set(HOSTED_CURRENT_PROPOSITION_KEYS);
+const independentRemaining = supported.map(row => row.proposition_key).filter(key => !hostedCurrent.has(key)).sort();
 eq(supported.length, 23, 'supported eligible total must be 23');
 eq(HOSTED_CURRENT_PROPOSITION_KEYS.length, 13, 'Hosted Current baseline model must be 13');
-eq(remaining, [...EXPECTED_REMAINING_KEYS], 'remaining supported set must be exact 10');
-eq(frozen.remaining_proposition_keys, [...EXPECTED_REMAINING_KEYS], 'frozen remaining key set drift');
+eq(independentRemaining, [...EXPECTED_REMAINING_KEYS], 'remaining supported set must be exact 10');
+eq(frozen.remaining_proposition_keys, [...EXPECTED_REMAINING_KEYS], 'frozen remaining set drift');
 eq(frozen.hosted_prestate.counts, HOSTED_PRESTATE_COUNTS, 'Hosted prestate count model drift');
 check(frozen.summary.frozen_supported_total === 23, 'supported total mismatch');
 check(frozen.summary.hosted_initial_current === 13, 'initial Current mismatch');
@@ -73,21 +79,25 @@ check(frozen.summary.expected_new_sources === 0 && frozen.summary.expected_new_b
 check(frozen.summary.expected_new_evidence === 10, 'new Evidence delta must be 10');
 check(frozen.summary.expected_final_current === 23 && frozen.summary.expected_adopted_unique_products === 8, 'final Current/product target mismatch');
 
-// Existing subject reuse only.
-eq(frozen.selected_subjects.map(x => x.pilot_id), ['M2', 'P3', 'T2', 'T3'], 'selected subjects must be exactly M2/P3/T2/T3');
+// Existing resolved/current subjects only.
+eq(frozen.selected_subjects.map(row => row.pilot_id), ['M2', 'P3', 'T2', 'T3'], 'selected subject set/order drift');
 for (const row of frozen.selected_subjects) {
-  const a = EXISTING_SUBJECT_AUTHORITY[row.pilot_id];
-  check(!!a, `missing subject authority ${row.pilot_id}`);
-  eq([row.product_id, row.subject_id, row.subject_semantic_key, row.formulation_revision_key, row.market_applicability], [a.product_id, a.subject_id, a.subject_semantic_key, a.formulation_revision_key, a.market_applicability], `Hosted subject mismatch ${row.pilot_id}`);
+  const authority = EXISTING_SUBJECT_AUTHORITY[row.pilot_id];
+  check(!!authority, `missing subject authority ${row.pilot_id}`);
+  eq(
+    [row.product_id, row.subject_id, row.subject_semantic_key, row.formulation_revision_key, row.market_applicability],
+    [authority.product_id, authority.subject_id, authority.subject_semantic_key, authority.formulation_revision_key, authority.market_applicability],
+    `Hosted subject mismatch ${row.pilot_id}`,
+  );
   check(row.identity_status === 'resolved' && row.current_state === 'current', `subject state mismatch ${row.pilot_id}`);
 }
-check(frozen.selected_facts.every(x => x.hosted_source_reuse.expected_reuse && x.hosted_source_reuse.source_id && x.hosted_source_reuse.binding_id), 'all Batch 3 source/binding rows must be reused');
-check(frozen.selected_facts.every(x => x.semantic_status === 'supported' && x.authority_ceiling === 'product_specific_primary' && x.fused_confidence === 'high'), 'selected Fact authority mismatch');
-check(frozen.selected_facts.every(x => x.planned_operation === 'reuse_subject_ingest_evidence_review_preflight_confirm_current'), 'planned operation mismatch');
+check(frozen.selected_facts.every(row => row.hosted_source_reuse.expected_reuse && row.hosted_source_reuse.source_id && row.hosted_source_reuse.binding_id), 'all source/binding rows must be reused');
+check(frozen.selected_facts.every(row => row.semantic_status === 'supported' && row.authority_ceiling === 'product_specific_primary' && row.fused_confidence === 'high'), 'selected Fact authority drift');
+check(frozen.selected_facts.every(row => row.planned_operation === 'reuse_subject_ingest_evidence_review_preflight_confirm_current'), 'planned operation drift');
 
-// Exact proposition semantics from frozen bytes.
-const byKey = new Map(frozen.selected_facts.map(x => [x.proposition_key, x]));
-const semantics = new Map([
+// Exact proposition semantics and typed values from frozen authority bytes.
+const byKey = new Map(frozen.selected_facts.map(row => [row.proposition_key, row]));
+const exact = new Map([
   ['0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee', ['M2','active_concentration','number_unit',5,'percent']],
   ['386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446', ['M2','contains_active','entity_identifier','panthenol',null]],
   ['1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506', ['P3','contains_active','entity_identifier','lactic_acid',null]],
@@ -99,23 +109,23 @@ const semantics = new Map([
   ['b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348', ['P3','contains_active','entity_identifier','salicylic_acid',null]],
   ['f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d', ['T2','recommended_use_frequency','range_unit',[1,1],'times_per_day']],
 ]);
-for (const [key, [pilot, factKey, type, value, unit]] of semantics) {
-  const x = byKey.get(key);
-  check(!!x, `missing proposition ${key}`);
-  eq([x.pilot_id, x.fact_key, x.typed_columns.value_type], [pilot, factKey, type], `typed identity mismatch ${key}`);
-  if (type === 'number_unit') eq([Number(x.typed_columns.value_number), x.typed_columns.value_unit], [value, unit], `number_unit mismatch ${key}`);
-  if (type === 'range_unit') eq([Number(x.typed_columns.value_range_min), Number(x.typed_columns.value_range_max), x.typed_columns.value_unit], [value[0], value[1], unit], `range_unit mismatch ${key}`);
-  if (type === 'entity_identifier') check(x.typed_columns.value_entity_identifier === value, `entity mismatch ${key}`);
-  if (type === 'enum') check(x.typed_columns.value_enum === value, `enum mismatch ${key}`);
-  if (type === 'boolean') check(x.typed_columns.value_boolean === value, `boolean mismatch ${key}`);
+for (const [key, [pilot, factKey, type, value, unit]] of exact) {
+  const row = byKey.get(key);
+  check(!!row, `missing proposition ${key}`);
+  eq([row.pilot_id, row.fact_key, row.typed_columns.value_type], [pilot, factKey, type], `typed identity mismatch ${key}`);
+  if (type === 'number_unit') eq([Number(row.typed_columns.value_number), row.typed_columns.value_unit], [value, unit], `number_unit mismatch ${key}`);
+  if (type === 'range_unit') eq([Number(row.typed_columns.value_range_min), Number(row.typed_columns.value_range_max), row.typed_columns.value_unit], [value[0], value[1], unit], `range_unit mismatch ${key}`);
+  if (type === 'entity_identifier') check(row.typed_columns.value_entity_identifier === value, `entity identifier mismatch ${key}`);
+  if (type === 'enum') check(row.typed_columns.value_enum === value, `enum mismatch ${key}`);
+  if (type === 'boolean') check(row.typed_columns.value_boolean === value, `boolean mismatch ${key}`);
 }
 
-// Existing-parent + same-batch-parent closure.
-const t2 = byKey.get('7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2');
-check(t2.dependency.kind === 'existing_hosted_parent', 'T2 existing-parent mode missing');
-check(t2.dependency.parent_proposition_key === '1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4', 'T2 parent proposition mismatch');
-check(t2.dependency.parent_fact_instance_id === '2462db37-e18a-415a-837c-e42ae240bc76', 'T2 actual Hosted parent FI mismatch');
-check(!frozen.selected_facts.some(x => x.proposition_key === t2.dependency.parent_proposition_key), 'T2 mandelic Fact must not be recreated');
+// Existing-parent and same-batch-parent closure.
+const t2Child = byKey.get('7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2');
+check(t2Child.dependency.kind === 'existing_hosted_parent', 'T2 existing-parent mode missing');
+check(t2Child.dependency.parent_proposition_key === '1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4', 'T2 parent proposition mismatch');
+check(t2Child.dependency.parent_fact_instance_id === '2462db37-e18a-415a-837c-e42ae240bc76', 'T2 actual Hosted mandelic parent FI mismatch');
+check(!frozen.selected_facts.some(row => row.proposition_key === t2Child.dependency.parent_proposition_key), 'T2 mandelic Fact must not be recreated');
 const m2Parent = byKey.get('386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446');
 const m2Child = byKey.get('0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee');
 check(m2Child.dependency.kind === 'same_batch_parent', 'M2 same-batch-parent mode missing');
@@ -123,45 +133,45 @@ check(m2Child.dependency.parent_proposition_key === m2Parent.proposition_key, 'M
 check(m2Child.dependency.parent_fact_instance_id === '__HOSTED_PARENT_FACT_INSTANCE_ID_FROM_BATCH__', 'M2 runtime parent FI placeholder missing');
 check(frozen.selected_facts.indexOf(m2Parent) < frozen.selected_facts.indexOf(m2Child), 'M2 parent must precede child');
 
-// Cardinality-many / exclusions.
+// Cardinality-many and excluded semantics.
 eq(frozen.cardinality_many_contract.T2, ['mandelic_acid','sodium_hyaluronate_crosspolymer'], 'T2 cardinality collapse');
 eq(frozen.cardinality_many_contract.T3, ['hyaluronic_acid','sodium_dna'], 'T3 cardinality collapse');
 eq(frozen.cardinality_many_contract.P3, ['lactic_acid','salicylic_acid'], 'P3 cardinality collapse');
 check(frozen.cardinality_many_contract.collapse_forbidden === true, 'Fact-plane dedupe must be forbidden');
-check(frozen.selected_facts.filter(x => x.pilot_id === 'P3' && x.fact_key === 'contains_active').length === 2, 'P3 two active Facts must remain separate');
-for (const pilot of ['M1','M3','P1']) check(frozen.excluded_candidates.some(x => x.pilot_id === pilot && x.reason === 'source_blocked'), `${pilot} source-blocked exclusion missing`);
-check(frozen.excluded_candidates.some(x => x.pilot_id === 'P2' && x.reason === 'identity_ambiguous'), 'P2 ambiguous exclusion missing');
-check(frozen.excluded_candidates.some(x => x.pilot_id === 'T3' && x.fact_key === 'active_concentration' && x.reason === 'reviewed_not_established'), 'T3 RNE exclusion missing');
-check(frozen.excluded_candidates.some(x => x.pilot_id === 'T3' && x.fact_key === 'hydration_change' && x.reason === 'evidence_insufficient'), 'T3 insufficient exclusion missing');
-check(frozen.excluded_candidates.filter(x => x.pilot_id === 'P3' && x.fact_key === 'active_concentration' && x.reason === 'reviewed_not_established').length === 2, 'P3 RNE exclusions missing');
+check(frozen.selected_facts.filter(row => row.pilot_id === 'P3' && row.fact_key === 'contains_active').length === 2, 'P3 two active Facts must remain separate');
+for (const pilot of ['M1','M3','P1']) check(frozen.excluded_candidates.some(row => row.pilot_id === pilot && row.reason === 'source_blocked'), `${pilot} source-blocked exclusion missing`);
+check(frozen.excluded_candidates.some(row => row.pilot_id === 'P2' && row.reason === 'identity_ambiguous'), 'P2 ambiguous exclusion missing');
+check(frozen.excluded_candidates.some(row => row.pilot_id === 'T3' && row.fact_key === 'active_concentration' && row.reason === 'reviewed_not_established'), 'T3 RNE exclusion missing');
+check(frozen.excluded_candidates.some(row => row.pilot_id === 'T3' && row.fact_key === 'hydration_change' && row.reason === 'evidence_insufficient'), 'T3 insufficient exclusion missing');
+check(frozen.excluded_candidates.filter(row => row.pilot_id === 'P3' && row.fact_key === 'active_concentration' && row.reason === 'reviewed_not_established').length === 2, 'P3 RNE exclusions missing');
 
-// Canonical lifecycle event math: evidence_ingested + assignment prepared under_review + transition ready + fact_confirmed.
+// Canonical RPC lifecycle event math: ingest + initial under_review + ready transition + confirm.
 const expectedReviewEventDelta = frozen.selected_facts.length * 4;
 check(expectedReviewEventDelta === 40, 'review event delta must be 40');
-check(HOSTED_PRESTATE_COUNTS.product_fact_review_events + expectedReviewEventDelta === 100, 'final review event count must be 100');
+check(HOSTED_PRESTATE_COUNTS.product_fact_review_events + expectedReviewEventDelta === 100, 'expected final review event count must be 100');
 
-// Batch 2 correction ledger / final closure / production isolation.
+// Read-only Batch 2 Hosted correction ledger and final closure.
 check(frozen.batch_2_hosted_authority_correction.length === 5, 'Batch 2 correction ledger must contain 5 rows');
-check(frozen.batch_2_hosted_authority_correction.some(x => x.proposition_key === '61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913' && x.fact_instance_id === 'ed8b3bcb-b9b7-41b7-8e62-d2a349f0c45f'), 'Round Lab correction missing');
-check(frozen.batch_2_hosted_authority_correction.some(x => x.proposition_key === 'f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a' && x.parent_fact_instance_id === '532138b9-fd99-49a3-b5ae-9ad677162055'), 'Derma correction missing');
-eq(frozen.expected_final_frozen_supported_proposition_keys, [...new Set([...HOSTED_CURRENT_PROPOSITION_KEYS, ...EXPECTED_REMAINING_KEYS])].sort(), 'final 23 exact-set closure mismatch');
+check(frozen.batch_2_hosted_authority_correction.some(row => row.proposition_key === '61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913' && row.fact_instance_id === 'ed8b3bcb-b9b7-41b7-8e62-d2a349f0c45f'), 'Round Lab correction missing');
+check(frozen.batch_2_hosted_authority_correction.some(row => row.proposition_key === 'f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a' && row.parent_fact_instance_id === '532138b9-fd99-49a3-b5ae-9ad677162055'), 'Derma Factory correction missing');
+eq(frozen.expected_final_frozen_supported_proposition_keys, [...new Set([...HOSTED_CURRENT_PROPOSITION_KEYS, ...EXPECTED_REMAINING_KEYS])].sort(), 'final frozen-supported 23 exact-set closure mismatch');
+
+// Production lifecycle remains inactive.
 check(frozen.lifecycle.catalog_fully_adopted === false, 'catalog fully adopted must remain NO');
 check(frozen.lifecycle.decision_axis_production_calibrated === false, 'Decision Axis calibration must remain NO');
-check(frozen.lifecycle.decision_axis_production_consumption === false, 'Decision Axis consumption must remain NO');
+check(frozen.lifecycle.decision_axis_production_consumption === false, 'Decision Axis production consumption must remain NO');
 check(frozen.lifecycle.recommendation_scorer_changed === false, 'recommendation scorer must remain unchanged');
 check(frozen.lifecycle.recommendation_activated === false, 'recommendation activation must remain NO');
 check(frozen.lifecycle.admin_product_fact_ui_operational === false, 'Admin Product Fact UI must remain NO');
 
-const tooling = [
-  read('scripts/product-evidence/product-fact-adoption-batch-3-v1.mjs'),
-  read('scripts/build-product-fact-adoption-batch-3-v1.mjs'),
-  read('scripts/verify-product-fact-adoption-batch-3-v1.mjs'),
-].join('\n');
-const importLines = tooling.split('\n').filter(line => /^\s*import\s/.test(line));
+// Only the executable Batch 3 core/builder are scanned for runtime coupling/RPC calls.
+// The verifier itself deliberately names forbidden boundaries in assertions and must not self-match.
+const runtimeTooling = [read(P.core), read(P.builder)].join('\n');
+const importLines = runtimeTooling.split('\n').filter(line => /^\s*import\s/.test(line));
 check(!importLines.some(line => /(?:app|components)\//.test(line)), 'production runtime import forbidden');
 check(!importLines.some(line => /recommendation|score/i.test(line)), 'Product Fact direct-to-score import edge forbidden');
-check(!/admin_register_product_fact_subject_v1/.test(tooling), 'subject registration call forbidden');
-check(!/registry_publish_v1|admin_publish_product_fact_registry/i.test(tooling), 'registry republish forbidden');
+check(!runtimeTooling.includes('admin_register_product_fact_subject_v1'), 'subject registration call forbidden');
+check(!/registry_publish_v1|admin_publish_product_fact_registry/i.test(runtimeTooling), 'registry republish forbidden');
 check(/Frozen supported confirmation-eligible: \*\*23\*\*/.test(frozenMd), 'Markdown supported total missing');
 check(/Remaining supported set: \*\*10\*\*/.test(frozenMd), 'Markdown remaining total missing');
 check(/New subjects: \*\*0\*\*/.test(frozenMd), 'Markdown new-subject boundary missing');
