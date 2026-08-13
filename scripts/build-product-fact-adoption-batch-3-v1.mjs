@@ -17,6 +17,7 @@ const paths = {
 const read = p => fs.readFileSync(path.join(ROOT,p),'utf8');
 const parse = p => JSON.parse(read(p));
 const hash = p => sha256Text(read(p));
+const canonicalTextEof = value => `${String(value).replace(/\n+$/u, '')}\n`;
 
 const baseMainSha = process.env.V21_8C_BASE_MAIN_SHA;
 if (!baseMainSha || !/^[0-9a-f]{40}$/.test(baseMainSha)) throw new Error('V21_8C_BASE_MAIN_SHA must be exact SHA');
@@ -40,7 +41,7 @@ const plan = buildBatch3Plan({
   inputHashes,
 });
 const json = stableJson(plan);
-const md = renderBatch3Markdown(plan);
+const md = canonicalTextEof(renderBatch3Markdown(plan));
 fs.mkdirSync(path.dirname(paths.outJson),{recursive:true});
 fs.mkdirSync(path.dirname(paths.outMd),{recursive:true});
 fs.writeFileSync(paths.outJson,json);
