@@ -1,5 +1,6 @@
 name: V21-8D Source Gap Recovery Wave 1
 
+# R2 exact-head verification trigger after canonical artifact freeze.
 on:
   push:
     branches: [research/product-fact-source-gap-recovery-wave-1-v1]
