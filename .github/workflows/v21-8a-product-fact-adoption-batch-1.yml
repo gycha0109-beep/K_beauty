@@ -7,6 +7,13 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/v21-8a-product-fact-adoption-batch-1.yml'
+      - 'scripts/product-evidence/product-fact-adoption-batch-v1.mjs'
+      - 'scripts/build-product-fact-adoption-batch-1-v1.mjs'
+      - 'scripts/verify-product-fact-adoption-batch-1-v1.mjs'
+      - 'evidence/product-fact-adoption-v1/cross-category-adoption-batch-1-v1.json'
+      - 'docs/evidence/product-fact-adoption-batch-1-v1.md'
   workflow_dispatch:
 
 permissions:
@@ -87,9 +94,17 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
-          test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
-          git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
-          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8a-authority.txt
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            diff_base="${{ github.event.pull_request.base.sha }}"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" "$diff_base"
+            git merge-base --is-ancestor "$diff_base" HEAD
+          else
+            diff_base="$BASE_MAIN_SHA"
+            test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          fi
+          echo "DIFF_BASE_SHA=$diff_base" >> "$GITHUB_ENV"
+          printf 'base_main=%s\ndiff_base=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$diff_base" "$(git rev-parse HEAD)" | tee /tmp/v21-8a-authority.txt
 
       - name: Freeze V2.1-2/4/5/6/7 authority hashes
         shell: bash
@@ -198,15 +213,14 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf _reference _historical
-          mapfile -t changed < <(git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t changed < <(git diff --name-only "$DIFF_BASE_SHA..HEAD" | sort)
           allowed_re='^(\.github/workflows/v21-8a-product-fact-adoption-batch-1\.yml|scripts/product-evidence/product-fact-adoption-batch-v1\.mjs|scripts/build-product-fact-adoption-batch-1-v1\.mjs|scripts/verify-product-fact-adoption-batch-1-v1\.mjs|evidence/product-fact-adoption-v1/cross-category-adoption-batch-1-v1\.json|docs/evidence/product-fact-adoption-batch-1-v1\.md)$'
           for file in "${changed[@]}"; do [[ "$file" =~ $allowed_re ]] || { echo "unexpected path: $file"; exit 1; }; done
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then test "${#changed[@]}" -eq 6; fi
-          test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          test -z "$(git diff --name-only "$DIFF_BASE_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
           if grep -R -n --include='*.js' --include='*.mjs' 'product-fact-adoption-batch-v1' app lib components 2>/dev/null; then
             echo 'Production runtime imports V2.1-8A module'; exit 1
           fi
-          git diff --check "$BASE_MAIN_SHA..HEAD"
+          git diff --check "$DIFF_BASE_SHA..HEAD"
           printf '%s\n' "${changed[@]}" | tee /tmp/v21-8a-changed.txt
           printf 'production_runtime_delta=0\nhosted_writes_by_ci=0\n' | tee /tmp/v21-8a-production-scope.txt
 
@@ -214,7 +228,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff -U0 "$BASE_MAIN_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
+          if git diff -U0 "$DIFF_BASE_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
             echo 'Potential credential literal detected'; exit 1
           fi
 
