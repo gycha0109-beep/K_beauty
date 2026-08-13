@@ -105,14 +105,20 @@ jobs:
           test "$(sha256sum evidence/product-evidence-decision-axis-v1/cross-category-real-pilot-gap-report-v1.json | awk '{print $1}')" = "5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215"
 
       - name: Batch 1 replay
+        shell: bash
         env:
           V21_8A_BASE_MAIN_SHA: 5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e
-        run: node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8c-batch1.txt
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8c-batch1.txt
 
       - name: Batch 2 replay
+        shell: bash
         env:
           V21_8B_BASE_MAIN_SHA: a303e216f3953567a175c4d01978efc06b20bbc6
-        run: node scripts/verify-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8c-batch2.txt
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8c-batch2.txt
 
       - name: Historical V2.1-2 replay
         run: |
@@ -162,18 +168,22 @@ jobs:
           node --check scripts/verify-product-fact-adoption-batch-3-v1.mjs
 
       - name: Build A
+        shell: bash
         env:
           V21_8C_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
         run: |
+          set -euo pipefail
           node scripts/build-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8c-build-a.txt
           cp "$OUT_JSON" /tmp/v21-8c-a.json
           cp "$OUT_MD" /tmp/v21-8c-a.md
           sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-8c-hash-a.txt
 
       - name: Build B and byte determinism
+        shell: bash
         env:
           V21_8C_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
         run: |
+          set -euo pipefail
           rm -f "$OUT_JSON" "$OUT_MD"
           node scripts/build-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8c-build-b.txt
           cmp -s /tmp/v21-8c-a.json "$OUT_JSON"
@@ -181,9 +191,12 @@ jobs:
           sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-8c-hash-b.txt
 
       - name: Remaining-set dependency and cardinality verifier
+        shell: bash
         env:
           V21_8C_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
-        run: node scripts/verify-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8c-verifier.txt
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8c-verifier.txt
 
       - name: Explicit remaining and subject gates
         shell: bash
@@ -194,7 +207,10 @@ jobs:
           test "$(node -e 'const x=require("./evidence/product-fact-adoption-v1/cross-category-adoption-batch-3-v1.json"); process.stdout.write(String(x.summary.new_unique_products))')" = "0"
 
       - name: 164 x 12 production replay
-        run: node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8c-production.txt
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8c-production.txt
 
       - name: Exact offline scope and runtime isolation
         shell: bash
@@ -204,7 +220,7 @@ jobs:
           mapfile -t changed < <(git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort)
           allowed_re='^(\.github/workflows/v21-8c-product-fact-frozen-pilot-completion\.yml|scripts/product-evidence/product-fact-adoption-batch-3-v1\.mjs|scripts/build-product-fact-adoption-batch-3-v1\.mjs|scripts/verify-product-fact-adoption-batch-3-v1\.mjs|evidence/product-fact-adoption-v1/cross-category-adoption-batch-3-v1\.json|docs/evidence/product-fact-adoption-batch-3-v1\.md)$'
           for f in "${changed[@]}"; do [[ "$f" =~ $allowed_re ]] || { echo "unexpected path: $f"; exit 1; }; done
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then test "${#changed[@]}" -eq 6; else [[ "${#changed[@]}" -eq 4 || "${#changed[@]}" -eq 6 ]]; fi
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then test "${#changed[@]}" -eq 6; else test "${#changed[@]}" -eq 6; fi
           test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
           if grep -R -n --include='*.js' --include='*.mjs' 'product-fact-adoption-batch-3-v1' app lib components 2>/dev/null; then exit 1; fi
           git diff --check "$BASE_MAIN_SHA..HEAD"
