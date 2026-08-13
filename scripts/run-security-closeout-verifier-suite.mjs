@@ -24,6 +24,7 @@ const EXPECTED_VERIFIERS = [
   "verify-existing-recommendation-candidate-source.mjs",
   "verify-face-lab-archetype-human-evaluation-contract-v1.mjs",
   "verify-face-lab-archetype-scoring.mjs",
+  "verify-face-lab-archetype-synthetic-stress-contract-v1.mjs",
   "verify-face-lab-failure-and-legacy-contract.mjs",
   "verify-face-lab-keyword-summary.mjs",
   "verify-face-lab-observation-contract.mjs",
