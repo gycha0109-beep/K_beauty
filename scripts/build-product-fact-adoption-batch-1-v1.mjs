@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { buildBatchPlan, stableJson, sha256JsonBytes } from './product-evidence/product-fact-adoption-batch-v1.mjs';
 
-const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || 'eb933621fd1320dc8270b86192d72e7636990c3f';
+const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || '5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e';
 const paths = {
   materialization: 'evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json',
   fusion: 'evidence/product-fact-fusion-v1/cleanser-evidence-fusion-review-uncertainty-v1.json',
