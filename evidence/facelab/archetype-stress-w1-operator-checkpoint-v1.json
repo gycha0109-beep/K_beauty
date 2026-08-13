@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "face-lab-archetype-stress-w1-operator-checkpoint-v1",
+  "campaignId": "face-eval-c-archetype-stress-pilot-v1",
+  "waveId": "W1",
+  "status": "authorized",
+  "authority": {
+    "sourceMainSha": "fd585546ef20e0db750137135792803e9898f747",
+    "preflightDigest": "dbc28d01ff6e0faef423c7a1fb543194e4a5c023b5662a19b19844628bead865"
+  },
+  "authorization": {
+    "authorizedByRole": "coordinator_operator",
+    "authorizationBasis": "explicit_proceed_instruction",
+    "authorizedScope": "W1_required_axis_positive_only",
+    "providerProfileId": "gpt-image-manual-v1",
+    "providerProfileVersion": "1.0.0"
+  },
+  "preExecutionCounters": {
+    "providerCalls": 0,
+    "generationAttempts": 0,
+    "syntheticAssetsWritten": 0,
+    "authoritativeObservationRuns": 0
+  },
+  "constraints": {
+    "w2Locked": true,
+    "w3Locked": true,
+    "weightTuningAllowed": false,
+    "thresholdSelectionAllowed": false,
+    "productionActivationAllowed": false
+  },
+  "checkpointDigest": "e4dd086b65c9ddfdb5a1d5252538364233832042234219109721d7c72ef67df0"
+}
