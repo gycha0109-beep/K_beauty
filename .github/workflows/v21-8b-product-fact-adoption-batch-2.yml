@@ -2,11 +2,16 @@ name: V21-8B Product Fact Catalog Adoption Batch 2
 
 on:
   push:
-    branches:
-      - research/product-fact-catalog-adoption-batch-2-v1
+    branches: [research/product-fact-catalog-adoption-batch-2-v1]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8b-product-fact-adoption-batch-2.yml'
+      - 'scripts/product-evidence/product-fact-adoption-batch-2-v1.mjs'
+      - 'scripts/build-product-fact-adoption-batch-2-v1.mjs'
+      - 'scripts/verify-product-fact-adoption-batch-2-v1.mjs'
+      - 'evidence/product-fact-adoption-v1/cross-category-adoption-batch-2-v1.json'
+      - 'docs/evidence/product-fact-adoption-batch-2-v1.md'
   workflow_dispatch:
 
 permissions:
@@ -17,9 +22,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
-      BASE_MAIN_SHA: 0839c8138b022a98490af874b46354b1a5f5116b
+      BASE_MAIN_SHA: a303e216f3953567a175c4d01978efc06b20bbc6
       BRANCH_NAME: research/product-fact-catalog-adoption-batch-2-v1
-      RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
       OUT_JSON: evidence/product-fact-adoption-v1/cross-category-adoption-batch-2-v1.json
       OUT_MD: docs/evidence/product-fact-adoption-batch-2-v1.md
     steps:
@@ -79,19 +83,18 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Freeze current main authority
+      - name: Current main authority
         shell: bash
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
           test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
           git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
-          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8b-authority.txt
+          echo "base_main=$BASE_MAIN_SHA" | tee /tmp/v21-8b-authority.txt
 
-      - name: Freeze V2.1-2/4/5/6/7 authority hashes
+      - name: Frozen authority hashes
         shell: bash
         run: |
           set -euo pipefail
@@ -100,178 +103,130 @@ jobs:
           test "$(sha256sum evidence/product-decision-axis-v1/cleanser-product-decision-axis-v1.json | awk '{print $1}')" = "fbddc761328f2caa5025a5867061866d17f16d24cb6566fe82d0796c20a4a0b4"
           test "$(sha256sum evidence/product-decision-axis-v1/cross-category-product-decision-axis-v1.json | awk '{print $1}')" = "5dc5c7975be7474bf0767951ea63074ed60968faabee5fdb8734153ff698ab5e"
           test "$(sha256sum evidence/product-recommendation-shadow-v1/legacy-vs-decision-axis-shadow-v1.json | awk '{print $1}')" = "7059cd691a0819e935d3debbd1912c7b92a2e3998557bfde28a6ded4a4659e1f"
-          printf 'v21_2=PASS\nv21_4=PASS\nv21_5=PASS\nv21_6=PASS\nv21_7=PASS\n' | tee /tmp/v21-8b-input-authority.txt
 
-      - name: Batch 1 artifact integrity and verifier replay
-        shell: bash
+      - name: Batch 1 replay
         env:
           V21_8A_BASE_MAIN_SHA: 5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e
-        run: |
-          set -euo pipefail
-          sha256sum evidence/product-fact-adoption-v1/cross-category-adoption-batch-1-v1.json | tee /tmp/v21-8b-batch1-hash.txt
-          node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8b-batch1-replay.txt
+        run: node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8b-batch1.txt
 
-      - name: Syntax check V2.1-8B
+      - name: V2.1-8B syntax
         run: |
           node --check scripts/product-evidence/product-fact-adoption-batch-2-v1.mjs
           node --check scripts/build-product-fact-adoption-batch-2-v1.mjs
           node --check scripts/verify-product-fact-adoption-batch-2-v1.mjs
 
       - name: Build A
-        shell: bash
         env:
           V21_8B_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
         run: |
-          set -euo pipefail
           node scripts/build-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8b-build-a.txt
           cp "$OUT_JSON" /tmp/v21-8b-a.json
           cp "$OUT_MD" /tmp/v21-8b-a.md
           sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-8b-hash-a.txt
 
-      - name: Build B and byte determinism
-        shell: bash
+      - name: Build B and deterministic equality
         env:
           V21_8B_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
         run: |
-          set -euo pipefail
           rm -f "$OUT_JSON" "$OUT_MD"
           node scripts/build-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8b-build-b.txt
           cmp -s /tmp/v21-8b-a.json "$OUT_JSON"
           cmp -s /tmp/v21-8b-a.md "$OUT_MD"
           sha256sum "$OUT_JSON" "$OUT_MD" | tee /tmp/v21-8b-hash-b.txt
-          echo 'V21_8B_BATCH_DETERMINISTIC=YES' | tee /tmp/v21-8b-determinism.txt
 
-      - name: Focused V2.1-8B selection and dependency verifier
+      - name: Batch 2 selection and parent dependency
         env:
           V21_8B_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
         run: node scripts/verify-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8b-verifier.txt
 
-      - name: Historical V2.1-2 materialization replay
-        shell: bash
+      - name: Historical V2.1-2 replay
         run: |
-          set -euo pipefail
           cd _historical/v21-2
           git update-ref refs/remotes/origin/main e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f
-          node scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs | tee /tmp/v21-8b-v21-2.txt
+          node scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
 
-      - name: Historical V2.1-4 fusion replay
-        shell: bash
+      - name: Historical V2.1-4 replay
         run: |
-          set -euo pipefail
           cd _historical/v21-4
           git update-ref refs/remotes/origin/main a38df682ebc686cb076dfc40b432ae714fdfd6da
-          node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs | tee /tmp/v21-8b-v21-4.txt
+          node scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
 
-      - name: Historical V2.1-5 mapper replay
-        shell: bash
+      - name: Historical V2.1-5 replay
         run: |
-          set -euo pipefail
           cd _historical/v21-5
           git update-ref refs/remotes/origin/main 4dce99057ca44adb14dac549e8df6d468cf7f5e2
-          node scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-8b-v21-5.txt
+          node scripts/verify-product-decision-axis-cleanser-v1.mjs
 
-      - name: Historical V2.1-6 cross-category replay
-        shell: bash
+      - name: Historical V2.1-6 replay
         run: |
-          set -euo pipefail
           cd _historical/v21-6
           git update-ref refs/remotes/origin/main 45628d2c859ab0ba875b66f30b4c47c150ef3162
-          node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-8b-v21-6.txt
+          node scripts/verify-product-decision-axis-cross-category-v1.mjs
 
       - name: V2.1-7 shadow replay
         env:
           V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
-          RECOMMENDATION_REFERENCE_ROOT: ${{ env.RECOMMENDATION_REFERENCE_ROOT }}
-        run: node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-8b-v21-7.txt
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+        run: node scripts/verify-product-decision-axis-comparator-v1.mjs
 
-      - name: Product Fact controlled-write contracts
-        shell: bash
+      - name: Product Fact controlled-write and subject contracts
         run: |
-          set -euo pipefail
-          node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/v21-8b-pf-write.json
-          node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/v21-8b-pf-subject.json
+          node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/pf-write.json
+          node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/pf-subject.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
-          for (const file of ['/tmp/v21-8b-pf-write.json','/tmp/v21-8b-pf-subject.json']) {
-            const result = JSON.parse(fs.readFileSync(file,'utf8'));
-            if (result.status !== 'PASS') throw new Error(`${file}: Product Fact verifier failed`);
+          for (const f of ['/tmp/pf-write.json','/tmp/pf-subject.json']) {
+            if (JSON.parse(fs.readFileSync(f,'utf8')).status !== 'PASS') throw new Error(`failed ${f}`);
           }
-          console.log('product_fact_static_contracts=PASS');
           NODE
 
-      - name: Current production 164 x 12 recommendation replay
-        run: node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8b-production-replay.txt
+      - name: 164 x 12 production replay
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8b-production.txt
 
-      - name: Exact scope and production import invariance
+      - name: Exact scope and runtime isolation
         shell: bash
         run: |
           set -euo pipefail
           rm -rf _reference _historical
           mapfile -t changed < <(git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort)
           allowed_re='^(\.github/workflows/v21-8b-product-fact-adoption-batch-2\.yml|scripts/product-evidence/product-fact-adoption-batch-2-v1\.mjs|scripts/build-product-fact-adoption-batch-2-v1\.mjs|scripts/verify-product-fact-adoption-batch-2-v1\.mjs|evidence/product-fact-adoption-v1/cross-category-adoption-batch-2-v1\.json|docs/evidence/product-fact-adoption-batch-2-v1\.md)$'
-          for file in "${changed[@]}"; do [[ "$file" =~ $allowed_re ]] || { echo "unexpected path: $file"; exit 1; }; done
+          for f in "${changed[@]}"; do [[ "$f" =~ $allowed_re ]] || { echo "unexpected path: $f"; exit 1; }; done
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then test "${#changed[@]}" -eq 6; fi
           test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
-          if grep -R -n --include='*.js' --include='*.mjs' 'product-fact-adoption-batch-2-v1' app lib components 2>/dev/null; then
-            echo 'Production runtime imports V2.1-8B module'; exit 1
-          fi
+          if grep -R -n --include='*.js' --include='*.mjs' 'product-fact-adoption-batch-2-v1' app lib components 2>/dev/null; then exit 1; fi
           git diff --check "$BASE_MAIN_SHA..HEAD"
           printf '%s\n' "${changed[@]}" | tee /tmp/v21-8b-changed.txt
-          printf 'production_runtime_delta=0\nhosted_writes_by_ci=0\n' | tee /tmp/v21-8b-production-scope.txt
 
       - name: Secret hygiene
-        shell: bash
         run: |
-          set -euo pipefail
-          if git diff -U0 "$BASE_MAIN_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
-            echo 'Potential credential literal detected'; exit 1
-          fi
+          if git diff -U0 "$BASE_MAIN_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
 
-      - name: Freeze generated Batch 2 outputs on branch
+      - name: Freeze generated Batch 2 outputs
         if: github.event_name == 'push' && github.ref_name == 'research/product-fact-catalog-adoption-batch-2-v1'
-        shell: bash
         run: |
-          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$OUT_JSON" "$OUT_MD"
-          if git diff --cached --quiet; then
-            echo 'Generated outputs already frozen.'
-          else
+          if ! git diff --cached --quiet; then
             git commit -m 'research(storage): freeze V2.1-8B adoption batch plan'
             git push origin HEAD:"$BRANCH_NAME"
           fi
 
-      - name: Record exact evaluated head
-        run: printf 'evaluated_head=%s\n' "${{ github.event.pull_request.head.sha || github.sha }}" | tee /tmp/v21-8b-evaluated-head.txt
-
-      - name: Upload V2.1-8B evidence
+      - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v21-8b-adoption-batch-2-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             /tmp/v21-8b-authority.txt
-            /tmp/v21-8b-input-authority.txt
-            /tmp/v21-8b-batch1-hash.txt
-            /tmp/v21-8b-batch1-replay.txt
+            /tmp/v21-8b-batch1.txt
             /tmp/v21-8b-build-a.txt
             /tmp/v21-8b-build-b.txt
             /tmp/v21-8b-hash-a.txt
             /tmp/v21-8b-hash-b.txt
-            /tmp/v21-8b-determinism.txt
             /tmp/v21-8b-verifier.txt
-            /tmp/v21-8b-v21-2.txt
-            /tmp/v21-8b-v21-4.txt
-            /tmp/v21-8b-v21-5.txt
-            /tmp/v21-8b-v21-6.txt
-            /tmp/v21-8b-v21-7.txt
-            /tmp/v21-8b-pf-write.json
-            /tmp/v21-8b-pf-subject.json
-            /tmp/v21-8b-production-replay.txt
+            /tmp/v21-8b-production.txt
             /tmp/v21-8b-changed.txt
-            /tmp/v21-8b-production-scope.txt
-            /tmp/v21-8b-evaluated-head.txt
             evidence/product-fact-adoption-v1/cross-category-adoption-batch-2-v1.json
             docs/evidence/product-fact-adoption-batch-2-v1.md
           if-no-files-found: warn
