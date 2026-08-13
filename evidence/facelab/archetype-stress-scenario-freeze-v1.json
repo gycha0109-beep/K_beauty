@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "face-lab-archetype-stress-scenario-freeze-v1",
+  "campaignId": "face-eval-c-archetype-stress-pilot-v1",
+  "status": "frozen_not_executed",
+  "sourceAuthority": {
+    "sourceMainSha": "84cf4aec5b9cb502aa12d5733a0b1b8a582dc1fe",
+    "archetypeRegistryVersion": "face-lab-archetype-rubric-20260727",
+    "archetypeLifecycle": "rubric_ready",
+    "calibrationStatus": "not_ready",
+    "generationSpecSchemaVersion": "generation-spec-v1",
+    "featureCueProfileVersion": "face-feature-cues-v2",
+    "archetypeTaxonomyVersion": "face-lab-archetype-taxonomy-v1",
+    "compiledPromptSchemaVersion": "compiled-prompt-v1",
+    "promptCompilerVersion": "prompt-compiler-v1",
+    "providerProfileId": "gpt-image-manual-v1",
+    "providerProfileVersion": "1.0.0"
+  },
+  "providerPolicy": {
+    "primaryProviderProfileId": "gpt-image-manual-v1",
+    "requiredProfileStatus": "active_pilot",
+    "singleProviderForPrimarySlots": true,
+    "fallbackProviderAllowed": false,
+    "providerSwitchRequiresNewFreeze": true
+  },
+  "budget": {
+    "primaryGenerationSlots": 20,
+    "technicalGenerationRetryReserve": 10,
+    "maxGenerationAttemptsTotal": 30,
+    "maxGenerationAttemptsPerSlot": 2,
+    "maxAuthoritativeObservationRuns": 20,
+    "maxObservationRecoveryRuns": 10,
+    "maxObservationRunsTotal": 30,
+    "calibrationSampleSizeClaim": false
+  },
+  "waves": [
+    {"waveId":"W1","mode":"provider_generation","stressKind":"required_axis_positive","slotCount":7,"unlockRule":"initial_wave"},
+    {"waveId":"W2","mode":"provider_generation","stressKind":"negative_contradiction","slotCount":7,"unlockRule":"after_w1_checkpoint_no_systemic_generation_or_observation_blocker"},
+    {"waveId":"W3","mode":"provider_generation","stressKind":"close_pair_boundary","slotCount":6,"unlockRule":"after_w2_checkpoint_no_systemic_generation_or_observation_blocker"},
+    {"waveId":"W4","mode":"offline_observation_fixture","stressKind":"missing_required_axis_and_low_evidence","slotCount":14,"unlockRule":"offline_only_no_provider_required"},
+    {"waveId":"W5","mode":"derived_image_transform","stressKind":"capture_stability","slotCount":14,"unlockRule":"after_w1_assets_registered_and_transform_verifier_ready"}
+  ],
+  "subjectSequence": [
+    {"adultAgeBand":"20s","presentation":"feminine","regionalAppearanceHint":null},
+    {"adultAgeBand":"30s","presentation":"masculine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"40s","presentation":"androgynous","regionalAppearanceHint":null},
+    {"adultAgeBand":"50s","presentation":"feminine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"20s","presentation":"masculine","regionalAppearanceHint":null},
+    {"adultAgeBand":"30s","presentation":"androgynous","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"40s","presentation":"feminine","regionalAppearanceHint":null},
+    {"adultAgeBand":"50s","presentation":"masculine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"20s","presentation":"androgynous","regionalAppearanceHint":null},
+    {"adultAgeBand":"30s","presentation":"feminine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"40s","presentation":"masculine","regionalAppearanceHint":null},
+    {"adultAgeBand":"50s","presentation":"androgynous","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"20s","presentation":"feminine","regionalAppearanceHint":null},
+    {"adultAgeBand":"30s","presentation":"masculine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"40s","presentation":"androgynous","regionalAppearanceHint":null},
+    {"adultAgeBand":"50s","presentation":"feminine","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"20s","presentation":"masculine","regionalAppearanceHint":null},
+    {"adultAgeBand":"30s","presentation":"androgynous","regionalAppearanceHint":"korean_appearance_hint"},
+    {"adultAgeBand":"40s","presentation":"feminine","regionalAppearanceHint":null},
+    {"adultAgeBand":"50s","presentation":"masculine","regionalAppearanceHint":"korean_appearance_hint"}
+  ],
+  "requiredPositivePlan": {
+    "wolf":{"eyeLength":"long","straightCurveBalance":"straight"},
+    "cat":{"eyeDirection":"upturned","featureConcentration":"centered"},
+    "puppy":{"eyeOpenness":"wide","straightCurveBalance":"curved"},
+    "deer":{"faceLengthBalance":"long","eyeOpenness":"wide"},
+    "tofu":{"featureContrast":"low","contourDefinition":"soft"},
+    "potato":{"faceLengthBalance":"short","faceShape":"round"},
+    "dino":{"featureScale":"large","jawlineAngularity":"angular"}
+  },
+  "negativeContradictionPlan": {
+    "wolf":{"straightCurveBalance":"curved"},
+    "cat":{"featureConcentration":"spread"},
+    "puppy":{"jawlineAngularity":"angular"},
+    "deer":{"jawlineAngularity":"angular"},
+    "tofu":{"featureContrast":"high"},
+    "potato":{"faceLengthBalance":"long"},
+    "dino":{"featureScale":"small"}
+  },
+  "closePairPlan": [
+    {"primary":"wolf","secondary":"cat","cues":{"eyeLength":"long","eyeDirection":"upturned","straightCurveBalance":"straight","featureConcentration":"centered"}},
+    {"primary":"puppy","secondary":"deer","cues":{"eyeOpenness":"wide","straightCurveBalance":"curved","faceLengthBalance":"long","contourDefinition":"soft"}},
+    {"primary":"puppy","secondary":"tofu","cues":{"eyeOpenness":"medium","straightCurveBalance":"curved","contourDefinition":"soft","featureContrast":"low"}},
+    {"primary":"deer","secondary":"tofu","cues":{"faceLengthBalance":"long","contourDefinition":"soft","featureContrast":"low","jawlineAngularity":"soft"}},
+    {"primary":"cat","secondary":"potato","cues":{"featureConcentration":"centered","eyeDirection":"upturned","faceShape":"round","faceLengthBalance":"short"}},
+    {"primary":"wolf","secondary":"dino","cues":{"eyeLength":"long","straightCurveBalance":"straight","contourDefinition":"defined","jawlineAngularity":"angular"}}
+  ],
+  "offlineFixturePlan": {
+    "missingRequiredAxisByArchetype":{"wolf":"eyeLength","cat":"eyeDirection","puppy":"eyeOpenness","deer":"faceLengthBalance","tofu":"featureContrast","potato":"faceLengthBalance","dino":"featureScale"},
+    "lowEvidenceRetainedCueByArchetype":{
+      "wolf":{"axis":"eyeDirection","value":"level"},
+      "cat":{"axis":"eyeLength","value":"long"},
+      "puppy":{"axis":"contourDefinition","value":"soft"},
+      "deer":{"axis":"jawTaper","value":"tapered"},
+      "tofu":{"axis":"straightCurveBalance","value":"balanced"},
+      "potato":{"axis":"featureConcentration","value":"centered"},
+      "dino":{"axis":"cheekboneProminence","value":"prominent"}
+    },
+    "unavailableAllRequiredAxesForLowEvidence": true
+  },
+  "stabilityPlan": {
+    "sourceWaveId":"W1",
+    "variantsPerBaseline":2,
+    "providerCallsRequired":0,
+    "transforms":[{"transformId":"gamma-0p95","operation":"gamma","value":0.95},{"transformId":"gamma-1p05","operation":"gamma","value":1.05}],
+    "structureMutationAllowed":false,
+    "identityMutationAllowed":false
+  },
+  "diagnosticPolicy": {
+    "observationFailureScenarioGeneratedDirectly":false,
+    "observationFailureFlag":"observation-side miss possible",
+    "diagnosticFlagIsCausalProof":false
+  },
+  "humanReviewPolicy": {
+    "reviewerCount":"not_yet_determined",
+    "consensusAlgorithm":"not_yet_determined",
+    "engineOutputHiddenBeforeHumanSubmission":true,
+    "generationIntentHiddenBeforeHumanSubmission":true
+  },
+  "executionState": {
+    "providerCalls":0,
+    "syntheticAssetsWritten":0,
+    "hostedWrites":0,
+    "humanAnnotationsCollected":0,
+    "campaignExecuted":false
+  },
+  "freezeDigest": "5b137c955697badf40ba6892853bd8c7aebb456e59a1bd1efcff7e6aff3752c2"
+}
