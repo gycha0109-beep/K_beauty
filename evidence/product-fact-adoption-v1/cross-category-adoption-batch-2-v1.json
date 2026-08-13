@@ -1,0 +1,1731 @@
+{
+  "version": "product-fact-adoption-batch-2-v1",
+  "stage": "V2.1-8B_CONTROLLED_HOSTED_PRODUCT_FACT_ADOPTION_BATCH_2",
+  "batch_id": "v21-8b-cross-category-batch-2",
+  "authority": {
+    "source_main_sha": "a303e216f3953567a175c4d01978efc06b20bbc6",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "materialization_sha256": "b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2",
+    "fusion_sha256": "86332b78ec38d79f8dfa12c5879cee46f4a22979d69945ee2f5a9dcc7038b802",
+    "cross_category_axis_sha256": "5dc5c7975be7474bf0767951ea63074ed60968faabee5fdb8734153ff698ab5e",
+    "shadow_sha256": "7059cd691a0819e935d3debbd1912c7b92a2e3998557bfde28a6ded4a4659e1f",
+    "batch_1_sha256": "62eeb8232fa2a2fef098c536b6bbb2b11977b575bddc9aa810cfc608c5602a61",
+    "frozen_corpus_sha256": "47457c0242451a35305fd8eceba0ebb7e210eb9ee2e73134ccf41696d18e517d",
+    "mapping_sha256": "c746c5d02f654ed7f0a8e8385611ac65ca30b9c4648fa4c6454ac863e7c9314f",
+    "gap_sha256": "5a4580d76cca62d90a3ac306744054c507a6d5e45b0b91a41dffb3b754980215",
+    "hosted_prestate_digest": "f07c2814deda56a2f92ae9ba996cbf4741e1ab7c4aa7f5c1d4b7f570b60375fd"
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "bootstrap_state": "ALREADY_YES",
+    "required_capabilities": [
+      "admin.products.review",
+      "admin.operations.execute"
+    ]
+  },
+  "selection_policy": {
+    "candidate_source": "frozen_cross_category_pilot_only",
+    "required": [
+      "resolved_identity",
+      "current_subject",
+      "eligible_binding",
+      "supported",
+      "product_specific_primary",
+      "high_confidence",
+      "dependency_closed"
+    ],
+    "priority": [
+      "new_fact_family_count_desc",
+      "eligible_fact_count_desc",
+      "pilot_id_asc",
+      "product_id_asc"
+    ],
+    "final_execution_order": [
+      "pilot_id_asc",
+      "product_id_asc",
+      "parent_before_child",
+      "fact_key_asc",
+      "proposition_key_asc"
+    ],
+    "authority_over_diversity": true,
+    "random_selection": false,
+    "limits": {
+      "products": 4,
+      "subjects": 4,
+      "facts": 8,
+      "current": 8,
+      "evidence": 10
+    }
+  },
+  "hosted_prestate": {
+    "digest": "f07c2814deda56a2f92ae9ba996cbf4741e1ab7c4aa7f5c1d4b7f570b60375fd",
+    "counts": {
+      "product_fact_registry_versions": 1,
+      "product_fact_definition_snapshots": 20,
+      "product_fact_subjects": 5,
+      "product_evidence_sources": 5,
+      "product_evidence_source_subject_bindings": 5,
+      "product_evidence_records": 8,
+      "product_fact_instances": 8,
+      "product_fact_evidence_links": 8,
+      "product_fact_review_assignments": 8,
+      "product_fact_review_events": 37,
+      "product_fact_confirmations": 8,
+      "product_fact_current": 8
+    },
+    "current_proposition_keys": [
+      "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30"
+    ],
+    "adopted_product_count": 5,
+    "current_fact_count": 8,
+    "canonical_admin_owner_already_provisioned": true
+  },
+  "selected_products": [
+    {
+      "pilot_id": "S1",
+      "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "brand": "ROUND LAB",
+      "name": "자작나무 수분 선크림",
+      "category": "sunscreen",
+      "subject_semantic_key": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "subject_payload": {
+        "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+        "subject_semantic_key": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": "renewed_KR",
+        "formulation_revision_key": "pilot-freeze-9aba73ebdc1f56e6041286efa04eb74f",
+        "formulation_label": "자작나무 수분 선크림",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": "KR",
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "selection_score": {
+        "new_fact_family_count_desc": 0,
+        "eligible_fact_count_desc": 2,
+        "stable_pilot_id": "S1",
+        "stable_product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d"
+      },
+      "facts": [
+        {
+          "proposal_ref": "fact:f01",
+          "pilot_id": "S1",
+          "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+          "fact_key": "spf_value",
+          "typed_value": 50,
+          "semantic_status": "supported",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "source_ref": "source:s01",
+          "binding_ref": "binding:s01:S1",
+          "evidence_ref": "evidence:e01",
+          "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e",
+          "offline_fusion_input_digest": "e07e6af2c2dcb2a3834d2fb97ab363b77fee7303933eaff6dc560d8bf15e1f00",
+          "expected_proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+          "parent_dependency": {
+            "required": false,
+            "frozen_parent_fact_instance_id": null,
+            "parent_proposition_key": null,
+            "execution_rule": null
+          },
+          "existing_hosted_state": "absent_before_batch_2",
+          "planned_operation": "controlled_rpc_confirm_to_current",
+          "rpc_materialization": {
+            "source": {
+              "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+              "publisher": "ROUND LAB",
+              "source_kind": "official_brand_page",
+              "source_metadata": {
+                "frozen_source_id": "s01",
+                "exact_product_match": "yes",
+                "source_authority_candidate": "product_specific_primary",
+                "source_language": "ko",
+                "source_notes": "KR exact.",
+                "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s01"
+              },
+              "content_digest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+              "external_snapshot_reference": null,
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "published_at": null,
+              "accessed_at": "2026-08-08",
+              "observed_at": null
+            },
+            "binding": {
+              "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "binding_state": "exact_subject_match",
+              "scope_relation": "equivalent",
+              "presentation_metadata": {
+                "frozen_exact_product_match": "yes",
+                "source_market": "KR",
+                "selected_product_market": "KR",
+                "source_notes": "KR exact."
+              },
+              "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+              "reviewed_at": "2026-08-08"
+            },
+            "evidence": {
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "spf_value",
+              "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "proposition_value_identity": null,
+              "parent_proposition_key": null,
+              "evidence_class": "product_claim",
+              "evidence_authority": "product_specific_primary",
+              "confidence": "high",
+              "support_direction": "supports",
+              "negative_admissibility": "not_applicable",
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {
+                "plus_modifier": "plus"
+              },
+              "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e",
+              "supersedes_evidence_id": null
+            },
+            "confirmation_template": {
+              "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "spf_value",
+              "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "semantic_status": "supported",
+              "value_type": "number",
+              "value_boolean": null,
+              "value_enum": null,
+              "value_number": 50,
+              "value_unit": null,
+              "value_range_min": null,
+              "value_range_max": null,
+              "value_entity_identifier": null,
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {
+                "plus_modifier": "plus"
+              },
+              "parent_fact_instance_id": null,
+              "parent_proposition_key": null,
+              "authority_ceiling": "product_specific_primary",
+              "fused_confidence": "high",
+              "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+              "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+              "supporting_evidence_ids": [
+                "__HOSTED_EVIDENCE_ID__"
+              ],
+              "opposing_evidence_ids": []
+            }
+          }
+        },
+        {
+          "proposal_ref": "fact:f02",
+          "pilot_id": "S1",
+          "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+          "fact_key": "uva_label",
+          "typed_value": "PA++++",
+          "semantic_status": "supported",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "source_ref": "source:s01",
+          "binding_ref": "binding:s01:S1",
+          "evidence_ref": "evidence:e02",
+          "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d",
+          "offline_fusion_input_digest": "8b8ccad74c734c0bb336c94c858dd59e3af2ba5a68b855640bab75ce411f3b8c",
+          "expected_proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+          "parent_dependency": {
+            "required": false,
+            "frozen_parent_fact_instance_id": null,
+            "parent_proposition_key": null,
+            "execution_rule": null
+          },
+          "existing_hosted_state": "absent_before_batch_2",
+          "planned_operation": "controlled_rpc_confirm_to_current",
+          "rpc_materialization": {
+            "source": {
+              "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+              "publisher": "ROUND LAB",
+              "source_kind": "official_brand_page",
+              "source_metadata": {
+                "frozen_source_id": "s01",
+                "exact_product_match": "yes",
+                "source_authority_candidate": "product_specific_primary",
+                "source_language": "ko",
+                "source_notes": "KR exact.",
+                "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s01"
+              },
+              "content_digest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+              "external_snapshot_reference": null,
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "published_at": null,
+              "accessed_at": "2026-08-08",
+              "observed_at": null
+            },
+            "binding": {
+              "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "binding_state": "exact_subject_match",
+              "scope_relation": "equivalent",
+              "presentation_metadata": {
+                "frozen_exact_product_match": "yes",
+                "source_market": "KR",
+                "selected_product_market": "KR",
+                "source_notes": "KR exact."
+              },
+              "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+              "reviewed_at": "2026-08-08"
+            },
+            "evidence": {
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "uva_label",
+              "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "proposition_value_identity": null,
+              "parent_proposition_key": null,
+              "evidence_class": "product_claim",
+              "evidence_authority": "product_specific_primary",
+              "confidence": "high",
+              "support_direction": "supports",
+              "negative_admissibility": "not_applicable",
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d",
+              "supersedes_evidence_id": null
+            },
+            "confirmation_template": {
+              "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "uva_label",
+              "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "semantic_status": "supported",
+              "value_type": "enum",
+              "value_boolean": null,
+              "value_enum": "PA++++",
+              "value_number": null,
+              "value_unit": null,
+              "value_range_min": null,
+              "value_range_max": null,
+              "value_entity_identifier": null,
+              "market": "KR",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "parent_fact_instance_id": null,
+              "parent_proposition_key": null,
+              "authority_ceiling": "product_specific_primary",
+              "fused_confidence": "high",
+              "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+              "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+              "supporting_evidence_ids": [
+                "__HOSTED_EVIDENCE_ID__"
+              ],
+              "opposing_evidence_ids": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "pilot_id": "S2",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand": "Beauty of Joseon",
+      "name": "맑은쌀 선크림 / Relief Sun : Rice + Probiotics",
+      "category": "sunscreen",
+      "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "subject_payload": {
+        "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+        "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": "Relief_Sun_Rice_Probiotics",
+        "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+        "formulation_label": "맑은쌀 선크림 / Relief Sun : Rice + Probiotics",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "selection_score": {
+        "new_fact_family_count_desc": 0,
+        "eligible_fact_count_desc": 1,
+        "stable_pilot_id": "S2",
+        "stable_product_id": "25b2763f-529f-4b2e-a436-2e0776279c55"
+      },
+      "facts": [
+        {
+          "proposal_ref": "fact:f03",
+          "pilot_id": "S2",
+          "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+          "fact_key": "spf_value",
+          "typed_value": 50,
+          "semantic_status": "supported",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "source_ref": "source:s03",
+          "binding_ref": "binding:s03:S2",
+          "evidence_ref": "evidence:e04",
+          "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270",
+          "offline_fusion_input_digest": "4d53bd3d73204fa8e003d1c78b223e6476c520211d03b7d3254ffd6f67ce96c4",
+          "expected_proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+          "parent_dependency": {
+            "required": false,
+            "frozen_parent_fact_instance_id": null,
+            "parent_proposition_key": null,
+            "execution_rule": null
+          },
+          "existing_hosted_state": "absent_before_batch_2",
+          "planned_operation": "controlled_rpc_confirm_to_current",
+          "rpc_materialization": {
+            "source": {
+              "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+              "publisher": "Beauty of Joseon",
+              "source_kind": "official_product_page",
+              "source_metadata": {
+                "frozen_source_id": "s03",
+                "exact_product_match": "yes",
+                "source_authority_candidate": "product_specific_primary",
+                "source_language": "en",
+                "source_notes": "Exact product.",
+                "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s03"
+              },
+              "content_digest": "cca19ddb32d09d2995995bbe8a8591882bc9cc29367cc5030b78ea726b2adadd",
+              "external_snapshot_reference": null,
+              "market": "GLOBAL",
+              "region": null,
+              "locale": null,
+              "published_at": null,
+              "accessed_at": "2026-08-08",
+              "observed_at": null
+            },
+            "binding": {
+              "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "binding_state": "exact_subject_match",
+              "scope_relation": "equivalent",
+              "presentation_metadata": {
+                "frozen_exact_product_match": "yes",
+                "source_market": "GLOBAL",
+                "selected_product_market": "KR",
+                "source_notes": "Exact product."
+              },
+              "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+              "reviewed_at": "2026-08-08"
+            },
+            "evidence": {
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "spf_value",
+              "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "proposition_value_identity": null,
+              "parent_proposition_key": null,
+              "evidence_class": "product_claim",
+              "evidence_authority": "product_specific_primary",
+              "confidence": "high",
+              "support_direction": "supports",
+              "negative_admissibility": "not_applicable",
+              "market": "GLOBAL",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {
+                "plus_modifier": "plus"
+              },
+              "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270",
+              "supersedes_evidence_id": null
+            },
+            "confirmation_template": {
+              "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "spf_value",
+              "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "semantic_status": "supported",
+              "value_type": "number",
+              "value_boolean": null,
+              "value_enum": null,
+              "value_number": 50,
+              "value_unit": null,
+              "value_range_min": null,
+              "value_range_max": null,
+              "value_entity_identifier": null,
+              "market": "GLOBAL",
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {
+                "plus_modifier": "plus"
+              },
+              "parent_fact_instance_id": null,
+              "parent_proposition_key": null,
+              "authority_ceiling": "product_specific_primary",
+              "fused_confidence": "high",
+              "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+              "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+              "supporting_evidence_ids": [
+                "__HOSTED_EVIDENCE_ID__"
+              ],
+              "opposing_evidence_ids": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "pilot_id": "T1",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "brand": "Derma Factory",
+      "name": "Niacinamide 20% Serum / 나이아신아마이드 20% 세럼",
+      "category": "treatment",
+      "subject_semantic_key": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+      "identity_status": "resolved",
+      "current_state": "current",
+      "subject_payload": {
+        "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+        "subject_semantic_key": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+        "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+        "variant_key": null,
+        "formulation_revision_key": "pilot-freeze-3637fac10fd819b43eeb697447a4ef9b",
+        "formulation_label": "Niacinamide 20% Serum / 나이아신아마이드 20% 세럼",
+        "identity_status": "resolved",
+        "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+        "current_state": "current",
+        "market_applicability": null,
+        "region_applicability": null,
+        "valid_from": null,
+        "valid_to": null,
+        "predecessor_subject_id": null,
+        "supersession_kind": null
+      },
+      "selection_score": {
+        "new_fact_family_count_desc": 1,
+        "eligible_fact_count_desc": 2,
+        "stable_pilot_id": "T1",
+        "stable_product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07"
+      },
+      "facts": [
+        {
+          "proposal_ref": "fact:f06",
+          "pilot_id": "T1",
+          "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+          "fact_key": "contains_active",
+          "typed_value": "niacinamide",
+          "semantic_status": "supported",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "source_ref": "source:s06",
+          "binding_ref": "binding:s06:T1",
+          "evidence_ref": "evidence:e08",
+          "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48",
+          "offline_fusion_input_digest": "5a25658a1d783d039cc80066380d2be9949d192c88c412a27dff3b14b6542f53",
+          "expected_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "parent_dependency": {
+            "required": false,
+            "frozen_parent_fact_instance_id": null,
+            "parent_proposition_key": null,
+            "execution_rule": null
+          },
+          "existing_hosted_state": "absent_before_batch_2",
+          "planned_operation": "controlled_rpc_confirm_to_current",
+          "rpc_materialization": {
+            "source": {
+              "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+              "publisher": "Derma Factory",
+              "source_kind": "official_product_page",
+              "source_metadata": {
+                "frozen_source_id": "s06",
+                "exact_product_match": "yes",
+                "source_authority_candidate": "product_specific_primary",
+                "source_language": "en",
+                "source_notes": "Exact product.",
+                "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06"
+              },
+              "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+              "external_snapshot_reference": null,
+              "market": "KR_US",
+              "region": null,
+              "locale": null,
+              "published_at": null,
+              "accessed_at": "2026-08-08",
+              "observed_at": null
+            },
+            "binding": {
+              "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "binding_state": "exact_subject_match",
+              "scope_relation": "equivalent",
+              "presentation_metadata": {
+                "frozen_exact_product_match": "yes",
+                "source_market": "KR_US",
+                "selected_product_market": "KR",
+                "source_notes": "Exact product."
+              },
+              "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+              "reviewed_at": "2026-08-08"
+            },
+            "evidence": {
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "contains_active",
+              "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "proposition_value_identity": "niacinamide",
+              "parent_proposition_key": null,
+              "evidence_class": "composition_identity",
+              "evidence_authority": "product_specific_primary",
+              "confidence": "high",
+              "support_direction": "supports",
+              "negative_admissibility": "not_applicable",
+              "market": null,
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48",
+              "supersedes_evidence_id": null
+            },
+            "confirmation_template": {
+              "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "contains_active",
+              "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "semantic_status": "supported",
+              "value_type": "entity_identifier",
+              "value_boolean": null,
+              "value_enum": null,
+              "value_number": null,
+              "value_unit": null,
+              "value_range_min": null,
+              "value_range_max": null,
+              "value_entity_identifier": "niacinamide",
+              "market": null,
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "parent_fact_instance_id": null,
+              "parent_proposition_key": null,
+              "authority_ceiling": "product_specific_primary",
+              "fused_confidence": "high",
+              "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+              "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+              "supporting_evidence_ids": [
+                "__HOSTED_EVIDENCE_ID__"
+              ],
+              "opposing_evidence_ids": []
+            }
+          }
+        },
+        {
+          "proposal_ref": "fact:f07",
+          "pilot_id": "T1",
+          "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+          "fact_key": "active_concentration",
+          "typed_value": {
+            "amount": 20,
+            "unit": "percent"
+          },
+          "semantic_status": "supported",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "source_ref": "source:s06",
+          "binding_ref": "binding:s06:T1",
+          "evidence_ref": "evidence:e09",
+          "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a",
+          "offline_fusion_input_digest": "74b5ba08982b2f75540f22af05dba81ce904f4212ae5b9c6673aa2e18a26d967",
+          "expected_proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+          "parent_dependency": {
+            "required": true,
+            "frozen_parent_fact_instance_id": "f06",
+            "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+            "execution_rule": "confirm_parent_first_then_bind_hosted_parent_fact_instance_id"
+          },
+          "existing_hosted_state": "absent_before_batch_2",
+          "planned_operation": "controlled_rpc_confirm_to_current",
+          "rpc_materialization": {
+            "source": {
+              "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+              "publisher": "Derma Factory",
+              "source_kind": "official_product_page",
+              "source_metadata": {
+                "frozen_source_id": "s06",
+                "exact_product_match": "yes",
+                "source_authority_candidate": "product_specific_primary",
+                "source_language": "en",
+                "source_notes": "Exact product.",
+                "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06"
+              },
+              "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+              "external_snapshot_reference": null,
+              "market": "KR_US",
+              "region": null,
+              "locale": null,
+              "published_at": null,
+              "accessed_at": "2026-08-08",
+              "observed_at": null
+            },
+            "binding": {
+              "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "binding_state": "exact_subject_match",
+              "scope_relation": "equivalent",
+              "presentation_metadata": {
+                "frozen_exact_product_match": "yes",
+                "source_market": "KR_US",
+                "selected_product_market": "KR",
+                "source_notes": "Exact product."
+              },
+              "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+              "reviewed_at": "2026-08-08"
+            },
+            "evidence": {
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "active_concentration",
+              "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "proposition_value_identity": null,
+              "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+              "evidence_class": "product_claim",
+              "evidence_authority": "product_specific_primary",
+              "confidence": "high",
+              "support_direction": "supports",
+              "negative_admissibility": "not_applicable",
+              "market": null,
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a",
+              "supersedes_evidence_id": null
+            },
+            "confirmation_template": {
+              "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+              "subject_id": "__HOSTED_SUBJECT_ID__",
+              "registry_version": "product-fact-registry-cross-category-v1",
+              "fact_key": "active_concentration",
+              "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+              "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+              "semantic_status": "supported",
+              "value_type": "number_unit",
+              "value_boolean": null,
+              "value_enum": null,
+              "value_number": 20,
+              "value_unit": "percent",
+              "value_range_min": null,
+              "value_range_max": null,
+              "value_entity_identifier": null,
+              "market": null,
+              "region": null,
+              "locale": null,
+              "valid_from": null,
+              "valid_to": null,
+              "qualifier": {},
+              "parent_fact_instance_id": "__HOSTED_PARENT_FACT_INSTANCE_ID__",
+              "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+              "authority_ceiling": "product_specific_primary",
+              "fused_confidence": "high",
+              "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+              "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+              "supporting_evidence_ids": [
+                "__HOSTED_EVIDENCE_ID__"
+              ],
+              "opposing_evidence_ids": []
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "selected_subjects": [
+    {
+      "pilot_id": "S1",
+      "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "subject_semantic_key": "cb287a3632034e8626d1580a2b9d82493730882f7694f73accf6cdca1d790e3e",
+      "identity_status": "resolved",
+      "current_state": "current"
+    },
+    {
+      "pilot_id": "S2",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+      "identity_status": "resolved",
+      "current_state": "current"
+    },
+    {
+      "pilot_id": "T1",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "subject_semantic_key": "5230aa736bc620e04fc7938fd2ceab0ba00eb63b8b313e3556f361cf56be5003",
+      "identity_status": "resolved",
+      "current_state": "current"
+    }
+  ],
+  "selected_facts": [
+    {
+      "proposal_ref": "fact:f01",
+      "pilot_id": "S1",
+      "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "fact_key": "spf_value",
+      "typed_value": 50,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "source_ref": "source:s01",
+      "binding_ref": "binding:s01:S1",
+      "evidence_ref": "evidence:e01",
+      "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e",
+      "offline_fusion_input_digest": "e07e6af2c2dcb2a3834d2fb97ab363b77fee7303933eaff6dc560d8bf15e1f00",
+      "expected_proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+      "parent_dependency": {
+        "required": false,
+        "frozen_parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "execution_rule": null
+      },
+      "existing_hosted_state": "absent_before_batch_2",
+      "planned_operation": "controlled_rpc_confirm_to_current",
+      "rpc_materialization": {
+        "source": {
+          "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+          "publisher": "ROUND LAB",
+          "source_kind": "official_brand_page",
+          "source_metadata": {
+            "frozen_source_id": "s01",
+            "exact_product_match": "yes",
+            "source_authority_candidate": "product_specific_primary",
+            "source_language": "ko",
+            "source_notes": "KR exact.",
+            "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s01"
+          },
+          "content_digest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+          "external_snapshot_reference": null,
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-08-08",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "frozen_exact_product_match": "yes",
+            "source_market": "KR",
+            "selected_product_market": "KR",
+            "source_notes": "KR exact."
+          },
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "reviewed_at": "2026-08-08"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "spf_value",
+          "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": null,
+          "parent_proposition_key": null,
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {
+            "plus_modifier": "plus"
+          },
+          "canonical_evidence_digest": "17376687f53f9f6803400389253767b1ef0096d779d15f048ed3c8bf1659df4e",
+          "supersedes_evidence_id": null
+        },
+        "confirmation_template": {
+          "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "spf_value",
+          "proposition_key": "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "semantic_status": "supported",
+          "value_type": "number",
+          "value_boolean": null,
+          "value_enum": null,
+          "value_number": 50,
+          "value_unit": null,
+          "value_range_min": null,
+          "value_range_max": null,
+          "value_entity_identifier": null,
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {
+            "plus_modifier": "plus"
+          },
+          "parent_fact_instance_id": null,
+          "parent_proposition_key": null,
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+          "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+          "supporting_evidence_ids": [
+            "__HOSTED_EVIDENCE_ID__"
+          ],
+          "opposing_evidence_ids": []
+        }
+      }
+    },
+    {
+      "proposal_ref": "fact:f02",
+      "pilot_id": "S1",
+      "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "fact_key": "uva_label",
+      "typed_value": "PA++++",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "source_ref": "source:s01",
+      "binding_ref": "binding:s01:S1",
+      "evidence_ref": "evidence:e02",
+      "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d",
+      "offline_fusion_input_digest": "8b8ccad74c734c0bb336c94c858dd59e3af2ba5a68b855640bab75ce411f3b8c",
+      "expected_proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+      "parent_dependency": {
+        "required": false,
+        "frozen_parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "execution_rule": null
+      },
+      "existing_hosted_state": "absent_before_batch_2",
+      "planned_operation": "controlled_rpc_confirm_to_current",
+      "rpc_materialization": {
+        "source": {
+          "canonical_locator": "https://roundlab.co.kr/article/press/8/3087",
+          "publisher": "ROUND LAB",
+          "source_kind": "official_brand_page",
+          "source_metadata": {
+            "frozen_source_id": "s01",
+            "exact_product_match": "yes",
+            "source_authority_candidate": "product_specific_primary",
+            "source_language": "ko",
+            "source_notes": "KR exact.",
+            "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s01"
+          },
+          "content_digest": "879027d0cd4ffb563e7c028ee98b6454055f6a73c609c2bad80321474886049a",
+          "external_snapshot_reference": null,
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-08-08",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "frozen_exact_product_match": "yes",
+            "source_market": "KR",
+            "selected_product_market": "KR",
+            "source_notes": "KR exact."
+          },
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "reviewed_at": "2026-08-08"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "uva_label",
+          "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": null,
+          "parent_proposition_key": null,
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "0cd078d24f7efe138329010c8b3e1d2b6a5530ce3c8d4ba14ab6e1009c29ef7d",
+          "supersedes_evidence_id": null
+        },
+        "confirmation_template": {
+          "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "uva_label",
+          "proposition_key": "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "semantic_status": "supported",
+          "value_type": "enum",
+          "value_boolean": null,
+          "value_enum": "PA++++",
+          "value_number": null,
+          "value_unit": null,
+          "value_range_min": null,
+          "value_range_max": null,
+          "value_entity_identifier": null,
+          "market": "KR",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "parent_fact_instance_id": null,
+          "parent_proposition_key": null,
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+          "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+          "supporting_evidence_ids": [
+            "__HOSTED_EVIDENCE_ID__"
+          ],
+          "opposing_evidence_ids": []
+        }
+      }
+    },
+    {
+      "proposal_ref": "fact:f03",
+      "pilot_id": "S2",
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "fact_key": "spf_value",
+      "typed_value": 50,
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "source_ref": "source:s03",
+      "binding_ref": "binding:s03:S2",
+      "evidence_ref": "evidence:e04",
+      "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270",
+      "offline_fusion_input_digest": "4d53bd3d73204fa8e003d1c78b223e6476c520211d03b7d3254ffd6f67ce96c4",
+      "expected_proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+      "parent_dependency": {
+        "required": false,
+        "frozen_parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "execution_rule": null
+      },
+      "existing_hosted_state": "absent_before_batch_2",
+      "planned_operation": "controlled_rpc_confirm_to_current",
+      "rpc_materialization": {
+        "source": {
+          "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+          "publisher": "Beauty of Joseon",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "frozen_source_id": "s03",
+            "exact_product_match": "yes",
+            "source_authority_candidate": "product_specific_primary",
+            "source_language": "en",
+            "source_notes": "Exact product.",
+            "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s03"
+          },
+          "content_digest": "cca19ddb32d09d2995995bbe8a8591882bc9cc29367cc5030b78ea726b2adadd",
+          "external_snapshot_reference": null,
+          "market": "GLOBAL",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-08-08",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "frozen_exact_product_match": "yes",
+            "source_market": "GLOBAL",
+            "selected_product_market": "KR",
+            "source_notes": "Exact product."
+          },
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "reviewed_at": "2026-08-08"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "spf_value",
+          "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": null,
+          "parent_proposition_key": null,
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": "GLOBAL",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {
+            "plus_modifier": "plus"
+          },
+          "canonical_evidence_digest": "9111898b0fd5e4c134238c692163e60a87ee273c5667430b14bfe98ee16e5270",
+          "supersedes_evidence_id": null
+        },
+        "confirmation_template": {
+          "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "spf_value",
+          "proposition_key": "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "semantic_status": "supported",
+          "value_type": "number",
+          "value_boolean": null,
+          "value_enum": null,
+          "value_number": 50,
+          "value_unit": null,
+          "value_range_min": null,
+          "value_range_max": null,
+          "value_entity_identifier": null,
+          "market": "GLOBAL",
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {
+            "plus_modifier": "plus"
+          },
+          "parent_fact_instance_id": null,
+          "parent_proposition_key": null,
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+          "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+          "supporting_evidence_ids": [
+            "__HOSTED_EVIDENCE_ID__"
+          ],
+          "opposing_evidence_ids": []
+        }
+      }
+    },
+    {
+      "proposal_ref": "fact:f06",
+      "pilot_id": "T1",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "fact_key": "contains_active",
+      "typed_value": "niacinamide",
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "source_ref": "source:s06",
+      "binding_ref": "binding:s06:T1",
+      "evidence_ref": "evidence:e08",
+      "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48",
+      "offline_fusion_input_digest": "5a25658a1d783d039cc80066380d2be9949d192c88c412a27dff3b14b6542f53",
+      "expected_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "parent_dependency": {
+        "required": false,
+        "frozen_parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "execution_rule": null
+      },
+      "existing_hosted_state": "absent_before_batch_2",
+      "planned_operation": "controlled_rpc_confirm_to_current",
+      "rpc_materialization": {
+        "source": {
+          "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "publisher": "Derma Factory",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "frozen_source_id": "s06",
+            "exact_product_match": "yes",
+            "source_authority_candidate": "product_specific_primary",
+            "source_language": "en",
+            "source_notes": "Exact product.",
+            "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06"
+          },
+          "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+          "external_snapshot_reference": null,
+          "market": "KR_US",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-08-08",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "frozen_exact_product_match": "yes",
+            "source_market": "KR_US",
+            "selected_product_market": "KR",
+            "source_notes": "Exact product."
+          },
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "reviewed_at": "2026-08-08"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "contains_active",
+          "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": "niacinamide",
+          "parent_proposition_key": null,
+          "evidence_class": "composition_identity",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": null,
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "aa0cafc9907296e9f351236dd96d1a7fc9ff898e649f874d522629d98bc6ed48",
+          "supersedes_evidence_id": null
+        },
+        "confirmation_template": {
+          "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "contains_active",
+          "proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "semantic_status": "supported",
+          "value_type": "entity_identifier",
+          "value_boolean": null,
+          "value_enum": null,
+          "value_number": null,
+          "value_unit": null,
+          "value_range_min": null,
+          "value_range_max": null,
+          "value_entity_identifier": "niacinamide",
+          "market": null,
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "parent_fact_instance_id": null,
+          "parent_proposition_key": null,
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+          "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+          "supporting_evidence_ids": [
+            "__HOSTED_EVIDENCE_ID__"
+          ],
+          "opposing_evidence_ids": []
+        }
+      }
+    },
+    {
+      "proposal_ref": "fact:f07",
+      "pilot_id": "T1",
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "fact_key": "active_concentration",
+      "typed_value": {
+        "amount": 20,
+        "unit": "percent"
+      },
+      "semantic_status": "supported",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "source_ref": "source:s06",
+      "binding_ref": "binding:s06:T1",
+      "evidence_ref": "evidence:e09",
+      "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a",
+      "offline_fusion_input_digest": "74b5ba08982b2f75540f22af05dba81ce904f4212ae5b9c6673aa2e18a26d967",
+      "expected_proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+      "parent_dependency": {
+        "required": true,
+        "frozen_parent_fact_instance_id": "f06",
+        "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+        "execution_rule": "confirm_parent_first_then_bind_hosted_parent_fact_instance_id"
+      },
+      "existing_hosted_state": "absent_before_batch_2",
+      "planned_operation": "controlled_rpc_confirm_to_current",
+      "rpc_materialization": {
+        "source": {
+          "canonical_locator": "https://www.dermafactory.net/products/niacinamide-20-serum-30ml?variant=46478659616933",
+          "publisher": "Derma Factory",
+          "source_kind": "official_product_page",
+          "source_metadata": {
+            "frozen_source_id": "s06",
+            "exact_product_match": "yes",
+            "source_authority_candidate": "product_specific_primary",
+            "source_language": "en",
+            "source_notes": "Exact product.",
+            "provenance_container": "evidence/product-evidence-decision-axis-v1/cross-category-real-evidence-pilot-v1.json#sources/s06"
+          },
+          "content_digest": "98279671fb0e027d35a199e3d02c913cd98e891f2dd8fe8bf837f730a022b291",
+          "external_snapshot_reference": null,
+          "market": "KR_US",
+          "region": null,
+          "locale": null,
+          "published_at": null,
+          "accessed_at": "2026-08-08",
+          "observed_at": null
+        },
+        "binding": {
+          "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "binding_state": "exact_subject_match",
+          "scope_relation": "equivalent",
+          "presentation_metadata": {
+            "frozen_exact_product_match": "yes",
+            "source_market": "KR_US",
+            "selected_product_market": "KR",
+            "source_notes": "Exact product."
+          },
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "reviewed_at": "2026-08-08"
+        },
+        "evidence": {
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "active_concentration",
+          "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": null,
+          "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "evidence_class": "product_claim",
+          "evidence_authority": "product_specific_primary",
+          "confidence": "high",
+          "support_direction": "supports",
+          "negative_admissibility": "not_applicable",
+          "market": null,
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "canonical_evidence_digest": "7ff58a2906aa59290ef7b48e837c98ce9461ed481be02d34b8e8ce474773b88a",
+          "supersedes_evidence_id": null
+        },
+        "confirmation_template": {
+          "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+          "subject_id": "__HOSTED_SUBJECT_ID__",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "fact_key": "active_concentration",
+          "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "semantic_status": "supported",
+          "value_type": "number_unit",
+          "value_boolean": null,
+          "value_enum": null,
+          "value_number": 20,
+          "value_unit": "percent",
+          "value_range_min": null,
+          "value_range_max": null,
+          "value_entity_identifier": null,
+          "market": null,
+          "region": null,
+          "locale": null,
+          "valid_from": null,
+          "valid_to": null,
+          "qualifier": {},
+          "parent_fact_instance_id": "__HOSTED_PARENT_FACT_INSTANCE_ID__",
+          "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+          "authority_ceiling": "product_specific_primary",
+          "fused_confidence": "high",
+          "fusion_policy_version": "cross-category-real-fact-mapping-pilot-v1:no-recalibration",
+          "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+          "supporting_evidence_ids": [
+            "__HOSTED_EVIDENCE_ID__"
+          ],
+          "opposing_evidence_ids": []
+        }
+      }
+    }
+  ],
+  "excluded_products": [
+    {
+      "pilot_id": "M1",
+      "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "reason": "authority_below_batch_threshold",
+      "detail": "no supported high-confidence product-specific-primary Fact with admissible exact/equivalent Evidence"
+    },
+    {
+      "pilot_id": "M2",
+      "product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+      "reason": "already_adopted",
+      "detail": "existing Hosted Current product before Batch 2"
+    },
+    {
+      "pilot_id": "M3",
+      "product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "reason": "authority_below_batch_threshold",
+      "detail": "no supported high-confidence product-specific-primary Fact with admissible exact/equivalent Evidence"
+    },
+    {
+      "pilot_id": "P1",
+      "product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+      "reason": "authority_below_batch_threshold",
+      "detail": "no supported high-confidence product-specific-primary Fact with admissible exact/equivalent Evidence"
+    },
+    {
+      "pilot_id": "P2",
+      "product_id": "38dc094e-4148-4566-a743-a09815265f44",
+      "reason": "identity_ambiguous",
+      "detail": "frozen_identity_status_ambiguous"
+    },
+    {
+      "pilot_id": "P3",
+      "product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+      "reason": "already_adopted",
+      "detail": "existing Hosted Current product before Batch 2"
+    },
+    {
+      "pilot_id": "S3",
+      "product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "reason": "already_adopted",
+      "detail": "existing Hosted Current product before Batch 2"
+    },
+    {
+      "pilot_id": "T2",
+      "product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "reason": "already_adopted",
+      "detail": "existing Hosted Current product before Batch 2"
+    },
+    {
+      "pilot_id": "T3",
+      "product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+      "reason": "already_adopted",
+      "detail": "existing Hosted Current product before Batch 2"
+    }
+  ],
+  "excluded_facts": [
+    {
+      "proposal_ref": "fact:f18",
+      "pilot_id": "M2",
+      "fact_key": "active_concentration",
+      "proposition_key": "0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f16",
+      "pilot_id": "M2",
+      "fact_key": "barrier_support_claim",
+      "proposition_key": "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f17",
+      "pilot_id": "M2",
+      "fact_key": "contains_active",
+      "proposition_key": "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f15",
+      "pilot_id": "M2",
+      "fact_key": "primary_use_role",
+      "proposition_key": "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f22",
+      "pilot_id": "P3",
+      "fact_key": "contains_active",
+      "proposition_key": "1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f23",
+      "pilot_id": "P3",
+      "fact_key": "contains_active",
+      "proposition_key": "b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f21",
+      "pilot_id": "P3",
+      "fact_key": "pad_surface_texture",
+      "proposition_key": "4ab8ddaeb4b84042635fa47846946b09bf202972b87eeaff694049c93752e06a",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f19",
+      "pilot_id": "P3",
+      "fact_key": "product_format",
+      "proposition_key": "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f20",
+      "pilot_id": "P3",
+      "fact_key": "wipe_off_use",
+      "proposition_key": "5a48189d6158fb9bc8f994779e766adba162c3e9d13b5ff73dfccdf1fe4757db",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:review:S2:uv_filter_type:reviewed_not_established",
+      "pilot_id": "S2",
+      "fact_key": "uv_filter_type",
+      "proposition_key": "492e51e6be88e3c76f427a8e21ca25ea1f8d661b895e1a6d2013df7b35d3a054",
+      "semantic_status": "reviewed_not_established",
+      "reason": "reviewed_not_established"
+    },
+    {
+      "proposal_ref": "fact:f04",
+      "pilot_id": "S3",
+      "fact_key": "spf_value",
+      "proposition_key": "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f05",
+      "pilot_id": "S3",
+      "fact_key": "uva_label",
+      "proposition_key": "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:review:S3:water_resistance_duration:reviewed_not_established",
+      "pilot_id": "S3",
+      "fact_key": "water_resistance_duration",
+      "proposition_key": "d99ed4a94b9b76103a4afa2c754c584b0ff0b4ef59bb639d19f050891e5ff94c",
+      "semantic_status": "reviewed_not_established",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f09",
+      "pilot_id": "T2",
+      "fact_key": "active_concentration",
+      "proposition_key": "7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f08",
+      "pilot_id": "T2",
+      "fact_key": "contains_active",
+      "proposition_key": "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f10",
+      "pilot_id": "T2",
+      "fact_key": "contains_active",
+      "proposition_key": "8178abcf346b1779b649fa935b0dec0d5ea874c9394081dc898debe1172d9c18",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f11",
+      "pilot_id": "T2",
+      "fact_key": "recommended_use_frequency",
+      "proposition_key": "f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f12",
+      "pilot_id": "T3",
+      "fact_key": "contains_active",
+      "proposition_key": "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f13",
+      "pilot_id": "T3",
+      "fact_key": "contains_active",
+      "proposition_key": "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:review:T3:hydration_change:evidence_insufficient",
+      "pilot_id": "T3",
+      "fact_key": "hydration_change",
+      "proposition_key": "8a4ec63c3e664d4f054f184728949c9b3f38fbc8a45dbe9b8e5a3ee8e1b9a60c",
+      "semantic_status": "evidence_insufficient",
+      "reason": "already_adopted"
+    },
+    {
+      "proposal_ref": "fact:f14",
+      "pilot_id": "T3",
+      "fact_key": "recommended_use_frequency",
+      "proposition_key": "6a251131fe601a73b41f4112231423346ba6198dfded3cabf09fffd010b23a1b",
+      "semantic_status": "supported",
+      "reason": "already_adopted"
+    }
+  ],
+  "parent_dependency_decisions": [
+    {
+      "pilot_id": "T1",
+      "fact_key": "active_concentration",
+      "proposition_key": "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+      "required": true,
+      "frozen_parent_fact_instance_id": "f06",
+      "parent_proposition_key": "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "execution_rule": "confirm_parent_first_then_bind_hosted_parent_fact_instance_id"
+    }
+  ],
+  "coverage": {
+    "categories": [
+      "sunscreen",
+      "treatment"
+    ],
+    "fact_families": [
+      "active_concentration",
+      "contains_active",
+      "spf_value",
+      "uva_label"
+    ],
+    "new_vs_batch_1_fact_families": [
+      "active_concentration"
+    ]
+  },
+  "expected_writes": {
+    "product_fact_registry_versions": 0,
+    "product_fact_definition_snapshots": 0,
+    "product_fact_subjects": 3,
+    "product_evidence_sources": 3,
+    "product_evidence_source_subject_bindings": 3,
+    "product_evidence_records": 5,
+    "product_fact_instances": 5,
+    "product_fact_evidence_links": 5,
+    "product_fact_review_assignments": 5,
+    "product_fact_review_events": 23,
+    "product_fact_confirmations": 5,
+    "product_fact_current": 5
+  },
+  "expected_final_hosted": {
+    "counts": {
+      "product_fact_registry_versions": 1,
+      "product_fact_definition_snapshots": 20,
+      "product_fact_subjects": 8,
+      "product_evidence_sources": 8,
+      "product_evidence_source_subject_bindings": 8,
+      "product_evidence_records": 13,
+      "product_fact_instances": 13,
+      "product_fact_evidence_links": 13,
+      "product_fact_review_assignments": 13,
+      "product_fact_review_events": 60,
+      "product_fact_confirmations": 13,
+      "product_fact_current": 13
+    },
+    "current_proposition_keys": [
+      "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+      "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+      "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+      "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+      "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a"
+    ],
+    "unique_adopted_product_count": 8,
+    "current_fact_count": 13,
+    "unexpected_current_count": 0
+  },
+  "summary": {
+    "new_products": 3,
+    "new_subjects": 3,
+    "new_facts": 5,
+    "new_current_pointers": 5,
+    "new_evidence_records": 5,
+    "unique_sources": 3,
+    "unique_bindings": 3,
+    "batch_limit_valid": true
+  },
+  "execution_contract": {
+    "repository_authority_before_hosted_write": true,
+    "registry_republish": false,
+    "controlled_rpc_only": true,
+    "direct_product_fact_table_write": false,
+    "preflight_before_each_confirm": true,
+    "preflight_zero_write_required": true,
+    "stale_prestate_negative_minimum": 1,
+    "confirm_exact_retry_required": true,
+    "existing_current_mutation_allowed": false,
+    "legacy_scalar_sync": false,
+    "migration_count": 0,
+    "ddl_count": 0
+  },
+  "lifecycle": {
+    "PRODUCT_FACT_PARTIAL_CATALOG_ADOPTION_PLANNED": true,
+    "PRODUCT_FACT_ADOPTION_BATCH_2_COMPLETE": false,
+    "CATALOG_FULLY_ADOPTED": false,
+    "PRODUCT_DECISION_AXIS_PRODUCTION_CALIBRATED": false,
+    "DECISION_AXIS_PRODUCTION_CONSUMPTION": false,
+    "RECOMMENDATION_SCORER_CHANGED": false,
+    "RECOMMENDATION_ACTIVATED": false,
+    "ADMIN_PRODUCT_FACT_UI_OPERATIONAL": false,
+    "HOSTED_WRITES_EXECUTED_BY_THIS_ARTIFACT_BUILD": 0
+  },
+  "plan_content_sha256": "c68a9249ee73aa90b2bfc57965f6d98b06cca80f9fdb81bcd612abcac46c0799"
+}
