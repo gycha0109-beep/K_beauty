@@ -120,7 +120,7 @@ for (const archetype of FACE_LAB_ARCHETYPE_REGISTRY.archetypes) {
     if (indicator.required) requiredAxes.add(axis);
     const allowed = ARCHETYPE_STRESS_FEATURE_CUE_REGISTRY[axis];
     assert.ok(allowed, `missing stress generation axis: ${axis}`);
-    for (const expected of indicator.expected) {
+    for (const expected of indicator.expectedValues) {
       assert.ok(allowed.includes(expected), `missing stress generation enum: ${axis}=${expected}`);
     }
   }
@@ -154,7 +154,7 @@ for (const archetype of FACE_LAB_ARCHETYPE_REGISTRY.archetypes) {
         .filter((indicator) => indicator.required)
         .map((indicator) => [
           axisFromIndicatorPath(indicator.path),
-          { value: indicator.expected[0], strength: "subtle" }
+          { value: indicator.expectedValues[0], strength: "subtle" }
         ])
     )
   };
