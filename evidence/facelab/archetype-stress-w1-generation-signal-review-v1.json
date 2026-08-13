@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "face-lab-archetype-stress-w1-generation-signal-review-v1",
+  "campaignId": "face-eval-c-archetype-stress-pilot-v1",
+  "sourceWaveId": "W1",
+  "sourceMainSha": "0a8182526c13b11494e560fb5733512791bb4bcc",
+  "registryVersion": "face-lab-archetype-rubric-20260727",
+  "sourceArtifacts": {
+    "preflightDigest": "dbc28d01ff6e0faef423c7a1fb543194e4a5c023b5662a19b19844628bead865",
+    "blindScoringDigest": "2fe94c8b96e561ed26ab30c37d356a89ac813df75237a72d387a33910078d539",
+    "revealDiagnosticDigest": "b0e2fc901d8ce68a8e96b894dea85c496e26df1d592c0384a8278827687d89ef"
+  },
+  "executionSummary": {
+    "generatedCandidates": 7,
+    "importedCandidates": 7,
+    "blindObservations": 7,
+    "providerObservationAttempts": 7,
+    "observationRetries": 0,
+    "humanJudgments": 0,
+    "consensusRuns": 0
+  },
+  "cueRecovery": {
+    "intendedCueCount": 14,
+    "exactMatched": 0,
+    "mismatched": 14,
+    "unavailable": 0,
+    "rubricRequiredMatched": 1,
+    "rubricRequiredAvailableNotMatched": 13
+  },
+  "candidateSummary": {
+    "targetBlindTopCount": 1,
+    "targetCount": 7,
+    "allTargetRequiredMatchedCount": 0,
+    "missingTargetRequiredEvidenceCount": 0,
+    "contradictionPresentCount": 0,
+    "availableAnalysisCount": 7
+  },
+  "blindTopDistribution": {
+    "puppy": 7
+  },
+  "classification": "W1_GENERATION_SIGNAL_REVIEW_REQUIRED",
+  "diagnosticInterpretation": [
+    "generation-side signal weak possible",
+    "ambiguous visual cue"
+  ],
+  "unsupportedCausalClaims": [
+    "generator_failure_proven",
+    "observation_failure_proven",
+    "rubric_failure_proven"
+  ],
+  "nextDiagnostic": "moderate_strength_required_axis_rerun",
+  "authorityClass": "local_synthetic_execution_summary",
+  "reviewDigest": "c4b4f9285a58738cb3c22548a97d4e17b2a1c081a3fc0aedc1fd0adb2f6fc7ab"
+}

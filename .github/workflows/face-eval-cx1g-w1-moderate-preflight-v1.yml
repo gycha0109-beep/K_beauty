@@ -1,0 +1,80 @@
+name: FACE-EVAL-CX1G W1 Moderate Preflight v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'evidence/facelab/archetype-stress-w1-generation-signal-review-v1.json'
+      - 'docs/domain/facelab/face-lab-archetype-stress-w1-generation-signal-review-v1.md'
+      - 'evidence/facelab/archetype-stress-w1-moderate-diagnostic-preflight-v1.json'
+      - 'scripts/check-face-lab-archetype-stress-w1-moderate-preflight-v1.mjs'
+      - 'scripts/export-face-lab-archetype-stress-w1-moderate-packet-v1.mjs'
+      - '.github/workflows/face-eval-cx1g-w1-moderate-preflight-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Freeze repository authority
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          source_sha="$(node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("evidence/facelab/archetype-stress-w1-moderate-diagnostic-preflight-v1.json","utf8")); process.stdout.write(x.sourceAuthority.sourceMainSha)')"
+          git merge-base --is-ancestor "$source_sha" HEAD
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$source_sha" "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+          fi
+
+      - name: Verify moderate diagnostic preflight
+        run: node scripts/check-face-lab-archetype-stress-w1-moderate-preflight-v1.mjs
+
+      - name: Export exact manual packet
+        run: node scripts/export-face-lab-archetype-stress-w1-moderate-packet-v1.mjs > /tmp/w1-moderate-packet.json
+
+      - name: Verify packet structure
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('/tmp/w1-moderate-packet.json', 'utf8'));
+          if (p.schemaVersion !== 'face-lab-archetype-stress-w1-moderate-manual-execution-packet-v1') process.exit(1);
+          if (!Array.isArray(p.slots) || p.slots.length !== 7) process.exit(1);
+          if (!/^[a-f0-9]{64}$/.test(p.packetDigest)) process.exit(1);
+          if (p.executionPolicy.copyPromptExactly !== true || p.executionPolicy.freeTextAdditionsAllowed !== false) process.exit(1);
+          if (p.slots.some((slot) => /at subtle strength/i.test(slot.positivePrompt))) process.exit(1);
+          if (p.slots.some((slot) => /\b(?:wolf|cat|puppy|deer|tofu|potato|dino)\b/i.test(slot.positivePrompt))) process.exit(1);
+          NODE
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$PR_BASE_SHA..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi

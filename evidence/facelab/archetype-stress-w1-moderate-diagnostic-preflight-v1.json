@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "face-lab-archetype-stress-w1-moderate-diagnostic-preflight-v1",
+  "diagnosticId": "face-eval-cx1g-w1-moderate-strength-v1",
+  "campaignId": "face-eval-c-archetype-stress-pilot-v1",
+  "sourceWaveId": "W1",
+  "diagnosticType": "required_axis_strength_escalation",
+  "status": "preflight_frozen_not_executed",
+  "sourceAuthority": {
+    "sourceMainSha": "0a8182526c13b11494e560fb5733512791bb4bcc",
+    "sourcePreflightDigest": "dbc28d01ff6e0faef423c7a1fb543194e4a5c023b5662a19b19844628bead865",
+    "sourceReviewDigest": "c4b4f9285a58738cb3c22548a97d4e17b2a1c081a3fc0aedc1fd0adb2f6fc7ab",
+    "registryVersion": "face-lab-archetype-rubric-20260727",
+    "generationSpecSchemaVersion": "generation-spec-v1",
+    "featureCueProfileVersion": "face-feature-cues-v2",
+    "archetypeTaxonomyVersion": "face-lab-archetype-taxonomy-v1",
+    "compiledPromptSchemaVersion": "compiled-prompt-v1",
+    "promptCompilerVersion": "prompt-compiler-v1",
+    "providerProfileId": "gpt-image-manual-v1",
+    "providerProfileVersion": "1.0.0"
+  },
+  "budgetState": {
+    "primarySlotsAuthorized": 7,
+    "providerCallsUsed": 0,
+    "generationAttemptsUsed": 0,
+    "technicalRetryReserveUsed": 0,
+    "syntheticAssetsWritten": 0,
+    "authoritativeObservationRunsUsed": 0
+  },
+  "executionPolicy": {
+    "copyPromptExactly": true,
+    "freeTextAdditionsAllowed": false,
+    "candidatesPerSlot": 1,
+    "technicalFailureRetryOnly": true,
+    "cueMismatchRegenerationAllowed": false,
+    "fallbackProviderAllowed": false,
+    "executeSequentially": true
+  },
+  "experimentalControl": {
+    "sourceStrength": "subtle",
+    "diagnosticStrength": "moderate",
+    "identityMatched": false,
+    "comparisonUnit": "cohort_slot_contract",
+    "administrativeProvenanceMayDiffer": true
+  },
+  "slots": [
+    {"ordinal":"01","diagnosticSlotId":"W1M-01","sourceSlotId":"W1-01-wolf","targetArchetypeMetadata":"wolf","subject":{"syntheticPersonOnly":true,"adultAgeBand":"20s","presentation":"feminine","regionalAppearanceHint":null,"personCount":1},"requiredCues":{"eyeLength":"long","straightCurveBalance":"straight"},"cueStrength":"moderate","sourceExpectedSpecDigest":"d1a272f70eb8caabd12285eb3a104b453676a87638a2e70610a073269d38783b","sourceExpectedPromptDigest":"c4b3f1a8c26487745d20c6975fa119064e7a1a3f724fe46a6da6fe53277233cb","sourceTemplateId":"w1m-wolf-required-axis","expectedSpecId":"gen_356f46340f93274f694d1641","expectedSpecDigest":"356f46340f93274f694d1641fac52b1bc23078d68333960e0275b27132d7065a","expectedPromptDigest":"74e703905f44a60d61b7a341ed6af04b1a27da20a782f57eb6af79016446aa96"},
+    {"ordinal":"02","diagnosticSlotId":"W1M-02","sourceSlotId":"W1-02-cat","targetArchetypeMetadata":"cat","subject":{"syntheticPersonOnly":true,"adultAgeBand":"30s","presentation":"masculine","regionalAppearanceHint":"korean_appearance_hint","personCount":1},"requiredCues":{"eyeDirection":"upturned","featureConcentration":"centered"},"cueStrength":"moderate","sourceExpectedSpecDigest":"20f2a4af296aaaf3cae181b0c0f31b96f013856f2569066cc2defee5af44b215","sourceExpectedPromptDigest":"c01e1ba107d3cb88ca2cd33c8cbc43fe836686d6433fdfd41433f0146ac68a3a","sourceTemplateId":"w1m-cat-required-axis","expectedSpecId":"gen_c09afda448e0e7aab6ac649a","expectedSpecDigest":"c09afda448e0e7aab6ac649a973455576e2d885f88d190c192a86129755f3f3b","expectedPromptDigest":"f749b33ad3086c52aae4d7fe526b257db5136f83dfcf7bdc23091900160fd5c7"},
+    {"ordinal":"03","diagnosticSlotId":"W1M-03","sourceSlotId":"W1-03-puppy","targetArchetypeMetadata":"puppy","subject":{"syntheticPersonOnly":true,"adultAgeBand":"40s","presentation":"androgynous","regionalAppearanceHint":null,"personCount":1},"requiredCues":{"eyeOpenness":"wide","straightCurveBalance":"curved"},"cueStrength":"moderate","sourceExpectedSpecDigest":"cf39535edaa29022683d0d022667f5924beae894d35fed0d5f76f72aa2d33205","sourceExpectedPromptDigest":"5d02f03b761707d741af9bd6e453bb69b6b3bbe6e9a75d5a4570870105dc3c81","sourceTemplateId":"w1m-puppy-required-axis","expectedSpecId":"gen_b54ff88bed85714ac1e1c868","expectedSpecDigest":"b54ff88bed85714ac1e1c8689ab78a4af6467bafd919d4725dc92907de6e72a5","expectedPromptDigest":"ddd82e7c0be993fa290f61f683b2fb0253bef52bc5f789ddf1b76bba375bee4a"},
+    {"ordinal":"04","diagnosticSlotId":"W1M-04","sourceSlotId":"W1-04-deer","targetArchetypeMetadata":"deer","subject":{"syntheticPersonOnly":true,"adultAgeBand":"50s","presentation":"feminine","regionalAppearanceHint":"korean_appearance_hint","personCount":1},"requiredCues":{"faceLengthBalance":"long","eyeOpenness":"wide"},"cueStrength":"moderate","sourceExpectedSpecDigest":"af74037112498ac2a3d41c34f26d13b3cf419839f1580a710e11871b710aa527","sourceExpectedPromptDigest":"ccae0562a2f31c4b390bf653e20b71c8ea768ba428fa49bf9a564d4f880194ea","sourceTemplateId":"w1m-deer-required-axis","expectedSpecId":"gen_0b94b89618f76d67be5a845d","expectedSpecDigest":"0b94b89618f76d67be5a845ddecc73470490f64bac6962774f54637882a8ff61","expectedPromptDigest":"62741cd5149e4894381750f8a73d02a564cbbeb0a4e189577b5dce89128a91f8"},
+    {"ordinal":"05","diagnosticSlotId":"W1M-05","sourceSlotId":"W1-05-tofu","targetArchetypeMetadata":"tofu","subject":{"syntheticPersonOnly":true,"adultAgeBand":"20s","presentation":"masculine","regionalAppearanceHint":null,"personCount":1},"requiredCues":{"featureContrast":"low","contourDefinition":"soft"},"cueStrength":"moderate","sourceExpectedSpecDigest":"0e60285adb81eef92ecace996b6d4b32802d6dbaafa93990aaf08e1525b76a11","sourceExpectedPromptDigest":"ac7ec33f9cd7727886048cc94755dc1efa73607c2b7ca7963a2a51d68ea21878","sourceTemplateId":"w1m-tofu-required-axis","expectedSpecId":"gen_48f3e09706557b58d84b887f","expectedSpecDigest":"48f3e09706557b58d84b887f3be7194e26f72543b1273a1a3c643e6cf0251294","expectedPromptDigest":"3ee522b531f6eca15e697ca707e5db04dc8f7658851d27d12ac9eab7957aa23c"},
+    {"ordinal":"06","diagnosticSlotId":"W1M-06","sourceSlotId":"W1-06-potato","targetArchetypeMetadata":"potato","subject":{"syntheticPersonOnly":true,"adultAgeBand":"30s","presentation":"androgynous","regionalAppearanceHint":"korean_appearance_hint","personCount":1},"requiredCues":{"faceLengthBalance":"short","faceShape":"round"},"cueStrength":"moderate","sourceExpectedSpecDigest":"a49b9231baab15e31a648cc64fbb959ba2f05dbd0bda46452689767133dcf640","sourceExpectedPromptDigest":"ce024ab9f1c4f01185fd3f452a9af8bbacff8c30f7de702cc2d29f0ec0e0b9f4","sourceTemplateId":"w1m-potato-required-axis","expectedSpecId":"gen_6ca9451a9c21601d47014cd6","expectedSpecDigest":"6ca9451a9c21601d47014cd64cd1d0f64a0b122015f54b8d96c1768e623ee2d3","expectedPromptDigest":"dda645d925476edcb326628192b2608bf333c0632d5006b1e425ca95bad4ca83"},
+    {"ordinal":"07","diagnosticSlotId":"W1M-07","sourceSlotId":"W1-07-dino","targetArchetypeMetadata":"dino","subject":{"syntheticPersonOnly":true,"adultAgeBand":"40s","presentation":"feminine","regionalAppearanceHint":null,"personCount":1},"requiredCues":{"featureScale":"large","jawlineAngularity":"angular"},"cueStrength":"moderate","sourceExpectedSpecDigest":"3cd2c91c43fc4d0a1188f309df5348827361bafa3e0bb9711a0b4b42f89691ff","sourceExpectedPromptDigest":"6c576e47b79692008818f0f0dedf2f518e6c6839e97745f1c5726386a646991b","sourceTemplateId":"w1m-dino-required-axis","expectedSpecId":"gen_2e7adc3ddb60d378e90372e5","expectedSpecDigest":"2e7adc3ddb60d378e90372e5668425d256cc3084a03fafcfcea710388d89f91a","expectedPromptDigest":"a0ca763cc4f9eb9aa28b3cf46e6c042ca1c4da85410520b81e68e505578ebd8c"}
+  ],
+  "preflightDigest": "b34045c27e397e6ebe782f4ad7fd40ea5d460e85b304ff6424770ad34870a5a5"
+}
