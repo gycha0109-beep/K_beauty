@@ -1,0 +1,63 @@
+name: FACE-EVAL-CX1 W1 Preflight v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'evidence/facelab/archetype-stress-w1-preflight-v1.json'
+      - 'scripts/check-face-lab-archetype-stress-w1-preflight-v1.mjs'
+      - '.github/workflows/face-eval-cx1-w1-preflight-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Freeze execution authority
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+            echo "FACE_EVAL_CX1_EXPECTED_BASE_SHA=$PR_BASE_SHA" >> "$GITHUB_ENV"
+          else
+            source_sha="$(node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("evidence/facelab/archetype-stress-w1-preflight-v1.json","utf8")); process.stdout.write(x.sourceAuthority.sourceMainSha)')"
+            git merge-base --is-ancestor "$source_sha" HEAD
+            echo "FACE_EVAL_CX1_EXPECTED_BASE_SHA=$source_sha" >> "$GITHUB_ENV"
+          fi
+
+      - name: Verify W1 preflight
+        run: node scripts/check-face-lab-archetype-stress-w1-preflight-v1.mjs
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$PR_BASE_SHA..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi

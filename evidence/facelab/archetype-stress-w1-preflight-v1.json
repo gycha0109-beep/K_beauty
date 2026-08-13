@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "face-lab-archetype-stress-w1-preflight-v1",
+  "campaignId": "face-eval-c-archetype-stress-pilot-v1",
+  "waveId": "W1",
+  "status": "preflight_frozen_not_executed",
+  "sourceAuthority": {
+    "sourceMainSha": "a00b59ea5d28d4cc544ed47f1e1265bb2c2e79b7",
+    "scenarioFreezeSchemaVersion": "face-lab-archetype-stress-scenario-freeze-v1",
+    "scenarioFreezeDigest": "5b137c955697badf40ba6892853bd8c7aebb456e59a1bd1efcff7e6aff3752c2",
+    "archetypeRegistryVersion": "face-lab-archetype-rubric-20260727",
+    "generationSpecSchemaVersion": "generation-spec-v1",
+    "featureCueProfileVersion": "face-feature-cues-v2",
+    "archetypeTaxonomyVersion": "face-lab-archetype-taxonomy-v1",
+    "compiledPromptSchemaVersion": "compiled-prompt-v1",
+    "promptCompilerVersion": "prompt-compiler-v1",
+    "providerProfileId": "gpt-image-manual-v1",
+    "providerProfileVersion": "1.0.0"
+  },
+  "budgetState": {
+    "primarySlotsAuthorized": 7,
+    "providerCallsUsed": 0,
+    "generationAttemptsUsed": 0,
+    "technicalRetryReserveUsed": 0,
+    "syntheticAssetsWritten": 0,
+    "authoritativeObservationRunsUsed": 0
+  },
+  "operatorCheckpoint": {
+    "requiredBeforeProviderExecution": true,
+    "status": "not_started"
+  },
+  "draftTemplate": {
+    "schemaVersion": "generation-spec-v1",
+    "purpose": "archetype_stress",
+    "capture": {
+      "mediaStyle": "realistic_documentary_reference",
+      "pose": "direct_frontal",
+      "gaze": "camera",
+      "expression": "neutral",
+      "framing": "head_and_shoulders",
+      "headVisibility": "full_head_neck_upper_shoulders",
+      "background": "plain_light_gray",
+      "lighting": "soft_even_diffuse",
+      "whiteBalance": "natural",
+      "focus": "sharp_face",
+      "aspectRatio": "1:1",
+      "width": 1024,
+      "height": 1024
+    },
+    "appearance": {
+      "hairColor": "dark_brown_black",
+      "hairStyle": "tied_back",
+      "hairFaceClearance": "away_from_forehead_and_cheeks",
+      "clothing": "plain_crew_neck_top",
+      "glasses": false,
+      "jewelry": false,
+      "visibleAccessories": false,
+      "visibleMakeup": "none"
+    },
+    "skinIntent": {
+      "baselineTexture": "natural_visible_pores",
+      "redness": {
+        "severity": "none",
+        "regions": [],
+        "pattern": "none"
+      },
+      "blemishes": {
+        "severity": "none",
+        "regions": [],
+        "countBand": "none",
+        "pattern": "none"
+      },
+      "oiliness": "not_targeted",
+      "dryness": "not_targeted"
+    },
+    "variation": {
+      "pairingMode": "independent",
+      "referenceCandidateId": null,
+      "mutationScope": "full_generation",
+      "preserve": []
+    },
+    "exclusionPolicyVersion": "reference-portrait-exclusions-v1",
+    "featureIntentSchemaVersion": "face-feature-intent-v1",
+    "featureCueProfileVersion": "face-feature-cues-v2",
+    "archetypeTaxonomyVersion": "face-lab-archetype-taxonomy-v1",
+    "archetypeCompilationMode": "metadata_only",
+    "provenance": {
+      "authoredBy": "campaign_planner",
+      "sourceTemplateVersion": "v1",
+      "createdAt": "2026-08-13T04:09:45.000Z",
+      "notes": null
+    }
+  },
+  "slots": [
+    {
+      "slotId": "W1-01-wolf",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "wolf",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "20s",
+        "presentation": "feminine",
+        "regionalAppearanceHint": null,
+        "personCount": 1
+      },
+      "requiredCues": {
+        "eyeLength": "long",
+        "straightCurveBalance": "straight"
+      },
+      "sourceTemplateId": "w1-wolf-required-axis",
+      "expectedSpecId": "gen_d1a272f70eb8caabd12285eb",
+      "expectedSpecDigest": "d1a272f70eb8caabd12285eb3a104b453676a87638a2e70610a073269d38783b",
+      "expectedPromptDigest": "c4b3f1a8c26487745d20c6975fa119064e7a1a3f724fe46a6da6fe53277233cb"
+    },
+    {
+      "slotId": "W1-02-cat",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "cat",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "30s",
+        "presentation": "masculine",
+        "regionalAppearanceHint": "korean_appearance_hint",
+        "personCount": 1
+      },
+      "requiredCues": {
+        "eyeDirection": "upturned",
+        "featureConcentration": "centered"
+      },
+      "sourceTemplateId": "w1-cat-required-axis",
+      "expectedSpecId": "gen_20f2a4af296aaaf3cae181b0",
+      "expectedSpecDigest": "20f2a4af296aaaf3cae181b0c0f31b96f013856f2569066cc2defee5af44b215",
+      "expectedPromptDigest": "c01e1ba107d3cb88ca2cd33c8cbc43fe836686d6433fdfd41433f0146ac68a3a"
+    },
+    {
+      "slotId": "W1-03-puppy",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "puppy",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "40s",
+        "presentation": "androgynous",
+        "regionalAppearanceHint": null,
+        "personCount": 1
+      },
+      "requiredCues": {
+        "eyeOpenness": "wide",
+        "straightCurveBalance": "curved"
+      },
+      "sourceTemplateId": "w1-puppy-required-axis",
+      "expectedSpecId": "gen_cf39535edaa29022683d0d02",
+      "expectedSpecDigest": "cf39535edaa29022683d0d022667f5924beae894d35fed0d5f76f72aa2d33205",
+      "expectedPromptDigest": "5d02f03b761707d741af9bd6e453bb69b6b3bbe6e9a75d5a4570870105dc3c81"
+    },
+    {
+      "slotId": "W1-04-deer",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "deer",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "50s",
+        "presentation": "feminine",
+        "regionalAppearanceHint": "korean_appearance_hint",
+        "personCount": 1
+      },
+      "requiredCues": {
+        "faceLengthBalance": "long",
+        "eyeOpenness": "wide"
+      },
+      "sourceTemplateId": "w1-deer-required-axis",
+      "expectedSpecId": "gen_af74037112498ac2a3d41c34",
+      "expectedSpecDigest": "af74037112498ac2a3d41c34f26d13b3cf419839f1580a710e11871b710aa527",
+      "expectedPromptDigest": "ccae0562a2f31c4b390bf653e20b71c8ea768ba428fa49bf9a564d4f880194ea"
+    },
+    {
+      "slotId": "W1-05-tofu",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "tofu",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "20s",
+        "presentation": "masculine",
+        "regionalAppearanceHint": null,
+        "personCount": 1
+      },
+      "requiredCues": {
+        "featureContrast": "low",
+        "contourDefinition": "soft"
+      },
+      "sourceTemplateId": "w1-tofu-required-axis",
+      "expectedSpecId": "gen_0e60285adb81eef92ecace99",
+      "expectedSpecDigest": "0e60285adb81eef92ecace996b6d4b32802d6dbaafa93990aaf08e1525b76a11",
+      "expectedPromptDigest": "ac7ec33f9cd7727886048cc94755dc1efa73607c2b7ca7963a2a51d68ea21878"
+    },
+    {
+      "slotId": "W1-06-potato",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "potato",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "30s",
+        "presentation": "androgynous",
+        "regionalAppearanceHint": "korean_appearance_hint",
+        "personCount": 1
+      },
+      "requiredCues": {
+        "faceLengthBalance": "short",
+        "faceShape": "round"
+      },
+      "sourceTemplateId": "w1-potato-required-axis",
+      "expectedSpecId": "gen_a49b9231baab15e31a648cc6",
+      "expectedSpecDigest": "a49b9231baab15e31a648cc64fbb959ba2f05dbd0bda46452689767133dcf640",
+      "expectedPromptDigest": "ce024ab9f1c4f01185fd3f452a9af8bbacff8c30f7de702cc2d29f0ec0e0b9f4"
+    },
+    {
+      "slotId": "W1-07-dino",
+      "stressKind": "required_axis_positive",
+      "targetArchetypeMetadata": "dino",
+      "subject": {
+        "syntheticPersonOnly": true,
+        "adultAgeBand": "40s",
+        "presentation": "feminine",
+        "regionalAppearanceHint": null,
+        "personCount": 1
+      },
+      "requiredCues": {
+        "featureScale": "large",
+        "jawlineAngularity": "angular"
+      },
+      "sourceTemplateId": "w1-dino-required-axis",
+      "expectedSpecId": "gen_3cd2c91c43fc4d0a1188f309",
+      "expectedSpecDigest": "3cd2c91c43fc4d0a1188f309df5348827361bafa3e0bb9711a0b4b42f89691ff",
+      "expectedPromptDigest": "6c576e47b79692008818f0f0dedf2f518e6c6839e97745f1c5726386a646991b"
+    }
+  ],
+  "preflightDigest": "dbc28d01ff6e0faef423c7a1fb543194e4a5c023b5662a19b19844628bead865"
+}
