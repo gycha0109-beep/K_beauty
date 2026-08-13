@@ -1,17 +1,20 @@
 export const GENERATION_SPEC_SCHEMA_VERSION = "generation-spec-v1";
 export const FACE_FEATURE_INTENT_SCHEMA_VERSION = "face-feature-intent-v1";
 export const FACE_FEATURE_CUE_PROFILE_VERSION = "face-feature-cues-v1";
+export const ARCHETYPE_STRESS_FEATURE_CUE_PROFILE_VERSION = "face-feature-cues-v2";
+export const ARCHETYPE_STRESS_TAXONOMY_VERSION = "face-lab-archetype-taxonomy-v1";
 export const EXCLUSION_POLICY_VERSION = "reference-portrait-exclusions-v1";
 
 export const GENERATION_PURPOSES = Object.freeze([
   "capture_control",
   "skin_cue_control",
   "face_feature_control",
+  "archetype_stress",
   "paired_skin_edit",
   "mixed_control_pilot"
 ]);
 
-export const FACE_FEATURE_CUE_REGISTRY = Object.freeze({
+const FACE_FEATURE_CUE_REGISTRY_V1 = Object.freeze({
   eyeDirection: Object.freeze(["upturned", "level", "downturned"]),
   eyeOpenness: Object.freeze(["narrow", "medium", "wide"]),
   faceLengthBalance: Object.freeze(["short", "balanced", "long"]),
@@ -20,9 +23,43 @@ export const FACE_FEATURE_CUE_REGISTRY = Object.freeze({
   featureContrast: Object.freeze(["low", "medium", "high"])
 });
 
+export const ARCHETYPE_STRESS_FEATURE_CUE_REGISTRY = Object.freeze({
+  faceShape: Object.freeze(["oval", "round", "square", "oblong", "heart", "diamond", "triangle", "mixed"]),
+  jawlineAngularity: Object.freeze(["soft", "moderate", "angular"]),
+  jawTaper: Object.freeze(["tapered", "balanced", "broad"]),
+  cheekboneProminence: Object.freeze(["subtle", "moderate", "prominent"]),
+  faceLengthBalance: Object.freeze(["short", "balanced", "long"]),
+  eyeDirection: Object.freeze(["upturned", "level", "downturned", "mixed"]),
+  eyeLength: Object.freeze(["short", "medium", "long"]),
+  eyeOpenness: Object.freeze(["narrow", "medium", "wide"]),
+  featureScale: Object.freeze(["small", "medium", "large", "mixed"]),
+  featureConcentration: Object.freeze(["spread", "balanced", "centered"]),
+  straightCurveBalance: Object.freeze(["curved", "balanced", "straight"]),
+  contourDefinition: Object.freeze(["soft", "moderate", "defined"]),
+  featureContrast: Object.freeze(["low", "medium", "high"])
+});
+
+export const FACE_FEATURE_CUE_REGISTRY = FACE_FEATURE_CUE_REGISTRY_V1;
+export const FACE_FEATURE_CUE_REGISTRIES = Object.freeze({
+  [FACE_FEATURE_CUE_PROFILE_VERSION]: FACE_FEATURE_CUE_REGISTRY_V1,
+  [ARCHETYPE_STRESS_FEATURE_CUE_PROFILE_VERSION]: ARCHETYPE_STRESS_FEATURE_CUE_REGISTRY
+});
+
 export const FACE_FEATURE_CUE_STRENGTHS = Object.freeze(["subtle", "moderate"]);
 
-export const ENABLED_ARCHETYPE_TAXONOMIES = Object.freeze({});
+export const ARCHETYPE_STRESS_ARCHETYPE_KEYS = Object.freeze([
+  "wolf",
+  "cat",
+  "puppy",
+  "deer",
+  "tofu",
+  "potato",
+  "dino"
+]);
+
+export const ENABLED_ARCHETYPE_TAXONOMIES = Object.freeze({
+  [ARCHETYPE_STRESS_TAXONOMY_VERSION]: ARCHETYPE_STRESS_ARCHETYPE_KEYS
+});
 
 export const GENERATION_VALIDATION_ERROR_CODES = Object.freeze([
   "invalid_spec_shape",
@@ -181,7 +218,8 @@ function validateFeatureIntent(value, errors) {
     addError(errors, "invalid_spec_shape", "featureIntent");
     return;
   }
-  if (value.schemaVersion !== FACE_FEATURE_INTENT_SCHEMA_VERSION || value.cueProfileVersion !== FACE_FEATURE_CUE_PROFILE_VERSION) {
+  const cueRegistry = FACE_FEATURE_CUE_REGISTRIES[value.cueProfileVersion];
+  if (value.schemaVersion !== FACE_FEATURE_INTENT_SCHEMA_VERSION || !cueRegistry) {
     addError(errors, "unapproved_feature_cue", "featureIntent.cueProfileVersion");
   }
   if (!isPlainObject(value.cues)) {
@@ -193,7 +231,7 @@ function validateFeatureIntent(value, errors) {
     addError(errors, "unapproved_feature_cue", "featureIntent.cues");
   }
   for (const [axis, cue] of entries) {
-    const allowed = FACE_FEATURE_CUE_REGISTRY[axis];
+    const allowed = cueRegistry?.[axis];
     if (!allowed || !exactKeys(cue, ["value", "strength"]) || !allowed.includes(cue.value) || !FACE_FEATURE_CUE_STRENGTHS.includes(cue.strength)) {
       addError(errors, "unapproved_feature_cue", `featureIntent.cues.${axis}`);
     }
@@ -216,10 +254,12 @@ function validateArchetypeIntent(value, errors) {
   if (value.compilationMode !== "metadata_only") {
     addError(errors, "invalid_spec_shape", "archetypeIntent.compilationMode");
   }
-  const declared = [value.primary, value.secondary].filter(Boolean);
-  if (declared.length !== new Set(declared).size || declared.some((token) => !taxonomy.includes(token))) {
+  const primaryValid = typeof value.primary === "string" && taxonomy.includes(value.primary);
+  const secondaryValid = value.secondary === null || (typeof value.secondary === "string" && taxonomy.includes(value.secondary));
+  if (!primaryValid || !secondaryValid || value.primary === value.secondary) {
     addError(errors, "archetype_taxonomy_unavailable", "archetypeIntent.primary");
   }
+  const declared = [value.primary, value.secondary].filter(Boolean);
   if (!isPlainObject(value.intendedWeightsBps)) {
     addError(errors, "archetype_weight_invalid", "archetypeIntent.intendedWeightsBps");
     return;
@@ -312,9 +352,13 @@ function skinCuePresence(skinIntent) {
 
 function validatePurposeCompatibility(spec, errors) {
   const hasFeature = spec.featureIntent !== null;
+  const hasArchetype = spec.archetypeIntent !== null;
   const hasSkinCue = skinCuePresence(spec.skinIntent);
   const mode = spec.variation?.pairingMode;
 
+  if (spec.purpose !== "archetype_stress" && hasArchetype) {
+    addError(errors, "unsupported_target_axis", "archetypeIntent");
+  }
   if (spec.purpose === "capture_control" && (hasFeature || hasSkinCue || mode !== "independent")) {
     addError(errors, "unsupported_target_axis", "purpose");
   }
@@ -322,6 +366,17 @@ function validatePurposeCompatibility(spec, errors) {
     addError(errors, "unsupported_target_axis", "purpose");
   }
   if (spec.purpose === "face_feature_control" && (!hasFeature || hasSkinCue || mode !== "independent")) {
+    addError(errors, "unsupported_target_axis", "purpose");
+  }
+  if (
+    spec.purpose === "archetype_stress" && (
+      !hasFeature ||
+      !hasArchetype ||
+      hasSkinCue ||
+      mode !== "independent" ||
+      spec.featureIntent?.cueProfileVersion !== ARCHETYPE_STRESS_FEATURE_CUE_PROFILE_VERSION
+    )
+  ) {
     addError(errors, "unsupported_target_axis", "purpose");
   }
   if (spec.purpose === "paired_skin_edit" && (hasFeature || !hasSkinCue || mode !== "reference_edit")) {
