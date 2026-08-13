@@ -1,8 +1,9 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import { buildBatchPlan, stableJson, sha256JsonBytes, KNOWN_HOSTED_PRODUCT_IDS, KNOWN_HOSTED_PROPOSITION_KEYS } from './product-evidence/product-fact-adoption-batch-v1.mjs';
 
-const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || '5be71af9fcb112d361d8fe3fefa97fa800c8bce7';
+const BASE_MAIN_SHA = process.env.V21_8A_BASE_MAIN_SHA || '91078d537abfc7779c3988326697539038904b6b';
 const read = (p) => fs.readFileSync(p, 'utf8');
 const sourcePaths = {
   materialization: 'evidence/product-fact-materialization-v1/cross-category-pilot-materialization-dry-run-v1.json',
@@ -13,7 +14,28 @@ const sourcePaths = {
 const texts = Object.fromEntries(Object.entries(sourcePaths).map(([k,p]) => [k, read(p)]));
 const docs = Object.fromEntries(Object.entries(texts).map(([k,t]) => [k, JSON.parse(t)]));
 const hashes = Object.fromEntries(Object.entries(texts).map(([k,t]) => [k, sha256JsonBytes(t)]));
-const expected = buildBatchPlan({ ...docs, baseMainSha: BASE_MAIN_SHA, inputHashes: hashes });
+
+function buildExpectedPlan() {
+  const axisForSelection = structuredClone(docs.decisionAxis);
+  const catalogDomainByPilot = new Map();
+  for (const product of axisForSelection.products) {
+    catalogDomainByPilot.set(product.pilot_id, product.domain);
+    if (product.domain.startsWith('moisturizer_')) product.domain = 'moisturizer_family';
+  }
+  const plan = buildBatchPlan({ ...docs, decisionAxis: axisForSelection, baseMainSha: BASE_MAIN_SHA, inputHashes: hashes });
+  for (const product of plan.selected_products) product.catalog_domain = catalogDomainByPilot.get(product.pilot_id);
+  plan.selection_policy.domain_family_adapter = {
+    sunscreen: ['sunscreen'],
+    moisturizer_family: ['moisturizer_cream', 'moisturizer_balm'],
+    treatment: ['treatment'],
+    authority: 'V2.1-6 axis_contract.domain_axis_map family semantics',
+  };
+  delete plan.plan_content_sha256;
+  plan.plan_content_sha256 = crypto.createHash('sha256').update(JSON.stringify(plan)).digest('hex');
+  return plan;
+}
+
+const expected = buildExpectedPlan();
 const frozen = JSON.parse(read('evidence/product-fact-adoption-v1/cross-category-adoption-batch-1-v1.json'));
 let assertions = 0;
 const check = (condition, message) => { assertions += 1; assert.ok(condition, message); };
@@ -31,7 +53,9 @@ check(frozen.summary.new_products === 3, 'Batch 1 must contain exactly 3 new pro
 check(frozen.summary.new_facts === 6, 'Batch 1 must contain exactly 6 new Facts');
 check(frozen.summary.new_current_pointers === 6, 'Batch 1 current budget mismatch');
 check(frozen.summary.batch_limit_valid === true, 'Batch budget invalid');
-eq(frozen.selected_products.map((p)=>p.domain), ['sunscreen','moisturizer_family','treatment'], 'domain shape mismatch');
+eq(frozen.selected_products.map((p)=>p.domain), ['sunscreen','moisturizer_family','treatment'], 'domain family shape mismatch');
+eq(frozen.selected_products.map((p)=>p.catalog_domain), ['sunscreen','moisturizer_balm','treatment'], 'catalog domain preservation mismatch');
+eq(frozen.selected_products.map((p)=>p.pilot_id), ['S3','M2','T3'], 'deterministic Batch 1 selection drift');
 check(new Set(frozen.selected_products.map((p)=>p.product_id)).size === 3, 'selected product IDs must be unique');
 check(frozen.selected_products.every((p)=>p.identity_status==='resolved' && p.current_state==='current'), 'selected subject must be resolved/current');
 check(frozen.selected_products.every((p)=>!KNOWN_HOSTED_PRODUCT_IDS.has(p.product_id)), 'already Hosted product selected');
@@ -64,15 +88,20 @@ check(frozen.lifecycle.RECOMMENDATION_ACTIVATED===false, 'recommendation activat
 check(frozen.lifecycle.HOSTED_WRITES_EXECUTED_BY_THIS_ARTIFACT_BUILD===0, 'offline build must write zero Hosted rows');
 check(frozen.expected_writes.product_fact_instances===6 && frozen.expected_writes.product_fact_current===6, 'Fact/Current expected write budget mismatch');
 check(frozen.expected_writes.product_fact_registry_versions===0 && frozen.expected_writes.product_fact_definition_snapshots===0, 'registry write expected unexpectedly');
-check(frozen.expected_writes.product_fact_subjects<=3, 'subject budget exceeded');
-check(frozen.expected_writes.product_fact_confirmations<=6, 'confirmation budget exceeded');
-check(frozen.expected_writes.product_fact_current<=6, 'Current budget exceeded');
+check(frozen.expected_writes.product_fact_subjects===3, 'subject write expectation mismatch');
+check(frozen.expected_writes.product_evidence_sources===3, 'source write expectation mismatch');
+check(frozen.expected_writes.product_evidence_source_subject_bindings===3, 'binding write expectation mismatch');
+check(frozen.expected_writes.product_evidence_records===6, 'Evidence write expectation mismatch');
+check(frozen.expected_writes.product_fact_review_assignments===6, 'assignment write expectation mismatch');
+check(frozen.expected_writes.product_fact_review_events===27, 'review event expectation mismatch');
+check(frozen.expected_writes.product_fact_confirmations===6, 'confirmation write expectation mismatch');
+check(frozen.expected_writes.product_fact_current===6, 'Current write expectation mismatch');
 check(!JSON.stringify(frozen).includes('reviewer_email'), 'reviewer email leakage');
 check(!JSON.stringify(frozen).includes('admin_email'), 'admin identity leakage');
 
 console.log('PASS verify-product-fact-adoption-batch-1-v1');
 console.log(`assertions=${assertions}`);
 console.log(`products=${frozen.summary.new_products} facts=${frozen.summary.new_facts} current=${frozen.summary.new_current_pointers}`);
-console.log(`selected=${frozen.selected_products.map((p)=>`${p.pilot_id}:${p.domain}`).join(',')}`);
+console.log(`selected=${frozen.selected_products.map((p)=>`${p.pilot_id}:${p.domain}/${p.catalog_domain}`).join(',')}`);
 console.log(`expected_subjects=${frozen.expected_writes.product_fact_subjects} expected_sources=${frozen.expected_writes.product_evidence_sources} expected_bindings=${frozen.expected_writes.product_evidence_source_subject_bindings} expected_evidence=${frozen.expected_writes.product_evidence_records}`);
 console.log('controlled_rpc_only=YES direct_pf_write=NO hosted_writes=0 production_consumption=NO recommendation_activation=NO');
