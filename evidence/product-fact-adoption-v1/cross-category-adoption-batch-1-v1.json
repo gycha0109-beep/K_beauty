@@ -3,7 +3,7 @@
   "stage": "V2.1-8A_CONTROLLED_HOSTED_PRODUCT_FACT_ADOPTION_BATCH_1",
   "batch_id": "v21-8a-cross-category-batch-1",
   "authority": {
-    "base_main_sha": "eb933621fd1320dc8270b86192d72e7636990c3f",
+    "base_main_sha": "5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e",
     "registry_version": "product-fact-registry-cross-category-v1",
     "registry_blob": "32fdaa2d3a181c9d18888fc48c1343e083ad20f7",
     "materialization_sha256": "b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2",
@@ -1862,5 +1862,5 @@
     "RECOMMENDATION_ACTIVATED": false,
     "HOSTED_WRITES_EXECUTED_BY_THIS_ARTIFACT_BUILD": 0
   },
-  "plan_content_sha256": "1a727ed1840602a00e2310aa92934c548bd7b21481d9356716b5521bf2dd0479"
+  "plan_content_sha256": "65c4433db9fed96691dab22a72632f13ad01f394d034583db5bf4a318be66a05"
 }

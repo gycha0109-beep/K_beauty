@@ -2,7 +2,7 @@
 
 ## Authority
 
-- Base main: `eb933621fd1320dc8270b86192d72e7636990c3f`
+- Base main: `5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e`
 - Registry: `product-fact-registry-cross-category-v1`
 - V2.1-2 materialization SHA-256: `b2f19878f00f53d9a60dad0b1515fff1f566449e6a531825e712dfa2e3f19bb2`
 - V2.1-4 fusion SHA-256: `86332b78ec38d79f8dfa12c5879cee46f4a22979d69945ee2f5a9dcc7038b802`
