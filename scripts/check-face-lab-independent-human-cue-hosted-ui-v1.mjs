@@ -24,6 +24,7 @@ for (const required of [
   assert.ok(html.includes(required), `hosted UI missing:${required}`);
 }
 assert.doesNotMatch(html, /reviewerSlot|reviewer-r0[123]|\.zip|JSON download/i);
+assert.doesNotMatch(html, /주요 축|검증 축/);
 assert.doesNotMatch(html, /SUPABASE_SERVICE_ROLE_KEY|createClient\s*\(/);
 assert.doesNotMatch(html, /https?:\/\//);
 assert.match(pageRoute, /isValidHostedHumanCueAccessToken/);
