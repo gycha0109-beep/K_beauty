@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Exact head and start-main ancestry
+      - name: Exact head and reconciled-main ancestry
         shell: bash
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -50,12 +50,17 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
           git merge-base --is-ancestor "$START_MAIN_SHA" HEAD
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             test -n "$PR_BASE_SHA"
             git merge-base --is-ancestor "$START_MAIN_SHA" "$PR_BASE_SHA"
             git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+            RECONCILED_BASE="$PR_BASE_SHA"
+          else
+            RECONCILED_BASE="$(git rev-parse refs/remotes/origin/main)"
+            git merge-base --is-ancestor "$RECONCILED_BASE" HEAD
           fi
-          printf 'start_main=%s\nhead=%s\n' "$START_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8g-authority.txt
+          printf 'start_main=%s\nreconciled_base=%s\nhead=%s\n' "$START_MAIN_SHA" "$RECONCILED_BASE" "$(git rev-parse HEAD)" | tee /tmp/v21-8g-authority.txt
 
       - name: Syntax and frozen upstream authority
         shell: bash
@@ -80,6 +85,9 @@ jobs:
             cmp -s "/tmp/v21-8g-a/$p" "/tmp/v21-8g-b/$p"
             cmp -s "$p" "/tmp/v21-8g-a/$p"
           done
+          test "$(sha256sum "$OUT_RESEARCH" | cut -d' ' -f1)" = "9dcf1462a5601c32594a7fd37b93b3ae4a7393b2e99a3a3c2856ece5a3dd734e"
+          test "$(sha256sum "$OUT_MATERIALIZATION" | cut -d' ' -f1)" = "a632351a04cccdb4e55c2203f63735d726edebce208ebdf4f10f4b84adb78120"
+          test "$(sha256sum "$OUT_MD" | cut -d' ' -f1)" = "425cf92474583644cd3c479e895d168ca895ac44f844f41de61e459a1c1a3fd3"
           sha256sum "/tmp/v21-8g-a/$OUT_RESEARCH" "/tmp/v21-8g-a/$OUT_MATERIALIZATION" "/tmp/v21-8g-a/$OUT_MD" | tee /tmp/v21-8g-hash-a.txt
           sha256sum "/tmp/v21-8g-b/$OUT_RESEARCH" "/tmp/v21-8g-b/$OUT_MATERIALIZATION" "/tmp/v21-8g-b/$OUT_MD" | tee /tmp/v21-8g-hash-b.txt
           node scripts/verify-product-fact-catalog-evidence-research-wave-1-v1.mjs | tee /tmp/v21-8g-verifier.txt
@@ -118,9 +126,16 @@ jobs:
 
       - name: Offline scope runtime and secret hygiene
         shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          BASE="${{ github.event.pull_request.base.sha || env.START_MAIN_SHA }}"
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="$PR_BASE_SHA"
+          else
+            BASE="$(git merge-base refs/remotes/origin/main HEAD)"
+          fi
           mapfile -t changed < <(git diff --name-only "$BASE..HEAD" | sort)
           allowed='^(\.github/workflows/v21-8g-catalog-evidence-research-wave-1\.yml|docs/evidence/product-fact-catalog-evidence-research-wave-1-v1\.md|evidence/product-evidence-expansion-v1/catalog-evidence-research-wave-1-v1\.json|evidence/product-fact-adoption-v1/catalog-evidence-research-wave-1-materialization-v1\.json|scripts/build-product-fact-catalog-evidence-research-wave-1-v1\.mjs|scripts/verify-product-fact-catalog-evidence-research-wave-1-v1\.mjs|scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1\.mjs)$'
           for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
@@ -128,6 +143,7 @@ jobs:
           ! grep -R -n --include='*.js' --include='*.mjs' --include='*.ts' --include='*.tsx' 'catalog-evidence-research-wave-1-v1\|product-fact-catalog-evidence-research-wave-1-v1' app lib components 2>/dev/null
           git diff --check "$BASE..HEAD"
           if git diff -U0 "$BASE..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
+          printf 'diff_base=%s\n' "$BASE" | tee /tmp/v21-8g-diff-base.txt
           printf '%s\n' "${changed[@]}" | tee /tmp/v21-8g-changed.txt
 
       - name: Freeze canonical research outputs
