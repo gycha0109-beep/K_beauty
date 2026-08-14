@@ -1,0 +1,689 @@
+{
+  "schemaVersion": "face-lab-independent-human-cue-single-hosted-set-authority-v1",
+  "authorityVersion": "face-lab-independent-human-cue-single-hosted-set-20260815-v1",
+  "sourceMainSha": "6f573b632824be13dfe208f29c796aa3306b4984",
+  "distributionMode": "single_hosted_set",
+  "orderAlgorithm": "lexicographic_sha256(authorityVersion + NUL + opaqueReviewItemId)",
+  "sourceAuthorities": {
+    "d2cFDefinitionContractDigest": "8e630605ece0629da6a51e30829297688c27f10a3a92be6a3c8e3413f546bb46",
+    "d2dPPacketAuthorityDigest": "1f344a9d1cbd8e8ac6076b06da7780d213ff6ff71df80ea7a9f818617965339c",
+    "d2dUi1DistributionAuthorityDigest": "23636cf323ac944ae0c283e75e3161ebfaceedee2838bc672789488bcf772a32"
+  },
+  "imageCount": 14,
+  "orderedItems": [
+    {
+      "ordinal": 1,
+      "reviewItemId": "hci_7712309789633997afb295f5",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png",
+      "assetName": "asset_b5a84777474ae7f94b117d40.png",
+      "assetSha256": "0b081b7ba155245a6f7391058392e1824dcc94c8a6b9e9ffd157f8ac72605be5",
+      "pixelDigest": "3230d20d54b34afcc7a2a443c17384bca73dc15acf006c6c7e229868f4e1f37e",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "059ad24116cf28d47973b5451c6b6120c4ffb6eb64d7a6e1ac64edd23263d9dc"
+    },
+    {
+      "ordinal": 2,
+      "reviewItemId": "hci_b1b316057b278d062d796925",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_5abdcbd7d7fe34f61fc12a26.png",
+      "assetName": "asset_5abdcbd7d7fe34f61fc12a26.png",
+      "assetSha256": "35dbc2bfacbc52630d0284954c61561e7aa2a58ddc3002b336c18e60b7e0db0f",
+      "pixelDigest": "2b063a9f5f5615a718fe47dde8c338f4859e2726c3c961c8a20f812a9e9da9ce",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "074204c8aaaa2bdcf221623bcbaca534b21ee750ff87ded04754aaef0b059dcd"
+    },
+    {
+      "ordinal": 3,
+      "reviewItemId": "hci_cd39774f2020c418880760d8",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_5655478e648120d16225090c.png",
+      "assetName": "asset_5655478e648120d16225090c.png",
+      "assetSha256": "e258b7345d395830dee7264aaab0bd48f5cd6a706d75d01a7302c2d00b51dc4f",
+      "pixelDigest": "08b6b7ae32e86c54c78d2c07f77e48b61a71765b18abfe752ffe9104ad2abaf5",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "225eae4ea1d8ad5cf3ef3931db95e45e451a9512d53ad4269d8c865635638a5a"
+    },
+    {
+      "ordinal": 4,
+      "reviewItemId": "hci_f0b0cca9c1b88403130d875d",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_aad18c11fe83029dfe03e58c.png",
+      "assetName": "asset_aad18c11fe83029dfe03e58c.png",
+      "assetSha256": "b7d268bb049c739070f225619b209af38b9432f7005de9ea9ddfdf5e61e659bc",
+      "pixelDigest": "4ef78ae8436e63f9f830c650246de19770a53997c2986df673b11c6c5cb81668",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "2d39dffbfc19fb0bca83cfe84c6b60c7cd48baf2332479f9d45e873fc1ce13b2"
+    },
+    {
+      "ordinal": 5,
+      "reviewItemId": "hci_64947412fa2533d96f230696",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_a79b05db49650a5fe5476e02.png",
+      "assetName": "asset_a79b05db49650a5fe5476e02.png",
+      "assetSha256": "71cf3eefbdc7422896b66e4f075914e012f51a3301972cb698cff80c7d9887e1",
+      "pixelDigest": "db5e43ca1a3d3c9e07d6c4472018cf8c9de8af4b3794cd152fed19727dbcbc9b",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "2ea161c88594b828e47fb3a9f7601cc040e3b9bb02576e9fe830baac08f8cdf6"
+    },
+    {
+      "ordinal": 6,
+      "reviewItemId": "hci_e113dd63f59f219ccbe332ce",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_f06b75a4154fe335b437b4a3.png",
+      "assetName": "asset_f06b75a4154fe335b437b4a3.png",
+      "assetSha256": "25cb60e5eb1bc699aaa27635b6c1193d57129ca599e08d193aff6d31be886de1",
+      "pixelDigest": "9accf9df38c9271b316441886a0413b8adbecce7232777d54337e6a11ec13f42",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "628aaa6ad1d81dd4eb0be6982ca064c1fb92302b07d515dd322dff9312828fd2"
+    },
+    {
+      "ordinal": 7,
+      "reviewItemId": "hci_0781c0be45da9b6fc8e3d403",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_b27815ec2457e9a7abb87483.png",
+      "assetName": "asset_b27815ec2457e9a7abb87483.png",
+      "assetSha256": "24e20667e344656fe42bdeca38c3dca46a10adffac935d83972f9f331a1b33b7",
+      "pixelDigest": "43fa3f5228036689929835f0a4837d5f6d24072fad0da44390af984eb08c68ff",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "7e4b370c0b5cd013d676a54527f7384f8d58df0bd5abaa65a52b6011b59b7f7a"
+    },
+    {
+      "ordinal": 8,
+      "reviewItemId": "hci_360fef9e0ba8a27476ff7016",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_4c9d3261fe13d6eb6dbe0b84.png",
+      "assetName": "asset_4c9d3261fe13d6eb6dbe0b84.png",
+      "assetSha256": "252a84d8517d65441ccb0dff608763fc105207627b0f194e9a2c8cb01ce33271",
+      "pixelDigest": "73b9f059c642601c54394b7315f2c135562c17594372a2f8fa663c48b5d73afd",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "7f71165105ee1b0728733b1ffbc7e24ad9c37a1bafc3e6ba5e85a41110c45bbd"
+    },
+    {
+      "ordinal": 9,
+      "reviewItemId": "hci_b0b44ce4d7bea11262182b0f",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_a3f491edabb98ee77ac2e1ae.png",
+      "assetName": "asset_a3f491edabb98ee77ac2e1ae.png",
+      "assetSha256": "ee82d20d125ac244eaeea557c20696dce49bf13c2c13501a5961882c1f098462",
+      "pixelDigest": "842bf3216db7ce42a2c352307f409263b3202621e5203e05681bb502af30ee1f",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "89ac89617875b6ed8a0980594e7fcd46e653588ee04af91352077d383a0eb121"
+    },
+    {
+      "ordinal": 10,
+      "reviewItemId": "hci_f411c7809353612a714a7651",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_445922c7edbc73b22ec9cf95.png",
+      "assetName": "asset_445922c7edbc73b22ec9cf95.png",
+      "assetSha256": "7ea664f91d22d8c068e7ac2929e824579c377259e05762a37934c3933d0c5d0f",
+      "pixelDigest": "a55ee0d1376c961f9f7ddfae0f997b1adbb922926c12b818f14086ce253811cb",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "c9c6500a5e2371418594f2e555e70d2c27e2a4c55f8e97633384271b58e59519"
+    },
+    {
+      "ordinal": 11,
+      "reviewItemId": "hci_cdda3e99c3fb25b98e5a921f",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_57b95057c1ec223f2df63239.png",
+      "assetName": "asset_57b95057c1ec223f2df63239.png",
+      "assetSha256": "0e76bb7e60f03872804a747a64544467871eef8b38afd13895b321cf6814d002",
+      "pixelDigest": "dca1a32ed16be949080994d513b2ee0cb9cddeed27e234a28abfbbbaeb1e9d6c",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "eb8cc1dae2b6a73b05bdc21c517f987abd24ff150ac6a9666766e4b3473cec3b"
+    },
+    {
+      "ordinal": 12,
+      "reviewItemId": "hci_2a00b33409bfd6c23f489a4c",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_004581bda0eb4388da2c113d.png",
+      "assetName": "asset_004581bda0eb4388da2c113d.png",
+      "assetSha256": "99de925b345cd2ad7a4adf3344776b3108e86a770c52231d518e3ebf0070668e",
+      "pixelDigest": "b4497cf0a28698d7ee39704bf24c12f3b11e6f0378605350df11149ddeece47a",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "f150cc7649c25f2b55f22acd7dbf9e477ed15fd52b97d7c70aed465dc473befd"
+    },
+    {
+      "ordinal": 13,
+      "reviewItemId": "hci_f02e55cb0f0f295e0f9f08d6",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_4a63193a97ccf17cd68dd109.png",
+      "assetName": "asset_4a63193a97ccf17cd68dd109.png",
+      "assetSha256": "6dfafc303d8ad3495dd9dbae1f92fc824a7326df461fd15352de56d93578df7b",
+      "pixelDigest": "73686406779cefbec7dec9b788e34a410dfd6bf7ab4ab001547efe6088cabc37",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "f20bbea72dda1d13596b78b1cdc8736600d94a62bac74cbd715e08ca0c2f9d88"
+    },
+    {
+      "ordinal": 14,
+      "reviewItemId": "hci_92063089c38313a071864e4f",
+      "assetPath": "/facelab/hosted-review/v1/assets/asset_b659daf7f822a48735036dd8.png",
+      "assetName": "asset_b659daf7f822a48735036dd8.png",
+      "assetSha256": "dd4676d70c7914e2bdb40f02c858aa68e1b503352d234bd1b265424bb8bd8a0e",
+      "pixelDigest": "6aa724b2c07782959ced2f8b314e04acf6e2cfa6003ba780dd4a911250f95b41",
+      "width": 1254,
+      "height": 1254,
+      "orderKey": "ff496fbf2c3ef968a33b64922d7f830197635bc631ae05672f795cddc5bc275e"
+    }
+  ],
+  "primaryAxes": [
+    {
+      "axisPath": "observations.outline.faceShape",
+      "enumOptions": [
+        "oval",
+        "round",
+        "square",
+        "oblong",
+        "heart",
+        "diamond",
+        "triangle",
+        "mixed"
+      ],
+      "content": {
+        "title": "얼굴형",
+        "shortInstruction": "얼굴 둘레의 길이, 너비, 좁아지는 방향과 아래 윤곽을 함께 살펴보세요.",
+        "observableTarget": "보이는 얼굴 둘레를 얼굴 길이, 윗얼굴 너비, 볼 너비, 아랫얼굴 너비, 좁아지는 정도, 아래 윤곽의 방향 변화로 나누어 봅니다.",
+        "referenceFrame": "보이는 얼굴 둘레와 얼굴 안의 너비 관계만 기준으로 삼습니다. 사진 틀, 헤어스타일, 인구 집단의 평균을 기준으로 삼지 않습니다.",
+        "valueDefinitions": {
+          "oval": "세로가 가로보다 길고 볼 부위가 가장 넓거나 공동으로 가장 넓으며, 뚜렷한 모서리 없이 둥근 아랫얼굴로 서서히 좁아집니다.",
+          "round": "세로와 가로 길이가 비슷하고 볼의 곡선이 넓으며, 아래 둘레가 둥글고 좁아짐이나 모서리가 거의 없습니다.",
+          "square": "세로와 가로 길이가 비슷하고 윗얼굴·볼·아랫얼굴 너비가 비교적 고르며, 아래 윤곽의 방향 변화가 분명합니다.",
+          "oblong": "세로가 가로보다 뚜렷하게 길고, 윗얼굴·볼·아랫얼굴 너비가 계란형처럼 좁아지지 않고 비교적 고릅니다.",
+          "heart": "윗얼굴이 아랫얼굴보다 넓고 볼 너비도 두드러지며, 아래 둘레가 더 좁은 턱 쪽으로 좁아집니다.",
+          "diamond": "볼 부위가 윗얼굴과 아랫얼굴보다 뚜렷하게 넓고 이마와 턱 양쪽으로 좁아집니다.",
+          "triangle": "아랫얼굴이 윗얼굴보다 넓고 턱 끝으로 좁아지기보다 턱 쪽으로 너비가 늘어납니다.",
+          "mixed": "둘 이상의 구성 패턴이 충돌해 하나의 얼굴형이 우세하지 않습니다. 정보 부족을 뜻하지 않습니다."
+        },
+        "neighborContrasts": [
+          "계란형과 둥근형: 세로로 긴 둘레와 점진적 좁아짐 / 세로·가로가 비슷하고 넓은 연속 곡선",
+          "계란형과 긴 사각형: 볼에서 턱으로 점차 좁아지고 둥근 아래 둘레 / 긴 윤곽에서 너비가 비교적 고름",
+          "둥근형과 사각형: 연속적으로 둥근 아래 둘레 / 아래 윤곽의 방향 변화와 비교적 고른 너비",
+          "사각형과 긴 사각형: 세로·가로가 비슷함 / 세로로 길고 너비가 비교적 고름",
+          "하트형과 다이아몬드형: 윗얼굴 너비가 우세함 / 볼 너비가 윗얼굴과 아랫얼굴보다 큼",
+          "삼각형과 하트형: 아랫얼굴이 더 넓음 / 윗얼굴이 더 넓음",
+          "혼합형과 판단 애매: 혼합형은 충돌하는 패턴이 실제로 보여야 하며, 판단 애매는 비교를 지지할 정보가 부족한 경우입니다."
+        ],
+        "ambiguityRules": [
+          "둘레는 보이지만 인접한 패턴을 신뢰성 있게 구분할 수 없으면 판단 애매를 선택합니다.",
+          "서로 충돌하는 구성 패턴 자체가 보일 때만 혼합형을 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "정면이 아닌 자세",
+          "머리카락이 많이 가림",
+          "이마 또는 턱이 잘림",
+          "원근 왜곡",
+          "얼굴 둘레가 충분히 보이지 않음"
+        ],
+        "imageConditionWarnings": [
+          "머리카락 가림",
+          "머리 자세",
+          "렌즈 원근",
+          "잘림",
+          "턱 너비를 바꾸는 표정"
+        ],
+        "humanReviewerInstruction": "이름 붙은 구성 관계를 먼저 확인한 뒤 얼굴형을 고릅니다. 막연한 전체 인상만으로 분류하지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.outline.jawlineAngularity",
+      "enumOptions": [
+        "soft",
+        "moderate",
+        "angular"
+      ],
+      "content": {
+        "title": "턱선의 각진 정도",
+        "shortInstruction": "아랫얼굴 옆선부터 턱으로 이어지는 윤곽의 굽음과 방향 변화를 보세요.",
+        "observableTarget": "아랫얼굴 옆선에서 턱으로 이어지는 하악 윤곽에서 보이는 곡률과 방향 변화를 봅니다.",
+        "referenceFrame": "수평에 가까운 정면 자세와 고른 조명에서 보이는 아랫얼굴 실루엣을 사용합니다. 그림자 농도나 얼굴의 마름이 아니라 형태를 판단합니다.",
+        "valueDefinitions": {
+          "soft": "아랫얼굴 윤곽이 둥근 전환으로 서서히 방향을 바꾸며, 뚜렷하게 우세한 턱 모서리가 없습니다.",
+          "moderate": "아랫얼굴 윤곽에 보이지만 지배적이지 않은 방향 변화가 있어, 완만한 곡선과 뚜렷한 모서리의 중간에 있습니다.",
+          "angular": "그림자 농도와 무관하게 뚜렷한 모서리나 급격한 방향 변화가 보입니다."
+        },
+        "neighborContrasts": [
+          "부드러움과 중간: 완만하고 연속적인 곡선 / 국소적으로 보이는 방향 변화",
+          "중간과 각짐: 보이지만 약한 방향 변화 / 분명히 우세한 모서리나 급격한 전환"
+        ],
+        "ambiguityRules": [
+          "조명이나 일부 가림 때문에 실제 모서리와 그림자 경계를 나눌 수 없으면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "턱이 머리카락이나 수염에 가림",
+          "정면이 아닌 자세",
+          "아랫얼굴이 잘림",
+          "강한 방향성 그림자",
+          "과도한 보정"
+        ],
+        "imageConditionWarnings": [
+          "조명",
+          "수염",
+          "머리카락 가림",
+          "자세",
+          "보정"
+        ],
+        "humanReviewerInstruction": "보이는 아랫얼굴 둘레를 따라가며 방향 변화를 분류합니다. 어두움, 마름, 헤어스타일을 결정 신호로 쓰지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.vertical.faceLengthBalance",
+      "enumOptions": [
+        "short",
+        "balanced",
+        "long"
+      ],
+      "content": {
+        "title": "얼굴 길이 비율",
+        "shortInstruction": "같은 얼굴 안에서 보이는 세로 길이와 넓은 볼 부위의 너비를 비교하세요.",
+        "observableTarget": "윗얼굴 경계부터 턱까지 보이는 세로 길이를 같은 얼굴의 넓은 볼 부위와 비교합니다.",
+        "referenceFrame": "얼굴 자체의 보이는 세로 길이와 볼 너비를 사용합니다. 사진의 프레임은 기준이 아닙니다.",
+        "valueDefinitions": {
+          "short": "넓은 볼 부위에 비해 보이는 세로 길이가 덜 두드러져 세로 비율이 압축되어 보입니다.",
+          "balanced": "얼굴 안 비율에서 보이는 세로 길이와 볼 너비 어느 쪽도 뚜렷하게 우세하지 않습니다.",
+          "long": "볼 너비에 비해 보이는 세로 길이가 두드러져 세로 비율이 길게 보입니다."
+        },
+        "neighborContrasts": [
+          "짧음과 균형: 세로 길이가 뚜렷하게 덜 두드러짐 / 어느 쪽도 뚜렷하게 우세하지 않음",
+          "균형과 김: 어느 쪽도 뚜렷하게 우세하지 않음 / 세로 길이가 뚜렷하게 우세함"
+        ],
+        "ambiguityRules": [
+          "윗얼굴 경계가 일부만 보이지만 얼굴 안 비율은 고려할 수 있고 범주는 확실하지 않으면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "윗얼굴 경계가 보이지 않음",
+          "턱이 잘림",
+          "머리의 위아래 기울기가 큼",
+          "원근 왜곡",
+          "얼굴 둘레가 가려짐"
+        ],
+        "imageConditionWarnings": [
+          "헤어라인 가시성",
+          "턱 가시성",
+          "머리의 위아래 기울기",
+          "렌즈 원근",
+          "잘림"
+        ],
+        "humanReviewerInstruction": "같은 얼굴의 보이는 높이와 볼 너비를 비교합니다. 사진 프레임이나 인구 집단 평균과 비교하지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.eyes.eyeDirection",
+      "enumOptions": [
+        "upturned",
+        "level",
+        "downturned",
+        "mixed"
+      ],
+      "content": {
+        "title": "눈꼬리 방향",
+        "shortInstruction": "각 눈의 안쪽 눈꼬리와 바깥쪽 눈꼬리의 높이를 비교하세요.",
+        "observableTarget": "각 눈에서 바깥쪽 눈꼬리가 안쪽 눈꼬리보다 위인지 아래인지 봅니다.",
+        "referenceFrame": "정면이고 수평이며 중립 표정인 이미지에서 각 눈의 안쪽부터 바깥쪽 눈꼬리를 봅니다.",
+        "valueDefinitions": {
+          "upturned": "판단 가능한 두 눈 모두 바깥쪽 눈꼬리가 안쪽보다 뚜렷하게 높습니다.",
+          "level": "판단 가능한 두 눈 모두 바깥쪽 눈꼬리의 위아래 이동이 뚜렷하지 않습니다.",
+          "downturned": "판단 가능한 두 눈 모두 바깥쪽 눈꼬리가 안쪽보다 뚜렷하게 낮습니다.",
+          "mixed": "판단 가능한 두 눈이 서로 반대 방향이거나 한쪽은 방향성이 있고 다른 쪽은 수평인 등, 의미 있게 다른 방향 패턴을 보입니다."
+        },
+        "neighborContrasts": [
+          "올라감과 수평: 바깥쪽이 뚜렷하게 높음 / 위아래 이동이 뚜렷하지 않음",
+          "수평과 내려감: 위아래 이동이 뚜렷하지 않음 / 바깥쪽이 뚜렷하게 낮음",
+          "한 방향과 좌우 다름: 두 눈이 한 패턴을 지지함 / 두 눈이 서로 다른 패턴을 지지함"
+        ],
+        "ambiguityRules": [
+          "두 눈꼬리가 보이지만 높이 관계를 신뢰성 있게 구분할 수 없으면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "한쪽 또는 양쪽 눈꼬리가 가림",
+          "정면이 아닌 자세",
+          "머리가 좌우로 기울어짐",
+          "표정이 눈꼬리를 왜곡함",
+          "선명도가 부족함"
+        ],
+        "imageConditionWarnings": [
+          "머리의 좌우 기울기",
+          "좌우 회전",
+          "표정",
+          "아이라이너",
+          "머리카락 가림"
+        ],
+        "humanReviewerInstruction": "각 눈의 안쪽과 바깥쪽 눈꼬리 관계를 판단합니다. 눈썹 방향을 결정 신호로 쓰지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.eyes.eyeOpenness",
+      "enumOptions": [
+        "narrow",
+        "medium",
+        "wide"
+      ],
+      "content": {
+        "title": "눈 뜬 정도",
+        "shortInstruction": "같은 눈의 가로 길이에 비해 위아래 눈꺼풀 사이가 얼마나 열려 있는지 보세요.",
+        "observableTarget": "가로 눈 길이와 분리해, 위아래 눈꺼풀 가장자리 사이의 보이는 세로 개방 정도를 봅니다.",
+        "referenceFrame": "각 눈의 가로 길이와 조심스럽게 확인한 홍채·흰자 노출을 같은 눈 안에서 기준으로 삼습니다.",
+        "valueDefinitions": {
+          "narrow": "같은 눈의 가로 길이에 비해 세로 눈꺼풀 틈이 뚜렷하게 좁고, 홍채나 흰자 노출도 그 개방 정도와 일치합니다.",
+          "medium": "같은 눈의 가로 길이에 비해 세로 개방이 뚜렷하게 좁지도 넓지도 않습니다.",
+          "wide": "같은 눈의 가로 길이에 비해 세로 눈꺼풀 틈이 뚜렷하게 넓고, 홍채나 흰자 노출도 그 개방 정도와 일치합니다."
+        },
+        "neighborContrasts": [
+          "좁음과 중간: 개방이 뚜렷하게 압축됨 / 좁지도 넓지도 않음",
+          "중간과 넓음: 좁지도 넓지도 않음 / 개방이 뚜렷하게 넓음"
+        ],
+        "ambiguityRules": [
+          "표정이나 눈꺼풀 위치가 일시적일 수 있지만 일부 해석은 가능하면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "눈이 일부 감김",
+          "중립 표정이 아님",
+          "눈이 가림",
+          "정면이 아닌 자세",
+          "선명도가 부족함"
+        ],
+        "imageConditionWarnings": [
+          "표정",
+          "깜박임 상태",
+          "좌우 회전",
+          "아이라이너",
+          "선명도"
+        ],
+        "humanReviewerInstruction": "같은 눈의 가로 길이에 대한 세로 개방을 판단합니다. 가로 눈 길이 자체를 이 범주로 대신하지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.featureLayout.featureScale",
+      "enumOptions": [
+        "small",
+        "medium",
+        "large",
+        "mixed"
+      ],
+      "content": {
+        "title": "이목구비 크기",
+        "shortInstruction": "눈·눈썹·코·입술을 각각 본 뒤 같은 얼굴 안에서 종합하세요.",
+        "observableTarget": "눈, 눈썹, 코, 입술의 보이는 크기를 각각 판단한 뒤 같은 얼굴에 대한 크기로 종합합니다.",
+        "referenceFrame": "같은 얼굴 둘레를 공통 기준으로 사용합니다. 광대뼈와 턱선은 이 버전의 크기 종합에서 제외합니다.",
+        "valueDefinitions": {
+          "small": "판단 가능한 구성 이목구비 대부분이 같은 얼굴에 비해 시각적으로 작아 보입니다.",
+          "medium": "판단 가능한 구성 이목구비 대부분이 같은 얼굴에 비해 뚜렷하게 작지도 크지도 않습니다.",
+          "large": "판단 가능한 구성 이목구비 대부분이 같은 얼굴에 비해 시각적으로 크게 두드러집니다.",
+          "mixed": "판단 가능한 이목구비들이 서로 의미 있게 다른 크기 범주를 지지합니다. 혼합형은 판단 애매가 아닙니다."
+        },
+        "neighborContrasts": [
+          "작음과 중간: 대부분이 뚜렷하게 작음 / 대부분 중간",
+          "중간과 큼: 대부분 중간 / 대부분 뚜렷하게 큼",
+          "한 범주와 혼합형: 구성 요소가 대체로 일치 / 서로 의미 있게 다른 크기 범주를 지지"
+        ],
+        "ambiguityRules": [
+          "신뢰할 수 있는 이목구비가 너무 적거나 경계선의 요소들이 일치 또는 이질성을 확립하지 못하면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "얼굴 둘레를 확인할 수 없음",
+          "여러 중심 이목구비가 가림",
+          "강한 원근",
+          "표정이 이목구비를 왜곡함",
+          "선명도가 부족함"
+        ],
+        "imageConditionWarnings": [
+          "원근",
+          "표정",
+          "화장",
+          "가림",
+          "잘림"
+        ],
+        "humanReviewerInstruction": "눈, 눈썹, 코, 입술을 따로 판단한 뒤 종합합니다. 광대뼈나 턱선은 포함하지 않고, 혼합형을 불확실성 대신 쓰지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.featureLayout.featureConcentration",
+      "enumOptions": [
+        "spread",
+        "balanced",
+        "centered"
+      ],
+      "content": {
+        "title": "이목구비 집중도",
+        "shortInstruction": "눈·눈썹·코·입술이 얼굴 중심과 둘레 사이에 어떻게 분포하는지 보세요.",
+        "observableTarget": "눈, 눈썹, 코, 입술이 보이는 얼굴 중심과 둘레를 기준으로 공간에 어떻게 분포하는지 봅니다.",
+        "referenceFrame": "정면이고 수평인 자세에서 보이는 얼굴 둘레의 중점을 사용합니다. 이목구비 크기는 결정 신호가 아닙니다.",
+        "valueDefinitions": {
+          "spread": "주요 중심 이목구비들이 보이는 얼굴의 더 넓은 부분을 차지하며 얼굴 중심에서 더 멀리 놓입니다.",
+          "balanced": "주요 중심 이목구비가 뚜렷하게 넓게 퍼지지도 중심에 모이지도 않습니다.",
+          "centered": "주요 중심 이목구비들이 얼굴 중심 가까이에 모여 주변 얼굴 영역이 더 많이 남습니다."
+        },
+        "neighborContrasts": [
+          "넓게 분포와 균형: 넓은 분포가 뚜렷하게 우세 / 넓은 분포와 중심 집중 어느 쪽도 우세하지 않음",
+          "균형과 중심부에 모임: 어느 쪽도 우세하지 않음 / 중심 집중이 뚜렷하게 우세"
+        ],
+        "ambiguityRules": [
+          "자세나 얼굴 둘레의 가시성 때문에 안정적으로 중심을 판단할 수 없거나 이목구비 위치가 서로 충돌하면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "정면이 아닌 자세",
+          "얼굴 둘레를 확인할 수 없음",
+          "중심 이목구비가 가림",
+          "강한 원근",
+          "잘림"
+        ],
+        "imageConditionWarnings": [
+          "좌우 회전",
+          "렌즈 원근",
+          "잘림",
+          "표정",
+          "가림"
+        ],
+        "humanReviewerInstruction": "같은 얼굴의 중심과 둘레에 대한 이목구비 위치를 판단합니다. 이목구비 크기나 얼굴이 좁다는 사실만으로 집중도를 추정하지 않습니다."
+      }
+    },
+    {
+      "axisPath": "observations.visualLanguage.straightCurveBalance",
+      "enumOptions": [
+        "curved",
+        "balanced",
+        "straight"
+      ],
+      "content": {
+        "title": "직선·곡선 균형",
+        "shortInstruction": "눈썹, 눈, 코, 턱선, 입술에서 보이는 직선과 곡선의 우세를 함께 보세요.",
+        "observableTarget": "눈썹, 눈의 열린 윤곽, 콧대나 코 가장자리, 턱선, 입술 윤곽에서 보이는 곡선과 직선 형태의 균형을 봅니다.",
+        "referenceFrame": "정해진 얼굴 구조만 각각 판단합니다. 헤어스타일, 옷, 배경, 화장 그래픽은 제외합니다.",
+        "valueDefinitions": {
+          "curved": "판단 가능한 구성 구조 전반에서 곡선 형태가 눈에 띄게 우세합니다.",
+          "balanced": "판단 가능한 구성 구조에 곡선과 직선이 모두 보이고 어느 쪽도 일관되게 우세하지 않습니다.",
+          "straight": "판단 가능한 구성 구조 전반에서 직선 또는 방향성이 뚜렷한 형태가 눈에 띄게 우세합니다."
+        },
+        "neighborContrasts": [
+          "곡선 우세와 균형: 곡선이 일관되게 우세 / 어느 쪽도 일관되게 우세하지 않음",
+          "균형과 직선 우세: 어느 쪽도 일관되게 우세하지 않음 / 직선이 일관되게 우세"
+        ],
+        "ambiguityRules": [
+          "구성 요소가 보이지만 너무 충돌하거나 경계에 있어 우세를 정할 수 없으면 판단 애매를 선택합니다. 균형은 판단 부족이 아니라 근거가 있는 혼합이어야 합니다."
+        ],
+        "notAssessableConditions": [
+          "대부분의 구성 구조가 가림",
+          "정면이 아닌 자세",
+          "진한 화장이 선의 모양을 바꿈",
+          "표정이 윤곽을 바꿈",
+          "선명도가 부족함"
+        ],
+        "imageConditionWarnings": [
+          "화장",
+          "표정",
+          "자세",
+          "가림",
+          "보정"
+        ],
+        "humanReviewerInstruction": "정해진 얼굴 구조만 봅니다. 균형은 곡선과 직선 근거가 모두 보여야 하며, 판단 애매는 근거가 균형을 지지하지 못하는 경우입니다."
+      }
+    }
+  ],
+  "validationAxes": [
+    {
+      "axisPath": "observations.eyes.eyeLength",
+      "enumOptions": [
+        "short",
+        "medium",
+        "long"
+      ],
+      "content": {
+        "title": "눈 가로 길이",
+        "shortInstruction": "눈을 뜬 세로 정도와 구분해 안쪽부터 바깥쪽까지의 가로 길이를 보세요.",
+        "observableTarget": "세로 개방과 구분해, 보이는 눈의 안쪽과 바깥쪽 끝점 사이 가로 길이를 봅니다.",
+        "referenceFrame": "같은 얼굴 너비와 주변 중심 이목구비 크기 안에서 두 눈을 봅니다. 아직 하나의 검증된 기준만 우세하지는 않습니다.",
+        "valueDefinitions": {
+          "short": "눈을 뜬 가로 길이가 같은 얼굴 너비와 주변 이목구비 맥락에서 짧아 보입니다.",
+          "medium": "눈을 뜬 가로 길이가 같은 얼굴 안에서 뚜렷하게 짧지도 길지도 않습니다.",
+          "long": "눈을 뜬 가로 길이가 같은 얼굴 너비와 주변 이목구비 맥락에서 길게 두드러집니다."
+        },
+        "neighborContrasts": [
+          "짧음과 중간: 가로 길이가 뚜렷하게 짧음 / 짧지도 길지도 않음",
+          "중간과 김: 짧지도 길지도 않음 / 가로 길이가 뚜렷하게 김"
+        ],
+        "ambiguityRules": [
+          "가능한 기준들이 서로 다르거나 가로 끝점은 보이지만 범주를 신뢰성 있게 나누기 어려우면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "눈의 끝점이 가림",
+          "정면이 아닌 자세",
+          "강한 원근",
+          "선명도가 부족함",
+          "한쪽 눈이 보이지 않음"
+        ],
+        "imageConditionWarnings": [
+          "좌우 회전",
+          "원근",
+          "아이라이너",
+          "가림",
+          "선명도"
+        ],
+        "humanReviewerInstruction": "가로 길이만 판단합니다. 세로로 눈을 뜬 정도를 눈 길이 대신 쓰지 말고, 같은 얼굴 안의 기준들이 다르면 판단 애매를 선택합니다."
+      }
+    },
+    {
+      "axisPath": "observations.visualLanguage.contourDefinition",
+      "enumOptions": [
+        "soft",
+        "moderate",
+        "defined"
+      ],
+      "content": {
+        "title": "얼굴 윤곽 선명도",
+        "shortInstruction": "사진 효과를 제외하고 얼굴 둘레, 턱선, 볼 전환 경계가 얼마나 이어져 보이는지 보세요.",
+        "observableTarget": "사진의 가장자리 강화 효과와 구조 근거를 분리한 뒤, 얼굴 둘레·턱선 경계·볼 전환의 가시성과 기하학적 연속성을 봅니다.",
+        "referenceFrame": "고른 조명과 안정적인 선명도에서 이름 붙은 얼굴 경계를 사용하고, 이미지 조건 근거는 따로 기록합니다.",
+        "valueDefinitions": {
+          "soft": "이미지 조건이 적절할 때 이름 붙은 구조 경계가 서서히 전환되고 강하게 구분되지 않습니다.",
+          "moderate": "이름 붙은 구조 경계가 보이고 국소적으로 구분되지만 전반적으로 강하게 구분되지는 않습니다.",
+          "defined": "강한 그림자나 선명화 인공물에 기대지 않고 여러 판단 가능 부위에서 구조 경계가 분명하게 이어집니다."
+        },
+        "neighborContrasts": [
+          "부드러움과 중간: 경계가 서서히 전환 / 국소적인 구분이 보임",
+          "중간과 선명함: 국소적인 구분 / 여러 부위에서 분명한 구분"
+        ],
+        "ambiguityRules": [
+          "구조적 경계와 사진 효과로 생긴 경계를 신뢰성 있게 분리할 수 없으면 판단 애매를 선택합니다."
+        ],
+        "notAssessableConditions": [
+          "고르지 않거나 강한 조명",
+          "흐림 또는 과도한 선명화",
+          "진한 윤곽 화장",
+          "보정 가능성",
+          "이름 붙은 경계가 가림"
+        ],
+        "imageConditionWarnings": [
+          "조명",
+          "대비",
+          "선명도",
+          "편집",
+          "화장"
+        ],
+        "humanReviewerInstruction": "이름 붙은 얼굴 경계만 사용하고, 구조적 선명함을 그림자·화장·대비·선명화 효과와 분리합니다."
+      }
+    }
+  ],
+  "excludedAxes": [
+    "observations.visualLanguage.featureContrast"
+  ],
+  "ui": {
+    "uiVersion": "face-lab-independent-human-cue-review-ui-ko-hosted-20260815-v1",
+    "language": "ko",
+    "estimatedMinutes": 5,
+    "tokenLabels": {
+      "oval": "계란형",
+      "round": "둥근형",
+      "square": "사각형",
+      "oblong": "긴 사각형",
+      "heart": "하트형",
+      "diamond": "다이아몬드형",
+      "triangle": "삼각형",
+      "mixed": "혼합형",
+      "soft": "부드러움",
+      "moderate": "중간",
+      "angular": "각짐",
+      "short": "짧음",
+      "balanced": "균형",
+      "long": "김",
+      "upturned": "올라감",
+      "level": "수평",
+      "downturned": "내려감",
+      "narrow": "좁음",
+      "medium": "중간",
+      "wide": "넓음",
+      "small": "작음",
+      "large": "큼",
+      "spread": "넓게 분포",
+      "centered": "중심부에 모임",
+      "curved": "곡선 우세",
+      "straight": "직선 우세",
+      "defined": "선명함",
+      "uncertain": "판단 애매",
+      "not_assessable": "판단 불가",
+      "low": "낮음",
+      "high": "높음",
+      "not_applicable": "해당 없음"
+    },
+    "reasonLabels": {
+      "pose": "얼굴 각도",
+      "occlusion": "머리카락·물체 등에 가림",
+      "crop": "얼굴 일부가 잘림",
+      "image_quality": "화질 문제",
+      "expression": "표정 영향",
+      "lighting": "조명 영향",
+      "makeup": "화장 영향",
+      "perspective": "원근·렌즈 왜곡",
+      "editing_or_filter": "보정 또는 필터 가능성",
+      "axis_specific_limitation": "이 항목 자체의 판별 한계",
+      "insufficient_visible_evidence": "보이는 정보가 부족함"
+    },
+    "attestationCopy": {
+      "generationTargetKnown": "이 이미지들이 어떤 특성을 의도해서 만들어졌는지 모릅니다.",
+      "generationPromptSeen": "이미지 제작에 사용된 지시문이나 설명을 본 적이 없습니다.",
+      "subtleModerateConditionKnown": "이미지들이 어떤 조건 그룹으로 나뉘는지 모릅니다.",
+      "archetypeTargetKnown": "각 이미지에 의도된 유형을 모릅니다.",
+      "visionObservationSeen": "AI가 이 이미지들을 어떻게 분석했는지 본 적이 없습니다.",
+      "shadowScoringSeen": "자동 점수나 순위 결과를 본 적이 없습니다.",
+      "peerJudgmentsSeen": "다른 참여자의 응답을 보지 않았습니다.",
+      "consensusSeen": "다른 참여자의 합의 결과를 보지 않았고 혼자 평가하겠습니다."
+    }
+  },
+  "blindness": {
+    "reviewerSlotUsed": false,
+    "targetMetadataExposed": false,
+    "archetypeMetadataExposed": false,
+    "visionMetadataExposed": false,
+    "scorerMetadataExposed": false,
+    "neutralAssetNames": true,
+    "reviewerSafeProjectionConfirmed": true
+  },
+  "executionCounters": {
+    "providerCalls": 0,
+    "observationCalls": 0,
+    "generationCalls": 0,
+    "humanJudgments": 0,
+    "consensus": 0
+  },
+  "productionConsumption": false,
+  "w2Status": "W2_REMAINS_LOCKED",
+  "authorityDigest": "b92f221f8c9b3521637b9f1660ddd2f6c287883bb8620f4b8ac02bd786e30491"
+}

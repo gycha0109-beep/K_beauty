@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-08-15 / Face Lab D2D-XP hosted blind Human cue intake v1
+
+- Task type: execution / High hosted tmp-table, service-only write, and blind evaluation UI boundary.
+- Branch: `feat/face-eval-cx1g-d2d-xp-hosted-intake-v1` reconciled onto actual `origin/main` `6f573b632824be13dfe208f29c796aa3306b4984`; the UI1 authority is an ancestor and the later Face Lab semantic delta is zero.
+- Scope: added a deterministic single 14-image hosted authority, byte-identical neutral public assets, a separate hosted response contract, Korean route-handler UI, opaque-token and same-origin submit route, service-role persistence helper, one isolated tmp-table migration, verifiers, domain/operator docs, and this entry. Existing D2D-P/D2D-UI1 authority, production Face Lab, scorer/observer/generation semantics, W1/W1M, unrelated product code, and the dirty primary checkout were not changed.
+- Supabase: project `bygrczggxfuisupcevaz`; migration `face_lab_hosted_intake_v1` applied. The table has RLS, zero policies, no anon/authenticated read or insert, service-role insert/select only, and no service-role update/delete. One canonical 140-judgment `test` row is retained; real Human submitted rows remain zero.
+- Validation: existing D2D-P and D2D-UI1 verifiers passed against the sealed local authority with zero source mutation; hosted set/response/UI verifiers, browser test-only flow, Next production build, and actual service-role hosted insert/read-back passed. Browser interaction used a mock submit because the repository hook blocked loading protected `.env.local`; the hosted persistence smoke was run separately without bypassing that boundary. Full requested regressions and Draft PR publishing remain pending at this entry.
+- Security: client service-role exposure 0; direct public table access 0; target/archetype/Vision/scorer metadata exposure 0; third-party browser requests 0; reviewer slots 0; Human judgments 0; provider/observation/generation calls 0; consensus 0; W2 remains locked.
+- Context promotion candidate: none. The current server-only secret, RLS/grant, and offline-provenance rules are task-specific and already covered by active repository/security guidance.
+
 ### 2026-07-14 / SEC-06 saved_reports premium write boundary implementation
 
 - Branch: `feature/premium-beta-flow`

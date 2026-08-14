@@ -253,6 +253,19 @@ Solo session:
 
 또한 pilot의 행정·운영 closeout은 아직 별도 단계다.
 
+### 8.1 Archetype stress D2D-XP hosted intake 준비 상태
+
+Independent Human cue 실행 준비에는 sealed D2D-P packet authority와 D2D-UI1 offline Korean distribution이 그대로 남아 있다. 그 위에 reviewer-specific ZIP/JSON 회수 대신 사용할 별도 hosted intake v1 draft가 추가됐다.
+
+- single deterministic 14-image hosted set
+- reviewer slot 없는 independent session submission
+- 한국어 blind-safe UI와 canonical-token response contract
+- opaque shared link와 server-only Supabase write
+- `public.tmp_face_lab_independent_human_cue_submissions` 격리 저장
+- hosted authority digest: `b92f221f8c9b3521637b9f1660ddd2f6c287883bb8620f4b8ac02bd786e30491`
+
+이 상태는 intake implementation과 test row 검증까지다. 실제 reviewer link 배포, Human judgment, reveal, aggregation, consensus, production consumption, D2D-X, W2는 시작되지 않았다. 상세 authority와 운영 경계는 `face-lab-independent-human-cue-hosted-intake-v1.md`와 operator note를 따른다.
+
 ## 9. 과거 문서와 현재 authority
 
 다음 자료는 설계 배경과 당시 상태를 이해하는 데 여전히 가치가 있지만 현재 구현 상태 authority는 아니다.
