@@ -1,0 +1,501 @@
+{
+  "authority": {
+    "historical_current_count": 23,
+    "historical_current_proposition_keys": [
+      "0f99e79e0ac8dea9709408ba2fc30926cdbc1531aecdb64efa1372120a50a7ee",
+      "1130020852b0028698d62c01046ce25430db8f4869b43191ae0ff02fc93f14d4",
+      "1c8be56a7ffca1f92b504e71869bb4837bd6f8dad9a34a99fe0f633d44c15506",
+      "386ee490eb6db1028a882d61fe367d5ad9d44fb381c5a136b2ff92ab9d451446",
+      "4ab8ddaeb4b84042635fa47846946b09bf202972b87eeaff694049c93752e06a",
+      "5a48189d6158fb9bc8f994779e766adba162c3e9d13b5ff73dfccdf1fe4757db",
+      "5bd530c0b48f73553f935695d2254d415476b66539a88624c7e4e1d581c8f777",
+      "61a9e96f7bc31ce1ed67304a4af2592ca7d27c7b931c57a786bf75807e170913",
+      "6a251131fe601a73b41f4112231423346ba6198dfded3cabf09fffd010b23a1b",
+      "6b1aecc4a6e4e78e178e68c3310c756b3a87a1b9610938c92e53ac5771eb9c1a",
+      "7447a2176f490ae2db3bdb9078622b7a6f1150bbd7cb8b75016ac04582182b80",
+      "7e3f44c47ef50a94953249bed4ae484b1a8ee7995fd05e1d497d07c6229763b2",
+      "8178abcf346b1779b649fa935b0dec0d5ea874c9394081dc898debe1172d9c18",
+      "89703d12e70171885f5a0db6edb1920bbd3e1ae3f2dc652c0511d93643bc1c55",
+      "a00cae7249ea6472f31d6a7bf5e0e0ffec90f2dd8c241bbda78bd5b0239d8742",
+      "ade30ee97c27c1bbd5280d0f671c7afae768d62386751798b73f334272d20b17",
+      "b5b242ca1dac5937a17f91e11fceef51553ca90b05549c10f0574ccdf393e348",
+      "b6f1424d1fef32965ec9b1d58d160f8d6b288ce5dcaf7d00fd478fc005eef098",
+      "b7b5726258b05371f9486d243e703f165b8fd3ea09d158bbdd60d8248e2c11b9",
+      "ca47a8163253401226cf60b5c790f80385605be5f4332e04ae4850e1c7f3163e",
+      "caece34a8bcfd3e93a776bf84934dda10ad4bb33ad4706b4cca6db039032bc30",
+      "f13b69729b2a15b9c1a86c4dbaa5a9718ae71e12d21ca5d8950e2e19fc39d00a",
+      "f4c8b638c67996c9d20af9b39f71e44512ba47ec649ac89d5f31ea27b2d0834d"
+    ],
+    "input_hashes": {
+      "evidence_sha256": "587afd259b12b93f11bb0ebae65370e12d07cf2b623c35c962ba4cf1ee72c3bc",
+      "markdown_sha256": "76e9d46fc19a9a0f28167e0d63107da3710b93a9154f18b168071e8dfcfc8565",
+      "materialization_sha256": "9324d64492332da47bf118aa21ec3e9177c98f821b4c5f0556b8c3a9e8c55735"
+    },
+    "registry_version": "product-fact-registry-cross-category-v1"
+  },
+  "binding_contract": {
+    "binding_state": "exact_subject_match",
+    "scope_relation": "narrower",
+    "subject_identity_change_required": false
+  },
+  "controlled_rpc_sequence": [
+    "admin_register_product_fact_subject_v1",
+    "admin_ingest_product_fact_evidence_v1",
+    "admin_prepare_product_fact_review_v1",
+    "admin_preflight_product_fact_confirmation_v1",
+    "admin_confirm_product_fact_v1"
+  ],
+  "exact_scope": {
+    "bindings": 1,
+    "confirmations": 2,
+    "current": 2,
+    "evidence": 2,
+    "excluded_pilots": [
+      "M3",
+      "P1",
+      "P2"
+    ],
+    "facts": 2,
+    "products": 1,
+    "sources": 1,
+    "subjects": 1
+  },
+  "execution_order": [
+    "primary_use_role",
+    "barrier_support_claim"
+  ],
+  "expected_poststate": {
+    "adopted_unique_products": 9,
+    "counts": {
+      "product_evidence_records": 25,
+      "product_evidence_source_subject_bindings": 9,
+      "product_evidence_sources": 9,
+      "product_fact_confirmations": 25,
+      "product_fact_current": 25,
+      "product_fact_definition_snapshots": 20,
+      "product_fact_evidence_links": 25,
+      "product_fact_instances": 25,
+      "product_fact_registry_versions": 1,
+      "product_fact_review_assignments": 25,
+      "product_fact_review_events": 108,
+      "product_fact_subjects": 9
+    },
+    "m1_current_count": 2,
+    "m1_subject_count": 1
+  },
+  "expected_writes": {
+    "product_evidence_records": 2,
+    "product_evidence_source_subject_bindings": 1,
+    "product_evidence_sources": 1,
+    "product_fact_confirmations": 2,
+    "product_fact_current": 2,
+    "product_fact_definition_snapshots": 0,
+    "product_fact_evidence_links": 2,
+    "product_fact_instances": 2,
+    "product_fact_registry_versions": 0,
+    "product_fact_review_assignments": 2,
+    "product_fact_review_events": 8,
+    "product_fact_subjects": 1
+  },
+  "facts": [
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "b7ec18be4f271bdad3be58421004a8a244e376fd06fab70036d73c918a161f67",
+      "confirmation_payload": {
+        "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+        "authority_ceiling": "product_specific_primary",
+        "fact_key": "primary_use_role",
+        "fused_confidence": "high",
+        "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+        "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+        "locale": null,
+        "market": "KR",
+        "opposing_evidence_ids": [],
+        "parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "qualifier": {},
+        "region": null,
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "semantic_status": "supported",
+        "subject_id": "__HOSTED_SUBJECT_ID__",
+        "supporting_evidence_ids": [
+          "__HOSTED_EVIDENCE_ID__"
+        ],
+        "valid_from": null,
+        "valid_to": null,
+        "value_boolean": null,
+        "value_entity_identifier": null,
+        "value_enum": "multi_area",
+        "value_number": null,
+        "value_range_max": null,
+        "value_range_min": null,
+        "value_type": "enum",
+        "value_unit": null
+      },
+      "evidence_class": "role_declaration",
+      "evidence_ref": "evidence:wave1:M1:primary_use_role",
+      "fact_key": "primary_use_role",
+      "fused_confidence": "high",
+      "ingest_payload": {
+        "binding": {
+          "binding_state": "exact_subject_match",
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "presentation_metadata": {
+            "source_market": "KR",
+            "source_ref": "source:wave1:M1:amorepacific",
+            "subject_identity_change_required": false,
+            "subject_market_applicability": null
+          },
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "reviewed_at": "2026-08-14",
+          "scope_relation": "narrower",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        },
+        "evidence": {
+          "canonical_evidence_digest": "b7ec18be4f271bdad3be58421004a8a244e376fd06fab70036d73c918a161f67",
+          "confidence": "high",
+          "evidence_authority": "product_specific_primary",
+          "evidence_class": "role_declaration",
+          "fact_key": "primary_use_role",
+          "locale": null,
+          "market": "KR",
+          "negative_admissibility": "not_applicable",
+          "parent_proposition_key": null,
+          "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": "multi_area",
+          "qualifier": {},
+          "region": null,
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "supersedes_evidence_id": null,
+          "support_direction": "supports",
+          "valid_from": null,
+          "valid_to": null
+        },
+        "source": {
+          "accessed_at": "2026-08-14",
+          "canonical_locator": "https://www.apgroup.com/int/ko/news/2026-03-27-2.html",
+          "content_digest": "c6a548b3c48d7a60d8c24e31e9cff38d1d7e5bd0ea1fdab4fe934ced3164f7a1",
+          "external_snapshot_reference": null,
+          "locale": "ko-KR",
+          "market": "KR",
+          "observed_at": null,
+          "published_at": null,
+          "publisher": "Amorepacific",
+          "region": null,
+          "source_kind": "official_manufacturer_product_news",
+          "source_metadata": {
+            "authority": "product_specific_primary",
+            "exact_product_identity_match": true,
+            "frozen_source_ref": "source:wave1:M1:amorepacific",
+            "provenance_container": "evidence/product-evidence-expansion-v1/source-gap-recovery-wave-1-v1.json#accepted_sources/0",
+            "size_match": true
+          }
+        }
+      },
+      "parent_proposition_key": null,
+      "proposition_identity": {
+        "fact_key": "primary_use_role",
+        "parent_proposition_key": null,
+        "qualifier": {},
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "scope": {
+          "market": "KR"
+        },
+        "serializer_version": "product-fact-proposition-pilot-v1",
+        "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
+        "value_identity": "multi_area"
+      },
+      "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+      "review_payloads": [
+        {
+          "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+          "fact_key": "primary_use_role",
+          "operational_state": "under_review",
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+          "reason_code": "v21_8e_recovered_source_gap_adoption",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "review_policy_version": "recovered-source-gap-adoption-wave-1-v1",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        },
+        {
+          "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+          "fact_key": "primary_use_role",
+          "operational_state": "ready_for_confirm",
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "proposition_key": "00bb4342dc4f76621a6961b928f39910aa311d5fa3e9b5f01d27fbc385a2c3c4",
+          "reason_code": "v21_8e_recovered_source_gap_ready",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "review_policy_version": "recovered-source-gap-adoption-wave-1-v1",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        }
+      ],
+      "scope": {
+        "market": "KR"
+      },
+      "semantic_status": "supported",
+      "support_direction": "supports",
+      "typed_columns": {
+        "value_boolean": null,
+        "value_entity_identifier": null,
+        "value_enum": "multi_area",
+        "value_number": null,
+        "value_range_max": null,
+        "value_range_min": null,
+        "value_type": "enum",
+        "value_unit": null
+      },
+      "typed_value": "multi_area"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "da5b96ebe73fd5ffbcf4d53ae0a802f5cf7ad2e4fce09a4f087a3d5312ab0bad",
+      "confirmation_payload": {
+        "assignment_id": "__HOSTED_ASSIGNMENT_ID__",
+        "authority_ceiling": "product_specific_primary",
+        "fact_key": "barrier_support_claim",
+        "fused_confidence": "high",
+        "fusion_input_digest": "__HOSTED_RUNTIME_FUSION_INPUT_DIGEST__",
+        "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+        "locale": null,
+        "market": "KR",
+        "opposing_evidence_ids": [],
+        "parent_fact_instance_id": null,
+        "parent_proposition_key": null,
+        "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "qualifier": {},
+        "region": null,
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "semantic_status": "supported",
+        "subject_id": "__HOSTED_SUBJECT_ID__",
+        "supporting_evidence_ids": [
+          "__HOSTED_EVIDENCE_ID__"
+        ],
+        "valid_from": null,
+        "valid_to": null,
+        "value_boolean": true,
+        "value_entity_identifier": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_range_max": null,
+        "value_range_min": null,
+        "value_type": "boolean",
+        "value_unit": null
+      },
+      "evidence_class": "product_claim",
+      "evidence_ref": "evidence:wave1:M1:barrier_support_claim",
+      "fact_key": "barrier_support_claim",
+      "fused_confidence": "high",
+      "ingest_payload": {
+        "binding": {
+          "binding_state": "exact_subject_match",
+          "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+          "presentation_metadata": {
+            "source_market": "KR",
+            "source_ref": "source:wave1:M1:amorepacific",
+            "subject_identity_change_required": false,
+            "subject_market_applicability": null
+          },
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "reviewed_at": "2026-08-14",
+          "scope_relation": "narrower",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        },
+        "evidence": {
+          "canonical_evidence_digest": "da5b96ebe73fd5ffbcf4d53ae0a802f5cf7ad2e4fce09a4f087a3d5312ab0bad",
+          "confidence": "high",
+          "evidence_authority": "product_specific_primary",
+          "evidence_class": "product_claim",
+          "fact_key": "barrier_support_claim",
+          "locale": null,
+          "market": "KR",
+          "negative_admissibility": "not_applicable",
+          "parent_proposition_key": null,
+          "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+          "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+          "proposition_value_identity": true,
+          "qualifier": {},
+          "region": null,
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "supersedes_evidence_id": null,
+          "support_direction": "supports",
+          "valid_from": null,
+          "valid_to": null
+        },
+        "source": {
+          "accessed_at": "2026-08-14",
+          "canonical_locator": "https://www.apgroup.com/int/ko/news/2026-03-27-2.html",
+          "content_digest": "c6a548b3c48d7a60d8c24e31e9cff38d1d7e5bd0ea1fdab4fe934ced3164f7a1",
+          "external_snapshot_reference": null,
+          "locale": "ko-KR",
+          "market": "KR",
+          "observed_at": null,
+          "published_at": null,
+          "publisher": "Amorepacific",
+          "region": null,
+          "source_kind": "official_manufacturer_product_news",
+          "source_metadata": {
+            "authority": "product_specific_primary",
+            "exact_product_identity_match": true,
+            "frozen_source_ref": "source:wave1:M1:amorepacific",
+            "provenance_container": "evidence/product-evidence-expansion-v1/source-gap-recovery-wave-1-v1.json#accepted_sources/0",
+            "size_match": true
+          }
+        }
+      },
+      "parent_proposition_key": null,
+      "proposition_identity": {
+        "fact_key": "barrier_support_claim",
+        "parent_proposition_key": null,
+        "qualifier": {},
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "scope": {
+          "market": "KR"
+        },
+        "serializer_version": "product-fact-proposition-pilot-v1",
+        "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
+        "value_identity": true
+      },
+      "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+      "review_payloads": [
+        {
+          "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+          "fact_key": "barrier_support_claim",
+          "operational_state": "under_review",
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+          "reason_code": "v21_8e_recovered_source_gap_adoption",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "review_policy_version": "recovered-source-gap-adoption-wave-1-v1",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        },
+        {
+          "assigned_to": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+          "fact_key": "barrier_support_claim",
+          "operational_state": "ready_for_confirm",
+          "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+          "proposition_key": "bbf0b595d0b81eae256ffa6b06065430e36c528f9d20cdd14c575c992c2be2fd",
+          "reason_code": "v21_8e_recovered_source_gap_ready",
+          "registry_version": "product-fact-registry-cross-category-v1",
+          "review_policy_version": "recovered-source-gap-adoption-wave-1-v1",
+          "subject_id": "__HOSTED_SUBJECT_ID__"
+        }
+      ],
+      "scope": {
+        "market": "KR"
+      },
+      "semantic_status": "supported",
+      "support_direction": "supports",
+      "typed_columns": {
+        "value_boolean": true,
+        "value_entity_identifier": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_range_max": null,
+        "value_range_min": null,
+        "value_type": "boolean",
+        "value_unit": null
+      },
+      "typed_value": true
+    }
+  ],
+  "hosted_prestate": {
+    "active_admin_owner": {
+      "is_active": true,
+      "role": "admin_owner",
+      "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+    },
+    "adopted_unique_products": 8,
+    "counts": {
+      "product_evidence_records": 23,
+      "product_evidence_source_subject_bindings": 8,
+      "product_evidence_sources": 8,
+      "product_fact_confirmations": 23,
+      "product_fact_current": 23,
+      "product_fact_definition_snapshots": 20,
+      "product_fact_evidence_links": 23,
+      "product_fact_instances": 23,
+      "product_fact_registry_versions": 1,
+      "product_fact_review_assignments": 23,
+      "product_fact_review_events": 100,
+      "product_fact_subjects": 8
+    },
+    "m1_current_count": 0,
+    "m1_source_count": 0,
+    "m1_subject_count": 0,
+    "migration_versions": [
+      "20260809115932",
+      "20260810174400",
+      "20260810174410"
+    ]
+  },
+  "invariants": {
+    "catalog_fully_adopted": false,
+    "ddl": false,
+    "decision_axis_production_consumption": false,
+    "direct_product_fact_table_write": false,
+    "existing_current_23_unchanged": true,
+    "legacy_business_tables_unchanged": [
+      "products",
+      "source_rankings",
+      "recommendation_logs"
+    ],
+    "m3_p1_p2_subject_and_current_zero": true,
+    "recommendation_activated": false,
+    "recommendation_scorer_changed": false,
+    "registry_republish": false,
+    "schema_mutation": false
+  },
+  "plan_content_sha256": "cc47824a2af6a61e42a7c7945ff8d9b92507e6fadea32dd186c76a4bbe39e099",
+  "plan_id": "v21-8e-m1-illiyoon-controlled-hosted-adoption",
+  "source": {
+    "accessed_at": "2026-08-14",
+    "canonical_locator": "https://www.apgroup.com/int/ko/news/2026-03-27-2.html",
+    "content_digest": "c6a548b3c48d7a60d8c24e31e9cff38d1d7e5bd0ea1fdab4fe934ced3164f7a1",
+    "external_snapshot_reference": null,
+    "locale": "ko-KR",
+    "market": "KR",
+    "observed_at": null,
+    "published_at": null,
+    "publisher": "Amorepacific",
+    "region": null,
+    "source_kind": "official_manufacturer_product_news",
+    "source_metadata": {
+      "authority": "product_specific_primary",
+      "exact_product_identity_match": true,
+      "frozen_source_ref": "source:wave1:M1:amorepacific",
+      "provenance_container": "evidence/product-evidence-expansion-v1/source-gap-recovery-wave-1-v1.json#accepted_sources/0",
+      "size_match": true
+    }
+  },
+  "source_main_sha": "da4e499b9b33af5a36c33e2c4c189462d731786b",
+  "stage": "V2.1-8E",
+  "subject": {
+    "brand": "ILLIYOON",
+    "payload": {
+      "current_state": "current",
+      "formulation_label": "Ceramide Ato Concentrate Cream 150mL / 세라마이드 아토 집중크림",
+      "formulation_revision_key": "pilot-freeze-eaa1452f7abd275fb4d096089a03e4b2",
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "identity_status": "resolved",
+      "market_applicability": null,
+      "predecessor_subject_id": null,
+      "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "region_applicability": null,
+      "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+      "subject_semantic_key": "d600446336216d911d4aada62502fcbcc5b800abc671094b27fa5625f241d810",
+      "supersession_kind": null,
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": null
+    },
+    "pilot_id": "M1",
+    "product": "Ceramide Ato Concentrate Cream 150mL / 세라마이드 아토 집중크림",
+    "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00"
+  },
+  "version": "recovered-source-gap-adoption-wave-1-v1"
+}
