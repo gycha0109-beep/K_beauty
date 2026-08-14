@@ -1,0 +1,87 @@
+name: FACE-EVAL-CX1G D2D-UI1 Korean Review UI v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/build-face-lab-independent-human-cue-review-ui-ko-v1.mjs'
+      - 'scripts/check-face-lab-independent-human-cue-review-ui-ko-v1.mjs'
+      - 'scripts/check-face-lab-independent-human-cue-review-ui-ko-browser-v1.mjs'
+      - 'scripts/build-face-lab-home-transfer-v1.mjs'
+      - 'scripts/check-face-lab-home-transfer-v1.mjs'
+      - 'docs/domain/facelab/face-lab-independent-human-cue-review-ui-ko-v1.md'
+      - 'package.json'
+      - '.github/workflows/face-eval-cx1g-d2d-ui1-korean-review-ui-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Freeze repository authority
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          source_sha="61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0"
+          git merge-base --is-ancestor "$source_sha" HEAD
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$source_sha" "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+          fi
+
+      - name: Verify Korean offline review UI
+        run: |
+          npm run verify:face-lab-independent-human-cue-review-ui-ko
+          node --check scripts/build-face-lab-home-transfer-v1.mjs
+          node --check scripts/check-face-lab-home-transfer-v1.mjs
+
+      - name: Verify D2D-P protocol authority
+        run: npm run verify:face-lab-independent-human-cue-protocol
+
+      - name: Verify D2C-F definition authority
+        run: npm run verify:face-lab-target-axis-definitions
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Verify Archetype scorer invariance
+        run: npm run verify:face-lab-archetype-scoring
+
+      - name: Verify Human evaluation contracts
+        run: npm run verify:face-lab-archetype-human-evaluation
+
+      - name: Verify synthetic toolkit regressions
+        run: npm run synthetic:verify
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$PR_BASE_SHA..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi
