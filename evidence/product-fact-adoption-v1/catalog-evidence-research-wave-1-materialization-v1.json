@@ -1,0 +1,605 @@
+{
+  "version": "catalog-evidence-research-wave-1-materialization-v1",
+  "stage": "V2.1-8G",
+  "authority": {
+    "research_json_sha256": "9dcf1462a5601c32594a7fd37b93b3ae4a7393b2e99a3a3c2856ece5a3dd734e",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "hosted_prestate_current": 25,
+    "hosted_prestate_adopted_products": 9,
+    "hosted_writes": 0
+  },
+  "candidate_products": [
+    "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+    "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+    "59b149d0-5ffa-4610-8141-c0a501b60565",
+    "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+    "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+    "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+    "be8a590e-e5cb-4af4-84e7-99c7e121f45a"
+  ],
+  "subject_candidates": [
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "formulation_revision_key": "catalog-evidence-wave-1-41bff0cbf0dde3a55c91ecb1f7285683",
+      "market_applicability": null
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "formulation_revision_key": "catalog-evidence-wave-1-d8e3acb3953d94a12fe64fcb7333bdb4",
+      "market_applicability": null
+    },
+    {
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "subject_semantic_key": "627a5f3355958e323a74f4a22397a425f63a7133ff889fac8b250bf2af636fcc",
+      "formulation_revision_key": "catalog-evidence-wave-1-efdf5036819ad917d6cbd4225d5d1de6",
+      "market_applicability": null
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "formulation_revision_key": "catalog-evidence-wave-1-f34ef818717c55eddc88ca2ee5aaf90c",
+      "market_applicability": null
+    },
+    {
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "subject_semantic_key": "17598fce1de9d413515ceae4ae7f0cf92fb87f34413e75dd47799ce2d837863b",
+      "formulation_revision_key": "catalog-evidence-wave-1-5093c0240e0d6ec0a097b22a897e8b6f",
+      "market_applicability": null
+    },
+    {
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "subject_semantic_key": "9b383fc923a71cf4f63fde0daf72d0ae92806edc339b685b767799f17c929b68",
+      "formulation_revision_key": "catalog-evidence-wave-1-6ac037f6c7f6cadfbb477d13a12a58b2",
+      "market_applicability": null
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "formulation_revision_key": "catalog-evidence-wave-1-d5dd7bcd51dd936a4a1d4695e14500d3",
+      "market_applicability": null
+    }
+  ],
+  "source_candidates": [
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "source_ref": "source:v21-8g:P1",
+      "canonical_locator": "https://roundlab.com/products/birch-moisturizing-soothing-gel",
+      "content_digest": "dc6be155ce14f08166860479ae86e4a4824e29fb4115137f674c9a535f45a154"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "source_ref": "source:v21-8g:P4",
+      "canonical_locator": "https://www.dr-g.co.kr/item/9987",
+      "content_digest": "dd379f09ac9c6fde4f71327c20df5d953d2513f3bfcfa841c3bf29e05cfd2604"
+    },
+    {
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "source_ref": "source:v21-8g:P6",
+      "canonical_locator": "https://laboreve.kr/",
+      "content_digest": "aa7e7a95d6ebda16d867a5d6db72f384f7651850f2ca37922ae65c16145db0e3"
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "source_ref": "source:v21-8g:P7",
+      "canonical_locator": "https://roundlab.com/products/pine-calming-cica-lotion",
+      "content_digest": "edeb025df70e9241139f63feaadc8895f0ebf4dbaf6ba86f14668924404cf854"
+    },
+    {
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "source_ref": "source:v21-8g:P8",
+      "canonical_locator": "https://ybk-cosmetics.com/product/%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml/18/",
+      "content_digest": "855c1e613bd0b1e372438eb59010ea1f7e9d02e9ad8fde0836108c965755b276"
+    },
+    {
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "source_ref": "source:v21-8g:P10",
+      "canonical_locator": "https://medihealshop.com/product/%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EC%A7%84%EC%A0%95-%EC%9E%A5%EB%B2%BD/1659/",
+      "content_digest": "f084458cef122890346e56200c8e4a1afbc36b4e361418931d438929e9313b40"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "canonical_locator": "https://clubclio.co.kr/shop/goodsView/0000005157",
+      "content_digest": "2e09f9cd2d4ccf16d11e8f41e0f40d814c272b202d28600c6c5c16ecd6155885"
+    }
+  ],
+  "binding_candidates": [
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "source_ref": "source:v21-8g:P1",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "source_ref": "source:v21-8g:P4",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "subject_semantic_key": "627a5f3355958e323a74f4a22397a425f63a7133ff889fac8b250bf2af636fcc",
+      "source_ref": "source:v21-8g:P6",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "source_ref": "source:v21-8g:P7",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "subject_semantic_key": "17598fce1de9d413515ceae4ae7f0cf92fb87f34413e75dd47799ce2d837863b",
+      "source_ref": "source:v21-8g:P8",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "subject_semantic_key": "9b383fc923a71cf4f63fde0daf72d0ae92806edc339b685b767799f17c929b68",
+      "source_ref": "source:v21-8g:P10",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "source_ref": "source:v21-8g:P12",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "identity_resolution_version": "catalog-evidence-research-wave-1-identity-v1"
+    }
+  ],
+  "evidence_candidates": [
+    {
+      "evidence_ref": "evidence:v21-8g:P1:primary_use_role:multi_area",
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "source_ref": "source:v21-8g:P1",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "fact_key": "primary_use_role",
+      "proposition_key": "cf65e7f0e64ad41929d035c081d338c41b2348f714fbfb08e2969fd42decc83c",
+      "canonical_evidence_digest": "ee905679e5a14f00620c8e9ffe480adc473198b536011c265955f5fba01d06e4"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P1:contains_active:hyaluronic_acid",
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "source_ref": "source:v21-8g:P1",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "fact_key": "contains_active",
+      "proposition_key": "bba056dda7fd4d029c2e3619df33e14d16d05da66ce51959b4514c4173ce10c4",
+      "canonical_evidence_digest": "50e0ada6a17efaae426d69bfb80bc50cc6075e4131f9c7ebcbb0002d9c398c3f"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P4:product_format:liquid",
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "source_ref": "source:v21-8g:P4",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "product_format",
+      "proposition_key": "f77373d8990861b445a27ea6700806fd597934b7bdd4586b5760770912dbd24c",
+      "canonical_evidence_digest": "e8d5b6d2ad5187378af31790db9423a6e0735dfda288e2a33762641d0df475e7"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P4:contains_active:niacinamide",
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "source_ref": "source:v21-8g:P4",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "proposition_key": "d8fb9a208c3dd26d4dc36e3b4490933a4f62f67c78b71806ff2e5ae56259574c",
+      "canonical_evidence_digest": "2ac6d6cacc2f948a5d842fd154ad692e1083fb3233127949aa1c182c169aa818"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P4:contains_active:panthenol",
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "source_ref": "source:v21-8g:P4",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "proposition_key": "a667fd875319508fc621e89b4a9e130f3731849f9904dec716503ec470c11eb6",
+      "canonical_evidence_digest": "d2da8f9d328a60c4f41581ae0f076606f5d90cbe3095fb897b6443c7d0c61f43"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P4:contains_active:mandelic_acid",
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "source_ref": "source:v21-8g:P4",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "proposition_key": "36feec2c175c7181f93d7e0ef3f7c703c93a18431bca7497e4fe661e3790043a",
+      "canonical_evidence_digest": "a9e5c7a901f9bd09721ca6737390a2e430514a190ad118d3680675ee77fe2f4d"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P6:contains_active:panthenol",
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "source_ref": "source:v21-8g:P6",
+      "subject_semantic_key": "627a5f3355958e323a74f4a22397a425f63a7133ff889fac8b250bf2af636fcc",
+      "fact_key": "contains_active",
+      "proposition_key": "4e220dad3e8fc36e86a5dc34f7f5fd9bfe9f813756513f63b170e31029059a2f",
+      "canonical_evidence_digest": "db8d7987b634593f168414b44c383b451c1351b4ad4b5749a771b0208ae47592"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P7:primary_use_role:full_face",
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "source_ref": "source:v21-8g:P7",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "fact_key": "primary_use_role",
+      "proposition_key": "9fa0c13ec45a496187ca605349c39bd1936fdb058ae4b132375287db28b7f289",
+      "canonical_evidence_digest": "a7a37be0182131435ad1749eb6e66fdadca4ad2089e1b1bab79015aefa31d43f"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P7:contains_active:hyaluronic_acid",
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "source_ref": "source:v21-8g:P7",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "fact_key": "contains_active",
+      "proposition_key": "4dd6a17d799351a2d34dcb422ff7e84985415b2be08e30dd0aadd6add8c3be0b",
+      "canonical_evidence_digest": "30e3dcdcd2618bcb9d01b39f768229f47881171774fcebd20e2c4aae52ab7dfb"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P8:low_ph:true",
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "source_ref": "source:v21-8g:P8",
+      "subject_semantic_key": "17598fce1de9d413515ceae4ae7f0cf92fb87f34413e75dd47799ce2d837863b",
+      "fact_key": "low_ph",
+      "proposition_key": "f61493fcb981aeeaf90ae0439e9e762f132df81ec5498bc57d0b517e16964cae",
+      "canonical_evidence_digest": "0ab5c1854d0adb1e61d14fefc206ee8edfdbf6b48a873a65131eea82da5fe94c"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P10:deep_cleansing:true",
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "source_ref": "source:v21-8g:P10",
+      "subject_semantic_key": "9b383fc923a71cf4f63fde0daf72d0ae92806edc339b685b767799f17c929b68",
+      "fact_key": "deep_cleansing",
+      "proposition_key": "c9e5e2b03416dfb5fecd4d895e3a50291682524cfa7796904109a30f9c30c5b2",
+      "canonical_evidence_digest": "6e950bc00ac83857bfff3dd1ed78209119afdd143919aaaa509be74eae5856c5"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P12:product_format:pad",
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "product_format",
+      "proposition_key": "7ad1e29dbcbcc1e24550732023c53dd09d9397d111e3fb004e339e1d0374db9f",
+      "canonical_evidence_digest": "990458756653bfb6d27ad885d1a45d8bcc48d1a390a03f270a01faa584a02ec4"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P12:contains_active:hyaluronic_acid",
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "proposition_key": "6fd066cc24bef6d755cb749d43278ca02ed0615c95bf64f26f1896198884aec1",
+      "canonical_evidence_digest": "b34ccf47bb584909ac1186f29c354c49e20ac1a825f606e93e90639e87851ddd"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P12:contains_active:panthenol",
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "proposition_key": "148e2493e2d97b5bf7366345ed246ce0d48c63c28f8d69cfae8fb54672a15522",
+      "canonical_evidence_digest": "c04d05035572dfd85075dbca35ee5521fdee55b118ee7306a7e3b1cda566e0aa"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P12:contains_active:sodium_hyaluronate_crosspolymer",
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "proposition_key": "e41dcc38f80b4b4f43d254ae31ffe0f51c38f7d38db1121ebf57516e41db56e2",
+      "canonical_evidence_digest": "0b2ebdc1fbf4ec7f6c1b7564502c3409aff068aff615cb56e0b782cd32632647"
+    },
+    {
+      "evidence_ref": "evidence:v21-8g:P12:wipe_off_use:true",
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "source_ref": "source:v21-8g:P12",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "wipe_off_use",
+      "proposition_key": "c4c500478d662d022495e162280592077b906540bb499e583b5809afd0ae1562",
+      "canonical_evidence_digest": "40c90a935a2357ff8a4c4c61fcd2cc8f9ad801534c51bc627deb09de8097f46a"
+    }
+  ],
+  "fact_candidates": [
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "fact_key": "primary_use_role",
+      "value": "multi_area",
+      "scope": {
+        "market": "GLOBAL"
+      },
+      "proposition_key": "cf65e7f0e64ad41929d035c081d338c41b2348f714fbfb08e2969fd42decc83c",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P1:primary_use_role:multi_area"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "subject_semantic_key": "d87563002c8e84636591cf734a7d7d23a20ab5654a1ccdc3ea1cad6aa303a560",
+      "fact_key": "contains_active",
+      "value": "hyaluronic_acid",
+      "scope": {
+        "market": "GLOBAL"
+      },
+      "proposition_key": "bba056dda7fd4d029c2e3619df33e14d16d05da66ce51959b4514c4173ce10c4",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P1:contains_active:hyaluronic_acid"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "product_format",
+      "value": "liquid",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "f77373d8990861b445a27ea6700806fd597934b7bdd4586b5760770912dbd24c",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P4:product_format:liquid"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "value": "niacinamide",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "d8fb9a208c3dd26d4dc36e3b4490933a4f62f67c78b71806ff2e5ae56259574c",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P4:contains_active:niacinamide"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "value": "panthenol",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "a667fd875319508fc621e89b4a9e130f3731849f9904dec716503ec470c11eb6",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P4:contains_active:panthenol"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "subject_semantic_key": "c06d787e93226ec1710981e1e1eb954f51105e7d0d6abe599c442487a70f91b7",
+      "fact_key": "contains_active",
+      "value": "mandelic_acid",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "36feec2c175c7181f93d7e0ef3f7c703c93a18431bca7497e4fe661e3790043a",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P4:contains_active:mandelic_acid"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "subject_semantic_key": "627a5f3355958e323a74f4a22397a425f63a7133ff889fac8b250bf2af636fcc",
+      "fact_key": "contains_active",
+      "value": "panthenol",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "4e220dad3e8fc36e86a5dc34f7f5fd9bfe9f813756513f63b170e31029059a2f",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P6:contains_active:panthenol"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "fact_key": "primary_use_role",
+      "value": "full_face",
+      "scope": {
+        "market": "GLOBAL"
+      },
+      "proposition_key": "9fa0c13ec45a496187ca605349c39bd1936fdb058ae4b132375287db28b7f289",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P7:primary_use_role:full_face"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "subject_semantic_key": "0278e85d0fdeb37acba4ceeb96ec3e4305a3e8f8452332b5e991dc9798013dbb",
+      "fact_key": "contains_active",
+      "value": "hyaluronic_acid",
+      "scope": {
+        "market": "GLOBAL"
+      },
+      "proposition_key": "4dd6a17d799351a2d34dcb422ff7e84985415b2be08e30dd0aadd6add8c3be0b",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P7:contains_active:hyaluronic_acid"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "subject_semantic_key": "17598fce1de9d413515ceae4ae7f0cf92fb87f34413e75dd47799ce2d837863b",
+      "fact_key": "low_ph",
+      "value": true,
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "f61493fcb981aeeaf90ae0439e9e762f132df81ec5498bc57d0b517e16964cae",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P8:low_ph:true"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "subject_semantic_key": "9b383fc923a71cf4f63fde0daf72d0ae92806edc339b685b767799f17c929b68",
+      "fact_key": "deep_cleansing",
+      "value": true,
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "c9e5e2b03416dfb5fecd4d895e3a50291682524cfa7796904109a30f9c30c5b2",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P10:deep_cleansing:true"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "product_format",
+      "value": "pad",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "7ad1e29dbcbcc1e24550732023c53dd09d9397d111e3fb004e339e1d0374db9f",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P12:product_format:pad"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "value": "hyaluronic_acid",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "6fd066cc24bef6d755cb749d43278ca02ed0615c95bf64f26f1896198884aec1",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P12:contains_active:hyaluronic_acid"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "value": "panthenol",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "148e2493e2d97b5bf7366345ed246ce0d48c63c28f8d69cfae8fb54672a15522",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P12:contains_active:panthenol"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "contains_active",
+      "value": "sodium_hyaluronate_crosspolymer",
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "e41dcc38f80b4b4f43d254ae31ffe0f51c38f7d38db1121ebf57516e41db56e2",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P12:contains_active:sodium_hyaluronate_crosspolymer"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    },
+    {
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "subject_semantic_key": "8f2c378779f6a1a81b5c5f20673d74ca5780c8de43997e8837df2baaf5b6a251",
+      "fact_key": "wipe_off_use",
+      "value": true,
+      "scope": {
+        "market": "KR"
+      },
+      "proposition_key": "c4c500478d662d022495e162280592077b906540bb499e583b5809afd0ae1562",
+      "supporting_evidence_refs": [
+        "evidence:v21-8g:P12:wipe_off_use:true"
+      ],
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "fusion_status": "supported"
+    }
+  ],
+  "summary": {
+    "future_new_subjects": 7,
+    "future_new_sources": 7,
+    "future_new_bindings": 7,
+    "future_new_evidence": 16,
+    "future_new_fact_instances": 16,
+    "future_new_evidence_links": 16,
+    "future_new_review_assignments": 16,
+    "future_new_confirmations": 16,
+    "future_new_current": 16,
+    "future_adopted_product_count_delta": 7,
+    "projected_adopted_product_count": 16,
+    "projected_current_fact_count": 41,
+    "blocked_or_uncertain_current_candidates": 0,
+    "blocked_or_uncertain_confirmation_candidates": 0
+  },
+  "hosted_write_intent": {
+    "register_subject": 0,
+    "ingest_evidence": 0,
+    "prepare_review": 0,
+    "preflight": 0,
+    "confirm": 0,
+    "direct_table_writes": 0
+  },
+  "invariants": {
+    "dry_run_only": true,
+    "supported_only_materialization": true,
+    "missing_not_false": true,
+    "reviewed_not_established_not_supported_false": true,
+    "hosted_product_fact_writes": 0,
+    "production_consumption": false,
+    "v21_8h_started": false
+  }
+}
