@@ -1,0 +1,2630 @@
+{
+  "version": "coverage-expansion-wave-1-selection-v1",
+  "stage": "V2.1-8F",
+  "authority": {
+    "source_main_sha": "b1e70c638f0e039c4061986cefd55e8e937f0983",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "selection_policy_version": "catalog-expansion-selection-policy-v1",
+    "hosted_snapshot_digest": "e7cf34642fc6ae8e073e30d852cc829ceb30ba408098e3fe1238d7978d95ee46",
+    "snapshot_manifest_sha256": "168b302c7e1bc178dd9a89f51638fc5757a81d48745f58ca81689be98535646a",
+    "snapshot_partition_proof": [
+      {
+        "path": "cleanser.json",
+        "sha256": "b9c69fac7c9c5d45dd1dddb9bb3bd5e1c591db7aa6d760bf8e60aec57170a5c0",
+        "rows": 26
+      },
+      {
+        "path": "toner_essence.json",
+        "sha256": "009a35992d72b3123472170155614614a2d6b314a9c31746cdbe12c0825771d6",
+        "rows": 24
+      },
+      {
+        "path": "toner_pad.json",
+        "sha256": "68baab7084c92c65075458f55d932d706585482f97e3d46f4867700da854cfa7",
+        "rows": 24
+      },
+      {
+        "path": "moisturizer_lotion_emulsion.json",
+        "sha256": "25a6c476f674ca36162f5f932729ba69b2601f364be2177f53817513ff832e24",
+        "rows": 21
+      },
+      {
+        "path": "moisturizer_balm.json",
+        "sha256": "b041566aac32b6260641c90a2956a6b1696ba891f969bb4e95c78d49a269b125",
+        "rows": 20
+      },
+      {
+        "path": "treatment.json",
+        "sha256": "fe9feea13b10681e244ca29d7576f854b25a2c97ca07821ecba01a22e94500af",
+        "rows": 18
+      },
+      {
+        "path": "sunscreen.json",
+        "sha256": "f1c9d8da3c133269dece57cde1ddf60ccb4d5bda345a5d0616ec27aa35155007",
+        "rows": 11
+      },
+      {
+        "path": "moisturizer_cream.json",
+        "sha256": "5a118bfa81011b5f111f98b85a36e67262bebc25f31f4f28d4616f96ade76b15",
+        "rows": 10
+      },
+      {
+        "path": "moisturizer_gel.json",
+        "sha256": "5ea99c6e3e77d2f8cdb982efa8d1f8d1961b93bb1bdb989d2f33fa7ab702aa89",
+        "rows": 10
+      }
+    ],
+    "generated_at_policy": "none_deterministic"
+  },
+  "catalog_snapshot": {
+    "catalog_product_count": 164,
+    "adopted_product_count": 9,
+    "adopted_current_fact_count": 25,
+    "facts_per_adopted_product": 2.777778,
+    "category_floor_target": 3,
+    "category_floor_met_count": 2,
+    "category_floor_coverage": 0.222222,
+    "max_eligible_recommendation_log_frequency": 119,
+    "source_ranking_component_unavailable": true
+  },
+  "coverage_by_category": [
+    {
+      "category": "cleanser",
+      "total_products": 26,
+      "adopted_products": 0,
+      "adopted_current_facts": 0,
+      "unadopted_products": 26,
+      "category_adoption_ratio": 0,
+      "category_floor_gap": 3,
+      "category_floor_met": false
+    },
+    {
+      "category": "moisturizer_balm",
+      "total_products": 20,
+      "adopted_products": 1,
+      "adopted_current_facts": 4,
+      "unadopted_products": 19,
+      "category_adoption_ratio": 0.05,
+      "category_floor_gap": 2,
+      "category_floor_met": false
+    },
+    {
+      "category": "moisturizer_cream",
+      "total_products": 10,
+      "adopted_products": 1,
+      "adopted_current_facts": 2,
+      "unadopted_products": 9,
+      "category_adoption_ratio": 0.1,
+      "category_floor_gap": 2,
+      "category_floor_met": false
+    },
+    {
+      "category": "moisturizer_gel",
+      "total_products": 10,
+      "adopted_products": 0,
+      "adopted_current_facts": 0,
+      "unadopted_products": 10,
+      "category_adoption_ratio": 0,
+      "category_floor_gap": 3,
+      "category_floor_met": false
+    },
+    {
+      "category": "moisturizer_lotion_emulsion",
+      "total_products": 21,
+      "adopted_products": 0,
+      "adopted_current_facts": 0,
+      "unadopted_products": 21,
+      "category_adoption_ratio": 0,
+      "category_floor_gap": 3,
+      "category_floor_met": false
+    },
+    {
+      "category": "sunscreen",
+      "total_products": 11,
+      "adopted_products": 3,
+      "adopted_current_facts": 5,
+      "unadopted_products": 8,
+      "category_adoption_ratio": 0.272727,
+      "category_floor_gap": 0,
+      "category_floor_met": true
+    },
+    {
+      "category": "toner_essence",
+      "total_products": 24,
+      "adopted_products": 0,
+      "adopted_current_facts": 0,
+      "unadopted_products": 24,
+      "category_adoption_ratio": 0,
+      "category_floor_gap": 3,
+      "category_floor_met": false
+    },
+    {
+      "category": "toner_pad",
+      "total_products": 24,
+      "adopted_products": 1,
+      "adopted_current_facts": 5,
+      "unadopted_products": 23,
+      "category_adoption_ratio": 0.041667,
+      "category_floor_gap": 2,
+      "category_floor_met": false
+    },
+    {
+      "category": "treatment",
+      "total_products": 18,
+      "adopted_products": 3,
+      "adopted_current_facts": 9,
+      "unadopted_products": 15,
+      "category_adoption_ratio": 0.166667,
+      "category_floor_gap": 0,
+      "category_floor_met": true
+    }
+  ],
+  "selection_policy": {
+    "version": "catalog-expansion-selection-policy-v1",
+    "target_floor": 3,
+    "score_formula": "category_gap_score + recommendation_relevance_score + identity_readiness_score + registry_opportunity_score + evidence_discovery_readiness_score - nonblocking_penalties",
+    "category_gap_formula": "40 * max(0, 3 - category_adopted_count) / 3",
+    "recommendation_log_formula": "15 * candidate_frequency / max_eligible_candidate_frequency",
+    "source_ranking_component": {
+      "status": "unavailable",
+      "score": 0,
+      "reason": "source_rankings has candidate_id only and current product_candidates.matched_product_id count is zero; no defensible product-level mapping"
+    },
+    "identity_readiness_formula": [
+      "normalized_brand +3",
+      "normalized_name +3",
+      "valid_https_source_url +3",
+      "external_source_and_external_id +3",
+      "identity_disambiguating_attribute +3"
+    ],
+    "registry_opportunity_formula": "min(15, governed_applicable_fact_family_count * 3)",
+    "evidence_discovery_formula": [
+      "valid_https_source_url +2",
+      "valid_https_hwahae_or_external_locator +1",
+      "external_source +1",
+      "external_id +1"
+    ],
+    "nonblocking_penalties": [],
+    "p0_threshold": 60,
+    "p2_rule": "unresolved historical identity/variant/formulation blocker or missing normalized brand/name",
+    "brand_cap": 2,
+    "wave1_category_quota": [
+      {
+        "category": "cleanser",
+        "quota": 4
+      },
+      {
+        "category": "toner_essence",
+        "quota": 3
+      },
+      {
+        "category": "moisturizer_lotion_emulsion",
+        "quota": 2
+      },
+      {
+        "category": "moisturizer_gel",
+        "quota": 2
+      },
+      {
+        "category": "toner_pad",
+        "quota": 1
+      }
+    ],
+    "candidate_fact_family_map": {
+      "cleanser": [
+        "low_ph",
+        "deep_cleansing",
+        "fragrance_declared"
+      ],
+      "toner_essence": [
+        "product_format",
+        "contains_active",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ],
+      "toner_pad": [
+        "product_format",
+        "contains_active",
+        "pad_surface_texture",
+        "wipe_off_use",
+        "recommended_use_frequency"
+      ],
+      "moisturizer_lotion_emulsion": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ],
+      "moisturizer_gel": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ]
+    },
+    "deterministic_tie_break": [
+      "priority_score DESC",
+      "recommendation_relevance_score DESC",
+      "category_adopted_count ASC",
+      "identity_readiness_score DESC",
+      "registry_opportunity_score DESC",
+      "normalized_brand ASC",
+      "normalized_name ASC",
+      "product_id ASC"
+    ]
+  },
+  "candidate_pool_summary": {
+    "nominal_unadopted_count": 155,
+    "eligible_candidate_pool_count": 152,
+    "P0_count": 91,
+    "P1_count": 61,
+    "P2_count": 3,
+    "selected_count": 12,
+    "selected_by_category": {
+      "cleanser": 4,
+      "toner_essence": 3,
+      "moisturizer_lotion_emulsion": 2,
+      "moisturizer_gel": 2,
+      "toner_pad": 1
+    },
+    "selected_by_brand": {
+      "ybk": 1,
+      "구달": 1,
+      "닥터지": 1,
+      "닥터트웬티프로젝트": 1,
+      "라보레브": 1,
+      "라운드랩": 2,
+      "러베": 1,
+      "메디필": 1,
+      "메디힐": 1,
+      "메이크프렘": 1,
+      "브링그린": 1
+    },
+    "already_adopted_exclusions": 9,
+    "historical_block_exclusions": 3,
+    "minimum_identity_exclusions": 0
+  },
+  "selected_products": [
+    {
+      "selection_rank_overall": 1,
+      "product_id": "24103bd1-c7ba-4cc9-b9b9-8129c6452232",
+      "brand": "라운드랩",
+      "name": "자작나무 수분 수딩젤",
+      "normalized_brand": "라운드랩",
+      "normalized_name": "자작나무수분수딩젤",
+      "category": "moisturizer_gel",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72.756303,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0.756303,
+      "recommendation_log_component": 0.756303,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://roundlab.co.kr/product/자작나무-수분-수딩젤-150ml/200/",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-%EC%9E%90%EC%9E%91%EB%82%98%EB%AC%B4-%EC%88%98%EB%B6%84-%EC%88%98%EB%94%A9%EC%A0%A4-150ml/31621?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "31621",
+      "recommendation_log_frequency": 6,
+      "top_pick_frequency": 0,
+      "size_ml": 150,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 1,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=moisturizer_gel; priority_class=P0; priority_score=72.756303; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 2,
+      "product_id": "173c63a8-a40d-4d1e-acb6-a7944d66ec43",
+      "brand": "브링그린",
+      "name": "알로에 수딩 젤",
+      "normalized_brand": "브링그린",
+      "normalized_name": "알로에수딩젤",
+      "category": "moisturizer_gel",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72.504202,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0.504202,
+      "recommendation_log_component": 0.504202,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000215502",
+      "hwahae_url": "https://www.hwahae.co.kr/products/2127212",
+      "external_source": "hwahae",
+      "external_type": "products",
+      "external_id": "2127212",
+      "recommendation_log_frequency": 4,
+      "top_pick_frequency": 0,
+      "size_ml": 300,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 2,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=moisturizer_gel; priority_class=P0; priority_score=72.504202; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 3,
+      "product_id": "97deb2cc-2fae-4dbb-8253-03170e197002",
+      "brand": "러베",
+      "name": "5중 세라마이드 로션",
+      "normalized_brand": "러베",
+      "normalized_name": "5중 세라마이드 아기로션",
+      "category": "moisturizer_lotion_emulsion",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72.12605,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0.12605,
+      "recommendation_log_component": 0.12605,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://ruuve.kr/product/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EC%95%84%EA%B8%B0%EB%A1%9C%EC%85%98-200ml/4140/",
+      "hwahae_url": "https://www.hwahae.co.kr/products/%EB%9F%AC%EB%B2%A0-5%EC%A4%91-%EC%84%B8%EB%9D%BC%EB%A7%88%EC%9D%B4%EB%93%9C-%EB%A1%9C%EC%85%98/2179529",
+      "external_source": "ruuve_official",
+      "external_type": "official_product",
+      "external_id": "4140",
+      "recommendation_log_frequency": 1,
+      "top_pick_frequency": 0,
+      "size_ml": 200,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 1,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=moisturizer_lotion_emulsion; priority_class=P0; priority_score=72.126050; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 4,
+      "product_id": "c4a5f510-8d9e-46bd-a31c-3c0a34fee331",
+      "brand": "닥터지",
+      "name": "레드 블레미쉬 10-시카 캡슐 수딩 토너",
+      "normalized_brand": "닥터지",
+      "normalized_name": "레드블레미쉬10시카캡슐수딩토너",
+      "category": "toner_essence",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "product_format",
+        "contains_active",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/77401",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/77401",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "77401",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 300,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 1,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=toner_essence; priority_class=P0; priority_score=72.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 5,
+      "product_id": "dfc4b232-9997-4584-a886-bc7074b6f247",
+      "brand": "닥터트웬티프로젝트",
+      "name": "나인 토너",
+      "normalized_brand": "닥터트웬티프로젝트",
+      "normalized_name": "나인토너",
+      "category": "toner_essence",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "product_format",
+        "contains_active",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/70460",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/70460",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "70460",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 300,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 2,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=toner_essence; priority_class=P0; priority_score=72.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 6,
+      "product_id": "59b149d0-5ffa-4610-8141-c0a501b60565",
+      "brand": "라보레브",
+      "name": "피치마이크로바이옴 78 피디알엔 토너",
+      "normalized_brand": "라보레브",
+      "normalized_name": "피치마이크로바이옴78피디알엔토너",
+      "category": "toner_essence",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "product_format",
+        "contains_active",
+        "recommended_use_frequency",
+        "wipe_off_use"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/73624",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/73624",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "73624",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 125,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 3,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=toner_essence; priority_class=P0; priority_score=72.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 7,
+      "product_id": "1f20944c-5a86-4748-8daf-7d57259ea6c0",
+      "brand": "라운드랩",
+      "name": "소나무 진정 시카 로션",
+      "normalized_brand": "라운드랩",
+      "normalized_name": "소나무진정시카로션기획",
+      "category": "moisturizer_lotion_emulsion",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 72,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 12,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "primary_use_role",
+        "barrier_support_claim",
+        "contains_active",
+        "active_concentration"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/75403",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EB%9D%BC%EC%9A%B4%EB%93%9C%EB%9E%A9-only%ED%99%94%ED%95%B4-%EC%86%8C%EB%82%98%EB%AC%B4-%EC%A7%84%EC%A0%95-%EC%8B%9C%EC%B9%B4-%EB%A1%9C%EC%85%98-250ml-%EA%B8%B0%ED%9A%8D-PLUS%EC%95%B0%ED%94%8C15mlPLUS%EB%A7%88%EC%8A%A4%ED%81%AC1%EB%A7%A4/75403?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "75403",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 250,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 2,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=moisturizer_lotion_emulsion; priority_class=P0; priority_score=72.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 8,
+      "product_id": "65a4be83-a9b7-4b1d-bd58-1b6e99cf66fc",
+      "brand": "YBK",
+      "name": "릴리프 하이드레이션 라이트 폼 클렌저",
+      "normalized_brand": "ybk",
+      "normalized_name": "릴리프하이드레이션라이트폼클렌저",
+      "category": "cleanser",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 69,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 9,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "low_ph",
+        "deep_cleansing",
+        "fragrance_declared"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/58874",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/YBK-only%ED%99%94%ED%95%B4-%EB%A6%B4%EB%A6%AC%ED%94%84-%ED%95%98%EC%9D%B4%EB%93%9C%EB%A0%88%EC%9D%B4%EC%85%98-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%ED%8F%BC-%ED%81%B4%EB%A0%8C%EC%A0%80-150ml-1PLUS1-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D/58874?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "58874",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 300,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 1,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=cleanser; priority_class=P0; priority_score=69.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 9,
+      "product_id": "8889342d-d9a2-454b-aa27-60d4934b9978",
+      "brand": "메디필",
+      "name": "레드 락토 콜라겐 클리어 폼클렌저 2.0",
+      "normalized_brand": "메디필",
+      "normalized_name": "레드락토콜라겐클리어폼클렌저20",
+      "category": "cleanser",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 69,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 9,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "low_ph",
+        "deep_cleansing",
+        "fragrance_declared"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/62432",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%95%84-%EB%A0%88%EB%93%9C-%EB%9D%BD%ED%86%A0-%EC%BD%9C%EB%9D%BC%EA%B2%90-%ED%81%B4%EB%A6%AC%EC%96%B4-%ED%8F%BC%ED%81%B4%EB%A0%8C%EC%A0%80-2-0-120ml/62432?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "62432",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 120,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 2,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=cleanser; priority_class=P0; priority_score=69.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 10,
+      "product_id": "51d526de-b127-47c4-83f1-64fc1ec4aa10",
+      "brand": "메디힐",
+      "name": "더마 크림 팩 클렌저 마데카소사이드",
+      "normalized_brand": "메디힐",
+      "normalized_name": "더마크림팩클렌저마데카소사이드",
+      "category": "cleanser",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 69,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 9,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "low_ph",
+        "deep_cleansing",
+        "fragrance_declared"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/75341",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EB%94%94%ED%9E%90-only%ED%99%94%ED%95%B4-%EB%8D%94%EB%A7%88-%ED%81%AC%EB%A6%BC-%ED%8C%A9-%ED%81%B4%EB%A0%8C%EC%A0%80-%EB%A7%88%EB%8D%B0%EC%B9%B4%EC%86%8C%EC%82%AC%EC%9D%B4%EB%93%9C-%EB%8D%94%EB%B8%94-%EA%B8%B0%ED%9A%8D-120ml-2PLUS5ml-3/75341?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "75341",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 255,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 3,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=cleanser; priority_class=P0; priority_score=69.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 11,
+      "product_id": "0b59cb66-ab03-4a0d-815e-7a94a5c7ae65",
+      "brand": "메이크프렘",
+      "name": "세이프 미 클렌징폼",
+      "normalized_brand": "메이크프렘",
+      "normalized_name": "세이프미클렌징폼",
+      "category": "cleanser",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 69,
+      "category_adopted_count": 0,
+      "category_gap_score": 40,
+      "recommendation_relevance_score": 0,
+      "recommendation_log_component": 0,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 9,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "low_ph",
+        "deep_cleansing",
+        "fragrance_declared"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/42891",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EB%A9%94%EC%9D%B4%ED%81%AC%ED%94%84%EB%A0%98-only%ED%99%94%ED%95%B4-%EC%84%B8%EC%9D%B4%ED%94%84-%EB%AF%B8-%ED%81%B4%EB%A0%8C%EC%A7%95%ED%8F%BC-170ml-%EB%8D%94%EB%B8%94%EA%B8%B0%ED%9A%8D-PLUS%EB%B0%80%ED%81%AC-21mlPLUS%ED%81%AC%EB%A6%BC-10ml/42891?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "42891",
+      "recommendation_log_frequency": 0,
+      "top_pick_frequency": 0,
+      "size_ml": 340,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 4,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=cleanser; priority_class=P0; priority_score=69.000000; brand cap satisfied"
+    },
+    {
+      "selection_rank_overall": 12,
+      "product_id": "be8a590e-e5cb-4af4-84e7-99c7e121f45a",
+      "brand": "구달",
+      "name": "어성초 히알루론 수딩 클리어패드",
+      "normalized_brand": "구달",
+      "normalized_name": "어성초히알루론수딩클리어패드",
+      "category": "toner_pad",
+      "current_fact_count": 0,
+      "priority_class": "P0",
+      "priority_score": 61.792717,
+      "category_adopted_count": 1,
+      "category_gap_score": 26.666667,
+      "recommendation_relevance_score": 0.12605,
+      "recommendation_log_component": 0.12605,
+      "source_ranking_component": 0,
+      "identity_readiness_score": 15,
+      "registry_opportunity_score": 15,
+      "evidence_discovery_readiness_score": 5,
+      "penalties": [],
+      "penalty_total": 0,
+      "candidate_fact_families": [
+        "product_format",
+        "contains_active",
+        "pad_surface_texture",
+        "wipe_off_use",
+        "recommended_use_frequency"
+      ],
+      "known_blocker_state": null,
+      "known_blocker_authority": null,
+      "minimum_identity_ready": true,
+      "source_url": "https://www.hwahae.co.kr/goods/61608",
+      "hwahae_url": "https://www.hwahae.co.kr/goods/%EA%B5%AC%EB%8B%AC-%EC%96%B4%EC%84%B1%EC%B4%88-%ED%9E%88%EC%95%8C%EB%A3%A8%EB%A1%A0-%EC%88%98%EB%94%A9-%ED%81%B4%EB%A6%AC%EC%96%B4%ED%8C%A8%EB%93%9C-70%EB%A7%A4/61608?goods_tab=review_ingredients",
+      "external_source": "hwahae",
+      "external_type": "goods",
+      "external_id": "61608",
+      "recommendation_log_frequency": 1,
+      "top_pick_frequency": 0,
+      "size_ml": 370,
+      "product_form": null,
+      "exclusion_state": null,
+      "selection_rank_within_category": 1,
+      "brand_cap_relaxed": false,
+      "selection_reason": "selected for next Product Fact evidence research under catalog-expansion-selection-policy-v1; category quota=toner_pad; priority_class=P0; priority_score=61.792717; brand cap satisfied"
+    }
+  ],
+  "deferred_products": [
+    {
+      "product_id": "d0319209-502b-4c85-be54-392600ff6b23",
+      "brand": "그린핑거",
+      "name": "판테딘 엠디 더마 수딩젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "41bef2ab-f40b-4467-9932-2d0bc5e1e525",
+      "brand": "로티",
+      "name": "리프루미 하이드레이팅 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "1fc018f5-8c7a-428e-a5e7-7954aa58822e",
+      "brand": "마녀공장",
+      "name": "비피다 바이옴 앰플 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "2638b09d-301d-4e0e-8dc7-83559accc27e",
+      "brand": "비그린",
+      "name": "무알콜 뮤신 에센스 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "c7839904-2245-4a86-922c-4d59cf8df0b3",
+      "brand": "아로마티카",
+      "name": "수딩 알로에 베라 젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "5848640c-84ca-4079-9d9e-8f3113159fe1",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 수분 젤크림",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "dbb67fed-4991-4856-8def-7017b806e769",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 100 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "1eb7b437-b527-44e4-b4c2-5d56dc26d2d3",
+      "brand": "이니스프리",
+      "name": "알로에 리바이탈라이징 수딩젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "de9fbe7f-e28b-4a8e-bbf6-536d3aa2a2c4",
+      "brand": "이즈앤트리",
+      "name": "알로에 수딩 젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "fe5f7e61-19ea-4c5f-be1a-2c9c9fcf0978",
+      "brand": "이즈앤트리",
+      "name": "초저분자 히아루론산 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "12320690-011b-4fff-93a7-e0e18d635d2a",
+      "brand": "이플미",
+      "name": "하이드라 셀 부스팅 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "c8a6c9e2-9068-4b7a-976b-97bb3438f2e1",
+      "brand": "인요에",
+      "name": "세라마이드 쌀 그리미 밀크 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "358bb655-d0e8-4bbf-93c0-58eea5b5d7ae",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 수딩젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "af70acaa-24b0-45eb-b82b-3c3b9f6d589f",
+      "brand": "잇츠스킨",
+      "name": "파워 10 포뮬라 엘아이 수딩 젤 크림",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "ae72c231-3629-4272-8c16-9ca4372e3985",
+      "brand": "코스노리",
+      "name": "판테놀 베리어 에멀전",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "662ca9ea-deb1-4e52-bd23-00ec65ea05f8",
+      "brand": "코스노리",
+      "name": "판테놀 베리어 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "df3ab2f1-a4bf-46f9-aaff-df3665156b37",
+      "brand": "큐어알파",
+      "name": "알로에 시카 수딩젤",
+      "category": "moisturizer_gel",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "07257728-9e64-48aa-9dbd-f1239bd98d87",
+      "brand": "토니모리",
+      "name": "세라마이드 모찌 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "efae9c95-90e8-40df-8bf5-b09f378df4ba",
+      "brand": "프리메이",
+      "name": "비건 어성초 진정해 수분 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 72,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "5448b8c3-cf87-4561-a699-3baf3dcb3dab",
+      "brand": "비알머드",
+      "name": "리커버리 머드 팩투폼 클렌저",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d0b4789c-bc0a-46e1-8317-ce498377333e",
+      "brand": "션리",
+      "name": "다시마 앰플 클렌징폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "b46ca581-7a4e-4cf1-b599-b9fdc026885d",
+      "brand": "수이스킨",
+      "name": "어린새싹 딥 클렌징폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "0bced9fe-aa08-4982-bb4a-03fb9ed509c1",
+      "brand": "아누아",
+      "name": "어성초 쿼세티놀 모공 딥 클렌징 폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "2fddc273-d7ee-4034-a399-3bfd2cfcafd4",
+      "brand": "아렌시아",
+      "name": "프레시 그린 떡솝 클렌저",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "f2a697ce-43d9-4a9a-b110-1f332bc29b50",
+      "brand": "아비브",
+      "name": "딥 클린 폼 클렌저 수분초 히알루론 폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d4f64d02-6d35-435b-8269-b6ed7cd34bad",
+      "brand": "에스네이처",
+      "name": "아쿠아 라이스 약산성 클렌징폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "3f83bb85-cc53-4aa0-a0f0-e08535288749",
+      "brand": "주미소",
+      "name": "포어 퓨리파잉 살리실산 클렌저",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "fbe265d2-8457-4c4f-96e2-7a08be0e5073",
+      "brand": "토리든",
+      "name": "밸런스풀 시카 포어 클렌징 폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "63300ce0-9bb7-4ce5-98d5-5c59ae283cda",
+      "brand": "풀리",
+      "name": "그린 토마토 클레이 팩 클렌저",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "15420430-2a68-49e2-ab53-716d9c4ff45e",
+      "brand": "프리메이",
+      "name": "햇쌀 데일리 폼 클렌저",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "009e0339-fa00-429e-a1c2-2a23eb4707f8",
+      "brand": "한율",
+      "name": "어린쑥 클렌징 흡착 팩폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 69,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "deaacf29-585c-4e1b-a7c3-73a243e69c2e",
+      "brand": "싸이닉",
+      "name": "더 심플 데일리 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67.12605,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "5116d78d-0118-42b1-acc8-1ee384624725",
+      "brand": "YBK",
+      "name": "세라마이드 릴리프 하이드레이션 에멀젼",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "ffbaebea-2515-4c5f-8403-cd9a56830ae4",
+      "brand": "더마비",
+      "name": "세라엠디 리페어 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "615c6866-b1ea-48d3-adbe-fbe1831dc6f1",
+      "brand": "레스케미",
+      "name": "갈락토미세스 더마로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "e4f25cfc-293d-47f8-8eea-70e4b0ec1c7b",
+      "brand": "브링그린",
+      "name": "블루빈 B5-PDRN 마일드 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "9a98cc54-6238-4ed6-91d0-200f5203f46c",
+      "brand": "세타필",
+      "name": "모이스쳐 라이징 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "47a8a197-40d4-41df-b1ed-7f85eb458a3d",
+      "brand": "스킨웨이비",
+      "name": "탄탄 모공 펩타노산™ 단백질 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "e8d1bb9d-1a8b-430b-a79d-79d16b18ce5e",
+      "brand": "시드물",
+      "name": "울트라 페이셜 모이스처라이징 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "bd98f785-15c8-4800-af64-d39c3ad873a0",
+      "brand": "아토팜",
+      "name": "MLE 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "3f12f933-9525-4ee1-80c5-257daf40d902",
+      "brand": "아토팜",
+      "name": "수딩 젤 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "93d11022-2b8c-4a72-a3a1-9f69655b9e91",
+      "brand": "온그리디언츠",
+      "name": "스킨 베리어 카밍 로션 EX",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "7a58897d-bc51-47e8-ba8d-60322b5f8f3d",
+      "brand": "제로이드",
+      "name": "수딩 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d4e752ca-81bb-49bf-b74d-03d388830f47",
+      "brand": "퓨어솜",
+      "name": "서양송악 순수 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 67,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "cd3b66be-cddc-47e1-906f-a871dea84412",
+      "brand": "비플레인",
+      "name": "녹두 약산성 클렌징폼",
+      "category": "cleanser",
+      "priority_class": "P0",
+      "priority_score": 65.815126,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "65a4c320-4815-4488-b031-b0a06b4702ca",
+      "brand": "에뛰드",
+      "name": "순정 10무 수분 에멀전",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 63.773109,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "2d52e270-0429-4c5f-89dd-5c608b92fe8c",
+      "brand": "에스트라",
+      "name": "아토베리어365 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 62.764706,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "4de82c5d-9cb4-4163-a225-953e744f934c",
+      "brand": "듀이트리",
+      "name": "AC 딥 진정 모공 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.792717,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "faf46ddf-2e9a-488a-9dbd-2289c40621a9",
+      "brand": "넘버즈인",
+      "name": "1번 시카 갈아만든 초록패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "b10e26d9-2ca6-446e-b677-3cce92aa2014",
+      "brand": "리브엠",
+      "name": "워터핏 8중 수분착붙 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "a64c5dda-6220-4fca-8a21-369df0f9a6e5",
+      "brand": "메디힐",
+      "name": "마데카소사이드 흔적 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "9b81da7a-649e-41ec-a22b-7e367c05afe4",
+      "brand": "비플레인",
+      "name": "녹두 모공 클리어링 필터 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "618ea3cd-972a-46ab-bb3b-dd49e0e0f337",
+      "brand": "비플레인",
+      "name": "시카테롤 블레미쉬 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "113bdded-b5bd-4f93-8d85-db6d831b920e",
+      "brand": "셀퓨전씨",
+      "name": "포스트 알파 쿨링 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "ce14cf3d-a033-4ad2-8340-049d1bbfafc0",
+      "brand": "스킨푸드",
+      "name": "당근 PDRN 속수분 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "63a6b2f2-564a-477a-95f7-4e6d0ea29099",
+      "brand": "스킨푸드",
+      "name": "캐롯 카로틴 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "b5a38d1c-1c57-42a2-a5c7-60f7bbe3132e",
+      "brand": "스킨푸드",
+      "name": "포테이토 마데카소사이드 수딩패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "fb5b65a4-00bf-4833-81eb-2625ec62f7bb",
+      "brand": "아비브",
+      "name": "수분초 히알루론 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d0830c44-6f87-4f31-84b2-712b3ca37775",
+      "brand": "아비브",
+      "name": "어성초 흔적 에센스 패드 클리어터치",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "1f7a425b-8684-4292-875b-60b380885d85",
+      "brand": "아이레시피",
+      "name": "시카 PDRN 흔적 클리어 토너패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "8b8fabbf-ed92-4950-a0cd-b5fd00d94919",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 판테알란 카밍패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "75e37685-9f8a-4c67-bf77-0e7be62eb801",
+      "brand": "ASCE plus",
+      "name": "더블: 이엑스 시그널 패드 프로",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "4cd0d9c7-d84c-4c41-b20b-cbe28f967026",
+      "brand": "일루미엘",
+      "name": "물결 수분 네모 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "5c73e494-98a2-4e85-9031-78287c30a1ed",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 멀티패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "8ab512e6-4401-40e4-907b-bbcf50b4a1ae",
+      "brand": "토리든",
+      "name": "밸런스풀 시카 토너 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d183aa35-da04-48e7-a3cc-ce22bdfe2def",
+      "brand": "퓨리피아",
+      "name": "메타바이옴 토너 패드",
+      "category": "toner_pad",
+      "priority_class": "P0",
+      "priority_score": 61.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "daf3f5a9-1e95-4908-a8d4-2f4f0a3a986b",
+      "brand": "바이오더마",
+      "name": "하이드라비오 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61.252101,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "b1d6bec5-05f1-4c14-89cb-6e5b573ab7e7",
+      "brand": "더랩바이블랑두",
+      "name": "올리고 히알루론산 딥 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "4e8cb9ad-761a-4941-91d0-2b2cda1ab12e",
+      "brand": "라네즈",
+      "name": "크림스킨",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "eb675aef-b910-4e5c-b76b-6ade44966775",
+      "brand": "라운드랩",
+      "name": "1025 독도 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "2ab9955d-9e7f-41fc-9751-9e313d50e492",
+      "brand": "라운드랩",
+      "name": "1025 독도 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "02142b67-a50e-41b9-862c-b5a68203daf7",
+      "brand": "브링그린",
+      "name": "티트리 시카 수딩 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d724250d-c9ab-4882-8634-54f4b61dc9d2",
+      "brand": "썸바이미",
+      "name": "아하 바하 파하 30 데이즈 미라클 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "a75acd31-3256-4040-95a1-7df13c622958",
+      "brand": "아비브",
+      "name": "어성초 카밍 토너 스킨부스터",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "0781dcb5-d377-44b5-aa14-01ab2c04f0b2",
+      "brand": "에스네이처",
+      "name": "아쿠아 오아시스 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "37f18d02-adfd-4c72-b267-8e8facb1c5d1",
+      "brand": "일리윤",
+      "name": "세라마이드 아토 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "fbbec26f-66a2-4fae-b95b-aeb5b482a526",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "ef252acf-cfe2-4b2b-a223-80064be88e52",
+      "brand": "피지오겔",
+      "name": "DMT 페이셜 로션",
+      "category": "moisturizer_lotion_emulsion",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "2a48454c-c801-4953-a694-cdaffc10a027",
+      "brand": "피지오겔",
+      "name": "DMT 에센스 인 토너",
+      "category": "toner_essence",
+      "priority_class": "P0",
+      "priority_score": 61,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "6d560546-80f1-4ccf-9d2c-34023722d2a7",
+      "brand": "닥터지",
+      "name": "약산성 레드 블레미쉬 클리어 수딩 폼",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 59.764706,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "0def9373-087e-4998-8ef1-7f4cbdac40e4",
+      "brand": "코스알엑스",
+      "name": "약산성 굿모닝 젤 클렌저",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 59.008403,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "e6c3f88c-6908-401f-83d1-a5164f1dd60a",
+      "brand": "센카",
+      "name": "퍼펙트 휩 페이셜 워시",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58.12605,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "cb04b777-9a57-4246-9431-3018638354db",
+      "brand": "라로슈포제",
+      "name": "똘러리앙 퓨리파잉 포밍 클렌저",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d7bb44e4-d585-41ca-8a74-04781470d1de",
+      "brand": "라운드랩",
+      "name": "1025 독도 클렌저",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "c8f78d00-85b9-4850-b464-e8a0d815b2d8",
+      "brand": "라운드랩",
+      "name": "자작나무 수분 클렌저",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "635aa0fd-aabb-495e-b68f-42b1135df544",
+      "brand": "에스트라",
+      "name": "아토베리어365 포밍 클렌저",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "9d47de96-3227-494b-a8aa-2a4a3b7959d8",
+      "brand": "이니스프리",
+      "name": "화산송이 모공 클렌징폼",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "50d8285d-9f90-4437-9427-ecc93e9fa055",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 클렌징 폼",
+      "category": "cleanser",
+      "priority_class": "P1",
+      "priority_score": 58,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "d8079820-5d68-4968-a819-8bf5f60a441f",
+      "brand": "스트라이덱스",
+      "name": "센시티브 패드",
+      "category": "toner_pad",
+      "priority_class": "P1",
+      "priority_score": 47.918768,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "a136233c-fb77-408b-8e36-04ce2e9d5500",
+      "brand": "더마토리",
+      "name": "살리시닉 포어 클리어 블랙 모공 토너패드",
+      "category": "toner_pad",
+      "priority_class": "P1",
+      "priority_score": 47.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "LOWER_THAN_SELECTED_CATEGORY_CUTOFF"
+      ]
+    },
+    {
+      "product_id": "b639c8b4-6a61-440e-b4db-fac7381593ff",
+      "brand": "에스네이처",
+      "name": "아쿠아 스쿠알란 수분크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 47.044818,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "15b45c92-8b35-493a-8329-bc6b4ab5a53d",
+      "brand": "웰라쥬",
+      "name": "리얼 히알루로닉 수딩크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 47.044818,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "d5093dae-ce2f-4681-9811-2052e1779ff3",
+      "brand": "닥터지",
+      "name": "더모이스처 배리어.D 멀티 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+      "brand": "더하르나이",
+      "name": "시카이드 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "3fe73499-c2a9-4ee5-b4b5-6a60e07c6686",
+      "brand": "디에이이펙트",
+      "name": "포스트케어 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "49a483f3-9232-4b58-a91b-ddb5ea2f973e",
+      "brand": "라로제",
+      "name": "안티퍼티그 아이 컨투어 스틱",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "e15a1f7e-29b3-49fd-aae4-297bf9ada4ed",
+      "brand": "마녀공장",
+      "name": "판테토인 인리치드 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "9e727419-40e6-4c61-b44c-609507b7b822",
+      "brand": "비플레인",
+      "name": "녹두 모공 타이트업 수딩 크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "637782f6-709e-45e3-a886-a279c142667d",
+      "brand": "시드물",
+      "name": "민중기 보르피린 40 주름 탄력 멀티 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "976c13ef-8ebd-4b69-acae-0d070f6cd590",
+      "brand": "아누아",
+      "name": "피디알엔 히알루론산캡슐 100 수분크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "418e2bc1-7d6c-4334-9058-7af7ce159c6c",
+      "brand": "아토팜",
+      "name": "릴렉싱 나이트 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "b1f6b527-679f-48f3-9b58-5d28ec095f2f",
+      "brand": "에뛰드",
+      "name": "순정 판텐소사이드™ 10 시카 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "3e8c269e-17d8-47ec-a51d-9eada96461f4",
+      "brand": "ASCE plus",
+      "name": "엑소밤-SR2",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "b72b0570-ee3f-4692-b45f-633b46ae3b64",
+      "brand": "이니스프리",
+      "name": "비자 시카 밤 EX",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "7a98b5e7-2c1f-441a-afee-dd1c592d95bc",
+      "brand": "제로이드",
+      "name": "인텐시브 SOS 플러스 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "d35a03e7-4974-4eef-ad9d-c2e909622c6c",
+      "brand": "토니모리",
+      "name": "리얼 버터 영양 크림",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 46.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "c2bb9ffd-f261-4f9b-91ed-23f6cea9ada1",
+      "brand": "아토팜",
+      "name": "MLE 크림 스틱 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 44.044818,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "7b4a237c-7f6e-4f18-a581-9d6fcad8f92e",
+      "brand": "달바",
+      "name": "더블 세럼 올인원 멀티밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "f0bea751-1439-4f32-b9e9-1e204c5dd64e",
+      "brand": "메디포포",
+      "name": "레미디얼 크림",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "8c2c12e7-2fa6-4230-bee6-958a4dc9dc97",
+      "brand": "시드물",
+      "name": "에코 멀티 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "36b7d8f7-eb23-4fdb-a510-99ad4b64eb0e",
+      "brand": "싸이닉",
+      "name": "콜라겐 탄력 앰플스틱",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "cd0022c9-a80e-4f57-876b-79e1cb311a15",
+      "brand": "아비노베이비",
+      "name": "더멕사 아토 나이트타임 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "4c7af697-1413-4b7d-a89e-6edd2bd5f40c",
+      "brand": "키엘",
+      "name": "울트라 훼이셜 베리어 스틱 밤",
+      "category": "moisturizer_balm",
+      "priority_class": "P1",
+      "priority_score": 43.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "a59880f2-be88-4938-9958-254b87fd37ea",
+      "brand": "셀린저",
+      "name": "더마 배리어 P 크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 40.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "fd00be48-42e4-4db5-8838-e0820f147254",
+      "brand": "에코미니멀",
+      "name": "데일리 페이셜 크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 40.666667,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "03f5a72b-6c9a-4487-a3a9-39d1e6afa7bb",
+      "brand": "에스트라",
+      "name": "아토베리어365 하이드로 수딩크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 36.296919,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "d2141a9d-3975-4d93-83f7-a4814c9c6a57",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 수딩 크림",
+      "category": "moisturizer_cream",
+      "priority_class": "P1",
+      "priority_score": 35.792717,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "c01207df-b867-4233-b434-f7ebab0d369f",
+      "brand": "스킨1004",
+      "name": "마다가스카르 센텔라 앰플",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 24,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "31015762-2741-4211-a553-3ceb7fdf32e8",
+      "brand": "토리든",
+      "name": "다이브인 저분자 히알루론산 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20.218487,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "fb1384b3-109f-4b30-ac44-8ef0c8550756",
+      "brand": "닥터상떼",
+      "name": "아줄렌 수더 필 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "76f755f2-0e46-4143-b145-8e08c7a32590",
+      "brand": "믹순",
+      "name": "콩 에센스",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "bffeb912-7693-465d-ab6f-76f3eb5f0bc8",
+      "brand": "성분에디터",
+      "name": "애플필 매끈 결 수딩 세럼 플레인",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "a1fa0824-af5a-437d-9acf-6d59e06d9639",
+      "brand": "유아른",
+      "name": "비건 아하파하 앰플",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "25e68245-aa63-4440-b4ab-09db91741cce",
+      "brand": "유이크",
+      "name": "바이옴 베리어 파하 결 앰플",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "e96296f1-0186-4263-b185-c12374178546",
+      "brand": "트루스오브뷰티",
+      "name": "갈락토 씨씨 결 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "c813f9be-b19c-4f8e-a7d5-c0eb91452d44",
+      "brand": "파파레서피",
+      "name": "블레미쉬 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "96d7f8bc-5b0a-4cde-85eb-b2528eb726f5",
+      "brand": "하이클",
+      "name": "라하 톤앤글로우 소프트닝 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "ae6919e4-eca9-4af3-bc58-7d8a949375f6",
+      "brand": "화음",
+      "name": "갈락토미세스 데일리 부스터 세럼",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 20,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "brand": "라로슈포제",
+      "name": "안뗄리오스 선 플루이드",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 15,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "f516207e-681c-42d7-90af-20119706abfd",
+      "brand": "리쥬란",
+      "name": "리쥬란 턴오버 앰플",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 10.890756,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "f9a763e5-5e09-465e-8153-78f10a8e226b",
+      "brand": "에스트라",
+      "name": "아토베리어365 하이드로 세라-히얼 앰플",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 10.134454,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "684ea5da-6ca2-41cd-a916-57014bf4b269",
+      "brand": "미샤",
+      "name": "미샤 타임 레볼루션 더 퍼스트 에센스 5X",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 9.882353,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "brand": "뷰티오브조선",
+      "name": "맑은쌀 선크림 아쿠아프레쉬",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9.756303,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "brand": "이즈앤트리",
+      "name": "히아루론산 워터리 선젤",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9.756303,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "brand": "닥터지",
+      "name": "그린 마일드 업 선 플러스",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "brand": "스킨1004",
+      "name": "히알루-시카 워터핏 선세럼 UV",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "brand": "에스트라",
+      "name": "더마 UV365 레드 카밍 톤업 선스크린",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "brand": "에스트라",
+      "name": "더마UV365 장벽수분 무기자차 선크림",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "cf8528ac-b343-42f0-8dc9-af2c4997afcf",
+      "brand": "코스알엑스",
+      "name": "어드밴스드 스네일 96 뮤신 파워 에센스",
+      "category": "treatment",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    },
+    {
+      "product_id": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "brand": "토리든",
+      "name": "다이브인 워터리 모이스처 선크림",
+      "category": "sunscreen",
+      "priority_class": "P1",
+      "priority_score": 9,
+      "disposition": "DEFERRED_CATEGORY_QUOTA",
+      "reason_codes": [
+        "NO_WAVE_1_CATEGORY_ALLOCATION"
+      ]
+    }
+  ],
+  "excluded_products": [
+    {
+      "product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+      "category": "toner_essence",
+      "priority_class": "P2",
+      "priority_score": 61,
+      "disposition": "EXCLUDED_FORMULATION_CONFLICT",
+      "reason_codes": [
+        "FORMULATION_SCOPE_CONFLICT"
+      ]
+    },
+    {
+      "product_id": "38dc094e-4148-4566-a743-a09815265f44",
+      "category": "toner_pad",
+      "priority_class": "P2",
+      "priority_score": 52.204482,
+      "disposition": "EXCLUDED_IDENTITY_BLOCKED",
+      "reason_codes": [
+        "IDENTITY_BLOCKED"
+      ]
+    },
+    {
+      "product_id": "230f1c9c-cbf8-4458-aaac-ea1010a21e8c",
+      "category": "toner_pad",
+      "priority_class": "ADOPTED",
+      "priority_score": 47.666667,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "c67266dd-3706-4929-9196-936d1f61cbc5",
+      "category": "moisturizer_balm",
+      "priority_class": "ADOPTED",
+      "priority_score": 46.666667,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "4aa41038-de5b-4125-97b0-a50e7575cc00",
+      "category": "moisturizer_cream",
+      "priority_class": "ADOPTED",
+      "priority_score": 45.750701,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "category": "moisturizer_cream",
+      "priority_class": "P2",
+      "priority_score": 35.792717,
+      "disposition": "EXCLUDED_VARIANT_CONFLICT",
+      "reason_codes": [
+        "VARIANT_SCOPE_CONFLICT"
+      ]
+    },
+    {
+      "product_id": "0b88019a-9eb2-4be9-842d-f1e60e42cf51",
+      "category": "treatment",
+      "priority_class": "ADOPTED",
+      "priority_score": 20,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "24a339bf-f380-493f-88b5-68e6be887c30",
+      "category": "treatment",
+      "priority_class": "ADOPTED",
+      "priority_score": 19.336134,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "category": "sunscreen",
+      "priority_class": "ADOPTED",
+      "priority_score": 14.252101,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "fa5b1f6b-1e55-47b0-bfa1-494be512df07",
+      "category": "treatment",
+      "priority_class": "ADOPTED",
+      "priority_score": 9,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "category": "sunscreen",
+      "priority_class": "ADOPTED",
+      "priority_score": 9,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    },
+    {
+      "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "category": "sunscreen",
+      "priority_class": "ADOPTED",
+      "priority_score": 9,
+      "disposition": "EXCLUDED_ALREADY_ADOPTED",
+      "reason_codes": [
+        "HAS_PRODUCT_FACT_CURRENT"
+      ]
+    }
+  ],
+  "invariants": {
+    "hosted_product_fact_write_intent": 0,
+    "products_write_intent": 0,
+    "source_rankings_write_intent": 0,
+    "recommendation_logs_write_intent": 0,
+    "external_product_evidence_research": 0,
+    "product_fact_semantic_assertions_generated": 0,
+    "selected_product_count": 12,
+    "brand_cap_relaxation_count": 0,
+    "quota_trace": [],
+    "runtime_consumption": false
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "version": "v21-8f-hosted-selection-snapshot-v1",
+  "stage": "V2.1-8F",
+  "source": "Hosted Supabase read-only snapshot",
+  "source_main_sha": "b1e70c638f0e039c4061986cefd55e8e937f0983",
+  "registry_version": "product-fact-registry-cross-category-v1",
+  "selection_policy_version": "catalog-expansion-selection-policy-v1",
+  "hosted_semantic_digest": "e7cf34642fc6ae8e073e30d852cc829ceb30ba408098e3fe1238d7978d95ee46",
+  "catalog_product_count": 164,
+  "adopted_product_count": 9,
+  "adopted_current_fact_count": 25,
+  "source_ranking_component_unavailable": true,
+  "source_ranking_reason": "source_rankings has candidate_id only and current product_candidates.matched_product_id count is zero; no defensible product-level mapping",
+  "product_fields": [
+    "id", "brand", "name", "normalized_brand", "normalized_name", "category", "recommendation_tier", "size_ml", "product_form",
+    "source_url", "hwahae_url", "external_source", "external_type", "external_id", "current_fact_count", "recommendation_log_frequency", "top_pick_frequency"
+  ],
+  "historical_blockers": [
+    {
+      "product_id": "38dc094e-4148-4566-a743-a09815265f44",
+      "state": "IDENTITY_BLOCKED",
+      "authority": "cross-category-real-pilot-gap-report-v1"
+    },
+    {
+      "product_id": "4cbd41f3-1357-42c6-a6c7-6df0e90d54a7",
+      "state": "VARIANT_SCOPE_CONFLICT",
+      "authority": "source-gap-recovery-wave-1-v1"
+    },
+    {
+      "product_id": "d9e40ddb-b1e2-46e4-92db-82744227dfe3",
+      "state": "FORMULATION_SCOPE_CONFLICT",
+      "authority": "source-gap-recovery-wave-1-v1"
+    }
+  ],
+  "category_files": [
+    {"category":"cleanser","path":"cleanser.json","rows":26,"sha256":"b9c69fac7c9c5d45dd1dddb9bb3bd5e1c591db7aa6d760bf8e60aec57170a5c0"},
+    {"category":"toner_essence","path":"toner_essence.json","rows":24,"sha256":"009a35992d72b3123472170155614614a2d6b314a9c31746cdbe12c0825771d6"},
+    {"category":"toner_pad","path":"toner_pad.json","rows":24,"sha256":"68baab7084c92c65075458f55d932d706585482f97e3d46f4867700da854cfa7"},
+    {"category":"moisturizer_lotion_emulsion","path":"moisturizer_lotion_emulsion.json","rows":21,"sha256":"25a6c476f674ca36162f5f932729ba69b2601f364be2177f53817513ff832e24"},
+    {"category":"moisturizer_balm","path":"moisturizer_balm.json","rows":20,"sha256":"b041566aac32b6260641c90a2956a6b1696ba891f969bb4e95c78d49a269b125"},
+    {"category":"treatment","path":"treatment.json","rows":18,"sha256":"fe9feea13b10681e244ca29d7576f854b25a2c97ca07821ecba01a22e94500af"},
+    {"category":"sunscreen","path":"sunscreen.json","rows":11,"sha256":"f1c9d8da3c133269dece57cde1ddf60ccb4d5bda345a5d0616ec27aa35155007"},
+    {"category":"moisturizer_cream","path":"moisturizer_cream.json","rows":10,"sha256":"5a118bfa81011b5f111f98b85a36e67262bebc25f31f4f28d4616f96ade76b15"},
+    {"category":"moisturizer_gel","path":"moisturizer_gel.json","rows":10,"sha256":"5ea99c6e3e77d2f8cdb982efa8d1f8d1961b93bb1bdb989d2f33fa7ab702aa89"}
+  ],
+  "capture_invariants": {
+    "hosted_read_only": true,
+    "hosted_product_fact_writes": 0,
+    "products_writes": 0,
+    "source_rankings_writes": 0,
+    "recommendation_logs_writes": 0,
+    "external_product_evidence_research": 0
+  }
+}
