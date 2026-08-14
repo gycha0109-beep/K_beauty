@@ -1,0 +1,143 @@
+name: V21-8E Recovered Source-Gap Adoption Wave 1
+
+on:
+  push:
+    branches: [research/product-fact-recovered-source-gap-adoption-wave-1-v1]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8e-recovered-source-gap-adoption-wave-1.yml'
+      - 'docs/evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.md'
+      - 'evidence/product-fact-adoption-v1/recovered-source-gap-adoption-wave-1-v1.json'
+      - 'scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
+      - 'scripts/product-evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
+      - 'scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
+      - '.codex/AI_WORK_LOG.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-adoption-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      BASE_MAIN_SHA: da4e499b9b33af5a36c33e2c4c189462d731786b
+      OUT_JSON: evidence/product-fact-adoption-v1/recovered-source-gap-adoption-wave-1-v1.json
+      OUT_MD: docs/evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.md
+    steps:
+      - name: Checkout exact V2.1-8E head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact main authority and ancestry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
+          git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8e-authority.txt
+
+      - name: Immutable V2.1-8D authority hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum evidence/product-evidence-expansion-v1/source-gap-recovery-wave-1-v1.json | awk '{print $1}')" = 587afd259b12b93f11bb0ebae65370e12d07cf2b623c35c962ba4cf1ee72c3bc
+          test "$(sha256sum evidence/product-fact-adoption-v1/source-gap-recovery-wave-1-materialization-v1.json | awk '{print $1}')" = 9324d64492332da47bf118aa21ec3e9177c98f821b4c5f0556b8c3a9e8c55735
+          test "$(sha256sum docs/evidence/product-fact-source-gap-recovery-wave-1-v1.md | awk '{print $1}')" = 76e9d46fc19a9a0f28167e0d63107da3710b93a9154f18b168071e8dfcfc8565
+
+      - name: Controlled-write contracts and V2.1-8E syntax
+        run: |
+          node scripts/verify-product-fact-controlled-write-v1.mjs > /tmp/v21-8e-pf-write.json
+          node scripts/verify-product-fact-subject-registration-v1.mjs > /tmp/v21-8e-pf-subject.json
+          node -e 'for(const f of process.argv.slice(1)){if(require(f).status!=="PASS")process.exit(1)}' /tmp/v21-8e-pf-write.json /tmp/v21-8e-pf-subject.json
+          node --check scripts/product-evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.mjs
+          node --check scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs
+          node --check scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs
+
+      - name: Build A and Build B byte determinism
+        shell: bash
+        env:
+          V21_8E_BASE_MAIN_SHA: ${{ env.BASE_MAIN_SHA }}
+        run: |
+          set -euo pipefail
+          for run in a b; do
+            root="/tmp/v21-8e-$run"
+            rm -rf "$root"
+            V21_8E_OUTPUT_ROOT="$root" node scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs | tee "/tmp/v21-8e-build-$run.txt"
+          done
+          cmp -s "/tmp/v21-8e-a/$OUT_JSON" "/tmp/v21-8e-b/$OUT_JSON"
+          cmp -s "/tmp/v21-8e-a/$OUT_MD" "/tmp/v21-8e-b/$OUT_MD"
+          cmp -s "$OUT_JSON" "/tmp/v21-8e-a/$OUT_JSON"
+          cmp -s "$OUT_MD" "/tmp/v21-8e-a/$OUT_MD"
+          sha256sum "/tmp/v21-8e-a/$OUT_JSON" "/tmp/v21-8e-a/$OUT_MD" | tee /tmp/v21-8e-hash-a.txt
+          sha256sum "/tmp/v21-8e-b/$OUT_JSON" "/tmp/v21-8e-b/$OUT_MD" | tee /tmp/v21-8e-hash-b.txt
+          node scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs | tee /tmp/v21-8e-verifier.txt
+
+      - name: V2.1-8A through V2.1-8D replays
+        run: |
+          V21_8A_BASE_MAIN_SHA=5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8e-v21-8a.txt
+          V21_8B_BASE_MAIN_SHA=a303e216f3953567a175c4d01978efc06b20bbc6 node scripts/verify-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8e-v21-8b.txt
+          V21_8C_BASE_MAIN_SHA=a13e27e9e3dae0b5a38bab3324c587b99e8495d5 node scripts/verify-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8e-v21-8c.txt
+          V21_8D_BASE_MAIN_SHA=118152c40d76d2956d85c5bbc56ecdbe725b5ee7 node scripts/verify-product-fact-source-gap-recovery-wave-1-v1.mjs | tee /tmp/v21-8e-v21-8d.txt
+
+      - name: Historical V2.1-2 through V2.1-6 replays
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_hist(){ d="$1"; commit="$2"; main="$3"; script="$4"; rm -rf "/tmp/$d"; git clone -q --no-hardlinks . "/tmp/$d"; git -C "/tmp/$d" checkout -q "$commit"; git -C "/tmp/$d" update-ref refs/remotes/origin/main "$main"; (cd "/tmp/$d" && node "$script"); }
+          run_hist v21-2 6e79aa6a4ac08c98790787e371d59698588f349e e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
+          run_hist v21-4 c471f5ae82acc36a7c29b9ec8158b4ca2d595ec9 a38df682ebc686cb076dfc40b432ae714fdfd6da scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+          run_hist v21-5 4cb69354c3919f40c2b00acc070bcd0fb142f042 4dce99057ca44adb14dac549e8df6d468cf7f5e2 scripts/verify-product-decision-axis-cleanser-v1.mjs
+          run_hist v21-6 bd04f0924a74c8d36a935da8a4137dd3cf497117 45628d2c859ab0ba875b66f30b4c47c150ef3162 scripts/verify-product-decision-axis-cross-category-v1.mjs
+
+      - name: V2.1-7 and pre-write 164 x 12 invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-8e-v21-7.txt
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8e-production.txt
+          rm -rf _reference
+
+      - name: Exact scope, isolation, diff and secret hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort)
+          allowed='^(\.codex/AI_WORK_LOG\.md|\.github/workflows/v21-8e-recovered-source-gap-adoption-wave-1\.yml|docs/evidence/product-fact-recovered-source-gap-adoption-wave-1-v1\.md|evidence/product-fact-adoption-v1/recovered-source-gap-adoption-wave-1-v1\.json|scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs|scripts/product-evidence/product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs|scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs)$'
+          for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
+          test "${#changed[@]}" -eq 7
+          test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          ! grep -R -n --include='*.js' --include='*.mjs' 'recovered-source-gap-adoption-wave-1-v1' app lib components 2>/dev/null
+          git diff --check "$BASE_MAIN_SHA..HEAD"
+          if git diff -U0 "$BASE_MAIN_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
+          printf '%s\n' "${changed[@]}" | tee /tmp/v21-8e-changed.txt
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-8e-recovered-source-gap-adoption-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/v21-8e-*.txt
+            /tmp/v21-8e-*.json
+            evidence/product-fact-adoption-v1/recovered-source-gap-adoption-wave-1-v1.json
+            docs/evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.md
+          if-no-files-found: warn
+          retention-days: 14
