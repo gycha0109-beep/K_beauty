@@ -14,7 +14,7 @@ export const OUTPUTS=Object.freeze({
  replay:"evidence/product-decision-axis-anchor-research-v1/exfoliation-load-targeted-numeric-anchor-research-replay-wave-1-v1.json",
  doc:"docs/evidence/exfoliation-load-targeted-numeric-anchor-evidence-research-wave-1-v1.md"
 });
-export const EXPECTED_HASHES=Object.freeze({ledger:"3e04ba5360c9a5247b6240d26784cc25ca7dd1538c413a2115281bfe105fbc2b",result:"f09b8f14b1f457bf2d5f1133a2c26119bf72ba120e2c5e2890a2ec5e4ffd4640",replay:"c2b5c1d0cafff9799f89c6a026ca53b3231d34df297f5ef93912fc5073c87644",doc:"ee04af88ed25c02a359064f1d6cb558f8b724c8fb12c74e40a793a8e20d2be99"});
+export const EXPECTED_HASHES=Object.freeze({ledger:"3e04ba5360c9a5247b6240d26784cc25ca7dd1538c413a2115281bfe105fbc2b",result:"f09b8f14b1f457bf2d5f1133a2c26119bf72ba120e2c5e2890a2ec5e4ffd4640",replay:"c2b5c1d0cafff9799f89c6a026ca53b3231d34df297f5ef93912fc5073c87644",doc:"0de00c3a284bbe6165531795f35417cc615c9bb4fc4f8ec665dbe9969cb42018"});
 const TERMINALS=new Set(["COMPARABLE_NUMERIC_ANCHOR_SET_FOUND","PARTIAL_NUMERIC_ANCHOR_SOURCE_GAP","NO_NUMERIC_ANCHOR_SOURCE_FOUND","INCOMPATIBLE_PROTOCOL_FAMILIES_ONLY","ORDINAL_ONLY_ANCHOR_FOUND"]);
 const VALID_ID=new Set(["exact","equivalent"]), MISSING=new Set([null,"","none","not_stated","not_stated_on_page","not_applicable","not_stated_for_clinical_study"]);
 const inv=(x,m)=>{if(!x)throw new Error(m)};
