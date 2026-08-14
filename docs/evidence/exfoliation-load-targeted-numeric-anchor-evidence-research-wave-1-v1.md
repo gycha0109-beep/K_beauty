@@ -1,9 +1,9 @@
 # V2.1-8M — Exfoliation Load Targeted Numeric Anchor Evidence Research Wave 1
 
-Status: **FROZEN RESEARCH CLOSEOUT**  
-Stage: `V2.1-8M`  
-Axis: `exfoliation_load`  
-Start main authority: `f7b024b81d2ffcae2082fdadda7399c33c8a1ff7`  
+Status: **FROZEN RESEARCH CLOSEOUT**
+Stage: `V2.1-8M`
+Axis: `exfoliation_load`
+Start main authority: `f7b024b81d2ffcae2082fdadda7399c33c8a1ff7`
 Upstream V2.1-8L contract SHA256: `07aa89c15039b77763a0e2bd411575279e5867468db7ed9ca1ac34b6f61740d8`
 
 ## 1. Question
