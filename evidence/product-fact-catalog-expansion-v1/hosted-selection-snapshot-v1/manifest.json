@@ -41,7 +41,7 @@
     {"category":"treatment","path":"treatment.json","rows":18,"sha256":"fe9feea13b10681e244ca29d7576f854b25a2c97ca07821ecba01a22e94500af"},
     {"category":"sunscreen","path":"sunscreen.json","rows":11,"sha256":"f1c9d8da3c133269dece57cde1ddf60ccb4d5bda345a5d0616ec27aa35155007"},
     {"category":"moisturizer_cream","path":"moisturizer_cream.json","rows":10,"sha256":"5a118bfa81011b5f111f98b85a36e67262bebc25f31f4f28d4616f96ade76b15"},
-    {"category":"moisturizer_gel","path":"moisturizer_gel.json","rows":10,"sha256":"d0afbccaa407da91476e6dad1d464c744a47f760550250ca1e257291755233a4"}
+    {"category":"moisturizer_gel","path":"moisturizer_gel.json","rows":10,"sha256":"5ea99c6e3e77d2f8cdb982efa8d1f8d1961b93bb1bdb989d2f33fa7ab702aa89"}
   ],
   "capture_invariants": {
     "hosted_read_only": true,
