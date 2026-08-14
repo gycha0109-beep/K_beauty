@@ -1,0 +1,79 @@
+name: FACE-EVAL-CX1G D2D-P Blind Human Cue Protocol v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/face-contracts/src/archetype-human-evaluation/independent-human-cue-audit.js'
+      - 'packages/face-contracts/src/archetype-human-evaluation/index.js'
+      - 'evidence/facelab/archetype-stress-independent-human-cue-audit-protocol-freeze-v1.json'
+      - 'docs/domain/facelab/face-lab-independent-human-cue-audit-protocol-v1.md'
+      - 'scripts/build-face-lab-independent-human-cue-audit-packets-v1.mjs'
+      - 'scripts/check-face-lab-independent-human-cue-audit-protocol-v1.mjs'
+      - '.github/workflows/face-eval-cx1g-d2d-p-blind-human-cue-protocol-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Freeze repository authority
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          source_sha="$(node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("evidence/facelab/archetype-stress-independent-human-cue-audit-protocol-freeze-v1.json","utf8")); process.stdout.write(x.authority.mainSha)')"
+          git merge-base --is-ancestor "$source_sha" HEAD
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$source_sha" "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+          fi
+      - name: Verify independent Human cue audit protocol
+        run: node scripts/check-face-lab-independent-human-cue-audit-protocol-v1.mjs
+
+      - name: Verify target-axis definition authority
+        run: node scripts/check-face-lab-target-axis-operational-definitions-v1.mjs
+
+      - name: Verify architecture boundaries
+        run: npm run architecture:guard
+
+      - name: Verify Archetype scorer invariance
+        run: npm run verify:face-lab-archetype-scoring
+
+      - name: Verify Human evaluation contracts
+        run: npm run verify:face-lab-archetype-human-evaluation
+
+      - name: Verify synthetic toolkit regressions
+        run: npm run synthetic:verify
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --check "$PR_BASE_SHA..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi

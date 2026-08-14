@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "face-lab-independent-human-cue-audit-protocol-freeze-v1",
+  "protocolVersion": "face-lab-independent-human-cue-audit-20260814-v1",
+  "status": "packet_ready_not_executed",
+  "authority": {
+    "mainSha": "5fa0c661672502b9e49f2222e4eeb19bdc82ce15",
+    "definitionContractVersion": "face-lab-target-axis-operational-definitions-20260814-v1",
+    "definitionContractDigest": "8e630605ece0629da6a51e30829297688c27f10a3a92be6a3c8e3413f546bb46",
+    "definitionFreezeDigest": "cb7d3a0d60ce398dc9c76ee1aa4ff88ee94b0e001fa378f173367712ea279029",
+    "reviewerSafeDefinitionProjectionDigest": "4adbae197f32402a7e063666e3031cd558be7770952e41fa49d29aeaedd798f3",
+    "protocolDigest": "a32dd94dfbd8e090363ae0d662d51174eeab05796ccad5a8b2ad4c303d886b77"
+  },
+  "inputSummary": {
+    "subtleCanonicalCandidates": 7,
+    "moderateCanonicalCandidates": 7,
+    "totalCanonicalCandidates": 14,
+    "uniqueCanonicalAssets": 14,
+    "sourceMutationCount": 0
+  },
+  "axisSummary": {
+    "primaryAxisCount": 8,
+    "validationOnlyAxisCount": 2,
+    "excludedDirectAxisCount": 1
+  },
+  "reviewerSummary": {
+    "plannedReviewerSlots": 3,
+    "partAJudgmentsPerReviewer": 112,
+    "partBJudgmentsPerReviewer": 28,
+    "fullPlannedJudgments": 420,
+    "humanJudgmentsExecuted": 0
+  },
+  "packetPrepared": true,
+  "localPacketAuthorityDigest": "1f344a9d1cbd8e8ac6076b06da7780d213ff6ff71df80ea7a9f818617965339c",
+  "productionConsumption": false,
+  "executionCounters": {
+    "providerCalls": 0,
+    "observationCalls": 0,
+    "generationCalls": 0,
+    "humanJudgments": 0,
+    "consensus": 0,
+    "hostedWrites": 0
+  },
+  "w2Status": "locked",
+  "freezeDigest": "2ef4f572002cf8050d73c204d7e28b649dc3bb8b6b1a179f1be560fb04f5c228"
+}
