@@ -88,12 +88,20 @@ jobs:
           cmp -s "$DOC" "/tmp/v21-8i-a/$DOC"
           sha256sum "$SNAPSHOT" "$AUDIT" "$DOC" | tee /tmp/v21-8i-hashes.txt
 
-      - name: Current Product Fact resolver and Decision Axis contract replay
+      - name: Historical Product Decision Axis contract replay and current V2.1-8H replay
         shell: bash
         run: |
           set -euo pipefail
-          node scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-8i-cleanser.txt
-          node scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-8i-cross-category.txt
+          run_hist(){
+            d="$1"; commit="$2"; main="$3"; script="$4"
+            rm -rf "/tmp/$d"
+            git clone -q --no-hardlinks . "/tmp/$d"
+            git -C "/tmp/$d" checkout -q "$commit"
+            git -C "/tmp/$d" update-ref refs/remotes/origin/main "$main"
+            (cd "/tmp/$d" && node "$script")
+          }
+          run_hist v21-5 4cb69354c3919f40c2b00acc070bcd0fb142f042 4dce99057ca44adb14dac549e8df6d468cf7f5e2 scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-8i-cleanser.txt
+          run_hist v21-6 bd04f0924a74c8d36a935da8a4137dd3cf497117 45628d2c859ab0ba875b66f30b4c47c150ef3162 scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-8i-cross-category.txt
           node scripts/verify-product-fact-catalog-hosted-adoption-wave-1-v1.mjs | tee /tmp/v21-8i-v21-8h.txt
 
       - name: V2.1-7 shadow and 164 x 12 production invariance
