@@ -90,7 +90,7 @@ jobs:
           }
           const contract=JSON.parse(fs.readFileSync('evidence/product-decision-axis-contract-v1/product-decision-axis-mapper-contract-v1.json','utf8'));
           const {contract_digest,contract_digest_semantics,...body}=contract;
-          const digest=crypto.createHash('sha256').update(JSON.stringify(stable(body))).digest('hex');
+          const digest=crypto.createHash('sha256').update(JSON.stringify(stable(body))+'\n').digest('hex');
           if (contract_digest !== 'ce137d8755f454ae10c46e5321c718f3adca9f2cbceafc221bc3d93600543386' || digest !== 'ce137d8755f454ae10c46e5321c718f3adca9f2cbceafc221bc3d93600543386') throw new Error('8J canonical body digest drift');
           console.log('v21_8i_v21_8j_authority=PASS contract_digest='+digest);
           NODE
