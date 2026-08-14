@@ -1,0 +1,157 @@
+name: V21-8G Catalog Evidence Research Wave 1
+
+on:
+  push:
+    branches: [research/product-fact-catalog-evidence-research-wave-1-v1]
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8g-catalog-evidence-research-wave-1.yml'
+      - 'scripts/build-product-fact-catalog-evidence-research-wave-1-v1.mjs'
+      - 'scripts/verify-product-fact-catalog-evidence-research-wave-1-v1.mjs'
+      - 'scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1.mjs'
+      - 'evidence/product-evidence-expansion-v1/catalog-evidence-research-wave-1-v1.json'
+      - 'evidence/product-fact-adoption-v1/catalog-evidence-research-wave-1-materialization-v1.json'
+      - 'docs/evidence/product-fact-catalog-evidence-research-wave-1-v1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-freeze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      START_MAIN_SHA: 61d9d40db0f7fdac9aa2db1b68cad259f11e6ec0
+      OUT_RESEARCH: evidence/product-evidence-expansion-v1/catalog-evidence-research-wave-1-v1.json
+      OUT_MATERIALIZATION: evidence/product-fact-adoption-v1/catalog-evidence-research-wave-1-materialization-v1.json
+      OUT_MD: docs/evidence/product-fact-catalog-evidence-research-wave-1-v1.md
+    steps:
+      - name: Checkout exact V2.1-8G head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact head and start-main ancestry
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$START_MAIN_SHA" HEAD
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$START_MAIN_SHA" "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$PR_BASE_SHA" HEAD
+          fi
+          printf 'start_main=%s\nhead=%s\n' "$START_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8g-authority.txt
+
+      - name: Syntax and frozen upstream authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1.mjs
+          node --check scripts/build-product-fact-catalog-evidence-research-wave-1-v1.mjs
+          node --check scripts/verify-product-fact-catalog-evidence-research-wave-1-v1.mjs
+          test "$(sha256sum evidence/product-fact-catalog-expansion-v1/coverage-expansion-wave-1-selection-v1.json | cut -d' ' -f1)" = "b7bcbc9be95bd81a9d2014c79728317eaee5771bfb6deea3bc6f23af3cddc59b"
+          test "$(sha256sum docs/evidence/product-fact-catalog-expansion-wave-1-selection-v1.md | cut -d' ' -f1)" = "c43dd31b4110f60b5dd5356bf3cc149d55850de4b6e47c3814ca318df58bc4cd"
+
+      - name: Canonical build and Build A/B determinism
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-product-fact-catalog-evidence-research-wave-1-v1.mjs | tee /tmp/v21-8g-canonical-build.txt
+          for r in a b; do
+            root="/tmp/v21-8g-$r"; rm -rf "$root"
+            V21_8G_OUTPUT_ROOT="$root" node scripts/build-product-fact-catalog-evidence-research-wave-1-v1.mjs > "/tmp/v21-8g-build-$r.txt"
+          done
+          for p in "$OUT_RESEARCH" "$OUT_MATERIALIZATION" "$OUT_MD"; do
+            cmp -s "/tmp/v21-8g-a/$p" "/tmp/v21-8g-b/$p"
+            cmp -s "$p" "/tmp/v21-8g-a/$p"
+          done
+          sha256sum "/tmp/v21-8g-a/$OUT_RESEARCH" "/tmp/v21-8g-a/$OUT_MATERIALIZATION" "/tmp/v21-8g-a/$OUT_MD" | tee /tmp/v21-8g-hash-a.txt
+          sha256sum "/tmp/v21-8g-b/$OUT_RESEARCH" "/tmp/v21-8g-b/$OUT_MATERIALIZATION" "/tmp/v21-8g-b/$OUT_MD" | tee /tmp/v21-8g-hash-b.txt
+          node scripts/verify-product-fact-catalog-evidence-research-wave-1-v1.mjs | tee /tmp/v21-8g-verifier.txt
+
+      - name: V2.1-8A through V2.1-8F replays
+        shell: bash
+        run: |
+          set -euo pipefail
+          V21_8A_BASE_MAIN_SHA=5bcebba6b945f08b0fc5b1ae9f31fb0f9067397e node scripts/verify-product-fact-adoption-batch-1-v1.mjs | tee /tmp/v21-8g-v21-8a.txt
+          V21_8B_BASE_MAIN_SHA=a303e216f3953567a175c4d01978efc06b20bbc6 node scripts/verify-product-fact-adoption-batch-2-v1.mjs | tee /tmp/v21-8g-v21-8b.txt
+          V21_8C_BASE_MAIN_SHA=a13e27e9e3dae0b5a38bab3324c587b99e8495d5 node scripts/verify-product-fact-adoption-batch-3-v1.mjs | tee /tmp/v21-8g-v21-8c.txt
+          V21_8D_BASE_MAIN_SHA=118152c40d76d2956d85c5bbc56ecdbe725b5ee7 node scripts/verify-product-fact-source-gap-recovery-wave-1-v1.mjs | tee /tmp/v21-8g-v21-8d.txt
+          V21_8E_BASE_MAIN_SHA=da4e499b9b33af5a36c33e2c4c189462d731786b node scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs | tee /tmp/v21-8g-v21-8e.txt
+          node scripts/verify-product-fact-catalog-expansion-wave-v1.mjs | tee /tmp/v21-8g-v21-8f.txt
+
+      - name: Historical V2.1-2 through V2.1-6 replays
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_hist(){ d="$1"; commit="$2"; main="$3"; script="$4"; rm -rf "/tmp/$d"; git clone -q --no-hardlinks . "/tmp/$d"; git -C "/tmp/$d" checkout -q "$commit"; git -C "/tmp/$d" update-ref refs/remotes/origin/main "$main"; (cd "/tmp/$d" && node "$script"); }
+          run_hist v21-2 6e79aa6a4ac08c98790787e371d59698588f349e e75ae83f3cc8b682fa7cc7dfb38edf983d2aa68f scripts/verify-product-fact-cross-category-materialization-dry-run-v1.mjs
+          run_hist v21-4 c471f5ae82acc36a7c29b9ec8158b4ca2d595ec9 a38df682ebc686cb076dfc40b432ae714fdfd6da scripts/verify-product-fact-evidence-fusion-review-uncertainty-v1.mjs
+          run_hist v21-5 4cb69354c3919f40c2b00acc070bcd0fb142f042 4dce99057ca44adb14dac549e8df6d468cf7f5e2 scripts/verify-product-decision-axis-cleanser-v1.mjs
+          run_hist v21-6 bd04f0924a74c8d36a935da8a4137dd3cf497117 45628d2c859ab0ba875b66f30b4c47c150ef3162 scripts/verify-product-decision-axis-cross-category-v1.mjs
+
+      - name: V2.1-7 and 164 x 12 production invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-8g-v21-7.txt
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8g-production.txt
+          rm -rf _reference
+
+      - name: Offline scope runtime and secret hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha || env.START_MAIN_SHA }}"
+          mapfile -t changed < <(git diff --name-only "$BASE..HEAD" | sort)
+          allowed='^(\.github/workflows/v21-8g-catalog-evidence-research-wave-1\.yml|docs/evidence/product-fact-catalog-evidence-research-wave-1-v1\.md|evidence/product-evidence-expansion-v1/catalog-evidence-research-wave-1-v1\.json|evidence/product-fact-adoption-v1/catalog-evidence-research-wave-1-materialization-v1\.json|scripts/build-product-fact-catalog-evidence-research-wave-1-v1\.mjs|scripts/verify-product-fact-catalog-evidence-research-wave-1-v1\.mjs|scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1\.mjs)$'
+          for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
+          test -z "$(git diff --name-only "$BASE..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          ! grep -R -n --include='*.js' --include='*.mjs' --include='*.ts' --include='*.tsx' 'catalog-evidence-research-wave-1-v1\|product-fact-catalog-evidence-research-wave-1-v1' app lib components 2>/dev/null
+          git diff --check "$BASE..HEAD"
+          if git diff -U0 "$BASE..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
+          printf '%s\n' "${changed[@]}" | tee /tmp/v21-8g-changed.txt
+
+      - name: Freeze canonical research outputs
+        if: github.event_name == 'push' && github.ref_name == 'research/product-fact-catalog-evidence-research-wave-1-v1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_RESEARCH" "$OUT_MATERIALIZATION" "$OUT_MD"
+          if ! git diff --cached --quiet; then
+            git commit -m 'research(evidence): freeze V2.1-8G Wave 1 research'
+            git push origin HEAD:research/product-fact-catalog-evidence-research-wave-1-v1
+          fi
+
+      - name: Upload V2.1-8G evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-8g-catalog-evidence-research-wave-1-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/v21-8g-*.txt
+            evidence/product-evidence-expansion-v1/catalog-evidence-research-wave-1-v1.json
+            evidence/product-fact-adoption-v1/catalog-evidence-research-wave-1-materialization-v1.json
+            docs/evidence/product-fact-catalog-evidence-research-wave-1-v1.md
+          if-no-files-found: warn
+          retention-days: 14
