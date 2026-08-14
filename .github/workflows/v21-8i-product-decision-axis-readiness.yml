@@ -1,0 +1,166 @@
+name: V21-8I Product Decision Axis Readiness Audit
+
+on:
+  push:
+    branches:
+      - audit/v21-8i-product-decision-axis-readiness
+      - main
+    paths:
+      - '.github/workflows/v21-8i-product-decision-axis-readiness.yml'
+      - 'evidence/product-decision-axis-readiness-v1/**'
+      - 'docs/evidence/product-decision-axis-input-coverage-calibration-readiness-audit-v1.md'
+      - 'scripts/product-evidence/product-decision-axis-readiness-audit-v1.mjs'
+      - 'scripts/product-evidence/verify-product-decision-axis-readiness-audit-v1.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8i-product-decision-axis-readiness.yml'
+      - 'evidence/product-decision-axis-readiness-v1/**'
+      - 'docs/evidence/product-decision-axis-input-coverage-calibration-readiness-audit-v1.md'
+      - 'scripts/product-evidence/product-decision-axis-readiness-audit-v1.mjs'
+      - 'scripts/product-evidence/verify-product-decision-axis-readiness-audit-v1.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      START_MAIN_SHA: e34e7e9f731de1018fc2fd70e5462d69f919869d
+      SNAPSHOT: evidence/product-decision-axis-readiness-v1/product-decision-axis-input-snapshot-v1.json
+      AUDIT: evidence/product-decision-axis-readiness-v1/product-decision-axis-input-coverage-audit-v1.json
+      DOC: docs/evidence/product-decision-axis-input-coverage-calibration-readiness-audit-v1.md
+    steps:
+      - name: Checkout exact V2.1-8I head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact head and authority ancestry
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$START_MAIN_SHA" HEAD
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            test -n "$PR_BASE_SHA"
+            test "$PR_BASE_SHA" = "$START_MAIN_SHA"
+            BASE="$PR_BASE_SHA"
+          elif [ "${{ github.ref_name }}" = "main" ]; then
+            BASE="$START_MAIN_SHA"
+          else
+            BASE="$(git merge-base refs/remotes/origin/main HEAD)"
+            test "$BASE" = "$START_MAIN_SHA"
+          fi
+          printf 'start_main=%s\nbase=%s\nhead=%s\n' "$START_MAIN_SHA" "$BASE" "$(git rev-parse HEAD)" | tee /tmp/v21-8i-authority.txt
+
+      - name: Syntax, canonical build, and Build A/B determinism
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/product-decision-axis-readiness-audit-v1.mjs
+          node --check scripts/product-evidence/verify-product-decision-axis-readiness-audit-v1.mjs
+          node scripts/product-evidence/product-decision-axis-readiness-audit-v1.mjs | tee /tmp/v21-8i-build.txt
+          node scripts/product-evidence/verify-product-decision-axis-readiness-audit-v1.mjs | tee /tmp/v21-8i-verifier.txt
+          for r in a b; do
+            root="/tmp/v21-8i-$r"
+            rm -rf "$root"
+            V21_8I_OUTPUT_ROOT="$root" node scripts/product-evidence/product-decision-axis-readiness-audit-v1.mjs > "/tmp/v21-8i-build-$r.txt"
+          done
+          cmp -s "/tmp/v21-8i-a/$AUDIT" "/tmp/v21-8i-b/$AUDIT"
+          cmp -s "/tmp/v21-8i-a/$DOC" "/tmp/v21-8i-b/$DOC"
+          cmp -s "$AUDIT" "/tmp/v21-8i-a/$AUDIT"
+          cmp -s "$DOC" "/tmp/v21-8i-a/$DOC"
+          sha256sum "$SNAPSHOT" "$AUDIT" "$DOC" | tee /tmp/v21-8i-hashes.txt
+
+      - name: Historical Product Decision Axis contract replay and current V2.1-8H replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_hist(){
+            d="$1"; commit="$2"; main="$3"; script="$4"
+            rm -rf "/tmp/$d"
+            git clone -q --no-hardlinks . "/tmp/$d"
+            git -C "/tmp/$d" checkout -q "$commit"
+            git -C "/tmp/$d" update-ref refs/remotes/origin/main "$main"
+            (cd "/tmp/$d" && node "$script")
+          }
+          run_hist v21-5 4cb69354c3919f40c2b00acc070bcd0fb142f042 4dce99057ca44adb14dac549e8df6d468cf7f5e2 scripts/verify-product-decision-axis-cleanser-v1.mjs | tee /tmp/v21-8i-cleanser.txt
+          run_hist v21-6 bd04f0924a74c8d36a935da8a4137dd3cf497117 45628d2c859ab0ba875b66f30b4c47c150ef3162 scripts/verify-product-decision-axis-cross-category-v1.mjs | tee /tmp/v21-8i-cross-category.txt
+          node scripts/verify-product-fact-catalog-hosted-adoption-wave-1-v1.mjs | tee /tmp/v21-8i-v21-8h.txt
+
+      - name: V2.1-7 shadow and 164 x 12 production invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs | tee /tmp/v21-8i-v21-7.txt
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/v21-8i-production.txt
+          rm -rf _reference
+
+      - name: Audit-only scope and secret hygiene
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          if [ "${{ github.event_name }}" = "pull_request" ]; then BASE="$PR_BASE_SHA"; elif [ "${{ github.ref_name }}" = "main" ]; then BASE="$START_MAIN_SHA"; else BASE="$(git merge-base refs/remotes/origin/main HEAD)"; fi
+          mapfile -t changed < <(git diff --name-only "$BASE..HEAD" | sort)
+          allowed='^(\.github/workflows/v21-8i-product-decision-axis-readiness\.yml|docs/evidence/product-decision-axis-input-coverage-calibration-readiness-audit-v1\.md|evidence/product-decision-axis-readiness-v1/product-decision-axis-input-snapshot-v1\.json|evidence/product-decision-axis-readiness-v1/product-decision-axis-input-coverage-audit-v1\.json|scripts/product-evidence/product-decision-axis-readiness-audit-v1\.mjs|scripts/product-evidence/verify-product-decision-axis-readiness-audit-v1\.mjs)$'
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_name }}" = "audit/v21-8i-product-decision-axis-readiness" ]; then
+            test "${#changed[@]}" -eq 4 -o "${#changed[@]}" -eq 6
+          else
+            test "${#changed[@]}" -eq 6
+          fi
+          for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
+          test -z "$(git diff --name-only "$BASE..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          git diff --check "$BASE..HEAD"
+          if git diff -U0 "$BASE..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
+            echo 'Potential credential literal detected'
+            exit 1
+          fi
+          printf '%s\n' "${changed[@]}" | tee /tmp/v21-8i-changed.txt
+
+      - name: Freeze canonical V2.1-8I audit outputs
+        if: github.event_name == 'push' && github.ref_name == 'audit/v21-8i-product-decision-axis-readiness'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$AUDIT" "$DOC"
+          if ! git diff --cached --quiet; then
+            git commit -m 'audit(v21-8i): freeze readiness artifacts'
+            git push origin HEAD:audit/v21-8i-product-decision-axis-readiness
+          fi
+
+      - name: Upload V2.1-8I evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v21-8i-product-decision-axis-readiness-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            /tmp/v21-8i-*.txt
+            evidence/product-decision-axis-readiness-v1/product-decision-axis-input-snapshot-v1.json
+            evidence/product-decision-axis-readiness-v1/product-decision-axis-input-coverage-audit-v1.json
+            docs/evidence/product-decision-axis-input-coverage-calibration-readiness-audit-v1.md
+          if-no-files-found: warn
+          retention-days: 14
