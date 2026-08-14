@@ -138,8 +138,10 @@ jobs:
           for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
           test -z "$(git diff --name-only "$BASE..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
           git diff --check "$BASE..HEAD"
-          if git diff -U0 "$BASE..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'admin_(register|ingest|prepare|preflight|confirm)_product_fact|INSERT INTO|UPDATE product_fact|DELETE FROM product_fact|CREATE TABLE|ALTER TABLE'; then
-            echo 'Hosted mutation or DDL path detected in V2.1-8J diff'
+          if grep -En 'admin_(register|ingest|prepare|preflight|confirm)_product_fact|INSERT[[:space:]]+INTO|UPDATE[[:space:]]+product_fact|DELETE[[:space:]]+FROM[[:space:]]+product_fact|CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE' \
+            scripts/product-evidence/product-decision-axis-mapper-contract-v1.mjs \
+            scripts/product-evidence/verify-product-decision-axis-mapper-contract-v1.mjs; then
+            echo 'Hosted mutation or DDL path detected in V2.1-8J source files'
             exit 1
           fi
           if git diff -U0 "$BASE..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then
