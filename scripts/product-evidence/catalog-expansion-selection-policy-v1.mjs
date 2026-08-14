@@ -73,3 +73,5 @@ export function compareCandidates(a, b) {
     || compareCodepointAsc(a.normalized_name, b.normalized_name)
     || compareCodepointAsc(a.product_id, b.product_id);
 }
+
+// Exact-head CI trigger after canonical Wave 1 planning outputs were frozen.
