@@ -11,6 +11,8 @@ const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const CI_PORTABILITY_SEMANTIC_PATH = "scripts/verify-candidate-policy-runtime-reevaluation.mjs";
 const CI_PORTABILITY_SOURCE_BLOB = "15f5cc94e2a2673ba36ef73a2cdb7a6a690ffc6c";
 const CI_PORTABILITY_RESULT_BLOB = "4eea1f845c7a20a819a2189a3956b724b1d631ea";
+const V21_8R_SHADOW_ADAPTER_PATH = "lib/candidate-exposure-policy-shadow.js";
+const V21_8R_SHADOW_ADAPTER_RESULT_BLOB = "020e93901b0b7cdfe28040703111674fc233206f";
 const CLOSEOUT_SEMANTIC_BLOBS = Object.freeze({
   "lib/candidate-exposure-policy-observability.js": "1c108be104d020e80a7c571d586a27013bb9d646",
   "scripts/verify-candidate-exposure-policy-shadow-runtime.mjs": "3a02dc8a47e2d9bf037f44f349ba87884206bb2d",
@@ -74,6 +76,20 @@ for (const entry of manifest.includeExact) {
   if (entry.path === CI_PORTABILITY_SEMANTIC_PATH) {
     check(entry.sourceBlob === CI_PORTABILITY_SOURCE_BLOB, "historical reevaluation source blob drift");
     check(hash(entry.path) === CI_PORTABILITY_RESULT_BLOB, "reevaluation CI portability result drift");
+    continue;
+  }
+  if (entry.path === V21_8R_SHADOW_ADAPTER_PATH) {
+    const actualBlob = hash(entry.path);
+    check(
+      actualBlob === expectedBlob(entry, "sourceBlob") || actualBlob === V21_8R_SHADOW_ADAPTER_RESULT_BLOB,
+      "candidate shadow historical/approved V2.1-8R blob mismatch"
+    );
+    if (actualBlob === V21_8R_SHADOW_ADAPTER_RESULT_BLOB) {
+      const source = readFileSync(path.join(ROOT, entry.path), "utf8");
+      check(source.includes("buildExfoliationNonNumericPdaShadowDecisionInputs"), "V2.1-8R shadow adapter invocation missing");
+      check(source.includes("const policyResult = evaluator({ canonicalState, candidates });"), "V2.1-8R changed canonical CandidateExposurePolicy evaluator input");
+      check(source.includes("exfoliationPdaShadow"), "V2.1-8R shadow-only adapter result missing");
+    }
     continue;
   }
   check(hash(entry.path) === expectedBlob(entry, "sourceBlob"), `source/closeout blob mismatch: ${entry.path}`);
@@ -338,4 +354,4 @@ for (const command of Object.values(pkg.scripts)) {
   if (match && match[1].startsWith("scripts/")) check(existsSync(path.join(ROOT, match[1])), `package script target missing: ${match[1]}`);
 }
 
-console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated; FACE-EVAL-CG exact generation blobs gated)`);
+console.log(`verify-candidate-policy-main-integration: PASS (${assertions} assertions; latest closeout semantics preserved; current-main preserve paths compared to ${CURRENT_MAIN_REF}; main-only automatic Vercel deployment with globstar preview deny enforced; 5 approved Admin semantic deltas; Solo alignment semantic drift gated; FACE-EVAL-CG exact generation blobs gated; V2.1-8R shadow adapter exact descendant blob gated)`);

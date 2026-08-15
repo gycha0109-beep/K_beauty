@@ -1,0 +1,180 @@
+name: V2.1-8R Exfoliation Shadow Recommendation Adapter
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml'
+      - '.github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml'
+      - 'lib/exfoliation-non-numeric-pda-shadow-adapter.js'
+      - 'lib/candidate-exposure-policy-shadow.js'
+      - 'scripts/verify-candidate-policy-main-integration.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json'
+      - 'docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-adapter-implementation-v1.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml'
+      - '.github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml'
+      - 'lib/exfoliation-non-numeric-pda-shadow-adapter.js'
+      - 'lib/candidate-exposure-policy-shadow.js'
+      - 'scripts/verify-candidate-policy-main-integration.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json'
+      - 'docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-adapter-implementation-v1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v21-8r:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      V21_8R_BASE_MAIN_SHA: e812ee6a7eae6b98940adfe7b10471687e5cad1a
+      FROZEN_8Q_HEAD_SHA: 9c8d387e9698a8c8ad2d11697e488a79862f9e65
+      FROZEN_8Q_CONTRACT_BLOB_SHA: 2930e353d0182576cb81432eef55fa1889be8847
+      FROZEN_8P_OUTPUT_SHA256: 03d4446fd7ea1ce8dd23c44bb6c641804bd3394b4aab39db9ee0d7e021029624
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.event.pull_request.head.sha || github.sha }}'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Exact repository and frozen authority
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$V21_8R_BASE_MAIN_SHA" HEAD
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-contract-v1.json)" = "$FROZEN_8Q_CONTRACT_BLOB_SHA"
+          test "$(sha256sum evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-output-v1.json | awk '{print $1}')" = "$FROZEN_8P_OUTPUT_SHA256"
+          node - <<'NODE'
+          const fs = require('fs');
+          const c = JSON.parse(fs.readFileSync('evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-contract-v1.json','utf8'));
+          if (c.stage !== 'V2.1-8Q') process.exit(1);
+          if (c.version !== 'exfoliation-non-numeric-pda-shadow-consumption-adapter-contract-v1') process.exit(1);
+          if (c.implementation_status !== 'DESIGNED_NOT_IMPLEMENTED') process.exit(1);
+          if (c.boundary !== 'non_numeric_exfoliation_pda + routine_user_context -> shadow_decision_input') process.exit(1);
+          if (c.scope.shadow_only !== true || c.scope.production_activation_authorized !== false) process.exit(1);
+          NODE
+
+      - name: Deterministic Build A B and focused verifier
+        run: |
+          set -euo pipefail
+          node --check lib/exfoliation-non-numeric-pda-shadow-adapter.js
+          node --check lib/candidate-exposure-policy-shadow.js
+          node --check scripts/verify-candidate-policy-main-integration.mjs
+          node --check scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const stable = (v) => Array.isArray(v) ? v.map(stable) : v && typeof v === 'object'
+            ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, stable(v[k])])) : v;
+          for (const f of [
+            'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json',
+            'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json'
+          ]) {
+            const parsed = JSON.parse(fs.readFileSync(f, 'utf8'));
+            const buildA = JSON.stringify(stable(parsed)) + '\n';
+            const buildB = JSON.stringify(stable(parsed)) + '\n';
+            if (buildA !== buildB || fs.readFileSync(f, 'utf8') !== buildA) process.exit(1);
+          }
+          NODE
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs | tee /tmp/8r-focused.log
+          sha256sum \
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json \
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json \
+            docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-adapter-implementation-v1.md | tee /tmp/8r-hashes.log
+
+      - name: Existing candidate exposure shadow regression
+        run: |
+          set -euo pipefail
+          npm run verify:candidate-exposure-policy-shadow
+          npm run verify:candidate-exposure-policy-shadow-evaluation
+          node scripts/verify-candidate-policy-main-integration.mjs
+
+      - name: Historical V2.1-8J through V2.1-8P replay
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-product-decision-axis-mapper-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-wave-1-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-anchor-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-targeted-numeric-anchor-research-wave-1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-feasibility-reassessment-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
+
+      - name: Historical V2.1-8Q replay at frozen authority
+        run: |
+          set -euo pipefail
+          rm -rf _reference/v21-8q
+          git clone -q --no-hardlinks . _reference/v21-8q
+          git -C _reference/v21-8q checkout -q "$V21_8R_BASE_MAIN_SHA"
+          (cd _reference/v21-8q && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs)
+          rm -rf _reference/v21-8q
+
+      - name: 164 x 12 production invariance
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/8r-production.log
+          rm -rf _reference/recommendation
+
+      - name: Exact V2.1-8R scope and frozen non-mutation
+        run: |
+          set -euo pipefail
+          expected=(
+            .github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml
+            .github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml
+            docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-adapter-implementation-v1.md
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json
+            lib/candidate-exposure-policy-shadow.js
+            lib/exfoliation-non-numeric-pda-shadow-adapter.js
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs
+            scripts/verify-candidate-policy-main-integration.mjs
+          )
+          mapfile -t actual < <(git diff --name-only "$V21_8R_BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${actual[@]}")" = "$(printf '%s\n' "${expected_sorted[@]}")"
+
+          frozen=(
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-contract-v1.json
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-examples-v1.json
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-replay-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-current-input-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-output-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-replay-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-consumption-ledger-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-contract-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-consumption-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-consumption-replay-v1.json
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs
+          )
+          test -z "$(git diff --name-only "$V21_8R_BASE_MAIN_SHA..HEAD" -- "${frozen[@]}")"
+          test -z "$(git diff --name-only "$V21_8R_BASE_MAIN_SHA..HEAD" -- \
+            app/api/analyze/route.js \
+            lib/candidate-exposure-policy.js \
+            lib/candidate-exposure-policy-evaluator-adapter.js \
+            lib/shared-skin-decision-context.js \
+            lib/shared-skin-decision-context-v4.js \
+            lib/routine-policy.js \
+            lib/functional-policy.js \
+            lib/recent-instability-guard-policy.js \
+            lib/skin-match-decision-engine.js \
+            package.json package-lock.json supabase/migrations)"
+          git diff --check "$V21_8R_BASE_MAIN_SHA..HEAD"
