@@ -44,5 +44,12 @@ jobs:
         run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
       - name: Replay V2.1-8P
         run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
-      - name: Verify V2.1-8Q
-        run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs
+      - name: Verify V2.1-8Q at frozen authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/v21-8q
+          git clone -q --no-hardlinks . _reference/v21-8q
+          git -C _reference/v21-8q checkout -q e812ee6a7eae6b98940adfe7b10471687e5cad1a
+          (cd _reference/v21-8q && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs)
+          rm -rf _reference/v21-8q

@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml'
+      - '.github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml'
       - 'lib/exfoliation-non-numeric-pda-shadow-adapter.js'
       - 'lib/candidate-exposure-policy-shadow.js'
+      - 'scripts/verify-candidate-policy-main-integration.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json'
@@ -15,8 +17,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml'
+      - '.github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml'
       - 'lib/exfoliation-non-numeric-pda-shadow-adapter.js'
       - 'lib/candidate-exposure-policy-shadow.js'
+      - 'scripts/verify-candidate-policy-main-integration.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-validation-replay-v1.json'
@@ -70,6 +74,7 @@ jobs:
           set -euo pipefail
           node --check lib/exfoliation-non-numeric-pda-shadow-adapter.js
           node --check lib/candidate-exposure-policy-shadow.js
+          node --check scripts/verify-candidate-policy-main-integration.mjs
           node --check scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs
           node - <<'NODE'
           const fs = require('fs');
@@ -96,6 +101,7 @@ jobs:
           set -euo pipefail
           npm run verify:candidate-exposure-policy-shadow
           npm run verify:candidate-exposure-policy-shadow-evaluation
+          node scripts/verify-candidate-policy-main-integration.mjs
 
       - name: Historical V2.1-8J through V2.1-8P replay
         run: |
@@ -127,10 +133,11 @@ jobs:
           RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/8r-production.log
           rm -rf _reference/recommendation
 
-      - name: Exact additive scope and frozen non-mutation
+      - name: Exact V2.1-8R scope and frozen non-mutation
         run: |
           set -euo pipefail
           expected=(
+            .github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml
             .github/workflows/v21-8r-exfoliation-shadow-recommendation-adapter.yml
             docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-adapter-implementation-v1.md
             evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.json
@@ -138,6 +145,7 @@ jobs:
             lib/candidate-exposure-policy-shadow.js
             lib/exfoliation-non-numeric-pda-shadow-adapter.js
             scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs
+            scripts/verify-candidate-policy-main-integration.mjs
           )
           mapfile -t actual < <(git diff --name-only "$V21_8R_BASE_MAIN_SHA..HEAD" | sort)
           mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
