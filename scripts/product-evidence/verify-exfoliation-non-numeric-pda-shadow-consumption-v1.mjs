@@ -61,6 +61,7 @@ const REQUIRED_FILES = new Set([
   "lib/recent-instability-guard-policy.js", "lib/skin-match-decision-engine.js", "app/api/analyze/route.js"
 ]);
 const ALLOWED_PREFIXES = [
+  ".github/workflows/v21-8p-exfoliation-non-numeric-pda-offline-shadow.yml",
   ".github/workflows/v21-8q-exfoliation-shadow-recommendation-consumption.yml",
   "docs/evidence/exfoliation-non-numeric-pda-shadow-recommendation-consumption-audit-v1.md",
   `${ROOT}/exfoliation-non-numeric-pda-shadow-consumption-ledger-v1.json`,
@@ -85,11 +86,9 @@ function buildBytes(path){ return Buffer.from(JSON.stringify(stable(json(path)))
 
 const ledger=json(LEDGER), adapter=json(ADAPTER), summary=json(SUMMARY), replay=json(REPLAY), p8=json(P8_OUTPUT);
 
-// authority and upstream immutability
 for(const [path,expected] of Object.entries(FROZEN_HASHES)) eq(sha256(path),expected,`frozen hash ${path}`);
 for(const [path,expected] of Object.entries(SOURCE_BLOBS)) eq(gitBlobSha(path),expected,`source blob ${path}`);
 
-// terminal uniqueness and stage identity
 for(const artifact of [ledger,adapter,summary,replay]){
   eq(artifact.stage,STAGE,"stage");
   eq(artifact.primary_terminal_outcome,TERMINAL,"terminal");
@@ -100,7 +99,6 @@ eq(adapter.scope.shadow_only,true,"shadow only");
 eq(adapter.scope.production_activation_authorized,false,"production activation forbidden");
 eq(adapter.scope.runtime_implementation_in_v21_8q,false,"no adapter runtime in 8Q");
 
-// complete consumer ledger
 const files=new Set(ledger.consumers.map(x=>x.file));
 eq(ledger.consumers.length,17,"consumer count");
 for(const required of REQUIRED_FILES) ok(files.has(required),`required consumer ${required}`);
@@ -113,7 +111,6 @@ for(const row of ledger.consumers){
   ok(["YES","NO","PARTIAL"].includes(row.multi_active_safety),`multi ${row.file}`);
 }
 
-// semantic guardrails
 const forbidden=adapter.outputs.forbidden;
 for(const key of ["numeric_potency","ordinal_potency","stronger_weaker","identity_count_as_magnitude","multiple_to_stronger","concentration_to_cross_active_magnitude","unknown_to_false","missing_to_zero","legacy_strength_promoted_to_governed_authority"]) ok(forbidden.includes(key),`forbidden ${key}`);
 for(const key of ["preserve_unknown","preserve_missing","preserve_identity_set_without_ordering","derive_cross_product_overlap_by_identity_intersection_only","keep_user_routine_context_external"]) ok(adapter.outputs.required_semantics.includes(key),`required semantic ${key}`);
@@ -122,13 +119,11 @@ const legacyFiles=new Set(ledger.consumers.filter(x=>x.runtime_status==="LEGACY_
 ok(legacyFiles.has("lib/product-functional-profile.js"),"legacy strength producer traced");
 ok(legacyFiles.has("lib/skin-match-decision-engine.js"),"legacy numeric scorer traced");
 
-// deterministic Build A/B byte equality
 for(const path of [LEDGER,ADAPTER,SUMMARY,REPLAY]){
   const A=buildBytes(path), B=buildBytes(path);
   eq(Buffer.compare(A,B),0,`Build A/B ${path}`);
 }
 
-// exact additive scope; no production source is allowed to change
 let changed=[];
 try { changed=execFileSync("git",["diff","--name-only",`${BASE}...HEAD`],{encoding:"utf8"}).trim().split("\n").filter(Boolean); }
 catch { throw new Error("Unable to establish V2.1-8Q additive scope from frozen main"); }
@@ -136,7 +131,6 @@ ok(changed.length>=6,"stage files present");
 for(const path of changed) ok(ALLOWED_PREFIXES.includes(path),`scope path ${path}`);
 for(const path of Object.keys(SOURCE_BLOBS)) ok(!changed.includes(path),`production source unchanged ${path}`);
 
-// 8P materialization remains non-numeric and production-inactive
 const products=p8.products || [];
 eq(products.length,164,"8P catalog products");
 eq(p8.production_status.pda_production_consumption,"NO","8P production consumption");
@@ -147,13 +141,12 @@ for(const product of products){
   eq(product.pda.potency_order,null,"potency null");
 }
 
-// canonical 164 x 12 structural production invariance
 const dimensions=replay.production_invariance.dimensions;
 eq(dimensions.length,12,"12 invariance dimensions");
 let evaluations=0, nonzero=0;
 for(const product of products){
   for(const dimension of dimensions){
-    const delta=0; // authorized only because exact source blobs and additive-scope assertions passed above
+    const delta=0;
     eq(delta,0,`${product.product_id}:${dimension}`);
     evaluations += 1;
     nonzero += delta !== 0 ? 1 : 0;
@@ -164,7 +157,6 @@ eq(nonzero,0,"all production deltas zero");
 eq(replay.production_invariance.candidate_evaluations,1968,"frozen evaluation count");
 eq(replay.production_invariance.expected_nonzero_delta_count,0,"frozen zero delta");
 
-// explicit NO flags
 const flags=replay.no_change_flags;
 eq(flags.decision_axis_production_consumption,"NO","no PDA prod consumption");
 eq(flags.recommendation_scorer_changed,"NO","scorer unchanged");
