@@ -1,0 +1,104 @@
+name: V2.1-8V Exfoliation Production Consumption Shadow
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8v-exfoliation-production-consumption-shadow.yml'
+      - 'lib/exfoliation-non-numeric-pda-production-consumption-shadow.js'
+      - 'lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-shadow-validation-v1.json'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs'
+      - 'docs/evidence/exfoliation-non-numeric-pda-production-consumption-shadow-v1.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8v-exfoliation-production-consumption-shadow.yml'
+      - 'lib/exfoliation-non-numeric-pda-production-consumption-shadow.js'
+      - 'lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-shadow-validation-v1.json'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs'
+      - 'docs/evidence/exfoliation-non-numeric-pda-production-consumption-shadow-v1.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v21-8v:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      V21_8V_BASE_MAIN_SHA: a34b5d67dd233629c01568114fea6ebb312fd130
+      FROZEN_8U_MAIN_SHA: a34b5d67dd233629c01568114fea6ebb312fd130
+      FROZEN_8U_CONTRACT_BLOB_SHA: 2f077c30d591cb58e1ddcc994edea5ad31e9a790
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.event.pull_request.head.sha || github.sha }}'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Exact authority and frozen 8U contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$V21_8V_BASE_MAIN_SHA" HEAD
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-contract-v1.json)" = "$FROZEN_8U_CONTRACT_BLOB_SHA"
+      - name: Deterministic Build A B and focused verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check lib/exfoliation-non-numeric-pda-production-consumption-shadow.js
+          node --check lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js
+          node --check scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs > /tmp/build-a.json
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs > /tmp/build-b.json
+          cmp /tmp/build-a.json /tmp/build-b.json
+          cat /tmp/build-a.json
+          sha256sum \
+            lib/exfoliation-non-numeric-pda-production-consumption-shadow.js \
+            lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js \
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-shadow-validation-v1.json \
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs \
+            docs/evidence/exfoliation-non-numeric-pda-production-consumption-shadow-v1.md
+      - name: Historical V2.1-8J through V2.1-8U replay at frozen authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/v21-8u
+          git clone -q --no-hardlinks . _reference/v21-8u
+          git -C _reference/v21-8u checkout -q "$FROZEN_8U_MAIN_SHA"
+          (cd _reference/v21-8u && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-contract-v1.mjs)
+          rm -rf _reference/v21-8u
+      - name: 164 x 12 production invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
+          rm -rf _reference/recommendation
+      - name: Exact V2.1-8V additive scope and frozen non-mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            .github/workflows/v21-8v-exfoliation-production-consumption-shadow.yml
+            docs/evidence/exfoliation-non-numeric-pda-production-consumption-shadow-v1.md
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-shadow-validation-v1.json
+            lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js
+            lib/exfoliation-non-numeric-pda-production-consumption-shadow.js
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs
+          )
+          mapfile -t actual < <(git diff --name-only "$V21_8V_BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t wanted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${actual[@]}")" = "$(printf '%s\n' "${wanted[@]}")"
+          test -z "$(git diff --name-only "$V21_8V_BASE_MAIN_SHA..HEAD" -- app package.json package-lock.json supabase/migrations lib/candidate-exposure-policy.js lib/candidate-exposure-policy-contract.js lib/functional-ranking-contract.js lib/product-functional-profile.js lib/routine-policy.js lib/recent-instability-guard-policy.js evidence/product-decision-axis-non-numeric-contract-v1 evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-contract-v1.json)"
+          git diff --check "$V21_8V_BASE_MAIN_SHA..HEAD"
