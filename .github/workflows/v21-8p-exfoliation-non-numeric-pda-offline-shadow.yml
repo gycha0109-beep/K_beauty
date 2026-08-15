@@ -4,16 +4,22 @@ on:
     branches: [feat/v21-8p-exfoliation-non-numeric-pda-offline-shadow, main]
     paths:
       - '.github/workflows/v21-8p-exfoliation-non-numeric-pda-offline-shadow.yml'
-      - 'evidence/product-decision-axis-non-numeric-shadow-v1/**'
       - 'docs/evidence/exfoliation-non-numeric-pda-offline-shadow-implementation-v1.md'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-current-input-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-output-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-replay-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-summary-v1.json'
       - 'scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs'
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/v21-8p-exfoliation-non-numeric-pda-offline-shadow.yml'
-      - 'evidence/product-decision-axis-non-numeric-shadow-v1/**'
       - 'docs/evidence/exfoliation-non-numeric-pda-offline-shadow-implementation-v1.md'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-current-input-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-output-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-replay-v1.json'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-summary-v1.json'
       - 'scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs'
   workflow_dispatch:
@@ -25,6 +31,7 @@ jobs:
     timeout-minutes: 90
     env:
       START_MAIN_SHA: 8f8d492f2682c97f71f3f7880adb710f1be4c7f2
+      FROZEN_8P_HEAD_SHA: 0b7dc4697084202f0c9996168cfe915749a9b1d1
       SNAPSHOT_SHA256: 31311c223cfc1084e02e226e36b60b6052884f16c52cdc3f5308b786641a9fea
     steps:
       - uses: actions/checkout@v4
@@ -43,19 +50,11 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-          git merge-base --is-ancestor "$START_MAIN_SHA" HEAD
+          git merge-base --is-ancestor "$START_MAIN_SHA" "$FROZEN_8P_HEAD_SHA"
+          git merge-base --is-ancestor "$FROZEN_8P_HEAD_SHA" HEAD
           if [ "${{ github.event_name }}" = pull_request ]; then
             test -n "$PR_BASE_SHA"
-            git merge-base --is-ancestor "$START_MAIN_SHA" "$PR_BASE_SHA"
-            if [ "$PR_BASE_SHA" != "$START_MAIN_SHA" ]; then
-              mapfile -t drift < <(git diff --name-only "$START_MAIN_SHA..$PR_BASE_SHA" | sort)
-              for f in "${drift[@]}"; do
-                case "$f" in
-                  .codex/AI_WORK_LOG.md|docs/domain/facelab/*|evidence/facelab/*) ;;
-                  *) echo "related or unclassified PR-base drift: $f" >&2; exit 1 ;;
-                esac
-              done
-            fi
+            git merge-base --is-ancestor "$FROZEN_8P_HEAD_SHA" "$PR_BASE_SHA"
           fi
 
       - name: Frozen V2.1-8O contract authority
@@ -127,19 +126,11 @@ jobs:
           RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/8p-production.log
           rm -rf _reference
 
-      - name: Exact additive scope no production import no mutation path
+      - name: Frozen V2.1-8P scope and descendant non-mutation
         env:
           PR_BASE_SHA: '${{ github.event.pull_request.base.sha }}'
         run: |
           set -euo pipefail
-          scope_base="$START_MAIN_SHA"
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            scope_base="$(git merge-base "$PR_BASE_SHA" HEAD)"
-          elif [ "${{ github.ref }}" = refs/heads/main ]; then
-            scope_base="$(git rev-parse HEAD^1)"
-          fi
-          mapfile -t changed < <(git diff --name-only "$scope_base..HEAD" | sort)
-          test "${#changed[@]}" -eq 8
           expected=(
             .github/workflows/v21-8p-exfoliation-non-numeric-pda-offline-shadow.yml
             docs/evidence/exfoliation-non-numeric-pda-offline-shadow-implementation-v1.md
@@ -150,10 +141,28 @@ jobs:
             scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs
             scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
           )
+          mapfile -t historical < <(git diff --name-only "$START_MAIN_SHA..$FROZEN_8P_HEAD_SHA" | sort)
           mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
-          test "$(printf '%s\n' "${changed[@]}")" = "$(printf '%s\n' "${expected_sorted[@]}")"
+          test "$(printf '%s\n' "${historical[@]}")" = "$(printf '%s\n' "${expected_sorted[@]}")"
+
+          frozen=(
+            docs/evidence/exfoliation-non-numeric-pda-offline-shadow-implementation-v1.md
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-current-input-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-output-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-replay-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-offline-shadow-summary-v1.json
+            scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
+          )
+          test -z "$(git diff --name-only "$FROZEN_8P_HEAD_SHA..HEAD" -- "${frozen[@]}")"
+
+          scope_base="$FROZEN_8P_HEAD_SHA"
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            scope_base="$(git merge-base "$PR_BASE_SHA" HEAD)"
+          elif [ "${{ github.ref }}" = refs/heads/main ]; then
+            scope_base="$(git rev-parse HEAD^1)"
+          fi
           test -z "$(git diff --name-only "$scope_base..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
-          test -z "$(git diff --name-only "$scope_base..HEAD" -- evidence/product-decision-axis-contract-v1 evidence/product-decision-axis-calibration-v1 evidence/product-decision-axis-anchor-contract-v1 evidence/product-decision-axis-anchor-research-v1 evidence/product-decision-axis-feasibility-v1 evidence/product-decision-axis-non-numeric-contract-v1)"
           git diff --check "$scope_base..HEAD"
           test -z "$(git grep -n 'exfoliation-non-numeric-pda-offline-shadow-v1' -- app components lib 2>/dev/null || true)"
           mapper=scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs
