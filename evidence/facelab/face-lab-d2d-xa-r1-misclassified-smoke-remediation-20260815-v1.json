@@ -1,8 +1,8 @@
 {
   "schemaVersion": "face-lab-d2d-xa-r1-remediation-evidence-v1",
   "remediationId": "FACE-EVAL-CX1G-D2D-XA-R1",
-  "evidencePhase": "pre_delete_frozen",
-  "verifiedAt": "2026-08-15T09:28:48.9889713+09:00",
+  "evidencePhase": "remediation_closed",
+  "verifiedAt": "2026-08-15T09:36:20.1430065+09:00",
   "incident": {
     "id": "FACE-EVAL-CX1G-D2D-XA",
     "result": "BLOCKED_D2D_XA_DEPLOYMENT_ENV_AUTHORITY",
@@ -107,6 +107,16 @@
       "preserve": true
     }
   },
+  "preDeleteEvidenceAuthority": {
+    "artifactFileSha256": "bbe3bf49ff7a63fb87f88fcbcbbb482b10d7031ca9d2d6a586aab09d38a1e43d",
+    "gitBlobSha": "4f0532875f6e22b643a099acd301adfe7b4ff37f",
+    "sourceCommitSha": "7ccc3951ccb09f4c5ee74a05ef3cb30d2a2e6cb9",
+    "pullRequest": 239,
+    "checks": "PASS",
+    "mergeStatus": "MERGED",
+    "mergedMainSha": "a2536bac8def3b28dc71e02c0c09099c299633b1",
+    "frozenBeforeProductionDelete": true
+  },
   "plannedRemediation": {
     "strategy": "audit_evidence_freeze_then_exact_primary_key_delete",
     "operation": "DELETE",
@@ -120,9 +130,53 @@
     "statusUpdateAllowed": false,
     "broadDeleteAllowed": false,
     "newSubmissionAllowed": false,
-    "executionState": "pending_evidence_commit_push_pr_merge"
+    "executionState": "completed_after_evidence_merge"
   },
-  "lifecycleAfterEvidenceFreeze": {
+  "remediationExecution": {
+    "executedAfter": "2026-08-15T09:33:37+09:00",
+    "poststateVerifiedBy": "2026-08-15T09:36:20.1430065+09:00",
+    "administrationSurface": "supabase_cli_linked_management_api",
+    "transactionSqlSha256": "071562af4f492cb2fd672d538ca8b1cb9d569537f66729518afa5bc79da03300",
+    "targetingMethod": "primary_key_status_payload_hash_and_three_authority_digests",
+    "transactionalPrestateGuard": true,
+    "historicalTestRowGuard": true,
+    "expectedAffectedRows": 1,
+    "actualAffectedRows": 1,
+    "transactionCommitted": true,
+    "targetRowAbsentAfterCommit": true,
+    "updateExecuted": false,
+    "otherRowsModified": 0,
+    "otherRowsDeleted": 0,
+    "rowsInserted": 0,
+    "rlsOrGrantChange": false
+  },
+  "supabasePoststate": {
+    "totalRows": 1,
+    "testRows": 1,
+    "submittedRows": 0,
+    "startedRows": 0,
+    "invalidRows": 0,
+    "otherRows": 0,
+    "targetRowExists": false,
+    "historicalTestRow": {
+      "id": "9d602d3b-ada4-4290-ac32-a8afea83ffcc",
+      "submissionStatus": "test",
+      "judgmentCount": 140,
+      "preserved": true
+    },
+    "eligibleHumanEvidenceRows": 0,
+    "dbSubmittedRows": 0,
+    "invariantRestored": true
+  },
+  "r1SubmissionAccounting": {
+    "browserSubmissions": 0,
+    "apiSubmissions": 0,
+    "smokeSubmissions": 0,
+    "humanSubmissions": 0,
+    "rowInserts": 0
+  },
+  "lifecycleAfterRemediation": {
+    "d2dXaR1": "CLOSED",
     "d2dXa": "BLOCKED_NOT_SUCCESSFULLY_RERUN",
     "deployedHostedE2eVerified": false,
     "hostedIntakeActivated": false,
