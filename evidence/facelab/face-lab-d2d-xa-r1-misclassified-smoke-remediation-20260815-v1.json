@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "face-lab-d2d-xa-r1-remediation-evidence-v1",
+  "remediationId": "FACE-EVAL-CX1G-D2D-XA-R1",
+  "evidencePhase": "pre_delete_frozen",
+  "verifiedAt": "2026-08-15T09:28:48.9889713+09:00",
+  "incident": {
+    "id": "FACE-EVAL-CX1G-D2D-XA",
+    "result": "BLOCKED_D2D_XA_DEPLOYMENT_ENV_AUTHORITY",
+    "attempted": true,
+    "succeeded": false,
+    "actualHumanReviewerExecuted": false,
+    "eligibleHumanEvidenceBeforeRemediation": 0
+  },
+  "repositoryAuthority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "remoteMainSha": "2b323ed09f4968e19ffb422aba6ba297d8878615",
+    "d2dXpMergeSha": "c4d8c2273b21cd6453b123796222b62769736aeb",
+    "d2dXpIsAncestor": true,
+    "faceLabSemanticDriftSinceIncident": false,
+    "deterministicFixtureBuilder": "scripts/build-face-lab-independent-human-cue-hosted-test-submission-v1.mjs",
+    "canonicalPayloadHasher": "stableStringifyHostedHumanCueValue"
+  },
+  "deploymentAuthority": {
+    "vercelProject": "k-beauty",
+    "vercelProjectId": "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA",
+    "incidentSubmissionDeploymentId": "dpl_3fSs1bQDuJJSjvL62feZMQb9ddC3",
+    "cleanupDeploymentId": "dpl_BwrpaJ23ToatmPf1Go2wVuxYkvVg",
+    "deployedGitSha": "2b323ed09f4968e19ffb422aba6ba297d8878615",
+    "cleanupDeploymentState": "READY",
+    "testSubmissionAuthorityAtIncident": "not_active_in_production",
+    "testSubmissionVariableScopeAtIncident": "preview_only",
+    "testSubmissionVariableCurrentState": "absent_all_scopes"
+  },
+  "targetRow": {
+    "id": "ae0cfee6-6b5b-4cc5-87e6-10439b24d64a",
+    "campaignKey": "face_lab_cx1g_d2d_xp_v1",
+    "accessMode": "shared_opaque_link",
+    "intakeVersion": "face-lab-independent-human-cue-hosted-intake-20260815-v1",
+    "protocolVersion": "face-lab-independent-human-cue-audit-20260814-v1",
+    "uiVersion": "face-lab-independent-human-cue-review-ui-ko-hosted-20260815-v1",
+    "sourceAuthorityDigest": "1f344a9d1cbd8e8ac6076b06da7780d213ff6ff71df80ea7a9f818617965339c",
+    "targetAxisDefinitionDigest": "8e630605ece0629da6a51e30829297688c27f10a3a92be6a3c8e3413f546bb46",
+    "packetAuthorityDigest": "b92f221f8c9b3521637b9f1660ddd2f6c287883bb8620f4b8ac02bd786e30491",
+    "distributionMode": "single_hosted_set",
+    "classificationBeforeRemediation": "submitted",
+    "actualReviewProvenance": "deterministic_non_human_smoke",
+    "humanReviewerExecuted": false,
+    "eligibleHumanEvidence": false,
+    "sessionId": "hsi_80fc5db8-3168-4b81-bcd5-ab3eae40b7fb",
+    "startedAt": "2026-08-15T08:25:59.729+09:00",
+    "submittedAt": "2026-08-15T08:31:03.211+09:00",
+    "clientSubmittedAt": "2026-08-15T08:31:01.731+09:00",
+    "createdAt": "2026-08-15T08:31:04.856309+09:00",
+    "updatedAt": "2026-08-15T08:31:04.856309+09:00",
+    "responsePayloadSha256": "1be190f4207aa6add957ac774d2961f1e162be563c53526ebf3b47765d57e4cf",
+    "storageSchemaVersion": "tmp-face-lab-independent-human-cue-submissions-v1",
+    "completion": {
+      "completed": true,
+      "imageCount": 14,
+      "judgmentCount": 140,
+      "primaryAxisCount": 8,
+      "validationAxisCount": 2
+    },
+    "reviewerAttestations": {
+      "fieldCount": 8,
+      "allValuesFalse": true
+    }
+  },
+  "nonHumanProvenanceVerification": {
+    "storedPayloadDigestMatchesExpected": true,
+    "repositoryCanonicalPayloadDigestMatchesStored": true,
+    "deterministicJudgmentsCanonicalExact": true,
+    "orderedReviewItemAxisBindingsExact": true,
+    "allResponsesUseFirstCanonicalEnum": true,
+    "allConfidenceValuesAreLow": true,
+    "allEvidenceTagsAreEmpty": true,
+    "allNotAssessableReasonCodesAreEmpty": true,
+    "completionExact": true,
+    "requiredAttestationsExact": true,
+    "independentHumanIdentityPresent": false,
+    "fullResponsePayloadCopiedIntoThisArtifact": false
+  },
+  "causalPath": {
+    "reviewRouteRule": "smoke query enables testMode only when FACE_LAB_HOSTED_REVIEW_ALLOW_TEST_SUBMISSION equals 1 in the deployed runtime",
+    "clientRule": "x-face-lab-test-submission is sent only when rendered testMode is true",
+    "submitRouteRule": "an explicit test header is rejected when production test authority is inactive",
+    "persistenceRule": "submission_status is test only for an authorized testSubmission; otherwise it is submitted",
+    "incidentRootCause": "FACE_LAB_HOSTED_REVIEW_ALLOW_TEST_SUBMISSION was scoped to Preview rather than Production, so the deterministic smoke followed the ordinary authorized submission path",
+    "classificationOutcome": "submitted"
+  },
+  "supabasePrestate": {
+    "projectRef": "bygrczggxfuisupcevaz",
+    "table": "public.tmp_face_lab_independent_human_cue_submissions",
+    "totalRows": 2,
+    "testRows": 1,
+    "submittedRows": 1,
+    "startedRows": 0,
+    "invalidRows": 0,
+    "otherRows": 0,
+    "submittedRowIds": [
+      "ae0cfee6-6b5b-4cc5-87e6-10439b24d64a"
+    ],
+    "historicalTestRow": {
+      "id": "9d602d3b-ada4-4290-ac32-a8afea83ffcc",
+      "submissionStatus": "test",
+      "judgmentCount": 140,
+      "preserve": true
+    }
+  },
+  "plannedRemediation": {
+    "strategy": "audit_evidence_freeze_then_exact_primary_key_delete",
+    "operation": "DELETE",
+    "targetId": "ae0cfee6-6b5b-4cc5-87e6-10439b24d64a",
+    "requiredStatus": "submitted",
+    "requiredResponsePayloadSha256": "1be190f4207aa6add957ac774d2961f1e162be563c53526ebf3b47765d57e4cf",
+    "requiredSourceAuthorityDigest": "1f344a9d1cbd8e8ac6076b06da7780d213ff6ff71df80ea7a9f818617965339c",
+    "requiredTargetAxisDefinitionDigest": "8e630605ece0629da6a51e30829297688c27f10a3a92be6a3c8e3413f546bb46",
+    "requiredPacketAuthorityDigest": "b92f221f8c9b3521637b9f1660ddd2f6c287883bb8620f4b8ac02bd786e30491",
+    "expectedAffectedRows": 1,
+    "statusUpdateAllowed": false,
+    "broadDeleteAllowed": false,
+    "newSubmissionAllowed": false,
+    "executionState": "pending_evidence_commit_push_pr_merge"
+  },
+  "lifecycleAfterEvidenceFreeze": {
+    "d2dXa": "BLOCKED_NOT_SUCCESSFULLY_RERUN",
+    "deployedHostedE2eVerified": false,
+    "hostedIntakeActivated": false,
+    "d2dX": "NOT_STARTED",
+    "d2dA": "NOT_STARTED",
+    "d2dR": "NOT_STARTED",
+    "w2": "LOCKED",
+    "w3": "LOCKED",
+    "calibration": "NOT_READY",
+    "productionArchetype": "OFF"
+  },
+  "secretMaterialIncluded": false
+}
