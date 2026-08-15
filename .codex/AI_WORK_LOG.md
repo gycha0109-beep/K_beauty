@@ -2,6 +2,15 @@
 
 ## Entries
 
+### 2026-08-15 / Face Lab D2D-XA-R1 misclassified smoke remediation
+
+- Task type: recovery / Critical production-data remediation with explicit one-row delete authority.
+- Scope: froze the exact D2D-XA deterministic non-human smoke provenance, merged the pre-delete evidence in PR #239, then deleted only row `ae0cfee6-6b5b-4cc5-87e6-10439b24d64a` through a transaction guarded by primary key, `submitted` status, canonical payload SHA-256, all three authority digests, exact prestate counts, and the historical test-row invariant. No application, migration, RLS, grant, UI, scoring, calibration, or deployment behavior changed.
+- Evidence: the stored payload canonical SHA-256 was `1be190f4207aa6add957ac774d2961f1e162be563c53526ebf3b47765d57e4cf`; all 140 judgments matched the repository deterministic smoke builder exactly. No Human reviewer executed and the row was not eligible Human evidence.
+- Result: delete count `1`; target absent; final total `1`, test `1`, submitted `0`, started `0`, invalid `0`; historical test row `9d602d3b-ada4-4290-ac32-a8afea83ffcc` remained `test` with 140 judgments. Production/Preview test authority remained absent and no submission or insert occurred during R1.
+- Lifecycle: R1 closed only. D2D-XA remains blocked and was not rerun; D2D-X/D2D-A/D2D-R remain not started, W2/W3 locked, calibration not ready, and production Archetype off.
+- Context promotion candidate: when a protected production-data cleanup is explicitly authorized, merge a minimal pre-delete identity/provenance artifact before an exact preconditioned transaction. Existing protected-area and change-control rules already cover the general boundary, so no `AI_CONTEXT.md` change is proposed.
+
 ### 2026-08-15 / Face Lab D2D-XP hosted blind Human cue intake v1
 
 - Task type: execution / High hosted tmp-table, service-only write, and blind evaluation UI boundary.

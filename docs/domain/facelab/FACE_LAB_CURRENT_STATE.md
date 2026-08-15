@@ -266,6 +266,25 @@ Independent Human cue 실행 준비에는 sealed D2D-P packet authority와 D2D-U
 
 이 상태는 intake implementation과 test row 검증까지다. 실제 reviewer link 배포, Human judgment, reveal, aggregation, consensus, production consumption, D2D-X, W2는 시작되지 않았다. 상세 authority와 운영 경계는 `face-lab-independent-human-cue-hosted-intake-v1.md`와 operator note를 따른다.
 
+### 8.2 D2D-XA 시도와 R1 remediation closeout
+
+2026-08-15 D2D-XA production TEST-only E2E는 시도됐지만 성공하지 않았다. `FACE_LAB_HOSTED_REVIEW_ALLOW_TEST_SUBMISSION`이 Production이 아닌 Preview scope에 저장되어 Production test authority가 비활성인 상태에서 deterministic non-human smoke payload가 일반 authorized submission 경로로 저장됐다.
+
+- D2D-XA attempted: `YES`
+- D2D-XA success: `NO`
+- D2D-XA result: `BLOCKED_D2D_XA_DEPLOYMENT_ENV_AUTHORITY`
+- 실제 Human reviewer 실행: `NO`
+- 대상 오염 row: `ae0cfee6-6b5b-4cc5-87e6-10439b24d64a`
+- 실제 provenance: `deterministic_non_human_smoke`
+- R1 remediation: `CLOSED`
+- remediation 방식: pre-delete evidence merge 후 exact primary-key-scoped production `DELETE` 1건
+- 최종 DB 상태: total `1`, test `1`, submitted `0`, eligible Human evidence `0`
+- Production/Preview test authority: `ABSENT`
+
+삭제 전 row identity, canonical payload SHA-256, authority lineage, non-human fixture exact match, transaction precondition, 삭제 결과와 최종 invariant는 [`face-lab-d2d-xa-r1-misclassified-smoke-remediation-20260815-v1.json`](../../../evidence/facelab/face-lab-d2d-xa-r1-misclassified-smoke-remediation-20260815-v1.json)에 동결했다.
+
+D2D-XA는 재실행되지 않았고 `DEPLOYED_HOSTED_E2E_VERIFIED = NO`, `HOSTED_INTAKE_ACTIVATED = NO`다. D2D-X/D2D-A/D2D-R은 시작되지 않았으며 W2/W3는 잠금, calibration은 `NOT_READY`, production Archetype은 `OFF`를 유지한다.
+
 ## 9. 과거 문서와 현재 authority
 
 다음 자료는 설계 배경과 당시 상태를 이해하는 데 여전히 가치가 있지만 현재 구현 상태 authority는 아니다.
