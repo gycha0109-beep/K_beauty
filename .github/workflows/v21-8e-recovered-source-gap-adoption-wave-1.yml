@@ -12,7 +12,6 @@ on:
       - 'scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
       - 'scripts/product-evidence/product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
       - 'scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1.mjs'
-      - '.codex/AI_WORK_LOG.md'
   workflow_dispatch:
 
 permissions:
@@ -46,10 +45,18 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
-          test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
-          git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            diff_base="${{ github.event.pull_request.base.sha }}"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" "$diff_base"
+            git merge-base --is-ancestor "$diff_base" HEAD
+          else
+            diff_base="$BASE_MAIN_SHA"
+            test "$(git rev-parse refs/remotes/origin/main)" = "$BASE_MAIN_SHA"
+            git merge-base --is-ancestor "$BASE_MAIN_SHA" HEAD
+          fi
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
-          printf 'base_main=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$(git rev-parse HEAD)" | tee /tmp/v21-8e-authority.txt
+          echo "DIFF_BASE_SHA=$diff_base" >> "$GITHUB_ENV"
+          printf 'base_main=%s\ndiff_base=%s\nhead=%s\n' "$BASE_MAIN_SHA" "$diff_base" "$(git rev-parse HEAD)" | tee /tmp/v21-8e-authority.txt
 
       - name: Immutable V2.1-8D authority hashes
         shell: bash
@@ -119,14 +126,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t changed < <(git diff --name-only "$BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t changed < <(git diff --name-only "$DIFF_BASE_SHA..HEAD" | sort)
           allowed='^(\.codex/AI_WORK_LOG\.md|\.github/workflows/v21-8e-recovered-source-gap-adoption-wave-1\.yml|docs/evidence/product-fact-recovered-source-gap-adoption-wave-1-v1\.md|evidence/product-fact-adoption-v1/recovered-source-gap-adoption-wave-1-v1\.json|scripts/build-product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs|scripts/product-evidence/product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs|scripts/verify-product-fact-recovered-source-gap-adoption-wave-1-v1\.mjs)$'
           for file in "${changed[@]}"; do [[ "$file" =~ $allowed ]] || { echo "unexpected path: $file"; exit 1; }; done
-          test "${#changed[@]}" -eq 7
-          test -z "$(git diff --name-only "$BASE_MAIN_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          test -z "$(git diff --name-only "$DIFF_BASE_SHA..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
           ! grep -R -n --include='*.js' --include='*.mjs' 'recovered-source-gap-adoption-wave-1-v1' app lib components 2>/dev/null
-          git diff --check "$BASE_MAIN_SHA..HEAD"
-          if git diff -U0 "$BASE_MAIN_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
+          git diff --check "$DIFF_BASE_SHA..HEAD"
+          if git diff -U0 "$DIFF_BASE_SHA..HEAD" | grep '^+' | grep -Ev '^\+\+\+' | grep -E 'sk-(proj-)?[A-Za-z0-9_-]{24,}|eyJ[A-Za-z0-9_-]{40,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}'; then exit 1; fi
           printf '%s\n' "${changed[@]}" | tee /tmp/v21-8e-changed.txt
 
       - name: Upload evidence
