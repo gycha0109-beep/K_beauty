@@ -1,0 +1,51 @@
+{
+  "stage": "V2.1-8Q",
+  "version": "exfoliation-non-numeric-pda-shadow-consumption-replay-v1",
+  "primary_terminal_outcome": "SHADOW_RECOMMENDATION_CONSUMPTION_REQUIRES_ADAPTER_CONTRACT",
+  "repository_authority": {
+    "base_main_sha": "a73ca3261b5c713f908a8010a47737a7072ff5e4"
+  },
+  "historical_replay": [
+    {"stage": "V2.1-8J", "expected": "PASS", "assertions": 208, "terminal_or_state": "STRUCTURALLY_READY_FOR_BOUNDED_OFFLINE_CALIBRATION:exfoliation_load"},
+    {"stage": "V2.1-8K", "expected": "PASS", "assertions": 152, "terminal_or_state": "NUMERIC_ANCHOR_GAP_CONFIRMED"},
+    {"stage": "V2.1-8L", "expected": "PASS", "assertions": 155, "terminal_or_state": "NUMERIC_ANCHOR_EVIDENCE_CONTRACT_DESIGNED"},
+    {"stage": "V2.1-8M", "expected": "PASS", "assertions": 148, "terminal_or_state": "NO_NUMERIC_ANCHOR_SOURCE_FOUND"},
+    {"stage": "V2.1-8N", "expected": "PASS", "assertions": 232, "terminal_or_state": "NON_NUMERIC_DECISION_REPRESENTATION_RECOMMENDED"},
+    {"stage": "V2.1-8O", "expected": "PASS", "assertions": 123, "terminal_or_state": "NON_NUMERIC_EXFOLIATION_PDA_CONTRACT_FROZEN"},
+    {"stage": "V2.1-8P", "expected": "PASS", "assertions": 2402, "terminal_or_state": "NON_NUMERIC_EXFOLIATION_PDA_OFFLINE_SHADOW_REPLAY_VALIDATED"}
+  ],
+  "production_invariance": {
+    "catalog_products": 164,
+    "dimensions": [
+      "score",
+      "ranking",
+      "top1",
+      "top3",
+      "eligibility",
+      "public_response",
+      "persistence",
+      "candidate_policy_fingerprint",
+      "recommendation_scorer",
+      "recommendation_order",
+      "candidate_exposure",
+      "legacy_heuristic"
+    ],
+    "dimension_count": 12,
+    "candidate_evaluations": 1968,
+    "expected_nonzero_delta_count": 0,
+    "method": "For every frozen 8P catalog product, the focused verifier evaluates all 12 production-impact dimensions as zero-delta only after exact production-source Git blob fingerprints and additive-scope guards pass.",
+    "production_source_authority_sha": "a73ca3261b5c713f908a8010a47737a7072ff5e4"
+  },
+  "no_change_flags": {
+    "decision_axis_production_consumption": "NO",
+    "recommendation_scorer_changed": "NO",
+    "recommendation_activated": "NO",
+    "candidate_policy_production_changed": "NO",
+    "legacy_heuristic_replaced": "NO",
+    "numeric_fitting": 0,
+    "potency_ordering_created": "NO",
+    "hosted_product_fact_writes": 0,
+    "registry_definition_delta": 0,
+    "migration_delta": 0
+  }
+}
