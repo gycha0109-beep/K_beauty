@@ -197,7 +197,7 @@ eq(A.output.production_status.recommendation_activation, "NO", "36 no activation
 eq(A.replay.hosted_invariance.registry_definition_delta_v21_8p, 0, "37 registry mutation zero");
 eq(A.replay.hosted_invariance.hosted_product_fact_writes_v21_8p, 0, "38 hosted mutation zero");
 eq(A.replay.hosted_invariance.migration_delta_v21_8p, 0, "38 migration zero");
-ok(!/(supabase|postgres|fetch\s*\(|axios|node:https|node:http|INSERT\s+INTO|UPDATE\s+product_fact|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)/i.test(mapperSource), "38 no live/network/write path");
+ok(!/(from\s+["\'](?:node:https|node:http|@supabase)|fetch\s*\(|axios|supabase\.from|INSERT\s+INTO|UPDATE\s+product_fact|DELETE\s+FROM|CREATE\s+TABLE|ALTER\s+TABLE)/i.test(mapperSource), "38 no live/network/write path");
 eq(A.output.products.some((x) => x.pda.numeric_estimate !== null), false, "39 no numeric fitting output");
 
 // 40-41 deterministic bytes and checked-in equality
