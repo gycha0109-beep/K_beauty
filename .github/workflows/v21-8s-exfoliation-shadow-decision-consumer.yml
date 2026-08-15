@@ -36,6 +36,7 @@ jobs:
     timeout-minutes: 90
     env:
       V21_8S_BASE_MAIN_SHA: 053a963a14bf00d7deb731a2c5427a97f3172b9f
+      V21_8Q_MERGED_MAIN_SHA: e812ee6a7eae6b98940adfe7b10471687e5cad1a
       V21_8R_SHADOW_BLOB: 020e93901b0b7cdfe28040703111674fc233206f
       V21_8R_ADAPTER_BLOB: 5a4d2ead5b1f35075a4aa64ff90a4323f3f88733
     steps:
@@ -96,12 +97,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf _reference/v21-8r
+          rm -rf _reference/v21-8q _reference/v21-8r
+          git clone -q --no-hardlinks . _reference/v21-8q
+          git -C _reference/v21-8q checkout -q "$V21_8Q_MERGED_MAIN_SHA"
+          (cd _reference/v21-8q && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs)
           git clone -q --no-hardlinks . _reference/v21-8r
           git -C _reference/v21-8r checkout -q "$V21_8S_BASE_MAIN_SHA"
-          (cd _reference/v21-8r && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs)
           (cd _reference/v21-8r && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs)
-          rm -rf _reference/v21-8r
+          rm -rf _reference/v21-8q _reference/v21-8r
       - name: 164 x 12 production invariance
         shell: bash
         run: |
