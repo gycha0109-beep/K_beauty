@@ -31,6 +31,10 @@ jobs:
     env:
       V21_8V_BASE_MAIN_SHA: a34b5d67dd233629c01568114fea6ebb312fd130
       FROZEN_8U_MAIN_SHA: a34b5d67dd233629c01568114fea6ebb312fd130
+      FROZEN_8T_MAIN_SHA: d988f33664e3086250e2595b55319aa18e127608
+      FROZEN_8S_MAIN_SHA: c3a844ff3aec6a89456aeba9e86a3479239f2974
+      FROZEN_8R_MAIN_SHA: 053a963a14bf00d7deb731a2c5427a97f3172b9f
+      FROZEN_8Q_MAIN_SHA: e812ee6a7eae6b98940adfe7b10471687e5cad1a
       FROZEN_8U_CONTRACT_BLOB_SHA: 2f077c30d591cb58e1ddcc994edea5ad31e9a790
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +70,42 @@ jobs:
             evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-production-consumption-shadow-validation-v1.json \
             scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs \
             docs/evidence/exfoliation-non-numeric-pda-production-consumption-shadow-v1.md
-      - name: Historical V2.1-8J through V2.1-8U replay at frozen authority
+      - name: Historical V2.1-8J through V2.1-8P replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-product-decision-axis-mapper-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-wave-1-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-anchor-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-targeted-numeric-anchor-research-wave-1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-feasibility-reassessment-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
+      - name: Historical V2.1-8Q through V2.1-8S replay at frozen authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/v21-8q _reference/v21-8r _reference/v21-8s
+          git clone -q --no-hardlinks . _reference/v21-8q
+          git -C _reference/v21-8q checkout -q "$FROZEN_8Q_MAIN_SHA"
+          (cd _reference/v21-8q && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs)
+          git clone -q --no-hardlinks . _reference/v21-8r
+          git -C _reference/v21-8r checkout -q "$FROZEN_8R_MAIN_SHA"
+          (cd _reference/v21-8r && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs)
+          git clone -q --no-hardlinks . _reference/v21-8s
+          git -C _reference/v21-8s checkout -q "$FROZEN_8S_MAIN_SHA"
+          (cd _reference/v21-8s && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumer-v1.mjs)
+          rm -rf _reference/v21-8q _reference/v21-8r _reference/v21-8s
+      - name: Historical V2.1-8T replay at frozen authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/v21-8t
+          git clone -q --no-hardlinks . _reference/v21-8t
+          git -C _reference/v21-8t checkout -q "$FROZEN_8T_MAIN_SHA"
+          (cd _reference/v21-8t && node scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-divergence-readiness-v1.mjs)
+          rm -rf _reference/v21-8t
+      - name: Historical V2.1-8U replay at frozen authority
         shell: bash
         run: |
           set -euo pipefail
