@@ -1,0 +1,139 @@
+name: V21-8O Exfoliation Non-Numeric PDA Contract
+on:
+  push:
+    branches: [feat/v21-8o-exfoliation-non-numeric-pda-contract, main]
+    paths:
+      - '.github/workflows/v21-8o-exfoliation-non-numeric-pda-contract.yml'
+      - 'evidence/product-decision-axis-non-numeric-contract-v1/**'
+      - 'docs/evidence/exfoliation-non-numeric-product-decision-axis-contract-v1.md'
+      - 'scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-8o-exfoliation-non-numeric-pda-contract.yml'
+      - 'evidence/product-decision-axis-non-numeric-contract-v1/**'
+      - 'docs/evidence/exfoliation-non-numeric-product-decision-axis-contract-v1.md'
+      - 'scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs'
+  workflow_dispatch:
+permissions: {contents: read}
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      START_MAIN_SHA: 070cd4be1e9dcd05660d26451027ae0b504c5034
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.event.pull_request.head.sha || github.sha }}'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Exact repository authority
+        env:
+          PR_BASE_SHA: '${{ github.event.pull_request.base.sha }}'
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$START_MAIN_SHA" HEAD
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            test -n "$PR_BASE_SHA"
+            git merge-base --is-ancestor "$START_MAIN_SHA" "$PR_BASE_SHA"
+            if [ "$PR_BASE_SHA" != "$START_MAIN_SHA" ]; then
+              mapfile -t drift < <(git diff --name-only "$START_MAIN_SHA..$PR_BASE_SHA" | sort)
+              for f in "${drift[@]}"; do
+                case "$f" in
+                  .codex/AI_WORK_LOG.md|docs/domain/facelab/*|evidence/facelab/*) ;;
+                  *) echo "related or unclassified PR-base drift: $f" >&2; exit 1 ;;
+                esac
+              done
+            fi
+          fi
+
+      - name: Frozen V2.1-8J through V2.1-8N authority
+        run: |
+          set -euo pipefail
+          test "$(sha256sum evidence/product-decision-axis-feasibility-v1/exfoliation-load-downstream-requirement-ledger-v1.json | awk '{print $1}')" = 7cf3dba06e9b85bf3fef61a14392e23021b7dbd724cbcae3fc4fcc083c59e807
+          test "$(sha256sum evidence/product-decision-axis-feasibility-v1/exfoliation-load-representation-option-matrix-v1.json | awk '{print $1}')" = 9ace523c3c1da7d8d95f20973bc4477d7ce8236fae721f0c35fe68e39c95bd05
+          test "$(sha256sum evidence/product-decision-axis-feasibility-v1/exfoliation-load-calibration-feasibility-reassessment-v1.json | awk '{print $1}')" = 5991ef106d3a6f71370ad89248418340c58dd3a3fe1c40c1a52f52ba49f88be4
+          test "$(sha256sum evidence/product-decision-axis-feasibility-v1/exfoliation-load-feasibility-replay-v1.json | awk '{print $1}')" = da4916ddabcfcdad30dfd81061706caeb48a7fb9e00839d81590e3453f723a11
+          test "$(sha256sum docs/evidence/exfoliation-load-calibration-feasibility-reassessment-v1.md | awk '{print $1}')" = 53d224fe65cd96042cb8b208de6f04a1d52a4c8ddfda76e8433cbcdc07924990
+          node scripts/product-evidence/verify-product-decision-axis-mapper-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-wave-1-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-anchor-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-targeted-numeric-anchor-research-wave-1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-feasibility-reassessment-v1.mjs
+
+      - name: Deterministic V2.1-8O contract
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs
+          node --check scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+          for x in a b; do
+            rm -rf "/tmp/8o-$x"
+            V21_8O_OUTPUT_ROOT="/tmp/8o-$x" node scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs > "/tmp/8o-$x.log"
+          done
+          for f in \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-contract-v1.json \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-examples-v1.json \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-replay-v1.json \
+            docs/evidence/exfoliation-non-numeric-product-decision-axis-contract-v1.md
+          do
+            cmp -s "/tmp/8o-a/$f" "/tmp/8o-b/$f"
+            cmp -s "$f" "/tmp/8o-a/$f"
+          done
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs | tee /tmp/8o-verifier.log
+          sha256sum \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-contract-v1.json \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-examples-v1.json \
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-replay-v1.json \
+            docs/evidence/exfoliation-non-numeric-product-decision-axis-contract-v1.md | tee /tmp/8o-hashes.log
+
+      - name: 164 x 12 production invariance
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs | tee /tmp/8o-production.log
+          rm -rf _reference
+
+      - name: Exact additive scope and zero mutation
+        env:
+          PR_BASE_SHA: '${{ github.event.pull_request.base.sha }}'
+        run: |
+          set -euo pipefail
+          scope_base="$START_MAIN_SHA"
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            scope_base="$(git merge-base "$PR_BASE_SHA" HEAD)"
+          elif [ "${{ github.ref }}" = refs/heads/main ]; then
+            scope_base="$(git rev-parse HEAD^1)"
+          fi
+          mapfile -t changed < <(git diff --name-only "$scope_base..HEAD" | sort)
+          test "${#changed[@]}" -eq 7
+          expected=(
+            .github/workflows/v21-8o-exfoliation-non-numeric-pda-contract.yml
+            docs/evidence/exfoliation-non-numeric-product-decision-axis-contract-v1.md
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-contract-v1.json
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-examples-v1.json
+            evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-replay-v1.json
+            scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${changed[@]}")" = "$(printf '%s\n' "${expected_sorted[@]}")"
+          test -z "$(git diff --name-only "$scope_base..HEAD" -- app components lib supabase/migrations package.json package-lock.json)"
+          test -z "$(git diff --name-only "$scope_base..HEAD" -- evidence/product-decision-axis-contract-v1 evidence/product-decision-axis-calibration-v1 evidence/product-decision-axis-anchor-contract-v1 evidence/product-decision-axis-anchor-research-v1 evidence/product-decision-axis-feasibility-v1)"
+          git diff --check "$scope_base..HEAD"
+          if grep -En 'supabase\.from\(|INSERT[[:space:]]+INTO|UPDATE[[:space:]]+product_fact|DELETE[[:space:]]+FROM|CREATE[[:space:]]+TABLE|ALTER[[:space:]]+TABLE|node:https|node:http|fetch\(|axios|curl|wget' scripts/product-evidence/exfoliation-non-numeric-pda-contract-v1.mjs scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs; then
+            exit 1
+          fi
+          grep -q '"primary_terminal_outcome":"NON_NUMERIC_EXFOLIATION_PDA_CONTRACT_FROZEN"' evidence/product-decision-axis-non-numeric-contract-v1/exfoliation-non-numeric-pda-contract-v1.json
