@@ -12,8 +12,9 @@ import {
   EXFOLIATION_NORMATIVE_POLICY_DIVERGENCE_CLASSES
 } from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js";
 import {
-  runExfoliationNormativeProductionPolicyShadowDualRun as wiredRun
-} from "../../lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js";
+  runExfoliationNormativeProductionPolicyShadowObservation as wiredRun,
+  EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION
+} from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js";
 import {
   buildImplementationEvidence,
   buildCanonicalRuntimeReplay,
@@ -32,6 +33,8 @@ const FILES = {
 };
 const FROZEN_8X = `${ROOT}/exfoliation-non-numeric-pda-normative-production-policy-canonical-examples-v1.json`;
 const CONTRACT_8X = `${ROOT}/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json`;
+const FROZEN_8V_DUAL = "lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js";
+const FROZEN_8V_DUAL_SHA256 = "e42c3b913ee1790ed46914ff9134330469fbf9e2bb5433c81218f04ae6235d87";
 
 let assertions = 0;
 const eq = (actual, expected, message) => { assert.deepEqual(actual, expected, message); assertions += 1; };
@@ -63,8 +66,10 @@ eq(implementation.frozen_8x_contract.version, EXFOLIATION_NORMATIVE_PRODUCTION_P
 eq(contract.primary_terminal_outcome, "NORMATIVE_PRODUCTION_POLICY_DECISION_CONTRACT_FROZEN", "8X terminal intact");
 eq(EXFOLIATION_NORMATIVE_POLICY_ACTIONS, ["ALLOW", "CAUTION", "RESTRICT", "DEFER", "NOT_APPLICABLE"], "exact action vocabulary");
 eq(implementation.implementation.shadow_runtime_version, EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION, "shadow version");
+eq(implementation.implementation.observation_version, EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION, "observation version");
 eq(implementation.implementation.runtime_shadow_wired, true, "runtime shadow wired");
-eq(typeof wiredRun, "function", "8Y dual-run exported through 8V observation boundary");
+eq(implementation.implementation.frozen_8v_module_modified, false, "frozen 8V module not modified");
+eq(typeof wiredRun, "function", "8Y additive observation entrypoint callable");
 
 eq(canonical.case_count, 17, "17 canonical cases");
 eq(frozen.cases.length, 17, "frozen 8X has 17 cases");
@@ -116,6 +121,7 @@ for (const row of governed.products) {
 
 eq(dual.result.mode, "SHADOW_OBSERVATION_ONLY", "dual-run mode");
 eq(dual.result.runtime_shadow_wired, true, "dual runtime wired");
+eq(dual.result.wiring_boundary, "ADDITIVE_SHADOW_OBSERVATION_ENTRYPOINT", "additive observation wiring boundary");
 eq(dual.result.production_authority, false, "dual no authority");
 eq(dual.result.production_activation, false, "dual no activation");
 eq(dual.result.restrict_enforcement_implemented, false, "restrict enforcement absent");
@@ -207,9 +213,11 @@ for (const file of canonicalConsumerFiles) {
   ok(!source.includes(EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION), `${file}: no 8Y version import`);
   ok(!source.includes("normative-production-policy-shadow"), `${file}: no 8Y shadow import`);
 }
-const boundarySource = read("lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js");
-ok(boundarySource.includes("runExfoliationNormativeProductionPolicyShadowDualRun"), "8V boundary exposes 8Y only");
-ok(boundarySource.includes("SHADOW_OBSERVATION_ONLY"), "8V boundary remains shadow only");
+eq(sha(FROZEN_8V_DUAL), FROZEN_8V_DUAL_SHA256, "frozen 8V dual-run bytes unchanged");
+ok(!read(FROZEN_8V_DUAL).includes("normative-production-policy"), "frozen 8V dual-run has no 8Y import");
+const observationSource = read("lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js");
+ok(observationSource.includes("runExfoliationNormativeProductionPolicyShadowDualRun"), "additive observation entrypoint wires 8Y dual-run");
+ok(observationSource.includes("production_authority: false"), "observation entrypoint non-authoritative");
 
 const shadowSource = read("lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js");
 ok(!shadowSource.includes("potency_order"), "runtime does not create potency ordering");
