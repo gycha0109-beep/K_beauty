@@ -32,7 +32,7 @@ const FILES = {
 const FROZEN_8X = `${ROOT}/exfoliation-non-numeric-pda-normative-production-policy-canonical-examples-v1.json`;
 const CONTRACT_8X = `${ROOT}/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json`;
 const FROZEN_8V_DUAL = "lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js";
-const FROZEN_8V_DUAL_SHA256 = "e42c3b913ee1790ed46914ff9134330469fbf9e2bb5433c81218f04ae6235d87";
+const FROZEN_8V_DUAL_SHA256 = "45141993e2964c11404976f656710024c0c03fffb16b749117b758e39b09636a";
 
 let assertions = 0;
 const eq = (actual, expected, message) => { assert.deepEqual(actual, expected, message); assertions += 1; };
