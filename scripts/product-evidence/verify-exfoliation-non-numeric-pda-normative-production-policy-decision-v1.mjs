@@ -256,7 +256,7 @@ const instability = read("lib/recent-instability-guard-policy.js");
 const candidateContract = read("lib/candidate-exposure-policy-contract.js");
 const ranking = read("lib/functional-ranking-contract.js");
 ok(routine.includes('return "hold"') && routine.includes('return "reduce"') && routine.includes('return "check_needed"'), "RoutinePolicy vocabulary present");
-ok(routine.includes('severity: "blocked"') && routine.includes('severity: "warning"'), "RoutinePolicy same-window vocabulary present");
+ok(routine.includes('? "blocked" : "warning"') && routine.includes('severity: "warning"'), "RoutinePolicy same-window vocabulary present");
 ok(instability.includes('"hard_block_candidate"') && instability.includes('"allow_with_context"') && instability.includes('"insufficient_data"'), "RecentInstabilityGuard vocabulary present");
 ok(candidateContract.includes('"primary"') && candidateContract.includes('"contextual"') && candidateContract.includes('"hidden"'), "CandidateExposurePolicy vocabulary remains distinct");
 ok(ranking.includes("SCORE_WEIGHTS") && ranking.includes("STRENGTH_SCORE"), "legacy numeric ranking exists separately");
