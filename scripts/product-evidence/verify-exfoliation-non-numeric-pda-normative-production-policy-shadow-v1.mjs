@@ -8,9 +8,7 @@ import {
   EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION,
   EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION
 } from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js";
-import {
-  EXFOLIATION_NORMATIVE_POLICY_DIVERGENCE_CLASSES
-} from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js";
+import { EXFOLIATION_NORMATIVE_POLICY_DIVERGENCE_CLASSES } from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js";
 import {
   runExfoliationNormativeProductionPolicyShadowObservation as wiredRun,
   EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION
@@ -73,11 +71,20 @@ eq(typeof wiredRun, "function", "8Y additive observation entrypoint callable");
 
 eq(canonical.case_count, 17, "17 canonical cases");
 eq(frozen.cases.length, 17, "frozen 8X has 17 cases");
+eq(canonical.guards, {
+  production_authority: false,
+  restrict_enforced: false,
+  allow_promoted_to_canonical_approval: false
+}, "canonical shared shadow guards");
+
 const frozenById = new Map(frozen.cases.map((row) => [row.case_id, row]));
 const actionSet = new Set();
 for (const row of canonical.cases) {
   const expectedRow = frozenById.get(row.case_id);
   ok(expectedRow, `${row.case_id}: frozen case exists`);
+  eq(row.neutral_gate, expectedRow.neutral_envelope.neutral_gate, `${row.case_id}: neutral gate`);
+  eq(row.governed_pda_state, expectedRow.governed_pda_state, `${row.case_id}: governed state preserved`);
+  eq(row.external_context, expectedRow.external_context, `${row.case_id}: external state preserved`);
   actionSet.add(row.actual.policy_action);
   const expected = {
     policy_action: expectedRow.selected_normative_action,
@@ -94,10 +101,8 @@ for (const row of canonical.cases) {
   for (const [field, value] of Object.entries(expected)) {
     eq(row.actual[field], value, `${row.case_id}: exact frozen ${field}`);
   }
-  eq(row.actual.production_authority, false, `${row.case_id}: no production authority`);
-  eq(row.actual.restrict_enforced, false, `${row.case_id}: restrict not enforced`);
-  eq(row.actual.allow_promoted_to_canonical_approval, false, `${row.case_id}: allow not approval`);
-  eq(row.actual.provenance.contract_version, EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION, `${row.case_id}: provenance contract`);
+  eq(row.actual.provenance.upstream_case_id, row.case_id, `${row.case_id}: upstream case provenance`);
+  eq(row.actual.provenance.external_policy_source, "frozen_8x_external_context_fixture", `${row.case_id}: external provenance`);
 }
 eq(Array.from(actionSet).sort(), ["ALLOW", "CAUTION", "DEFER", "NOT_APPLICABLE", "RESTRICT"].sort(), "all action categories materialized");
 
@@ -140,7 +145,7 @@ for (const row of dual.result.rows) {
   eq(row.divergence.agreement_implies_activation_readiness, false, `${row.product_id}: agreement not readiness`);
   eq(row.current_production.public_response, "UNCHANGED_BY_SHADOW_BOUNDARY", `${row.product_id}: public response unchanged`);
   eq(row.current_production.persistence, "UNCHANGED_BY_SHADOW_BOUNDARY", `${row.product_id}: persistence unchanged`);
-  eq(row.new_policy_shadow.production_authority, false, `${row.product_id}: new policy non-authoritative`);
+  eq(row.new_policy_shadow.production_activation, false, `${row.product_id}: new policy not activated`);
 }
 for (const field of [
   "canonical_production_identical",
@@ -150,16 +155,8 @@ for (const field of [
 ]) eq(dual.result.invariance[field], true, `dual invariance ${field}`);
 
 const restrictProbe = evaluateExfoliationNormativeProductionPolicyShadow({
-  productionConsumptionEnvelope: {
-    neutral_gate: "READY_FOR_SEPARATE_POLICY_EVALUATION",
-    production_decision: "UNSPECIFIED",
-    production_authority: false
-  },
-  externalPolicyContext: {
-    recent_instability_guard_decision: "hard_block_candidate",
-    routine_action: "keep",
-    same_window_severity: "none"
-  },
+  productionConsumptionEnvelope: { neutral_gate: "READY_FOR_SEPARATE_POLICY_EVALUATION", production_decision: "UNSPECIFIED", production_authority: false },
+  externalPolicyContext: { recent_instability_guard_decision: "hard_block_candidate", routine_action: "keep", same_window_severity: "none" },
   governedContext: { uncertainty: "LOW" }
 });
 eq(restrictProbe.policy_action, "RESTRICT", "restrict computes");
@@ -171,16 +168,8 @@ eq(restrictProbe.canonical_rank_mutated, false, "restrict no rank");
 eq(restrictProbe.canonical_top_k_mutated, false, "restrict no top-k");
 
 const allowProbe = evaluateExfoliationNormativeProductionPolicyShadow({
-  productionConsumptionEnvelope: {
-    neutral_gate: "READY_FOR_SEPARATE_POLICY_EVALUATION",
-    production_decision: "UNSPECIFIED",
-    production_authority: false
-  },
-  externalPolicyContext: {
-    recent_instability_guard_decision: "no_guard",
-    routine_action: "keep",
-    same_window_severity: "none"
-  },
+  productionConsumptionEnvelope: { neutral_gate: "READY_FOR_SEPARATE_POLICY_EVALUATION", production_decision: "UNSPECIFIED", production_authority: false },
+  externalPolicyContext: { recent_instability_guard_decision: "no_guard", routine_action: "keep", same_window_severity: "none" },
   governedContext: { uncertainty: "LOW" }
 });
 eq(allowProbe.policy_action, "ALLOW", "allow computes");
@@ -210,12 +199,7 @@ eq(inv.HOSTED_PRODUCT_FACT_WRITES, 0, "hosted writes zero");
 eq(inv.REGISTRY_DEFINITION_DELTA, 0, "registry delta zero");
 eq(inv.MIGRATION_DELTA, 0, "migration delta zero");
 
-const canonicalConsumerFiles = [
-  "lib/skin-match-decision-engine.js",
-  "lib/candidate-exposure-policy.js",
-  "lib/functional-ranking-contract.js"
-];
-for (const file of canonicalConsumerFiles) {
+for (const file of ["lib/skin-match-decision-engine.js", "lib/candidate-exposure-policy.js", "lib/functional-ranking-contract.js"]) {
   const source = read(file);
   ok(!source.includes(EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION), `${file}: no 8Y version import`);
   ok(!source.includes("normative-production-policy-shadow"), `${file}: no 8Y shadow import`);
@@ -225,7 +209,6 @@ ok(!read(FROZEN_8V_DUAL).includes("normative-production-policy"), "frozen 8V dua
 const observationSource = read("lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js");
 ok(observationSource.includes("runExfoliationNormativeProductionPolicyShadowDualRun"), "additive observation entrypoint wires 8Y dual-run");
 ok(observationSource.includes("production_authority: false"), "observation entrypoint non-authoritative");
-
 const shadowSource = read("lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js");
 ok(!shadowSource.includes("potency_order"), "runtime does not create potency ordering");
 ok(!shadowSource.includes("numeric_estimate"), "runtime does not fit numeric estimate");
@@ -237,9 +220,7 @@ const result = {
   canonical_examples: canonical.case_count,
   governed_products: governed.product_count,
   divergence_distribution: dual.result.divergence_distribution,
-  artifact_sha256: Object.fromEntries(
-    Object.entries(FILES).map(([key, path]) => [key, sha(path)])
-  ),
+  artifact_sha256: Object.fromEntries(Object.entries(FILES).map(([key, path]) => [key, sha(path)])),
   normative_policy_shadow_runtime_implemented: true,
   runtime_shadow_wired: true,
   production_activation_authorized: false,
