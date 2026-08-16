@@ -73,27 +73,31 @@ eq(typeof wiredRun, "function", "8Y additive observation entrypoint callable");
 
 eq(canonical.case_count, 17, "17 canonical cases");
 eq(frozen.cases.length, 17, "frozen 8X has 17 cases");
+const frozenById = new Map(frozen.cases.map((row) => [row.case_id, row]));
 const actionSet = new Set();
 for (const row of canonical.cases) {
+  const expectedRow = frozenById.get(row.case_id);
+  ok(expectedRow, `${row.case_id}: frozen case exists`);
   actionSet.add(row.actual.policy_action);
-  for (const field of [
-    "policy_action",
-    "eligibility_effect",
-    "ranking_effect",
-    "score_effect",
-    "top_k_effect",
-    "warning_effect",
-    "matched_rule_ids",
-    "reason_codes",
-    "authority_sources",
-    "production_activation"
-  ]) {
-    eq(row.actual[field], row.expected[field], `${row.case_id}: exact frozen ${field}`);
+  const expected = {
+    policy_action: expectedRow.selected_normative_action,
+    eligibility_effect: expectedRow.eligibility_effect,
+    ranking_effect: expectedRow.ranking_effect,
+    score_effect: expectedRow.score_effect,
+    top_k_effect: expectedRow.top_k_effect,
+    warning_effect: expectedRow.warning_effect,
+    matched_rule_ids: expectedRow.matched_rule_ids,
+    reason_codes: expectedRow.reason_codes,
+    authority_sources: expectedRow.authority_sources,
+    production_activation: false
+  };
+  for (const [field, value] of Object.entries(expected)) {
+    eq(row.actual[field], value, `${row.case_id}: exact frozen ${field}`);
   }
   eq(row.actual.production_authority, false, `${row.case_id}: no production authority`);
   eq(row.actual.restrict_enforced, false, `${row.case_id}: restrict not enforced`);
   eq(row.actual.allow_promoted_to_canonical_approval, false, `${row.case_id}: allow not approval`);
-  ok(row.actual.provenance?.contract_version === EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION, `${row.case_id}: provenance contract`);
+  eq(row.actual.provenance.contract_version, EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION, `${row.case_id}: provenance contract`);
 }
 eq(Array.from(actionSet).sort(), ["ALLOW", "CAUTION", "DEFER", "NOT_APPLICABLE", "RESTRICT"].sort(), "all action categories materialized");
 
@@ -111,12 +115,14 @@ eq(governed.products.map((row) => row.neutral_envelope.neutral_gate), [
   "DEFER_INSUFFICIENT_AUTHORITY",
   "READY_FOR_SEPARATE_POLICY_EVALUATION"
 ], "governed neutral gates");
-eq(governed.products.map((row) => row.policy_action), ["ALLOW", "DEFER", "DEFER", "ALLOW"], "governed actions");
+eq(governed.products.map((row) => row.normative_policy_shadow.policy_action), ["ALLOW", "DEFER", "DEFER", "ALLOW"], "governed actions");
 for (const row of governed.products) {
-  eq(row.production_activation, false, `${row.product_id}: no activation`);
-  ok(row.provenance?.upstream_provenance?.intrinsic?.evidence_provenance?.length > 0, `${row.product_id}: upstream evidence provenance preserved`);
-  eq(row.ranking_effect, "NO_DIRECT_RANK_MUTATION", `${row.product_id}: no rank mutation`);
-  eq(row.score_effect, "NO_DIRECT_SCORE_MUTATION", `${row.product_id}: no score mutation`);
+  const shadow = row.normative_policy_shadow;
+  eq(shadow.production_activation, false, `${row.product_id}: no activation`);
+  ok(shadow.provenance.upstream_evidence.length > 0, `${row.product_id}: upstream evidence provenance preserved`);
+  eq(shadow.ranking_effect, "NO_DIRECT_RANK_MUTATION", `${row.product_id}: no rank mutation`);
+  eq(shadow.score_effect, "NO_DIRECT_SCORE_MUTATION", `${row.product_id}: no score mutation`);
+  eq(row.neutral_envelope.production_authority, false, `${row.product_id}: upstream neutral authority false`);
 }
 
 eq(dual.result.mode, "SHADOW_OBSERVATION_ONLY", "dual-run mode");
@@ -134,6 +140,7 @@ for (const row of dual.result.rows) {
   eq(row.divergence.agreement_implies_activation_readiness, false, `${row.product_id}: agreement not readiness`);
   eq(row.current_production.public_response, "UNCHANGED_BY_SHADOW_BOUNDARY", `${row.product_id}: public response unchanged`);
   eq(row.current_production.persistence, "UNCHANGED_BY_SHADOW_BOUNDARY", `${row.product_id}: persistence unchanged`);
+  eq(row.new_policy_shadow.production_authority, false, `${row.product_id}: new policy non-authoritative`);
 }
 for (const field of [
   "canonical_production_identical",
