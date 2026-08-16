@@ -55,32 +55,19 @@ function asEnvelope(row) {
     },
     intrinsic: {
       signal_status: row.governed_pda_state?.signal_status || null,
-      active_identity_set: {
-        items: row.governed_pda_state?.active_identities || [],
-        semantic_ordering: "NONE"
-      },
+      active_identity_set: { items: row.governed_pda_state?.active_identities || [], semantic_ordering: "NONE" },
       coverage_state: row.governed_pda_state?.coverage || null,
       uncertainty: row.uncertainty || null
     },
-    provenance: {
-      source: "frozen_8x_canonical_example",
-      case_id: row.case_id
-    }
+    provenance: { source: "frozen_8x_canonical_example", case_id: row.case_id }
   };
 }
 
-function compactProvenance(provenance = {}) {
+function provenanceView(provenance = {}) {
   const upstream = provenance.upstream_provenance || {};
-  const evidence = Array.isArray(upstream?.intrinsic?.evidence_provenance)
-    ? upstream.intrinsic.evidence_provenance
-    : [];
   return {
-    contract_version: provenance.contract_version || null,
-    shadow_runtime_version: provenance.shadow_runtime_version || null,
-    upstream_neutral_gate: provenance.upstream_neutral_gate || null,
-    upstream_shadow_version: provenance.upstream_shadow_version || null,
     upstream_case_id: upstream.case_id || null,
-    upstream_evidence: evidence.map((row) => ({
+    upstream_evidence: (upstream?.intrinsic?.evidence_provenance || []).map((row) => ({
       fact_key: row.fact_key || null,
       source_record_id: row.source_record_id || null
     })),
@@ -91,7 +78,7 @@ function compactProvenance(provenance = {}) {
   };
 }
 
-function compactNormative(result) {
+function normativeView(result) {
   return {
     policy_action: result.policy_action,
     eligibility_effect: result.eligibility_effect,
@@ -103,15 +90,12 @@ function compactNormative(result) {
     reason_codes: result.reason_codes,
     authority_sources: result.authority_sources,
     uncertainty: result.uncertainty,
-    provenance: compactProvenance(result.provenance),
-    production_activation: result.production_activation,
-    production_authority: result.production_authority,
-    restrict_enforced: result.restrict_enforced,
-    allow_promoted_to_canonical_approval: result.allow_promoted_to_canonical_approval
+    provenance: provenanceView(result.provenance),
+    production_activation: result.production_activation
   };
 }
 
-function compactEnvelope(envelope = {}) {
+function envelopeView(envelope = {}) {
   return {
     version: envelope.version || null,
     product_id: envelope.product_id || null,
@@ -126,13 +110,13 @@ function compactEnvelope(envelope = {}) {
     coverage_state: envelope?.intrinsic?.coverage_state || null,
     uncertainty: envelope?.intrinsic?.uncertainty || null,
     identity_overlap_state: envelope?.derived_relations?.identity_overlap?.state || null,
-    evidence_record_ids: (envelope?.provenance?.intrinsic?.evidence_provenance || [])
-      .map((row) => row.source_record_id)
+    evidence_fact_keys: (envelope?.provenance?.intrinsic?.evidence_provenance || [])
+      .map((row) => row.fact_key)
       .filter(Boolean)
   };
 }
 
-function compactExternal(external = {}) {
+function externalView(external = {}) {
   return {
     recent_instability_guard_decision: external.recent_instability_guard_decision || null,
     routine_action: external.routine_action || null,
@@ -144,7 +128,7 @@ function compactExternal(external = {}) {
   };
 }
 
-function compactCandidate(candidate = null) {
+function candidateView(candidate = null) {
   if (!candidate) return null;
   return {
     candidate_ref: candidate.candidateRef || null,
@@ -156,7 +140,7 @@ function compactCandidate(candidate = null) {
   };
 }
 
-function compactLegacy(legacy = {}) {
+function legacyView(legacy = {}) {
   const ranking = legacy.functional_ranking_candidate || {};
   return {
     product_functional_profile: legacy.product_functional_profile || null,
@@ -180,6 +164,11 @@ function canonicalReplay() {
     shadow_runtime_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION,
     source_artifact: CANONICAL_8X,
     case_count: frozen.cases.length,
+    guards: {
+      production_authority: false,
+      restrict_enforced: false,
+      allow_promoted_to_canonical_approval: false
+    },
     cases: frozen.cases.map((row) => {
       const result = evaluateExfoliationNormativeProductionPolicyShadow({
         productionConsumptionEnvelope: asEnvelope(row),
@@ -195,7 +184,9 @@ function canonicalReplay() {
       return {
         case_id: row.case_id,
         neutral_gate: row.neutral_envelope.neutral_gate,
-        actual: compactNormative(result)
+        governed_pda_state: row.governed_pda_state,
+        external_context: row.external_context,
+        actual: normativeView(result)
       };
     })
   };
@@ -203,60 +194,32 @@ function canonicalReplay() {
 
 function runtimeState() {
   return {
-    decisionBundle: {
-      context: {
-        version: "shared-skin-decision-context-v4",
-        skinState: {
-          priorityAxis: "pores",
-          concernScores: { pores: 20 },
-          sensitivity: "low"
-        },
-        survey: { answers: { makeupUse: false }, completeness: "available" },
-        safetyState: {
-          level: "stable",
-          sensitiveBurden: false,
-          exfoliationExpansionAllowed: true,
-          recentSkinChange: "no",
-          recentlyChangedProduct: "no"
-        },
-        productExposureState: {
-          rows: [],
-          duplicateActiveAxes: [],
-          unknownProductCount: 0,
-          unknownExposurePresent: false,
-          recentExposureState: "none_reported",
-          reactionLinkState: "none_reported"
-        },
-        conditionSignalState: {
-          recentSkinChange: "no",
-          recentProductChange: "no",
-          productReaction: "no"
-        }
-      }
-    },
-    functionalPolicy: {
-      version: "functional-policy-v1",
-      functionalDirection: "tone_care",
-      planMode: "START",
-      recommendationSuppressed: false,
-      safety: {
+    decisionBundle: { context: {
+      version: "shared-skin-decision-context-v4",
+      skinState: { priorityAxis: "pores", concernScores: { pores: 20 }, sensitivity: "low" },
+      survey: { answers: { makeupUse: false }, completeness: "available" },
+      safetyState: {
         level: "stable",
-        activeExpansionAllowed: true,
-        protectionMustMaintain: true
-      }
+        sensitiveBurden: false,
+        exfoliationExpansionAllowed: true,
+        recentSkinChange: "no",
+        recentlyChangedProduct: "no"
+      },
+      productExposureState: {
+        rows: [], duplicateActiveAxes: [], unknownProductCount: 0, unknownExposurePresent: false,
+        recentExposureState: "none_reported", reactionLinkState: "none_reported"
+      },
+      conditionSignalState: { recentSkinChange: "no", recentProductChange: "no", productReaction: "no" }
+    } },
+    functionalPolicy: {
+      version: "functional-policy-v1", functionalDirection: "tone_care", planMode: "START",
+      recommendationSuppressed: false,
+      safety: { level: "stable", activeExpansionAllowed: true, protectionMustMaintain: true }
     },
-    consistency: {
-      version: "cross-domain-consistency-v1",
-      effectivePolicySource: "raw"
-    },
+    consistency: { version: "cross-domain-consistency-v1", effectivePolicySource: "raw" },
     currentProductFindings: {
       findings: [],
-      summary: {
-        evaluableSelectedCount: 0,
-        notInDbCount: 0,
-        notUsingCount: 0,
-        unansweredCount: 0
-      }
+      summary: { evaluableSelectedCount: 0, notInDbCount: 0, notUsingCount: 0, unansweredCount: 0 }
     }
   };
 }
@@ -275,7 +238,7 @@ function governedSetup() {
     category: row.source_product.category,
     pda: row.expected_output
   }));
-  return { source, products, pdaArtifact: { products: records } };
+  return { products, pdaArtifact: { products: records } };
 }
 
 function governedDualRun() {
@@ -290,24 +253,9 @@ function governedDualRun() {
       mapper_version: "product-decision-axis-mapper-contract-v1",
       snapshot_sha256: "31311c223cfc1084e02e226e36b60b6052884f16c52cdc3f5308b786641a9fea"
     },
-    surveyContract: {
-      safety: {
-        sensitivityRisk: "low",
-        recentSkinChange: "no",
-        recentlyChangedProduct: "no"
-      }
-    },
-    surveySafety: {
-      sensitivityRisk: "low",
-      recentSkinChange: "no",
-      recentlyChangedProduct: "no"
-    },
-    goalPolicy: {
-      rankingGoal: "pores",
-      safetyGoal: "pores",
-      recommendationGuard: "normal",
-      hasTension: false
-    }
+    surveyContract: { safety: { sensitivityRisk: "low", recentSkinChange: "no", recentlyChangedProduct: "no" } },
+    surveySafety: { sensitivityRisk: "low", recentSkinChange: "no", recentlyChangedProduct: "no" },
+    goalPolicy: { rankingGoal: "pores", safetyGoal: "pores", recommendationGuard: "normal", hasTension: false }
   });
 }
 
@@ -316,14 +264,15 @@ function governedReplay() {
   return {
     stage: STAGE,
     terminal: TERMINAL,
+    contract_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION,
     source_artifact: GOVERNED_8O,
     product_count: dual.rows.length,
     products: dual.rows.map((row) => ({
       product_id: row.product_id,
       product_name: row.product_name,
-      neutral_envelope: compactEnvelope(row.neutral_envelope),
-      external_policy_context: compactExternal(row.external_policy_context),
-      normative_policy_shadow: compactNormative(row.normative_policy_shadow)
+      neutral_envelope: envelopeView(row.neutral_envelope),
+      external_policy_context: externalView(row.external_policy_context),
+      normative_policy_shadow: normativeView(row.normative_policy_shadow)
     }))
   };
 }
@@ -333,6 +282,7 @@ function dualRunReplay() {
   return {
     stage: STAGE,
     terminal: TERMINAL,
+    contract_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION,
     observation_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION,
     dual_run_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_DUAL_RUN_VERSION,
     divergence_taxonomy_version: "V2.1-8T_FROZEN_TAXONOMY_REUSED",
@@ -345,10 +295,6 @@ function dualRunReplay() {
       allow_not_canonical_approval: true
     },
     result: {
-      version: dual.version,
-      shadow_runtime_version: dual.shadow_runtime_version,
-      observation_entrypoint_version: dual.observation_entrypoint_version,
-      dual_run_version: dual.dual_run_version,
       mode: dual.mode,
       runtime_shadow_wired: dual.runtime_shadow_wired,
       wiring_boundary: dual.wiring_boundary,
@@ -361,10 +307,10 @@ function dualRunReplay() {
         product_id: row.product_id,
         product_name: row.product_name,
         neutral_gate: row.neutral_envelope.neutral_gate,
-        external_policy_context: compactExternal(row.external_policy_context),
-        new_policy_shadow: compactNormative(row.normative_policy_shadow),
+        external_policy_context: externalView(row.external_policy_context),
+        new_policy_shadow: normativeView(row.normative_policy_shadow),
         current_production: {
-          candidate_exposure_policy: compactCandidate(row.current_production.candidate_exposure_policy),
+          candidate_exposure_policy: candidateView(row.current_production.candidate_exposure_policy),
           existing_eligibility: row.current_production.existing_eligibility,
           score: row.current_production.score,
           rank: row.current_production.rank,
@@ -372,7 +318,7 @@ function dualRunReplay() {
           public_response: row.current_production.public_response,
           persistence: row.current_production.persistence
         },
-        legacy_comparable: compactLegacy(row.legacy_comparable),
+        legacy_comparable: legacyView(row.legacy_comparable),
         divergence: row.divergence
       })),
       invariance: dual.invariance
@@ -388,22 +334,14 @@ function implementationEvidence() {
   return {
     stage: STAGE,
     primary_terminal_outcome: TERMINAL,
-    execution_authority: {
-      repository: "gycha0109-beep/K_beauty",
-      base_main_sha: BASE_MAIN
-    },
-    frozen_8x_contract: {
-      path: CONTRACT_8X,
-      version: contract.version,
-      terminal: contract.primary_terminal_outcome
-    },
+    execution_authority: { repository: "gycha0109-beep/K_beauty", base_main_sha: BASE_MAIN },
+    frozen_8x_contract: { path: CONTRACT_8X, version: contract.version, terminal: contract.primary_terminal_outcome },
     implementation: {
       shadow_runtime_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION,
       observation_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION,
       dual_run_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_DUAL_RUN_VERSION,
       runtime_shadow_wired: true,
-      observation_boundary:
-        "lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js additive shadow-only entrypoint",
+      observation_boundary: "lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js additive shadow-only entrypoint",
       frozen_8v_module_modified: false,
       canonical_consumer_imported: false,
       production_authority: false,
@@ -424,14 +362,8 @@ function implementationEvidence() {
       scenarios: 12,
       candidate_evaluations: 1968,
       required_zero_delta_fields: [
-        "production_score",
-        "production_ranking",
-        "top1",
-        "top3",
-        "eligibility",
-        "public_response",
-        "persistence",
-        "candidate_policy_canonical_result"
+        "production_score", "production_ranking", "top1", "top3", "eligibility",
+        "public_response", "persistence", "candidate_policy_canonical_result"
       ],
       execution_verifier: "scripts/verify-product-decision-axis-comparator-v1.mjs + scripts/verify-skin-decision-recommendation-invariance.mjs"
     },
