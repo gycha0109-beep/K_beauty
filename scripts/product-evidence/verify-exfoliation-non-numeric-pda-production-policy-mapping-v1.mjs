@@ -149,7 +149,7 @@ ok(dual.includes('mode:"SHADOW_OBSERVATION_ONLY"'), "8V dual-run is observation-
 ok(!candidate.includes("exfoliation-non-numeric-pda-production-consumption"), "CandidateExposurePolicy does not consume 8V envelope");
 ok(candidateContract.includes('"primary"') && candidateContract.includes('"contextual"') && candidateContract.includes('"hidden"'), "CandidateExposurePolicy vocabulary is exposure/presentation");
 ok(candidateContract.includes("buildCandidateLaneEligibility"), "CandidateExposurePolicy owns lane eligibility");
-ok(routine.includes('action: "hold"') && routine.includes("prohibitedSameWindow"), "RoutinePolicy owns routine action/window semantics");
+ok(routine.includes('return "hold"') && routine.includes("prohibitedSameWindow"), "RoutinePolicy owns routine action/window semantics");
 ok(!routine.includes("READY_FOR_SEPARATE_POLICY_EVALUATION"), "RoutinePolicy has no governed neutral-gate mapping");
 ok(instability.includes('"allow_with_context"') && instability.includes('"hard_block_candidate"'), "RecentInstabilityGuard owns safety-domain guard decisions");
 ok(!instability.includes("READY_FOR_SEPARATE_POLICY_EVALUATION"), "RecentInstabilityGuard has no governed neutral-gate mapping");
