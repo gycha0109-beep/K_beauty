@@ -7,10 +7,13 @@ import {
   EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_CONTRACT_VERSION
 } from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js";
 import {
-  runExfoliationNormativeProductionPolicyShadowDualRun,
   EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_DUAL_RUN_VERSION,
   EXFOLIATION_NORMATIVE_POLICY_DIVERGENCE_CLASSES
 } from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js";
+import {
+  runExfoliationNormativeProductionPolicyShadowObservation,
+  EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION
+} from "../../lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js";
 
 const STAGE = "V2.1-8Y";
 const TERMINAL = "NORMATIVE_PRODUCTION_POLICY_SHADOW_RUNTIME_VALIDATED";
@@ -207,7 +210,7 @@ function governedSetup() {
 
 function governedDualRun() {
   const { products, pdaArtifact } = governedSetup();
-  return runExfoliationNormativeProductionPolicyShadowDualRun({
+  return runExfoliationNormativeProductionPolicyShadowObservation({
     canonicalState: runtimeState(),
     candidates: products,
     pdaArtifact,
@@ -270,6 +273,7 @@ function dualRunReplay() {
   return {
     stage: STAGE,
     terminal: TERMINAL,
+    observation_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION,
     dual_run_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_DUAL_RUN_VERSION,
     divergence_taxonomy_version: "V2.1-8T_FROZEN_TAXONOMY_REUSED",
     divergence_classes: EXFOLIATION_NORMATIVE_POLICY_DIVERGENCE_CLASSES,
@@ -303,10 +307,12 @@ function implementationEvidence() {
     },
     implementation: {
       shadow_runtime_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_SHADOW_VERSION,
+      observation_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_OBSERVATION_VERSION,
       dual_run_version: EXFOLIATION_NORMATIVE_PRODUCTION_POLICY_DUAL_RUN_VERSION,
       runtime_shadow_wired: true,
       observation_boundary:
-        "lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js additive re-export",
+        "lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js additive shadow-only entrypoint",
+      frozen_8v_module_modified: false,
       canonical_consumer_imported: false,
       production_authority: false,
       production_activation: false
