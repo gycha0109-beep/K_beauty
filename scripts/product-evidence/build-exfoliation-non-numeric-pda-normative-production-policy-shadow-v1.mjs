@@ -69,6 +69,108 @@ function asEnvelope(row) {
   };
 }
 
+function compactProvenance(provenance = {}) {
+  const upstream = provenance.upstream_provenance || {};
+  const evidence = Array.isArray(upstream?.intrinsic?.evidence_provenance)
+    ? upstream.intrinsic.evidence_provenance
+    : [];
+  return {
+    contract_version: provenance.contract_version || null,
+    shadow_runtime_version: provenance.shadow_runtime_version || null,
+    upstream_neutral_gate: provenance.upstream_neutral_gate || null,
+    upstream_shadow_version: provenance.upstream_shadow_version || null,
+    upstream_case_id: upstream.case_id || null,
+    upstream_evidence: evidence.map((row) => ({
+      fact_key: row.fact_key || null,
+      source_record_id: row.source_record_id || null
+    })),
+    external_policy_source:
+      provenance?.external_policy_provenance?.source ||
+      provenance?.external_policy_provenance?.recent_instability_guard_policy?.version ||
+      null
+  };
+}
+
+function compactNormative(result) {
+  return {
+    policy_action: result.policy_action,
+    eligibility_effect: result.eligibility_effect,
+    ranking_effect: result.ranking_effect,
+    score_effect: result.score_effect,
+    top_k_effect: result.top_k_effect,
+    warning_effect: result.warning_effect,
+    matched_rule_ids: result.matched_rule_ids,
+    reason_codes: result.reason_codes,
+    authority_sources: result.authority_sources,
+    uncertainty: result.uncertainty,
+    provenance: compactProvenance(result.provenance),
+    production_activation: result.production_activation,
+    production_authority: result.production_authority,
+    restrict_enforced: result.restrict_enforced,
+    allow_promoted_to_canonical_approval: result.allow_promoted_to_canonical_approval
+  };
+}
+
+function compactEnvelope(envelope = {}) {
+  return {
+    version: envelope.version || null,
+    product_id: envelope.product_id || null,
+    neutral_gate: envelope.neutral_gate || null,
+    production_decision: envelope.production_decision || null,
+    production_authority: envelope.production_authority === true,
+    signal_status: envelope?.intrinsic?.signal_status || null,
+    active_identities: (envelope?.intrinsic?.active_identity_set?.items || []).map((row) => ({
+      identity: row.identity || null,
+      concentration_state: row.concentration_state || null
+    })),
+    coverage_state: envelope?.intrinsic?.coverage_state || null,
+    uncertainty: envelope?.intrinsic?.uncertainty || null,
+    identity_overlap_state: envelope?.derived_relations?.identity_overlap?.state || null,
+    evidence_record_ids: (envelope?.provenance?.intrinsic?.evidence_provenance || [])
+      .map((row) => row.source_record_id)
+      .filter(Boolean)
+  };
+}
+
+function compactExternal(external = {}) {
+  return {
+    recent_instability_guard_decision: external.recent_instability_guard_decision || null,
+    routine_action: external.routine_action || null,
+    same_window_severity: external.same_window_severity || null,
+    duplicate_exfoliation: external.duplicate_exfoliation === true,
+    sensitivity_context: external.sensitivity_context === true,
+    recent_reaction_or_instability: external.recent_reaction_or_instability === true,
+    preference_ranking_benefit: external.preference_ranking_benefit === true
+  };
+}
+
+function compactCandidate(candidate = null) {
+  if (!candidate) return null;
+  return {
+    candidate_ref: candidate.candidateRef || null,
+    exposure: candidate.exposure || null,
+    lane_eligibility: candidate.laneEligibility || null,
+    reason_codes: candidate.reasonCodes || [],
+    evidence_state: candidate.evidenceState || null,
+    current_product_relation: candidate.currentProductRelation || null
+  };
+}
+
+function compactLegacy(legacy = {}) {
+  const ranking = legacy.functional_ranking_candidate || {};
+  return {
+    product_functional_profile: legacy.product_functional_profile || null,
+    functional_ranking_candidate: {
+      eligible: ranking.eligible ?? null,
+      hard_filter_status: ranking.hardFilterStatus || null,
+      total_score: ranking.totalScore ?? null,
+      confidence: ranking.confidence || null,
+      reasons: ranking.reasons || [],
+      penalties: ranking.penalties || []
+    }
+  };
+}
+
 function canonicalReplay() {
   const frozen = json(CANONICAL_8X);
   return {
@@ -93,35 +195,7 @@ function canonicalReplay() {
       return {
         case_id: row.case_id,
         neutral_gate: row.neutral_envelope.neutral_gate,
-        expected: {
-          policy_action: row.selected_normative_action,
-          eligibility_effect: row.eligibility_effect,
-          ranking_effect: row.ranking_effect,
-          score_effect: row.score_effect,
-          top_k_effect: row.top_k_effect,
-          warning_effect: row.warning_effect,
-          matched_rule_ids: row.matched_rule_ids,
-          reason_codes: row.reason_codes,
-          authority_sources: row.authority_sources,
-          production_activation: false
-        },
-        actual: {
-          policy_action: result.policy_action,
-          eligibility_effect: result.eligibility_effect,
-          ranking_effect: result.ranking_effect,
-          score_effect: result.score_effect,
-          top_k_effect: result.top_k_effect,
-          warning_effect: result.warning_effect,
-          matched_rule_ids: result.matched_rule_ids,
-          reason_codes: result.reason_codes,
-          authority_sources: result.authority_sources,
-          uncertainty: result.uncertainty,
-          provenance: result.provenance,
-          production_activation: result.production_activation,
-          production_authority: result.production_authority,
-          restrict_enforced: result.restrict_enforced,
-          allow_promoted_to_canonical_approval: result.allow_promoted_to_canonical_approval
-        }
+        actual: compactNormative(result)
       };
     })
   };
@@ -201,11 +275,7 @@ function governedSetup() {
     category: row.source_product.category,
     pda: row.expected_output
   }));
-  return {
-    source,
-    products,
-    pdaArtifact: { products: records }
-  };
+  return { source, products, pdaArtifact: { products: records } };
 }
 
 function governedDualRun() {
@@ -251,19 +321,9 @@ function governedReplay() {
     products: dual.rows.map((row) => ({
       product_id: row.product_id,
       product_name: row.product_name,
-      neutral_envelope: row.neutral_envelope,
-      external_policy_context: row.external_policy_context,
-      policy_action: row.normative_policy_shadow.policy_action,
-      eligibility_effect: row.normative_policy_shadow.eligibility_effect,
-      ranking_effect: row.normative_policy_shadow.ranking_effect,
-      score_effect: row.normative_policy_shadow.score_effect,
-      top_k_effect: row.normative_policy_shadow.top_k_effect,
-      warning_effect: row.normative_policy_shadow.warning_effect,
-      reason_codes: row.normative_policy_shadow.reason_codes,
-      authority_sources: row.normative_policy_shadow.authority_sources,
-      uncertainty: row.normative_policy_shadow.uncertainty,
-      provenance: row.normative_policy_shadow.provenance,
-      production_activation: false
+      neutral_envelope: compactEnvelope(row.neutral_envelope),
+      external_policy_context: compactExternal(row.external_policy_context),
+      normative_policy_shadow: compactNormative(row.normative_policy_shadow)
     }))
   };
 }
@@ -284,7 +344,39 @@ function dualRunReplay() {
       restrict_not_canonical_block: true,
       allow_not_canonical_approval: true
     },
-    result: dual
+    result: {
+      version: dual.version,
+      shadow_runtime_version: dual.shadow_runtime_version,
+      observation_entrypoint_version: dual.observation_entrypoint_version,
+      dual_run_version: dual.dual_run_version,
+      mode: dual.mode,
+      runtime_shadow_wired: dual.runtime_shadow_wired,
+      wiring_boundary: dual.wiring_boundary,
+      production_authority: dual.production_authority,
+      production_activation: dual.production_activation,
+      restrict_enforcement_implemented: dual.restrict_enforcement_implemented,
+      allow_promoted_to_canonical_approval: dual.allow_promoted_to_canonical_approval,
+      divergence_distribution: dual.divergence_distribution,
+      rows: dual.rows.map((row) => ({
+        product_id: row.product_id,
+        product_name: row.product_name,
+        neutral_gate: row.neutral_envelope.neutral_gate,
+        external_policy_context: compactExternal(row.external_policy_context),
+        new_policy_shadow: compactNormative(row.normative_policy_shadow),
+        current_production: {
+          candidate_exposure_policy: compactCandidate(row.current_production.candidate_exposure_policy),
+          existing_eligibility: row.current_production.existing_eligibility,
+          score: row.current_production.score,
+          rank: row.current_production.rank,
+          top_k: row.current_production.top_k,
+          public_response: row.current_production.public_response,
+          persistence: row.current_production.persistence
+        },
+        legacy_comparable: compactLegacy(row.legacy_comparable),
+        divergence: row.divergence
+      })),
+      invariance: dual.invariance
+    }
   };
 }
 
