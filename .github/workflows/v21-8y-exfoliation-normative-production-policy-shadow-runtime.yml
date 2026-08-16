@@ -8,7 +8,7 @@ on:
       - 'docs/evidence/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-v1.md'
       - 'lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js'
       - 'lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js'
-      - 'lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js'
+      - 'lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js'
       - 'scripts/product-evidence/build-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-evidence-v1.json'
@@ -22,7 +22,7 @@ on:
       - 'docs/evidence/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-v1.md'
       - 'lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js'
       - 'lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js'
-      - 'lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js'
+      - 'lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js'
       - 'scripts/product-evidence/build-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs'
       - 'scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-evidence-v1.json'
@@ -72,6 +72,7 @@ jobs:
           set -euo pipefail
           node --check lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js
           node --check lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js
+          node --check lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js
           node --check scripts/product-evidence/build-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs
           node --check scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs
           rm -rf /tmp/v21-8y-a /tmp/v21-8y-b
@@ -159,7 +160,7 @@ jobs:
             docs/evidence/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-v1.md
             lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js
             lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js
-            lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js
+            lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js
             scripts/product-evidence/build-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs
             scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs
             evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-shadow-runtime-evidence-v1.json
@@ -181,6 +182,7 @@ jobs:
             lib/product-functional-profile.js \
             lib/current-product-findings.js \
             lib/skin-match-decision-engine.js \
+            lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js \
             evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json \
             evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-canonical-examples-v1.json)"
           git diff --check "$V21_8Y_BASE_MAIN_SHA..HEAD"
