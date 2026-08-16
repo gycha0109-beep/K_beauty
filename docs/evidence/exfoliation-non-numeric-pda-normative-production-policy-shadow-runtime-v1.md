@@ -21,13 +21,13 @@ The implementation does not reopen 8X mappings. Product Facts, PDA facts, effica
 
 `lib/exfoliation-non-numeric-pda-normative-production-policy-dual-run.js` evaluates the new policy side by side with current CandidateExposurePolicy and legacy functional/routine/safety surfaces. It reuses the V2.1-8T divergence taxonomy and preserves before/after canonical production, response, snapshot, and candidate-order fingerprints.
 
+`lib/exfoliation-non-numeric-pda-normative-production-policy-observation.js` is the additive runtime observation entrypoint. It exposes the 8Y dual-run as `SHADOW_OBSERVATION_ONLY` without changing any frozen 8V module or canonical production consumer.
+
 ## Observation-only wiring
 
-The only existing runtime file modified by 8Y is:
+V2.1-8Y modifies **no pre-existing runtime implementation file**. The initially considered 8V re-export was rejected after the frozen 8V exact-scope workflow demonstrated that modifying the historical 8V module would unnecessarily reopen its stage surface. The 8V file was restored byte-for-byte to its authoritative state.
 
-`lib/exfoliation-non-numeric-pda-production-consumption-dual-run.js`
-
-The change is an additive re-export of the 8Y dual-run function through the already-established `SHADOW_OBSERVATION_ONLY` boundary. Existing 8V behavior is otherwise unchanged. No canonical recommendation consumer imports the 8Y runtime.
+The final wiring boundary is therefore the new additive observation entrypoint. It calls the new dual-run module, which in turn consumes the existing 8V neutral materializer and current production comparators. This is runtime-callable wiring, but it has no canonical import path and no production authority.
 
 ## RESTRICT guard
 
@@ -85,7 +85,7 @@ CI requires Build A bytes = Build B bytes = checked-in bytes.
 - dual-run invariance
 - V2.1-8J through V2.1-8X historical replay with 8Q–8X at their frozen exact authorities
 - canonical 164 × 12 = 1968 production invariance
-- exact 8Y scope and frozen 8X non-mutation
+- exact 8Y scope and frozen 8X/8V non-mutation
 - Hosted Product Fact / Registry / migration delta 0
 
 ## Explicit invariants
