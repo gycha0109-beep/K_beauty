@@ -1,0 +1,205 @@
+name: V2.1-9C Normative Policy Activation Readiness Reassessment
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-9c-normative-policy-activation-readiness-reassessment.yml'
+      - 'docs/evidence/exfoliation-normative-production-policy-activation-readiness-reassessment-v1.md'
+      - 'scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-*.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-9c-normative-policy-activation-readiness-reassessment.yml'
+      - 'docs/evidence/exfoliation-normative-production-policy-activation-readiness-reassessment-v1.md'
+      - 'scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs'
+      - 'scripts/product-evidence/verify-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v21-9c:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      V21_9C_BASE_MAIN_SHA: 851eac78646c04196673e57ab7b52f77cacae8ae
+      FROZEN_9B_MAIN_SHA: 851eac78646c04196673e57ab7b52f77cacae8ae
+      FROZEN_9A_MAIN_SHA: 1c65eced12e05ca4a81d74bbef167f367e170582
+      FROZEN_8Z_MAIN_SHA: 57211ec9c2c99ea02da74c4f8d2c707ca89aa597
+      FROZEN_8Y_MAIN_SHA: 5ce7195670eab6f2e9a2aff7810d4f48c9b6f688
+      FROZEN_8X_MAIN_SHA: 7dd6f3566ca3a680627eb64430ca8d34178b53bd
+      FROZEN_8W_MAIN_SHA: fc5da448cc97572547e14c4a796b57773aa0b8d0
+      FROZEN_8V_MAIN_SHA: d85ed057cb01923d3f3beef18b08e820fb7d7e22
+      FROZEN_8U_MAIN_SHA: a34b5d67dd233629c01568114fea6ebb312fd130
+      FROZEN_8T_MAIN_SHA: d988f33664e3086250e2595b55319aa18e127608
+      FROZEN_8S_MAIN_SHA: c3a844ff3aec6a89456aeba9e86a3479239f2974
+      FROZEN_8R_MAIN_SHA: 053a963a14bf00d7deb731a2c5427a97f3172b9f
+      FROZEN_8Q_MAIN_SHA: e812ee6a7eae6b98940adfe7b10471687e5cad1a
+      FROZEN_8X_CONTRACT_BLOB_SHA: 5eed23e9b85e4997087663d792a82ecca34d8ad0
+      FROZEN_8Y_RUNTIME_BLOB_SHA: 827f3b69f4ad288ea1f791893d8c9fb921fa0226
+      FROZEN_8Z_READINESS_BLOB_SHA: 1f67f548fd0f4781296390ab0ee34e890f069efb
+      FROZEN_8Z_ASSESSMENT_BLOB_SHA: f047736d752e52d6098bb6e2d635d85a98055ce6
+      FROZEN_8Z_GATE_BLOB_SHA: 32975817aa7448206ecea8565ad4a255da9772d5
+      FROZEN_8Z_OBSERVABILITY_BLOB_SHA: be4cc5935b86f33d3882b60bb0485113a861cb53
+      FROZEN_8Z_ROLLBACK_BLOB_SHA: e75a8dbb9426f7511d8772920f13b9cd31b6b226
+      FROZEN_8Z_FALLBACK_BLOB_SHA: 352da38982cf7b6fd3036e4478e058dea99f59f7
+      FROZEN_8Z_SIMULATION_BLOB_SHA: f4692546039f9dda07028903252558111930d286
+      FROZEN_8Z_ENFORCEMENT_BLOB_SHA: a78c00093dc4b76d3a296601599b6a58674cba37
+      FROZEN_9A_SUMMARY_BLOB_SHA: 51ec9f5a73b49e4256187780de6a2f8083e19c32
+      FROZEN_9A_DIVERGENCE_BLOB_SHA: aef15e41826b0f683b84398b9238340af260db80
+      FROZEN_9A_GAPS_BLOB_SHA: 209553770dff632c5e34465e29cdc9084c733cff
+      FROZEN_9B_SUMMARY_BLOB_SHA: 2d6ad9d60a11f86923947e95176d4fb329bfcb3b
+      FROZEN_9B_GAPS_BLOB_SHA: 084b2ae68adb1353c52d2e131b58919241369a1e
+      FROZEN_9B_RESTRICT_BLOB_SHA: 64a5cc3040a8939894cf50452e4684122fd54bc1
+      FROZEN_9B_BOUNDARY_BLOB_SHA: 7d1469b2b0a9db803501ad20a7badf23a20e07b1
+      V21_9C_REQUIRE_CHECKED_IN: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.event.pull_request.head.sha || github.sha }}'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Exact authority and frozen 8X through 9B evidence bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$V21_9C_BASE_MAIN_SHA" HEAD
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json)" = "$FROZEN_8X_CONTRACT_BLOB_SHA"
+          test "$(git hash-object lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js)" = "$FROZEN_8Y_RUNTIME_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-activation-readiness-contract-v1.json)" = "$FROZEN_8Z_READINESS_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-readiness-evidence-assessment-v1.json)" = "$FROZEN_8Z_ASSESSMENT_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-activation-gate-v1.json)" = "$FROZEN_8Z_GATE_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-observability-requirements-v1.json)" = "$FROZEN_8Z_OBSERVABILITY_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-rollback-requirements-v1.json)" = "$FROZEN_8Z_ROLLBACK_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-failure-fallback-matrix-v1.json)" = "$FROZEN_8Z_FALLBACK_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-hypothetical-enforcement-simulation-v1.json)" = "$FROZEN_8Z_SIMULATION_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-enforcement-boundary-contract-v1.json)" = "$FROZEN_8Z_ENFORCEMENT_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-evidence-summary-v1.json)" = "$FROZEN_9A_SUMMARY_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-divergence-distribution-v1.json)" = "$FROZEN_9A_DIVERGENCE_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-readiness-gap-reassessment-v1.json)" = "$FROZEN_9A_GAPS_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-existing-eligibility-candidate-availability-shadow-evidence-summary-v1.json)" = "$FROZEN_9B_SUMMARY_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-existing-eligibility-candidate-availability-gap-reassessment-v1.json)" = "$FROZEN_9B_GAPS_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-existing-eligibility-candidate-availability-restrict-classification-v1.json)" = "$FROZEN_9B_RESTRICT_BLOB_SHA"
+          test "$(git hash-object evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-existing-eligibility-candidate-availability-enforcement-boundary-validation-v1.json)" = "$FROZEN_9B_BOUNDARY_BLOB_SHA"
+
+      - name: Prepare frozen 164 x 12 recommendation reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
+
+      - name: Deterministic Build A B and checked-in byte equality
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs
+          node --check scripts/product-evidence/verify-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs
+          rm -rf /tmp/v21-9c-a /tmp/v21-9c-b
+          mkdir -p /tmp/v21-9c-a /tmp/v21-9c-b
+          declare -A files=(
+            [summary]=exfoliation-normative-production-policy-activation-readiness-reassessment-summary-v1.json
+            [matrix]=exfoliation-normative-production-policy-readiness-matrix-v1.json
+            [prerequisites]=exfoliation-normative-production-policy-activation-prerequisite-evaluation-v1.json
+            [lineage]=exfoliation-normative-production-policy-evidence-lineage-map-v1.json
+            [risk]=exfoliation-normative-production-policy-divergence-readiness-risk-summary-v1.json
+            [live]=exfoliation-normative-production-policy-live-production-evidence-requirement-assessment-v1.json
+            [boundary]=exfoliation-normative-production-policy-separate-activation-authorization-boundary-v1.json
+          )
+          for mode in summary matrix prerequisites lineage risk live boundary; do
+            node scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs "$mode" > "/tmp/v21-9c-a/$mode.json"
+            node scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs "$mode" > "/tmp/v21-9c-b/$mode.json"
+            cmp "/tmp/v21-9c-a/$mode.json" "/tmp/v21-9c-b/$mode.json"
+            cmp "/tmp/v21-9c-a/$mode.json" "evidence/product-decision-axis-non-numeric-shadow-v1/${files[$mode]}"
+          done
+          sha256sum /tmp/v21-9c-a/*.json
+
+      - name: Focused V2.1-9C verifier
+        run: node scripts/product-evidence/verify-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs
+
+      - name: Historical V2.1-8J through V2.1-8P replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/product-evidence/verify-product-decision-axis-mapper-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-wave-1-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-anchor-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-targeted-numeric-anchor-research-wave-1.mjs
+          node scripts/product-evidence/verify-exfoliation-load-calibration-feasibility-reassessment-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-offline-shadow-v1.mjs
+
+      - name: Historical V2.1-8Q through V2.1-9B replay at exact frozen authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pair in \
+            "v21-8q:$FROZEN_8Q_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumption-v1.mjs" \
+            "v21-8r:$FROZEN_8R_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-adapter-implementation-v1.mjs" \
+            "v21-8s:$FROZEN_8S_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-consumer-v1.mjs" \
+            "v21-8t:$FROZEN_8T_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-shadow-divergence-readiness-v1.mjs" \
+            "v21-8u:$FROZEN_8U_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-contract-v1.mjs" \
+            "v21-8v:$FROZEN_8V_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-shadow-v1.mjs" \
+            "v21-8w:$FROZEN_8W_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-policy-mapping-v1.mjs" \
+            "v21-8x:$FROZEN_8X_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-decision-v1.mjs" \
+            "v21-8y:$FROZEN_8Y_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-shadow-v1.mjs" \
+            "v21-8z:$FROZEN_8Z_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-normative-production-policy-activation-readiness-v1.mjs" \
+            "v21-9a:$FROZEN_9A_MAIN_SHA:scripts/product-evidence/verify-exfoliation-non-numeric-pda-additional-shadow-evidence-v1.mjs" \
+            "v21-9b:$FROZEN_9B_MAIN_SHA:scripts/product-evidence/verify-exfoliation-existing-eligibility-candidate-availability-shadow-v1.mjs"; do
+            IFS=: read -r name sha verifier <<< "$pair"
+            rm -rf "_reference/$name"
+            git clone -q --no-hardlinks . "_reference/$name"
+            git -C "_reference/$name" checkout -q "$sha"
+            if [ "$name" = "v21-9a" ]; then
+              (cd "_reference/$name" && V21_9A_REQUIRE_CHECKED_IN=1 RECOMMENDATION_REFERENCE_ROOT="$GITHUB_WORKSPACE/_reference/recommendation" node "$verifier")
+            elif [ "$name" = "v21-9b" ]; then
+              (cd "_reference/$name" && V21_9B_REQUIRE_CHECKED_IN=1 RECOMMENDATION_REFERENCE_ROOT="$GITHUB_WORKSPACE/_reference/recommendation" node "$verifier")
+            else
+              (cd "_reference/$name" && node "$verifier")
+            fi
+            rm -rf "_reference/$name"
+          done
+
+      - name: Canonical 164 x 12 production invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Exact V2.1-9C additive scope and frozen non-mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            .github/workflows/v21-9c-normative-policy-activation-readiness-reassessment.yml
+            docs/evidence/exfoliation-normative-production-policy-activation-readiness-reassessment-v1.md
+            scripts/product-evidence/build-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs
+            scripts/product-evidence/verify-exfoliation-normative-production-policy-activation-readiness-reassessment-v1.mjs
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-activation-readiness-reassessment-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-readiness-matrix-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-activation-prerequisite-evaluation-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-evidence-lineage-map-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-divergence-readiness-risk-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-live-production-evidence-requirement-assessment-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-separate-activation-authorization-boundary-v1.json
+          )
+          mapfile -t actual < <(git diff --name-only "$V21_9C_BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t wanted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${actual[@]}")" = "$(printf '%s\n' "${wanted[@]}")"
+          test -z "$(git diff --name-only "$V21_9C_BASE_MAIN_SHA..HEAD" -- app package.json package-lock.json supabase/migrations lib evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-* evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-existing-eligibility-candidate-availability-*)"
+          git diff --check "$V21_9C_BASE_MAIN_SHA..HEAD"
+          rm -rf _reference/recommendation
