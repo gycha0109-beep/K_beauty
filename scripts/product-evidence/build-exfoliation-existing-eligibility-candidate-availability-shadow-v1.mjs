@@ -52,7 +52,8 @@ function keyOf(row) {
 }
 
 function classifyRestrict(row) {
-  if (row.action !== "RESTRICT") return "NOT_RESTRICT";
+  const action = row.source_9a_action ?? row.action;
+  if (action !== "RESTRICT") return "NOT_RESTRICT";
   if (row.candidate_availability_state !== "PRESENT_AT_ENFORCEMENT_BOUNDARY") return "CANDIDATE_NOT_AVAILABLE";
   if (row.existing_eligibility === "INELIGIBLE") return "ALREADY_INELIGIBLE";
   if (row.existing_eligibility === "ELIGIBLE") return "DEFINITE_NEW_EXCLUSION";
