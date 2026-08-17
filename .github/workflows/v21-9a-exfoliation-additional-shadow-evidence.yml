@@ -41,7 +41,7 @@ jobs:
       FROZEN_8X_CONTRACT_BLOB_SHA: 5eed23e9b85e4997087663d792a82ecca34d8ad0
       FROZEN_8Y_RUNTIME_BLOB_SHA: 827f3b69f4ad288ea1f791893d8c9fb921fa0226
       FROZEN_8Z_READINESS_BLOB_SHA: 1f67f548fd0f4781296390ab0ee34e890f069efb
-      V21_9A_REQUIRE_CHECKED_IN: '0'
+      V21_9A_REQUIRE_CHECKED_IN: '1'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -88,7 +88,7 @@ jobs:
           name: v21-9a-generated-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: /tmp/v21-9a-a/*.json
           retention-days: 3
-      - name: Focused V2.1-9A verifier
+      - name: Focused V2.1-9A verifier and checked-in byte equality
         shell: bash
         run: |
           set -euo pipefail
@@ -132,10 +132,25 @@ jobs:
           set -euo pipefail
           V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
           RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
-      - name: Frozen non-mutation and additive scope sanity
+      - name: Exact V2.1-9A additive scope and frozen non-mutation
         shell: bash
         run: |
           set -euo pipefail
+          expected=(
+            .github/workflows/v21-9a-exfoliation-additional-shadow-evidence.yml
+            docs/evidence/exfoliation-non-numeric-pda-additional-shadow-evidence-v1.md
+            scripts/product-evidence/build-exfoliation-non-numeric-pda-additional-shadow-evidence-v1.mjs
+            scripts/product-evidence/verify-exfoliation-non-numeric-pda-additional-shadow-evidence-v1.mjs
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-evidence-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-distribution-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-action-distribution-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-divergence-distribution-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-hypothetical-restrict-impact-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-additional-shadow-readiness-gap-reassessment-v1.json
+          )
+          mapfile -t actual < <(git diff --name-only "$V21_9A_BASE_MAIN_SHA..HEAD" | sort)
+          mapfile -t wanted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "$(printf '%s\n' "${actual[@]}")" = "$(printf '%s\n' "${wanted[@]}")"
           test -z "$(git diff --name-only "$V21_9A_BASE_MAIN_SHA..HEAD" -- app package.json package-lock.json supabase/migrations lib/skin-match-decision-engine.js lib/candidate-exposure-policy.js lib/candidate-exposure-policy-contract.js lib/routine-policy.js lib/recent-instability-guard-policy.js lib/functional-ranking-contract.js lib/product-functional-profile.js lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-activation-readiness-contract-v1.json)"
           git diff --check "$V21_9A_BASE_MAIN_SHA..HEAD"
           rm -rf _reference/recommendation
