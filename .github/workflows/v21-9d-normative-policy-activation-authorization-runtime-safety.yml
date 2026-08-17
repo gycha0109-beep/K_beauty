@@ -59,7 +59,7 @@ jobs:
       FROZEN_9C_SUMMARY_BLOB_SHA: eedaf74c931f2fd72f4498eb079ba2b6a5699d56
       FROZEN_9C_BOUNDARY_BLOB_SHA: cf9b846f3f4326f2d195ec4aca7111f3e3b3c8b1
       FROZEN_9C_VERIFIER_BLOB_SHA: ee4ee8823cc7bc6c87c4f298900c6a6f51d52204
-      V21_9D_REQUIRE_CHECKED_IN: '0'
+      V21_9D_REQUIRE_CHECKED_IN: '1'
 
     steps:
       - uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
           git clone -q --no-hardlinks . _reference/recommendation
           git -C _reference/recommendation checkout -q 783afb91a964f5d762f46846f9ef854902b48e95
 
-      - name: Generate deterministic V2.1-9D Build A B
+      - name: Deterministic Build A B and checked-in byte equality
         shell: bash
         run: |
           set -euo pipefail
@@ -111,19 +111,22 @@ jobs:
           node --check scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
           rm -rf /tmp/v21-9d-a /tmp/v21-9d-b
           mkdir -p /tmp/v21-9d-a /tmp/v21-9d-b
+          declare -A files=(
+            [summary]=exfoliation-normative-policy-activation-authorization-runtime-safety-summary-v1.json
+            [authorization]=exfoliation-normative-policy-activation-authorization-decision-v1.json
+            [contract]=exfoliation-normative-policy-runtime-safety-contract-v1.json
+            [validation]=exfoliation-normative-policy-runtime-safety-validation-v1.json
+            [live]=exfoliation-normative-policy-live-shadow-requirement-v1.json
+            [adapter]=exfoliation-normative-policy-enforcement-adapter-prerequisite-validation-v1.json
+            [fixtures]=exfoliation-normative-policy-runtime-safety-fixtures-v1.json
+          )
           for mode in summary authorization contract validation live adapter fixtures; do
             node scripts/product-evidence/build-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs "$mode" > "/tmp/v21-9d-a/$mode.json"
             node scripts/product-evidence/build-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs "$mode" > "/tmp/v21-9d-b/$mode.json"
             cmp "/tmp/v21-9d-a/$mode.json" "/tmp/v21-9d-b/$mode.json"
+            cmp "/tmp/v21-9d-a/$mode.json" "evidence/product-decision-axis-non-numeric-shadow-v1/${files[$mode]}"
           done
           sha256sum /tmp/v21-9d-a/*.json
-
-      - name: Upload generated V2.1-9D evidence
-        uses: actions/upload-artifact@v4
-        with:
-          name: v21-9d-generated-evidence-${{ github.event.pull_request.head.sha || github.sha }}
-          path: /tmp/v21-9d-a/*.json
-          retention-days: 3
 
       - name: Focused V2.1-9D verifier and safety fixtures
         run: node scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
@@ -181,7 +184,7 @@ jobs:
           V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs
           RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
 
-      - name: Bootstrap V2.1-9D additive scope and frozen non-mutation
+      - name: Exact V2.1-9D additive scope and frozen non-mutation
         shell: bash
         run: |
           set -euo pipefail
@@ -192,8 +195,15 @@ jobs:
             lib/exfoliation-normative-policy-runtime-observability.js
             scripts/product-evidence/build-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
             scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-activation-authorization-runtime-safety-summary-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-activation-authorization-decision-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-runtime-safety-contract-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-runtime-safety-validation-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-live-shadow-requirement-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-enforcement-adapter-prerequisite-validation-v1.json
+            evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-runtime-safety-fixtures-v1.json
           )
           mapfile -t actual < <(git diff --name-only "$V21_9D_BASE_MAIN_SHA..HEAD" | sort)
           mapfile -t wanted < <(printf '%s\n' "${expected[@]}" | sort)
           test "$(printf '%s\n' "${actual[@]}")" = "$(printf '%s\n' "${wanted[@]}")"
-          test -z "$(git diff --name-only "$V21_9D_BASE_MAIN_SHA..HEAD" -- app package.json package-lock.json supabase/migrations lib/skin-match-decision-engine.js lib/recommendation-scoring.ts lib/candidate-exposure-policy.js lib/candidate-exposure-policy-contract.js lib/evaluator-boundary-policy-runtime.js lib/existing-recommendation-candidate-source.js lib/routine-policy.js lib/recent-instability-guard-policy.js lib/functional-ranking-contract.js lib/product-functional-profile.js lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js)"
+          test -z "$(git diff --name-only "$V21_9D_BASE_MAIN_SHA..HEAD" -- app package.json package-lock.json supabase/migrations lib/skin-match-decision-engine.js lib/recommendation-scoring.ts lib/candidate-exposure-policy.js lib/candidate-exposure-policy-contract.js lib/evaluator-boundary-policy-runtime.js lib/existing-recommendation-candidate-source.js lib/routine-policy.js lib/recent-instability-guard-policy.js lib/functional-ranking-contract.js lib/product-functional-profile.js lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1.json evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-non-numeric-pda-normative-production-policy-activation-gate-v1.json evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-production-policy-activation-readiness-reassessment-summary-v1.json)"
