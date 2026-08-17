@@ -1,6 +1,6 @@
 # V2.1-9A — Exfoliation Normative Production Policy Additional Shadow Evidence
 
-Terminal: `NORMATIVE_PRODUCTION_POLICY_ADDITIONAL_SHADOW_EVIDENCE_SUFFICIENT_FOR_ACTIVATION_REASSESSMENT`
+Terminal: `NORMATIVE_PRODUCTION_POLICY_ADDITIONAL_SHADOW_EVIDENCE_GAP_REMAINS`
 
 This stage acquires additional **bounded shadow evidence** only. It does not authorize or execute production activation.
 
@@ -16,7 +16,7 @@ This stage acquires additional **bounded shadow evidence** only. It does not aut
 
 The frozen `exfoliation_load` mapper applies only to `treatment`, `toner_essence`, and `toner_pad`. Current authoritative catalog counts are 18 + 24 + 24 = 66 applicable products and 98 products outside the axis domain. Those 98 real products provide authoritative `NOT_APPLICABLE` coverage without inventing missing Product Facts.
 
-The four existing governed runtime replay products are preserved exactly. Two are READY and two remain governed DEFER. READY products are the only products on which controlled external contexts can create CAUTION/RESTRICT in 9A. Other applicable products without a frozen governed PDA replay remain `DEFER_INSUFFICIENT_AUTHORITY`; missing is never coerced to false or safe.
+The four existing governed runtime replay products are preserved exactly. Two are READY and two remain governed DEFER. READY products are the only products on which controlled external contexts create CAUTION/RESTRICT in 9A. Other applicable products without a frozen governed PDA replay remain `DEFER_INSUFFICIENT_AUTHORITY`; missing is never coerced to false or safe.
 
 ## Controlled context families
 
@@ -26,22 +26,31 @@ CAUTION and RESTRICT prove deterministic policy mapping of authorized external s
 
 ## Bounded distribution and divergence
 
-The builder reuses the existing canonical 164×12 comparator output and the frozen 8Y evaluator. It does not create a new scorer/ranker/eligibility path. Every one of the 1968 evaluations is materialized deterministically in CI; checked-in distribution artifacts store complete aggregate strata plus the full row count and canonical SHA-256, while the verbose 1968-row corpus is uploaded as a CI artifact rather than promoted to live traffic evidence.
+The builder reuses the existing canonical 164×12 comparator output and the frozen 8Y evaluator. It does not create a new scorer/ranker/eligibility path. Every one of the 1968 evaluations is materialized deterministically in CI; checked-in distribution artifacts store aggregate strata plus the full row count and canonical SHA-256, while the verbose row corpus remains a CI artifact and is never represented as live traffic.
 
 The V2.1-8T divergence taxonomy is reused unchanged. 9A adds only enforcement relevance classification: NONE, POTENTIAL_ELIGIBILITY_IMPACT, POTENTIAL_TOP_K_IMPACT, or REQUIRES_REVIEW.
 
-## Hypothetical enforcement
+## Acquired evidence
 
-For shadow `RESTRICT` only, 9A simulates the already-frozen future overlay:
+The bounded distribution structurally exercises all five policy actions. Actual governed READY products produce ALLOW with no controlled concern, CAUTION through authorized controlled safety/routine/window/duplicate/identity contexts, and RESTRICT through `hard_block_candidate`, routine `hold`, and same-window `blocked`. Actual governed DEFER products preserve insufficient-authority uncertainty. Actual products outside the frozen axis category domain provide NOT_APPLICABLE.
 
-`hypothetical_final_eligibility = existing_eligibility AND normative_policy_eligibility`
+## Remaining material gap
 
-Null existing eligibility remains unknown and is never coerced to true. Top1/Top3 effects are reported as definite only when the exclusion is definite, and separately as potential when canonical selection membership indicates exposure to the counterfactual restriction.
+The canonical comparator does not expose a boolean per-candidate existing eligibility value for these 1968 rows: `existing_eligibility` is unknown throughout the bounded corpus. This is preserved as unknown rather than coerced to eligible or ineligible.
 
-## Readiness interpretation
+Consequences for the six controlled-context RESTRICT rows:
 
-All shadow-acquirable structural gaps identified by 8Z are characterized: five-action structural coverage, actual-product controlled CAUTION/RESTRICT, real catalog NOT_APPLICABLE, all external-context families, bounded catalog action/divergence distributions, enforcement relevance, and hypothetical RESTRICT candidate/Top-K impact.
+- deterministic RESTRICT mapping is validated;
+- all six have unknown existing eligibility;
+- the two restricted governed products are outside the current Top1/Top3 in the three RESTRICT scenarios, so direct current Top1/Top3 overlap is zero;
+- definite candidate exclusions cannot be counted;
+- refill ordering after exclusion cannot be asserted;
+- Top-K insufficiency cannot be asserted.
 
-Live production distribution remains `NOT_OBTAINABLE_WITH_CURRENT_AUTHORITY`; evaluator/canonical enforcement runtime evidence remains partially closed because canonical enforcement is intentionally unimplemented. These remaining gaps belong to a **new separate activation-readiness reassessment**, not another bounded shadow-evidence acquisition wave.
+Therefore enforcement relevance and hypothetical Top-K impact are only **partially closed**. A further bounded evidence wave targeting the authoritative existing-eligibility / candidate-availability surface is justified before returning to activation-readiness reassessment.
 
-The terminal above does not authorize activation. `PRODUCTION_ACTIVATION_AUTHORIZED`, `ACTIVATION_EXECUTED`, `RESTRICT_ENFORCEMENT_IMPLEMENTED`, and `RESTRICT_CANONICAL_EXCLUSION_ACTIVE` remain `NO`, and canonical score/rank/eligibility/Top-K/public response/persistence remain unchanged.
+Live production distribution also remains `NOT_OBTAINABLE_WITH_CURRENT_AUTHORITY`; 9A does not manufacture it.
+
+The terminal is therefore `NORMATIVE_PRODUCTION_POLICY_ADDITIONAL_SHADOW_EVIDENCE_GAP_REMAINS`. This is a successful 9A closeout, not a technical failure.
+
+`PRODUCTION_ACTIVATION_AUTHORIZED`, `ACTIVATION_EXECUTED`, `RESTRICT_ENFORCEMENT_IMPLEMENTED`, and `RESTRICT_CANONICAL_EXCLUSION_ACTIVE` remain `NO`, and canonical score/rank/eligibility/Top-K/public response/persistence remain unchanged.
