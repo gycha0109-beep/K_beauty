@@ -1,0 +1,93 @@
+name: V2.1-9E Normative Policy Production SHADOW
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-9e-normative-policy-production-shadow.yml'
+      - 'lib/skin-match-decision-engine.js'
+      - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
+      - 'lib/exfoliation-normative-policy-governed-runtime-authority.js'
+      - 'scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json'
+      - 'scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v21-9e-normative-policy-production-shadow.yml'
+      - 'lib/skin-match-decision-engine.js'
+      - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
+      - 'lib/exfoliation-normative-policy-governed-runtime-authority.js'
+      - 'scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json'
+      - 'scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-v21-9e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      V21_9E_BASE_MAIN_SHA: 41c6e1a7a81d205b096ec504f39cccdbd04c5dfb
+      V21_9E_ARTIFACT_SHA256: 5ec22e79667d7e32a20cb5512db99d739ce7f49b59807605deef8737e1c291e0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.event.pull_request.head.sha || github.sha }}'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Exact authority and hook scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          git merge-base --is-ancestor "$V21_9E_BASE_MAIN_SHA" HEAD
+          test "$(grep -c 'observeExfoliationNormativePolicyProductionShadow' lib/skin-match-decision-engine.js)" = "1"
+          grep -q 'POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY' lib/exfoliation-normative-policy-activation-runtime.js
+          ! grep -q 'EXFOLIATION_NORMATIVE_POLICY_MODE.*ENFORCE' lib/exfoliation-normative-policy-production-shadow-observer.js
+
+      - name: Syntax and deterministic Build A B checked-in equality
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check lib/exfoliation-normative-policy-governed-runtime-authority.js
+          node --check lib/exfoliation-normative-policy-production-shadow-observer.js
+          node --check scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+          node --check scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+          rm -rf /tmp/v21-9e-a /tmp/v21-9e-b
+          mkdir -p /tmp/v21-9e-a /tmp/v21-9e-b
+          V21_9E_OUTPUT_DIR=/tmp/v21-9e-a node scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+          V21_9E_OUTPUT_DIR=/tmp/v21-9e-b node scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+          cmp /tmp/v21-9e-a/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json /tmp/v21-9e-b/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json
+          cmp /tmp/v21-9e-a/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json
+          test "$(sha256sum /tmp/v21-9e-a/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json | awk '{print $1}')" = "$V21_9E_ARTIFACT_SHA256"
+          sha256sum /tmp/v21-9e-a/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json
+
+      - name: Focused V2.1-9E SHADOW verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+
+      - name: Historical V2.1-9D 32 safety assertions
+        env:
+          V21_9D_REQUIRE_CHECKED_IN: '1'
+        run: node scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
+
+      - name: Production build
+        env:
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: '0'
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: '0'
+          EXFOLIATION_NORMATIVE_POLICY_MODE: 'OFF'
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: npm run build
