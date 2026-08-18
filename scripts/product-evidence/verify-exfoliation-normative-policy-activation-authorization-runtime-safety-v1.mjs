@@ -40,9 +40,8 @@ ok(summary.invariants.HOSTED_PRODUCT_FACT_WRITES === 0 && summary.invariants.REG
 ok(summary.invariants.NUMERIC_FITTING === 0 && summary.invariants.POTENCY_ORDERING_CREATED === "NO", "no numeric fitting/potency");
 ok(summary.invariants.RECOMMENDATION_SCORER_CHANGED === "NO" && summary.invariants.RECOMMENDATION_RANKER_CHANGED === "NO" && summary.invariants.LEGACY_HEURISTIC_REPLACED === "NO", "production semantics frozen");
 ok(authorization.rollout_scope.numeric_percentage_defined === false && authorization.rollout_scope.implicit_user_exposure_authorized === false, "bounded authorization without invented blast radius");
-const skinEngine = fs.readFileSync("lib/skin-match-decision-engine.js", "utf8");
-ok(!skinEngine.includes("exfoliation-normative-policy-activation-runtime"), "9D runtime not canonically wired");
-ok(!skinEngine.includes("exfoliation-normative-policy-runtime-observability"), "9D observability not canonically wired");
+eq(contract.production_integration_state, "DORMANT_NOT_CANONICALLY_WIRED_IN_9D", "9D historical integration state remains dormant");
+ok(summary.decision.activation_executed === false && summary.decision.runtime_active === false && summary.decision.enforce_authorized === false, "9D historical runtime remained inactive and unenforced");
 if (process.env.V21_9D_REQUIRE_CHECKED_IN === "1") {
   const root = "evidence/product-decision-axis-non-numeric-shadow-v1";
   for (const [mode, file] of Object.entries(OUTPUTS)) {
