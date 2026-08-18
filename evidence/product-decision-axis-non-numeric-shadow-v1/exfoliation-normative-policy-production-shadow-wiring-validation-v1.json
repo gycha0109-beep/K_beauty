@@ -1,0 +1,32 @@
+{
+  "authority_gap_behavior": "DEFER_INSUFFICIENT_AUTHORITY",
+  "authorized_mode": "SHADOW",
+  "boundary": "POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY",
+  "canonical_delta_off": 0,
+  "canonical_delta_shadow": 0,
+  "canonical_mutation_authorized": false,
+  "default_mode": "OFF",
+  "enforce_active": false,
+  "enforce_authorized": false,
+  "expected_164x12_actions": {
+    "ALLOW": 2,
+    "CAUTION": 12,
+    "DEFER": 772,
+    "NOT_APPLICABLE": 1176,
+    "RESTRICT": 6
+  },
+  "expected_restrict_positions": [
+    72,
+    118,
+    130,
+    147,
+    149,
+    153
+  ],
+  "governed_runtime_product_count": 4,
+  "production_config_control": "HUMAN_OPERATOR_MEDIATED_VERCEL_PRODUCTION_ENV",
+  "restrict_behavior": "HYPOTHETICAL_EXCLUSION_ONLY",
+  "runtime_effect": "OBSERVATION_ONLY",
+  "stage": "V2.1-9E",
+  "version": "exfoliation-normative-policy-production-shadow-wiring-validation-v1"
+}
