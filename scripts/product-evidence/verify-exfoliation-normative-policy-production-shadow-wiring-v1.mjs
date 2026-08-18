@@ -22,6 +22,9 @@ import {
 import {
   observeExfoliationNormativePolicyProductionShadow
 } from "../../lib/exfoliation-normative-policy-production-shadow-observer.js";
+import {
+  buildExfoliationNormativePolicyRuntimeStateReadback
+} from "../../lib/exfoliation-normative-policy-runtime-state-readback.js";
 
 let assertions = 0;
 const ok = (value, message) => { assert.ok(value, message); assertions += 1; };
@@ -74,6 +77,34 @@ eq(wrongScope.effectiveMode, "OFF", "wrong scope rejects to OFF");
 ok(wrongScope.reasonCodes.includes("unsupported_activation_scope"), "wrong scope reason");
 
 eq(listExfoliationNormativePolicyGovernedRuntimeProductIds().length, 4, "four governed runtime products materialized");
+
+const readbackOff = buildExfoliationNormativePolicyRuntimeStateReadback(env({
+  EXFOLIATION_NORMATIVE_POLICY_ENABLED: "0",
+  EXFOLIATION_NORMATIVE_POLICY_MODE: "OFF",
+  VERCEL_ENV: "production",
+  VERCEL_GIT_COMMIT_REF: "main",
+  VERCEL_GIT_COMMIT_SHA: "exact-production-sha"
+}));
+eq(readbackOff.effectiveMode, "OFF", "production readback resolves OFF");
+ok(readbackOff.runtimeActive === false && readbackOff.enforceActive === false, "OFF readback is inactive and never enforcing");
+eq(readbackOff.deploymentSha, "exact-production-sha", "readback carries exact deployment SHA");
+ok(readbackOff.versionCompatible === true && readbackOff.scopeValid === true, "OFF readback verifies exact version and scope pins");
+
+const readbackShadow = buildExfoliationNormativePolicyRuntimeStateReadback(env({
+  VERCEL_ENV: "production",
+  VERCEL_GIT_COMMIT_REF: "main",
+  VERCEL_GIT_COMMIT_SHA: "exact-production-sha"
+}));
+eq(readbackShadow.effectiveMode, "SHADOW", "production readback resolves SHADOW");
+ok(readbackShadow.runtimeActive === true && readbackShadow.enforcementAllowed === false && readbackShadow.enforceActive === false, "SHADOW readback remains non-enforcing");
+
+const readbackEnforceRequest = buildExfoliationNormativePolicyRuntimeStateReadback(env({
+  EXFOLIATION_NORMATIVE_POLICY_MODE: "ENFORCE",
+  VERCEL_ENV: "production"
+}));
+eq(readbackEnforceRequest.effectiveMode, "OFF", "readback proves ENFORCE request cannot become effective");
+ok(readbackEnforceRequest.reasonCodes.includes("enforce_not_authorized_by_v21_9d"), "readback exposes ENFORCE rejection reason");
+ok(!Object.keys(readbackShadow).some((key) => /(secret|token|cookie|authorization|api.?key)/i.test(key)), "readback exposes no secret-bearing fields");
 
 const candidates = [
   {
@@ -228,6 +259,14 @@ const hookSlice = engineSource.slice(observerHook, topPickBoundary);
 ok(!hookSlice.includes("exposureProducts ="), "observer hook cannot replace canonical exposureProducts");
 ok(!hookSlice.includes("engine_score =") && !hookSlice.includes(".sort("), "observer hook cannot rescore or rerank");
 eq((engineSource.match(/observeExfoliationNormativePolicyProductionShadow/g) || []).length, 1, "exactly one canonical observer hook");
+
+const readbackRouteSource = fs.readFileSync(
+  "app/api/internal/exfoliation-normative-policy-runtime-state/route.js",
+  "utf8"
+);
+ok(readbackRouteSource.includes("export function GET()"), "runtime readback route accepts no request argument");
+ok(!/(searchParams|request\.headers|request\.json|request\.url|cookies\()/i.test(readbackRouteSource), "runtime readback route has no client-controlled activation input");
+ok(readbackRouteSource.includes('process.env.VERCEL_ENV !== "production"'), "runtime readback route is production-scoped");
 
 process.stdout.write(JSON.stringify({
   stage: "V2.1-9E",
