@@ -8,10 +8,12 @@ on:
       - 'app/api/internal/exfoliation-normative-policy-runtime-state/route.js'
       - 'lib/skin-match-decision-engine.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
+      - 'lib/exfoliation-normative-policy-skin-match-context-adapter.js'
       - 'lib/exfoliation-normative-policy-governed-runtime-authority.js'
       - 'lib/exfoliation-normative-policy-runtime-state-readback.js'
       - 'scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
       - 'scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'scripts/product-evidence/verify-v21-9i-shared-context-score-scale-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json'
       - 'scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs'
   push:
@@ -22,10 +24,12 @@ on:
       - 'app/api/internal/exfoliation-normative-policy-runtime-state/route.js'
       - 'lib/skin-match-decision-engine.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
+      - 'lib/exfoliation-normative-policy-skin-match-context-adapter.js'
       - 'lib/exfoliation-normative-policy-governed-runtime-authority.js'
       - 'lib/exfoliation-normative-policy-runtime-state-readback.js'
       - 'scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
       - 'scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs'
+      - 'scripts/product-evidence/verify-v21-9i-shared-context-score-scale-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json'
       - 'scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs'
   workflow_dispatch:
@@ -64,6 +68,7 @@ jobs:
           ! grep -q 'EXFOLIATION_NORMATIVE_POLICY_MODE.*ENFORCE' lib/exfoliation-normative-policy-production-shadow-observer.js
           test -f app/api/internal/exfoliation-normative-policy-runtime-state/route.js
           test -f lib/exfoliation-normative-policy-runtime-state-readback.js
+          test -f lib/exfoliation-normative-policy-skin-match-context-adapter.js
 
       - name: Syntax and deterministic Build A B checked-in equality
         shell: bash
@@ -71,9 +76,11 @@ jobs:
           set -euo pipefail
           node --check lib/exfoliation-normative-policy-governed-runtime-authority.js
           node --check lib/exfoliation-normative-policy-production-shadow-observer.js
+          node --check lib/exfoliation-normative-policy-skin-match-context-adapter.js
           node --check lib/exfoliation-normative-policy-runtime-state-readback.js
           node --check scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
           node --check scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+          node --check scripts/product-evidence/verify-v21-9i-shared-context-score-scale-v1.mjs
           rm -rf /tmp/v21-9e-a /tmp/v21-9e-b
           mkdir -p /tmp/v21-9e-a /tmp/v21-9e-b
           V21_9E_OUTPUT_DIR=/tmp/v21-9e-a node scripts/product-evidence/build-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
@@ -85,6 +92,9 @@ jobs:
 
       - name: Focused V2.1-9E SHADOW verifier
         run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+
+      - name: Focused V2.1-9I score-scale verifier
+        run: node scripts/product-evidence/verify-v21-9i-shared-context-score-scale-v1.mjs
 
       - name: Historical V2.1-9D safety verifier
         env:
