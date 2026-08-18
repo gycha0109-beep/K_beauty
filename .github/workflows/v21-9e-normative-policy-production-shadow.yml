@@ -13,7 +13,9 @@ on:
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/exfoliation-normative-policy-production-shadow-wiring-validation-v1.json'
       - 'scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs'
   push:
-    branches: [main]
+    branches:
+      - main
+      - activate/v21-9e-normative-policy-production-shadow
     paths:
       - '.github/workflows/v21-9e-normative-policy-production-shadow.yml'
       - 'lib/skin-match-decision-engine.js'
