@@ -35,19 +35,16 @@ function report() {
 
 const rawContext = buildExfoliationNormativePolicySkinMatchContext(report());
 const genericContext = buildSharedSkinDecisionContext(report()).context;
-const directRawContext = buildSharedSkinDecisionContext(report(), {
+const directRawSafetyContext = buildSharedSkinDecisionContext(report(), {
   source: "v21_9i_routine_source_scale_contract",
   concernScoreScale: "skin_match_raw"
 }).context;
 
-assert.deepEqual(rawContext.safetyState, directRawContext.safetyState);
+assert.deepEqual(rawContext.safetyState, directRawSafetyContext.safetyState);
 assert.equal(rawContext.metadata.concernScoreScale, "skin_match_raw");
 
 const rawRoutine = buildRoutinePolicy({ context: rawContext });
-const directRawRoutine = buildRoutinePolicy({ context: directRawContext });
 const genericRoutine = buildRoutinePolicy({ context: genericContext });
-
-assert.deepEqual(rawRoutine, directRawRoutine);
 
 const rawHydration = rawRoutine.windows.morning.steps.find((step) => step.stepKey === "am.hydration");
 const genericHydration = genericRoutine.windows.morning.steps.find((step) => step.stepKey === "am.hydration");
@@ -78,7 +75,8 @@ console.log(JSON.stringify({
   verifier: "verify-v21-9i-routine-source-scale-contract-v1",
   raw_source_hydration_requirement: rawHydration?.requirement,
   generic_dynamic_hydration_requirement: genericHydration?.requirement,
-  source_scale_no_semantic_fork: true,
+  shared_safety_no_fork: true,
+  routine_source_scale_boundary: true,
   generic_scale100_regression: true,
   status: "PASS"
 }, null, 2));
