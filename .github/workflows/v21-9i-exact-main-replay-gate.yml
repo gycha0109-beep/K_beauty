@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   exact-main-replay-gate:
@@ -62,3 +63,28 @@ jobs:
         env:
           V21_9I_REFERENCE_ROOT: _reference/recommendation
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-exact-main-replay-gate-v1.mjs
+
+      - name: Publish exact-main replay gate attestation
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          PRIOR_JOB_STATUS: '${{ job.status }}'
+        run: |
+          set -euo pipefail
+          state="success"
+          description="V2.1-9I exact-main replay gate passed"
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            description="V2.1-9I exact-main replay gate blocked"
+          fi
+          payload=$(printf '{"state":"%s","context":"V2.1-9I exact-main replay gate","description":"%s","target_url":"%s/%s/actions/runs/%s"}' \
+            "$state" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "$payload" >/dev/null
+          test "$state" = "success"
