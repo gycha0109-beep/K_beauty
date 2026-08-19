@@ -1,0 +1,64 @@
+name: V2.1-9I Exact Main Replay Gate
+
+on:
+  push:
+    branches:
+      - audit/v21-9i-exact-main-replay-remediation
+    paths:
+      - '.github/workflows/v21-9i-exact-main-replay-gate.yml'
+      - 'scripts/product-evidence/verify-v21-9i-exact-main-replay-gate-v1.mjs'
+      - 'evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-remediated-synthetic-contexts-v1.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-main-replay-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      V21_9I_BASE_MAIN_SHA: 7a8e964a833e08047b3fda02ebef40b6f19e5979
+      V21_9I_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: '${{ github.sha }}'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Freeze exact-main ancestry and production-source zero delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          git merge-base --is-ancestor "$V21_9I_BASE_MAIN_SHA" HEAD
+          test "$(git merge-base "$V21_9I_BASE_MAIN_SHA" HEAD)" = "$V21_9I_BASE_MAIN_SHA"
+          git diff --exit-code "$V21_9I_BASE_MAIN_SHA" -- lib app
+          grep -q 'buildSharedSkinDecisionContext' lib/exfoliation-normative-policy-production-shadow-observer.js
+          ! grep -q 'buildExfoliationNormativePolicySkinMatchContext' lib/exfoliation-normative-policy-production-shadow-observer.js
+          ! test -f lib/exfoliation-normative-policy-skin-match-context-adapter.js
+
+      - name: Validate gate-owned fixture and verifier syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/verify-v21-9i-exact-main-replay-gate-v1.mjs
+          node -e 'const f=require("./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-remediated-synthetic-contexts-v1.json"); if(f.context_count!==28||f.contexts.length!==28) process.exit(1)'
+
+      - name: Prepare frozen canonical 164-product reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
+
+      - name: Exact-main 28 x 164 production-module replay gate
+        env:
+          V21_9I_REFERENCE_ROOT: _reference/recommendation
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-exact-main-replay-gate-v1.mjs
