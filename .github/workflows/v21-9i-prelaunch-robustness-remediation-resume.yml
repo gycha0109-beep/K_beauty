@@ -1,0 +1,221 @@
+name: V2.1-9I Full Pre-Launch Robustness Remediation
+
+on:
+  push:
+    branches:
+      - audit/v21-9i-prelaunch-robustness-remediation-resume
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/v21-9i-prelaunch-robustness-remediation-resume.yml"
+      - "scripts/product-evidence/build-v21-9i-prelaunch-robustness-remediation-v1.mjs"
+      - "scripts/product-evidence/materialize-v21-9i-prelaunch-robustness-remediation-v1.mjs"
+      - "scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs"
+      - "evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json"
+      - "evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-manifest-v1.json"
+      - "docs/evidence/v21-9i-prelaunch-robustness-remediation-v1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+env:
+  V21_9I_FULL_BASE_MAIN_SHA: a93a997d26dd01cd708fb4319c3fe953aa99cc4f
+  V21_9I_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  V21_9I_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-v21-9i-full:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head or merged-main SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.V21_9I_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact SHA and ancestry
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V21_9I_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$V21_9I_FULL_BASE_MAIN_SHA" HEAD
+          test "$(git merge-base "$V21_9I_FULL_BASE_MAIN_SHA" HEAD)" = "$V21_9I_FULL_BASE_MAIN_SHA"
+
+      - name: Production semantic source zero-delta
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$V21_9I_FULL_BASE_MAIN_SHA" -- lib src app
+
+      - name: Bounded validation and evidence scope
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$V21_9I_FULL_BASE_MAIN_SHA")"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-9i-prelaunch-robustness-remediation-resume\.yml|scripts/product-evidence/(build|materialize|verify)-v21-9i-prelaunch-robustness-remediation-v1\.mjs|evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation(-manifest)?-v1\.json|docs/evidence/v21-9i-prelaunch-robustness-remediation-v1\.md)$' || true)"
+          test -z "$forbidden"
+
+      - name: Syntax
+        run: |
+          node --check scripts/product-evidence/build-v21-9i-prelaunch-robustness-remediation-v1.mjs
+          node --check scripts/product-evidence/materialize-v21-9i-prelaunch-robustness-remediation-v1.mjs
+          node --check scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
+
+      - name: Fixture integrity and lineage
+        run: |
+          node - <<'NODE'
+          const f=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-remediated-synthetic-contexts-v1.json');
+          if(f.contexts.length!==28) process.exit(1);
+          if(f.fixture_lineage!=='REMEDIATED_FIXTURE_VERSION') process.exit(1);
+          if(f.original_worker_fixture_recovered!==false) process.exit(1);
+          NODE
+
+      - name: Prepare frozen 164-product reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
+
+      - name: Exact 28x164 replay, reachability, precedence, fallback, historical replay, and Build A-B byte equality
+        env:
+          V21_9I_REFERENCE_ROOT: _reference/recommendation
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
+
+      - name: Synthetic replay and NOT_APPLICABLE evidence assertions
+        run: |
+          node - <<'NODE'
+          const a=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json');
+          const s=a.synthetic_replay;
+          if(s.contexts!==28||s.products!==164||s.replay_cases!==4592||s.runtime_executions!==4592) process.exit(1);
+          if(JSON.stringify(s.action_distribution)!==JSON.stringify({ALLOW:28,CAUTION:2,DEFER:4542,NOT_APPLICABLE:0,RESTRICT:20})) process.exit(1);
+          if(s.semantic_mismatch_count!==0||s.fallback_count!==0||s.actual_normative_exclusion_count!==0) process.exit(1);
+          if(a.not_applicable_reachability.classification!=='REACHABLE_BY_CURRENT_CONTRACT_NOT_OBSERVED_IN_REMEDIATED_28_CONTEXT_REPLAY') process.exit(1);
+          if(a.not_applicable_reachability.forced_for_coverage!==false) process.exit(1);
+          NODE
+
+      - name: Full 48-case precedence audit assertion
+        run: |
+          node - <<'NODE'
+          const a=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json');
+          const p=a.precedence_audit;
+          if(p.total!==48||p.pass_count!==48||p.failure_count!==0||p.cases.length!==48||p.cases.some(x=>x.pass!==true)) process.exit(1);
+          NODE
+
+      - name: Full 13-case failure and fallback audit assertion
+        run: |
+          node - <<'NODE'
+          const a=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json');
+          const f=a.failure_fallback_audit;
+          if(f.total!==13||f.pass_count!==13||f.failure_count!==0||f.cases.length!==13||f.cases.some(x=>x.pass!==true)) process.exit(1);
+          if(f.fallback_principle!=='FAIL_CLOSED_TO_POLICY_DEFER_PRESERVE_EXISTING_LEGACY_PRODUCTION_PATH') process.exit(1);
+          NODE
+
+      - name: Privacy-safe historical 40x164 replay assertion
+        run: |
+          node - <<'NODE'
+          const a=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json');
+          const h=a.historical_replay;
+          if(h.lineage!=='PRIVACY_SAFE_REPOSITORY_HISTORICAL_EVIDENCE_PROJECTION') process.exit(1);
+          if(h.privacy_classification!=='PRIVACY_SAFE_HISTORICAL_REPLAY') process.exit(1);
+          if(h.original_worker_corpus_recovered!==false||h.organic_evidence!==false||h.live_user_evidence!==false||h.raw_personal_data_committed!==false) process.exit(1);
+          if(h.contexts!==40||h.products!==164||h.replay_cases!==6560||h.runtime_executions!==6560) process.exit(1);
+          if(JSON.stringify(h.action_distribution)!==JSON.stringify({ALLOW:328,CAUTION:1312,DEFER:3936,RESTRICT:984})) process.exit(1);
+          NODE
+
+      - name: Deterministic checked-in artifact manifest assertion
+        run: |
+          node - <<'NODE'
+          const m=require('./evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-manifest-v1.json');
+          if(m.artifact_sha256!=='7aec77bd85f8f665f62ed641ca5e16bef25adab1d1953d04b4bae3e295ff635b') process.exit(1);
+          if(!m.build_a_build_b_required||!m.checked_in_byte_equality_required) process.exit(1);
+          if(m.timestamps_included||m.execution_durations_included||m.random_ids_included) process.exit(1);
+          NODE
+
+      - name: Historical V2.1-9E production SHADOW wiring regression
+        run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+
+      - name: Historical V2.1-9D activation safety regression
+        env:
+          V21_9D_REQUIRE_CHECKED_IN: "1"
+        run: node scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
+
+      - name: V2.1-9I-SR source-contract regression
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs
+
+      - name: Canonical 164x12 OFF invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "0"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: OFF
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Canonical 164x12 SHADOW invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "1"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: SHADOW
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish pre-PR exact-SHA validation attestation
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/audit/v21-9i-prelaunch-robustness-remediation-resume' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          description="V2.1-9I full pre-PR exact-SHA validation passed"
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            description="V2.1-9I full pre-PR exact-SHA validation failed"
+          fi
+          payload=$(printf '{"state":"%s","context":"V2.1-9I full pre-PR exact-SHA validation","description":"%s","target_url":"%s/%s/actions/runs/%s"}' "$state" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
+          curl --fail-with-body --silent --show-error -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -d "$payload" >/dev/null
+          test "$state" = "success"
+
+      - name: Publish merged-main exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          description="V2.1-9I full merged-main exact-SHA CI passed"
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            description="V2.1-9I full merged-main exact-SHA CI failed"
+          fi
+          payload=$(printf '{"state":"%s","context":"V2.1-9I full merged-main exact-SHA CI","description":"%s","target_url":"%s/%s/actions/runs/%s"}' "$state" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
+          curl --fail-with-body --silent --show-error -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -d "$payload" >/dev/null
+          test "$state" = "success"
