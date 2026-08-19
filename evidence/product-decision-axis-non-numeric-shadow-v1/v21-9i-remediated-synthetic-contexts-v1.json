@@ -1,0 +1,205 @@
+{
+  "fixture_version": "v21-9i-remediated-synthetic-contexts-v1",
+  "fixture_lineage": "REMEDIATED_FIXTURE_VERSION",
+  "original_worker_fixture_recovered": false,
+  "privacy_classification": "CONTROLLED_SYNTHETIC_NO_PERSONAL_DATA",
+  "context_count": 28,
+  "contexts": [
+    {
+      "context_id": "CTX-001",
+      "dimensions": ["baseline", "stable", "no_current_products"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 12, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": false, "safety_level": "stable"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-002",
+      "dimensions": ["survey_sensitivity_high", "safety_context"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "high", "mainConcern": "redness", "mainConcerns": ["redness"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "redness", "score_card": {"barrier": 10, "redness": 16, "acne": 5, "dehydration": 8, "oiliness": 8, "pores": 10, "uneven_tone": 4, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-003",
+      "dimensions": ["sensitive_priority", "barrier_priority"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "low", "mainConcern": "barrier", "mainConcerns": ["barrier"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "barrier", "score_card": {"barrier": 12, "redness": 4, "acne": 4, "dehydration": 10, "oiliness": 4, "pores": 8, "uneven_tone": 5, "uv": 5}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-004",
+      "dimensions": ["raw_score_boundary", "barrier_18", "max_below_40"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 18, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 39, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-005",
+      "dimensions": ["raw_score_scale_cross_axis", "barrier_20", "pores_47"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 20, "redness": 2, "acne": 3, "dehydration": 0, "oiliness": 12, "pores": 47, "uneven_tone": 3, "uv": 4}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-006",
+      "dimensions": ["raw_score_scale_cross_axis", "redness_18", "uv_55"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "uv", "mainConcerns": ["uv"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "uv", "score_card": {"barrier": 8, "redness": 18, "acne": 4, "dehydration": 6, "oiliness": 8, "pores": 10, "uneven_tone": 7, "uv": 55}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "redness"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-007",
+      "dimensions": ["raw_score_scale_cross_axis", "dehydration_18", "pores_41"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 4, "dehydration": 18, "oiliness": 8, "pores": 41, "uneven_tone": 7, "uv": 7}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "dehydration"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-008",
+      "dimensions": ["raw_score_scale_cross_axis", "acne_18", "oiliness_60"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "oiliness", "mainConcerns": ["oiliness"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "more_oily", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "oiliness", "score_card": {"barrier": 8, "redness": 4, "acne": 18, "dehydration": 5, "oiliness": 60, "pores": 35, "uneven_tone": 4, "uv": 5}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "acne"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-009",
+      "dimensions": ["recent_skin_change", "instability"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "yes", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 20, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-010",
+      "dimensions": ["recent_product_change", "instability"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "yes", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 20, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-011",
+      "dimensions": ["active_current_product", "raw_score_scale_cross_axis", "barrier_20", "pores_47"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 20, "redness": 2, "acne": 3, "dehydration": 0, "oiliness": 12, "pores": 47, "uneven_tone": 3, "uv": 4}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "sensitive_burden": true, "safety_level": "stabilize_first", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-012",
+      "dimensions": ["active_current_product", "barrier_20", "max_below_40"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 20, "redness": 2, "acne": 3, "dehydration": 0, "oiliness": 12, "pores": 39, "uneven_tone": 3, "uv": 4}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "sensitive_burden": true, "safety_level": "stabilize_first", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-013",
+      "dimensions": ["duplicate_current_active", "active_stack"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "uneven_tone", "mainConcerns": ["uneven_tone"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "uneven_tone", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 8, "pores": 10, "uneven_tone": 16, "uv": 6}, "current_products_mode": "active_double"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-014",
+      "dimensions": ["unknown_current_product", "missing_authority"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 16, "uneven_tone": 5, "uv": 6}, "current_products_mode": "unknown_selected"},
+      "expected_relevant_dimensions": {"unknown_exposure_present": true},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-015",
+      "dimensions": ["high_sensitivity", "active_current_product"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "high", "mainConcern": "barrier", "mainConcerns": ["barrier"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "more_dry", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "barrier", "score_card": {"barrier": 16, "redness": 8, "acne": 4, "dehydration": 15, "oiliness": 3, "pores": 5, "uneven_tone": 5, "uv": 5}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "sensitive_burden": true, "safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-016",
+      "dimensions": ["cleansing_frequency_3_plus", "routine_burden"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "oiliness", "mainConcerns": ["oiliness"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "more_oily", "cleansingFrequency": "3_plus", "makeupUse": false}, "priority_axis": "oiliness", "score_card": {"barrier": 8, "redness": 4, "acne": 7, "dehydration": 5, "oiliness": 20, "pores": 18, "uneven_tone": 4, "uv": 5}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"safety_level": "stable"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-017",
+      "dimensions": ["post_wash_tight", "routine_burden"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "low", "mainConcern": "dehydration", "mainConcerns": ["dehydration"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "tight", "afternoonSkinChange": "more_dry", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "dehydration", "score_card": {"barrier": 12, "redness": 4, "acne": 4, "dehydration": 17, "oiliness": 3, "pores": 6, "uneven_tone": 5, "uv": 5}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-018",
+      "dimensions": ["makeup_use", "routine_burden"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": true}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 12, "pores": 16, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"safety_level": "stable"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-019",
+      "dimensions": ["recent_product_reaction", "instability_signal"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "medium", "mainConcern": "redness", "mainConcerns": ["redness"], "recentSkinChange": "yes", "recentlyChangedProduct": "yes", "productReaction": "yes", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "redness", "score_card": {"barrier": 12, "redness": 17, "acne": 5, "dehydration": 9, "oiliness": 8, "pores": 10, "uneven_tone": 5, "uv": 5}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-020",
+      "dimensions": ["recent_instability", "high_sensitivity", "no_current_products"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "high", "mainConcern": "barrier", "mainConcerns": ["barrier", "redness"], "recentSkinChange": "yes", "recentlyChangedProduct": "no", "postWashFeeling": "tight", "afternoonSkinChange": "more_dry", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "barrier", "score_card": {"barrier": 17, "redness": 15, "acne": 5, "dehydration": 16, "oiliness": 3, "pores": 4, "uneven_tone": 4, "uv": 4}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-021",
+      "dimensions": ["barrier_priority", "active_current_product", "same_window_pressure"],
+      "input": {"answers": {"skinType": "dry", "sensitivity": "medium", "mainConcern": "barrier", "mainConcerns": ["barrier"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "more_dry", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "barrier", "score_card": {"barrier": 17, "redness": 8, "acne": 5, "dehydration": 15, "oiliness": 3, "pores": 5, "uneven_tone": 5, "uv": 5}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "sensitive_burden": true, "safety_level": "stabilize_first"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-022",
+      "dimensions": ["raw_score_boundary", "active_current_product", "barrier_18", "pores_80"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 18, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 20, "pores": 80, "uneven_tone": 5, "uv": 6}, "current_products_mode": "active_single"},
+      "expected_relevant_dimensions": {"active_exposure_present": true, "sensitive_burden": true, "safety_level": "stabilize_first", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-023",
+      "dimensions": ["raw_score_boundary_control", "barrier_17", "pores_80"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 17, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 20, "pores": 80, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"high_sensitive_axes_excludes": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-024",
+      "dimensions": ["raw_score_boundary", "barrier_18", "pores_80"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 18, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 20, "pores": 80, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-025",
+      "dimensions": ["raw_score_boundary_control", "redness_17", "pores_80"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 17, "acne": 5, "dehydration": 6, "oiliness": 20, "pores": 80, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"high_sensitive_axes_excludes": "redness"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-026",
+      "dimensions": ["raw_score_boundary", "redness_18", "pores_80"],
+      "input": {"answers": {"skinType": "oily", "sensitivity": "low", "mainConcern": "pores", "mainConcerns": ["pores"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false}, "priority_axis": "pores", "score_card": {"barrier": 8, "redness": 18, "acne": 5, "dehydration": 6, "oiliness": 20, "pores": 80, "uneven_tone": 5, "uv": 6}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "redness"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-027",
+      "dimensions": ["uv_priority", "raw_score_boundary", "barrier_18", "uv_80"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "mainConcern": "uv", "mainConcerns": ["uv"], "recentSkinChange": "no", "recentlyChangedProduct": "no", "postWashFeeling": "comfortable", "afternoonSkinChange": "mostly_same", "cleansingFrequency": "twice", "makeupUse": false, "outdoorExposure": true}, "priority_axis": "uv", "score_card": {"barrier": 18, "redness": 4, "acne": 5, "dehydration": 6, "oiliness": 8, "pores": 10, "uneven_tone": 5, "uv": 80}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": true, "safety_level": "caution", "high_sensitive_axes_contains": "barrier"},
+      "privacy": "controlled_synthetic"
+    },
+    {
+      "context_id": "CTX-028",
+      "dimensions": ["missing_context", "unknown_authority", "minimal_scores"],
+      "input": {"answers": {"skinType": "combination", "sensitivity": "low", "recentSkinChange": "no", "recentlyChangedProduct": "no"}, "priority_axis": null, "score_card": {}, "current_products_mode": "none"},
+      "expected_relevant_dimensions": {"sensitive_burden": false, "safety_level": "stable"},
+      "privacy": "controlled_synthetic"
+    }
+  ]
+}
