@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v21-9i-score-scale-semantic-remediation.yml'
+      - 'lib/shared-skin-decision-context.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
       - 'lib/exfoliation-normative-policy-skin-match-context.js'
       - 'scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs'
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v21-9i-score-scale-semantic-remediation.yml'
+      - 'lib/shared-skin-decision-context.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
       - 'lib/exfoliation-normative-policy-skin-match-context.js'
       - 'scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs'
@@ -28,7 +30,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:
-      V21_9I_SR_BASE_MAIN_SHA: 7a8e964a833e08047b3fda02ebef40b6f19e5979
+      V21_9I_SR_BASE_MAIN_SHA: 3fdbd70095258684bda7a2450a8448fd648f07b2
       V21_9I_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
     steps:
       - uses: actions/checkout@v4
@@ -51,10 +53,10 @@ jobs:
           git merge-base --is-ancestor "$V21_9I_SR_BASE_MAIN_SHA" HEAD
           test "$(git merge-base "$V21_9I_SR_BASE_MAIN_SHA" HEAD)" = "$V21_9I_SR_BASE_MAIN_SHA"
           git diff --exit-code "$V21_9I_SR_BASE_MAIN_SHA" -- \
-            lib/shared-skin-decision-context.js \
             lib/shared-skin-decision-context-v4.js \
             lib/routine-policy.js \
-            lib/skin-match-decision-engine.js
+            lib/skin-match-decision-engine.js \
+            lib/exfoliation-normative-policy-production-shadow-observer.js
           grep -q 'buildExfoliationNormativePolicySkinMatchContext' lib/exfoliation-normative-policy-production-shadow-observer.js
           ! grep -q 'buildSharedSkinDecisionContext' lib/exfoliation-normative-policy-production-shadow-observer.js
           ! grep -q 'EXFOLIATION_NORMATIVE_POLICY_MODE.*ENFORCE' lib/exfoliation-normative-policy-production-shadow-observer.js
@@ -63,11 +65,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check lib/shared-skin-decision-context.js
           node --check lib/exfoliation-normative-policy-skin-match-context.js
           node --check lib/exfoliation-normative-policy-production-shadow-observer.js
           node --check scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs
-          grep -q 'RAW_SKIN_MATCH_HIGH_CONCERN_THRESHOLD = 18' lib/exfoliation-normative-policy-skin-match-context.js
+          grep -q 'concernScoreScale.*skin_match_raw' lib/shared-skin-decision-context.js
           grep -q 'concernScoreScale: "skin_match_raw"' lib/exfoliation-normative-policy-skin-match-context.js
+          ! grep -q 'rebuildRawSkinMatchSafetyState' lib/exfoliation-normative-policy-skin-match-context.js
+          ! grep -q 'activeBurden' lib/exfoliation-normative-policy-skin-match-context.js
 
       - name: Prepare frozen canonical 164-product reference
         shell: bash
@@ -78,7 +83,7 @@ jobs:
           git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
           node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
 
-      - name: Boundary, blocker contexts, and exact 28 x 164 replay
+      - name: Boundary, blocker contexts, source no-fork, and exact 28 x 164 replay
         env:
           V21_9I_REFERENCE_ROOT: _reference/recommendation
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs
@@ -89,6 +94,9 @@ jobs:
           set -euo pipefail
           node scripts/verify-shared-skin-decision-context-v4.mjs
           node scripts/verify-routine-policy-single-source.mjs
+
+      - name: Historical V2.1-9E production SHADOW wiring verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
 
       - name: Historical normative runtime safety
         env:
