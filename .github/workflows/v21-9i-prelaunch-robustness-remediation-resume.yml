@@ -9,6 +9,7 @@ on:
     paths:
       - ".github/workflows/v21-9i-prelaunch-robustness-remediation-resume.yml"
       - "scripts/product-evidence/build-v21-9i-prelaunch-robustness-remediation-v1.mjs"
+      - "scripts/product-evidence/materialize-v21-9i-prelaunch-robustness-remediation-v1.mjs"
       - "scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs"
       - "evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json"
       - "evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-manifest-v1.json"
@@ -16,7 +17,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   statuses: write
 
 env:
@@ -59,15 +60,14 @@ jobs:
           set -euo pipefail
           changed="$(git diff --name-only "$V21_9I_FULL_BASE_MAIN_SHA")"
           printf '%s\n' "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-9i-prelaunch-robustness-remediation-resume\.yml|scripts/product-evidence/(build|verify)-v21-9i-prelaunch-robustness-remediation-v1\.mjs|evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation(-manifest)?-v1\.json|docs/evidence/v21-9i-prelaunch-robustness-remediation-v1\.md)$' || true)"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-9i-prelaunch-robustness-remediation-resume\.yml|scripts/product-evidence/(build|materialize|verify)-v21-9i-prelaunch-robustness-remediation-v1\.mjs|evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation(-manifest)?-v1\.json|docs/evidence/v21-9i-prelaunch-robustness-remediation-v1\.md)$' || true)"
           test -z "$forbidden"
 
       - name: Syntax
         run: |
           node --check scripts/product-evidence/build-v21-9i-prelaunch-robustness-remediation-v1.mjs
-          if test -f scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs; then
-            node --check scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
-          fi
+          node --check scripts/product-evidence/materialize-v21-9i-prelaunch-robustness-remediation-v1.mjs
+          node --check scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
 
       - name: Prepare frozen 164-product reference
         run: |
@@ -77,15 +77,26 @@ jobs:
           git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
           node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
 
-      - name: Generate deterministic full 9I evidence
+      - name: Materialize deterministic checked-in evidence
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/audit/v21-9i-prelaunch-robustness-remediation-resume' }}
         env:
           V21_9I_REFERENCE_ROOT: _reference/recommendation
         run: |
           set -euo pipefail
-          node --experimental-default-type=module scripts/product-evidence/build-v21-9i-prelaunch-robustness-remediation-v1.mjs --emit-base64
+          node --experimental-default-type=module scripts/product-evidence/materialize-v21-9i-prelaunch-robustness-remediation-v1.mjs
+          git add \
+            evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-v1.json \
+            evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-prelaunch-robustness-remediation-manifest-v1.json
+          if git diff --cached --quiet; then
+            echo "Deterministic evidence already materialized."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "evidence(v21-9i): materialize deterministic full closeout artifacts"
+            git push origin HEAD:audit/v21-9i-prelaunch-robustness-remediation-resume
+          fi
 
-      - name: Verify checked-in deterministic evidence
-        if: ${{ hashFiles('scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs') != '' }}
+      - name: Build A / Build B and checked-in byte equality
         env:
           V21_9I_REFERENCE_ROOT: _reference/recommendation
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
