@@ -6,18 +6,22 @@ on:
     paths:
       - '.github/workflows/v21-9i-score-scale-semantic-remediation.yml'
       - 'lib/shared-skin-decision-context.js'
+      - 'lib/routine-policy.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
       - 'lib/exfoliation-normative-policy-skin-match-context.js'
       - 'scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs'
+      - 'scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-remediated-synthetic-contexts-v1.json'
   push:
     branches: [main]
     paths:
       - '.github/workflows/v21-9i-score-scale-semantic-remediation.yml'
       - 'lib/shared-skin-decision-context.js'
+      - 'lib/routine-policy.js'
       - 'lib/exfoliation-normative-policy-production-shadow-observer.js'
       - 'lib/exfoliation-normative-policy-skin-match-context.js'
       - 'scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs'
+      - 'scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs'
       - 'evidence/product-decision-axis-non-numeric-shadow-v1/v21-9i-remediated-synthetic-contexts-v1.json'
   workflow_dispatch:
 
@@ -54,7 +58,6 @@ jobs:
           test "$(git merge-base "$V21_9I_SR_BASE_MAIN_SHA" HEAD)" = "$V21_9I_SR_BASE_MAIN_SHA"
           git diff --exit-code "$V21_9I_SR_BASE_MAIN_SHA" -- \
             lib/shared-skin-decision-context-v4.js \
-            lib/routine-policy.js \
             lib/skin-match-decision-engine.js \
             lib/exfoliation-normative-policy-production-shadow-observer.js
           grep -q 'buildExfoliationNormativePolicySkinMatchContext' lib/exfoliation-normative-policy-production-shadow-observer.js
@@ -66,10 +69,13 @@ jobs:
         run: |
           set -euo pipefail
           node --check lib/shared-skin-decision-context.js
+          node --check lib/routine-policy.js
           node --check lib/exfoliation-normative-policy-skin-match-context.js
           node --check lib/exfoliation-normative-policy-production-shadow-observer.js
           node --check scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs
+          node --check scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs
           grep -q 'concernScoreScale.*skin_match_raw' lib/shared-skin-decision-context.js
+          grep -q 'concernScoreScale.*skin_match_raw' lib/routine-policy.js
           grep -q 'concernScoreScale: "skin_match_raw"' lib/exfoliation-normative-policy-skin-match-context.js
           ! grep -q 'rebuildRawSkinMatchSafetyState' lib/exfoliation-normative-policy-skin-match-context.js
           ! grep -q 'activeBurden' lib/exfoliation-normative-policy-skin-match-context.js
@@ -87,6 +93,9 @@ jobs:
         env:
           V21_9I_REFERENCE_ROOT: _reference/recommendation
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-score-scale-semantic-remediation-v1.mjs
+
+      - name: RoutinePolicy source-scale boundary
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs
 
       - name: Generic shared-context and routine regressions
         shell: bash
