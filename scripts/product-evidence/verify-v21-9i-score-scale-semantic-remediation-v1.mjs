@@ -188,6 +188,14 @@ assert.equal(
   EXFOLIATION_NORMATIVE_POLICY_SKIN_MATCH_CONTEXT_VERSION
 );
 
+// The domain boundary must delegate safety semantics to the shared implementation, not fork them.
+const directRawBoundary18 = buildSharedSkinDecisionContext(boundaryReport(18), {
+  source: "v21_9i_source_scale_no_fork_assertion",
+  concernScoreScale: "skin_match_raw"
+}).context;
+assert.deepEqual(boundary18.safetyState, directRawBoundary18.safetyState);
+assert.deepEqual(boundary18.productExposureState, directRawBoundary18.productExposureState);
+
 // Generic shared/premium compatibility must remain unchanged: default dynamic scale still exists.
 const genericBoundary18 = buildSharedSkinDecisionContext(boundaryReport(18)).context;
 assert.equal(genericBoundary18.safetyState.sensitiveBurden, false);
@@ -214,6 +222,11 @@ const semanticMismatches = [];
 const blockerResults = [];
 for (const context of fixture.contexts) {
   const built = buildExfoliationNormativePolicySkinMatchContext(reportForContext(context));
+  const directRaw = buildSharedSkinDecisionContext(reportForContext(context), {
+    source: "v21_9i_source_scale_no_fork_assertion",
+    concernScoreScale: "skin_match_raw"
+  }).context;
+  assert.deepEqual(built.safetyState, directRaw.safetyState);
   const mismatches = expectationMismatches(context, built);
   if (mismatches.length) {
     semanticMismatches.push({ context_id: context.context_id, mismatches });
@@ -288,7 +301,7 @@ assert.deepEqual([...stopReasons], []);
 console.log(JSON.stringify({
   stage: "V2.1-9I-SR",
   semantic_outcome: "RAW_SKIN_MATCH_SCALE_IS_AUTHORITATIVE",
-  architecture: "DOMAIN_SCOPED_RAW_SCALE_CONTEXT_BOUNDARY",
+  architecture: "SOURCE_AWARE_SHARED_CONTEXT_WITH_DOMAIN_SCOPED_BOUNDARY",
   fixture_lineage: fixture.fixture_lineage,
   product_count: 164,
   context_count: 28,
@@ -300,6 +313,7 @@ console.log(JSON.stringify({
   semantic_mismatch_count: semanticMismatches.length,
   blocker_contexts_passed: blockerResults.length,
   boundary_17_18_19: "PASS",
+  source_scale_no_semantic_fork: "PASS",
   generic_dynamic_scale_regression: "PASS",
   generic_scale100_routine_regression: "PASS",
   enforce_requested: false,
