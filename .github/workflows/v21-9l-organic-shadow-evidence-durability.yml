@@ -1,0 +1,181 @@
+name: V2.1-9L Organic SHADOW Evidence Durability
+
+on:
+  push:
+    branches:
+      - feat/v21-9l-organic-shadow-evidence-durability
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/v21-9l-organic-shadow-evidence-durability.yml"
+      - "lib/exfoliation-normative-policy-production-provenance.js"
+      - "lib/exfoliation-normative-policy-organic-evidence-context.js"
+      - "lib/exfoliation-normative-policy-organic-evidence-store.js"
+      - "scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1.mjs"
+      - "supabase/migrations/20260820093000_v21_9l_organic_shadow_evidence_daily_v1.sql"
+      - "docs/evidence/v21-9l-organic-shadow-evidence-durability-v1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: v21-9l-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  V21_9L_BASE_MAIN_SHA: da30d1faa4e9d8f9a8cf41860627df064d377f67
+  V21_9I_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  V21_9L_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-v21-9l:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head or merged-main SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.V21_9L_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact starting authority and ancestry
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V21_9L_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$V21_9L_BASE_MAIN_SHA" HEAD
+          test "$(git merge-base "$V21_9L_BASE_MAIN_SHA" HEAD)" = "$V21_9L_BASE_MAIN_SHA"
+
+      - name: Bounded V2.1-9L change scope
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$V21_9L_BASE_MAIN_SHA")"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-9l-organic-shadow-evidence-durability\.yml|lib/exfoliation-normative-policy-(production-provenance|organic-evidence-context|organic-evidence-store)\.js|scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1\.mjs|supabase/migrations/20260820093000_v21_9l_organic_shadow_evidence_daily_v1\.sql|docs/evidence/v21-9l-organic-shadow-evidence-durability-v1\.md)$' || true)"
+          test -z "$forbidden"
+
+      - name: No Product Fact mapper scorer ranker CandidatePolicy or activation semantic change
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$V21_9L_BASE_MAIN_SHA" -- \
+            lib/recommendation-scoring.js \
+            lib/candidate-exposure-policy-shadow.js \
+            lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js \
+            lib/exfoliation-normative-policy-activation-runtime.js \
+            lib/exfoliation-normative-policy-production-shadow-observer.js \
+            lib/exfoliation-normative-policy-runtime-observability.js \
+            lib/product-decision-axis-mapper-v1.js
+          changed_migrations="$(git diff --name-only "$V21_9L_BASE_MAIN_SHA" -- supabase/migrations)"
+          test "$changed_migrations" = "supabase/migrations/20260820093000_v21_9l_organic_shadow_evidence_daily_v1.sql"
+
+      - name: Syntax
+        run: |
+          node --check lib/exfoliation-normative-policy-production-provenance.js
+          node --check lib/exfoliation-normative-policy-organic-evidence-context.js
+          node --check lib/exfoliation-normative-policy-organic-evidence-store.js
+          node --check scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1.mjs
+
+      - name: Focused V2.1-9L T1-T18 durability privacy verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1.mjs
+
+      - name: Historical V2.1-9J provenance verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9j-organic-shadow-evidence-attribution-v1.mjs
+
+      - name: Controlled probe remains manual-only and is not executed
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('.github/workflows/v21-9j-controlled-production-probe.yml','utf8');
+          if(!/^on:\n  workflow_dispatch:\s*$/m.test(s)) process.exit(1);
+          if(/^\s{2}(push|pull_request|schedule):/m.test(s)) process.exit(1);
+          if(!s.includes('id-token: write')) process.exit(1);
+          NODE
+
+      - name: Prepare frozen 164-product Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
+
+      - name: Historical V2.1-9I full verifier
+        env:
+          V21_9I_REFERENCE_ROOT: _reference/recommendation
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
+
+      - name: Historical V2.1-9I-SR source-scale verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs
+
+      - name: Historical V2.1-9E production SHADOW wiring verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+
+      - name: Historical V2.1-9D activation safety verifier
+        env:
+          V21_9D_REQUIRE_CHECKED_IN: "1"
+        run: node scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
+
+      - name: CandidatePolicy shadow regressions
+        run: |
+          npm run verify:candidate-exposure-policy-shadow
+          npm run verify:candidate-exposure-policy-shadow-evaluation
+
+      - name: Canonical 164x12 OFF invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "0"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: OFF
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Canonical 164x12 SHADOW invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "1"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: SHADOW
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish merged-main exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          description="V2.1-9L merged-main exact-SHA CI passed"
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            description="V2.1-9L merged-main exact-SHA CI failed"
+          fi
+          payload=$(printf '{"state":"%s","context":"V2.1-9L merged-main exact-SHA CI","description":"%s","target_url":"%s/%s/actions/runs/%s"}' "$state" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
+          curl --fail-with-body --silent --show-error -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -d "$payload" >/dev/null
+          test "$state" = "success"
