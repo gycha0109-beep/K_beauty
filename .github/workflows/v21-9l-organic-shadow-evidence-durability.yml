@@ -32,6 +32,25 @@ env:
 jobs:
   verify-v21-9l:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
     steps:
       - name: Checkout exact PR head or merged-main SHA
         uses: actions/checkout@v4
@@ -86,6 +105,61 @@ jobs:
 
       - name: Focused V2.1-9L T1-T18 durability privacy verifier
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1.mjs
+
+      - name: Runtime migration and concurrent atomic increment verification
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin;
+          SQL
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260820093000_v21_9l_organic_shadow_evidence_daily_v1.sql
+
+          cat > /tmp/v21_9l_increment.sql <<'SQL'
+          select public.record_recommendation_shadow_evidence_daily_v1(
+            '[{
+              "bucket_date":"2026-08-20",
+              "evidence_schema_version":"exfoliation-normative-organic-shadow-evidence-daily-v1",
+              "activation_version":"exfoliation-non-numeric-pda-normative-production-policy-activation-v1",
+              "policy_contract_version":"exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1",
+              "runtime_version":"exfoliation-non-numeric-pda-normative-production-policy-shadow-v1",
+              "production_source":"ORGANIC_PRODUCTION",
+              "context_bucket_version":"privacy-safe-recommendation-context-bucket-v1",
+              "partition_key":"TOTAL",
+              "partition_value":"ALL",
+              "execution_count":1,
+              "candidate_evaluation_count":164,
+              "allow_count":2,
+              "caution_count":0,
+              "restrict_count":0,
+              "defer_count":162,
+              "not_applicable_count":0,
+              "fallback_count":0,
+              "runtime_error_count":0,
+              "hypothetical_exclusion_count":0,
+              "actual_exclusion_count":0,
+              "stop_required_count":0
+            }]'::jsonb
+          );
+          SQL
+
+          seq 1 16 | xargs -P 16 -I{} psql -v ON_ERROR_STOP=1 -q -f /tmp/v21_9l_increment.sql >/dev/null
+
+          test "$(psql -Atqc "select execution_count from public.recommendation_shadow_evidence_daily_v1 where bucket_date='2026-08-20' and production_source='ORGANIC_PRODUCTION' and partition_key='TOTAL' and partition_value='ALL'")" = "16"
+          test "$(psql -Atqc "select candidate_evaluation_count from public.recommendation_shadow_evidence_daily_v1 where bucket_date='2026-08-20' and production_source='ORGANIC_PRODUCTION' and partition_key='TOTAL' and partition_value='ALL'")" = "2624"
+          test "$(psql -Atqc "select allow_count from public.recommendation_shadow_evidence_daily_v1 where bucket_date='2026-08-20' and production_source='ORGANIC_PRODUCTION' and partition_key='TOTAL' and partition_value='ALL'")" = "32"
+          test "$(psql -Atqc "select defer_count from public.recommendation_shadow_evidence_daily_v1 where bucket_date='2026-08-20' and production_source='ORGANIC_PRODUCTION' and partition_key='TOTAL' and partition_value='ALL'")" = "2592"
+          test "$(psql -Atqc "select actual_exclusion_count from public.recommendation_shadow_evidence_daily_v1 where bucket_date='2026-08-20' and production_source='ORGANIC_PRODUCTION' and partition_key='TOTAL' and partition_value='ALL'")" = "0"
+
+          if psql -v ON_ERROR_STOP=1 -c "set role anon; select public.record_recommendation_shadow_evidence_daily_v1('[]'::jsonb);" >/dev/null 2>&1; then
+            echo "anon unexpectedly executed 9L RPC" >&2
+            exit 1
+          fi
+          if psql -v ON_ERROR_STOP=1 -c "set role authenticated; select public.record_recommendation_shadow_evidence_daily_v1('[]'::jsonb);" >/dev/null 2>&1; then
+            echo "authenticated unexpectedly executed 9L RPC" >&2
+            exit 1
+          fi
 
       - name: Historical V2.1-9J provenance verifier
         run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9j-organic-shadow-evidence-attribution-v1.mjs
