@@ -1,0 +1,52 @@
+name: V2.1-9J Controlled Production Probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  controlled-production-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bind dispatch to exact main ref
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+
+      - name: Request GitHub OIDC token and invoke exactly one controlled probe
+        env:
+          AUDIENCE: urn:bejewely:v21-9j:controlled-production-probe
+          TARGET_URL: https://k-beauty-two.vercel.app/api/internal/exfoliation-normative-policy-controlled-production-probe
+        run: |
+          set -euo pipefail
+          encoded_audience="$(node -p 'encodeURIComponent(process.env.AUDIENCE)')"
+          oidc_response="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${encoded_audience}")"
+          oidc_token="$(printf '%s' "$oidc_response" | node -e 'let s=""; process.stdin.on("data",d=>s+=d); process.stdin.on("end",()=>{const v=JSON.parse(s).value; if(!v) process.exit(1); process.stdout.write(v);});')"
+          test -n "$oidc_token"
+
+          probe_response="$(curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "Authorization: Bearer ${oidc_token}" \
+            -H "Accept: application/json" \
+            "$TARGET_URL")"
+
+          printf '%s\n' "$probe_response"
+          printf '%s' "$probe_response" | node -e '
+            let s="";
+            process.stdin.on("data",d=>s+=d);
+            process.stdin.on("end",()=>{
+              const r=JSON.parse(s);
+              if(r.provenance!=="CONTROLLED_PRODUCTION_PROBE") process.exit(1);
+              if(r.effectiveMode!=="SHADOW"||r.runtimeActive!==true) process.exit(1);
+              if(r.controlledProductionProbeExecutionCount!==1) process.exit(1);
+              if(r.organicRecommendationExecutionCount!==0) process.exit(1);
+              if(r.actualNormativeExclusionCount!==0) process.exit(1);
+              if(r.canonicalMutationApplied!==false||r.restrictCanonicalExclusionCount!==0) process.exit(1);
+              if(r.stopRequired!==false) process.exit(1);
+            });'
