@@ -1,0 +1,39 @@
+{
+  "schema_version": "eval-p10-journey-scenario-manifest-v1",
+  "stage": "EVAL-P10",
+  "lifecycle": "LOCKED",
+  "scenario_manifest_version": "eval-p10-journey-scenario-manifest-v1",
+  "source_regression_cohort_id": "eval-p6-locked-regression-cohort-v1",
+  "source_regression_cohort_hash": "c774fc52ae1494c5a4fc39d11d2e7564a196460db391bb94f41d0510b7ae59f8",
+  "source_persona_count": 37,
+  "interaction_persona_version": "interaction-persona-v1",
+  "assignment_strategy": "ROUND_ROBIN_BY_FROZEN_P6_MEMBER_ORDER",
+  "prng_algorithm": "NONE",
+  "seed": 0,
+  "weighting_strategy": "NONE",
+  "market_prevalence_claim_allowed": false,
+  "correlation_basis": "TECHNICAL_CROSS_PRODUCT_ASSIGNMENT_NO_POPULATION_DOMAIN_OR_DECISION_CORRELATION_CLAIM",
+  "journey_count": 37,
+  "interaction_profile_assignment_counts": {
+    "P10-I01-TEXTURE-REFINER": 10,
+    "P10-I02-SUNSCREEN-CLARIFIER": 9,
+    "P10-I03-FEEL-REFINER": 9,
+    "P10-I04-EARLY-STOPPER": 9
+  },
+  "mutation_policy": "NEW_VERSION_REQUIRED",
+  "authority_ceiling": {
+    "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
+    "organic_production_evidence": false,
+    "real_user_behavior_truth": false,
+    "market_prevalence": false,
+    "satisfaction_or_conversion_truth": false,
+    "product_fact_authority": false,
+    "enforce_authority": false
+  },
+  "assignment_rule": {
+    "base_member_order": "EXACT_P6_MEMBER_IDS_ORDER",
+    "interaction_profile_order": "EXACT_INTERACTION_PERSONA_SET_PROFILE_ORDER",
+    "assignment_formula": "profile_index = (base_member_index_0_based mod 4)",
+    "journey_id_formula": "P10-J + 1_based_index_zero_padded_3"
+  }
+}
