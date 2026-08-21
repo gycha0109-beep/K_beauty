@@ -37,7 +37,6 @@ assert.deepEqual(
 const empiricalObjectiveKeys = V21_9O_UNRESOLVED_GOVERNANCE.slice(0, -1);
 const pendingStates = Object.fromEntries(empiricalObjectiveKeys.map((key) => [key, "PENDING"]));
 const passStates = Object.fromEntries(empiricalObjectiveKeys.map((key) => [key, "PASS"]));
-
 const base = Object.freeze({
   organic_execution_count: 1,
   normative_contract_frozen: true,
@@ -49,7 +48,6 @@ const base = Object.freeze({
   evidence_schema_valid: true,
   provenance_valid: true
 });
-
 function evaluate(overrides = {}) {
   return evaluateV21_9PNormativeAcceptance({ ...base, ...overrides });
 }
@@ -99,6 +97,7 @@ assert.equal(f12.ready_for_separate_enforce_reassessment, false);
 const f13 = evaluate({
   objective_states: passStates,
   calibrated_values_locked: true,
+  candidate_values_governance_adopted: true,
   independent_validation_passed: true,
   sequestered_holdout_passed: true,
   successor_sufficiency_policy_frozen: true,
@@ -115,31 +114,29 @@ const f16 = evaluate({ external_threshold_imported_directly: true });
 assert.equal(f16.decision_state, V21_9N_DECISION_STATES.NOT_READY);
 assert.equal(f16.governance_state, V21_9P_GOVERNANCE_STATES.REJECTED_BY_GOVERNANCE);
 
-assert.deepEqual(
-  V21_9P_OBJECTIVE_REGISTRY.map((objective) => objective.id),
-  V21_9O_UNRESOLVED_GOVERNANCE
-);
+assert.deepEqual(V21_9P_OBJECTIVE_REGISTRY.map((objective) => objective.id), V21_9O_UNRESOLVED_GOVERNANCE);
 assert.equal(new Set(V21_9P_OBJECTIVE_REGISTRY.map((objective) => objective.id)).size, V21_9O_UNRESOLVED_GOVERNANCE.length);
 assert.ok(V21_9P_OBJECTIVE_REGISTRY.every((objective) => objective.compensation_allowed === false));
 
-assert.ok(V21_9P_HARD_BLOCKERS.includes("UNAUTHORIZED_ENFORCE_ACTIVATION"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("SHADOW_ACTUAL_EXCLUSION_NONZERO"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("CONTROLLED_EVIDENCE_ATTRIBUTED_AS_ORGANIC"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("UNKNOWN_EVIDENCE_PROMOTED_AS_ORGANIC"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("PRODUCT_FACT_UNEXPECTED_MUTATION"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("CANONICAL_RECOMMENDATION_MUTATION_FROM_SHADOW_POLICY"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("EVIDENCE_SCHEMA_INVALID_OR_PROVENANCE_BROKEN"));
-assert.ok(V21_9P_HARD_BLOCKERS.includes("STOP_REQUIRED_INTEGRITY_FAILURE"));
+for (const blocker of [
+  "UNAUTHORIZED_ENFORCE_ACTIVATION",
+  "SHADOW_ACTUAL_EXCLUSION_NONZERO",
+  "CONTROLLED_EVIDENCE_ATTRIBUTED_AS_ORGANIC",
+  "UNKNOWN_EVIDENCE_PROMOTED_AS_ORGANIC",
+  "PRODUCT_FACT_UNEXPECTED_MUTATION",
+  "CANONICAL_RECOMMENDATION_MUTATION_FROM_SHADOW_POLICY",
+  "EVIDENCE_SCHEMA_INVALID_OR_PROVENANCE_BROKEN",
+  "STOP_REQUIRED_INTEGRITY_FAILURE"
+]) assert.ok(V21_9P_HARD_BLOCKERS.includes(blocker), blocker);
 
-assert.ok(V21_9P_NON_PROMOTABLE_EVIDENCE.includes("SYNTHETIC_ONLY_MATURITY_CLAIM"));
-assert.ok(V21_9P_NON_PROMOTABLE_EVIDENCE.includes("CONTROLLED_ONLY_MATURITY_CLAIM"));
-assert.ok(V21_9P_NON_PROMOTABLE_EVIDENCE.includes("CROSS_MARGINAL_RECONSTRUCTED_PSEUDO_USER_EVIDENCE"));
-assert.ok(V21_9P_NON_PROMOTABLE_EVIDENCE.includes("OPERATOR_INVENTED_TOLERANCE_TO_PASS_CURRENT_EVIDENCE"));
+for (const nonPromotable of [
+  "SYNTHETIC_ONLY_MATURITY_CLAIM",
+  "CONTROLLED_ONLY_MATURITY_CLAIM",
+  "CROSS_MARGINAL_RECONSTRUCTED_PSEUDO_USER_EVIDENCE",
+  "OPERATOR_INVENTED_TOLERANCE_TO_PASS_CURRENT_EVIDENCE"
+]) assert.ok(V21_9P_NON_PROMOTABLE_EVIDENCE.includes(nonPromotable), nonPromotable);
 
-assert.deepEqual(
-  V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.future_calibration_dependency.parameters,
-  V21_9N_CALIBRATION_PARAMETERS
-);
+assert.deepEqual(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.future_calibration_dependency.parameters, V21_9N_CALIBRATION_PARAMETERS);
 assert.equal(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.promotion_rule.model, "NON_COMPENSATORY_CONJUNCTIVE_GATE");
 assert.equal(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.promotion_rule.failed_objective_can_be_compensated, false);
 assert.equal(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.promotion_rule.unobserved_objective_can_promote, false);
@@ -166,30 +163,16 @@ assert.equal(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT.calibrated_value_adoption_poli
 function collectNumbers(value, numbers = []) {
   if (typeof value === "number") numbers.push(value);
   if (Array.isArray(value)) for (const item of value) collectNumbers(item, numbers);
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    for (const item of Object.values(value)) collectNumbers(item, numbers);
-  }
+  if (value && typeof value === "object" && !Array.isArray(value)) for (const item of Object.values(value)) collectNumbers(item, numbers);
   return numbers;
 }
 assert.deepEqual(collectNumbers(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT), []);
 
 const serialized = serializeV21_9P(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT);
-for (const forbidden of [
-  "7 days",
-  "30 days",
-  "100 executions",
-  "95% confidence",
-  "UNKNOWN < 1%",
-  "runtime error < 0.5%",
-  "fallback < 1%",
-  "total score"
-]) {
+for (const forbidden of ["7 days", "30 days", "100 executions", "95% confidence", "UNKNOWN < 1%", "runtime error < 0.5%", "fallback < 1%", "total score"]) {
   assert.equal(serialized.includes(forbidden), false, forbidden);
 }
-assert.equal(
-  serializeV21_9P({ z: 1, a: { y: 2, x: 3 } }),
-  serializeV21_9P({ a: { x: 3, y: 2 }, z: 1 })
-);
+assert.equal(serializeV21_9P({ z: 1, a: { y: 2, x: 3 } }), serializeV21_9P({ a: { x: 3, y: 2 }, z: 1 }));
 const buildA = Buffer.from(serialized, "utf8");
 const buildB = Buffer.from(serializeV21_9P(V21_9P_NORMATIVE_ACCEPTANCE_CONTRACT), "utf8");
 assert.equal(buildA.equals(buildB), true);
@@ -200,6 +183,7 @@ assert.equal(hashA, hashB);
 const theoreticalReady = evaluate({
   objective_states: passStates,
   calibrated_values_locked: true,
+  candidate_values_governance_adopted: true,
   independent_validation_passed: true,
   sequestered_holdout_passed: true,
   successor_sufficiency_policy_frozen: true
@@ -211,6 +195,7 @@ assert.equal(theoreticalReady.enforce_active, false);
 
 for (const [gate, value] of [
   ["calibrated_values_locked", false],
+  ["candidate_values_governance_adopted", false],
   ["independent_validation_passed", false],
   ["sequestered_holdout_passed", false],
   ["successor_sufficiency_policy_frozen", false]
@@ -218,6 +203,7 @@ for (const [gate, value] of [
   const r = evaluate({
     objective_states: passStates,
     calibrated_values_locked: true,
+    candidate_values_governance_adopted: true,
     independent_validation_passed: true,
     sequestered_holdout_passed: true,
     successor_sufficiency_policy_frozen: true,
@@ -230,6 +216,7 @@ for (const [gate, value] of [
 const blockerDominates = evaluate({
   objective_states: passStates,
   calibrated_values_locked: true,
+  candidate_values_governance_adopted: true,
   independent_validation_passed: true,
   sequestered_holdout_passed: true,
   successor_sufficiency_policy_frozen: true,
@@ -239,10 +226,7 @@ const blockerDominates = evaluate({
 assert.equal(blockerDominates.decision_state, V21_9N_DECISION_STATES.BLOCKED);
 assert.equal(blockerDominates.ready_for_separate_enforce_reassessment, false);
 
-assert.equal(
-  V21_9P_PRIMARY_OUTCOME,
-  "ENFORCE_REASSESSMENT_NORMATIVE_ACCEPTANCE_OBJECTIVES_FROZEN"
-);
+assert.equal(V21_9P_PRIMARY_OUTCOME, "ENFORCE_REASSESSMENT_NORMATIVE_ACCEPTANCE_OBJECTIVES_FROZEN");
 
 console.log(JSON.stringify({
   verifier: "verify-v21-9p-enforce-reassessment-normative-acceptance-v1",
