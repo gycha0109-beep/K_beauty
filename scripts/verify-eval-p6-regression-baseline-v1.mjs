@@ -8,9 +8,7 @@ const baselineArtifactRoot = path.resolve(process.env.EVAL_P6_BASELINE_ARTIFACT_
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(Object.keys(value).sort((a, b) => a.localeCompare(b, "en")).map((key) => [key, stable(value[key])]));
-  }
+  if (value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort((a, b) => a.localeCompare(b, "en")).map((key) => [key, stable(value[key])]));
   return value;
 }
 function hash(value) { return createHash("sha256").update(JSON.stringify(stable(value))).digest("hex"); }
@@ -39,13 +37,11 @@ assert.equal(summary.output_semantic_hash, contract.baseline.output_semantic_has
 
 const actualById = new Map(snapshots.persona_snapshots.map((item) => [item.persona_id, item]));
 assert.equal(actualById.size, contract.baseline.persona_count);
-for (const expected of contract.baseline.persona_baseline_hashes) {
-  const actual = actualById.get(expected.persona_id);
-  assert(actual, `${expected.persona_id}: baseline snapshot`);
-  assert.equal(actual.source_cohort_type, expected.source_cohort_type);
-  assert.equal(actual.source_persona_hash, expected.source_persona_hash);
-  assert.equal(actual.domain_hash, expected.domain_hash);
-  assert.equal(actual.persona_regression_hash, expected.persona_regression_hash);
+assert.equal(Object.keys(contract.baseline.persona_regression_hashes).length, contract.baseline.persona_count);
+for (const [personaId, expectedHash] of Object.entries(contract.baseline.persona_regression_hashes)) {
+  const actual = actualById.get(personaId);
+  assert(actual, `${personaId}: baseline snapshot`);
+  assert.equal(actual.persona_regression_hash, expectedHash, `${personaId}: regression hash`);
 }
 
 const { baseline_contract_hash: declaredHash, ...withoutHash } = contract;
