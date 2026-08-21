@@ -79,13 +79,15 @@ jobs:
           git diff --exit-code "$EVAL_P8_BASE_MAIN_SHA" -- lib app/api supabase/migrations
           test -z "$(git diff --name-only "$EVAL_P8_BASE_MAIN_SHA" -- package.json package-lock.json)"
 
-      - name: Syntax and contract parse
+      - name: Syntax contract and required observation parse
         run: |
+          set -euo pipefail
           node --check scripts/prepare-eval-p8-bounded-llm-judge-v1.mjs
           node --check scripts/verify-eval-p8-llm-judge-contract-v1.mjs
-          if [ -f scripts/finalize-eval-p8-bounded-llm-judge-v1.mjs ]; then node --check scripts/finalize-eval-p8-bounded-llm-judge-v1.mjs; fi
+          node --check scripts/finalize-eval-p8-bounded-llm-judge-v1.mjs
+          test -f fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json
           node -e 'JSON.parse(require("fs").readFileSync("fixtures/persona-evaluation/eval-p8-llm-judge-contract-v1.json","utf8"))'
-          if [ -f fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json ]; then node -e 'JSON.parse(require("fs").readFileSync("fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json","utf8"))'; fi
+          node -e 'JSON.parse(require("fs").readFileSync("fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json","utf8"))'
 
       - name: Prepare immutable P3 materialization source
         run: |
@@ -134,10 +136,10 @@ jobs:
           cmp artifacts/eval-p8/input-a/bounded-llm-judge-inputs-v1.json artifacts/eval-p8/input-b/bounded-llm-judge-inputs-v1.json
           node scripts/verify-eval-p8-llm-judge-contract-v1.mjs
 
-      - name: Validate bounded judge observations when present
-        if: ${{ hashFiles('fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json') != '' }}
+      - name: Validate bounded diagnostic judge observations
         env:
           EVAL_P8_INPUT_PATH: artifacts/eval-p8/input-a/bounded-llm-judge-inputs-v1.json
+          EVAL_P8_OBSERVATION_PATH: fixtures/persona-evaluation/eval-p8-llm-judge-observations-v1.json
           EVAL_P8_ARTIFACT_ROOT: artifacts/eval-p8/final
         run: node scripts/finalize-eval-p8-bounded-llm-judge-v1.mjs
 
