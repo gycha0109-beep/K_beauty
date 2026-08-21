@@ -1,8 +1,9 @@
 {
   "schema_version": "eval-p5-metamorphic-evaluation-contract-v1",
   "stage": "EVAL-P5",
-  "evaluator_version": "eval-p5-counterfactual-metamorphic-evaluator-v1",
+  "evaluator_version": "eval-p5-counterfactual-metamorphic-evaluator-v1.1",
   "scenario_generator_version": "eval-p5-paired-scenario-generator-v1",
+  "policy_fixture_projection_version": "eval-p5-metadata-restored-fixture-projection-v1",
   "authority": {
     "execution_base_main_sha": "6a18af5a992eb6a70e2006361e99456e3b491ed2",
     "p4_merged_sha": "a4772e3cd44d68f67fe4bbf25926ba0942f353b3",
@@ -27,6 +28,23 @@
     "weighting_strategy": "NONE",
     "cross_cohort_raw_rate_comparison_allowed": false
   },
+  "fixture_views": {
+    "legacy_replay_view": {
+      "purpose": "P3_AND_HISTORICAL_REPLAY_COMPATIBILITY_ONLY",
+      "materialization": "buildRecommendationProductFromSource(raw_fixture_product)",
+      "known_limitation": "historical fixture stores policy/scoring fields under metadata while product-source materializer reads canonical source fields from the top level",
+      "policy_relation_authority": "DIAGNOSTIC_ONLY"
+    },
+    "policy_evaluation_view": {
+      "purpose": "P5_POLICY_RELATION_EVALUATION",
+      "materialization": "buildRecommendationProductFromSource(restore raw_fixture.metadata to canonical source fields while preserving root identity/category)",
+      "restoration_source": "HISTORICAL_FIXTURE_METADATA_ONLY",
+      "invented_values_allowed": false,
+      "production_runtime_claim": false,
+      "adapter_version": "eval-p5-metadata-restored-fixture-projection-v1"
+    },
+    "projection_gap_classification": "LEGACY_FIXTURE_POLICY_METADATA_PROJECTION_GAP"
+  },
   "pair_contract": {
     "raw_input_paths_changed_per_pair": 1,
     "source_persona_is_immutable": true,
@@ -34,129 +52,98 @@
     "rank_monotonicity_is_hard_assertion": false,
     "full_recommendation_delta_authority": "DIAGNOSTIC_ONLY",
     "masked_product_comparison_classification": "MASKED_BY_OTHER_CONSTRAINT",
-    "catalog_predicate_absence_classification": "CATALOG_PRODUCT_PREDICATE_NOT_OBSERVED",
+    "catalog_predicate_absence_classification": "FROZEN_FIXTURE_PRODUCT_PREDICATE_NOT_OBSERVED",
     "probe_authority": "EVALUATOR_RULE_FIXTURE_NOT_CATALOG_TRUTH"
   },
   "relations": [
     {
       "relation_id": "MR-GENDER-001",
-      "input_dimension": "profile.genderPreference",
       "controlled_path": "profile.genderPreference",
       "before": "unspecified",
       "after": "female",
       "pair_preconditions": [],
       "product_predicate": "is_mens = true",
       "assertion_level": "RECOMMENDATION_ELIGIBILITY",
-      "expected_invariant_or_direction": "target product eligible before and ineligible after",
-      "authority_source": "PRODUCT_POLICY_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": [],
+      "expected": "unmasked target product eligible before and ineligible after",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-SUN-EYE-001",
-      "input_dimension": "sunscreen.eyeSensitive",
       "controlled_path": "sunscreen.eyeSensitive",
       "before": false,
       "after": true,
       "pair_preconditions": ["sunscreen.preferenceState = answered"],
       "product_predicate": "category = sunscreen AND eye_sting = high",
       "assertion_level": "HARD_REJECT_SET",
-      "expected_invariant_or_direction": "unmasked target sunscreen enters hard-rejected set after change",
-      "authority_source": "PRODUCT_POLICY_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": ["comparison may be masked when another hard constraint already rejects the product before the controlled change"],
+      "expected": "unmasked target sunscreen enters hard-rejected set after change",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-SUN-WHITECAST-001",
-      "input_dimension": "sunscreen.whiteCastHate",
       "controlled_path": "sunscreen.whiteCastHate",
       "before": false,
       "after": true,
-      "pair_preconditions": [
-        "sunscreen.preferenceState = answered",
-        "sunscreen.toneUpWanted = false"
-      ],
+      "pair_preconditions": ["sunscreen.preferenceState = answered", "sunscreen.toneUpWanted = false"],
       "product_predicate": "category = sunscreen AND white_cast = high",
       "assertion_level": "STRICT_CANDIDATE_SET",
-      "expected_invariant_or_direction": "unmasked target sunscreen is removed from strict candidate set after change",
-      "authority_source": "PRODUCT_POLICY_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": [
-        "penalty-only fallback may still allow final recommendation",
-        "comparison may be masked when another constraint already removes the product from the strict set before the controlled change"
-      ],
+      "expected": "unmasked target sunscreen is removed from strict candidate set after change",
+      "known_exception": "penalty-only fallback may still allow final recommendation",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-SUN-MAKEUP-001",
-      "input_dimension": "sunscreen.makeupUse",
       "controlled_path": "sunscreen.makeupUse",
       "before": false,
       "after": true,
       "pair_preconditions": ["sunscreen.preferenceState = answered"],
       "product_predicate": "category = sunscreen AND pilling_risk = high",
       "assertion_level": "STRICT_CANDIDATE_SET",
-      "expected_invariant_or_direction": "unmasked target sunscreen is removed from strict candidate set after change",
-      "authority_source": "PRODUCT_POLICY_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": [
-        "penalty-only fallback may still allow final recommendation",
-        "comparison may be masked when another constraint already removes the product from the strict set before the controlled change"
-      ],
+      "expected": "unmasked target sunscreen is removed from strict candidate set after change",
+      "known_exception": "penalty-only fallback may still allow final recommendation",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-SUN-SENSITIVITY-001",
-      "input_dimension": "sensitivity",
       "controlled_path": "sensitivity",
       "before": "SOURCE_LOW_OR_MEDIUM",
       "after": "high",
-      "pair_preconditions": [
-        "source sensitivity in {low, medium}",
-        "primaryConcern not in {redness, barrier}",
-        "routeExtensions.verySensitivePeriod = false"
-      ],
+      "pair_preconditions": ["source sensitivity in {low, medium}", "primaryConcern not in {redness, barrier}", "routeExtensions.verySensitivePeriod = false"],
       "product_predicate": "category = sunscreen AND irritation_risk = high",
       "assertion_level": "HARD_REJECT_SET",
-      "expected_invariant_or_direction": "unmasked target sunscreen enters hard-rejected set after change",
-      "authority_source": "PRODUCT_POLICY_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": ["comparison may be masked when another hard constraint already rejects the product before sensitivity changes"],
+      "expected": "unmasked target sunscreen enters hard-rejected set after change",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-DERIVED-DRYNESS-001",
-      "input_dimension": "postWashFeeling",
       "controlled_path": "postWashFeeling",
       "before": "comfortable",
       "after": "tight",
       "pair_preconditions": ["afternoonSkinChange != more_dry"],
       "product_predicate": null,
       "assertion_level": "SURVEY_DERIVED_STATE",
-      "expected_invariant_or_direction": "drynessRisk changes from non-high to high",
-      "authority_source": "CURRENT_SURVEY_CONTRACT_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": [],
+      "expected": "drynessRisk changes from non-high to high",
       "rank_direction": "NOT_ASSERTED"
     },
     {
       "relation_id": "MR-DERIVED-REDNESS-001",
-      "input_dimension": "afternoonSkinChange",
       "controlled_path": "afternoonSkinChange",
       "before": "mostly_same",
       "after": "red_or_irritated",
       "pair_preconditions": ["before rednessRisk is not already high from another governed signal"],
       "product_predicate": null,
       "assertion_level": "SURVEY_DERIVED_STATE",
-      "expected_invariant_or_direction": "rednessRisk changes from non-high to high",
-      "authority_source": "CURRENT_SURVEY_CONTRACT_DERIVED",
-      "contract_version": "persona-metamorphic-registry-v1",
-      "known_exceptions": [],
+      "expected": "rednessRisk changes from non-high to high",
       "rank_direction": "NOT_ASSERTED"
     }
   ],
+  "acceptance": {
+    "all_seven_relations_must_have_applicable_pairs": true,
+    "all_evaluable_hard_relations_must_pass": true,
+    "policy_fixture_projection_must_preserve_source_predicate_counts": true,
+    "legacy_projection_gap_must_be_typed_not_hidden": true,
+    "isolated_probe_required_for_each_applicable_product_relation_pair": true,
+    "deterministic_semantic_replay_required": true
+  },
   "authority_ceiling": {
     "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
     "organic_production_evidence": false,
