@@ -10,6 +10,7 @@ on:
       - ".github/workflows/eval-p5-counterfactual-metamorphic.yml"
       - "fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1.json"
       - "scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs"
+      - "scripts/finalize-eval-p5-summary-v1.mjs"
       - "docs/evidence/eval-p5-counterfactual-metamorphic-v1.md"
   workflow_dispatch:
 
@@ -65,7 +66,7 @@ jobs:
           set -euo pipefail
           changed="$(git diff --name-only "$EVAL_P5_BASE_MAIN_SHA")"
           printf '%s\n' "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/eval-p5-counterfactual-metamorphic\.yml|fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1\.json|scripts/verify-eval-p5-counterfactual-metamorphic-v1\.mjs|docs/evidence/eval-p5-counterfactual-metamorphic-v1\.md)$' || true)"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/eval-p5-counterfactual-metamorphic\.yml|fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1\.json|scripts/verify-eval-p5-counterfactual-metamorphic-v1\.mjs|scripts/finalize-eval-p5-summary-v1\.mjs|docs/evidence/eval-p5-counterfactual-metamorphic-v1\.md)$' || true)"
           test -z "$forbidden"
 
       - name: No Production Recommendation Product Fact or Hosted mutation
@@ -77,6 +78,7 @@ jobs:
       - name: Syntax and contract parse
         run: |
           node --check scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs
+          node --check scripts/finalize-eval-p5-summary-v1.mjs
           node -e 'JSON.parse(require("fs").readFileSync("fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1.json","utf8"))'
 
       - name: Prepare immutable P3 materialization source
@@ -107,6 +109,11 @@ jobs:
           EVAL_P5_IMPLEMENTATION_SHA: ${{ env.EVAL_P5_CHECKOUT_SHA }}
           EVAL_P5_ARTIFACT_ROOT: artifacts/eval-p5
         run: node scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs
+
+      - name: Finalize typed EVAL-P5 terminal outcome
+        env:
+          EVAL_P5_ARTIFACT_ROOT: artifacts/eval-p5
+        run: node scripts/finalize-eval-p5-summary-v1.mjs
 
       - name: Re-run EVAL-P3 deterministic harness
         env:
