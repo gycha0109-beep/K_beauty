@@ -1,0 +1,10 @@
+[
+  {"id":"F1","name":"zero organic evidence","expected":"NOT_READY"},
+  {"id":"F2","name":"one thin organic execution with qualitative categories populated","expected":"SUFFICIENCY_CALIBRATION_REQUIRED"},
+  {"id":"F3","name":"multiple evidence categories without governed maturity","expected":"SUFFICIENCY_CALIBRATION_REQUIRED"},
+  {"id":"F4","name":"integrity failure","expected":"BLOCKED_INTEGRITY_FAILURE"},
+  {"id":"F5","name":"SHADOW actual exclusion greater than zero","expected":"BLOCKED_INTEGRITY_FAILURE"},
+  {"id":"F6","name":"mixed runtime versions","expected":"BLOCKED_INTEGRITY_FAILURE"},
+  {"id":"F7","name":"explicit UNKNOWN provenance kept separate from organic","expected":"SUFFICIENCY_CALIBRATION_REQUIRED"},
+  {"id":"F8","name":"healthy category-complete evidence with empirical maturity uncalibrated","expected":"SUFFICIENCY_CALIBRATION_REQUIRED"}
+]
