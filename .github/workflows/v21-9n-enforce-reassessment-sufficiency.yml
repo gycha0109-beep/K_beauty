@@ -155,20 +155,29 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Publish merged-main exact-SHA CI attestation
-        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Publish exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' }}
         env:
           GH_TOKEN: ${{ github.token }}
           PRIOR_JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
           state="success"
-          description="V2.1-9N merged-main exact-SHA CI passed"
+          context="V2.1-9N exact-head CI"
+          description="V2.1-9N exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="V2.1-9N merged-main exact-SHA CI"
+            description="V2.1-9N merged-main exact-SHA CI passed"
+          fi
           if [ "$PRIOR_JOB_STATUS" != "success" ]; then
             state="failure"
-            description="V2.1-9N merged-main exact-SHA CI failed"
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+              description="V2.1-9N merged-main exact-SHA CI failed"
+            else
+              description="V2.1-9N exact-head CI failed"
+            fi
           fi
-          payload=$(printf '{"state":"%s","context":"V2.1-9N merged-main exact-SHA CI","description":"%s","target_url":"%s/%s/actions/runs/%s"}' "$state" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
+          payload=$(printf '{"state":"%s","context":"%s","description":"%s","target_url":"%s/%s/actions/runs/%s"}' "$state" "$context" "$description" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID")
           curl --fail-with-body --silent --show-error -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN" \
