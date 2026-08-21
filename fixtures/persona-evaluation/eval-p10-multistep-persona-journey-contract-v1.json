@@ -1,0 +1,117 @@
+{
+  "schema_version": "eval-p10-multistep-persona-journey-contract-v1",
+  "stage": "EVAL-P10",
+  "stage_name": "Multi-step Persona Journey Simulation",
+  "journey_contract_version": "eval-p10-multistep-persona-journey-contract-v1",
+  "interaction_persona_version": "interaction-persona-v1",
+  "transition_engine_version": "eval-p10-deterministic-transition-engine-v1",
+  "comparison_version": "eval-p10-descriptive-recommendation-comparison-v1",
+  "journey_sequence": [
+    "INITIAL_SURVEY",
+    "RECOMMENDATION_1",
+    "PERSONA_REACTION",
+    "PREFERENCE_REFINEMENT_OR_EXPECTED_STOP",
+    "RECOMMENDATION_2_IF_REFINED",
+    "DESCRIPTIVE_COMPARISON_IF_REFINED"
+  ],
+  "determinism": {
+    "free_form_llm_reaction_generation_allowed": false,
+    "transition_must_be_rule_driven": true,
+    "same_input_engine_catalog_contracts_must_replay_same_hash": true,
+    "prng_algorithm": "NONE",
+    "seed": 0
+  },
+  "reaction_authority": {
+    "recommendation_score_may_drive_reaction": false,
+    "recommendation_rank_may_drive_reaction": false,
+    "why_picked_may_drive_reaction": false,
+    "score_breakdown_may_drive_reaction": false,
+    "top_pick_presence_may_select_no_result_branch": true,
+    "interaction_profile_may_drive_reaction": true,
+    "technical_transition_is_real_user_truth": false
+  },
+  "preference_refinement": {
+    "allowed_mutable_paths": [
+      "preferredTexture",
+      "mostDislikedFeel",
+      "sunscreen.preferenceState",
+      "sunscreen.eyeSensitive"
+    ],
+    "forbidden_state_like_paths": [
+      "skinType",
+      "sensitivity",
+      "primaryConcern",
+      "secondaryConcern",
+      "postWashFeeling",
+      "afternoonSkinChange",
+      "cleansingFrequency",
+      "environmentExposure",
+      "recentSkinChange",
+      "recentlyChangedProduct",
+      "profile",
+      "routeExtensions"
+    ],
+    "medical_or_allergy_truth_creation_allowed": false,
+    "population_or_demographic_derivation_allowed": false,
+    "domain_state_fabrication_allowed": false,
+    "transition_policies": [
+      {
+        "policy_id": "P10-TP-TEXTURE-NEXT",
+        "mutation": "preferredTexture",
+        "algorithm": "gel->watery->lotion->cream->gel"
+      },
+      {
+        "policy_id": "P10-TP-SUNSCREEN-CLARIFY",
+        "mutation": "sunscreen.preferenceState + sunscreen.eyeSensitive",
+        "algorithm": "preferenceState=answered; eyeSensitive=logical_not(previous eyeSensitive)"
+      },
+      {
+        "policy_id": "P10-TP-DISLIKED-FEEL-NEXT",
+        "mutation": "mostDislikedFeel",
+        "algorithm": "sticky->greasy->heavy->sticky"
+      },
+      {
+        "policy_id": "P10-TP-EXPECTED-STOP",
+        "mutation": "NONE",
+        "algorithm": "stop after Recommendation 1"
+      }
+    ]
+  },
+  "comparison_authority": {
+    "descriptive_only": true,
+    "automatic_improvement_inference_allowed": false,
+    "automatic_worsening_inference_allowed": false,
+    "synthetic_satisfaction_score_allowed": false,
+    "conversion_prediction_allowed": false,
+    "top_k_reference_truth_allowed": false
+  },
+  "cohort_rules": {
+    "source_cohort": "eval-p6-locked-regression-cohort-v1",
+    "source_cohort_mutation_allowed": false,
+    "source_weighting_mutation_allowed": false,
+    "interaction_assignment_strategy": "ROUND_ROBIN_BY_FROZEN_P6_MEMBER_ORDER",
+    "interaction_assignment_correlation_claim": "NONE_TECHNICAL_CROSS_PRODUCT_ONLY",
+    "cross_cohort_raw_rate_market_interpretation_allowed": false,
+    "p9_calibration_hold_blocks_technical_journey_simulation": false,
+    "population_representativeness_claim_allowed": false
+  },
+  "harness_rules": {
+    "domain_core_required": true,
+    "contract_integration_required": true,
+    "initial_step_harness_equivalence_required": true,
+    "refined_step_harness_equivalence_required_when_executed": true,
+    "production_api_route_invocation_allowed": false,
+    "production_network_calls_allowed": false
+  },
+  "authority_ceiling": {
+    "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
+    "organic_production_evidence": false,
+    "controlled_production_evidence": false,
+    "real_user_truth": false,
+    "real_user_behavior_truth": false,
+    "market_prevalence": false,
+    "satisfaction_or_conversion_truth": false,
+    "product_fact_authority": false,
+    "enforce_authority": false
+  }
+}
