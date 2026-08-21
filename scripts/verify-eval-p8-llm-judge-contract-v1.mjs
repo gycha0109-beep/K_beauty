@@ -30,6 +30,9 @@ const promptMaterial = {
 
 assert.equal(contract.authority.judge_authority, "DIAGNOSTIC_ONLY");
 assert.equal(contract.authority.release_blocker_authority, false);
+assert.equal(contract.judge_input_policy.product_name_exposed, false);
+assert.equal(contract.judge_input_policy.brand_identity_exposed, false);
+assert.equal(contract.judge_input_policy.comparison_identity_text_exposed, false);
 assert.equal(contract.validation_policy.judge_semantic_labels_are_ci_blocking, false);
 assert.equal(contract.validation_policy.judge_overall_signal_is_ci_blocking, false);
 assert.equal(contract.validation_policy.judge_contract_release_blocker_promotion_in_p8, "FORBIDDEN");
@@ -38,6 +41,7 @@ assert.equal(contract.rubric.numeric_score_forbidden, true);
 assert.equal(contract.rubric.release_decision_forbidden, true);
 assert.equal(input.case_count, 16);
 assert.equal(input.cases.length, 16);
+assert.equal(input.prompt.prompt_version, "eval-p8-llm-judge-prompt-v1.1");
 assert.equal(input.prompt.prompt_semantic_hash, hash(promptMaterial));
 assert.equal(input.case_set_semantic_hash, hash(input.cases));
 assert.equal(new Set(input.cases.map((item) => item.case_id)).size, 16);
@@ -50,10 +54,14 @@ assert.deepEqual(
 for (const item of input.cases) {
   assert.equal(item.judge_limits.product_name_exposed, false);
   assert.equal(item.judge_limits.brand_identity_exposed, false);
+  assert.equal(item.judge_limits.comparison_identity_text_exposed, false);
   assert.equal(item.judge_limits.numeric_recommendation_score_exposed, false);
   assert.equal(item.judge_limits.recommendation_rank_is_truth, false);
   assert.equal(item.judge_limits.product_correctness_is_in_scope, false);
   assert.equal(item.judge_limits.release_decision_is_in_scope, false);
+  assert.equal(Object.hasOwn(item.recommendation_explanation?.top_pick || {}, "comparison_reason"), false);
+  assert.equal(Object.hasOwn(item.recommendation_explanation?.top_pick || {}, "name"), false);
+  assert.equal(Object.hasOwn(item.recommendation_explanation?.top_pick || {}, "brand"), false);
 }
 
 console.log("EVAL-P8 LLM judge contract verifier: PASS");
