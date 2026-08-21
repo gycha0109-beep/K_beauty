@@ -1,0 +1,128 @@
+name: V2.1 ADMISSION G2 Initial Admission Grant
+
+on:
+  push:
+    branches:
+      - governance/v21-admission-g2-initial-admission-grant
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/v21-admission-g2-initial-admission-grant.yml"
+      - "scripts/product-evidence/initial-admission-grant-policy-v1.mjs"
+      - "scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs"
+      - "fixtures/recommendation-governance/initial-admission-grant-v1.json"
+      - "fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt"
+      - "docs/evidence/canonical-recommendation-initial-admission-authority-v1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: v21-admission-g2-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  G2_BASE_MAIN_SHA: 8d43a30497a310a1d5a64c5c593fc786e3281d12
+  G2_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  G2_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-g2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.G2_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact authority and ancestry
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$G2_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$G2_BASE_MAIN_SHA" HEAD
+          test "$(git merge-base "$G2_BASE_MAIN_SHA" HEAD)" = "$G2_BASE_MAIN_SHA"
+
+      - name: Exact additive G2 scope
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$G2_BASE_MAIN_SHA")"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-admission-g2-initial-admission-grant\.yml|scripts/product-evidence/initial-admission-grant-policy-v1\.mjs|scripts/product-evidence/verify-initial-admission-grant-policy-v1\.mjs|fixtures/recommendation-governance/initial-admission-grant-v1\.json|fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1\.txt|docs/evidence/canonical-recommendation-initial-admission-authority-v1\.md)$' || true)"
+          test -z "$forbidden"
+
+      - name: No Production Recommendation PF PDA or Hosted runtime mutation
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$G2_BASE_MAIN_SHA" -- app lib supabase/migrations
+          test -z "$(git diff --name-only "$G2_BASE_MAIN_SHA" -- package.json package-lock.json)"
+          test -z "$(git diff --name-only "$G2_BASE_MAIN_SHA" -- lib/product-source.js lib/recommendation-scoring.js lib/skin-match-decision-engine.js)"
+
+      - name: Syntax and deterministic fixture parse
+        run: |
+          set -euo pipefail
+          node --check scripts/product-evidence/initial-admission-grant-policy-v1.mjs
+          node --check scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs
+          node -e 'JSON.parse(require("fs").readFileSync("fixtures/recommendation-governance/initial-admission-grant-v1.json","utf8"))'
+
+      - name: Verify INITIAL_ADMISSION_GRANT F1-F20
+        run: node scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs
+
+      - name: Revalidate frozen non-numeric PDA contract
+        run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+
+      - name: Revalidate frozen PDA production-consumption contract
+        run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-production-consumption-contract-v1.mjs
+
+      - name: Prepare frozen Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$G2_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164) process.exit(1)'
+
+      - name: Historical canonical 164x12 Recommendation invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          context="V2.1-ADMISSION-G2 exact-head CI"
+          description="G2 exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="V2.1-ADMISSION-G2 merged-main exact-SHA CI"
+            description="G2 merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then description="G2 merged-main exact-SHA CI failed"; else description="G2 exact-head CI failed"; fi
+          fi
+          gh api --method POST -H "Accept: application/vnd.github+json" \
+            "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" -f context="$context" -f description="$description" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = "success"

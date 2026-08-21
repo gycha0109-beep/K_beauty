@@ -1,0 +1,62 @@
+{
+  "fixtureVersion": "initial-admission-grant-fixture-v1",
+  "policyVersion": "initial-admission-grant-policy-v1",
+  "positiveFixture": {
+    "product": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "category": "treatment",
+      "canonicalProduct": true,
+      "identityStatus": "resolved"
+    },
+    "subject": {
+      "subjectId": "22222222-2222-4222-8222-222222222222",
+      "productId": "11111111-1111-4111-8111-111111111111",
+      "identityStatus": "resolved",
+      "currentState": "current",
+      "subjectIdentitySerializerVersion": "product-fact-subject-identity-v1",
+      "identityResolutionVersion": "cross-category-real-evidence-pilot-v1"
+    },
+    "authority": {
+      "registryVersion": "product-fact-registry-cross-category-v1",
+      "registryChecksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575"
+    },
+    "currentFacts": [
+      {
+        "factKey": "contains_active",
+        "subjectId": "22222222-2222-4222-8222-222222222222",
+        "isCurrent": true,
+        "semanticStatus": "supported",
+        "authorityCeiling": "product_specific_primary",
+        "registryVersion": "product-fact-registry-cross-category-v1",
+        "propositionSerializerVersion": "product-fact-proposition-pilot-v1",
+        "propositionKey": "contains_active:salicylic_acid",
+        "factInstanceId": "33333333-3333-4333-8333-333333333333",
+        "confirmationId": "44444444-4444-4444-8444-444444444444",
+        "valueEntityIdentifier": "salicylic_acid",
+        "stale": false
+      }
+    ],
+    "pda": {
+      "axisKey": "exfoliation_load",
+      "contractVersion": "exfoliation-non-numeric-pda-contract-v1",
+      "mapperVersion": "exfoliation-non-numeric-pda-offline-shadow-v1",
+      "activeIdentityMappingVersion": "exfoliating-active-identity-set-v1",
+      "signalStatus": "GOVERNED_SIGNAL_ESTABLISHED",
+      "coverageState": "active_identity_only",
+      "uncertaintyReasons": [
+        "ACTIVE_CONCENTRATION_MISSING",
+        "RECOMMENDED_USE_FREQUENCY_MISSING"
+      ],
+      "current": true,
+      "stale": false
+    },
+    "legacyMetadata": {
+      "concerns": ["pores"],
+      "ingredient_signals": {"functional_summary": {"pores": 10}},
+      "popularity": 999999,
+      "ranking": 1
+    },
+    "candidatePolicy": {"action": "ALLOW"},
+    "normativePolicy": {"policy_action": "ALLOW"}
+  }
+}
