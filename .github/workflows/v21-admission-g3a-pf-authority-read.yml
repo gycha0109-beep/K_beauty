@@ -1,0 +1,186 @@
+name: V2.1 ADMISSION G3A PF Authority Read
+
+on:
+  push:
+    branches:
+      - admission/g3a-cont-pf-authority-read
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
+      - "supabase/migrations/20260822083000_v21_admission_g3a_pf_authority_read_v1.sql"
+      - "lib/recommendation-admission-authority-contract.mjs"
+      - "lib/recommendation-admission-authority-reader.js"
+      - "lib/recommendation-admission-authority-controlled-probe-oidc.js"
+      - "app/api/internal/recommendation-admission-authority-controlled-probe/route.js"
+      - "fixtures/recommendation-governance/g3a-pf-authority-reader-v1.json"
+      - "scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs"
+      - "docs/evidence/v21-admission-g3a-pf-authority-read-v1.md"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+  deployments: read
+  id-token: write
+  statuses: write
+
+concurrency:
+  group: v21-admission-g3a-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  G3A_BASE_MAIN_SHA: 5409a5913107064c214733f967ea0f61bc1edfa8
+  G3A_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  G3A_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  G3A_RUNTIME_PROBE_PRODUCT_ID: 0b88019a-9eb2-4be9-842d-f1e60e42cf51
+  G3A_OIDC_AUDIENCE: urn:bejewely:v21-admission-g3a:runtime-probe
+
+jobs:
+  verify-g3a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.G3A_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Exact authority and bounded scope
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$G3A_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$G3A_BASE_MAIN_SHA" HEAD
+          changed="$(git diff --name-only "$G3A_BASE_MAIN_SHA" HEAD)"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-admission-g3a-pf-authority-read\.yml|supabase/migrations/20260822083000_v21_admission_g3a_pf_authority_read_v1\.sql|lib/recommendation-admission-authority-contract\.mjs|lib/recommendation-admission-authority-reader\.js|lib/recommendation-admission-authority-controlled-probe-oidc\.js|app/api/internal/recommendation-admission-authority-controlled-probe/route\.js|fixtures/recommendation-governance/g3a-pf-authority-reader-v1\.json|scripts/verify-v21-admission-g3a-pf-authority-reader-v1\.mjs|docs/evidence/v21-admission-g3a-pf-authority-read-v1\.md|package\.json|package-lock\.json)$' || true)"
+          test -z "$forbidden"
+          git diff --exit-code "$G3A_BASE_MAIN_SHA" HEAD -- lib/product-source.js app/api/analyze/route.js lib/recommendation-scoring.js lib/skin-match-decision-engine.js scripts/product-evidence/initial-admission-grant-policy-v1.mjs scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt
+
+      - name: Secret and client-boundary guards
+        run: |
+          set -euo pipefail
+          ! git grep -nE 'NEXT_PUBLIC_RECOMMENDATION_ADMISSION_DATABASE_URL|SUPABASE_SERVICE_ROLE_KEY' -- ':!docs/**' ':!*.md'
+          ! git diff "$G3A_BASE_MAIN_SHA" HEAD | grep -E 'postgres(ql)?://[^[:space:]]+:[^[:space:]@]+@'
+          ! git diff "$G3A_BASE_MAIN_SHA" HEAD | grep -Ei 'password[[:space:]]*=[[:space:]]*["'"''][^"'"'']+'
+          test "$(git grep -l 'RECOMMENDATION_ADMISSION_DATABASE_URL' -- 'app/**' 'lib/**' | tr '\n' ' ')" = "lib/recommendation-admission-authority-reader.js "
+          ! git grep -n 'recommendation-admission-authority-reader' -- 'app/**' ':!app/api/internal/recommendation-admission-authority-controlled-probe/route.js'
+
+      - name: Syntax and focused G3A verification
+        run: |
+          set -euo pipefail
+          node --check lib/recommendation-admission-authority-contract.mjs
+          node --check lib/recommendation-admission-authority-reader.js
+          node --check lib/recommendation-admission-authority-controlled-probe-oidc.js
+          node --check app/api/internal/recommendation-admission-authority-controlled-probe/route.js
+          node --check scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs
+          node scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs
+
+      - name: Revalidate frozen G2 F1-F20
+        run: node scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs
+
+      - name: Revalidate frozen PDA contract
+        run: node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+
+      - name: Prepare immutable Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$G3A_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164) process.exit(1)'
+
+      - name: Historical canonical 164x12 Recommendation invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish exact-SHA CI attestation
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state=success
+          context="V2.1-ADMISSION-G3A exact-head CI"
+          description="G3A exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="V2.1-ADMISSION-G3A merged-main exact-SHA CI"
+            description="G3A merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != success ]; then
+            state=failure
+            description="${context} failed"
+          fi
+          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$G3A_CHECKOUT_SHA" -f state="$state" -f context="$context" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = success
+
+  runtime-probe:
+    if: github.event_name == 'push'
+    needs: verify-g3a
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Resolve exact Vercel deployment URL from GitHub deployment evidence
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 36); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?per_page=100" --jq ".[] | select(.sha == \"$GITHUB_SHA\") | .id" || true)"
+            for id in $ids; do
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then url="$candidate"; break; fi
+            done
+            if [ -n "$url" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$url" ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            url="https://k-beauty-two.vercel.app"
+          fi
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain short-lived GitHub OIDC token
+        id: oidc
+        run: |
+          set -euo pipefail
+          token_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${G3A_OIDC_AUDIENCE}")"
+          token="$(printf '%s' "$token_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$token"
+          printf 'token=%s\n' "$token" >> "$GITHUB_OUTPUT"
+
+      - name: Exact deployed server-runtime PF authority proof
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error --retry 18 --retry-delay 5 --retry-all-errors \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data "{\"productId\":\"$G3A_RUNTIME_PROBE_PRODUCT_ID\"}" \
+            "$DEPLOYMENT_URL/api/internal/recommendation-admission-authority-controlled-probe")"
+          printf '%s\n' "$response"
+          printf '%s' "$response" | node -e '
+            let x=""; process.stdin.on("data",d=>x+=d).on("end",()=>{
+              const j=JSON.parse(x);
+              if(j.result!=="PASS"||j.deploymentSha!==process.env.GITHUB_SHA||j.credentialAvailable!==true||j.runtimeRoleMatch!==true||j.rawPfSelectDenied!==true||j.authorityStatus!=="AUTHORITY_RESOLVED"||j.readContractVersion!=="recommendation-admission-authority-read-v1"||j.secretValueExposed!==false) process.exit(1);
+            })'
