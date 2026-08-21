@@ -1,0 +1,64 @@
+name: EVAL-R1 Bootstrap Remediation
+
+on:
+  push:
+    branches:
+      - eval/r1-persona-explanation-grounding-remediation
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply exact explanation-only remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('lib/skin-match-decision-engine.js')
+          s = p.read_text()
+
+          old = '''  const hatesHeavy = answers.mostDislikedFeel === "heavy" || answers.mostDislikedFeel === "greasy";\n'''
+          new = '''  const hatesHeavy = answers.mostDislikedFeel === "heavy" || answers.mostDislikedFeel === "greasy";\n  const explicitTightness = answers.postWashFeeling === "tight";\n  const explicitHighSensitivity = answers.sensitivity === "high" || Boolean(answers.verySensitivePeriod);\n  const explicitIrritation = answers.afternoonSkinChange === "red_or_irritated";\n  const groundedSensitivity = explicitHighSensitivity || explicitIrritation;\n  const explicitRedness =\n    hasAnswerConcern(answers, "redness") || explicitIrritation || photoAxes.has("redness");\n'''
+          assert s.count(old) == 1, 'grounding variable anchor drift'
+          s = s.replace(old, new)
+
+          old = '''    const leadSentence = sensitiveState\n      ? "세안 뒤 당김이나 예민함이 같이 올라오는 피부라면, 세정력만 강한 쪽보다 부담을 덜 남기는 클렌저부터 맞추는 편이 좋습니다."\n      : highOil || highPores || acneState\n'''
+          new = '''    const leadSentence = sensitiveState\n      ? explicitTightness && groundedSensitivity\n        ? "세안 뒤 당김과 예민함이 같이 올라오는 피부라면, 세정력만 강한 쪽보다 부담을 덜 남기는 클렌저부터 맞추는 편이 좋습니다."\n        : explicitTightness\n          ? "세안 뒤 당김이 올라오는 피부라면, 세정력만 강한 쪽보다 부담을 덜 남기는 클렌저부터 맞추는 편이 좋습니다."\n          : groundedSensitivity\n            ? "예민함이 올라오는 피부라면, 세정력만 강한 쪽보다 부담을 덜 남기는 클렌저부터 맞추는 편이 좋습니다."\n            : "장벽 부담 신호가 큰 피부라면, 세정력만 강한 쪽보다 부담을 덜 남기는 클렌저부터 맞추는 편이 좋습니다."\n      : highOil || highPores || acneState\n'''
+          assert s.count(old) == 1, 'cleanser copy anchor drift'
+          s = s.replace(old, new)
+
+          old = '''    const leadSentence = sensitiveState\n      ? "예민함이나 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n      : acneState || priorityAxis === "redness"\n'''
+          new = '''    const leadSentence = sensitiveState\n      ? explicitRedness && groundedSensitivity\n        ? "예민함과 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n        : explicitRedness\n          ? "붉은기 신호가 직접 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n          : explicitHighSensitivity\n            ? "민감도가 높은 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n            : groundedSensitivity\n              ? "오후 예민함이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n              : "장벽 부담 신호가 큰 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."\n      : acneState || priorityAxis === "redness"\n'''
+          assert s.count(old) == 1, 'serum copy anchor drift'
+          s = s.replace(old, new)
+
+          old = '''    const leadSentence = sensitiveState || priorityAxis === "barrier"\n      ? "장벽과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."\n      : highDry || priorityAxis === "dehydration"\n        ? "세안 뒤 당김이 이어지는 피부라면, 보습 단계에서 수분이 쉽게 끊기지 않게 붙잡아 주는 쪽이 중요합니다."\n'''
+          new = '''    const leadSentence = sensitiveState || priorityAxis === "barrier"\n      ? explicitHighSensitivity\n        ? "장벽 부담과 높은 민감도가 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."\n        : groundedSensitivity\n          ? "장벽 부담과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."\n          : "장벽 부담 신호가 큰 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."\n      : highDry || priorityAxis === "dehydration"\n        ? explicitTightness\n          ? "세안 뒤 당김이 이어지는 피부라면, 보습 단계에서 수분이 쉽게 끊기지 않게 붙잡아 주는 쪽이 중요합니다."\n          : "건조 축이 높게 잡힌 피부라면, 보습 단계에서 수분이 쉽게 끊기지 않게 붙잡아 주는 쪽이 중요합니다."\n'''
+          assert s.count(old) == 1, 'moisturizer copy anchor drift'
+          s = s.replace(old, new)
+
+          old = '''  if (answers.sensitivity === "high" || scoreCard.barrier.total >= 18) {\n    items.push(\n      formatEvidenceItem(\n        "barrier",\n        locale === "en" ? "Sensitivity guardrail" : "민감도 가드레일",\n        locale === "en"\n          ? "Higher sensitivity increased barrier-first weighting."\n          : "민감도가 높아 장벽 우선 가중치를 더했습니다."\n      )\n    );\n  }\n'''
+          new = '''  if (answers.sensitivity === "high") {\n    items.push(\n      formatEvidenceItem(\n        "barrier",\n        locale === "en" ? "Sensitivity guardrail" : "민감도 가드레일",\n        locale === "en"\n          ? "Higher sensitivity increased barrier-first weighting."\n          : "민감도가 높아 장벽 우선 가중치를 더했습니다."\n      )\n    );\n  } else if (scoreCard.barrier.total >= 18) {\n    items.push(\n      formatEvidenceItem(\n        "barrier",\n        locale === "en" ? "Barrier priority signal" : "장벽 우선 근거",\n        locale === "en"\n          ? "Barrier-related survey signals accumulated and increased barrier-first weighting."\n          : "설문 응답의 장벽 관련 신호가 누적돼 장벽 우선 가중치가 높아졌습니다."\n      )\n    );\n  }\n'''
+          assert s.count(old) == 1, 'survey evidence anchor drift'
+          s = s.replace(old, new)
+
+          p.write_text(s)
+          PY
+          node --check lib/skin-match-decision-engine.js
+          git diff --check
+          git diff -- lib/skin-match-decision-engine.js
+      - name: Commit remediation and retire bootstrap
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/eval-r1-bootstrap-remediation.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/skin-match-decision-engine.js
+          git commit -m "fix(eval-r1): ground recommendation explanations to supported state"
+          git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
