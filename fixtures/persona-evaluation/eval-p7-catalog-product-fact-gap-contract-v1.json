@@ -1,0 +1,81 @@
+{
+  "schema_version": "eval-p7-catalog-product-fact-gap-contract-v1",
+  "stage": "EVAL-P7",
+  "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
+  "execution_base_sha": "ee8f06485a0e7d41396682ac9d44f5b1402abeaa",
+  "p5_authority_sha": "269fe701a7f3ee967d12e15c88e9e5767af895f6",
+  "p6_authority_sha": "ee8f06485a0e7d41396682ac9d44f5b1402abeaa",
+  "frozen_recommendation_reference_sha": "783afb91a964f5d762f46846f9ef854902b48e95",
+  "independent_catalog_reference": {
+    "status": "NONE_AUTHORIZED",
+    "coverage_classification": "CATALOG_COVERAGE_NOT_ESTABLISHED"
+  },
+  "product_fact_authority": {
+    "status": "NOT_ESTABLISHED_FOR_FROZEN_RECOMMENDATION_FIXTURE",
+    "rule": "Recommendation metadata fixture fields are observations for frozen-fixture diagnostics only and MUST NOT be promoted to governed current Product Fact evidence."
+  },
+  "engine_gap_authority": {
+    "status": "ENGINE_GAP_NOT_ESTABLISHED",
+    "rule": "Do not classify an ENGINE_GAP unless product existence and governed Product Fact support for the target predicate are independently established."
+  },
+  "predicates": [
+    {
+      "relation_id": "MR-GENDER-001",
+      "scope": "ALL_PRODUCTS",
+      "field": "is_mens",
+      "target_value": true,
+      "expected_scope_count": 164,
+      "expected_match_count": 0
+    },
+    {
+      "relation_id": "MR-SUN-EYE-001",
+      "scope": "SUNSCREEN_ONLY",
+      "field": "eye_sting",
+      "target_value": "high",
+      "expected_scope_count": 11,
+      "expected_match_count": 0
+    },
+    {
+      "relation_id": "MR-SUN-WHITECAST-001",
+      "scope": "SUNSCREEN_ONLY",
+      "field": "white_cast",
+      "target_value": "high",
+      "expected_scope_count": 11,
+      "expected_match_count": 0
+    },
+    {
+      "relation_id": "MR-SUN-MAKEUP-001",
+      "scope": "SUNSCREEN_ONLY",
+      "field": "pilling_risk",
+      "target_value": "high",
+      "expected_scope_count": 11,
+      "expected_match_count": 0
+    },
+    {
+      "relation_id": "MR-SUN-SENSITIVITY-001",
+      "scope": "SUNSCREEN_ONLY",
+      "field": "irritation_risk",
+      "target_value": "high",
+      "expected_scope_count": 11,
+      "expected_match_count": 0
+    }
+  ],
+  "required_classifications": [
+    "FROZEN_FIXTURE_PRODUCT_PREDICATE_COVERAGE_GAP",
+    "FROZEN_FIXTURE_RELEVANT_FIELD_COMPLETE_FOR_SCOPE",
+    "FROZEN_FIXTURE_TARGET_VALUE_ABSENT",
+    "PRODUCT_FACT_AUTHORITY_NOT_ESTABLISHED_FOR_FROZEN_FIXTURE",
+    "CATALOG_COVERAGE_NOT_ESTABLISHED",
+    "ENGINE_GAP_NOT_ESTABLISHED"
+  ],
+  "forbidden_claims": [
+    "CURRENT_PRODUCTION_CATALOG_PRODUCT_ABSENCE",
+    "CURRENT_PRODUCT_FACT_ABSENCE",
+    "MARKET_PREVALENCE",
+    "REAL_USER_DEMAND",
+    "REAL_USER_SATISFACTION",
+    "CONVERSION_PREDICTION",
+    "ENGINE_FAILURE_WITHOUT_PRODUCT_AND_FACT_SUPPORT",
+    "ENFORCE_AUTHORIZATION"
+  ]
+}
