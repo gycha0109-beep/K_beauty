@@ -81,8 +81,7 @@ function maskedProduct(product) {
   if (!product) return null;
   return {
     category: product.category || null,
-    reason: product.reason || "",
-    comparison_reason: product.comparison_reason || ""
+    reason: product.reason || ""
   };
 }
 
@@ -132,6 +131,7 @@ function projectJudgeCase(persona, bundle) {
     judge_limits: {
       product_name_exposed: false,
       brand_identity_exposed: false,
+      comparison_identity_text_exposed: false,
       numeric_recommendation_score_exposed: false,
       recommendation_rank_is_truth: false,
       product_correctness_is_in_scope: false,
@@ -140,10 +140,23 @@ function projectJudgeCase(persona, bundle) {
   };
 }
 
+function assertIdentityRedaction(cases, rawProducts) {
+  const serialized = JSON.stringify(cases).toLowerCase();
+  for (const product of rawProducts) {
+    const name = String(product?.name || "").trim().toLowerCase();
+    const brand = String(product?.brand || "").trim().toLowerCase();
+    if (name.length >= 4) assert.equal(serialized.includes(name), false, `P8 judge input leaks product name: ${product.id}`);
+    if (brand.length >= 5) assert.equal(serialized.includes(brand), false, `P8 judge input leaks brand identity: ${product.id}`);
+  }
+}
+
 assert.equal(contract.stage, "EVAL-P8");
 assert.equal(contract.authority.judge_authority, "DIAGNOSTIC_ONLY");
 assert.equal(contract.authority.release_blocker_authority, false);
 assert.equal(contract.sample_contract.sample_count, 16);
+assert.equal(contract.judge_input_policy.product_name_exposed, false);
+assert.equal(contract.judge_input_policy.brand_identity_exposed, false);
+assert.equal(contract.judge_input_policy.comparison_identity_text_exposed, false);
 assert.equal(cohort.cohort.lifecycle, "LOCKED");
 assert.equal(cohort.cohort.persona_count, 37);
 assert.equal(productsFixture.productCount, 164);
@@ -171,6 +184,7 @@ for (const persona of sample) {
   });
   cases.push(projectJudgeCase(persona, bundle));
 }
+assertIdentityRedaction(cases, productsFixture.products);
 
 const promptMaterial = {
   prompt_version: contract.prompt.prompt_version,
