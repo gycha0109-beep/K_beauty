@@ -1,0 +1,171 @@
+{
+  "schema_version": "eval-p5-metamorphic-evaluation-contract-v1",
+  "stage": "EVAL-P5",
+  "evaluator_version": "eval-p5-counterfactual-metamorphic-evaluator-v1",
+  "scenario_generator_version": "eval-p5-paired-scenario-generator-v1",
+  "authority": {
+    "execution_base_main_sha": "6a18af5a992eb6a70e2006361e99456e3b491ed2",
+    "p4_merged_sha": "a4772e3cd44d68f67fe4bbf25926ba0942f353b3",
+    "p3_materialization_source_sha": "4265450ddcf40bdb4359a3d5c82d22b00a1024dd",
+    "recommendation_reference_sha": "783afb91a964f5d762f46846f9ef854902b48e95",
+    "p4_manifest_path": "fixtures/persona-evaluation/eval-p4-cohort-freeze-manifest-v1.json",
+    "p4_manifest_semantic_hash": "31acc3c76ad45fc0aa5006529e3d3dc488ddbaea14b6af99b69800980bf0ed7c",
+    "p2_metamorphic_registry_version": "persona-metamorphic-registry-v1",
+    "survey_contract_blob_sha": "0ad41d8328caf1939789063ab3bc06391a2a94d1",
+    "recommendation_scorer_blob_sha": "45358401d80e5edd8c92d303462f2a415196590c",
+    "skin_decision_engine_blob_sha": "13945cb21c0acec1c303eedfa2b9b6000f6e066d",
+    "analyze_route_blob_sha": "cc059eba680034d28e1ade0b1a8147d43a8b30f7"
+  },
+  "cohort_input": {
+    "coverage_cohort_id": "eval-p4-coverage-cohort-v1",
+    "coverage_persona_count": 29,
+    "coverage_cohort_hash": "ffcd3341fbf408116399ab39cfaa250468baab01e7d5eae3295193996ce0530a",
+    "adversarial_cohort_id": "eval-p4-adversarial-cohort-v1",
+    "adversarial_persona_count": 8,
+    "adversarial_cohort_hash": "957a8200d12aa5fb27744a65e11831ba69001f82401231bd2694e9aadbc1cbe7",
+    "population_prior_persona_count": 0,
+    "weighting_strategy": "NONE",
+    "cross_cohort_raw_rate_comparison_allowed": false
+  },
+  "pair_contract": {
+    "raw_input_paths_changed_per_pair": 1,
+    "source_persona_is_immutable": true,
+    "paired_scenarios_are_new_cohort_members": false,
+    "rank_monotonicity_is_hard_assertion": false,
+    "full_recommendation_delta_authority": "DIAGNOSTIC_ONLY",
+    "masked_product_comparison_classification": "MASKED_BY_OTHER_CONSTRAINT",
+    "catalog_predicate_absence_classification": "CATALOG_PRODUCT_PREDICATE_NOT_OBSERVED",
+    "probe_authority": "EVALUATOR_RULE_FIXTURE_NOT_CATALOG_TRUTH"
+  },
+  "relations": [
+    {
+      "relation_id": "MR-GENDER-001",
+      "input_dimension": "profile.genderPreference",
+      "controlled_path": "profile.genderPreference",
+      "before": "unspecified",
+      "after": "female",
+      "pair_preconditions": [],
+      "product_predicate": "is_mens = true",
+      "assertion_level": "RECOMMENDATION_ELIGIBILITY",
+      "expected_invariant_or_direction": "target product eligible before and ineligible after",
+      "authority_source": "PRODUCT_POLICY_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": [],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-SUN-EYE-001",
+      "input_dimension": "sunscreen.eyeSensitive",
+      "controlled_path": "sunscreen.eyeSensitive",
+      "before": false,
+      "after": true,
+      "pair_preconditions": ["sunscreen.preferenceState = answered"],
+      "product_predicate": "category = sunscreen AND eye_sting = high",
+      "assertion_level": "HARD_REJECT_SET",
+      "expected_invariant_or_direction": "unmasked target sunscreen enters hard-rejected set after change",
+      "authority_source": "PRODUCT_POLICY_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": ["comparison may be masked when another hard constraint already rejects the product before the controlled change"],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-SUN-WHITECAST-001",
+      "input_dimension": "sunscreen.whiteCastHate",
+      "controlled_path": "sunscreen.whiteCastHate",
+      "before": false,
+      "after": true,
+      "pair_preconditions": [
+        "sunscreen.preferenceState = answered",
+        "sunscreen.toneUpWanted = false"
+      ],
+      "product_predicate": "category = sunscreen AND white_cast = high",
+      "assertion_level": "STRICT_CANDIDATE_SET",
+      "expected_invariant_or_direction": "unmasked target sunscreen is removed from strict candidate set after change",
+      "authority_source": "PRODUCT_POLICY_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": [
+        "penalty-only fallback may still allow final recommendation",
+        "comparison may be masked when another constraint already removes the product from the strict set before the controlled change"
+      ],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-SUN-MAKEUP-001",
+      "input_dimension": "sunscreen.makeupUse",
+      "controlled_path": "sunscreen.makeupUse",
+      "before": false,
+      "after": true,
+      "pair_preconditions": ["sunscreen.preferenceState = answered"],
+      "product_predicate": "category = sunscreen AND pilling_risk = high",
+      "assertion_level": "STRICT_CANDIDATE_SET",
+      "expected_invariant_or_direction": "unmasked target sunscreen is removed from strict candidate set after change",
+      "authority_source": "PRODUCT_POLICY_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": [
+        "penalty-only fallback may still allow final recommendation",
+        "comparison may be masked when another constraint already removes the product from the strict set before the controlled change"
+      ],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-SUN-SENSITIVITY-001",
+      "input_dimension": "sensitivity",
+      "controlled_path": "sensitivity",
+      "before": "SOURCE_LOW_OR_MEDIUM",
+      "after": "high",
+      "pair_preconditions": [
+        "source sensitivity in {low, medium}",
+        "primaryConcern not in {redness, barrier}",
+        "routeExtensions.verySensitivePeriod = false"
+      ],
+      "product_predicate": "category = sunscreen AND irritation_risk = high",
+      "assertion_level": "HARD_REJECT_SET",
+      "expected_invariant_or_direction": "unmasked target sunscreen enters hard-rejected set after change",
+      "authority_source": "PRODUCT_POLICY_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": ["comparison may be masked when another hard constraint already rejects the product before sensitivity changes"],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-DERIVED-DRYNESS-001",
+      "input_dimension": "postWashFeeling",
+      "controlled_path": "postWashFeeling",
+      "before": "comfortable",
+      "after": "tight",
+      "pair_preconditions": ["afternoonSkinChange != more_dry"],
+      "product_predicate": null,
+      "assertion_level": "SURVEY_DERIVED_STATE",
+      "expected_invariant_or_direction": "drynessRisk changes from non-high to high",
+      "authority_source": "CURRENT_SURVEY_CONTRACT_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": [],
+      "rank_direction": "NOT_ASSERTED"
+    },
+    {
+      "relation_id": "MR-DERIVED-REDNESS-001",
+      "input_dimension": "afternoonSkinChange",
+      "controlled_path": "afternoonSkinChange",
+      "before": "mostly_same",
+      "after": "red_or_irritated",
+      "pair_preconditions": ["before rednessRisk is not already high from another governed signal"],
+      "product_predicate": null,
+      "assertion_level": "SURVEY_DERIVED_STATE",
+      "expected_invariant_or_direction": "rednessRisk changes from non-high to high",
+      "authority_source": "CURRENT_SURVEY_CONTRACT_DERIVED",
+      "contract_version": "persona-metamorphic-registry-v1",
+      "known_exceptions": [],
+      "rank_direction": "NOT_ASSERTED"
+    }
+  ],
+  "authority_ceiling": {
+    "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
+    "organic_production_evidence": false,
+    "controlled_production_evidence": false,
+    "real_user_truth": false,
+    "market_prevalence": false,
+    "satisfaction_or_conversion_truth": false,
+    "product_fact_authority": false,
+    "enforce_authority": false,
+    "llm_judge_calls": 0
+  }
+}
