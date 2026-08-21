@@ -1,0 +1,111 @@
+{
+  "schema_version": "eval-p9-real-aggregate-calibration-contract-v1",
+  "stage": "EVAL-P9",
+  "stage_name": "Real Aggregate Calibration Contract",
+  "authority": {
+    "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE_WITH_SEPARATE_AGGREGATE_CALIBRATION_GOVERNANCE",
+    "organic_production_evidence_promoted_into_synthetic_evidence": false,
+    "row_level_real_user_data_allowed": false,
+    "individual_persona_reconstruction_allowed": false,
+    "real_user_truth": false,
+    "satisfaction_or_conversion_truth": false,
+    "market_prevalence_truth": false,
+    "enforce_authority": false
+  },
+  "source_gate": {
+    "required_source_classes": [
+      "AUTHORIZED_PRIVACY_SAFE_AGGREGATE_SOURCE"
+    ],
+    "required_lineage_fields": [
+      "source_system",
+      "source_definition_version",
+      "observation_window",
+      "aggregation_definition",
+      "segment_definition_version",
+      "source_selection_bias_assessment",
+      "recommendation_exposure_bias_assessment",
+      "privacy_policy_reference",
+      "suppression_or_minimum_cell_rule_reference",
+      "aggregate_snapshot_reference",
+      "aggregate_snapshot_hash"
+    ],
+    "row_level_export_forbidden": true,
+    "session_level_replay_persona_forbidden": true,
+    "raw_questionnaire_retention_for_persona_cloning_forbidden": true,
+    "marginal_combination_into_pseudo_user_fingerprint_forbidden": true
+  },
+  "privacy_gate": {
+    "aggregate_only": true,
+    "low_count_segment_policy_required": true,
+    "existing_privacy_policy_required": true,
+    "minimum_cell_rule_reference_required": true,
+    "persona_track_may_invent_k": false,
+    "if_policy_absent": "CALIBRATION_HOLD_REQUIRE_SEPARATE_PRIVACY_GOVERNANCE"
+  },
+  "calibration_targets": [
+    {
+      "target": "POPULATION_PRIOR_CALIBRATION",
+      "layer": "POPULATION",
+      "allowed_source_semantics": "PRE_RECOMMENDATION_POPULATION_PRIOR_AGGREGATE_ONLY"
+    },
+    {
+      "target": "DOMAIN_STATE_DISTRIBUTION_CALIBRATION",
+      "layer": "DOMAIN",
+      "allowed_source_semantics": "PRE_RECOMMENDATION_DOMAIN_INPUT_AGGREGATE_ONLY"
+    },
+    {
+      "target": "DECISION_PREFERENCE_CALIBRATION",
+      "layer": "DECISION",
+      "allowed_source_semantics": "EXPLICIT_PRE_RECOMMENDATION_PREFERENCE_AGGREGATE_ONLY"
+    },
+    {
+      "target": "INTERACTION_BEHAVIOR_CALIBRATION",
+      "layer": "INTERACTION",
+      "allowed_source_semantics": "RECOMMENDATION_EXPOSED_BEHAVIOR_WITH_EXPOSURE_BIAS_EXPLICITLY_MODELED"
+    }
+  ],
+  "cross_layer_rules": {
+    "one_signal_may_automatically_calibrate_another_layer": false,
+    "click_or_purchase_may_infer_skin_state_prevalence": false,
+    "recommendation_exposed_behavior_may_be_treated_as_population_prior_without_bias_review": false
+  },
+  "comparability_gate": {
+    "cross_cohort_raw_rate_comparison": "FORBIDDEN",
+    "weighted_and_unweighted_metrics_may_be_mixed": false,
+    "numerator_and_denominator_required_for_every_rate": true,
+    "weighted_numerator_denominator_and_raw_count_required_when_weighting_exists": true,
+    "sampling_frame_required": true,
+    "sampling_strategy_required": true,
+    "weighting_strategy_required": true,
+    "oversampling_semantics_required": true
+  },
+  "reweighting_governance": {
+    "locked_cohort_mutation_in_place": "FORBIDDEN",
+    "p4_locked_cohort_mutation_in_place": "FORBIDDEN",
+    "p6_locked_regression_cohort_mutation_in_place": "FORBIDDEN",
+    "reweighting_requires_new_version": true,
+    "new_version_requires_parent_lineage": true,
+    "new_version_requires_source_snapshot_hash": true,
+    "new_version_requires_weighting_semantics": true,
+    "new_version_requires_privacy_policy_reference": true
+  },
+  "p8_boundary": {
+    "llm_judge_diagnostic_counts_may_be_used_as_population_calibration_target": false,
+    "llm_judge_authority": "DIAGNOSTIC_ONLY",
+    "llm_judge_repeatability_status": "NOT_ESTABLISHED"
+  },
+  "execution_policy": {
+    "calibration_execution_requires_all_source_and_privacy_gates": true,
+    "partial_gate_satisfaction_may_trigger_reweighting": false,
+    "missing_privacy_policy_disposition": "HOLD",
+    "missing_authorized_aggregate_source_disposition": "HOLD",
+    "missing_layer_mapping_disposition": "HOLD",
+    "missing_bias_assessment_disposition": "HOLD"
+  },
+  "terminal_outcomes": [
+    "CALIBRATION_EXECUTABLE",
+    "CALIBRATION_HOLD_SOURCE_AUTHORITY_NOT_ESTABLISHED",
+    "CALIBRATION_HOLD_PRIVACY_POLICY_NOT_ESTABLISHED",
+    "CALIBRATION_HOLD_SOURCE_AND_PRIVACY_AUTHORITY_NOT_ESTABLISHED"
+  ]
+}
