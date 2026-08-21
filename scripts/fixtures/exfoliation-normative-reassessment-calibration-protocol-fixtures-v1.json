@@ -1,0 +1,12 @@
+[
+  {"id":"F1","name":"organic absent protocol complete","expected":"PROTOCOL_REGISTERED_CALIBRATION_PENDING"},
+  {"id":"F2","name":"only pre-registration organic evidence exists","expected":"RETROSPECTIVE_EVIDENCE_INELIGIBLE"},
+  {"id":"F3","name":"calibration validation overlap","expected":"REJECTED_BY_CALIBRATION_PROTOCOL"},
+  {"id":"F4","name":"holdout reused after failed validation","expected":"REJECTED_BY_CALIBRATION_PROTOCOL"},
+  {"id":"F5","name":"incompatible version regimes silently pooled","expected":"REJECTED_BY_CALIBRATION_PROTOCOL"},
+  {"id":"F6","name":"candidate values derived governance adoption absent","expected":"CANDIDATE_GOVERNANCE_ADOPTION_REQUIRED"},
+  {"id":"F7","name":"candidate governance adopted after validation result","expected":"REJECTED_BY_CALIBRATION_PROTOCOL"},
+  {"id":"F8","name":"synthetic controlled volume cannot replace organic","expected":"PROTOCOL_REGISTERED_CALIBRATION_PENDING"},
+  {"id":"F9","name":"all protocol artifacts valid values absent","expected":"PROTOCOL_REGISTERED_CALIBRATION_PENDING"},
+  {"id":"F10","name":"all future protocol gates satisfied","expected":"READY_FOR_SEPARATE_ENFORCE_REASSESSMENT"}
+]
