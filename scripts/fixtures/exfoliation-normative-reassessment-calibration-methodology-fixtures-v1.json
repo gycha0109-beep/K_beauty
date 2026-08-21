@@ -1,0 +1,14 @@
+[
+  {"id":"F1","name":"zero organic evidence","expected":"INSUFFICIENT_TO_CALIBRATE"},
+  {"id":"F2","name":"thin one-event category-complete organic evidence","expected":"CALIBRATION_CANDIDATE_DATA_AVAILABLE"},
+  {"id":"F3","name":"organic candidate data but no independent validation window","expected":"VALIDATION_DATA_NOT_YET_AVAILABLE"},
+  {"id":"F4","name":"separated calibration validation holdout and future normative target","expected":"METHODOLOGY_PATH_AVAILABLE"},
+  {"id":"F5","name":"mixed runtime versions without partition","expected":"VERSION_PARTITION_REQUIRED"},
+  {"id":"F6","name":"UNKNOWN observed with provenance separated","expected":"FURTHER_GOVERNANCE_REQUIRED"},
+  {"id":"F7","name":"isolated runtime error fallback observations","expected":"FURTHER_GOVERNANCE_REQUIRED"},
+  {"id":"F8","name":"large synthetic controlled evidence organic absent","expected":"INSUFFICIENT_TO_CALIBRATE"},
+  {"id":"F9","name":"retroactive threshold selection attempt","expected":"REJECTED_BY_METHODOLOGY"},
+  {"id":"F10","name":"same window used for calibration and validation","expected":"REJECTED_BY_METHODOLOGY"},
+  {"id":"F11","name":"composite context reconstruction attempt","expected":"REJECTED_BY_METHODOLOGY"},
+  {"id":"F12","name":"current zero evidence state","expected":"INSUFFICIENT_TO_CALIBRATE"}
+]
