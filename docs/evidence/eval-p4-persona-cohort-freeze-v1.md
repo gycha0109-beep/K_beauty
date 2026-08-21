@@ -95,6 +95,7 @@ Diagnostic run:
 
 ```text
 GitHub Actions run = 32439159163
+job = 96646221870
 failure gate = EVAL-P4 locked cohort reconstruction
 finding = Coverage Persona collapse detected
 ```
@@ -274,7 +275,7 @@ Future Population-Prior weighting must preserve upstream population-prior semant
 
 ## 11. Persona-collapse protection after promotion
 
-P4 verifier now requires:
+P4 verifier requires and the corrected run established:
 
 ```text
 P3 source Coverage = 32 records / 29 unique Domain states
@@ -283,11 +284,87 @@ LOCKED Adversarial = 8 records / 8 unique Domain states
 Combined LOCKED technical cohort union = 37 records / 37 unique Domain states
 ```
 
-This is a structural duplicate/collapse check, not an opaque diversity score or realism metric.
+Observed locked-domain distributions are diagnostic coverage descriptors only:
 
-## 12. Verification contract
+```text
+skinType:
+  combination = 8
+  dry = 10
+  not_sure = 9
+  oily = 10
 
-P4 exact-head CI must prove:
+sensitivity:
+  high = 12
+  low = 12
+  medium = 13
+
+primaryConcern:
+  acne = 4
+  barrier = 5
+  dehydration = 5
+  oiliness = 5
+  pores = 4
+  redness = 5
+  uneven_tone = 4
+  uv = 5
+
+sunscreenPreferenceState:
+  answered = 28
+  skipped = 4
+  unknown = 5
+```
+
+These counts are fixture composition, not population frequencies.
+
+## 12. Corrected authoritative execution
+
+First corrected exact-head execution that passed the complete P4 gate:
+
+```text
+implementation/evidence head = 4da035f053aeec93ad63f2d940e1b6bf59a0a960
+GitHub Actions run = 32439456276
+job = 96647111015
+result = SUCCESS
+```
+
+Passed stages:
+
+```text
+exact authority / ancestry
+bounded EVAL-P4 scope
+no Production Recommendation / Product Fact / Hosted mutation
+syntax / manifest parse
+immutable P3 materialization-source preparation
+EVAL-P4 locked cohort reconstruction
+frozen Recommendation reference preparation
+EVAL-P3 deterministic harness replay
+historical 164x12 Recommendation replay
+production build
+artifact upload
+```
+
+Artifact:
+
+```text
+artifact id = 9431898906
+artifact name = eval-p4-persona-cohort-freeze-4da035f053aeec93ad63f2d940e1b6bf59a0a960
+artifact ZIP SHA-256 = c9041a99f8175ce008fa5d33c30c94ec85638ab3f2c0e0cd27c9f39a98507242
+```
+
+Artifact semantic evidence:
+
+```text
+freeze_manifest_semantic_hash = 31acc3c76ad45fc0aa5006529e3d3dc488ddbaea14b6af99b69800980bf0ed7c
+source_combined_cohort_hash = c00426432a8481fd8a16cd38110f29bbaf87c42d389560bd40c0b33c97a64cf9
+locked_coverage_hash = ffcd3341fbf408116399ab39cfaa250468baab01e7d5eae3295193996ce0530a
+locked_adversarial_hash = 957a8200d12aa5fb27744a65e11831ba69001f82401231bd2694e9aadbc1cbe7
+```
+
+The exact head containing this closeout document must independently pass the same CI before merge. The external GitHub status for that later exact head is authoritative; this document does not self-attest its own future run.
+
+## 13. Verification contract
+
+P4 exact-head and merged-main CI must prove:
 
 ```text
 - exact P4 execution-base ancestry
@@ -306,7 +383,7 @@ P4 exact-head CI must prove:
 - production build PASS
 ```
 
-## 13. Authority ceiling
+## 14. Authority ceiling
 
 ```text
 EVIDENCE_CLASS = SYNTHETIC_SIMULATION_EVIDENCE
@@ -319,15 +396,29 @@ PRODUCT_FACT_AUTHORITY = NO
 ENFORCE_AUTHORITY = NO
 ```
 
-## 14. Provisional terminal outcome
-
-Semantic freeze decision pending successful exact-head and merged-main verification:
+## 15. P4 terminal outcome
 
 ```text
-COVERAGE_COHORT = LOCKED_V1 / 29 UNIQUE PERSONAS
-ADVERSARIAL_COHORT = LOCKED_V1 / 8 UNIQUE PERSONAS
+STAGE = EVAL-P4
+TERMINAL_OUTCOME = COVERAGE_ADVERSARIAL_LOCKED_POPULATION_PRIOR_DEFERRED
+SEMANTIC_RESULT = SUCCESS
+
+COVERAGE_COHORT = LOCKED_V1
+COVERAGE_SOURCE_PERSONAS = 32
+COVERAGE_LOCKED_PERSONAS = 29
+COVERAGE_UNIQUE_DOMAIN_STATES = 29
+
+ADVERSARIAL_COHORT = LOCKED_V1
+ADVERSARIAL_LOCKED_PERSONAS = 8
+ADVERSARIAL_UNIQUE_DOMAIN_STATES = 8
+
 POPULATION_PRIOR_COHORT = DEFERRED_NOT_LOCKED
+POPULATION_PRIOR_PERSONAS = 0
+AUTHORIZED_POPULATION_DATASET = NONE
+
 LOCKED_REGRESSION_COHORT = NOT_CREATED
+SYNTHETIC_EVIDENCE_AUTHORITY_ESCALATION = NO
+PRODUCTION_OR_GOVERNANCE_AUTHORITY_CHANGE = NO
 ```
 
-No final CI success is claimed here until the corrected exact-head and merged-main runs complete.
+EVAL-P4 therefore freezes two immutable technical cohorts without silently preserving duplicate Coverage weighting or inventing Population-Prior realism. Population-Prior adoption remains a separately governed future decision.
