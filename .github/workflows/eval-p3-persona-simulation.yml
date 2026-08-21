@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  EVAL_P3_BASE_MAIN_SHA: b702652c7167b49da96ce4f5308112436e066bd3
+  EVAL_P3_BASE_MAIN_SHA: 524ea7ff96616259b725ecdc9ac1a3f22133e6dc
   EVAL_P3_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
   EVAL_P3_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
