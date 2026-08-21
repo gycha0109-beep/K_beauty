@@ -1,0 +1,205 @@
+name: V2.1-9Q ENFORCE Reassessment Calibration Protocol
+
+on:
+  push:
+    branches:
+      - governance/v21-9q-calibration-protocol
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/v21-9q-enforce-reassessment-calibration-protocol.yml"
+      - "lib/exfoliation-normative-policy-reassessment-calibration-protocol.js"
+      - "scripts/fixtures/exfoliation-normative-reassessment-calibration-protocol-fixtures-v1.json"
+      - "scripts/product-evidence/verify-v21-9q-enforce-reassessment-calibration-protocol-v1.mjs"
+      - "docs/evidence/v21-9q-enforce-reassessment-calibration-protocol-v1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: v21-9q-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  V21_9Q_BASE_MAIN_SHA: 6a18af5a992eb6a70e2006361e99456e3b491ed2
+  V21_9P_MERGED_SHA: 6a18af5a992eb6a70e2006361e99456e3b491ed2
+  V21_9O_MERGED_SHA: 7806d6956d5d82743d176eb4c58959ee84b698c5
+  V21_9I_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  V21_9Q_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-v21-9q:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout exact PR head or merged-main SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.V21_9Q_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact starting authority and 9P ancestry
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$V21_9Q_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$V21_9Q_BASE_MAIN_SHA" HEAD
+          git merge-base --is-ancestor "$V21_9O_MERGED_SHA" "$V21_9P_MERGED_SHA"
+          test "$(git merge-base "$V21_9Q_BASE_MAIN_SHA" HEAD)" = "$V21_9Q_BASE_MAIN_SHA"
+
+      - name: Bounded V2.1-9Q additive scope
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$V21_9Q_BASE_MAIN_SHA")"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-9q-enforce-reassessment-calibration-protocol\.yml|lib/exfoliation-normative-policy-reassessment-calibration-protocol\.js|scripts/fixtures/exfoliation-normative-reassessment-calibration-protocol-fixtures-v1\.json|scripts/product-evidence/verify-v21-9q-enforce-reassessment-calibration-protocol-v1\.mjs|docs/evidence/v21-9q-enforce-reassessment-calibration-protocol-v1\.md)$' || true)"
+          test -z "$forbidden"
+
+      - name: Recommendation CandidatePolicy Product Fact governance runtime API migration zero-delta
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$V21_9Q_BASE_MAIN_SHA" -- \
+            lib/recommendation-scoring.js \
+            lib/candidate-exposure-policy-shadow.js \
+            lib/exfoliation-non-numeric-pda-normative-production-policy-shadow.js \
+            lib/exfoliation-normative-policy-activation-runtime.js \
+            lib/exfoliation-normative-policy-production-shadow-observer.js \
+            lib/exfoliation-normative-policy-runtime-observability.js \
+            lib/exfoliation-normative-policy-organic-evidence-context.js \
+            lib/exfoliation-normative-policy-organic-evidence-store.js \
+            lib/exfoliation-normative-policy-durable-evidence-readback.js \
+            lib/exfoliation-normative-policy-reassessment-sufficiency.js \
+            lib/exfoliation-normative-policy-reassessment-calibration-methodology.js \
+            lib/exfoliation-normative-policy-reassessment-normative-acceptance.js \
+            lib/product-decision-axis-mapper-v1.js
+          test -z "$(git diff --name-only "$V21_9Q_BASE_MAIN_SHA" -- supabase/migrations)"
+          test -z "$(git diff --name-only "$V21_9Q_BASE_MAIN_SHA" -- app/api)"
+          test -z "$(git diff --name-only "$V21_9Q_BASE_MAIN_SHA" -- package.json package-lock.json)"
+
+      - name: Syntax and focused V2.1-9Q verifier
+        run: |
+          node --check lib/exfoliation-normative-policy-reassessment-calibration-protocol.js
+          node --check scripts/product-evidence/verify-v21-9q-enforce-reassessment-calibration-protocol-v1.mjs
+          node --experimental-default-type=module scripts/product-evidence/verify-v21-9q-enforce-reassessment-calibration-protocol-v1.mjs
+
+      - name: Historical V2.1-9P verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9p-enforce-reassessment-normative-acceptance-v1.mjs
+
+      - name: Historical V2.1-9O verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9o-enforce-reassessment-calibration-methodology-v1.mjs
+
+      - name: Historical V2.1-9N verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9n-enforce-reassessment-sufficiency-v1.mjs
+
+      - name: Historical V2.1-9M readback verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9m-durable-evidence-readback-v1.mjs
+
+      - name: Historical V2.1-9L durable evidence verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9l-organic-shadow-evidence-durability-v1.mjs
+
+      - name: Historical V2.1-9J provenance verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9j-organic-shadow-evidence-attribution-v1.mjs
+
+      - name: Prepare frozen 164-product Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$V21_9I_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.products.length!==164) process.exit(1)'
+
+      - name: Historical V2.1-9I full verifier
+        env:
+          V21_9I_REFERENCE_ROOT: _reference/recommendation
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-prelaunch-robustness-remediation-v1.mjs
+
+      - name: Historical V2.1-9I-SR source-scale verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-v21-9i-routine-source-scale-contract-v1.mjs
+
+      - name: Historical V2.1-9E production SHADOW wiring verifier
+        run: node --experimental-default-type=module scripts/product-evidence/verify-exfoliation-normative-policy-production-shadow-wiring-v1.mjs
+
+      - name: Historical V2.1-9D activation safety verifier
+        env:
+          V21_9D_REQUIRE_CHECKED_IN: "1"
+        run: node scripts/product-evidence/verify-exfoliation-normative-policy-activation-authorization-runtime-safety-v1.mjs
+
+      - name: CandidatePolicy regressions
+        run: |
+          npm run verify:candidate-exposure-policy-shadow
+          npm run verify:candidate-exposure-policy-shadow-evaluation
+
+      - name: Canonical 164x12 OFF invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "0"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: OFF
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Canonical 164x12 SHADOW invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          V21_7_BASE_MAIN_SHA: e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87
+          EXFOLIATION_NORMATIVE_POLICY_ENABLED: "1"
+          EXFOLIATION_NORMATIVE_POLICY_KILL_SWITCH: "0"
+          EXFOLIATION_NORMATIVE_POLICY_MODE: SHADOW
+          EXFOLIATION_NORMATIVE_POLICY_ACTIVATION_VERSION: exfoliation-non-numeric-pda-normative-production-policy-activation-v1
+          EXFOLIATION_NORMATIVE_POLICY_CONTRACT_VERSION: exfoliation-non-numeric-pda-normative-production-policy-decision-contract-v1
+          EXFOLIATION_NORMATIVE_POLICY_RUNTIME_VERSION: exfoliation-non-numeric-pda-normative-production-policy-shadow-v1
+          EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
+        run: |
+          node scripts/verify-product-decision-axis-comparator-v1.mjs
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          context="V2.1-9Q exact-head CI"
+          description="V2.1-9Q exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="V2.1-9Q merged-main exact-SHA CI"
+            description="V2.1-9Q merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+              description="V2.1-9Q merged-main exact-SHA CI failed"
+            else
+              description="V2.1-9Q exact-head CI failed"
+            fi
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" \
+            -f context="$context" \
+            -f description="$description" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = "success"
