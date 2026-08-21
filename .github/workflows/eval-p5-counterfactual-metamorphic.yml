@@ -1,0 +1,164 @@
+name: EVAL-P5 Counterfactual Metamorphic Evaluation
+
+on:
+  push:
+    branches:
+      - eval/p5-counterfactual-metamorphic
+      - main
+  pull_request:
+    paths:
+      - ".github/workflows/eval-p5-counterfactual-metamorphic.yml"
+      - "fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1.json"
+      - "scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs"
+      - "docs/evidence/eval-p5-counterfactual-metamorphic-v1.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: eval-p5-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  EVAL_P5_BASE_MAIN_SHA: 6a18af5a992eb6a70e2006361e99456e3b491ed2
+  EVAL_P5_P4_MERGED_SHA: a4772e3cd44d68f67fe4bbf25926ba0942f353b3
+  EVAL_P5_P3_SOURCE_SHA: 4265450ddcf40bdb4359a3d5c82d22b00a1024dd
+  EVAL_P5_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  EVAL_P5_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-eval-p5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.EVAL_P5_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Exact authority and ancestry
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EVAL_P5_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$EVAL_P5_BASE_MAIN_SHA" HEAD
+          test "$(git merge-base "$EVAL_P5_BASE_MAIN_SHA" HEAD)" = "$EVAL_P5_BASE_MAIN_SHA"
+          git merge-base --is-ancestor "$EVAL_P5_P4_MERGED_SHA" "$EVAL_P5_BASE_MAIN_SHA"
+          git merge-base --is-ancestor "$EVAL_P5_P3_SOURCE_SHA" "$EVAL_P5_P4_MERGED_SHA"
+          test -f docs/evidence/eval-p2-persona-contract-freeze-v1.md
+          test -f docs/evidence/eval-p4-persona-cohort-freeze-v1.md
+
+      - name: Bounded EVAL-P5 change scope
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$EVAL_P5_BASE_MAIN_SHA")"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/eval-p5-counterfactual-metamorphic\.yml|fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1\.json|scripts/verify-eval-p5-counterfactual-metamorphic-v1\.mjs|docs/evidence/eval-p5-counterfactual-metamorphic-v1\.md)$' || true)"
+          test -z "$forbidden"
+
+      - name: No Production Recommendation Product Fact or Hosted mutation
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$EVAL_P5_BASE_MAIN_SHA" -- lib app/api supabase/migrations
+          test -z "$(git diff --name-only "$EVAL_P5_BASE_MAIN_SHA" -- package.json package-lock.json)"
+
+      - name: Syntax and contract parse
+        run: |
+          node --check scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs
+          node -e 'JSON.parse(require("fs").readFileSync("fixtures/persona-evaluation/eval-p5-metamorphic-evaluation-contract-v1.json","utf8"))'
+
+      - name: Prepare immutable P3 materialization source
+        run: |
+          set -euo pipefail
+          rm -rf _reference/persona-p3
+          git clone -q --no-hardlinks . _reference/persona-p3
+          git -C _reference/persona-p3 checkout -q "$EVAL_P5_P3_SOURCE_SHA"
+
+      - name: Revalidate EVAL-P4 locked cohorts
+        env:
+          EVAL_P4_P3_REFERENCE_ROOT: _reference/persona-p3
+          EVAL_P4_ARTIFACT_ROOT: artifacts/eval-p4-replay
+        run: node scripts/verify-eval-p4-persona-cohort-freeze-v1.mjs
+
+      - name: Prepare frozen Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$EVAL_P5_RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.categoryCounts?.sunscreen!==11) process.exit(1)'
+
+      - name: EVAL-P5 counterfactual metamorphic evaluation
+        env:
+          EVAL_P5_P3_REFERENCE_ROOT: _reference/persona-p3
+          EVAL_P5_RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+          EVAL_P5_IMPLEMENTATION_SHA: ${{ env.EVAL_P5_CHECKOUT_SHA }}
+          EVAL_P5_ARTIFACT_ROOT: artifacts/eval-p5
+        run: node scripts/verify-eval-p5-counterfactual-metamorphic-v1.mjs
+
+      - name: Re-run EVAL-P3 deterministic harness
+        env:
+          EVAL_P3_REFERENCE_ROOT: _reference/recommendation
+          EVAL_P3_IMPLEMENTATION_SHA: ${{ env.EVAL_P5_CHECKOUT_SHA }}
+          EVAL_P3_ARTIFACT_ROOT: artifacts/eval-p3-replay
+        run: node scripts/verify-eval-p3-persona-simulation-v1.mjs
+
+      - name: Historical 164x12 Recommendation replay
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Production build
+        run: npm run build
+
+      - name: Upload EVAL-P5 evaluation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-p5-counterfactual-metamorphic-${{ env.EVAL_P5_CHECKOUT_SHA }}
+          path: artifacts/eval-p5/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish exact-SHA CI attestation
+        if: ${{ always() && github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state="success"
+          context="EVAL-P5 exact-head CI"
+          description="EVAL-P5 exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="EVAL-P5 merged-main exact-SHA CI"
+            description="EVAL-P5 merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != "success" ]; then
+            state="failure"
+            if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+              description="EVAL-P5 merged-main exact-SHA CI failed"
+            else
+              description="EVAL-P5 exact-head CI failed"
+            fi
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -f state="$state" \
+            -f context="$context" \
+            -f description="$description" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = "success"
