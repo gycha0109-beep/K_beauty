@@ -1,0 +1,69 @@
+{
+  "schema_version": "eval-p10-interaction-persona-set-v1",
+  "stage": "EVAL-P10",
+  "layer": "INTERACTION_PERSONA",
+  "lifecycle": "LOCKED",
+  "interaction_persona_version": "interaction-persona-v1",
+  "source_class": "EXPLORATORY_TECHNICAL_INTERACTION_ASSIGNMENT",
+  "correlation_basis": "INDEPENDENT_TECHNICAL_ASSIGNMENT_NO_POPULATION_DOMAIN_OR_DECISION_CORRELATION_CLAIM",
+  "mutation_policy": "NEW_VERSION_REQUIRED",
+  "profiles": [
+    {
+      "interaction_persona_id": "P10-I01-TEXTURE-REFINER",
+      "answer_confidence": "MEDIUM",
+      "survey_abandonment_tendency": "LOW",
+      "willingness_to_refine_answer": "HIGH",
+      "recommendation_skepticism": "MEDIUM",
+      "explanation_depth_preference": "DETAILED",
+      "comparison_tendency": "HIGH",
+      "response_to_uncertainty": "REFINE",
+      "response_to_no_result": "REFINE",
+      "transition_policy_id": "P10-TP-TEXTURE-NEXT"
+    },
+    {
+      "interaction_persona_id": "P10-I02-SUNSCREEN-CLARIFIER",
+      "answer_confidence": "LOW",
+      "survey_abandonment_tendency": "LOW",
+      "willingness_to_refine_answer": "HIGH",
+      "recommendation_skepticism": "MEDIUM",
+      "explanation_depth_preference": "DETAILED",
+      "comparison_tendency": "HIGH",
+      "response_to_uncertainty": "REFINE",
+      "response_to_no_result": "REFINE",
+      "transition_policy_id": "P10-TP-SUNSCREEN-CLARIFY"
+    },
+    {
+      "interaction_persona_id": "P10-I03-FEEL-REFINER",
+      "answer_confidence": "MEDIUM",
+      "survey_abandonment_tendency": "LOW",
+      "willingness_to_refine_answer": "HIGH",
+      "recommendation_skepticism": "HIGH",
+      "explanation_depth_preference": "DETAILED",
+      "comparison_tendency": "HIGH",
+      "response_to_uncertainty": "REFINE",
+      "response_to_no_result": "REFINE",
+      "transition_policy_id": "P10-TP-DISLIKED-FEEL-NEXT"
+    },
+    {
+      "interaction_persona_id": "P10-I04-EARLY-STOPPER",
+      "answer_confidence": "LOW",
+      "survey_abandonment_tendency": "HIGH",
+      "willingness_to_refine_answer": "LOW",
+      "recommendation_skepticism": "LOW",
+      "explanation_depth_preference": "CONCISE",
+      "comparison_tendency": "LOW",
+      "response_to_uncertainty": "STOP",
+      "response_to_no_result": "STOP",
+      "transition_policy_id": "P10-TP-EXPECTED-STOP"
+    }
+  ],
+  "authority_ceiling": {
+    "evidence_class": "SYNTHETIC_SIMULATION_EVIDENCE",
+    "organic_production_evidence": false,
+    "real_user_behavior_truth": false,
+    "market_prevalence": false,
+    "satisfaction_or_conversion_truth": false,
+    "product_fact_authority": false,
+    "enforce_authority": false
+  }
+}
