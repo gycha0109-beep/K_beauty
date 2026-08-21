@@ -1,0 +1,18 @@
+[
+  {"id":"F1","name":"zero organic evidence","expected_decision":"NOT_READY","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F2","name":"one organic execution with qualitative categories present","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F3","name":"one isolated contained runtime error","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F4","name":"repeated contained runtime error pattern","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F5","name":"isolated intended fallback","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F6","name":"repeated unexpected fallback","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F7","name":"correctly separated UNKNOWN evidence","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F8","name":"UNKNOWN promoted as organic","expected_decision":"BLOCKED_INTEGRITY_FAILURE","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F9","name":"actual exclusion observed in SHADOW","expected_decision":"BLOCKED_INTEGRITY_FAILURE","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F10","name":"synthetic controlled perfect safety reachability but organic safety branches unobserved","expected_decision":"NOT_READY","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F11","name":"high organic volume with poor context breadth","expected_decision":"NOT_READY","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F12","name":"good context breadth with unresolved runtime instability","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F13","name":"all empirical descriptors calibrated but promotion rule absent","expected_decision":"NOT_READY","expected_governance":"NORMATIVE_ACCEPTANCE_INCOMPLETE"},
+  {"id":"F14","name":"normative contract complete but numeric values absent","expected_decision":"SUFFICIENCY_CALIBRATION_REQUIRED","expected_governance":"NORMATIVE_OBJECTIVES_FROZEN"},
+  {"id":"F15","name":"operator invents tolerance solely to pass current evidence","expected_decision":"NOT_READY","expected_governance":"REJECTED_BY_GOVERNANCE"},
+  {"id":"F16","name":"external numeric tolerance imported directly","expected_decision":"NOT_READY","expected_governance":"REJECTED_BY_GOVERNANCE"}
+]
