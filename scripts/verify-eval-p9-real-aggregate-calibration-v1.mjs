@@ -109,15 +109,25 @@ assert.equal(p6.cohort.lifecycle, "LOCKED");
 assert.equal(p6.cohort.persona_count, 37);
 assert.equal(p6.cohort.cohort_hash, "c774fc52ae1494c5a4fc39d11d2e7564a196460db391bb94f41d0510b7ae59f8");
 assert.equal(p6.cohort.mutation_policy, "NEW_VERSION_REQUIRED");
-assert.equal(p4.cohorts.coverage.lifecycle, "LOCKED");
-assert.equal(p4.cohorts.adversarial.lifecycle, "LOCKED");
-assert.equal(p4.cohorts.population_prior.status, "DEFERRED_NOT_LOCKED");
+const p4Coverage = p4.locked_cohorts.find((item) => item.cohort_type === "COVERAGE_COHORT");
+const p4Adversarial = p4.locked_cohorts.find((item) => item.cohort_type === "ADVERSARIAL_COHORT");
+assert(p4Coverage);
+assert(p4Adversarial);
+assert.equal(p4Coverage.lifecycle, "LOCKED");
+assert.equal(p4Coverage.persona_count, 29);
+assert.equal(p4Coverage.cohort_hash, "ffcd3341fbf408116399ab39cfaa250468baab01e7d5eae3295193996ce0530a");
+assert.equal(p4Adversarial.lifecycle, "LOCKED");
+assert.equal(p4Adversarial.persona_count, 8);
+assert.equal(p4Adversarial.cohort_hash, "957a8200d12aa5fb27744a65e11831ba69001f82401231bd2694e9aadbc1cbe7");
+assert.equal(p4.population_prior.lifecycle, "DEFERRED_NOT_LOCKED");
+assert.equal(p4.population_prior.persona_count, 0);
 
 assert.equal(p8Contract.authority.judge_authority, "DIAGNOSTIC_ONLY");
 assert.equal(p8Contract.authority.release_blocker_authority, false);
 assert.equal(p8Contract.validation_policy.repeatability_authority, "NOT_ESTABLISHED");
 assert.equal(p8Observation.authority.judge_authority, "DIAGNOSTIC_ONLY");
-assert.equal(p8Observation.execution_lineage.repeatability_status, "NOT_ESTABLISHED");
+assert.equal(p8Observation.execution_lineage.blindness_integrity, "PARTIAL");
+assert.equal(p8Observation.execution_lineage.brand_blindness_claim_allowed, false);
 
 const forbiddenRawIdentityKeys = new Set([
   "distinct_id",
@@ -142,6 +152,8 @@ const semanticEvidence = {
   privacy_governance_status: assessment.privacy_governance_assessment.status,
   calibration_executed: assessment.calibration_execution.executed,
   weights_applied: assessment.calibration_execution.weights_applied,
+  p4_coverage_cohort_hash: p4Coverage.cohort_hash,
+  p4_adversarial_cohort_hash: p4Adversarial.cohort_hash,
   p6_locked_regression_cohort_hash: p6.cohort.cohort_hash,
   p6_persona_count: p6.cohort.persona_count,
   p8_llm_judge_authority: p8Contract.authority.judge_authority,
