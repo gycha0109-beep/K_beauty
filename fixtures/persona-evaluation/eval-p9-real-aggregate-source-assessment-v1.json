@@ -1,0 +1,81 @@
+{
+  "schema_version": "eval-p9-real-aggregate-source-assessment-v1",
+  "stage": "EVAL-P9",
+  "assessment_basis": {
+    "repository_main_sha": "2bff9f2382d47a0189f71c9ba2b242575cc7b6b8",
+    "master_spec_section": "13. Calibration Principle",
+    "inspection_mode": "AGGREGATE_AUTHORITY_DISCOVERY_ONLY",
+    "row_level_records_retrieved": false,
+    "person_identifiers_retrieved": false,
+    "raw_questionnaire_rows_retrieved": false
+  },
+  "production_aggregate_source_assessment": {
+    "status": "NOT_ESTABLISHED",
+    "connected_analytics_candidate": {
+      "system": "PostHog",
+      "event_schema_inspected": true,
+      "recent_observation_window": "LAST_30_DAYS_AT_STAGE_ASSESSMENT",
+      "events_observed_in_recent_window": 0,
+      "reference_schema_entries_are_not_treated_as_collected_data": true,
+      "authorized_persona_calibration_source_contract_found": false,
+      "aggregate_snapshot_reference": null,
+      "aggregate_snapshot_hash": null,
+      "calibration_source_authority": "NOT_ESTABLISHED"
+    },
+    "repository_instrumentation_search": {
+      "posthog_or_persona_calibration_instrumentation_found": false,
+      "authorized_aggregate_source_definition_found": false
+    },
+    "warehouse_source_assessment": {
+      "status": "NOT_ESTABLISHED_IN_AVAILABLE_INSPECTION_SURFACE",
+      "absence_claim_allowed": false
+    },
+    "disposition": "CALIBRATION_HOLD_SOURCE_AUTHORITY_NOT_ESTABLISHED"
+  },
+  "privacy_governance_assessment": {
+    "status": "NOT_ESTABLISHED",
+    "repository_search_terms": [
+      "suppression",
+      "minimum cell",
+      "low-count privacy",
+      "aggregate calibration privacy"
+    ],
+    "predefined_suppression_policy_found": false,
+    "authorized_minimum_cell_rule_found": false,
+    "authorized_k_value": null,
+    "persona_track_may_invent_k": false,
+    "disposition": "CALIBRATION_HOLD_PRIVACY_POLICY_NOT_ESTABLISHED"
+  },
+  "layer_target_readiness": {
+    "POPULATION_PRIOR_CALIBRATION": "NOT_EXECUTABLE",
+    "DOMAIN_STATE_DISTRIBUTION_CALIBRATION": "NOT_EXECUTABLE",
+    "DECISION_PREFERENCE_CALIBRATION": "NOT_EXECUTABLE",
+    "INTERACTION_BEHAVIOR_CALIBRATION": "NOT_EXECUTABLE"
+  },
+  "calibration_execution": {
+    "executed": false,
+    "aggregate_distribution_comparison_executed": false,
+    "weights_estimated": false,
+    "weights_applied": false,
+    "p4_locked_cohort_changed": false,
+    "p6_locked_regression_cohort_changed": false,
+    "successor_population_or_domain_cohort_created": false,
+    "production_recommendation_mutation": false,
+    "product_fact_mutation": false,
+    "hosted_write": false,
+    "organic_evidence_write": false,
+    "controlled_production_probe": false,
+    "shadow_changed": false,
+    "enforce_authorized": false,
+    "enforce_activated": false
+  },
+  "terminal_outcome": "CALIBRATION_HOLD_SOURCE_AND_PRIVACY_AUTHORITY_NOT_ESTABLISHED",
+  "stage_semantic_result": "CONTRACT_ESTABLISHED_CALIBRATION_HELD",
+  "authority_ceiling": {
+    "real_user_truth": false,
+    "market_prevalence_truth": false,
+    "satisfaction_or_conversion_truth": false,
+    "synthetic_evidence_promoted_to_organic": false,
+    "enforce_authority": false
+  }
+}
