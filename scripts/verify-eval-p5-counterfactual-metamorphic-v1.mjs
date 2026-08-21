@@ -25,11 +25,7 @@ const fixedGeneratedAt = "2000-01-01T00:00:00.000Z";
 
 const contract = JSON.parse(await readFile(contractPath, "utf8"));
 const p4Manifest = JSON.parse(await readFile(p4ManifestPath, "utf8"));
-
-const p3ModulePath = path.join(
-  p3ReferenceRoot,
-  p4Manifest.execution_authority.p3_materializer_path
-);
+const p3ModulePath = path.join(p3ReferenceRoot, p4Manifest.execution_authority.p3_materializer_path);
 const p3 = await import(pathToFileURL(p3ModulePath).href);
 
 const [
@@ -75,16 +71,14 @@ function diffPaths(left, right, prefix = "") {
   }
   const leftObject = left && typeof left === "object";
   const rightObject = right && typeof right === "object";
-  if (!leftObject || !rightObject) {
-    return Object.is(left, right) ? [] : [prefix];
-  }
+  if (!leftObject || !rightObject) return Object.is(left, right) ? [] : [prefix];
   const keys = [...new Set([...Object.keys(left), ...Object.keys(right)])]
     .sort((a, b) => a.localeCompare(b, "en"));
-  return keys.flatMap((key) => diffPaths(
-    left[key],
-    right[key],
-    prefix ? `${prefix}.${key}` : key
-  ));
+  return keys.flatMap((key) => diffPaths(left[key], right[key], prefix ? `${prefix}.${key}` : key));
+}
+
+function sameArray(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function getProductId(value) {
@@ -131,13 +125,53 @@ function countBy(values) {
   );
 }
 
+function restoreFixturePolicySource(raw) {
+  const metadata = raw?.metadata && typeof raw.metadata === "object" && !Array.isArray(raw.metadata)
+    ? raw.metadata
+    : {};
+  return {
+    ...raw,
+    ...metadata,
+    id: raw.id,
+    name: raw.name,
+    brand: raw.brand,
+    category: raw.category,
+    product_form: raw.product_form ?? metadata.product_form
+  };
+}
+
+function sourceField(raw, key) {
+  if (raw?.[key] != null) return raw[key];
+  if (raw?.metadata && typeof raw.metadata === "object") return raw.metadata[key];
+  return null;
+}
+
+function sourcePredicate(relationId, raw) {
+  if (relationId === "MR-GENDER-001") return sourceField(raw, "is_mens") === true;
+  if (raw.category !== "sunscreen") return false;
+  if (relationId === "MR-SUN-EYE-001") return sourceField(raw, "eye_sting") === "high";
+  if (relationId === "MR-SUN-WHITECAST-001") return sourceField(raw, "white_cast") === "high";
+  if (relationId === "MR-SUN-MAKEUP-001") return sourceField(raw, "pilling_risk") === "high";
+  if (relationId === "MR-SUN-SENSITIVITY-001") return sourceField(raw, "irritation_risk") === "high";
+  return false;
+}
+
+function canonicalPredicate(relationId, product) {
+  if (relationId === "MR-GENDER-001") return product?.is_mens === true;
+  if (getProductCategorySlot(product) !== "sunscreen") return false;
+  if (relationId === "MR-SUN-EYE-001") return product.eye_sting === "high";
+  if (relationId === "MR-SUN-WHITECAST-001") return product.white_cast === "high";
+  if (relationId === "MR-SUN-MAKEUP-001") return product.pilling_risk === "high";
+  if (relationId === "MR-SUN-SENSITIVITY-001") return product.irritation_risk === "high";
+  return false;
+}
+
 invariant(contract.schema_version === "eval-p5-metamorphic-evaluation-contract-v1", "P5 contract schema mismatch");
 invariant(contract.stage === "EVAL-P5", "P5 stage mismatch");
-invariant(contract.relations.length === 7, "P5 must execute exactly the seven P2 frozen metamorphic relations");
-invariant(
-  contract.authority.p2_metamorphic_registry_version === "persona-metamorphic-registry-v1",
-  "P2 metamorphic registry version mismatch"
-);
+invariant(contract.evaluator_version === "eval-p5-counterfactual-metamorphic-evaluator-v1.1", "P5 evaluator version mismatch");
+invariant(contract.policy_fixture_projection_version === "eval-p5-metadata-restored-fixture-projection-v1", "P5 fixture adapter mismatch");
+invariant(contract.relations.length === 7, "P5 must execute exactly seven frozen metamorphic relations");
+invariant(contract.authority.p2_metamorphic_registry_version === "persona-metamorphic-registry-v1", "P2 metamorphic registry mismatch");
 invariant(
   p3.semanticHash(p4Manifest) === contract.authority.p4_manifest_semantic_hash,
   "P4 manifest semantic hash mismatch",
@@ -145,14 +179,8 @@ invariant(
 );
 
 const sourceSet = p3.materializeP3Personas();
-invariant(
-  sourceSet.lineage.cohort_hash === p4Manifest.execution_authority.p3_combined_cohort_hash,
-  "immutable P3 source cohort hash mismatch"
-);
-
-const lockedByType = Object.fromEntries(
-  p4Manifest.locked_cohorts.map((item) => [item.cohort_type, item])
-);
+invariant(sourceSet.lineage.cohort_hash === p4Manifest.execution_authority.p3_combined_cohort_hash, "immutable P3 source cohort hash mismatch");
+const lockedByType = Object.fromEntries(p4Manifest.locked_cohorts.map((item) => [item.cohort_type, item]));
 const coverageLock = lockedByType.COVERAGE_COHORT;
 const adversarialLock = lockedByType.ADVERSARIAL_COHORT;
 invariant(coverageLock?.lifecycle === "LOCKED", "Coverage cohort is not LOCKED");
@@ -164,8 +192,7 @@ const personaById = new Map(sourceSet.personas.map((persona) => [persona.persona
 const coverage = coverageLock.member_ids.map((id) => personaById.get(id));
 const adversarial = adversarialLock.member_ids.map((id) => personaById.get(id));
 invariant(coverage.every(Boolean) && adversarial.every(Boolean), "LOCKED cohort member missing from immutable P3 source");
-invariant(coverage.length === 29, "LOCKED Coverage count mismatch");
-invariant(adversarial.length === 8, "LOCKED Adversarial count mismatch");
+invariant(coverage.length === 29 && adversarial.length === 8, "LOCKED cohort counts mismatch");
 invariant(p3.semanticHash(coverage) === coverageLock.cohort_hash, "LOCKED Coverage hash mismatch");
 invariant(p3.semanticHash(adversarial) === adversarialLock.cohort_hash, "LOCKED Adversarial hash mismatch");
 const lockedPersonas = [...coverage, ...adversarial];
@@ -174,20 +201,57 @@ const productsFixture = JSON.parse(await readFile(
   path.join(recommendationReferenceRoot, "fixtures/recommendation-metadata/products-v1.json"),
   "utf8"
 ));
-invariant(productsFixture.productCount === 164, "frozen catalog product count mismatch");
-invariant(productsFixture.categoryCounts?.sunscreen === 11, "frozen sunscreen count mismatch");
-const orderedProducts = [...productsFixture.products].sort((left, right) =>
+invariant(productsFixture.productCount === 164, "frozen fixture product count mismatch");
+invariant(productsFixture.categoryCounts?.sunscreen === 11, "frozen fixture sunscreen count mismatch");
+const orderedRawProducts = [...productsFixture.products].sort((left, right) =>
   String(left.category).localeCompare(String(right.category), "en") ||
   String(left.brand).localeCompare(String(right.brand), "en") ||
   String(left.name).localeCompare(String(right.name), "en") ||
   String(left.id).localeCompare(String(right.id), "en")
 );
-const recommendationProducts = orderedProducts.map(buildRecommendationProductFromSource);
-const sunscreenProducts = recommendationProducts.filter(
-  (product) => getProductCategorySlot(product) === "sunscreen"
-);
-invariant(recommendationProducts.length === 164, "converted catalog count mismatch");
-invariant(sunscreenProducts.length === 11, "converted sunscreen count mismatch");
+const legacyProducts = orderedRawProducts.map(buildRecommendationProductFromSource);
+const policyProducts = orderedRawProducts.map((raw) => buildRecommendationProductFromSource(restoreFixturePolicySource(raw)));
+invariant(legacyProducts.length === 164 && legacyProducts.every(Boolean), "legacy fixture materialization count mismatch");
+invariant(policyProducts.length === 164 && policyProducts.every(Boolean), "policy fixture materialization count mismatch");
+invariant(policyProducts.filter((product) => getProductCategorySlot(product) === "sunscreen").length === 11, "policy fixture sunscreen count mismatch");
+
+const productRelationIds = [
+  "MR-GENDER-001",
+  "MR-SUN-EYE-001",
+  "MR-SUN-WHITECAST-001",
+  "MR-SUN-MAKEUP-001",
+  "MR-SUN-SENSITIVITY-001"
+];
+
+const fixtureProjectionByRelation = Object.fromEntries(productRelationIds.map((relationId) => {
+  const sourceIds = orderedRawProducts.filter((raw) => sourcePredicate(relationId, raw)).map((raw) => String(raw.id)).sort();
+  const legacyIds = legacyProducts.filter((product) => canonicalPredicate(relationId, product)).map((product) => String(product.id)).sort();
+  const policyIds = policyProducts.filter((product) => canonicalPredicate(relationId, product)).map((product) => String(product.id)).sort();
+  invariant(
+    sameArray(sourceIds, policyIds),
+    "metadata-restored policy fixture view does not preserve source predicate membership",
+    { relationId, sourceIds, policyIds }
+  );
+  const sourceSetIds = new Set(sourceIds);
+  const legacySetIds = new Set(legacyIds);
+  const missingFromLegacy = sourceIds.filter((id) => !legacySetIds.has(id));
+  const legacyFalsePositive = legacyIds.filter((id) => !sourceSetIds.has(id));
+  return [relationId, {
+    relation_id: relationId,
+    frozen_fixture_source_target_ids: sourceIds,
+    frozen_fixture_source_target_count: sourceIds.length,
+    legacy_replay_view_target_ids: legacyIds,
+    legacy_replay_view_target_count: legacyIds.length,
+    policy_evaluation_view_target_ids: policyIds,
+    policy_evaluation_view_target_count: policyIds.length,
+    legacy_projection_missing_ids: missingFromLegacy,
+    legacy_projection_false_positive_ids: legacyFalsePositive,
+    legacy_projection_gap_observed: missingFromLegacy.length > 0 || legacyFalsePositive.length > 0,
+    source_predicate_observation: sourceIds.length > 0
+      ? "FROZEN_FIXTURE_PRODUCT_PREDICATE_OBSERVED"
+      : "FROZEN_FIXTURE_PRODUCT_PREDICATE_NOT_OBSERVED"
+  }];
+}));
 
 function surveyForDomain(domain, source) {
   return buildSurveyInputContract(p3.toRecommendationAnswers(domain), {
@@ -257,8 +321,7 @@ function buildPair(persona, relationId) {
   } else if (relationId === "MR-DERIVED-REDNESS-001") {
     setPath(before, "afternoonSkinChange", "mostly_same");
     setPath(after, "afternoonSkinChange", "red_or_irritated");
-    const beforeSurvey = surveyForDomain(before, "eval_p5_redness_precondition");
-    if (beforeSurvey.safety.rednessRisk === "high") {
+    if (surveyForDomain(before, "eval_p5_redness_precondition").safety.rednessRisk === "high") {
       applicable = false;
       reason = "REDNESS_ALREADY_HIGH_FROM_OTHER_SIGNAL";
     }
@@ -279,7 +342,7 @@ function buildPair(persona, relationId) {
   const changedPaths = diffPaths(before, after);
   invariant(
     changedPaths.length === 1 && changedPaths[0] === relation.controlled_path,
-    "paired scenario must change exactly the frozen controlled raw-input path",
+    "paired scenario must change exactly one frozen raw-input path",
     { relationId, persona_id: persona.persona_id, changedPaths, expected: relation.controlled_path }
   );
 
@@ -298,7 +361,16 @@ function buildPair(persona, relationId) {
   };
 }
 
-function makeSunscreenProbe(relationId) {
+function makeProbe(relationId) {
+  if (relationId === "MR-GENDER-001") {
+    return {
+      id: "eval-p5-probe-mr-gender-001",
+      name: "EVAL P5 MR-GENDER-001 Rule Probe",
+      brand: "EVAL_ONLY",
+      category: "cleanser",
+      is_mens: true
+    };
+  }
   const base = {
     id: `eval-p5-probe-${relationId.toLowerCase()}`,
     name: `EVAL P5 ${relationId} Rule Probe`,
@@ -322,26 +394,7 @@ function makeSunscreenProbe(relationId) {
   if (relationId === "MR-SUN-WHITECAST-001") return { ...base, white_cast: "high" };
   if (relationId === "MR-SUN-MAKEUP-001") return { ...base, pilling_risk: "high" };
   if (relationId === "MR-SUN-SENSITIVITY-001") return { ...base, irritation_risk: "high" };
-  throw new Error(`NO_SUNSCREEN_PROBE_FOR:${relationId}`);
-}
-
-function catalogTargetsForRelation(relationId) {
-  if (relationId === "MR-GENDER-001") {
-    return recommendationProducts.filter((product) => product.is_mens === true);
-  }
-  if (relationId === "MR-SUN-EYE-001") {
-    return sunscreenProducts.filter((product) => product.eye_sting === "high");
-  }
-  if (relationId === "MR-SUN-WHITECAST-001") {
-    return sunscreenProducts.filter((product) => product.white_cast === "high");
-  }
-  if (relationId === "MR-SUN-MAKEUP-001") {
-    return sunscreenProducts.filter((product) => product.pilling_risk === "high");
-  }
-  if (relationId === "MR-SUN-SENSITIVITY-001") {
-    return sunscreenProducts.filter((product) => product.irritation_risk === "high");
-  }
-  return [];
+  throw new Error(`NO_PROBE_FOR:${relationId}`);
 }
 
 function evaluateProductComparison(relationId, product, beforeDomain, afterDomain) {
@@ -350,14 +403,8 @@ function evaluateProductComparison(relationId, product, beforeDomain, afterDomai
   const id = String(product.id);
 
   if (relationId === "MR-GENDER-001") {
-    const beforeEligible = isProductEligibleForGenderPreference(
-      product,
-      normalizeRecommendationAnswers(beforeAnswers)
-    );
-    const afterEligible = isProductEligibleForGenderPreference(
-      product,
-      normalizeRecommendationAnswers(afterAnswers)
-    );
+    const beforeEligible = isProductEligibleForGenderPreference(product, normalizeRecommendationAnswers(beforeAnswers));
+    const afterEligible = isProductEligibleForGenderPreference(product, normalizeRecommendationAnswers(afterAnswers));
     return {
       product_id: id,
       classification: beforeEligible
@@ -370,7 +417,6 @@ function evaluateProductComparison(relationId, product, beforeDomain, afterDomai
 
   const before = filterSunscreenCandidates([product], beforeAnswers);
   const after = filterSunscreenCandidates([product], afterAnswers);
-
   if (["MR-SUN-EYE-001", "MR-SUN-SENSITIVITY-001"].includes(relationId)) {
     const beforeRejected = containsId(before.rejected, id);
     const afterRejected = containsId(after.rejected, id);
@@ -384,34 +430,17 @@ function evaluateProductComparison(relationId, product, beforeDomain, afterDomai
     };
   }
 
-  if (["MR-SUN-WHITECAST-001", "MR-SUN-MAKEUP-001"].includes(relationId)) {
-    const beforeStrict = containsId(before.strictCandidates, id);
-    const afterStrict = containsId(after.strictCandidates, id);
-    return {
-      product_id: id,
-      classification: beforeStrict
-        ? (afterStrict ? "METAMORPHIC_VIOLATION" : "EVALUABLE_PASS")
-        : "MASKED_BY_OTHER_CONSTRAINT",
-      before_state: beforeStrict ? "STRICT_CANDIDATE" : "NOT_STRICT_CANDIDATE",
-      after_state: afterStrict ? "STRICT_CANDIDATE" : "NOT_STRICT_CANDIDATE",
-      after_penalty_only: containsId(after.penaltyOnlyCandidates, id)
-    };
-  }
-
-  throw new Error(`NO_PRODUCT_EVALUATOR_FOR:${relationId}`);
-}
-
-function probeForRelation(relationId) {
-  if (relationId === "MR-GENDER-001") {
-    return {
-      id: "eval-p5-probe-mr-gender-001",
-      name: "EVAL P5 MR-GENDER-001 Rule Probe",
-      brand: "EVAL_ONLY",
-      category: "cleanser",
-      is_mens: true
-    };
-  }
-  return makeSunscreenProbe(relationId);
+  const beforeStrict = containsId(before.strictCandidates, id);
+  const afterStrict = containsId(after.strictCandidates, id);
+  return {
+    product_id: id,
+    classification: beforeStrict
+      ? (afterStrict ? "METAMORPHIC_VIOLATION" : "EVALUABLE_PASS")
+      : "MASKED_BY_OTHER_CONSTRAINT",
+    before_state: beforeStrict ? "STRICT_CANDIDATE" : "NOT_STRICT_CANDIDATE",
+    after_state: afterStrict ? "STRICT_CANDIDATE" : "NOT_STRICT_CANDIDATE",
+    after_penalty_only: containsId(after.penaltyOnlyCandidates, id)
+  };
 }
 
 async function engineObservation(domain) {
@@ -420,23 +449,19 @@ async function engineObservation(domain) {
   const routePayload = p3.buildRouteLikePayload(domain, { explicitOutdoorExposure: false });
   const routeInput = p3.materializeRouteRecommendationInput(routePayload);
   const normalizedRoute = normalizeRecommendationAnswers(routeInput);
-  const directHash = p3.semanticHash(normalizedDirect);
-  const routeHash = p3.semanticHash(normalizedRoute);
   invariant(
-    directHash === routeHash,
+    p3.semanticHash(normalizedDirect) === p3.semanticHash(normalizedRoute),
     "P5 pair route normalization divergence",
-    { directHash, routeHash }
+    { direct: normalizedDirect, route: normalizedRoute }
   );
-
   const bundle = await buildSkinMatchDecisionBundle(answers, {
-    products: recommendationProducts,
+    products: policyProducts,
     photoAnalysis: buildFallbackPhotoAnalysis("ko"),
     currentProducts: [],
     currentProductSnapshots: [],
     locale: "ko"
   });
   return {
-    normalized_answers_hash: directHash,
     route_normalization_equivalent: true,
     recommendation: projectBundle(bundle)
   };
@@ -455,14 +480,12 @@ async function evaluatePair(pair) {
     before_domain_hash: pair.before_domain_hash,
     after_domain_hash: pair.after_domain_hash,
     changed_paths: pair.changed_paths,
-    route_normalization_equivalent:
-      beforeObservation.route_normalization_equivalent &&
-      afterObservation.route_normalization_equivalent,
+    route_normalization_equivalent: true,
     full_recommendation_delta: {
       authority: "DIAGNOSTIC_ONLY",
+      fixture_view: "POLICY_EVALUATION_VIEW",
       rank_direction_asserted: false,
-      top_pick_changed:
-        beforeObservation.recommendation.topPickId !== afterObservation.recommendation.topPickId,
+      top_pick_changed: beforeObservation.recommendation.topPickId !== afterObservation.recommendation.topPickId,
       before: beforeObservation.recommendation,
       after: afterObservation.recommendation
     }
@@ -471,9 +494,7 @@ async function evaluatePair(pair) {
   if (relationId === "MR-DERIVED-DRYNESS-001") {
     const beforeSurvey = surveyForDomain(pair.before, `${pair.scenario_id}:before`);
     const afterSurvey = surveyForDomain(pair.after, `${pair.scenario_id}:after`);
-    const passed =
-      beforeSurvey.safety.drynessRisk !== "high" &&
-      afterSurvey.safety.drynessRisk === "high";
+    const passed = beforeSurvey.safety.drynessRisk !== "high" && afterSurvey.safety.drynessRisk === "high";
     return {
       ...base,
       hard_evaluation: {
@@ -488,9 +509,7 @@ async function evaluatePair(pair) {
   if (relationId === "MR-DERIVED-REDNESS-001") {
     const beforeSurvey = surveyForDomain(pair.before, `${pair.scenario_id}:before`);
     const afterSurvey = surveyForDomain(pair.after, `${pair.scenario_id}:after`);
-    const passed =
-      beforeSurvey.safety.rednessRisk !== "high" &&
-      afterSurvey.safety.rednessRisk === "high";
+    const passed = beforeSurvey.safety.rednessRisk !== "high" && afterSurvey.safety.rednessRisk === "high";
     return {
       ...base,
       hard_evaluation: {
@@ -502,30 +521,24 @@ async function evaluatePair(pair) {
     };
   }
 
-  const catalogTargets = catalogTargetsForRelation(relationId);
-  const catalogComparisons = catalogTargets.map((product) =>
-    evaluateProductComparison(relationId, product, pair.before, pair.after)
-  );
-  const probe = probeForRelation(relationId);
-  const probeComparison = evaluateProductComparison(
-    relationId,
-    probe,
-    pair.before,
-    pair.after
-  );
+  const projection = fixtureProjectionByRelation[relationId];
+  const policyTargetIds = new Set(projection.policy_evaluation_view_target_ids);
+  const targets = policyProducts.filter((product) => policyTargetIds.has(String(product.id)));
+  const catalogComparisons = targets.map((product) => evaluateProductComparison(relationId, product, pair.before, pair.after));
+  const probeComparison = evaluateProductComparison(relationId, makeProbe(relationId), pair.before, pair.after);
   invariant(
     probeComparison.classification === "EVALUABLE_PASS",
-    "isolated evaluator-rule probe failed or became masked",
-    { pair: pair.scenario_id, probeComparison }
+    "isolated evaluator rule probe failed or became masked",
+    { scenario_id: pair.scenario_id, probeComparison }
   );
 
   return {
     ...base,
     hard_evaluation: {
       type: contract.relations.find((item) => item.relation_id === relationId).assertion_level,
-      catalog_target_count: catalogTargets.length,
-      catalog_observation_classification:
-        catalogTargets.length > 0 ? "CATALOG_PRODUCT_PREDICATE_OBSERVED" : "CATALOG_PRODUCT_PREDICATE_NOT_OBSERVED",
+      frozen_fixture_source_target_count: projection.frozen_fixture_source_target_count,
+      policy_evaluation_view_target_count: targets.length,
+      source_predicate_observation: projection.source_predicate_observation,
       catalog_comparisons: catalogComparisons,
       probe_authority: contract.pair_contract.probe_authority,
       probe_comparison: probeComparison
@@ -539,14 +552,10 @@ function summarizeRelation(relationId, pairResults, notApplicable) {
     COVERAGE_COHORT: relationPairs.filter((item) => item.cohort_type === "COVERAGE_COHORT").length,
     ADVERSARIAL_COHORT: relationPairs.filter((item) => item.cohort_type === "ADVERSARIAL_COHORT").length
   };
-  const topPickChanged = relationPairs.filter(
-    (item) => item.full_recommendation_delta.top_pick_changed
-  ).length;
+  const topPickChanged = relationPairs.filter((item) => item.full_recommendation_delta.top_pick_changed).length;
 
   if (["MR-DERIVED-DRYNESS-001", "MR-DERIVED-REDNESS-001"].includes(relationId)) {
-    const violations = relationPairs.filter(
-      (item) => item.hard_evaluation.classification !== "EVALUABLE_PASS"
-    ).length;
+    const violations = relationPairs.filter((item) => item.hard_evaluation.classification !== "EVALUABLE_PASS").length;
     return {
       relation_id: relationId,
       applicable_pair_count: relationPairs.length,
@@ -560,48 +569,35 @@ function summarizeRelation(relationId, pairResults, notApplicable) {
     };
   }
 
-  const comparisons = relationPairs.flatMap(
-    (item) => item.hard_evaluation.catalog_comparisons
-  );
-  const probeComparisons = relationPairs.map(
-    (item) => item.hard_evaluation.probe_comparison
-  );
-  const catalogViolations = comparisons.filter(
-    (item) => item.classification === "METAMORPHIC_VIOLATION"
-  ).length;
-  const catalogPasses = comparisons.filter(
-    (item) => item.classification === "EVALUABLE_PASS"
-  ).length;
-  const masked = comparisons.filter(
-    (item) => item.classification === "MASKED_BY_OTHER_CONSTRAINT"
-  ).length;
-  const probeViolations = probeComparisons.filter(
-    (item) => item.classification !== "EVALUABLE_PASS"
-  ).length;
-  const targetCounts = [...new Set(
-    relationPairs.map((item) => item.hard_evaluation.catalog_target_count)
-  )];
+  const comparisons = relationPairs.flatMap((item) => item.hard_evaluation.catalog_comparisons);
+  const probeComparisons = relationPairs.map((item) => item.hard_evaluation.probe_comparison);
+  const catalogViolations = comparisons.filter((item) => item.classification === "METAMORPHIC_VIOLATION").length;
+  const catalogPasses = comparisons.filter((item) => item.classification === "EVALUABLE_PASS").length;
+  const masked = comparisons.filter((item) => item.classification === "MASKED_BY_OTHER_CONSTRAINT").length;
+  const probeViolations = probeComparisons.filter((item) => item.classification !== "EVALUABLE_PASS").length;
+  const projection = fixtureProjectionByRelation[relationId];
 
   return {
     relation_id: relationId,
     applicable_pair_count: relationPairs.length,
     not_applicable_count: notApplicable.length,
     applicable_pairs_by_cohort: byCohort,
-    catalog_target_count: targetCounts.length === 1 ? targetCounts[0] : null,
-    catalog_product_comparison_count: comparisons.length,
-    catalog_evaluable_pass_count: catalogPasses,
-    catalog_masked_by_other_constraint_count: masked,
-    catalog_metamorphic_violation_count: catalogViolations,
+    frozen_fixture_source_target_count: projection.frozen_fixture_source_target_count,
+    legacy_replay_view_target_count: projection.legacy_replay_view_target_count,
+    policy_evaluation_view_target_count: projection.policy_evaluation_view_target_count,
+    legacy_projection_gap_observed: projection.legacy_projection_gap_observed,
+    legacy_projection_missing_ids: projection.legacy_projection_missing_ids,
+    legacy_projection_false_positive_ids: projection.legacy_projection_false_positive_ids,
+    source_predicate_observation: projection.source_predicate_observation,
+    policy_product_comparison_count: comparisons.length,
+    policy_evaluable_pass_count: catalogPasses,
+    policy_masked_by_other_constraint_count: masked,
+    policy_metamorphic_violation_count: catalogViolations,
     isolated_probe_comparison_count: probeComparisons.length,
     isolated_probe_violation_count: probeViolations,
     full_recommendation_top_pick_change_count: topPickChanged,
     full_recommendation_delta_authority: "DIAGNOSTIC_ONLY",
-    status:
-      relationPairs.length > 0 &&
-      probeViolations === 0 &&
-      catalogViolations === 0
-        ? "PASS"
-        : "FAIL"
+    status: relationPairs.length > 0 && probeViolations === 0 && catalogViolations === 0 ? "PASS" : "FAIL"
   };
 }
 
@@ -624,48 +620,36 @@ async function executeEvaluation() {
       pairResults.push(await evaluatePair(pair));
     }
   }
-
-  const relationResults = contract.relations.map((relation) =>
-    summarizeRelation(
-      relation.relation_id,
-      pairResults,
-      notApplicable.filter((item) => item.relation_id === relation.relation_id)
-    )
-  );
-  return {
-    pair_results: pairResults,
-    not_applicable: notApplicable,
-    relation_results: relationResults
-  };
+  const relationResults = contract.relations.map((relation) => summarizeRelation(
+    relation.relation_id,
+    pairResults,
+    notApplicable.filter((item) => item.relation_id === relation.relation_id)
+  ));
+  return { pair_results: pairResults, not_applicable: notApplicable, relation_results: relationResults };
 }
 
 const firstPass = await executeEvaluation();
 const secondPass = await executeEvaluation();
-
 const firstSemanticHash = p3.semanticHash(firstPass);
 const secondSemanticHash = p3.semanticHash(secondPass);
-invariant(
-  firstSemanticHash === secondSemanticHash,
-  "P5 deterministic semantic replay mismatch",
-  { firstSemanticHash, secondSemanticHash }
-);
-invariant(
-  firstPass.relation_results.every((item) => item.status === "PASS"),
-  "one or more frozen metamorphic relations failed",
-  firstPass.relation_results
-);
-invariant(
-  firstPass.pair_results.every((item) => item.changed_paths.length === 1),
-  "a paired scenario changed more than one raw input path"
-);
-invariant(
-  firstPass.pair_results.every((item) => item.route_normalization_equivalent),
-  "route normalization equivalence failed for a P5 pair"
-);
-invariant(
-  contract.authority_ceiling.evidence_class === "SYNTHETIC_SIMULATION_EVIDENCE",
-  "synthetic evidence namespace drift"
-);
+
+invariant(firstSemanticHash === secondSemanticHash, "P5 deterministic semantic replay mismatch", { firstSemanticHash, secondSemanticHash });
+invariant(firstPass.relation_results.length === 7, "seven frozen relations were not executed");
+invariant(firstPass.relation_results.every((item) => item.applicable_pair_count > 0), "a frozen relation has zero applicable pairs", firstPass.relation_results);
+invariant(firstPass.relation_results.every((item) => item.status === "PASS"), "one or more frozen metamorphic relations failed", firstPass.relation_results);
+invariant(firstPass.pair_results.every((item) => item.changed_paths.length === 1), "a paired scenario changed more than one raw input path");
+invariant(firstPass.pair_results.every((item) => item.route_normalization_equivalent), "route normalization equivalence failed");
+
+for (const relationId of productRelationIds) {
+  const projection = fixtureProjectionByRelation[relationId];
+  invariant(
+    sameArray(projection.frozen_fixture_source_target_ids, projection.policy_evaluation_view_target_ids),
+    "policy fixture projection changed source predicate membership",
+    projection
+  );
+}
+
+invariant(contract.authority_ceiling.evidence_class === "SYNTHETIC_SIMULATION_EVIDENCE", "synthetic evidence namespace drift");
 for (const key of [
   "organic_production_evidence",
   "controlled_production_evidence",
@@ -674,33 +658,32 @@ for (const key of [
   "satisfaction_or_conversion_truth",
   "product_fact_authority",
   "enforce_authority"
-]) {
-  invariant(contract.authority_ceiling[key] === false, `authority escalation detected: ${key}`);
-}
+]) invariant(contract.authority_ceiling[key] === false, `authority escalation detected: ${key}`);
 invariant(contract.authority_ceiling.llm_judge_calls === 0, "P5 must not call LLM Judge");
 
-const catalogComparisons = firstPass.pair_results.flatMap(
-  (item) => item.hard_evaluation.catalog_comparisons || []
+const productComparisons = firstPass.pair_results.flatMap((item) => item.hard_evaluation.catalog_comparisons || []);
+const hardViolations = firstPass.relation_results.reduce(
+  (sum, item) => sum + (item.policy_metamorphic_violation_count || 0) + (item.derived_state_violation_count || 0) + (item.isolated_probe_violation_count || 0),
+  0
 );
-const hardViolations =
-  firstPass.relation_results.reduce(
-    (sum, item) =>
-      sum +
-      (item.catalog_metamorphic_violation_count || 0) +
-      (item.derived_state_violation_count || 0) +
-      (item.isolated_probe_violation_count || 0),
-    0
-  );
+const legacyProjectionGapRelations = productRelationIds.filter((relationId) => fixtureProjectionByRelation[relationId].legacy_projection_gap_observed);
+const sourcePredicateAbsentRelations = productRelationIds.filter((relationId) => fixtureProjectionByRelation[relationId].frozen_fixture_source_target_count === 0);
+const terminalOutcome = legacyProjectionGapRelations.length > 0
+  ? "SUCCESS_WITH_TYPED_LEGACY_FIXTURE_POLICY_METADATA_PROJECTION_GAP"
+  : "SUCCESS";
 
 const summary = {
   schema_version: "eval-p5-counterfactual-metamorphic-summary-v1",
   stage: "EVAL-P5",
-  terminal_outcome: "SUCCESS",
+  terminal_outcome: terminalOutcome,
+  semantic_result: "SUCCESS",
   evidence_class: "SYNTHETIC_SIMULATION_EVIDENCE",
   authority: {
     ...contract.authority,
     evaluation_implementation_sha: implementationSha,
-    catalog_declared_sha256: productsFixture.canonicalFixtureSha256
+    catalog_declared_sha256: productsFixture.canonicalFixtureSha256,
+    evaluator_version: contract.evaluator_version,
+    policy_fixture_projection_version: contract.policy_fixture_projection_version
   },
   locked_cohort_input: {
     coverage_personas: coverage.length,
@@ -710,17 +693,21 @@ const summary = {
     coverage_hash: p3.semanticHash(coverage),
     adversarial_hash: p3.semanticHash(adversarial)
   },
+  fixture_projection: {
+    classification: contract.fixture_views.projection_gap_classification,
+    legacy_projection_gap_relations: legacyProjectionGapRelations,
+    source_predicate_absent_relations: sourcePredicateAbsentRelations,
+    relations: productRelationIds.map((relationId) => fixtureProjectionByRelation[relationId])
+  },
   counts: {
     relations: contract.relations.length,
     applicable_pairs: firstPass.pair_results.length,
     not_applicable_source_relation_combinations: firstPass.not_applicable.length,
-    catalog_product_comparisons: catalogComparisons.length,
-    catalog_evaluable_passes: catalogComparisons.filter((item) => item.classification === "EVALUABLE_PASS").length,
-    catalog_masked_by_other_constraints: catalogComparisons.filter((item) => item.classification === "MASKED_BY_OTHER_CONSTRAINT").length,
+    policy_product_comparisons: productComparisons.length,
+    policy_evaluable_passes: productComparisons.filter((item) => item.classification === "EVALUABLE_PASS").length,
+    policy_masked_by_other_constraints: productComparisons.filter((item) => item.classification === "MASKED_BY_OTHER_CONSTRAINT").length,
     hard_violations: hardViolations,
-    full_recommendation_top_pick_changes: firstPass.pair_results.filter(
-      (item) => item.full_recommendation_delta.top_pick_changed
-    ).length,
+    full_recommendation_top_pick_changes: firstPass.pair_results.filter((item) => item.full_recommendation_delta.top_pick_changed).length,
     llm_judge_calls: 0
   },
   pair_precondition_exclusions: countBy(firstPass.not_applicable.map((item) => item.reason)),
@@ -728,9 +715,15 @@ const summary = {
   acceptance: {
     deterministic_semantic_hash_replay: firstSemanticHash === secondSemanticHash,
     seven_frozen_relations_executed: firstPass.relation_results.length === 7,
+    every_relation_has_applicable_pairs: firstPass.relation_results.every((item) => item.applicable_pair_count > 0),
     all_relations_passed: firstPass.relation_results.every((item) => item.status === "PASS"),
     one_raw_input_path_changed_per_pair: firstPass.pair_results.every((item) => item.changed_paths.length === 1),
     route_normalization_equivalent_for_all_pairs: firstPass.pair_results.every((item) => item.route_normalization_equivalent),
+    policy_fixture_projection_preserves_source_predicate_membership: productRelationIds.every((relationId) => sameArray(
+      fixtureProjectionByRelation[relationId].frozen_fixture_source_target_ids,
+      fixtureProjectionByRelation[relationId].policy_evaluation_view_target_ids
+    )),
+    legacy_fixture_projection_gap_typed_not_hidden: true,
     rank_monotonicity_not_used_as_hard_assertion: true,
     full_recommendation_deltas_diagnostic_only: true,
     masked_constraints_not_counted_as_failures: true,
@@ -758,34 +751,28 @@ const summary = {
 
 await mkdir(artifactRoot, { recursive: true });
 await Promise.all([
-  writeFile(
-    path.join(artifactRoot, "counterfactual-metamorphic-summary-v1.json"),
-    `${JSON.stringify(summary, null, 2)}\n`,
-    "utf8"
-  ),
-  writeFile(
-    path.join(artifactRoot, "counterfactual-pair-results-v1.json"),
-    `${JSON.stringify({
-      schema_version: "eval-p5-counterfactual-pair-results-v1",
-      pair_results: firstPass.pair_results,
-      not_applicable: firstPass.not_applicable
-    }, null, 2)}\n`,
-    "utf8"
-  ),
-  writeFile(
-    path.join(artifactRoot, "metamorphic-relation-results-v1.json"),
-    `${JSON.stringify({
-      schema_version: "eval-p5-metamorphic-relation-results-v1",
-      relation_results: firstPass.relation_results,
-      evaluation_semantic_hash: firstSemanticHash
-    }, null, 2)}\n`,
-    "utf8"
-  )
+  writeFile(path.join(artifactRoot, "counterfactual-metamorphic-summary-v1.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8"),
+  writeFile(path.join(artifactRoot, "counterfactual-pair-results-v1.json"), `${JSON.stringify({
+    schema_version: "eval-p5-counterfactual-pair-results-v1",
+    fixture_view: "POLICY_EVALUATION_VIEW",
+    pair_results: firstPass.pair_results,
+    not_applicable: firstPass.not_applicable
+  }, null, 2)}\n`, "utf8"),
+  writeFile(path.join(artifactRoot, "metamorphic-relation-results-v1.json"), `${JSON.stringify({
+    schema_version: "eval-p5-metamorphic-relation-results-v1",
+    relation_results: firstPass.relation_results,
+    fixture_projection: summary.fixture_projection,
+    evaluation_semantic_hash: firstSemanticHash
+  }, null, 2)}\n`, "utf8")
 ]);
 
 console.log("EVAL-P5 counterfactual/metamorphic evaluator: PASS");
+console.log(`terminal_outcome=${terminalOutcome}`);
 console.log(`locked_personas=${lockedPersonas.length}`);
 console.log(`applicable_pairs=${firstPass.pair_results.length}`);
 console.log(`not_applicable=${firstPass.not_applicable.length}`);
+console.log(`policy_product_comparisons=${productComparisons.length}`);
+console.log(`legacy_projection_gap_relations=${legacyProjectionGapRelations.join(",") || "NONE"}`);
+console.log(`source_predicate_absent_relations=${sourcePredicateAbsentRelations.join(",") || "NONE"}`);
 console.log(`hard_violations=${hardViolations}`);
 console.log(`evaluation_semantic_hash=${firstSemanticHash}`);
