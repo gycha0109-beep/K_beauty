@@ -69,9 +69,9 @@ assert.equal(f2.normalized.status, "NO_AUTHORITY");
 assert.equal(f2.normalized.reason, "REQUIRED_CURRENT_FACT_MISSING:contains_active");
 results.F2 = "PASS";
 
-for (const [fixtureName, semanticStatus, expectedSignal, expectedReason] of [
-  ["F3", "evidence_insufficient", "GOVERNED_SIGNAL_UNKNOWN", "PDA_AUTHORITY_BLOCKED:EVIDENCE_INSUFFICIENT"],
-  ["F4", "evidence_conflict", "GOVERNED_SIGNAL_BLOCKED", "PDA_AUTHORITY_BLOCKED:CONFLICTING_GOVERNED_FACT"],
+for (const [fixtureName, semanticStatus, expectedSignal] of [
+  ["F3", "evidence_insufficient", "GOVERNED_SIGNAL_UNKNOWN"],
+  ["F4", "evidence_conflict", "GOVERNED_SIGNAL_BLOCKED"],
 ]) {
   const payload = clone(fixture.validPayload);
   const contains = payload.current_facts.find((fact) => fact.fact_key === "contains_active");
@@ -88,7 +88,7 @@ for (const [fixtureName, semanticStatus, expectedSignal, expectedReason] of [
   assert.equal(result.normalized.status, "AUTHORITY_RESOLVED");
   assert.equal(result.mapperResult.pda.signal_status, expectedSignal);
   assert.equal(result.g2.decision, "NO_GRANT");
-  assert.ok(result.g2.reasons.includes(expectedReason) || result.g2.reasons.some((reason) => reason.includes(semanticStatus === "evidence_insufficient" ? "EVIDENCE_INSUFFICIENT" : "CONFLICTING_GOVERNED_FACT")));
+  assert.ok(result.g2.reasons.includes("REQUIRED_CURRENT_FACT_NON_POSITIVE_AUTHORITY:contains_active"));
   results[fixtureName] = "PASS";
 }
 
