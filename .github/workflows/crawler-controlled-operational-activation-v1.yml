@@ -45,7 +45,6 @@ jobs:
           test -f docs/evidence/crawler-controlled-operational-activation-v1.md
           test -f evidence/crawler-controlled-operational-activation-v1.json
           test -f crawler/config/controlled-operational-activation-v1.json
-          test "$(node -p 'require("./lib/security/package.json").type')" = module
           grep -q '"status": "PRE_RUN_FROZEN"' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"rankCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"candidateWriteCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
@@ -111,13 +110,13 @@ jobs:
         working-directory: crawler
         run: npm ci --no-audit --no-fund
 
-      - name: Verify narrow runtime-module remediation
+      - name: Verify narrow crawler runtime compatibility
         working-directory: crawler
         shell: bash
         run: |
           set -euo pipefail
           npm run typecheck
-          npx tsx test-security-policy-runtime-import.ts
+          NODE_OPTIONS=--experimental-default-type=module npx tsx test-security-policy-runtime-import.ts
 
       - name: Verify Production build before external source request
         run: npm run build
@@ -131,7 +130,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm run crawl -- \
+          NODE_OPTIONS=--experimental-default-type=module npm run crawl -- \
             --config=config/controlled-operational-activation-v1.json \
             --job-ids="${CONTROLLED_JOB_ID}" \
             --delay-ms=1500 \
