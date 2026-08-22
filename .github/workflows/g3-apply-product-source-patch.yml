@@ -1,0 +1,65 @@
+name: G3 apply product-source integration patch
+
+on:
+  push:
+    branches:
+      - admission/g3-production-candidate-gate
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: admission/g3-production-candidate-gate
+          fetch-depth: 0
+      - name: Apply exact G3 product-source patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('lib/product-source.js')
+          s = p.read_text()
+
+          import_anchor = 'import { resolveSafeProductImage } from "@/lib/security/image-source-policy";\n'
+          import_block = '''import { resolveSafeProductImage } from "@/lib/security/image-source-policy";\nimport {\n  RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,\n  admitRecommendationProducts,\n  projectAdmittedRecommendationProducts\n} from "@/lib/recommendation-candidate-admission";\nimport {\n  RECOMMENDATION_PRODUCT_ENUMERATION_VERSION,\n  enumerateRecommendationProductsDeterministically\n} from "@/lib/recommendation-product-enumerator.mjs";\n'''
+          if import_anchor not in s:
+              raise SystemExit('import anchor missing')
+          s = s.replace(import_anchor, import_block, 1)
+
+          s = s.replace('const CACHE_TTL_MS = 5 * 60 * 1000;', 'const CACHE_TTL_MS = 0;', 1)
+
+          state_anchor = 'let inFlightProductsPromise = null;\n'
+          state_block = '''let inFlightProductsPromise = null;\nlet lastRecommendationAdmissionSummary = null;\n'''
+          if state_anchor not in s:
+              raise SystemExit('state anchor missing')
+          s = s.replace(state_anchor, state_block, 1)
+
+          old = '''  let response;\n\n  try {\n    response = await supabase\n      .from("products")\n      .select("*")\n      .order("created_at", { ascending: false })\n      .limit(500);\n  } catch (error) {\n    writeSafeLog("error", {\n      event: "product_source_failed",\n      category: "database_unavailable",\n      operation: "product_source",\n      dependency: "supabase",\n      retryable: true\n    });\n    throw new ProductSourceUnavailableError("query_failed", { cause: error });\n  }\n\n  const { data, error } = response;\n\n  if (error) {\n    writeSafeLog("error", {\n      event: "product_source_failed",\n      category: "database_unavailable",\n      operation: "product_source",\n      dependency: "supabase",\n      retryable: true\n    });\n    throw new ProductSourceUnavailableError("query_failed", { cause: error });\n  }\n\n  const skippedByCategoryReason = {};\n  const products = [];\n\n  for (const product of (data || []).filter((item) => item?.name && item?.brand)) {\n'''
+          new = '''  let enumeration;\n\n  try {\n    enumeration = await enumerateRecommendationProductsDeterministically({\n      fetchPage: async ({ afterId, limit }) => {\n        let query = supabase\n          .from("products")\n          .select("*")\n          .order("id", { ascending: true })\n          .limit(limit);\n\n        if (afterId) {\n          query = query.gt("id", afterId);\n        }\n\n        const { data, error } = await query;\n        if (error) throw error;\n        return data || [];\n      }\n    });\n  } catch (error) {\n    writeSafeLog("error", {\n      event: "product_source_failed",\n      category: "database_unavailable",\n      operation: "product_source_enumeration",\n      dependency: "supabase",\n      retryable: true\n    });\n    throw new ProductSourceUnavailableError("enumeration_failed", { cause: error });\n  }\n\n  const data = enumeration.rows;\n  let admission;\n\n  try {\n    admission = await admitRecommendationProducts(data);\n  } catch (error) {\n    writeSafeLog("error", {\n      event: "recommendation_candidate_admission_failed",\n      category: "authority_unavailable",\n      operation: "recommendation_candidate_admission",\n      retryable: true,\n      authority_failure_count: 1,\n      admission_contract_version: RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION\n    });\n    throw new ProductSourceUnavailableError("admission_authority_failed", { cause: error });\n  }\n\n  lastRecommendationAdmissionSummary = admission.summary;\n  writeSafeLog("info", {\n    event: "recommendation_candidate_admission",\n    operation: "recommendation_candidate_admission",\n    enumerated_count: admission.summary.enumeratedCount,\n    legacy_admitted_count: admission.summary.legacyAdmittedCount,\n    nonlegacy_checked_count: admission.summary.nonlegacyCheckedCount,\n    nonlegacy_granted_count: admission.summary.nonlegacyGrantedCount,\n    nonlegacy_rejected_count: admission.summary.nonlegacyRejectedCount,\n    authority_failure_count: admission.summary.authorityFailureCount,\n    admission_contract_version: RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,\n    enumeration_contract_version: RECOMMENDATION_PRODUCT_ENUMERATION_VERSION\n  });\n\n  const admittedRows = projectAdmittedRecommendationProducts(admission, (product) => product);\n  const skippedByCategoryReason = {};\n  const products = [];\n\n  for (const product of admittedRows.filter((item) => item?.name && item?.brand)) {\n'''
+          if old not in s:
+              raise SystemExit('fetch block missing')
+          s = s.replace(old, new, 1)
+
+          probe_anchor = '''async function loadRecommendationProducts() {\n  const supabaseProducts = await fetchSupabaseProducts();\n\n  return supabaseProducts\n    .map(applyRecommendationProductOverrides)\n    .map((product) => ({\n      ...product,\n      review_signals: normalizeReviewSignals(product?.review_signals)\n    }));\n}\n\nexport async function getRecommendationProducts() {\n'''
+          probe_block = '''async function loadRecommendationProducts() {\n  const supabaseProducts = await fetchSupabaseProducts();\n\n  return supabaseProducts\n    .map(applyRecommendationProductOverrides)\n    .map((product) => ({\n      ...product,\n      review_signals: normalizeReviewSignals(product?.review_signals)\n    }));\n}\n\nexport async function runRecommendationCandidateAdmissionRuntimeProbe() {\n  const products = await loadRecommendationProducts();\n  return Object.freeze({\n    productCount: products.length,\n    admissionSummary: lastRecommendationAdmissionSummary\n      ? Object.freeze({ ...lastRecommendationAdmissionSummary })\n      : null\n  });\n}\n\nexport async function getRecommendationProducts() {\n'''
+          if probe_anchor not in s:
+              raise SystemExit('probe anchor missing')
+          s = s.replace(probe_anchor, probe_block, 1)
+
+          p.write_text(s)
+          PY
+          grep -q 'product_source_enumeration' lib/product-source.js
+          grep -q 'admittedRows.filter' lib/product-source.js
+          ! grep -q '\.limit(500)' lib/product-source.js
+      - name: Commit product-source integration and remove bootstrap workflow
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/g3-apply-product-source-patch.yml
+          git add lib/product-source.js
+          git commit -m 'feat(g3): enforce admission before recommendation normalization'
+          git push origin HEAD:admission/g3-production-candidate-gate
