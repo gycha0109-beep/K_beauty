@@ -1,0 +1,275 @@
+name: Crawler Next Bounded Controlled Run Closeout v1
+
+on:
+  push:
+    branches:
+      - crawler/next-bounded-controlled-run-v1
+      - main
+    paths:
+      - ".github/workflows/crawler-next-bounded-controlled-run-closeout-v1.yml"
+      - ".github/workflows/crawler-next-bounded-controlled-run-v1.yml"
+      - "crawler/config/next-bounded-controlled-run-v1.json"
+      - "docs/evidence/crawler-next-bounded-controlled-run-v1.md"
+      - "evidence/crawler-next-bounded-controlled-run-v1.json"
+      - "scripts/verify-crawler-next-bounded-controlled-run-v1.mjs"
+  pull_request:
+    paths:
+      - ".github/workflows/crawler-next-bounded-controlled-run-closeout-v1.yml"
+      - ".github/workflows/crawler-next-bounded-controlled-run-v1.yml"
+      - "crawler/config/next-bounded-controlled-run-v1.json"
+      - "docs/evidence/crawler-next-bounded-controlled-run-v1.md"
+      - "evidence/crawler-next-bounded-controlled-run-v1.json"
+      - "scripts/verify-crawler-next-bounded-controlled-run-v1.mjs"
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: crawler-next-bounded-controlled-run-closeout-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  STAGE_BASE_SHA: a9d3883d130a29facaa58c665ec7fe7bdafd7b70
+  CLOSEOUT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  TARGET_PROJECT_REF: bygrczggxfuisupcevaz
+  NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+
+jobs:
+  verify-closeout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact closeout candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CLOSEOUT_CHECKOUT_SHA }}
+          fetch-depth: 0
+
+      - name: Verify exact head and bounded repository scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CLOSEOUT_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$STAGE_BASE_SHA" HEAD
+
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            scope_base="$(git rev-parse HEAD^1)"
+          elif [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            scope_base="$(git merge-base origin/main HEAD)"
+          else
+            scope_base="$STAGE_BASE_SHA"
+          fi
+
+          changed="$(git diff --name-only "$scope_base" HEAD)"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/crawler-next-bounded-controlled-run-closeout-v1\.yml|\.github/workflows/crawler-next-bounded-controlled-run-v1\.yml|crawler/config/next-bounded-controlled-run-v1\.json|docs/evidence/crawler-next-bounded-controlled-run-v1\.md|evidence/crawler-next-bounded-controlled-run-v1\.json|scripts/verify-crawler-next-bounded-controlled-run-v1\.mjs)$' || true)"
+          test -z "$forbidden"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify frozen bounded-run evidence
+        run: node scripts/verify-crawler-next-bounded-controlled-run-v1.mjs
+
+      - name: Verify crawler runtime contracts without source execution
+        working-directory: crawler
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npm run verify:security-policy-runtime-import
+          node --loader ./image-source-policy-loader.mjs --import tsx test-ranking-ingest.ts
+          node --loader ./image-source-policy-loader.mjs --import tsx test-ranking-review-rules.ts
+
+      - name: Revalidate frozen G3 G3A G2 PDA authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs
+          node scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs
+          node scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+
+      - name: CandidatePolicy invariance
+        run: npm run verify:candidate-exposure-policy-shadow
+
+      - name: Historical Recommendation invariance
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$STAGE_BASE_SHA"
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Assert automation remains OFF and closeout cannot recrawl
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
+          ! grep -R -n -E '^  schedule:|^    - cron:' .github/workflows/*crawler*.yml
+          ! grep -n -E 'npm run crawl|refresh_candidate_promotion_reviews|promote:approved|approve:candidate' .github/workflows/crawler-next-bounded-controlled-run-closeout-v1.yml
+
+      - name: Resolve active server secret without logging it
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN}"
+          keys_json="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Accept: application/json" \
+            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys?reveal=true")"
+          service_key="$(printf '%s' "$keys_json" | node -e '
+            let s="";
+            process.stdin.on("data",d=>s+=d);
+            process.stdin.on("end",()=>{
+              const rows=JSON.parse(s);
+              const active=rows.filter(r=>r.disabled!==true);
+              const values=active.flatMap(r=>[r.api_key,r.key,r.value]).filter(v=>typeof v==="string");
+              const key=values.find(v=>v.startsWith("sb_secret_"));
+              if(!key) process.exit(1);
+              process.stdout.write(key);
+            });')"
+          test -n "$service_key"
+          echo "::add-mask::$service_key"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$service_key" >> "$GITHUB_ENV"
+          unset service_key keys_json
+
+      - name: Read-only Hosted closeout and exact Legacy set equality
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import crypto from 'node:crypto';
+          import fs from 'node:fs';
+
+          const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (!base || !key) throw new Error('hosted_credentials_missing');
+
+          async function getRows(table, select='*', filters={}) {
+            const url = new URL(`${base}/rest/v1/${table}`);
+            url.searchParams.set('select', select);
+            url.searchParams.set('limit', '1000');
+            for (const [name, value] of Object.entries(filters)) url.searchParams.set(name, value);
+            const response = await fetch(url, {
+              headers: {
+                apikey: key,
+                Authorization: `Bearer ${key}`,
+                Accept: 'application/json',
+              },
+            });
+            if (!response.ok) throw new Error(`${table}_read_failed_${response.status}_${await response.text()}`);
+            const rows = await response.json();
+            if (!Array.isArray(rows)) throw new Error(`${table}_non_array_response`);
+            return rows;
+          }
+
+          const expectedCounts = {
+            ranking_snapshots: 29,
+            source_rankings: 800,
+            product_candidates: 176,
+            candidate_promotion_reviews: 58,
+            crawler_canonical_adoption_requests: 0,
+            products: 164,
+            product_fact_registry_versions: 1,
+            product_fact_definition_snapshots: 20,
+            product_fact_subjects: 16,
+            product_fact_instances: 41,
+            product_fact_evidence_links: 41,
+            product_fact_review_assignments: 41,
+            product_fact_review_events: 180,
+            product_fact_confirmations: 41,
+            product_fact_current: 41,
+          };
+
+          for (const [table, expected] of Object.entries(expectedCounts)) {
+            const rows = await getRows(table, '*');
+            if (rows.length !== expected) throw new Error(`${table}_count_${rows.length}_expected_${expected}`);
+          }
+
+          const reviews = await getRows('candidate_promotion_reviews', 'status,rule_version,evidence_snapshot');
+          const queued = reviews.filter(r => r.status === 'queued' && r.rule_version === 'ranking-review-v2').length;
+          const deferred = reviews.filter(r => r.status === 'deferred' && r.rule_version === 'ranking-review-v2').length;
+          const mismatched = reviews.filter(r => r.rule_version !== 'ranking-review-v2' || r.evidence_snapshot?.rule_version !== 'ranking-review-v2').length;
+          if (queued !== 38 || deferred !== 20 || mismatched !== 0) {
+            throw new Error(`review_queue_mismatch_queued_${queued}_deferred_${deferred}_mismatched_${mismatched}`);
+          }
+
+          const auditRows = await getRows('admin_audit_logs', 'action,metadata', {action: 'eq.admin.product_candidate.identity_resolution_recorded'});
+          const stageAuditRows = auditRows.filter(r => r.metadata?.evidence?.stage_version === 'crawler-next-bounded-controlled-run-v1');
+          if (stageAuditRows.length !== 5) throw new Error(`identity_audit_event_count_${stageAuditRows.length}_expected_5`);
+
+          const products = await getRows('products', 'id');
+          const liveIds = products.map(r => r.id).sort();
+          const corpusText = fs.readFileSync('fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt', 'utf8');
+          if (!corpusText.endsWith('\n')) throw new Error('legacy_corpus_final_lf_required');
+          const expectedIds = corpusText.slice(0, -1).split('\n');
+          if (expectedIds.length !== 164 || liveIds.length !== 164) throw new Error('legacy_count_mismatch');
+          if (JSON.stringify(liveIds) !== JSON.stringify(expectedIds)) throw new Error('hosted_legacy_uuid_set_mismatch');
+          const liveText = `${liveIds.join('\n')}\n`;
+          const liveHash = crypto.createHash('sha256').update(liveText, 'utf8').digest('hex');
+          const expectedHash = 'b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05';
+          if (liveHash !== expectedHash) throw new Error(`hosted_legacy_hash_${liveHash}`);
+
+          const snapshots = await getRows('ranking_snapshots', 'id,snapshot_hash', {id: 'eq.a12d6543-b5fe-46d0-96d5-2cb8b5c121d5'});
+          if (snapshots.length !== 1 || snapshots[0].snapshot_hash !== '71a0e9e75046d28ba0fd9e71a9db60a373413ded806bc44fa9f412184e7aaab4') {
+            throw new Error('authoritative_snapshot_mismatch');
+          }
+
+          console.log(JSON.stringify({
+            hostedCounts: expectedCounts,
+            reviewQueue: {queued, deferred, ruleVersion: 'ranking-review-v2'},
+            identityAuditEvents: stageAuditRows.length,
+            legacyCount: liveIds.length,
+            legacySha256: liveHash,
+            snapshotId: snapshots[0].id,
+            writesPerformed: 0,
+          }));
+          NODE
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish exact-SHA closeout attestation
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=success
+          context="Crawler next bounded run exact-head closeout CI"
+          description="Bounded run exact-head closeout passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="Crawler next bounded run merged-main exact-SHA CI"
+            description="Bounded run merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != success ]; then
+            state=failure
+            description="${context} failed"
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${CLOSEOUT_CHECKOUT_SHA}" \
+            -f state="$state" \
+            -f context="$context" \
+            -f description="$description" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+          test "$state" = success
