@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hwahae-essence-ampoule-serum-trouble",
+    "source": "hwahae",
+    "source_category_key": "essence_ampoule_serum",
+    "service_category": "treatment",
+    "source_product_form": null,
+    "ranking_scope": "concern",
+    "ranking_filter": "trouble",
+    "source_concern_key": "trouble",
+    "canonical_concerns": ["acne"],
+    "evidence_type": "concern_relevance",
+    "limit": 20,
+    "requested_limit": 20,
+    "enabled": true,
+    "disabled_reason": null,
+    "source_theme_name": "Essences/Ampoules/Serums",
+    "source_filter_name": "Blemishes",
+    "source_category_code": "001:001:003",
+    "pagination": {
+      "strategy": "gateway_details_api",
+      "observed_json_ld_item_count": 90
+    },
+    "themeId": 4181,
+    "url": "https://www.hwahae.co.kr/rankings?english_name=category&theme_id=4181"
+  }
+]
