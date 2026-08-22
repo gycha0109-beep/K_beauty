@@ -1,4 +1,4 @@
-name: EVAL-R1 Executor Registration Smoke
+name: EVAL-R1 Exact Patch Executor
 
 on:
   pull_request:
@@ -9,8 +9,54 @@ permissions:
   contents: write
 
 jobs:
-  smoke:
+  patch-eval-r1:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - run: echo EVAL_R1_EXECUTOR_REGISTRATION_OK
+      - name: Checkout EVAL-R1 branch
+        uses: actions/checkout@v4
+        with:
+          ref: eval/r1-persona-explanation-grounding-remediation
+          fetch-depth: 0
+
+      - name: Apply exact frozen two-hunk patch
+        run: |
+          set -euo pipefail
+          test "$(git hash-object lib/skin-match-decision-engine.js)" = "5028688320264596a3eed31526f04a937abd8b94"
+          test "$(wc -l < lib/skin-match-decision-engine.js | tr -d ' ')" = "3100"
+          cp lib/skin-match-decision-engine.js /tmp/engine.before.js
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("lib/skin-match-decision-engine.js")
+          s = p.read_text(encoding="utf-8")
+          old1 = '"예민함과 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."'
+          new1 = '"예민함이나 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."'
+          old2 = "\n".join([
+              'const leadSentence = sensitiveState || priorityAxis === "barrier"',
+              '      ? explicitHighSensitivity',
+              '        ? "장벽 부담과 높은 민감도가 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."',
+              '        : groundedSensitivity',
+              '          ? "장벽 부담과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."',
+              '          : "장벽 부담 신호가 큰 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."',
+          ])
+          new2 = "\n".join([
+              'const leadSentence = sensitiveState || priorityAxis === "barrier"',
+              '      ? "장벽과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."',
+          ])
+          assert s.count(old1) == 1, s.count(old1)
+          assert s.count(old2) == 1, s.count(old2)
+          p.write_text(s.replace(old1, new1, 1).replace(old2, new2, 1), encoding="utf-8")
+          PY
+          test "$(git hash-object lib/skin-match-decision-engine.js)" = "28ee297a6184a269fb7167fe462366e0c25ca47d"
+          test "$(sha256sum lib/skin-match-decision-engine.js | awk '{print $1}')" = "5236e182eaa600036fbe5562f7a2807c1787c1556e4efb3460c60857c9d8a79c"
+          test "$(wc -l < lib/skin-match-decision-engine.js | tr -d ' ')" = "3096"
+          node --check lib/skin-match-decision-engine.js
+          git diff --check -- lib/skin-match-decision-engine.js
+          git diff --unified=0 -- lib/skin-match-decision-engine.js | tee /tmp/eval-r1.diff
+          test "$(grep -c '^@@' /tmp/eval-r1.diff)" = "2"
+          test "$(git diff --name-only)" = "lib/skin-match-decision-engine.js"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/skin-match-decision-engine.js
+          git commit -m "fix(eval-r1): narrow explanation grounding remediation"
+          git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
