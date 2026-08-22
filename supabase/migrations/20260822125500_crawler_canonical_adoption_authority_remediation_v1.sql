@@ -1,7 +1,7 @@
 begin;
 
 -- CRAWLER-CANONICAL-ADOPTION-AUTHORITY-REMEDIATION v1
--- Canonical catalog existence is structural authority only. Recommendation truth remains governed elsewhere.
+-- Catalog existence is structural authority only. Recommendation truth is governed elsewhere.
 
 alter table public.products alter column skin_types drop not null;
 alter table public.products alter column concerns drop not null;
@@ -10,18 +10,12 @@ alter table public.products alter column finish drop not null;
 alter table public.products alter column irritation_risk drop not null;
 alter table public.products alter column sensitivity_safe drop not null;
 
-comment on column public.products.skin_types is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
-comment on column public.products.concerns is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
-comment on column public.products.texture is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
-comment on column public.products.finish is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
-comment on column public.products.irritation_risk is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
-comment on column public.products.sensitivity_safe is
-  'Legacy Recommendation semantic field. NULL means not established for non-legacy structural adoption; crawler adoption is not authoritative for this field.';
+comment on column public.products.skin_types is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
+comment on column public.products.concerns is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
+comment on column public.products.texture is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
+comment on column public.products.finish is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
+comment on column public.products.irritation_risk is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
+comment on column public.products.sensitivity_safe is 'Legacy Recommendation semantic field. NULL = not established for a non-legacy structural adoption.';
 
 alter table public.product_candidates
   add column if not exists identity_resolution_state text not null default 'unresolved',
@@ -31,26 +25,21 @@ alter table public.product_candidates
 do $$
 begin
   if not exists (
-    select 1
-    from pg_constraint
+    select 1 from pg_constraint
     where conrelid = 'public.product_candidates'::regclass
       and conname = 'product_candidates_identity_resolution_state_check'
   ) then
     alter table public.product_candidates
       add constraint product_candidates_identity_resolution_state_check
       check (identity_resolution_state in (
-        'unresolved',
-        'resolved',
-        'identity_ambiguous',
-        'variant_scope_conflict',
-        'formulation_scope_conflict',
+        'unresolved', 'resolved', 'identity_ambiguous',
+        'variant_scope_conflict', 'formulation_scope_conflict',
         'reformulation_candidate'
       ));
   end if;
 
   if not exists (
-    select 1
-    from pg_constraint
+    select 1 from pg_constraint
     where conrelid = 'public.product_candidates'::regclass
       and conname = 'product_candidates_identity_resolution_version_check'
   ) then
@@ -60,8 +49,7 @@ begin
   end if;
 
   if not exists (
-    select 1
-    from pg_constraint
+    select 1 from pg_constraint
     where conrelid = 'public.product_candidates'::regclass
       and conname = 'product_candidates_identity_resolution_evidence_object_check'
   ) then
@@ -75,10 +63,8 @@ begin
 end;
 $$;
 
-comment on column public.product_candidates.identity_resolution_state is
-  'crawler-identity-resolution-v1 state. Only resolved is eligible for structural canonical promotion.';
-comment on column public.product_candidates.identity_resolution_evidence is
-  'Auditable raw/source identity and resolution evidence. Normalized comparison keys are not authoritative identity.';
+comment on column public.product_candidates.identity_resolution_state is 'crawler-identity-resolution-v1; only resolved may structurally promote.';
+comment on column public.product_candidates.identity_resolution_evidence is 'Auditable source/raw identity evidence; normalized comparison keys are not authoritative identity.';
 
 create or replace function public.crawler_canonical_structural_adoption_contract_v1()
 returns jsonb
@@ -131,10 +117,7 @@ declare
   v_evidence jsonb;
   v_audit_id uuid;
 begin
-  v_actor_role := public.admin_require_product_review_actor(
-    p_actor_user_id,
-    'admin.products.review'
-  );
+  v_actor_role := public.admin_require_product_review_actor(p_actor_user_id, 'admin.products.review');
 
   if p_candidate_id is null
     or v_state not in (
@@ -158,12 +141,11 @@ begin
   if not found then
     raise exception 'crawler_identity_resolution_candidate_not_found' using errcode = 'P0002';
   end if;
-
   if v_candidate.review_status = 'promoted'::public.product_review_status then
     raise exception 'crawler_identity_resolution_promoted_candidate_immutable' using errcode = '23514';
   end if;
 
-  v_evidence := jsonb_strip_nulls(jsonb_build_object(
+  v_evidence := p_evidence || jsonb_strip_nulls(jsonb_build_object(
     'reason_code', v_reason,
     'source_name', v_candidate.source_name,
     'source_url', v_candidate.source_url,
@@ -174,14 +156,15 @@ begin
     'comparison_normalized_brand', v_candidate.normalized_brand,
     'comparison_normalized_name', v_candidate.normalized_name,
     'reviewed_at', now()
-  )) || p_evidence;
+  ));
 
   update public.product_candidates
   set identity_resolution_state = v_state,
       identity_resolution_version = 'crawler-identity-resolution-v1',
       identity_resolution_evidence = v_evidence,
       review_flags = case
-        when v_state = 'resolved' then array_remove(coalesce(review_flags, '{}'::text[]), 'identity_unresolved')
+        when v_state = 'resolved'
+          then array_remove(coalesce(review_flags, '{}'::text[]), 'identity_unresolved')
         else public.merge_text_flags(coalesce(review_flags, '{}'::text[]), array[v_state])
       end,
       reviewed_by = p_actor_user_id::text,
@@ -204,7 +187,7 @@ begin
       'identity_resolution_version', 'crawler-identity-resolution-v1'
     ),
     v_reason,
-    'crawler-identity-resolution:' || p_candidate_id::text || ':' || extract(epoch from clock_timestamp())::bigint::text,
+    'crawler-identity-resolution:' || p_candidate_id::text || ':' || md5(clock_timestamp()::text),
     jsonb_build_object('evidence', v_evidence)
   );
 
@@ -274,7 +257,6 @@ begin
   then
     v_flags := array_append(v_flags, coalesce(v_candidate.identity_resolution_state, 'unresolved'));
   end if;
-
   if nullif(btrim(coalesce(v_candidate.canonical_name, '')), '') is null then
     v_flags := array_append(v_flags, 'missing_canonical_name');
   end if;
@@ -329,10 +311,7 @@ begin
 
   v_normalized_name := public.normalize_product_key(v_candidate.canonical_name);
   v_normalized_brand := public.normalize_brand_key(v_candidate.canonical_brand);
-
-  if v_normalized_name is null or v_normalized_name = ''
-    or v_normalized_brand is null or v_normalized_brand = ''
-  then
+  if nullif(v_normalized_name, '') is null or nullif(v_normalized_brand, '') is null then
     raise exception 'crawler_structural_promotion_normalization_invalid' using errcode = '23514';
   end if;
 
@@ -346,11 +325,7 @@ begin
   end if;
 
   if v_target_id is not null then
-    select * into v_target
-    from public.products
-    where id = v_target_id
-    for update;
-
+    select * into v_target from public.products where id = v_target_id for update;
     if not found
       or v_target.normalized_name is distinct from v_normalized_name
       or v_target.normalized_brand is distinct from v_normalized_brand
@@ -366,8 +341,7 @@ begin
     and nullif(v_candidate.external_type, '') is not null
     and nullif(v_candidate.external_id, '') is not null
   then
-    select count(*)::integer, min(id)
-    into v_exact_source_match_count, v_target_id
+    select count(*)::integer into v_exact_source_match_count
     from public.products
     where external_source = v_candidate.source_name
       and external_type = v_candidate.external_type
@@ -375,13 +349,16 @@ begin
 
     if v_exact_source_match_count > 1 then
       v_flags := public.merge_text_flags(v_flags, array['identity_ambiguous']);
-      v_target_id := null;
     elsif v_exact_source_match_count = 1 then
       select * into v_target
       from public.products
-      where id = v_target_id
+      where external_source = v_candidate.source_name
+        and external_type = v_candidate.external_type
+        and external_id = v_candidate.external_id
+      order by id
+      limit 1
       for update;
-
+      v_target_id := v_target.id;
       if v_target.normalized_name is distinct from v_normalized_name
         or v_target.normalized_brand is distinct from v_normalized_brand
       then
@@ -392,12 +369,10 @@ begin
   end if;
 
   if coalesce(array_length(v_flags, 1), 0) = 0 and v_target_id is null then
-    select count(*)::integer
-    into v_match_count
+    select count(*)::integer into v_match_count
     from public.products
     where normalized_name = v_normalized_name
       and normalized_brand = v_normalized_brand;
-
     if v_match_count > 0 then
       v_flags := public.merge_text_flags(v_flags, array['identity_ambiguous']);
     end if;
@@ -437,33 +412,18 @@ begin
 
   if v_target_id is null then
     insert into public.products (
-      name,
-      brand,
-      category,
-      product_form,
-      normalized_name,
-      normalized_brand,
-      external_source,
-      external_type,
-      external_id,
-      source_url,
-      created_at,
-      updated_at
+      name, brand, category, product_form,
+      normalized_name, normalized_brand,
+      external_source, external_type, external_id, source_url,
+      created_at, updated_at
     ) values (
-      v_candidate.canonical_name,
-      v_candidate.canonical_brand,
-      v_candidate.service_category,
-      v_candidate.product_form,
-      v_normalized_name,
-      v_normalized_brand,
-      v_candidate.source_name,
-      v_candidate.external_type,
-      v_candidate.external_id,
-      v_candidate.source_url,
-      now(),
-      now()
-    )
-    returning id into v_target_id;
+      v_candidate.canonical_name, v_candidate.canonical_brand,
+      v_candidate.service_category, v_candidate.product_form,
+      v_normalized_name, v_normalized_brand,
+      v_candidate.source_name, v_candidate.external_type,
+      v_candidate.external_id, v_candidate.source_url,
+      now(), now()
+    ) returning id into v_target_id;
     v_action := 'inserted';
   else
     update public.products
@@ -511,7 +471,7 @@ revoke all on function public.promote_product_candidate_structural_v1(uuid, text
 grant execute on function public.promote_product_candidate_structural_v1(uuid, text)
   to service_role;
 
--- Preserve the historical entry point for callers, but permanently narrow its authority.
+-- Historical entry point remains for compatibility but delegates to the structural-only writer.
 create or replace function public.promote_product_candidate(
   p_candidate_id uuid,
   p_actor text
@@ -538,17 +498,12 @@ create table if not exists public.crawler_canonical_adoption_requests (
   payload_hash text not null,
   result jsonb not null,
   created_at timestamptz not null default now(),
-  constraint crawler_canonical_adoption_request_id_check
-    check (char_length(btrim(request_id)) between 8 and 120),
-  constraint crawler_canonical_adoption_payload_hash_check
-    check (payload_hash ~ '^[0-9a-f]{64}$'),
-  constraint crawler_canonical_adoption_result_object_check
-    check (jsonb_typeof(result) = 'object')
+  constraint crawler_canonical_adoption_request_id_check check (char_length(btrim(request_id)) between 8 and 120),
+  constraint crawler_canonical_adoption_payload_hash_check check (payload_hash ~ '^[0-9a-f]{64}$'),
+  constraint crawler_canonical_adoption_result_object_check check (jsonb_typeof(result) = 'object')
 );
-
 alter table public.crawler_canonical_adoption_requests enable row level security;
-revoke all on table public.crawler_canonical_adoption_requests
-  from public, anon, authenticated, service_role;
+revoke all on table public.crawler_canonical_adoption_requests from public, anon, authenticated, service_role;
 
 create or replace function public.admin_confirm_product_candidate_structural_adoption_v1(
   p_actor_user_id uuid,
@@ -570,7 +525,6 @@ declare
   v_candidate_id uuid;
   v_existing_product_id uuid;
   v_reason text;
-  v_identity_state text;
   v_identity_evidence jsonb;
   v_normalized_brand text;
   v_normalized_name text;
@@ -579,10 +533,7 @@ declare
   v_audit_id uuid;
   v_result jsonb;
 begin
-  v_actor_role := public.admin_require_product_review_actor(
-    p_actor_user_id,
-    'admin.products.review'
-  );
+  v_actor_role := public.admin_require_product_review_actor(p_actor_user_id, 'admin.products.review');
 
   if char_length(v_request_id) not between 8 and 120
     or p_payload is null
@@ -618,12 +569,11 @@ begin
   end;
 
   v_reason := btrim(coalesce(p_payload ->> 'reason', ''));
-  v_identity_state := p_payload ->> 'identity_resolution_state';
   v_identity_evidence := p_payload -> 'identity_resolution_evidence';
   v_payload_hash := public.admin_product_review_sha256_json(p_payload);
 
   if char_length(v_reason) not between 3 and 1000
-    or v_identity_state <> 'resolved'
+    or p_payload ->> 'identity_resolution_state' <> 'resolved'
     or p_payload ->> 'identity_resolution_version' <> 'crawler-identity-resolution-v1'
     or jsonb_typeof(v_identity_evidence) <> 'object'
     or octet_length(v_identity_evidence::text) > 16384
@@ -631,14 +581,10 @@ begin
     raise exception 'crawler_structural_adoption_identity_unresolved' using errcode = '23514';
   end if;
 
-  perform pg_advisory_xact_lock(
-    hashtextextended('crawler-structural-adoption:' || v_request_id, 0)
-  );
-
+  perform pg_advisory_xact_lock(hashtextextended('crawler-structural-adoption:' || v_request_id, 0));
   select * into v_existing
   from public.crawler_canonical_adoption_requests
   where request_id = v_request_id;
-
   if found then
     if v_existing.actor_user_id <> p_actor_user_id
       or v_existing.candidate_id <> v_candidate_id
@@ -653,7 +599,6 @@ begin
   from public.product_candidates
   where id = v_candidate_id
   for update;
-
   if not found then
     raise exception 'crawler_structural_adoption_candidate_not_found' using errcode = 'P0002';
   end if;
@@ -662,7 +607,6 @@ begin
   from public.candidate_promotion_reviews
   where candidate_id = v_candidate_id
   for update;
-
   if not found or v_review.status not in ('queued', 'reviewing', 'deferred') then
     raise exception 'crawler_structural_adoption_review_not_actionable' using errcode = '23514';
   end if;
@@ -679,19 +623,18 @@ begin
   end if;
 
   if p_payload ->> 'canonical_category' = 'treatment' then
-    if p_payload ->> 'product_form' not in (
-      'serum', 'ampoule', 'essence', 'booster', 'peeling_solution'
-    ) then
+    if p_payload ->> 'product_form' not in ('serum', 'ampoule', 'essence', 'booster', 'peeling_solution') then
       raise exception 'crawler_structural_adoption_product_form_invalid' using errcode = '23514';
     end if;
-  elsif p_payload -> 'product_form' <> 'null'::jsonb
-    and nullif(p_payload ->> 'product_form', '') is not null
-  then
+  elsif nullif(p_payload ->> 'product_form', '') is not null then
     raise exception 'crawler_structural_adoption_product_form_invalid' using errcode = '23514';
   end if;
 
   v_normalized_brand := public.normalize_brand_key(p_payload ->> 'canonical_brand');
   v_normalized_name := public.normalize_product_key(p_payload ->> 'canonical_name');
+  if nullif(v_normalized_brand, '') is null or nullif(v_normalized_name, '') is null then
+    raise exception 'crawler_structural_adoption_normalization_invalid' using errcode = '23514';
+  end if;
 
   if v_existing_product_id is not null and not exists (
     select 1 from public.products
@@ -713,7 +656,7 @@ begin
       duplicate_of_product_id = v_existing_product_id,
       identity_resolution_state = 'resolved',
       identity_resolution_version = 'crawler-identity-resolution-v1',
-      identity_resolution_evidence = jsonb_strip_nulls(jsonb_build_object(
+      identity_resolution_evidence = v_identity_evidence || jsonb_strip_nulls(jsonb_build_object(
         'reason_code', v_reason,
         'source_name', source_name,
         'source_url', source_url,
@@ -721,32 +664,25 @@ begin
         'external_id', external_id,
         'raw_brand', brand_name_raw,
         'raw_name', product_name_raw,
-        'comparison_normalized_brand', normalized_brand,
-        'comparison_normalized_name', normalized_name,
+        'comparison_normalized_brand', v_normalized_brand,
+        'comparison_normalized_name', v_normalized_name,
         'reviewed_at', now()
-      )) || v_identity_evidence,
+      )),
       promotion_payload = (coalesce(promotion_payload, '{}'::jsonb) - 'product') ||
-        jsonb_build_object(
-          'structural_review', jsonb_build_object(
-            'contract_version', 'crawler-canonical-product-structural-adoption-v1',
-            'reviewed_at', now(),
-            'reviewed_by', p_actor_user_id,
-            'reason_code', v_reason
-          )
-        ),
+        jsonb_build_object('structural_review', jsonb_build_object(
+          'contract_version', 'crawler-canonical-product-structural-adoption-v1',
+          'reviewed_at', now(),
+          'reviewed_by', p_actor_user_id,
+          'reason_code', v_reason
+        )),
       review_status = 'approved'::public.product_review_status,
       reviewed_by = p_actor_user_id::text,
       reviewed_at = now(),
-      review_notes = trim(both from concat_ws(
-        E'\n', nullif(review_notes, ''), 'Structural adoption approved: ' || v_reason
-      )),
+      review_notes = trim(both from concat_ws(E'\n', nullif(review_notes, ''), 'Structural adoption approved: ' || v_reason)),
       updated_at = now()
   where id = v_candidate_id;
 
-  v_promotion_result := public.promote_product_candidate_structural_v1(
-    v_candidate_id,
-    p_actor_user_id::text
-  );
+  v_promotion_result := public.promote_product_candidate_structural_v1(v_candidate_id, p_actor_user_id::text);
 
   if v_promotion_result ->> 'action' not in ('inserted', 'merged') then
     update public.candidate_promotion_reviews
@@ -758,22 +694,15 @@ begin
     where candidate_id = v_candidate_id;
 
     v_result := jsonb_build_object(
-      'status', 'blocked',
-      'idempotent', false,
-      'request_id', v_request_id,
-      'candidate_id', v_candidate_id,
-      'actor_role', v_actor_role,
-      'promotion', v_promotion_result
+      'status', 'blocked', 'idempotent', false,
+      'request_id', v_request_id, 'candidate_id', v_candidate_id,
+      'actor_role', v_actor_role, 'promotion', v_promotion_result
     );
   else
     v_product_id := nullif(v_promotion_result ->> 'product_id', '')::uuid;
-
     update public.candidate_promotion_reviews
-    set status = 'approved',
-        reviewed_at = now(),
-        review_note = v_reason,
-        approved_product_id = v_product_id,
-        updated_at = now()
+    set status = 'approved', reviewed_at = now(), review_note = v_reason,
+        approved_product_id = v_product_id, updated_at = now()
     where candidate_id = v_candidate_id;
 
     v_audit_id := public.record_admin_audit_event(
@@ -803,24 +732,20 @@ begin
     );
 
     v_result := jsonb_build_object(
-      'status', 'confirmed',
-      'idempotent', false,
-      'request_id', v_request_id,
-      'candidate_id', v_candidate_id,
-      'actor_role', v_actor_role,
-      'product_id', v_product_id,
+      'status', 'confirmed', 'idempotent', false,
+      'request_id', v_request_id, 'candidate_id', v_candidate_id,
+      'actor_role', v_actor_role, 'product_id', v_product_id,
       'promotion_action', v_promotion_result ->> 'action',
       'audit_id', v_audit_id,
       'contract_version', 'crawler-canonical-product-structural-adoption-v1'
     );
   end if;
 
-  insert into public.crawler_canonical_adoption_requests (
+  insert into public.crawler_canonical_adoption_requests(
     request_id, candidate_id, actor_user_id, payload_hash, result, created_at
   ) values (
     v_request_id, v_candidate_id, p_actor_user_id, v_payload_hash, v_result, now()
   );
-
   return v_result;
 end;
 $$;
@@ -830,7 +755,7 @@ revoke all on function public.admin_confirm_product_candidate_structural_adoptio
 grant execute on function public.admin_confirm_product_candidate_structural_adoption_v1(uuid, text, jsonb)
   to service_role;
 
--- The exposed admin preflight is also narrowed to structural authority. Historical unsafe helpers remain read-only artifacts.
+-- Exposed admin preflight is structural-only. Historical unsafe helpers remain read-only artifacts.
 create or replace function public.admin_preflight_product_candidate_review(
   p_actor_user_id uuid,
   p_candidate_id uuid,
@@ -854,64 +779,33 @@ declare
   v_target_id uuid;
   v_match_count integer := 0;
   v_status text;
-  v_planned jsonb;
 begin
-  v_actor_role := public.admin_require_product_review_actor(
-    p_actor_user_id,
-    'admin.products.review'
-  );
+  v_actor_role := public.admin_require_product_review_actor(p_actor_user_id, 'admin.products.review');
 
-  select * into v_candidate
-  from public.product_candidates
-  where id = p_candidate_id;
-  if not found then
-    raise exception 'admin_product_review_candidate_not_found' using errcode = 'P0002';
-  end if;
+  select * into v_candidate from public.product_candidates where id = p_candidate_id;
+  if not found then raise exception 'admin_product_review_candidate_not_found' using errcode = 'P0002'; end if;
+  select * into v_review from public.candidate_promotion_reviews where candidate_id = p_candidate_id;
+  if not found then raise exception 'admin_product_review_queue_not_found' using errcode = 'P0002'; end if;
 
-  select * into v_review
-  from public.candidate_promotion_reviews
-  where candidate_id = p_candidate_id;
-  if not found then
-    raise exception 'admin_product_review_queue_not_found' using errcode = 'P0002';
-  end if;
-
-  if v_decision not in ('approve', 'defer', 'block') then
-    v_issues := array_append(v_issues, 'invalid_decision');
-  end if;
-  if char_length(v_reason) not between 3 and 1000 then
-    v_issues := array_append(v_issues, 'reason_required');
-  end if;
-  if v_review.status not in ('queued', 'reviewing', 'deferred') then
-    v_issues := array_append(v_issues, 'review_queue_not_actionable');
-  end if;
+  if v_decision not in ('approve', 'defer', 'block') then v_issues := array_append(v_issues, 'invalid_decision'); end if;
+  if char_length(v_reason) not between 3 and 1000 then v_issues := array_append(v_issues, 'reason_required'); end if;
+  if v_review.status not in ('queued', 'reviewing', 'deferred') then v_issues := array_append(v_issues, 'review_queue_not_actionable'); end if;
 
   if v_decision = 'approve' then
     if v_candidate.identity_resolution_state is distinct from 'resolved'
       or v_candidate.identity_resolution_version is distinct from 'crawler-identity-resolution-v1'
-    then
-      v_issues := array_append(v_issues, 'identity_unresolved');
-    end if;
-    if nullif(btrim(coalesce(v_candidate.canonical_brand, '')), '') is null then
-      v_issues := array_append(v_issues, 'missing_canonical_brand');
-    end if;
-    if nullif(btrim(coalesce(v_candidate.canonical_name, '')), '') is null then
-      v_issues := array_append(v_issues, 'missing_canonical_name');
-    end if;
+    then v_issues := array_append(v_issues, 'identity_unresolved'); end if;
+    if nullif(btrim(coalesce(v_candidate.canonical_brand, '')), '') is null then v_issues := array_append(v_issues, 'missing_canonical_brand'); end if;
+    if nullif(btrim(coalesce(v_candidate.canonical_name, '')), '') is null then v_issues := array_append(v_issues, 'missing_canonical_name'); end if;
     if v_candidate.service_category is null then
       v_issues := array_append(v_issues, 'ambiguous_category');
-    elsif v_candidate.service_category = 'treatment'::public.product_category
-      and v_candidate.product_form is null
-    then
+    elsif v_candidate.service_category = 'treatment'::public.product_category and v_candidate.product_form is null then
       v_issues := array_append(v_issues, 'missing_product_form');
-    elsif v_candidate.service_category <> 'treatment'::public.product_category
-      and v_candidate.product_form is not null
-    then
+    elsif v_candidate.service_category <> 'treatment'::public.product_category and v_candidate.product_form is not null then
       v_issues := array_append(v_issues, 'unexpected_product_form');
     end if;
 
-    if nullif(v_candidate.canonical_brand, '') is not null
-      and nullif(v_candidate.canonical_name, '') is not null
-    then
+    if nullif(v_candidate.canonical_brand, '') is not null and nullif(v_candidate.canonical_name, '') is not null then
       v_normalized_brand := public.normalize_brand_key(v_candidate.canonical_brand);
       v_normalized_name := public.normalize_product_key(v_candidate.canonical_name);
     end if;
@@ -932,31 +826,16 @@ begin
         and normalized_name = v_normalized_name
     ) then
       v_issues := array_append(v_issues, 'conflicting_product_identity');
-    elsif v_target_id is null
-      and v_normalized_brand is not null
-      and v_normalized_name is not null
-    then
+    elsif v_target_id is null and v_normalized_brand is not null and v_normalized_name is not null then
       select count(*)::integer into v_match_count
       from public.products
-      where normalized_brand = v_normalized_brand
-        and normalized_name = v_normalized_name;
-      if v_match_count > 0 then
-        v_issues := array_append(v_issues, 'identity_ambiguous_match_requires_resolution');
-      end if;
+      where normalized_brand = v_normalized_brand and normalized_name = v_normalized_name;
+      if v_match_count > 0 then v_issues := array_append(v_issues, 'identity_ambiguous_match_requires_resolution'); end if;
     end if;
   end if;
 
-  select coalesce(array_agg(distinct issue order by issue), '{}'::text[])
-  into v_issues
-  from unnest(v_issues) as issue;
-
+  select coalesce(array_agg(distinct issue order by issue), '{}'::text[]) into v_issues from unnest(v_issues) as issue;
   v_status := case when coalesce(array_length(v_issues, 1), 0) = 0 then 'ready' else 'blocked' end;
-  v_planned := jsonb_build_object(
-    'products_write_count', case when v_status = 'ready' and v_decision = 'approve' then 1 else 0 end,
-    'promotion_contract', 'crawler-canonical-product-structural-adoption-v1',
-    'target_product_id', v_target_id,
-    'recommendation_semantic_write_count', 0
-  );
 
   return jsonb_build_object(
     'status', v_status,
@@ -967,7 +846,12 @@ begin
     'candidate_updated_at', v_candidate.updated_at,
     'review_updated_at', v_review.updated_at,
     'issues', to_jsonb(v_issues),
-    'planned', v_planned,
+    'planned', jsonb_build_object(
+      'products_write_count', case when v_status = 'ready' and v_decision = 'approve' then 1 else 0 end,
+      'promotion_contract', 'crawler-canonical-product-structural-adoption-v1',
+      'target_product_id', v_target_id,
+      'recommendation_semantic_write_count', 0
+    ),
     'before', jsonb_build_object(
       'candidate_review_status', v_candidate.review_status,
       'queue_status', v_review.status,
