@@ -18,7 +18,7 @@ const assert = (condition, message) => {
 };
 const sha256 = (text) => crypto.createHash("sha256").update(text, "utf8").digest("hex");
 
-const migrationPath = "supabase/migrations/20260822125500_crawler_canonical_adoption_authority_remediation_v1.sql";
+const migrationPath = "supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql";
 const migration = read(migrationPath);
 const fixtures = JSON.parse(read("fixtures/crawler-governance/canonical-adoption-authority-remediation-v1.json"));
 
