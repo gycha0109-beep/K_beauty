@@ -8,12 +8,16 @@
 
 - Repository: `gycha0109-beep/K_beauty`
 - Original R1 base main: `5409a5913107064c214733f967ea0f61bc1edfa8`
-- Final continuation current main: `6fdff47f3c41a4e90dace8b8f7281b51a92d7c3f`
-- Final continuation Production SHA: `6fdff47f3c41a4e90dace8b8f7281b51a92d7c3f`
+- Final closure task-start main: `4acc939ce487e9fa277672b5b2da63b31bfcca2c`
+- Final closure task-start Production SHA: `4acc939ce487e9fa277672b5b2da63b31bfcca2c`
+- Final closure task-start PR #288 HEAD: `f21d0a429752d2f87e4ca53c4aa10a0a44ba8208`
+- Target engine pre-patch blob: `5028688320264596a3eed31526f04a937abd8b94`
 - P10 merged ancestor: `8d43a30497a310a1d5a64c5c593fc786e3281d12`
-- Drift classification: `UNRELATED_DRIFT`
+- Drift classification: `RELATED_RUNTIME_DRIFT_REQUIRING_EXACT_HEAD_REVALIDATION`
 
-The final-continuation drift is the merged G3A protected Product Fact authority read surface. It does not mutate `lib/skin-match-decision-engine.js`, Persona P6/P8/P10, CandidatePolicy, Recommendation scoring/ranking/eligibility, or explanation generation, so EVAL-R1 may safely rebase its six-file scope onto this authority before final verification.
+The final closure began after G3A and G3 had advanced `main`. G3A did not modify the EVAL-R1 explanation, Persona, CandidatePolicy, or historical Recommendation authority surfaces. G3 introduced the Production Recommendation admission boundary in `lib/product-source.js` and adjacent admission modules, so it is relevant runtime drift rather than explanation-source drift. It does not directly modify `lib/skin-match-decision-engine.js` or the frozen P6/P8/P10/CandidatePolicy implementation. EVAL-R1 therefore does not reopen its frozen findings, but the final candidate must include current `main` and rerun the complete exact-head regression chain before merge.
+
+Temporary workflow-only commits used to establish a GitHub-hosted write/verification surface are operational CI scaffolding only. They do not alter application runtime code, Product Fact, PDA, Admission semantics, CandidatePolicy semantics, ENFORCE, Crawler, package dependencies, or Supabase migrations. The final EVAL-R1 merge must replace that temporary workflow with the canonical verification workflow.
 
 ## Frozen Persona authority
 
