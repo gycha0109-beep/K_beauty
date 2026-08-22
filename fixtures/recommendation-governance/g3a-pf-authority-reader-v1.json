@@ -1,0 +1,106 @@
+{
+  "fixtureVersion": "g3a-pf-authority-reader-v1",
+  "legacyContract": {
+    "version": "LEGACY_FROZEN_RECOMMENDATION_CORPUS_V1",
+    "count": 164,
+    "sha256": "b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05",
+    "readerRequired": false
+  },
+  "validPayload": {
+    "read_contract_version": "recommendation-admission-authority-read-v1",
+    "status": "AUTHORITY_RESOLVED",
+    "product": {
+      "product_id": "123e4567-e89b-42d3-a456-426614174000",
+      "category": "treatment"
+    },
+    "subject": {
+      "subject_id": "223e4567-e89b-42d3-a456-426614174001",
+      "product_id": "123e4567-e89b-42d3-a456-426614174000",
+      "subject_identity_serializer_version": "product-fact-subject-identity-v1",
+      "identity_status": "resolved",
+      "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+      "current_state": "current",
+      "valid_from": null,
+      "valid_to": null
+    },
+    "registry": {
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "registry_checksum": "79d41ac13de8080df5199543e31ad7bbc1c1763836ef776313613b7547b79575",
+      "identity_serializer_version": "product-fact-subject-identity-v1"
+    },
+    "current_facts": [
+      {
+        "proposition_key": "1111111111111111111111111111111111111111111111111111111111111111",
+        "fact_instance_id": "323e4567-e89b-42d3-a456-426614174002",
+        "subject_id": "223e4567-e89b-42d3-a456-426614174001",
+        "confirmation_id": "423e4567-e89b-42d3-a456-426614174003",
+        "fact_key": "contains_active",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "semantic_status": "supported",
+        "value_type": "entity_identifier",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": null,
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": "salicylic_acid",
+        "parent_proposition_key": null,
+        "parent_fact_instance_id": null,
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "valid_from": null,
+        "valid_to": null
+      },
+      {
+        "proposition_key": "2222222222222222222222222222222222222222222222222222222222222222",
+        "fact_instance_id": "523e4567-e89b-42d3-a456-426614174004",
+        "subject_id": "223e4567-e89b-42d3-a456-426614174001",
+        "confirmation_id": "623e4567-e89b-42d3-a456-426614174005",
+        "fact_key": "active_concentration",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "semantic_status": "supported",
+        "value_type": "number_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": 2,
+        "value_unit": "percent",
+        "value_range_min": null,
+        "value_range_max": null,
+        "value_entity_identifier": null,
+        "parent_proposition_key": "1111111111111111111111111111111111111111111111111111111111111111",
+        "parent_fact_instance_id": "323e4567-e89b-42d3-a456-426614174002",
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "valid_from": null,
+        "valid_to": null
+      },
+      {
+        "proposition_key": "3333333333333333333333333333333333333333333333333333333333333333",
+        "fact_instance_id": "723e4567-e89b-42d3-a456-426614174006",
+        "subject_id": "223e4567-e89b-42d3-a456-426614174001",
+        "confirmation_id": "823e4567-e89b-42d3-a456-426614174007",
+        "fact_key": "recommended_use_frequency",
+        "registry_version": "product-fact-registry-cross-category-v1",
+        "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+        "semantic_status": "supported",
+        "value_type": "range_unit",
+        "value_boolean": null,
+        "value_enum": null,
+        "value_number": null,
+        "value_unit": "times_per_day",
+        "value_range_min": 1,
+        "value_range_max": 1,
+        "value_entity_identifier": null,
+        "parent_proposition_key": null,
+        "parent_fact_instance_id": null,
+        "authority_ceiling": "product_specific_primary",
+        "fused_confidence": "high",
+        "valid_from": null,
+        "valid_to": null
+      }
+    ]
+  }
+}
