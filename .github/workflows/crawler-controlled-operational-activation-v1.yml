@@ -45,6 +45,7 @@ jobs:
           test -f docs/evidence/crawler-controlled-operational-activation-v1.md
           test -f evidence/crawler-controlled-operational-activation-v1.json
           test -f crawler/config/controlled-operational-activation-v1.json
+          test -f crawler/image-source-policy-loader.mjs
           grep -q '"status": "PRE_RUN_FROZEN"' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"rankCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"candidateWriteCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
@@ -116,7 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           npm run typecheck
-          node --experimental-default-type=module ./node_modules/tsx/dist/cli.mjs test-security-policy-runtime-import.ts
+          npm run verify:security-policy-runtime-import
 
       - name: Verify Production build before external source request
         run: npm run build
@@ -130,7 +131,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --experimental-default-type=module ./node_modules/tsx/dist/cli.mjs hwahae.ts \
+          npm run crawl -- \
             --config=config/controlled-operational-activation-v1.json \
             --job-ids="${CONTROLLED_JOB_ID}" \
             --delay-ms=1500 \
