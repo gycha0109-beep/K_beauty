@@ -31,6 +31,7 @@ concurrency:
 
 env:
   STAGE_BASE_SHA: a9d3883d130a29facaa58c665ec7fe7bdafd7b70
+  RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
   CLOSEOUT_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
   TARGET_PROJECT_REF: bygrczggxfuisupcevaz
   NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
@@ -114,7 +115,8 @@ jobs:
           set -euo pipefail
           rm -rf _reference/recommendation
           git clone -q --no-hardlinks . _reference/recommendation
-          git -C _reference/recommendation checkout -q "$STAGE_BASE_SHA"
+          git -C _reference/recommendation checkout -q "$RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164) process.exit(1)'
           RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs
 
       - name: Assert automation remains OFF and closeout cannot recrawl
