@@ -46,18 +46,28 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EVAL_R1_CHECKOUT_SHA"
           git merge-base --is-ancestor "$EVAL_R1_BASE_MAIN_SHA" HEAD
-          changed="$(git diff --name-only "$EVAL_R1_BASE_MAIN_SHA" HEAD)"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            scope_base="${{ github.event.pull_request.base.sha }}"
+          else
+            scope_base="$(git rev-parse HEAD^1)"
+          fi
+          git merge-base --is-ancestor "$scope_base" HEAD
+          changed="$(git diff --name-only "$scope_base" HEAD)"
           printf '%s\n' "$changed"
           forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(lib/skin-match-decision-engine\.js|\.github/workflows/eval-r1-persona-explanation-grounding-remediation\.yml|fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1\.json|scripts/verify-eval-r1-explanation-grounding-v1\.mjs|scripts/verify-eval-r1-grounding-probes-v1\.mjs|docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1\.md)$' || true)"
           test -z "$forbidden"
-          git diff --exit-code "$EVAL_R1_BASE_MAIN_SHA" HEAD -- supabase/migrations lib/product-source.js lib/recommendation-scoring.ts app/api/analyze/route.js package.json package-lock.json
+          test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l | tr -d ' ')" = "6"
+          git diff --exit-code "$scope_base" HEAD -- supabase/migrations lib/product-source.js lib/recommendation-scoring.ts app/api/analyze/route.js package.json package-lock.json
 
       - name: Syntax and inventory
         run: |
+          set -euo pipefail
           node --check lib/skin-match-decision-engine.js
           node --check scripts/verify-eval-r1-explanation-grounding-v1.mjs
           node --check scripts/verify-eval-r1-grounding-probes-v1.mjs
           node -e 'const x=require("./fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1.json"); if(x.findings.length!==6) process.exit(1)'
+          test "$(git hash-object lib/skin-match-decision-engine.js)" = "28ee297a6184a269fb7167fe462366e0c25ca47d"
+          test "$(sha256sum lib/skin-match-decision-engine.js | awk '{print $1}')" = "5236e182eaa600036fbe5562f7a2807c1787c1556e4efb3460c60857c9d8a79c"
 
       - name: Prepare immutable references
         run: |
