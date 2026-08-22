@@ -99,7 +99,7 @@ jobs:
           git clone -q --no-hardlinks . _reference/recommendation
           git -C _reference/recommendation checkout -q "$V21_9E_RECOMMENDATION_REFERENCE_SHA"
 
-      - name: Canonical 164 x 12 explicit-OFF production invariance
+      - name: Canonical 164 x 12 explicit-OFF production materialization
         shell: bash
         env:
           EXFOLIATION_NORMATIVE_POLICY_ENABLED: '0'
@@ -111,11 +111,12 @@ jobs:
           EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
         run: |
           set -euo pipefail
-          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs > /tmp/v21-9e-off.log 2>&1
-          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs >> /tmp/v21-9e-off.log 2>&1
-          tail -n 30 /tmp/v21-9e-off.log
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation \
+          RECOMMENDATION_ENGINE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" \
+          RECOMMENDATION_SEMANTIC_ARTIFACT_PATH=/tmp/v21-9e-off-semantic.json \
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
 
-      - name: Canonical 164 x 12 SHADOW production invariance
+      - name: Canonical 164 x 12 SHADOW direct production invariance
         shell: bash
         env:
           EXFOLIATION_NORMATIVE_POLICY_ENABLED: '1'
@@ -127,9 +128,46 @@ jobs:
           EXFOLIATION_NORMATIVE_POLICY_SCOPE: POST_SCORE_POST_SORT_ELIGIBILITY_OVERLAY_BEFORE_RESULT_ASSEMBLY
         run: |
           set -euo pipefail
-          V21_7_BASE_MAIN_SHA=e2be97b9fcbf75ff43b6f7ecfe96a680aff4cb87 RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-product-decision-axis-comparator-v1.mjs > /tmp/v21-9e-shadow.log 2>&1
-          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation node scripts/verify-skin-decision-recommendation-invariance.mjs >> /tmp/v21-9e-shadow.log 2>&1
-          tail -n 30 /tmp/v21-9e-shadow.log
+          RECOMMENDATION_REFERENCE_ROOT=_reference/recommendation \
+          RECOMMENDATION_ENGINE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" \
+          RECOMMENDATION_SEMANTIC_ARTIFACT_PATH=/tmp/v21-9e-shadow-semantic.json \
+          node scripts/verify-skin-decision-recommendation-invariance.mjs
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFile } from 'node:fs/promises';
+          const off = JSON.parse(await readFile('/tmp/v21-9e-off-semantic.json', 'utf8'));
+          const shadow = JSON.parse(await readFile('/tmp/v21-9e-shadow-semantic.json', 'utf8'));
+          assert.equal(off.schema_version, 'historical-recommendation-semantic-invariance-v1');
+          assert.equal(shadow.schema_version, off.schema_version);
+          assert.equal(off.semantic_hash, shadow.semantic_hash, 'OFF vs SHADOW aggregate semantic hash');
+          assert.equal(off.scenarios.length, 12);
+          assert.equal(shadow.scenarios.length, off.scenarios.length);
+          const shadowById = new Map(shadow.scenarios.map((scenario) => [scenario.id, scenario]));
+          const fields = [
+            'projection_hash',
+            'score_hash',
+            'ranking_hash',
+            'top1_hash',
+            'top3_hash',
+            'eligibility_hash',
+            'legacy_ranking_hash',
+            'legacy_score_hash',
+            'legacy_response_hash'
+          ];
+          for (const before of off.scenarios) {
+            const after = shadowById.get(before.id);
+            assert(after, `${before.id}: SHADOW scenario missing`);
+            for (const field of fields) {
+              assert.equal(after[field], before[field], `${before.id}: OFF vs SHADOW ${field}`);
+            }
+          }
+          assert.equal(off.self_tests.presentation_only_projection_invariant, 'PASS');
+          assert.equal(shadow.self_tests.presentation_only_projection_invariant, 'PASS');
+          assert.equal(off.self_tests.real_semantic_delta_detected, 'DETECTED');
+          assert.equal(shadow.self_tests.real_semantic_delta_detected, 'DETECTED');
+          console.log(`V2.1-9E current OFF↔SHADOW direct invariance: PASS scenarios=${off.scenarios.length} semantic_hash=${off.semantic_hash}`);
+          console.log('score_delta=0 ranking_delta=0 top1_delta=0 top3_delta=0 eligibility_delta=0 public_response_delta=0');
+          NODE
 
       - name: Production build
         env:
