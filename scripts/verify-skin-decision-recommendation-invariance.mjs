@@ -24,10 +24,6 @@ const candidatePolicyReportPath = process.env.EVAL_R1_CANDIDATE_POLICY_REPORT
   : null;
 const engineSha = process.env.RECOMMENDATION_ENGINE_SHA || "UNSPECIFIED_ENGINE_SHA";
 const referenceSha = process.env.RECOMMENDATION_REFERENCE_SHA || "783afb91a964f5d762f46846f9ef854902b48e95";
-const isEvalR1SemanticBaselineMaterialization =
-  baselineArtifactPath === null &&
-  Boolean(process.env.EVAL_R1_BASE_MAIN_SHA) &&
-  engineSha === process.env.EVAL_R1_BASE_MAIN_SHA;
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
@@ -153,6 +149,12 @@ async function materializeOnce() {
     const expected = expectedById.get(scenario.id)?.legacyInvariance;
     assert(expected, `${scenario.id}: expected baseline missing`);
     const legacySnapshot = publicSnapshot(bundle, scoredProducts);
+    const legacyRankingHash = hash(
+      legacySnapshot.ranked.map((item) => [item.id, item.engine_score, item.score])
+    );
+    const legacyScoreHash = hash(
+      legacySnapshot.ranked.map((item) => [item.id, item.score_breakdown])
+    );
 
     if (presentationOnlySelfTest === "NOT_RUN") {
       const presentationBundle = { ...bundle, summary: "controlled presentation-only mutation" };
@@ -192,6 +194,10 @@ async function materializeOnce() {
       top1_id: projection.top1_id,
       top3_ranked_ids: projection.top3_ranked_ids,
       eligible_product_count: projection.eligible_product_ids.length,
+      legacy_ranking_hash: legacyRankingHash,
+      legacy_expected_ranking_hash: expected.actualRankingHashBefore,
+      legacy_score_hash: legacyScoreHash,
+      legacy_expected_score_hash: expected.scoreHashBefore,
       legacy_response_hash: hash(legacySnapshot),
       legacy_expected_response_hash: expected.actualResponseHashBefore
     });
@@ -281,12 +287,17 @@ if (baselineArtifactPath) {
       : null
   };
   assert.equal(comparison.semantic_hash_equal, true, "Historical Recommendation aggregate semantic hash invariant");
-} else if (!isEvalR1SemanticBaselineMaterialization) {
+} else {
   for (const scenario of buildA.scenarios) {
     assert.equal(
-      scenario.legacy_response_hash,
-      scenario.legacy_expected_response_hash,
-      `${scenario.id}: EVAL-P1 reference must reproduce frozen legacy response hash`
+      scenario.legacy_ranking_hash,
+      scenario.legacy_expected_ranking_hash,
+      `${scenario.id}: frozen historical Recommendation ranking semantic invariant`
+    );
+    assert.equal(
+      scenario.legacy_score_hash,
+      scenario.legacy_expected_score_hash,
+      `${scenario.id}: frozen historical Recommendation score semantic invariant`
     );
   }
 }
@@ -322,5 +333,5 @@ await mkdir(path.dirname(semanticArtifactPath), { recursive: true });
 await writeFile(semanticArtifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
 console.log(
   `verify-skin-decision-recommendation-invariance: PASS products=${productsFixture.productCount} scenarios=${buildA.scenarios.length} ` +
-  `semantic_hash=${buildA.semantic_hash} mode=${baselineArtifactPath ? "compare" : "reference-materialize"}`
+  `semantic_hash=${buildA.semantic_hash} mode=${baselineArtifactPath ? "compare" : "reference-semantic"}`
 );
