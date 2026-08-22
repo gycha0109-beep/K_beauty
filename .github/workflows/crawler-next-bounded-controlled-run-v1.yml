@@ -1,0 +1,175 @@
+name: Crawler Next Bounded Controlled Run v1
+
+on:
+  push:
+    branches:
+      - crawler/next-bounded-controlled-run-v1
+    paths:
+      - ".github/workflows/crawler-next-bounded-controlled-run-v1.yml"
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: crawler-next-bounded-controlled-run-v1
+  cancel-in-progress: false
+
+env:
+  EXPECTED_BASE_SHA: a9d3883d130a29facaa58c665ec7fe7bdafd7b70
+  TARGET_PROJECT_REF: bygrczggxfuisupcevaz
+  NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+  CONTROLLED_JOB_ID: hwahae-essence-ampoule-serum-trouble
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+
+jobs:
+  bounded-run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact bounded-run head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify frozen manifest and ceilings
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git merge-base --is-ancestor "${EXPECTED_BASE_SHA}" HEAD
+          test -f docs/evidence/crawler-next-bounded-controlled-run-v1.md
+          test -f evidence/crawler-next-bounded-controlled-run-v1.json
+          test -f crawler/config/next-bounded-controlled-run-v1.json
+          grep -q '"status": "PRE_RUN_FROZEN"' evidence/crawler-next-bounded-controlled-run-v1.json
+          ! grep -R -n -- '--all' crawler/config/next-bounded-controlled-run-v1.json .github/workflows/crawler-next-bounded-controlled-run-v1.yml
+          node - <<'NODE'
+          const jobs = require('./crawler/config/next-bounded-controlled-run-v1.json');
+          if (!Array.isArray(jobs) || jobs.length !== 1) process.exit(1);
+          const job = jobs[0];
+          if (job.id !== 'hwahae-essence-ampoule-serum-trouble') process.exit(1);
+          if (job.enabled !== true || job.limit !== 10 || job.requested_limit !== 10) process.exit(1);
+          if (job.themeId !== 4181 || job.service_category !== 'treatment') process.exit(1);
+          if (job.evidence_type !== 'concern_relevance' || job.source_concern_key !== 'trouble') process.exit(1);
+          NODE
+
+      - name: Publish bounded-run pending status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=pending \
+            -f context="Crawler next bounded controlled run" \
+            -f description="One Top10 concern run pending" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+
+      - name: Resolve service-role JWT without logging it
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN}"
+          keys_json="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Accept: application/json" \
+            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys")"
+          service_key="$(printf '%s' "$keys_json" | node -e '
+            let s="";
+            process.stdin.on("data",d=>s+=d);
+            process.stdin.on("end",()=>{
+              const rows=JSON.parse(s);
+              const candidates=rows.filter(r=>r.name==="service_role"||r.name==="service_role key"||r.type==="service_role");
+              const values=candidates.flatMap(r=>[r.api_key,r.key,r.value]).filter(v=>typeof v==="string");
+              const key=values.find(v=>v.startsWith("eyJ"));
+              if(!key) process.exit(1);
+              process.stdout.write(key);
+            });')"
+          test -n "$service_key"
+          echo "::add-mask::$service_key"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$service_key" >> "$GITHUB_ENV"
+          unset service_key keys_json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify crawler runtime before source request
+        working-directory: crawler
+        run: |
+          npm run typecheck
+          npm run verify:security-policy-runtime-import
+
+      - name: Install Chromium
+        working-directory: crawler
+        run: npx playwright install --with-deps chromium
+
+      - name: Execute exactly one Top10 real Hwahae concern crawl
+        working-directory: crawler
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run crawl -- \
+            --config=config/next-bounded-controlled-run-v1.json \
+            --job-ids="${CONTROLLED_JOB_ID}" \
+            --delay-ms=1500 \
+            --retries=2
+
+      - name: Refresh ranking-review-v2 exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/refresh_candidate_promotion_reviews" \
+            -d '{"p_rule_version":"ranking-review-v2"}' | tee /tmp/review-refresh.json
+          node -e 'const r=require("/tmp/review-refresh.json"); if(r.rule_version!=="ranking-review-v2"||r.products_written!==0) process.exit(1); console.log(JSON.stringify(r));'
+
+      - name: Assert automation remains OFF
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
+          ! grep -R -n -E '^  schedule:|^    - cron:' .github/workflows/*crawler*.yml
+
+      - name: Publish bounded-run terminal status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=success
+          description="One Top10 concern run and one review refresh completed"
+          if [ "$JOB_STATUS" != success ]; then
+            state=failure
+            description="Next bounded controlled run failed"
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$state" \
+            -f context="Crawler next bounded controlled run" \
+            -f description="$description" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+          test "$state" = success
