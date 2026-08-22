@@ -116,7 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           npm run typecheck
-          NODE_OPTIONS=--experimental-default-type=module npx tsx test-security-policy-runtime-import.ts
+          node --experimental-default-type=module ./node_modules/tsx/dist/cli.mjs test-security-policy-runtime-import.ts
 
       - name: Verify Production build before external source request
         run: npm run build
@@ -130,7 +130,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          NODE_OPTIONS=--experimental-default-type=module npm run crawl -- \
+          node --experimental-default-type=module ./node_modules/tsx/dist/cli.mjs hwahae.ts \
             --config=config/controlled-operational-activation-v1.json \
             --job-ids="${CONTROLLED_JOB_ID}" \
             --delay-ms=1500 \
