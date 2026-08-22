@@ -1,3 +1,4 @@
+import "@/lib/server/recommendation-candidate-admission-runtime";
 import { NextResponse } from "next/server";
 import {
   RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,
