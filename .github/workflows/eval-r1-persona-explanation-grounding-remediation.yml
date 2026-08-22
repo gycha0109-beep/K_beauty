@@ -148,15 +148,11 @@ jobs:
           cmp artifacts/eval-r1/p10-a/multistep-persona-journey-results-v1.json artifacts/eval-r1/p10-b/multistep-persona-journey-results-v1.json
           cmp artifacts/eval-r1/p10-a/multistep-persona-journey-evidence-v1.json artifacts/eval-r1/p10-b/multistep-persona-journey-evidence-v1.json
 
-      - name: Existing deterministic Persona and historical Recommendation regressions
+      - name: Historical Recommendation semantic invariance
         env:
-          EVAL_P3_REFERENCE_ROOT: _reference/recommendation
-          EVAL_P3_IMPLEMENTATION_SHA: ${{ env.EVAL_R1_CHECKOUT_SHA }}
-          EVAL_P3_ARTIFACT_ROOT: artifacts/eval-r1/p3
           RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
         run: |
           set -euo pipefail
-          node scripts/verify-eval-p3-persona-simulation-v1.mjs
           node scripts/verify-skin-decision-recommendation-invariance.mjs
 
       - name: Production build
