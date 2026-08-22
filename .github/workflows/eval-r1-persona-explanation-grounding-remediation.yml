@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: write
+  statuses: write
 
 jobs:
   bootstrap-production-patch:
@@ -13,12 +14,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout exact EVAL-R1 branch
+        id: checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: eval/r1-persona-explanation-grounding-remediation
 
       - name: Apply frozen two-hunk correction and push
+        id: patch
+        continue-on-error: true
         env:
           EXPECTED_HEAD: f21d0a429752d2f87e4ca53c4aa10a0a44ba8208
           EXPECTED_PRE_BLOB: 5028688320264596a3eed31526f04a937abd8b94
@@ -64,3 +68,19 @@ jobs:
           git add lib/skin-match-decision-engine.js
           git commit -m "fix(eval-r1): narrow explanation grounding remediation"
           git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
+
+      - name: Publish bootstrap attestation
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATCH_OUTCOME: ${{ steps.patch.outcome }}
+        run: |
+          set -euo pipefail
+          state=failure
+          description="EVAL-R1 bootstrap patch failed"
+          if [ "$PATCH_OUTCOME" = "success" ]; then
+            state=success
+            description="EVAL-R1 exact two-hunk bootstrap patch committed"
+          fi
+          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -f state="$state" -f context="EVAL-R1 bootstrap patch" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = success
