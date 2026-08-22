@@ -1,0 +1,59 @@
+{
+  "stageVersion": "crawler-controlled-operational-activation-v1",
+  "status": "PRE_RUN_FROZEN",
+  "startingAuthority": {
+    "mainSha": "4b6dfaf6d90826728f8029bcaa3be3fcde77c3f5",
+    "productionSha": "4b6dfaf6d90826728f8029bcaa3be3fcde77c3f5",
+    "productionDeploymentId": "dpl_EqbP54AMPdFPF3jta71Lcvd5CHCC",
+    "productionReady": true
+  },
+  "manifest": {
+    "source": "hwahae",
+    "jobId": "hwahae-skincare-toner-category-all",
+    "sourceCategoryKey": "toner",
+    "serviceCategory": "toner_essence",
+    "rankingScope": "category_all",
+    "rankingFilter": "all",
+    "themeId": 5106,
+    "targetUrl": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=5106",
+    "rankCeiling": 10,
+    "crawlExecutions": 1,
+    "logicalNavigationCeiling": 2,
+    "gatewayRequestCeiling": 0,
+    "delayMs": 1500,
+    "retries": 2,
+    "observationWriteCeiling": 10,
+    "candidateWriteCeiling": 10,
+    "reviewCeiling": 5,
+    "canonicalPromotionCeiling": 1,
+    "scheduler": "OFF",
+    "autoAdoption": "OFF",
+    "startedAt": "2026-08-22T15:03:02+09:00"
+  },
+  "preRun": {
+    "rankingSnapshots": 27,
+    "sourceRankings": 780,
+    "productCandidates": 164,
+    "promotionReviews": 50,
+    "structuralAdoptionRequests": 0,
+    "products": 164,
+    "legacy": 164,
+    "nonLegacy": 0,
+    "registryVersions": 1,
+    "definitionSnapshots": 20,
+    "subjects": 16,
+    "factInstances": 41,
+    "evidenceLinks": 41,
+    "reviewAssignments": 41,
+    "reviewEvents": 180,
+    "confirmations": 41,
+    "currentFacts": 41,
+    "legacyUuidSha256": "b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05"
+  },
+  "reviewAuthority": {
+    "ruleVersion": "ranking-review-v2",
+    "kstDistinctDate": true,
+    "popularityOnlyQueues": false
+  },
+  "results": null
+}
