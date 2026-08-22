@@ -78,7 +78,7 @@ jobs:
           keys_json="$(curl --fail-with-body --silent --show-error \
             -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
             -H "Accept: application/json" \
-            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys")"
+            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys?reveal=true")"
           service_key="$(printf '%s' "$keys_json" | node -e '
             let s="";
             process.stdin.on("data",d=>s+=d);
@@ -136,7 +136,6 @@ jobs:
           curl --fail-with-body --silent --show-error \
             -X POST \
             -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
             -H "Content-Type: application/json" \
             "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/refresh_candidate_promotion_reviews" \
             -d '{"p_rule_version":"ranking-review-v2"}' | tee /tmp/review-refresh.json
