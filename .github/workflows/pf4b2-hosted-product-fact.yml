@@ -58,11 +58,6 @@ jobs:
           ref: ${{ env.EXECUTION_SHA }}
           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Verify exact PF-2 execution authority
         shell: bash
         run: |
@@ -99,11 +94,40 @@ jobs:
             exit 1
           fi
 
-          actual_sha256="$(sha256sum "${PF2_PATH}" | awk '{print $1}')"
-          if [[ "${actual_sha256}" != "${PF2_SHA256}" ]]; then
-            echo "PF-2 SHA-256 mismatch: ${actual_sha256} != ${PF2_SHA256}" >&2
-            exit 1
-          fi
+          python3 - "${PF2_PATH}" "${PF2_BLOB}" "${PF2_SHA256}" <<'PY'
+          import hashlib
+          import pathlib
+          import subprocess
+          import sys
+
+          path, blob_id, frozen_raw_sha = sys.argv[1:]
+          worktree = pathlib.Path(path).read_bytes()
+          blob = subprocess.check_output(["git", "cat-file", "blob", blob_id])
+
+          def normalize_eol(value: bytes) -> bytes:
+              return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+          canonical = normalize_eol(blob)
+          worktree_canonical = normalize_eol(worktree)
+          if worktree_canonical != canonical:
+              raise SystemExit("PF-2 working tree is not EOL-equivalent to the frozen Git blob")
+
+          lf_sha = hashlib.sha256(canonical).hexdigest()
+          crlf_sha = hashlib.sha256(canonical.replace(b"\n", b"\r\n")).hexdigest()
+          worktree_sha = hashlib.sha256(worktree).hexdigest()
+
+          if frozen_raw_sha not in {lf_sha, crlf_sha}:
+              raise SystemExit(
+                  "PF-2 frozen raw SHA is not an LF/CRLF rendering of the frozen Git blob: "
+                  f"frozen={frozen_raw_sha} lf={lf_sha} crlf={crlf_sha} worktree={worktree_sha}"
+              )
+
+          print(
+              "PF-2 EOL authority verified: "
+              f"worktree_sha256={worktree_sha} lf_sha256={lf_sha} "
+              f"crlf_sha256={crlf_sha} frozen_raw_sha256={frozen_raw_sha}"
+          )
+          PY
 
           if ! git cat-file -e "${PRE_PF2_SHA}^{commit}"; then
             echo "Pre-PF2 commit is missing from full checkout history: ${PRE_PF2_SHA}" >&2
@@ -136,7 +160,10 @@ jobs:
           fi
 
           current_pf2_blob="$(git rev-parse "${current_main}:${PF2_PATH}")"
-          test "${current_pf2_blob}" = "${PF2_BLOB}"
+          if [[ "${current_pf2_blob}" != "${PF2_BLOB}" ]]; then
+            echo "Current-main PF-2 blob mismatch: ${current_pf2_blob} != ${PF2_BLOB}" >&2
+            exit 1
+          fi
           echo "current_main=${current_main}"
 
       - name: Verify Supabase CLI
@@ -216,10 +243,39 @@ jobs:
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/pf4b2-main-final
           current_main="$(git rev-parse refs/remotes/origin/pf4b2-main-final)"
           git merge-base --is-ancestor "${EXECUTION_SHA}" "${current_main}"
-          test -z "$(git diff --name-only "${EXECUTION_SHA}" "${current_main}" -- supabase/migrations)"
+
+          migration_delta="$(git diff --name-only "${EXECUTION_SHA}" "${current_main}" -- supabase/migrations)"
+          if [[ -n "${migration_delta}" ]]; then
+            echo "Migration authority drift immediately before Hosted write:" >&2
+            printf '%s\n' "${migration_delta}" >&2
+            exit 1
+          fi
+
           test "$(git rev-parse "${current_main}:${PF2_PATH}")" = "${PF2_BLOB}"
           test "$(git rev-parse HEAD)" = "${EXECUTION_SHA}"
-          test "$(sha256sum "${PF2_PATH}" | awk '{print $1}')" = "${PF2_SHA256}"
+
+          python3 - "${PF2_PATH}" "${PF2_BLOB}" "${PF2_SHA256}" <<'PY'
+          import hashlib
+          import pathlib
+          import subprocess
+          import sys
+
+          path, blob_id, frozen_raw_sha = sys.argv[1:]
+          worktree = pathlib.Path(path).read_bytes()
+          blob = subprocess.check_output(["git", "cat-file", "blob", blob_id])
+
+          def normalize_eol(value: bytes) -> bytes:
+              return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+          canonical = normalize_eol(blob)
+          if normalize_eol(worktree) != canonical:
+              raise SystemExit("PF-2 working tree lost EOL equivalence before Hosted write")
+
+          lf_sha = hashlib.sha256(canonical).hexdigest()
+          crlf_sha = hashlib.sha256(canonical.replace(b"\n", b"\r\n")).hexdigest()
+          if frozen_raw_sha not in {lf_sha, crlf_sha}:
+              raise SystemExit("PF-2 frozen raw SHA lost LF/CRLF equivalence before Hosted write")
+          PY
 
       - name: Apply canonical PF-2 only
         if: ${{ inputs.mode == 'execute' }}
