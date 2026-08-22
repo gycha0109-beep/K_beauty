@@ -1,8 +1,14 @@
 name: EVAL-R1 Bootstrap Exact Production Patch
 
 on:
-  push:
-    branches: [main]
+  pull_request:
+    paths:
+      - "lib/skin-match-decision-engine.js"
+      - ".github/workflows/eval-r1-persona-explanation-grounding-remediation.yml"
+      - "fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1.json"
+      - "scripts/verify-eval-r1-explanation-grounding-v1.mjs"
+      - "scripts/verify-eval-r1-grounding-probes-v1.mjs"
+      - "docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1.md"
 
 permissions:
   contents: write
@@ -10,28 +16,35 @@ permissions:
 
 jobs:
   bootstrap-production-patch:
+    if: github.event.pull_request.number == 288 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout exact EVAL-R1 branch
-        id: checkout
+      - name: Checkout exact PR head
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: eval/r1-persona-explanation-grounding-remediation
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Apply frozen two-hunk correction and push
+      - name: Apply or verify frozen two-hunk correction
         id: patch
-        continue-on-error: true
         env:
-          EXPECTED_HEAD: f21d0a429752d2f87e4ca53c4aa10a0a44ba8208
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
           EXPECTED_PRE_BLOB: 5028688320264596a3eed31526f04a937abd8b94
           EXPECTED_POST_BLOB: 28ee297a6184a269fb7167fe462366e0c25ca47d
           EXPECTED_POST_SHA256: 5236e182eaa600036fbe5562f7a2807c1787c1556e4efb3460c60857c9d8a79c
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
-          test "$(git hash-object lib/skin-match-decision-engine.js)" = "$EXPECTED_PRE_BLOB"
+          current_blob="$(git hash-object lib/skin-match-decision-engine.js)"
+          if [ "$current_blob" = "$EXPECTED_POST_BLOB" ]; then
+            test "$(sha256sum lib/skin-match-decision-engine.js | awk '{print $1}')" = "$EXPECTED_POST_SHA256"
+            test "$(wc -l < lib/skin-match-decision-engine.js | tr -d ' ')" = "3096"
+            node --check lib/skin-match-decision-engine.js
+            echo "already_patched=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          test "$current_blob" = "$EXPECTED_PRE_BLOB"
           test "$(wc -l < lib/skin-match-decision-engine.js | tr -d ' ')" = "3100"
           cp lib/skin-match-decision-engine.js /tmp/skin-match-decision-engine.before.js
           python - <<'PY'
@@ -68,19 +81,20 @@ jobs:
           git add lib/skin-match-decision-engine.js
           git commit -m "fix(eval-r1): narrow explanation grounding remediation"
           git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
+          echo "already_patched=false" >> "$GITHUB_OUTPUT"
 
-      - name: Publish bootstrap attestation
+      - name: Publish exact bootstrap attestation
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-          PATCH_OUTCOME: ${{ steps.patch.outcome }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
-          state=failure
-          description="EVAL-R1 bootstrap patch failed"
-          if [ "$PATCH_OUTCOME" = "success" ]; then
-            state=success
-            description="EVAL-R1 exact two-hunk bootstrap patch committed"
+          state=success
+          description="EVAL-R1 exact two-hunk patch verified"
+          if [ "$JOB_STATUS" != "success" ]; then
+            state=failure
+            description="EVAL-R1 bootstrap patch failed"
           fi
-          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -f state="$state" -f context="EVAL-R1 bootstrap patch" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/${{ github.event.pull_request.head.sha }}" -f state="$state" -f context="EVAL-R1 bootstrap patch" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
           test "$state" = success
