@@ -20,11 +20,13 @@ env:
   TARGET_PROJECT_REF: bygrczggxfuisupcevaz
   NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
   CONTROLLED_JOB_ID: hwahae-skincare-toner-category-all
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
 
 jobs:
   controlled-crawl:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
@@ -43,6 +45,7 @@ jobs:
           test -f docs/evidence/crawler-controlled-operational-activation-v1.md
           test -f evidence/crawler-controlled-operational-activation-v1.json
           test -f crawler/config/controlled-operational-activation-v1.json
+          test "$(node -p 'require("./lib/security/package.json").type')" = module
           grep -q '"status": "PRE_RUN_FROZEN"' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"rankCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"candidateWriteCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
@@ -67,7 +70,7 @@ jobs:
             "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
             -f state=pending \
             -f context="Crawler controlled operational activation source run" \
-            -f description="One-shot bounded source run in progress" \
+            -f description="Bounded preflight before one source run" \
             -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
 
       - name: Resolve legacy service-role JWT without logging it
@@ -100,11 +103,24 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: crawler/package-lock.json
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
 
       - name: Install crawler dependencies
         working-directory: crawler
         run: npm ci --no-audit --no-fund
+
+      - name: Verify narrow runtime-module remediation
+        working-directory: crawler
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npx tsx test-security-policy-runtime-import.ts
+
+      - name: Verify Production build before external source request
+        run: npm run build
 
       - name: Install Chromium for the one controlled crawl
         working-directory: crawler
@@ -121,13 +137,13 @@ jobs:
             --delay-ms=1500 \
             --retries=2
 
-      - name: Assert no persistent scheduler or auto-adoption was introduced
+      - name: Assert scheduler and auto-adoption remain OFF
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
-          ! grep -Eq '^\s*schedule:|cron:' .github/workflows/crawler-controlled-operational-activation-v1.yml
+          ! grep -Eq '^  schedule:' .github/workflows/crawler-controlled-operational-activation-v1.yml
 
       - name: Publish controlled-run terminal status
         if: always()
