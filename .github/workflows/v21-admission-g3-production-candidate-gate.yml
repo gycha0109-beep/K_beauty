@@ -13,6 +13,8 @@ on:
       - "lib/recommendation-legacy-corpus-v1.mjs"
       - "lib/recommendation-candidate-admission-core.mjs"
       - "lib/recommendation-candidate-admission.js"
+      - "lib/server/recommendation-candidate-admission-runtime.js"
+      - "lib/server/vision-observation-service.js"
       - "app/api/internal/recommendation-candidate-admission-controlled-probe/route.js"
       - "lib/recommendation-candidate-admission-controlled-probe-oidc.mjs"
       - "fixtures/recommendation-governance/g3-production-candidate-admission-v1.json"
@@ -62,7 +64,7 @@ jobs:
           git merge-base --is-ancestor "$G3_BASE_MAIN_SHA" HEAD
           changed="$(git diff --name-only "$G3_BASE_MAIN_SHA" HEAD)"
           printf '%s\n' "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-admission-g3-production-candidate-gate\.yml|lib/product-source\.js|lib/recommendation-product-enumerator\.mjs|lib/recommendation-legacy-corpus-v1\.mjs|lib/recommendation-candidate-admission-core\.mjs|lib/recommendation-candidate-admission\.js|lib/recommendation-candidate-admission-controlled-probe-oidc\.mjs|app/api/internal/recommendation-candidate-admission-controlled-probe/route\.js|fixtures/recommendation-governance/g3-production-candidate-admission-v1\.json|scripts/verify-v21-admission-g3-production-candidate-gate-v1\.mjs|docs/evidence/v21-admission-g3-production-candidate-gate-v1\.md)$' || true)"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/v21-admission-g3-production-candidate-gate\.yml|lib/product-source\.js|lib/recommendation-product-enumerator\.mjs|lib/recommendation-legacy-corpus-v1\.mjs|lib/recommendation-candidate-admission-core\.mjs|lib/recommendation-candidate-admission\.js|lib/server/recommendation-candidate-admission-runtime\.js|lib/server/vision-observation-service\.js|lib/recommendation-candidate-admission-controlled-probe-oidc\.mjs|app/api/internal/recommendation-candidate-admission-controlled-probe/route\.js|fixtures/recommendation-governance/g3-production-candidate-admission-v1\.json|scripts/verify-v21-admission-g3-production-candidate-gate-v1\.mjs|docs/evidence/v21-admission-g3-production-candidate-gate-v1\.md)$' || true)"
           test -z "$forbidden"
           git diff --exit-code "$G3_BASE_MAIN_SHA" HEAD -- app/api/analyze/route.js lib/recommendation-scoring.js lib/skin-match-decision-engine.js lib/candidate-exposure-policy-shadow.js scripts/product-evidence/initial-admission-grant-policy-v1.mjs scripts/product-evidence/exfoliation-non-numeric-pda-offline-shadow-v1.mjs lib/recommendation-admission-authority-reader.js lib/recommendation-admission-authority-contract.mjs supabase/migrations package.json package-lock.json
 
@@ -77,6 +79,9 @@ jobs:
           ! printf '%s\n' "$sensitive_diff" | grep -Ei '^\+.*password[[:space:]]*=[[:space:]]*["'"''][^"'"'']+'
           test "$(git grep -l 'RECOMMENDATION_ADMISSION_DATABASE_URL' -- 'app/**' 'lib/**' | tr '\n' ' ')" = "lib/recommendation-admission-authority-reader.js "
           ! git grep -n 'recommendation-admission-authority-reader' -- 'app/**' ':!app/api/internal/recommendation-admission-authority-controlled-probe/route.js'
+          test "$(git grep -l 'recommendation-admission-authority-reader' -- 'lib/server/recommendation-candidate-admission-runtime.js' | tr '\n' ' ')" = "lib/server/recommendation-candidate-admission-runtime.js "
+          ! git grep -n 'recommendation-candidate-admission-core' -- 'lib/product-source.js'
+          ! git grep -n 'recommendation-admission-authority-reader' -- 'lib/product-source.js'
 
       - name: Syntax and focused G3 verification
         run: |
@@ -85,6 +90,8 @@ jobs:
           node --check lib/recommendation-legacy-corpus-v1.mjs
           node --check lib/recommendation-candidate-admission-core.mjs
           node --check lib/recommendation-candidate-admission.js
+          node --check lib/server/recommendation-candidate-admission-runtime.js
+          node --check lib/server/vision-observation-service.js
           node --check lib/recommendation-candidate-admission-controlled-probe-oidc.mjs
           node --check lib/product-source.js
           node --check app/api/internal/recommendation-candidate-admission-controlled-probe/route.js
