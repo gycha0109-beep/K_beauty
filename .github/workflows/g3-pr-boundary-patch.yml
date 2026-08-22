@@ -1,0 +1,35 @@
+name: G3 PR boundary patch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'admission/g3-production-candidate-gate' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: admission/g3-production-candidate-gate
+          fetch-depth: 0
+      - name: Apply bounded refactor
+        run: python scripts/g3-boundary-refactor-patch.py
+      - name: Verify patch shape
+        run: |
+          grep -q 'admittedProjection = await admissionEvaluator(data)' lib/product-source.js
+          ! grep -q 'recommendation-candidate-admission"' lib/product-source.js
+          grep -q 'products: recommendationProducts' app/api/analyze/route.js
+          grep -q 'admitAndProjectRecommendationProducts' app/api/analyze/route.js
+      - name: Commit refactor and remove staging helpers
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/g3-pr-boundary-patch.yml .github/workflows/g3-refactor-production-boundary.yml scripts/g3-boundary-refactor-patch.py
+          git add lib/product-source.js app/api/analyze/route.js app/api/internal/recommendation-candidate-admission-controlled-probe/route.js scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs .github/workflows/v21-admission-g3-production-candidate-gate.yml
+          git commit -m 'fix(g3): inject protected admission only at production server boundary'
+          git push origin HEAD:admission/g3-production-candidate-gate
