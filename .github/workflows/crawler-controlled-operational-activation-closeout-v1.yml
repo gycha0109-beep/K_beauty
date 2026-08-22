@@ -97,8 +97,8 @@ jobs:
           set -euo pipefail
           npm run typecheck
           npm run verify:security-policy-runtime-import
-          npm run test:ranking-ingest
-          npm run test:ranking-review-rules
+          node --loader ./image-source-policy-loader.mjs --import tsx test-ranking-ingest.ts
+          node --loader ./image-source-policy-loader.mjs --import tsx test-ranking-review-rules.ts
 
       - name: Revalidate frozen G3 G3A G2 PDA authority
         shell: bash
