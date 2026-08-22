@@ -1,0 +1,66 @@
+name: EVAL-R1 Bounded Correction Bootstrap
+
+on:
+  push:
+    branches:
+      - eval/r1-persona-explanation-grounding-remediation
+    paths:
+      - ".github/workflows/eval-r1-correction-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: eval/r1-persona-explanation-grounding-remediation
+          fetch-depth: 0
+
+      - name: Narrow explanation remediation to frozen findings
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("lib/skin-match-decision-engine.js")
+          text = path.read_text()
+
+          old_serum = '        ? "예민함과 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."'
+          new_serum = '        ? "예민함이나 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."'
+
+          old_moisturizer = '''    const leadSentence = sensitiveState || priorityAxis === "barrier"
+      ? explicitHighSensitivity
+        ? "장벽 부담과 높은 민감도가 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."
+        : groundedSensitivity
+          ? "장벽 부담과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."
+          : "장벽 부담 신호가 큰 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."'''
+          new_moisturizer = '''    const leadSentence = sensitiveState || priorityAxis === "barrier"
+      ? "장벽과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."'''
+
+          for old, new, label in [
+              (old_serum, new_serum, "serum direct-redness baseline phrase"),
+              (old_moisturizer, new_moisturizer, "moisturizer collateral rewrite"),
+          ]:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected exactly one match, got {count}")
+              text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+
+          git diff --check
+          git diff -- lib/skin-match-decision-engine.js
+          node --check lib/skin-match-decision-engine.js
+
+      - name: Commit bounded engine correction
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/skin-match-decision-engine.js
+          git diff --cached --quiet && exit 1
+          git commit -m "fix(eval-r1): narrow explanation remediation scope"
+          git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
