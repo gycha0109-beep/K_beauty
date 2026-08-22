@@ -53,11 +53,11 @@ assert(admissionCore.includes("authorityFailureCount"), "authority failure telem
 
 const productSource = read("lib/product-source.js");
 const gateIndex = productSource.indexOf("admitRecommendationProducts(data)");
-const projectionIndex = productSource.indexOf("projectAdmittedRecommendationProducts(admission");
-const normalizeIndex = productSource.indexOf("buildSupabaseProduct(product)");
+const projectionIndex = productSource.indexOf("projectAdmittedRecommendationProducts(admission", gateIndex);
+const normalizeIndex = productSource.indexOf("buildSupabaseProduct(product)", projectionIndex);
 assert(gateIndex >= 0, "Production product-source G3 call missing");
 assert(projectionIndex > gateIndex, "admission projection does not follow G3");
-assert(normalizeIndex > projectionIndex, "normalization occurs before G3 admission projection");
+assert(normalizeIndex > projectionIndex, "no post-admission normalization call found after G3 projection");
 for (const token of [
   "enumerated_count",
   "legacy_admitted_count",
