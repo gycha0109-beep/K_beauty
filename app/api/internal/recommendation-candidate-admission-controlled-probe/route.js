@@ -7,9 +7,6 @@ import {
   verifyG3GitHubActionsOidcToken,
 } from "@/lib/recommendation-candidate-admission-controlled-probe-oidc.mjs";
 import {
-  isRecommendationAdmissionCredentialConfigured,
-} from "@/lib/recommendation-admission-authority-reader";
-import {
   runRecommendationCandidateAdmissionRuntimeProbe,
 } from "@/lib/product-source";
 
@@ -49,7 +46,6 @@ export async function POST(request) {
       evidenceType: "v21_admission_g3_runtime_probe_v1",
       deploymentSha,
       deploymentRef,
-      credentialAvailable: isRecommendationAdmissionCredentialConfigured(),
       secretValueExposed: false,
       result: "FAIL_CLOSED",
     }, 503);
@@ -69,7 +65,6 @@ export async function POST(request) {
       evidenceType: "v21_admission_g3_runtime_probe_v1",
       deploymentSha,
       deploymentRef,
-      credentialAvailable: isRecommendationAdmissionCredentialConfigured(),
       productCount: probe?.productCount ?? null,
       admissionSummary: summary,
       secretValueExposed: false,
@@ -82,7 +77,6 @@ export async function POST(request) {
     workflowRunId: authorization.claims.runId,
     deploymentSha,
     deploymentRef,
-    credentialAvailable: isRecommendationAdmissionCredentialConfigured(),
     admissionContractVersion: RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,
     productCount: probe.productCount,
     admissionSummary: summary,
