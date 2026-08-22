@@ -1,9 +1,7 @@
 name: EVAL-R1 Bounded Correction Bootstrap
 
 on:
-  push:
-    branches:
-      - eval/r1-persona-explanation-grounding-remediation
+  pull_request:
     paths:
       - ".github/workflows/eval-r1-correction-bootstrap.yml"
 
@@ -12,6 +10,7 @@ permissions:
 
 jobs:
   patch-engine:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
