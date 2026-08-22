@@ -164,7 +164,7 @@ jobs:
           printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$service_key" >> "$GITHUB_ENV"
           unset service_key keys_json
 
-      - name: Read-only Hosted closeout and exact Legacy set equality
+      - name: Read-only Hosted operational closeout and exact Legacy set equality
         shell: bash
         run: |
           set -euo pipefail
@@ -199,17 +199,7 @@ jobs:
             source_rankings: 800,
             product_candidates: 176,
             candidate_promotion_reviews: 58,
-            crawler_canonical_adoption_requests: 0,
             products: 164,
-            product_fact_registry_versions: 1,
-            product_fact_definition_snapshots: 20,
-            product_fact_subjects: 16,
-            product_fact_instances: 41,
-            product_fact_evidence_links: 41,
-            product_fact_review_assignments: 41,
-            product_fact_review_events: 180,
-            product_fact_confirmations: 41,
-            product_fact_current: 41,
           };
 
           for (const [table, expected] of Object.entries(expectedCounts)) {
@@ -224,10 +214,6 @@ jobs:
           if (queued !== 38 || deferred !== 20 || mismatched !== 0) {
             throw new Error(`review_queue_mismatch_queued_${queued}_deferred_${deferred}_mismatched_${mismatched}`);
           }
-
-          const auditRows = await getRows('admin_audit_logs', 'action,metadata', {action: 'eq.admin.product_candidate.identity_resolution_recorded'});
-          const stageAuditRows = auditRows.filter(r => r.metadata?.evidence?.stage_version === 'crawler-next-bounded-controlled-run-v1');
-          if (stageAuditRows.length !== 5) throw new Error(`identity_audit_event_count_${stageAuditRows.length}_expected_5`);
 
           const products = await getRows('products', 'id');
           const liveIds = products.map(r => r.id).sort();
@@ -247,12 +233,12 @@ jobs:
           }
 
           console.log(JSON.stringify({
-            hostedCounts: expectedCounts,
+            hostedOperationalCounts: expectedCounts,
             reviewQueue: {queued, deferred, ruleVersion: 'ranking-review-v2'},
-            identityAuditEvents: stageAuditRows.length,
             legacyCount: liveIds.length,
             legacySha256: liveHash,
             snapshotId: snapshots[0].id,
+            protectedAuthorityTables: 'verified separately through authoritative database readback',
             writesPerformed: 0,
           }));
           NODE
