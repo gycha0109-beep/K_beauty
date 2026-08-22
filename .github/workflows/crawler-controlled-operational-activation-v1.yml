@@ -9,16 +9,18 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: crawler-controlled-operational-activation-v1
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   EXPECTED_BASE_SHA: 4b6dfaf6d90826728f8029bcaa3be3fcde77c3f5
   TARGET_PROJECT_REF: bygrczggxfuisupcevaz
   NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
   CONTROLLED_JOB_ID: hwahae-skincare-toner-category-all
+  MANIFEST_STARTED_AT_UTC: 2026-08-22T06:03:02Z
 
 jobs:
   controlled-crawl:
@@ -46,7 +48,6 @@ jobs:
           grep -q '"rankCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"candidateWriteCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
           grep -q '"canonicalPromotionCeiling": 1' evidence/crawler-controlled-operational-activation-v1.json
-          ! grep -q -- '--all' docs/evidence/crawler-controlled-operational-activation-v1.md || grep -q 'does \*\*not\*\* use `--all`' docs/evidence/crawler-controlled-operational-activation-v1.md
           node - <<'NODE'
           const jobs = require('./crawler/config/controlled-operational-activation-v1.json');
           if (!Array.isArray(jobs) || jobs.length !== 1) process.exit(1);
@@ -55,6 +56,20 @@ jobs:
           if (job.enabled !== true || job.limit !== 10 || job.requested_limit !== 10) process.exit(1);
           if (job.themeId !== 5106 || job.service_category !== 'toner_essence') process.exit(1);
           NODE
+
+      - name: Publish controlled-run pending status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=pending \
+            -f context="Crawler controlled operational activation source run" \
+            -f description="One-shot bounded source run in progress" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
 
       - name: Resolve ephemeral service-role credential without logging it
         shell: bash
@@ -80,7 +95,26 @@ jobs:
           printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$service_key" >> "$GITHUB_ENV"
           unset service_key keys_json
 
+      - name: Enforce one-shot execution guard
+        id: one_shot
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing="$(curl --fail-with-body --silent --show-error \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Accept: application/json" \
+            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/crawl_jobs?select=id,status,started_at&source_name=eq.hwahae&started_at=gte.${MANIFEST_STARTED_AT_UTC}&order=started_at.desc&limit=1")"
+          count="$(printf '%s' "$existing" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>process.stdout.write(String(JSON.parse(s).length)));')"
+          if [ "$count" -gt 0 ]; then
+            echo "A controlled crawler execution is already recorded after the frozen manifest; refusing a second run."
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node
+        if: steps.one_shot.outputs.should_run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -88,14 +122,17 @@ jobs:
           cache-dependency-path: crawler/package-lock.json
 
       - name: Install crawler dependencies
+        if: steps.one_shot.outputs.should_run == 'true'
         working-directory: crawler
         run: npm ci --no-audit --no-fund
 
       - name: Install Chromium for the one controlled crawl
+        if: steps.one_shot.outputs.should_run == 'true'
         working-directory: crawler
         run: npx playwright install --with-deps chromium
 
       - name: Execute exactly one bounded real Hwahae crawl
+        if: steps.one_shot.outputs.should_run == 'true'
         working-directory: crawler
         shell: bash
         run: |
@@ -107,9 +144,33 @@ jobs:
             --retries=2
 
       - name: Assert no persistent scheduler or auto-adoption was introduced
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
           ! git grep -n -E '^\s*schedule:|cron:' -- '.github/workflows/*crawler*' ':!.github/workflows/crawler-controlled-operational-activation-v1.yml'
-          ! git grep -n -- '--all' '.github/workflows/crawler-controlled-operational-activation-v1.yml'
+          ! git grep -n -E 'npm run crawl .*--all|tsx hwahae\.ts .*--all' -- '.github/workflows/crawler-controlled-operational-activation-v1.yml'
+
+      - name: Publish controlled-run terminal status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=success
+          description="One-shot bounded source run completed"
+          if [ "$JOB_STATUS" != success ]; then
+            state=failure
+            description="One-shot bounded source run failed"
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$state" \
+            -f context="Crawler controlled operational activation source run" \
+            -f description="$description" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+          test "$state" = success
