@@ -1,6 +1,6 @@
 {
   "stageVersion": "crawler-next-bounded-controlled-run-v1",
-  "status": "RUN_COMPLETE_NO_SAFE_PROMOTION",
+  "status": "REPOSITORY_CLOSEOUT_CANDIDATE",
   "startingMainSha": "a9d3883d130a29facaa58c665ec7fe7bdafd7b70",
   "startingProductionSha": "a9d3883d130a29facaa58c665ec7fe7bdafd7b70",
   "startingProductionDeployment": "dpl_CvrZeDxdoLW6eiLsfVw5egAEhvQg",
@@ -187,7 +187,7 @@
     "version": "LEGACY_FROZEN_RECOMMENDATION_CORPUS_V1",
     "count": 164,
     "sha256": "b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05",
-    "membershipVerification": "closeout CI must compare live Hosted product UUID set exactly to the frozen corpus file"
+    "membershipVerification": "closeout CI and final hosted readback compare the live Hosted product UUID set exactly to the frozen corpus file"
   },
   "finalAutomationState": {
     "manualControlledCrawler": "VALIDATED",
@@ -197,12 +197,20 @@
     "bulkPromotion": "OFF",
     "unboundedCrawler": "NOT_AUTHORIZED"
   },
+  "repositoryCloseout": {
+    "realCrawlerMustNotRerun": true,
+    "reviewRefreshMustNotRerun": true,
+    "closeoutUsesReadOnlyHostedVerification": true,
+    "requiresExactLegacySetEquality": true,
+    "requiresMergedMainExactShaCi": true,
+    "requiresProductionExactMergeShaReady": true
+  },
   "finalOutcome": {
-    "stage": "STRICT_SUCCESS_PENDING_REPOSITORY_CLOSEOUT",
+    "stage": "STRICT_SUCCESS_PENDING_MERGED_MAIN_CLOSEOUT",
     "primaryOutcome": "BOUNDED_CRAWLER_RUN_VALIDATED__NO_SAFE_CANONICAL_ADOPTION_CANDIDATE",
     "reviewEligibilityProgression": "VALIDATED",
     "canonicalAdoption": 0,
     "recommendationAuthoritySeparation": "PRESERVED",
-    "next": "ANOTHER_BOUNDED_RUN_OR_EVIDENCE_MATURATION_WAIT"
+    "next": "NO_FURTHER_STAGE_MUTATION_REQUIRED_AFTER_MERGED_MAIN_CI_AND_PRODUCTION_READBACK"
   }
 }
