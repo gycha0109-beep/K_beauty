@@ -69,14 +69,15 @@ for (const token of [
   assert(productSource.includes(token), `Production admission telemetry missing: ${token}`);
 }
 
-const g3Fixture = read("fixtures/recommendation-governance/g3-production-candidate-admission-v1.json");
-for (const token of [
-  "evidence_insufficient",
-  "evidence_conflict",
-  "PRODUCT_CATEGORY_UNSUPPORTED",
-]) {
-  assert(g3Fixture.includes(token), `G3 controlled fixture coverage missing: ${token}`);
-}
+const g3Fixture = JSON.parse(read("fixtures/recommendation-governance/g3-production-candidate-admission-v1.json"));
+const g3CaseById = new Map(g3Fixture.cases.map((entry) => [entry.id, entry]));
+assert(g3CaseById.get("G5")?.scenario === "evidence_insufficient preserved through PDA", "G3 insufficient fixture drift");
+assert(g3CaseById.get("G5")?.expected === "REJECTED", "G3 insufficient fixture no longer rejects");
+assert(g3CaseById.get("G6")?.scenario === "evidence_conflict preserved through PDA", "G3 conflict fixture drift");
+assert(g3CaseById.get("G6")?.expected === "REJECTED", "G3 conflict fixture no longer rejects");
+assert(g3CaseById.get("G7")?.scenario === "unsupported category", "G3 unsupported-category fixture drift");
+assert(g3CaseById.get("G7")?.expected === "REJECTED", "G3 unsupported category no longer rejects");
+assert(g3CaseById.get("G12")?.expected === "NO_PROJECTOR_INVOCATION", "G3 pre-normalization rejection fixture drift");
 
 const reviewedContract = read("crawler/lib/reviews/reviewed-intake-contract.ts");
 for (const field of LEGACY_FIELDS) {
