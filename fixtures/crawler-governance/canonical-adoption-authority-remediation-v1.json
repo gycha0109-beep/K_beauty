@@ -1,0 +1,37 @@
+{
+  "version": "crawler-canonical-adoption-authority-remediation-fixtures-v1",
+  "structural": [
+    {"id":"S1","identityResolutionState":"resolved","recommendationSemantics":{},"normalizedCollisionCount":0,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"},
+    {"id":"S2","identityResolutionState":"resolved","recommendationSemantics":{"skin_types":["oily"]},"normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"recommendation_semantic_assertion_forbidden"},
+    {"id":"S3","identityResolutionState":"resolved","recommendationSemantics":{"irritation_risk":"low"},"normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"recommendation_semantic_assertion_forbidden"},
+    {"id":"S4","identityResolutionState":"resolved","recommendationSemantics":{},"normalizedCollisionCount":0,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"},
+    {"id":"S5","identityResolutionState":"resolved","recommendationSemantics":{"skin_types":null,"concerns":null,"texture":null,"finish":null,"irritation_risk":null,"sensitivity_safe":null},"normalizedCollisionCount":0,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"},
+    {"id":"S6","identityResolutionState":"resolved","recommendationSemantics":{},"normalizedCollisionCount":0,"legacyMutationExpected":false,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"}
+  ],
+  "identity": [
+    {"id":"I1","identityResolutionState":"resolved","normalizedCollisionCount":0,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"},
+    {"id":"I2","identityResolutionState":"identity_ambiguous","normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"identity_ambiguous"},
+    {"id":"I3","identityResolutionState":"variant_scope_conflict","normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"variant_scope_conflict"},
+    {"id":"I4","identityResolutionState":"formulation_scope_conflict","normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"formulation_scope_conflict"},
+    {"id":"I5","identityResolutionState":"reformulation_candidate","normalizedCollisionCount":0,"expectedAllowed":false,"expectedReason":"reformulation_candidate"},
+    {"id":"I6","identityResolutionState":"resolved","normalizedCollisionCount":1,"expectedAllowed":false,"expectedReason":"identity_ambiguous"},
+    {"id":"I7","identityResolutionState":"resolved","normalizedCollisionCount":1,"explicitProductIdentityConflict":true,"expectedAllowed":false,"expectedReason":"identity_ambiguous"},
+    {"id":"I8","identityResolutionState":"resolved","normalizedCollisionCount":0,"repeat":2,"expectedAllowed":true,"expectedReason":"structural_adoption_allowed"}
+  ],
+  "normalizationSignals": [
+    {
+      "brand":"Example Brand",
+      "name":"Barrier Serum 50 ml Renewal",
+      "expectedNormalizedName":"barrier serum",
+      "expectedVolumeMarker":true,
+      "expectedRenewalMarker":true
+    },
+    {
+      "brand":"Example Brand",
+      "name":"Barrier Serum 100 ml",
+      "expectedNormalizedName":"barrier serum",
+      "expectedVolumeMarker":true,
+      "expectedRenewalMarker":false
+    }
+  ]
+}

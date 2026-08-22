@@ -1,0 +1,20 @@
+[
+  {
+    "id": "hwahae-skincare-toner-category-all",
+    "source": "hwahae",
+    "source_category_key": "toner",
+    "service_category": "toner_essence",
+    "source_product_form": null,
+    "ranking_scope": "category_all",
+    "ranking_filter": "all",
+    "source_concern_key": null,
+    "canonical_concerns": [],
+    "evidence_type": "popularity",
+    "limit": 10,
+    "requested_limit": 10,
+    "enabled": true,
+    "disabled_reason": null,
+    "themeId": 5106,
+    "url": "https://www.hwahae.com/en/rankings?english_name=category&theme_id=5106"
+  }
+]
