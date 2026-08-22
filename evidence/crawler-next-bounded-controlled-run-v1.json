@@ -16,16 +16,16 @@
     "sourceConcernKey": "trouble",
     "canonicalConcerns": ["acne"],
     "themeId": 4181,
-    "rankCeiling": 20
+    "rankCeiling": 10
   },
-  "selectionReason": "Existing enabled and previously validated concern-ranking job. Unlike the toner popularity job already run on 2026-08-22, this job has prior KST observation dates 2026-06-22 and 2026-06-23, so one bounded run on 2026-08-22 provides legitimate third-date progression without same-day persistence inflation.",
+  "selectionReason": "Existing enabled and previously validated concern-ranking job. Unlike the toner popularity job already run on 2026-08-22, this job has prior KST observation dates 2026-06-22 and 2026-06-23. A Top10-only run on 2026-08-22 stays within the 10-candidate mutation ceiling while providing legitimate third-date progression without same-day persistence inflation.",
   "previousObservationDatesKst": ["2026-06-22", "2026-06-23"],
   "distinctDateOpportunity": true,
   "reviewRuleVersion": "ranking-review-v2",
   "ceilings": {
     "sourceJobs": 1,
     "realCrawlExecutions": 1,
-    "observedRows": 20,
+    "observedRows": 10,
     "newOrUpdatedCandidates": 10,
     "reviewCandidatesExamined": 5,
     "identityResolutions": 5,
