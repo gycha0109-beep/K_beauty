@@ -1,0 +1,20 @@
+{
+  "version": "g3-production-candidate-admission-fixtures-v1",
+  "stage": "V2.1-ADMISSION-G3",
+  "cases": [
+    { "id": "G1", "scenario": "governed supported category with valid PF/PDA", "expected": "INITIAL_ADMISSION_GRANT" },
+    { "id": "G2", "scenario": "canonical product authority missing", "expected": "REJECTED" },
+    { "id": "G3", "scenario": "required Product Fact missing", "expected": "REJECTED" },
+    { "id": "G4", "scenario": "contains_active positive with valid lineage", "expected": "INITIAL_ADMISSION_GRANT" },
+    { "id": "G5", "scenario": "evidence_insufficient preserved through PDA", "expected": "REJECTED" },
+    { "id": "G6", "scenario": "evidence_conflict preserved through PDA", "expected": "REJECTED" },
+    { "id": "G7", "scenario": "unsupported category", "expected": "REJECTED" },
+    { "id": "G8", "scenario": "malformed protected-reader payload", "expected": "FAIL_CLOSED_REQUEST" },
+    { "id": "G9", "scenario": "protected-reader timeout", "expected": "FAIL_CLOSED_REQUEST" },
+    { "id": "G10", "scenario": "unknown read contract version", "expected": "FAIL_CLOSED_REQUEST" },
+    { "id": "G11", "scenario": "valid authority but G2 non-grant", "expected": "REJECTED" },
+    { "id": "G12", "scenario": "rejected non-legacy cannot reach normalization projector", "expected": "NO_PROJECTOR_INVOCATION" }
+  ],
+  "enumeration": ["E1", "E2", "E3", "E4", "E5", "E6"],
+  "legacy": ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]
+}
