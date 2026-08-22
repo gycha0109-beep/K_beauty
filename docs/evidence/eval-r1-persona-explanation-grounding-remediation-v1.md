@@ -129,3 +129,5 @@ Required validation:
 ## Authority ceiling
 
 EVAL-R1 output remains `SYNTHETIC_SIMULATION_EVIDENCE` for defect reproduction and regression validation. It is not organic Production evidence, real-user efficacy evidence, Product Fact authority, or ENFORCE authorization evidence.
+
+<!-- one-shot bounded correction trigger; replaced by final evidence update -->
