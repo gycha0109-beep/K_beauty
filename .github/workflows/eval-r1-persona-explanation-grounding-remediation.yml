@@ -157,11 +157,11 @@ jobs:
           baseline_artifact="$root/artifacts/eval-r1/historical-recommendation-baseline-v1.json"
           candidate_artifact="$root/artifacts/eval-r1/historical-recommendation-candidate-v1.json"
           (
-            cd _reference/recommendation
-            RECOMMENDATION_ENGINE_ROOT="$root/_reference/recommendation" \
+            cd _reference/eval-r1-baseline
+            RECOMMENDATION_ENGINE_ROOT="$root/_reference/eval-r1-baseline" \
             RECOMMENDATION_REFERENCE_ROOT="$root/_reference/recommendation" \
             RECOMMENDATION_REFERENCE_SHA="$EVAL_R1_RECOMMENDATION_REFERENCE_SHA" \
-            RECOMMENDATION_ENGINE_SHA="$EVAL_R1_RECOMMENDATION_REFERENCE_SHA" \
+            RECOMMENDATION_ENGINE_SHA="$EVAL_R1_BASE_MAIN_SHA" \
             RECOMMENDATION_SEMANTIC_ARTIFACT_PATH="$baseline_artifact" \
             node "$root/scripts/verify-skin-decision-recommendation-invariance.mjs"
           )
