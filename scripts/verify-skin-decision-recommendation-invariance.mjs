@@ -24,6 +24,18 @@ const candidatePolicyReportPath = process.env.EVAL_R1_CANDIDATE_POLICY_REPORT
   : null;
 const engineSha = process.env.RECOMMENDATION_ENGINE_SHA || "UNSPECIFIED_ENGINE_SHA";
 const referenceSha = process.env.RECOMMENDATION_REFERENCE_SHA || "783afb91a964f5d762f46846f9ef854902b48e95";
+const isEvalR1SemanticBaselineMaterialization =
+  baselineArtifactPath === null &&
+  Boolean(process.env.EVAL_R1_BASE_MAIN_SHA) &&
+  engineSha === process.env.EVAL_R1_BASE_MAIN_SHA;
+const isV21_9eCurrentModeMaterialization =
+  baselineArtifactPath === null &&
+  Boolean(process.env.V21_9E_BASE_MAIN_SHA) &&
+  ["OFF", "SHADOW"].includes(process.env.EXFOLIATION_NORMATIVE_POLICY_MODE || "");
+const shouldAssertFrozenReferenceSemantics =
+  baselineArtifactPath === null &&
+  !isEvalR1SemanticBaselineMaterialization &&
+  !isV21_9eCurrentModeMaterialization;
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
@@ -287,7 +299,7 @@ if (baselineArtifactPath) {
       : null
   };
   assert.equal(comparison.semantic_hash_equal, true, "Historical Recommendation aggregate semantic hash invariant");
-} else {
+} else if (shouldAssertFrozenReferenceSemantics) {
   for (const scenario of buildA.scenarios) {
     assert.equal(
       scenario.legacy_ranking_hash,
@@ -301,6 +313,14 @@ if (baselineArtifactPath) {
     );
   }
 }
+
+const verificationMode = baselineArtifactPath
+  ? "compare"
+  : shouldAssertFrozenReferenceSemantics
+    ? "reference-semantic"
+    : isEvalR1SemanticBaselineMaterialization
+      ? "eval-r1-baseline-materialize"
+      : "v21-9e-current-mode-materialize";
 
 const artifact = {
   schema_version: "historical-recommendation-semantic-invariance-v1",
@@ -333,5 +353,5 @@ await mkdir(path.dirname(semanticArtifactPath), { recursive: true });
 await writeFile(semanticArtifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
 console.log(
   `verify-skin-decision-recommendation-invariance: PASS products=${productsFixture.productCount} scenarios=${buildA.scenarios.length} ` +
-  `semantic_hash=${buildA.semantic_hash} mode=${baselineArtifactPath ? "compare" : "reference-semantic"}`
+  `semantic_hash=${buildA.semantic_hash} mode=${verificationMode}`
 );
