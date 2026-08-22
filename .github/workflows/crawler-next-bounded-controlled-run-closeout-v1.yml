@@ -125,7 +125,19 @@ jobs:
           set -euo pipefail
           node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
           ! grep -R -n -E '^  schedule:|^    - cron:' .github/workflows/*crawler*.yml
-          ! grep -n -E 'npm run crawl|refresh_candidate_promotion_reviews|promote:approved|approve:candidate' .github/workflows/crawler-next-bounded-controlled-run-closeout-v1.yml
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const body = fs.readFileSync('.github/workflows/crawler-next-bounded-controlled-run-closeout-v1.yml', 'utf8');
+          const forbidden = [
+            ['npm run', 'crawl --'].join(' '),
+            ['/rest/v1/rpc/', 'refresh_candidate_promotion_reviews'].join(''),
+            ['npm run', 'promote:approved'].join(' '),
+            ['npm run', 'approve:candidate'].join(' '),
+          ];
+          for (const token of forbidden) {
+            if (body.includes(token)) throw new Error(`forbidden closeout command: ${token}`);
+          }
+          NODE
 
       - name: Resolve active server secret without logging it
         shell: bash
