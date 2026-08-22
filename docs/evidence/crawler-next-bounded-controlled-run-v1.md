@@ -44,7 +44,7 @@ ranking_scope = concern
 ranking_filter = trouble
 canonical concern = acne
 theme_id = 4181
-controlled rank ceiling = 20
+controlled rank ceiling = 10
 ```
 
 The current repository matrix marks this job enabled and uses the verified Hwahae gateway details API path. Existing Production snapshots for this job have KST dates:
@@ -54,7 +54,7 @@ The current repository matrix marks this job enabled and uses the verified Hwaha
 2026-06-23
 ```
 
-Therefore one and only one run on `2026-08-22` creates legitimate third-date progression rather than same-day inflation.
+Therefore one and only one Top10 run on `2026-08-22` stays within the ten-candidate mutation ceiling while creating legitimate third-date progression rather than same-day inflation.
 
 ## Frozen review authority
 
@@ -84,7 +84,7 @@ Popularity-only observations do not independently queue candidates.
 stage_version = crawler-next-bounded-controlled-run-v1
 source jobs = 1
 real crawl executions = 1
-observed rows <= 20
+observed rows <= 10
 new/updated candidates <= 10
 review candidates examined <= 5
 identity resolutions <= 5
@@ -133,7 +133,7 @@ SHA256 = b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05
 
 ## Pre-run review progression opportunity
 
-The previous Top-20 observations for the selected concern job were already review-eligible under `ranking-review-v2` and have two distinct KST dates. This run is still useful because it tests real third-date evidence progression and may surface rank/order or candidate-set changes. Any newly surfaced candidate must satisfy live policy after the one authorized refresh.
+The previous Top-10 observations for the selected concern job were already review-eligible under `ranking-review-v2` and have two distinct KST dates. This run is still useful because it tests real third-date evidence progression and may surface rank/order or candidate-set changes. Any newly surfaced candidate must satisfy live policy after the one authorized refresh.
 
 No identity state may be forced merely to create a promotion outcome.
 
