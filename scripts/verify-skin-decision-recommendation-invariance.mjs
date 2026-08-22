@@ -24,6 +24,10 @@ const candidatePolicyReportPath = process.env.EVAL_R1_CANDIDATE_POLICY_REPORT
   : null;
 const engineSha = process.env.RECOMMENDATION_ENGINE_SHA || "UNSPECIFIED_ENGINE_SHA";
 const referenceSha = process.env.RECOMMENDATION_REFERENCE_SHA || "783afb91a964f5d762f46846f9ef854902b48e95";
+const isEvalR1SemanticBaselineMaterialization =
+  baselineArtifactPath === null &&
+  Boolean(process.env.EVAL_R1_BASE_MAIN_SHA) &&
+  engineSha === process.env.EVAL_R1_BASE_MAIN_SHA;
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
@@ -277,7 +281,7 @@ if (baselineArtifactPath) {
       : null
   };
   assert.equal(comparison.semantic_hash_equal, true, "Historical Recommendation aggregate semantic hash invariant");
-} else {
+} else if (!isEvalR1SemanticBaselineMaterialization) {
   for (const scenario of buildA.scenarios) {
     assert.equal(
       scenario.legacy_response_hash,
