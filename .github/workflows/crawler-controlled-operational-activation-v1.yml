@@ -1,0 +1,168 @@
+name: Crawler Controlled Operational Activation v1
+
+on:
+  push:
+    branches:
+      - crawler/controlled-operational-activation-v1
+    paths:
+      - ".github/workflows/crawler-controlled-operational-activation-v1.yml"
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: crawler-controlled-operational-activation-v1
+  cancel-in-progress: true
+
+env:
+  EXPECTED_BASE_SHA: 4b6dfaf6d90826728f8029bcaa3be3fcde77c3f5
+  TARGET_PROJECT_REF: bygrczggxfuisupcevaz
+  NEXT_PUBLIC_SUPABASE_URL: https://bygrczggxfuisupcevaz.supabase.co
+  CONTROLLED_JOB_ID: hwahae-skincare-toner-category-all
+  NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
+
+jobs:
+  controlled-crawl:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact controlled-run branch head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify frozen manifest and bounded authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git merge-base --is-ancestor "${EXPECTED_BASE_SHA}" HEAD
+          test -f docs/evidence/crawler-controlled-operational-activation-v1.md
+          test -f evidence/crawler-controlled-operational-activation-v1.json
+          test -f crawler/config/controlled-operational-activation-v1.json
+          test -f crawler/image-source-policy-loader.mjs
+          grep -q '"status": "PRE_RUN_FROZEN"' evidence/crawler-controlled-operational-activation-v1.json
+          grep -q '"rankCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
+          grep -q '"candidateWriteCeiling": 10' evidence/crawler-controlled-operational-activation-v1.json
+          grep -q '"canonicalPromotionCeiling": 1' evidence/crawler-controlled-operational-activation-v1.json
+          node - <<'NODE'
+          const jobs = require('./crawler/config/controlled-operational-activation-v1.json');
+          if (!Array.isArray(jobs) || jobs.length !== 1) process.exit(1);
+          const job = jobs[0];
+          if (job.id !== 'hwahae-skincare-toner-category-all') process.exit(1);
+          if (job.enabled !== true || job.limit !== 10 || job.requested_limit !== 10) process.exit(1);
+          if (job.themeId !== 5106 || job.service_category !== 'toner_essence') process.exit(1);
+          NODE
+
+      - name: Publish controlled-run pending status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=pending \
+            -f context="Crawler controlled operational activation source run" \
+            -f description="Bounded preflight before one source run" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+
+      - name: Resolve active Supabase service credential without logging it
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN}"
+          keys_json="$(curl --fail-with-body --silent --show-error \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Accept: application/json" \
+            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys?reveal=true")"
+          service_key="$(printf '%s' "$keys_json" | node -e '
+            let s="";
+            process.stdin.on("data",d=>s+=d);
+            process.stdin.on("end",()=>{
+              const rows=JSON.parse(s).filter(r=>r.disabled!==true);
+              const values=rows.flatMap(r=>[r.api_key,r.key,r.value]).filter(v=>typeof v==="string");
+              const key=values.find(v=>v.startsWith("sb_secret_")) || values.find(v=>v.startsWith("eyJ"));
+              if(!key) process.exit(1);
+              process.stdout.write(key);
+            });')"
+          test -n "$service_key"
+          echo "::add-mask::$service_key"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$service_key" >> "$GITHUB_ENV"
+          unset service_key keys_json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify narrow crawler runtime compatibility
+        working-directory: crawler
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npm run verify:security-policy-runtime-import
+
+      - name: Verify Production build before external source request
+        run: npm run build
+
+      - name: Install Chromium for the one controlled crawl
+        working-directory: crawler
+        run: npx playwright install --with-deps chromium
+
+      - name: Execute exactly one bounded real Hwahae crawl
+        working-directory: crawler
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run crawl -- \
+            --config=config/controlled-operational-activation-v1.json \
+            --job-ids="${CONTROLLED_JOB_ID}" \
+            --delay-ms=1500 \
+            --retries=2
+
+      - name: Assert scheduler and auto-adoption remain OFF
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
+          ! grep -Eq '^  schedule:' .github/workflows/crawler-controlled-operational-activation-v1.yml
+
+      - name: Publish controlled-run terminal status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          state=success
+          description="One-shot bounded source run completed"
+          if [ "$JOB_STATUS" != success ]; then
+            state=failure
+            description="One-shot bounded source run failed"
+          fi
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$state" \
+            -f context="Crawler controlled operational activation source run" \
+            -f description="$description" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
+          test "$state" = success

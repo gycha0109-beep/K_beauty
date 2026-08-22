@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "crawl": "tsx hwahae.ts",
-    "crawl:hwahae": "tsx hwahae.ts",
+    "crawl": "node --loader ./image-source-policy-loader.mjs --import tsx hwahae.ts",
+    "crawl:hwahae": "node --loader ./image-source-policy-loader.mjs --import tsx hwahae.ts",
     "approve:candidate": "tsx approve-candidate.ts",
     "enrich:products": "tsx enrich-products.ts",
     "enrich:queue": "tsx enrich-queue.ts",
@@ -19,6 +19,7 @@
     "test:ranking-review-rules": "tsx test-ranking-review-rules.ts",
     "test:ranking-ingest": "tsx test-ranking-ingest.ts",
     "typecheck": "tsc --noEmit",
+    "verify:security-policy-runtime-import": "node --loader ./image-source-policy-loader.mjs --import tsx test-security-policy-runtime-import.ts",
     "reviews:export": "tsx export-product-reviews.ts",
     "reviews:export-v2": "tsx export-product-reviews-v2.ts",
     "reviews:import-reviewed": "tsx import-reviewed-product-reviews.ts",
