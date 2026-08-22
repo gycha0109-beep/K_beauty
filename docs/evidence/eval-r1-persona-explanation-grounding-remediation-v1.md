@@ -7,12 +7,13 @@
 ## Starting authority
 
 - Repository: `gycha0109-beep/K_beauty`
-- Starting main: `5409a5913107064c214733f967ea0f61bc1edfa8`
-- Starting Production SHA: `5409a5913107064c214733f967ea0f61bc1edfa8`
+- Original R1 base main: `5409a5913107064c214733f967ea0f61bc1edfa8`
+- Final continuation current main: `6fdff47f3c41a4e90dace8b8f7281b51a92d7c3f`
+- Final continuation Production SHA: `6fdff47f3c41a4e90dace8b8f7281b51a92d7c3f`
 - P10 merged ancestor: `8d43a30497a310a1d5a64c5c593fc786e3281d12`
 - Drift classification: `UNRELATED_DRIFT`
 
-The intervening G2 change freezes initial non-legacy candidate admission authority and does not mutate Persona fixtures, Recommendation scoring/ranking, Product Fact/PDA semantics, CandidatePolicy/ENFORCE, or explanation generation.
+The final-continuation drift is the merged G3A protected Product Fact authority read surface. It does not mutate `lib/skin-match-decision-engine.js`, Persona P6/P8/P10, CandidatePolicy, Recommendation scoring/ranking/eligibility, or explanation generation, so EVAL-R1 may safely rebase its six-file scope onto this authority before final verification.
 
 ## Frozen Persona authority
 
