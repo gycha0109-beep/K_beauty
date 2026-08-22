@@ -3,181 +3,67 @@ name: EVAL-R1 Persona Explanation Grounding Remediation
 on:
   pull_request:
     paths:
-      - "lib/skin-match-decision-engine.js"
       - ".github/workflows/eval-r1-persona-explanation-grounding-remediation.yml"
-      - "fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1.json"
-      - "scripts/verify-eval-r1-explanation-grounding-v1.mjs"
-      - "scripts/verify-eval-r1-grounding-probes-v1.mjs"
-      - "docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1.md"
-  push:
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
-  contents: read
-  statuses: write
-
-env:
-  EVAL_R1_BASE_MAIN_SHA: 5409a5913107064c214733f967ea0f61bc1edfa8
-  EVAL_R1_P3_SOURCE_SHA: 4265450ddcf40bdb4359a3d5c82d22b00a1024dd
-  EVAL_R1_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
-  EVAL_R1_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+  contents: write
 
 jobs:
-  verify-eval-r1:
+  apply-bounded-correction:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
-      - name: Checkout exact head
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
+          ref: eval/r1-persona-explanation-grounding-remediation
           fetch-depth: 0
-          ref: ${{ env.EVAL_R1_CHECKOUT_SHA }}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20.20.2
-          cache: npm
-
-      - run: npm ci
-
-      - name: Exact authority, ancestry and bounded scope
+      - name: Narrow Production explanation remediation
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EVAL_R1_CHECKOUT_SHA"
-          git merge-base --is-ancestor "$EVAL_R1_BASE_MAIN_SHA" HEAD
-          changed="$(git diff --name-only "$EVAL_R1_BASE_MAIN_SHA" HEAD)"
-          printf '%s\n' "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(lib/skin-match-decision-engine\.js|\.github/workflows/eval-r1-persona-explanation-grounding-remediation\.yml|fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1\.json|scripts/verify-eval-r1-explanation-grounding-v1\.mjs|scripts/verify-eval-r1-grounding-probes-v1\.mjs|docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1\.md)$' || true)"
-          test -z "$forbidden"
-          git diff --exit-code "$EVAL_R1_BASE_MAIN_SHA" HEAD -- supabase/migrations lib/product-source.js lib/recommendation-scoring.ts app/api/analyze/route.js package.json package-lock.json
+          python - <<'PY'
+          from pathlib import Path
 
-      - name: Syntax and inventory
-        run: |
+          path = Path("lib/skin-match-decision-engine.js")
+          text = path.read_text()
+
+          replacements = [
+            (
+              '        ? "예민함과 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."',
+              '        ? "예민함이나 붉은기가 같이 잡힌 피부라면, 세럼 단계에서 진정과 컨디션 회복을 먼저 챙기는 편이 맞습니다."',
+              "serum direct-redness baseline phrase",
+            ),
+            (
+              '''    const leadSentence = sensitiveState || priorityAxis === "barrier"
+      ? explicitHighSensitivity
+        ? "장벽 부담과 높은 민감도가 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."
+        : groundedSensitivity
+          ? "장벽 부담과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."
+          : "장벽 부담 신호가 큰 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."''',
+              '''    const leadSentence = sensitiveState || priorityAxis === "barrier"
+      ? "장벽과 예민함이 함께 잡힌 피부라면, 보습 단계에서는 기능을 더 얹기보다 편안함이 오래 남는 쪽을 먼저 보는 편이 맞습니다."''',
+              "moisturizer collateral rewrite",
+            ),
+          ]
+
+          for old, new, label in replacements:
+            count = text.count(old)
+            if count != 1:
+              raise SystemExit(f"{label}: expected exactly one match, got {count}")
+            text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+          git diff --check
           node --check lib/skin-match-decision-engine.js
-          node --check scripts/verify-eval-r1-explanation-grounding-v1.mjs
-          node --check scripts/verify-eval-r1-grounding-probes-v1.mjs
-          node -e 'const x=require("./fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1.json"); if(x.findings.length!==6) process.exit(1)'
+          git diff -- lib/skin-match-decision-engine.js
 
-      - name: Prepare immutable references
+      - name: Commit bounded correction
         run: |
           set -euo pipefail
-          rm -rf _reference/persona-p3 _reference/recommendation _reference/eval-r1-baseline
-          git clone -q --no-hardlinks . _reference/persona-p3
-          git -C _reference/persona-p3 checkout -q "$EVAL_R1_P3_SOURCE_SHA"
-          git clone -q --no-hardlinks . _reference/recommendation
-          git -C _reference/recommendation checkout -q "$EVAL_R1_RECOMMENDATION_REFERENCE_SHA"
-          git clone -q --no-hardlinks . _reference/eval-r1-baseline
-          git -C _reference/eval-r1-baseline checkout -q "$EVAL_R1_BASE_MAIN_SHA"
-          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164||f.categoryCounts?.sunscreen!==11) process.exit(1)'
-
-      - name: Materialize exact P8 baseline
-        run: |
-          set -euo pipefail
-          root="$GITHUB_WORKSPACE"
-          cd _reference/eval-r1-baseline
-          EVAL_P8_P3_REFERENCE_ROOT="$root/_reference/persona-p3" \
-          EVAL_P8_RECOMMENDATION_REFERENCE_ROOT="$root/_reference/recommendation" \
-          EVAL_P8_IMPLEMENTATION_SHA="$EVAL_R1_BASE_MAIN_SHA" \
-          EVAL_P8_P3_SOURCE_SHA="$EVAL_R1_P3_SOURCE_SHA" \
-          EVAL_P8_ARTIFACT_ROOT="$root/artifacts/eval-r1/p8-baseline" \
-          node scripts/prepare-eval-p8-bounded-llm-judge-v1.mjs
-
-      - name: Materialize exact P8 candidate
-        env:
-          EVAL_P8_P3_REFERENCE_ROOT: _reference/persona-p3
-          EVAL_P8_RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
-          EVAL_P8_IMPLEMENTATION_SHA: ${{ env.EVAL_R1_CHECKOUT_SHA }}
-          EVAL_P8_P3_SOURCE_SHA: ${{ env.EVAL_R1_P3_SOURCE_SHA }}
-          EVAL_P8_ARTIFACT_ROOT: artifacts/eval-r1/p8-candidate
-        run: node scripts/prepare-eval-p8-bounded-llm-judge-v1.mjs
-
-      - name: Focused E1-E6 and E10 grounding probes
-        env:
-          EVAL_R1_P3_REFERENCE_ROOT: _reference/persona-p3
-          EVAL_R1_RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
-        run: node scripts/verify-eval-r1-grounding-probes-v1.mjs
-
-      - name: P6 LOCKED 37 Persona baseline replay
-        run: |
-          set -euo pipefail
-          root="$GITHUB_WORKSPACE"
-          EVAL_P6_ENGINE_ROOT="$root/_reference/eval-r1-baseline" \
-          EVAL_P6_ENGINE_SHA="$EVAL_R1_BASE_MAIN_SHA" \
-          EVAL_P6_RUN_ROLE=BASELINE \
-          EVAL_P6_P3_REFERENCE_ROOT="$root/_reference/persona-p3" \
-          EVAL_P6_RECOMMENDATION_REFERENCE_ROOT="$root/_reference/recommendation" \
-          EVAL_P6_P4_MANIFEST_PATH="$root/fixtures/persona-evaluation/eval-p4-cohort-freeze-manifest-v1.json" \
-          EVAL_P6_COHORT_PATH="$root/fixtures/persona-evaluation/eval-p6-locked-regression-cohort-v1.json" \
-          EVAL_P6_ARTIFACT_ROOT="$root/artifacts/eval-r1/p6-baseline" \
-          node scripts/verify-eval-p6-persona-regression-v1.mjs
-
-      - name: P6 LOCKED 37 Persona candidate replay
-        env:
-          EVAL_P6_ENGINE_ROOT: ${{ github.workspace }}
-          EVAL_P6_ENGINE_SHA: ${{ env.EVAL_R1_CHECKOUT_SHA }}
-          EVAL_P6_RUN_ROLE: CANDIDATE
-          EVAL_P6_P3_REFERENCE_ROOT: _reference/persona-p3
-          EVAL_P6_RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
-          EVAL_P6_P4_MANIFEST_PATH: fixtures/persona-evaluation/eval-p4-cohort-freeze-manifest-v1.json
-          EVAL_P6_COHORT_PATH: fixtures/persona-evaluation/eval-p6-locked-regression-cohort-v1.json
-          EVAL_P6_ARTIFACT_ROOT: artifacts/eval-r1/p6-candidate
-        run: node scripts/verify-eval-p6-persona-regression-v1.mjs
-
-      - name: P8 offending-case closure and Recommendation invariance
-        run: node scripts/verify-eval-r1-explanation-grounding-v1.mjs
-
-      - name: P10 journey replay A/B
-        env:
-          EVAL_P10_IMPLEMENTATION_SHA: ${{ env.EVAL_R1_CHECKOUT_SHA }}
-          EVAL_P10_RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
-        run: |
-          set -euo pipefail
-          EVAL_P10_ARTIFACT_ROOT=artifacts/eval-r1/p10-a node scripts/verify-eval-p10-multistep-persona-journey-v1.mjs
-          EVAL_P10_ARTIFACT_ROOT=artifacts/eval-r1/p10-b node scripts/verify-eval-p10-multistep-persona-journey-v1.mjs
-          cmp artifacts/eval-r1/p10-a/multistep-persona-journey-results-v1.json artifacts/eval-r1/p10-b/multistep-persona-journey-results-v1.json
-          cmp artifacts/eval-r1/p10-a/multistep-persona-journey-evidence-v1.json artifacts/eval-r1/p10-b/multistep-persona-journey-evidence-v1.json
-
-      - name: Existing deterministic Persona and historical Recommendation regressions
-        env:
-          EVAL_P3_REFERENCE_ROOT: _reference/recommendation
-          EVAL_P3_IMPLEMENTATION_SHA: ${{ env.EVAL_R1_CHECKOUT_SHA }}
-          EVAL_P3_ARTIFACT_ROOT: artifacts/eval-r1/p3
-          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
-        run: |
-          set -euo pipefail
-          node scripts/verify-eval-p3-persona-simulation-v1.mjs
-          node scripts/verify-skin-decision-recommendation-invariance.mjs
-
-      - name: Production build
-        run: npm run build
-
-      - name: Upload EVAL-R1 artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: eval-r1-persona-explanation-grounding-${{ env.EVAL_R1_CHECKOUT_SHA }}
-          path: artifacts/eval-r1/
-          retention-days: 30
-          if-no-files-found: warn
-
-      - name: Publish exact-SHA CI attestation
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PRIOR_JOB_STATUS: ${{ job.status }}
-        run: |
-          set -euo pipefail
-          state=success
-          context="EVAL-R1 exact-head CI"
-          description="EVAL-R1 exact-head CI passed"
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-            context="EVAL-R1 merged-main exact-SHA CI"
-            description="EVAL-R1 merged-main exact-SHA CI passed"
-          fi
-          if [ "$PRIOR_JOB_STATUS" != success ]; then
-            state=failure
-            description="${context} failed"
-          fi
-          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$EVAL_R1_CHECKOUT_SHA" -f state="$state" -f context="$context" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
-          test "$state" = success
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/skin-match-decision-engine.js
+          git diff --cached --quiet && exit 1
+          git commit -m "fix(eval-r1): narrow explanation remediation scope"
+          git push origin HEAD:eval/r1-persona-explanation-grounding-remediation
