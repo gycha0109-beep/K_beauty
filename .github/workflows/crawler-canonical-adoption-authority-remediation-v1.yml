@@ -1,0 +1,159 @@
+name: Crawler Canonical Adoption Authority Remediation v1
+
+on:
+  push:
+    branches:
+      - crawler/canonical-adoption-authority-remediation
+      - main
+    paths:
+      - ".github/workflows/crawler-canonical-adoption-authority-remediation-v1.yml"
+      - "lib/crawler-canonical-adoption-authority-v1.mjs"
+      - "fixtures/crawler-governance/canonical-adoption-authority-remediation-v1.json"
+      - "scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"
+      - "docs/evidence/crawler-canonical-adoption-authority-remediation-v1.md"
+      - "supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql"
+  pull_request:
+    paths:
+      - ".github/workflows/crawler-canonical-adoption-authority-remediation-v1.yml"
+      - "lib/crawler-canonical-adoption-authority-v1.mjs"
+      - "fixtures/crawler-governance/canonical-adoption-authority-remediation-v1.json"
+      - "scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"
+      - "docs/evidence/crawler-canonical-adoption-authority-remediation-v1.md"
+      - "supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1.sql"
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: crawler-canonical-authority-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REMEDIATION_BASE_SHA: 9819a83cdb40c757dd7a68751d257ccc19b4292d
+  RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  REMEDIATION_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  verify-remediation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.REMEDIATION_CHECKOUT_SHA }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Exact-head and bounded scope
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$REMEDIATION_CHECKOUT_SHA"
+          git merge-base --is-ancestor "$REMEDIATION_BASE_SHA" HEAD
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -ge 3 ]; then
+            scope_base="$(git rev-parse HEAD^1)"
+          elif [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            scope_base="${{ github.event.pull_request.base.sha }}"
+          else
+            scope_base="$REMEDIATION_BASE_SHA"
+          fi
+          changed="$(git diff --name-only "$scope_base" HEAD)"
+          printf '%s\n' "$changed"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(\.github/workflows/crawler-canonical-adoption-authority-remediation-v1\.yml|lib/crawler-canonical-adoption-authority-v1\.mjs|fixtures/crawler-governance/canonical-adoption-authority-remediation-v1\.json|scripts/verify-crawler-canonical-adoption-authority-remediation-v1\.mjs|docs/evidence/crawler-canonical-adoption-authority-remediation-v1\.md|supabase/migrations/20260822130309_crawler_canonical_adoption_authority_remediation_v1\.sql)$' || true)"
+          test -z "$forbidden"
+
+      - name: Frozen Production semantics unchanged
+        run: |
+          set -euo pipefail
+          git diff --exit-code "$REMEDIATION_BASE_SHA" HEAD -- \
+            app \
+            crawler \
+            lib/product-source.js \
+            lib/recommendation-candidate-admission-core.mjs \
+            lib/recommendation-candidate-admission.js \
+            lib/recommendation-legacy-corpus-v1.mjs \
+            lib/recommendation-product-enumerator.mjs \
+            lib/recommendation-scoring.js \
+            lib/skin-match-decision-engine.js \
+            lib/candidate-exposure-policy-shadow.js \
+            lib/recommendation-admission-authority-reader.js \
+            lib/recommendation-admission-authority-contract.mjs \
+            scripts/product-evidence
+
+      - name: Syntax and remediation contract
+        run: |
+          set -euo pipefail
+          node --check lib/crawler-canonical-adoption-authority-v1.mjs
+          node --check scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs
+          node scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs
+
+      - name: Revalidate frozen G3 G3A G2 PDA
+        run: |
+          set -euo pipefail
+          node scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs
+          node scripts/verify-v21-admission-g3a-pf-authority-reader-v1.mjs
+          node scripts/product-evidence/verify-initial-admission-grant-policy-v1.mjs
+          node scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs
+
+      - name: CandidatePolicy invariance
+        run: npm run verify:candidate-exposure-policy-shadow
+
+      - name: Prepare immutable Recommendation reference
+        run: |
+          set -euo pipefail
+          rm -rf _reference/recommendation
+          git clone -q --no-hardlinks . _reference/recommendation
+          git -C _reference/recommendation checkout -q "$RECOMMENDATION_REFERENCE_SHA"
+          node -e 'const f=require("./_reference/recommendation/fixtures/recommendation-metadata/products-v1.json"); if(f.productCount!==164) process.exit(1)'
+
+      - name: Historical canonical 164x12 Recommendation invariance
+        env:
+          RECOMMENDATION_REFERENCE_ROOT: _reference/recommendation
+        run: node scripts/verify-skin-decision-recommendation-invariance.mjs
+
+      - name: Crawler activation remains off
+        run: |
+          set -euo pipefail
+          node -e 'const v=require("./vercel.json"); if(Object.prototype.hasOwnProperty.call(v,"crons")) process.exit(1)'
+          ! git grep -n -E 'schedule:|cron:' -- '.github/workflows/*crawler*' ':!.github/workflows/crawler-canonical-adoption-authority-remediation-v1.yml'
+
+      - name: Secret and authority shortcut guard
+        run: |
+          set -euo pipefail
+          changed_diff="$(git diff --unified=0 "$REMEDIATION_BASE_SHA" HEAD -- . ':!docs/**' || true)"
+          ! printf '%s\n' "$changed_diff" | grep -E '^\+.*SUPABASE_SERVICE_ROLE_KEY[[:space:]]*[:=][[:space:]]*["'"''][^"'"'']+'
+          ! printf '%s\n' "$changed_diff" | grep -E '^\+.*postgres(ql)?://[^[:space:]]+:[^[:space:]@]+@'
+          ! git grep -n -E 'read_recommendation_admission_authority_v1|INITIAL_ADMISSION_GRANT|product_fact_current|product_fact_confirmations|product_fact_instances' -- 'crawler/**'
+
+      - name: Production build
+        run: npm run build
+
+      - name: Publish exact-SHA CI attestation
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state=success
+          context="Crawler canonical authority exact-head CI"
+          description="Crawler canonical authority exact-head CI passed"
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            context="Crawler canonical authority merged-main exact-SHA CI"
+            description="Crawler canonical authority merged-main exact-SHA CI passed"
+          fi
+          if [ "$PRIOR_JOB_STATUS" != success ]; then
+            state=failure
+            description="${context} failed"
+          fi
+          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$REMEDIATION_CHECKOUT_SHA" -f state="$state" -f context="$context" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = success
