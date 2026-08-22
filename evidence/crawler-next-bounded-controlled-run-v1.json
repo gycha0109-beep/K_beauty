@@ -1,0 +1,216 @@
+{
+  "stageVersion": "crawler-next-bounded-controlled-run-v1",
+  "status": "REPOSITORY_CLOSEOUT_CANDIDATE",
+  "startingMainSha": "a9d3883d130a29facaa58c665ec7fe7bdafd7b70",
+  "startingProductionSha": "a9d3883d130a29facaa58c665ec7fe7bdafd7b70",
+  "startingProductionDeployment": "dpl_CvrZeDxdoLW6eiLsfVw5egAEhvQg",
+  "productionReady": true,
+  "kstDate": "2026-08-22",
+  "source": "hwahae",
+  "jobId": "hwahae-essence-ampoule-serum-trouble",
+  "serviceCategory": "treatment",
+  "sourceScope": {
+    "sourceCategoryKey": "essence_ampoule_serum",
+    "rankingScope": "concern",
+    "rankingFilter": "trouble",
+    "sourceConcernKey": "trouble",
+    "canonicalConcerns": ["acne"],
+    "themeId": 4181,
+    "rankCeiling": 10
+  },
+  "selectionReason": "Existing enabled and previously validated concern-ranking job with prior KST observations on 2026-06-22 and 2026-06-23. The Top10-only run on 2026-08-22 stayed within the ten-candidate mutation ceiling and provided legitimate third-date progression without same-day persistence inflation.",
+  "previousObservationDatesKst": ["2026-06-22", "2026-06-23"],
+  "distinctDateOpportunity": true,
+  "reviewRuleVersion": "ranking-review-v2",
+  "ceilings": {
+    "sourceJobs": 1,
+    "realCrawlExecutions": 1,
+    "observedRows": 10,
+    "newOrUpdatedCandidates": 10,
+    "reviewCandidatesExamined": 5,
+    "identityResolutions": 5,
+    "canonicalPromotions": 1
+  },
+  "ratePolicy": {
+    "delayMs": 1500,
+    "retries": 2,
+    "unboundedRetry": false
+  },
+  "preflightAttempts": {
+    "failedBeforeExternalRequest": 2,
+    "hostedDeltaFromFailedPreflights": 0,
+    "reason": "bounded execution credential harness compatibility; no source request occurred before the successful run"
+  },
+  "preRunHosted": {
+    "rankingSnapshots": 28,
+    "sourceRankings": 790,
+    "productCandidates": 168,
+    "promotionReviews": 50,
+    "structuralAdoptionRequests": 0,
+    "products": 164,
+    "legacy": 164,
+    "nonLegacy": 0,
+    "registryVersions": 1,
+    "definitionSnapshots": 20,
+    "subjects": 16,
+    "factInstances": 41,
+    "evidenceLinks": 41,
+    "reviewAssignments": 41,
+    "reviewEvents": 180,
+    "confirmations": 41,
+    "currentFacts": 41,
+    "reviewQueue": {
+      "queued": 30,
+      "deferred": 20,
+      "ruleVersion": "ranking-review-v2"
+    },
+    "capturedAt": "2026-08-22T17:56:21+09:00"
+  },
+  "realRun": {
+    "successfulRunHead": "879c63b54d193ee9e277de74a664eb03f7752d85",
+    "actionsRunId": 32564016568,
+    "actionsJobId": 97009847037,
+    "realExternalRequest": true,
+    "sourceFailures": 0,
+    "jobsCrawled": 1,
+    "observedRows": 10,
+    "snapshotsWritten": 1,
+    "sourceRankingsWritten": 10,
+    "newCandidates": 8,
+    "reobservedCandidates": 2,
+    "productsWritten": 0,
+    "snapshotId": "a12d6543-b5fe-46d0-96d5-2cb8b5c121d5",
+    "snapshotCollectedAt": "2026-08-22T18:06:51.506+09:00",
+    "snapshotHash": "71a0e9e75046d28ba0fd9e71a9db60a373413ded806bc44fa9f412184e7aaab4",
+    "ingestKey": "5dcabe934765d2dbfbe297a546dfa0e7c6149f22eee5eba967697d5af22d5dda"
+  },
+  "reviewRefresh": {
+    "executions": 1,
+    "ruleVersion": "ranking-review-v2",
+    "candidatesExamined": 38,
+    "reviewsInserted": 8,
+    "reviewsUpdated": 30,
+    "reviewsDeferred": 0,
+    "protectedReviewsSkipped": 0,
+    "productsWritten": 0
+  },
+  "reviewProgression": {
+    "runTouchedCandidates": 10,
+    "distinctDateProgressions": 2,
+    "newlyReviewEligible": 8,
+    "newlyReviewEligibleReason": "top_15_immediate",
+    "existingReviewEligibleUnchanged": 2,
+    "stillDeferred": 0,
+    "sameDayPersistenceInflation": 0,
+    "ruleVersionConsistency": true,
+    "thirdDateCandidates": [
+      {
+        "rank": 7,
+        "candidateId": "65bdd501-c9a1-4dc4-8691-2053bba6eb4d",
+        "kstDates": ["2026-06-22", "2026-06-23", "2026-08-22"]
+      },
+      {
+        "rank": 10,
+        "candidateId": "6421d559-65bd-42d6-9799-d36847127889",
+        "kstDates": ["2026-06-22", "2026-06-23", "2026-08-22"]
+      }
+    ]
+  },
+  "identityReview": {
+    "reviewed": 5,
+    "resolved": 0,
+    "identityAmbiguous": 2,
+    "variantScopeConflict": 3,
+    "formulationScopeConflict": 0,
+    "reformulationCandidate": 0,
+    "blocked": 5,
+    "remainingRunTouchedUnresolved": 5,
+    "selectedForPromotion": 0,
+    "contractVersion": "crawler-identity-resolution-v1",
+    "auditEventsRecorded": 5,
+    "reason": "five newly queued candidates showed same-locator external-identity and/or bundle/size scope uncertainty; fail-closed states were recorded rather than forcing resolved identity"
+  },
+  "promotion": {
+    "preflightEntered": false,
+    "attempted": 0,
+    "succeeded": 0,
+    "newCanonicalUuid": null,
+    "reason": "no_safe_resolved_novel_candidate",
+    "semanticAuthorityWritten": false,
+    "structuralAdoptionRequests": 0
+  },
+  "g3Proof": {
+    "newProductRuntimeProbeApplicable": false,
+    "reason": "no structural canonical promotion occurred",
+    "recommendationAuthoritySeparation": "PRESERVED",
+    "pfAuthorityDelta": 0,
+    "newNonLegacyProducts": 0
+  },
+  "postRunHosted": {
+    "rankingSnapshots": 29,
+    "sourceRankings": 800,
+    "productCandidates": 176,
+    "promotionReviews": 58,
+    "structuralAdoptionRequests": 0,
+    "products": 164,
+    "legacy": 164,
+    "nonLegacy": 0,
+    "registryVersions": 1,
+    "definitionSnapshots": 20,
+    "subjects": 16,
+    "factInstances": 41,
+    "evidenceLinks": 41,
+    "reviewAssignments": 41,
+    "reviewEvents": 180,
+    "confirmations": 41,
+    "currentFacts": 41,
+    "reviewQueue": {
+      "queued": 38,
+      "deferred": 20,
+      "ruleVersion": "ranking-review-v2"
+    }
+  },
+  "deltaLedger": {
+    "rankingSnapshots": 1,
+    "sourceRankings": 10,
+    "productCandidates": 8,
+    "promotionReviews": 8,
+    "identityAuditEvents": 5,
+    "structuralAdoptionRequests": 0,
+    "products": 0,
+    "factInstances": 0,
+    "confirmations": 0,
+    "currentFacts": 0,
+    "unauthorizedDelta": 0
+  },
+  "legacyExpected": {
+    "version": "LEGACY_FROZEN_RECOMMENDATION_CORPUS_V1",
+    "count": 164,
+    "sha256": "b6577d95353c4151152cf82e1705131516d5a2558cb68241a8f9fd48d9047a05",
+    "membershipVerification": "closeout CI and final hosted readback compare the live Hosted product UUID set exactly to the frozen corpus file"
+  },
+  "finalAutomationState": {
+    "manualControlledCrawler": "VALIDATED",
+    "scheduler": "OFF",
+    "cron": "OFF",
+    "autoAdoption": "OFF",
+    "bulkPromotion": "OFF",
+    "unboundedCrawler": "NOT_AUTHORIZED"
+  },
+  "repositoryCloseout": {
+    "realCrawlerMustNotRerun": true,
+    "reviewRefreshMustNotRerun": true,
+    "closeoutUsesReadOnlyHostedVerification": true,
+    "requiresExactLegacySetEquality": true,
+    "requiresMergedMainExactShaCi": true,
+    "requiresProductionExactMergeShaReady": true
+  },
+  "finalOutcome": {
+    "stage": "STRICT_SUCCESS_PENDING_MERGED_MAIN_CLOSEOUT",
+    "primaryOutcome": "BOUNDED_CRAWLER_RUN_VALIDATED__NO_SAFE_CANONICAL_ADOPTION_CANDIDATE",
+    "reviewEligibilityProgression": "VALIDATED",
+    "canonicalAdoption": 0,
+    "recommendationAuthoritySeparation": "PRESERVED",
+    "next": "NO_FURTHER_STAGE_MUTATION_REQUIRED_AFTER_MERGED_MAIN_CI_AND_PRODUCTION_READBACK"
+  }
+}
