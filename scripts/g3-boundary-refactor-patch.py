@@ -1,0 +1,299 @@
+from pathlib import Path
+
+p = Path('lib/product-source.js')
+s = p.read_text()
+old_import = '''import {
+  RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,
+  admitRecommendationProducts,
+  projectAdmittedRecommendationProducts
+} from "@/lib/recommendation-candidate-admission";
+'''
+if old_import not in s:
+    raise SystemExit('product-source admission import anchor missing')
+s = s.replace(old_import, '', 1)
+s = s.replace(
+    'async function fetchSupabaseProducts() {',
+    'async function fetchSupabaseProducts({ admissionEvaluator = null, requireAdmission = false } = {}) {',
+    1,
+)
+old_admission = '''  const data = enumeration.rows;
+  let admission;
+
+  try {
+    admission = await admitRecommendationProducts(data);
+  } catch (error) {
+    writeSafeLog("error", {
+      event: "recommendation_candidate_admission_failed",
+      category: "authority_unavailable",
+      operation: "recommendation_candidate_admission",
+      retryable: true,
+      authority_failure_count: 1,
+      admission_contract_version: RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION
+    });
+    throw new ProductSourceUnavailableError("admission_authority_failed", { cause: error });
+  }
+
+  lastRecommendationAdmissionSummary = admission.summary;
+  writeSafeLog("info", {
+    event: "recommendation_candidate_admission",
+    operation: "recommendation_candidate_admission",
+    enumerated_count: admission.summary.enumeratedCount,
+    legacy_admitted_count: admission.summary.legacyAdmittedCount,
+    nonlegacy_checked_count: admission.summary.nonlegacyCheckedCount,
+    nonlegacy_granted_count: admission.summary.nonlegacyGrantedCount,
+    nonlegacy_rejected_count: admission.summary.nonlegacyRejectedCount,
+    authority_failure_count: admission.summary.authorityFailureCount,
+    admission_contract_version: RECOMMENDATION_CANDIDATE_ADMISSION_CONTRACT_VERSION,
+    enumeration_contract_version: RECOMMENDATION_PRODUCT_ENUMERATION_VERSION
+  });
+
+  const admittedRows = projectAdmittedRecommendationProducts(admission, (product) => product);
+'''
+new_admission = '''  const data = enumeration.rows;
+  let admittedRows = data;
+
+  if (requireAdmission) {
+    if (typeof admissionEvaluator !== "function") {
+      throw new ProductSourceUnavailableError("admission_evaluator_required");
+    }
+
+    let admittedProjection;
+    try {
+      admittedProjection = await admissionEvaluator(data);
+    } catch (error) {
+      writeSafeLog("error", {
+        event: "recommendation_candidate_admission_failed",
+        category: "authority_unavailable",
+        operation: "recommendation_candidate_admission",
+        retryable: true,
+        authority_failure_count: 1
+      });
+      throw new ProductSourceUnavailableError("admission_authority_failed", { cause: error });
+    }
+
+    if (
+      !admittedProjection ||
+      !Array.isArray(admittedProjection.products) ||
+      !admittedProjection.summary ||
+      typeof admittedProjection.contractVersion !== "string"
+    ) {
+      throw new ProductSourceUnavailableError("admission_projection_malformed");
+    }
+
+    admittedRows = admittedProjection.products;
+    lastRecommendationAdmissionSummary = admittedProjection.summary;
+    writeSafeLog("info", {
+      event: "recommendation_candidate_admission",
+      operation: "recommendation_candidate_admission",
+      enumerated_count: admittedProjection.summary.enumeratedCount,
+      legacy_admitted_count: admittedProjection.summary.legacyAdmittedCount,
+      nonlegacy_checked_count: admittedProjection.summary.nonlegacyCheckedCount,
+      nonlegacy_granted_count: admittedProjection.summary.nonlegacyGrantedCount,
+      nonlegacy_rejected_count: admittedProjection.summary.nonlegacyRejectedCount,
+      authority_failure_count: admittedProjection.summary.authorityFailureCount,
+      admission_contract_version: admittedProjection.contractVersion,
+      enumeration_contract_version: RECOMMENDATION_PRODUCT_ENUMERATION_VERSION
+    });
+  }
+'''
+if old_admission not in s:
+    raise SystemExit('product-source admission block missing')
+s = s.replace(old_admission, new_admission, 1)
+old_bottom = '''async function loadRecommendationProducts() {
+  const supabaseProducts = await fetchSupabaseProducts();
+
+  return supabaseProducts
+    .map(applyRecommendationProductOverrides)
+    .map((product) => ({
+      ...product,
+      review_signals: normalizeReviewSignals(product?.review_signals)
+    }));
+}
+
+export async function runRecommendationCandidateAdmissionRuntimeProbe() {
+  const products = await loadRecommendationProducts();
+  return Object.freeze({
+    productCount: products.length,
+    admissionSummary: lastRecommendationAdmissionSummary
+      ? Object.freeze({ ...lastRecommendationAdmissionSummary })
+      : null
+  });
+}
+
+export async function getRecommendationProducts() {
+'''
+new_bottom = '''async function loadRecommendationProducts({ admissionEvaluator = null, requireAdmission = false } = {}) {
+  const supabaseProducts = await fetchSupabaseProducts({ admissionEvaluator, requireAdmission });
+
+  return supabaseProducts
+    .map(applyRecommendationProductOverrides)
+    .map((product) => ({
+      ...product,
+      review_signals: normalizeReviewSignals(product?.review_signals)
+    }));
+}
+
+export async function runRecommendationCandidateAdmissionRuntimeProbe({ admissionEvaluator } = {}) {
+  const products = await loadRecommendationProducts({
+    admissionEvaluator,
+    requireAdmission: true
+  });
+  return Object.freeze({
+    productCount: products.length,
+    admissionSummary: lastRecommendationAdmissionSummary
+      ? Object.freeze({ ...lastRecommendationAdmissionSummary })
+      : null
+  });
+}
+
+export async function getProductionRecommendationProducts({ admissionEvaluator } = {}) {
+  return loadRecommendationProducts({
+    admissionEvaluator,
+    requireAdmission: true
+  });
+}
+
+export async function getRecommendationProducts() {
+'''
+if old_bottom not in s:
+    raise SystemExit('product-source bottom block missing')
+s = s.replace(old_bottom, new_bottom, 1)
+p.write_text(s)
+
+p = Path('app/api/analyze/route.js')
+s = p.read_text()
+old_import = '''  PRODUCT_SOURCE_UNAVAILABLE_CODE,
+  fetchCurrentProductSnapshotsByIds,
+  isProductSourceUnavailableError
+} from "@/lib/product-source";
+'''
+new_import = '''  PRODUCT_SOURCE_UNAVAILABLE_CODE,
+  fetchCurrentProductSnapshotsByIds,
+  getProductionRecommendationProducts,
+  isProductSourceUnavailableError
+} from "@/lib/product-source";
+import { admitAndProjectRecommendationProducts } from "@/lib/recommendation-candidate-admission";
+'''
+if old_import not in s:
+    raise SystemExit('analyze product-source import anchor missing')
+s = s.replace(old_import, new_import, 1)
+anchor = '''    const currentProductSnapshots = await fetchCurrentProductSnapshotsByIds(
+      currentProducts
+        .filter((item) => item.status === "selected")
+        .map((item) => item.productId)
+    );
+
+    let decision = await buildSkinMatchDecisionBundle(formInput, {
+'''
+replacement = '''    const currentProductSnapshots = await fetchCurrentProductSnapshotsByIds(
+      currentProducts
+        .filter((item) => item.status === "selected")
+        .map((item) => item.productId)
+    );
+    const recommendationProducts = await getProductionRecommendationProducts({
+      admissionEvaluator: admitAndProjectRecommendationProducts
+    });
+
+    let decision = await buildSkinMatchDecisionBundle(formInput, {
+      products: recommendationProducts,
+'''
+if anchor not in s:
+    raise SystemExit('analyze decision anchor missing')
+s = s.replace(anchor, replacement, 1)
+p.write_text(s)
+
+p = Path('app/api/internal/recommendation-candidate-admission-controlled-probe/route.js')
+s = p.read_text()
+import_anchor = '''import {
+  runRecommendationCandidateAdmissionRuntimeProbe,
+} from "@/lib/product-source";
+'''
+import_replacement = '''import {
+  runRecommendationCandidateAdmissionRuntimeProbe,
+} from "@/lib/product-source";
+import { admitAndProjectRecommendationProducts } from "@/lib/recommendation-candidate-admission";
+'''
+if import_anchor not in s:
+    raise SystemExit('probe import anchor missing')
+s = s.replace(import_anchor, import_replacement, 1)
+call_anchor = '    probe = await runRecommendationCandidateAdmissionRuntimeProbe();'
+call_replacement = '''    probe = await runRecommendationCandidateAdmissionRuntimeProbe({
+      admissionEvaluator: admitAndProjectRecommendationProducts
+    });'''
+if call_anchor not in s:
+    raise SystemExit('probe call anchor missing')
+s = s.replace(call_anchor, call_replacement, 1)
+p.write_text(s)
+
+p = Path('scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs')
+s = p.read_text()
+s = s.replace(
+    'const PRODUCT_SOURCE_PATH = path.join(ROOT, "lib/product-source.js");',
+    'const PRODUCT_SOURCE_PATH = path.join(ROOT, "lib/product-source.js");\nconst ANALYZE_ROUTE_PATH = path.join(ROOT, "app/api/analyze/route.js");',
+    1,
+)
+old_verify = '''function verifyProductionSourceOrdering() {
+  const source = fs.readFileSync(PRODUCT_SOURCE_PATH, "utf8");
+  assert.equal(source.includes(".limit(500)"), false);
+  assert.equal(source.includes('.order("id", { ascending: true })'), true);
+  assert.equal(source.includes("enumerateRecommendationProductsDeterministically"), true);
+  assert.equal(source.includes("admitRecommendationProducts(data)"), true);
+  assert.equal(source.includes("admittedRows.filter"), true);
+
+  const admissionIndex = source.indexOf("admission = await admitRecommendationProducts(data)");
+  const projectionIndex = source.indexOf("projectAdmittedRecommendationProducts(admission");
+  const normalizationIndex = source.indexOf("const builtProduct = buildSupabaseProduct(product)");
+  assert.ok(admissionIndex > 0);
+  assert.ok(projectionIndex > admissionIndex);
+  assert.ok(normalizationIndex > projectionIndex);
+  record("ORDERING_INVARIANT");
+}
+'''
+new_verify = '''function verifyProductionSourceOrdering() {
+  const source = fs.readFileSync(PRODUCT_SOURCE_PATH, "utf8");
+  const route = fs.readFileSync(ANALYZE_ROUTE_PATH, "utf8");
+  assert.equal(source.includes(".limit(500)"), false);
+  assert.equal(source.includes('.order("id", { ascending: true })'), true);
+  assert.equal(source.includes("enumerateRecommendationProductsDeterministically"), true);
+  assert.equal(source.includes('from "@/lib/recommendation-candidate-admission"'), false);
+  assert.equal(source.includes("admittedProjection = await admissionEvaluator(data)"), true);
+  assert.equal(source.includes("admittedRows.filter"), true);
+
+  const admissionIndex = source.indexOf("admittedProjection = await admissionEvaluator(data)");
+  const projectionIndex = source.indexOf("admittedRows = admittedProjection.products");
+  const normalizationIndex = source.indexOf("const builtProduct = buildSupabaseProduct(product)");
+  assert.ok(admissionIndex > 0);
+  assert.ok(projectionIndex > admissionIndex);
+  assert.ok(normalizationIndex > projectionIndex);
+
+  assert.equal(route.includes("getProductionRecommendationProducts"), true);
+  assert.equal(route.includes("admitAndProjectRecommendationProducts"), true);
+  const routeAdmissionIndex = route.indexOf("const recommendationProducts = await getProductionRecommendationProducts");
+  const routeDecisionIndex = route.indexOf("let decision = await buildSkinMatchDecisionBundle");
+  assert.ok(routeAdmissionIndex > 0);
+  assert.ok(routeDecisionIndex > routeAdmissionIndex);
+  assert.ok(route.slice(routeDecisionIndex, routeDecisionIndex + 300).includes("products: recommendationProducts"));
+  record("ORDERING_INVARIANT");
+}
+'''
+if old_verify not in s:
+    raise SystemExit('verifier ordering anchor missing')
+s = s.replace(old_verify, new_verify, 1)
+p.write_text(s)
+
+p = Path('.github/workflows/v21-admission-g3-production-candidate-gate.yml')
+s = p.read_text()
+path_anchor = '      - "lib/product-source.js"\n'
+if path_anchor not in s:
+    raise SystemExit('workflow path anchor missing')
+s = s.replace(path_anchor, '      - "app/api/analyze/route.js"\n' + path_anchor, 1)
+allowed_old = '^(\\.github/workflows/v21-admission-g3-production-candidate-gate\\.yml|lib/product-source\\.js|'
+allowed_new = '^(\\.github/workflows/v21-admission-g3-production-candidate-gate\\.yml|app/api/analyze/route\\.js|lib/product-source\\.js|'
+if allowed_old not in s:
+    raise SystemExit('workflow allowlist anchor missing')
+s = s.replace(allowed_old, allowed_new, 1)
+frozen = 'app/api/analyze/route.js lib/recommendation-scoring.js'
+if frozen not in s:
+    raise SystemExit('workflow frozen route anchor missing')
+s = s.replace(frozen, 'lib/recommendation-scoring.js', 1)
+p.write_text(s)
