@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/skin-match-decision-engine.js"
       - ".github/workflows/eval-r1-persona-explanation-grounding-remediation.yml"
+      - ".github/workflows/v21-9e-normative-policy-production-shadow.yml"
       - "fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1.json"
       - "scripts/verify-eval-r1-explanation-grounding-v1.mjs"
       - "scripts/verify-eval-r1-grounding-probes-v1.mjs"
@@ -55,9 +56,9 @@ jobs:
           git merge-base --is-ancestor "$scope_base" HEAD
           changed="$(git diff --name-only "$scope_base" HEAD)"
           printf '%s\n' "$changed"
-          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(lib/skin-match-decision-engine\.js|\.github/workflows/eval-r1-persona-explanation-grounding-remediation\.yml|fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1\.json|scripts/verify-eval-r1-explanation-grounding-v1\.mjs|scripts/verify-eval-r1-grounding-probes-v1\.mjs|scripts/verify-skin-decision-recommendation-invariance\.mjs|docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1\.md)$' || true)"
+          forbidden="$(printf '%s\n' "$changed" | grep -Ev '^(lib/skin-match-decision-engine\.js|\.github/workflows/eval-r1-persona-explanation-grounding-remediation\.yml|\.github/workflows/v21-9e-normative-policy-production-shadow\.yml|fixtures/persona-evaluation/eval-r1-explanation-grounding-remediation-v1\.json|scripts/verify-eval-r1-explanation-grounding-v1\.mjs|scripts/verify-eval-r1-grounding-probes-v1\.mjs|scripts/verify-skin-decision-recommendation-invariance\.mjs|docs/evidence/eval-r1-persona-explanation-grounding-remediation-v1\.md)$' || true)"
           test -z "$forbidden"
-          test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l | tr -d ' ')" = "7"
+          test "$(printf '%s\n' "$changed" | sed '/^$/d' | wc -l | tr -d ' ')" = "8"
           git diff --exit-code "$scope_base" HEAD -- supabase/migrations lib/product-source.js lib/recommendation-scoring.ts app/api/analyze/route.js package.json package-lock.json
 
       - name: Syntax and inventory
