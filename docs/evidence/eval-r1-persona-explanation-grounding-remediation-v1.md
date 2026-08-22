@@ -19,6 +19,7 @@ The intervening G2 change freezes initial non-legacy candidate admission authori
 - P6 LOCKED regression cohort: 37 Personas; cohort hash `c774fc52ae1494c5a4fc39d11d2e7564a196460db391bb94f41d0510b7ae59f8`.
 - P8 bounded judge remains `DIAGNOSTIC_ONLY`; its observations are synthetic diagnostic evidence, not real-user or Product Fact truth.
 - P10 deterministic multi-step journey remains the journey regression authority.
+- `P8-GROUNDING-005` is classified `NON_AUTHORITATIVE_HANDOFF_ARTIFACT`; it is not part of EVAL-R1 and no prior-use tri-state remediation is authorized by this stage.
 
 ## P8 authoritative grounding inventory
 
@@ -53,15 +54,20 @@ The same explanation builder computes `sensitiveState` from high sensitivity, ba
 
 ### RC03 — barrier score → high-sensitivity copy
 
-`buildSurveyEvidence()` currently branches on:
-
-`answers.sensitivity === "high" || scoreCard.barrier.total >= 18`
-
-but the shared prose is `민감도가 높아 장벽 우선 가중치를 더했습니다.` Therefore low/medium inputs can be narrated as high sensitivity when barrier weighting is high.
+`buildSurveyEvidence()` branches on high sensitivity or a barrier-score threshold in the baseline implementation, but the shared prose says `민감도가 높아 장벽 우선 가중치를 더했습니다.` Low/medium inputs can therefore be narrated as high sensitivity when only barrier weighting is high.
 
 ### RC04 — composite sensitive state → current redness copy
 
 The serum branch renders the composite `sensitiveState` as `예민함이나 붉은기가 같이 잡힌 피부`. A high-sensitivity input can therefore be promoted into affirmative current redness even when redness exists only as a downstream scoring axis.
+
+## Over-remediation audit
+
+The original `f9f9ae59bcf0fb7b0793159e4f92f9bb60c0859f` candidate changed 9 of the 16 authoritative P8 materialized explanations.
+
+- In frozen R1 scope: `C02`, `C03`, `C06`, `A02`, `A05`.
+- Outside frozen R1 scope: `C01`, `A01`, `A06`, `A08`.
+
+R1 therefore requires zero explanation delta for `C01`, `A01`, `A06`, and `A08`. The inventory must not be widened to legitimize those collateral copy changes.
 
 ## Remediation contract
 
@@ -69,9 +75,9 @@ The fix is explanation-only.
 
 Allowed delta:
 
-- grounded reason wording,
-- survey evidence wording/selection,
-- premium detailed explanation derived from those strings.
+- grounded reason wording required to close F01–F06,
+- survey evidence wording/selection required to close F01–F06,
+- premium detailed explanation derived from those authorized strings.
 
 Forbidden delta:
 
@@ -80,9 +86,10 @@ Forbidden delta:
 - ranking,
 - Top1/Top3 identity,
 - eligible candidate set,
-- CandidatePolicy fingerprint,
+- CandidatePolicy decision semantics,
 - survey-derived safety state,
-- Product Fact/PDA/Admission/ENFORCE semantics.
+- Product Fact/PDA/Admission/ENFORCE semantics,
+- unrelated explanation copy outside the five frozen P8 cases.
 
 Grounding invariant:
 
@@ -97,37 +104,56 @@ Specific guards:
 - still_oily != tight,
 - derived redness weighting != affirmative current redness.
 
+## CandidatePolicy invariance measurement correction
+
+P6's legacy field named `candidate_policy_fingerprint` is a SHA-256 of the broader `publicSnapshot()` and therefore contains presentation/explanation state. It is retained as a frozen P6 snapshot field but is not interpreted by EVAL-R1 as CandidatePolicy semantic authority.
+
+EVAL-R1 instead evaluates the actual `candidate-exposure-policy.js` implementation on the repository's deterministic isolated-canary manifest and canonicalizes only CandidatePolicy decision authority:
+
+- top-level `policyVersion`, `status`;
+- decision `policyVersion`, `candidateRef`, `exposure`, `reasonCodes`, `currentProductRelation`, `evidenceState`, `laneEligibility`, and `provenance`.
+
+Presentation fields such as explanation text, recommendation reason copy, `comparison_reason`, premium copy, survey evidence prose, routine explanation, summary, and UI strings are excluded.
+
+The comparator is fail-closed in both directions:
+
+- a controlled explanation-only mutation must preserve the semantic projection;
+- a controlled policy-semantic mutation must change the projection and be detected.
+
+Frozen P6 harness code and CandidatePolicy implementation code are not modified by this correction.
+
 ## Regression contract
 
 Blocking:
 
 - explicit input contradiction,
 - deterministic grounding invariant failure,
+- unauthorized P8 explanation delta,
 - hard-reject violation,
 - reproducibility failure,
-- Recommendation semantic/ranking/score/eligibility delta.
+- Recommendation semantic/ranking/score/eligibility delta,
+- actual CandidatePolicy semantic projection delta.
 
 Review required, not automatically blocking:
 
 - intentional product/ranking changes in future stages,
-- stylistic explanation changes,
+- stylistic explanation changes authorized by a future stage,
 - cohort-level utility movement.
 
-EVAL-R1 itself permits only explanation changes that correspond to a reproducible baseline grounding violation or an authoritative P8 finding.
+EVAL-R1 itself permits only explanation changes required by the six frozen findings.
 
 Required validation:
 
 1. focused E1–E6 and locale E10 probes;
-2. exact P8 baseline/candidate offending-case comparison;
-3. P6 37-Persona baseline/candidate replay with projection/ranking/score/CandidatePolicy/survey-derived zero-delta;
-4. P10 deterministic journey replay A/B;
-5. existing P3 deterministic harness;
-6. historical 164×12 Recommendation invariance;
-7. Production build;
-8. repository-only scope and Hosted read-only zero-delta verification.
+2. exact P8 baseline/candidate offending-case comparison plus zero out-of-scope explanation delta;
+3. P6 37-Persona baseline/candidate replay with projection/ranking/score/survey-derived zero-delta;
+4. actual CandidatePolicy baseline/candidate semantic projection equality plus comparator V1/V2 self-tests;
+5. P10 deterministic journey replay A/B;
+6. existing P3 deterministic harness;
+7. historical 164×12 Recommendation invariance;
+8. Production build;
+9. repository-only scope and Hosted read-only zero-delta verification.
 
 ## Authority ceiling
 
 EVAL-R1 output remains `SYNTHETIC_SIMULATION_EVIDENCE` for defect reproduction and regression validation. It is not organic Production evidence, real-user efficacy evidence, Product Fact authority, or ENFORCE authorization evidence.
-
-<!-- one-shot bounded correction trigger; replaced by final evidence update -->
