@@ -73,7 +73,7 @@ jobs:
             -f description="Bounded preflight before one source run" \
             -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >/dev/null
 
-      - name: Resolve legacy service-role JWT without logging it
+      - name: Resolve active Supabase service credential without logging it
         shell: bash
         run: |
           set -euo pipefail
@@ -86,10 +86,9 @@ jobs:
             let s="";
             process.stdin.on("data",d=>s+=d);
             process.stdin.on("end",()=>{
-              const rows=JSON.parse(s);
-              const candidates=rows.filter(r=>r.name==="service_role"||r.name==="service_role key"||r.type==="service_role");
-              const values=candidates.flatMap(r=>[r.api_key,r.key,r.value]).filter(v=>typeof v==="string");
-              const key=values.find(v=>v.startsWith("eyJ"));
+              const rows=JSON.parse(s).filter(r=>r.disabled!==true);
+              const values=rows.flatMap(r=>[r.api_key,r.key,r.value]).filter(v=>typeof v==="string");
+              const key=values.find(v=>v.startsWith("sb_secret_")) || values.find(v=>v.startsWith("eyJ"));
               if(!key) process.exit(1);
               process.stdout.write(key);
             });')"
