@@ -32,6 +32,7 @@ concurrency:
 env:
   G3_BASE_MAIN_SHA: 6fdff47f3c41a4e90dace8b8f7281b51a92d7c3f
   G3_RECOMMENDATION_REFERENCE_SHA: 783afb91a964f5d762f46846f9ef854902b48e95
+  G3_OIDC_AUDIENCE: urn:bejewely:v21-admission-g3:runtime-probe
   G3_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
 jobs:
@@ -84,7 +85,9 @@ jobs:
           node --check lib/recommendation-legacy-corpus-v1.mjs
           node --check lib/recommendation-candidate-admission-core.mjs
           node --check lib/recommendation-candidate-admission.js
+          node --check lib/recommendation-candidate-admission-controlled-probe-oidc.mjs
           node --check lib/product-source.js
+          node --check app/api/internal/recommendation-candidate-admission-controlled-probe/route.js
           node --check scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs
           node scripts/verify-v21-admission-g3-production-candidate-gate-v1.mjs
 
@@ -143,4 +146,79 @@ jobs:
             description="${context} failed"
           fi
           gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$G3_CHECKOUT_SHA" -f state="$state" -f context="$context" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
+          test "$state" = success
+
+  production-runtime-probe:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify-g3
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Resolve exact Vercel deployment URL from GitHub deployment evidence
+        id: deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          url=""
+          for attempt in $(seq 1 36); do
+            ids="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments?per_page=100" --jq ".[] | select(.sha == \"$GITHUB_SHA\") | .id" || true)"
+            for id in $ids; do
+              candidate="$(gh api --method GET "/repos/$GITHUB_REPOSITORY/deployments/$id/statuses?per_page=100" --jq '[.[] | select(.state == "success" and .environment_url != null)][0].environment_url // empty' || true)"
+              if [ -n "$candidate" ]; then url="$candidate"; break; fi
+            done
+            if [ -n "$url" ]; then break; fi
+            sleep 5
+          done
+          if [ -z "$url" ]; then
+            url="https://k-beauty-two.vercel.app"
+          fi
+          test -n "$url"
+          printf 'url=%s\n' "$url" >> "$GITHUB_OUTPUT"
+
+      - name: Obtain short-lived GitHub OIDC tokens
+        id: oidc
+        run: |
+          set -euo pipefail
+          custom_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${G3_OIDC_AUDIENCE}")"
+          custom="$(printf '%s' "$custom_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          trusted_json="$(curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")"
+          trusted="$(printf '%s' "$trusted_json" | node -e 'let x="";process.stdin.on("data",d=>x+=d).on("end",()=>{const j=JSON.parse(x);if(!j.value)process.exit(1);process.stdout.write(j.value)})')"
+          echo "::add-mask::$custom"
+          echo "::add-mask::$trusted"
+          printf 'custom=%s\ntrusted=%s\n' "$custom" "$trusted" >> "$GITHUB_OUTPUT"
+
+      - name: Exact deployed Production admission proof
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error --retry 18 --retry-delay 5 --retry-all-errors \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/internal/recommendation-candidate-admission-controlled-probe")"
+          printf '%s\n' "$response"
+          printf '%s' "$response" | node -e '
+            let x=""; process.stdin.on("data",d=>x+=d).on("end",()=>{
+              const j=JSON.parse(x); const s=j.admissionSummary||{};
+              if(j.result!=="PASS"||j.deploymentSha!==process.env.GITHUB_SHA||j.deploymentRef!=="main"||j.admissionContractVersion!=="production-recommendation-candidate-admission-v1"||j.productCount!==164||s.enumeratedCount!==164||s.legacyAdmittedCount!==164||s.nonlegacyCheckedCount!==0||s.nonlegacyGrantedCount!==0||s.nonlegacyRejectedCount!==0||s.authorityFailureCount!==0||j.secretValueExposed!==false) process.exit(1);
+            })'
+
+      - name: Publish Production runtime attestation
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRIOR_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          state=success
+          description="G3 Production admission runtime proof passed"
+          if [ "$PRIOR_JOB_STATUS" != success ]; then
+            state=failure
+            description="G3 Production admission runtime proof failed"
+          fi
+          gh api --method POST -H "Accept: application/vnd.github+json" "/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" -f state="$state" -f context="V2.1-ADMISSION-G3 production runtime" -f description="$description" -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
           test "$state" = success
