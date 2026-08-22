@@ -81,7 +81,7 @@ jobs:
           keys_json="$(curl --fail-with-body --silent --show-error \
             -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
             -H "Accept: application/json" \
-            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys")"
+            "https://api.supabase.com/v1/projects/${TARGET_PROJECT_REF}/api-keys?reveal=true")"
           service_key="$(printf '%s' "$keys_json" | node -e '
             let s="";
             process.stdin.on("data",d=>s+=d);
