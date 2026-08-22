@@ -3,7 +3,8 @@
   "git": {
     "deploymentEnabled": {
       "**": false,
-      "main": true
+      "main": true,
+      "admission/g3a-cont-pf-authority-read": true
     }
   }
 }
