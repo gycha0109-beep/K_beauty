@@ -11,7 +11,7 @@ import {
 } from "./verify-admin-product-review-v2-diff-scope.mjs";
 
 const read = (filePath) => fs.readFileSync(filePath, "utf8");
-const run = (command, args) => execFileSync(command, args, { encoding: "utf8" });
+const run = (command, args) => execFileSync(command, args, { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 });
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 const baseSha = process.env.ADMIN_VERIFY_BASE_SHA;
