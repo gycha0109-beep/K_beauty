@@ -58,6 +58,22 @@ for (const file of runtimeTextFiles) {
 }
 assert.deepEqual(findings, [], `secret or forbidden public-authority shortcut detected: ${findings.join(", ")}`);
 
+const crawlerFiles = tracked.filter((file) => file.startsWith("crawler/") && /\.(?:js|mjs|cjs|ts|tsx|jsx)$/.test(file));
+const crawlerAuthorityPattern = /read_recommendation_admission_authority_v1|INITIAL_ADMISSION_GRANT|product_fact_current|product_fact_confirmations|product_fact_instances/;
+const crawlerAuthorityFindings = crawlerFiles.filter((file) => crawlerAuthorityPattern.test(readFileSync(path.join(ROOT, file), "utf8")));
+assert.deepEqual(crawlerAuthorityFindings, [], `crawler must not bypass canonical adoption boundary: ${crawlerAuthorityFindings.join(", ")}`);
+
+const vercel = JSON.parse(readFileSync(path.join(ROOT, "vercel.json"), "utf8"));
+assert(!Object.prototype.hasOwnProperty.call(vercel, "crons"), "crawler/scheduled auto-adoption must remain disabled");
+assert.equal(vercel.git?.deploymentEnabled?.["**"], false, "non-main automatic Vercel deployment disabled");
+assert.equal(vercel.git?.deploymentEnabled?.main, true, "main Vercel deployment enabled");
+
+const shadowObserverPath = path.join(ROOT, "lib/exfoliation-normative-policy-production-shadow-observer.js");
+if (existsSync(shadowObserverPath)) {
+  const observer = readFileSync(shadowObserverPath, "utf8");
+  assert(!/EXFOLIATION_NORMATIVE_POLICY_MODE.*ENFORCE/.test(observer), "current Production observer must not activate ENFORCE");
+}
+
 const canonicalWorkflowPath = path.join(ROOT, ".github/workflows/current-main-health.yml");
 assert(existsSync(canonicalWorkflowPath), "canonical current-main workflow must exist");
 const canonicalWorkflow = readFileSync(canonicalWorkflowPath, "utf8");
@@ -74,7 +90,10 @@ console.log(JSON.stringify({
   status: "PASS",
   tracked_file_count: tracked.length,
   runtime_secret_scan_file_count: runtimeTextFiles.length,
+  crawler_authority_scan_file_count: crawlerFiles.length,
   stale_artifact_count: 0,
   tracked_env_secret_file_count: 0,
   secret_or_shortcut_findings: 0,
+  crawler_authority_findings: 0,
+  scheduled_auto_adoption: false,
 }, null, 2));
