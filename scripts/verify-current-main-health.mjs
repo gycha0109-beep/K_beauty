@@ -18,24 +18,14 @@ function run(label, command, args, env = {}) {
 }
 
 run("Current verifier syntax", node, ["--check", "scripts/verify-current-main-health.mjs"]);
+run("Current Recommendation verifier syntax", node, ["--check", "scripts/verify-current-recommendation-health.mjs"]);
 run("Repository hygiene verifier syntax", node, ["--check", "scripts/verify-current-repository-hygiene.mjs"]);
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
 run("Unified Vision pipeline", npm, ["run", "verify:unified-vision-pipeline"]);
 run("Skin decision persistence and reentry", npm, ["run", "verify:skin-decision-persistence-reentry"]);
-
-run(
-  "Canonical 164x12 Recommendation semantic invariance",
-  node,
-  ["scripts/verify-skin-decision-recommendation-invariance.mjs"],
-  {
-    RECOMMENDATION_ENGINE_ROOT: ".",
-    RECOMMENDATION_REFERENCE_ROOT: ".",
-    RECOMMENDATION_ENGINE_SHA: process.env.GITHUB_SHA || "CURRENT_WORKTREE",
-    RECOMMENDATION_SEMANTIC_ARTIFACT_PATH: "tmp/current-main-recommendation-semantic-invariance.json",
-  },
-);
+run("Canonical 164x12 current Recommendation semantic health", node, ["scripts/verify-current-recommendation-health.mjs"]);
 
 run("CandidatePolicy current semantic invariant", npm, ["run", "verify:candidate-exposure-policy-shadow"]);
 run("Current Product Decision Axis contract", node, ["scripts/product-evidence/verify-exfoliation-non-numeric-pda-contract-v1.mjs"]);
