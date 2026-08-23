@@ -10,6 +10,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
+    "verify:current": "node scripts/verify-current-main-health.mjs",
+    "verify:current-repository-hygiene": "node scripts/verify-current-repository-hygiene.mjs",
     "verify:candidate-exposure-policy-shadow": "node scripts/verify-candidate-exposure-policy-shadow-runtime.mjs",
     "verify:candidate-exposure-policy-shadow-evaluation": "node scripts/verify-candidate-exposure-policy-shadow-evaluation.mjs",
     "promo:generate": "node scripts/generate-promo-content.mjs",
