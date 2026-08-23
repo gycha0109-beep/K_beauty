@@ -106,7 +106,13 @@ check(nextConfig.includes("extensionAlias"), "NodeNext extension resolution miss
 check(nextConfig.includes('".ts"'), "TypeScript extension alias missing");
 
 const securitySuite = read("scripts/run-security-closeout-verifier-suite.mjs");
-check(securitySuite.includes('"verify-admin-product-candidate-reviews.mjs"'), "security closeout manifest missing admin product verifier");
+check(securitySuite.includes('"current-security-verifier-suite-v1"'), "current security suite authority missing");
+check(securitySuite.includes('name: "admin-access-boundary"'), "current security suite missing admin access boundary");
+check(
+  securitySuite.includes('name: "repository-secret-and-authority-shortcut-scan"'),
+  "current security suite missing repository hygiene boundary"
+);
+check(securitySuite.includes("historicalManifestAuthority: false"), "historical security manifest authority must remain disabled");
 
 const vercel = JSON.parse(read("vercel.json"));
 check(vercel.git?.deploymentEnabled?.["**"] === false, "non-main Vercel deployment deny lost");
