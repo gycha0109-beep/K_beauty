@@ -13,12 +13,18 @@ const trackedSet = new Set(tracked);
 const forbiddenTrackedPaths = [
   "Todo.txt",
   "e supabasemigrations  Select-String 20260506070849",
-  "lib/backups/product-db.backup.js",
 ];
 for (const file of forbiddenTrackedPaths) {
   assert(!trackedSet.has(file), `stale repository artifact must not be tracked: ${file}`);
 }
-assert(!tracked.some((file) => file.startsWith("lib/backups/")), "backup-only lib/backups directory must not remain in current main");
+
+const runtimeLegacyFixture = "lib/backups/product-db.backup.js";
+assert(trackedSet.has(runtimeLegacyFixture), `runtime-referenced legacy fixture missing: ${runtimeLegacyFixture}`);
+const presetSource = readFileSync(path.join(ROOT, "lib/test-result-presets.js"), "utf8");
+assert(
+  presetSource.includes("@/lib/backups/product-db.backup"),
+  "runtime-referenced legacy fixture is no longer consumed by test-result-presets"
+);
 
 const envFiles = tracked.filter((file) => {
   const base = path.basename(file);
@@ -92,6 +98,7 @@ console.log(JSON.stringify({
   runtime_secret_scan_file_count: runtimeTextFiles.length,
   crawler_authority_scan_file_count: crawlerFiles.length,
   stale_artifact_count: 0,
+  runtime_referenced_legacy_fixture_count: 1,
   tracked_env_secret_file_count: 0,
   secret_or_shortcut_findings: 0,
   crawler_authority_findings: 0,
