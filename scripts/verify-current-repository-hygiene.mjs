@@ -45,10 +45,11 @@ const runtimeTextFiles = tracked.filter((file) => {
   return inRuntime && /\.(?:js|mjs|cjs|ts|tsx|jsx|json|ya?ml)$/.test(file);
 });
 
+const openAiProjectKeyPattern = new RegExp(["sk", "-proj-", "[A-Za-z0-9_-]{20,}"].join(""));
 const secretPatterns = [
   ["private-key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
   ["github-token", /(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}/],
-  ["openai-project-key", /sk-proj-[A-Za-z0-9_-]{20,}/],
+  ["openai-project-key", openAiProjectKeyPattern],
   ["slack-token", /xox[baprs]-[A-Za-z0-9-]{20,}/],
   ["aws-access-key", /AKIA[0-9A-Z]{16}/],
   ["public-service-role", /NEXT_PUBLIC_[A-Z0-9_]*SERVICE_ROLE[A-Z0-9_]*/],
