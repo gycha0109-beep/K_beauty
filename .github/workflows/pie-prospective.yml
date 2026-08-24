@@ -15,7 +15,31 @@ permissions:
   pull-requests: read
 
 jobs:
+  profile-preflight:
+    name: PIE profile preflight
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Check project-local PIE configuration
+        id: check
+        shell: bash
+        run: |
+          if [[ -f .review/project.yml && -f .review/intelligence/config.yml ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "PIE shadow skipped: this PR head predates project-local PIE onboarding."
+          fi
+
   pie:
+    needs: profile-preflight
+    if: needs.profile-preflight.outputs.ready == 'true'
     uses: gycha0109-beep/Project_Intelligence_Engine/.github/workflows/prospective-pr.yml@bf9582973590bb58cde13a7d1faef6a17e56eef0
     with:
       repository: ${{ github.repository }}
