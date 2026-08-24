@@ -1,6 +1,11 @@
 import "./globals.css";
 import { headers } from "next/headers";
 import AnonymousAuthBootstrap from "@/components/auth/AnonymousAuthBootstrap";
+import DocumentLocaleSync from "@/components/i18n/DocumentLocaleSync";
+import {
+  DOCUMENT_LOCALE_HEADER_NAME,
+  normalizeDocumentLocale
+} from "@/lib/document-locale";
 import securityHeaderPolicy from "@/lib/security/security-headers";
 
 const { isValidCspNonce, NONCE_HEADER_NAME } = securityHeaderPolicy;
@@ -36,6 +41,13 @@ export const metadata = {
     template: `%s | ${brandTitle}`
   },
   description: siteDescription,
+  alternates: {
+    canonical: "/",
+    languages: {
+      "ko-KR": "/",
+      "en-US": "/en"
+    }
+  },
   openGraph: {
     title: brandTitle,
     description: socialDescription,
@@ -64,9 +76,12 @@ export default async function RootLayout({ children }) {
   const requestHeaders = await headers();
   const requestNonce = requestHeaders.get(NONCE_HEADER_NAME);
   const nonce = isValidCspNonce(requestNonce) ? requestNonce : null;
+  const locale = normalizeDocumentLocale(
+    requestHeaders.get(DOCUMENT_LOCALE_HEADER_NAME)
+  );
 
   return (
-    <html lang="ko" className="scheme-light" suppressHydrationWarning>
+    <html lang={locale} className="scheme-light" suppressHydrationWarning>
       <head>
         {nonce ? (
           <script
@@ -76,6 +91,7 @@ export default async function RootLayout({ children }) {
         ) : null}
       </head>
       <body className="ui-page">
+        <DocumentLocaleSync />
         <AnonymousAuthBootstrap />
         {children}
       </body>
