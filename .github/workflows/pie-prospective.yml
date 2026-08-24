@@ -1,0 +1,26 @@
+name: PIE Prospective Shadow
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
+      - edited
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pie:
+    uses: gycha0109-beep/Project_Intelligence_Engine/.github/workflows/prospective-pr.yml@bf9582973590bb58cde13a7d1faef6a17e56eef0
+    with:
+      repository: ${{ github.repository }}
+      pull_request_number: ${{ github.event.pull_request.number }}
+      event_head_sha: ${{ github.event.pull_request.head.sha }}
+      pie_revision: bf9582973590bb58cde13a7d1faef6a17e56eef0
+      profile: .review/project.yml
+      config: .review/intelligence/config.yml

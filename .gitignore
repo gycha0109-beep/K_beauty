@@ -30,6 +30,9 @@ private
 .codex/review-chrome-profile/
 .codex/runtime/premium-e2e/
 
+# PIE local evidence
+.pie/
+
 # OS / editor local files
 .DS_Store
 Thumbs.db

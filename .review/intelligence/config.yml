@@ -1,0 +1,31 @@
+schema_version: "1.0"
+graph:
+  max_file_size_bytes: 1000000
+components:
+  - id: application
+    name: Web Application
+    paths: ["app/**", "components/**", "lib/**"]
+  - id: engine-runtime
+    name: Engine and Evaluation Runtime
+    paths: ["scripts/**", "packages/**", "tools/**"]
+  - id: database
+    name: Supabase Database
+    paths: ["supabase/**"]
+  - id: crawler
+    name: Crawler
+    paths: ["crawler/**"]
+  - id: tests
+    name: Tests and Security Verification
+    paths: ["tests/**", "security-tests/**"]
+  - id: documentation
+    name: Documentation
+    paths: ["docs/**"]
+  - id: root-config
+    name: Root Runtime Configuration
+    paths: ["package*.json", "next.config.*"]
+  - id: pie-config
+    name: PIE Project Configuration
+    paths: [".review/**"]
+  - id: github-workflows
+    name: GitHub Workflows
+    paths: [".github/workflows/**"]
