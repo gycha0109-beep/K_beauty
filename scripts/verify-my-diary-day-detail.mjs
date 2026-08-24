@@ -41,12 +41,13 @@ for (const field of [
   "keep_items",
   "reduce_items",
   "avoid_items",
-  "warnings",
-  "generation_source"
+  "warnings"
 ]) {
   assert.match(readerSource, new RegExp(`"${field}"`), `reader must include stored ${field}`);
   assert.match(checkinRouteSource, new RegExp(`${field}: routinePayload\\.${field}`), `check-in must persist ${field}`);
 }
+assert.match(readerSource, /"generation_source"/);
+assert.match(checkinRouteSource, /generation_source: "rule"/);
 
 assert.match(routeSource, /searchParams\.get\("date"\)/);
 assert.match(routeSource, /isValidLocalDate\(date\)/);
