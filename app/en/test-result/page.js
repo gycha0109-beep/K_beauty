@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import ResultPage from "@/app/result/page";
+import EnglishResultPage from "@/app/en/result/page";
 import { seedTestResultSession } from "@/lib/test-result-fixture";
 
 export default function EnglishTestResultPage() {
@@ -23,5 +23,5 @@ export default function EnglishTestResultPage() {
     return null;
   }
 
-  return <ResultPage />;
+  return <EnglishResultPage />;
 }
