@@ -7,6 +7,7 @@ import {
   normalizeCurrentProductCategory,
   resolveCurrentProductSemantics
 } from "@/lib/current-products";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const GROUPS = [
   { groupId: "cleanser", categoryIntent: "cleanser", categories: ["cleanser"] },
@@ -101,6 +102,31 @@ function dedupeProducts(products = []) {
   return deduped;
 }
 
+async function localizeProductsForEnglish(products, locale) {
+  if (locale !== "en" || !products.length) {
+    return products;
+  }
+
+  const ids = products.map((product) => product.id).filter(Boolean);
+  if (!ids.length) return products;
+
+  const supabase = createBrowserSupabaseClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id,name_en,brand_en")
+    .in("id", ids);
+
+  if (error || !Array.isArray(data)) {
+    return products;
+  }
+
+  const localizedById = new Map(data.map((row) => [row.id, row]));
+  return products.map((product) => {
+    const localized = localizedById.get(product.id);
+    return localized ? { ...product, ...localized } : product;
+  });
+}
+
 async function fetchCurrentProductOptionsByCategory(category) {
   const normalizedCategory = CANONICAL_CURRENT_PRODUCT_CATEGORIES.includes(category) ? category : "";
 
@@ -173,7 +199,8 @@ export default function CurrentProductsSelector({
 
       try {
         const productsByGroup = await Promise.all(GROUPS.map(fetchCurrentProductOptionsByGroup));
-        const nextProducts = dedupeProducts(productsByGroup.flat());
+        const dedupedProducts = dedupeProducts(productsByGroup.flat());
+        const nextProducts = await localizeProductsForEnglish(dedupedProducts, locale);
 
         if (!cancelled) {
           setProducts(nextProducts);
@@ -192,7 +219,7 @@ export default function CurrentProductsSelector({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     onChange?.(toSelectionList(selectionMap));
@@ -312,7 +339,7 @@ export default function CurrentProductsSelector({
                     <option value="">{copy.choose}</option>
                     {groupProducts.map((product) => (
                       <option key={product.id} value={product.id}>
-                        {product.brand} - {product.name}
+                        {product.brand_en || product.brand} - {product.name_en || product.name}
                       </option>
                     ))}
                   </select>
