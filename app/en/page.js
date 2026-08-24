@@ -6,6 +6,13 @@ export const metadata = {
     absolute: brandTitle
   },
   description: englishDescription,
+  alternates: {
+    canonical: "/en",
+    languages: {
+      "ko-KR": "/",
+      "en-US": "/en"
+    }
+  },
   openGraph: {
     title: brandTitle,
     description: englishDescription,

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCanonicalProductionRedirectUrl } from "@/lib/canonical-site-origin";
+import {
+  DOCUMENT_LOCALE_HEADER_NAME,
+  resolveDocumentLocale
+} from "@/lib/document-locale";
 import securityHeaderPolicy from "@/lib/security/security-headers";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -27,6 +31,10 @@ export async function middleware(request) {
         isDevelopment: process.env.NODE_ENV === "development",
         requestUrl: request.url
       });
+      securityContext.requestHeaders.set(
+        DOCUMENT_LOCALE_HEADER_NAME,
+        resolveDocumentLocale(request.nextUrl.pathname)
+      );
     } catch {
       return createSecurityPolicyUnavailableResponse();
     }
