@@ -20,6 +20,7 @@ function run(label, command, args, env = {}) {
 run("Current verifier syntax", node, ["--check", "scripts/verify-current-main-health.mjs"]);
 run("Current Recommendation verifier syntax", node, ["--check", "scripts/verify-current-recommendation-health.mjs"]);
 run("Repository hygiene verifier syntax", node, ["--check", "scripts/verify-current-repository-hygiene.mjs"]);
+run("Document locale contract", node, ["--experimental-default-type=module", "scripts/verify-document-locale-contract.mjs"]);
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
