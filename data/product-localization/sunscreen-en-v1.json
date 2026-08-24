@@ -1,0 +1,73 @@
+{
+  "version": "sunscreen-en-v1",
+  "authority": "display-localization-only",
+  "invariant": "Localized Display Name != Canonical Identity",
+  "products": [
+    {
+      "id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "brand_en": "Dr.G",
+      "name_en": "GREEN MILD UP SUN+",
+      "source_url": "https://www.hwahae.com/en/products/Dr-G-GREEN-MILD-UP-SUNPLUS-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1994185"
+    },
+    {
+      "id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "brand_en": "LA ROCHE-POSAY",
+      "name_en": "ANTHELIOS SUN FLUID",
+      "source_url": "https://www.hwahae.com/en/products/LAROCHE-POSAY-ANTHELIOS-SUN-FLUID-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/2199136"
+    },
+    {
+      "id": "0bb742d2-df6b-49a7-8e29-8f76ae62ac0d",
+      "brand_en": "ROUNDLAB",
+      "name_en": "Birch Moisture Sun Cream",
+      "source_url": "https://www.hwahae.com/en/products/ROUNDLAB-Birch-Moisture-Sun-Cream-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1920665/reviews"
+    },
+    {
+      "id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+      "brand_en": "Beauty of Joseon",
+      "name_en": "Relief Sun : Rice + Probiotics",
+      "source_url": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics-spf50-pa-uk"
+    },
+    {
+      "id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "brand_en": "Beauty of Joseon",
+      "name_en": "Relief Sun Aqua-Fresh : Rice + B5",
+      "source_url": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh"
+    },
+    {
+      "id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "brand_en": "SKIN1004",
+      "name_en": "Hyalu-Cica Water-Fit Sun Serum UV",
+      "source_url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv"
+    },
+    {
+      "id": "cbcd06a2-de29-47ca-afd1-ab1d5de93903",
+      "brand_en": "ANESSA",
+      "name_en": "Perfect UV Sunscreen Skincare Milk NA",
+      "source_url": "https://www.hwahae.com/vi/products/ANESSA-Perfect-UV-Sunscreen-Skincare-Milk-NA-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/2093103/reviews"
+    },
+    {
+      "id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "brand_en": "AESTURA",
+      "name_en": "DERMA UV365 Red Calming Tone-up Sunscreen",
+      "source_url": "https://int.aestura.com/collections/dermauv-365"
+    },
+    {
+      "id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "brand_en": "AESTURA",
+      "name_en": "DERMA UV365 Barrier Hydro Mineral Sunscreen",
+      "source_url": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen"
+    },
+    {
+      "id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "brand_en": "IsNtree",
+      "name_en": "HYALURONIC ACID WATERY SUN GEL",
+      "source_url": "https://www.hwahae.com/en/products/IsNtree-HYALURONIC-ACID-WATERY-SUN-GEL-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1889858"
+    },
+    {
+      "id": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "brand_en": "Torriden",
+      "name_en": "DIVE IN WATERY MOISTURE SUN CREAM",
+      "source_url": "https://www.hwahae.com/en/products/Torriden-DIVE-IN-WATERY-MOISTURE-SUN-CREAM-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/2036939"
+    }
+  ]
+}
