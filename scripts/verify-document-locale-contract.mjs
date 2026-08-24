@@ -21,10 +21,17 @@ assert.equal(normalizeDocumentLocale("ko"), "ko");
 assert.equal(normalizeDocumentLocale("invalid"), "ko");
 assert.equal(normalizeDocumentLocale(null), "ko");
 
-const [middlewareSource, layoutSource, clientSyncSource, englishPageSource] = await Promise.all([
+const [
+  middlewareSource,
+  layoutSource,
+  clientSyncSource,
+  englishLayoutSource,
+  englishPageSource
+] = await Promise.all([
   readFile(new URL("../middleware.js", import.meta.url), "utf8"),
   readFile(new URL("../app/layout.js", import.meta.url), "utf8"),
   readFile(new URL("../components/i18n/DocumentLocaleSync.jsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/en/layout.js", import.meta.url), "utf8"),
   readFile(new URL("../app/en/page.js", import.meta.url), "utf8")
 ]);
 
@@ -44,6 +51,12 @@ assert.match(layoutSource, /requestHeaders\.get\(DOCUMENT_LOCALE_HEADER_NAME\)/)
 assert.match(layoutSource, /<html lang=\{locale\}/);
 assert.match(layoutSource, /<DocumentLocaleSync \/>/);
 assert.match(clientSyncSource, /document\.documentElement\.lang = resolveDocumentLocale\(pathname\)/);
+
+assert.match(englishLayoutSource, /A personalized skincare report from one photo and a quick survey\./);
+assert.match(englishLayoutSource, /locale: "en_US"/);
+assert.doesNotMatch(englishLayoutSource, /canonical:/);
+assert.doesNotMatch(englishLayoutSource, /languages:/);
+
 assert.match(englishPageSource, /canonical: "\/en"/);
 assert.match(englishPageSource, /"ko-KR": "\/"/);
 assert.match(englishPageSource, /"en-US": "\/en"/);
