@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import FullReportPage from "@/app/result/full-report/page";
+import EnglishFullReportPage from "@/app/en/result/full-report/page";
 import { seedTestResultSession } from "@/lib/test-result-fixture";
 
 export default function EnglishTestFullReportPage() {
@@ -47,5 +47,5 @@ export default function EnglishTestFullReportPage() {
     return null;
   }
 
-  return <FullReportPage functionalPlanDevScenarios={functionalPlanDevScenarios} />;
+  return <EnglishFullReportPage functionalPlanDevScenarios={functionalPlanDevScenarios} />;
 }
