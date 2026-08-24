@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isValidLocalDate } from "@/lib/my/local-date";
+import { isValidDiaryMonth } from "@/lib/my/diary-month";
 import { getMyDashboardPayload } from "@/lib/my/dashboard";
 import { createNoStoreHeaders } from "@/lib/security/error-redaction";
 
@@ -14,13 +15,19 @@ function sensitiveJsonResponse(body, init = {}) {
 
 export async function GET(request) {
   const localDate = request.nextUrl.searchParams.get("localDate");
+  const diaryMonth = request.nextUrl.searchParams.get("diaryMonth");
 
   if (localDate && !isValidLocalDate(localDate)) {
     return sensitiveJsonResponse({ error: "invalid_local_date" }, { status: 400 });
   }
 
+  if (diaryMonth && !isValidDiaryMonth(diaryMonth)) {
+    return sensitiveJsonResponse({ error: "invalid_diary_month" }, { status: 400 });
+  }
+
   const result = await getMyDashboardPayload({
-    localDate: localDate || undefined
+    localDate: localDate || undefined,
+    diaryMonth: diaryMonth || undefined
   });
 
   if (result.status === 401) {

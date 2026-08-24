@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
+import SkinDiaryCalendar from "@/components/my/SkinDiaryCalendar";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
 import TodayCheckInPrompt from "@/components/my/TodayCheckInPrompt";
 import TodayRoutineCard from "@/components/my/TodayRoutineCard";
-import {
-  CHECKIN_EVENT_TAG_ORDER,
-  getSelectedCheckinEventKeys
-} from "@/lib/my/checkin-events";
+import { isValidDiaryMonth } from "@/lib/my/diary-month";
 import { getBrowserDateContext } from "@/lib/my/local-date";
 import { getMyCopy } from "@/lib/my/i18n";
 
@@ -75,14 +73,6 @@ const CHECKIN_METRICS = [
   { key: "oiliness", field: "oiliness_level" }
 ];
 
-const DIARY_SIGNAL_METRICS = [
-  { key: "irritation", field: "irritation_level" },
-  { key: "redness", field: "redness_level" },
-  { key: "breakout", field: "breakout_level" },
-  { key: "dryness", field: "dryness_level" },
-  { key: "oiliness", field: "oiliness_level" }
-];
-
 function normalizeCheckins(values) {
   return Array.isArray(values) ? values.filter(Boolean) : [];
 }
@@ -136,60 +126,6 @@ function buildSparklinePoints(checkins, metric) {
       y
     };
   });
-}
-
-function getCheckinSummary(checkin, copy) {
-  const values = CHECKIN_METRICS.map((metric) => getMetricValue(checkin, metric.field));
-  const max = Math.max(...values);
-  const highCount = values.filter((value) => value >= 3).length;
-
-  if (max >= 4 || highCount >= 2) {
-    return copy.diary.recovery;
-  }
-
-  if (max >= 2) {
-    return copy.diary.mild;
-  }
-
-  return copy.diary.stable;
-}
-
-function getTopCheckinSignals(checkin, copy) {
-  return DIARY_SIGNAL_METRICS.map((metric, priority) => ({
-    key: metric.key,
-    label: copy.trend.labels[metric.key],
-    value: getMetricValue(checkin, metric.field),
-    priority
-  }))
-    .filter((metric) => metric.value > 0)
-    .sort((left, right) => {
-      if (right.value !== left.value) {
-        return right.value - left.value;
-      }
-
-      return left.priority - right.priority;
-    })
-    .slice(0, 2);
-}
-
-function getCheckinTags(checkin, copy) {
-  const selectedEvents = new Set(getSelectedCheckinEventKeys(checkin?.context));
-  const allTags = CHECKIN_EVENT_TAG_ORDER.map((key) => {
-    if (key === "makeup") {
-      return checkin?.makeup_today ? copy.diary.makeup : null;
-    }
-
-    if (key === "outdoor") {
-      return checkin?.outdoor_today ? copy.diary.outdoor : null;
-    }
-
-    return selectedEvents.has(key) ? copy.diary.events[key] : null;
-  }).filter(Boolean);
-
-  return {
-    visible: allTags.slice(0, 3),
-    hiddenCount: Math.max(0, allTags.length - 3)
-  };
 }
 
 function SkinTrendPreview({ checkins, copy, locale }) {
@@ -270,162 +206,6 @@ function SkinTrendPreview({ checkins, copy, locale }) {
   );
 }
 
-function getCalendarAnchor(entries) {
-  const latestDate = entries[0]?.checkin_date;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(latestDate || "")) {
-    const [year, month] = latestDate.split("-").map(Number);
-    return { year, month };
-  }
-
-  const now = new Date();
-  return { year: now.getFullYear(), month: now.getMonth() + 1 };
-}
-
-function buildDiaryCalendar(entries) {
-  const { year, month } = getCalendarAnchor(entries);
-  const firstDay = new Date(year, month - 1, 1);
-  const lastDate = new Date(year, month, 0).getDate();
-  const leadingEmpty = firstDay.getDay();
-  const entriesByDate = new Map(entries.map((entry) => [entry.checkin_date, entry]));
-  const cells = [];
-
-  for (let index = 0; index < leadingEmpty; index += 1) {
-    cells.push({ key: `empty-${index}`, empty: true });
-  }
-
-  for (let day = 1; day <= lastDate; day += 1) {
-    const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({
-      key: dateKey,
-      day,
-      entry: entriesByDate.get(dateKey) || null
-    });
-  }
-
-  return cells;
-}
-
-function SkinDiaryPreview({ checkins, copy, locale }) {
-  const entries = normalizeCheckins(checkins);
-  const calendarCells = buildDiaryCalendar(entries);
-  const weekLabels = locale === "en"
-    ? ["S", "M", "T", "W", "T", "F", "S"]
-    : ["일", "월", "화", "수", "목", "금", "토"];
-
-  return (
-    <section className="rounded-[1.25rem] border border-[#ead2ca] bg-white/65 p-4 dark:border-[#4a303c] dark:bg-[#2b1c26] sm:p-5">
-      <div>
-        <p className="ui-kicker">{copy.diary.kicker}</p>
-        <h2 className="ui-title mt-1 text-xl">{copy.diary.title}</h2>
-        <p className="ui-text-secondary mt-1 text-sm leading-6">{copy.diary.body}</p>
-      </div>
-
-      {entries.length ? (
-        <div className="mt-4 rounded-[1rem] border border-[#ead2ca] bg-[#fffaf6] p-3 dark:border-[#3a2630] dark:bg-[#2f202a]">
-          <div className="grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold text-[#9b7280] dark:text-[#cdb5bc]">
-            {weekLabels.map((label, index) => (
-              <span key={`${label}-${index}`}>{label}</span>
-            ))}
-          </div>
-          <div className="mt-2 grid grid-cols-7 gap-1">
-            {calendarCells.map((cell) => {
-              if (cell.empty) {
-                return <div key={cell.key} className="aspect-square" />;
-              }
-
-              const entry = cell.entry;
-              const memo = typeof entry?.memo === "string" ? entry.memo.trim() : "";
-              const tags = entry ? getCheckinTags(entry, copy) : { visible: [], hiddenCount: 0 };
-              const signals = entry ? getTopCheckinSignals(entry, copy) : [];
-              const summary = entry ? getCheckinSummary(entry, copy) : "";
-
-              return (
-                <div
-                  key={cell.key}
-                  title={memo || undefined}
-                  className={`relative min-h-14 rounded-[0.85rem] border p-1.5 text-left ${
-                    entry
-                      ? "border-[#e6b9c7] bg-white text-[#3f2230] dark:border-[#6a4050] dark:bg-[#3a2530] dark:text-[#f7e6e2]"
-                      : "border-transparent bg-transparent text-[#b79ca4] dark:text-[#80656d]"
-                  }`}
-                >
-                  {memo ? (
-                    <span className="absolute right-1 top-0 h-3 w-2 rounded-b-sm bg-[#e76b91]" aria-label={copy.diary.memoMarker} />
-                  ) : null}
-                  <p className="text-xs font-semibold leading-none">{cell.day}</p>
-                  {entry ? (
-                    <div className="mt-1 space-y-1">
-                      <p className="truncate text-[0.62rem] text-[#8a5d69] dark:text-[#d9bcc5]">{summary}</p>
-                      <div className="flex flex-wrap gap-0.5">
-                        {tags.visible.slice(0, 1).map((tag) => (
-                          <span key={tag} className="max-w-full truncate rounded-full border border-[#ead2ca] px-1 text-[0.58rem] text-[#7c3048] dark:border-[#5a3a45] dark:text-[#ffdce7]">
-                            {tag}
-                          </span>
-                        ))}
-                        {tags.hiddenCount || tags.visible.length > 1 ? (
-                          <span className="rounded-full border border-[#ead2ca] px-1 text-[0.58rem] text-[#7c3048] dark:border-[#5a3a45] dark:text-[#ffdce7]">
-                            +{tags.hiddenCount + Math.max(0, tags.visible.length - 1)}
-                          </span>
-                        ) : null}
-                      </div>
-                      {signals[0] ? (
-                        <p className="truncate text-[0.58rem] text-[#9b7280] dark:text-[#cdb5bc]">
-                          {signals[0].label} {signals[0].value}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-3 divide-y divide-[#ead2ca] overflow-hidden rounded-[0.9rem] border border-[#ead2ca] dark:divide-[#4a303c] dark:border-[#3a2630]">
-            {entries.slice(0, 2).map((entry) => {
-            const tags = getCheckinTags(entry, copy);
-            const signals = getTopCheckinSignals(entry, copy);
-            const memo = typeof entry.memo === "string" ? entry.memo.trim() : "";
-
-            return (
-              <article key={entry.id || entry.checkin_date} className="grid gap-3 p-3 sm:grid-cols-[5.5rem_minmax(0,1fr)]">
-                <div className="min-w-0">
-                  <p className="ui-text-primary text-sm font-semibold">{formatShortDate(entry.checkin_date, locale)}</p>
-                  <p className="ui-text-faint mt-1 break-words text-xs">
-                    <span>{getCheckinSummary(entry, copy)}</span>
-                    {signals.map((signal) => (
-                      <span key={signal.key}> · {signal.label} {signal.value}</span>
-                    ))}
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  {tags.visible.length || tags.hiddenCount ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {tags.visible.map((tag) => (
-                        <span key={tag} className="ui-chip-compact">{tag}</span>
-                      ))}
-                      {tags.hiddenCount ? (
-                        <span className="ui-chip-compact">+{tags.hiddenCount}</span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  {memo ? (
-                    <p className="ui-text-secondary mt-2 line-clamp-2 break-words text-sm leading-6">{memo}</p>
-                  ) : null}
-                </div>
-              </article>
-            );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 rounded-[1rem] border border-dashed border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#4a303c] dark:bg-[#2f202a]">
-          <p className="ui-text-secondary text-sm leading-6">{copy.diary.empty}</p>
-        </div>
-      )}
-    </section>
-  );
-}
-
 function EmptyProfileState({ copy }) {
   return (
     <section className="ui-card mx-auto w-full max-w-2xl p-6 text-center sm:p-8">
@@ -493,16 +273,22 @@ function getReportHref(path, locale = "ko") {
 export default function MyDashboard({ dashboard, locale = "ko" }) {
   const copy = getMyCopy(locale);
   const [clientDashboard, setClientDashboard] = useState(null);
+  const [isDiaryLoading, setIsDiaryLoading] = useState(false);
+  const browserDateContextRef = useRef(null);
   // Server props are the initial fallback; browser-local dashboard data replaces them after refresh.
   const activeDashboard = clientDashboard || dashboard;
 
   useEffect(() => {
-    const { localDate, timezone } = getBrowserDateContext();
+    const context = getBrowserDateContext();
+    const diaryMonth = context.localDate.slice(0, 7);
     const params = new URLSearchParams({
-      localDate,
-      timezone
+      localDate: context.localDate,
+      timezone: context.timezone,
+      diaryMonth
     });
     let isActive = true;
+
+    browserDateContextRef.current = context;
 
     async function refreshDashboard() {
       try {
@@ -531,16 +317,59 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
     };
   }, []);
 
+  async function handleDiaryMonthChange(nextMonth) {
+    if (!isValidDiaryMonth(nextMonth) || isDiaryLoading) {
+      return;
+    }
+
+    const context = browserDateContextRef.current || getBrowserDateContext();
+    const currentMonth = activeDashboard.currentDiaryMonth || context.localDate.slice(0, 7);
+
+    if (nextMonth > currentMonth) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      localDate: context.localDate,
+      timezone: context.timezone,
+      diaryMonth: nextMonth
+    });
+
+    setIsDiaryLoading(true);
+
+    try {
+      const response = await fetch(`/api/my/dashboard?${params.toString()}`, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+      setClientDashboard(data);
+    } catch {
+      // Keep the current month visible when a month refresh is unavailable.
+    } finally {
+      setIsDiaryLoading(false);
+    }
+  }
+
   const {
     latestSkinProfile,
     todayCheckin,
+    recentTrendCheckins,
     recentCheckins,
+    monthlyDiaryCheckins,
+    diaryMonth,
+    currentDiaryMonth,
     todayRoutine,
     latestSharePath,
     hasProfile,
     needsCheckIn
   } = activeDashboard;
   const latestReportHref = getReportHref(latestSharePath, locale);
+  const trendCheckins = recentTrendCheckins || recentCheckins || [];
 
   return (
     <main className="ui-page-shell min-h-screen px-4 py-6 sm:px-6 sm:py-8">
@@ -580,9 +409,17 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
                 <RoutinePendingNotice copy={copy} />
               ) : null}
 
-              <SkinTrendPreview checkins={recentCheckins} copy={copy} locale={locale} />
+              <SkinTrendPreview checkins={trendCheckins} copy={copy} locale={locale} />
 
-              <SkinDiaryPreview checkins={recentCheckins} copy={copy} locale={locale} />
+              <SkinDiaryCalendar
+                checkins={monthlyDiaryCheckins}
+                copy={copy}
+                locale={locale}
+                diaryMonth={diaryMonth}
+                currentDiaryMonth={currentDiaryMonth}
+                loading={isDiaryLoading}
+                onMonthChange={handleDiaryMonthChange}
+              />
 
               <SkinProfileSummaryCard
                 profile={latestSkinProfile}
