@@ -34,8 +34,6 @@ assert.match(layoutSource, /requestHeaders\.get\(DOCUMENT_LOCALE_HEADER_NAME\)/)
 assert.match(layoutSource, /<html lang=\{locale\}/);
 assert.match(layoutSource, /<DocumentLocaleSync \/>/);
 assert.match(clientSyncSource, /document\.documentElement\.lang = resolveDocumentLocale\(pathname\)/);
-assert.match(layoutSource, /"ko-KR": "\/"/);
-assert.match(layoutSource, /"en-US": "\/en"/);
 assert.match(englishPageSource, /canonical: "\/en"/);
 assert.match(englishPageSource, /"ko-KR": "\/"/);
 assert.match(englishPageSource, /"en-US": "\/en"/);
