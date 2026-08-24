@@ -30,6 +30,16 @@ const [middlewareSource, layoutSource, clientSyncSource, englishPageSource] = aw
 
 assert.match(middlewareSource, /DOCUMENT_LOCALE_HEADER_NAME/);
 assert.match(middlewareSource, /resolveDocumentLocale\(request\.nextUrl\.pathname\)/);
+assert.match(middlewareSource, /const localeRequestHeaders = getLocaleForwardedRequestHeaders\(request\);/);
+assert.ok(
+  middlewareSource.indexOf("const localeRequestHeaders = getLocaleForwardedRequestHeaders(request);") <
+    middlewareSource.indexOf("if (isDocumentRequest(request))"),
+  "locale headers must be prepared before document classification"
+);
+assert.match(
+  middlewareSource,
+  /return updateSession\(request, \{\s*requestHeaders: localeRequestHeaders\s*\}\);/
+);
 assert.match(layoutSource, /requestHeaders\.get\(DOCUMENT_LOCALE_HEADER_NAME\)/);
 assert.match(layoutSource, /<html lang=\{locale\}/);
 assert.match(layoutSource, /<DocumentLocaleSync \/>/);
