@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from "react";
 import FullReportPage from "../../../result/full-report/page";
-import { localizeStoredProductsForEnglish } from "@/lib/product-localization-client";
+import {
+  installEnglishFullReportResponseLocalization,
+  localizeStoredProductsForEnglish
+} from "@/lib/product-localization-client";
 
 export default function EnglishFullReportPage(props) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let active = true;
-    let restore = () => {};
+    let restoreStorage = () => {};
+    const restoreFetch = installEnglishFullReportResponseLocalization();
 
     void localizeStoredProductsForEnglish()
       .then((restoreLocalizedStorage) => {
-        restore = restoreLocalizedStorage;
+        restoreStorage = restoreLocalizedStorage;
       })
       .finally(() => {
         if (active) setReady(true);
@@ -21,7 +25,8 @@ export default function EnglishFullReportPage(props) {
 
     return () => {
       active = false;
-      restore();
+      restoreStorage();
+      restoreFetch();
     };
   }, []);
 
