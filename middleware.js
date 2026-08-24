@@ -20,21 +20,28 @@ function createSecurityPolicyUnavailableResponse() {
   );
 }
 
+function getLocaleForwardedRequestHeaders(request) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(
+    DOCUMENT_LOCALE_HEADER_NAME,
+    resolveDocumentLocale(request.nextUrl.pathname)
+  );
+  return requestHeaders;
+}
+
 export async function middleware(request) {
+  const localeRequestHeaders = getLocaleForwardedRequestHeaders(request);
+
   if (isDocumentRequest(request)) {
     let securityContext;
 
     try {
       securityContext = createDocumentSecurityContext({
-        requestHeaders: request.headers,
+        requestHeaders: localeRequestHeaders,
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         isDevelopment: process.env.NODE_ENV === "development",
         requestUrl: request.url
       });
-      securityContext.requestHeaders.set(
-        DOCUMENT_LOCALE_HEADER_NAME,
-        resolveDocumentLocale(request.nextUrl.pathname)
-      );
     } catch {
       return createSecurityPolicyUnavailableResponse();
     }
@@ -57,7 +64,9 @@ export async function middleware(request) {
     );
   }
 
-  return updateSession(request);
+  return updateSession(request, {
+    requestHeaders: localeRequestHeaders
+  });
 }
 
 export const config = {
