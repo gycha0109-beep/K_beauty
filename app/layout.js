@@ -41,13 +41,6 @@ export const metadata = {
     template: `%s | ${brandTitle}`
   },
   description: siteDescription,
-  alternates: {
-    canonical: "/",
-    languages: {
-      "ko-KR": "/",
-      "en-US": "/en"
-    }
-  },
   openGraph: {
     title: brandTitle,
     description: socialDescription,
