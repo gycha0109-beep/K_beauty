@@ -1,5 +1,7 @@
-import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   FAILURE_CATEGORIES,
   JourneyFailure,
@@ -16,7 +18,6 @@ import {
   MY_E2E_META_PURPOSE,
   MY_E2E_META_SHA,
   MY_E2E_PURPOSE,
-  MY_E2E_VERCEL_PROJECT,
   MY_E2E_VERCEL_SCOPE,
   resolveMyE2EPreviewDeployment,
   runMyE2EVercelCommand
@@ -29,15 +30,33 @@ const branch = getGitBranch();
 const gitHead = getGitHead();
 requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "preview_branch_invalid");
 
-const vercelDir = resolve(process.cwd(), ".vercel");
-const gitignorePath = resolve(process.cwd(), ".gitignore");
-const hadVercelDir = existsSync(vercelDir);
-const hadGitignore = existsSync(gitignorePath);
-const originalGitignore = hadGitignore ? readFileSync(gitignorePath, "utf8") : null;
+const snapshotDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-"));
+const snapshotPrefix = `${snapshotDir.replace(/\\/g, "/")}/`;
 
 try {
+  try {
+    execFileSync("git", [
+      "checkout-index",
+      "--all",
+      "--force",
+      `--prefix=${snapshotPrefix}`
+    ], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+  } catch (error) {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "preview-snapshot",
+      "git_tracked_snapshot_export_failed",
+      error?.stderr || error?.message || "git_tracked_snapshot_export_failed"
+    );
+  }
+
   runMyE2EVercelCommand([
     "deploy",
+    snapshotDir,
     "--yes",
     "--scope",
     MY_E2E_VERCEL_SCOPE,
@@ -49,14 +68,7 @@ try {
     `${MY_E2E_META_PURPOSE}=${MY_E2E_PURPOSE}`
   ], "vercel-preview-deploy");
 } finally {
-  if (!hadVercelDir && existsSync(vercelDir)) rmSync(vercelDir, { recursive: true, force: true });
-  if (hadGitignore) {
-    if (!existsSync(gitignorePath) || readFileSync(gitignorePath, "utf8") !== originalGitignore) {
-      writeFileSync(gitignorePath, originalGitignore, "utf8");
-    }
-  } else if (existsSync(gitignorePath)) {
-    unlinkSync(gitignorePath);
-  }
+  rmSync(snapshotDir, { recursive: true, force: true });
 }
 
 assertGitWorktreeClean();
@@ -73,8 +85,9 @@ console.log(JSON.stringify({
   branch,
   gitHead,
   attestationSource: deployed.attestationSource,
-  project: MY_E2E_VERCEL_PROJECT,
+  project: deployed.project,
   scope: MY_E2E_VERCEL_SCOPE,
+  deploymentSource: "tracked-git-snapshot",
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));
