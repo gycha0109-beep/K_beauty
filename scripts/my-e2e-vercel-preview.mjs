@@ -16,10 +16,6 @@ export const MY_E2E_VERCEL_PROJECT_ID = String(
 export const MY_E2E_VERCEL_ORG_ID = String(
   process.env.MY_E2E_VERCEL_ORG_ID || process.env.VERCEL_ORG_ID || "team_xuYA9OhCWlJETaYFOmeVodgS"
 ).trim();
-export const MY_E2E_META_SHA = "myE2EGitSha";
-export const MY_E2E_META_BRANCH = "myE2EGitBranch";
-export const MY_E2E_META_PURPOSE = "myE2EPurpose";
-export const MY_E2E_PURPOSE = "my-adversarial";
 
 function resolveNpxInvocation() {
   const npmExecPath = String(process.env.npm_execpath || "").trim();
@@ -76,7 +72,7 @@ function runVercel(args, step) {
       summary || "vercel_cli_failed"
     );
   }
-  return [stdout, stderr].filter(Boolean).join("\n");
+  return stdout;
 }
 
 function deploymentUrls(output) {
@@ -85,18 +81,7 @@ function deploymentUrls(output) {
   )];
 }
 
-function listByMetadata({ branch, gitHead, metadataSource }) {
-  const metadata = metadataSource === "my-e2e"
-    ? [
-        `${MY_E2E_META_SHA}=${gitHead}`,
-        `${MY_E2E_META_BRANCH}=${branch}`,
-        `${MY_E2E_META_PURPOSE}=${MY_E2E_PURPOSE}`
-      ]
-    : [
-        `githubCommitSha=${gitHead}`,
-        `githubCommitRef=${branch}`
-      ];
-
+function listGitAttestedDeployments({ branch, gitHead }) {
   const args = [
     "list",
     MY_E2E_VERCEL_PROJECT,
@@ -106,10 +91,13 @@ function listByMetadata({ branch, gitHead, metadataSource }) {
     "preview",
     "--status",
     "READY",
-    "--yes"
+    "--yes",
+    "--meta",
+    `githubCommitSha=${gitHead}`,
+    "--meta",
+    `githubCommitRef=${branch}`
   ];
-  for (const pair of metadata) args.push("--meta", pair);
-  return deploymentUrls(runVercel(args, `vercel-preview-${metadataSource}`));
+  return deploymentUrls(runVercel(args, "vercel-preview-github"));
 }
 
 export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = "" } = {}) {
@@ -118,14 +106,8 @@ export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = 
   requireCondition(MY_E2E_VERCEL_PROJECT && MY_E2E_VERCEL_SCOPE, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_project_scope_missing");
   requireCondition(MY_E2E_VERCEL_PROJECT_ID && MY_E2E_VERCEL_ORG_ID, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_project_ids_missing");
 
-  let urls = listByMetadata({ branch, gitHead, metadataSource: "my-e2e" });
-  let attestationSource = "my-e2e-metadata";
-  if (!urls.length) {
-    urls = listByMetadata({ branch, gitHead, metadataSource: "github" });
-    attestationSource = "github-metadata";
-  }
-
-  requireCondition(urls.length > 0, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_preview_for_head_not_found");
+  const urls = listGitAttestedDeployments({ branch, gitHead });
+  requireCondition(urls.length > 0, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_git_preview_for_head_not_found");
 
   let selected = urls[0];
   if (requestedUrl) {
@@ -145,12 +127,25 @@ export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = 
     projectId: MY_E2E_VERCEL_PROJECT_ID,
     scope: MY_E2E_VERCEL_SCOPE,
     orgId: MY_E2E_VERCEL_ORG_ID,
-    attestationSource
+    attestationSource: "github-metadata"
   };
 }
 
 export function runMyE2EVercelCommand(args, step = "vercel-command") {
   return runVercel(args, step);
+}
+
+export function runMyE2EVercelJsonCommand(args, step = "vercel-json-command") {
+  const output = runVercel(args, step);
+  try {
+    return JSON.parse(output);
+  } catch {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      step,
+      "vercel_cli_json_invalid"
+    );
+  }
 }
 
 export function extractMyE2EDeploymentUrls(output) {
