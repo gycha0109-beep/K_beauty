@@ -13,6 +13,7 @@ export default function MyDashboardMenu({ locale = "ko" }) {
         { code: "ko", label: copy.menu.languages.ko, href: "/my", active: locale !== "en" },
         { code: "en", label: copy.menu.languages.en, href: "/en/my", active: locale === "en" }
       ]}
+      showAccountIdentity
       actions={[
         {
           label: copy.menu.startAnalysis,
