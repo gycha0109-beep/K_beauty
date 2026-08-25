@@ -89,6 +89,8 @@ for (const probe of [
   "premiumReport",
   "ATTACKER_OVERWRITE"
 ]) includes(runner, probe, `adversarial probe ${probe}`);
+includes(runner, 'data: Buffer.from("{", "utf8")', "raw malformed JSON transport");
+assert.doesNotMatch(runner, /data:\s*"\{"/, "malformed JSON probe must not use Playwright string data serialization");
 
 // API level fields are an explicit JSON-number contract: do not accept coercible strings from direct callers.
 includes(checkinRoute, 'typeof value !== "number"', "strict level JSON type boundary");
