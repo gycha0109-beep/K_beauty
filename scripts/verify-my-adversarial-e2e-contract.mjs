@@ -37,6 +37,7 @@ const previewDeployer = read("scripts/deploy-my-adversarial-e2e-preview.mjs");
 const rlsProbe = read("scripts/run-my-rls-adversarial-probe.mjs");
 const checkinRoute = read("app/api/my/check-in/route.js");
 const packageJson = JSON.parse(read("package.json"));
+const vercelConfig = JSON.parse(read("vercel.json"));
 const health = read("scripts/verify-current-main-health.mjs");
 const revisitMigration = read("supabase/migrations/20260520170737_add_revisit_core_tables.sql");
 
@@ -134,15 +135,15 @@ includes(runner, 'a[href="/my"]', "EN-to-KO My navigation");
 includes(runner, 'getByRole("button", { name: /sign out/i })', "logout UI action");
 includes(runner, "session_still_authenticated_after_logout", "post-logout API boundary");
 
-// Exact deployment attestation: stale stored URLs and caller-asserted deployment SHAs are not authorities.
+// Exact deployment attestation must come from Vercel native Git metadata only.
 matches(previewResolver, /"--environment"\s*,\s*"preview"/, "Vercel Preview-only discovery");
 matches(previewResolver, /"--status"\s*,\s*"READY"/, "Vercel READY-only discovery");
 includes(previewResolver, "githubCommitSha", "Git deployment SHA metadata filter");
 includes(previewResolver, "githubCommitRef", "Git deployment branch metadata filter");
-includes(previewResolver, "myE2EGitSha", "manual exact-head deployment SHA metadata");
-includes(previewResolver, "myE2EGitBranch", "manual exact-head deployment branch metadata");
+includes(previewResolver, 'attestationSource: "github-metadata"', "native Git attestation verdict");
+includes(previewResolver, "vercel_git_preview_for_head_not_found", "missing native exact Preview must fail closed");
 includes(previewResolver, "requested_preview_not_attested_for_head", "caller URL must be attested");
-includes(previewResolver, "vercel_preview_for_head_not_found", "missing exact Preview must fail closed");
+assert.doesNotMatch(previewResolver, /myE2EGitSha|myE2EGitBranch|myE2EPurpose|my-e2e-metadata/, "self-declared deployment metadata must not be an authority");
 includes(previewResolver, "VERCEL_PROJECT_ID: MY_E2E_VERCEL_PROJECT_ID", "existing Vercel project ID authority");
 includes(previewResolver, "VERCEL_ORG_ID: MY_E2E_VERCEL_ORG_ID", "existing Vercel org ID authority");
 includes(loginBootstrap, "resolveMyE2EPreviewDeployment", "login target auto-discovery");
@@ -152,32 +153,37 @@ includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth 
 includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
 assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
 
-// Preview deployment helper must export the exact HEAD index with checkout EOL conversion disabled.
-matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
-assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
-includes(previewDeployer, "GIT_INDEX_FILE: snapshotIndexPath", "isolated exact-HEAD index authority");
-matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*\n?\s*"read-tree"/, "exact HEAD tree import");
-includes(previewDeployer, "gitHead", "exact HEAD snapshot authority");
-includes(previewDeployer, '"core.autocrlf=false"', "checkout EOL conversion disabled");
-matches(previewDeployer, /"checkout-index"\s*,\s*\n?\s*"--all"/, "tracked HEAD snapshot export");
-includes(previewDeployer, '"--ignore-skip-worktree-bits"', "complete tracked HEAD export");
-assert.doesNotMatch(previewDeployer, /tarCommand|tracked-head\.tar|"archive"/, "snapshot export must not depend on external tar extraction");
-includes(previewDeployer, '"cat-file"', "Git blob byte authority");
-includes(previewDeployer, '"blob"', "Git blob byte authority mode");
-includes(previewDeployer, "LEGACY_RECOMMENDATION_CORPUS", "frozen corpus byte attestation target");
-includes(previewDeployer, "snapshotCorpus.equals(canonicalCorpus)", "snapshot byte equality assertion");
-includes(previewDeployer, "git_snapshot_byte_mismatch", "snapshot byte mismatch fail-closed guard");
-includes(previewDeployer, "git_canonical_snapshot_export_failed", "canonical snapshot export failure category");
-includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
-includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
-includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
-includes(previewDeployer, "rmSync(snapshotIndexDir", "temporary index cleanup");
-includes(previewDeployer, "deploymentSource: \"canonical-head-index-snapshot\"", "canonical snapshot verdict");
-includes(previewDeployer, "snapshotByteAuthority: \"git-cat-file-blob\"", "Git blob byte authority verdict");
-includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
-includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
+// Git-backed Preview deployment: exact remote branch head -> ephemeral deploy hook -> native Git metadata -> hook cleanup.
+includes(previewDeployer, '"ls-remote"', "remote branch SHA lookup");
+includes(previewDeployer, '"--heads"', "remote branch lookup must be branch-scoped");
+includes(previewDeployer, '"origin"', "origin remote authority");
+includes(previewDeployer, "refs/heads/${branch}", "exact branch ref lookup");
+includes(previewDeployer, "remote_branch_not_exact_head", "remote/local exact SHA equality gate");
+includes(previewDeployer, '"deploy-hooks"', "Vercel deploy hook flow");
+includes(previewDeployer, '"create"', "ephemeral deploy hook creation");
+includes(previewDeployer, '"--ref"', "deploy hook branch pin");
+includes(previewDeployer, '"--project"', "explicit Vercel project target");
+includes(previewDeployer, "MY_E2E_VERCEL_PROJECT", "Vercel project authority");
+includes(previewDeployer, "MY_E2E_VERCEL_SCOPE", "Vercel scope authority");
+includes(previewDeployer, 'hookUrl.searchParams.set("buildCache", "false")', "fresh Git build trigger");
+includes(previewDeployer, 'hookUrl.hostname === "api.vercel.com"', "deploy hook host allowlist");
+includes(previewDeployer, 'hookUrl.pathname.startsWith("/v1/integrations/deploy/")', "deploy hook path allowlist");
+includes(previewDeployer, "vercel_git_preview_ready_timeout", "native Git Preview readiness timeout");
+includes(previewDeployer, 'deployed.attestationSource === "github-metadata"', "deployer requires native Git metadata");
+includes(previewDeployer, "vercel_native_git_attestation_mismatch", "native Git metadata fail-closed assertion");
+includes(previewDeployer, '"rm"', "ephemeral deploy hook cleanup command");
+includes(previewDeployer, '"--yes"', "non-interactive deploy hook cleanup");
+includes(previewDeployer, 'deploymentSource: "vercel-git-deploy-hook"', "Git-backed deployment verdict");
+includes(previewDeployer, 'remoteHeadAuthority: "origin-branch-sha"', "remote Git SHA verdict");
+includes(previewDeployer, 'artifactGitAuthority: "vercel-git-source"', "Vercel Git artifact authority verdict");
+includes(previewDeployer, "deployHookRemoved: true", "deploy hook cleanup verdict");
 includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
 includes(previewDeployer, "localVercelLinkCreated: false", "no persistent local link contract");
+assert.doesNotMatch(previewDeployer, /checkout-index|GIT_INDEX_FILE|snapshotDir|tracked-head\.tar|"archive"/, "native Git deployment must not upload a reconstructed local snapshot");
+
+// Repository policy remains main-only for automatic Git deployments; manual My validation uses an explicit deploy hook.
+assert.equal(vercelConfig?.git?.deploymentEnabled?.["**"], false, "automatic feature-branch deploys must stay disabled");
+assert.equal(vercelConfig?.git?.deploymentEnabled?.main, true, "main automatic deployment must stay enabled");
 
 // Launcher reuses the authoritative premium two-account cookie capture rather than inventing a second auth mechanism.
 includes(launcher, "captureAccountSessionResilient", "shared auth capture");
