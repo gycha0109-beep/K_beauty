@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import MyDashboardMenu from "@/components/my/MyDashboardMenu";
+import SavedReportHistory from "@/components/my/SavedReportHistory";
 import SkinDiaryCalendar from "@/components/my/SkinDiaryCalendar";
 import SkinProfileSummaryCard from "@/components/my/SkinProfileSummaryCard";
 import TodayCheckInPrompt from "@/components/my/TodayCheckInPrompt";
@@ -394,7 +395,10 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
 
         <div className="mt-6 sm:mt-8">
           {!hasProfile ? (
-            <EmptyProfileState copy={copy} />
+            <div className="space-y-4 sm:space-y-5">
+              <EmptyProfileState copy={copy} />
+              <SavedReportHistory locale={locale} />
+            </div>
           ) : (
             <div className="space-y-4 sm:space-y-5">
               {needsCheckIn ? (
@@ -420,6 +424,8 @@ export default function MyDashboard({ dashboard, locale = "ko" }) {
                 loading={isDiaryLoading}
                 onMonthChange={handleDiaryMonthChange}
               />
+
+              <SavedReportHistory locale={locale} />
 
               <SkinProfileSummaryCard
                 profile={latestSkinProfile}
