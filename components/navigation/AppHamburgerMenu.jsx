@@ -31,6 +31,7 @@ export default function AppHamburgerMenu({
   languageOptions,
   showLanguage = true,
   showAccount = true,
+  showAccountIdentity = false,
   showTheme = true,
   actions = [],
   openLabel,
@@ -138,7 +139,12 @@ export default function AppHamburgerMenu({
                 {navigationCopy.account}
               </p>
               <div className="mt-1.5">
-                <AuthNav locale={locale} showMyLink={false} menu />
+                <AuthNav
+                  locale={locale}
+                  showMyLink={false}
+                  showAccountIdentity={showAccountIdentity}
+                  menu
+                />
               </div>
             </div>
           ) : null}
