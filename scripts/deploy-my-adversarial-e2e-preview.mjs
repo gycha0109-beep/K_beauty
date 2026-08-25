@@ -34,35 +34,40 @@ const gitHead = getGitHead();
 requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "preview_branch_invalid");
 
 const snapshotDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-"));
-const archivePath = join(snapshotDir, "tracked-head.tar");
-const tarCommand = process.platform === "win32" ? "tar.exe" : "tar";
+const snapshotIndexDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-index-"));
+const snapshotIndexPath = join(snapshotIndexDir, "index");
+const snapshotPrefix = `${snapshotDir.replace(/\\/g, "/")}/`;
+const snapshotGitEnv = {
+  ...process.env,
+  GIT_INDEX_FILE: snapshotIndexPath
+};
 
 try {
   try {
     execFileSync("git", [
-      "archive",
-      "--format=tar",
-      "--output",
-      archivePath,
+      "read-tree",
       gitHead
     ], {
       cwd: process.cwd(),
+      env: snapshotGitEnv,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
 
-    execFileSync(tarCommand, [
-      "-xf",
-      archivePath,
-      "-C",
-      snapshotDir
+    execFileSync("git", [
+      "-c",
+      "core.autocrlf=false",
+      "checkout-index",
+      "--all",
+      "--force",
+      "--ignore-skip-worktree-bits",
+      `--prefix=${snapshotPrefix}`
     ], {
       cwd: process.cwd(),
+      env: snapshotGitEnv,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
-
-    rmSync(archivePath, { force: true });
   } catch (error) {
     throw new JourneyFailure(
       FAILURE_CATEGORIES.PRECONDITION,
@@ -119,6 +124,7 @@ try {
   ], "vercel-preview-deploy");
 } finally {
   rmSync(snapshotDir, { recursive: true, force: true });
+  rmSync(snapshotIndexDir, { recursive: true, force: true });
 }
 
 assertGitWorktreeClean();
@@ -137,7 +143,7 @@ console.log(JSON.stringify({
   attestationSource: deployed.attestationSource,
   project: deployed.project,
   scope: MY_E2E_VERCEL_SCOPE,
-  deploymentSource: "canonical-git-archive-snapshot",
+  deploymentSource: "canonical-head-index-snapshot",
   snapshotByteAuthority: "git-cat-file-blob",
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
