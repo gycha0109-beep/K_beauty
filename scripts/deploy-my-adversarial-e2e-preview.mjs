@@ -63,6 +63,46 @@ function delay(ms) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 }
 
+function removeDeployHook(hookId, step) {
+  runMyE2EVercelCommand([
+    "deploy-hooks",
+    "rm",
+    hookId,
+    "--project",
+    MY_E2E_VERCEL_PROJECT,
+    "--scope",
+    MY_E2E_VERCEL_SCOPE,
+    "--yes"
+  ], step);
+}
+
+function cleanupOrphanedHook(hookName) {
+  const listed = runMyE2EVercelJsonCommand([
+    "deploy-hooks",
+    "ls",
+    "--project",
+    MY_E2E_VERCEL_PROJECT,
+    "--scope",
+    MY_E2E_VERCEL_SCOPE
+  ], "vercel-deploy-hook-preflight-list");
+
+  const hooks = Array.isArray(listed?.hooks) ? listed.hooks : [];
+  for (const hook of hooks) {
+    const candidateName = String(hook?.name || "").trim();
+    const candidateRef = String(hook?.ref || "").trim();
+    if (candidateName !== hookName || candidateRef !== branch) continue;
+
+    const candidateId = String(hook?.id || "").trim();
+    requireCondition(
+      candidateId,
+      FAILURE_CATEGORIES.PRECONDITION,
+      "vercel-deploy-hook-preflight-list",
+      "orphaned_deploy_hook_id_missing"
+    );
+    removeDeployHook(candidateId, "vercel-deploy-hook-preflight-remove");
+  }
+}
+
 async function waitForGitAttestedPreview() {
   for (let attempt = 0; attempt < DEPLOYMENT_POLL_ATTEMPTS; attempt += 1) {
     try {
@@ -97,6 +137,8 @@ let primaryError = null;
 let cleanupError = null;
 
 try {
+  cleanupOrphanedHook(hookName);
+
   const created = runMyE2EVercelJsonCommand([
     "deploy-hooks",
     "create",
@@ -174,16 +216,7 @@ try {
 } finally {
   if (hookId) {
     try {
-      runMyE2EVercelCommand([
-        "deploy-hooks",
-        "rm",
-        hookId,
-        "--project",
-        MY_E2E_VERCEL_PROJECT,
-        "--scope",
-        MY_E2E_VERCEL_SCOPE,
-        "--yes"
-      ], "vercel-deploy-hook-remove");
+      removeDeployHook(hookId, "vercel-deploy-hook-remove");
     } catch (error) {
       cleanupError = error instanceof JourneyFailure
         ? error
@@ -216,6 +249,7 @@ console.log(JSON.stringify({
   remoteHeadAuthority: "origin-branch-sha",
   artifactGitAuthority: "vercel-git-source",
   deployHookRemoved: true,
+  orphanedHookRecovery: true,
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));
