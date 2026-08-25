@@ -628,16 +628,7 @@ try {
     failure: finalError ? { category: finalError.category, step: finalError.step, code: finalError.code } : null,
     checks
   };
-  const summary = `# My adversarial authenticated E2E\
-\
-- Run ID: \`${runId}\`\
-- Environment: \`${environment}\`\
-- Target host: \`${baseUrl.hostname}\`\
-- Target SHA: \`${deploymentSha}\`\
-- Result: **${passed ? "PASS" : "FAIL"}**\
-- Two-account isolation: enabled\
-- Cleanup: exact fixture IDs + prior active-profile restoration\
-${finalError ? `- Failure: \`${finalError.category}/${finalError.step}/${finalError.code}\`` : ""}`;
+  const summary = `# My adversarial authenticated E2E\n\n- Run ID: \`${runId}\`\n- Environment: \`${environment}\`\n- Target host: \`${baseUrl.hostname}\`\n- Target SHA: \`${deploymentSha}\`\n- Result: **${passed ? "PASS" : "FAIL"}**\n- Two-account isolation: enabled\n- Cleanup: exact fixture IDs + prior active-profile restoration\n${finalError ? `- Failure: \`${finalError.category}/${finalError.step}/${finalError.code}\`` : ""}`;
   await writeArtifactSet({ artifactDir, manifest, steps, responses, persistence, verdict, summary });
   try {
     await scanArtifactDirectoryForSecrets(artifactDir, [accessTokenA, accessTokenB, previewBypassToken, userA.email, userB.email]);
