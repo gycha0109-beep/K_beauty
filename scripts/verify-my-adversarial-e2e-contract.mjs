@@ -17,6 +17,10 @@ function includes(source, needle, label) {
   assert.ok(source.includes(needle), `${label}: missing ${JSON.stringify(needle)}`);
 }
 
+function matches(source, pattern, label) {
+  assert.match(source, pattern, `${label}: missing ${String(pattern)}`);
+}
+
 function syntaxCheck(relativePath) {
   const result = spawnSync(process.execPath, ["--check", relativePath], {
     cwd: root,
@@ -27,16 +31,24 @@ function syntaxCheck(relativePath) {
 
 const runner = read("scripts/run-my-adversarial-e2e.mjs");
 const launcher = read("scripts/run-my-adversarial-e2e-local.mjs");
+const loginBootstrap = read("scripts/bootstrap-my-adversarial-e2e-auth.mjs");
+const previewResolver = read("scripts/my-e2e-vercel-preview.mjs");
+const previewDeployer = read("scripts/deploy-my-adversarial-e2e-preview.mjs");
 const rlsProbe = read("scripts/run-my-rls-adversarial-probe.mjs");
 const checkinRoute = read("app/api/my/check-in/route.js");
 const packageJson = JSON.parse(read("package.json"));
 const health = read("scripts/verify-current-main-health.mjs");
 const revisitMigration = read("supabase/migrations/20260520170737_add_revisit_core_tables.sql");
 
-syntaxCheck("scripts/run-my-adversarial-e2e.mjs");
-syntaxCheck("scripts/run-my-adversarial-e2e-local.mjs");
-syntaxCheck("scripts/run-my-rls-adversarial-probe.mjs");
-syntaxCheck("scripts/verify-my-adversarial-e2e-contract.mjs");
+for (const file of [
+  "scripts/run-my-adversarial-e2e.mjs",
+  "scripts/run-my-adversarial-e2e-local.mjs",
+  "scripts/bootstrap-my-adversarial-e2e-auth.mjs",
+  "scripts/my-e2e-vercel-preview.mjs",
+  "scripts/deploy-my-adversarial-e2e-preview.mjs",
+  "scripts/run-my-rls-adversarial-probe.mjs",
+  "scripts/verify-my-adversarial-e2e-contract.mjs"
+]) syntaxCheck(file);
 
 // The runtime must use real browser sessions and two distinct permanent accounts.
 includes(runner, 'import { chromium } from "playwright";', "Playwright runtime");
@@ -77,6 +89,8 @@ for (const probe of [
   "premiumReport",
   "ATTACKER_OVERWRITE"
 ]) includes(runner, probe, `adversarial probe ${probe}`);
+includes(runner, 'data: Buffer.from("{", "utf8")', "raw malformed JSON transport");
+assert.doesNotMatch(runner, /data:\s*"\{"/, "malformed JSON probe must not use Playwright string data serialization");
 
 // API level fields are an explicit JSON-number contract: do not accept coercible strings from direct callers.
 includes(checkinRoute, 'typeof value !== "number"', "strict level JSON type boundary");
@@ -120,12 +134,56 @@ includes(runner, 'a[href="/my"]', "EN-to-KO My navigation");
 includes(runner, 'getByRole("button", { name: /sign out/i })', "logout UI action");
 includes(runner, "session_still_authenticated_after_logout", "post-logout API boundary");
 
-// Launcher reuses the already-authoritative premium two-account cookie capture rather than inventing a second auth mechanism.
+// Exact deployment attestation: stale stored URLs and caller-asserted deployment SHAs are not authorities.
+matches(previewResolver, /"--environment"\s*,\s*"preview"/, "Vercel Preview-only discovery");
+matches(previewResolver, /"--status"\s*,\s*"READY"/, "Vercel READY-only discovery");
+includes(previewResolver, "githubCommitSha", "Git deployment SHA metadata filter");
+includes(previewResolver, "githubCommitRef", "Git deployment branch metadata filter");
+includes(previewResolver, "myE2EGitSha", "manual exact-head deployment SHA metadata");
+includes(previewResolver, "myE2EGitBranch", "manual exact-head deployment branch metadata");
+includes(previewResolver, "requested_preview_not_attested_for_head", "caller URL must be attested");
+includes(previewResolver, "vercel_preview_for_head_not_found", "missing exact Preview must fail closed");
+includes(previewResolver, "VERCEL_PROJECT_ID: MY_E2E_VERCEL_PROJECT_ID", "existing Vercel project ID authority");
+includes(previewResolver, "VERCEL_ORG_ID: MY_E2E_VERCEL_ORG_ID", "existing Vercel org ID authority");
+includes(loginBootstrap, "resolveMyE2EPreviewDeployment", "login target auto-discovery");
+matches(loginBootstrap, /"--url"\s*,\s*deployment\.url/, "premium login receives attested URL only");
+includes(launcher, "resolveMyE2EPreviewDeployment", "runtime target auto-discovery");
+includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth target rejection");
+includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
+assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
+
+// Preview deployment helper must export the exact HEAD index with checkout EOL conversion disabled.
+matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
+assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
+includes(previewDeployer, "GIT_INDEX_FILE: snapshotIndexPath", "isolated exact-HEAD index authority");
+matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*\n?\s*"read-tree"/, "exact HEAD tree import");
+includes(previewDeployer, "gitHead", "exact HEAD snapshot authority");
+includes(previewDeployer, '"core.autocrlf=false"', "checkout EOL conversion disabled");
+matches(previewDeployer, /"checkout-index"\s*,\s*\n?\s*"--all"/, "tracked HEAD snapshot export");
+includes(previewDeployer, '"--ignore-skip-worktree-bits"', "complete tracked HEAD export");
+assert.doesNotMatch(previewDeployer, /tarCommand|tracked-head\.tar|"archive"/, "snapshot export must not depend on external tar extraction");
+includes(previewDeployer, '"cat-file"', "Git blob byte authority");
+includes(previewDeployer, '"blob"', "Git blob byte authority mode");
+includes(previewDeployer, "LEGACY_RECOMMENDATION_CORPUS", "frozen corpus byte attestation target");
+includes(previewDeployer, "snapshotCorpus.equals(canonicalCorpus)", "snapshot byte equality assertion");
+includes(previewDeployer, "git_snapshot_byte_mismatch", "snapshot byte mismatch fail-closed guard");
+includes(previewDeployer, "git_canonical_snapshot_export_failed", "canonical snapshot export failure category");
+includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
+includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
+includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
+includes(previewDeployer, "rmSync(snapshotIndexDir", "temporary index cleanup");
+includes(previewDeployer, "deploymentSource: \"canonical-head-index-snapshot\"", "canonical snapshot verdict");
+includes(previewDeployer, "snapshotByteAuthority: \"git-cat-file-blob\"", "Git blob byte authority verdict");
+includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
+includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
+includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
+includes(previewDeployer, "localVercelLinkCreated: false", "no persistent local link contract");
+
+// Launcher reuses the authoritative premium two-account cookie capture rather than inventing a second auth mechanism.
 includes(launcher, "captureAccountSessionResilient", "shared auth capture");
 includes(launcher, "assertAccountPair", "shared account-pair assertion");
 includes(launcher, "loadBootstrapMetadata", "bootstrap identity pin");
 includes(launcher, "assertGitWorktreeClean", "clean exact-head guard");
-includes(launcher, "resolveExpectedSha", "exact deployment SHA guard");
 includes(launcher, "LOCAL_PROFILE_A_PATH", "shared profile A path");
 includes(launcher, "LOCAL_PROFILE_B_PATH", "shared profile B path");
 includes(launcher, "verify-my-adversarial-e2e-contract.mjs", "launcher preflight verifier");
@@ -144,7 +202,8 @@ for (const contract of [
 ]) includes(revisitMigration, contract, `Supabase authority ${contract}`);
 
 assert.equal(packageJson.scripts["verify:my-adversarial-e2e-contract"], "node scripts/verify-my-adversarial-e2e-contract.mjs");
-assert.equal(packageJson.scripts["e2e:my:login"], "node scripts/bootstrap-premium-e2e-auth.mjs");
+assert.equal(packageJson.scripts["e2e:my:deploy-preview"], "node scripts/deploy-my-adversarial-e2e-preview.mjs");
+assert.equal(packageJson.scripts["e2e:my:login"], "node scripts/bootstrap-my-adversarial-e2e-auth.mjs");
 assert.equal(packageJson.scripts["e2e:my:hosted"], "node scripts/run-my-adversarial-e2e-local.mjs");
 includes(
   health,
