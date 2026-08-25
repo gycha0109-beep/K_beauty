@@ -24,11 +24,18 @@ function getVisibleUser(user) {
   return user;
 }
 
-export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut = true, menu = false }) {
+export default function AuthNav({
+  locale = "ko",
+  showMyLink = true,
+  showSignOut = true,
+  showAccountIdentity = false,
+  menu = false
+}) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const isEnglish = locale === "en";
   const myPath = isEnglish ? "/en/my" : "/my";
+  const signOutAction = isEnglish ? "/api/auth/signout?locale=en" : "/api/auth/signout?locale=ko";
   const copy = getCommonCopy(locale).auth;
 
   useEffect(() => {
@@ -95,6 +102,7 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
   }
 
   const avatarInitials = getAvatarInitials(user);
+  const accountEmail = typeof user.email === "string" ? user.email.trim() : "";
 
   return (
     <div className={menu ? "flex min-w-0 items-center justify-between gap-2" : "flex min-w-0 items-center justify-end gap-1.5 sm:gap-2"}>
@@ -110,6 +118,14 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
           </svg>
         )}
       </span>
+      {showAccountIdentity && accountEmail ? (
+        <span
+          className="min-w-0 flex-1 truncate text-[11px] font-medium text-[#7a5360] dark:text-[#e5c7d1]"
+          title={accountEmail}
+        >
+          {accountEmail}
+        </span>
+      ) : null}
       {showMyLink ? (
         <Link
           href={myPath}
@@ -119,7 +135,7 @@ export default function AuthNav({ locale = "ko", showMyLink = true, showSignOut 
         </Link>
       ) : null}
       {showSignOut ? (
-        <form method="post" action="/api/auth/signout">
+        <form method="post" action={signOutAction}>
           <button
             type="submit"
             className="inline-flex min-h-9 items-center justify-center whitespace-nowrap rounded-full border border-[#ead2ca] bg-white/70 px-3 py-1.5 text-xs font-semibold text-[#7d5361] transition hover:border-[#dbaea4] hover:bg-white dark:border-[#5a3a48] dark:bg-[#301f28] dark:text-[#c8aeb8] dark:hover:border-[#6a4050] dark:hover:bg-[#352430]"
