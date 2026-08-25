@@ -17,6 +17,10 @@ function includes(source, needle, label) {
   assert.ok(source.includes(needle), `${label}: missing ${JSON.stringify(needle)}`);
 }
 
+function matches(source, pattern, label) {
+  assert.match(source, pattern, `${label}: missing ${String(pattern)}`);
+}
+
 function syntaxCheck(relativePath) {
   const result = spawnSync(process.execPath, ["--check", relativePath], {
     cwd: root,
@@ -129,26 +133,28 @@ includes(runner, 'getByRole("button", { name: /sign out/i })', "logout UI action
 includes(runner, "session_still_authenticated_after_logout", "post-logout API boundary");
 
 // Exact deployment attestation: stale stored URLs and caller-asserted deployment SHAs are not authorities.
-includes(previewResolver, '"--environment",\n    "preview"', "Vercel Preview-only discovery");
-includes(previewResolver, '"--status",\n    "READY"', "Vercel READY-only discovery");
+matches(previewResolver, /"--environment"\s*,\s*"preview"/, "Vercel Preview-only discovery");
+matches(previewResolver, /"--status"\s*,\s*"READY"/, "Vercel READY-only discovery");
 includes(previewResolver, "githubCommitSha", "Git deployment SHA metadata filter");
 includes(previewResolver, "githubCommitRef", "Git deployment branch metadata filter");
 includes(previewResolver, "myE2EGitSha", "manual exact-head deployment SHA metadata");
 includes(previewResolver, "myE2EGitBranch", "manual exact-head deployment branch metadata");
 includes(previewResolver, "requested_preview_not_attested_for_head", "caller URL must be attested");
 includes(previewResolver, "vercel_preview_for_head_not_found", "missing exact Preview must fail closed");
+includes(previewResolver, "VERCEL_PROJECT_ID: MY_E2E_VERCEL_PROJECT_ID", "existing Vercel project ID authority");
+includes(previewResolver, "VERCEL_ORG_ID: MY_E2E_VERCEL_ORG_ID", "existing Vercel org ID authority");
 includes(loginBootstrap, "resolveMyE2EPreviewDeployment", "login target auto-discovery");
-includes(loginBootstrap, '"--url",\n  deployment.url', "premium login receives attested URL only");
+matches(loginBootstrap, /"--url"\s*,\s*deployment\.url/, "premium login receives attested URL only");
 includes(launcher, "resolveMyE2EPreviewDeployment", "runtime target auto-discovery");
 includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth target rejection");
 includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
 assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
 
 // Preview deployment helper must target the existing project without persisting a local Vercel link.
-includes(previewDeployer, '"--project",\n    MY_E2E_VERCEL_PROJECT', "explicit existing Vercel project target");
-includes(previewDeployer, '"--scope",\n    MY_E2E_VERCEL_SCOPE', "explicit Vercel scope target");
-includes(previewDeployer, `${"MY_E2E_META_SHA"}`, "server-side exact SHA metadata");
-includes(previewDeployer, `${"MY_E2E_META_BRANCH"}`, "server-side exact branch metadata");
+matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
+assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
+includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
+includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
 includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
 includes(previewDeployer, "rmSync(vercelDir", "transient .vercel cleanup");
 includes(previewDeployer, "originalGitignore", "gitignore restoration");
