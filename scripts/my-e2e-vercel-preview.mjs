@@ -146,52 +146,10 @@ export function parseMyE2EVercelJsonOutput(output, step = "vercel-json-command")
   }
 
   try {
-    const direct = JSON.parse(text);
-    if (direct && typeof direct === "object" && !Array.isArray(direct)) return direct;
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === "object") return parsed;
   } catch {
-    // Vercel CLI can prefix/suffix machine-readable output with CLI status text.
-  }
-
-  for (let start = 0; start < text.length; start += 1) {
-    if (text[start] !== "{") continue;
-
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
-
-    for (let index = start; index < text.length; index += 1) {
-      const char = text[index];
-
-      if (inString) {
-        if (escaped) {
-          escaped = false;
-        } else if (char === "\\") {
-          escaped = true;
-        } else if (char === '"') {
-          inString = false;
-        }
-        continue;
-      }
-
-      if (char === '"') {
-        inString = true;
-        continue;
-      }
-      if (char === "{") depth += 1;
-      if (char !== "}") continue;
-
-      depth -= 1;
-      if (depth !== 0) continue;
-
-      const candidate = text.slice(start, index + 1);
-      try {
-        const parsed = JSON.parse(candidate);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
-      } catch {
-        // Keep scanning for the next complete top-level object.
-      }
-      break;
-    }
+    // JSON-mode commands are required to emit one complete JSON value on stdout.
   }
 
   throw new JourneyFailure(
