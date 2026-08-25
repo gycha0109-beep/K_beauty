@@ -150,14 +150,17 @@ includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth 
 includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
 assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
 
-// Preview deployment helper must target the existing project without persisting a local Vercel link.
+// Preview deployment helper must deploy a clean tracked Git snapshot, not the local working directory.
 matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
 assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
+includes(previewDeployer, "git\", [\n      \"checkout-index\"", "tracked Git snapshot export");
+includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
+includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
+includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
+includes(previewDeployer, "deploymentSource: \"tracked-git-snapshot\"", "tracked snapshot verdict");
 includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
 includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
 includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
-includes(previewDeployer, "rmSync(vercelDir", "transient .vercel cleanup");
-includes(previewDeployer, "originalGitignore", "gitignore restoration");
 includes(previewDeployer, "localVercelLinkCreated: false", "no persistent local link contract");
 
 // Launcher reuses the authoritative premium two-account cookie capture rather than inventing a second auth mechanism.
