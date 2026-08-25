@@ -27,12 +27,15 @@ function syntaxCheck(relativePath) {
 
 const runner = read("scripts/run-my-adversarial-e2e.mjs");
 const launcher = read("scripts/run-my-adversarial-e2e-local.mjs");
+const rlsProbe = read("scripts/run-my-rls-adversarial-probe.mjs");
+const checkinRoute = read("app/api/my/check-in/route.js");
 const packageJson = JSON.parse(read("package.json"));
 const health = read("scripts/verify-current-main-health.mjs");
 const revisitMigration = read("supabase/migrations/20260520170737_add_revisit_core_tables.sql");
 
 syntaxCheck("scripts/run-my-adversarial-e2e.mjs");
 syntaxCheck("scripts/run-my-adversarial-e2e-local.mjs");
+syntaxCheck("scripts/run-my-rls-adversarial-probe.mjs");
 syntaxCheck("scripts/verify-my-adversarial-e2e-contract.mjs");
 
 // The runtime must use real browser sessions and two distinct permanent accounts.
@@ -44,6 +47,7 @@ includes(runner, "DEDICATED_ACCOUNT_CONFIRMATION", "dedicated account guard");
 includes(runner, "validateEnvironmentGuard", "deployment/environment guard");
 includes(runner, "MY_E2E_ALLOW_PRODUCTION", "explicit Production write confirmation boundary");
 assert.doesNotMatch(runner, /SERVICE_ROLE|service_role|SUPABASE_SERVICE/i, "E2E must not depend on service-role authority");
+assert.doesNotMatch(rlsProbe, /SERVICE_ROLE|service_role|SUPABASE_SERVICE/i, "RLS attack probe must use user authority only");
 
 // Security and bug scenarios are required, not optional comments.
 for (const scenario of [
@@ -74,6 +78,12 @@ for (const probe of [
   "ATTACKER_OVERWRITE"
 ]) includes(runner, probe, `adversarial probe ${probe}`);
 
+// API level fields are an explicit JSON-number contract: do not accept coercible strings from direct callers.
+includes(checkinRoute, 'typeof value !== "number"', "strict level JSON type boundary");
+includes(checkinRoute, "Number.isInteger(value)", "integer level boundary");
+assert.doesNotMatch(checkinRoute, /const level = Number\(value\)/, "check-in level validation must not coerce strings");
+includes(runner, 'breakout_level: "2"', "numeric-string abuse probe");
+
 // Persistence safety: fixtures are exact-ID tracked, cleaned, and the prior active baseline is restored.
 includes(runner, "fixtureIds", "fixture ID tracking");
 includes(runner, "cleanupFixtures", "cleanup implementation");
@@ -88,6 +98,16 @@ includes(runner, 'restRequest(accessTokenB, "daily_checkins"', "foreign delete/i
 includes(runner, "rls_foreign_select_allowed", "foreign select denial assertion");
 includes(runner, "owner_report_mutated_by_foreign_user", "owner mutation readback");
 includes(runner, "owner_checkin_deleted_by_foreign_user", "owner delete readback");
+
+// The collision-free forged-owner probe must not allow a uniqueness error to masquerade as RLS enforcement.
+includes(rlsProbe, 'rest(accessTokenB, "saved_reports"', "collision-free forged owner insert");
+includes(rlsProbe, "user_id: userA.id", "forged owner target");
+includes(rlsProbe, "forged_owner_insert_allowed", "forged insert fail-closed assertion");
+includes(rlsProbe, "[401, 403].includes(forgedInsert.status)", "RLS-only denial statuses");
+assert.doesNotMatch(rlsProbe, /409/, "collision-free RLS probe must not accept uniqueness conflicts");
+includes(rlsProbe, "forged_owner_row_persisted", "owner readback after attack");
+includes(launcher, "run-my-rls-adversarial-probe.mjs", "launcher collision-free RLS preflight");
+includes(launcher, "collision_free_forged_owner_probe_failed", "launcher requires RLS probe pass");
 
 // Stored XSS is checked in a real rendered My page, not only by string sanitization.
 includes(runner, "window.__MY_E2E_XSS", "stored XSS sentinel");
@@ -106,6 +126,8 @@ includes(launcher, "assertAccountPair", "shared account-pair assertion");
 includes(launcher, "loadBootstrapMetadata", "bootstrap identity pin");
 includes(launcher, "assertGitWorktreeClean", "clean exact-head guard");
 includes(launcher, "resolveExpectedSha", "exact deployment SHA guard");
+includes(launcher, "LOCAL_PROFILE_A_PATH", "shared profile A path");
+includes(launcher, "LOCAL_PROFILE_B_PATH", "shared profile B path");
 includes(launcher, "verify-my-adversarial-e2e-contract.mjs", "launcher preflight verifier");
 
 // Database authority: current Supabase migration must keep unique same-day rows and own-row RLS on all My persistence tables.
