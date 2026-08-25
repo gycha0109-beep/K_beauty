@@ -82,13 +82,11 @@ const ROUTINE_LOG_COLUMNS = [
 ].join(",");
 
 function normalizeLevel(value) {
-  const level = Number(value);
-
-  if (!Number.isInteger(level) || level < 0 || level > 4) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 4) {
     return null;
   }
 
-  return level;
+  return value;
 }
 
 function normalizeCheckinPayload(body) {
