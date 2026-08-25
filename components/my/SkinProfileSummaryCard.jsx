@@ -1,4 +1,22 @@
+import Link from "next/link";
 import { getMyCopy } from "@/lib/my/i18n";
+
+const BASELINE_COPY = {
+  ko: {
+    title: "현재 기준 피부 프로필",
+    body: "매일 체크인과 케어는 이 분석 기준선을 바탕으로 이어집니다.",
+    current: "현재 기준",
+    refresh: "새 분석으로 갱신",
+    refreshNote: "새 분석을 저장하면 현재 기준선이 교체되고, 기존 분석 기록은 그대로 유지됩니다."
+  },
+  en: {
+    title: "Current Skin Baseline",
+    body: "Daily check-ins and care continue from this analysis baseline.",
+    current: "Current baseline",
+    refresh: "Refresh with a new analysis",
+    refreshNote: "Saving a new analysis replaces the current baseline while keeping your previous analysis history."
+  }
+};
 
 function getMappedLabel(value, labels, fallback) {
   if (!value) {
@@ -6,6 +24,22 @@ function getMappedLabel(value, labels, fallback) {
   }
 
   return labels?.[value] || value;
+}
+
+function formatBaselineDate(value, locale) {
+  if (!value) {
+    return "";
+  }
+
+  try {
+    return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
 }
 
 function renderList(values, copy) {
@@ -29,15 +63,34 @@ function renderList(values, copy) {
 
 export default function SkinProfileSummaryCard({
   profile,
-  copy = getMyCopy("ko")
+  copy = getMyCopy("ko"),
+  locale = "ko"
 }) {
+  const baselineCopy = locale === "en" ? BASELINE_COPY.en : BASELINE_COPY.ko;
+  const analysisDate = formatBaselineDate(profile?.created_at, locale);
+
   return (
     <section className="rounded-[1.25rem] border border-[#ead2ca] bg-[#fffaf6] p-4 dark:border-[#3a2630] dark:bg-[#2f202a] sm:p-5">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="ui-kicker">{copy.profile.kicker}</p>
-          <h2 className="ui-title mt-1 text-xl">{copy.profile.title}</h2>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="ui-kicker">{copy.profile.kicker}</p>
+            <span className="ui-chip-compact">{baselineCopy.current}</span>
+          </div>
+          <h2 className="ui-title mt-1 text-xl">{baselineCopy.title}</h2>
+          <p className="ui-text-secondary mt-1 text-sm leading-6">{baselineCopy.body}</p>
+          {analysisDate ? (
+            <p className="ui-text-faint mt-2 text-xs">
+              {copy.profile.analysisDate}: {analysisDate}
+            </p>
+          ) : null}
         </div>
+        <Link
+          href={copy.paths.home}
+          className="ui-button-secondary flex min-h-10 w-full shrink-0 items-center justify-center px-4 text-sm font-semibold sm:w-auto"
+        >
+          {baselineCopy.refresh}
+        </Link>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -56,6 +109,10 @@ export default function SkinProfileSummaryCard({
       </div>
 
       {renderList(profile?.concerns, copy)}
+
+      <p className="ui-text-faint mt-4 border-t border-[#ead2ca] pt-3 text-xs leading-5 dark:border-[#4a303c]">
+        {baselineCopy.refreshNote}
+      </p>
     </section>
   );
 }
