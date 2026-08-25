@@ -9,6 +9,9 @@ import {
 } from "./premium-browser-journey-core.mjs";
 import {
   LOCAL_ARTIFACT_ROOT,
+  LOCAL_CONFIG_PATH,
+  LOCAL_PROFILE_A_PATH,
+  LOCAL_PROFILE_B_PATH,
   LOCAL_STORAGE_A_PATH,
   LOCAL_STORAGE_B_PATH,
   assertAccountPair,
@@ -19,8 +22,7 @@ import {
   parseCliArgs,
   readJsonIfPresent,
   resolveExpectedSha,
-  resolvePreviewConfiguration,
-  LOCAL_CONFIG_PATH
+  resolvePreviewConfiguration
 } from "./premium-browser-journey-local-auth.mjs";
 import { captureAccountSessionResilient } from "./premium-e2e-session-capture.mjs";
 
@@ -73,14 +75,14 @@ let accountB;
 try {
   accountA = await captureAccountSessionResilient({
     label: "A",
-    profilePath: resolve(process.cwd(), ".codex/runtime/premium-e2e/profile-a"),
+    profilePath: LOCAL_PROFILE_A_PATH,
     storageStatePath: LOCAL_STORAGE_A_PATH,
     baseUrl,
     previewBypassToken
   });
   accountB = await captureAccountSessionResilient({
     label: "B",
-    profilePath: resolve(process.cwd(), ".codex/runtime/premium-e2e/profile-b"),
+    profilePath: LOCAL_PROFILE_B_PATH,
     storageStatePath: LOCAL_STORAGE_B_PATH,
     baseUrl,
     previewBypassToken
@@ -135,6 +137,18 @@ const env = {
 
 console.log(`My adversarial E2E 대상: ${baseUrl.origin}`);
 console.log(`검증 브랜치/SHA: ${branch} @ ${expectedSha}`);
+
+const rlsProbeResult = await runNodeScript(
+  resolve(process.cwd(), "scripts/run-my-rls-adversarial-probe.mjs"),
+  env
+);
+requireCondition(
+  rlsProbeResult.code === 0,
+  FAILURE_CATEGORIES.AUTH,
+  "rls-adversarial-preflight",
+  "collision_free_forged_owner_probe_failed"
+);
+
 const result = await runNodeScript(resolve(process.cwd(), "scripts/run-my-adversarial-e2e.mjs"), env);
 
 console.log(JSON.stringify({
@@ -144,7 +158,8 @@ console.log(JSON.stringify({
   branch,
   gitHead,
   expectedSha,
-  deploymentSha
+  deploymentSha,
+  collisionFreeRlsProbe: rlsProbeResult.code === 0
 }, null, 2));
 
 if (result.code !== 0) process.exitCode = result.code;
