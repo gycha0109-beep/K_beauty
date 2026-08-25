@@ -1,4 +1,6 @@
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import {
   FAILURE_CATEGORIES,
   JourneyFailure,
@@ -13,14 +15,33 @@ export const MY_E2E_META_BRANCH = "myE2EGitBranch";
 export const MY_E2E_META_PURPOSE = "myE2EPurpose";
 export const MY_E2E_PURPOSE = "my-adversarial";
 
-const npxExecutable = process.platform === "win32" ? "npx.cmd" : "npx";
+function resolveNpxInvocation() {
+  const npmExecPath = String(process.env.npm_execpath || "").trim();
+  if (npmExecPath) {
+    const npxCliPath = join(dirname(npmExecPath), "npx-cli.js");
+    if (existsSync(npxCliPath)) {
+      return {
+        command: process.execPath,
+        prefixArgs: [npxCliPath, "vercel"]
+      };
+    }
+  }
+  requireCondition(
+    process.platform !== "win32",
+    FAILURE_CATEGORIES.PRECONDITION,
+    "vercel-cli",
+    "npm_runtime_required_for_windows_vercel_cli"
+  );
+  return { command: "npx", prefixArgs: ["vercel"] };
+}
 
 function stripAnsi(value) {
   return String(value || "").replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, "");
 }
 
 function runVercel(args, step) {
-  const result = spawnSync(npxExecutable, ["vercel", ...args], {
+  const invocation = resolveNpxInvocation();
+  const result = spawnSync(invocation.command, [...invocation.prefixArgs, ...args], {
     cwd: process.cwd(),
     encoding: "utf8",
     env: {
@@ -32,8 +53,8 @@ function runVercel(args, step) {
   });
   const stdout = stripAnsi(result.stdout);
   const stderr = stripAnsi(result.stderr);
-  if (result.status !== 0) {
-    const summary = [stdout, stderr].filter(Boolean).join("\n").slice(-2000);
+  if (result.error || result.status !== 0) {
+    const summary = [result.error?.message, stdout, stderr].filter(Boolean).join("\n").slice(-2000);
     throw new JourneyFailure(
       FAILURE_CATEGORIES.PRECONDITION,
       step,
