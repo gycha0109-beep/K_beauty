@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -23,6 +23,9 @@ import {
   runMyE2EVercelCommand
 } from "./my-e2e-vercel-preview.mjs";
 
+const LEGACY_RECOMMENDATION_CORPUS =
+  "fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt";
+
 await ensureLocalRuntime();
 assertGitWorktreeClean();
 
@@ -31,28 +34,75 @@ const gitHead = getGitHead();
 requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "preview_branch_invalid");
 
 const snapshotDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-"));
-const snapshotPrefix = `${snapshotDir.replace(/\\/g, "/")}/`;
+const archivePath = join(snapshotDir, "tracked-head.tar");
+const tarCommand = process.platform === "win32" ? "tar.exe" : "tar";
 
 try {
   try {
     execFileSync("git", [
-      "checkout-index",
-      "--all",
-      "--force",
-      `--prefix=${snapshotPrefix}`
+      "archive",
+      "--format=tar",
+      "--output",
+      archivePath,
+      gitHead
     ], {
       cwd: process.cwd(),
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"]
     });
+
+    execFileSync(tarCommand, [
+      "-xf",
+      archivePath,
+      "-C",
+      snapshotDir
+    ], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    rmSync(archivePath, { force: true });
   } catch (error) {
     throw new JourneyFailure(
       FAILURE_CATEGORIES.PRECONDITION,
       "preview-snapshot",
-      "git_tracked_snapshot_export_failed",
-      error?.stderr || error?.message || "git_tracked_snapshot_export_failed"
+      "git_canonical_snapshot_export_failed",
+      error?.stderr || error?.message || "git_canonical_snapshot_export_failed"
     );
   }
+
+  let canonicalCorpus;
+  let snapshotCorpus;
+  try {
+    canonicalCorpus = execFileSync("git", [
+      "cat-file",
+      "blob",
+      `${gitHead}:${LEGACY_RECOMMENDATION_CORPUS}`
+    ], {
+      cwd: process.cwd(),
+      encoding: null,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    snapshotCorpus = readFileSync(
+      join(snapshotDir, ...LEGACY_RECOMMENDATION_CORPUS.split("/"))
+    );
+  } catch (error) {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "preview-snapshot",
+      "git_snapshot_byte_attestation_failed",
+      error?.stderr?.toString?.("utf8") || error?.message || "git_snapshot_byte_attestation_failed"
+    );
+  }
+
+  requireCondition(
+    snapshotCorpus.equals(canonicalCorpus),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-snapshot",
+    "git_snapshot_byte_mismatch"
+  );
 
   runMyE2EVercelCommand([
     "deploy",
@@ -87,7 +137,8 @@ console.log(JSON.stringify({
   attestationSource: deployed.attestationSource,
   project: deployed.project,
   scope: MY_E2E_VERCEL_SCOPE,
-  deploymentSource: "tracked-git-snapshot",
+  deploymentSource: "canonical-git-archive-snapshot",
+  snapshotByteAuthority: "git-cat-file-blob",
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));
