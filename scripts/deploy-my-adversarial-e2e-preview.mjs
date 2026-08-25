@@ -1,7 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import {
   FAILURE_CATEGORIES,
   JourneyFailure,
@@ -14,17 +11,15 @@ import {
   getGitHead
 } from "./premium-browser-journey-local-auth.mjs";
 import {
-  MY_E2E_META_BRANCH,
-  MY_E2E_META_PURPOSE,
-  MY_E2E_META_SHA,
-  MY_E2E_PURPOSE,
+  MY_E2E_VERCEL_PROJECT,
   MY_E2E_VERCEL_SCOPE,
   resolveMyE2EPreviewDeployment,
-  runMyE2EVercelCommand
+  runMyE2EVercelCommand,
+  runMyE2EVercelJsonCommand
 } from "./my-e2e-vercel-preview.mjs";
 
-const LEGACY_RECOMMENDATION_CORPUS =
-  "fixtures/recommendation-governance/legacy-frozen-recommendation-corpus-v1.txt";
+const DEPLOYMENT_POLL_ATTEMPTS = 60;
+const DEPLOYMENT_POLL_MS = 2000;
 
 await ensureLocalRuntime();
 assertGitWorktreeClean();
@@ -33,106 +28,180 @@ const branch = getGitBranch();
 const gitHead = getGitHead();
 requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "preview_branch_invalid");
 
-const snapshotDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-"));
-const snapshotIndexDir = mkdtempSync(join(tmpdir(), "bejewely-my-e2e-index-"));
-const snapshotIndexPath = join(snapshotIndexDir, "index");
-const snapshotPrefix = `${snapshotDir.replace(/\\/g, "/")}/`;
-const snapshotGitEnv = {
-  ...process.env,
-  GIT_INDEX_FILE: snapshotIndexPath
-};
+function readRemoteBranchHead() {
+  let output;
+  try {
+    output = execFileSync(
+      "git",
+      ["ls-remote", "--heads", "origin", `refs/heads/${branch}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"]
+      }
+    ).trim();
+  } catch (error) {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "preview-remote-head",
+      "remote_branch_lookup_failed",
+      error?.stderr || error?.message || "remote_branch_lookup_failed"
+    );
+  }
+
+  const remoteSha = output.split(/\s+/)[0] || "";
+  requireCondition(
+    /^[0-9a-f]{40}$/i.test(remoteSha),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-remote-head",
+    "remote_branch_head_missing"
+  );
+  return remoteSha;
+}
+
+function delay(ms) {
+  return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+}
+
+async function waitForGitAttestedPreview() {
+  for (let attempt = 0; attempt < DEPLOYMENT_POLL_ATTEMPTS; attempt += 1) {
+    try {
+      return resolveMyE2EPreviewDeployment({ branch, gitHead });
+    } catch (error) {
+      if (!(error instanceof JourneyFailure) || error.code !== "vercel_git_preview_for_head_not_found") {
+        throw error;
+      }
+    }
+    await delay(DEPLOYMENT_POLL_MS);
+  }
+
+  throw new JourneyFailure(
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-deploy",
+    "vercel_git_preview_ready_timeout"
+  );
+}
+
+const remoteHead = readRemoteBranchHead();
+requireCondition(
+  remoteHead === gitHead,
+  FAILURE_CATEGORIES.PRECONDITION,
+  "preview-remote-head",
+  "remote_branch_not_exact_head"
+);
+
+const hookName = `my-e2e-native-${gitHead.slice(0, 12)}`;
+let hookId = "";
+let deployed = null;
+let primaryError = null;
+let cleanupError = null;
 
 try {
-  try {
-    execFileSync("git", [
-      "read-tree",
-      gitHead
-    ], {
-      cwd: process.cwd(),
-      env: snapshotGitEnv,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"]
-    });
+  const created = runMyE2EVercelJsonCommand([
+    "deploy-hooks",
+    "create",
+    hookName,
+    "--ref",
+    branch,
+    "--project",
+    MY_E2E_VERCEL_PROJECT,
+    "--scope",
+    MY_E2E_VERCEL_SCOPE
+  ], "vercel-deploy-hook-create");
 
-    execFileSync("git", [
-      "-c",
-      "core.autocrlf=false",
-      "checkout-index",
-      "--all",
-      "--force",
-      "--ignore-skip-worktree-bits",
-      `--prefix=${snapshotPrefix}`
-    ], {
-      cwd: process.cwd(),
-      env: snapshotGitEnv,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-  } catch (error) {
-    throw new JourneyFailure(
-      FAILURE_CATEGORIES.PRECONDITION,
-      "preview-snapshot",
-      "git_canonical_snapshot_export_failed",
-      error?.stderr || error?.message || "git_canonical_snapshot_export_failed"
-    );
-  }
-
-  let canonicalCorpus;
-  let snapshotCorpus;
-  try {
-    canonicalCorpus = execFileSync("git", [
-      "cat-file",
-      "blob",
-      `${gitHead}:${LEGACY_RECOMMENDATION_CORPUS}`
-    ], {
-      cwd: process.cwd(),
-      encoding: null,
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-
-    snapshotCorpus = readFileSync(
-      join(snapshotDir, ...LEGACY_RECOMMENDATION_CORPUS.split("/"))
-    );
-  } catch (error) {
-    throw new JourneyFailure(
-      FAILURE_CATEGORIES.PRECONDITION,
-      "preview-snapshot",
-      "git_snapshot_byte_attestation_failed",
-      error?.stderr?.toString?.("utf8") || error?.message || "git_snapshot_byte_attestation_failed"
-    );
-  }
+  const hook = created?.hook || null;
+  hookId = String(hook?.id || "").trim();
+  const hookRef = String(hook?.ref || "").trim();
+  const hookUrlValue = String(hook?.url || "").trim();
 
   requireCondition(
-    snapshotCorpus.equals(canonicalCorpus),
+    hookId && hookRef === branch && hookUrlValue,
     FAILURE_CATEGORIES.PRECONDITION,
-    "preview-snapshot",
-    "git_snapshot_byte_mismatch"
+    "vercel-deploy-hook-create",
+    "deploy_hook_creation_not_attested"
   );
 
-  runMyE2EVercelCommand([
-    "deploy",
-    snapshotDir,
-    "--yes",
-    "--scope",
-    MY_E2E_VERCEL_SCOPE,
-    "--meta",
-    `${MY_E2E_META_SHA}=${gitHead}`,
-    "--meta",
-    `${MY_E2E_META_BRANCH}=${branch}`,
-    "--meta",
-    `${MY_E2E_META_PURPOSE}=${MY_E2E_PURPOSE}`
-  ], "vercel-preview-deploy");
+  let hookUrl;
+  try {
+    hookUrl = new URL(hookUrlValue);
+  } catch {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "vercel-deploy-hook-create",
+      "deploy_hook_url_invalid"
+    );
+  }
+  requireCondition(
+    hookUrl.protocol === "https:" &&
+      hookUrl.hostname === "api.vercel.com" &&
+      hookUrl.pathname.startsWith("/v1/integrations/deploy/"),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "vercel-deploy-hook-create",
+    "deploy_hook_url_untrusted"
+  );
+  hookUrl.searchParams.set("buildCache", "false");
+
+  let triggerResponse;
+  try {
+    triggerResponse = await fetch(hookUrl, { method: "POST" });
+  } catch (error) {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "vercel-deploy-hook-trigger",
+      "deploy_hook_trigger_unreachable",
+      error?.message || "deploy_hook_trigger_unreachable"
+    );
+  }
+  const triggerBody = await triggerResponse.json().catch(() => null);
+  requireCondition(
+    triggerResponse.ok && triggerBody?.job?.id,
+    FAILURE_CATEGORIES.PRECONDITION,
+    "vercel-deploy-hook-trigger",
+    "deploy_hook_trigger_failed"
+  );
+
+  deployed = await waitForGitAttestedPreview();
+  requireCondition(
+    deployed.gitSha === gitHead &&
+      deployed.branch === branch &&
+      deployed.attestationSource === "github-metadata",
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-deploy",
+    "vercel_native_git_attestation_mismatch"
+  );
+} catch (error) {
+  primaryError = error;
 } finally {
-  rmSync(snapshotDir, { recursive: true, force: true });
-  rmSync(snapshotIndexDir, { recursive: true, force: true });
+  if (hookId) {
+    try {
+      runMyE2EVercelCommand([
+        "deploy-hooks",
+        "rm",
+        hookId,
+        "--project",
+        MY_E2E_VERCEL_PROJECT,
+        "--scope",
+        MY_E2E_VERCEL_SCOPE,
+        "--yes"
+      ], "vercel-deploy-hook-remove");
+    } catch (error) {
+      cleanupError = error instanceof JourneyFailure
+        ? error
+        : new JourneyFailure(
+            FAILURE_CATEGORIES.PRECONDITION,
+            "vercel-deploy-hook-remove",
+            "deploy_hook_cleanup_failed",
+            error?.message || "deploy_hook_cleanup_failed"
+          );
+    }
+  }
 }
+
+if (primaryError) throw primaryError;
+if (cleanupError) throw cleanupError;
+requireCondition(Boolean(deployed), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "vercel_git_preview_missing_after_trigger");
 
 assertGitWorktreeClean();
-
-const deployed = resolveMyE2EPreviewDeployment({ branch, gitHead });
-if (deployed.gitSha !== gitHead || deployed.branch !== branch) {
-  throw new JourneyFailure(FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "vercel_preview_attestation_mismatch");
-}
 
 console.log(JSON.stringify({
   ok: true,
@@ -143,8 +212,10 @@ console.log(JSON.stringify({
   attestationSource: deployed.attestationSource,
   project: deployed.project,
   scope: MY_E2E_VERCEL_SCOPE,
-  deploymentSource: "canonical-head-index-snapshot",
-  snapshotByteAuthority: "git-cat-file-blob",
+  deploymentSource: "vercel-git-deploy-hook",
+  remoteHeadAuthority: "origin-branch-sha",
+  artifactGitAuthority: "vercel-git-source",
+  deployHookRemoved: true,
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));
