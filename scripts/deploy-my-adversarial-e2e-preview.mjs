@@ -13,13 +13,13 @@ import {
 import {
   MY_E2E_VERCEL_PROJECT,
   MY_E2E_VERCEL_SCOPE,
-  resolveMyE2EPreviewDeployment,
-  runMyE2EVercelCommand,
-  runMyE2EVercelJsonCommand
+  MY_E2E_VERCEL_PROJECT_ID,
+  runMyE2EVercelApiJsonCommand
 } from "./my-e2e-vercel-preview.mjs";
 
-const DEPLOYMENT_POLL_ATTEMPTS = 60;
+const DEPLOYMENT_POLL_ATTEMPTS = 180;
 const DEPLOYMENT_POLL_MS = 2000;
+const TERMINAL_DEPLOYMENT_STATES = new Set(["BLOCKED", "CANCELED", "ERROR"]);
 
 await ensureLocalRuntime();
 assertGitWorktreeClean();
@@ -63,84 +63,124 @@ function delay(ms) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 }
 
-function removeDeployHook(hookId, step) {
-  runMyE2EVercelCommand([
-    "deploy-hooks",
-    "rm",
-    hookId,
-    "--project",
-    MY_E2E_VERCEL_PROJECT,
-    "--scope",
-    MY_E2E_VERCEL_SCOPE,
-    "--yes"
-  ], step);
-}
-
-function listDeployHooks(step) {
-  const listed = runMyE2EVercelJsonCommand([
-    "deploy-hooks",
-    "ls",
-    "--format",
-    "json",
-    "--project",
-    MY_E2E_VERCEL_PROJECT,
-    "--scope",
-    MY_E2E_VERCEL_SCOPE
-  ], step);
-
-  if (Array.isArray(listed)) return listed;
-  if (Array.isArray(listed?.hooks)) return listed.hooks;
-
-  throw new JourneyFailure(
-    FAILURE_CATEGORIES.PRECONDITION,
-    step,
-    "vercel_deploy_hook_list_shape_invalid"
-  );
-}
-
-function cleanupOrphanedHook(hookName) {
-  const hooks = listDeployHooks("vercel-deploy-hook-preflight-list");
-  for (const hook of hooks) {
-    const candidateName = String(hook?.name || "").trim();
-    const candidateRef = String(hook?.ref || "").trim();
-    if (candidateName !== hookName || candidateRef !== branch) continue;
-
-    const candidateId = String(hook?.id || "").trim();
-    requireCondition(
-      candidateId,
+function readOriginGitHubRepository() {
+  let output;
+  try {
+    output = execFileSync("git", ["config", "--get", "remote.origin.url"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    }).trim();
+  } catch (error) {
+    throw new JourneyFailure(
       FAILURE_CATEGORIES.PRECONDITION,
-      "vercel-deploy-hook-preflight-list",
-      "orphaned_deploy_hook_id_missing"
+      "preview-origin-repository",
+      "origin_repository_lookup_failed",
+      error?.stderr || error?.message || "origin_repository_lookup_failed"
     );
-    removeDeployHook(candidateId, "vercel-deploy-hook-preflight-remove");
   }
+
+  const normalized = output.replace(/\.git$/i, "");
+  const match = normalized.match(/^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([^/]+)\/(.+)$/i);
+  requireCondition(
+    Boolean(match?.[1] && match?.[2]),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-origin-repository",
+    "origin_github_repository_invalid"
+  );
+  return { org: match[1], repo: match[2] };
 }
 
-function resolveCreatedHook(hookName) {
-  const hooks = listDeployHooks("vercel-deploy-hook-postcreate-list");
-  const matches = hooks.filter((hook) =>
-    String(hook?.name || "").trim() === hookName &&
-    String(hook?.ref || "").trim() === branch
+function readVercelProjectGitSource() {
+  const project = runMyE2EVercelApiJsonCommand(
+    `/v9/projects/${encodeURIComponent(MY_E2E_VERCEL_PROJECT_ID)}`,
+    { method: "GET" },
+    "vercel-project-git-source"
   );
+  const originRepository = readOriginGitHubRepository();
+  const linkType = String(project?.link?.type || "").trim();
+  const repoId = project?.link?.repoId;
+  const linkedOrg = String(project?.link?.org || "").trim();
+  const linkedRepo = String(project?.link?.repo || "").trim();
 
   requireCondition(
-    matches.length === 1,
+    project?.id === MY_E2E_VERCEL_PROJECT_ID &&
+      project?.name === MY_E2E_VERCEL_PROJECT &&
+      linkType === "github" &&
+      ["number", "string"].includes(typeof repoId) &&
+      String(repoId).trim() &&
+      linkedOrg.toLowerCase() === originRepository.org.toLowerCase() &&
+      linkedRepo.toLowerCase() === originRepository.repo.toLowerCase(),
     FAILURE_CATEGORIES.PRECONDITION,
-    "vercel-deploy-hook-postcreate-list",
-    "deploy_hook_creation_not_attested"
+    "vercel-project-git-source",
+    "vercel_project_git_source_mismatch"
   );
 
-  return matches[0];
+  return { type: linkType, repoId };
 }
 
-async function waitForGitAttestedPreview() {
+function validateGitDeployment(deployment, { deploymentId, repoId, requireReady }) {
+  const readyState = String(deployment?.readyState || "").trim().toUpperCase();
+  const gitSource = deployment?.gitSource;
+  requireCondition(
+    deployment?.id === deploymentId &&
+      deployment?.projectId === MY_E2E_VERCEL_PROJECT_ID &&
+      deployment?.name === MY_E2E_VERCEL_PROJECT &&
+      deployment?.target == null &&
+      gitSource?.type === "github" &&
+      String(gitSource?.repoId) === String(repoId) &&
+      gitSource?.ref === branch &&
+      gitSource?.sha === gitHead,
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-deploy",
+    "vercel_native_git_source_mismatch"
+  );
+
+  if (!requireReady) return null;
+  requireCondition(
+    readyState === "READY" &&
+      deployment?.meta?.githubCommitSha === gitHead &&
+      deployment?.meta?.githubCommitRef === branch,
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-deploy",
+    "vercel_native_git_attestation_mismatch"
+  );
+
+  const hostname = String(deployment?.url || "").trim().toLowerCase();
+  requireCondition(
+    /^[a-z0-9.-]+\.vercel\.app$/.test(hostname),
+    FAILURE_CATEGORIES.PRECONDITION,
+    "preview-deploy",
+    "vercel_preview_url_invalid"
+  );
+  return {
+    id: deploymentId,
+    url: `https://${hostname}`,
+    branch,
+    gitSha: gitHead,
+    project: MY_E2E_VERCEL_PROJECT,
+    attestationSource: "github-metadata"
+  };
+}
+
+async function waitForGitAttestedPreview({ deploymentId, repoId }) {
   for (let attempt = 0; attempt < DEPLOYMENT_POLL_ATTEMPTS; attempt += 1) {
-    try {
-      return resolveMyE2EPreviewDeployment({ branch, gitHead });
-    } catch (error) {
-      if (!(error instanceof JourneyFailure) || error.code !== "vercel_git_preview_for_head_not_found") {
-        throw error;
-      }
+    const deployment = runMyE2EVercelApiJsonCommand(
+      `/v13/deployments/${encodeURIComponent(deploymentId)}`,
+      { method: "GET" },
+      "vercel-preview-deployment-poll"
+    );
+    const readyState = String(deployment?.readyState || "").trim().toUpperCase();
+    validateGitDeployment(deployment, { deploymentId, repoId, requireReady: false });
+    if (readyState === "READY") {
+      return validateGitDeployment(deployment, { deploymentId, repoId, requireReady: true });
+    }
+    if (TERMINAL_DEPLOYMENT_STATES.has(readyState)) {
+      throw new JourneyFailure(
+        FAILURE_CATEGORIES.PRECONDITION,
+        "preview-deploy",
+        `vercel_git_preview_terminal_${readyState.toLowerCase()}`
+      );
     }
     await delay(DEPLOYMENT_POLL_MS);
   }
@@ -160,110 +200,35 @@ requireCondition(
   "remote_branch_not_exact_head"
 );
 
-const hookName = `my-e2e-native-${gitHead.slice(0, 12)}`;
-let hookId = "";
-let deployed = null;
-let primaryError = null;
-let cleanupError = null;
-
-try {
-  cleanupOrphanedHook(hookName);
-
-  runMyE2EVercelCommand([
-    "deploy-hooks",
-    "create",
-    hookName,
-    "--ref",
-    branch,
-    "--project",
-    MY_E2E_VERCEL_PROJECT,
-    "--scope",
-    MY_E2E_VERCEL_SCOPE,
-    "--yes"
-  ], "vercel-deploy-hook-create");
-
-  const hook = resolveCreatedHook(hookName);
-  hookId = String(hook?.id || "").trim();
-  const hookRef = String(hook?.ref || "").trim();
-  const hookUrlValue = String(hook?.url || "").trim();
-
-  requireCondition(
-    hookId && hookRef === branch && hookUrlValue,
-    FAILURE_CATEGORIES.PRECONDITION,
-    "vercel-deploy-hook-postcreate-list",
-    "deploy_hook_creation_not_attested"
-  );
-
-  let hookUrl;
-  try {
-    hookUrl = new URL(hookUrlValue);
-  } catch {
-    throw new JourneyFailure(
-      FAILURE_CATEGORIES.PRECONDITION,
-      "vercel-deploy-hook-create",
-      "deploy_hook_url_invalid"
-    );
-  }
-  requireCondition(
-    hookUrl.protocol === "https:" &&
-      hookUrl.hostname === "api.vercel.com" &&
-      hookUrl.pathname.startsWith("/v1/integrations/deploy/"),
-    FAILURE_CATEGORIES.PRECONDITION,
-    "vercel-deploy-hook-create",
-    "deploy_hook_url_untrusted"
-  );
-  hookUrl.searchParams.set("buildCache", "false");
-
-  let triggerResponse;
-  try {
-    triggerResponse = await fetch(hookUrl, { method: "POST" });
-  } catch (error) {
-    throw new JourneyFailure(
-      FAILURE_CATEGORIES.PRECONDITION,
-      "vercel-deploy-hook-trigger",
-      "deploy_hook_trigger_unreachable",
-      error?.message || "deploy_hook_trigger_unreachable"
-    );
-  }
-  const triggerBody = await triggerResponse.json().catch(() => null);
-  requireCondition(
-    triggerResponse.ok && triggerBody?.job?.id,
-    FAILURE_CATEGORIES.PRECONDITION,
-    "vercel-deploy-hook-trigger",
-    "deploy_hook_trigger_failed"
-  );
-
-  deployed = await waitForGitAttestedPreview();
-  requireCondition(
-    deployed.gitSha === gitHead &&
-      deployed.branch === branch &&
-      deployed.attestationSource === "github-metadata",
-    FAILURE_CATEGORIES.PRECONDITION,
-    "preview-deploy",
-    "vercel_native_git_attestation_mismatch"
-  );
-} catch (error) {
-  primaryError = error;
-} finally {
-  if (hookId) {
-    try {
-      removeDeployHook(hookId, "vercel-deploy-hook-remove");
-    } catch (error) {
-      cleanupError = error instanceof JourneyFailure
-        ? error
-        : new JourneyFailure(
-            FAILURE_CATEGORIES.PRECONDITION,
-            "vercel-deploy-hook-remove",
-            "deploy_hook_cleanup_failed",
-            error?.message || "deploy_hook_cleanup_failed"
-          );
+const projectGitSource = readVercelProjectGitSource();
+const created = runMyE2EVercelApiJsonCommand(
+  "/v13/deployments?forceNew=1",
+  {
+    method: "POST",
+    body: {
+      name: MY_E2E_VERCEL_PROJECT,
+      project: MY_E2E_VERCEL_PROJECT_ID,
+      gitSource: {
+        type: "github",
+        repoId: projectGitSource.repoId,
+        ref: branch,
+        sha: gitHead
+      }
     }
-  }
-}
-
-if (primaryError) throw primaryError;
-if (cleanupError) throw cleanupError;
-requireCondition(Boolean(deployed), FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "vercel_git_preview_missing_after_trigger");
+  },
+  "vercel-git-source-deploy-create"
+);
+const deploymentId = String(created?.id || "").trim();
+requireCondition(
+  /^dpl_[A-Za-z0-9]+$/.test(deploymentId),
+  FAILURE_CATEGORIES.PRECONDITION,
+  "vercel-git-source-deploy-create",
+  "vercel_deployment_id_missing"
+);
+const deployed = await waitForGitAttestedPreview({
+  deploymentId,
+  repoId: projectGitSource.repoId
+});
 
 assertGitWorktreeClean();
 
@@ -271,16 +236,19 @@ console.log(JSON.stringify({
   ok: true,
   verdict: "MY_E2E_PREVIEW_READY",
   url: deployed.url,
+  deploymentId: deployed.id,
   branch,
   gitHead,
   attestationSource: deployed.attestationSource,
   project: deployed.project,
   scope: MY_E2E_VERCEL_SCOPE,
-  deploymentSource: "vercel-git-deploy-hook",
+  deploymentSource: "vercel-git-source-api",
   remoteHeadAuthority: "origin-branch-sha",
   artifactGitAuthority: "vercel-git-source",
-  deployHookRemoved: true,
-  orphanedHookRecovery: true,
+  deployHookCreated: false,
+  deployHookRemoved: false,
+  orphanedHookRecovery: false,
+  forceNewDeployment: true,
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));

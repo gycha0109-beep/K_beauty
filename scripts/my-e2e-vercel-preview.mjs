@@ -41,7 +41,7 @@ function stripAnsi(value) {
   return String(value || "").replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, "");
 }
 
-function runVercel(args, step) {
+function runVercel(args, step, { input } = {}) {
   requireCondition(
     MY_E2E_VERCEL_PROJECT_ID && MY_E2E_VERCEL_ORG_ID,
     FAILURE_CATEGORIES.PRECONDITION,
@@ -52,6 +52,7 @@ function runVercel(args, step) {
   const result = spawnSync(invocation.command, [...invocation.prefixArgs, ...args], {
     cwd: process.cwd(),
     encoding: "utf8",
+    input,
     env: {
       ...process.env,
       VERCEL_PROJECT_ID: MY_E2E_VERCEL_PROJECT_ID,
@@ -92,12 +93,39 @@ function listGitAttestedDeployments({ branch, gitHead }) {
     "--status",
     "READY",
     "--yes",
+    "--format",
+    "json",
     "--meta",
     `githubCommitSha=${gitHead}`,
     "--meta",
     `githubCommitRef=${branch}`
   ];
-  return deploymentUrls(runVercel(args, "vercel-preview-github"));
+  const listed = runMyE2EVercelJsonCommand(args, "vercel-preview-github");
+  if (!Array.isArray(listed?.deployments)) {
+    throw new JourneyFailure(
+      FAILURE_CATEGORIES.PRECONDITION,
+      "vercel-preview-github",
+      "vercel_deployment_list_shape_invalid"
+    );
+  }
+
+  return listed.deployments
+    .filter((deployment) =>
+      deployment?.state === "READY" &&
+      deployment?.target == null &&
+      String(deployment?.meta?.githubCommitSha || "") === gitHead &&
+      String(deployment?.meta?.githubCommitRef || "") === branch
+    )
+    .map((deployment) => {
+      const hostname = String(deployment?.url || "").trim().toLowerCase();
+      requireCondition(
+        /^[a-z0-9.-]+\.vercel\.app$/.test(hostname),
+        FAILURE_CATEGORIES.PRECONDITION,
+        "vercel-preview-github",
+        "vercel_preview_url_invalid"
+      );
+      return `https://${hostname}`;
+    });
 }
 
 export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = "" } = {}) {
@@ -161,6 +189,44 @@ export function parseMyE2EVercelJsonOutput(output, step = "vercel-json-command")
 
 export function runMyE2EVercelJsonCommand(args, step = "vercel-json-command") {
   return parseMyE2EVercelJsonOutput(runVercel(args, step), step);
+}
+
+export function runMyE2EVercelApiJsonCommand(
+  endpoint,
+  { method = "GET", body } = {},
+  step = "vercel-api-command"
+) {
+  const normalizedEndpoint = String(endpoint || "").trim();
+  const normalizedMethod = String(method || "GET").trim().toUpperCase();
+  requireCondition(
+    normalizedEndpoint.startsWith("/") && !normalizedEndpoint.startsWith("//"),
+    FAILURE_CATEGORIES.PRECONDITION,
+    step,
+    "vercel_api_endpoint_invalid"
+  );
+  requireCondition(
+    ["GET", "POST"].includes(normalizedMethod),
+    FAILURE_CATEGORIES.PRECONDITION,
+    step,
+    "vercel_api_method_invalid"
+  );
+
+  const args = [
+    "api",
+    normalizedEndpoint,
+    "--method",
+    normalizedMethod,
+    "--raw",
+    "--scope",
+    MY_E2E_VERCEL_SCOPE
+  ];
+  let input;
+  if (body !== undefined) {
+    args.push("--input", "-");
+    input = JSON.stringify(body);
+  }
+
+  return parseMyE2EVercelJsonOutput(runVercel(args, step, { input }), step);
 }
 
 export function extractMyE2EDeploymentUrls(output) {

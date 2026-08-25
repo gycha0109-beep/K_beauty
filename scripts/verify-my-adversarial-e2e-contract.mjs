@@ -138,6 +138,7 @@ includes(runner, "session_still_authenticated_after_logout", "post-logout API bo
 // Exact deployment attestation must come from Vercel native Git metadata only.
 matches(previewResolver, /"--environment"\s*,\s*"preview"/, "Vercel Preview-only discovery");
 matches(previewResolver, /"--status"\s*,\s*"READY"/, "Vercel READY-only discovery");
+matches(previewResolver, /"--format"\s*,\s*"json"/, "Vercel deployment discovery uses JSON mode");
 includes(previewResolver, "githubCommitSha", "Git deployment SHA metadata filter");
 includes(previewResolver, "githubCommitRef", "Git deployment branch metadata filter");
 includes(previewResolver, 'attestationSource: "github-metadata"', "native Git attestation verdict");
@@ -159,29 +160,33 @@ includes(previewDeployer, '"--heads"', "remote branch lookup must be branch-scop
 includes(previewDeployer, '"origin"', "origin remote authority");
 includes(previewDeployer, "refs/heads/${branch}", "exact branch ref lookup");
 includes(previewDeployer, "remote_branch_not_exact_head", "remote/local exact SHA equality gate");
-includes(previewDeployer, '"deploy-hooks"', "Vercel deploy hook flow");
-includes(previewDeployer, '"create"', "ephemeral deploy hook creation");
-includes(previewDeployer, '"--ref"', "deploy hook branch pin");
-includes(previewDeployer, '"--project"', "explicit Vercel project target");
 includes(previewDeployer, "MY_E2E_VERCEL_PROJECT", "Vercel project authority");
+includes(previewDeployer, "MY_E2E_VERCEL_PROJECT_ID", "Vercel project ID authority");
 includes(previewDeployer, "MY_E2E_VERCEL_SCOPE", "Vercel scope authority");
-includes(previewDeployer, 'hookUrl.searchParams.set("buildCache", "false")', "fresh Git build trigger");
-includes(previewDeployer, 'hookUrl.hostname === "api.vercel.com"', "deploy hook host allowlist");
-includes(previewDeployer, 'hookUrl.pathname.startsWith("/v1/integrations/deploy/")', "deploy hook path allowlist");
+includes(previewDeployer, '"/v13/deployments?forceNew=1"', "exact Git deployment API with fresh build");
+includes(previewDeployer, 'method: "POST"', "deployment API POST method");
+includes(previewDeployer, "gitSource", "native Git deployment source");
+includes(previewDeployer, 'type: "github"', "GitHub deployment source type");
+includes(previewDeployer, "repoId: projectGitSource.repoId", "live linked GitHub repository authority");
+includes(previewDeployer, "ref: branch", "deployment source branch pin");
+includes(previewDeployer, "sha: gitHead", "deployment source exact SHA pin");
+includes(previewDeployer, "deploymentId", "exact deployment ID polling authority");
+includes(previewDeployer, "gitSource?.sha === gitHead", "polled native Git SHA attestation");
+includes(previewDeployer, "gitSource?.ref === branch", "polled native Git branch attestation");
 includes(previewDeployer, "vercel_git_preview_ready_timeout", "native Git Preview readiness timeout");
-includes(previewDeployer, 'deployed.attestationSource === "github-metadata"', "deployer requires native Git metadata");
 includes(previewDeployer, "vercel_native_git_attestation_mismatch", "native Git metadata fail-closed assertion");
-includes(previewDeployer, '"rm"', "ephemeral deploy hook cleanup command");
-includes(previewDeployer, '"--yes"', "non-interactive deploy hook cleanup");
-includes(previewDeployer, 'deploymentSource: "vercel-git-deploy-hook"', "Git-backed deployment verdict");
+includes(previewDeployer, 'deploymentSource: "vercel-git-source-api"', "exact Git-backed API deployment verdict");
 includes(previewDeployer, 'remoteHeadAuthority: "origin-branch-sha"', "remote Git SHA verdict");
 includes(previewDeployer, 'artifactGitAuthority: "vercel-git-source"', "Vercel Git artifact authority verdict");
-includes(previewDeployer, "deployHookRemoved: true", "deploy hook cleanup verdict");
+includes(previewDeployer, "deployHookCreated: false", "deploy hook is not used");
+includes(previewDeployer, "deployHookRemoved: false", "deploy hook cleanup is not applicable");
+includes(previewDeployer, "orphanedHookRecovery: false", "orphan cleanup is not decorative evidence");
 includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
 includes(previewDeployer, "localVercelLinkCreated: false", "no persistent local link contract");
+assert.doesNotMatch(previewDeployer, /deploy-hooks|hookUrl|buildCache/, "deployment must not rely on deploy hooks");
 assert.doesNotMatch(previewDeployer, /checkout-index|GIT_INDEX_FILE|snapshotDir|tracked-head\.tar|"archive"/, "native Git deployment must not upload a reconstructed local snapshot");
 
-// Repository policy remains main-only for automatic Git deployments; manual My validation uses an explicit deploy hook.
+// Repository policy remains main-only for automatic Git deployments; manual My validation uses exact gitSource.
 assert.equal(vercelConfig?.git?.deploymentEnabled?.["**"], false, "automatic feature-branch deploys must stay disabled");
 assert.equal(vercelConfig?.git?.deploymentEnabled?.main, true, "main automatic deployment must stay enabled");
 
