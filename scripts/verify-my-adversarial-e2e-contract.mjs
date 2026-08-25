@@ -150,11 +150,16 @@ includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth 
 includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
 assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
 
-// Preview deployment helper must export canonical HEAD bytes rather than a converted Windows checkout.
+// Preview deployment helper must export the exact HEAD index with checkout EOL conversion disabled.
 matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
 assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
-assert.doesNotMatch(previewDeployer, /checkout-index/, "snapshot export must not use checkout conversion");
-matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*\n?\s*"archive"/, "canonical Git archive export");
+includes(previewDeployer, "GIT_INDEX_FILE: snapshotIndexPath", "isolated exact-HEAD index authority");
+matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*\n?\s*"read-tree"/, "exact HEAD tree import");
+includes(previewDeployer, "gitHead", "exact HEAD snapshot authority");
+includes(previewDeployer, '"core.autocrlf=false"', "checkout EOL conversion disabled");
+matches(previewDeployer, /"checkout-index"\s*,\s*\n?\s*"--all"/, "tracked HEAD snapshot export");
+includes(previewDeployer, '"--ignore-skip-worktree-bits"', "complete tracked HEAD export");
+assert.doesNotMatch(previewDeployer, /tarCommand|tracked-head\.tar|"archive"/, "snapshot export must not depend on external tar extraction");
 includes(previewDeployer, '"cat-file"', "Git blob byte authority");
 includes(previewDeployer, '"blob"', "Git blob byte authority mode");
 includes(previewDeployer, "LEGACY_RECOMMENDATION_CORPUS", "frozen corpus byte attestation target");
@@ -164,7 +169,8 @@ includes(previewDeployer, "git_canonical_snapshot_export_failed", "canonical sna
 includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
 includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
 includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
-includes(previewDeployer, "deploymentSource: \"canonical-git-archive-snapshot\"", "canonical snapshot verdict");
+includes(previewDeployer, "rmSync(snapshotIndexDir", "temporary index cleanup");
+includes(previewDeployer, "deploymentSource: \"canonical-head-index-snapshot\"", "canonical snapshot verdict");
 includes(previewDeployer, "snapshotByteAuthority: \"git-cat-file-blob\"", "Git blob byte authority verdict");
 includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
 includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
