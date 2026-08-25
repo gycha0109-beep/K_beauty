@@ -18,7 +18,6 @@ import {
   MY_E2E_PURPOSE,
   MY_E2E_VERCEL_PROJECT,
   MY_E2E_VERCEL_SCOPE,
-  extractMyE2EDeploymentUrls,
   resolveMyE2EPreviewDeployment,
   runMyE2EVercelCommand
 } from "./my-e2e-vercel-preview.mjs";
@@ -36,9 +35,8 @@ const hadVercelDir = existsSync(vercelDir);
 const hadGitignore = existsSync(gitignorePath);
 const originalGitignore = hadGitignore ? readFileSync(gitignorePath, "utf8") : null;
 
-let deployOutput = "";
 try {
-  deployOutput = runMyE2EVercelCommand([
+  runMyE2EVercelCommand([
     "deploy",
     "--yes",
     "--scope",
@@ -65,15 +63,7 @@ try {
 
 assertGitWorktreeClean();
 
-const outputUrls = extractMyE2EDeploymentUrls(deployOutput);
-requireCondition(outputUrls.length > 0, FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "vercel_preview_url_missing_from_deploy_output");
-
-const deployed = resolveMyE2EPreviewDeployment({
-  branch,
-  gitHead,
-  requestedUrl: outputUrls[0]
-});
-
+const deployed = resolveMyE2EPreviewDeployment({ branch, gitHead });
 if (deployed.gitSha !== gitHead || deployed.branch !== branch) {
   throw new JourneyFailure(FAILURE_CATEGORIES.PRECONDITION, "preview-deploy", "vercel_preview_attestation_mismatch");
 }
