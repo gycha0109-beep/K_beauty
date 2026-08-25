@@ -24,6 +24,7 @@ run("Document locale contract", node, ["--experimental-default-type=module", "sc
 run("My monthly diary data contract", node, ["--experimental-default-type=module", "scripts/verify-my-monthly-diary.mjs"]);
 run("My diary day detail contract", node, ["--experimental-default-type=module", "scripts/verify-my-diary-day-detail.mjs"]);
 run("My saved report history contract", node, ["--experimental-default-type=module", "scripts/verify-my-saved-report-history.mjs"]);
+run("My skin profile baseline contract", node, ["--experimental-default-type=module", "scripts/verify-my-skin-profile-baseline.mjs"]);
 run("Architecture guard", npm, ["run", "architecture:guard"]);
 run("Shared skin decision context", npm, ["run", "verify:shared-skin-decision-context"]);
 run("Premium integrated deterministic evaluation", npm, ["run", "verify:premium-integrated-evaluation-v2"]);
