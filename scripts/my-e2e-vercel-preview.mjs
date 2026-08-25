@@ -10,6 +10,12 @@ import {
 
 export const MY_E2E_VERCEL_PROJECT = String(process.env.MY_E2E_VERCEL_PROJECT || "k-beauty").trim();
 export const MY_E2E_VERCEL_SCOPE = String(process.env.MY_E2E_VERCEL_SCOPE || "johnny-self").trim();
+export const MY_E2E_VERCEL_PROJECT_ID = String(
+  process.env.MY_E2E_VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT_ID || "prj_VHh3BMegmXFGwxgOJLlgFQjksmKA"
+).trim();
+export const MY_E2E_VERCEL_ORG_ID = String(
+  process.env.MY_E2E_VERCEL_ORG_ID || process.env.VERCEL_ORG_ID || "team_xuYA9OhCWlJETaYFOmeVodgS"
+).trim();
 export const MY_E2E_META_SHA = "myE2EGitSha";
 export const MY_E2E_META_BRANCH = "myE2EGitBranch";
 export const MY_E2E_META_PURPOSE = "myE2EPurpose";
@@ -40,12 +46,20 @@ function stripAnsi(value) {
 }
 
 function runVercel(args, step) {
+  requireCondition(
+    MY_E2E_VERCEL_PROJECT_ID && MY_E2E_VERCEL_ORG_ID,
+    FAILURE_CATEGORIES.PRECONDITION,
+    step,
+    "vercel_project_ids_missing"
+  );
   const invocation = resolveNpxInvocation();
   const result = spawnSync(invocation.command, [...invocation.prefixArgs, ...args], {
     cwd: process.cwd(),
     encoding: "utf8",
     env: {
       ...process.env,
+      VERCEL_PROJECT_ID: MY_E2E_VERCEL_PROJECT_ID,
+      VERCEL_ORG_ID: MY_E2E_VERCEL_ORG_ID,
       CI: "1",
       NO_UPDATE_NOTIFIER: "1"
     },
@@ -102,6 +116,7 @@ export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = 
   requireCondition(branch && !["main", "master"].includes(branch), FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "preview_branch_invalid");
   requireCondition(/^[0-9a-f]{40}$/i.test(String(gitHead || "")), FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "git_head_invalid");
   requireCondition(MY_E2E_VERCEL_PROJECT && MY_E2E_VERCEL_SCOPE, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_project_scope_missing");
+  requireCondition(MY_E2E_VERCEL_PROJECT_ID && MY_E2E_VERCEL_ORG_ID, FAILURE_CATEGORIES.PRECONDITION, "vercel-preview", "vercel_project_ids_missing");
 
   let urls = listByMetadata({ branch, gitHead, metadataSource: "my-e2e" });
   let attestationSource = "my-e2e-metadata";
@@ -127,7 +142,9 @@ export function resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl = 
     branch,
     gitSha: gitHead,
     project: MY_E2E_VERCEL_PROJECT,
+    projectId: MY_E2E_VERCEL_PROJECT_ID,
     scope: MY_E2E_VERCEL_SCOPE,
+    orgId: MY_E2E_VERCEL_ORG_ID,
     attestationSource
   };
 }
