@@ -5,6 +5,7 @@ import {
   FAILURE_CATEGORIES,
   JourneyFailure,
   createRunId,
+  normalizeBaseUrl,
   requireCondition
 } from "./premium-browser-journey-core.mjs";
 import {
@@ -18,13 +19,13 @@ import {
   assertGitWorktreeClean,
   ensureLocalRuntime,
   getGitBranch,
+  getGitHead,
   loadBootstrapMetadata,
   parseCliArgs,
-  readJsonIfPresent,
-  resolveExpectedSha,
-  resolvePreviewConfiguration
+  readJsonIfPresent
 } from "./premium-browser-journey-local-auth.mjs";
 import { captureAccountSessionResilient } from "./premium-e2e-session-capture.mjs";
+import { resolveMyE2EPreviewDeployment } from "./my-e2e-vercel-preview.mjs";
 
 function runNodeScript(path, env) {
   return new Promise((resolvePromise, rejectPromise) => {
@@ -44,16 +45,42 @@ function runNodeScript(path, env) {
 const args = parseCliArgs();
 await ensureLocalRuntime();
 assertGitWorktreeClean();
+
 const storedConfig = await readJsonIfPresent(LOCAL_CONFIG_PATH);
-const { baseUrl, environment, expectedHost } = resolvePreviewConfiguration({ args, storedConfig });
-const { expectedSha, deploymentSha, gitHead } = resolveExpectedSha(args);
 const branch = getGitBranch();
+const gitHead = getGitHead();
+const requestedUrl = typeof args.url === "string" ? args.url : "";
+const deployment = resolveMyE2EPreviewDeployment({ branch, gitHead, requestedUrl });
+const baseUrl = normalizeBaseUrl(deployment.url);
+const environment = "preview";
+const expectedHost = deployment.hostname;
+const expectedSha = gitHead;
+const deploymentSha = deployment.gitSha;
+
+if (typeof args.sha === "string") {
+  requireCondition(args.sha === gitHead, FAILURE_CATEGORIES.PRECONDITION, "local-config", "expected_sha_not_local_head");
+}
+if (typeof args["deployment-sha"] === "string") {
+  requireCondition(args["deployment-sha"] === deploymentSha, FAILURE_CATEGORIES.PRECONDITION, "local-config", "deployment_sha_not_attested_head");
+}
+
 requireCondition(
   branch && branch === storedConfig?.branch,
   FAILURE_CATEGORIES.PRECONDITION,
   "local-config",
   "current_branch_not_bootstrap_branch"
 );
+const storedBaseUrl = storedConfig?.baseUrl ? normalizeBaseUrl(storedConfig.baseUrl) : null;
+if (!storedBaseUrl || storedBaseUrl.hostname !== deployment.hostname) {
+  console.error("AUTH_TARGET_STALE: npm run e2e:my:login 을 실행해 현재 attested Preview에 인증을 다시 고정하십시오.");
+}
+requireCondition(
+  storedBaseUrl && storedBaseUrl.hostname === deployment.hostname,
+  FAILURE_CATEGORIES.PRECONDITION,
+  "local-config",
+  "bootstrap_target_not_current_attested_preview"
+);
+
 const bootstrapMetadata = await loadBootstrapMetadata(baseUrl);
 const previewBypassToken = String(
   args["preview-bypass-token"] || process.env.PREMIUM_E2E_PREVIEW_BYPASS_TOKEN || ""
@@ -135,8 +162,9 @@ const env = {
   MY_E2E_HEADLESS: args.headed ? "0" : "1"
 };
 
-console.log(`My adversarial E2E 대상: ${baseUrl.origin}`);
+console.log(`My adversarial E2E 대상(attested): ${baseUrl.origin}`);
 console.log(`검증 브랜치/SHA: ${branch} @ ${expectedSha}`);
+console.log(`Vercel attestation: ${deployment.attestationSource}`);
 
 const rlsProbeResult = await runNodeScript(
   resolve(process.cwd(), "scripts/run-my-rls-adversarial-probe.mjs"),
@@ -159,6 +187,8 @@ console.log(JSON.stringify({
   gitHead,
   expectedSha,
   deploymentSha,
+  deploymentUrl: baseUrl.origin,
+  deploymentAttestation: deployment.attestationSource,
   collisionFreeRlsProbe: rlsProbeResult.code === 0
 }, null, 2));
 

@@ -285,7 +285,7 @@ async function assertAuthenticatedInputFuzz(context) {
   const malformed = await context.request.fetch(appUrl("/api/my/check-in"), {
     method: "POST",
     headers: { ...extraHTTPHeaders, "Content-Type": "application/json" },
-    data: "{"
+    data: Buffer.from("{", "utf8")
   });
   const malformedParsed = await parseApiResponse(malformed);
   responses.push(safeResponseContract("fuzz:checkin-invalid-json", malformedParsed));

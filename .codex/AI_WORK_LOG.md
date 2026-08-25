@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-08-25 / My exact-SHA Vercel Preview and adversarial Hosted E2E
+
+- Task type: recovery / Medium provider-auth-hosted harness repair with explicit Preview and two-account Hosted execution authority. DB schema, migration, RLS policy, storage contract, payment, product runtime, frozen corpus, environment files, and production deployment impact were `N`.
+- Root cause: the proposed deploy-hook workflow used unsupported Vercel CLI flags and could only bind a mutable branch ref; it did not establish that the created Preview was built from the requested immutable Git SHA.
+- Implementation: `scripts/deploy-my-adversarial-e2e-preview.mjs` now validates the live Vercel GitHub project binding, creates a forced-new Preview through `POST /v13/deployments` with native `gitSource` repo/ref/SHA authority, polls the exact deployment ID, and fails closed unless Git metadata proves the requested SHA. `scripts/my-e2e-vercel-preview.mjs` uses the installed CLI's structured deployment output, and the static contract verifier rejects deploy-hook and branch-tip fallbacks.
+- Policy boundary: `vercel.json` automatic feature-branch deployment remains disabled; no deploy hook was created or removed, the pre-existing hook count stayed unchanged, no Production target or traffic was changed, and no secret or reviewer URL was written to tracked files or chat.
+- Pre-log evidence: implementation commit `231e70ea46984bcb7568a70909f149d5e4623ffe` passed focused syntax/contract checks, an LF-exact isolated production build, all six required exact-head CI workflows, exact-SHA Preview provenance, fresh manual Google login for two distinct permanent accounts, and the 13-check authenticated adversarial Hosted suite including malformed-input rejection, cross-account application/RLS isolation, forged-owner insert denial, XSS, cleanup/restoration, and logout boundaries.
+- Completion gate: because this work-log entry changes the commit SHA, the log-bearing final HEAD must be pushed and must independently repeat exact-head CI, Preview provenance, two-account login, Hosted E2E, cleanup, and latest-main freshness checks before the task may be reported `VERIFIED`.
+- Context promotion candidate: none. The immutable-SHA deployment and no-secret-output rules are task-specific applications of existing deployment and protected-area guidance.
+
 ### 2026-08-15 / Face Lab D2D-XA-R1 misclassified smoke remediation
 
 - Task type: recovery / Critical production-data remediation with explicit one-row delete authority.
