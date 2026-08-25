@@ -1,0 +1,193 @@
+schema_version: "1.0"
+contract_version: PIE_OPERATIONAL_POLICY_V1
+project_id: bejewely
+policy_authority: PR_BASE_REVISION
+
+operational_classes:
+  application-runtime:
+    paths:
+      - app/**
+      - components/**
+      - lib/**
+    trust_task_class: routine_code
+    required_scenarios:
+      - recommendation-determinism
+      - boundary-input
+      - metadata-compatibility
+      - user-flow-regression
+    required_evidence:
+      - repository-ci
+    readiness_policy:
+      policy_id: bejewely-application-runtime
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
+
+  authorization-boundary:
+    paths:
+      - app/**/auth/**
+      - lib/**/auth/**
+      - app/**/middleware*
+      - middleware*
+    trust_task_class: authorization
+    required_scenarios:
+      - unauthorized-denial
+      - authenticated-isolation
+      - cross-user-isolation
+      - authorization-regression
+    required_evidence:
+      - repository-ci
+      - authorization-verification
+    readiness_policy:
+      policy_id: bejewely-authorization-boundary
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
+
+  engine-runtime:
+    paths:
+      - scripts/**
+      - packages/**
+      - tools/**
+    trust_task_class: routine_code
+    required_scenarios:
+      - deterministic-evaluation
+      - corpus-compatibility
+      - recommendation-regression
+      - evidence-replay
+    required_evidence:
+      - repository-ci
+    readiness_policy:
+      policy_id: bejewely-engine-runtime
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
+
+  verifier-boundary:
+    paths:
+      - tools/**
+      - scripts/**/*verify*
+      - scripts/**/*evaluation*
+      - packages/**/*verify*
+      - packages/**/*evaluation*
+    trust_task_class: verifier
+    required_scenarios:
+      - deterministic-replay
+      - negative-control
+      - tamper-rejection
+      - verifier-regression
+    required_evidence:
+      - repository-ci
+      - verifier-evidence
+    readiness_policy:
+      policy_id: bejewely-verifier-boundary
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
+
+  crawler-runtime:
+    paths:
+      - crawler/**
+    trust_task_class: routine_code
+    required_scenarios:
+      - source-admission
+      - parser-failure
+      - deduplication
+      - deterministic-replay
+    required_evidence:
+      - repository-ci
+    readiness_policy:
+      policy_id: bejewely-crawler-runtime
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
+
+  database-contract:
+    paths:
+      - supabase/**
+    trust_task_class: database_migration
+    required_scenarios:
+      - migration-forward
+      - rollback-plan
+      - rls-preservation
+      - relational-integrity
+    required_evidence:
+      - repository-ci
+      - migration-verification
+    readiness_policy:
+      policy_id: bejewely-database-contract
+      policy_version: 1.0.0
+      min_ledger_runs: 1
+      min_ledger_decisions: 1
+      min_defects: 1
+      min_closed_defects: 0
+      min_reground_observations: 1
+      min_reground_coverage: 1.0
+      min_reground_precision: 1.0
+      min_reground_recall: 1.0
+      max_reground_false_positive_rate: 0.0
+      require_active_policy: true
+      require_pass_evaluation: true
+      require_holdout: true
+      require_repeatability: true
+      require_zero_protected_negative_regressions: true
