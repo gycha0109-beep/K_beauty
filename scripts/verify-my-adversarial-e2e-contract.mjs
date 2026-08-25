@@ -153,7 +153,7 @@ assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equalit
 // Preview deployment helper must deploy a clean tracked Git snapshot, not the local working directory.
 matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
 assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
-includes(previewDeployer, "git\", [\n      \"checkout-index\"", "tracked Git snapshot export");
+matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*"checkout-index"/, "tracked Git snapshot export");
 includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
 includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
 includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
