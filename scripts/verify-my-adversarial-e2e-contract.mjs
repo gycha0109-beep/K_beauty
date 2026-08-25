@@ -150,14 +150,22 @@ includes(launcher, "bootstrap_target_not_current_attested_preview", "stale auth 
 includes(launcher, "deploymentSha = deployment.gitSha", "actual deployment metadata SHA authority");
 assert.doesNotMatch(launcher, /resolveExpectedSha/, "caller-provided SHA equality must not be deployment authority");
 
-// Preview deployment helper must deploy a clean tracked Git snapshot, not the local working directory.
+// Preview deployment helper must export canonical HEAD bytes rather than a converted Windows checkout.
 matches(previewDeployer, /"--scope"\s*,\s*MY_E2E_VERCEL_SCOPE/, "explicit Vercel scope target");
 assert.doesNotMatch(previewDeployer, /"--project"/, "Vercel v53 deploy must not use unsupported --project flag");
-matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*"checkout-index"/, "tracked Git snapshot export");
+assert.doesNotMatch(previewDeployer, /checkout-index/, "snapshot export must not use checkout conversion");
+matches(previewDeployer, /execFileSync\(\s*"git"\s*,\s*\[\s*\n?\s*"archive"/, "canonical Git archive export");
+includes(previewDeployer, '"cat-file"', "Git blob byte authority");
+includes(previewDeployer, '"blob"', "Git blob byte authority mode");
+includes(previewDeployer, "LEGACY_RECOMMENDATION_CORPUS", "frozen corpus byte attestation target");
+includes(previewDeployer, "snapshotCorpus.equals(canonicalCorpus)", "snapshot byte equality assertion");
+includes(previewDeployer, "git_snapshot_byte_mismatch", "snapshot byte mismatch fail-closed guard");
+includes(previewDeployer, "git_canonical_snapshot_export_failed", "canonical snapshot export failure category");
 includes(previewDeployer, "mkdtempSync", "isolated temporary deployment directory");
 includes(previewDeployer, "snapshotDir", "snapshot path passed to Vercel deploy");
 includes(previewDeployer, "rmSync(snapshotDir", "temporary snapshot cleanup");
-includes(previewDeployer, "deploymentSource: \"tracked-git-snapshot\"", "tracked snapshot verdict");
+includes(previewDeployer, "deploymentSource: \"canonical-git-archive-snapshot\"", "canonical snapshot verdict");
+includes(previewDeployer, "snapshotByteAuthority: \"git-cat-file-blob\"", "Git blob byte authority verdict");
 includes(previewDeployer, "MY_E2E_META_SHA", "server-side exact SHA metadata");
 includes(previewDeployer, "MY_E2E_META_BRANCH", "server-side exact branch metadata");
 includes(previewDeployer, "assertGitWorktreeClean", "clean-tree deployment guard");
