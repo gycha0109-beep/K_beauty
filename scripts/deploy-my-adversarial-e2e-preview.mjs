@@ -76,17 +76,30 @@ function removeDeployHook(hookId, step) {
   ], step);
 }
 
-function cleanupOrphanedHook(hookName) {
+function listDeployHooks(step) {
   const listed = runMyE2EVercelJsonCommand([
     "deploy-hooks",
     "ls",
+    "--format",
+    "json",
     "--project",
     MY_E2E_VERCEL_PROJECT,
     "--scope",
     MY_E2E_VERCEL_SCOPE
-  ], "vercel-deploy-hook-preflight-list");
+  ], step);
 
-  const hooks = Array.isArray(listed?.hooks) ? listed.hooks : [];
+  if (Array.isArray(listed)) return listed;
+  if (Array.isArray(listed?.hooks)) return listed.hooks;
+
+  throw new JourneyFailure(
+    FAILURE_CATEGORIES.PRECONDITION,
+    step,
+    "vercel_deploy_hook_list_shape_invalid"
+  );
+}
+
+function cleanupOrphanedHook(hookName) {
+  const hooks = listDeployHooks("vercel-deploy-hook-preflight-list");
   for (const hook of hooks) {
     const candidateName = String(hook?.name || "").trim();
     const candidateRef = String(hook?.ref || "").trim();
@@ -101,6 +114,23 @@ function cleanupOrphanedHook(hookName) {
     );
     removeDeployHook(candidateId, "vercel-deploy-hook-preflight-remove");
   }
+}
+
+function resolveCreatedHook(hookName) {
+  const hooks = listDeployHooks("vercel-deploy-hook-postcreate-list");
+  const matches = hooks.filter((hook) =>
+    String(hook?.name || "").trim() === hookName &&
+    String(hook?.ref || "").trim() === branch
+  );
+
+  requireCondition(
+    matches.length === 1,
+    FAILURE_CATEGORIES.PRECONDITION,
+    "vercel-deploy-hook-postcreate-list",
+    "deploy_hook_creation_not_attested"
+  );
+
+  return matches[0];
 }
 
 async function waitForGitAttestedPreview() {
@@ -139,7 +169,7 @@ let cleanupError = null;
 try {
   cleanupOrphanedHook(hookName);
 
-  const created = runMyE2EVercelJsonCommand([
+  runMyE2EVercelCommand([
     "deploy-hooks",
     "create",
     hookName,
@@ -148,10 +178,11 @@ try {
     "--project",
     MY_E2E_VERCEL_PROJECT,
     "--scope",
-    MY_E2E_VERCEL_SCOPE
+    MY_E2E_VERCEL_SCOPE,
+    "--yes"
   ], "vercel-deploy-hook-create");
 
-  const hook = created?.hook || null;
+  const hook = resolveCreatedHook(hookName);
   hookId = String(hook?.id || "").trim();
   const hookRef = String(hook?.ref || "").trim();
   const hookUrlValue = String(hook?.url || "").trim();
@@ -159,7 +190,7 @@ try {
   requireCondition(
     hookId && hookRef === branch && hookUrlValue,
     FAILURE_CATEGORIES.PRECONDITION,
-    "vercel-deploy-hook-create",
+    "vercel-deploy-hook-postcreate-list",
     "deploy_hook_creation_not_attested"
   );
 
