@@ -41,8 +41,6 @@ try {
     "--yes",
     "--scope",
     MY_E2E_VERCEL_SCOPE,
-    "--project",
-    MY_E2E_VERCEL_PROJECT,
     "--meta",
     `${MY_E2E_META_SHA}=${gitHead}`,
     "--meta",
@@ -75,8 +73,8 @@ console.log(JSON.stringify({
   branch,
   gitHead,
   attestationSource: deployed.attestationSource,
-  project: deployed.project,
-  scope: deployed.scope,
+  project: MY_E2E_VERCEL_PROJECT,
+  scope: MY_E2E_VERCEL_SCOPE,
   localVercelLinkCreated: false,
   nextCommand: "npm run e2e:my:login"
 }, null, 2));
