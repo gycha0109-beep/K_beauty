@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
+    "apps/*",
     "packages/*",
     "tools/*"
   ],
@@ -77,7 +78,14 @@
     "verify:admin-product-review-import-confirm": "node scripts/verify-admin-product-review-import-confirm.mjs",
     "verify:admin-product-review-import-ui": "node scripts/verify-admin-product-review-import-ui.mjs",
     "verify:admin-product-review-import-routes": "node scripts/verify-admin-product-review-import-routes.mjs",
-    "verify:admin-product-current-main-integration": "node scripts/verify-admin-product-current-main-integration.mjs"
+    "verify:admin-product-current-main-integration": "node scripts/verify-admin-product-current-main-integration.mjs",
+    "mobile:start": "npm run start --workspace @bejewely/mobile",
+    "mobile:android": "npm run android --workspace @bejewely/mobile",
+    "mobile:typecheck": "npm run typecheck --workspace @bejewely/mobile",
+    "mobile:lint": "npm run lint --workspace @bejewely/mobile",
+    "mobile:config": "npm run config:check --workspace @bejewely/mobile",
+    "mobile:export:android": "npm run export:android --workspace @bejewely/mobile",
+    "verify:mobile-foundation": "node scripts/verify-mobile-architecture-foundation.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
