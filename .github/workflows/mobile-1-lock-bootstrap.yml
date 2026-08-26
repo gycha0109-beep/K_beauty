@@ -44,7 +44,7 @@ jobs:
           const packages = lock.packages || {};
           const versionsFor = (name) => [...new Set(
             Object.entries(packages)
-              .filter(([path, meta]) => path.endsWith(`/node_modules/${name}`) && meta?.version)
+              .filter(([path, meta]) => (path === `node_modules/${name}` || path.endsWith(`/node_modules/${name}`)) && meta?.version)
               .map(([, meta]) => meta.version)
           )];
           const reanimated = versionsFor('react-native-reanimated');
