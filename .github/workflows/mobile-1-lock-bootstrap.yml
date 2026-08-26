@@ -1,0 +1,56 @@
+name: BEJEWELY MOBILE-1 Worklet Lock Bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/package.json"
+      - ".github/workflows/mobile-1-lock-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  pin-mobile-lockfile:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Resolve workspace lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Verify SDK 57 native pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const lock = require('./package-lock.json');
+          const packages = lock.packages || {};
+          if (packages['apps/mobile/node_modules/react-native-reanimated']?.version !== '4.5.1') process.exit(1);
+          if (packages['apps/mobile/node_modules/react-native-worklets']?.version !== '0.10.1') process.exit(1);
+          console.log('MOBILE_WORKLET_PAIR=4.5.1/0.10.1');
+          NODE
+          npm ci --ignore-scripts
+
+      - name: Commit lockfile and remove bootstrap workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/mobile-1-lock-bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore(mobile): pin SDK 57 worklet runtime pair"
+          git push origin "HEAD:${{ github.head_ref }}"
