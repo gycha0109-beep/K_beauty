@@ -7,13 +7,20 @@
     "scheme": "bejewely",
     "userInterfaceStyle": "automatic",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-system-ui"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "android": {
-      "predictiveBackGestureEnabled": false
+      "package": "com.bejewely.mobile",
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "androidStatusBar": {
+      "translucent": false
     }
   }
 }

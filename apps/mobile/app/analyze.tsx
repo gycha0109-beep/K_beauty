@@ -1,16 +1,15 @@
 import { StyleSheet, Text } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
+import { MOBILE_COPY } from "../lib/copy";
+import { useMobileShell } from "../lib/mobile-shell";
 
 export default function AnalyzeScreen() {
+  const { locale, palette } = useMobileShell();
+  const copy = MOBILE_COPY[locale].analyze;
+
   return (
-    <ScreenShell
-      eyebrow="ANALYZE"
-      title="Native analysis entry"
-      description="This route is a navigation placeholder for the future native survey and camera flow."
-    >
-      <Text style={styles.notice}>
-        MOBILE-0 does not call /api/analyze and does not port the Recommendation Engine or browser camera implementation.
-      </Text>
+    <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
+      <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
     </ScreenShell>
   );
 }
@@ -18,7 +17,6 @@ export default function AnalyzeScreen() {
 const styles = StyleSheet.create({
   notice: {
     fontSize: 15,
-    lineHeight: 22,
-    color: "#4B4458"
+    lineHeight: 22
   }
 });
