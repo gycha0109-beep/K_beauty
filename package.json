@@ -70,7 +70,7 @@
     "synthetic:report": "npm run report --workspace @bejewely/synthetic-evaluation --",
     "synthetic:export": "npm run export --workspace @bejewely/synthetic-evaluation --",
     "synthetic:dataset": "npm run dataset --workspace @bejewely/synthetic-evaluation --",
-    "synthetic:baseline": "npm run baseline --workspace @bejewely/synthetic-evaluation --",
+    "synthetic:baseline": "npm run baseline --workspace @bejewely/synthetic-evaluation",
     "synthetic:rehearsal": "npm run rehearsal --workspace @bejewely/synthetic-evaluation --",
     "synthetic:solo": "npm run solo --workspace @bejewely/synthetic-evaluation --",
     "lint": "next lint",
@@ -85,7 +85,10 @@
     "mobile:lint": "npm run lint --workspace @bejewely/mobile",
     "mobile:config": "npm run config:check --workspace @bejewely/mobile",
     "mobile:export:android": "npm run export:android --workspace @bejewely/mobile",
-    "verify:mobile-foundation": "node scripts/verify-mobile-architecture-foundation.mjs"
+    "mobile:prebuild:android": "npm run prebuild:android --workspace @bejewely/mobile",
+    "mobile:build:android:debug": "npm run build:android:debug --workspace @bejewely/mobile",
+    "verify:mobile-foundation": "node scripts/verify-mobile-architecture-foundation.mjs",
+    "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.35",
