@@ -10,6 +10,7 @@ UI_DUMP="$ARTIFACT_DIR/window.xml"
 METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
 METRO_READY=0
+METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -37,6 +38,28 @@ if [[ ! -x "$EXPO_BIN" ]]; then
 fi
 if [[ ! -x "$EXPO_BIN" ]]; then
   echo "Expo CLI binary not found after npm ci" >&2
+  exit 1
+fi
+
+if ! NODE_PATH="$METRO_NODE_PATH" node -e "require.resolve('expo-router/_ctx-shared')" >/dev/null 2>&1; then
+  echo "Expo Router workspace module resolution failed before Metro startup" >&2
+  NODE_PATH="$METRO_NODE_PATH" node - <<'NODE' >&2 || true
+const path = require('node:path');
+for (const candidate of [
+  'expo-router/package.json',
+  'expo-router/_ctx-shared',
+  '@expo/router-server/package.json',
+]) {
+  try {
+    console.error(`${candidate} -> ${require.resolve(candidate)}`);
+  } catch (error) {
+    console.error(`${candidate} -> unresolved (${error.code ?? error.message})`);
+  }
+}
+console.error(`NODE_PATH=${process.env.NODE_PATH}`);
+console.error(`cwd=${process.cwd()}`);
+console.error(`mobileNodeModules=${path.join(process.cwd(), 'apps/mobile/node_modules')}`);
+NODE
   exit 1
 fi
 
@@ -90,7 +113,11 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 
 (
   cd "$MOBILE_ROOT"
-  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 "$EXPO_BIN" start --localhost --port 8081
+  CI=1 \
+  EXPO_NO_TELEMETRY=1 \
+  EXPO_OFFLINE=1 \
+  NODE_PATH="$METRO_NODE_PATH" \
+  "$EXPO_BIN" start --localhost --port 8081
 ) > "$METRO_LOG" 2>&1 &
 METRO_PID=$!
 
