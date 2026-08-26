@@ -29,7 +29,7 @@ jobs:
           cache: npm
 
       - name: Resolve workspace lockfile
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps
 
       - name: Verify SDK 57 native pair
         shell: bash
