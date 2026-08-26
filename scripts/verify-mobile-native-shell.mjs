@@ -23,6 +23,16 @@ assert.equal(typeof mobilePackage.scripts?.["build:android:debug"], "string");
 assert.equal(typeof mobilePackage.scripts?.["verify:native"], "string");
 assert.equal(mobilePackage.dependencies?.["expo-system-ui"], "~57.0.2");
 assert.equal(mobilePackage.dependencies?.["expo-localization"], "~57.0.1");
+assert.equal(
+  mobilePackage.dependencies?.["react-native-reanimated"],
+  "4.5.1",
+  "Expo SDK 57 native shell requires the validated Reanimated 4.5.1 runtime pair",
+);
+assert.equal(
+  mobilePackage.dependencies?.["react-native-worklets"],
+  "0.10.1",
+  "Expo SDK 57 native shell requires the validated Worklets 0.10.1 runtime pair",
+);
 
 const androidRoot = join(mobileRoot, "android");
 assert.ok(existsSync(androidRoot), "Run Expo Android prebuild before the MOBILE-1 native verifier");
