@@ -85,6 +85,10 @@ MOBILE-1 also establishes:
 - non-translucent Android status bar plus Safe Area shell
 - generated native directories excluded from source control
 
+### SDK 57 native compatibility pin
+
+The Android runtime pair is intentionally pinned to `react-native-reanimated 4.5.1` and `react-native-worklets 0.10.1`. An earlier unpinned optional-peer resolution selected Reanimated 4.6.0 + Worklets 0.12.1 and failed native C++ compilation in `expo-modules-core` because the expected `WorkletRuntime::executeSync` API was absent. The root lockfile was regenerated after removing the stale pair, a clean plain `npm ci` validated the resulting graph, and the permanent native verifier rejects drift from the validated SDK 57 pair.
+
 The native CI gate must prove all of the following on the exact candidate SHA:
 
 1. clean workspace install
