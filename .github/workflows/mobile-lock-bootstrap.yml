@@ -1,0 +1,45 @@
+name: BEJEWELY Mobile Lock Bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "scripts/prepare-mobile-workspace-lock.mjs"
+      - ".github/workflows/mobile-lock-bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-lock-bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Prepare workspace manifest
+        run: node scripts/prepare-mobile-workspace-lock.mjs
+
+      - name: Generate canonical npm lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Upload generated manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-workspace-manifests
+          path: |
+            package.json
+            package-lock.json
+          if-no-files-found: error
+          retention-days: 1
