@@ -19,6 +19,12 @@ cleanup() {
   adb logcat -d > "$ARTIFACT_DIR/logcat.txt" 2>&1 || true
   adb shell uiautomator dump /sdcard/bejewely-window.xml >/dev/null 2>&1 || true
   adb pull /sdcard/bejewely-window.xml "$ARTIFACT_DIR/final-window.xml" >/dev/null 2>&1 || true
+  if [[ "$status" -ne 0 ]]; then
+    echo "--- Metro log ---" >&2
+    cat "$METRO_LOG" >&2 2>/dev/null || true
+    echo "--- Final UI hierarchy ---" >&2
+    cat "$ARTIFACT_DIR/final-window.xml" >&2 2>/dev/null || true
+  fi
   if [[ -n "$METRO_PID" ]] && kill -0 "$METRO_PID" 2>/dev/null; then
     kill "$METRO_PID" 2>/dev/null || true
   fi
@@ -108,6 +114,18 @@ PY
   adb shell input tap "$x" "$y"
 }
 
+metro_port_ready() {
+  python - <<'PY'
+import socket
+
+try:
+    with socket.create_connection(("localhost", 8081), timeout=1):
+        pass
+except OSError:
+    raise SystemExit(1)
+PY
+}
+
 adb shell cmd uimode night no >/dev/null
 adb reverse tcp:8081 tcp:8081 >/dev/null
 
@@ -123,12 +141,13 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 METRO_PID=$!
 
 for _ in $(seq 1 90); do
-  if curl --silent --fail --max-time 2 http://127.0.0.1:8081/status | grep -Fq "packager-status:running"; then
+  if metro_port_ready; then
     METRO_READY=1
+    printf 'MOBILE_METRO_TCP_READY=PASS\n'
     break
   fi
   if ! kill -0 "$METRO_PID" 2>/dev/null; then
-    echo "Metro exited before becoming ready" >&2
+    echo "Metro exited before opening port 8081" >&2
     cat "$METRO_LOG" >&2 || true
     exit 1
   fi
@@ -136,7 +155,8 @@ for _ in $(seq 1 90); do
 done
 
 if [[ "$METRO_READY" -ne 1 ]]; then
-  echo "Metro did not become ready within 90 seconds" >&2
+  echo "Metro did not open port 8081 within 90 seconds" >&2
+  ss -ltnp >&2 2>/dev/null || true
   cat "$METRO_LOG" >&2 || true
   exit 1
 fi
@@ -157,7 +177,7 @@ wait_for_text "Native account space"
 tap_text "Home"
 wait_for_text "BEJEWELY Mobile"
 
-tap_text "KO"
+tap_text "locale-ko"
 wait_for_text "BEJEWELY 모바일"
 wait_for_text "테마 · 라이트"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-ko.png"
