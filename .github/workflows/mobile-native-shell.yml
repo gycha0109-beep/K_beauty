@@ -119,6 +119,7 @@ jobs:
         with:
           name: bejewely-mobile-native-shell-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: warn
+          include-hidden-files: true
           retention-days: 14
           path: |
             apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
