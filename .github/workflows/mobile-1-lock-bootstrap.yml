@@ -38,8 +38,19 @@ jobs:
           node - <<'NODE'
           const lock = require('./package-lock.json');
           const packages = lock.packages || {};
-          if (packages['apps/mobile/node_modules/react-native-reanimated']?.version !== '4.5.1') process.exit(1);
-          if (packages['apps/mobile/node_modules/react-native-worklets']?.version !== '0.10.1') process.exit(1);
+          const versionsFor = (name) => [...new Set(
+            Object.entries(packages)
+              .filter(([path, meta]) => path.endsWith(`/node_modules/${name}`) && meta?.version)
+              .map(([, meta]) => meta.version)
+          )];
+          const reanimated = versionsFor('react-native-reanimated');
+          const worklets = versionsFor('react-native-worklets');
+          if (reanimated.length !== 1 || reanimated[0] !== '4.5.1') {
+            throw new Error(`Unexpected react-native-reanimated versions: ${reanimated.join(',')}`);
+          }
+          if (worklets.length !== 1 || worklets[0] !== '0.10.1') {
+            throw new Error(`Unexpected react-native-worklets versions: ${worklets.join(',')}`);
+          }
           console.log('MOBILE_WORKLET_PAIR=4.5.1/0.10.1');
           NODE
           npm ci --ignore-scripts
