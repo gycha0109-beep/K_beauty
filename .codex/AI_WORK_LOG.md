@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-08-26 / MOBILE-0 native architecture foundation
+
+- Task type: execution / Medium monorepo mobile foundation. Database schema/migration/RLS/storage, payment, Recommendation runtime, Product Fact runtime, Face Lab server runtime, existing Web auth semantics, and existing Web API response semantics were not changed. Production access was read-only for baseline/deployment attestation.
+- Live baseline: execution started from `main` `a274768fbf2ad2a4b3455b6bc1cf69720c60b84e`; the live Vercel Production deployment was READY on the same SHA. Root workspaces were `packages/*` + `tools/*`; Web My auth was cookie-backed Supabase server auth; `/api/analyze` was a multipart client endpoint with anonymous/authenticated guard handling and server-side Recommendation/Vision authority.
+- Implementation: added `apps/mobile` with Expo SDK 57 / React Native / Expo Router / TypeScript, native Home-Analyze-My tabs, safe-area shell, `EXPO_PUBLIC_*` environment contract, production-localhost guard, platform-neutral `packages/shared`, root `apps/*` workspace integration, generated npm lockfile, static platform/secret boundary verifier, architecture documentation, and exact-head Mobile Foundation CI. No Auth, Camera, `/api/analyze` call, Premium, push, billing, or native engine port was added.
+- Pre-log validation: exact head `2a0655d6c161e8827ca6408bb9d5118ed2e3fc82` passed BEJEWELY Mobile Foundation run #2 (clean monorepo install, boundary lint, TypeScript, Expo public config, Android JS export), BEJEWELY Current Main Health run #88, and the existing Admin integration `next build`/architecture/security contract job. A verifier cwd defect found during the first pass was corrected before these results. Local clone/build was unavailable because the execution sandbox could not resolve GitHub DNS; no local success was claimed.
+- Completion gate: this log-bearing final HEAD must independently rerun exact-head CI before merge. MOBILE-0 does not claim emulator/device launch or an installable Android binary; those remain MOBILE-1 native gates.
+- Context promotion candidate: `docs/architecture/mobile-foundation.md` is the bounded project architecture record. No global `.codex/AI_CONTEXT.md` promotion is required.
+
+
 ### 2026-08-25 / My exact-SHA Vercel Preview and adversarial Hosted E2E
 
 - Task type: recovery / Medium provider-auth-hosted harness repair with explicit Preview and two-account Hosted execution authority. DB schema, migration, RLS policy, storage contract, payment, product runtime, frozen corpus, environment files, and production deployment impact were `N`.
