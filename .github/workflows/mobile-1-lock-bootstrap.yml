@@ -14,7 +14,7 @@ jobs:
   pin-mobile-lockfile:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout exact PR head
         uses: actions/checkout@v6
@@ -28,8 +28,12 @@ jobs:
           node-version: 22.23.1
           cache: npm
 
-      - name: Resolve workspace lockfile
-        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps --workspace @bejewely/mobile react-native-reanimated@4.5.1 react-native-worklets@0.10.1
+      - name: Rebuild mobile worklet dependency graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm uninstall --workspace @bejewely/mobile --ignore-scripts --legacy-peer-deps react-native-reanimated react-native-worklets
+          npm install --workspace @bejewely/mobile --ignore-scripts --legacy-peer-deps --save-exact react-native-reanimated@4.5.1 react-native-worklets@0.10.1
 
       - name: Verify SDK 57 native pair
         shell: bash
