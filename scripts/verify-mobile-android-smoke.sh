@@ -2,10 +2,14 @@
 set -euo pipefail
 
 PACKAGE_ID="com.bejewely.mobile"
-APK_PATH="apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk"
-ARTIFACT_DIR="apps/mobile/.mobile-native-artifacts"
+REPO_ROOT="$(pwd)"
+MOBILE_ROOT="$REPO_ROOT/apps/mobile"
+APK_PATH="$MOBILE_ROOT/android/app/build/outputs/apk/debug/app-debug.apk"
+ARTIFACT_DIR="$MOBILE_ROOT/.mobile-native-artifacts"
 UI_DUMP="$ARTIFACT_DIR/window.xml"
+METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
+METRO_READY=0
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -24,6 +28,15 @@ trap cleanup EXIT
 
 if [[ ! -f "$APK_PATH" ]]; then
   echo "Missing debug APK: $APK_PATH" >&2
+  exit 1
+fi
+
+EXPO_BIN="$REPO_ROOT/node_modules/.bin/expo"
+if [[ ! -x "$EXPO_BIN" ]]; then
+  EXPO_BIN="$MOBILE_ROOT/node_modules/.bin/expo"
+fi
+if [[ ! -x "$EXPO_BIN" ]]; then
+  echo "Expo CLI binary not found after npm ci" >&2
   exit 1
 fi
 
@@ -73,26 +86,36 @@ PY
 }
 
 adb shell cmd uimode night no >/dev/null
-adb reverse tcp:8081 tcp:8081
+adb reverse tcp:8081 tcp:8081 >/dev/null
 
-CI=1 EXPO_NO_TELEMETRY=1 npm run start --workspace @bejewely/mobile -- --localhost > "$ARTIFACT_DIR/metro.log" 2>&1 &
+(
+  cd "$MOBILE_ROOT"
+  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 "$EXPO_BIN" start --localhost --port 8081
+) > "$METRO_LOG" 2>&1 &
 METRO_PID=$!
 
-for _ in $(seq 1 60); do
-  if curl --silent --fail http://127.0.0.1:8081/status | grep -Fq "packager-status:running"; then
+for _ in $(seq 1 90); do
+  if curl --silent --fail --max-time 2 http://127.0.0.1:8081/status | grep -Fq "packager-status:running"; then
+    METRO_READY=1
     break
   fi
   if ! kill -0 "$METRO_PID" 2>/dev/null; then
     echo "Metro exited before becoming ready" >&2
+    cat "$METRO_LOG" >&2 || true
     exit 1
   fi
   sleep 1
 done
 
-curl --silent --fail http://127.0.0.1:8081/status | grep -Fq "packager-status:running"
+if [[ "$METRO_READY" -ne 1 ]]; then
+  echo "Metro did not become ready within 90 seconds" >&2
+  cat "$METRO_LOG" >&2 || true
+  exit 1
+fi
+
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
-adb reverse tcp:8081 tcp:8081
+adb reverse tcp:8081 tcp:8081 >/dev/null
 adb shell monkey -p "$PACKAGE_ID" -c android.intent.category.LAUNCHER 1 >/dev/null
 
 wait_for_text "BEJEWELY Mobile"
