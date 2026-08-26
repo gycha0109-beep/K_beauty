@@ -1,0 +1,47 @@
+name: BEJEWELY MOBILE-1 Work Log Bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/mobile-1-worklog-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prepend-mobile-1-log:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Prepend MOBILE-1 execution entry
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('.codex/AI_WORK_LOG.md')
+          text = path.read_text(encoding='utf-8')
+          marker = '## Entries\n'
+          entry = '''\n### 2026-08-26 / MOBILE-1 Android native shell\n\n- Task type: execution / Medium Android-first native shell closure. Existing Web routes, cookie-backed Web auth, `/api/analyze`, Recommendation/Product Fact/Face Lab/Premium server authority, DB/schema/RLS/storage, payment, provider secrets, and Production traffic semantics were not changed.\n- Baseline: MOBILE-1 started from merged MOBILE-0 `main` `9050fb4315830288a35dc57e9c2a95707f5481df`. The phase preserves the Expo CNG model with generated `android/` and `ios/` ignored, and scopes runtime work to the Android shell only.\n- Implementation: added Android package `com.bejewely.mobile`, portrait/status-bar/keyboard-resize configuration, `expo-system-ui` automatic theme support, `expo-localization` KO/EN system-locale initialization and bounded runtime switch, native Home/Analyze/My shell behavior, generated-native contract verification, Gradle debug APK assembly, Android emulator install/launch/navigation/theme/locale smoke evidence, and a read-only exact-head native-shell CI gate. The emulator runner action is pinned to the reviewed v2.38.0 commit SHA.\n- Native dependency remediation: initial Android C++ compilation exposed an `expo-modules-core` / Worklets API mismatch (`WorkletRuntime::executeSync`) because npm optional-peer resolution selected Reanimated 4.6.0 + Worklets 0.12.1. The mobile workspace now explicitly pins the Expo SDK 57 validated pair Reanimated 4.5.1 + Worklets 0.10.1; the regenerated lockfile passed a clean plain `npm ci`, and the permanent native verifier rejects pair drift.\n- Validation boundary: Expo Android prebuild and generated-native contract verification have passed during implementation. A pre-remediation `assembleDebug` failure was not counted as APK success. This log-bearing final head must independently pass clean install, MOBILE-0 regression, TypeScript/config, Android prebuild, generated-native verifier, Gradle APK assembly, emulator install/launch, rendered Home/Analyze/My navigation, KO/EN, light/dark smoke, Web current-main health, and production Next build before merge.\n- Non-targets: no MOBILE-2 auth/session transport, camera, `/api/analyze` mobile transport, Premium, push, billing/store signing, native Recommendation/Face Lab engine port, or iOS runtime claim.\n- Context promotion candidate: `docs/architecture/mobile-foundation.md` remains the bounded mobile architecture authority; no global context promotion is required.\n\n'''
+          if '### 2026-08-26 / MOBILE-1 Android native shell' in text:
+              raise SystemExit('MOBILE-1 work-log entry already exists')
+          if marker not in text:
+              raise SystemExit('AI_WORK_LOG entries marker missing')
+          path.write_text(text.replace(marker, marker + entry, 1), encoding='utf-8')
+
+      - name: Commit log and remove bootstrap workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/mobile-1-worklog-bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .codex/AI_WORK_LOG.md
+          git commit -m "docs(ai): record MOBILE-1 native shell execution"
+          git push origin "HEAD:${{ github.head_ref }}"
