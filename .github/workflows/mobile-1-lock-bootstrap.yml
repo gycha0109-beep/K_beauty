@@ -29,7 +29,7 @@ jobs:
           cache: npm
 
       - name: Resolve workspace lockfile
-        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+        run: npm install --package-lock-only --ignore-scripts --legacy-peer-deps --workspace @bejewely/mobile react-native-reanimated@4.5.1 react-native-worklets@0.10.1
 
       - name: Verify SDK 57 native pair
         shell: bash
@@ -62,6 +62,6 @@ jobs:
           git rm .github/workflows/mobile-1-lock-bootstrap.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
+          git add package-lock.json apps/mobile/package.json
           git commit -m "chore(mobile): pin SDK 57 worklet runtime pair"
           git push origin "HEAD:${{ github.head_ref }}"
