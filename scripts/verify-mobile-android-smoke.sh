@@ -116,6 +116,7 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
   CI=1 \
   EXPO_NO_TELEMETRY=1 \
   EXPO_OFFLINE=1 \
+  EXPO_UNSTABLE_HEADLESS=1 \
   NODE_PATH="$METRO_NODE_PATH" \
   "$EXPO_BIN" start --localhost --port 8081
 ) > "$METRO_LOG" 2>&1 &
