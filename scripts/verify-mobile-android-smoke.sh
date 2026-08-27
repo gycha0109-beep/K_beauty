@@ -11,6 +11,8 @@ METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
 METRO_READY=0
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
+QUICKSTEP_RECOVERY_COUNT=0
+QUICKSTEP_RECOVERY_LIMIT=2
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -80,6 +82,23 @@ wait_for_text() {
     dump_ui || true
     if [[ -f "$UI_DUMP" ]] && grep -Fq "$expected" "$UI_DUMP"; then
       return 0
+    fi
+    if [[ -f "$UI_DUMP" ]] && grep -Fq "Quickstep isn't responding" "$UI_DUMP"; then
+      if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+        echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
+        return 1
+      fi
+      if ! tap_text "Close app"; then
+        echo "Quickstep ANR detected but its Close app action was unavailable" >&2
+        return 1
+      fi
+      QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+      printf 'MOBILE_ANDROID_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
+      sleep 2
+      adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+      printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_RESTART=PASS\n'
+      sleep 2
+      continue
     fi
     sleep 2
   done
@@ -163,6 +182,8 @@ fi
 
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
+adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 adb reverse tcp:8081 tcp:8081 >/dev/null
 adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
 printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_START=PASS\n'
