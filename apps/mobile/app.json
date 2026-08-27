@@ -8,7 +8,13 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
-      "expo-system-ui"
+      "expo-system-ui",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
