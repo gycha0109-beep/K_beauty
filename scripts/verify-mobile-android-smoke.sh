@@ -76,14 +76,33 @@ dump_ui() {
   adb pull /sdcard/bejewely-window.xml "$UI_DUMP" >/dev/null
 }
 
+ui_has_text() {
+  local target="$1"
+  python - "$UI_DUMP" "$target" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+path, target = sys.argv[1], sys.argv[2]
+try:
+    root = ET.parse(path).getroot()
+except (ET.ParseError, OSError):
+    raise SystemExit(1)
+
+for node in root.iter("node"):
+    if node.attrib.get("text") == target or node.attrib.get("content-desc") == target:
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 wait_for_text() {
   local expected="$1"
   for _ in $(seq 1 45); do
     dump_ui || true
-    if [[ -f "$UI_DUMP" ]] && grep -Fq "$expected" "$UI_DUMP"; then
+    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
       return 0
     fi
-    if [[ -f "$UI_DUMP" ]] && grep -Fq "Quickstep isn't responding" "$UI_DUMP"; then
+    if [[ -f "$UI_DUMP" ]] && ui_has_text "Quickstep isn't responding"; then
       if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
         echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
         return 1
@@ -195,7 +214,7 @@ adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 tap_text "Analyze"
 wait_for_text "Native analysis entry"
 tap_text "My"
-wait_for_text "Native account space"
+wait_for_text "Native My & Skin Diary"
 tap_text "Home"
 wait_for_text "BEJEWELY Mobile"
 

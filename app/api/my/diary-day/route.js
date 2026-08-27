@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getMyDiaryDayPayload } from "@/lib/my/diary-day";
 import { isValidLocalDate } from "@/lib/my/local-date";
 import { createNoStoreHeaders } from "@/lib/security/error-redaction";
+import { resolveRouteSupabaseAuth } from "@/lib/supabase/server-client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,13 @@ export async function GET(request) {
     return sensitiveJsonResponse({ error: "invalid_diary_date" }, { status: 400 });
   }
 
-  const result = await getMyDiaryDayPayload({ date });
+  const authContext = await resolveRouteSupabaseAuth(request);
+
+  if (!authContext) {
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const result = await getMyDiaryDayPayload({ date, authContext });
 
   if (result.status !== 200) {
     return sensitiveJsonResponse(

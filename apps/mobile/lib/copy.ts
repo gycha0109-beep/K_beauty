@@ -69,19 +69,19 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "Routes · Home / Analyze / My",
       localeLabel: "Locale",
       nativeGate: "Android gate · prebuild / APK / emulator launch",
-      note: "Authentication is now implemented in MOBILE-2 while camera capture, analysis requests, and Premium remain separate mobile phases."
+      note: "Authentication is implemented in MOBILE-2 and My / Skin Diary is connected in MOBILE-3. Survey, camera, analysis results, and Premium remain separate later phases."
     },
     analyze: {
       eyebrow: "ANALYZE",
       title: "Native analysis entry",
-      description: "This route is reserved for the future native survey and camera flow.",
+      description: "This route is reserved for the later native survey, camera, and analysis-result flow.",
       notice: "The native client does not move Recommendation, Product Fact, or Face Lab server authority into the app."
     },
     my: {
-      eyebrow: "MY · MOBILE-2",
-      title: "Native account space",
-      description: "Native Supabase sessions stay on-device and authenticated API calls send the access token as Bearer while Web cookie auth remains unchanged.",
-      notice: "Google OAuth returns through bejewely://auth/callback. The Supabase redirect allow-list must include that native scheme before hosted sign-in can complete.",
+      eyebrow: "MY · MOBILE-3",
+      title: "Native My & Skin Diary",
+      description: "Native My reuses the existing authenticated dashboard, check-in, routine, and skin-diary APIs over Bearer while Web cookie auth remains unchanged.",
+      notice: "Google OAuth returns through bejewely://auth/callback. Hosted sign-in still requires that native callback in the Supabase redirect allow-list.",
       signInGoogle: "Continue with Google",
       signingIn: "Opening Google sign-in…",
       signedOut: "Not signed in",
@@ -116,19 +116,19 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "경로 · 홈 / 분석 / 마이",
       localeLabel: "언어",
       nativeGate: "Android 게이트 · prebuild / APK / emulator launch",
-      note: "MOBILE-2에서 인증을 연결했으며 카메라 촬영, 분석 요청, Premium은 별도 모바일 단계로 유지합니다."
+      note: "MOBILE-2에서 인증을 연결했고 MOBILE-3에서 My / Skin Diary를 연결했습니다. 설문, 카메라, 분석 결과, Premium은 이후 별도 단계로 유지합니다."
     },
     analyze: {
       eyebrow: "ANALYZE",
       title: "네이티브 분석 진입점",
-      description: "향후 네이티브 설문과 카메라 흐름이 들어올 경로입니다.",
+      description: "향후 네이티브 설문·카메라·분석 결과 흐름이 들어올 경로입니다.",
       notice: "Recommendation, Product Fact, Face Lab 서버 권한은 네이티브 앱으로 이동하지 않습니다."
     },
     my: {
-      eyebrow: "MY · MOBILE-2",
-      title: "네이티브 계정 영역",
-      description: "Supabase 네이티브 세션은 기기에 유지하고 인증 API 호출에는 access token을 Bearer로 전송하며 Web cookie 인증은 그대로 보존합니다.",
-      notice: "Google OAuth는 bejewely://auth/callback으로 복귀합니다. 실제 로그인 전 Supabase redirect allow-list에 이 native scheme이 등록되어 있어야 합니다.",
+      eyebrow: "MY · MOBILE-3",
+      title: "네이티브 My · 스킨 다이어리",
+      description: "기존 인증 대시보드·체크인·루틴·스킨 다이어리 API를 Native Bearer로 재사용하며 Web cookie 인증은 그대로 보존합니다.",
+      notice: "Google OAuth는 bejewely://auth/callback으로 복귀합니다. Hosted 로그인에는 Supabase redirect allow-list에 이 native callback이 등록되어 있어야 합니다.",
       signInGoogle: "Google로 계속하기",
       signingIn: "Google 로그인 여는 중…",
       signedOut: "로그인되지 않음",
