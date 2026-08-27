@@ -1,5 +1,5 @@
 import * as Linking from "expo-linking";
-import type { Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "./env";
 import { getMobileSupabaseClient } from "./supabase";
 
