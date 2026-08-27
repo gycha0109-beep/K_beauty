@@ -408,11 +408,11 @@ export default function MyScreen() {
 
               <Text style={[styles.subheading, { color: palette.text }]}>{diaryCopy.eventsTitle}</Text>
               <View style={styles.chipRow}>
-                <Pressable onPress={() => setForm((current) => ({ ...current, makeup_today: !current.makeup_today }))}
+                <Pressable onPress={() => { setSaveState("idle"); setForm((current) => ({ ...current, makeup_today: !current.makeup_today })); }}
                   style={[styles.toggleChip, { borderColor: form.makeup_today ? palette.accent : palette.border, backgroundColor: form.makeup_today ? palette.surfaceMuted : palette.surface }]}>
                   <Text style={[styles.toggleText, { color: form.makeup_today ? palette.accent : palette.text }]}>{diaryCopy.makeup}</Text>
                 </Pressable>
-                <Pressable onPress={() => setForm((current) => ({ ...current, outdoor_today: !current.outdoor_today }))}
+                <Pressable onPress={() => { setSaveState("idle"); setForm((current) => ({ ...current, outdoor_today: !current.outdoor_today })); }}
                   style={[styles.toggleChip, { borderColor: form.outdoor_today ? palette.accent : palette.border, backgroundColor: form.outdoor_today ? palette.surfaceMuted : palette.surface }]}>
                   <Text style={[styles.toggleText, { color: form.outdoor_today ? palette.accent : palette.text }]}>{diaryCopy.outdoor}</Text>
                 </Pressable>
