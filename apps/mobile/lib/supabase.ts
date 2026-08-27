@@ -1,6 +1,6 @@
 import { AppState } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { GoTrueClient } from "@supabase/auth-js";
 import { getMobileSupabasePublicEnv } from "./env";
 
 const STORAGE_FILE_PREFIX = "bejewely-supabase-";
@@ -37,7 +37,11 @@ const nativeSessionStorage = {
   }
 };
 
-let mobileSupabaseClient: SupabaseClient | null | undefined;
+type MobileSupabaseAuthClient = {
+  auth: GoTrueClient;
+};
+
+let mobileSupabaseClient: MobileSupabaseAuthClient | null | undefined;
 let appStateSubscription: { remove: () => void } | null = null;
 
 export function getMobileSupabaseClient() {
@@ -47,31 +51,38 @@ export function getMobileSupabaseClient() {
 
   try {
     const { supabaseUrl, supabaseAnonKey } = getMobileSupabasePublicEnv();
-
-    mobileSupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        storage: nativeSessionStorage,
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: false,
-        flowType: "pkce"
-      }
+    const auth = new GoTrueClient({
+      url: `${supabaseUrl.replace(/\/$/, "")}/auth/v1`,
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`
+      },
+      storageKey: "bejewely-native-auth",
+      storage: nativeSessionStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+      flowType: "pkce"
     });
+
+    mobileSupabaseClient = { auth };
 
     if (!appStateSubscription) {
       if (AppState.currentState === "active") {
-        mobileSupabaseClient.auth.startAutoRefresh();
+        auth.startAutoRefresh();
       }
 
       appStateSubscription = AppState.addEventListener("change", (state) => {
-        if (!mobileSupabaseClient) {
+        const currentAuth = mobileSupabaseClient?.auth;
+
+        if (!currentAuth) {
           return;
         }
 
         if (state === "active") {
-          mobileSupabaseClient.auth.startAutoRefresh();
+          currentAuth.startAutoRefresh();
         } else {
-          mobileSupabaseClient.auth.stopAutoRefresh();
+          currentAuth.stopAutoRefresh();
         }
       });
     }
