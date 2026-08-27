@@ -120,7 +120,19 @@ export function getNativeDiaryMonth(date = new Date()) {
 }
 
 export function shiftNativeDiaryMonth(month: string, delta: number) {
-  const [year, monthNumber] = month.split("-").map(Number);
+  const [yearText = "", monthText = ""] = month.split("-");
+  const year = Number(yearText);
+  const monthNumber = Number(monthText);
+
+  if (
+    !Number.isInteger(year) ||
+    !Number.isInteger(monthNumber) ||
+    monthNumber < 1 ||
+    monthNumber > 12
+  ) {
+    return getNativeDiaryMonth();
+  }
+
   const date = new Date(year, monthNumber - 1 + delta, 1);
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
