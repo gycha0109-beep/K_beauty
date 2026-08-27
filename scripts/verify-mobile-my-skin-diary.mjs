@@ -23,6 +23,7 @@ function forbidText(relativePath, text, label) {
 }
 
 const dashboardRoute = "app/api/my/dashboard/route.js";
+const dashboardDomain = "lib/my/dashboard.js";
 const checkInRoute = "app/api/my/check-in/route.js";
 const diaryDayRoute = "app/api/my/diary-day/route.js";
 const diaryDayDomain = "lib/my/diary-day.js";
@@ -34,6 +35,8 @@ for (const route of [dashboardRoute, checkInRoute, diaryDayRoute]) {
   requireText(route, "resolveRouteSupabaseAuth(request)", `${route} dual-auth resolver`);
 }
 
+requireText(dashboardDomain, '"am_routine"', "dashboard AM routine projection");
+requireText(dashboardDomain, '"pm_routine"', "dashboard PM routine projection");
 requireText(diaryDayRoute, "getMyDiaryDayPayload({ date, authContext })", "diary-day auth injection");
 requireText(diaryDayDomain, "async function resolveDiaryDayAuth(authContext)", "diary-day auth adapter");
 requireText(diaryDayDomain, "authContext?.supabase && authContext?.user", "diary-day injected auth path");
