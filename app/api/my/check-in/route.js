@@ -169,6 +169,15 @@ export async function POST(request) {
   }
 
   const { supabase, user } = authContext;
+  const {
+    data: { user: routeVerifiedUser },
+    error: routeUserError
+  } = await supabase.auth.getUser();
+
+  if (routeUserError || !routeVerifiedUser || routeVerifiedUser.id !== user.id) {
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
+  }
+
   let body;
 
   try {
