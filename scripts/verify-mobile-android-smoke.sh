@@ -164,7 +164,8 @@ fi
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
 adb reverse tcp:8081 tcp:8081 >/dev/null
-adb shell monkey -p "$PACKAGE_ID" -c android.intent.category.LAUNCHER 1 >/dev/null
+adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_START=PASS\n'
 
 wait_for_text "BEJEWELY Mobile"
 wait_for_text "Native shell ready"
