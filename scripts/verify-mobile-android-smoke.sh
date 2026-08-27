@@ -195,7 +195,7 @@ adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 tap_text "Analyze"
 wait_for_text "Native analysis entry"
 tap_text "My"
-wait_for_text "Native account space"
+wait_for_text "Native My & Skin Diary"
 tap_text "Home"
 wait_for_text "BEJEWELY Mobile"
 
