@@ -156,7 +156,7 @@ function toDisplayItems(value: unknown): string[] {
       if (typeof item === "string") return item.trim();
       if (!item || typeof item !== "object") return "";
       const record = item as Record<string, unknown>;
-      for (const key of ["label", "name", "title", "action", "step", "product_name", "productName"]) {
+      for (const key of ["label", "name", "title", "message", "action", "step", "product_name", "productName"]) {
         if (typeof record[key] === "string" && record[key]) return String(record[key]);
       }
       return "";
