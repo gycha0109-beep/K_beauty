@@ -35,7 +35,7 @@ Existing Web platform code (`app/`, `components/`, server `lib/`) is not importe
 
 Mobile source uses `EXPO_PUBLIC_*` names for values that are intentionally embedded in the client bundle. There is no automatic passthrough from Web `NEXT_PUBLIC_*` names.
 
-Required future runtime values:
+Required runtime values:
 
 - `EXPO_PUBLIC_API_BASE_URL`
 - `EXPO_PUBLIC_SUPABASE_URL`
@@ -45,7 +45,11 @@ Required future runtime values:
 
 ## Authentication boundary
 
-Current Web server auth remains cookie-based and unchanged. Mobile Bearer access-token resolution is a separate MOBILE-2 server-auth adapter task and must preserve the existing Web cookie path.
+Web remains cookie-based. MOBILE-2 adds a shared server authorization boundary that accepts either the existing Web cookie context or a Native Supabase Bearer access token and validates the token server-side before returning a user-bound Supabase client.
+
+Native auth uses standalone `@supabase/auth-js` `GoTrueClient`, PKCE, `bejewely://auth/callback`, encrypted SecureStore persistence, bounded chunking, automatic refresh, and migration/deletion of the former plaintext FileSystem session payload. Service-role/admin/server secrets remain forbidden from the native bundle.
+
+Hosted Google sign-in additionally requires `bejewely://auth/callback` in the Supabase redirect allow-list. Repository code cannot by itself attest that external hosted setting.
 
 ## Navigation
 
@@ -55,7 +59,7 @@ The native shell uses one tab surface:
 - Analyze
 - My
 
-Result and Premium routes remain deferred until those features exist. The `bejewely` scheme is reserved for future auth/share deep links, but no callback is implemented in MOBILE-1.
+Result and Premium routes remain deferred until those features exist. The `bejewely` scheme is registered for the native auth callback and later bounded deep-link work.
 
 ## MOBILE-1 native shell
 
@@ -104,10 +108,57 @@ The native CI gate must prove all of the following on the exact candidate SHA:
 11. light → dark system appearance propagation
 12. APK, screenshots, UI dump, Metro log, logcat, and activity evidence retained as CI artifacts
 
-MOBILE-1 does not implement Auth, Camera, `/api/analyze`, Premium, push notifications, billing, native Recommendation logic, or native Face Lab analysis. Those remain separate later phases.
+MOBILE-1 does not implement Auth, Camera, `/api/analyze`, Premium, push notifications, billing, native Recommendation logic, or native Face Lab analysis. Those are separate later phases.
+
+## MOBILE-2 authentication
+
+MOBILE-2 connects the native client to the existing Supabase user authority without replacing the Web cookie flow.
+
+The server contract is:
+
+```text
+Web cookie session ─┐
+                    ├─ resolveRouteSupabaseAuth → validated user-bound Supabase client
+Native Bearer token ┘
+```
+
+The native client:
+
+- uses Google OAuth + PKCE
+- restores and refreshes the Supabase session on-device
+- persists session material in Expo SecureStore with bounded chunking
+- sends only normal-user Bearer access tokens to authenticated BEJEWELY APIs
+- never embeds service-role/admin/server secrets
+- keeps the standalone GoTrue dependency boundary required by the validated Hermes graph
+
+## MOBILE-3 My / Skin Diary
+
+MOBILE-3 does not create a second diary domain. It projects the existing Web/server My authority into the native client.
+
+The native My surface reuses:
+
+- `GET /api/my/dashboard` for active profile, today state, recent seven-day check-ins, selected-month diary entries, server-generated routine, and latest-report metadata
+- `POST /api/my/check-in` for the existing five 0–4 condition levels, bounded event context, memo, and server-side daily routine generation
+- `GET /api/my/diary-day` for historical check-in/routine snapshots
+
+`/api/my/dashboard` and `/api/my/check-in` already supported the MOBILE-2 dual-auth resolver. MOBILE-3 extends only the missing `/api/my/diary-day` path so that its domain function can consume an injected validated auth context while preserving the original cookie fallback.
+
+The native client may format and display returned profile/check-in/routine data, but it must not reproduce `generateDailyRoutine`, recommendation scoring, Product Fact logic, Face Lab analysis, or Premium generation.
+
+MOBILE-3 intentionally leaves the following for later stages:
+
+- MOBILE-4: shared survey contract extraction
+- MOBILE-5: native camera
+- MOBILE-6: face capture guidance
+- MOBILE-7: analyze transport + result
+- MOBILE-8+: Premium, share/deep-link expansion, store readiness
 
 ## Validation semantics
 
 MOBILE-0 static validation proves workspace resolution, TypeScript, Expo config, Android JS export, and platform-import boundaries.
 
-MOBILE-1 adds a real Android native gate. A passing MOBILE-1 run means an APK was generated and installed on an Android emulator and the rendered shell completed the bounded smoke flow. It does not claim physical-device coverage, iOS coverage, store signing, production push, or mobile Auth/API behavior.
+MOBILE-1 adds a real Android native gate. A passing native-shell run means an APK was generated and installed on an Android emulator and the rendered shell completed the bounded smoke flow. It does not claim physical-device coverage, iOS coverage, store signing, production push, or hosted OAuth behavior.
+
+MOBILE-2 adds auth-specific static gates for cookie preservation, Bearer validation, standalone GoTrue, PKCE, encrypted session persistence, plaintext migration/deletion, and secret boundaries.
+
+MOBILE-3 adds a My/Skin Diary contract gate proving that native reads/writes use existing authenticated APIs, diary-day preserves cookie + Bearer dual auth, and routine/Recommendation/Face Lab/Premium authority has not moved into the native client. The existing native-shell workflow remains the rendered Android regression gate for the exact candidate and merged-main SHA.
