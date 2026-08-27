@@ -2,6 +2,16 @@
 
 ## Entries
 
+### 2026-08-27 / MOBILE-3 My / Skin Diary
+
+- Task type: execution / Medium Android-first native My and Skin Diary projection. Existing Web cookie auth, Supabase user/RLS authority, Recommendation/Product Fact/Face Lab/Premium server authority, DB schema/migrations, provider secrets, camera, survey extraction, `/api/analyze`, push, billing, and store readiness were not expanded.
+- Baseline: MOBILE-3 started from merged and Vercel-READY `main` `934e9ed78d0865f4d22f84b97111316dc3deeaaa`. MOBILE-2 native auth and SecureStore session persistence remain the authentication foundation.
+- Implementation: added a native My API adapter over existing `/api/my/dashboard`, `/api/my/check-in`, and `/api/my/diary-day`; implemented active profile, five 0-4 condition levels, bounded daily context events, memo, server-generated routine rendering, recent seven-day state, monthly diary navigation, and historical day detail. `/api/my/diary-day` now accepts the existing validated cookie-or-Bearer auth context while preserving its original Web cookie fallback and user-bound Supabase/RLS query path.
+- Authority boundary: `generateDailyRoutine` remains server-only; Native only renders returned routine/warning payloads and does not import Web/server modules or reproduce Recommendation, Face Lab, Product Fact, or Premium decision logic. Hosted Google OAuth redirect allow-list verification remains an external MOBILE-2 prerequisite and is not claimed by MOBILE-3.
+- Verification: dedicated MOBILE-3 verifier/workflow enforces dual-auth diary reads, Bearer dashboard/check-in/diary transport, server routine authority, and native secret/import boundaries. The Android smoke contract was updated to assert the MOBILE-3 My title. This log-bearing final HEAD must independently pass Current Main Health, Mobile Foundation, Mobile Auth, Mobile My Skin Diary, PIE Shadow when triggered, and the real Android APK/emulator rendered-shell gate before expected-head merge.
+- Next boundary: MOBILE-4 is shared survey-contract extraction only. Native camera remains MOBILE-5, face capture guidance MOBILE-6, and analyze/result MOBILE-7.
+- Context promotion candidate: `docs/architecture/mobile-foundation.md` remains the bounded mobile architecture authority; no global context promotion is required.
+
 ### 2026-08-26 / MOBILE-1 Android native shell
 
 - Task type: execution / Medium Android-first native shell closure. Existing Web routes, cookie-backed Web auth, `/api/analyze`, Recommendation/Product Fact/Face Lab/Premium server authority, DB/schema/RLS/storage, payment, provider secrets, and Production traffic semantics were not changed.
