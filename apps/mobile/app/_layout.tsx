@@ -29,6 +29,7 @@ function NativeTabs() {
         <Tabs.Screen name="index" options={{ title: copy.tabs.home }} />
         <Tabs.Screen name="analyze" options={{ title: copy.tabs.analyze }} />
         <Tabs.Screen name="my" options={{ title: copy.tabs.my }} />
+        <Tabs.Screen name="auth/callback" options={{ href: null, title: "Auth" }} />
       </Tabs>
     </>
   );
