@@ -1,3 +1,6 @@
 .expo/
 .expo-ci-dist/
+.mobile-native-artifacts/
+android/
+ios/
 dist/

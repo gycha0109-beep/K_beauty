@@ -1,23 +1,28 @@
 import { FACE_CAPTURE_STATES, SUPPORTED_LOCALES } from "@bejewely/shared";
 import { StyleSheet, Text, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
+import { MOBILE_COPY } from "../lib/copy";
+import { useMobileShell } from "../lib/mobile-shell";
 
 export default function HomeScreen() {
+  const { locale, palette, themeMode } = useMobileShell();
+  const copy = MOBILE_COPY[locale];
+
   return (
-    <ScreenShell
-      eyebrow="MOBILE-0"
-      title="BEJEWELY Mobile"
-      description="Web authority stays intact while the native client foundation is added beside it."
-    >
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Foundation ready</Text>
-        <Text style={styles.cardBody}>Native routes: Home · Analyze · My</Text>
-        <Text style={styles.cardBody}>Locales reserved: {SUPPORTED_LOCALES.join(" / ")}</Text>
-        <Text style={styles.cardBody}>Face capture contract states: {FACE_CAPTURE_STATES.length}</Text>
+    <ScreenShell eyebrow={copy.home.eyebrow} title={copy.home.title} description={copy.home.description}>
+      <View style={[styles.card, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
+        <Text style={[styles.cardTitle, { color: palette.text }]}>{copy.home.cardTitle}</Text>
+        <Text style={[styles.cardBody, { color: palette.textMuted }]}>{copy.home.routes}</Text>
+        <Text style={[styles.cardBody, { color: palette.textMuted }]}>
+          {copy.home.localeLabel} · {locale.toUpperCase()} ({SUPPORTED_LOCALES.join(" / ")})
+        </Text>
+        <Text style={[styles.cardBody, { color: palette.textMuted }]}>
+          {copy.theme.label} · {copy.theme[themeMode]}
+        </Text>
+        <Text style={[styles.cardBody, { color: palette.textMuted }]}>{copy.home.nativeGate}</Text>
+        <Text style={[styles.cardBody, { color: palette.textMuted }]}>Face capture states · {FACE_CAPTURE_STATES.length}</Text>
       </View>
-      <Text style={styles.note}>
-        Authentication, camera capture, analysis requests, and Premium are intentionally not implemented in MOBILE-0.
-      </Text>
+      <Text style={[styles.note, { color: palette.textMuted }]}>{copy.home.note}</Text>
     </ScreenShell>
   );
 }
@@ -27,22 +32,19 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 8,
     padding: 20,
-    borderRadius: 20,
-    backgroundColor: "#F3F0FF"
+    borderWidth: 1,
+    borderRadius: 20
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#201A2E"
+    fontWeight: "700"
   },
   cardBody: {
     fontSize: 15,
-    lineHeight: 21,
-    color: "#4B4458"
+    lineHeight: 21
   },
   note: {
     fontSize: 14,
-    lineHeight: 20,
-    color: "#6A6471"
+    lineHeight: 20
   }
 });

@@ -2,6 +2,17 @@
 
 ## Entries
 
+### 2026-08-26 / MOBILE-1 Android native shell
+
+- Task type: execution / Medium Android-first native shell closure. Existing Web routes, cookie-backed Web auth, `/api/analyze`, Recommendation/Product Fact/Face Lab/Premium server authority, DB/schema/RLS/storage, payment, provider secrets, and Production traffic semantics were not changed.
+- Baseline: MOBILE-1 started from merged MOBILE-0 `main` `9050fb4315830288a35dc57e9c2a95707f5481df`. The phase preserves the Expo CNG model with generated `android/` and `ios/` ignored, and scopes runtime work to the Android shell only.
+- Implementation: added Android package `com.bejewely.mobile`, portrait/status-bar/keyboard-resize configuration, `expo-system-ui` automatic theme support, `expo-localization` KO/EN system-locale initialization and bounded runtime switch, native Home/Analyze/My shell behavior, generated-native contract verification, Gradle debug APK assembly, Android emulator install/launch/navigation/theme/locale smoke evidence, and a read-only exact-head native-shell CI gate. The emulator runner action is pinned to the reviewed v2.38.0 commit SHA.
+- Native dependency remediation: initial Android C++ compilation exposed an `expo-modules-core` / Worklets API mismatch (`WorkletRuntime::executeSync`) because npm optional-peer resolution selected Reanimated 4.6.0 + Worklets 0.12.1. The mobile workspace now explicitly pins the Expo SDK 57 validated pair Reanimated 4.5.1 + Worklets 0.10.1; the regenerated lockfile passed a clean plain `npm ci`, and the permanent native verifier rejects pair drift.
+- Validation boundary: Expo Android prebuild and generated-native contract verification have passed during implementation. A pre-remediation `assembleDebug` failure was not counted as APK success. This log-bearing final head must independently pass clean install, MOBILE-0 regression, TypeScript/config, Android prebuild, generated-native verifier, Gradle APK assembly, emulator install/launch, rendered Home/Analyze/My navigation, KO/EN, light/dark smoke, Web current-main health, and production Next build before merge.
+- Non-targets: no MOBILE-2 auth/session transport, camera, `/api/analyze` mobile transport, Premium, push, billing/store signing, native Recommendation/Face Lab engine port, or iOS runtime claim.
+- Context promotion candidate: `docs/architecture/mobile-foundation.md` remains the bounded mobile architecture authority; no global context promotion is required.
+
+
 ### 2026-08-26 / MOBILE-0 native architecture foundation
 
 - Task type: execution / Medium monorepo mobile foundation. Database schema/migration/RLS/storage, payment, Recommendation runtime, Product Fact runtime, Face Lab server runtime, existing Web auth semantics, and existing Web API response semantics were not changed. Production access was read-only for baseline/deployment attestation.
