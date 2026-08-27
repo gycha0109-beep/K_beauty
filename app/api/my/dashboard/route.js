@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveRouteSupabaseAuth } from "@/lib/supabase/server-client";
 import { isValidLocalDate } from "@/lib/my/local-date";
 import { isValidDiaryMonth } from "@/lib/my/diary-month";
 import { getMyDashboardPayload } from "@/lib/my/dashboard";
@@ -25,9 +26,16 @@ export async function GET(request) {
     return sensitiveJsonResponse({ error: "invalid_diary_month" }, { status: 400 });
   }
 
+  const authContext = await resolveRouteSupabaseAuth(request);
+
+  if (!authContext) {
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
+  }
+
   const result = await getMyDashboardPayload({
     localDate: localDate || undefined,
-    diaryMonth: diaryMonth || undefined
+    diaryMonth: diaryMonth || undefined,
+    authContext
   });
 
   if (result.status === 401) {

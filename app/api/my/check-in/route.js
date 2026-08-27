@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { resolveRouteSupabaseAuth } from "@/lib/supabase/server-client";
 import {
   isLocalDateInServerWindow,
   isValidLocalDate
@@ -162,13 +162,19 @@ async function getActiveSkinProfile(supabase, userId) {
 }
 
 export async function POST(request) {
-  const supabase = await createServerSupabaseClient();
+  const authContext = await resolveRouteSupabaseAuth(request);
+
+  if (!authContext) {
+    return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const { supabase, user } = authContext;
   const {
-    data: { user },
-    error: userError
+    data: { user: routeVerifiedUser },
+    error: routeUserError
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+  if (routeUserError || !routeVerifiedUser || routeVerifiedUser.id !== user.id) {
     return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -206,8 +212,6 @@ export async function POST(request) {
       throw new Error("daily_checkin_existing_read_failed");
     }
 
-    // checkin_date/routine_date are the user's calendar date.
-    // created_at remains the UTC event timestamp for audit and ordering.
     const checkinRecord = {
       user_id: user.id,
       skin_profile_id: skinProfile.id,
