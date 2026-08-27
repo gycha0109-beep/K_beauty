@@ -39,10 +39,16 @@ requireText(checkInRoute, "resolveRouteSupabaseAuth(request)", "check-in dual au
 requireText(webServerClient, 'import { cookies } from "next/headers"', "web cookie authority");
 requireText(webServerClient, "cookieStore.getAll()", "web cookie read path");
 
+requireText(mobileSupabase, 'import { GoTrueClient } from "@supabase/auth-js"', "standalone native auth client");
+requireText(mobileSupabase, "new GoTrueClient({", "standalone auth construction");
 requireText(mobileSupabase, 'persistSession: true', "native session persistence");
 requireText(mobileSupabase, 'autoRefreshToken: true', "native refresh");
 requireText(mobileSupabase, 'flowType: "pkce"', "native PKCE");
 requireText(mobileSupabase, 'expo-file-system/legacy', "native persistent storage");
+
+if (read(mobileSupabase).includes('from "@supabase/supabase-js"')) {
+  throw new Error("native auth must not bundle the Supabase core client");
+}
 
 requireText(mobileAuth, 'provider: "google"', "native Google OAuth");
 requireText(mobileAuth, 'bejewely://auth/callback', "native callback scheme");
@@ -63,6 +69,7 @@ for (const relativePath of [mobileSupabase, mobileAuth, mobileCallback, dashboar
 
 console.log("MOBILE_AUTH_COOKIE_PATH=PASS");
 console.log("MOBILE_AUTH_BEARER_PATH=PASS");
+console.log("MOBILE_AUTH_STANDALONE_GOTRUE=PASS");
 console.log("MOBILE_AUTH_NATIVE_PKCE_PERSISTENCE=PASS");
 console.log("MOBILE_AUTH_SECRET_BOUNDARY=PASS");
 console.log("MOBILE_AUTH_FOUNDATION=PASS");
