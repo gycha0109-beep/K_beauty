@@ -1,0 +1,75 @@
+name: BEJEWELY Mobile Auth
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/api/my/dashboard/route.js"
+      - "app/api/my/check-in/route.js"
+      - "lib/my/dashboard.js"
+      - "lib/supabase/server-client.js"
+      - "lib/supabase/server.js"
+      - "scripts/verify-mobile-auth-foundation.mjs"
+      - ".github/workflows/mobile-auth.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/api/my/dashboard/route.js"
+      - "app/api/my/check-in/route.js"
+      - "lib/my/dashboard.js"
+      - "lib/supabase/server-client.js"
+      - "lib/supabase/server.js"
+      - "scripts/verify-mobile-auth-foundation.mjs"
+      - ".github/workflows/mobile-auth.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-auth-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-auth:
+    name: BEJEWELY Mobile Auth
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_AUTH_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify MOBILE-2 auth boundaries
+        run: node scripts/verify-mobile-auth-foundation.mjs
+
+      - name: Run mobile TypeScript check
+        run: npm run mobile:typecheck
+
+      - name: Validate Expo public config
+        run: npm run mobile:config
+
+      - name: Export Android JS bundle
+        run: npm run mobile:export:android
