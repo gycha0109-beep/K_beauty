@@ -266,7 +266,7 @@ wait_for_text "Native shell ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 tap_text "Analyze"
-wait_for_text "Native skin photo capture"
+wait_for_text "NATIVE SKIN PHOTO CAPTURE"
 wait_for_text "Camera ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
 tap_text "Take photo"
