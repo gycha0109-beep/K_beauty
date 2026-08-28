@@ -33,6 +33,8 @@ type MobileCopy = {
       permissionDescription: string;
       grantPermission: string;
       openSettings: string;
+      openCamera: string;
+      closeCamera: string;
       previewLabel: string;
       ready: string;
       preparing: string;
@@ -99,6 +101,8 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         permissionDescription: "BEJEWELY uses the front camera only to capture the skin photo you choose to take.",
         grantPermission: "Allow camera",
         openSettings: "Open app settings",
+        openCamera: "Open camera",
+        closeCamera: "Close camera",
         previewLabel: "Front camera preview",
         ready: "Camera ready",
         preparing: "Preparing camera…",
@@ -163,6 +167,8 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         permissionDescription: "BEJEWELY는 사용자가 선택해 촬영하는 피부 사진을 얻기 위해서만 전면 카메라를 사용합니다.",
         grantPermission: "카메라 허용",
         openSettings: "앱 설정 열기",
+        openCamera: "카메라 열기",
+        closeCamera: "카메라 닫기",
         previewLabel: "전면 카메라 미리보기",
         ready: "카메라 준비 완료",
         preparing: "카메라 준비 중…",
