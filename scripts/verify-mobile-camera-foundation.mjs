@@ -41,6 +41,7 @@ assert.match(cameraSource, /base64:\s*false/, "MOBILE-5 must not inflate the cap
 assert.match(cameraSource, /capturedPhoto\.uri/, "Captured cache URI must drive local preview");
 assert.match(cameraSource, /setCapturedPhoto\(null\)/, "Retake must discard the previous local capture");
 assert.match(cameraSource, /Linking\.openSettings\(\)/, "Permanent permission denial must have a recoverable settings path");
+assert.match(cameraSource, /textTransform:\s*"uppercase"/, "Captured section label casing is part of the rendered Android smoke contract");
 
 assert.match(analyzeSource, /NativeFaceCamera/, "Analyze route must render the native camera foundation");
 assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy locale-aware");
@@ -85,8 +86,8 @@ assert.match(
 );
 assert.match(
   androidSmokeSource,
-  /wait_for_text_with_scroll "Captured photo" down 4/,
-  "Android camera smoke must verify the captured state after scrolling back"
+  /wait_for_text_with_scroll "CAPTURED PHOTO" down 4/,
+  "Android camera smoke must verify the rendered captured-state label after scrolling back"
 );
 assert.match(
   androidSmokeSource,
