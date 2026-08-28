@@ -3,6 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./survey": {
+      "types": "./src/survey-input-contract.d.ts",
+      "default": "./src/survey-input-contract.js"
+    }
+  },
   "sideEffects": false
 }
