@@ -266,16 +266,19 @@ wait_for_text "Native shell ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 tap_text "Analyze"
-wait_for_text "Native skin photo capture"
-wait_for_text_with_scroll "Camera ready" up 4
+wait_for_text "NATIVE SKIN PHOTO CAPTURE"
+wait_for_text "Camera ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
 tap_text "Take photo"
-wait_for_text_with_scroll "CAPTURED PHOTO" down 4
+wait_for_text "CAPTURED PHOTO"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
-wait_for_text_with_scroll "Retake" up 4
+wait_for_text "Retake"
 tap_text "Retake"
-wait_for_text_with_scroll "Camera ready" up 4
+wait_for_text "Camera ready"
+tap_text "Close camera"
+wait_for_text "Open camera"
 printf 'MOBILE_ANDROID_CAMERA_CAPTURE_SMOKE=PASS\n'
+printf 'MOBILE_ANDROID_CAMERA_FULLSCREEN_EXIT=PASS\n'
 
 tap_text "My"
 wait_for_text "Native My & Skin Diary"
