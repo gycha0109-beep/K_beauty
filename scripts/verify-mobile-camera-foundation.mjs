@@ -12,6 +12,8 @@ const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "Native
 const analyzeSource = readFileSync(join(mobileRoot, "app", "analyze.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
 const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
+const cameraWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-camera.yml"), "utf8");
+const androidSmokeSource = readFileSync(join(repoRoot, "scripts", "verify-mobile-android-smoke.sh"), "utf8");
 
 assert.equal(
   mobilePackage.dependencies?.["expo-camera"],
@@ -53,8 +55,43 @@ assert.match(
 );
 assert.match(
   nativeShellWorkflow,
-  /hw\.camera\.front=emulated/,
-  "Android native smoke must force the generated AVD front camera before emulator launch"
+  /pre-emulator-launch-script: \|\n\s+config=.*; test -f "\$config";.*hw\.camera\.front=emulated.*MOBILE_ANDROID_FRONT_CAMERA_AVD_CONFIG=PASS/,
+  "Android native smoke must configure the AVD front camera in one pre-launch shell command"
+);
+assert.match(
+  cameraWorkflow,
+  /scripts\/verify-mobile-android-smoke\.sh/,
+  "Camera gate must rerun when the Android camera smoke changes"
+);
+assert.match(
+  cameraWorkflow,
+  /\.github\/workflows\/mobile-native-shell\.yml/,
+  "Camera gate must rerun when native-shell camera wiring changes"
+);
+assert.match(
+  cameraWorkflow,
+  /bash -n scripts\/verify-mobile-android-smoke\.sh/,
+  "Camera gate must validate Android smoke shell syntax before native build"
+);
+assert.match(
+  androidSmokeSource,
+  /wait_for_text_with_scroll\(\)/,
+  "Android camera smoke must support viewport-aware status discovery"
+);
+assert.match(
+  androidSmokeSource,
+  /wait_for_text_with_scroll "Camera ready" up 4/,
+  "Android camera smoke must find the ready state below the preview"
+);
+assert.match(
+  androidSmokeSource,
+  /wait_for_text_with_scroll "Captured photo" down 4/,
+  "Android camera smoke must verify the captured state after scrolling back"
+);
+assert.match(
+  androidSmokeSource,
+  /wait_for_text_with_scroll "Retake" up 4/,
+  "Android camera smoke must find and exercise the retake control"
 );
 
 const forbiddenPatterns = [
