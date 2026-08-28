@@ -270,7 +270,7 @@ wait_for_text "Native skin photo capture"
 wait_for_text_with_scroll "Camera ready" up 4
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
 tap_text "Take photo"
-wait_for_text_with_scroll "Captured photo" down 4
+wait_for_text_with_scroll "CAPTURED PHOTO" down 4
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
 wait_for_text_with_scroll "Retake" up 4
 tap_text "Retake"
