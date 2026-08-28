@@ -35,7 +35,7 @@ type NativeFaceCameraProps = {
 export function NativeFaceCamera({ copy, palette }: NativeFaceCameraProps) {
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
-  const [isFocused, setIsFocused] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<CameraCapturedPicture | null>(null);
