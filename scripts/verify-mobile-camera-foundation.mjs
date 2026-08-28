@@ -11,6 +11,7 @@ const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"))
 const cameraSource = readFileSync(join(mobileRoot, "features", "camera", "NativeFaceCamera.tsx"), "utf8");
 const analyzeSource = readFileSync(join(mobileRoot, "app", "analyze.tsx"), "utf8");
 const copySource = readFileSync(join(mobileRoot, "lib", "copy.ts"), "utf8");
+const nativeShellWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-native-shell.yml"), "utf8");
 
 assert.equal(
   mobilePackage.dependencies?.["expo-camera"],
@@ -44,6 +45,17 @@ assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy
 assert.match(copySource, /ANALYZE · MOBILE-5/, "MOBILE-5 copy marker is missing");
 assert.match(copySource, /로컬 캐시/, "Korean local-only capture disclosure is missing");
 assert.match(copySource, /local cache/i, "English local-only capture disclosure is missing");
+
+assert.match(
+  nativeShellWorkflow,
+  /-camera-front emulated/,
+  "Android native smoke must boot with an emulated front camera"
+);
+assert.match(
+  nativeShellWorkflow,
+  /hw\.camera\.front=emulated/,
+  "Android native smoke must force the generated AVD front camera before emulator launch"
+);
 
 const forbiddenPatterns = [
   /@mediapipe\//,
