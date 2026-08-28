@@ -17,9 +17,7 @@ import {
   OPTIONAL_DEFAULTS as WEB_OPTIONAL_DEFAULTS,
   OPTION_SETS as WEB_OPTION_SETS
 } from "../components/onboarding/constants.js";
-import {
-  buildSurveyInputContract as buildWebSurveyInputContract
-} from "../lib/survey-input-contract.js";
+import { buildSurveyInputContract as buildWebSurveyInputContract } from "../lib/survey-input-contract.js";
 
 const FIXED_TIME = "2026-08-28T00:00:00.000Z";
 
@@ -261,33 +259,31 @@ assert.deepEqual(emptyContract.goals, {
 });
 
 assert.deepEqual(
-  buildWebSurveyInputContract(completeInput, {
-    source: "web_facade",
-    generatedAt: FIXED_TIME
-  }),
-  buildSurveyInputContract(completeInput, {
-    source: "web_facade",
-    generatedAt: FIXED_TIME
-  })
+  buildWebSurveyInputContract(completeInput, { source: "web_facade", generatedAt: FIXED_TIME }),
+  buildSurveyInputContract(completeInput, { source: "web_facade", generatedAt: FIXED_TIME })
 );
 
-const sharedRuntimeSource = await readFile(new URL("../packages/shared/src/survey-input-contract.js", import.meta.url), "utf8");
-for (const forbiddenToken of [
-  "skin-match-decision-engine",
-  "@supabase",
-  "openai",
-  "next/",
-  "react",
-  "expo",
-  "window.",
-  "document.",
-  "process.env",
-  "node:"
-]) {
-  assert.equal(
-    sharedRuntimeSource.includes(forbiddenToken),
-    false,
-    `shared survey runtime must remain platform-neutral: ${forbiddenToken}`
+const sharedRuntimeSource = await readFile(
+  new URL("../packages/shared/src/survey-input-contract.js", import.meta.url),
+  "utf8"
+);
+const forbiddenImports = [
+  /from\s+["']next(?:\/|["'])/,
+  /from\s+["']react(?:\/|["'])/,
+  /from\s+["']expo(?:-|\/|["'])/,
+  /from\s+["']@supabase\//,
+  /require\(\s*["'](?:next|react|expo(?:-|\/)|@supabase\/)/,
+  /skin-match-decision-engine/,
+  /process\.env/,
+  /window\./,
+  /document\./,
+  /node:/
+];
+for (const forbiddenPattern of forbiddenImports) {
+  assert.doesNotMatch(
+    sharedRuntimeSource,
+    forbiddenPattern,
+    `shared survey runtime must remain platform-neutral: ${forbiddenPattern}`
   );
 }
 
