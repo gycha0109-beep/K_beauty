@@ -60,6 +60,7 @@ assert.match(cameraSource, /textTransform:\s*"uppercase"/, "Captured section lab
 
 assert.match(analyzeSource, /NativeFaceCamera/, "Analyze route must render the native camera foundation");
 assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy locale-aware");
+assert.match(analyzeSource, /previewLabel:\s*copy\.title/, "Fullscreen camera must preserve the Analyze title for rendered smoke/accessibility continuity");
 assert.match(copySource, /ANALYZE · MOBILE-5/, "MOBILE-5 copy marker is missing");
 assert.match(copySource, /얼굴을 타원 안에 맞춰 주세요/, "Korean static oval guidance is missing");
 assert.match(copySource, /Position your face inside the oval/, "English static oval guidance is missing");
@@ -91,9 +92,9 @@ assert.match(
   /bash -n scripts\/verify-mobile-android-smoke\.sh/,
   "Camera gate must validate Android smoke shell syntax before native build"
 );
-assert.match(androidSmokeSource, /wait_for_text "Front camera preview"/, "Android smoke must observe the fullscreen camera surface");
-assert.match(androidSmokeSource, /wait_for_text "Camera ready"/, "Android smoke must verify the ready state");
-assert.match(androidSmokeSource, /wait_for_text "CAPTURED PHOTO"/, "Android smoke must verify the fullscreen captured state");
+assert.match(androidSmokeSource, /wait_for_text "Native skin photo capture"/, "Android smoke must observe the fullscreen Analyze title");
+assert.match(androidSmokeSource, /Camera ready/, "Android smoke must verify the ready state");
+assert.match(androidSmokeSource, /CAPTURED PHOTO/, "Android smoke must verify the fullscreen captured state");
 assert.match(androidSmokeSource, /tap_text "Retake"/, "Android smoke must exercise the retake control");
 
 const forbiddenPatterns = [
