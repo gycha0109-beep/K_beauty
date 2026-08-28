@@ -11,7 +11,10 @@ export default function AnalyzeScreen() {
   return (
     <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
       <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
-      <NativeFaceCamera copy={copy.camera} palette={palette} />
+      <NativeFaceCamera
+        copy={{ ...copy.camera, previewLabel: copy.title }}
+        palette={palette}
+      />
     </ScreenShell>
   );
 }
