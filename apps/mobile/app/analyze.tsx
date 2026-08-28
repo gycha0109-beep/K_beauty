@@ -1,5 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
+import { NativeFaceCamera } from "../features/camera/NativeFaceCamera";
 import { MOBILE_COPY } from "../lib/copy";
 import { useMobileShell } from "../lib/mobile-shell";
 
@@ -10,6 +11,7 @@ export default function AnalyzeScreen() {
   return (
     <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
       <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
+      <NativeFaceCamera copy={copy.camera} palette={palette} />
     </ScreenShell>
   );
 }
@@ -17,6 +19,7 @@ export default function AnalyzeScreen() {
 const styles = StyleSheet.create({
   notice: {
     fontSize: 15,
-    lineHeight: 22
+    lineHeight: 22,
+    marginBottom: 4
   }
 });

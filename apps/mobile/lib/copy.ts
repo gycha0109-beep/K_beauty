@@ -27,6 +27,22 @@ type MobileCopy = {
     title: string;
     description: string;
     notice: string;
+    camera: {
+      permissionLoading: string;
+      permissionTitle: string;
+      permissionDescription: string;
+      grantPermission: string;
+      openSettings: string;
+      previewLabel: string;
+      ready: string;
+      preparing: string;
+      capture: string;
+      capturing: string;
+      captureFailed: string;
+      capturedLabel: string;
+      retake: string;
+      localOnly: string;
+    };
   };
   my: {
     eyebrow: string;
@@ -69,13 +85,29 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "Routes · Home / Analyze / My",
       localeLabel: "Locale",
       nativeGate: "Android gate · prebuild / APK / emulator launch",
-      note: "Authentication is implemented in MOBILE-2 and My / Skin Diary is connected in MOBILE-3. Survey, camera, analysis results, and Premium remain separate later phases."
+      note: "Authentication is implemented in MOBILE-2, My / Skin Diary in MOBILE-3, and native camera acquisition in MOBILE-5. Analysis results and Premium remain separate later phases."
     },
     analyze: {
-      eyebrow: "ANALYZE",
-      title: "Native analysis entry",
-      description: "This route is reserved for the later native survey, camera, and analysis-result flow.",
-      notice: "The native client does not move Recommendation, Product Fact, or Face Lab server authority into the app."
+      eyebrow: "ANALYZE · MOBILE-5",
+      title: "Native skin photo capture",
+      description: "The Analyze route can now acquire a front-camera photo on device while analysis stays server-authoritative and remains a later phase.",
+      notice: "This step only captures a local cache photo. It does not upload, score, recommend products, or invoke Face Lab.",
+      camera: {
+        permissionLoading: "Checking camera permission…",
+        permissionTitle: "Camera access is required",
+        permissionDescription: "BEJEWELY uses the front camera only to capture the skin photo you choose to take.",
+        grantPermission: "Allow camera",
+        openSettings: "Open app settings",
+        previewLabel: "Front camera preview",
+        ready: "Camera ready",
+        preparing: "Preparing camera…",
+        capture: "Take photo",
+        capturing: "Capturing…",
+        captureFailed: "The camera could not capture a photo. Try again.",
+        capturedLabel: "Captured photo",
+        retake: "Retake",
+        localOnly: "This image currently remains only in the app's local cache and is not uploaded or analyzed."
+      }
     },
     my: {
       eyebrow: "MY · MOBILE-3",
@@ -116,13 +148,29 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "경로 · 홈 / 분석 / 마이",
       localeLabel: "언어",
       nativeGate: "Android 게이트 · prebuild / APK / emulator launch",
-      note: "MOBILE-2에서 인증을 연결했고 MOBILE-3에서 My / Skin Diary를 연결했습니다. 설문, 카메라, 분석 결과, Premium은 이후 별도 단계로 유지합니다."
+      note: "MOBILE-2에서 인증, MOBILE-3에서 My / Skin Diary, MOBILE-5에서 네이티브 카메라 획득 기반을 연결했습니다. 분석 결과와 Premium은 이후 별도 단계로 유지합니다."
     },
     analyze: {
-      eyebrow: "ANALYZE",
-      title: "네이티브 분석 진입점",
-      description: "향후 네이티브 설문·카메라·분석 결과 흐름이 들어올 경로입니다.",
-      notice: "Recommendation, Product Fact, Face Lab 서버 권한은 네이티브 앱으로 이동하지 않습니다."
+      eyebrow: "ANALYZE · MOBILE-5",
+      title: "네이티브 피부 사진 촬영",
+      description: "분석 경로에서 기기 전면 카메라로 사진을 획득할 수 있게 하되 실제 분석 권한은 서버에 유지하고 이후 단계로 분리합니다.",
+      notice: "이 단계는 로컬 캐시 사진만 촬영합니다. 업로드·점수 계산·제품 추천·Face Lab 호출은 수행하지 않습니다.",
+      camera: {
+        permissionLoading: "카메라 권한 확인 중…",
+        permissionTitle: "카메라 접근 권한이 필요합니다",
+        permissionDescription: "BEJEWELY는 사용자가 선택해 촬영하는 피부 사진을 얻기 위해서만 전면 카메라를 사용합니다.",
+        grantPermission: "카메라 허용",
+        openSettings: "앱 설정 열기",
+        previewLabel: "전면 카메라 미리보기",
+        ready: "카메라 준비 완료",
+        preparing: "카메라 준비 중…",
+        capture: "사진 촬영",
+        capturing: "촬영 중…",
+        captureFailed: "사진을 촬영하지 못했습니다. 다시 시도해 주세요.",
+        capturedLabel: "촬영한 사진",
+        retake: "다시 촬영",
+        localOnly: "현재 이 이미지는 앱 로컬 캐시에만 있으며 업로드하거나 분석하지 않습니다."
+      }
     },
     my: {
       eyebrow: "MY · MOBILE-3",

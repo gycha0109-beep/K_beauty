@@ -26,12 +26,12 @@ assert.equal(mobilePackage.dependencies?.["expo-localization"], "~57.0.1");
 assert.equal(
   mobilePackage.dependencies?.["react-native-reanimated"],
   "4.5.1",
-  "Expo SDK 57 native shell requires the validated Reanimated 4.5.1 runtime pair",
+  "Expo SDK 57 native shell requires the validated Reanimated 4.5.1 runtime pair"
 );
 assert.equal(
   mobilePackage.dependencies?.["react-native-worklets"],
   "0.10.1",
-  "Expo SDK 57 native shell requires the validated Worklets 0.10.1 runtime pair",
+  "Expo SDK 57 native shell requires the validated Worklets 0.10.1 runtime pair"
 );
 
 const androidRoot = join(mobileRoot, "android");
@@ -45,5 +45,14 @@ assert.match(buildGradle, /applicationId\s+["']com\.bejewely\.mobile["']/, "Gene
 assert.match(manifest, /android:screenOrientation=["']portrait["']/, "Generated Android manifest lost portrait orientation");
 assert.match(manifest, /android:windowSoftInputMode=["'][^"']*adjustResize[^"']*["']/, "Generated Android manifest lost keyboard resize behavior");
 assert.ok(existsSync(mainActivity), "Generated MainActivity package path is missing");
+
+if (mobilePackage.dependencies?.["expo-camera"]) {
+  const cameraPlugin = expo.plugins?.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-camera");
+  assert.ok(cameraPlugin, "expo-camera dependency requires the Expo config plugin");
+  assert.equal(cameraPlugin[1]?.recordAudioAndroid, false, "Photo-only camera must keep Android audio recording disabled");
+  assert.equal(cameraPlugin[1]?.barcodeScannerEnabled, false, "Camera foundation must keep barcode support disabled");
+  assert.match(manifest, /android\.permission\.CAMERA/, "Generated Android manifest lost CAMERA permission");
+  assert.doesNotMatch(manifest, /android\.permission\.RECORD_AUDIO/, "Photo-only MOBILE-5 must not request RECORD_AUDIO");
+}
 
 console.log("MOBILE_NATIVE_SHELL=PASS");

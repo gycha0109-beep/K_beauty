@@ -109,8 +109,12 @@ jobs:
           api-level: 35
           arch: x86_64
           profile: pixel_6
+          avd-name: bejewely-mobile-api35
+          force-avd-creation: true
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          pre-emulator-launch-script: |
+            config="$HOME/.android/avd/bejewely-mobile-api35.avd/config.ini"; test -f "$config"; if grep -q '^hw\.camera\.front' "$config"; then sed -i 's/^hw\.camera\.front.*/hw.camera.front=emulated/' "$config"; else printf '\nhw.camera.front=emulated\n' >> "$config"; fi; grep -q '^hw\.camera\.front=emulated$' "$config"; printf 'MOBILE_ANDROID_FRONT_CAMERA_AVD_CONFIG=PASS\n'
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-front emulated -camera-back none
           script: bash scripts/verify-mobile-android-smoke.sh
 
       - name: Upload APK and native smoke evidence

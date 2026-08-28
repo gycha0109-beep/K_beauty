@@ -95,36 +95,6 @@ raise SystemExit(1)
 PY
 }
 
-wait_for_text() {
-  local expected="$1"
-  for _ in $(seq 1 45); do
-    dump_ui || true
-    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
-      return 0
-    fi
-    if [[ -f "$UI_DUMP" ]] && ui_has_text "Quickstep isn't responding"; then
-      if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
-        echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
-        return 1
-      fi
-      if ! tap_text "Close app"; then
-        echo "Quickstep ANR detected but its Close app action was unavailable" >&2
-        return 1
-      fi
-      QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
-      printf 'MOBILE_ANDROID_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
-      sleep 2
-      adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
-      printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_RESTART=PASS\n'
-      sleep 2
-      continue
-    fi
-    sleep 2
-  done
-  echo "UI text not found: $expected" >&2
-  return 1
-}
-
 tap_text() {
   local target="$1"
   dump_ui
@@ -150,6 +120,88 @@ PY
 )"
   read -r x y <<< "$coords"
   adb shell input tap "$x" "$y"
+}
+
+recover_quickstep_if_needed() {
+  if [[ ! -f "$UI_DUMP" ]] || ! ui_has_text "Quickstep isn't responding"; then
+    return 1
+  fi
+  if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+    echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
+    return 2
+  fi
+  if ! tap_text "Close app"; then
+    echo "Quickstep ANR detected but its Close app action was unavailable" >&2
+    return 2
+  fi
+  QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+  printf 'MOBILE_ANDROID_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
+  sleep 2
+  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_RESTART=PASS\n'
+  sleep 2
+  return 0
+}
+
+wait_for_text() {
+  local expected="$1"
+  for _ in $(seq 1 45); do
+    dump_ui || true
+    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
+      return 0
+    fi
+    if recover_quickstep_if_needed; then
+      continue
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 1
+      fi
+    fi
+    sleep 2
+  done
+  echo "UI text not found: $expected" >&2
+  return 1
+}
+
+wait_for_text_with_scroll() {
+  local expected="$1"
+  local direction="${2:-up}"
+  local max_scrolls="${3:-4}"
+  local scrolls=0
+
+  for _ in $(seq 1 45); do
+    dump_ui || true
+    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
+      printf 'MOBILE_ANDROID_SCROLL_SEARCH=PASS target=%s direction=%s scrolls=%d\n' "$expected" "$direction" "$scrolls"
+      return 0
+    fi
+    if recover_quickstep_if_needed; then
+      continue
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 1
+      fi
+    fi
+
+    if (( scrolls < max_scrolls )); then
+      if [[ "$direction" == "up" ]]; then
+        adb shell input swipe 540 1800 540 800 350 >/dev/null 2>&1 || true
+      elif [[ "$direction" == "down" ]]; then
+        adb shell input swipe 540 800 540 1800 350 >/dev/null 2>&1 || true
+      else
+        echo "Unsupported scroll direction: $direction" >&2
+        return 1
+      fi
+      scrolls=$((scrolls + 1))
+      sleep 1
+    fi
+    sleep 1
+  done
+
+  echo "UI text not found after viewport-aware scroll: $expected" >&2
+  return 1
 }
 
 metro_port_ready() {
@@ -201,6 +253,8 @@ fi
 
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
+adb shell pm grant "$PACKAGE_ID" android.permission.CAMERA >/dev/null
+printf 'MOBILE_ANDROID_CAMERA_PERMISSION_GRANT=PASS\n'
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 adb reverse tcp:8081 tcp:8081 >/dev/null
@@ -212,7 +266,17 @@ wait_for_text "Native shell ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 tap_text "Analyze"
-wait_for_text "Native analysis entry"
+wait_for_text "Native skin photo capture"
+wait_for_text_with_scroll "Camera ready" up 4
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
+tap_text "Take photo"
+wait_for_text_with_scroll "CAPTURED PHOTO" down 4
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
+wait_for_text_with_scroll "Retake" up 4
+tap_text "Retake"
+wait_for_text_with_scroll "Camera ready" up 4
+printf 'MOBILE_ANDROID_CAMERA_CAPTURE_SMOKE=PASS\n'
+
 tap_text "My"
 wait_for_text "Native My & Skin Diary"
 tap_text "Home"
