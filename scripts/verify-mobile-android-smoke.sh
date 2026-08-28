@@ -201,6 +201,8 @@ fi
 
 adb install -r "$APK_PATH" >/dev/null
 adb shell pm clear "$PACKAGE_ID" >/dev/null
+adb shell pm grant "$PACKAGE_ID" android.permission.CAMERA >/dev/null
+printf 'MOBILE_ANDROID_CAMERA_PERMISSION_GRANT=PASS\n'
 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
 adb reverse tcp:8081 tcp:8081 >/dev/null
@@ -212,7 +214,16 @@ wait_for_text "Native shell ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 tap_text "Analyze"
-wait_for_text "Native analysis entry"
+wait_for_text "Native skin photo capture"
+wait_for_text "Camera ready"
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
+tap_text "Take photo"
+wait_for_text "Captured photo"
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
+tap_text "Retake"
+wait_for_text "Camera ready"
+printf 'MOBILE_ANDROID_CAMERA_CAPTURE_SMOKE=PASS\n'
+
 tap_text "My"
 wait_for_text "Native My & Skin Diary"
 tap_text "Home"
