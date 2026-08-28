@@ -18,6 +18,8 @@ export type NativeFaceCameraCopy = {
   permissionDescription: string;
   grantPermission: string;
   openSettings: string;
+  openCamera: string;
+  closeCamera: string;
   previewLabel: string;
   ready: string;
   preparing: string;
@@ -60,6 +62,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   const cameraRef = useRef<CameraView | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isFocused, setIsFocused] = useState(false);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(true);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<NativeCameraPhoto | null>(null);
@@ -68,12 +71,26 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   useFocusEffect(
     useCallback(() => {
       setIsFocused(true);
+      setIsFullscreenOpen(true);
       return () => {
         setIsFocused(false);
+        setIsFullscreenOpen(false);
         setIsCameraReady(false);
       };
     }, [])
   );
+
+  const closeCamera = useCallback(() => {
+    setIsFullscreenOpen(false);
+    setIsCameraReady(false);
+    setCameraError(null);
+  }, []);
+
+  const openCamera = useCallback(() => {
+    setIsFullscreenOpen(true);
+    setIsCameraReady(false);
+    setCameraError(null);
+  }, []);
 
   const capturePhoto = useCallback(async () => {
     if (!cameraRef.current || !isCameraReady || isCapturing) {
@@ -145,79 +162,119 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   }
 
   return (
-    <Modal
-      animationType="fade"
-      navigationBarTranslucent
-      presentationStyle="fullScreen"
-      statusBarTranslucent
-      supportedOrientations={["portrait"]}
-      visible={isFocused}
-    >
-      <View style={styles.fullscreenRoot}>
-        {capturedPhoto ? (
-          <Image source={{ uri: capturedPhoto.uri }} style={styles.fullscreenMedia} resizeMode="cover" />
-        ) : (
-          <CameraView
-            ref={cameraRef}
-            style={styles.fullscreenMedia}
-            facing="front"
-            mode="picture"
-            mirror
-            onCameraReady={() => {
-              setIsCameraReady(true);
-              setCameraError(null);
-            }}
-            onMountError={() => {
-              setIsCameraReady(false);
-              setCameraError(copy.captureFailed);
-            }}
-          />
-        )}
+    <>
+      {!isFullscreenOpen ? (
+        <View style={[styles.panel, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+          <Text style={[styles.panelTitle, { color: palette.text }]}>{copy.previewLabel}</Text>
+          <Text style={[styles.bodyText, { color: palette.textMuted }]}>
+            {capturedPhoto ? copy.localOnly : copy.alignFace}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.openCamera}
+            onPress={openCamera}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 }
+            ]}
+          >
+            <Text style={styles.primaryButtonText}>{copy.openCamera}</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
-        {!capturedPhoto ? (
-          <View pointerEvents="none" style={styles.guideLayer}>
-            <View testID="native-face-guide-oval" style={styles.faceOval} />
-          </View>
-        ) : null}
+      <Modal
+        animationType="fade"
+        navigationBarTranslucent
+        onRequestClose={closeCamera}
+        presentationStyle="fullScreen"
+        statusBarTranslucent
+        supportedOrientations={["portrait"]}
+        visible={isFocused && isFullscreenOpen}
+      >
+        <View style={styles.fullscreenRoot}>
+          {capturedPhoto ? (
+            <Image source={{ uri: capturedPhoto.uri }} style={styles.fullscreenMedia} resizeMode="cover" />
+          ) : (
+            <CameraView
+              ref={cameraRef}
+              style={styles.fullscreenMedia}
+              facing="front"
+              mode="picture"
+              mirror
+              onCameraReady={() => {
+                setIsCameraReady(true);
+                setCameraError(null);
+              }}
+              onMountError={() => {
+                setIsCameraReady(false);
+                setCameraError(copy.captureFailed);
+              }}
+            />
+          )}
 
-        <SafeAreaView pointerEvents="box-none" style={styles.overlay} edges={["top", "left", "right", "bottom"]}>
-          <View pointerEvents="none" style={styles.topCopy}>
-            <Text style={styles.sectionLabel}>{capturedPhoto ? copy.capturedLabel : copy.previewLabel}</Text>
-            <Text style={styles.guidanceText}>{capturedPhoto ? copy.localOnly : copy.alignFace}</Text>
-          </View>
+          {!capturedPhoto ? (
+            <View pointerEvents="none" style={styles.guideLayer}>
+              <View testID="native-face-guide-oval" style={styles.faceOval} />
+            </View>
+          ) : null}
 
-          <View style={styles.bottomControls}>
-            <Text style={[styles.cameraStatus, cameraError ? styles.errorStatus : null]}>
-              {cameraError ?? (capturedPhoto ? copy.localOnly : isCameraReady ? copy.ready : copy.preparing)}
-            </Text>
-            {capturedPhoto ? (
+          <SafeAreaView pointerEvents="box-none" style={styles.overlay} edges={["top", "left", "right", "bottom"]}>
+            <View style={styles.topRow}>
               <Pressable
                 accessibilityRole="button"
-                onPress={retakePhoto}
-                style={({ pressed }) => [styles.captureButton, pressed ? styles.pressedButton : null]}
-              >
-                <Text style={styles.captureButtonText}>{copy.retake}</Text>
-              </Pressable>
-            ) : (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !isCameraReady || isCapturing }}
-                disabled={!isCameraReady || isCapturing}
-                onPress={capturePhoto}
+                accessibilityLabel={copy.closeCamera}
+                disabled={isCapturing}
+                onPress={closeCamera}
                 style={({ pressed }) => [
-                  styles.shutterOuter,
-                  !isCameraReady || isCapturing ? styles.disabledButton : null,
+                  styles.closeButton,
+                  isCapturing ? styles.disabledButton : null,
                   pressed ? styles.pressedButton : null
                 ]}
               >
-                <View style={styles.shutterInner} />
-                <Text style={styles.srCaptureText}>{isCapturing ? copy.capturing : copy.capture}</Text>
+                <Text style={styles.closeButtonText}>×</Text>
               </Pressable>
-            )}
-          </View>
-        </SafeAreaView>
-      </View>
-    </Modal>
+              <View pointerEvents="none" style={styles.topCopy}>
+                <Text style={styles.sectionLabel}>{capturedPhoto ? copy.capturedLabel : copy.previewLabel}</Text>
+                <Text style={styles.guidanceText}>{capturedPhoto ? copy.localOnly : copy.alignFace}</Text>
+              </View>
+              <View style={styles.closeSpacer} />
+            </View>
+
+            <View style={styles.bottomControls}>
+              <Text style={[styles.cameraStatus, cameraError ? styles.errorStatus : null]}>
+                {cameraError ?? (capturedPhoto ? copy.localOnly : isCameraReady ? copy.ready : copy.preparing)}
+              </Text>
+              {capturedPhoto ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={copy.retake}
+                  onPress={retakePhoto}
+                  style={({ pressed }) => [styles.captureButton, pressed ? styles.pressedButton : null]}
+                >
+                  <Text style={styles.captureButtonText}>{copy.retake}</Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={copy.capture}
+                  accessibilityState={{ disabled: !isCameraReady || isCapturing }}
+                  disabled={!isCameraReady || isCapturing}
+                  onPress={capturePhoto}
+                  style={({ pressed }) => [
+                    styles.shutterOuter,
+                    !isCameraReady || isCapturing ? styles.disabledButton : null,
+                    pressed ? styles.pressedButton : null
+                  ]}
+                >
+                  <View style={styles.shutterInner} />
+                </Pressable>
+              )}
+            </View>
+          </SafeAreaView>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -282,10 +339,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 18
   },
-  topCopy: {
-    alignItems: "center",
-    gap: 8,
+  topRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
     paddingTop: 8
+  },
+  topCopy: {
+    flex: 1,
+    alignItems: "center",
+    gap: 8
+  },
+  closeButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "rgba(0, 0, 0, 0.48)",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  closeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 32,
+    lineHeight: 34,
+    fontWeight: "400"
+  },
+  closeSpacer: {
+    width: 46,
+    height: 46
   },
   sectionLabel: {
     color: "#FFFFFF",
@@ -346,12 +428,6 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 29,
     backgroundColor: "#FFFFFF"
-  },
-  srCaptureText: {
-    position: "absolute",
-    width: 1,
-    height: 1,
-    opacity: 0
   },
   captureButton: {
     minWidth: 160,
