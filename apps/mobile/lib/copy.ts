@@ -36,6 +36,7 @@ type MobileCopy = {
       previewLabel: string;
       ready: string;
       preparing: string;
+      alignFace: string;
       capture: string;
       capturing: string;
       captureFailed: string;
@@ -101,6 +102,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         previewLabel: "Front camera preview",
         ready: "Camera ready",
         preparing: "Preparing camera…",
+        alignFace: "Position your face inside the oval",
         capture: "Take photo",
         capturing: "Capturing…",
         captureFailed: "The camera could not capture a photo. Try again.",
@@ -164,6 +166,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         previewLabel: "전면 카메라 미리보기",
         ready: "카메라 준비 완료",
         preparing: "카메라 준비 중…",
+        alignFace: "얼굴을 타원 안에 맞춰 주세요",
         capture: "사진 촬영",
         capturing: "촬영 중…",
         captureFailed: "사진을 촬영하지 못했습니다. 다시 시도해 주세요.",
