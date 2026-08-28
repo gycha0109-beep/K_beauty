@@ -95,7 +95,7 @@ assert.match(
   /bash -n scripts\/verify-mobile-android-smoke\.sh/,
   "Camera gate must validate Android smoke shell syntax before native build"
 );
-assert.match(androidSmokeSource, /wait_for_text "Native skin photo capture"/, "Android smoke must observe the fullscreen Analyze title");
+assert.match(androidSmokeSource, /wait_for_text "NATIVE SKIN PHOTO CAPTURE"/, "Android smoke must observe the rendered fullscreen Analyze title");
 assert.match(androidSmokeSource, /Camera ready/, "Android smoke must verify the ready state");
 assert.match(androidSmokeSource, /CAPTURED PHOTO/, "Android smoke must verify the fullscreen captured state");
 assert.match(androidSmokeSource, /tap_text "Retake"/, "Android smoke must exercise the retake control");
