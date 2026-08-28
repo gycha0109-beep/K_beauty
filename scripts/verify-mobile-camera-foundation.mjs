@@ -59,6 +59,9 @@ assert.match(cameraSource, /Linking\.openSettings\(\)/, "Permanent permission de
 assert.match(cameraSource, /textTransform:\s*"uppercase"/, "Captured section label casing is part of the rendered Android smoke contract");
 
 assert.match(analyzeSource, /NativeFaceCamera/, "Analyze route must render the native camera foundation");
+assert.match(analyzeSource, /type NativeCameraPhoto/, "Analyze route must consume the typed native capture contract");
+assert.match(analyzeSource, /useState<NativeCameraPhoto \| null>/, "Analyze route must retain the captured descriptor outside camera-local state");
+assert.match(analyzeSource, /onPhotoChange=\{setCapturedPhoto\}/, "Analyze route must wire the upload-ready descriptor handoff");
 assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy locale-aware");
 assert.match(analyzeSource, /previewLabel:\s*copy\.title/, "Fullscreen camera must preserve the Analyze title for rendered smoke/accessibility continuity");
 assert.match(copySource, /ANALYZE · MOBILE-5/, "MOBILE-5 copy marker is missing");
@@ -127,4 +130,5 @@ console.log("MOBILE_CAMERA_FULLSCREEN=PASS");
 console.log("MOBILE_CAMERA_OVAL_GUIDE=PASS");
 console.log("MOBILE_CAMERA_ORIENTATION=PASS");
 console.log("MOBILE_CAMERA_JPEG_FILE_CONTRACT=PASS");
+console.log("MOBILE_CAMERA_UPLOAD_HANDOFF=PASS");
 console.log("MOBILE_CAMERA_FOUNDATION=PASS");
