@@ -1,0 +1,67 @@
+name: BEJEWELY Mobile Camera
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - ".github/workflows/mobile-camera.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - ".github/workflows/mobile-camera.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  camera-foundation:
+    name: Native Camera Foundation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_CAMERA_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify camera acquisition boundary
+        run: node scripts/verify-mobile-camera-foundation.mjs
+
+      - name: Verify mobile architecture
+        run: npm run verify:mobile-foundation
+
+      - name: Typecheck mobile client
+        run: npm run mobile:typecheck
+
+      - name: Verify Expo public config
+        run: npm run mobile:config
