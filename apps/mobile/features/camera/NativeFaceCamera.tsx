@@ -98,7 +98,13 @@ export function NativeFaceCamera({ copy, palette }: NativeFaceCameraProps) {
         <Text style={[styles.bodyText, { color: palette.textMuted }]}>{copy.permissionDescription}</Text>
         <Pressable
           accessibilityRole="button"
-          onPress={canAskAgain ? requestPermission : Linking.openSettings}
+          onPress={() => {
+            if (canAskAgain) {
+              void requestPermission();
+            } else {
+              void Linking.openSettings();
+            }
+          }}
           style={({ pressed }) => [
             styles.primaryButton,
             { backgroundColor: palette.accent, opacity: pressed ? 0.82 : 1 }
