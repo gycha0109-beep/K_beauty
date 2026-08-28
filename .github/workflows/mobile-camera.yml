@@ -65,3 +65,9 @@ jobs:
 
       - name: Verify Expo public config
         run: npm run mobile:config
+
+      - name: Generate Android native project
+        run: npm run mobile:prebuild:android
+
+      - name: Verify generated camera permission contract
+        run: npm run verify:mobile-native
