@@ -315,12 +315,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#09070A"
   },
   fullscreenMedia: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: "100%",
     height: "100%"
   },
   guideLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent"
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 18
