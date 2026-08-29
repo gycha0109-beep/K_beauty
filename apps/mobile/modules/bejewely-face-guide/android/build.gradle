@@ -1,0 +1,15 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.bejewely'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.bejewelyfaceguide"
+}
+
+dependencies {
+  implementation 'com.google.mlkit:face-detection:16.1.7'
+}
