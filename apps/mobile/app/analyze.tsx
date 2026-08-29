@@ -104,6 +104,7 @@ export default function AnalyzeScreen() {
             copy={{
               ...copy.camera,
               previewLabel: copy.title,
+              acceptPhoto: locale === "ko" ? "이 사진 사용" : "Use photo",
               localOnly: locale === "ko"
                 ? "촬영한 최종 사진은 분석을 실행하기 전까지 로컬 캐시에 유지됩니다. 분석 실행 시에만 기존 BEJEWELY 서버로 전송됩니다."
                 : "The final photo stays in local cache until you run analysis. It is sent to the existing BEJEWELY server only when analysis starts."
