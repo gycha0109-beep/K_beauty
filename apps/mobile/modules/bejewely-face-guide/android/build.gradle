@@ -8,6 +8,10 @@ version = '0.1.0'
 
 android {
   namespace "expo.modules.bejewelyfaceguide"
+
+  defaultConfig {
+    versionName "0.1.0"
+  }
 }
 
 dependencies {
