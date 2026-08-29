@@ -28,6 +28,7 @@ const resultRoute = read("app/api/results/[shareId]/route.js");
 const resultGuard = read("lib/security/public-result-read-guard.js");
 const fullReportRoute = read("app/api/full-report/route.js");
 const premiumContext = read("lib/premium-route-context.js");
+const premiumPrincipal = read("lib/premium-route-principal.js");
 const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
 
 assert(layout.includes('name="saved-report"'), "hidden-saved-report-route");
@@ -62,7 +63,11 @@ assert(resultGuard.includes("resolveAnalysisGuardPrincipal"), "free-read-native-
 assert(fullReportRoute.includes("if (body?.savedReportId)"), "premium-existing-reentry-branch");
 assert(fullReportRoute.includes("loadSavedPremiumReport"), "premium-owner-snapshot-read");
 assert(fullReportRoute.includes('"saved-report"'), "premium-saved-report-response-source");
-assert(premiumContext.includes("resolveNativeBearerPrincipal"), "premium-native-principal");
+assert(premiumContext.includes("getBearerToken(request)"), "premium-bearer-token-read");
+assert(premiumContext.includes("createRouteSupabaseAuthClient(bearerToken)"), "premium-bearer-auth-client");
+assert(premiumContext.includes("selectPremiumRoutePrincipal"), "premium-principal-selector");
+assert(premiumPrincipal.includes('authSource: "bearer"'), "premium-bearer-principal-selection");
+assert(premiumPrincipal.includes("principalAligned: true"), "premium-principal-alignment");
 
 for (const forbidden of [
   "/api/analyze",
