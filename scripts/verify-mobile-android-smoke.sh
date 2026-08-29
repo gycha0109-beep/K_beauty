@@ -290,6 +290,13 @@ printf 'MOBILE_ANDROID_CAMERA_FULLSCREEN_EXIT=PASS\n'
 
 tap_text "My"
 wait_for_text "Native My & Skin Diary"
+wait_for_text "Saved report"
+tap_text "Saved report"
+wait_for_text "Sign in on My to reopen a saved report."
+adb exec-out screencap -p > "$ARTIFACT_DIR/saved-report-signed-out-en.png"
+printf 'MOBILE_ANDROID_SAVED_REPORT_ROUTE_SMOKE=PASS\n'
+tap_text "Back to My"
+wait_for_text "Native My & Skin Diary"
 tap_text "Home"
 wait_for_text "BEJEWELY Mobile"
 
