@@ -103,8 +103,8 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       note: "Authentication is implemented in MOBILE-2, My / Skin Diary in MOBILE-3, native camera acquisition in MOBILE-5, and on-device face-capture guidance in MOBILE-6. Analysis results and Premium remain separate later phases."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-6",
-      title: "Guided native skin photo capture",
+      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
+      title: "Native skin photo capture",
       description: "The front camera now evaluates face distance, centering, and head pose on device before capture while analysis remains server-authoritative and separate.",
       notice: "Guidance samples stay local and are deleted after on-device detection. Final photos remain in local cache only; this phase does not upload, score, recommend products, or invoke Face Lab.",
       camera: {
@@ -181,8 +181,8 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       note: "MOBILE-2에서 인증, MOBILE-3에서 My / Skin Diary, MOBILE-5에서 네이티브 카메라 획득, MOBILE-6에서 기기 내 얼굴 촬영 가이드를 연결했습니다. 분석 결과와 Premium은 이후 별도 단계로 유지합니다."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-6",
-      title: "가이드형 네이티브 피부 사진 촬영",
+      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
+      title: "네이티브 피부 사진 촬영",
       description: "전면 카메라에서 얼굴 거리·중앙 정렬·정면 상태를 기기 내에서 확인하면서 촬영할 수 있게 하되 실제 분석 권한은 서버에 유지하고 별도 단계로 분리합니다.",
       notice: "가이드용 샘플은 기기 안에서만 판정하고 즉시 삭제합니다. 최종 사진도 로컬 캐시에만 유지하며 업로드·점수 계산·제품 추천·Face Lab 호출은 수행하지 않습니다.",
       camera: {
