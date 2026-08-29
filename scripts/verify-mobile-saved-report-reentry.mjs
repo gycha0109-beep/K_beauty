@@ -56,6 +56,8 @@ assert(client.includes("savedReportId: metadata.id"), "premium-saved-report-id-o
 assert(client.includes('payload?.meta?.source !== "saved-report"'), "premium-snapshot-source-guard");
 assert(client.includes('Authorization: `Bearer ${session.access_token}`'), "native-bearer-auth");
 assert((client.match(/credentials: "include"/g) || []).length >= 2, "cookie-continuity-read-paths");
+assert(!client.includes("publicShared"), "reentry-client-no-publication-response");
+assert(!client.includes("share: true"), "reentry-client-no-publication-mutation");
 
 assert(resultRoute.includes("guardPublicResultRead"), "free-read-guard");
 assert(resultRoute.includes("readAnalysisResultForShare"), "free-read-existing-authority");
@@ -114,6 +116,7 @@ console.log("MOBILE_SAVED_REPORT_SERVER_AUTHORITY=PASS");
 console.log("MOBILE_SAVED_REPORT_FREE_REENTRY=PASS");
 console.log("MOBILE_SAVED_REPORT_PREMIUM_REENTRY=PASS");
 console.log("MOBILE_SAVED_REPORT_AUTH_BOUNDARY=PASS");
+console.log("MOBILE_SAVED_REPORT_REENTRY_CLIENT_READ_ONLY=PASS");
 console.log("MOBILE_SAVED_REPORT_READ_ONLY_BOUNDARY=PASS");
 console.log("MOBILE_SAVED_REPORT_NATIVE_ROUTE=PASS");
 console.log("MOBILE_SAVED_REPORT_ANDROID_ROUTE_SMOKE=PASS");

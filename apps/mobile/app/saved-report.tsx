@@ -4,7 +4,10 @@ import { useRouter } from "expo-router";
 import { Pressable, Share, StyleSheet, Text, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
 import { NativeSavedReport } from "../features/reports/NativeSavedReport";
-import { publishNativeFreeSavedReport } from "../features/reports/public-share-client";
+import {
+  publishNativeFreeSavedReport,
+  type NativePublicShare
+} from "../features/reports/public-share-client";
 import {
   loadLatestNativeSavedReport,
   type NativeSavedReportLoadResult
@@ -91,7 +94,7 @@ export default function SavedReportScreen() {
     if (!session || state.status !== "loaded" || state.value.kind !== "free") return;
 
     setPublicShareState({ status: "publishing" });
-    let published;
+    let published: NativePublicShare;
     try {
       published = await publishNativeFreeSavedReport(session, state.value.shareId);
     } catch {
@@ -181,7 +184,7 @@ export default function SavedReportScreen() {
               }
             ]}
           >
-            <Text style={[styles.shareButtonText, { color: palette.background }]}> 
+            <Text style={[styles.shareButtonText, { color: palette.background }]}>
               {publicShareState.status === "publishing" ? copy.sharing : copy.shareAction}
             </Text>
           </Pressable>
