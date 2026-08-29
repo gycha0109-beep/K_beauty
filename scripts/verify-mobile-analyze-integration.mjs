@@ -25,6 +25,9 @@ const boundary = read("apps/mobile/features/analyze/README.md");
 const camera = read("apps/mobile/features/camera/NativeFaceCamera.tsx");
 const sharedSurvey = read("packages/shared/src/survey-input-contract.js");
 const serverRoute = read("app/api/analyze/route.js");
+const analysisGuard = read("lib/security/analysis-request-guard.js");
+const analysisGuardCore = read("lib/security/analysis-request-guard-core.js");
+const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
 const env = read("apps/mobile/lib/env.ts");
 
 for (const marker of [
@@ -63,6 +66,8 @@ assert(client.includes('`${getMobileApiBaseUrl()}/api/analyze`'), "existing-api-
 assert(env.includes('"EXPO_PUBLIC_API_BASE_URL"'), "mobile-api-env");
 assert(client.includes('"Idempotency-Key": idempotencyKey'), "idempotency-header");
 assert(client.includes("mobile-analyze-"), "idempotency-prefix");
+assert(analysisGuardCore.includes('IDEMPOTENCY_HEADER = "Idempotency-Key"'), "server-idempotency-header");
+assert(analysisGuardCore.includes("^[A-Za-z0-9._:-]{16,128}$"), "server-idempotency-pattern");
 assert(!client.includes('"Content-Type": "multipart/form-data"'), "manual-multipart-content-type");
 assert(!client.includes("'Content-Type': 'multipart/form-data'"), "manual-multipart-content-type-single");
 assert(client.includes('Authorization = `Bearer ${session.access_token}`'), "optional-native-bearer");
@@ -104,7 +109,7 @@ for (const errorCode of [
   "invalid_idempotency_key",
   "analysis_guard_unavailable"
 ]) {
-  assert(serverRoute.includes("guardAnalysisRequest") || client.includes(errorCode), `analysis-guard-boundary:${errorCode}`);
+  assert(analysisGuard.includes(errorCode), `analysis-guard-error:${errorCode}`);
 }
 
 assert(survey.includes('testID="native-analyze-survey"'), "native-survey-render-marker");
@@ -114,6 +119,9 @@ assert(result.includes('testID="native-analyze-result-summary"'), "native-result
 assert(screen.includes("Temporary guidance samples are never uploaded."), "guidance-upload-boundary-copy");
 assert(boundary.includes("Only the final `NativeCameraPhoto` JPEG"), "final-photo-boundary-doc");
 assert(boundary.includes("MOBILE-8+"), "premium-deferred-boundary-doc");
+assert(androidSmoke.includes('wait_for_text_with_scroll "Skin survey before analysis"'), "android-survey-render-smoke");
+assert(androidSmoke.includes("MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS"), "android-survey-smoke-marker");
+assert(androidSmoke.includes('analyze-survey-en.png'), "android-survey-screenshot-artifact");
 
 const boundedMobileSources = [client, survey, result, screen, boundary].join("\n");
 for (const forbidden of [
@@ -134,5 +142,6 @@ console.log("MOBILE_ANALYZE_SHARED_SURVEY=PASS");
 console.log("MOBILE_ANALYZE_MULTIPART_TRANSPORT=PASS");
 console.log("MOBILE_ANALYZE_IDEMPOTENCY_AUTH=PASS");
 console.log("MOBILE_ANALYZE_FREE_RESULT_BOUNDARY=PASS");
+console.log("MOBILE_ANALYZE_ANDROID_SURVEY_RUNTIME=PASS");
 console.log("MOBILE_ANALYZE_SERVER_AUTHORITY=PASS");
 console.log("MOBILE_7_ANALYZE_SERVER_INTEGRATION=PASS");
