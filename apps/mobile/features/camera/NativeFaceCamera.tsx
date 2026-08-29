@@ -32,6 +32,7 @@ export type NativeFaceCameraCopy = {
   openSettings: string;
   openCamera: string;
   closeCamera: string;
+  acceptPhoto?: string;
   previewLabel: string;
   ready: string;
   preparing: string;
@@ -458,14 +459,31 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
                 {cameraError ?? (capturedPhoto ? copy.localOnly : isCameraReady ? copy.ready : copy.preparing)}
               </Text>
               {capturedPhoto ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={copy.retake}
-                  onPress={retakePhoto}
-                  style={({ pressed }) => [styles.captureButton, pressed ? styles.pressedButton : null]}
-                >
-                  <Text style={styles.captureButtonText}>{copy.retake}</Text>
-                </Pressable>
+                <View style={styles.captureActions}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={copy.retake}
+                    onPress={retakePhoto}
+                    style={({ pressed }) => [styles.captureButton, pressed ? styles.pressedButton : null]}
+                  >
+                    <Text style={styles.captureButtonText}>{copy.retake}</Text>
+                  </Pressable>
+                  {copy.acceptPhoto ? (
+                    <Pressable
+                      testID="native-camera-use-photo"
+                      accessibilityRole="button"
+                      accessibilityLabel={copy.acceptPhoto}
+                      onPress={closeCamera}
+                      style={({ pressed }) => [
+                        styles.captureButton,
+                        { backgroundColor: palette.accent },
+                        pressed ? styles.pressedButton : null
+                      ]}
+                    >
+                      <Text style={styles.acceptButtonText}>{copy.acceptPhoto}</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
               ) : (
                 <Pressable
                   accessibilityRole="button"
@@ -641,6 +659,13 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     backgroundColor: "#FFFFFF"
   },
+  captureActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: 12
+  },
   captureButton: {
     minWidth: 160,
     minHeight: 52,
@@ -653,6 +678,11 @@ const styles = StyleSheet.create({
   },
   captureButtonText: {
     color: "#111111",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  acceptButtonText: {
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "800"
   },
