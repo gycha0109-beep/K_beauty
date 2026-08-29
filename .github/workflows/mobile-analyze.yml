@@ -11,6 +11,7 @@ on:
       - "scripts/verify-mobile-analyze-integration.mjs"
       - "scripts/verify-mobile-camera-foundation.mjs"
       - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-analyze.yml"
       - ".github/workflows/mobile-camera.yml"
       - ".github/workflows/mobile-face-guidance.yml"
@@ -25,6 +26,7 @@ on:
       - "scripts/verify-mobile-analyze-integration.mjs"
       - "scripts/verify-mobile-camera-foundation.mjs"
       - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-analyze.yml"
       - ".github/workflows/mobile-camera.yml"
       - ".github/workflows/mobile-face-guidance.yml"
@@ -72,6 +74,9 @@ jobs:
 
       - name: Verify MOBILE-7 analyze boundary
         run: node scripts/verify-mobile-analyze-integration.mjs
+
+      - name: Verify Android smoke shell syntax
+        run: bash -n scripts/verify-mobile-android-smoke.sh
 
       - name: Typecheck mobile client
         run: npm run mobile:typecheck
