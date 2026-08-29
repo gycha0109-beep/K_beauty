@@ -28,6 +28,7 @@ const resultRoute = read("app/api/results/[shareId]/route.js");
 const resultGuard = read("lib/security/public-result-read-guard.js");
 const fullReportRoute = read("app/api/full-report/route.js");
 const premiumContext = read("lib/premium-route-context.js");
+const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
 
 assert(layout.includes('name="saved-report"'), "hidden-saved-report-route");
 assert(layout.includes('href: null'), "saved-report-hidden-from-tabs");
@@ -95,6 +96,11 @@ for (const forbidden of [
   assert(!boundedMobileSources.includes(forbidden), `mobile-authority-forbidden:${forbidden}`);
 }
 
+assert(androidSmoke.includes('wait_for_text "Saved report"'), "android-my-saved-report-entry");
+assert(androidSmoke.includes('tap_text "Saved report"'), "android-saved-report-route-action");
+assert(androidSmoke.includes('wait_for_text "Sign in on My to reopen a saved report."'), "android-signed-out-boundary");
+assert(androidSmoke.includes('saved-report-signed-out-en.png'), "android-saved-report-screenshot");
+assert(androidSmoke.includes("MOBILE_ANDROID_SAVED_REPORT_ROUTE_SMOKE=PASS"), "android-saved-report-smoke-marker");
 assert(analyzeScreen.includes("onPhotoChange={setCapturedPhoto}"), "mobile5-camera-regression-contract");
 assert(!boundedMobileSources.includes("normalizeSurveyAnswers"), "no-survey-recompute");
 assert(!boundedMobileSources.includes("submitNativeAnalysis"), "no-analysis-recompute");
@@ -105,6 +111,7 @@ console.log("MOBILE_SAVED_REPORT_PREMIUM_REENTRY=PASS");
 console.log("MOBILE_SAVED_REPORT_AUTH_BOUNDARY=PASS");
 console.log("MOBILE_SAVED_REPORT_READ_ONLY_BOUNDARY=PASS");
 console.log("MOBILE_SAVED_REPORT_NATIVE_ROUTE=PASS");
+console.log("MOBILE_SAVED_REPORT_ANDROID_ROUTE_SMOKE=PASS");
 console.log("MOBILE_SAVED_REPORT_NO_RECOMPUTE=PASS");
 console.log("MOBILE_SAVED_REPORT_CAMERA_REGRESSION=PASS");
 console.log("MOBILE_8_SAVED_REPORT_REENTRY=PASS");
