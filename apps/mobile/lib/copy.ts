@@ -45,6 +45,18 @@ type MobileCopy = {
       capturedLabel: string;
       retake: string;
       localOnly: string;
+      guidance: {
+        loading: string;
+        noFace: string;
+        multipleFaces: string;
+        tooFar: string;
+        tooClose: string;
+        offCenter: string;
+        notFrontal: string;
+        stabilizing: string;
+        ready: string;
+        unavailable: string;
+      };
     };
   };
   my: {
@@ -88,13 +100,13 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "Routes · Home / Analyze / My",
       localeLabel: "Locale",
       nativeGate: "Android gate · prebuild / APK / emulator launch",
-      note: "Authentication is implemented in MOBILE-2, My / Skin Diary in MOBILE-3, and native camera acquisition in MOBILE-5. Analysis results and Premium remain separate later phases."
+      note: "Authentication is implemented in MOBILE-2, My / Skin Diary in MOBILE-3, native camera acquisition in MOBILE-5, and on-device face-capture guidance in MOBILE-6. Analysis results and Premium remain separate later phases."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-5",
+      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
       title: "Native skin photo capture",
-      description: "The Analyze route can now acquire a front-camera photo on device while analysis stays server-authoritative and remains a later phase.",
-      notice: "This step only captures a local cache photo. It does not upload, score, recommend products, or invoke Face Lab.",
+      description: "The front camera now evaluates face distance, centering, and head pose on device before capture while analysis remains server-authoritative and separate.",
+      notice: "Guidance samples stay local and are deleted after on-device detection. Final photos remain in local cache only; this phase does not upload, score, recommend products, or invoke Face Lab.",
       camera: {
         permissionLoading: "Checking camera permission…",
         permissionTitle: "Camera access is required",
@@ -112,7 +124,19 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         captureFailed: "The camera could not capture a photo. Try again.",
         capturedLabel: "Captured photo",
         retake: "Retake",
-        localOnly: "This image currently remains only in the app's local cache and is not uploaded or analyzed."
+        localOnly: "This image currently remains only in the app's local cache and is not uploaded or analyzed.",
+        guidance: {
+          loading: "Checking face alignment…",
+          noFace: "No face detected. Place one face inside the oval.",
+          multipleFaces: "Only one face should be visible.",
+          tooFar: "Move a little closer.",
+          tooClose: "Move a little farther away.",
+          offCenter: "Center your face inside the oval.",
+          notFrontal: "Face the camera straight.",
+          stabilizing: "Hold still for a moment.",
+          ready: "Framing looks good. Hold still or take the photo.",
+          unavailable: "Face guidance is unavailable. You can still take the photo manually."
+        }
       }
     },
     my: {
@@ -154,13 +178,13 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       routes: "경로 · 홈 / 분석 / 마이",
       localeLabel: "언어",
       nativeGate: "Android 게이트 · prebuild / APK / emulator launch",
-      note: "MOBILE-2에서 인증, MOBILE-3에서 My / Skin Diary, MOBILE-5에서 네이티브 카메라 획득 기반을 연결했습니다. 분석 결과와 Premium은 이후 별도 단계로 유지합니다."
+      note: "MOBILE-2에서 인증, MOBILE-3에서 My / Skin Diary, MOBILE-5에서 네이티브 카메라 획득, MOBILE-6에서 기기 내 얼굴 촬영 가이드를 연결했습니다. 분석 결과와 Premium은 이후 별도 단계로 유지합니다."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-5",
+      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
       title: "네이티브 피부 사진 촬영",
-      description: "분석 경로에서 기기 전면 카메라로 사진을 획득할 수 있게 하되 실제 분석 권한은 서버에 유지하고 이후 단계로 분리합니다.",
-      notice: "이 단계는 로컬 캐시 사진만 촬영합니다. 업로드·점수 계산·제품 추천·Face Lab 호출은 수행하지 않습니다.",
+      description: "전면 카메라에서 얼굴 거리·중앙 정렬·정면 상태를 기기 내에서 확인하면서 촬영할 수 있게 하되 실제 분석 권한은 서버에 유지하고 별도 단계로 분리합니다.",
+      notice: "가이드용 샘플은 기기 안에서만 판정하고 즉시 삭제합니다. 최종 사진도 로컬 캐시에만 유지하며 업로드·점수 계산·제품 추천·Face Lab 호출은 수행하지 않습니다.",
       camera: {
         permissionLoading: "카메라 권한 확인 중…",
         permissionTitle: "카메라 접근 권한이 필요합니다",
@@ -178,7 +202,19 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         captureFailed: "사진을 촬영하지 못했습니다. 다시 시도해 주세요.",
         capturedLabel: "촬영한 사진",
         retake: "다시 촬영",
-        localOnly: "현재 이 이미지는 앱 로컬 캐시에만 있으며 업로드하거나 분석하지 않습니다."
+        localOnly: "현재 이 이미지는 앱 로컬 캐시에만 있으며 업로드하거나 분석하지 않습니다.",
+        guidance: {
+          loading: "얼굴 정렬 상태 확인 중…",
+          noFace: "얼굴이 보이지 않습니다. 한 명의 얼굴을 타원 안에 맞춰 주세요.",
+          multipleFaces: "한 명의 얼굴만 화면에 보이게 해 주세요.",
+          tooFar: "조금 더 가까이 와 주세요.",
+          tooClose: "조금 더 멀리 떨어져 주세요.",
+          offCenter: "얼굴을 타원 중앙에 맞춰 주세요.",
+          notFrontal: "카메라를 정면으로 바라봐 주세요.",
+          stabilizing: "잠시 그대로 유지해 주세요.",
+          ready: "정렬이 좋습니다. 그대로 유지하거나 사진을 촬영하세요.",
+          unavailable: "얼굴 가이드를 사용할 수 없습니다. 사진은 수동으로 계속 촬영할 수 있습니다."
+        }
       }
     },
     my: {
