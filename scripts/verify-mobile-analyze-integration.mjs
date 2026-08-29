@@ -119,6 +119,12 @@ assert(result.includes('testID="native-analyze-result-summary"'), "native-result
 assert(screen.includes("Temporary guidance samples are never uploaded."), "guidance-upload-boundary-copy");
 assert(boundary.includes("Only the final `NativeCameraPhoto` JPEG"), "final-photo-boundary-doc");
 assert(boundary.includes("MOBILE-8+"), "premium-deferred-boundary-doc");
+
+assert(camera.includes("acceptPhoto?: string"), "camera-photo-accept-copy-contract");
+assert(camera.includes('testID="native-camera-use-photo"'), "camera-photo-accept-render-marker");
+assert(screen.includes('acceptPhoto: locale === "ko" ? "이 사진 사용" : "Use photo"'), "camera-photo-accept-localized-copy");
+assert(androidSmoke.includes('wait_for_text "Use photo"'), "android-photo-accept-visible-smoke");
+assert(androidSmoke.includes('tap_text "Use photo"'), "android-photo-accept-action-smoke");
 assert(androidSmoke.includes('wait_for_text_with_scroll "Skin survey before analysis"'), "android-survey-render-smoke");
 assert(androidSmoke.includes("MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS"), "android-survey-smoke-marker");
 assert(androidSmoke.includes('analyze-survey-en.png'), "android-survey-screenshot-artifact");
@@ -142,6 +148,7 @@ console.log("MOBILE_ANALYZE_SHARED_SURVEY=PASS");
 console.log("MOBILE_ANALYZE_MULTIPART_TRANSPORT=PASS");
 console.log("MOBILE_ANALYZE_IDEMPOTENCY_AUTH=PASS");
 console.log("MOBILE_ANALYZE_FREE_RESULT_BOUNDARY=PASS");
+console.log("MOBILE_ANALYZE_PHOTO_ACCEPT_HANDOFF=PASS");
 console.log("MOBILE_ANALYZE_ANDROID_SURVEY_RUNTIME=PASS");
 console.log("MOBILE_ANALYZE_SERVER_AUTHORITY=PASS");
 console.log("MOBILE_7_ANALYZE_SERVER_INTEGRATION=PASS");
