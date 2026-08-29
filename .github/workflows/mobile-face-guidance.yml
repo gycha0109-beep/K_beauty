@@ -1,0 +1,78 @@
+name: BEJEWELY Mobile Face Guidance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-face-guidance.yml"
+      - ".github/workflows/mobile-camera.yml"
+      - ".github/workflows/mobile-native-shell.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "scripts/verify-mobile-face-guidance.mjs"
+      - "scripts/verify-mobile-camera-foundation.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-face-guidance.yml"
+      - ".github/workflows/mobile-camera.yml"
+      - ".github/workflows/mobile-native-shell.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  face-guidance:
+    name: Native Face Guidance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_FACE_GUIDANCE_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify camera regression boundary
+        run: node scripts/verify-mobile-camera-foundation.mjs
+
+      - name: Verify face guidance boundary
+        run: node scripts/verify-mobile-face-guidance.mjs
+
+      - name: Verify camera smoke shell syntax
+        run: bash -n scripts/verify-mobile-android-smoke.sh
+
+      - name: Typecheck mobile client
+        run: npm run mobile:typecheck
+
+      - name: Verify Expo public config
+        run: npm run mobile:config
+
+      - name: Generate Android native project
+        run: npm run mobile:prebuild:android
+
+      - name: Verify generated Android contract
+        run: npm run verify:mobile-native
