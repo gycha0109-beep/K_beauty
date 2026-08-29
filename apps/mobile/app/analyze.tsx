@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ScreenShell } from "../components/ScreenShell";
@@ -36,6 +36,14 @@ export default function AnalyzeScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    setResult(null);
+    setErrorMessage("");
+    if (!capturedPhoto) {
+      setSurvey(createInitialSurvey());
+    }
+  }, [capturedPhoto]);
+
   const resetAnalysis = useCallback(() => {
     setCapturedPhoto(null);
     setSurvey(createInitialSurvey());
@@ -43,15 +51,6 @@ export default function AnalyzeScreen() {
     setSubmitting(false);
     setErrorMessage("");
     setCameraRevision((current) => current + 1);
-  }, []);
-
-  const handlePhotoChange = useCallback((photo: NativeCameraPhoto | null) => {
-    setCapturedPhoto(photo);
-    setResult(null);
-    setErrorMessage("");
-    if (!photo) {
-      setSurvey(createInitialSurvey());
-    }
   }, []);
 
   const handleAnalyze = useCallback(async () => {
@@ -110,7 +109,7 @@ export default function AnalyzeScreen() {
                 : "The final photo stays in local cache until you run analysis. It is sent to the existing BEJEWELY server only when analysis starts."
             }}
             palette={palette}
-            onPhotoChange={handlePhotoChange}
+            onPhotoChange={setCapturedPhoto}
           />
 
           {capturedPhoto ? (
