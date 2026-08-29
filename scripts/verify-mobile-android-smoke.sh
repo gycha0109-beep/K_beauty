@@ -272,6 +272,14 @@ adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
 tap_text "Take photo"
 wait_for_text "CAPTURED PHOTO"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-captured-en.png"
+wait_for_text "Use photo"
+tap_text "Use photo"
+wait_for_text_with_scroll "Skin survey before analysis" "up" 5
+adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-survey-en.png"
+printf 'MOBILE_ANDROID_ANALYZE_SURVEY_SMOKE=PASS\n'
+wait_for_text_with_scroll "Open camera" "down" 5
+tap_text "Open camera"
+wait_for_text "CAPTURED PHOTO"
 wait_for_text "Retake"
 tap_text "Retake"
 wait_for_text "Camera ready"
