@@ -1,8 +1,20 @@
 import { CameraView, useCameraPermissions, type CameraCapturedPicture } from "expo-camera";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Linking, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import {
+  detectNativeFacesAsync,
+  isNativeFaceGuideAvailable
+} from "../../modules/bejewely-face-guide/src/BejewelyFaceGuideModule";
+import {
+  evaluateNativeFaceGuidance,
+  NATIVE_FACE_GUIDANCE_SAMPLE_INTERVAL_MS,
+  NATIVE_FACE_GUIDANCE_STABLE_SAMPLES,
+  type NativeFaceGuidanceRect,
+  type NativeFaceGuidanceState
+} from "./NativeFaceGuidance";
 
 export type NativeCameraPhoto = Readonly<{
   uri: string;
@@ -30,6 +42,18 @@ export type NativeFaceCameraCopy = {
   capturedLabel: string;
   retake: string;
   localOnly: string;
+  guidance: {
+    loading: string;
+    noFace: string;
+    multipleFaces: string;
+    tooFar: string;
+    tooClose: string;
+    offCenter: string;
+    notFrontal: string;
+    stabilizing: string;
+    ready: string;
+    unavailable: string;
+  };
 };
 
 type NativeFaceCameraProps = {
@@ -58,8 +82,40 @@ export function buildUploadReadyCameraPhoto(photo: CameraCapturedPicture): Nativ
   };
 }
 
+function resolveGuidanceCopy(copy: NativeFaceCameraCopy, state: NativeFaceGuidanceState) {
+  switch (state) {
+    case "no_face":
+      return copy.guidance.noFace;
+    case "multiple_faces":
+      return copy.guidance.multipleFaces;
+    case "too_far":
+      return copy.guidance.tooFar;
+    case "too_close":
+      return copy.guidance.tooClose;
+    case "off_center":
+      return copy.guidance.offCenter;
+    case "not_frontal":
+      return copy.guidance.notFrontal;
+    case "stabilizing":
+      return copy.guidance.stabilizing;
+    case "ready":
+      return copy.guidance.ready;
+    case "unavailable":
+      return copy.guidance.unavailable;
+    case "loading":
+    default:
+      return copy.guidance.loading;
+  }
+}
+
 export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCameraProps) {
   const cameraRef = useRef<CameraView | null>(null);
+  const guidanceInFlightRef = useRef<Promise<void> | null>(null);
+  const guidanceGenerationRef = useRef(0);
+  const guidanceReadySamplesRef = useRef(0);
+  const finalCaptureLockRef = useRef(false);
+  const previewRectRef = useRef<NativeFaceGuidanceRect | null>(null);
+  const guideRectRef = useRef<NativeFaceGuidanceRect | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [isFocused, setIsFocused] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(true);
@@ -67,40 +123,170 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<NativeCameraPhoto | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [guidanceState, setGuidanceState] = useState<NativeFaceGuidanceState>("loading");
+
+  const resetGuidance = useCallback(() => {
+    guidanceGenerationRef.current += 1;
+    guidanceReadySamplesRef.current = 0;
+    setGuidanceState("loading");
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       setIsFocused(true);
       setIsFullscreenOpen(true);
+      resetGuidance();
       return () => {
+        guidanceGenerationRef.current += 1;
+        guidanceReadySamplesRef.current = 0;
+        finalCaptureLockRef.current = false;
         setIsFocused(false);
         setIsFullscreenOpen(false);
         setIsCameraReady(false);
       };
-    }, [])
+    }, [resetGuidance])
   );
 
   const closeCamera = useCallback(() => {
+    finalCaptureLockRef.current = false;
     setIsFullscreenOpen(false);
     setIsCameraReady(false);
     setCameraError(null);
-  }, []);
+    resetGuidance();
+  }, [resetGuidance]);
 
   const openCamera = useCallback(() => {
     setIsFullscreenOpen(true);
     setIsCameraReady(false);
     setCameraError(null);
-  }, []);
+    resetGuidance();
+  }, [resetGuidance]);
+
+  useEffect(() => {
+    if (
+      !permission?.granted ||
+      !isFocused ||
+      !isFullscreenOpen ||
+      capturedPhoto ||
+      !isCameraReady ||
+      isCapturing
+    ) {
+      return;
+    }
+
+    if (!isNativeFaceGuideAvailable) {
+      setGuidanceState("unavailable");
+      return;
+    }
+
+    let cancelled = false;
+    const generation = guidanceGenerationRef.current + 1;
+    guidanceGenerationRef.current = generation;
+
+    const sampleGuidance = async () => {
+      if (cancelled || finalCaptureLockRef.current || guidanceInFlightRef.current) {
+        return;
+      }
+
+      const camera = cameraRef.current;
+      const previewRect = previewRectRef.current;
+      const guideRect = guideRectRef.current;
+      if (!camera || !previewRect || !guideRect) {
+        setGuidanceState("loading");
+        return;
+      }
+
+      let currentTask: Promise<void>;
+      currentTask = (async () => {
+        try {
+          const sample = await camera.takePictureAsync({
+            quality: 0.2,
+            base64: false,
+            exif: false,
+            skipProcessing: false,
+            shutterSound: false
+          });
+          const detection = await detectNativeFacesAsync(sample.uri, true);
+
+          if (cancelled || generation !== guidanceGenerationRef.current || finalCaptureLockRef.current) {
+            return;
+          }
+
+          if (!detection) {
+            guidanceReadySamplesRef.current = 0;
+            setGuidanceState("unavailable");
+            return;
+          }
+
+          const evaluation = evaluateNativeFaceGuidance({
+            faces: detection.faces,
+            imageWidth: sample.width,
+            imageHeight: sample.height,
+            previewRect,
+            guideRect,
+            mirrored: true
+          });
+
+          if (evaluation.state === "ready") {
+            guidanceReadySamplesRef.current += 1;
+            setGuidanceState(
+              guidanceReadySamplesRef.current >= NATIVE_FACE_GUIDANCE_STABLE_SAMPLES
+                ? "ready"
+                : "stabilizing"
+            );
+          } else {
+            guidanceReadySamplesRef.current = 0;
+            setGuidanceState(evaluation.state);
+          }
+        } catch {
+          if (!cancelled && generation === guidanceGenerationRef.current && !finalCaptureLockRef.current) {
+            guidanceReadySamplesRef.current = 0;
+            setGuidanceState("unavailable");
+          }
+        }
+      })();
+
+      guidanceInFlightRef.current = currentTask;
+      try {
+        await currentTask;
+      } finally {
+        if (guidanceInFlightRef.current === currentTask) {
+          guidanceInFlightRef.current = null;
+        }
+      }
+    };
+
+    void sampleGuidance();
+    const interval = setInterval(() => {
+      void sampleGuidance();
+    }, NATIVE_FACE_GUIDANCE_SAMPLE_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      if (guidanceGenerationRef.current === generation) {
+        guidanceGenerationRef.current += 1;
+      }
+      guidanceReadySamplesRef.current = 0;
+    };
+  }, [capturedPhoto, isCameraReady, isCapturing, isFocused, isFullscreenOpen, permission?.granted]);
 
   const capturePhoto = useCallback(async () => {
     if (!cameraRef.current || !isCameraReady || isCapturing) {
       return;
     }
 
+    finalCaptureLockRef.current = true;
+    guidanceGenerationRef.current += 1;
     setIsCapturing(true);
     setCameraError(null);
 
     try {
+      const pendingGuidance = guidanceInFlightRef.current;
+      if (pendingGuidance) {
+        await pendingGuidance.catch(() => undefined);
+      }
+
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.85,
         base64: false,
@@ -115,6 +301,7 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
     } catch {
       setCameraError(copy.captureFailed);
     } finally {
+      finalCaptureLockRef.current = false;
       setIsCapturing(false);
     }
   }, [copy.captureFailed, isCameraReady, isCapturing, onPhotoChange]);
@@ -124,7 +311,8 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
     onPhotoChange?.(null);
     setCameraError(null);
     setIsCameraReady(false);
-  }, [onPhotoChange]);
+    resetGuidance();
+  }, [onPhotoChange, resetGuidance]);
 
   if (!permission) {
     return (
@@ -161,13 +349,15 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
     );
   }
 
+  const guidanceText = resolveGuidanceCopy(copy, guidanceState);
+
   return (
     <>
       {!isFullscreenOpen ? (
         <View style={[styles.panel, { backgroundColor: palette.surface, borderColor: palette.border }]}>
           <Text style={[styles.panelTitle, { color: palette.text }]}>{copy.previewLabel}</Text>
           <Text style={[styles.bodyText, { color: palette.textMuted }]}>
-            {capturedPhoto ? copy.localOnly : copy.alignFace}
+            {capturedPhoto ? copy.localOnly : guidanceText}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -192,7 +382,13 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
         supportedOrientations={["portrait"]}
         visible={isFocused && isFullscreenOpen}
       >
-        <View style={styles.fullscreenRoot}>
+        <View
+          style={styles.fullscreenRoot}
+          onLayout={(event) => {
+            const { width, height } = event.nativeEvent.layout;
+            previewRectRef.current = { left: 0, top: 0, width, height };
+          }}
+        >
           {capturedPhoto ? (
             <Image source={{ uri: capturedPhoto.uri }} style={styles.fullscreenMedia} resizeMode="cover" />
           ) : (
@@ -205,17 +401,27 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
               onCameraReady={() => {
                 setIsCameraReady(true);
                 setCameraError(null);
+                resetGuidance();
               }}
               onMountError={() => {
                 setIsCameraReady(false);
                 setCameraError(copy.captureFailed);
+                setGuidanceState("unavailable");
               }}
             />
           )}
 
           {!capturedPhoto ? (
-            <View pointerEvents="none" style={styles.guideLayer}>
-              <View testID="native-face-guide-oval" style={styles.faceOval} />
+            <View pointerEvents="box-none" style={styles.guideLayer}>
+              <View
+                pointerEvents="none"
+                testID="native-face-guide-oval"
+                style={styles.faceOval}
+                onLayout={(event) => {
+                  const { x, y, width, height } = event.nativeEvent.layout;
+                  guideRectRef.current = { left: x, top: y, width, height };
+                }}
+              />
             </View>
           ) : null}
 
@@ -236,7 +442,13 @@ export function NativeFaceCamera({ copy, palette, onPhotoChange }: NativeFaceCam
               </Pressable>
               <View pointerEvents="none" style={styles.topCopy}>
                 <Text style={styles.sectionLabel}>{capturedPhoto ? copy.capturedLabel : copy.previewLabel}</Text>
-                <Text style={styles.guidanceText}>{capturedPhoto ? copy.localOnly : copy.alignFace}</Text>
+                <Text
+                  accessibilityLiveRegion="polite"
+                  testID="native-face-guidance-status"
+                  style={styles.guidanceText}
+                >
+                  {capturedPhoto ? copy.localOnly : isCameraReady ? guidanceText : copy.alignFace}
+                </Text>
               </View>
               <View style={styles.closeSpacer} />
             </View>
