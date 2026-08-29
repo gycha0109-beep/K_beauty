@@ -1,11 +1,14 @@
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
+import { Pressable, Text } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { MOBILE_COPY } from "../lib/copy";
 import { MobileShellProvider, useMobileShell } from "../lib/mobile-shell";
 
 function NativeTabs() {
+  const router = useRouter();
   const { locale, palette, themeMode } = useMobileShell();
   const copy = MOBILE_COPY[locale];
+  const savedReportTitle = locale === "ko" ? "저장 리포트" : "Saved report";
 
   return (
     <>
@@ -28,7 +31,31 @@ function NativeTabs() {
       >
         <Tabs.Screen name="index" options={{ title: copy.tabs.home }} />
         <Tabs.Screen name="analyze" options={{ title: copy.tabs.analyze }} />
-        <Tabs.Screen name="my" options={{ title: copy.tabs.my }} />
+        <Tabs.Screen
+          name="my"
+          options={{
+            title: copy.tabs.my,
+            headerRight: () => (
+              <Pressable
+                testID="mobile-my-latest-report"
+                accessibilityRole="button"
+                accessibilityLabel={savedReportTitle}
+                onPress={() => router.push("/saved-report")}
+                style={({ pressed }) => ({
+                  marginRight: 14,
+                  paddingHorizontal: 8,
+                  paddingVertical: 6,
+                  opacity: pressed ? 0.6 : 1
+                })}
+              >
+                <Text style={{ color: palette.accent, fontSize: 13, fontWeight: "700" }}>
+                  {savedReportTitle}
+                </Text>
+              </Pressable>
+            )
+          }}
+        />
+        <Tabs.Screen name="saved-report" options={{ href: null, title: savedReportTitle }} />
         <Tabs.Screen name="auth/callback" options={{ href: null, title: "Auth" }} />
       </Tabs>
     </>
