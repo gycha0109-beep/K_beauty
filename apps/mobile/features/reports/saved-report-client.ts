@@ -29,6 +29,7 @@ export type NativeSavedReportRead =
   | Readonly<{
       kind: "free";
       metadata: NativeSavedReportMetadata;
+      shareId: string;
       result: NativeFreeSavedResult;
     }>
   | Readonly<{
@@ -133,6 +134,7 @@ async function loadFreeSavedReport(
   return {
     kind: "free",
     metadata,
+    shareId,
     result: payload.result as NativeFreeSavedResult
   };
 }
