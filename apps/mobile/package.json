@@ -12,6 +12,7 @@
     "config:check": "expo config --type public",
     "export:android": "expo export --platform android --output-dir .expo-ci-dist",
     "prebuild:android": "expo prebuild --platform android --clean --no-install",
+    "prebuild:ios": "expo prebuild --platform ios --clean --no-install",
     "build:android:debug": "cd android && ./gradlew :app:assembleDebug --no-daemon",
     "verify:native": "node ../../scripts/verify-mobile-native-shell.mjs"
   },
