@@ -1,0 +1,101 @@
+name: BEJEWELY Mobile iOS Shell
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-ios-smoke.sh"
+      - ".github/workflows/mobile-ios-shell.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-ios-smoke.sh"
+      - ".github/workflows/mobile-ios-shell.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ios-shell-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-native-shell:
+    name: iOS Native Shell
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_IOS_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify platform boundary and types
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Generate iOS native project
+        run: npm run prebuild:ios --workspace @bejewely/mobile
+
+      - name: Verify generated iOS contract
+        run: node scripts/verify-mobile-ios-shell.mjs
+
+      - name: Install CocoaPods dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          pod --version
+          cd apps/mobile/ios
+          pod install
+
+      - name: Build, install, and verify iOS Simulator shell
+        shell: bash
+        run: bash scripts/verify-mobile-ios-smoke.sh
+
+      - name: Upload iOS Simulator app and runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bejewely-mobile-ios-shell-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 14
+          path: |
+            apps/mobile/.mobile-ios-derived-data/Build/Products/Release-iphonesimulator/BEJEWELY.app/**
+            apps/mobile/.mobile-ios-artifacts/**
