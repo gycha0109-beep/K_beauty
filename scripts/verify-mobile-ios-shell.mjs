@@ -63,7 +63,7 @@ const infoPlist = readFileSync(infoPlistFile, "utf8");
 
 assert.match(
   project,
-  /PRODUCT_BUNDLE_IDENTIFIER\s*=\s*com\.bejewely\.mobile;/,
+  /PRODUCT_BUNDLE_IDENTIFIER\s*=\s*["']?com\.bejewely\.mobile["']?;/,
   "Generated iOS bundle identifier drifted from app config"
 );
 assert.match(infoPlist, /<string>bejewely<\/string>/, "Generated Info.plist lost the bejewely URL scheme");
