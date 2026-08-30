@@ -33,6 +33,10 @@
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize"
     },
+    "ios": {
+      "bundleIdentifier": "com.bejewely.mobile",
+      "supportsTablet": false
+    },
     "androidStatusBar": {
       "translucent": false
     }
