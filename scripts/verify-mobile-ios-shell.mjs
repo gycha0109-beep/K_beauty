@@ -73,12 +73,12 @@ assert.match(
 assert.match(
   compatScript,
   /expectedSourceSha1 = "708aeaf33190ec55694e2677da0e7c565f61adfe"/,
-  "MOBILE-12 compatibility shim lost the attested upstream source hash"
+  "MOBILE-12 compatibility shim lost the attested npm source hash"
 );
 assert.match(
   compatScript,
-  /expectedPatchedSha1 = "4f90cc098a33df83d0734fd1c80d549b72a90619"/,
-  "MOBILE-12 compatibility shim lost the attested patched-source hash"
+  /expectedPatchedSha1 = "104a90a05f703288e5697c5548bb3af14ef951b1"/,
+  "MOBILE-12 compatibility shim lost the exact bounded patched-source hash"
 );
 
 const forbiddenBundleTokens = [
@@ -104,8 +104,8 @@ assert.equal(
 );
 assert.equal(
   sha1(runtimeScheduler),
-  "4f90cc098a33df83d0734fd1c80d549b72a90619",
-  "expo-modules-jsi RuntimeScheduler.h is not the exact attested Xcode 26.2 compatibility result"
+  "104a90a05f703288e5697c5548bb3af14ef951b1",
+  "expo-modules-jsi RuntimeScheduler.h is not the exact bounded Xcode 26.2 compatibility result"
 );
 assert.ok(
   !runtimeScheduler.includes("SWIFT_RETURNS_RETAINED RuntimeScheduler"),
