@@ -4,18 +4,46 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MOBILE_ROOT="$REPO_ROOT/apps/mobile"
 IOS_ROOT="$MOBILE_ROOT/ios"
-ARTIFACT_DIR="$MOBILE_ROOT/.mobile-ios-artifacts"
-DERIVED_DATA="$MOBILE_ROOT/.mobile-ios-derived-data"
+FINAL_ARTIFACT_DIR="$MOBILE_ROOT/.mobile-ios-artifacts"
+TEMP_BASE="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+WORK_ROOT="$TEMP_BASE/bejewely-mobile-ios-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
+ARTIFACT_DIR="$WORK_ROOT/artifacts"
+DERIVED_DATA="$WORK_ROOT/derived-data"
 BUNDLE_ID="com.bejewely.mobile"
 WORKSPACE="$IOS_ROOT/BEJEWELY.xcworkspace"
 SCHEME="BEJEWELY"
 START_MARKER="$ARTIFACT_DIR/smoke-start.marker"
+APP_PATH="$DERIVED_DATA/Build/Products/Release-iphonesimulator/BEJEWELY.app"
 
-rm -rf "$ARTIFACT_DIR" "$DERIVED_DATA"
+rm -rf "$WORK_ROOT" "$FINAL_ARTIFACT_DIR"
 mkdir -p "$ARTIFACT_DIR"
 touch "$START_MARKER"
 
 test -d "$WORKSPACE"
+
+INITIAL_STATE="Unknown"
+UDID=""
+
+stage_artifacts() {
+  set +e
+  rm -rf "$FINAL_ARTIFACT_DIR"
+  mkdir -p "$FINAL_ARTIFACT_DIR"
+  if [[ -d "$ARTIFACT_DIR" ]]; then
+    cp -R "$ARTIFACT_DIR"/. "$FINAL_ARTIFACT_DIR"/
+  fi
+  if [[ -d "$APP_PATH" ]]; then
+    rm -rf "$FINAL_ARTIFACT_DIR/BEJEWELY.app"
+    ditto "$APP_PATH" "$FINAL_ARTIFACT_DIR/BEJEWELY.app"
+  fi
+}
+
+cleanup() {
+  stage_artifacts
+  if [[ -n "$UDID" && "$INITIAL_STATE" != "Booted" ]]; then
+    xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
 
 {
   xcodebuild -version
@@ -72,13 +100,7 @@ test -n "$RUNTIME_ID"
 printf 'MOBILE_IOS_SIMULATOR_UDID=%s\n' "$UDID" | tee "$ARTIFACT_DIR/runtime-markers.txt"
 printf 'MOBILE_IOS_SIMULATOR_DEVICE=%s\n' "$DEVICE_NAME" | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 printf 'MOBILE_IOS_SIMULATOR_RUNTIME=%s\n' "$RUNTIME_ID" | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
-
-cleanup() {
-  if [[ "$INITIAL_STATE" != "Booted" ]]; then
-    xcrun simctl shutdown "$UDID" >/dev/null 2>&1 || true
-  fi
-}
-trap cleanup EXIT
+printf 'MOBILE_IOS_DERIVED_DATA_OUTSIDE_SOURCE=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
 if [[ "$INITIAL_STATE" != "Booted" ]]; then
   xcrun simctl boot "$UDID"
@@ -101,7 +123,6 @@ xcodebuild \
   CODE_SIGNING_REQUIRED=NO \
   build 2>&1 | tee "$ARTIFACT_DIR/xcodebuild.log"
 
-APP_PATH="$DERIVED_DATA/Build/Products/Release-iphonesimulator/BEJEWELY.app"
 test -d "$APP_PATH"
 printf 'MOBILE_IOS_UNSIGNED_SIMULATOR_BUILD=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
