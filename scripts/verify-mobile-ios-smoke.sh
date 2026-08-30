@@ -10,6 +10,7 @@ WORK_ROOT="$TEMP_BASE/bejewely-mobile-ios-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_A
 ARTIFACT_DIR="$WORK_ROOT/artifacts"
 DERIVED_DATA="$WORK_ROOT/derived-data"
 BUNDLE_ID="com.bejewely.mobile"
+URL_SCHEME="bejewely"
 WORKSPACE="$IOS_ROOT/BEJEWELY.xcworkspace"
 SCHEME="BEJEWELY"
 START_MARKER="$ARTIFACT_DIR/smoke-start.marker"
@@ -44,6 +45,28 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
+
+preapprove_url_scheme() {
+  local approval_key="com.apple.CoreSimulator.CoreSimulatorBridge-->$URL_SCHEME"
+  local approval_value
+
+  xcrun simctl spawn "$UDID" defaults write \
+    com.apple.launchservices.schemeapproval \
+    "$approval_key" \
+    -string "$BUNDLE_ID"
+
+  approval_value="$(xcrun simctl spawn "$UDID" defaults read \
+    com.apple.launchservices.schemeapproval \
+    "$approval_key")"
+  test "$approval_value" = "$BUNDLE_ID"
+
+  xcrun simctl spawn "$UDID" defaults export \
+    com.apple.launchservices.schemeapproval - \
+    > "$ARTIFACT_DIR/scheme-approval.plist"
+  grep -F "$approval_key" "$ARTIFACT_DIR/scheme-approval.plist" >/dev/null
+  grep -F "$BUNDLE_ID" "$ARTIFACT_DIR/scheme-approval.plist" >/dev/null
+  printf 'MOBILE_IOS_URL_SCHEME_PREAPPROVAL=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+}
 
 {
   xcodebuild -version
@@ -111,6 +134,8 @@ xcrun simctl spawn "$UDID" defaults write NSGlobalDomain AppleLanguages -array e
 xcrun simctl spawn "$UDID" defaults write NSGlobalDomain AppleLocale -string en_US || true
 printf 'MOBILE_IOS_SIMULATOR_BOOT=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
+preapprove_url_scheme
+
 set -o pipefail
 xcodebuild \
   -workspace "$WORKSPACE" \
@@ -142,12 +167,12 @@ sleep 8
 xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/home-en.png" >/dev/null
 printf 'MOBILE_IOS_HOME_SCREENSHOT=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
-xcrun simctl openurl "$UDID" "bejewely://analyze"
+xcrun simctl openurl "$UDID" "$URL_SCHEME://analyze"
 sleep 4
 xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/analyze-en.png" >/dev/null
 printf 'MOBILE_IOS_ANALYZE_ROUTE_OPEN=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 
-xcrun simctl openurl "$UDID" "bejewely://my"
+xcrun simctl openurl "$UDID" "$URL_SCHEME://my"
 sleep 4
 xcrun simctl io "$UDID" screenshot "$ARTIFACT_DIR/my-signed-out-en.png" >/dev/null
 printf 'MOBILE_IOS_MY_ROUTE_OPEN=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
