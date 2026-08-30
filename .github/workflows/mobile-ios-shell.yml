@@ -37,6 +37,8 @@ jobs:
     name: iOS Native Shell
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v6
@@ -52,6 +54,16 @@ jobs:
           actual="$(git rev-parse HEAD)"
           test "$actual" = "$expected"
           printf 'MOBILE_IOS_SHA=%s\n' "$actual"
+
+      - name: Verify Xcode 26.2 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.2"
+          xcodebuild -version
+          swift --version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          printf 'MOBILE_IOS_XCODE_26_2=PASS\n'
 
       - name: Setup Node 22
         uses: actions/setup-node@v6
