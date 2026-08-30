@@ -10,6 +10,7 @@ const iosRoot = join(mobileRoot, "ios");
 const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"));
 const mobilePackage = JSON.parse(readFileSync(join(mobileRoot, "package.json"), "utf8"));
 const mobileIgnore = readFileSync(join(mobileRoot, ".gitignore"), "utf8");
+const iosWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ios-shell.yml"), "utf8");
 const faceGuideConfig = JSON.parse(
   readFileSync(join(mobileRoot, "modules", "bejewely-face-guide", "expo-module.config.json"), "utf8")
 );
@@ -32,6 +33,16 @@ assert.deepEqual(
   ["android"],
   "The Android ML Kit face-guide module must not be linked into the iOS shell"
 );
+assert.match(
+  iosWorkflow,
+  /DEVELOPER_DIR:\s*\/Applications\/Xcode_26\.2\.app\/Contents\/Developer/,
+  "MOBILE-12 CI must pin an Xcode toolchain with Swift tools 6.2 support"
+);
+assert.match(
+  iosWorkflow,
+  /test \"\$\(xcodebuild -version \| sed -n '1p'\)\" = \"Xcode 26\.2\"/,
+  "MOBILE-12 CI must attest the pinned Xcode version before native generation/build"
+);
 
 const forbiddenBundleTokens = [
   "SUPABASE_SERVICE_ROLE_KEY",
@@ -47,6 +58,7 @@ for (const token of forbiddenBundleTokens) {
 
 console.log("MOBILE_IOS_SOURCE_CONFIG=PASS");
 console.log("MOBILE_IOS_PLATFORM_BOUNDARY=PASS");
+console.log("MOBILE_IOS_XCODE_TOOLCHAIN_PIN=PASS");
 
 assert.ok(existsSync(iosRoot), "Run Expo iOS prebuild before the MOBILE-12 generated-native verifier");
 
