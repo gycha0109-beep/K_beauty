@@ -9,6 +9,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
       - ".github/workflows/mobile-ios-shell.yml"
@@ -20,6 +21,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-ios-smoke.sh"
       - ".github/workflows/mobile-ios-shell.yml"
@@ -73,6 +75,9 @@ jobs:
 
       - name: Install monorepo dependencies
         run: npm ci
+
+      - name: Apply bounded Expo Modules JSI Xcode 26.2 compatibility shim
+        run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
 
       - name: Verify platform boundary and types
         shell: bash
