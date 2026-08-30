@@ -25,7 +25,7 @@ test -d "$WORKSPACE"
 
 xcrun simctl list devices available -j > "$ARTIFACT_DIR/simulators.json"
 
-readarray -t SIM_SELECTION < <(python3 - "$ARTIFACT_DIR/simulators.json" <<'PY'
+python3 - "$ARTIFACT_DIR/simulators.json" > "$ARTIFACT_DIR/simulator-selection.txt" <<'PY'
 import json
 import re
 import sys
@@ -59,12 +59,15 @@ print(device["name"])
 print(runtime_id)
 print(device.get("state", "Unknown"))
 PY
-)
 
-UDID="${SIM_SELECTION[0]}"
-DEVICE_NAME="${SIM_SELECTION[1]}"
-RUNTIME_ID="${SIM_SELECTION[2]}"
-INITIAL_STATE="${SIM_SELECTION[3]}"
+UDID="$(sed -n '1p' "$ARTIFACT_DIR/simulator-selection.txt")"
+DEVICE_NAME="$(sed -n '2p' "$ARTIFACT_DIR/simulator-selection.txt")"
+RUNTIME_ID="$(sed -n '3p' "$ARTIFACT_DIR/simulator-selection.txt")"
+INITIAL_STATE="$(sed -n '4p' "$ARTIFACT_DIR/simulator-selection.txt")"
+
+test -n "$UDID"
+test -n "$DEVICE_NAME"
+test -n "$RUNTIME_ID"
 
 printf 'MOBILE_IOS_SIMULATOR_UDID=%s\n' "$UDID" | tee "$ARTIFACT_DIR/runtime-markers.txt"
 printf 'MOBILE_IOS_SIMULATOR_DEVICE=%s\n' "$DEVICE_NAME" | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
