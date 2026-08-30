@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ScreenShell } from "../components/ScreenShell";
@@ -27,6 +28,7 @@ function createInitialSurvey(): SurveyFormInput {
 }
 
 export default function AnalyzeScreen() {
+  const router = useRouter();
   const { locale, palette } = useMobileShell();
   const copy = MOBILE_COPY[locale].analyze;
   const [cameraRevision, setCameraRevision] = useState(0);
@@ -96,6 +98,7 @@ export default function AnalyzeScreen() {
           locale={locale}
           palette={palette}
           onStartOver={resetAnalysis}
+          onOpenPremium={() => router.push("/premium")}
         />
       ) : (
         <>

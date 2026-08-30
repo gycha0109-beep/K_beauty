@@ -1,0 +1,113 @@
+name: BEJEWELY Mobile Premium Entry
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/api/analyze/route.js"
+      - "app/api/full-report/route.js"
+      - "app/api/premium/access/route.js"
+      - "app/api/current-products/products/route.js"
+      - "lib/premium-access.js"
+      - "lib/premium-report-session.js"
+      - "lib/premium-route-context.js"
+      - "lib/premium-current-products.js"
+      - "lib/current-products.js"
+      - "docs/architecture/mobile-11-native-premium-beta-entry.md"
+      - "scripts/verify-mobile-premium-entry.mjs"
+      - "scripts/verify-mobile-public-result-deep-link.mjs"
+      - "scripts/verify-mobile-public-share.mjs"
+      - "scripts/verify-mobile-saved-report-reentry.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-premium-entry.yml"
+      - ".github/workflows/mobile-native-shell.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/api/analyze/route.js"
+      - "app/api/full-report/route.js"
+      - "app/api/premium/access/route.js"
+      - "app/api/current-products/products/route.js"
+      - "lib/premium-access.js"
+      - "lib/premium-report-session.js"
+      - "lib/premium-route-context.js"
+      - "lib/premium-current-products.js"
+      - "lib/current-products.js"
+      - "docs/architecture/mobile-11-native-premium-beta-entry.md"
+      - "scripts/verify-mobile-premium-entry.mjs"
+      - "scripts/verify-mobile-public-result-deep-link.mjs"
+      - "scripts/verify-mobile-public-share.mjs"
+      - "scripts/verify-mobile-saved-report-reentry.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
+      - ".github/workflows/mobile-premium-entry.yml"
+      - ".github/workflows/mobile-native-shell.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-premium-entry-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  premium-entry:
+    name: Native Premium Entry
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_PREMIUM_ENTRY_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify MOBILE-5 camera regression boundary
+        run: node scripts/verify-mobile-camera-foundation.mjs
+
+      - name: Verify MOBILE-7 analyze regression boundary
+        run: node scripts/verify-mobile-analyze-integration.mjs
+
+      - name: Verify MOBILE-8 saved report boundary
+        run: node scripts/verify-mobile-saved-report-reentry.mjs
+
+      - name: Verify MOBILE-9 public share boundary
+        run: node scripts/verify-mobile-public-share.mjs
+
+      - name: Verify MOBILE-10 public result deep-link boundary
+        run: node scripts/verify-mobile-public-result-deep-link.mjs
+
+      - name: Verify MOBILE-11 Premium entry boundary
+        run: node scripts/verify-mobile-premium-entry.mjs
+
+      - name: Typecheck mobile client
+        run: npm run mobile:typecheck
+
+      - name: Verify Expo public config
+        run: npm run mobile:config
+
+      - name: Generate Android native project
+        run: npm run mobile:prebuild:android
+
+      - name: Verify generated Android contract
+        run: npm run verify:mobile-native
