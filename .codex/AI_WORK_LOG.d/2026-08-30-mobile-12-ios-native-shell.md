@@ -27,10 +27,12 @@ The first hosted iOS candidate reached Expo prebuild and CocoaPods successfully,
 MOBILE-12 does not carry an unbounded dependency patch and does not mutate `package-lock.json` by hand. The temporary compatibility step is intentionally fail-closed:
 
 1. installed package version must equal `57.0.5`;
-2. `RuntimeScheduler.h` must match upstream attested SHA-1 `708aeaf33190ec55694e2677da0e7c565f61adfe`;
-3. exactly the two invalid constructor annotations are removed;
-4. the resulting file must match attested SHA-1 `4f90cc098a33df83d0734fd1c80d549b72a90619`;
+2. `RuntimeScheduler.h` must match the exact npm-installed source SHA-1 `708aeaf33190ec55694e2677da0e7c565f61adfe`;
+3. exactly the two invalid constructor annotations are removed and no other source edit is made;
+4. the exact two-removal result must match SHA-1 `104a90a05f703288e5697c5548bb3af14ef951b1`;
 5. any version/source/result drift aborts the gate instead of attempting a broader patch.
+
+Expo's issue investigation separately reported SHA-1 `4f90cc098a33df83d0734fd1c80d549b72a90619` for its proposed fixed header, whose proposal also adds a source comment. MOBILE-12 does not reproduce that extra comment; the hosted candidate gate measured `104a90a05f703288e5697c5548bb3af14ef951b1` for the deliberately narrower two-removal result from the exact `708aeaf...` npm source.
 
 Once the lockfile is safely regenerated onto an upstream fixed package, this compatibility step must be removed rather than widened.
 
