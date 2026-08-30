@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,15 +7,31 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const mobileRoot = join(repoRoot, "apps", "mobile");
 const iosRoot = join(mobileRoot, "ios");
+const expoModulesJsiRoot = join(repoRoot, "node_modules", "expo-modules-jsi");
+const expoModulesJsiPackagePath = join(expoModulesJsiRoot, "package.json");
+const runtimeSchedulerPath = join(
+  expoModulesJsiRoot,
+  "apple",
+  "Sources",
+  "ExpoModulesJSI-Cxx",
+  "include",
+  "RuntimeScheduler.h"
+);
+const compatScriptPath = join(repoRoot, "scripts", "apply-expo-modules-jsi-xcode26-compat.mjs");
 
 const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"));
 const mobilePackage = JSON.parse(readFileSync(join(mobileRoot, "package.json"), "utf8"));
 const mobileIgnore = readFileSync(join(mobileRoot, ".gitignore"), "utf8");
 const iosWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ios-shell.yml"), "utf8");
+const compatScript = readFileSync(compatScriptPath, "utf8");
 const faceGuideConfig = JSON.parse(
   readFileSync(join(mobileRoot, "modules", "bejewely-face-guide", "expo-module.config.json"), "utf8")
 );
 const expo = appConfig.expo || {};
+
+function sha1(value) {
+  return createHash("sha1").update(value).digest("hex");
+}
 
 assert.equal(expo.scheme, "bejewely", "MOBILE-12 must preserve the existing custom scheme");
 assert.equal(expo.orientation, "portrait", "MOBILE-12 must preserve portrait orientation");
@@ -43,6 +60,26 @@ assert.match(
   /test \"\$\(xcodebuild -version \| sed -n '1p'\)\" = \"Xcode 26\.2\"/,
   "MOBILE-12 CI must attest the pinned Xcode version before native generation/build"
 );
+assert.match(
+  iosWorkflow,
+  /node scripts\/apply-expo-modules-jsi-xcode26-compat\.mjs/,
+  "MOBILE-12 CI must apply the bounded expo-modules-jsi compatibility shim after npm ci"
+);
+assert.match(
+  compatScript,
+  /expectedVersion = "57\.0\.5"/,
+  "MOBILE-12 compatibility shim must remain bounded to expo-modules-jsi@57.0.5"
+);
+assert.match(
+  compatScript,
+  /expectedSourceSha1 = "708aeaf33190ec55694e2677da0e7c565f61adfe"/,
+  "MOBILE-12 compatibility shim lost the attested upstream source hash"
+);
+assert.match(
+  compatScript,
+  /expectedPatchedSha1 = "4f90cc098a33df83d0734fd1c80d549b72a90619"/,
+  "MOBILE-12 compatibility shim lost the attested patched-source hash"
+);
 
 const forbiddenBundleTokens = [
   "SUPABASE_SERVICE_ROLE_KEY",
@@ -56,9 +93,29 @@ for (const token of forbiddenBundleTokens) {
   assert.ok(!appJsonSource.includes(token), `Forbidden server secret token leaked into iOS app config: ${token}`);
 }
 
+assert.ok(existsSync(expoModulesJsiPackagePath), "expo-modules-jsi must be installed before MOBILE-12 verification");
+assert.ok(existsSync(runtimeSchedulerPath), "expo-modules-jsi RuntimeScheduler.h is missing after dependency installation");
+const expoModulesJsiPackage = JSON.parse(readFileSync(expoModulesJsiPackagePath, "utf8"));
+const runtimeScheduler = readFileSync(runtimeSchedulerPath, "utf8");
+assert.equal(
+  expoModulesJsiPackage.version,
+  "57.0.5",
+  "MOBILE-12 compatibility boundary must fail closed when expo-modules-jsi changes version"
+);
+assert.equal(
+  sha1(runtimeScheduler),
+  "4f90cc098a33df83d0734fd1c80d549b72a90619",
+  "expo-modules-jsi RuntimeScheduler.h is not the exact attested Xcode 26.2 compatibility result"
+);
+assert.ok(
+  !runtimeScheduler.includes("SWIFT_RETURNS_RETAINED RuntimeScheduler"),
+  "Invalid SWIFT_RETURNS_RETAINED constructor annotation remained after the bounded shim"
+);
+
 console.log("MOBILE_IOS_SOURCE_CONFIG=PASS");
 console.log("MOBILE_IOS_PLATFORM_BOUNDARY=PASS");
 console.log("MOBILE_IOS_XCODE_TOOLCHAIN_PIN=PASS");
+console.log("MOBILE_IOS_EXPO_MODULES_JSI_COMPAT=PASS");
 
 assert.ok(existsSync(iosRoot), "Run Expo iOS prebuild before the MOBILE-12 generated-native verifier");
 
