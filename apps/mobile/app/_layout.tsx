@@ -9,6 +9,7 @@ function NativeTabs() {
   const { locale, palette, themeMode } = useMobileShell();
   const copy = MOBILE_COPY[locale];
   const savedReportTitle = locale === "ko" ? "저장 리포트" : "Saved report";
+  const publicResultTitle = locale === "ko" ? "공유 결과" : "Shared result";
 
   return (
     <>
@@ -56,6 +57,7 @@ function NativeTabs() {
           }}
         />
         <Tabs.Screen name="saved-report" options={{ href: null, title: savedReportTitle }} />
+        <Tabs.Screen name="r/[shareId]" options={{ href: null, title: publicResultTitle }} />
         <Tabs.Screen name="auth/callback" options={{ href: null, title: "Auth" }} />
       </Tabs>
     </>

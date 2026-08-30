@@ -300,6 +300,15 @@ wait_for_text "Native My & Skin Diary"
 tap_text "Home"
 wait_for_text "BEJEWELY Mobile"
 
+adb shell am start -W -a android.intent.action.VIEW -d "bejewely://r/invalid" -p "$PACKAGE_ID" >/dev/null
+printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_START=PASS\n'
+wait_for_text "Shared result"
+wait_for_text "Invalid shared result link."
+adb exec-out screencap -p > "$ARTIFACT_DIR/public-result-deep-link-invalid-en.png"
+printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_SMOKE=PASS\n'
+tap_text "Back to Home"
+wait_for_text "BEJEWELY Mobile"
+
 tap_text "locale-ko"
 wait_for_text "BEJEWELY 모바일"
 wait_for_text "테마 · 라이트"
