@@ -39,7 +39,7 @@ function ResultProduct({
   if (!productName && !product.reason) return null;
 
   return (
-    <View style={[styles.productCard, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
+    <View style={[styles.productCard, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}> 
       <Text style={[styles.kicker, { color: palette.accent }]}>{title}</Text>
       {productName ? <Text style={[styles.productName, { color: palette.text }]}>{productName}</Text> : null}
       {product.reason ? <Text style={[styles.body, { color: palette.textMuted }]}>{product.reason}</Text> : null}
@@ -66,7 +66,7 @@ function RoutineList({
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: palette.text }]}>{title}</Text>
       {rows.map((row, index) => (
-        <Text key={`${title}-${index}-${row}`} style={[styles.body, { color: palette.textMuted }]}>
+        <Text key={`${title}-${index}-${row}`} style={[styles.body, { color: palette.textMuted }]}> 
           {index + 1}. {row}
         </Text>
       ))}
@@ -96,7 +96,7 @@ export function NativeAnalyzeResultView({
       style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}
     >
       <Text style={[styles.kicker, { color: palette.accent }]}>MOBILE-7 · SERVER RESULT</Text>
-      <Text style={[styles.title, { color: palette.text }]}>
+      <Text style={[styles.title, { color: palette.text }]}> 
         {locale === "ko" ? "피부 분석 결과" : "Skin analysis result"}
       </Text>
       <Text testID="native-analyze-result-summary" style={[styles.summary, { color: palette.text }]}> 
