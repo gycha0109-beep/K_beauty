@@ -86,7 +86,7 @@ export default function AnalyzeScreen() {
 
   return (
     <ScreenShell eyebrow="ANALYZE · MOBILE-7" title={copy.title} description={description}>
-      <Text style={[styles.notice, { color: palette.textMuted }]}> 
+      <Text style={[styles.notice, { color: palette.textMuted }]}>
         {locale === "ko"
           ? "분석을 실행할 때만 촬영한 최종 사진과 설문값이 /api/analyze로 전송됩니다. 가이드용 임시 샘플은 업로드하지 않습니다."
           : "Only when you run analysis are the final photo and survey values sent to /api/analyze. Temporary guidance samples are never uploaded."}
@@ -163,7 +163,7 @@ export default function AnalyzeScreen() {
                 </Text>
               </Pressable>
 
-              <Text style={[styles.boundary, { color: palette.textMuted }]}> 
+              <Text style={[styles.boundary, { color: palette.textMuted }]}>
                 {locale === "ko"
                   ? "추천·Product Fact·Face Lab·Premium 판단은 서버 권한으로 유지됩니다. 앱은 결과를 계산하거나 재작성하지 않습니다."
                   : "Recommendation, Product Fact, Face Lab, and Premium decisions remain server authority. The app does not calculate or rewrite the result."}
