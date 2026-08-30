@@ -47,25 +47,53 @@ cleanup() {
 trap cleanup EXIT
 
 preapprove_url_scheme() {
+  local approval_domain="com.apple.launchservices.schemeapproval"
   local approval_key="com.apple.CoreSimulator.CoreSimulatorBridge-->$URL_SCHEME"
   local approval_value
 
   xcrun simctl spawn "$UDID" defaults write \
-    com.apple.launchservices.schemeapproval \
+    "$approval_domain" \
     "$approval_key" \
     -string "$BUNDLE_ID"
 
   approval_value="$(xcrun simctl spawn "$UDID" defaults read \
-    com.apple.launchservices.schemeapproval \
+    "$approval_domain" \
     "$approval_key")"
   test "$approval_value" = "$BUNDLE_ID"
 
   xcrun simctl spawn "$UDID" defaults export \
-    com.apple.launchservices.schemeapproval - \
+    "$approval_domain" - \
     > "$ARTIFACT_DIR/scheme-approval.plist"
-  grep -F "$approval_key" "$ARTIFACT_DIR/scheme-approval.plist" >/dev/null
-  grep -F "$BUNDLE_ID" "$ARTIFACT_DIR/scheme-approval.plist" >/dev/null
-  printf 'MOBILE_IOS_URL_SCHEME_PREAPPROVAL=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+
+  python3 - "$ARTIFACT_DIR/scheme-approval.plist" "$approval_key" "$BUNDLE_ID" <<'PY'
+import plistlib
+import sys
+
+path, key, expected = sys.argv[1:]
+with open(path, "rb") as handle:
+    payload = plistlib.load(handle)
+
+if not isinstance(payload, dict):
+    raise SystemExit("scheme approval plist is not a dictionary")
+
+actual = payload.get(key)
+if actual != expected:
+    raise SystemExit(
+        f"scheme approval mismatch: key={key!r} expected={expected!r} actual={actual!r}"
+    )
+PY
+
+  printf 'MOBILE_IOS_URL_SCHEME_PREAPPROVAL_PERSISTED=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
+
+  xcrun simctl shutdown "$UDID"
+  xcrun simctl boot "$UDID"
+  xcrun simctl bootstatus "$UDID" -b
+
+  approval_value="$(xcrun simctl spawn "$UDID" defaults read \
+    "$approval_domain" \
+    "$approval_key")"
+  test "$approval_value" = "$BUNDLE_ID"
+  printf 'MOBILE_IOS_URL_SCHEME_PREAPPROVAL_RELOAD=PASS\n' | tee -a "$ARTIFACT_DIR/runtime-markers.txt"
 }
 
 {
