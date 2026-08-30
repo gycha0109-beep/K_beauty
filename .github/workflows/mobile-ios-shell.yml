@@ -96,6 +96,4 @@ jobs:
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 14
-          path: |
-            apps/mobile/.mobile-ios-derived-data/Build/Products/Release-iphonesimulator/BEJEWELY.app/**
-            apps/mobile/.mobile-ios-artifacts/**
+          path: apps/mobile/.mobile-ios-artifacts/**
