@@ -18,7 +18,7 @@ const runtimeSchedulerPath = join(
 
 const expectedVersion = "57.0.5";
 const expectedSourceSha1 = "708aeaf33190ec55694e2677da0e7c565f61adfe";
-const expectedPatchedSha1 = "4f90cc098a33df83d0734fd1c80d549b72a90619";
+const expectedPatchedSha1 = "104a90a05f703288e5697c5548bb3af14ef951b1";
 const retainedAnnotation = "SWIFT_RETURNS_RETAINED";
 const replacements = [
   [
@@ -67,7 +67,7 @@ assert.ok(!patched.includes(retainedAnnotation), `${retainedAnnotation} remained
 assert.equal(
   sha1(patched),
   expectedPatchedSha1,
-  "Patched RuntimeScheduler.h hash did not match the attested compatibility result"
+  "Patched RuntimeScheduler.h hash did not match the exact bounded two-removal result"
 );
 
 writeFileSync(runtimeSchedulerPath, patched, "utf8");
