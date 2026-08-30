@@ -309,6 +309,15 @@ printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_SMOKE=PASS\n'
 tap_text "Back to Home"
 wait_for_text "BEJEWELY Mobile"
 
+adb shell am start -W -a android.intent.action.VIEW -d "bejewely://premium" -p "$PACKAGE_ID" >/dev/null
+printf 'MOBILE_ANDROID_PREMIUM_ROUTE_START=PASS\n'
+wait_for_text "Premium report"
+wait_for_text "Sign in on My to create a premium report."
+adb exec-out screencap -p > "$ARTIFACT_DIR/premium-signed-out-en.png"
+printf 'MOBILE_ANDROID_PREMIUM_ROUTE_SMOKE=PASS\n'
+tap_text "Home"
+wait_for_text "BEJEWELY Mobile"
+
 tap_text "locale-ko"
 wait_for_text "BEJEWELY 모바일"
 wait_for_text "테마 · 라이트"
