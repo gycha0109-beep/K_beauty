@@ -93,6 +93,8 @@ assert.equal(readiness.toolchainContract.expoSdkMajor, 57);
 assert.equal(readiness.toolchainContract.reactNativeMinor, "0.86");
 assert.equal(readiness.toolchainContract.androidTargetSdk, 36);
 assert.equal(readiness.toolchainContract.androidNativePageSizeKb, 16);
+assert.deepEqual(readiness.toolchainContract.androidNativePageSizeAbiScope, ["arm64-v8a", "x86_64"]);
+assert.equal(readiness.toolchainContract.android16KbPlayEnforcementDate, "2027-02-01");
 assert.equal(readiness.toolchainContract.iosSubmissionSdkMinimum, "26");
 assert.equal(readiness.toolchainContract.bundletoolVersion, "1.18.3");
 assert.equal(
