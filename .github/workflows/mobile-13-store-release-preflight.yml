@@ -126,6 +126,46 @@ jobs:
           fi
           printf 'MOBILE_13_ANDROID_TARGET_API_36=%s\n' "$resolved"
 
+      - name: Verify Android 16 KB page-size bundle contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="apps/mobile/android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$artifact"
+
+          bundletool="$RUNNER_TEMP/bundletool-all-1.18.3.jar"
+          curl -fsSL \
+            "https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar" \
+            -o "$bundletool"
+          echo "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29  $bundletool" | sha256sum -c -
+
+          bundle_config="$(java -jar "$bundletool" dump config --bundle="$artifact")"
+          printf '%s\n' "$bundle_config"
+          grep -q 'PAGE_ALIGNMENT_16K' <<<"$bundle_config"
+
+          native_dir="$RUNNER_TEMP/mobile13-aab-native"
+          rm -rf "$native_dir"
+          mkdir -p "$native_dir"
+          unzip -q "$artifact" -d "$native_dir"
+          mapfile -t native_libs < <(find "$native_dir" -type f -name '*.so' -print | sort)
+          test "${#native_libs[@]}" -gt 0
+
+          readelf="$ANDROID_SDK_ROOT/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
+          test -x "$readelf"
+          bad=0
+          for library in "${native_libs[@]}"; do
+            while IFS= read -r load_line; do
+              align="$(awk '{print $NF}' <<<"$load_line")"
+              if (( align < 0x4000 )); then
+                printf 'Native LOAD alignment below 16 KB: %s :: %s\n' "$library" "$load_line" >&2
+                bad=1
+              fi
+            done < <("$readelf" -lW "$library" | awk '$1 == "LOAD" { print }')
+          done
+          test "$bad" -eq 0
+          printf 'MOBILE_13_ANDROID_PAGE_ALIGNMENT_16K=PASS\n'
+          printf 'MOBILE_13_ANDROID_NATIVE_ELF_ALIGNMENT_16K=PASS\n'
+
       - name: Verify release AAB output
         shell: bash
         run: |

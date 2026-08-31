@@ -53,7 +53,13 @@ assert.equal(expo.ios?.deploymentTarget, readiness.toolchainContract.iosDeployme
 assert.equal(readiness.toolchainContract.expoSdkMajor, 57);
 assert.equal(readiness.toolchainContract.reactNativeMinor, "0.86");
 assert.equal(readiness.toolchainContract.androidTargetSdk, 36);
+assert.equal(readiness.toolchainContract.androidNativePageSizeKb, 16);
 assert.equal(readiness.toolchainContract.iosSubmissionSdkMinimum, "26");
+assert.equal(readiness.toolchainContract.bundletoolVersion, "1.18.3");
+assert.equal(
+  readiness.toolchainContract.bundletoolSha256,
+  "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+);
 
 assert.match(mobilePackage.dependencies?.expo || "", /^~57\./, "MOBILE-13 expects Expo SDK 57");
 assert.match(mobilePackage.dependencies?.["react-native"] || "", /^0\.86\./, "MOBILE-13 expects React Native 0.86");

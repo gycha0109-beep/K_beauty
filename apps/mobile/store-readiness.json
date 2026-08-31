@@ -21,7 +21,10 @@
     "reactNativeMinor": "0.86",
     "iosDeploymentTarget": "16.4",
     "iosSubmissionSdkMinimum": "26",
-    "androidTargetSdk": 36
+    "androidTargetSdk": 36,
+    "androidNativePageSizeKb": 16,
+    "bundletoolVersion": "1.18.3",
+    "bundletoolSha256": "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
   },
   "permissionContract": {
     "required": ["camera"],
@@ -86,6 +89,7 @@
       "Public app identity and platform build numbers are explicit.",
       "Generated native projects match the frozen identity, permission and minimum-platform contracts.",
       "Android can produce a release AAB without production upload signing.",
+      "The Android release AAB resolves target API 36 and requests 16 KB page alignment, with packaged native ELF LOAD segments aligned to at least 16 KB.",
       "iOS can produce an unsigned Release archive, separating compile/archive viability from distribution signing.",
       "Known store compliance and external-authority blockers are explicit and fail-visible."
     ],

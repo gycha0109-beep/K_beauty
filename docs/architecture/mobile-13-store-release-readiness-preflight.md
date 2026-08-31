@@ -34,6 +34,7 @@ iOS build number          1
 Android versionCode       1
 iOS deployment target     16.4
 Android target SDK        36 (generated Expo SDK 57 contract)
+Android native page size  16 KB
 ```
 
 Version policy:
@@ -48,12 +49,15 @@ MOBILE-13 is intentionally aligned to the current external submission floor rath
 
 - Apple: uploads to App Store Connect require Xcode 26+ and the iOS 26 SDK+ since 2026-04-28.
 - Google Play: from 2026-08-31, new apps and updates must target Android 16 / API 36+.
+- Google Play: apps that contain native code must support 16 KB memory page sizes; BEJEWELY contains React Native/native libraries, so this is a release contract, not a Java/Kotlin-only exemption.
 - Expo SDK 57: React Native 0.86, Android target/compile SDK 36, iOS 16.4+, Xcode 26.4+.
 
 Authority references:
 
 - https://developer.apple.com/news/upcoming-requirements/
-- https://developer.android.com/google/play/requirements/target-sdk
+- https://support.google.com/googleplay/android-developer/answer/11926878
+- https://support.google.com/googleplay/android-developer/answer/17492799
+- https://developer.android.com/guide/practices/page-sizes
 - https://docs.expo.dev/versions/latest/
 
 ## 4. What CI proves
@@ -65,13 +69,17 @@ exact candidate SHA
 → source identity/version/secret audit
 → Expo prebuild
 → generated Manifest/Gradle audit
-→ API 36 contract
-→ permission boundary
 → release bundleRelease
+→ resolved release Manifest targetSdk=36
+→ pinned bundletool 1.18.3 digest check
+→ AAB PAGE_ALIGNMENT_16K
+→ packaged native ELF LOAD alignment >= 16 KB
 → non-empty app-release.aab
 ```
 
-This proves release packaging viability. It does **not** prove Play upload signing because the production upload key is intentionally absent.
+The bundletool binary is pinned by SHA-256 in `store-readiness.json` and verified before execution.
+
+This proves release packaging viability and a bounded 16 KB page-size build contract. It does **not** prove Play upload signing because the production upload key is intentionally absent. The generated release build currently uses development signing material only as a build-time placeholder and must never be treated as the Play upload key.
 
 ### iOS
 
@@ -101,6 +109,8 @@ contacts = forbidden
 photo library read = forbidden
 broad Android external storage = forbidden
 ```
+
+`expo-camera` must explicitly set both Android audio recording off and iOS microphone permission injection off. Generated native files are checked again after Expo prebuild so a plugin default cannot silently broaden the permission surface.
 
 Client config must not contain server secret tokens such as service-role keys, LLM provider API keys, payment secret keys, OAuth client secrets, or Apple private keys.
 
@@ -148,7 +158,7 @@ MOBILE-15
 - Google Play Console authority
 - iOS distribution certificates/provisioning
 - Android upload signing key
-- physical-device QA
+- physical-device QA, including a real 16 KB Android environment where available
 - TestFlight / Play Internal Testing
 
 MOBILE-16
@@ -171,6 +181,7 @@ MOBILE-13 does not:
 - change hosted OAuth redirects;
 - upload to TestFlight or Google Play;
 - claim that privacy metadata is complete;
+- substitute build-time 16 KB checks for physical-device/runtime validation;
 - introduce a payment provider;
 - change recommendation, Face Lab, Premium, report, or My domain behavior.
 
@@ -183,6 +194,9 @@ SOURCE_IDENTITY = PASS
 VERSION_POLICY = PASS
 SECRET_BOUNDARY = PASS
 ANDROID_GENERATED_RELEASE_CONTRACT = PASS
+ANDROID_TARGET_API_36 = PASS
+ANDROID_PAGE_ALIGNMENT_16K = PASS
+ANDROID_NATIVE_ELF_ALIGNMENT_16K = PASS
 ANDROID_RELEASE_AAB = PASS
 IOS_GENERATED_RELEASE_CONTRACT = PASS
 IOS_UNSIGNED_RELEASE_ARCHIVE = PASS
