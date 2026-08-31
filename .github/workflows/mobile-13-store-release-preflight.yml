@@ -71,6 +71,8 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install Android SDK 36 toolchain
         shell: bash
@@ -99,8 +101,30 @@ jobs:
           node scripts/verify-mobile-native-shell.mjs
           node scripts/verify-mobile-13-store-release-preflight.mjs --platform android
 
-      - name: Build unsigned-authority release AAB
+      - name: Build release AAB without production upload signing
         run: npm run build:android:release --workspace @bejewely/mobile
+
+      - name: Verify resolved Android target API 36
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolved=""
+          while IFS= read -r manifest; do
+            case "$manifest" in
+              *release*) ;;
+              *) continue ;;
+            esac
+            if grep -Eq 'android:targetSdkVersion="36"|targetSdkVersion="36"' "$manifest"; then
+              resolved="$manifest"
+              break
+            fi
+          done < <(find apps/mobile/android/app/build/intermediates -type f -name AndroidManifest.xml -print)
+          if [ -z "$resolved" ]; then
+            printf 'No release merged/packaged manifest resolved targetSdkVersion=36. Candidates:\n' >&2
+            find apps/mobile/android/app/build/intermediates -type f -name AndroidManifest.xml -print >&2 || true
+            exit 1
+          fi
+          printf 'MOBILE_13_ANDROID_TARGET_API_36=%s\n' "$resolved"
 
       - name: Verify release AAB output
         shell: bash

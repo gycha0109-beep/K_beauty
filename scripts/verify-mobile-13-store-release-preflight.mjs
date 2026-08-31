@@ -27,10 +27,6 @@ function pluginConfig(name) {
   return Array.isArray(entry) ? entry[1] || {} : {};
 }
 
-function readIfExists(path) {
-  return existsSync(path) ? readFileSync(path, "utf8") : "";
-}
-
 function findFiles(root, basename, found = []) {
   if (!existsSync(root)) return found;
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -74,6 +70,7 @@ assert.equal(
   "Camera disclosure drifted"
 );
 assert.equal(camera.recordAudioAndroid, false, "Camera plugin must not request Android audio recording");
+assert.equal(camera.microphonePermission, false, "Camera plugin must not inject an iOS microphone disclosure");
 assert.equal(camera.barcodeScannerEnabled, false, "Barcode scanner remains outside BEJEWELY scope");
 
 for (const token of [
@@ -129,24 +126,16 @@ if (requestedPlatform === "all" || requestedPlatform === "android") {
 
   const manifestPath = join(androidRoot, "app", "src", "main", "AndroidManifest.xml");
   const appGradlePath = join(androidRoot, "app", "build.gradle");
-  const rootGradlePath = join(androidRoot, "build.gradle");
-  const gradlePropertiesPath = join(androidRoot, "gradle.properties");
-
   const manifest = readFileSync(manifestPath, "utf8");
   const appGradle = readFileSync(appGradlePath, "utf8");
-  const androidBuildContract = [
-    appGradle,
-    readIfExists(rootGradlePath),
-    readIfExists(gradlePropertiesPath)
-  ].join("\n");
 
   assert.match(appGradle, /applicationId\s+["']com\.bejewely\.mobile["']/);
   assert.match(appGradle, /versionCode\s+1\b/);
   assert.match(appGradle, /versionName\s+["']0\.1\.0["']/);
   assert.match(
-    androidBuildContract,
-    /targetSdkVersion[^\n]*36|android\.targetSdkVersion[^\n]*36|targetSdk\s*=?\s*36/,
-    "Generated Android project must target API 36"
+    appGradle,
+    /targetSdkVersion\s+rootProject\.ext\.targetSdkVersion/,
+    "Generated Android app must resolve targetSdk through the Expo root-project contract"
   );
   assert.match(manifest, /android\.permission\.CAMERA/);
   for (const permission of [
@@ -161,7 +150,7 @@ if (requestedPlatform === "all" || requestedPlatform === "android") {
     assert.ok(!manifest.includes(permission), `Unexpected Android permission: ${permission}`);
   }
 
-  console.log("MOBILE_13_ANDROID_TARGET_API_36=PASS");
+  console.log("MOBILE_13_ANDROID_TARGET_API_DELEGATION=PASS");
   console.log("MOBILE_13_ANDROID_GENERATED_PERMISSIONS=PASS");
   console.log("MOBILE_13_ANDROID_RELEASE_CONTRACT=PASS");
 }
