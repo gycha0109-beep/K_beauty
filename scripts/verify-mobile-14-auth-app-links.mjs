@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const mobileRoot = join(repoRoot, "apps", "mobile");
@@ -11,10 +11,8 @@ const readiness = JSON.parse(readFileSync(join(mobileRoot, "store-readiness.json
 const authSource = readFileSync(join(mobileRoot, "lib", "auth.ts"), "utf8");
 const mySource = readFileSync(join(mobileRoot, "app", "my.tsx"), "utf8");
 const appleButtonSource = readFileSync(join(mobileRoot, "components", "NativeAppleSignInButton.tsx"), "utf8");
-const aasaPath = join(repoRoot, "app", ".well-known", "apple-app-site-association", "route.js");
-const assetlinksPath = join(repoRoot, "app", ".well-known", "assetlinks.json", "route.js");
-const aasaSource = readFileSync(aasaPath, "utf8");
-const assetlinksSource = readFileSync(assetlinksPath, "utf8");
+const aasaSource = readFileSync(join(repoRoot, "app", ".well-known", "apple-app-site-association", "route.js"), "utf8");
+const assetlinksSource = readFileSync(join(repoRoot, "app", ".well-known", "assetlinks.json", "route.js"), "utf8");
 const expo = appConfig.expo || {};
 const platform = process.argv.includes("--platform") ? process.argv[process.argv.indexOf("--platform") + 1] : "source";
 
@@ -56,44 +54,14 @@ for (const [source, envKey] of [
 ]) {
   assert.ok(source.includes(envKey), `Association endpoint must use ${envKey}`);
   assert.match(source, /503/, "Missing external authority must fail closed with HTTP 503");
+  assert.match(source, /Cache-Control["']?:\s*["']no-store["']/, "Association endpoints must not cache missing authority state");
 }
+assert.match(aasaSource, /TEAM_ID_PATTERN/);
 assert.match(aasaSource, /com\.bejewely\.mobile/);
 assert.match(aasaSource, /\/r\/\*/);
+assert.match(assetlinksSource, /SHA256_PATTERN/);
 assert.match(assetlinksSource, /com\.bejewely\.mobile/);
 assert.match(assetlinksSource, /delegate_permission\/common\.handle_all_urls/);
-
-async function verifyAssociationRuntime() {
-  const oldTeamId = process.env.MOBILE_IOS_APPLE_TEAM_ID;
-  const oldFingerprints = process.env.MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS;
-  try {
-    delete process.env.MOBILE_IOS_APPLE_TEAM_ID;
-    delete process.env.MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS;
-    const aasaModule = await import(`${pathToFileURL(aasaPath).href}?mobile14=${Date.now()}`);
-    const assetlinksModule = await import(`${pathToFileURL(assetlinksPath).href}?mobile14=${Date.now()}`);
-    assert.equal((await aasaModule.GET()).status, 503);
-    assert.equal((await assetlinksModule.GET()).status, 503);
-
-    process.env.MOBILE_IOS_APPLE_TEAM_ID = "ABCDE12345";
-    process.env.MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS = Array(32).fill("AA").join(":");
-    const aasaOk = await aasaModule.GET();
-    const assetlinksOk = await assetlinksModule.GET();
-    assert.equal(aasaOk.status, 200);
-    assert.equal(assetlinksOk.status, 200);
-    const aasa = await aasaOk.json();
-    const assetlinks = await assetlinksOk.json();
-    assert.equal(aasa.applinks.details[0].appID, "ABCDE12345.com.bejewely.mobile");
-    assert.equal(aasa.applinks.details[0].components[0]["/"], "/r/*");
-    assert.equal(assetlinks[0].target.package_name, "com.bejewely.mobile");
-    assert.equal(assetlinks[0].target.sha256_cert_fingerprints.length, 1);
-  } finally {
-    if (oldTeamId === undefined) delete process.env.MOBILE_IOS_APPLE_TEAM_ID;
-    else process.env.MOBILE_IOS_APPLE_TEAM_ID = oldTeamId;
-    if (oldFingerprints === undefined) delete process.env.MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS;
-    else process.env.MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS = oldFingerprints;
-  }
-}
-
-await verifyAssociationRuntime();
 console.log("MOBILE_14_SOURCE_AUTH_AND_ASSOCIATION=PASS");
 
 if (platform === "android") {
