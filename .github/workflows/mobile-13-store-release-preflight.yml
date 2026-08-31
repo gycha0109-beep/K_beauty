@@ -147,8 +147,12 @@ jobs:
           rm -rf "$native_dir"
           mkdir -p "$native_dir"
           unzip -q "$artifact" -d "$native_dir"
-          mapfile -t native_libs < <(find "$native_dir" -type f -name '*.so' -print | sort)
-          test "${#native_libs[@]}" -gt 0
+
+          mapfile -t arm64_libs < <(find "$native_dir" -type f -path '*/lib/arm64-v8a/*.so' -print | sort)
+          mapfile -t x86_64_libs < <(find "$native_dir" -type f -path '*/lib/x86_64/*.so' -print | sort)
+          test "${#arm64_libs[@]}" -gt 0
+          test "${#x86_64_libs[@]}" -gt 0
+          native_libs=("${arm64_libs[@]}" "${x86_64_libs[@]}")
 
           readelf="$ANDROID_SDK_ROOT/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
           test -x "$readelf"
@@ -157,14 +161,15 @@ jobs:
             while IFS= read -r load_line; do
               align="$(awk '{print $NF}' <<<"$load_line")"
               if (( align < 0x4000 )); then
-                printf 'Native LOAD alignment below 16 KB: %s :: %s\n' "$library" "$load_line" >&2
+                printf '64-bit native LOAD alignment below 16 KB: %s :: %s\n' "$library" "$load_line" >&2
                 bad=1
               fi
             done < <("$readelf" -lW "$library" | awk '$1 == "LOAD" { print }')
           done
           test "$bad" -eq 0
           printf 'MOBILE_13_ANDROID_PAGE_ALIGNMENT_16K=PASS\n'
-          printf 'MOBILE_13_ANDROID_NATIVE_ELF_ALIGNMENT_16K=PASS\n'
+          printf 'MOBILE_13_ANDROID_ARM64_ELF_ALIGNMENT_16K=PASS\n'
+          printf 'MOBILE_13_ANDROID_X86_64_ELF_ALIGNMENT_16K=PASS\n'
 
       - name: Verify release AAB output
         shell: bash
