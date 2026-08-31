@@ -1,3 +1,4 @@
+import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "./env";
@@ -114,6 +115,45 @@ export async function signInNativeWithGoogle() {
   }
 
   await Linking.openURL(data.url);
+}
+
+export async function signInNativeWithApple() {
+  const supabase = requireMobileSupabaseClient();
+  const available = await AppleAuthentication.isAvailableAsync();
+
+  if (!available) {
+    throw new Error("mobile_apple_auth_unavailable");
+  }
+
+  const credential = await AppleAuthentication.signInAsync({
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      AppleAuthentication.AppleAuthenticationScope.EMAIL
+    ]
+  });
+
+  if (!credential.identityToken) {
+    throw new Error("mobile_apple_auth_missing_identity_token");
+  }
+
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider: "apple",
+    token: credential.identityToken
+  });
+
+  if (error || !data.session) {
+    throw new Error("mobile_apple_auth_failed");
+  }
+
+  const givenName = credential.fullName?.givenName?.trim() || "";
+  const familyName = credential.fullName?.familyName?.trim() || "";
+  const fullName = [givenName, familyName].filter(Boolean).join(" ");
+
+  if (fullName && !data.session.user.user_metadata?.full_name) {
+    await supabase.auth.updateUser({ data: { full_name: fullName } });
+  }
+
+  return data.session;
 }
 
 export async function signOutNative() {

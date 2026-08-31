@@ -25,7 +25,11 @@ const resultReadRoute = read("app/api/results/[shareId]/route.js");
 const analysisAccess = read("lib/analysis-result-access.js");
 const analyzeScreen = read("apps/mobile/app/analyze.tsx");
 const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
-const appConfig = read("apps/mobile/app.json");
+const appConfigSource = read("apps/mobile/app.json");
+const appConfig = JSON.parse(appConfigSource);
+const readiness = JSON.parse(read("apps/mobile/store-readiness.json"));
+const mobileSliceMatch = /^MOBILE-(\d+)$/.exec(readiness.slice || "");
+const mobile14OrLater = Number(mobileSliceMatch?.[1] || 0) >= 14;
 
 assert(shareClient.includes('`${getMobileApiBaseUrl()}/api/results`'), "existing-publication-endpoint");
 assert(shareClient.includes('method: "POST"'), "publication-post");
@@ -84,9 +88,33 @@ for (const forbidden of [
   assert(!shareClient.includes(forbidden), `share-client-forbidden:${forbidden}`);
 }
 
-assert(!screen.includes('Linking.addEventListener'), "no-inbound-deep-link-scope");
-assert(!appConfig.includes('associatedDomains'), "no-ios-universal-link-scope");
-assert(!appConfig.includes('intentFilters'), "no-android-app-link-scope");
+assert(!screen.includes('Linking.addEventListener'), "saved-report-screen-does-not-own-global-inbound-link-listener");
+
+if (mobile14OrLater) {
+  const expo = appConfig.expo || {};
+  assert(
+    Array.isArray(expo.ios?.associatedDomains) &&
+      expo.ios.associatedDomains.length === 1 &&
+      expo.ios.associatedDomains[0] === "applinks:k-beauty-two.vercel.app",
+    "mobile14-ios-universal-link-domain"
+  );
+  const appLink = (expo.android?.intentFilters || []).find((entry) =>
+    entry?.action === "VIEW" &&
+    entry?.autoVerify === true &&
+    (entry?.data || []).some((item) =>
+      item?.scheme === "https" &&
+      item?.host === "k-beauty-two.vercel.app" &&
+      item?.pathPrefix === "/r/"
+    )
+  );
+  assert(Boolean(appLink), "mobile14-android-app-link-scope");
+  console.log("MOBILE_PUBLIC_SHARE_DEEP_LINK_FORWARD_COMPAT=PASS");
+} else {
+  assert(!appConfigSource.includes('associatedDomains'), "no-ios-universal-link-scope");
+  assert(!appConfigSource.includes('intentFilters'), "no-android-app-link-scope");
+  console.log("MOBILE_PUBLIC_SHARE_DEEP_LINK_EXCLUDED=PASS");
+}
+
 assert(androidSmoke.includes('MOBILE_ANDROID_SAVED_REPORT_ROUTE_SMOKE=PASS'), "m8-native-route-runtime-regression");
 assert(analyzeScreen.includes('onPhotoChange={setCapturedPhoto}'), "mobile5-camera-regression-contract");
 
@@ -96,7 +124,6 @@ console.log("MOBILE_PUBLIC_SHARE_EXPLICIT_CONSENT=PASS");
 console.log("MOBILE_PUBLIC_SHARE_CANONICAL_URL=PASS");
 console.log("MOBILE_PUBLIC_SHARE_OS_SHEET=PASS");
 console.log("MOBILE_PUBLIC_SHARE_PREMIUM_EXCLUDED=PASS");
-console.log("MOBILE_PUBLIC_SHARE_DEEP_LINK_EXCLUDED=PASS");
 console.log("MOBILE_PUBLIC_SHARE_M8_SEPARATION=PASS");
 console.log("MOBILE_PUBLIC_SHARE_CAMERA_REGRESSION=PASS");
 console.log("MOBILE_9_NATIVE_FREE_PUBLIC_SHARE=PASS");

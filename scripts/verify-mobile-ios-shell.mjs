@@ -21,6 +21,7 @@ const compatScriptPath = join(repoRoot, "scripts", "apply-expo-modules-jsi-xcode
 
 const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"));
 const mobilePackage = JSON.parse(readFileSync(join(mobileRoot, "package.json"), "utf8"));
+const readiness = JSON.parse(readFileSync(join(mobileRoot, "store-readiness.json"), "utf8"));
 const mobileIgnore = readFileSync(join(mobileRoot, ".gitignore"), "utf8");
 const iosWorkflow = readFileSync(join(repoRoot, ".github", "workflows", "mobile-ios-shell.yml"), "utf8");
 const compatScript = readFileSync(compatScriptPath, "utf8");
@@ -28,6 +29,8 @@ const faceGuideConfig = JSON.parse(
   readFileSync(join(mobileRoot, "modules", "bejewely-face-guide", "expo-module.config.json"), "utf8")
 );
 const expo = appConfig.expo || {};
+const mobileSliceMatch = /^MOBILE-(\d+)$/.exec(readiness.slice || "");
+const mobile14OrLater = Number(mobileSliceMatch?.[1] || 0) >= 14;
 
 function sha1(value) {
   return createHash("sha1").update(value).digest("hex");
@@ -38,7 +41,17 @@ assert.equal(expo.orientation, "portrait", "MOBILE-12 must preserve portrait ori
 assert.equal(expo.userInterfaceStyle, "automatic", "MOBILE-12 must preserve automatic system appearance");
 assert.equal(expo.ios?.bundleIdentifier, "com.bejewely.mobile", "Unexpected pre-store iOS bundle identifier");
 assert.equal(expo.ios?.supportsTablet, false, "MOBILE-12 simulator scope is phone-first");
-assert.ok(!Object.hasOwn(expo.ios || {}, "associatedDomains"), "Universal Links remain out of MOBILE-12 scope");
+if (mobile14OrLater) {
+  assert.deepEqual(
+    expo.ios?.associatedDomains,
+    ["applinks:k-beauty-two.vercel.app"],
+    "MOBILE-14+ must preserve the frozen BEJEWELY Universal Link domain"
+  );
+  assert.equal(expo.ios?.usesAppleSignIn, true, "MOBILE-14+ must preserve Sign in with Apple capability");
+} else {
+  assert.ok(!Object.hasOwn(expo.ios || {}, "associatedDomains"), "Universal Links remain out of MOBILE-12/13 scope");
+  assert.ok(!Object.hasOwn(expo.ios || {}, "usesAppleSignIn"), "Sign in with Apple remains out of MOBILE-12/13 scope");
+}
 assert.match(mobileIgnore, /^ios\/$/m, "Generated iOS project must stay untracked");
 assert.equal(
   mobilePackage.scripts?.["prebuild:ios"],
@@ -121,6 +134,7 @@ assert.ok(existsSync(iosRoot), "Run Expo iOS prebuild before the MOBILE-12 gener
 
 const projectFile = join(iosRoot, "BEJEWELY.xcodeproj", "project.pbxproj");
 const infoPlistFile = join(iosRoot, "BEJEWELY", "Info.plist");
+const entitlementsFile = join(iosRoot, "BEJEWELY", "BEJEWELY.entitlements");
 const podfile = join(iosRoot, "Podfile");
 
 assert.ok(existsSync(projectFile), "Generated BEJEWELY Xcode project is missing");
@@ -137,10 +151,21 @@ assert.match(
 );
 assert.match(infoPlist, /<string>bejewely<\/string>/, "Generated Info.plist lost the bejewely URL scheme");
 assert.match(infoPlist, /<key>NSCameraUsageDescription<\/key>/, "Generated Info.plist lost camera usage disclosure");
-assert.doesNotMatch(project, /com\.apple\.developer\.associated-domains/, "Universal Links entitlement is outside MOBILE-12");
-assert.doesNotMatch(infoPlist, /applinks:/, "Universal Links are outside MOBILE-12");
+
+if (mobile14OrLater) {
+  assert.ok(existsSync(entitlementsFile), "MOBILE-14+ generated iOS entitlements file is missing");
+  const entitlements = readFileSync(entitlementsFile, "utf8");
+  assert.match(entitlements, /com\.apple\.developer\.associated-domains/);
+  assert.match(entitlements, /applinks:k-beauty-two\.vercel\.app/);
+  assert.match(entitlements, /com\.apple\.developer\.applesignin/);
+  console.log("MOBILE_IOS_HOSTED_LINKS_ENABLED=PASS");
+  console.log("MOBILE_IOS_APPLE_SIGN_IN_ENABLED=PASS");
+} else {
+  assert.doesNotMatch(project, /com\.apple\.developer\.associated-domains/, "Universal Links entitlement is outside MOBILE-12/13");
+  assert.doesNotMatch(infoPlist, /applinks:/, "Universal Links are outside MOBILE-12/13");
+  console.log("MOBILE_IOS_HOSTED_LINKS_EXCLUDED=PASS");
+}
 
 console.log("MOBILE_IOS_GENERATED_CONTRACT=PASS");
-console.log("MOBILE_IOS_HOSTED_LINKS_EXCLUDED=PASS");
 console.log("MOBILE_IOS_STORE_SIGNING_EXCLUDED=PASS");
 console.log("MOBILE_12_IOS_NATIVE_SHELL=PASS");

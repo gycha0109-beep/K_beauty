@@ -1,0 +1,174 @@
+name: BEJEWELY Mobile 14 Auth and App Links
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/.well-known/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - ".github/workflows/mobile-14-auth-app-links.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "app/.well-known/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - ".github/workflows/mobile-14-auth-app-links.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-14-auth-app-links-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-web:
+    name: Source and Web Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_14_SOURCE_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-mobile-14-auth-app-links.mjs
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+          node scripts/verify-mobile-14-auth-app-links.mjs
+
+      - name: Verify Next production build including association routes
+        run: npm run build
+
+  android-app-links:
+    name: Android Verified App Links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_14_ANDROID_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Generate Android native project
+        run: npm run prebuild:android --workspace @bejewely/mobile
+
+      - name: Verify Android native and App Link contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-native-shell.mjs
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform android
+          node scripts/verify-mobile-14-auth-app-links.mjs --platform android
+
+  ios-auth-and-links:
+    name: iOS Apple Auth and Universal Links
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_14_IOS_SHA=%s\n' "$actual"
+
+      - name: Verify Xcode 26.6 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.6"
+          case "$(xcrun --sdk iphoneos --show-sdk-version)" in 26.*) ;; *) exit 1 ;; esac
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Apply bounded Expo Modules JSI compatibility shim
+        run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+
+      - name: Generate iOS native project
+        run: npm run prebuild:ios --workspace @bejewely/mobile
+
+      - name: Verify iOS native, Apple Auth and Universal Link contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-ios-shell.mjs
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform ios
+          node scripts/verify-mobile-14-auth-app-links.mjs --platform ios
