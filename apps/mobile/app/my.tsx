@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/auth-js";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
+import { NativeAppleSignInButton } from "../components/NativeAppleSignInButton";
 import {
   getNativeSession,
+  signInNativeWithApple,
   signInNativeWithGoogle,
   signOutNative,
   subscribeNativeAuth
@@ -275,6 +277,15 @@ export default function MyScreen() {
     }
   }
 
+  async function handleAppleSignIn() {
+    setStatus("signing-in");
+    try {
+      await signInNativeWithApple();
+    } catch {
+      setStatus("error");
+    }
+  }
+
   async function handleSignOut() {
     try {
       await signOutNative();
@@ -350,6 +361,9 @@ export default function MyScreen() {
             style={({ pressed }) => [styles.primaryButton, { backgroundColor: palette.accent, opacity: pressed || status === "signing-in" ? 0.72 : 1 }]}>
             <Text style={[styles.primaryButtonText, { color: palette.background }]}>{status === "signing-in" ? copy.signingIn : copy.signInGoogle}</Text>
           </Pressable>
+        ) : null}
+        {!session && status !== "loading" && status !== "unconfigured" ? (
+          <NativeAppleSignInButton disabled={status === "signing-in"} onPress={handleAppleSignIn} />
         ) : null}
         {session ? (
           <Pressable accessibilityRole="button" accessibilityLabel="mobile-sign-out" onPress={handleSignOut}
