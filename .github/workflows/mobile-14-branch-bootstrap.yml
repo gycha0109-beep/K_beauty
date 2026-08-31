@@ -1,0 +1,61 @@
+name: MOBILE-14 Branch Bootstrap
+
+on:
+  push:
+    branches: [codex/mobile-14-auth-app-links]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/mobile-14-auth-app-links
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Patch Apple auth UI exactly once
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path("apps/mobile/app/my.tsx")
+          text = path.read_text()
+          if 'NativeAppleSignInButton' not in text:
+              old = 'import { ScreenShell } from "../components/ScreenShell";\n'
+              new = old + 'import { NativeAppleSignInButton } from "../components/NativeAppleSignInButton";\n'
+              assert text.count(old) == 1
+              text = text.replace(old, new)
+
+              old = '  getNativeSession,\n  signInNativeWithGoogle,\n'
+              new = '  getNativeSession,\n  signInNativeWithApple,\n  signInNativeWithGoogle,\n'
+              assert text.count(old) == 1
+              text = text.replace(old, new)
+
+              old = '''  async function handleSignOut() {\n'''
+              new = '''  async function handleAppleSignIn() {\n    setStatus("signing-in");\n    try {\n      await signInNativeWithApple();\n    } catch {\n      setStatus("error");\n    }\n  }\n\n  async function handleSignOut() {\n'''
+              assert text.count(old) == 1
+              text = text.replace(old, new)
+
+              old = '''          </Pressable>\n        ) : null}\n        {session ? (\n'''
+              new = '''          </Pressable>\n        ) : null}\n        {!session && status !== "loading" && status !== "unconfigured" ? (\n          <NativeAppleSignInButton disabled={status === "signing-in"} onPress={handleAppleSignIn} />\n        ) : null}\n        {session ? (\n'''
+              assert text.count(old) == 1
+              text = text.replace(old, new)
+              path.write_text(text)
+      - name: Refresh npm lockfile from declared workspace dependency
+        run: npm install --package-lock-only --workspace @bejewely/mobile --ignore-scripts
+      - name: Commit generated branch changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/mobile/app/my.tsx package-lock.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "MOBILE-14: wire Apple sign-in UI and lockfile"
+          git push origin HEAD:codex/mobile-14-auth-app-links
