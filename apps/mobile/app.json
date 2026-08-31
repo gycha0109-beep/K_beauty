@@ -20,7 +20,8 @@
         {
           "cameraPermission": "Allow BEJEWELY to use your camera for skin photo capture.",
           "recordAudioAndroid": false,
-          "barcodeScannerEnabled": false
+          "barcodeScannerEnabled": false,
+          "microphonePermission": false
         }
       ]
     ],
