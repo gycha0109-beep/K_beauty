@@ -30,6 +30,9 @@ private
 .codex/review-chrome-profile/
 .codex/runtime/premium-e2e/
 
+# Face Lab local reviewer handoff
+.review/local/
+
 # PIE local evidence
 .pie/
 
