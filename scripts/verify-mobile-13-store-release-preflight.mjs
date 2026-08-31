@@ -57,6 +57,24 @@ function findMobileSourceFiles(root, found = []) {
   return found;
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function assertAndroidPermissionNotRequested(manifest, permission) {
+  const escapedPermission = escapeRegExp(permission);
+  const tags = manifest.match(
+    new RegExp(`<uses-permission(?:-sdk-23)?\\b[^>]*android:name=["']${escapedPermission}["'][^>]*\\/?>`, "g")
+  ) || [];
+  for (const tag of tags) {
+    assert.match(
+      tag,
+      /tools:node=["']remove["']/,
+      `Unexpected Android permission request without a removal marker: ${permission}`
+    );
+  }
+}
+
 assert.equal(readiness.schemaVersion, "mobile-store-readiness-v1");
 assert.equal(readiness.slice, "MOBILE-13");
 assert.equal(readiness.status, "preflight_only");
@@ -99,6 +117,27 @@ assert.equal(
 assert.equal(camera.recordAudioAndroid, false, "Camera plugin must not request Android audio recording");
 assert.equal(camera.microphonePermission, false, "Camera plugin must not inject an iOS microphone disclosure");
 assert.equal(camera.barcodeScannerEnabled, false, "Barcode scanner remains outside BEJEWELY scope");
+
+const forbiddenAndroidPermissions = [
+  "android.permission.RECORD_AUDIO",
+  "android.permission.ACCESS_FINE_LOCATION",
+  "android.permission.ACCESS_COARSE_LOCATION",
+  "android.permission.ACCESS_BACKGROUND_LOCATION",
+  "android.permission.READ_CONTACTS",
+  "android.permission.WRITE_CONTACTS",
+  "android.permission.GET_ACCOUNTS",
+  "android.permission.READ_MEDIA_IMAGES",
+  "android.permission.READ_MEDIA_VIDEO",
+  "android.permission.READ_MEDIA_AUDIO",
+  "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+  "android.permission.READ_EXTERNAL_STORAGE",
+  "android.permission.WRITE_EXTERNAL_STORAGE",
+  "android.permission.MANAGE_EXTERNAL_STORAGE"
+];
+const blockedAndroidPermissions = new Set(expo.android?.blockedPermissions || []);
+for (const permission of forbiddenAndroidPermissions) {
+  assert.ok(blockedAndroidPermissions.has(permission), `Android permission must be explicitly blocked: ${permission}`);
+}
 
 const allowedEnvKeys = new Set(readiness.clientEnvironmentContract.allowedProcessEnvKeys);
 assert.deepEqual(
@@ -210,16 +249,8 @@ if (requestedPlatform === "all" || requestedPlatform === "android") {
     "Generated Android app must resolve targetSdk through the Expo root-project contract"
   );
   assert.match(manifest, /android\.permission\.CAMERA/);
-  for (const permission of [
-    "android.permission.RECORD_AUDIO",
-    "android.permission.ACCESS_FINE_LOCATION",
-    "android.permission.ACCESS_COARSE_LOCATION",
-    "android.permission.READ_CONTACTS",
-    "android.permission.READ_MEDIA_IMAGES",
-    "android.permission.READ_EXTERNAL_STORAGE",
-    "android.permission.WRITE_EXTERNAL_STORAGE"
-  ]) {
-    assert.ok(!manifest.includes(permission), `Unexpected Android permission: ${permission}`);
+  for (const permission of forbiddenAndroidPermissions) {
+    assertAndroidPermissionNotRequested(manifest, permission);
   }
 
   console.log("MOBILE_13_ANDROID_TARGET_API_DELEGATION=PASS");
