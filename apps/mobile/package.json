@@ -20,6 +20,7 @@
   "dependencies": {
     "@bejewely/shared": "*",
     "expo": "~57.0.9",
+    "expo-apple-authentication": "~57.0.1",
     "expo-camera": "~57.0.3",
     "expo-constants": "~57.0.13",
     "expo-linking": "~57.0.4",
