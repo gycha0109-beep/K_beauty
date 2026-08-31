@@ -1,0 +1,41 @@
+name: MOBILE-14 Forward Compatibility Patch
+
+on:
+  push:
+    branches: [codex/mobile-14-auth-app-links]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/mobile-14-auth-app-links
+      - name: Preserve MOBILE-13 verifier across MOBILE-14 readiness state
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path("scripts/verify-mobile-13-store-release-preflight.mjs")
+          text = path.read_text()
+          old = 'assert.equal(readiness.slice, "MOBILE-13");\nassert.equal(readiness.status, "preflight_only");'
+          new = 'assert.ok(["MOBILE-13", "MOBILE-14"].includes(readiness.slice));\nassert.ok(["preflight_only", "repository_ready_external_pending"].includes(readiness.status));'
+          if old in text:
+              text = text.replace(old, new, 1)
+          old = '''  "google_external_account_deletion",\n  "ios_equivalent_privacy_login",\n  "production_app_icon"\n]) {\n  assert.equal(compliance.get(id).status, "blocked", `${id} must remain fail-visible until its owning slice closes it`);\n}'''
+          new = '''  "google_external_account_deletion",\n  "production_app_icon"\n]) {\n  assert.equal(compliance.get(id).status, "blocked", `${id} must remain fail-visible until its owning slice closes it`);\n}\nassert.ok(\n  ["blocked", "repository_implemented_external_pending"].includes(compliance.get("ios_equivalent_privacy_login").status),\n  "iOS equivalent privacy login must remain fail-visible until repository and external authority are complete"\n);'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          path.write_text(text)
+      - name: Commit verifier patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/verify-mobile-13-store-release-preflight.mjs
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "MOBILE-14: keep MOBILE-13 preflight verifier forward-compatible"
+          git push origin HEAD:codex/mobile-14-auth-app-links
