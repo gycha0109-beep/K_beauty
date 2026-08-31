@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -37,6 +37,26 @@ function findFiles(root, basename, found = []) {
   return found;
 }
 
+function findMobileSourceFiles(root, found = []) {
+  const skippedDirectories = new Set([
+    "android",
+    "ios",
+    "node_modules",
+    ".expo",
+    ".expo-ci-dist",
+    ".mobile-store-preflight"
+  ]);
+  const sourceExtensions = new Set([".ts", ".tsx", ".js", ".mjs", ".cjs"]);
+
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    if (entry.isDirectory() && skippedDirectories.has(entry.name)) continue;
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) findMobileSourceFiles(path, found);
+    else if (sourceExtensions.has(extname(entry.name))) found.push(path);
+  }
+  return found;
+}
+
 assert.equal(readiness.schemaVersion, "mobile-store-readiness-v1");
 assert.equal(readiness.slice, "MOBILE-13");
 assert.equal(readiness.status, "preflight_only");
@@ -50,6 +70,7 @@ assert.equal(expo.android?.package, "com.bejewely.mobile");
 assert.equal(expo.ios?.buildNumber, readiness.releaseVersion.iosBuildNumber);
 assert.equal(expo.android?.versionCode, readiness.releaseVersion.androidVersionCode);
 assert.equal(expo.ios?.deploymentTarget, readiness.toolchainContract.iosDeploymentTarget);
+assert.equal(readiness.publicIdentity.externalRegistrationStatus, "not_verified");
 assert.equal(readiness.toolchainContract.expoSdkMajor, 57);
 assert.equal(readiness.toolchainContract.reactNativeMinor, "0.86");
 assert.equal(readiness.toolchainContract.androidTargetSdk, 36);
@@ -79,7 +100,16 @@ assert.equal(camera.recordAudioAndroid, false, "Camera plugin must not request A
 assert.equal(camera.microphonePermission, false, "Camera plugin must not inject an iOS microphone disclosure");
 assert.equal(camera.barcodeScannerEnabled, false, "Barcode scanner remains outside BEJEWELY scope");
 
-for (const token of [
+const allowedEnvKeys = new Set(readiness.clientEnvironmentContract.allowedProcessEnvKeys);
+assert.deepEqual(
+  [...allowedEnvKeys].sort(),
+  ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "EXPO_PUBLIC_SUPABASE_URL", "NODE_ENV"].sort()
+);
+assert.equal(readiness.clientEnvironmentContract.serverSecretsAllowed, false);
+
+const mobileSourceFiles = findMobileSourceFiles(mobileRoot);
+const observedProcessEnvKeys = new Set();
+const forbiddenSecretTokens = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "OPENAI_API_KEY",
   "ANTHROPIC_API_KEY",
@@ -87,7 +117,29 @@ for (const token of [
   "STRIPE_SECRET_KEY",
   "GOOGLE_CLIENT_SECRET",
   "APPLE_PRIVATE_KEY"
-]) {
+];
+const forbiddenSecretLiteralPatterns = [/sk-proj-[A-Za-z0-9_-]{12,}/, /sk-ant-[A-Za-z0-9_-]{12,}/, /sb_secret_[A-Za-z0-9_-]{12,}/];
+
+for (const sourcePath of mobileSourceFiles) {
+  const source = readFileSync(sourcePath, "utf8");
+  assert.ok(!/process\.env\s*\[/.test(source), `Dynamic process.env access is forbidden in mobile source: ${sourcePath}`);
+  for (const match of source.matchAll(/process\.env\.([A-Z0-9_]+)/g)) {
+    observedProcessEnvKeys.add(match[1]);
+  }
+  for (const token of forbiddenSecretTokens) {
+    assert.ok(!source.includes(token), `Forbidden server secret token referenced by mobile source: ${token} in ${sourcePath}`);
+  }
+  for (const pattern of forbiddenSecretLiteralPatterns) {
+    assert.ok(!pattern.test(source), `Secret-like literal found in mobile source: ${sourcePath}`);
+  }
+}
+for (const envKey of observedProcessEnvKeys) {
+  assert.ok(allowedEnvKeys.has(envKey), `Unexpected mobile process.env key: ${envKey}`);
+}
+for (const envKey of ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_SUPABASE_URL", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "NODE_ENV"]) {
+  assert.ok(observedProcessEnvKeys.has(envKey), `Expected mobile public environment contract is not exercised: ${envKey}`);
+}
+for (const token of forbiddenSecretTokens) {
   assert.ok(!appJsonSource.includes(token), `Forbidden server secret token leaked into app config: ${token}`);
 }
 
@@ -96,23 +148,36 @@ for (const id of [
   "privacy_policy",
   "account_deletion_in_app",
   "google_external_account_deletion",
+  "ios_equivalent_privacy_login",
+  "production_app_icon",
+  "store_listing_assets",
   "apple_privacy_manifest_required_reason_audit",
   "google_play_data_safety",
+  "apple_export_compliance",
+  "store_age_rating_and_content_declarations",
   "ai_skin_analysis_claim_review"
 ]) {
   assert.ok(compliance.has(id), `Missing compliance inventory item: ${id}`);
 }
-assert.equal(compliance.get("privacy_policy").status, "blocked");
-assert.equal(compliance.get("account_deletion_in_app").status, "blocked");
-assert.equal(compliance.get("google_external_account_deletion").status, "blocked");
+for (const id of [
+  "privacy_policy",
+  "account_deletion_in_app",
+  "google_external_account_deletion",
+  "ios_equivalent_privacy_login",
+  "production_app_icon"
+]) {
+  assert.equal(compliance.get(id).status, "blocked", `${id} must remain fail-visible until its owning slice closes it`);
+}
 
 const externalBlockers = new Set(readiness.externalBlockers.map((item) => item.id));
 for (const id of [
+  "bundle_and_package_registration",
   "apple_developer_and_app_store_connect",
   "google_play_console",
   "ios_distribution_signing_and_provisioning",
   "android_upload_signing_key",
   "hosted_oauth_redirect_allow_list",
+  "ios_equivalent_privacy_login",
   "universal_links_and_android_app_links",
   "domain_association_files",
   "testflight_and_play_internal_testing"
@@ -123,6 +188,7 @@ for (const id of [
 console.log("MOBILE_13_SOURCE_IDENTITY=PASS");
 console.log("MOBILE_13_VERSION_POLICY=PASS");
 console.log("MOBILE_13_PERMISSION_SOURCE_BOUNDARY=PASS");
+console.log("MOBILE_13_CLIENT_ENVIRONMENT_BOUNDARY=PASS");
 console.log("MOBILE_13_SECRET_BOUNDARY=PASS");
 console.log("MOBILE_13_COMPLIANCE_INVENTORY=PASS");
 

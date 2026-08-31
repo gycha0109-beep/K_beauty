@@ -37,6 +37,8 @@ Android target SDK        36 (generated Expo SDK 57 contract)
 Android native page size  16 KB
 ```
 
+`com.bejewely.mobile` is frozen as the **registration candidate**, not as an externally proven registration. Apple Developer/App Store Connect and Google Play Console availability/registration remain `not_verified` until MOBILE-15 has the required external authority.
+
 Version policy:
 
 - the marketing version is shared across both platforms;
@@ -97,7 +99,7 @@ exact candidate SHA
 
 This separates code/archive viability from Apple Developer signing/provisioning authority.
 
-## 5. Permission and secret boundary
+## 5. Permission, environment and secret boundary
 
 Expected app capability in this slice:
 
@@ -112,7 +114,16 @@ broad Android external storage = forbidden
 
 `expo-camera` must explicitly set both Android audio recording off and iOS microphone permission injection off. Generated native files are checked again after Expo prebuild so a plugin default cannot silently broaden the permission surface.
 
-Client config must not contain server secret tokens such as service-role keys, LLM provider API keys, payment secret keys, OAuth client secrets, or Apple private keys.
+The mobile source may consume only:
+
+```text
+EXPO_PUBLIC_API_BASE_URL
+EXPO_PUBLIC_SUPABASE_URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY
+NODE_ENV
+```
+
+The verifier scans the non-generated mobile source tree for `process.env` use, forbids dynamic environment lookup, rejects unexpected environment names and rejects server-secret identifiers/secret-like literal prefixes. The Supabase anon key is intentionally public client material; service-role or provider/payment secrets are not.
 
 ## 6. Store compliance inventory
 
@@ -125,18 +136,26 @@ Known repository blockers:
 | Public versioned privacy policy | BLOCKED | MOBILE-16 |
 | In-app account deletion path | BLOCKED | MOBILE-16 |
 | Google external account-deletion web resource | BLOCKED | MOBILE-16 |
+| Equivalent privacy-preserving iOS login option | BLOCKED | MOBILE-14 |
+| Production BEJEWELY app icon/adaptive icon | BLOCKED | MOBILE-16 |
+| Final screenshots/feature/listing assets | PENDING | MOBILE-16 |
 | Apple required-reason Privacy Manifest audit | PENDING | MOBILE-16 |
 | Google Play Data Safety answers | PENDING | MOBILE-16 |
+| Apple export-compliance declaration | PENDING | MOBILE-16 |
+| Store age/content-rating declarations | PENDING | MOBILE-16 |
 | AI skin-analysis store-copy / medical-claim review | PENDING | MOBILE-16 |
 
 Current policy relevance:
 
 - Apple apps that support account creation must allow users to initiate account deletion.
+- Apple App Review Guideline 4.8 requires an equivalent privacy-preserving login option when a third-party/social login such as Google is used to set up or authenticate the primary app account, unless a documented exception applies. Current native auth implements Google OAuth only.
 - Google Play requires account deletion support for apps that allow account creation and requires an accurate Data Safety disclosure and privacy policy.
 - The repository currently has authenticated My/account usage but no frozen account deletion path and no repository privacy-policy route.
+- The Expo config does not freeze a BEJEWELY production icon/adaptive-icon asset; store listing assets remain outside MOBILE-13.
 
 Authority references:
 
+- https://developer.apple.com/app-store/review/guidelines/
 - https://developer.apple.com/support/offering-account-deletion-in-your-app/
 - https://support.google.com/googleplay/android-developer/answer/13327111
 - https://support.google.com/googleplay/android-developer/answer/10144311
@@ -148,12 +167,14 @@ These are not code failures and remain outside MOBILE-13:
 ```text
 MOBILE-14
 - hosted Supabase OAuth redirect allow-list
+- equivalent privacy-preserving iOS login option / applicable Guideline 4.8 resolution
 - Universal Links
 - Android App Links
 - apple-app-site-association
 - assetlinks.json
 
 MOBILE-15
+- verify/register bundle/package identity in external developer consoles
 - Apple Developer / App Store Connect authority
 - Google Play Console authority
 - iOS distribution certificates/provisioning
@@ -164,8 +185,11 @@ MOBILE-15
 MOBILE-16
 - privacy policy
 - account deletion surfaces
+- production app/store graphics
 - Apple privacy metadata / required-reason audit
+- Apple export-compliance declaration
 - Google Data Safety
+- store age/content-rating declarations
 - store listing copy/assets
 - AI skin-analysis claim review
 - submission-readiness closeout
@@ -177,9 +201,11 @@ MOBILE-13 does not:
 
 - register bundle/package identifiers in external consoles;
 - add production signing credentials;
+- implement Sign in with Apple or another Guideline 4.8-equivalent login;
 - add Universal Links/App Links;
 - change hosted OAuth redirects;
 - upload to TestFlight or Google Play;
+- create final store screenshots/icons/listing metadata;
 - claim that privacy metadata is complete;
 - substitute build-time 16 KB checks for physical-device/runtime validation;
 - introduce a payment provider;
@@ -191,7 +217,9 @@ MOBILE-13 can close only when:
 
 ```text
 SOURCE_IDENTITY = PASS
+IDENTITY_EXTERNAL_REGISTRATION = EXPLICITLY_NOT_VERIFIED
 VERSION_POLICY = PASS
+CLIENT_ENVIRONMENT_BOUNDARY = PASS
 SECRET_BOUNDARY = PASS
 ANDROID_GENERATED_RELEASE_CONTRACT = PASS
 ANDROID_TARGET_API_36 = PASS
