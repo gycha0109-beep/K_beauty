@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "face-count-neutral-source-acquisition-v1",
+  "acquisitionMethod": "governed_exact_byte_reuse_and_verified_public_source_acquisition",
+  "assembledAt": "2026-08-31T16:41:15.000Z",
+  "assets": [
+    {
+      "slot": "candidate_a",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Earth_apollo17.jpg",
+      "sourcePageRevisionRef": "commons-oldid:1189343460",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Earth_apollo17.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 45846,
+      "width": 512,
+      "height": 507,
+      "sha256": "a48278513a38768ff92247972e60bc873eb361a8527cb8686a3e19c3ae1bdf9d",
+      "fileName": "fcneutral_01.jpg",
+      "licenseFamily": "public_domain",
+      "rightsBasisRef": "Wikimedia Commons revision 1189343460; NASA/GSFC U.S. public-domain source metadata recorded, not legal adjudication.",
+      "sourceEvidenceRef": "MyeongHa FR-DATA-224 capture-frdata224-batch-a-001"
+    },
+    {
+      "slot": "candidate_b",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dwight_D_Eisenhower_(cropped).jpg",
+      "sourcePageRevisionRef": "commons-oldid:1216230814",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Dwight_D_Eisenhower_%28cropped%29.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 365066,
+      "width": 782,
+      "height": 942,
+      "sha256": "1131e5923243d08050e206663d06739bb61e19dd0c4844478446d24e49a1b0f4",
+      "fileName": "fcneutral_02.jpg",
+      "licenseFamily": "public_domain",
+      "rightsBasisRef": "Wikimedia Commons revision 1216230814; official-duty U.S. Army public-domain source metadata recorded, not legal adjudication.",
+      "sourceEvidenceRef": "MyeongHa FR-DATA-224 capture-frdata224-batch-a-002"
+    },
+    {
+      "slot": "candidate_c",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Group_Portrait(GN11452).jpg",
+      "sourcePageRevisionRef": "commons-oldid:1212884184",
+      "originalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Group_Portrait%28GN11452%29.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 1177142,
+      "width": 3264,
+      "height": 2448,
+      "sha256": "5427892220dadebde0c91bdec47468be61b945b966a917eb6c82e366867b6065",
+      "fileName": "fcneutral_03.jpg",
+      "licenseFamily": "cc0",
+      "rightsBasisRef": "Wikimedia Commons revision 1212884184; History Trust of South Australia GN11452 recorded under CC0 1.0, not legal adjudication.",
+      "sourceEvidenceRef": "MyeongHa FR-DATA-224 capture-frdata224-batch-a-003"
+    }
+  ]
+}

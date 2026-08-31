@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "face-count-neutral-review-authority-v1",
+  "authorityRef": "authority.facelab.neutral_face_count.shared_review.v1",
+  "authorityVersion": "1.0.0",
+  "campaignKey": "face_count_neutral_shared_review_v1",
+  "intakeVersion": "face-count-neutral-intake-v1",
+  "storageSchemaVersion": "face-count-neutral-storage-v1",
+  "sourceAcquisitionManifestSha256": "bdc2480c2b97f2b4d08a4f3b32235cd8b50b92735b6d820cab1e82ff8ef7a0cd",
+  "responseTokens": [
+    "none",
+    "one",
+    "two_or_more",
+    "not_assessable"
+  ],
+  "orderedItems": [
+    {
+      "reviewItemId": "fcneutral_01",
+      "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_01.jpg",
+      "assetSha256": "a48278513a38768ff92247972e60bc873eb361a8527cb8686a3e19c3ae1bdf9d"
+    },
+    {
+      "reviewItemId": "fcneutral_02",
+      "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_02.jpg",
+      "assetSha256": "1131e5923243d08050e206663d06739bb61e19dd0c4844478446d24e49a1b0f4"
+    },
+    {
+      "reviewItemId": "fcneutral_03",
+      "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_03.jpg",
+      "assetSha256": "5427892220dadebde0c91bdec47468be61b945b966a917eb6c82e366867b6065"
+    }
+  ],
+  "reviewerUi": {
+    "title": "얼굴 수 확인",
+    "instruction": "사진 안에서 사람 얼굴로 식별되는 얼굴 수만 확인해 주세요. 확신하기 어렵다면 판단 불가를 선택해 주세요.",
+    "responseLabels": {
+      "none": "없음",
+      "one": "1개",
+      "two_or_more": "2개 이상",
+      "not_assessable": "판단 불가"
+    },
+    "attestationCopy": {
+      "sourceOrAnswerInformationNotViewed": "이미지의 출처나 정답 정보를 제공받거나 확인하지 않았습니다.",
+      "automatedAnalysisResultsNotViewed": "AI 또는 자동 분석 결과를 확인하지 않았습니다.",
+      "otherParticipantResponsesNotViewed": "다른 참여자의 응답을 보거나 상의하지 않았습니다.",
+      "visibleHumanFaceCountOnly": "화면에서 보이는 사람 얼굴 수만 독립적으로 판단하겠습니다.",
+      "sensitiveIdentityInferenceNotPerformed": "신원, 나이, 성별, 인종, 성격 등 사람의 민감하거나 불필요한 특성을 추론하지 않겠습니다."
+    },
+    "requiredIndependenceAttestation": {
+      "sourceOrAnswerInformationNotViewed": true,
+      "automatedAnalysisResultsNotViewed": true,
+      "otherParticipantResponsesNotViewed": true,
+      "visibleHumanFaceCountOnly": true,
+      "sensitiveIdentityInferenceNotPerformed": true
+    }
+  },
+  "authorityBoundary": {
+    "expectedFaceCountLabelsIncluded": false,
+    "sourceNamesIncludedInReviewerModel": false,
+    "assetDigestsIncludedInReviewerModel": false,
+    "traditionalSemanticAuthority": false,
+    "providerInferenceAuthority": false,
+    "empiricalValidationEstablished": false
+  },
+  "authorityDigest": "c9f0bd01b30f80a38a32b8c9ce6e8522a81cef0e65bf6347d1d6ea3eb0a0c910"
+}
