@@ -17,7 +17,11 @@ function assert(condition, label) {
   if (!condition) fail(label);
 }
 
-const appConfig = read("apps/mobile/app.json");
+const appConfigSource = read("apps/mobile/app.json");
+const appConfig = JSON.parse(appConfigSource);
+const readiness = JSON.parse(read("apps/mobile/store-readiness.json"));
+const mobileSliceMatch = /^MOBILE-(\d+)$/.exec(readiness.slice || "");
+const mobile14OrLater = Number(mobileSliceMatch?.[1] || 0) >= 14;
 const layout = read("apps/mobile/app/_layout.tsx");
 const screen = read("apps/mobile/app/r/[shareId].tsx");
 const client = read("apps/mobile/features/reports/public-result-client.ts");
@@ -31,9 +35,31 @@ const analysisResults = read("lib/analysis-results.js");
 const analyzeScreen = read("apps/mobile/app/analyze.tsx");
 const androidSmoke = read("scripts/verify-mobile-android-smoke.sh");
 
-assert(appConfig.includes('"scheme": "bejewely"'), "existing-custom-scheme");
-assert(!appConfig.includes("intentFilters"), "android-https-app-links-excluded");
-assert(!appConfig.includes("associatedDomains"), "ios-universal-links-excluded");
+assert(appConfigSource.includes('"scheme": "bejewely"'), "existing-custom-scheme");
+if (mobile14OrLater) {
+  const expo = appConfig.expo || {};
+  assert(
+    Array.isArray(expo.ios?.associatedDomains) &&
+      expo.ios.associatedDomains.length === 1 &&
+      expo.ios.associatedDomains[0] === "applinks:k-beauty-two.vercel.app",
+    "mobile14-ios-hosted-result-link"
+  );
+  const appLink = (expo.android?.intentFilters || []).find((entry) =>
+    entry?.action === "VIEW" &&
+    entry?.autoVerify === true &&
+    (entry?.data || []).some((item) =>
+      item?.scheme === "https" &&
+      item?.host === "k-beauty-two.vercel.app" &&
+      item?.pathPrefix === "/r/"
+    )
+  );
+  assert(Boolean(appLink), "mobile14-android-hosted-result-link");
+  console.log("MOBILE_PUBLIC_RESULT_HOSTED_LINKS_ENABLED=PASS");
+} else {
+  assert(!appConfigSource.includes("intentFilters"), "android-https-app-links-excluded");
+  assert(!appConfigSource.includes("associatedDomains"), "ios-universal-links-excluded");
+  console.log("MOBILE_PUBLIC_RESULT_HOSTED_LINKS_EXCLUDED=PASS");
+}
 assert(layout.includes('name="r/[shareId]"'), "hidden-public-result-route");
 assert(layout.includes('name="r/[shareId]" options={{ href: null'), "public-result-hidden-from-tabs");
 
@@ -110,7 +136,6 @@ console.log("MOBILE_PUBLIC_RESULT_ANONYMOUS_READ=PASS");
 console.log("MOBILE_PUBLIC_RESULT_SERVER_VISIBILITY_AUTHORITY=PASS");
 console.log("MOBILE_PUBLIC_RESULT_SERVER_DTO_AUTHORITY=PASS");
 console.log("MOBILE_PUBLIC_RESULT_READ_ONLY_BOUNDARY=PASS");
-console.log("MOBILE_PUBLIC_RESULT_HOSTED_LINKS_EXCLUDED=PASS");
 console.log("MOBILE_PUBLIC_RESULT_M9_SEPARATION=PASS");
 console.log("MOBILE_PUBLIC_RESULT_ANDROID_DEEP_LINK_SMOKE=PASS");
 console.log("MOBILE_PUBLIC_RESULT_CAMERA_REGRESSION=PASS");
