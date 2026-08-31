@@ -1,0 +1,211 @@
+name: BEJEWELY Mobile 13 Store Release Preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - ".github/workflows/mobile-13-store-release-preflight.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-native-shell.mjs"
+      - "scripts/verify-mobile-ios-shell.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - ".github/workflows/mobile-13-store-release-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-13-store-release-preflight-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-release-preflight:
+    name: Android Release Preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_13_ANDROID_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify mobile regression boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Generate Android native project
+        run: npm run prebuild:android --workspace @bejewely/mobile
+
+      - name: Verify Android native and store preflight contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-native-shell.mjs
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform android
+
+      - name: Build unsigned-authority release AAB
+        run: npm run build:android:release --workspace @bejewely/mobile
+
+      - name: Verify release AAB output
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="apps/mobile/android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$artifact"
+          sha256sum "$artifact"
+          printf 'MOBILE_13_ANDROID_RELEASE_AAB=PASS\n'
+
+      - name: Upload Android release preflight artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bejewely-mobile-13-android-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+
+  ios-release-preflight:
+    name: iOS Unsigned Archive Preflight
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_13_IOS_SHA=%s\n' "$actual"
+
+      - name: Verify Xcode 26.6 distribution toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.6"
+          sdk="$(xcrun --sdk iphoneos --show-sdk-version)"
+          case "$sdk" in
+            26.*) ;;
+            *) printf 'Unexpected iPhoneOS SDK: %s\n' "$sdk" >&2; exit 1 ;;
+          esac
+          xcodebuild -version
+          printf 'MOBILE_13_IOS_SDK=%s\n' "$sdk"
+          printf 'MOBILE_13_IOS_XCODE_26_6=PASS\n'
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Apply bounded Expo Modules JSI compatibility shim
+        run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+
+      - name: Verify mobile regression boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+
+      - name: Generate iOS native project
+        run: npm run prebuild:ios --workspace @bejewely/mobile
+
+      - name: Verify iOS native and store preflight contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-ios-shell.mjs
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform ios
+
+      - name: Install CocoaPods dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/mobile/ios
+          pod install
+
+      - name: Build unsigned Release archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p apps/mobile/.mobile-store-preflight
+          xcodebuild \
+            -workspace apps/mobile/ios/BEJEWELY.xcworkspace \
+            -scheme BEJEWELY \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$GITHUB_WORKSPACE/apps/mobile/.mobile-store-preflight/BEJEWELY.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            archive
+          test -f apps/mobile/.mobile-store-preflight/BEJEWELY.xcarchive/Info.plist
+          printf 'MOBILE_13_IOS_UNSIGNED_ARCHIVE=PASS\n'

@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "mobile-store-readiness-v1",
+  "slice": "MOBILE-13",
+  "status": "preflight_only",
+  "baselineMainSha": "be08285f6fd1bac50f209a45634c250d7b5a533f",
+  "publicIdentity": {
+    "appName": "BEJEWELY",
+    "scheme": "bejewely",
+    "iosBundleIdentifier": "com.bejewely.mobile",
+    "androidApplicationId": "com.bejewely.mobile",
+    "identityDecision": "freeze_for_store_registration"
+  },
+  "releaseVersion": {
+    "marketingVersion": "0.1.0",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 1,
+    "policy": "Marketing version is shared across platforms. Every submitted binary must monotonically increase the platform build number/version code; marketing version changes are explicit release decisions."
+  },
+  "toolchainContract": {
+    "expoSdkMajor": 57,
+    "reactNativeMinor": "0.86",
+    "iosDeploymentTarget": "16.4",
+    "iosSubmissionSdkMinimum": "26",
+    "androidTargetSdk": 36
+  },
+  "permissionContract": {
+    "required": ["camera"],
+    "forbiddenUnlessFutureSliceApproves": [
+      "microphone",
+      "location",
+      "contacts",
+      "photo_library_read",
+      "broad_external_storage"
+    ]
+  },
+  "complianceInventory": [
+    {
+      "id": "privacy_policy",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "No public, versioned privacy-policy route/URL is frozen in the repository."
+    },
+    {
+      "id": "account_deletion_in_app",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "The authenticated mobile My flow has no account-deletion entry or request flow."
+    },
+    {
+      "id": "google_external_account_deletion",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "No public web deletion-request resource is frozen for Google Play metadata."
+    },
+    {
+      "id": "apple_privacy_manifest_required_reason_audit",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Generated app and third-party SDK required-reason API declarations must be audited before submission metadata is frozen."
+    },
+    {
+      "id": "google_play_data_safety",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Data Safety answers must be derived from the final production data flow and included SDKs."
+    },
+    {
+      "id": "ai_skin_analysis_claim_review",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Store copy must be reviewed to avoid unsupported diagnostic or medical claims."
+    }
+  ],
+  "externalBlockers": [
+    {"id": "apple_developer_and_app_store_connect", "owner": "MOBILE-15"},
+    {"id": "google_play_console", "owner": "MOBILE-15"},
+    {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15"},
+    {"id": "android_upload_signing_key", "owner": "MOBILE-15"},
+    {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14"},
+    {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14"},
+    {"id": "domain_association_files", "owner": "MOBILE-14"},
+    {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15"}
+  ],
+  "preflightMeaning": {
+    "passMeans": [
+      "Public app identity and platform build numbers are explicit.",
+      "Generated native projects match the frozen identity, permission and minimum-platform contracts.",
+      "Android can produce a release AAB without production upload signing.",
+      "iOS can produce an unsigned Release archive, separating compile/archive viability from distribution signing.",
+      "Known store compliance and external-authority blockers are explicit and fail-visible."
+    ],
+    "passDoesNotMean": [
+      "App Store or Google Play submission readiness.",
+      "Distribution signing readiness.",
+      "Hosted OAuth or associated-domain readiness.",
+      "Privacy policy/Data Safety/App Privacy metadata completion.",
+      "Physical-device or beta-distribution validation."
+    ]
+  }
+}

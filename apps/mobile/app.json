@@ -35,6 +35,8 @@
     },
     "ios": {
       "bundleIdentifier": "com.bejewely.mobile",
+      "buildNumber": "1",
+      "deploymentTarget": "16.4",
       "supportsTablet": false
     },
     "androidStatusBar": {
