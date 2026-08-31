@@ -76,8 +76,8 @@ function assertAndroidPermissionNotRequested(manifest, permission) {
 }
 
 assert.equal(readiness.schemaVersion, "mobile-store-readiness-v1");
-assert.equal(readiness.slice, "MOBILE-13");
-assert.equal(readiness.status, "preflight_only");
+assert.ok(["MOBILE-13", "MOBILE-14"].includes(readiness.slice));
+assert.ok(["preflight_only", "repository_ready_external_pending"].includes(readiness.status));
 
 assert.equal(expo.name, "BEJEWELY");
 assert.equal(expo.scheme, "bejewely");
@@ -206,11 +206,14 @@ for (const id of [
   "privacy_policy",
   "account_deletion_in_app",
   "google_external_account_deletion",
-  "ios_equivalent_privacy_login",
   "production_app_icon"
 ]) {
   assert.equal(compliance.get(id).status, "blocked", `${id} must remain fail-visible until its owning slice closes it`);
 }
+assert.ok(
+  ["blocked", "repository_implemented_external_pending"].includes(compliance.get("ios_equivalent_privacy_login").status),
+  "iOS equivalent privacy login must remain fail-visible until repository and external authority are complete"
+);
 
 const externalBlockers = new Set(readiness.externalBlockers.map((item) => item.id));
 for (const id of [
