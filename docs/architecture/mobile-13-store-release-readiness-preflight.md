@@ -34,7 +34,7 @@ iOS build number          1
 Android versionCode       1
 iOS deployment target     16.4
 Android target SDK        36 (generated Expo SDK 57 contract)
-Android native page size  16 KB
+Android native page size  16 KB (64-bit arm64-v8a / x86_64 compatibility scope)
 ```
 
 `com.bejewely.mobile` is frozen as the **registration candidate**, not as an externally proven registration. Apple Developer/App Store Connect and Google Play Console availability/registration remain `not_verified` until MOBILE-15 has the required external authority.
@@ -47,11 +47,12 @@ Version policy:
 
 ## 3. Current 2026 platform floor
 
-MOBILE-13 is intentionally aligned to the current external submission floor rather than the older simulator-only toolchain.
+MOBILE-13 is intentionally aligned to current external submission and compatibility requirements rather than the older simulator-only toolchain.
 
 - Apple: uploads to App Store Connect require Xcode 26+ and the iOS 26 SDK+ since 2026-04-28.
 - Google Play: from 2026-08-31, new apps and updates must target Android 16 / API 36+.
-- Google Play: apps that contain native code must support 16 KB memory page sizes; BEJEWELY contains React Native/native libraries, so this is a release contract, not a Java/Kotlin-only exemption.
+- Android 16 KB compatibility: current Android Developers guidance states that apps targeting Android 15 / API 35+ must support 16 KB memory page sizes on **64-bit devices** on Google Play; the current enforcement date shown by Android Developers is 2027-02-01.
+- BEJEWELY contains React Native/native libraries, so MOBILE-13 treats 16 KB compatibility as a release-preflight contract now rather than waiting for enforcement.
 - Expo SDK 57: React Native 0.86, Android target/compile SDK 36, iOS 16.4+, Xcode 26.4+.
 
 Authority references:
@@ -75,11 +76,11 @@ exact candidate SHA
 → resolved release Manifest targetSdk=36
 → pinned bundletool 1.18.3 digest check
 → AAB PAGE_ALIGNMENT_16K
-→ packaged native ELF LOAD alignment >= 16 KB
+→ packaged arm64-v8a + x86_64 native ELF LOAD alignment >= 16 KB
 → non-empty app-release.aab
 ```
 
-The bundletool binary is pinned by SHA-256 in `store-readiness.json` and verified before execution.
+The bundletool binary is pinned by SHA-256 in `store-readiness.json` and verified before execution. The ELF check requires both current 64-bit ABI families to be present in the AAB and checks every packaged `.so` under `arm64-v8a` and `x86_64`. This matches Android's current 16 KB verification guidance, which identifies unaligned `arm64-v8a` or `x86_64` shared libraries as requiring remediation.
 
 This proves release packaging viability and a bounded 16 KB page-size build contract. It does **not** prove Play upload signing because the production upload key is intentionally absent. The generated release build currently uses development signing material only as a build-time placeholder and must never be treated as the Play upload key.
 
@@ -110,9 +111,11 @@ location = forbidden
 contacts = forbidden
 photo library read = forbidden
 broad Android external storage = forbidden
+system overlay = forbidden
+vibration = forbidden
 ```
 
-`expo-camera` must explicitly set both Android audio recording off and iOS microphone permission injection off. Generated native files are checked again after Expo prebuild so a plugin default cannot silently broaden the permission surface.
+`expo-camera` must explicitly set both Android audio recording off and iOS microphone permission injection off. Android permissions outside the current BEJEWELY capability surface are explicitly blocked in Expo config. Generated native files are checked again after Expo prebuild, and manifest `tools:node="remove"` markers are distinguished from actual permission requests so a plugin default cannot silently broaden the permission surface.
 
 The mobile source may consume only:
 
@@ -224,7 +227,8 @@ SECRET_BOUNDARY = PASS
 ANDROID_GENERATED_RELEASE_CONTRACT = PASS
 ANDROID_TARGET_API_36 = PASS
 ANDROID_PAGE_ALIGNMENT_16K = PASS
-ANDROID_NATIVE_ELF_ALIGNMENT_16K = PASS
+ANDROID_ARM64_ELF_ALIGNMENT_16K = PASS
+ANDROID_X86_64_ELF_ALIGNMENT_16K = PASS
 ANDROID_RELEASE_AAB = PASS
 IOS_GENERATED_RELEASE_CONTRACT = PASS
 IOS_UNSIGNED_RELEASE_ARCHIVE = PASS
