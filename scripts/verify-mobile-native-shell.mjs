@@ -10,6 +10,20 @@ const mobilePackage = JSON.parse(readFileSync(join(mobileRoot, "package.json"), 
 const mobileIgnore = readFileSync(join(mobileRoot, ".gitignore"), "utf8");
 const expo = appConfig.expo || {};
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function assertPermissionNotRequested(manifest, permission, message) {
+  const escapedPermission = escapeRegExp(permission);
+  const tags = manifest.match(
+    new RegExp(`<uses-permission(?:-sdk-23)?\\b[^>]*android:name=["']${escapedPermission}["'][^>]*\\/?>`, "g")
+  ) || [];
+  for (const tag of tags) {
+    assert.match(tag, /tools:node=["']remove["']/, message);
+  }
+}
+
 assert.equal(expo.orientation, "portrait", "MOBILE-1 must keep the native shell portrait-locked");
 assert.equal(expo.userInterfaceStyle, "automatic", "MOBILE-1 must follow the system light/dark preference");
 assert.ok(expo.plugins?.includes("expo-system-ui"), "expo-system-ui plugin is required for Android automatic UI style");
@@ -52,7 +66,15 @@ if (mobilePackage.dependencies?.["expo-camera"]) {
   assert.equal(cameraPlugin[1]?.recordAudioAndroid, false, "Photo-only camera must keep Android audio recording disabled");
   assert.equal(cameraPlugin[1]?.barcodeScannerEnabled, false, "Camera foundation must keep barcode support disabled");
   assert.match(manifest, /android\.permission\.CAMERA/, "Generated Android manifest lost CAMERA permission");
-  assert.doesNotMatch(manifest, /android\.permission\.RECORD_AUDIO/, "Photo-only MOBILE-5 must not request RECORD_AUDIO");
+  assert.ok(
+    expo.android?.blockedPermissions?.includes("android.permission.RECORD_AUDIO"),
+    "Photo-only MOBILE-5 must explicitly block RECORD_AUDIO"
+  );
+  assertPermissionNotRequested(
+    manifest,
+    "android.permission.RECORD_AUDIO",
+    "Photo-only MOBILE-5 must not request RECORD_AUDIO unless the manifest entry is an explicit removal marker"
+  );
 }
 
 console.log("MOBILE_NATIVE_SHELL=PASS");

@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "mobile-store-readiness-v1",
+  "slice": "MOBILE-13",
+  "status": "preflight_only",
+  "baselineMainSha": "be08285f6fd1bac50f209a45634c250d7b5a533f",
+  "publicIdentity": {
+    "appName": "BEJEWELY",
+    "scheme": "bejewely",
+    "iosBundleIdentifier": "com.bejewely.mobile",
+    "androidApplicationId": "com.bejewely.mobile",
+    "identityDecision": "freeze_for_store_registration",
+    "externalRegistrationStatus": "not_verified"
+  },
+  "releaseVersion": {
+    "marketingVersion": "0.1.0",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 1,
+    "policy": "Marketing version is shared across platforms. Every submitted binary must monotonically increase the platform build number/version code; marketing version changes are explicit release decisions."
+  },
+  "toolchainContract": {
+    "expoSdkMajor": 57,
+    "reactNativeMinor": "0.86",
+    "iosDeploymentTarget": "16.4",
+    "iosSubmissionSdkMinimum": "26",
+    "androidTargetSdk": 36,
+    "androidNativePageSizeKb": 16,
+    "androidNativePageSizeAbiScope": ["arm64-v8a", "x86_64"],
+    "android16KbPlayEnforcementDate": "2027-02-01",
+    "bundletoolVersion": "1.18.3",
+    "bundletoolSha256": "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+  },
+  "permissionContract": {
+    "required": ["camera"],
+    "forbiddenUnlessFutureSliceApproves": [
+      "microphone",
+      "location",
+      "contacts",
+      "photo_library_read",
+      "broad_external_storage",
+      "system_overlay",
+      "vibration"
+    ]
+  },
+  "clientEnvironmentContract": {
+    "allowedProcessEnvKeys": [
+      "EXPO_PUBLIC_API_BASE_URL",
+      "EXPO_PUBLIC_SUPABASE_URL",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY",
+      "NODE_ENV"
+    ],
+    "serverSecretsAllowed": false
+  },
+  "complianceInventory": [
+    {
+      "id": "privacy_policy",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "No public, versioned privacy-policy route/URL is frozen in the repository."
+    },
+    {
+      "id": "account_deletion_in_app",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "The authenticated mobile My flow has no account-deletion entry or request flow."
+    },
+    {
+      "id": "google_external_account_deletion",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "No public web deletion-request resource is frozen for Google Play metadata."
+    },
+    {
+      "id": "ios_equivalent_privacy_login",
+      "status": "blocked",
+      "owner": "MOBILE-14",
+      "reason": "Native primary-account auth currently implements Google OAuth only. No equivalent privacy-preserving login option or documented App Review Guideline 4.8 exception is frozen."
+    },
+    {
+      "id": "production_app_icon",
+      "status": "blocked",
+      "owner": "MOBILE-16",
+      "reason": "Expo config does not freeze a BEJEWELY production icon/adaptive icon asset for store binaries."
+    },
+    {
+      "id": "store_listing_assets",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "App Store/Play screenshots, feature/promotional graphics and final listing assets are not frozen."
+    },
+    {
+      "id": "apple_privacy_manifest_required_reason_audit",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Generated app and third-party SDK required-reason API declarations must be audited before submission metadata is frozen."
+    },
+    {
+      "id": "google_play_data_safety",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Data Safety answers must be derived from the final production data flow and included SDKs."
+    },
+    {
+      "id": "apple_export_compliance",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "App Store export-compliance answers must be frozen from the final networking/cryptography dependency set."
+    },
+    {
+      "id": "store_age_rating_and_content_declarations",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "App Store age rating and Google Play content-rating declarations are not frozen."
+    },
+    {
+      "id": "ai_skin_analysis_claim_review",
+      "status": "pending",
+      "owner": "MOBILE-16",
+      "reason": "Store copy must be reviewed to avoid unsupported diagnostic or medical claims."
+    }
+  ],
+  "externalBlockers": [
+    {"id": "bundle_and_package_registration", "owner": "MOBILE-15"},
+    {"id": "apple_developer_and_app_store_connect", "owner": "MOBILE-15"},
+    {"id": "google_play_console", "owner": "MOBILE-15"},
+    {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15"},
+    {"id": "android_upload_signing_key", "owner": "MOBILE-15"},
+    {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14"},
+    {"id": "ios_equivalent_privacy_login", "owner": "MOBILE-14"},
+    {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14"},
+    {"id": "domain_association_files", "owner": "MOBILE-14"},
+    {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15"}
+  ],
+  "preflightMeaning": {
+    "passMeans": [
+      "Public app identity and platform build numbers are explicit, while external identifier registration remains explicitly unverified.",
+      "Generated native projects match the frozen identity, permission and minimum-platform contracts.",
+      "The mobile source tree consumes only the explicitly allowed public environment variables and NODE_ENV.",
+      "Android can produce a release AAB without production upload signing.",
+      "The Android release AAB resolves target API 36 and requests 16 KB page alignment, with packaged arm64-v8a and x86_64 native ELF LOAD segments aligned to at least 16 KB.",
+      "iOS can produce an unsigned Release archive, separating compile/archive viability from distribution signing.",
+      "Known store compliance and external-authority blockers are explicit and fail-visible."
+    ],
+    "passDoesNotMean": [
+      "App Store or Google Play submission readiness.",
+      "Bundle/package identifier availability or external registration.",
+      "Distribution signing readiness.",
+      "Hosted OAuth, equivalent iOS login, or associated-domain readiness.",
+      "Privacy policy/Data Safety/App Privacy metadata completion.",
+      "Physical-device or beta-distribution validation."
+    ]
+  }
+}
