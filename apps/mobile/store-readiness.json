@@ -24,6 +24,8 @@
     "iosSubmissionSdkMinimum": "26",
     "androidTargetSdk": 36,
     "androidNativePageSizeKb": 16,
+    "androidNativePageSizeAbiScope": ["arm64-v8a", "x86_64"],
+    "android16KbPlayEnforcementDate": "2027-02-01",
     "bundletoolVersion": "1.18.3",
     "bundletoolSha256": "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
   },
@@ -34,7 +36,9 @@
       "location",
       "contacts",
       "photo_library_read",
-      "broad_external_storage"
+      "broad_external_storage",
+      "system_overlay",
+      "vibration"
     ]
   },
   "clientEnvironmentContract": {
@@ -132,7 +136,7 @@
       "Generated native projects match the frozen identity, permission and minimum-platform contracts.",
       "The mobile source tree consumes only the explicitly allowed public environment variables and NODE_ENV.",
       "Android can produce a release AAB without production upload signing.",
-      "The Android release AAB resolves target API 36 and requests 16 KB page alignment, with packaged native ELF LOAD segments aligned to at least 16 KB.",
+      "The Android release AAB resolves target API 36 and requests 16 KB page alignment, with packaged arm64-v8a and x86_64 native ELF LOAD segments aligned to at least 16 KB.",
       "iOS can produce an unsigned Release archive, separating compile/archive viability from distribution signing.",
       "Known store compliance and external-authority blockers are explicit and fail-visible."
     ],
