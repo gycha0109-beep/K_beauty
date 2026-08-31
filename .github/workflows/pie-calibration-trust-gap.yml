@@ -11,8 +11,8 @@ permissions:
 
 jobs:
   diagnostic:
-    uses: gycha0109-beep/Project_Intelligence_Engine/.github/workflows/calibration-trust-gap.yml@dd6596ec3562a1ccb9b8eb0f304b9e66501cce09
+    uses: gycha0109-beep/Project_Intelligence_Engine/.github/workflows/calibration-trust-gap.yml@f899a742bb9d9172f14d98b7760f93ec382f378a
     with:
       repository: ${{ github.repository }}
       source_pie_revision: 96f9061d7538e92dbb8fdc8567147b3d6c01744e
-      diagnostic_revision: dd6596ec3562a1ccb9b8eb0f304b9e66501cce09
+      diagnostic_revision: f899a742bb9d9172f14d98b7760f93ec382f378a
