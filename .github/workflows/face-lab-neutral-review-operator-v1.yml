@@ -1,0 +1,51 @@
+name: Face Lab Neutral Review Operator v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/face-lab-neutral-review-operator.mjs'
+      - 'scripts/check-face-lab-neutral-review-operator-v1.mjs'
+      - '.gitignore'
+      - '.github/workflows/face-lab-neutral-review-operator-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify exact head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+
+      - name: Verify Face Lab neutral review operator safety
+        run: node scripts/check-face-lab-neutral-review-operator-v1.mjs
+
+      - name: Diff hygiene
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            base="$(git merge-base "$PR_BASE_SHA" HEAD)"
+            git diff --check "$base..HEAD"
+          else
+            git diff --check "HEAD^..HEAD"
+          fi
