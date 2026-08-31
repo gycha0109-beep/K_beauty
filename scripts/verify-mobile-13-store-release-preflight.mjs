@@ -132,7 +132,9 @@ const forbiddenAndroidPermissions = [
   "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
   "android.permission.READ_EXTERNAL_STORAGE",
   "android.permission.WRITE_EXTERNAL_STORAGE",
-  "android.permission.MANAGE_EXTERNAL_STORAGE"
+  "android.permission.MANAGE_EXTERNAL_STORAGE",
+  "android.permission.SYSTEM_ALERT_WINDOW",
+  "android.permission.VIBRATE"
 ];
 const blockedAndroidPermissions = new Set(expo.android?.blockedPermissions || []);
 for (const permission of forbiddenAndroidPermissions) {
