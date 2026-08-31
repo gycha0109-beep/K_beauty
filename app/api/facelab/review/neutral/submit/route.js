@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
-import {
-  HostedHumanCueIntakeError,
-  isValidHostedHumanCueAccessToken,
-  persistHostedHumanCueSubmission
-} from "@/lib/face-lab-hosted-intake";
+import { isValidHostedHumanCueAccessToken } from "@/lib/face-lab-hosted-intake";
 import {
   NeutralFaceCountIntakeError,
-  clearNeutralFaceCountReceiptCookie,
-  requireVerifiedNeutralFaceCountReceipt
+  persistNeutralFaceCountSubmission,
+  setNeutralFaceCountReceiptCookie
 } from "@/lib/face-lab-neutral-face-count-intake";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const MAX_BODY_BYTES = 262_144;
-const HOSTED_SESSION_PATTERN = /^hsi_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MAX_BODY_BYTES = 32_768;
 
 function json(body, status = 200) {
   return NextResponse.json(body, {
@@ -41,22 +36,22 @@ function isSameOriginRequest(request) {
 
 async function readJsonBody(request) {
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
-    throw new HostedHumanCueIntakeError("hosted_submission_invalid", 415);
+    throw new NeutralFaceCountIntakeError("neutral_submission_invalid", 415);
   }
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-    throw new HostedHumanCueIntakeError("hosted_submission_invalid", 413);
+    throw new NeutralFaceCountIntakeError("neutral_submission_invalid", 413);
   }
   const raw = await request.text();
   if (Buffer.byteLength(raw, "utf8") > MAX_BODY_BYTES) {
-    throw new HostedHumanCueIntakeError("hosted_submission_invalid", 413);
+    throw new NeutralFaceCountIntakeError("neutral_submission_invalid", 413);
   }
   try {
     const value = JSON.parse(raw);
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
     return value;
   } catch {
-    throw new HostedHumanCueIntakeError("hosted_submission_invalid", 400);
+    throw new NeutralFaceCountIntakeError("neutral_submission_invalid", 400);
   }
 }
 
@@ -80,27 +75,20 @@ export async function POST(request) {
       return json({ ok: false, error: "review_test_mode_denied" }, 403);
     }
 
-    if (!testSubmission) {
-      if (!HOSTED_SESSION_PATTERN.test(payload.sessionId || "")) {
-        throw new HostedHumanCueIntakeError("hosted_submission_invalid", 400);
-      }
-      await requireVerifiedNeutralFaceCountReceipt(request, payload.sessionId);
-    }
-
-    const result = await persistHostedHumanCueSubmission({
+    const persisted = await persistNeutralFaceCountSubmission({
       payload,
       testSubmission
     });
-    const response = json({ ok: true, result }, 201);
-    if (!testSubmission) clearNeutralFaceCountReceiptCookie(response);
+    const { receiptValue, ...publicResult } = persisted;
+    const response = json({ ok: true, result: publicResult }, 201);
+    if (!testSubmission) {
+      setNeutralFaceCountReceiptCookie(response, receiptValue);
+    }
     return response;
   } catch (error) {
-    if (error instanceof HostedHumanCueIntakeError) {
-      return json({ ok: false, error: error.code }, error.status);
-    }
     if (error instanceof NeutralFaceCountIntakeError) {
       return json({ ok: false, error: error.code }, error.status);
     }
-    return json({ ok: false, error: "hosted_intake_write_failed" }, 503);
+    return json({ ok: false, error: "neutral_intake_write_failed" }, 503);
   }
 }
