@@ -1,8 +1,8 @@
 {
   "schemaVersion": "mobile-store-readiness-v1",
-  "slice": "MOBILE-13",
-  "status": "preflight_only",
-  "baselineMainSha": "be08285f6fd1bac50f209a45634c250d7b5a533f",
+  "slice": "MOBILE-14",
+  "status": "repository_ready_external_pending",
+  "baselineMainSha": "07683a045eb4be3cce7818f6244731ce48066b68",
   "publicIdentity": {
     "appName": "BEJEWELY",
     "scheme": "bejewely",
@@ -28,6 +28,18 @@
     "android16KbPlayEnforcementDate": "2027-02-01",
     "bundletoolVersion": "1.18.3",
     "bundletoolSha256": "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
+  },
+  "mobile14Contract": {
+    "canonicalWebOrigin": "https://k-beauty-two.vercel.app",
+    "googleOAuthRedirect": "bejewely://auth/callback",
+    "appleLoginImplementation": "expo-apple-authentication_to_supabase_apple_id_token",
+    "iosAssociatedDomain": "applinks:k-beauty-two.vercel.app",
+    "androidAppLinkHost": "k-beauty-two.vercel.app",
+    "verifiedLinkPathPrefix": "/r/",
+    "appleAssociationEnvironmentKey": "MOBILE_IOS_APPLE_TEAM_ID",
+    "androidAssociationEnvironmentKey": "MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
+    "associationMissingAuthorityBehavior": "http_503_fail_closed",
+    "externalAuthorityStatus": "pending_mobile_15_registration_and_signing"
   },
   "permissionContract": {
     "required": ["camera"],
@@ -71,9 +83,9 @@
     },
     {
       "id": "ios_equivalent_privacy_login",
-      "status": "blocked",
+      "status": "repository_implemented_external_pending",
       "owner": "MOBILE-14",
-      "reason": "Native primary-account auth currently implements Google OAuth only. No equivalent privacy-preserving login option or documented App Review Guideline 4.8 exception is frozen."
+      "reason": "The iOS client implements native Sign in with Apple and Supabase Apple ID-token exchange. Apple Developer/Supabase provider authority remains external and must be verified before store submission."
     },
     {
       "id": "production_app_icon",
@@ -124,27 +136,27 @@
     {"id": "google_play_console", "owner": "MOBILE-15"},
     {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15"},
     {"id": "android_upload_signing_key", "owner": "MOBILE-15"},
-    {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14"},
-    {"id": "ios_equivalent_privacy_login", "owner": "MOBILE-14"},
-    {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14"},
-    {"id": "domain_association_files", "owner": "MOBILE-14"},
+    {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14", "status": "external_pending"},
+    {"id": "ios_equivalent_privacy_login", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
+    {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
+    {"id": "domain_association_files", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
     {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15"}
   ],
   "preflightMeaning": {
     "passMeans": [
-      "Public app identity and platform build numbers are explicit, while external identifier registration remains explicitly unverified.",
-      "Generated native projects match the frozen identity, permission and minimum-platform contracts.",
-      "The mobile source tree consumes only the explicitly allowed public environment variables and NODE_ENV.",
-      "Android can produce a release AAB without production upload signing.",
-      "The Android release AAB resolves target API 36 and requests 16 KB page alignment, with packaged arm64-v8a and x86_64 native ELF LOAD segments aligned to at least 16 KB.",
-      "iOS can produce an unsigned Release archive, separating compile/archive viability from distribution signing.",
-      "Known store compliance and external-authority blockers are explicit and fail-visible."
+      "MOBILE-13 release-preflight identity, toolchain, permission and native build contracts remain preserved.",
+      "Google OAuth keeps the frozen bejewely custom-scheme callback and the repository records that hosted redirect allow-list verification remains external.",
+      "iOS exposes native Sign in with Apple through Expo Apple Authentication and exchanges the Apple identity token with Supabase.",
+      "iOS Universal Links and Android App Links are scoped to the canonical production host and public /r/* report path.",
+      "The canonical web origin exposes association endpoints that fail closed until Apple Team ID and Android production signing SHA-256 authority are supplied.",
+      "Known store compliance and external-authority blockers remain explicit and fail-visible."
     ],
     "passDoesNotMean": [
       "App Store or Google Play submission readiness.",
       "Bundle/package identifier availability or external registration.",
       "Distribution signing readiness.",
-      "Hosted OAuth, equivalent iOS login, or associated-domain readiness.",
+      "Supabase hosted redirect allow-list or Apple provider configuration has been verified.",
+      "A real Apple Team ID or Android production signing certificate fingerprint has been registered on the production domain.",
       "Privacy policy/Data Safety/App Privacy metadata completion.",
       "Physical-device or beta-distribution validation."
     ]
