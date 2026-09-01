@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "mobile-health-claims-readiness-v1",
+  "slice": "MOBILE-16D",
+  "status": "repository_implemented_external_declarations_pending",
+  "productIntent": {
+    "primaryUse": "cosmetic_skin_care_observation_and_personalization",
+    "medicalDecisionUse": false,
+    "diagnosisUse": false,
+    "treatmentUse": false,
+    "regulatoryMedicalDeviceStatus": "external_not_verified",
+    "rule": "Repository product intent is non-diagnostic cosmetic skin-care guidance. Regulatory medical-device classification remains external authority and is not asserted by repository implementation alone."
+  },
+  "googlePlay": {
+    "healthAppsDeclarationRequired": true,
+    "healthFeatureCategory": "Diseases and Conditions Management",
+    "healthFeatureBasis": "Google Play's Health apps declaration guidance explicitly includes skin care under Diseases and Conditions Management.",
+    "medicalDeviceDeclaration": "not_claimed",
+    "healthAppsDeclarationStatus": "external_pending",
+    "requiredStoreDescriptionDisclaimer": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition.",
+    "requiredStoreDescriptionDisclaimerKo": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다."
+  },
+  "apple": {
+    "appReviewGuidelineBoundary": "1.4.1 Physical Harm / Medical Apps",
+    "healthMeasurementAccuracyClaim": false,
+    "medicalDiagnosisOrTreatmentClaim": false,
+    "regulatoryMedicalDeviceStatus": "external_not_verified",
+    "rule": "Do not present BEJEWELY output as a validated health measurement, diagnosis, treatment, or medical decision. Cosmetic visible observations and skin-care personalization must remain explicitly non-medical."
+  },
+  "claimBoundary": {
+    "allowed": [
+      "cautious visible skin appearance observations",
+      "cosmetic skin-care routine personalization",
+      "cosmetic product recommendation explanations grounded in survey and visible cues",
+      "non-diagnostic language such as visible redness, surface shine, dry-looking texture, and breakout-prone concerns"
+    ],
+    "forbidden": [
+      "diagnosing or asserting a disease, disorder, infection, allergy, or medical condition",
+      "claiming to treat, cure, or prevent a medical condition",
+      "claiming clinician-equivalent or medical-device functionality",
+      "claiming validated health-measurement accuracy without externally verified evidence",
+      "turning visible image cues into medical severity or pathology conclusions"
+    ],
+    "visionObservationPrompt": "already_non_diagnostic",
+    "productExplanationPrompt": "repository_guard_required",
+    "inAppDisclaimer": {
+      "en": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only.",
+      "ko": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다."
+    }
+  },
+  "externalAuthority": {
+    "googlePlayHealthAppsDeclaration": "external_pending",
+    "appleRegulatedMedicalDeviceDeclaration": "external_pending_if_applicable",
+    "legalRegulatoryClassification": "external_pending"
+  },
+  "policyEvidence": {
+    "auditedAt": "2026-09-02",
+    "googlePlay": "Health Content and Services + Health apps declaration guidance",
+    "apple": "App Review Guidelines 1.4.1",
+    "repositoryEvidence": [
+      "lib/vision-observation-contract.js",
+      "app/api/analyze/route.js",
+      "apps/mobile/lib/copy.ts",
+      "apps/mobile/app/analyze.tsx"
+    ]
+  }
+}
