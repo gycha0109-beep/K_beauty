@@ -9,9 +9,12 @@ import {
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const mobileRoot = join(repoRoot, "apps", "mobile");
+const workflowPath = join(repoRoot, ".github", "workflows", "mobile-15-distribution-authority.yml");
 const appConfig = JSON.parse(readFileSync(join(mobileRoot, "app.json"), "utf8"));
 const storeReadiness = JSON.parse(readFileSync(join(mobileRoot, "store-readiness.json"), "utf8"));
 const distribution = JSON.parse(readFileSync(join(mobileRoot, "distribution-readiness.json"), "utf8"));
+const workflowSource = readFileSync(workflowPath, "utf8");
+const gitignoreSource = readFileSync(join(repoRoot, ".gitignore"), "utf8");
 const expo = appConfig.expo || {};
 
 const mode = process.argv.includes("--platform")
@@ -93,6 +96,43 @@ for (const id of [
   assert.equal(authorityById.get(id)?.status, "pending", `External authority must remain pending until verified: ${id}`);
 }
 assert.equal(distribution.closeoutRule.signedArtifactBuildAloneDoesNotCloseSlice, true);
+
+// Source-control and workflow secret-safety boundary.
+for (const ignoredPattern of ["*.jks", "*.keystore", "*.p12", "*.p8", "*.mobileprovision"]) {
+  assert.ok(gitignoreSource.split(/\r?\n/).includes(ignoredPattern), `Signing material must be gitignored: ${ignoredPattern}`);
+}
+assert.match(workflowSource, /workflow_dispatch:/);
+assert.match(workflowSource, /name:\s+MOBILE-15 Source Contract/);
+assert.equal(
+  [...workflowSource.matchAll(/github\.event_name == 'workflow_dispatch'/g)].length,
+  2,
+  "Signed Android/iOS jobs must be gated exclusively behind manual workflow_dispatch"
+);
+for (const secretName of [...expectedSecretNames, "MOBILE_IOS_APPLE_TEAM_ID"]) {
+  assert.ok(workflowSource.includes(`secrets.${secretName}`), `Workflow must source signing authority from GitHub secrets: ${secretName}`);
+}
+assert.match(workflowSource, /Missing required MOBILE-15 Android signing authority/);
+assert.match(workflowSource, /Missing required MOBILE-15 iOS signing authority/);
+assert.match(workflowSource, /test "\$\(git rev-parse HEAD\)" = "\$\{\{ github\.sha \}\}"/);
+assert.match(workflowSource, /if:\s+always\(\)/);
+
+const androidJobSource = workflowSource.split("\n  android-signed-distribution:")[1]?.split("\n  ios-signed-distribution:")[0] || "";
+const iosJobSource = workflowSource.split("\n  ios-signed-distribution:")[1] || "";
+assert.ok(androidJobSource, "Android signed distribution job is missing");
+assert.ok(iosJobSource, "iOS signed distribution job is missing");
+assert.match(androidJobSource, /apps\/mobile\/android\/app\/build\/outputs\/bundle\/release\/app-release\.aab/);
+assert.match(androidJobSource, /apps\/mobile\/mobile15-android-signing-evidence\.txt/);
+assert.ok(!/upload-artifact[\s\S]*?\.keystore/.test(androidJobSource), "Android upload artifact boundary must not include keystore material");
+assert.match(iosJobSource, /apps\/mobile\/\.mobile-store-preflight\/export\/\*\.ipa/);
+assert.match(iosJobSource, /apps\/mobile\/mobile15-ios-signing-evidence\.txt/);
+const iosUploadBlock = iosJobSource.split("- name: Upload signed iOS distribution artifact")[1]?.split("- name: Remove ephemeral Apple signing material")[0] || "";
+assert.ok(iosUploadBlock, "iOS signed artifact upload block is missing");
+for (const forbiddenArtifact of [".p12", ".p8", ".mobileprovision", "keychain-db", "export-options.plist"]) {
+  assert.ok(!iosUploadBlock.includes(forbiddenArtifact), `iOS upload artifact boundary must exclude signing material: ${forbiddenArtifact}`);
+}
+assert.match(iosJobSource, /security delete-keychain/);
+assert.match(iosJobSource, /rm -f[\s\S]*mobile15-distribution\.p12/);
+console.log("MOBILE_15_SECRET_SAFE_WORKFLOW_BOUNDARY=PASS");
 
 const fixture = `android {\n    signingConfigs {\n        debug {\n            storeFile file('debug.keystore')\n        }\n    }\n    buildTypes {\n        debug {\n            signingConfig signingConfigs.debug\n        }\n        release {\n            signingConfig signingConfigs.debug\n            minifyEnabled false\n        }\n    }\n}\n`;
 const patchedFixture = patchAndroidReleaseSigning(fixture);
