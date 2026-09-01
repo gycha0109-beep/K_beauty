@@ -1,7 +1,7 @@
 {
   "schemaVersion": "mobile-health-claims-readiness-v1",
   "slice": "MOBILE-16D",
-  "status": "repository_implemented_external_declarations_pending",
+  "status": "repository_mobile_boundary_implemented_external_declarations_pending",
   "productIntent": {
     "primaryUse": "cosmetic_skin_care_observation_and_personalization",
     "medicalDecisionUse": false,
@@ -41,7 +41,11 @@
       "turning visible image cues into medical severity or pathology conclusions"
     ],
     "visionObservationPrompt": "already_non_diagnostic",
-    "productExplanationPrompt": "repository_guard_required",
+    "productExplanationPrompt": "server_prompt_explicit_guard_pending",
+    "mobileRenderGuard": "strong_medical_claims_fail_closed_without_rewriting_server_result",
+    "mobileRenderGuardPath": "apps/mobile/lib/health-claims.ts",
+    "mobileAnalyzeClientEnforcementPath": "apps/mobile/features/analyze/analyze-client.ts",
+    "inAppDisclaimerPath": "apps/mobile/app/analyze.tsx",
     "inAppDisclaimer": {
       "en": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only.",
       "ko": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다."
@@ -59,7 +63,8 @@
     "repositoryEvidence": [
       "lib/vision-observation-contract.js",
       "app/api/analyze/route.js",
-      "apps/mobile/lib/copy.ts",
+      "apps/mobile/lib/health-claims.ts",
+      "apps/mobile/features/analyze/analyze-client.ts",
       "apps/mobile/app/analyze.tsx"
     ]
   }
