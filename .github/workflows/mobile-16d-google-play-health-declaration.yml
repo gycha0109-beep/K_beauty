@@ -1,0 +1,66 @@
+name: BEJEWELY Mobile 16D Google Play Health Declaration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/google-play-health-apps-declaration.json"
+      - "apps/mobile/store-readiness.json"
+      - "lib/vision-observation-contract.js"
+      - "apps/mobile/app/analyze.tsx"
+      - "scripts/verify-mobile-16d-google-play-health-declaration.mjs"
+      - ".github/workflows/mobile-16d-google-play-health-declaration.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/google-play-health-apps-declaration.json"
+      - "apps/mobile/store-readiness.json"
+      - "lib/vision-observation-contract.js"
+      - "apps/mobile/app/analyze.tsx"
+      - "scripts/verify-mobile-16d-google-play-health-declaration.mjs"
+      - ".github/workflows/mobile-16d-google-play-health-declaration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-16d-google-play-health-declaration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Google Play Health Declaration Boundary
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_16D_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify MOBILE-16D contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-16d-google-play-health-declaration.mjs
+          npm run verify:mobile-foundation
