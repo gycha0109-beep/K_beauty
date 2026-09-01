@@ -52,6 +52,34 @@
     "betaDistributionStatus": "not_verified",
     "physicalDeviceQaStatus": "not_verified"
   },
+  "mobile16AContract": {
+    "privacyPolicyUrl": "https://k-beauty-two.vercel.app/privacy",
+    "privacyPolicyEnglishUrl": "https://k-beauty-two.vercel.app/en/privacy",
+    "externalAccountDeletionUrl": "https://k-beauty-two.vercel.app/account-deletion",
+    "externalAccountDeletionEnglishUrl": "https://k-beauty-two.vercel.app/en/account-deletion",
+    "accountDeletionApiPath": "/api/my/account",
+    "mobilePrivacyAccountPath": "/privacy-account",
+    "deletionConfirmation": "delete_account",
+    "authDeleteMode": "hard",
+    "explicitCustomerPurgeTables": [
+      "analysis_results",
+      "recommendation_logs",
+      "analysis_requests",
+      "profiles"
+    ],
+    "appleDeletionReauthorization": "fresh_native_authorization_code",
+    "appleTokenRevocation": "server_side_exchange_then_revoke_fail_closed",
+    "appleRevocationEnvironmentKeys": [
+      "MOBILE_IOS_APPLE_TEAM_ID",
+      "APPLE_SIGN_IN_KEY_ID",
+      "APPLE_SIGN_IN_PRIVATE_KEY"
+    ],
+    "privacyContactEnvironmentKey": "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL",
+    "sourceContractStatus": "repository_implemented",
+    "hostedRouteStatus": "pending_merge_and_production_deploy",
+    "appleRevocationAuthorityStatus": "external_credentials_pending",
+    "privacyContactStatus": "external_value_pending"
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -76,21 +104,21 @@
   "complianceInventory": [
     {
       "id": "privacy_policy",
-      "status": "blocked",
-      "owner": "MOBILE-16",
-      "reason": "No public, versioned privacy-policy route/URL is frozen in the repository."
+      "status": "repository_implemented_external_contact_pending",
+      "owner": "MOBILE-16A",
+      "reason": "Public Korean/English privacy-policy routes are source-frozen; the public privacy contact value and production deployment still require external authority."
     },
     {
       "id": "account_deletion_in_app",
-      "status": "blocked",
-      "owner": "MOBILE-16",
-      "reason": "The authenticated mobile My flow has no account-deletion entry or request flow."
+      "status": "repository_implemented_apple_authority_pending",
+      "owner": "MOBILE-16A",
+      "reason": "The authenticated mobile My flow exposes Privacy · Account and hard account deletion; Sign in with Apple deletion fails closed until Apple token-revocation credentials are configured."
     },
     {
       "id": "google_external_account_deletion",
-      "status": "blocked",
-      "owner": "MOBILE-16",
-      "reason": "No public web deletion-request resource is frozen for Google Play metadata."
+      "status": "repository_implemented_pending_deploy",
+      "owner": "MOBILE-16A",
+      "reason": "A public web deletion resource is implemented for the canonical origin and must be merged/deployed before Play Console metadata can claim it."
     },
     {
       "id": "ios_equivalent_privacy_login",
@@ -152,16 +180,19 @@
     {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
     {"id": "domain_association_files", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
     {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "physical_device_qa", "owner": "MOBILE-15", "status": "external_pending"}
+    {"id": "physical_device_qa", "owner": "MOBILE-15", "status": "external_pending"},
+    {"id": "apple_sign_in_token_revocation_authority", "owner": "MOBILE-16A", "status": "external_pending"},
+    {"id": "privacy_contact", "owner": "MOBILE-16A", "status": "external_pending"}
   ],
   "preflightMeaning": {
     "passMeans": [
       "MOBILE-13 release-preflight identity, toolchain, permission and native build contracts remain preserved.",
       "MOBILE-14 native Apple auth, Universal Links, Android Verified App Links and hosted association boundaries remain preserved.",
       "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
+      "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, explicit customer-data purge and fail-closed Sign in with Apple token revocation.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
-      "iOS distribution certificate, App Store provisioning profile and export-options authority are injected only at workflow runtime.",
-      "Missing distribution credentials fail closed rather than falling back to debug or unsigned distribution artifacts.",
+      "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
+      "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
       "Known store compliance and external-authority blockers remain explicit and fail-visible."
     ],
     "passDoesNotMean": [
@@ -169,9 +200,11 @@
       "Bundle/package identifier availability or external registration.",
       "Apple Developer, App Store Connect or Google Play Console authority has been verified.",
       "A signed artifact has been produced with real distribution credentials.",
-      "A real Apple Team ID or Google Play app-signing certificate fingerprint has been registered on the production domain.",
+      "A real Apple Team ID, Sign in with Apple private key or Google Play app-signing certificate fingerprint has been registered/configured for production.",
+      "The public privacy contact value has been configured in production.",
+      "The MOBILE-16A public routes have been merged and deployed to the canonical production origin.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
-      "Privacy policy/Data Safety/App Privacy metadata completion.",
+      "Data Safety/App Privacy metadata completion.",
       "Physical-device validation."
     ]
   }
