@@ -2,7 +2,10 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import type { Session } from "@supabase/auth-js";
 import { getMobileApiBaseUrl } from "./env";
-import { getMobileSupabaseClient } from "./supabase";
+import {
+  clearMobileSupabaseSessionStorage,
+  getMobileSupabaseClient
+} from "./supabase";
 
 export const MOBILE_AUTH_REDIRECT_URL = "bejewely://auth/callback";
 
@@ -156,6 +159,23 @@ export async function signInNativeWithApple() {
   return data.session;
 }
 
+export async function getNativeAppleDeletionAuthorizationCode() {
+  const available = await AppleAuthentication.isAvailableAsync();
+
+  if (!available) {
+    throw new Error("mobile_apple_auth_unavailable");
+  }
+
+  const credential = await AppleAuthentication.signInAsync({ requestedScopes: [] });
+  const authorizationCode = credential.authorizationCode?.trim() || "";
+
+  if (!authorizationCode) {
+    throw new Error("mobile_apple_deletion_authorization_missing");
+  }
+
+  return authorizationCode;
+}
+
 export async function signOutNative() {
   const supabase = requireMobileSupabaseClient();
   const { error } = await supabase.auth.signOut();
@@ -163,6 +183,10 @@ export async function signOutNative() {
   if (error) {
     throw new Error("mobile_signout_failed");
   }
+}
+
+export async function clearNativeSessionAfterAccountDeletion() {
+  await clearMobileSupabaseSessionStorage();
 }
 
 function getLocalDate() {
