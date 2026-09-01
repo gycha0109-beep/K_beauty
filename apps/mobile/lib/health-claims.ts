@@ -1,8 +1,8 @@
 import type { SupportedLocale } from "@bejewely/shared";
 
 export const MOBILE_HEALTH_DISCLAIMER: Record<SupportedLocale, string> = {
-  en: "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only.",
-  ko: "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다."
+  en: "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional.",
+  ko: "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다. 의학적 조언·진단·치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요."
 };
 
 const STRONG_MEDICAL_CLAIM_PATTERNS = [
