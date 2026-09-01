@@ -1,13 +1,32 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { pathToFileURL, fileURLToPath } from "node:url";
+import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contractPath = join(repoRoot, "apps", "mobile", "google-play-data-safety.json");
 const envPath = join(repoRoot, "apps", "mobile", "lib", "env.ts");
 const contract = JSON.parse(readFileSync(contractPath, "utf8"));
-const envModule = await import(pathToFileURL(envPath).href);
+const envSource = readFileSync(envPath, "utf8");
+const transpiledEnv = ts.transpileModule(envSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022
+  },
+  fileName: envPath,
+  reportDiagnostics: true
+});
+
+assert.deepEqual(
+  transpiledEnv.diagnostics || [],
+  [],
+  "MOBILE-16C env verifier requires an erasable/transpilable TypeScript module"
+);
+
+const envModule = await import(
+  `data:text/javascript;base64,${Buffer.from(transpiledEnv.outputText, "utf8").toString("base64")}`
+);
 
 assert.equal(contract.schemaVersion, "mobile-google-play-data-safety-v1");
 assert.equal(contract.slice, "MOBILE-16C");
