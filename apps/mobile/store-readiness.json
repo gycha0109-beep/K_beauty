@@ -230,6 +230,16 @@
     "googleIarcFinalRatingStatus": "external_pending",
     "consoleSubmissionStatus": "external_pending"
   },
+  "mobile16FContract": {
+    "listingClaimsReadinessPath": "docs/store/mobile-listing-claims-readiness.json",
+    "verifier": "scripts/verify-mobile-16f-store-listing-claims.mjs",
+    "workflow": ".github/workflows/mobile-16f-store-listing-claims.yml",
+    "runtimeBehaviorChanged": false,
+    "runtimeMedicalDisclaimerAdded": false,
+    "googlePlayDisclaimerPlacement": "google_play_app_description",
+    "finalListingCopyStatus": "pending",
+    "sourceContractStatus": "repository_implemented"
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -321,9 +331,9 @@
     },
     {
       "id": "ai_skin_analysis_claim_review",
-      "status": "pending",
-      "owner": "MOBILE-16",
-      "reason": "Final store copy must still be reviewed to avoid unsupported diagnostic or medical claims; MOBILE-16D does not close final listing-copy review or external Play policy review."
+      "status": "repository_claim_boundary_ready_final_listing_copy_pending",
+      "owner": "MOBILE-16F",
+      "reason": "The repository now freezes allowed cosmetic skin-care positioning and prohibits diagnostic, treatment, clinical-accuracy, medical-device and guaranteed-efficacy claims in final store metadata. The existing MOBILE-16D Play-description disclaimer remains store-only; final title/description/screenshots/promotional copy still require review before submission."
     }
   ],
   "externalBlockers": [
@@ -361,6 +371,7 @@
       "MOBILE-16C source-freezes the Google Play Data Safety answer basis and enforces HTTPS for production mobile API and Supabase traffic while preserving explicit external Play Console, processor-contract and OpenAI ZDR authority boundaries.",
       "MOBILE-16D source-freezes a conservative Google Play Health Apps declaration for the skin-care taxonomy, keeps medical-device/diagnosis/treatment claims false, and keeps policy disclaimer copy in Play store-description metadata rather than runtime analysis UI.",
       "MOBILE-16E source-freezes the Apple age-rating and Google IARC questionnaire answer basis, including health/wellness versus medical-treatment separation and the absence of in-app social/UGC exchange, while leaving final store ratings external.",
+      "MOBILE-16F source-freezes the store-listing claim boundary: cosmetic personalization is allowed, while diagnosis, treatment, medical-device, clinical-accuracy and guaranteed-efficacy claims are prohibited; no runtime medical disclaimer is added.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
@@ -380,6 +391,7 @@
       "Any medical-device regulatory determination has been made for BEJEWELY; the repository only freezes product non-claims and intended Play declaration metadata.",
       "Apple has calculated or accepted the final BEJEWELY age rating.",
       "IARC or Google Play has calculated or accepted the final BEJEWELY content rating or Target Audience & Content answers.",
+      "Final App Store or Google Play listing copy, screenshots, promotional text or graphics have been authored, approved or submitted.",
       "Supabase/OpenAI processor-contract status or OpenAI Zero Data Retention has been externally verified.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Physical-device validation."

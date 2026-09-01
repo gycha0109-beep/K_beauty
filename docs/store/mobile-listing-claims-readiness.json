@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "mobile-store-listing-claims-readiness-v1",
+  "slice": "MOBILE-16F",
+  "status": "repository_claim_boundary_ready_final_listing_copy_pending",
+  "policySnapshotDate": "2026-09-02",
+  "scope": {
+    "runtimeBehaviorChanged": false,
+    "runtimeMedicalDisclaimerAdded": false,
+    "finalMarketingCopyFrozen": false,
+    "purpose": "Define allowed and prohibited store-listing claims before final App Store and Google Play copy is authored."
+  },
+  "productPositioning": {
+    "primaryPurpose": "consumer_cosmetic_skin_care_and_product_personalization",
+    "allowed": [
+      "personalized cosmetic skin-care guidance",
+      "skin-care product recommendations based on user-provided photo and survey context",
+      "morning and evening cosmetic skin-care routine guidance",
+      "skin diary and saved report features"
+    ],
+    "prohibited": [
+      "diagnoses acne or any disease or medical condition",
+      "treats, cures, or prevents a disease or medical condition",
+      "measures or clinically determines hydration, skin-barrier state, UV damage, or disease severity",
+      "claims dermatologist-equivalent, clinical, diagnostic, or treatment accuracy",
+      "claims a medical-device or regulated clinical function without external regulatory authority",
+      "claims guaranteed skin improvement or guaranteed product efficacy"
+    ]
+  },
+  "googlePlay": {
+    "healthAppsDeclarationOwner": "MOBILE-16D",
+    "healthCategorySelection": "Diseases and Conditions Management",
+    "taxonomyExample": "skin care",
+    "medicalDeviceAppsSelected": false,
+    "appDescriptionDisclaimerRequiredByCurrentRepositoryDeclarationBasis": true,
+    "appDescriptionDisclaimerSource": "apps/mobile/google-play-health-apps-declaration.json#storeListingBoundary.englishDisclaimer",
+    "disclaimerPlacement": "google_play_app_description",
+    "runtimeDisclaimerRequiredByThisSlice": false,
+    "finalPlayListingStatus": "external_copy_and_console_submission_pending"
+  },
+  "apple": {
+    "medicalFunctionClaimed": false,
+    "healthMeasurementAccuracyClaimed": false,
+    "diagnosisOrTreatmentClaimed": false,
+    "finalAppStoreListingStatus": "external_copy_and_app_store_connect_submission_pending"
+  },
+  "dynamicResultBoundary": {
+    "serverAuthority": true,
+    "mobileClientRewritesResults": false,
+    "existingNonDiagnosticPromptBoundaryRequired": true,
+    "storeCopyMustNotConvertCosmeticObservationsIntoMedicalClaims": true
+  },
+  "finalCopyGate": {
+    "requiredBeforeSubmission": true,
+    "check": "Review final title, subtitle/short description, full description, screenshots, promotional text and feature graphics against this claim boundary before store submission.",
+    "status": "pending"
+  },
+  "policySources": [
+    {
+      "title": "Apple App Review Guidelines - 1.4.1 Medical Apps",
+      "url": "https://developer.apple.com/app-store/review/guidelines/"
+    },
+    {
+      "title": "Google Play - Health Content and Services",
+      "url": "https://support.google.com/googleplay/android-developer/answer/16679511"
+    },
+    {
+      "title": "Google Play - Deceptive Behavior",
+      "url": "https://support.google.com/googleplay/android-developer/answer/17006354"
+    },
+    {
+      "title": "Google Play - Metadata",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9898842"
+    }
+  ]
+}

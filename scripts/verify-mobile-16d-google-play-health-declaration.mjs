@@ -88,7 +88,11 @@ assert.equal(
   "repository_prepared_play_console_submission_pending"
 );
 assert.equal(compliance.get("google_play_health_apps_declaration")?.owner, "MOBILE-16D");
-assert.equal(compliance.get("ai_skin_analysis_claim_review")?.status, "pending");
+assert.equal(
+  compliance.get("ai_skin_analysis_claim_review")?.status,
+  "repository_claim_boundary_ready_final_listing_copy_pending"
+);
+assert.equal(compliance.get("ai_skin_analysis_claim_review")?.owner, "MOBILE-16F");
 
 const externalBlockers = new Map(readiness.externalBlockers.map((item) => [item.id, item]));
 for (const blockerId of [
