@@ -11,9 +11,14 @@ type ScreenShellProps = {
   children?: ReactNode;
 };
 
+function toUserFacingEyebrow(value: string) {
+  return value.replace(/\s*·\s*MOBILE-[0-9/]+(?:\s*\/\s*MOBILE-[0-9/]+)?$/i, "").trim();
+}
+
 export function ScreenShell({ eyebrow, title, description, children }: ScreenShellProps) {
   const { locale, toggleLocale, palette } = useMobileShell();
   const copy = MOBILE_COPY[locale];
+  const visibleEyebrow = toUserFacingEyebrow(eyebrow);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]} edges={["left", "right", "bottom"]}>
@@ -25,7 +30,7 @@ export function ScreenShell({ eyebrow, title, description, children }: ScreenShe
         <View style={styles.contentColumn}>
           <View style={styles.header}>
             <View style={styles.topRow}>
-              <Text style={[styles.eyebrow, { color: palette.accent }]}>{eyebrow}</Text>
+              <Text style={[styles.eyebrow, { color: palette.accent }]}>{visibleEyebrow}</Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={`locale-${copy.localeSwitch.toLowerCase()}`}
