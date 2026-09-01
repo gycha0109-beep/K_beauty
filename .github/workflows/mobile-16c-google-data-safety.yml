@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/google-play-data-safety.json"
+      - "apps/mobile/store-readiness.json"
       - "apps/mobile/lib/env.ts"
       - "scripts/verify-mobile-16c-google-data-safety.mjs"
       - ".github/workflows/mobile-16c-google-data-safety.yml"
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/google-play-data-safety.json"
+      - "apps/mobile/store-readiness.json"
       - "apps/mobile/lib/env.ts"
       - "scripts/verify-mobile-16c-google-data-safety.mjs"
       - ".github/workflows/mobile-16c-google-data-safety.yml"
