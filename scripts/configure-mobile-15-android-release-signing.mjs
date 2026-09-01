@@ -35,9 +35,16 @@ export function patchAndroidReleaseSigning(source) {
     next = next.replace("    signingConfigs {", `    signingConfigs {${releaseSigningBlock}`);
   }
 
-  const releaseBlockPattern = /(release\s*\{[\s\S]*?)signingConfig\s+signingConfigs\.debug/;
-  assert.match(next, releaseBlockPattern, "Generated Android release build no longer uses the expected Expo debug signing placeholder");
-  next = next.replace(releaseBlockPattern, "$1signingConfig signingConfigs.release");
+  const releaseUsesUploadSigning = /release\s*\{[\s\S]*?signingConfig\s+signingConfigs\.release/.test(next);
+  if (!releaseUsesUploadSigning) {
+    const releaseDebugPattern = /(release\s*\{[\s\S]*?)signingConfig\s+signingConfigs\.debug/;
+    assert.match(
+      next,
+      releaseDebugPattern,
+      "Generated Android release build no longer exposes the expected Expo signing placeholder"
+    );
+    next = next.replace(releaseDebugPattern, "$1signingConfig signingConfigs.release");
+  }
 
   assert.ok(next.includes(MOBILE15_ANDROID_SIGNING_MARKER));
   assert.match(next, /release\s*\{[\s\S]*?signingConfig\s+signingConfigs\.release/);
