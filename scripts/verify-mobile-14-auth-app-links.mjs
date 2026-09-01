@@ -17,7 +17,7 @@ const expo = appConfig.expo || {};
 const platform = process.argv.includes("--platform") ? process.argv[process.argv.indexOf("--platform") + 1] : "source";
 
 assert.ok(["source", "android", "ios"].includes(platform), `Unsupported platform: ${platform}`);
-assert.ok(["MOBILE-14", "MOBILE-15", "MOBILE-16A"].includes(readiness.slice));
+assert.ok(["MOBILE-14", "MOBILE-15"].includes(readiness.slice));
 assert.equal(readiness.status, "repository_ready_external_pending");
 assert.equal(readiness.mobile14Contract.canonicalWebOrigin, "https://k-beauty-two.vercel.app");
 assert.equal(readiness.mobile14Contract.googleOAuthRedirect, "bejewely://auth/callback");
