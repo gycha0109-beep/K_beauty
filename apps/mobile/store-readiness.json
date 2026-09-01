@@ -80,9 +80,96 @@
     ],
     "privacyContactEnvironmentKey": "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL",
     "sourceContractStatus": "repository_implemented",
-    "hostedRouteStatus": "pending_merge_and_production_deploy",
+    "hostedRouteStatus": "production_deployed_verified",
     "appleRevocationAuthorityStatus": "external_credentials_pending",
     "privacyContactStatus": "external_value_pending"
+  },
+  "mobile16BContract": {
+    "applePrivacyManifest": {
+      "source": "expo.ios.privacyManifests",
+      "tracking": false,
+      "trackingDomains": [],
+      "collectedDataTypes": [
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhotosorVideos",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            "NSPrivacyCollectedDataTypePurposeProductPersonalization"
+          ]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeHealth",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+            "NSPrivacyCollectedDataTypePurposeProductPersonalization"
+          ]
+        },
+        {
+          "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
+          "NSPrivacyCollectedDataTypeLinked": true,
+          "NSPrivacyCollectedDataTypeTracking": false,
+          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        }
+      ],
+      "requiredReasonApis": [
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+          "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+          "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+          "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+        }
+      ],
+      "dataFlowEvidence": {
+        "rawPhotoProcessor": "openai_vision_via_bejewely_server",
+        "rawPhotoPersistence": "not_persisted_in_analysis_requests_or_analysis_results",
+        "authenticatedLinking": "bearer_authenticated_requests_can_link_to_account_user_id",
+        "healthClassificationBasis": "User-provided skin profile, sensitivity, concern and skin-diary state are treated as health-related data for privacy disclosure; this classification is not a diagnostic or medical-product claim.",
+        "otherUserContentBasis": "User-provided free-form skin-diary memo."
+      },
+      "baselineBinaryAudit": {
+        "treeSha": "bdfa9f2bbecb415c9abc1d6bd7f022388e587fa0",
+        "privacyManifestFiles": 10,
+        "rootManifestObservedReasons": ["CA92.1", "C617.1", "35F9.1"]
+      },
+      "appStoreUploadValidationStatus": "external_pending"
+    },
+    "exportCompliance": {
+      "source": "expo.ios.config.usesNonExemptEncryption",
+      "infoPlistKey": "ITSAppUsesNonExemptEncryption",
+      "value": false,
+      "classification": "exempt_only",
+      "basis": "Mobile-owned networking is standard HTTPS; auth session protection uses Expo SecureStore and Apple platform keychain facilities; no app-owned non-exempt cryptography dependency was observed in the mobile/shared dependency surface.",
+      "appStoreConnectConfirmationStatus": "external_pending"
+    },
+    "sourceContractStatus": "repository_implemented"
   },
   "permissionContract": {
     "required": ["camera"],
@@ -110,7 +197,7 @@
       "id": "privacy_policy",
       "status": "repository_implemented_external_contact_pending",
       "owner": "MOBILE-16A",
-      "reason": "Public Korean/English privacy-policy routes are source-frozen; the public privacy contact value and production deployment still require external authority."
+      "reason": "Public Korean/English privacy-policy routes are deployed on the canonical production origin; the public privacy contact value remains external authority."
     },
     {
       "id": "account_deletion_in_app",
@@ -120,9 +207,9 @@
     },
     {
       "id": "google_external_account_deletion",
-      "status": "repository_implemented_pending_deploy",
+      "status": "production_deployed_external_contact_pending",
       "owner": "MOBILE-16A",
-      "reason": "A public web deletion resource supports authenticated deletion and a provider-neutral email request path; it must be merged/deployed and the public contact configured before Play Console metadata can claim it."
+      "reason": "The public web deletion resource is deployed and reachable on the canonical production origin; the provider-neutral request contact must still be configured before Play Console metadata can claim completion."
     },
     {
       "id": "ios_equivalent_privacy_login",
@@ -144,9 +231,9 @@
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
-      "status": "pending",
-      "owner": "MOBILE-16",
-      "reason": "Generated app and third-party SDK required-reason API declarations must be audited before submission metadata is frozen."
+      "status": "repository_implemented_app_store_upload_validation_pending",
+      "owner": "MOBILE-16B",
+      "reason": "App-owned collected-data types, tracking=false and observed required-reason categories are source-frozen in Expo config and checked after iOS prebuild; final App Store upload validation remains external."
     },
     {
       "id": "google_play_data_safety",
@@ -156,9 +243,9 @@
     },
     {
       "id": "apple_export_compliance",
-      "status": "pending",
-      "owner": "MOBILE-16",
-      "reason": "App Store export-compliance answers must be frozen from the final networking/cryptography dependency set."
+      "status": "repository_implemented_app_store_connect_confirmation_pending",
+      "owner": "MOBILE-16B",
+      "reason": "The source declares ITSAppUsesNonExemptEncryption=false from the audited exempt-only mobile cryptography boundary; App Store Connect confirmation remains external."
     },
     {
       "id": "store_age_rating_and_content_declarations",
@@ -186,14 +273,17 @@
     {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15", "status": "external_pending"},
     {"id": "physical_device_qa", "owner": "MOBILE-15", "status": "external_pending"},
     {"id": "apple_sign_in_token_revocation_authority", "owner": "MOBILE-16A", "status": "external_pending"},
-    {"id": "privacy_contact", "owner": "MOBILE-16A", "status": "external_pending"}
+    {"id": "privacy_contact", "owner": "MOBILE-16A", "status": "external_pending"},
+    {"id": "apple_privacy_manifest_app_store_validation", "owner": "MOBILE-16B", "status": "external_pending"},
+    {"id": "apple_export_compliance_confirmation", "owner": "MOBILE-16B", "status": "external_pending"}
   ],
   "preflightMeaning": {
     "passMeans": [
       "MOBILE-13 release-preflight identity, toolchain, permission and native build contracts remain preserved.",
       "MOBILE-14 native Apple auth, Universal Links, Android Verified App Links and hosted association boundaries remain preserved.",
       "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
-      "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, direct and linked customer-data purge, provider-neutral external deletion request, and fail-closed Sign in with Apple token revocation.",
+      "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, direct and linked customer-data purge, provider-neutral external deletion request, and fail-closed Sign in with Apple token revocation; its public routes are deployed on the canonical production origin.",
+      "MOBILE-16B source-freezes the app-owned Apple collected-data inventory, tracking=false boundary, observed required-reason API declarations and Expo exempt-only export-compliance declaration, with generated PrivacyInfo.xcprivacy and Info.plist verification.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
@@ -206,7 +296,8 @@
       "A signed artifact has been produced with real distribution credentials.",
       "A real Apple Team ID, Sign in with Apple private key or Google Play app-signing certificate fingerprint has been registered/configured for production.",
       "The public privacy contact value has been configured in production.",
-      "The MOBILE-16A public routes have been merged and deployed to the canonical production origin.",
+      "App Store Connect has accepted the app-owned collected-data or required-reason privacy-manifest declarations.",
+      "Apple export-compliance classification has been confirmed in App Store Connect.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Data Safety/App Privacy metadata completion.",
       "Physical-device validation."

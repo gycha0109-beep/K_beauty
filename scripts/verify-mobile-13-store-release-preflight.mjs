@@ -206,7 +206,11 @@ for (const id of [
 const ownedComplianceTransitions = new Map([
   ["privacy_policy", new Set(["blocked", "repository_implemented_external_contact_pending"])],
   ["account_deletion_in_app", new Set(["blocked", "repository_implemented_apple_authority_pending"])],
-  ["google_external_account_deletion", new Set(["blocked", "repository_implemented_pending_deploy"])],
+  ["google_external_account_deletion", new Set([
+    "blocked",
+    "repository_implemented_pending_deploy",
+    "production_deployed_external_contact_pending"
+  ])],
   ["production_app_icon", new Set(["blocked"])]
 ]);
 for (const [id, allowedStatuses] of ownedComplianceTransitions) {
