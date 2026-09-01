@@ -15,9 +15,9 @@ const visionPromptSource = read("lib/vision-observation-contract.js");
 const explanationRouteSource = read("app/api/analyze/route.js");
 
 const disclaimerEn =
-  "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only.";
+  "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional.";
 const disclaimerKo =
-  "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다.";
+  "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다. 의학적 조언·진단·치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요.";
 
 assert.equal(contract.schemaVersion, "mobile-health-claims-readiness-v1");
 assert.equal(contract.slice, "MOBILE-16D");
@@ -34,6 +34,9 @@ assert.equal(contract.claimBoundary.mobileRenderGuard, "strong_medical_claims_fa
 assert.equal(contract.claimBoundary.productExplanationPrompt, "server_prompt_explicit_guard_pending");
 assert.equal(contract.claimBoundary.inAppDisclaimer.en, disclaimerEn);
 assert.equal(contract.claimBoundary.inAppDisclaimer.ko, disclaimerKo);
+assert.ok(contract.googlePlay.requiredStoreDescriptionDisclaimer.includes("not a medical device"));
+assert.ok(contract.googlePlay.requiredStoreDescriptionDisclaimer.includes("consult a qualified healthcare professional"));
+assert.ok(contract.googlePlay.requiredStoreDescriptionDisclaimerKo.includes("의료 전문가와 상담"));
 assert.equal(contract.externalAuthority.googlePlayHealthAppsDeclaration, "external_pending");
 assert.equal(contract.externalAuthority.legalRegulatoryClassification, "external_pending");
 
@@ -170,4 +173,5 @@ console.log("MOBILE_16D_MOBILE_RENDER_FAIL_CLOSED=PASS");
 console.log("MOBILE_16D_CLAIM_GUARD_CASES=PASS");
 console.log("MOBILE_16D_RENDERED_FIELD_SCOPE=PASS");
 console.log("MOBILE_16D_IN_APP_DISCLAIMER=PASS");
+console.log("MOBILE_16D_CLINICIAN_GUIDANCE=PASS");
 console.log("MOBILE_16D_EXTERNAL_HEALTH_DECLARATIONS=PENDING");
