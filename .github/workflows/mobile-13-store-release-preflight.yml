@@ -13,6 +13,7 @@ on:
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-16b-apple-privacy-export.mjs"
       - ".github/workflows/mobile-13-store-release-preflight.yml"
   push:
     branches: [main]
@@ -26,6 +27,7 @@ on:
       - "scripts/verify-mobile-native-shell.mjs"
       - "scripts/verify-mobile-ios-shell.mjs"
       - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-16b-apple-privacy-export.mjs"
       - ".github/workflows/mobile-13-store-release-preflight.yml"
   workflow_dispatch:
 
@@ -90,6 +92,7 @@ jobs:
           npm run verify:mobile-foundation
           npm run mobile:typecheck
           npm run mobile:config
+          node scripts/verify-mobile-16b-apple-privacy-export.mjs --platform source
 
       - name: Generate Android native project
         run: npm run prebuild:android --workspace @bejewely/mobile
@@ -244,6 +247,7 @@ jobs:
           npm run verify:mobile-foundation
           npm run mobile:typecheck
           npm run mobile:config
+          node scripts/verify-mobile-16b-apple-privacy-export.mjs --platform source
 
       - name: Generate iOS native project
         run: npm run prebuild:ios --workspace @bejewely/mobile
@@ -254,6 +258,7 @@ jobs:
           set -euo pipefail
           node scripts/verify-mobile-ios-shell.mjs
           node scripts/verify-mobile-13-store-release-preflight.mjs --platform ios
+          node scripts/verify-mobile-16b-apple-privacy-export.mjs --platform ios
 
       - name: Install CocoaPods dependencies
         shell: bash
