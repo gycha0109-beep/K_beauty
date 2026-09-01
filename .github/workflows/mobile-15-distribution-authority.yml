@@ -1,0 +1,429 @@
+name: BEJEWELY Mobile 15 Distribution Authority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/configure-mobile-15-android-release-signing.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - "scripts/verify-mobile-15-distribution-authority.mjs"
+      - ".github/workflows/mobile-15-distribution-authority.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/shared/**"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
+      - "scripts/configure-mobile-15-android-release-signing.mjs"
+      - "scripts/verify-mobile-13-store-release-preflight.mjs"
+      - "scripts/verify-mobile-14-auth-app-links.mjs"
+      - "scripts/verify-mobile-15-distribution-authority.mjs"
+      - ".github/workflows/mobile-15-distribution-authority.yml"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Signed distribution artifact to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-15-distribution-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source-contract:
+    name: MOBILE-15 Source Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_15_SOURCE_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify preserved mobile boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run verify:mobile-foundation
+          npm run mobile:typecheck
+          npm run mobile:config
+          node scripts/verify-mobile-14-auth-app-links.mjs
+
+      - name: Verify MOBILE-15 distribution authority contract
+        run: node scripts/verify-mobile-15-distribution-authority.mjs
+
+  android-signed-distribution:
+    name: Android Signed Distribution AAB
+    needs: source-contract
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.platform == 'all' || inputs.platform == 'android') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+      MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+      MOBILE_ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEY_ALIAS }}
+      MOBILE_ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.MOBILE_ANDROID_UPLOAD_KEY_PASSWORD }}
+      MOBILE_ANDROID_UPLOAD_CERT_SHA256: ${{ secrets.MOBILE_ANDROID_UPLOAD_CERT_SHA256 }}
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          printf 'MOBILE_15_ANDROID_SHA=%s\n' "$(git rev-parse HEAD)"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android SDK 36 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Generate Android native project
+        run: npm run prebuild:android --workspace @bejewely/mobile
+
+      - name: Verify inherited Android release and app-link contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform android
+          node scripts/verify-mobile-14-auth-app-links.mjs --platform android
+
+      - name: Require Android upload signing authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in \
+            MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64 \
+            MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD \
+            MOBILE_ANDROID_UPLOAD_KEY_ALIAS \
+            MOBILE_ANDROID_UPLOAD_KEY_PASSWORD \
+            MOBILE_ANDROID_UPLOAD_CERT_SHA256
+          do
+            if [ -z "${!key:-}" ]; then
+              printf 'Missing required MOBILE-15 Android signing authority: %s\n' "$key" >&2
+              exit 1
+            fi
+          done
+          keystore="$RUNNER_TEMP/bejewely-mobile15-upload.keystore"
+          printf '%s' "$MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          chmod 600 "$keystore"
+          test -s "$keystore"
+          printf 'MOBILE_ANDROID_UPLOAD_KEYSTORE_PATH=%s\n' "$keystore" >> "$GITHUB_ENV"
+
+      - name: Configure generated Android release for upload signing
+        run: node scripts/configure-mobile-15-android-release-signing.mjs
+
+      - name: Verify generated Android distribution contract
+        run: node scripts/verify-mobile-15-distribution-authority.mjs --platform android
+
+      - name: Build signed release AAB
+        run: npm run build:android:release --workspace @bejewely/mobile
+
+      - name: Verify AAB signature and expected upload certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="apps/mobile/android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$artifact"
+          jarsigner -verify "$artifact"
+          cert_output="$RUNNER_TEMP/mobile15-upload-cert.txt"
+          keytool -J-Duser.language=en -printcert -jarfile "$artifact" > "$cert_output"
+          actual="$(awk -F': ' '/SHA256:/{print $2; exit}' "$cert_output")"
+          test -n "$actual"
+          normalize() { tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]'; }
+          actual_normalized="$(printf '%s' "$actual" | normalize)"
+          expected_normalized="$(printf '%s' "$MOBILE_ANDROID_UPLOAD_CERT_SHA256" | normalize)"
+          test "$actual_normalized" = "$expected_normalized"
+          sha256="$(sha256sum "$artifact" | awk '{print $1}')"
+          {
+            printf 'candidate_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'artifact=app-release.aab\n'
+            printf 'artifact_sha256=%s\n' "$sha256"
+            printf 'upload_certificate_sha256=%s\n' "$actual"
+            printf 'play_delivered_app_signing_certificate=EXTERNAL_GOOGLE_PLAY_AUTHORITY\n'
+          } > apps/mobile/mobile15-android-signing-evidence.txt
+          printf 'MOBILE_15_ANDROID_SIGNED_AAB=PASS\n'
+
+      - name: Upload signed Android distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bejewely-mobile15-android-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+            apps/mobile/mobile15-android-signing-evidence.txt
+
+  ios-signed-distribution:
+    name: iOS Signed Distribution IPA
+    needs: source-contract
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.platform == 'all' || inputs.platform == 'ios') }}
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64: ${{ secrets.MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64 }}
+      MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD: ${{ secrets.MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD }}
+      MOBILE_IOS_APP_STORE_PROFILE_BASE64: ${{ secrets.MOBILE_IOS_APP_STORE_PROFILE_BASE64 }}
+      MOBILE_IOS_EXPORT_OPTIONS_PLIST_BASE64: ${{ secrets.MOBILE_IOS_EXPORT_OPTIONS_PLIST_BASE64 }}
+      MOBILE_IOS_APPLE_TEAM_ID: ${{ secrets.MOBILE_IOS_APPLE_TEAM_ID }}
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          printf 'MOBILE_15_IOS_SHA=%s\n' "$(git rev-parse HEAD)"
+
+      - name: Verify Xcode 26.6 distribution toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.6"
+          xcodebuild -version
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Apply bounded Expo Modules JSI compatibility shim
+        run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+
+      - name: Generate iOS native project
+        run: npm run prebuild:ios --workspace @bejewely/mobile
+
+      - name: Verify inherited iOS release and auth/link contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-mobile-13-store-release-preflight.mjs --platform ios
+          node scripts/verify-mobile-14-auth-app-links.mjs --platform ios
+          node scripts/verify-mobile-15-distribution-authority.mjs --platform ios
+
+      - name: Install CocoaPods dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/mobile/ios
+          pod install
+
+      - name: Require and install Apple distribution authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in \
+            MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64 \
+            MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD \
+            MOBILE_IOS_APP_STORE_PROFILE_BASE64 \
+            MOBILE_IOS_EXPORT_OPTIONS_PLIST_BASE64 \
+            MOBILE_IOS_APPLE_TEAM_ID
+          do
+            if [ -z "${!key:-}" ]; then
+              printf 'Missing required MOBILE-15 iOS signing authority: %s\n' "$key" >&2
+              exit 1
+            fi
+          done
+
+          p12="$RUNNER_TEMP/mobile15-distribution.p12"
+          profile="$RUNNER_TEMP/mobile15-appstore.mobileprovision"
+          profile_plist="$RUNNER_TEMP/mobile15-profile.plist"
+          export_options="$RUNNER_TEMP/mobile15-export-options.plist"
+          keychain="$RUNNER_TEMP/mobile15-signing.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+
+          printf '%s' "$MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64" | base64 --decode > "$p12"
+          printf '%s' "$MOBILE_IOS_APP_STORE_PROFILE_BASE64" | base64 --decode > "$profile"
+          printf '%s' "$MOBILE_IOS_EXPORT_OPTIONS_PLIST_BASE64" | base64 --decode > "$export_options"
+          test -s "$p12"
+          test -s "$profile"
+          test -s "$export_options"
+          plutil -lint "$export_options"
+
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 7200 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$p12" -k "$keychain" -P "$MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain"
+
+          security cms -D -i "$profile" > "$profile_plist"
+          profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist")"
+          profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist")"
+          profile_team="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$profile_plist")"
+          profile_app_id="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$profile_plist")"
+          test "$profile_team" = "$MOBILE_IOS_APPLE_TEAM_ID"
+          test "$profile_app_id" = "$MOBILE_IOS_APPLE_TEAM_ID.com.bejewely.mobile"
+
+          profiles_dir="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$profiles_dir"
+          installed_profile="$profiles_dir/$profile_uuid.mobileprovision"
+          cp "$profile" "$installed_profile"
+
+          printf 'MOBILE15_IOS_PROFILE_UUID=%s\n' "$profile_uuid" >> "$GITHUB_ENV"
+          printf 'MOBILE15_IOS_PROFILE_NAME=%s\n' "$profile_name" >> "$GITHUB_ENV"
+          printf 'MOBILE15_IOS_INSTALLED_PROFILE=%s\n' "$installed_profile" >> "$GITHUB_ENV"
+          printf 'MOBILE15_IOS_KEYCHAIN_PATH=%s\n' "$keychain" >> "$GITHUB_ENV"
+          printf 'MOBILE15_IOS_EXPORT_OPTIONS_PATH=%s\n' "$export_options" >> "$GITHUB_ENV"
+          printf 'MOBILE_15_IOS_PROFILE_AUTHORITY=PASS\n'
+
+      - name: Build signed iOS distribution archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$GITHUB_WORKSPACE/apps/mobile/.mobile-store-preflight/BEJEWELY-mobile15.xcarchive"
+          mkdir -p "$(dirname "$archive")"
+          xcodebuild \
+            -workspace apps/mobile/ios/BEJEWELY.xcworkspace \
+            -scheme BEJEWELY \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$archive" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$MOBILE_IOS_APPLE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$MOBILE15_IOS_PROFILE_UUID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            OTHER_CODE_SIGN_FLAGS="--keychain $MOBILE15_IOS_KEYCHAIN_PATH" \
+            archive
+          app="$archive/Products/Applications/BEJEWELY.app"
+          test -d "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -d --entitlements :- "$app" > "$RUNNER_TEMP/mobile15-signed-entitlements.plist" 2>/dev/null
+          grep -q 'applinks:k-beauty-two.vercel.app' "$RUNNER_TEMP/mobile15-signed-entitlements.plist"
+          grep -q 'com.apple.developer.applesignin' "$RUNNER_TEMP/mobile15-signed-entitlements.plist"
+          codesign -dv --verbose=4 "$app" 2>&1 | grep -q "TeamIdentifier=$MOBILE_IOS_APPLE_TEAM_ID"
+          printf 'MOBILE_15_IOS_SIGNED_ARCHIVE=PASS\n'
+
+      - name: Export signed IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$GITHUB_WORKSPACE/apps/mobile/.mobile-store-preflight/BEJEWELY-mobile15.xcarchive"
+          export_dir="$GITHUB_WORKSPACE/apps/mobile/.mobile-store-preflight/export"
+          rm -rf "$export_dir"
+          mkdir -p "$export_dir"
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$archive" \
+            -exportPath "$export_dir" \
+            -exportOptionsPlist "$MOBILE15_IOS_EXPORT_OPTIONS_PATH"
+          ipa="$(find "$export_dir" -maxdepth 1 -type f -name '*.ipa' -print -quit)"
+          test -n "$ipa"
+          test -s "$ipa"
+          verify_dir="$RUNNER_TEMP/mobile15-ipa"
+          rm -rf "$verify_dir"
+          mkdir -p "$verify_dir"
+          unzip -q "$ipa" -d "$verify_dir"
+          signed_app="$(find "$verify_dir/Payload" -maxdepth 1 -type d -name '*.app' -print -quit)"
+          test -n "$signed_app"
+          codesign --verify --deep --strict --verbose=2 "$signed_app"
+          sha256="$(shasum -a 256 "$ipa" | awk '{print $1}')"
+          {
+            printf 'candidate_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'artifact=%s\n' "$(basename "$ipa")"
+            printf 'artifact_sha256=%s\n' "$sha256"
+            printf 'apple_team_id=%s\n' "$MOBILE_IOS_APPLE_TEAM_ID"
+            printf 'provisioning_profile_uuid=%s\n' "$MOBILE15_IOS_PROFILE_UUID"
+            printf 'provisioning_profile_name=%s\n' "$MOBILE15_IOS_PROFILE_NAME"
+            printf 'testflight_distribution=EXTERNAL_APP_STORE_CONNECT_AUTHORITY\n'
+          } > apps/mobile/mobile15-ios-signing-evidence.txt
+          printf 'MOBILE_15_IOS_SIGNED_IPA=PASS\n'
+
+      - name: Upload signed iOS distribution artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bejewely-mobile15-ios-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            apps/mobile/.mobile-store-preflight/export/*.ipa
+            apps/mobile/mobile15-ios-signing-evidence.txt
+
+      - name: Remove ephemeral Apple signing material
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          if [ -n "${MOBILE15_IOS_INSTALLED_PROFILE:-}" ]; then
+            rm -f "$MOBILE15_IOS_INSTALLED_PROFILE"
+          fi
+          if [ -n "${MOBILE15_IOS_KEYCHAIN_PATH:-}" ]; then
+            security delete-keychain "$MOBILE15_IOS_KEYCHAIN_PATH"
+          fi
+          rm -f \
+            "$RUNNER_TEMP/mobile15-distribution.p12" \
+            "$RUNNER_TEMP/mobile15-appstore.mobileprovision" \
+            "$RUNNER_TEMP/mobile15-profile.plist" \
+            "$RUNNER_TEMP/mobile15-export-options.plist"
