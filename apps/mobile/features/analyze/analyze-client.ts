@@ -3,6 +3,7 @@ import type { SupportedLocale } from "@bejewely/shared";
 import type { NativeCameraPhoto } from "../camera/NativeFaceCamera";
 import { getNativeSession } from "../../lib/auth";
 import { getMobileApiBaseUrl } from "../../lib/env";
+import { hasForbiddenMobileAnalyzeMedicalClaim } from "../../lib/health-claims";
 import { normalizeSurveyAnswers, type SurveyFormInput } from "../../lib/survey-contract";
 
 export type NativeAnalyzeProduct = Readonly<{
@@ -223,6 +224,16 @@ export async function submitNativeAnalyze(input: {
       input.locale === "ko"
         ? "분석 결과 형식을 확인할 수 없습니다. 새 분석을 시작해 주세요."
         : "The analysis result format is invalid. Please start a new analysis.",
+      { status: response.status }
+    );
+  }
+
+  if (hasForbiddenMobileAnalyzeMedicalClaim(responsePayload as Record<string, unknown>)) {
+    throw new NativeAnalyzeRequestError(
+      "mobile_analyze_medical_claim_guard",
+      input.locale === "ko"
+        ? "의료적 판단으로 오해될 수 있는 결과는 표시하지 않습니다. 새 분석을 시작해 주세요."
+        : "A result that could be mistaken for medical guidance was blocked. Please start a new analysis.",
       { status: response.status }
     );
   }

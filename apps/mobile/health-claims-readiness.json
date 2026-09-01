@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "mobile-health-claims-readiness-v1",
+  "slice": "MOBILE-16D",
+  "status": "repository_mobile_boundary_implemented_external_declarations_pending",
+  "productIntent": {
+    "primaryUse": "cosmetic_skin_care_observation_and_personalization",
+    "medicalDecisionUse": false,
+    "diagnosisUse": false,
+    "treatmentUse": false,
+    "regulatoryMedicalDeviceStatus": "external_not_verified",
+    "rule": "Repository product intent is non-diagnostic cosmetic skin-care guidance. Regulatory medical-device classification remains external authority and is not asserted by repository implementation alone."
+  },
+  "googlePlay": {
+    "healthAppsDeclarationRequired": true,
+    "healthFeatureCategory": "Diseases and Conditions Management",
+    "healthFeatureBasis": "Google Play's Health apps declaration guidance explicitly includes skin care under Diseases and Conditions Management.",
+    "medicalDeviceDeclaration": "not_claimed",
+    "healthAppsDeclarationStatus": "external_pending",
+    "requiredStoreDescriptionDisclaimer": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional.",
+    "requiredStoreDescriptionDisclaimerKo": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 의학적 조언·진단·치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요."
+  },
+  "apple": {
+    "appReviewGuidelineBoundary": "1.4.1 Physical Harm / Medical Apps",
+    "healthMeasurementAccuracyClaim": false,
+    "medicalDiagnosisOrTreatmentClaim": false,
+    "regulatoryMedicalDeviceStatus": "external_not_verified",
+    "rule": "Do not present BEJEWELY output as a validated health measurement, diagnosis, treatment, or medical decision. Cosmetic visible observations and skin-care personalization must remain explicitly non-medical."
+  },
+  "claimBoundary": {
+    "allowed": [
+      "cautious visible skin appearance observations",
+      "cosmetic skin-care routine personalization",
+      "cosmetic product recommendation explanations grounded in survey and visible cues",
+      "non-diagnostic language such as visible redness, surface shine, dry-looking texture, and breakout-prone concerns"
+    ],
+    "forbidden": [
+      "diagnosing or asserting a disease, disorder, infection, allergy, or medical condition",
+      "claiming to treat, cure, or prevent a medical condition",
+      "claiming clinician-equivalent or medical-device functionality",
+      "claiming validated health-measurement accuracy without externally verified evidence",
+      "turning visible image cues into medical severity or pathology conclusions"
+    ],
+    "visionObservationPrompt": "already_non_diagnostic",
+    "productExplanationPrompt": "server_prompt_explicit_guard_pending",
+    "mobileRenderGuard": "strong_medical_claims_fail_closed_without_rewriting_server_result",
+    "mobileRenderGuardPath": "apps/mobile/lib/health-claims.ts",
+    "mobileAnalyzeClientEnforcementPath": "apps/mobile/features/analyze/analyze-client.ts",
+    "inAppDisclaimerPath": "apps/mobile/app/analyze.tsx",
+    "inAppDisclaimer": {
+      "en": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Results are cosmetic skin-care guidance only. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional.",
+      "ko": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단·치료·치유·예방하지 않습니다. 결과는 화장품·스킨케어 참고용 안내입니다. 의학적 조언·진단·치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요."
+    }
+  },
+  "externalAuthority": {
+    "googlePlayHealthAppsDeclaration": "external_pending",
+    "appleRegulatedMedicalDeviceDeclaration": "external_pending_if_applicable",
+    "legalRegulatoryClassification": "external_pending"
+  },
+  "policyEvidence": {
+    "auditedAt": "2026-09-02",
+    "googlePlay": "Health Content and Services + Health apps declaration guidance",
+    "apple": "App Review Guidelines 1.4.1",
+    "repositoryEvidence": [
+      "lib/vision-observation-contract.js",
+      "app/api/analyze/route.js",
+      "apps/mobile/lib/health-claims.ts",
+      "apps/mobile/features/analyze/analyze-client.ts",
+      "apps/mobile/app/analyze.tsx"
+    ]
+  }
+}
