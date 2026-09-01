@@ -1,0 +1,64 @@
+name: Face Lab Neutral Review Vercel CLI Compat v1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'scripts/face-lab-neutral-review-operator.mjs'
+      - 'scripts/face-lab-neutral-review-operator-vercel-cli-compat.mjs'
+      - 'scripts/check-face-lab-neutral-review-operator-v1.mjs'
+      - 'scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs'
+      - '.github/workflows/face-lab-neutral-review-operator-vercel-cli-compat-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='${{ github.event.pull_request.head.sha || github.sha }}'
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'FACE_LAB_OPERATOR_COMPAT_SHA=%s\n' "$actual"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check compatibility launcher
+        run: |
+          node --check scripts/face-lab-neutral-review-operator.mjs
+          node --check scripts/face-lab-neutral-review-operator-vercel-cli-compat.mjs
+          node --check scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs
+
+      - name: Verify original operator safety contract
+        run: node scripts/check-face-lab-neutral-review-operator-v1.mjs
+
+      - name: Verify current Vercel CLI URL-only list compatibility
+        run: node scripts/check-face-lab-neutral-review-operator-vercel-cli-compat-v1.mjs
+
+      - name: Diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ '${{ github.event_name }}' = 'pull_request' ]; then
+            base="$(git merge-base '${{ github.event.pull_request.base.sha }}' HEAD)"
+            git diff --check "$base..HEAD"
+          else
+            git diff --check 'HEAD^..HEAD'
+          fi
