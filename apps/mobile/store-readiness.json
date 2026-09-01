@@ -2,7 +2,7 @@
   "schemaVersion": "mobile-store-readiness-v1",
   "slice": "MOBILE-15",
   "status": "repository_ready_external_pending",
-  "baselineMainSha": "74f47e8bb7ee07b99dc59426ac4cfcff0bf523f4",
+  "baselineMainSha": "64b2fab2705be629abc2d543f047165236b4ab22",
   "publicIdentity": {
     "appName": "BEJEWELY",
     "scheme": "bejewely",
