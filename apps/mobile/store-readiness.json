@@ -1,8 +1,8 @@
 {
   "schemaVersion": "mobile-store-readiness-v1",
-  "slice": "MOBILE-16A",
+  "slice": "MOBILE-15",
   "status": "repository_ready_external_pending",
-  "baselineMainSha": "64b2fab2705be629abc2d543f047165236b4ab22",
+  "baselineMainSha": "74f47e8bb7ee07b99dc59426ac4cfcff0bf523f4",
   "publicIdentity": {
     "appName": "BEJEWELY",
     "scheme": "bejewely",
@@ -70,6 +70,7 @@
     "linkedCustomerPurgeTables": [
       "premium_report_sessions"
     ],
+    "linkedCustomerPurgeAuthority": "saved_reports.source_type=premium_report_session + source_session_id, with cross-user reference guard",
     "appleDeletionReauthorization": "fresh_native_authorization_code",
     "appleTokenRevocation": "server_side_exchange_then_revoke_fail_closed",
     "appleRevocationEnvironmentKeys": [
@@ -121,7 +122,7 @@
       "id": "google_external_account_deletion",
       "status": "repository_implemented_pending_deploy",
       "owner": "MOBILE-16A",
-      "reason": "A public web deletion resource is implemented for the canonical origin and must be merged/deployed before Play Console metadata can claim it."
+      "reason": "A public web deletion resource supports authenticated deletion and a provider-neutral email request path; it must be merged/deployed and the public contact configured before Play Console metadata can claim it."
     },
     {
       "id": "ios_equivalent_privacy_login",
@@ -192,7 +193,7 @@
       "MOBILE-13 release-preflight identity, toolchain, permission and native build contracts remain preserved.",
       "MOBILE-14 native Apple auth, Universal Links, Android Verified App Links and hosted association boundaries remain preserved.",
       "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
-      "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, explicit customer-data purge, linked premium-session purge and fail-closed Sign in with Apple token revocation.",
+      "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, direct and linked customer-data purge, provider-neutral external deletion request, and fail-closed Sign in with Apple token revocation.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
