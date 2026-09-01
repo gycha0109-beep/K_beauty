@@ -49,8 +49,9 @@ assert.match(deletionRoute, /authContext\.transport === ["']cookie["']/);
 assert.match(deletionRoute, /evaluateSignOutRequest/);
 assert.match(deletionRoute, /body\?\.confirmation !== ["']delete_account["']/);
 assert.match(deletionRoute, /deleteVerifiedAccount\(authContext\.user/);
-assert.doesNotMatch(deletionRoute, /deleteVerifiedAccount\([^)]*body/s);
+assert.doesNotMatch(deletionRoute, /deleteVerifiedAccount\(\s*body/s);
 assert.doesNotMatch(deletionRoute, /body\?\.(?:userId|user_id)/);
+assert.doesNotMatch(deletionRoute, /body\.(?:userId|user_id)/);
 assert.match(deletionRoute, /appleAuthorizationCode/);
 assert.match(deletionRoute, /status: 428/);
 
