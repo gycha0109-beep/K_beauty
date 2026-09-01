@@ -13,6 +13,7 @@ import { NativeAnalyzeResultView } from "../features/analyze/NativeAnalyzeResult
 import { NativeAnalyzeSurvey } from "../features/analyze/NativeAnalyzeSurvey";
 import { NativeFaceCamera, type NativeCameraPhoto } from "../features/camera/NativeFaceCamera";
 import { MOBILE_COPY } from "../lib/copy";
+import { MOBILE_HEALTH_DISCLAIMER } from "../lib/health-claims";
 import { useMobileShell } from "../lib/mobile-shell";
 import {
   SURVEY_INITIAL_FORM,
@@ -90,6 +91,12 @@ export default function AnalyzeScreen() {
         {locale === "ko"
           ? "분석을 실행할 때만 촬영한 최종 사진과 설문값이 /api/analyze로 전송됩니다. 가이드용 임시 샘플은 업로드하지 않습니다."
           : "Only when you run analysis are the final photo and survey values sent to /api/analyze. Temporary guidance samples are never uploaded."}
+      </Text>
+      <Text
+        testID="native-analyze-health-disclaimer"
+        style={[styles.healthDisclaimer, { color: palette.textMuted, borderColor: palette.border }]}
+      >
+        {MOBILE_HEALTH_DISCLAIMER[locale]}
       </Text>
 
       {result ? (
@@ -180,6 +187,16 @@ const styles = StyleSheet.create({
   notice: {
     fontSize: 15,
     lineHeight: 22,
+    marginBottom: 4
+  },
+  healthDisclaimer: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "700",
     marginBottom: 4
   },
   analyzeFlow: {
