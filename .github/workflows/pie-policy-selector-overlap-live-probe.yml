@@ -1,0 +1,74 @@
+name: PIE Policy Selector Overlap Live Probe
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install exact PIE diagnostic revision
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            "git+https://github.com/gycha0109-beep/Project_Intelligence_Engine.git@7368fc01206158b69825eef787b9c6be8381d7ed"
+          pie-policy-selector-overlap --help >/dev/null
+
+      - name: Diagnose current base-authority policy selectors
+        run: |
+          set -euo pipefail
+          output="${RUNNER_TEMP}/pie-policy-selector-overlap.json"
+          pie-policy-selector-overlap \
+            --policy .review/operational/policy.yml \
+            --output "${output}" >/dev/null
+          python - "${output}" <<'PY'
+          import json
+          import re
+          import sys
+          from pathlib import Path
+
+          path = Path(sys.argv[1])
+          value = json.loads(path.read_text(encoding="utf-8"))
+          assert value["contract_version"] == "PIE_OPERATIONAL_POLICY_SELECTOR_OVERLAP_V1"
+          assert value["summary"]["finding_count"] == 8
+          assert value["summary"]["class_pair_count"] == 2
+          assert value["summary"]["class_pairs"] == [
+              "application-runtime|authorization-boundary",
+              "engine-runtime|verifier-boundary",
+          ]
+          assert value["summary"]["relation_histogram"] == {
+              "EXACT_SELECTOR_DUPLICATE": 1,
+              "LITERAL_PREFIX_RECURSIVE_SUBSUMPTION": 7,
+          }
+          assert value["detection_scope"]["proven_overlap_only"] is True
+          assert value["detection_scope"]["arbitrary_glob_intersection_exhaustive"] is False
+          assert re.fullmatch(r"[0-9a-f]{64}", value["diagnostic_sha256"])
+          assert all(item["proven_overlap"] is True for item in value["findings"])
+          assert all(flag is False for flag in value["authority"].values())
+          PY
+
+      - name: Upload diagnostic artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pie-policy-selector-overlap-kbeauty
+          path: ${{ runner.temp }}/pie-policy-selector-overlap.json
+          if-no-files-found: error
+          retention-days: 30
