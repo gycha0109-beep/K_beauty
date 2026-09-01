@@ -4,7 +4,15 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "apps/mobile/**"
+      - "apps/mobile/app/**"
+      - "apps/mobile/components/**"
+      - "apps/mobile/features/**"
+      - "apps/mobile/lib/**"
+      - "apps/mobile/modules/**"
+      - "apps/mobile/assets/**"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/tsconfig.json"
       - "packages/shared/**"
       - "package.json"
       - "package-lock.json"
@@ -16,7 +24,15 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/mobile/**"
+      - "apps/mobile/app/**"
+      - "apps/mobile/components/**"
+      - "apps/mobile/features/**"
+      - "apps/mobile/lib/**"
+      - "apps/mobile/modules/**"
+      - "apps/mobile/assets/**"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/tsconfig.json"
       - "packages/shared/**"
       - "package.json"
       - "package-lock.json"
