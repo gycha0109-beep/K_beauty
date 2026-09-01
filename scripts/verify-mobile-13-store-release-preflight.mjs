@@ -76,7 +76,7 @@ function assertAndroidPermissionNotRequested(manifest, permission) {
 }
 
 assert.equal(readiness.schemaVersion, "mobile-store-readiness-v1");
-assert.ok(["MOBILE-13", "MOBILE-14"].includes(readiness.slice));
+assert.ok(["MOBILE-13", "MOBILE-14", "MOBILE-15"].includes(readiness.slice));
 assert.ok(["preflight_only", "repository_ready_external_pending"].includes(readiness.status));
 
 assert.equal(expo.name, "BEJEWELY");

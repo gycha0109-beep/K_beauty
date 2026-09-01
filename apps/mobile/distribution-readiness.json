@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "mobile-distribution-readiness-v1",
+  "slice": "MOBILE-15",
+  "status": "repository_signing_path_ready_external_authority_pending",
+  "baselineMainSha": "74f47e8bb7ee07b99dc59426ac4cfcff0bf523f4",
+  "identity": {
+    "iosBundleIdentifier": "com.bejewely.mobile",
+    "androidApplicationId": "com.bejewely.mobile",
+    "registrationDecision": "frozen_pending_external_registration",
+    "iosRegistrationStatus": "not_verified",
+    "androidRegistrationStatus": "not_verified"
+  },
+  "releaseVersion": {
+    "marketingVersion": "0.1.0",
+    "iosBuildNumber": "1",
+    "androidVersionCode": 1,
+    "monotonicBuildIdentifiersRequired": true
+  },
+  "credentialBoundary": {
+    "repositoryStoresPrivateSigningMaterial": false,
+    "workflowSecretsOnly": true,
+    "android": {
+      "uploadKeystoreBase64Secret": "MOBILE_ANDROID_UPLOAD_KEYSTORE_BASE64",
+      "uploadKeystorePasswordSecret": "MOBILE_ANDROID_UPLOAD_KEYSTORE_PASSWORD",
+      "uploadKeyAliasSecret": "MOBILE_ANDROID_UPLOAD_KEY_ALIAS",
+      "uploadKeyPasswordSecret": "MOBILE_ANDROID_UPLOAD_KEY_PASSWORD",
+      "expectedUploadCertificateSha256Secret": "MOBILE_ANDROID_UPLOAD_CERT_SHA256",
+      "playDeliveredAppSigningCertificateSource": "google_play_console_after_play_app_signing_enrollment",
+      "playDeliveredAppSigningCertificateEnvironmentKey": "MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
+      "uploadCertificateIsNotDeliveredAppSigningCertificate": true
+    },
+    "ios": {
+      "distributionCertificateP12Base64Secret": "MOBILE_IOS_DISTRIBUTION_CERT_P12_BASE64",
+      "distributionCertificatePasswordSecret": "MOBILE_IOS_DISTRIBUTION_CERT_PASSWORD",
+      "appStoreProvisioningProfileBase64Secret": "MOBILE_IOS_APP_STORE_PROFILE_BASE64",
+      "exportOptionsPlistBase64Secret": "MOBILE_IOS_EXPORT_OPTIONS_PLIST_BASE64",
+      "appleTeamIdEnvironmentKey": "MOBILE_IOS_APPLE_TEAM_ID",
+      "requiredBundleIdentifier": "com.bejewely.mobile"
+    }
+  },
+  "repositoryOwnedGates": {
+    "sourceContract": "required_on_pull_request_and_main_push",
+    "androidSignedAab": "manual_dispatch_when_external_credentials_exist",
+    "iosSignedIpa": "manual_dispatch_when_external_credentials_exist",
+    "artifactCredentialLeakCheck": "required",
+    "exactShaCheckout": "required",
+    "signedArtifactEvidenceUpload": "required"
+  },
+  "externalAuthority": [
+    {
+      "id": "ios_bundle_id_registration",
+      "status": "pending",
+      "authority": "Apple Developer"
+    },
+    {
+      "id": "app_store_connect_app_record",
+      "status": "pending",
+      "authority": "App Store Connect"
+    },
+    {
+      "id": "ios_distribution_certificate_and_profile",
+      "status": "pending",
+      "authority": "Apple Developer"
+    },
+    {
+      "id": "android_package_registration",
+      "status": "pending",
+      "authority": "Google Play Console"
+    },
+    {
+      "id": "play_app_signing_enrollment",
+      "status": "pending",
+      "authority": "Google Play Console"
+    },
+    {
+      "id": "android_upload_key",
+      "status": "pending",
+      "authority": "Google Play Console / operator"
+    },
+    {
+      "id": "testflight_internal_distribution",
+      "status": "pending",
+      "authority": "App Store Connect"
+    },
+    {
+      "id": "play_internal_testing",
+      "status": "pending",
+      "authority": "Google Play Console"
+    },
+    {
+      "id": "physical_device_qa",
+      "status": "pending",
+      "authority": "operator"
+    }
+  ],
+  "closeoutRule": {
+    "repositoryPrepared": "Source contract is green and manual signed-artifact workflows are present, secret-safe, exact-SHA-bound, and fail closed when signing authority is absent.",
+    "mobile15Closed": "Repository preparation plus verified external registration, real distribution signing, TestFlight internal distribution, Play Internal Testing, and physical-device QA are all complete.",
+    "signedArtifactBuildAloneDoesNotCloseSlice": true
+  }
+}

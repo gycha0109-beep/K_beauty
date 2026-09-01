@@ -1,8 +1,8 @@
 {
   "schemaVersion": "mobile-store-readiness-v1",
-  "slice": "MOBILE-14",
+  "slice": "MOBILE-15",
   "status": "repository_ready_external_pending",
-  "baselineMainSha": "07683a045eb4be3cce7818f6244731ce48066b68",
+  "baselineMainSha": "74f47e8bb7ee07b99dc59426ac4cfcff0bf523f4",
   "publicIdentity": {
     "appName": "BEJEWELY",
     "scheme": "bejewely",
@@ -40,6 +40,17 @@
     "androidAssociationEnvironmentKey": "MOBILE_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
     "associationMissingAuthorityBehavior": "http_503_fail_closed",
     "externalAuthorityStatus": "pending_mobile_15_registration_and_signing"
+  },
+  "mobile15Contract": {
+    "distributionReadinessPath": "apps/mobile/distribution-readiness.json",
+    "signedArtifactWorkflow": ".github/workflows/mobile-15-distribution-authority.yml",
+    "androidUploadSigningConfigurator": "scripts/configure-mobile-15-android-release-signing.mjs",
+    "distributionVerifier": "scripts/verify-mobile-15-distribution-authority.mjs",
+    "sourceContractStatus": "repository_implemented",
+    "signedArtifactExecutionStatus": "external_credentials_pending",
+    "externalRegistrationStatus": "not_verified",
+    "betaDistributionStatus": "not_verified",
+    "physicalDeviceQaStatus": "not_verified"
   },
   "permissionContract": {
     "required": ["camera"],
@@ -131,34 +142,37 @@
     }
   ],
   "externalBlockers": [
-    {"id": "bundle_and_package_registration", "owner": "MOBILE-15"},
-    {"id": "apple_developer_and_app_store_connect", "owner": "MOBILE-15"},
-    {"id": "google_play_console", "owner": "MOBILE-15"},
-    {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15"},
-    {"id": "android_upload_signing_key", "owner": "MOBILE-15"},
+    {"id": "bundle_and_package_registration", "owner": "MOBILE-15", "status": "external_pending"},
+    {"id": "apple_developer_and_app_store_connect", "owner": "MOBILE-15", "status": "external_pending"},
+    {"id": "google_play_console", "owner": "MOBILE-15", "status": "external_pending"},
+    {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15", "status": "repository_prepared_external_pending"},
+    {"id": "android_upload_signing_key", "owner": "MOBILE-15", "status": "repository_prepared_external_pending"},
     {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14", "status": "external_pending"},
     {"id": "ios_equivalent_privacy_login", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
     {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
     {"id": "domain_association_files", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
-    {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15"}
+    {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15", "status": "external_pending"},
+    {"id": "physical_device_qa", "owner": "MOBILE-15", "status": "external_pending"}
   ],
   "preflightMeaning": {
     "passMeans": [
       "MOBILE-13 release-preflight identity, toolchain, permission and native build contracts remain preserved.",
-      "Google OAuth keeps the frozen bejewely custom-scheme callback and the repository records that hosted redirect allow-list verification remains external.",
-      "iOS exposes native Sign in with Apple through Expo Apple Authentication and exchanges the Apple identity token with Supabase.",
-      "iOS Universal Links and Android App Links are scoped to the canonical production host and public /r/* report path.",
-      "The canonical web origin exposes association endpoints that fail closed until Apple Team ID and Android production signing SHA-256 authority are supplied.",
+      "MOBILE-14 native Apple auth, Universal Links, Android Verified App Links and hosted association boundaries remain preserved.",
+      "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
+      "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
+      "iOS distribution certificate, App Store provisioning profile and export-options authority are injected only at workflow runtime.",
+      "Missing distribution credentials fail closed rather than falling back to debug or unsigned distribution artifacts.",
       "Known store compliance and external-authority blockers remain explicit and fail-visible."
     ],
     "passDoesNotMean": [
       "App Store or Google Play submission readiness.",
       "Bundle/package identifier availability or external registration.",
-      "Distribution signing readiness.",
-      "Supabase hosted redirect allow-list or Apple provider configuration has been verified.",
-      "A real Apple Team ID or Android production signing certificate fingerprint has been registered on the production domain.",
+      "Apple Developer, App Store Connect or Google Play Console authority has been verified.",
+      "A signed artifact has been produced with real distribution credentials.",
+      "A real Apple Team ID or Google Play app-signing certificate fingerprint has been registered on the production domain.",
+      "TestFlight or Google Play Internal Testing distribution has completed.",
       "Privacy policy/Data Safety/App Privacy metadata completion.",
-      "Physical-device or beta-distribution validation."
+      "Physical-device validation."
     ]
   }
 }
