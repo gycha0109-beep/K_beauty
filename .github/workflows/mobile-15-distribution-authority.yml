@@ -4,8 +4,11 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "apps/mobile/**"
-      - "packages/shared/**"
+      - ".gitignore"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/modules/**"
+      - "apps/mobile/distribution-readiness.json"
       - "package.json"
       - "package-lock.json"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
@@ -17,8 +20,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "apps/mobile/**"
-      - "packages/shared/**"
+      - ".gitignore"
+      - "apps/mobile/app.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/modules/**"
+      - "apps/mobile/distribution-readiness.json"
       - "package.json"
       - "package-lock.json"
       - "scripts/apply-expo-modules-jsi-xcode26-compat.mjs"
