@@ -25,6 +25,13 @@ data/hwahae/ranking-snapshots/
 supabase/.temp/
 private
 
+# Native distribution signing material must never enter source control
+*.jks
+*.keystore
+*.p12
+*.p8
+*.mobileprovision
+
 # Codex local runtime files
 .codex/environments/
 .codex/review-chrome-profile/
