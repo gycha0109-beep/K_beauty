@@ -35,11 +35,22 @@ function hasStrongMedicalClaim(value: unknown, depth = 0): boolean {
   return false;
 }
 
+function projectRenderedProduct(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const product = value as Record<string, unknown>;
+  return {
+    brand: product.brand,
+    name: product.name,
+    reason: product.reason,
+    comparisonReason: product.comparison_reason
+  };
+}
+
 export function hasForbiddenMobileAnalyzeMedicalClaim(result: Record<string, unknown>) {
   const userFacingBoundary = {
     summary: result.summary,
-    topPick: result.topPick,
-    alternative: result.alternative,
+    topPick: projectRenderedProduct(result.topPick),
+    alternative: projectRenderedProduct(result.alternative),
     amFocus: result.amFocus,
     pmFocus: result.pmFocus,
     morning: result.morning,
