@@ -60,7 +60,8 @@ for (const table of ["analysis_results", "recommendation_logs", "analysis_reques
 }
 assert.match(deletionService, /auth\.admin\.deleteUser\(verifiedUser\.id, false\)/);
 assert.match(deletionService, /https:\/\/appleid\.apple\.com\/auth\/token/);
-assert.match(deletionService, /https:\/\/appleid\.apple\.com\/auth\/oauth2\/v2\/revoke/);
+assert.match(deletionService, /https:\/\/appleid\.apple\.com\/auth\/revoke/);
+assert.doesNotMatch(deletionService, /auth\/oauth2\/v2\/revoke/);
 assert.match(deletionService, /APPLE_SIGN_IN_KEY_ID/);
 assert.match(deletionService, /APPLE_SIGN_IN_PRIVATE_KEY/);
 assert.match(deletionService, /MOBILE_IOS_APPLE_TEAM_ID/);
