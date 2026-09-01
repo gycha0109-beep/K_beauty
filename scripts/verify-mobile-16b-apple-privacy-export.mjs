@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +24,45 @@ const expectedRequiredReasons = new Map([
   ["NSPrivacyAccessedAPICategorySystemBootTime", ["35F9.1"]]
 ]);
 
+const expectedCollectedData = new Map([
+  ["NSPrivacyCollectedDataTypeName", {
+    linked: true,
+    tracking: false,
+    purposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+  }],
+  ["NSPrivacyCollectedDataTypeEmailAddress", {
+    linked: true,
+    tracking: false,
+    purposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+  }],
+  ["NSPrivacyCollectedDataTypeUserID", {
+    linked: true,
+    tracking: false,
+    purposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+  }],
+  ["NSPrivacyCollectedDataTypePhotosorVideos", {
+    linked: true,
+    tracking: false,
+    purposes: [
+      "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+      "NSPrivacyCollectedDataTypePurposeProductPersonalization"
+    ]
+  }],
+  ["NSPrivacyCollectedDataTypeHealth", {
+    linked: true,
+    tracking: false,
+    purposes: [
+      "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+      "NSPrivacyCollectedDataTypePurposeProductPersonalization"
+    ]
+  }],
+  ["NSPrivacyCollectedDataTypeOtherUserContent", {
+    linked: true,
+    tracking: false,
+    purposes: ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+  }]
+]);
+
 function normalizeReasonEntries(entries) {
   return new Map(
     (entries || []).map((entry) => [
@@ -44,9 +84,39 @@ function assertRequiredReasons(entries, label) {
   }
 }
 
+function normalizeCollectedData(entries) {
+  return new Map(
+    (entries || []).map((entry) => [
+      entry.NSPrivacyCollectedDataType,
+      {
+        linked: entry.NSPrivacyCollectedDataTypeLinked,
+        tracking: entry.NSPrivacyCollectedDataTypeTracking,
+        purposes: [...(entry.NSPrivacyCollectedDataTypePurposes || [])].sort()
+      }
+    ])
+  );
+}
+
+function assertCollectedData(entries, label) {
+  const actual = normalizeCollectedData(entries);
+  assert.deepEqual(
+    [...actual.keys()].sort(),
+    [...expectedCollectedData.keys()].sort(),
+    `${label} collected-data types drifted`
+  );
+  for (const [dataType, expected] of expectedCollectedData) {
+    assert.deepEqual(
+      actual.get(dataType),
+      { ...expected, purposes: [...expected.purposes].sort() },
+      `${label} declaration drifted for ${dataType}`
+    );
+  }
+}
+
 const privacy = ios.privacyManifests || {};
 assert.equal(privacy.NSPrivacyTracking, false, "MOBILE-16B forbids app-owned tracking");
 assert.deepEqual(privacy.NSPrivacyTrackingDomains || [], [], "Tracking domains must remain empty");
+assertCollectedData(privacy.NSPrivacyCollectedDataTypes, "Expo source privacy manifest");
 assertRequiredReasons(privacy.NSPrivacyAccessedAPITypes, "Expo source privacy manifest");
 assert.equal(
   ios.config?.usesNonExemptEncryption,
@@ -64,7 +134,11 @@ assert.equal(contract.exportCompliance.infoPlistKey, "ITSAppUsesNonExemptEncrypt
 assert.equal(contract.exportCompliance.value, false);
 assert.equal(contract.exportCompliance.classification, "exempt_only");
 assert.equal(contract.exportCompliance.appStoreConnectConfirmationStatus, "external_pending");
+assertCollectedData(contract.applePrivacyManifest.collectedDataTypes, "MOBILE-16B readiness contract");
 assertRequiredReasons(contract.applePrivacyManifest.requiredReasonApis, "MOBILE-16B readiness contract");
+assert.equal(contract.applePrivacyManifest.dataFlowEvidence.rawPhotoPersistence, "not_persisted_in_analysis_requests_or_analysis_results");
+assert.equal(contract.applePrivacyManifest.dataFlowEvidence.rawPhotoProcessor, "openai_vision_via_bejewely_server");
+assert.equal(contract.applePrivacyManifest.dataFlowEvidence.authenticatedLinking, "bearer_authenticated_requests_can_link_to_account_user_id");
 
 const compliance = new Map(readiness.complianceInventory.map((item) => [item.id, item]));
 assert.equal(
@@ -104,19 +178,19 @@ if (mode === "ios") {
   assert.ok(existsSync(privacyManifestPath), "Generated app PrivacyInfo.xcprivacy is required");
 
   const infoPlist = readFileSync(infoPlistPath, "utf8");
-  const privacyManifest = readFileSync(privacyManifestPath, "utf8");
   assert.match(
     infoPlist,
     /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\s*\/>/,
     "Generated Info.plist must carry ITSAppUsesNonExemptEncryption=false"
   );
-  assert.match(privacyManifest, /<key>NSPrivacyTracking<\/key>\s*<false\s*\/>/);
-  for (const [category, reasons] of expectedRequiredReasons) {
-    assert.ok(privacyManifest.includes(category), `Generated privacy manifest missing ${category}`);
-    for (const reason of reasons) {
-      assert.ok(privacyManifest.includes(reason), `Generated privacy manifest missing reason ${reason}`);
-    }
-  }
+
+  const generatedPrivacy = JSON.parse(
+    execFileSync("plutil", ["-convert", "json", "-o", "-", privacyManifestPath], { encoding: "utf8" })
+  );
+  assert.equal(generatedPrivacy.NSPrivacyTracking, false, "Generated app manifest must keep tracking disabled");
+  assert.deepEqual(generatedPrivacy.NSPrivacyTrackingDomains || [], [], "Generated tracking domains must remain empty");
+  assertCollectedData(generatedPrivacy.NSPrivacyCollectedDataTypes, "Generated app privacy manifest");
+  assertRequiredReasons(generatedPrivacy.NSPrivacyAccessedAPITypes, "Generated app privacy manifest");
 
   function findPrivacyManifests(root, found = []) {
     if (!existsSync(root)) return found;
