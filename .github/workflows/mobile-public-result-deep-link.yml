@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/**"
+      - "!apps/mobile/store-readiness.json"
+      - "!apps/mobile/google-play-data-safety.json"
+      - "!apps/mobile/google-play-health-apps-declaration.json"
       - "app/api/results/[shareId]/route.js"
       - "lib/analysis-result-access.js"
       - "lib/analysis-results.js"
@@ -19,6 +22,9 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/**"
+      - "!apps/mobile/store-readiness.json"
+      - "!apps/mobile/google-play-data-safety.json"
+      - "!apps/mobile/google-play-health-apps-declaration.json"
       - "app/api/results/[shareId]/route.js"
       - "lib/analysis-result-access.js"
       - "lib/analysis-results.js"
