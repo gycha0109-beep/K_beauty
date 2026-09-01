@@ -6,8 +6,10 @@ import ts from "typescript";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contractPath = join(repoRoot, "apps", "mobile", "google-play-data-safety.json");
+const readinessPath = join(repoRoot, "apps", "mobile", "store-readiness.json");
 const envPath = join(repoRoot, "apps", "mobile", "lib", "env.ts");
 const contract = JSON.parse(readFileSync(contractPath, "utf8"));
+const readiness = JSON.parse(readFileSync(readinessPath, "utf8"));
 const envSource = readFileSync(envPath, "utf8");
 const transpiledEnv = ts.transpileModule(envSource, {
   compilerOptions: {
@@ -70,6 +72,45 @@ assert.equal(
   contract.processorBoundary.openAiApi.photoEphemeralClaim,
   "prohibited_until_zdr_or_equivalent_nonretention_authority_is_verified"
 );
+
+const readinessContract = readiness.mobile16CContract;
+assert.ok(readinessContract, "Missing MOBILE-16C readiness contract");
+assert.equal(readinessContract.googlePlayDataSafetyPath, "apps/mobile/google-play-data-safety.json");
+assert.equal(readinessContract.verifier, "scripts/verify-mobile-16c-google-data-safety.mjs");
+assert.equal(readinessContract.workflow, ".github/workflows/mobile-16c-google-data-safety.yml");
+assert.equal(readinessContract.productionTransport.apiBaseUrl, "https_required_fail_closed");
+assert.equal(readinessContract.productionTransport.supabaseUrl, "https_required_fail_closed");
+assert.equal(readinessContract.openAiDataBoundary.defaultAbuseMonitoringRetention, "up_to_30_days");
+assert.equal(readinessContract.openAiDataBoundary.zeroDataRetentionStatus, "external_unverified");
+assert.equal(readinessContract.sourceContractStatus, "repository_implemented");
+assert.equal(readinessContract.playConsoleSubmissionStatus, "external_pending");
+assert.equal(readiness.clientEnvironmentContract.productionTransport, "https_only_for_api_and_supabase_fail_closed");
+assert.deepEqual(
+  [...readinessContract.declaredCollectedDataTypes].sort(),
+  [...expectedDataTypes.keys()].sort(),
+  "Store readiness and Google Play data inventory drifted"
+);
+assert.deepEqual([...readinessContract.requiredDataTypes].sort(), ["Health info", "Photos"]);
+assert.deepEqual(
+  [...readinessContract.optionalDataTypes].sort(),
+  ["Email address", "Name", "Other user-generated content", "User IDs"]
+);
+
+const compliance = new Map(readiness.complianceInventory.map((item) => [item.id, item]));
+assert.equal(
+  compliance.get("google_play_data_safety")?.status,
+  "repository_implemented_play_console_submission_pending"
+);
+assert.equal(compliance.get("google_play_data_safety")?.owner, "MOBILE-16C");
+
+const externalBlockers = new Map(readiness.externalBlockers.map((item) => [item.id, item]));
+for (const blockerId of [
+  "google_play_data_safety_submission",
+  "google_play_processor_contract_confirmation",
+  "openai_zero_data_retention_authority"
+]) {
+  assert.equal(externalBlockers.get(blockerId)?.status, "external_pending", `Missing external blocker: ${blockerId}`);
+}
 
 const envKeys = [
   "NODE_ENV",
