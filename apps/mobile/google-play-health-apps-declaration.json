@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "mobile-google-play-health-apps-declaration-v1",
+  "slice": "MOBILE-16D",
+  "status": "repository_prepared_play_console_submission_pending",
+  "authority": {
+    "googlePlayHealthAppsDeclaration": "external_pending",
+    "googlePlayPolicySnapshotDate": "2026-09-02",
+    "regulatoryMedicalDeviceStatus": "not_asserted_by_repository",
+    "rule": "Repository evidence freezes BEJEWELY's intended Google Play declaration and store-copy boundary. Play Console acceptance and any regulatory medical-device determination remain external authority."
+  },
+  "declaration": {
+    "requiredForPublishedGooglePlayApps": true,
+    "declaresHealthRelatedFeature": true,
+    "selectedFeatures": [
+      {
+        "section": "Medical",
+        "category": "Diseases and Conditions Management",
+        "taxonomyExample": "skin care",
+        "basis": "Google Play's Health apps declaration taxonomy explicitly lists skin care under Diseases and Conditions Management. This store taxonomy mapping does not change BEJEWELY's cosmetic product purpose into diagnosis, treatment, or medical-device functionality."
+      }
+    ],
+    "medicalDeviceAppsSelected": false
+  },
+  "productBoundary": {
+    "primaryPurpose": "cosmetic_skin_care_and_product_personalization",
+    "medicalDiagnosis": false,
+    "diseaseTreatment": false,
+    "diseaseCure": false,
+    "diseasePrevention": false,
+    "clinicalDecisionSupport": false,
+    "medicationOrPrescriptionManagement": false,
+    "medicalDeviceFunction": false,
+    "regulatedMedicalDeviceClaim": false
+  },
+  "existingGenerationSafetyBoundary": {
+    "path": "lib/vision-observation-contract.js",
+    "nonDiagnosticPromptBoundary": "This is not medical diagnosis",
+    "visibleCueOnlyBoundary": "Do not infer hydration, barrier state, acne disease, UV damage, or sensitivity beyond cautious visible cues."
+  },
+  "storeListingBoundary": {
+    "runtimeMedicalDisclaimerAdded": false,
+    "placement": "google_play_app_description",
+    "englishDisclaimer": "BEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional.",
+    "koreanDisclaimer": "BEJEWELY는 의료기기가 아니며 어떠한 질환도 진단, 치료, 치유 또는 예방하지 않습니다. 의학적 조언, 진단 또는 치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요.",
+    "cameraCompatibilityEnglish": "Photo analysis requires a supported device camera. BEJEWELY does not require external medical hardware or a special medical sensor.",
+    "cameraCompatibilityKorean": "사진 분석에는 지원되는 기기의 카메라가 필요합니다. BEJEWELY는 외부 의료 하드웨어나 특수 의료 센서를 요구하지 않습니다."
+  },
+  "explicitNonClaims": [
+    "medical_device",
+    "diagnosis",
+    "treatment",
+    "cure",
+    "disease_prevention",
+    "clinical_decision_support",
+    "healthcare_professional_equivalence"
+  ],
+  "externalPending": [
+    "google_play_health_apps_declaration_submission",
+    "google_play_health_policy_review",
+    "final_google_play_store_description_publication"
+  ],
+  "policySources": [
+    {
+      "title": "Provide information for the Health apps declaration form",
+      "url": "https://support.google.com/googleplay/android-developer/answer/14738291"
+    },
+    {
+      "title": "Health Content and Services",
+      "url": "https://support.google.com/googleplay/android-developer/answer/16679511"
+    },
+    {
+      "title": "Health app categories and additional information",
+      "url": "https://support.google.com/googleplay/android-developer/answer/13996367"
+    }
+  ]
+}
