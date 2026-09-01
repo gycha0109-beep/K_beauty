@@ -40,6 +40,10 @@ assert.deepEqual(readiness.mobile16AContract?.explicitCustomerPurgeTables, [
   "analysis_requests",
   "profiles"
 ]);
+assert.deepEqual(readiness.mobile16AContract?.linkedCustomerPurgeTables, [
+  "premium_report_sessions"
+]);
+assert.match(readiness.mobile16AContract?.linkedCustomerPurgeAuthority || "", /saved_reports\.source_type=premium_report_session/);
 assert.equal(readiness.mobile16AContract?.privacyContactEnvironmentKey, "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL");
 assert.ok(readiness.externalBlockers.some((item) => item.id === "apple_sign_in_token_revocation_authority" && item.status === "external_pending"));
 assert.ok(readiness.externalBlockers.some((item) => item.id === "privacy_contact" && item.status === "external_pending"));
@@ -58,6 +62,12 @@ assert.match(deletionRoute, /status: 428/);
 for (const table of ["analysis_results", "recommendation_logs", "analysis_requests", "profiles"]) {
   assert.ok(deletionService.includes(`table: "${table}"`), `Explicit purge table missing: ${table}`);
 }
+assert.match(deletionService, /targetTable:\s*["']premium_report_sessions["']/);
+assert.match(deletionService, /sourceType:\s*["']premium_report_session["']/);
+assert.match(deletionService, /getLinkedPremiumReportSessionIds/);
+assert.match(deletionService, /\.eq\(["']source_type["'],\s*["']premium_report_session["']\)/);
+assert.match(deletionService, /\.neq\(["']user_id["'],\s*userId\)/);
+assert.match(deletionService, /\.from\(["']premium_report_sessions["']\)[\s\S]*?\.delete\(\)[\s\S]*?\.in\(["']session_id["']/);
 assert.match(deletionService, /auth\.admin\.deleteUser\(verifiedUser\.id, false\)/);
 assert.match(deletionService, /https:\/\/appleid\.apple\.com\/auth\/token/);
 assert.match(deletionService, /https:\/\/appleid\.apple\.com\/auth\/revoke/);
@@ -74,6 +84,10 @@ assert.match(webDeletionPanel, /fetch\(["']\/api\/my\/account["']/);
 assert.match(webDeletionPanel, /method:\s*["']DELETE["']/);
 assert.match(webDeletionPanel, /credentials:\s*["']same-origin["']/);
 assert.match(webDeletionPanel, /confirmation:\s*["']delete_account["']/);
+assert.match(webDeletionPanel, /NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL/);
+assert.match(webDeletionPanel, /data-account-deletion-request=["']email["']/);
+assert.match(webDeletionPanel, /data-account-deletion-request=["']missing["']/);
+assert.match(webDeletionPanel, /mailto:/);
 
 assert.match(nativeAuth, /getNativeAppleDeletionAuthorizationCode/);
 assert.match(nativeAuth, /credential\.authorizationCode/);
