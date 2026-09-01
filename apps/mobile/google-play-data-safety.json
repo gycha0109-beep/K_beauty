@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "mobile-google-play-data-safety-v1",
+  "slice": "MOBILE-16C",
+  "status": "repository_derived_play_console_pending",
+  "authority": {
+    "googlePlayConsoleSubmission": "external_pending",
+    "processorContractConfirmation": "external_pending",
+    "openAiZeroDataRetention": "external_unverified",
+    "rule": "Repository evidence may freeze intended Play Console answers, but external console acceptance, processor-contract status, and Zero Data Retention authority remain external."
+  },
+  "dataCollectionAndSecurity": {
+    "collectsUserData": true,
+    "sharesUserData": false,
+    "sharingBasis": "Transfers to Supabase and OpenAI are treated as service-provider processing on behalf of BEJEWELY; final processor-contract confirmation remains external authority.",
+    "allUserDataEncryptedInTransit": true,
+    "encryptedInTransitBasis": "Production mobile API and Supabase endpoints are required to use HTTPS; non-production development may use HTTP only outside production.",
+    "deletionRequestMechanism": true,
+    "deletionRequestBasis": "MOBILE-16A provides authenticated in-app hard account deletion and a public external account-deletion request route."
+  },
+  "dataTypes": [
+    {
+      "category": "Personal info",
+      "dataType": "Name",
+      "collected": true,
+      "shared": false,
+      "required": false,
+      "ephemeral": false,
+      "purposes": ["Account management"],
+      "basis": "Name can be supplied by an optional authenticated account provider/profile path; core analysis can be used without signing in."
+    },
+    {
+      "category": "Personal info",
+      "dataType": "Email address",
+      "collected": true,
+      "shared": false,
+      "required": false,
+      "ephemeral": false,
+      "purposes": ["Account management"],
+      "basis": "Email is collected only through optional authenticated account flows and is not required for the anonymous core-analysis path."
+    },
+    {
+      "category": "Personal info",
+      "dataType": "User IDs",
+      "collected": true,
+      "shared": false,
+      "required": false,
+      "ephemeral": false,
+      "purposes": ["App functionality", "Account management"],
+      "basis": "Authenticated requests may be linked to a Supabase account user ID; sign-in is optional for the core-analysis path."
+    },
+    {
+      "category": "Health and fitness",
+      "dataType": "Health info",
+      "collected": true,
+      "shared": false,
+      "required": true,
+      "ephemeral": false,
+      "purposes": ["App functionality", "Personalization"],
+      "basis": "Skin profile, sensitivity, concerns, condition and related survey state are treated conservatively as health-related information for disclosure; this is not a diagnostic or medical-product claim."
+    },
+    {
+      "category": "Photos and videos",
+      "dataType": "Photos",
+      "collected": true,
+      "shared": false,
+      "required": true,
+      "ephemeral": false,
+      "purposes": ["App functionality", "Personalization"],
+      "basis": "A face photo is transmitted to the BEJEWELY server and then to OpenAI vision for the core photo-analysis flow. BEJEWELY does not persist the raw photo in analysis_requests or analysis_results, but the OpenAI project Zero Data Retention state is not yet verified, so the photo must not be declared ephemeral/non-collected."
+    },
+    {
+      "category": "App activity",
+      "dataType": "Other user-generated content",
+      "collected": true,
+      "shared": false,
+      "required": false,
+      "ephemeral": false,
+      "purposes": ["App functionality"],
+      "basis": "Free-form skin-diary memo content is user-provided, stored for the diary feature, and optional."
+    }
+  ],
+  "processorBoundary": {
+    "supabase": {
+      "role": "service_provider",
+      "uses": ["authentication", "hosted application data"]
+    },
+    "openAiApi": {
+      "role": "service_provider",
+      "uses": ["vision analysis"],
+      "trainingDefault": "not_used_for_training_unless_explicitly_opted_in",
+      "defaultAbuseMonitoringRetention": "up_to_30_days",
+      "zeroDataRetentionStatus": "external_unverified",
+      "photoEphemeralClaim": "prohibited_until_zdr_or_equivalent_nonretention_authority_is_verified"
+    }
+  },
+  "sourceEvidence": {
+    "mobileEnvironment": "apps/mobile/lib/env.ts",
+    "applePrivacyInventory": "apps/mobile/app.json + apps/mobile/store-readiness.json#mobile16BContract",
+    "accountDeletion": "apps/mobile/store-readiness.json#mobile16AContract",
+    "verification": "scripts/verify-mobile-16c-google-data-safety.mjs"
+  }
+}
