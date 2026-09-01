@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "mobile-store-content-rating-readiness-v1",
+  "slice": "MOBILE-16E",
+  "status": "repository_prepared_console_submission_pending",
+  "policySnapshotDate": "2026-09-02",
+  "authority": {
+    "appleAgeRatingCalculation": "external_pending",
+    "appleAppStoreConnectSubmission": "external_pending",
+    "googleIarcCalculation": "external_pending",
+    "googlePlayConsoleSubmission": "external_pending",
+    "rule": "Repository evidence freezes questionnaire answer basis only. Final Apple and IARC ratings are calculated and accepted by external store authorities."
+  },
+  "apple": {
+    "ageRatingRequired": true,
+    "questionnaireVersionBoundary": "current_iOS26_plus_age_rating_questionnaire_including_social_media_capability_questions",
+    "inAppControls": {
+      "parentalControls": false,
+      "ageAssurance": false
+    },
+    "capabilities": {
+      "unrestrictedWebAccess": false,
+      "userGeneratedContent": false,
+      "messagingAndChat": false,
+      "advertising": false,
+      "socialMedia": false,
+      "socialMediaDisabledForUsersUnder13": false,
+      "userGeneratedContentBasis": "A private skin-diary memo may be privacy-classified as Other User Content, but the current app does not broadly distribute user-created content to other users, which is the age-rating capability boundary used here."
+    },
+    "medicalOrWellness": {
+      "healthOrWellnessTopics": true,
+      "medicalOrTreatmentInformation": "none",
+      "basis": "BEJEWELY provides cosmetic skin-care guidance and product personalization. Apple lists Health or wellness topics separately from Medical or treatment information; the repository does not expose diagnosis or treatment functionality."
+    },
+    "matureThemes": {
+      "profanityOrCrudeHumor": "none",
+      "horrorOrFearThemes": "none",
+      "alcoholTobaccoOrDrugReferences": "none"
+    },
+    "sexualityOrNudity": {
+      "matureOrSuggestiveThemes": "none",
+      "sexualContentOrNudity": "none",
+      "graphicSexualContentOrNudity": "none"
+    },
+    "violence": {
+      "cartoonOrFantasyViolence": "none",
+      "realisticViolence": "none",
+      "prolongedGraphicOrSadisticRealisticViolence": "none",
+      "gunsOrOtherWeapons": "none"
+    },
+    "chanceBasedActivities": {
+      "contests": "none",
+      "simulatedGambling": "none",
+      "gambling": false,
+      "lootBoxes": false
+    },
+    "publishedDescriptorExpectation": {
+      "global": "Health or wellness topics appears in Apple's 9+ descriptor set for iOS 26+ age ratings.",
+      "finalRating": "external_calculation_required",
+      "kidsCategory": false,
+      "higherAgeOverride": "not_planned_from_repository_evidence"
+    }
+  },
+  "googlePlay": {
+    "contentRatingRequired": true,
+    "ratingSystem": "IARC",
+    "questionnaireCategory": "Utility, Productivity, Communication, or Other",
+    "categoryBasis": "Google's questionnaire guidance places utility-like non-game apps, including fitness apps, in this category. BEJEWELY is a consumer skin-care recommendation utility rather than a game or medical reference library.",
+    "onlineInteractionOrContentExchange": false,
+    "onlineInteractionBasis": "Current mobile product has no native social feed, comments, direct/group messaging, or in-app user-to-user content exchange. Public result sharing is not treated as an in-app social network capability.",
+    "contentTraits": {
+      "violence": "none",
+      "sexualContentOrNudity": "none",
+      "profanity": "none",
+      "controlledSubstances": "none",
+      "gamblingOrSimulatedGambling": "none",
+      "userGeneratedObjectionableContent": "none"
+    },
+    "finalRating": "external_iarc_calculation_required",
+    "retakeWhenRatingAnswersChange": true
+  },
+  "separateDeclarations": {
+    "googlePlayTargetAudienceAndContent": "external_pending_separate_from_iarc_content_rating",
+    "appleRegulatedMedicalDeviceStatus": "not_asserted_by_this_slice",
+    "googlePlayHealthAppsDeclaration": "owned_by_MOBILE_16D"
+  },
+  "policySources": [
+    {
+      "title": "Apple - Set an app age rating",
+      "url": "https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating"
+    },
+    {
+      "title": "Apple - Age ratings values and definitions",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/"
+    },
+    {
+      "title": "Google Play - Content Ratings",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9898843"
+    },
+    {
+      "title": "Google Play - Content rating requirements",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9859655"
+    },
+    {
+      "title": "Google Play - Utility, Productivity, Communication, or Other",
+      "url": "https://support.google.com/googleplay/android-developer/answer/6159978"
+    },
+    {
+      "title": "Google Play - Online Interaction or Content Exchange",
+      "url": "https://support.google.com/googleplay/android-developer/answer/7021383"
+    }
+  ]
+}
