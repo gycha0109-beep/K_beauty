@@ -49,9 +49,9 @@ assert.equal(privacy.NSPrivacyTracking, false, "MOBILE-16B forbids app-owned tra
 assert.deepEqual(privacy.NSPrivacyTrackingDomains || [], [], "Tracking domains must remain empty");
 assertRequiredReasons(privacy.NSPrivacyAccessedAPITypes, "Expo source privacy manifest");
 assert.equal(
-  ios.infoPlist?.ITSAppUsesNonExemptEncryption,
+  ios.config?.usesNonExemptEncryption,
   false,
-  "Export-compliance source must declare exempt-only/no non-exempt encryption"
+  "Expo export-compliance source must declare exempt-only/no non-exempt encryption"
 );
 
 const contract = readiness.mobile16BContract;
@@ -59,6 +59,7 @@ assert.ok(contract, "Missing MOBILE-16B readiness contract");
 assert.equal(contract.applePrivacyManifest.source, "expo.ios.privacyManifests");
 assert.equal(contract.applePrivacyManifest.tracking, false);
 assert.equal(contract.applePrivacyManifest.appStoreUploadValidationStatus, "external_pending");
+assert.equal(contract.exportCompliance.source, "expo.ios.config.usesNonExemptEncryption");
 assert.equal(contract.exportCompliance.infoPlistKey, "ITSAppUsesNonExemptEncryption");
 assert.equal(contract.exportCompliance.value, false);
 assert.equal(contract.exportCompliance.classification, "exempt_only");
