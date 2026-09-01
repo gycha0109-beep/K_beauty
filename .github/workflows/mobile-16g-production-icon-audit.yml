@@ -1,0 +1,65 @@
+name: BEJEWELY Mobile 16G Production Icon Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "public/images/brand/bejewely-icon-dark.png"
+      - "public/images/brand/bejewely-icon-light.png"
+      - "scripts/audit-mobile-16g-brand-icons.mjs"
+      - ".github/workflows/mobile-16g-production-icon-audit.yml"
+  push:
+    branches: [main]
+    paths:
+      - "public/images/brand/bejewely-icon-dark.png"
+      - "public/images/brand/bejewely-icon-light.png"
+      - "scripts/audit-mobile-16g-brand-icons.mjs"
+      - ".github/workflows/mobile-16g-production-icon-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-16g-production-icon-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  icon-audit:
+    name: Existing Brand Icon Pixel Audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_16G_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+
+      - name: Audit existing brand PNG candidates
+        run: node scripts/audit-mobile-16g-brand-icons.mjs
+
+      - name: Upload icon audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-16g-icon-audit
+          path: |
+            mobile-16g-icon-audit.json
+            public/images/brand/bejewely-icon-dark.png
+            public/images/brand/bejewely-icon-light.png
+          if-no-files-found: error
+          retention-days: 7
