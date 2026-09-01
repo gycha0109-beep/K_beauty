@@ -76,7 +76,7 @@ function assertAndroidPermissionNotRequested(manifest, permission) {
 }
 
 assert.equal(readiness.schemaVersion, "mobile-store-readiness-v1");
-assert.ok(["MOBILE-13", "MOBILE-14", "MOBILE-15"].includes(readiness.slice));
+assert.ok(["MOBILE-13", "MOBILE-14", "MOBILE-15", "MOBILE-16A"].includes(readiness.slice));
 assert.ok(["preflight_only", "repository_ready_external_pending"].includes(readiness.status));
 
 assert.equal(expo.name, "BEJEWELY");
@@ -202,13 +202,18 @@ for (const id of [
 ]) {
   assert.ok(compliance.has(id), `Missing compliance inventory item: ${id}`);
 }
-for (const id of [
-  "privacy_policy",
-  "account_deletion_in_app",
-  "google_external_account_deletion",
-  "production_app_icon"
-]) {
-  assert.equal(compliance.get(id).status, "blocked", `${id} must remain fail-visible until its owning slice closes it`);
+
+const ownedComplianceTransitions = new Map([
+  ["privacy_policy", new Set(["blocked", "repository_implemented_external_contact_pending"])],
+  ["account_deletion_in_app", new Set(["blocked", "repository_implemented_apple_authority_pending"])],
+  ["google_external_account_deletion", new Set(["blocked", "repository_implemented_pending_deploy"])],
+  ["production_app_icon", new Set(["blocked"])]
+]);
+for (const [id, allowedStatuses] of ownedComplianceTransitions) {
+  assert.ok(
+    allowedStatuses.has(compliance.get(id).status),
+    `${id} must remain fail-visible or advance only through its owning compliance slice`
+  );
 }
 assert.ok(
   ["blocked", "repository_implemented_external_pending"].includes(compliance.get("ios_equivalent_privacy_login").status),
