@@ -74,8 +74,8 @@
       "supportsTablet": false,
       "usesAppleSignIn": true,
       "associatedDomains": ["applinks:k-beauty-two.vercel.app"],
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+      "config": {
+        "usesNonExemptEncryption": false
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,
