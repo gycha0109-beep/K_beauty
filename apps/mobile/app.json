@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "scheme": "bejewely",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon/bejewely-icon-dark-1024.png",
     "plugins": [
       "expo-router",
       "expo-system-ui",
@@ -34,6 +35,7 @@
       "versionCode": 1,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
+      "icon": "./assets/icon/bejewely-icon-dark-1024.png",
       "intentFilters": [
         {
           "action": "VIEW",
@@ -73,6 +75,10 @@
       "deploymentTarget": "16.4",
       "supportsTablet": false,
       "usesAppleSignIn": true,
+      "icon": {
+        "light": "./assets/icon/bejewely-icon-light-1024.png",
+        "dark": "./assets/icon/bejewely-icon-dark-1024.png"
+      },
       "associatedDomains": ["applinks:k-beauty-two.vercel.app"],
       "config": {
         "usesNonExemptEncryption": false
