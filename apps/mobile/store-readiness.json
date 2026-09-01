@@ -171,6 +171,35 @@
     },
     "sourceContractStatus": "repository_implemented"
   },
+  "mobile16CContract": {
+    "googlePlayDataSafetyPath": "apps/mobile/google-play-data-safety.json",
+    "verifier": "scripts/verify-mobile-16c-google-data-safety.mjs",
+    "workflow": ".github/workflows/mobile-16c-google-data-safety.yml",
+    "productionTransport": {
+      "apiBaseUrl": "https_required_fail_closed",
+      "supabaseUrl": "https_required_fail_closed",
+      "localDevelopmentHttp": "allowed_outside_production"
+    },
+    "declaredCollectedDataTypes": [
+      "Name",
+      "Email address",
+      "User IDs",
+      "Health info",
+      "Photos",
+      "Other user-generated content"
+    ],
+    "requiredDataTypes": ["Health info", "Photos"],
+    "optionalDataTypes": ["Name", "Email address", "User IDs", "Other user-generated content"],
+    "openAiDataBoundary": {
+      "trainingDefault": "not_used_for_training_unless_explicitly_opted_in",
+      "defaultAbuseMonitoringRetention": "up_to_30_days",
+      "zeroDataRetentionStatus": "external_unverified",
+      "photoEphemeralClaim": "prohibited_until_zdr_or_equivalent_nonretention_authority_is_verified"
+    },
+    "sourceContractStatus": "repository_implemented",
+    "playConsoleSubmissionStatus": "external_pending",
+    "processorContractConfirmationStatus": "external_pending"
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -190,7 +219,8 @@
       "EXPO_PUBLIC_SUPABASE_ANON_KEY",
       "NODE_ENV"
     ],
-    "serverSecretsAllowed": false
+    "serverSecretsAllowed": false,
+    "productionTransport": "https_only_for_api_and_supabase_fail_closed"
   },
   "complianceInventory": [
     {
@@ -237,9 +267,9 @@
     },
     {
       "id": "google_play_data_safety",
-      "status": "pending",
-      "owner": "MOBILE-16",
-      "reason": "Data Safety answers must be derived from the final production data flow and included SDKs."
+      "status": "repository_implemented_play_console_submission_pending",
+      "owner": "MOBILE-16C",
+      "reason": "The repository now freezes the minimum collected-data inventory, required/optional handling, purposes, service-provider sharing boundary, deletion mechanism and production HTTPS transport contract; Play Console submission and processor/ZDR authority remain external."
     },
     {
       "id": "apple_export_compliance",
@@ -275,7 +305,10 @@
     {"id": "apple_sign_in_token_revocation_authority", "owner": "MOBILE-16A", "status": "external_pending"},
     {"id": "privacy_contact", "owner": "MOBILE-16A", "status": "external_pending"},
     {"id": "apple_privacy_manifest_app_store_validation", "owner": "MOBILE-16B", "status": "external_pending"},
-    {"id": "apple_export_compliance_confirmation", "owner": "MOBILE-16B", "status": "external_pending"}
+    {"id": "apple_export_compliance_confirmation", "owner": "MOBILE-16B", "status": "external_pending"},
+    {"id": "google_play_data_safety_submission", "owner": "MOBILE-16C", "status": "external_pending"},
+    {"id": "google_play_processor_contract_confirmation", "owner": "MOBILE-16C", "status": "external_pending"},
+    {"id": "openai_zero_data_retention_authority", "owner": "MOBILE-16C", "status": "external_pending"}
   ],
   "preflightMeaning": {
     "passMeans": [
@@ -284,6 +317,7 @@
       "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
       "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, direct and linked customer-data purge, provider-neutral external deletion request, and fail-closed Sign in with Apple token revocation; its public routes are deployed on the canonical production origin.",
       "MOBILE-16B source-freezes the app-owned Apple collected-data inventory, tracking=false boundary, observed required-reason API declarations and Expo exempt-only export-compliance declaration, with generated PrivacyInfo.xcprivacy and Info.plist verification.",
+      "MOBILE-16C source-freezes the Google Play Data Safety answer basis and enforces HTTPS for production mobile API and Supabase traffic while preserving explicit external Play Console, processor-contract and OpenAI ZDR authority boundaries.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
@@ -298,8 +332,9 @@
       "The public privacy contact value has been configured in production.",
       "App Store Connect has accepted the app-owned collected-data or required-reason privacy-manifest declarations.",
       "Apple export-compliance classification has been confirmed in App Store Connect.",
+      "Google Play Console has accepted or published the Data Safety declaration.",
+      "Supabase/OpenAI processor-contract status or OpenAI Zero Data Retention has been externally verified.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
-      "Data Safety/App Privacy metadata completion.",
       "Physical-device validation."
     ]
   }

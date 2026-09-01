@@ -30,13 +30,25 @@ function requireHttpUrl(name: string, value: string) {
   return url;
 }
 
+function requireProductionTransport(name: string, url: URL) {
+  if (process.env.NODE_ENV !== "production") {
+    return;
+  }
+
+  if (url.protocol !== "https:") {
+    throw new Error(`${name} must use https in production`);
+  }
+
+  if (LOCAL_ONLY_HOSTNAMES.has(url.hostname)) {
+    throw new Error(`${name} cannot target a local-only hostname in production`);
+  }
+}
+
 export function getMobileApiBaseUrl() {
   const apiBaseUrl = requirePublicValue("EXPO_PUBLIC_API_BASE_URL", process.env.EXPO_PUBLIC_API_BASE_URL);
   const apiUrl = requireHttpUrl("EXPO_PUBLIC_API_BASE_URL", apiBaseUrl);
 
-  if (process.env.NODE_ENV === "production" && LOCAL_ONLY_HOSTNAMES.has(apiUrl.hostname)) {
-    throw new Error("Production mobile API base URL cannot target a local-only hostname");
-  }
+  requireProductionTransport("EXPO_PUBLIC_API_BASE_URL", apiUrl);
 
   return apiUrl.toString().replace(/\/$/, "");
 }
@@ -47,8 +59,9 @@ export function getMobileSupabasePublicEnv(): MobileSupabasePublicEnv {
     "EXPO_PUBLIC_SUPABASE_ANON_KEY",
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
   );
+  const parsedSupabaseUrl = requireHttpUrl("EXPO_PUBLIC_SUPABASE_URL", supabaseUrl);
 
-  requireHttpUrl("EXPO_PUBLIC_SUPABASE_URL", supabaseUrl);
+  requireProductionTransport("EXPO_PUBLIC_SUPABASE_URL", parsedSupabaseUrl);
 
   return {
     supabaseUrl,
