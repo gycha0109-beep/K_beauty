@@ -17,9 +17,9 @@ import { useMobileShell } from "../lib/mobile-shell";
 
 const SAVED_REPORT_COPY = {
   en: {
-    eyebrow: "MY · MOBILE-8/9",
+    eyebrow: "REPORTS",
     title: "Saved report",
-    description: "Reopen the latest server-saved report. Free reports can be published to a public web link when you explicitly share them.",
+    description: "Reopen your latest saved report. Free reports become public only when you explicitly choose to share them.",
     loading: "Loading your latest saved report…",
     empty: "No saved report is available yet.",
     signedOut: "Sign in on My to reopen a saved report.",
@@ -36,9 +36,9 @@ const SAVED_REPORT_COPY = {
     shareSheetError: "The public link was created, but the system share sheet could not open. You can try again."
   },
   ko: {
-    eyebrow: "MY · MOBILE-8/9",
+    eyebrow: "리포트",
     title: "저장 리포트",
-    description: "서버에 저장된 최신 리포트를 다시 엽니다. 무료 리포트는 명시적으로 공유할 때만 공개 웹 링크로 전환됩니다.",
+    description: "최근 저장 리포트를 다시 확인하세요. 무료 리포트는 직접 공유를 선택할 때만 공개 링크로 전환됩니다.",
     loading: "최신 저장 리포트를 불러오는 중…",
     empty: "아직 다시 열 수 있는 저장 리포트가 없습니다.",
     signedOut: "My에서 로그인하면 저장 리포트를 다시 열 수 있습니다.",

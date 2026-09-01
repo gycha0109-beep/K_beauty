@@ -4,7 +4,7 @@ import type { NativeFreeSavedResult } from "./saved-report-client";
 
 const COPY = {
   en: {
-    kicker: "SHARED · MOBILE-10",
+    kicker: "SHARED RESULT",
     title: "Shared result",
     summary: "Shared summary",
     skinType: "Skin type",
@@ -14,7 +14,7 @@ const COPY = {
     pm: "PM routine"
   },
   ko: {
-    kicker: "공유 · MOBILE-10",
+    kicker: "공유 결과",
     title: "공유 결과",
     summary: "공유된 요약",
     skinType: "피부 타입",

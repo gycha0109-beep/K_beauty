@@ -17,7 +17,7 @@ const REPORT_COPY = {
     condition: "Condition guidance",
     version: "Version",
     savedAt: "Saved",
-    noDetail: "This saved server snapshot has no additional displayable detail."
+    noDetail: "This saved report has no additional detail to display."
   },
   ko: {
     free: "무료 리포트",
@@ -33,7 +33,7 @@ const REPORT_COPY = {
     condition: "컨디션 대응",
     version: "버전",
     savedAt: "저장",
-    noDetail: "저장된 서버 스냅샷에 추가로 표시할 수 있는 상세 내용이 없습니다."
+    noDetail: "이 저장 리포트에는 추가로 표시할 상세 내용이 없습니다."
   }
 } as const;
 
