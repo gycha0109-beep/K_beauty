@@ -104,6 +104,30 @@ assert.equal(
   true,
   "Nested user-facing product explanations must be covered by the claim guard"
 );
+assert.equal(
+  hasForbidden({
+    summary: "Cosmetic guidance",
+    topPick: {
+      name: "Daily Soothing Serum",
+      reason: "Lightweight calming support for visible redness.",
+      buy_link: "https://example.test/acne-treatment-reference"
+    },
+    morning: [],
+    night: []
+  }),
+  false,
+  "Non-rendered product metadata must not create a medical-claim false positive"
+);
+assert.equal(
+  hasForbidden({
+    summary: "Cosmetic guidance",
+    topPick: { name: "Acne Treatment Medical Device", reason: "Daily use." },
+    morning: [],
+    night: []
+  }),
+  true,
+  "Rendered product names remain inside the mobile claim boundary"
+);
 
 assert.ok(
   analyzeClientSource.includes("hasForbiddenMobileAnalyzeMedicalClaim"),
@@ -144,5 +168,6 @@ console.log("MOBILE_16D_PRODUCT_INTENT_NON_MEDICAL=PASS");
 console.log("MOBILE_16D_VISION_NON_DIAGNOSTIC=PASS");
 console.log("MOBILE_16D_MOBILE_RENDER_FAIL_CLOSED=PASS");
 console.log("MOBILE_16D_CLAIM_GUARD_CASES=PASS");
+console.log("MOBILE_16D_RENDERED_FIELD_SCOPE=PASS");
 console.log("MOBILE_16D_IN_APP_DISCLAIMER=PASS");
 console.log("MOBILE_16D_EXTERNAL_HEALTH_DECLARATIONS=PENDING");
