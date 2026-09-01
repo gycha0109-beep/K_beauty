@@ -116,7 +116,7 @@ assert(survey.includes('testID="native-analyze-survey"'), "native-survey-render-
 assert(screen.includes('testID="native-analyze-submit"'), "native-submit-render-marker");
 assert(result.includes('testID="native-analyze-result"'), "native-result-render-marker");
 assert(result.includes('testID="native-analyze-result-summary"'), "native-result-summary-marker");
-assert(screen.includes("Temporary guidance samples are never uploaded."), "guidance-upload-boundary-copy");
+assert(screen.includes("Temporary camera-guidance images are not uploaded."), "guidance-upload-boundary-copy");
 assert(boundary.includes("Only the final `NativeCameraPhoto` JPEG"), "final-photo-boundary-doc");
 assert(boundary.includes("MOBILE-8+"), "premium-deferred-boundary-doc");
 

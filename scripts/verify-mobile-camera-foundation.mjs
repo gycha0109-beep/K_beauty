@@ -64,11 +64,11 @@ assert.match(analyzeSource, /useState<NativeCameraPhoto \| null>/, "Analyze rout
 assert.match(analyzeSource, /onPhotoChange=\{setCapturedPhoto\}/, "Analyze route must wire the upload-ready descriptor handoff");
 assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy locale-aware");
 assert.match(analyzeSource, /previewLabel:\s*copy\.title/, "Fullscreen camera must preserve the Analyze title for rendered smoke/accessibility continuity");
-assert.match(copySource, /ANALYZE · MOBILE-5/, "MOBILE-5 copy marker is missing");
+assert.match(copySource, /eyebrow:\s*"SKIN ANALYSIS"/, "Production Analyze copy marker is missing");
 assert.match(copySource, /얼굴을 타원 안에 맞춰 주세요/, "Korean static oval guidance is missing");
 assert.match(copySource, /Position your face inside the oval/, "English static oval guidance is missing");
-assert.match(copySource, /로컬 캐시/, "Korean local-only capture disclosure is missing");
-assert.match(copySource, /local cache/i, "English local-only capture disclosure is missing");
+assert.match(copySource, /촬영한 사진은 분석을 시작하기 전까지 기기에만 유지됩니다/, "Korean local-only capture disclosure is missing");
+assert.match(copySource, /Your captured photo stays on your device until you choose to start analysis/i, "English local-only capture disclosure is missing");
 
 assert.match(
   nativeShellWorkflow,

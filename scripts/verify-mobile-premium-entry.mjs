@@ -46,7 +46,7 @@ assert(premiumScreen.includes("loadNativePremiumAccess"), "server-access-loader-
 assert(premiumScreen.includes("createNativePremiumReport"), "server-finalization-wiring");
 assert(premiumScreen.includes("NativeCurrentProductsSelector"), "current-products-selector-wiring");
 assert(premiumScreen.includes('router.replace("/saved-report")'), "mobile8-private-reentry-after-finalize");
-assert(premiumScreen.includes("This mobile slice does not add or change a payment flow."), "payment-boundary-copy");
+assert(premiumScreen.includes("Premium access is required to create this report. You can still open saved reports."), "payment-boundary-copy");
 assert(premiumScreen.includes('testID="native-premium-create"'), "premium-create-marker");
 assert(premiumScreen.includes('testID="native-premium-state"'), "premium-state-marker");
 
