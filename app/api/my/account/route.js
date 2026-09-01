@@ -58,14 +58,27 @@ function errorResponse(error) {
   }
 
   if (error.code === "account_deletion_requires_support") {
-    return sensitiveJsonResponse(
-      { error: error.code },
-      { status: 409 }
-    );
+    return sensitiveJsonResponse({ error: error.code }, { status: 409 });
+  }
+
+  if (error.code === "apple_reauthorization_required") {
+    return sensitiveJsonResponse({ error: error.code }, { status: 428 });
   }
 
   if (error.code === "account_deletion_invalid_user") {
     return sensitiveJsonResponse({ error: "unauthorized" }, { status: 401 });
+  }
+
+  if (
+    error.code === "apple_revocation_not_configured" ||
+    error.code === "apple_revocation_unavailable" ||
+    error.code === "apple_token_exchange_failed" ||
+    error.code === "apple_revocation_failed"
+  ) {
+    return sensitiveJsonResponse(
+      { error: error.code },
+      { status: 503, headers: { "Retry-After": "60" } }
+    );
   }
 
   return sensitiveJsonResponse(
@@ -92,10 +105,18 @@ export async function DELETE(request) {
   }
 
   try {
-    await deleteVerifiedAccount(authContext.user.id);
+    const result = await deleteVerifiedAccount(authContext.user, {
+      appleAuthorizationCode:
+        typeof body?.appleAuthorizationCode === "string"
+          ? body.appleAuthorizationCode
+          : null
+    });
+
+    return sensitiveJsonResponse({
+      deleted: result.deleted === true,
+      appleRevoked: result.appleRevocation?.revoked === true
+    });
   } catch (error) {
     return errorResponse(error);
   }
-
-  return sensitiveJsonResponse({ deleted: true });
 }
