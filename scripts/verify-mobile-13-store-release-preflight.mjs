@@ -211,7 +211,7 @@ const ownedComplianceTransitions = new Map([
     "repository_implemented_pending_deploy",
     "production_deployed_external_contact_pending"
   ])],
-  ["production_app_icon", new Set(["blocked"])]
+  ["production_app_icon", new Set(["blocked", "repository_implemented"])]
 ]);
 for (const [id, allowedStatuses] of ownedComplianceTransitions) {
   assert.ok(

@@ -240,6 +240,21 @@
     "finalListingCopyStatus": "pending",
     "sourceContractStatus": "repository_implemented"
   },
+  "mobile16HContract": {
+    "sourceAuditWorkflow": ".github/workflows/mobile-16g-production-icon-audit.yml",
+    "verifier": "scripts/verify-mobile-16h-production-icons.mjs",
+    "workflow": ".github/workflows/mobile-16h-production-icons.yml",
+    "rootIcon": "apps/mobile/assets/icon/bejewely-icon-dark-1024.png",
+    "androidIcon": "apps/mobile/assets/icon/bejewely-icon-dark-1024.png",
+    "iosIconLight": "apps/mobile/assets/icon/bejewely-icon-light-1024.png",
+    "iosIconDark": "apps/mobile/assets/icon/bejewely-icon-dark-1024.png",
+    "googlePlayListingIcon": "apps/mobile/assets/store/bejewely-play-icon-512.png",
+    "appIconRasterSize": "1024x1024",
+    "googlePlayListingRasterSize": "512x512",
+    "customAndroidAdaptiveIconConfigured": false,
+    "customAndroidAdaptiveIconStatus": "non_blocking_separate_layer_asset_not_configured",
+    "sourceContractStatus": "repository_implemented"
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -289,15 +304,15 @@
     },
     {
       "id": "production_app_icon",
-      "status": "blocked",
-      "owner": "MOBILE-16",
-      "reason": "Expo config does not freeze a BEJEWELY production icon/adaptive icon asset for store binaries."
+      "status": "repository_implemented",
+      "owner": "MOBILE-16H",
+      "reason": "Expo now freezes opaque 1024x1024 BEJEWELY root/Android and iOS light/dark production icons plus a 512x512 Google Play listing icon derived from the audited brand artwork. A custom Android adaptive foreground/monochrome layer is not configured; android.icon remains the launcher fallback and adaptive-layer optimization is non-blocking."
     },
     {
       "id": "store_listing_assets",
       "status": "pending",
       "owner": "MOBILE-16",
-      "reason": "App Store/Play screenshots, feature/promotional graphics and final listing assets are not frozen."
+      "reason": "The Google Play 512x512 listing icon is repository-frozen by MOBILE-16H; App Store/Play screenshots, feature/promotional graphics and remaining final listing assets are still pending."
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
@@ -375,7 +390,8 @@
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
-      "Known store compliance and external-authority blockers remain explicit and fail-visible."
+      "Known store compliance and external-authority blockers remain explicit and fail-visible.",
+      "MOBILE-16H source-freezes BEJEWELY production launcher icons (root/Android and iOS light/dark) plus the 512x512 Google Play listing icon from audited opaque brand artwork; a custom Android adaptive-layer asset remains a non-blocking optimization."
     ],
     "passDoesNotMean": [
       "App Store or Google Play submission readiness.",
