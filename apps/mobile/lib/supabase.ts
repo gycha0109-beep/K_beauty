@@ -8,6 +8,7 @@ const LEGACY_STORAGE_FILE_PREFIX = "bejewely-supabase-";
 const SECURE_STORAGE_PREFIX = "bejewely.auth.";
 const SECURE_STORE_CHUNK_SIZE = 400;
 const SECURE_STORE_MAX_CHUNKS = 256;
+const NATIVE_AUTH_STORAGE_KEY = "bejewely-native-auth";
 const SECURE_STORE_OPTIONS: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 };
@@ -249,7 +250,7 @@ export function getMobileSupabaseClient() {
         apikey: supabaseAnonKey,
         Authorization: `Bearer ${supabaseAnonKey}`
       },
-      storageKey: "bejewely-native-auth",
+      storageKey: NATIVE_AUTH_STORAGE_KEY,
       storage: nativeSessionStorage,
       autoRefreshToken: true,
       persistSession: true,
@@ -283,4 +284,10 @@ export function getMobileSupabaseClient() {
   }
 
   return mobileSupabaseClient;
+}
+
+export async function clearMobileSupabaseSessionStorage() {
+  mobileSupabaseClient?.auth.stopAutoRefresh();
+  await nativeSessionStorage.removeItem(NATIVE_AUTH_STORAGE_KEY);
+  mobileSupabaseClient = undefined;
 }

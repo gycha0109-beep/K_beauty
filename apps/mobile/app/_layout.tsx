@@ -1,5 +1,5 @@
 import { Tabs, useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { MOBILE_COPY } from "../lib/copy";
 import { MobileShellProvider, useMobileShell } from "../lib/mobile-shell";
@@ -9,6 +9,8 @@ function NativeTabs() {
   const { locale, palette, themeMode } = useMobileShell();
   const copy = MOBILE_COPY[locale];
   const savedReportTitle = locale === "ko" ? "저장 리포트" : "Saved report";
+  const privacyTitle = locale === "ko" ? "개인정보" : "Privacy";
+  const privacyAccountTitle = locale === "ko" ? "개인정보 · 계정" : "Privacy · Account";
   const publicResultTitle = locale === "ko" ? "공유 결과" : "Shared result";
   const premiumTitle = locale === "ko" ? "프리미엄 리포트" : "Premium report";
 
@@ -38,25 +40,42 @@ function NativeTabs() {
           options={{
             title: copy.tabs.my,
             headerRight: () => (
-              <Pressable
-                testID="mobile-my-latest-report"
-                accessibilityRole="button"
-                accessibilityLabel={savedReportTitle}
-                onPress={() => router.push("/saved-report")}
-                style={({ pressed }) => ({
-                  marginRight: 14,
-                  paddingHorizontal: 8,
-                  paddingVertical: 6,
-                  opacity: pressed ? 0.6 : 1
-                })}
-              >
-                <Text style={{ color: palette.accent, fontSize: 13, fontWeight: "700" }}>
-                  {savedReportTitle}
-                </Text>
-              </Pressable>
+              <View style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}>
+                <Pressable
+                  testID="mobile-my-privacy-account"
+                  accessibilityRole="button"
+                  accessibilityLabel={privacyAccountTitle}
+                  onPress={() => router.push("/privacy-account")}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 7,
+                    paddingVertical: 6,
+                    opacity: pressed ? 0.6 : 1
+                  })}
+                >
+                  <Text style={{ color: palette.accent, fontSize: 12, fontWeight: "700" }}>
+                    {privacyTitle}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID="mobile-my-latest-report"
+                  accessibilityRole="button"
+                  accessibilityLabel={savedReportTitle}
+                  onPress={() => router.push("/saved-report")}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 7,
+                    paddingVertical: 6,
+                    opacity: pressed ? 0.6 : 1
+                  })}
+                >
+                  <Text style={{ color: palette.accent, fontSize: 12, fontWeight: "700" }}>
+                    {savedReportTitle}
+                  </Text>
+                </Pressable>
+              </View>
             )
           }}
         />
+        <Tabs.Screen name="privacy-account" options={{ href: null, title: privacyAccountTitle }} />
         <Tabs.Screen name="saved-report" options={{ href: null, title: savedReportTitle }} />
         <Tabs.Screen name="r/[shareId]" options={{ href: null, title: publicResultTitle }} />
         <Tabs.Screen name="premium" options={{ href: null, title: premiumTitle }} />
