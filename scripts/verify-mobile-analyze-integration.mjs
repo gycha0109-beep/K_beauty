@@ -21,6 +21,7 @@ const client = read("apps/mobile/features/analyze/analyze-client.ts");
 const survey = read("apps/mobile/features/analyze/NativeAnalyzeSurvey.tsx");
 const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
 const screen = read("apps/mobile/app/analyze.tsx");
+const copy = read("apps/mobile/lib/copy.ts");
 const boundary = read("apps/mobile/features/analyze/README.md");
 const camera = read("apps/mobile/features/camera/NativeFaceCamera.tsx");
 const sharedSurvey = read("packages/shared/src/survey-input-contract.js");
@@ -116,7 +117,9 @@ assert(survey.includes('testID="native-analyze-survey"'), "native-survey-render-
 assert(screen.includes('testID="native-analyze-submit"'), "native-submit-render-marker");
 assert(result.includes('testID="native-analyze-result"'), "native-result-render-marker");
 assert(result.includes('testID="native-analyze-result-summary"'), "native-result-summary-marker");
-assert(screen.includes("Temporary guidance samples are never uploaded."), "guidance-upload-boundary-copy");
+assert(screen.includes("{copy.notice}"), "guidance-disclosure-render-boundary");
+assert(copy.includes("Framing samples stay on your device."), "english-guidance-on-device-copy");
+assert(copy.includes("촬영 가이드용 샘플은 기기 안에서 처리됩니다."), "korean-guidance-on-device-copy");
 assert(boundary.includes("Only the final `NativeCameraPhoto` JPEG"), "final-photo-boundary-doc");
 assert(boundary.includes("MOBILE-8+"), "premium-deferred-boundary-doc");
 

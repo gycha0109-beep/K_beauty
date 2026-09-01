@@ -17,9 +17,10 @@ type MobileCopy = {
     title: string;
     description: string;
     cardTitle: string;
-    routes: string;
-    localeLabel: string;
-    nativeGate: string;
+    stepPhoto: string;
+    stepSurvey: string;
+    stepGuidance: string;
+    cta: string;
     note: string;
   };
   analyze: {
@@ -93,20 +94,21 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       dark: "Dark"
     },
     home: {
-      eyebrow: "MOBILE-1",
-      title: "BEJEWELY Mobile",
-      description: "The native shell now runs beside the existing Web client while server authority remains unchanged.",
-      cardTitle: "Native shell ready",
-      routes: "Routes · Home / Analyze / My",
-      localeLabel: "Locale",
-      nativeGate: "Android gate · prebuild / APK / emulator launch",
-      note: "Authentication is implemented in MOBILE-2, My / Skin Diary in MOBILE-3, native camera acquisition in MOBILE-5, and on-device face-capture guidance in MOBILE-6. Analysis results and Premium remain separate later phases."
+      eyebrow: "PERSONALIZED K-BEAUTY",
+      title: "Skincare matched to your skin",
+      description: "Take a quick skin photo and answer a short survey to get skincare guidance shaped around your skin and routine.",
+      cardTitle: "Start with your skin",
+      stepPhoto: "Take one clear front-facing skin photo",
+      stepSurvey: "Tell us a little about your skin and preferences",
+      stepGuidance: "Review your personalized skincare guidance and product matches",
+      cta: "Start skin analysis",
+      note: "Your photo and survey are sent only when you choose to run the analysis."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
-      title: "Native skin photo capture",
-      description: "The front camera now evaluates face distance, centering, and head pose on device before capture while analysis remains server-authoritative and separate.",
-      notice: "Guidance samples stay local and are deleted after on-device detection. Final photos remain in local cache only; this phase does not upload, score, recommend products, or invoke Face Lab.",
+      eyebrow: "SKIN ANALYSIS",
+      title: "Take a clear skin photo",
+      description: "Use the front camera and follow the framing guide. After the photo, answer a short skin survey to continue.",
+      notice: "Your final photo and survey are sent only when you tap Run skin analysis. Framing samples stay on your device.",
       camera: {
         permissionLoading: "Checking camera permission…",
         permissionTitle: "Camera access is required",
@@ -124,7 +126,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         captureFailed: "The camera could not capture a photo. Try again.",
         capturedLabel: "Captured photo",
         retake: "Retake",
-        localOnly: "This image currently remains only in the app's local cache and is not uploaded or analyzed.",
+        localOnly: "This photo stays on your device until you choose to run the analysis.",
         guidance: {
           loading: "Checking face alignment…",
           noFace: "No face detected. Place one face inside the oval.",
@@ -140,22 +142,22 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       }
     },
     my: {
-      eyebrow: "MY · MOBILE-3",
-      title: "Native My & Skin Diary",
-      description: "Native My reuses the existing authenticated dashboard, check-in, routine, and skin-diary APIs over Bearer while Web cookie auth remains unchanged.",
-      notice: "Google OAuth returns through bejewely://auth/callback. Hosted sign-in still requires that native callback in the Supabase redirect allow-list.",
+      eyebrow: "MY SKIN",
+      title: "My skin & diary",
+      description: "Sign in to review your skin profile, daily check-ins, routines, and saved reports in one place.",
+      notice: "Sign in to keep your skin diary and saved results connected across sessions.",
       signInGoogle: "Continue with Google",
-      signingIn: "Opening Google sign-in…",
-      signedOut: "Not signed in",
+      signingIn: "Opening sign-in…",
+      signedOut: "Sign in to see your skin profile and diary",
       signedIn: "Signed in",
       signOut: "Sign out",
       loading: "Restoring session…",
-      authUnavailable: "Mobile auth is not configured in this build.",
-      authFailed: "Authentication could not be completed.",
-      dashboardReady: "Authenticated dashboard connected",
-      dashboardNoProfile: "Signed in · skin profile not created yet",
-      dashboardCheckIn: "Signed in · today's check-in is pending",
-      dashboardUnavailable: "Signed in, but the dashboard API is unavailable."
+      authUnavailable: "Sign-in is temporarily unavailable.",
+      authFailed: "Sign-in could not be completed. Please try again.",
+      dashboardReady: "Your skin dashboard is ready",
+      dashboardNoProfile: "Create your skin profile to personalize your diary",
+      dashboardCheckIn: "Today's check-in is ready when you are",
+      dashboardUnavailable: "Your skin dashboard could not be loaded."
     }
   },
   ko: {
@@ -171,20 +173,21 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       dark: "다크"
     },
     home: {
-      eyebrow: "MOBILE-1",
-      title: "BEJEWELY 모바일",
-      description: "기존 Web 클라이언트와 서버 권한은 그대로 유지하면서 네이티브 앱 셸을 병렬로 실행합니다.",
-      cardTitle: "네이티브 셸 준비 완료",
-      routes: "경로 · 홈 / 분석 / 마이",
-      localeLabel: "언어",
-      nativeGate: "Android 게이트 · prebuild / APK / emulator launch",
-      note: "MOBILE-2에서 인증, MOBILE-3에서 My / Skin Diary, MOBILE-5에서 네이티브 카메라 획득, MOBILE-6에서 기기 내 얼굴 촬영 가이드를 연결했습니다. 분석 결과와 Premium은 이후 별도 단계로 유지합니다."
+      eyebrow: "PERSONALIZED K-BEAUTY",
+      title: "내 피부에 맞는 스킨케어",
+      description: "간단한 피부 사진과 짧은 설문으로 내 피부와 루틴에 맞춘 스킨케어 가이드와 제품 매칭을 확인해 보세요.",
+      cardTitle: "내 피부부터 확인하기",
+      stepPhoto: "정면 피부 사진 한 장을 선명하게 촬영해요",
+      stepSurvey: "피부 상태와 선호를 간단히 알려주세요",
+      stepGuidance: "나에게 맞춘 스킨케어 가이드와 제품 매칭을 확인해요",
+      cta: "피부 분석 시작",
+      note: "사진과 설문은 사용자가 분석을 실행할 때만 전송됩니다."
     },
     analyze: {
-      eyebrow: "ANALYZE · MOBILE-5 / MOBILE-6",
-      title: "네이티브 피부 사진 촬영",
-      description: "전면 카메라에서 얼굴 거리·중앙 정렬·정면 상태를 기기 내에서 확인하면서 촬영할 수 있게 하되 실제 분석 권한은 서버에 유지하고 별도 단계로 분리합니다.",
-      notice: "가이드용 샘플은 기기 안에서만 판정하고 즉시 삭제합니다. 최종 사진도 로컬 캐시에만 유지하며 업로드·점수 계산·제품 추천·Face Lab 호출은 수행하지 않습니다.",
+      eyebrow: "피부 분석",
+      title: "피부 사진을 촬영해 주세요",
+      description: "전면 카메라의 촬영 가이드에 맞춰 사진을 찍은 뒤, 짧은 피부 설문에 답하면 분석을 진행할 수 있습니다.",
+      notice: "최종 사진과 설문은 ‘피부 분석 실행’을 누를 때만 전송됩니다. 촬영 가이드용 샘플은 기기 안에서 처리됩니다.",
       camera: {
         permissionLoading: "카메라 권한 확인 중…",
         permissionTitle: "카메라 접근 권한이 필요합니다",
@@ -202,7 +205,7 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
         captureFailed: "사진을 촬영하지 못했습니다. 다시 시도해 주세요.",
         capturedLabel: "촬영한 사진",
         retake: "다시 촬영",
-        localOnly: "현재 이 이미지는 앱 로컬 캐시에만 있으며 업로드하거나 분석하지 않습니다.",
+        localOnly: "이 사진은 사용자가 분석을 실행하기 전까지 기기에만 유지됩니다.",
         guidance: {
           loading: "얼굴 정렬 상태 확인 중…",
           noFace: "얼굴이 보이지 않습니다. 한 명의 얼굴을 타원 안에 맞춰 주세요.",
@@ -218,22 +221,22 @@ export const MOBILE_COPY: Record<SupportedLocale, MobileCopy> = {
       }
     },
     my: {
-      eyebrow: "MY · MOBILE-3",
-      title: "네이티브 My · 스킨 다이어리",
-      description: "기존 인증 대시보드·체크인·루틴·스킨 다이어리 API를 Native Bearer로 재사용하며 Web cookie 인증은 그대로 보존합니다.",
-      notice: "Google OAuth는 bejewely://auth/callback으로 복귀합니다. Hosted 로그인에는 Supabase redirect allow-list에 이 native callback이 등록되어 있어야 합니다.",
+      eyebrow: "MY SKIN",
+      title: "내 피부 · 스킨 다이어리",
+      description: "로그인하고 피부 프로필, 오늘의 체크인, 루틴, 저장한 리포트를 한곳에서 확인하세요.",
+      notice: "로그인하면 스킨 다이어리와 저장한 결과를 다음에도 이어서 확인할 수 있습니다.",
       signInGoogle: "Google로 계속하기",
-      signingIn: "Google 로그인 여는 중…",
-      signedOut: "로그인되지 않음",
+      signingIn: "로그인 여는 중…",
+      signedOut: "로그인하고 내 피부 프로필과 다이어리를 확인하세요",
       signedIn: "로그인됨",
       signOut: "로그아웃",
       loading: "세션 복원 중…",
-      authUnavailable: "이 빌드에는 모바일 인증 환경값이 설정되지 않았습니다.",
-      authFailed: "인증을 완료하지 못했습니다.",
-      dashboardReady: "인증된 대시보드 연결 완료",
-      dashboardNoProfile: "로그인됨 · 아직 피부 프로필이 없습니다",
-      dashboardCheckIn: "로그인됨 · 오늘 체크인이 필요합니다",
-      dashboardUnavailable: "로그인은 되었지만 대시보드 API를 사용할 수 없습니다."
+      authUnavailable: "현재 로그인을 사용할 수 없습니다.",
+      authFailed: "로그인을 완료하지 못했습니다. 다시 시도해 주세요.",
+      dashboardReady: "내 피부 대시보드가 준비되었습니다",
+      dashboardNoProfile: "피부 프로필을 만들고 다이어리를 시작해 보세요",
+      dashboardCheckIn: "오늘의 체크인을 기록해 보세요",
+      dashboardUnavailable: "내 피부 정보를 불러오지 못했습니다."
     }
   }
 };
