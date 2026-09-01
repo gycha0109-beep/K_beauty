@@ -215,6 +215,21 @@
     "playPolicyReviewStatus": "external_pending",
     "regulatoryMedicalDeviceStatus": "not_asserted_by_repository"
   },
+  "mobile16EContract": {
+    "storeContentRatingReadinessPath": "docs/store/mobile-content-rating-readiness.json",
+    "verifier": "scripts/verify-mobile-16e-content-rating-readiness.mjs",
+    "workflow": ".github/workflows/mobile-16e-content-rating-readiness.yml",
+    "appleHealthOrWellnessTopics": true,
+    "appleMedicalOrTreatmentInformation": "none",
+    "appleUserGeneratedContentCapability": false,
+    "appleSocialMediaCapability": false,
+    "googleIarcCategory": "Utility, Productivity, Communication, or Other",
+    "googleOnlineInteractionOrContentExchange": false,
+    "sourceContractStatus": "repository_implemented",
+    "appleFinalRatingStatus": "external_pending",
+    "googleIarcFinalRatingStatus": "external_pending",
+    "consoleSubmissionStatus": "external_pending"
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -300,9 +315,9 @@
     },
     {
       "id": "store_age_rating_and_content_declarations",
-      "status": "pending",
-      "owner": "MOBILE-16",
-      "reason": "App Store age rating and Google Play content-rating declarations are not frozen."
+      "status": "repository_prepared_console_submission_pending",
+      "owner": "MOBILE-16E",
+      "reason": "The repository freezes the current Apple age-rating and Google IARC questionnaire answer basis, while final store-calculated ratings, App Store Connect/Play Console submission, and Google Target Audience & Content remain external."
     },
     {
       "id": "ai_skin_analysis_claim_review",
@@ -331,7 +346,10 @@
     {"id": "google_play_processor_contract_confirmation", "owner": "MOBILE-16C", "status": "external_pending"},
     {"id": "openai_zero_data_retention_authority", "owner": "MOBILE-16C", "status": "external_pending"},
     {"id": "google_play_health_apps_declaration_submission", "owner": "MOBILE-16D", "status": "external_pending"},
-    {"id": "google_play_health_policy_review", "owner": "MOBILE-16D", "status": "external_pending"}
+    {"id": "google_play_health_policy_review", "owner": "MOBILE-16D", "status": "external_pending"},
+    {"id": "apple_age_rating_submission", "owner": "MOBILE-16E", "status": "external_pending"},
+    {"id": "google_play_iarc_content_rating_submission", "owner": "MOBILE-16E", "status": "external_pending"},
+    {"id": "google_play_target_audience_and_content", "owner": "MOBILE-16E", "status": "external_pending"}
   ],
   "preflightMeaning": {
     "passMeans": [
@@ -342,6 +360,7 @@
       "MOBILE-16B source-freezes the app-owned Apple collected-data inventory, tracking=false boundary, observed required-reason API declarations and Expo exempt-only export-compliance declaration, with generated PrivacyInfo.xcprivacy and Info.plist verification.",
       "MOBILE-16C source-freezes the Google Play Data Safety answer basis and enforces HTTPS for production mobile API and Supabase traffic while preserving explicit external Play Console, processor-contract and OpenAI ZDR authority boundaries.",
       "MOBILE-16D source-freezes a conservative Google Play Health Apps declaration for the skin-care taxonomy, keeps medical-device/diagnosis/treatment claims false, and keeps policy disclaimer copy in Play store-description metadata rather than runtime analysis UI.",
+      "MOBILE-16E source-freezes the Apple age-rating and Google IARC questionnaire answer basis, including health/wellness versus medical-treatment separation and the absence of in-app social/UGC exchange, while leaving final store ratings external.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
@@ -359,6 +378,8 @@
       "Google Play Console has accepted or published the Data Safety declaration.",
       "Google Play has accepted or published the Health Apps declaration or final store-description wording.",
       "Any medical-device regulatory determination has been made for BEJEWELY; the repository only freezes product non-claims and intended Play declaration metadata.",
+      "Apple has calculated or accepted the final BEJEWELY age rating.",
+      "IARC or Google Play has calculated or accepted the final BEJEWELY content rating or Target Audience & Content answers.",
       "Supabase/OpenAI processor-contract status or OpenAI Zero Data Retention has been externally verified.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Physical-device validation."
