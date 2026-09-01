@@ -111,6 +111,7 @@
       "appStoreUploadValidationStatus": "external_pending"
     },
     "exportCompliance": {
+      "source": "expo.ios.config.usesNonExemptEncryption",
       "infoPlistKey": "ITSAppUsesNonExemptEncryption",
       "value": false,
       "classification": "exempt_only",
@@ -231,7 +232,7 @@
       "MOBILE-14 native Apple auth, Universal Links, Android Verified App Links and hosted association boundaries remain preserved.",
       "MOBILE-15 freezes a secret-safe distribution authority contract and exact-SHA manual signed-artifact workflow.",
       "MOBILE-16A source-freezes public privacy/deletion routes, in-app account deletion, direct and linked customer-data purge, provider-neutral external deletion request, and fail-closed Sign in with Apple token revocation; its public routes are deployed on the canonical production origin.",
-      "MOBILE-16B source-freezes the observed Apple required-reason API declarations, no-tracking boundary and exempt-only export-compliance Info.plist declaration, with generated-iOS verification.",
+      "MOBILE-16B source-freezes the observed Apple required-reason API declarations, no-tracking boundary and Expo exempt-only export-compliance declaration, with generated-iOS Info.plist verification.",
       "Android upload signing is separated from the Google Play delivered app-signing certificate used by Verified App Links.",
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
