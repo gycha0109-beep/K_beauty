@@ -41,7 +41,7 @@ const MY_DIARY_COPY = {
     sensitivity: "Sensitivity",
     noValue: "Not recorded",
     checkinTitle: "Today's check-in",
-    checkinBody: "Record only what changed today. The server keeps the same diary and routine authority used by Web.",
+    checkinBody: "Record what changed today so you can compare your skin over time.",
     levels: {
       dryness_level: "Dryness",
       oiliness_level: "Oiliness",
@@ -81,7 +81,7 @@ const MY_DIARY_COPY = {
     detailFailed: "Could not load that diary day.",
     noProfile: "Create a skin profile through Skin Match before using the diary.",
     reload: "Reload",
-    dashboardFailed: "The My / Skin Diary API is unavailable.",
+    dashboardFailed: "Your skin diary could not be loaded.",
     routineSections: {
       am_routine: "AM",
       pm_routine: "PM",
@@ -98,7 +98,7 @@ const MY_DIARY_COPY = {
     sensitivity: "민감도",
     noValue: "기록 없음",
     checkinTitle: "오늘 체크인",
-    checkinBody: "오늘 달라진 조건만 기록합니다. Web과 동일한 서버 다이어리·루틴 권한을 그대로 사용합니다.",
+    checkinBody: "오늘 달라진 피부 상태와 생활 맥락을 기록해 변화를 이어서 확인하세요.",
     levels: {
       dryness_level: "건조함",
       oiliness_level: "유분",
@@ -138,7 +138,7 @@ const MY_DIARY_COPY = {
     detailFailed: "해당 날짜의 다이어리를 불러오지 못했습니다.",
     noProfile: "Skin Match에서 피부 프로필을 만든 뒤 다이어리를 사용할 수 있습니다.",
     reload: "다시 불러오기",
-    dashboardFailed: "My / Skin Diary API를 사용할 수 없습니다.",
+    dashboardFailed: "스킨 다이어리를 불러오지 못했습니다.",
     routineSections: {
       am_routine: "아침",
       pm_routine: "저녁",
@@ -353,7 +353,7 @@ export default function MyScreen() {
   else if (session) statusText = session.user.email ? `${copy.signedIn} · ${session.user.email}` : copy.signedIn;
 
   return (
-    <ScreenShell eyebrow="MY · MOBILE-3" title={copy.title} description={copy.description}>
+    <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
       <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}>
         <Text style={[styles.status, { color: palette.text }]}>{statusText}</Text>
         {!session && status !== "loading" && status !== "unconfigured" ? (

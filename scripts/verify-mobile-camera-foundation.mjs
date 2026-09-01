@@ -64,11 +64,11 @@ assert.match(analyzeSource, /useState<NativeCameraPhoto \| null>/, "Analyze rout
 assert.match(analyzeSource, /onPhotoChange=\{setCapturedPhoto\}/, "Analyze route must wire the upload-ready descriptor handoff");
 assert.match(analyzeSource, /copy\.camera/, "Analyze route must keep camera copy locale-aware");
 assert.match(analyzeSource, /previewLabel:\s*copy\.title/, "Fullscreen camera must preserve the Analyze title for rendered smoke/accessibility continuity");
-assert.match(copySource, /ANALYZE · MOBILE-5/, "MOBILE-5 copy marker is missing");
+assert.match(copySource, /eyebrow:\s*"SKIN ANALYSIS"/, "Production Analyze copy marker is missing");
 assert.match(copySource, /얼굴을 타원 안에 맞춰 주세요/, "Korean static oval guidance is missing");
 assert.match(copySource, /Position your face inside the oval/, "English static oval guidance is missing");
-assert.match(copySource, /로컬 캐시/, "Korean local-only capture disclosure is missing");
-assert.match(copySource, /local cache/i, "English local-only capture disclosure is missing");
+assert.match(copySource, /이 기기에만 보관/, "Korean pre-analysis local capture disclosure is missing");
+assert.match(copySource, /stays on this device/i, "English pre-analysis local capture disclosure is missing");
 
 assert.match(
   nativeShellWorkflow,
@@ -95,7 +95,7 @@ assert.match(
   /bash -n scripts\/verify-mobile-android-smoke\.sh/,
   "Camera gate must validate Android smoke shell syntax before native build"
 );
-assert.match(androidSmokeSource, /wait_for_text "NATIVE SKIN PHOTO CAPTURE"/, "Android smoke must observe the rendered fullscreen Analyze title");
+assert.match(androidSmokeSource, /wait_for_text "SKIN ANALYSIS"/, "Android smoke must observe the rendered fullscreen Analyze title");
 assert.match(androidSmokeSource, /Camera ready/, "Android smoke must verify the ready state");
 assert.match(androidSmokeSource, /CAPTURED PHOTO/, "Android smoke must verify the fullscreen captured state");
 assert.match(androidSmokeSource, /tap_text "Retake"/, "Android smoke must exercise the retake control");

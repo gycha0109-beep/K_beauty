@@ -261,12 +261,12 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
 printf 'MOBILE_ANDROID_DIRECT_ACTIVITY_START=PASS\n'
 
-wait_for_text "BEJEWELY Mobile"
-wait_for_text "Native shell ready"
+wait_for_text "BEJEWELY"
+wait_for_text "Find what fits your skin today"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-en.png"
 
 tap_text "Analyze"
-wait_for_text "NATIVE SKIN PHOTO CAPTURE"
+wait_for_text "SKIN ANALYSIS"
 wait_for_text "Camera ready"
 adb exec-out screencap -p > "$ARTIFACT_DIR/analyze-camera-ready-en.png"
 tap_text "Take photo"
@@ -289,16 +289,16 @@ printf 'MOBILE_ANDROID_CAMERA_CAPTURE_SMOKE=PASS\n'
 printf 'MOBILE_ANDROID_CAMERA_FULLSCREEN_EXIT=PASS\n'
 
 tap_text "My"
-wait_for_text "Native My & Skin Diary"
+wait_for_text "My · Skin Diary"
 wait_for_text "Saved report"
 tap_text "Saved report"
 wait_for_text "Sign in on My to reopen a saved report."
 adb exec-out screencap -p > "$ARTIFACT_DIR/saved-report-signed-out-en.png"
 printf 'MOBILE_ANDROID_SAVED_REPORT_ROUTE_SMOKE=PASS\n'
 tap_text "Back to My"
-wait_for_text "Native My & Skin Diary"
+wait_for_text "My · Skin Diary"
 tap_text "Home"
-wait_for_text "BEJEWELY Mobile"
+wait_for_text "BEJEWELY"
 
 adb shell am start -W -a android.intent.action.VIEW -d "bejewely://r/invalid" -p "$PACKAGE_ID" >/dev/null
 printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_START=PASS\n'
@@ -307,7 +307,7 @@ wait_for_text "Invalid shared result link."
 adb exec-out screencap -p > "$ARTIFACT_DIR/public-result-deep-link-invalid-en.png"
 printf 'MOBILE_ANDROID_PUBLIC_RESULT_DEEP_LINK_SMOKE=PASS\n'
 tap_text "Back to Home"
-wait_for_text "BEJEWELY Mobile"
+wait_for_text "BEJEWELY"
 
 adb shell am start -W -a android.intent.action.VIEW -d "bejewely://premium" -p "$PACKAGE_ID" >/dev/null
 printf 'MOBILE_ANDROID_PREMIUM_ROUTE_START=PASS\n'
@@ -316,15 +316,15 @@ wait_for_text "Sign in on My to create a premium report."
 adb exec-out screencap -p > "$ARTIFACT_DIR/premium-signed-out-en.png"
 printf 'MOBILE_ANDROID_PREMIUM_ROUTE_SMOKE=PASS\n'
 tap_text "Home"
-wait_for_text "BEJEWELY Mobile"
+wait_for_text "BEJEWELY"
 
 tap_text "locale-ko"
-wait_for_text "BEJEWELY 모바일"
-wait_for_text "테마 · 라이트"
+wait_for_text "BEJEWELY"
+wait_for_text "오늘 내 피부에 맞는 루틴 찾기"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-light-ko.png"
 
 adb shell cmd uimode night yes >/dev/null
-wait_for_text "테마 · 다크"
+wait_for_text "오늘 내 피부에 맞는 루틴 찾기"
 adb exec-out screencap -p > "$ARTIFACT_DIR/home-dark-ko.png"
 
 adb shell dumpsys activity activities | grep -F "$PACKAGE_ID/.MainActivity" > "$ARTIFACT_DIR/activity.txt"
