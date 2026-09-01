@@ -11,9 +11,9 @@ import { useMobileShell } from "../../lib/mobile-shell";
 
 const COPY = {
   en: {
-    kicker: "PUBLIC RESULT · MOBILE-10",
+    kicker: "PUBLIC RESULT",
     title: "Shared result",
-    description: "This read-only view opens a server-published free result from a BEJEWELY link.",
+    description: "Open a shared BEJEWELY free result in read-only mode.",
     loading: "Loading shared result…",
     invalid: "Invalid shared result link.",
     notFound: "This shared result is unavailable.",
@@ -23,9 +23,9 @@ const COPY = {
     back: "Back to Home"
   },
   ko: {
-    kicker: "공개 결과 · MOBILE-10",
+    kicker: "공개 결과",
     title: "공유 결과",
-    description: "서버에 공개된 무료 결과를 BEJEWELY 링크로 여는 읽기 전용 화면입니다.",
+    description: "공유된 BEJEWELY 무료 결과를 읽기 전용으로 확인합니다.",
     loading: "공유 결과를 불러오는 중…",
     invalid: "올바르지 않은 공유 결과 링크입니다.",
     notFound: "이 공유 결과를 불러올 수 없습니다.",

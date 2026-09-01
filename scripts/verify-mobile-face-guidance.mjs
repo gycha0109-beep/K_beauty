@@ -89,9 +89,9 @@ assert.match(cameraSource, /quality:\s*0\.85/, "MOBILE-5 final capture quality c
 assert.match(cameraSource, /type:\s*"image\/jpeg"/, "MOBILE-5 final JPEG descriptor must remain intact");
 assert.match(cameraSource, /skipProcessing:\s*false/, "Final capture must retain orientation processing");
 
-assert.match(copySource, /MOBILE-6/, "Analyze copy must identify the active MOBILE-6 slice");
-assert.match(copySource, /Guidance samples stay local and are deleted/, "English local-only guidance disclosure is missing");
-assert.match(copySource, /가이드용 샘플은 기기 안에서만 판정하고 즉시 삭제/, "Korean local-only guidance disclosure is missing");
+assert.match(copySource, /eyebrow:\s*"SKIN ANALYSIS"/, "Analyze copy must expose the production skin-analysis marker");
+assert.match(copySource, /Camera-guidance images stay on your device/, "English local-only guidance disclosure is missing");
+assert.match(copySource, /촬영 가이드용 이미지는 기기에만 유지/, "Korean local-only guidance disclosure is missing");
 assert.match(copySource, /Face guidance is unavailable\. You can still take the photo manually\./, "Guidance failure must fail open to manual capture");
 
 const protectedAuthorityPatterns = [

@@ -16,11 +16,11 @@ const COPY = {
   en: {
     kicker: "CURRENT PRODUCTS",
     title: "Current products",
-    body: "Optional context only. The server remains authoritative for all Premium judgments.",
+    body: "Optional. Add the products you use now so your Premium report can account for your current routine.",
     loading: "Loading product options…",
     loadError: "Product options could not be loaded. You can still continue without selecting products.",
-    selected: "DB product",
-    notInDb: "Using / not in DB",
+    selected: "Choose product",
+    notInDb: "Using another product",
     notUsing: "Not using",
     noProducts: "No products are available for this group.",
     tapAgain: "Tap the selected status again to clear it."
@@ -28,11 +28,11 @@ const COPY = {
   ko: {
     kicker: "현재 제품",
     title: "현재 쓰는 제품",
-    body: "선택 사항입니다. Premium 판단 권한은 그대로 서버에 있으며 앱은 선택값만 전달합니다.",
+    body: "선택 사항입니다. 현재 사용하는 제품을 추가하면 프리미엄 리포트가 기존 루틴을 함께 고려합니다.",
     loading: "제품 목록을 불러오는 중…",
     loadError: "제품 목록을 불러오지 못했습니다. 제품을 선택하지 않고 계속할 수 있습니다.",
-    selected: "DB 제품 선택",
-    notInDb: "사용 중 / DB 미등록",
+    selected: "제품 선택",
+    notInDb: "다른 제품 사용 중",
     notUsing: "사용 안 함",
     noProducts: "이 그룹에서 선택할 수 있는 제품이 없습니다.",
     tapAgain: "선택한 상태를 다시 누르면 해제됩니다."

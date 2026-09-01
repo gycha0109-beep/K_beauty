@@ -1,0 +1,52 @@
+name: BEJEWELY Mobile 17A Apply Verifier Compatibility
+
+on:
+  push:
+    branches:
+      - codex/mobile-17a-production-copy-cleanup
+    paths:
+      - scripts/apply-mobile-17a-verifier-compat.mjs
+      - .github/workflows/mobile-17a-apply-verifier-compat.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-17a-apply-verifier-compat
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: codex/mobile-17a-production-copy-cleanup
+          fetch-depth: 0
+
+      - name: Apply verifier compatibility
+        run: node scripts/apply-mobile-17a-verifier-compat.mjs
+
+      - name: Review changed scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git diff --stat
+
+      - name: Commit verifier changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            scripts/verify-mobile-camera-foundation.mjs \
+            scripts/verify-mobile-face-guidance.mjs \
+            scripts/verify-mobile-analyze-integration.mjs \
+            scripts/verify-mobile-premium-entry.mjs
+          test -n "$(git diff --cached --name-only)"
+          git commit -m "[MOBILE-17A] align legacy verifiers with production copy"
+          git push origin HEAD:codex/mobile-17a-production-copy-cleanup

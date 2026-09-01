@@ -95,7 +95,7 @@ export function NativeAnalyzeResultView({
       testID="native-analyze-result"
       style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}
     >
-      <Text style={[styles.kicker, { color: palette.accent }]}>MOBILE-7 · SERVER RESULT</Text>
+      <Text style={[styles.kicker, { color: palette.accent }]}>PERSONALIZED RESULT</Text>
       <Text style={[styles.title, { color: palette.text }]}> 
         {locale === "ko" ? "피부 분석 결과" : "Skin analysis result"}
       </Text>
@@ -143,8 +143,8 @@ export function NativeAnalyzeResultView({
 
       <Text style={[styles.boundary, { color: palette.textMuted }]}> 
         {locale === "ko"
-          ? "이 화면은 서버가 반환한 무료 결과만 표시합니다. Premium 및 Face Lab 엔진은 네이티브 앱으로 복제하지 않습니다."
-          : "This screen renders only the free result returned by the server. Premium and Face Lab engines are not duplicated in the native app."}
+          ? "추천 제품과 루틴을 확인하고, 더 자세한 루틴이 필요하면 프리미엄 리포트를 열어보세요."
+          : "Review your product picks and routine, or open Premium for a more detailed report."}
       </Text>
 
       <Pressable
