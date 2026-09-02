@@ -126,8 +126,8 @@ export function NativeAnalyzeSurvey({
       </Text>
       <Text style={[styles.description, { color: palette.textMuted }]}> 
         {locale === "ko"
-          ? "사진과 함께 서버의 기존 Skin Match 엔진에 전달되는 필수 항목입니다."
-          : "These required answers are sent with your photo to the existing server-side Skin Match engine."}
+          ? "답변은 피부 프로필과 맞춤 제품, 루틴을 더 정확하게 맞추는 데 사용됩니다."
+          : "Your answers help match your skin profile, product picks, and routine more accurately."}
       </Text>
 
       {FIELDS.map((field) => (

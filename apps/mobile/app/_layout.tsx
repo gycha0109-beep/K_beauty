@@ -1,8 +1,97 @@
 import { Tabs, useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, type ColorValue } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { MOBILE_COPY } from "../lib/copy";
 import { MobileShellProvider, useMobileShell } from "../lib/mobile-shell";
+
+type TabIconProps = Readonly<{
+  color: ColorValue;
+  size: number;
+}>;
+
+function HomeTabIcon({ color, size }: TabIconProps) {
+  return (
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "flex-end" }}>
+      <View
+        style={{
+          position: "absolute",
+          top: size * 0.16,
+          width: size * 0.48,
+          height: size * 0.48,
+          borderRadius: 3,
+          backgroundColor: color,
+          transform: [{ rotate: "45deg" }]
+        }}
+      />
+      <View
+        style={{
+          width: size * 0.62,
+          height: size * 0.46,
+          marginBottom: size * 0.08,
+          borderRadius: 4,
+          backgroundColor: color
+        }}
+      />
+    </View>
+  );
+}
+
+function AnalyzeTabIcon({ color, size }: TabIconProps) {
+  const ringSize = size * 0.72;
+  const stroke = Math.max(2, size * 0.08);
+
+  return (
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          width: ringSize,
+          height: ringSize,
+          alignItems: "center",
+          justifyContent: "center",
+          borderWidth: stroke,
+          borderRadius: ringSize / 2,
+          borderColor: color
+        }}
+      >
+        <View
+          style={{
+            width: size * 0.18,
+            height: size * 0.18,
+            borderRadius: size * 0.09,
+            backgroundColor: color
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
+function MyTabIcon({ color, size }: TabIconProps) {
+  return (
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          width: size * 0.3,
+          height: size * 0.3,
+          marginBottom: size * 0.08,
+          borderRadius: size * 0.15,
+          backgroundColor: color
+        }}
+      />
+      <View
+        style={{
+          width: size * 0.68,
+          height: size * 0.32,
+          borderTopLeftRadius: size * 0.34,
+          borderTopRightRadius: size * 0.34,
+          borderBottomLeftRadius: size * 0.12,
+          borderBottomRightRadius: size * 0.12,
+          backgroundColor: color
+        }}
+      />
+    </View>
+  );
+}
 
 function NativeTabs() {
   const router = useRouter();
@@ -33,12 +122,25 @@ function NativeTabs() {
           tabBarHideOnKeyboard: true
         }}
       >
-        <Tabs.Screen name="index" options={{ title: copy.tabs.home }} />
-        <Tabs.Screen name="analyze" options={{ title: copy.tabs.analyze }} />
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: copy.tabs.home,
+            tabBarIcon: ({ color, size }) => <HomeTabIcon color={color} size={size} />
+          }}
+        />
+        <Tabs.Screen
+          name="analyze"
+          options={{
+            title: copy.tabs.analyze,
+            tabBarIcon: ({ color, size }) => <AnalyzeTabIcon color={color} size={size} />
+          }}
+        />
         <Tabs.Screen
           name="my"
           options={{
             title: copy.tabs.my,
+            tabBarIcon: ({ color, size }) => <MyTabIcon color={color} size={size} />,
             headerRight: () => (
               <View style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}>
                 <Pressable
