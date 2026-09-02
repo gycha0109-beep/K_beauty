@@ -80,17 +80,9 @@ export default function AnalyzeScreen() {
     }
   }, [capturedPhoto, locale, submitting, survey]);
 
-  const description = locale === "ko"
-    ? "전면 카메라의 기기 내 촬영 가이드와 공용 설문 계약을 사용하고, 최종 JPEG만 기존 BEJEWELY 분석 서버로 전송합니다."
-    : "Use on-device front-camera guidance and the shared survey contract, then send only the final JPEG to the existing BEJEWELY analysis server.";
-
   return (
-    <ScreenShell eyebrow="ANALYZE · MOBILE-7" title={copy.title} description={description}>
-      <Text style={[styles.notice, { color: palette.textMuted }]}>
-        {locale === "ko"
-          ? "분석을 실행할 때만 촬영한 최종 사진과 설문값이 /api/analyze로 전송됩니다. 가이드용 임시 샘플은 업로드하지 않습니다."
-          : "Only when you run analysis are the final photo and survey values sent to /api/analyze. Temporary guidance samples are never uploaded."}
-      </Text>
+    <ScreenShell eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
+      <Text style={[styles.notice, { color: palette.textMuted }]}>{copy.notice}</Text>
 
       {result ? (
         <NativeAnalyzeResultView
@@ -107,10 +99,7 @@ export default function AnalyzeScreen() {
             copy={{
               ...copy.camera,
               previewLabel: copy.title,
-              acceptPhoto: locale === "ko" ? "이 사진 사용" : "Use photo",
-              localOnly: locale === "ko"
-                ? "촬영한 최종 사진은 분석을 실행하기 전까지 로컬 캐시에 유지됩니다. 분석 실행 시에만 기존 BEJEWELY 서버로 전송됩니다."
-                : "The final photo stays in local cache until you run analysis. It is sent to the existing BEJEWELY server only when analysis starts."
+              acceptPhoto: locale === "ko" ? "이 사진 사용" : "Use photo"
             }}
             palette={palette}
             onPhotoChange={setCapturedPhoto}
@@ -159,14 +148,14 @@ export default function AnalyzeScreen() {
                 <Text style={styles.submitButtonText}>
                   {submitting
                     ? locale === "ko" ? "분석 중…" : "Analyzing…"
-                    : locale === "ko" ? "피부 분석 실행" : "Run skin analysis"}
+                    : locale === "ko" ? "피부 분석 시작" : "Start skin analysis"}
                 </Text>
               </Pressable>
 
               <Text style={[styles.boundary, { color: palette.textMuted }]}>
                 {locale === "ko"
-                  ? "추천·Product Fact·Face Lab·Premium 판단은 서버 권한으로 유지됩니다. 앱은 결과를 계산하거나 재작성하지 않습니다."
-                  : "Recommendation, Product Fact, Face Lab, and Premium decisions remain server authority. The app does not calculate or rewrite the result."}
+                  ? "결과는 현재 피부 상태와 선호를 바탕으로 한 스킨케어 가이드와 제품 추천으로 제공됩니다."
+                  : "Your result is presented as skin-care guidance and product recommendations based on your current skin profile and preferences."}
               </Text>
             </View>
           ) : null}
