@@ -10,6 +10,8 @@ UI_DUMP="$ARTIFACT_DIR/window.xml"
 METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
+QUICKSTEP_RECOVERY_COUNT=0
+QUICKSTEP_RECOVERY_LIMIT=2
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -95,12 +97,41 @@ PY
   adb shell input tap "$x" "$y"
 }
 
+recover_quickstep_if_needed() {
+  if [[ ! -f "$UI_DUMP" ]] || ! ui_has_text "Quickstep isn't responding"; then
+    return 1
+  fi
+  if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then
+    echo "Quickstep ANR persisted beyond scoped recovery limit" >&2
+    return 2
+  fi
+  if ! tap_text "Close app"; then
+    echo "Quickstep ANR detected but its Close app action was unavailable" >&2
+    return 2
+  fi
+  QUICKSTEP_RECOVERY_COUNT=$((QUICKSTEP_RECOVERY_COUNT + 1))
+  printf 'MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS count=%d\n' "$QUICKSTEP_RECOVERY_COUNT"
+  sleep 2
+  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  printf 'MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS\n'
+  sleep 2
+  return 0
+}
+
 wait_for_text() {
   local expected="$1"
   for _ in $(seq 1 45); do
     dump_ui || true
     if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
       return 0
+    fi
+    if recover_quickstep_if_needed; then
+      continue
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 1
+      fi
     fi
     sleep 2
   done
@@ -116,6 +147,14 @@ wait_for_text_with_scroll() {
     dump_ui || true
     if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
       return 0
+    fi
+    if recover_quickstep_if_needed; then
+      continue
+    else
+      recovery_status=$?
+      if [[ "$recovery_status" -eq 2 ]]; then
+        return 1
+      fi
     fi
     if (( scrolls < max_scrolls )); then
       adb shell input swipe 540 1680 540 700 350 >/dev/null 2>&1 || true
