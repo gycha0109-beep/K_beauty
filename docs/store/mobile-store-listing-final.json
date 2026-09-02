@@ -1,14 +1,14 @@
 {
   "schemaVersion": "mobile-store-listing-final-v1",
   "slice": "MOBILE-18",
-  "status": "repository_listing_copy_frozen_assets_and_support_pending",
+  "status": "repository_listing_copy_and_support_url_frozen_assets_pending",
   "policySnapshotDate": "2026-09-02",
   "scope": {
     "runtimeBehaviorChanged": false,
     "finalMarketingCopyFrozen": true,
     "storeAssetsFrozen": false,
-    "appStoreSupportUrlFrozen": false,
-    "purpose": "Freeze submission-ready App Store and Google Play listing copy while keeping screenshots, feature graphics, support URL and console submission as explicit pending work."
+    "appStoreSupportUrlFrozen": true,
+    "purpose": "Freeze submission-ready App Store and Google Play listing copy plus the public App Store Support URL while keeping screenshots, feature graphics, support-contact configuration and console submission explicit."
   },
   "metadataConstraints": {
     "appStore": {
@@ -50,9 +50,12 @@
     "appName": "BEJEWELY",
     "privacyPolicyUrl": "https://k-beauty-two.vercel.app/privacy",
     "supportUrl": {
-      "status": "repository_route_pending",
-      "value": null,
-      "reason": "A dedicated public support resource is not yet frozen in the repository."
+      "status": "repository_route_implemented_external_contact_pending",
+      "value": "https://k-beauty-two.vercel.app/support",
+      "englishValue": "https://k-beauty-two.vercel.app/en/support",
+      "contactEnvironmentKey": "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL",
+      "contactStatus": "external_pending",
+      "reason": "The public Korean and English support routes are implemented. A valid public support email is displayed only when the existing public contact environment value is configured."
     },
     "localizations": {
       "en-US": {
@@ -109,12 +112,12 @@
     ]
   },
   "repositoryPending": [
-    "app_store_support_route_and_url",
     "app_store_screenshots",
     "google_play_phone_screenshots",
     "google_play_feature_graphic"
   ],
   "externalPending": [
+    "public_support_contact_configuration",
     "app_store_connect_metadata_submission",
     "google_play_console_metadata_submission"
   ],
