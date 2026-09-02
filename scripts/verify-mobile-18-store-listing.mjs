@@ -15,10 +15,11 @@ const byteCount = (value) => Buffer.byteLength(value, "utf8");
 
 assert.equal(listing.schemaVersion, "mobile-store-listing-final-v1");
 assert.equal(listing.slice, "MOBILE-18");
-assert.equal(listing.status, "repository_listing_copy_frozen_assets_and_support_pending");
+assert.equal(listing.status, "repository_listing_copy_and_support_url_frozen_assets_pending");
 assert.equal(listing.scope.runtimeBehaviorChanged, false);
 assert.equal(listing.scope.finalMarketingCopyFrozen, true);
 assert.equal(listing.scope.storeAssetsFrozen, false);
+assert.equal(listing.scope.appStoreSupportUrlFrozen, true);
 assert.equal(listing.appStore.appName, "BEJEWELY");
 assert.equal(listing.googlePlay.appName, "BEJEWELY");
 
@@ -91,12 +92,16 @@ assert.equal(listing.googlePlay.phoneScreenshots.status, "asset_pending");
 assert.ok(listing.googlePlay.phoneScreenshots.submissionMinimum >= 2);
 assert.ok(listing.googlePlay.phoneScreenshots.targetCount >= 4);
 assert.equal(listing.screenshotPlan.status, "capture_assets_pending");
-assert.equal(listing.appStore.supportUrl.status, "repository_route_pending");
-assert.equal(listing.appStore.supportUrl.value, null);
-assert.ok(listing.repositoryPending.includes("app_store_support_route_and_url"));
+assert.equal(listing.appStore.supportUrl.status, "repository_route_implemented_external_contact_pending");
+assert.equal(listing.appStore.supportUrl.value, "https://k-beauty-two.vercel.app/support");
+assert.equal(listing.appStore.supportUrl.englishValue, "https://k-beauty-two.vercel.app/en/support");
+assert.equal(listing.appStore.supportUrl.contactEnvironmentKey, "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL");
+assert.equal(listing.appStore.supportUrl.contactStatus, "external_pending");
+assert.equal(listing.repositoryPending.includes("app_store_support_route_and_url"), false);
 assert.ok(listing.repositoryPending.includes("app_store_screenshots"));
 assert.ok(listing.repositoryPending.includes("google_play_phone_screenshots"));
 assert.ok(listing.repositoryPending.includes("google_play_feature_graphic"));
+assert.ok(listing.externalPending.includes("public_support_contact_configuration"));
 
 assert.equal(claims.scope.finalMarketingCopyFrozen, true);
 assert.equal(claims.finalCopyGate.status, "copy_frozen_assets_pending");
@@ -106,4 +111,4 @@ console.log("MOBILE_18_APP_STORE_METADATA_LIMITS=PASS");
 console.log("MOBILE_18_GOOGLE_PLAY_METADATA_LIMITS=PASS");
 console.log("MOBILE_18_HEALTH_LISTING_BOUNDARY=PASS");
 console.log("MOBILE_18_COSMETIC_CLAIM_BOUNDARY=PASS");
-console.log("MOBILE_18_PENDING_ASSET_AND_SUPPORT_BOUNDARY=PASS");
+console.log("MOBILE_18_SUPPORT_URL_FROZEN_ASSETS_PENDING=PASS");

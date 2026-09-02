@@ -1,0 +1,75 @@
+name: BEJEWELY Mobile 19A Public Support
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/support/**"
+      - "app/en/support/**"
+      - "components/support/**"
+      - "docs/store/mobile-store-listing-final.json"
+      - "scripts/verify-mobile-18-store-listing.mjs"
+      - "scripts/verify-mobile-19a-public-support.mjs"
+      - ".github/workflows/mobile-19a-public-support.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/support/**"
+      - "app/en/support/**"
+      - "components/support/**"
+      - "docs/store/mobile-store-listing-final.json"
+      - "scripts/verify-mobile-18-store-listing.mjs"
+      - "scripts/verify-mobile-19a-public-support.mjs"
+      - ".github/workflows/mobile-19a-public-support.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-19a-public-support-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-support:
+    name: Public Support Route Contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact checked-out SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'MOBILE_19A_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Verify support and listing contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/verify-mobile-18-store-listing.mjs
+          node --check scripts/verify-mobile-19a-public-support.mjs
+          node scripts/verify-mobile-18-store-listing.mjs
+          node scripts/verify-mobile-19a-public-support.mjs
+
+      - name: Verify Next production build with public support routes
+        env:
+          NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL: support-ci@example.invalid
+        run: npm run build
