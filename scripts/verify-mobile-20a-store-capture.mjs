@@ -46,12 +46,21 @@ for (const marker of [
   'capture_png "01-home-ko-1080x1920.png"',
   'capture_png "02-analyze-ko-1080x1920.png"',
   "if (width, height) != (1080, 1920)",
+  "QUICKSTEP_RECOVERY_COUNT=0",
+  "QUICKSTEP_RECOVERY_LIMIT=2",
+  "recover_quickstep_if_needed()",
+  "Quickstep isn't responding",
+  "MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS",
+  "MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS",
   "MOBILE_20A_HOME_CAPTURE=PASS",
   "MOBILE_20A_ANALYZE_CAPTURE=PASS",
   "MOBILE_20A_STORE_CAPTURE=PASS"
 ]) {
   assert(capture.includes(marker), `capture-marker:${marker}`);
 }
+
+assert(capture.split("if recover_quickstep_if_needed; then").length - 1 === 2, "bounded-recovery-in-both-waits");
+assert(capture.includes("if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then"), "bounded-recovery-limit-enforced");
 
 for (const forbidden of [
   "saved-report-signed-out-en.png",
@@ -69,6 +78,7 @@ assert(workflow.includes("ReactiveCircus/android-emulator-runner@a421e43855164a8
 
 console.log("MOBILE_20A_RESULT_SURFACE=PASS");
 console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
+console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
 console.log("MOBILE_20A_STORE_CAPTURE=PASS");
