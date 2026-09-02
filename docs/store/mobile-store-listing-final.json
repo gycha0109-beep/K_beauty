@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "mobile-store-listing-final-v1",
+  "slice": "MOBILE-18",
+  "status": "repository_listing_copy_frozen_assets_and_support_pending",
+  "policySnapshotDate": "2026-09-02",
+  "scope": {
+    "runtimeBehaviorChanged": false,
+    "finalMarketingCopyFrozen": true,
+    "storeAssetsFrozen": false,
+    "appStoreSupportUrlFrozen": false,
+    "purpose": "Freeze submission-ready App Store and Google Play listing copy while keeping screenshots, feature graphics, support URL and console submission as explicit pending work."
+  },
+  "metadataConstraints": {
+    "appStore": {
+      "nameMaxCharacters": 30,
+      "subtitleMaxCharacters": 30,
+      "promotionalTextMaxCharacters": 170,
+      "descriptionMaxCharacters": 4000,
+      "keywordsMaxBytes": 100,
+      "screenshotCount": {"min": 1, "max": 10}
+    },
+    "googlePlay": {
+      "appNameMaxCharacters": 30,
+      "shortDescriptionMaxCharacters": 80,
+      "fullDescriptionMaxCharacters": 4000,
+      "phoneScreenshotMinimum": 2,
+      "recommendedPhoneScreenshotMinimum": 4,
+      "recommendedPortraitScreenshot": "1080x1920_or_higher_9:16",
+      "featureGraphic": "1024x500_png_or_jpeg_no_alpha"
+    }
+  },
+  "positioning": {
+    "primaryPurpose": "consumer_cosmetic_skin_care_and_product_personalization",
+    "allowedCoreBenefits": [
+      "skin profile from user-selected photo and survey context",
+      "personalized cosmetic skin-care product picks",
+      "morning and evening cosmetic skin-care routine guidance",
+      "saved reports",
+      "skin diary"
+    ],
+    "prohibitedMarketingClaims": [
+      "medical diagnosis",
+      "disease treatment, cure, or prevention",
+      "clinical or dermatologist-equivalent accuracy",
+      "medical-device functionality",
+      "guaranteed skin improvement or guaranteed product efficacy"
+    ]
+  },
+  "appStore": {
+    "appName": "BEJEWELY",
+    "privacyPolicyUrl": "https://k-beauty-two.vercel.app/privacy",
+    "supportUrl": {
+      "status": "repository_route_pending",
+      "value": null,
+      "reason": "A dedicated public support resource is not yet frozen in the repository."
+    },
+    "localizations": {
+      "en-US": {
+        "subtitle": "Personalized K-beauty routine",
+        "promotionalText": "One photo and a few quick questions help BEJEWELY organize your skin profile, personalized product picks, and an easy AM/PM routine.",
+        "description": "BEJEWELY helps you turn one skin photo and a short survey into a practical K-beauty routine.\n\nStart with a clear front-facing photo and answer a few questions about your skin type, concerns, sensitivity, and texture preferences.\n\nBEJEWELY organizes your input into:\n• a clear skin profile\n• personalized product picks\n• an easy morning and evening routine\n• saved reports you can revisit\n• a skin diary for tracking changes over time\n\nFace-framing guidance is processed on your device. Only the final photo you choose and your survey answers are sent when you start analysis.\n\nBEJEWELY is designed for everyday cosmetic skin-care guidance and product personalization.",
+        "keywords": "k-beauty,skincare,routine,skin diary,beauty,cosmetics"
+      },
+      "ko": {
+        "subtitle": "내 피부에 맞는 K-뷰티 루틴",
+        "promotionalText": "사진 한 장과 간단한 질문으로 피부 프로필, 맞춤 제품 추천, 아침·저녁 루틴을 한 흐름으로 정리해보세요.",
+        "description": "BEJEWELY는 피부 사진 한 장과 짧은 설문을 바탕으로 내 피부에 맞는 K-뷰티 루틴을 정리해주는 서비스입니다.\n\n밝은 곳에서 정면 사진을 촬영하고 피부 타입, 고민, 민감도, 선호 제형 등에 관한 몇 가지 질문에 답해보세요.\n\nBEJEWELY가 입력한 내용을 바탕으로 다음을 한 흐름으로 정리합니다.\n• 이해하기 쉬운 피부 프로필\n• 내 조건에 맞춘 제품 추천\n• 따라가기 쉬운 아침·저녁 루틴\n• 다시 확인할 수 있는 저장 리포트\n• 변화를 기록하는 스킨 다이어리\n\n얼굴 위치를 맞추는 가이드는 기기 안에서 처리합니다. 분석을 시작할 때 사용자가 선택한 최종 사진과 설문 답변만 전송됩니다.\n\nBEJEWELY는 일상적인 화장품·스킨케어 가이드와 제품 개인화에 초점을 둡니다.",
+        "keywords": "스킨케어,피부루틴,화장품,뷰티,피부일기"
+      }
+    }
+  },
+  "googlePlay": {
+    "appName": "BEJEWELY",
+    "listingIcon": "apps/mobile/assets/store/bejewely-play-icon-512.png",
+    "featureGraphic": {
+      "status": "asset_pending",
+      "requiredSize": "1024x500"
+    },
+    "phoneScreenshots": {
+      "status": "asset_pending",
+      "submissionMinimum": 2,
+      "targetCount": 4,
+      "targetPortraitSize": "1080x1920"
+    },
+    "localizations": {
+      "en-US": {
+        "shortDescription": "Personalized K-beauty product picks and routines matched to your skin.",
+        "fullDescription": "Build a practical K-beauty routine around your current skin context.\n\nTake one clear front-facing photo and answer a short survey about your skin type, concerns, sensitivity, and texture preferences. BEJEWELY uses that context to organize:\n\n• a clear skin profile\n• personalized product picks\n• an easy morning and evening routine\n• saved reports you can revisit\n• a skin diary for tracking changes over time\n\nPrivacy by design:\nFace-framing guidance is processed on your device. Only the final photo you choose and your survey answers are sent when you start analysis.\n\nPhoto analysis requires a supported device camera. BEJEWELY does not require external medical hardware or a special medical sensor.\n\nBEJEWELY is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. For medical advice, diagnosis, or treatment, consult a qualified healthcare professional."
+      },
+      "ko": {
+        "shortDescription": "사진과 설문으로 내 피부에 맞는 K-뷰티 제품과 루틴을 추천해요.",
+        "fullDescription": "지금 내 피부 조건을 바탕으로 실용적인 K-뷰티 루틴을 정리해보세요.\n\n밝은 곳에서 정면 사진 한 장을 촬영하고 피부 타입, 고민, 민감도, 선호 제형 등에 관한 짧은 설문에 답하면 BEJEWELY가 다음을 한 흐름으로 정리합니다.\n\n• 이해하기 쉬운 피부 프로필\n• 내 조건에 맞춘 제품 추천\n• 따라가기 쉬운 아침·저녁 루틴\n• 다시 확인할 수 있는 저장 리포트\n• 변화를 기록하는 스킨 다이어리\n\n개인정보 보호:\n얼굴 위치를 맞추는 가이드는 기기 안에서 처리합니다. 분석을 시작할 때 사용자가 선택한 최종 사진과 설문 답변만 전송됩니다.\n\n사진 분석에는 지원되는 기기의 카메라가 필요합니다. BEJEWELY는 외부 의료 하드웨어나 특수 의료 센서를 요구하지 않습니다.\n\nBEJEWELY는 의료기기가 아니며 어떠한 질환도 진단, 치료, 치유 또는 예방하지 않습니다. 의학적 조언, 진단 또는 치료가 필요한 경우 자격을 갖춘 의료 전문가와 상담하세요."
+      }
+    }
+  },
+  "screenshotPlan": {
+    "status": "capture_assets_pending",
+    "sourceOfTruth": "production mobile runtime after MOBILE-17A",
+    "doNotUseAsFinalAssets": [
+      "CI simulator screens that display unavailable camera or sign-in states",
+      "development/debug labels",
+      "signed-out placeholder states when the screenshot is intended to advertise a signed-in feature"
+    ],
+    "targetFrames": [
+      {"order": 1, "id": "home", "message": "personalized K-beauty entry and primary analysis CTA"},
+      {"order": 2, "id": "analyze", "message": "photo plus short skin survey"},
+      {"order": 3, "id": "results", "message": "skin profile and personalized product picks"},
+      {"order": 4, "id": "diary", "message": "skin diary and saved report continuity"}
+    ]
+  },
+  "repositoryPending": [
+    "app_store_support_route_and_url",
+    "app_store_screenshots",
+    "google_play_phone_screenshots",
+    "google_play_feature_graphic"
+  ],
+  "externalPending": [
+    "app_store_connect_metadata_submission",
+    "google_play_console_metadata_submission"
+  ],
+  "policySources": [
+    {"title": "Apple App information", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-information"},
+    {"title": "Apple Platform version information", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information"},
+    {"title": "Apple Screenshot specifications", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications"},
+    {"title": "Google Play Create and set up your app", "url": "https://support.google.com/googleplay/android-developer/answer/9859152"},
+    {"title": "Google Play Add preview assets", "url": "https://support.google.com/googleplay/android-developer/answer/9866151"}
+  ]
+}

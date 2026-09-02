@@ -1,13 +1,13 @@
 {
   "schemaVersion": "mobile-store-listing-claims-readiness-v1",
   "slice": "MOBILE-16F",
-  "status": "repository_claim_boundary_ready_final_listing_copy_pending",
+  "status": "repository_claim_boundary_ready_final_listing_copy_frozen_assets_pending",
   "policySnapshotDate": "2026-09-02",
   "scope": {
     "runtimeBehaviorChanged": false,
     "runtimeMedicalDisclaimerAdded": false,
-    "finalMarketingCopyFrozen": false,
-    "purpose": "Define allowed and prohibited store-listing claims before final App Store and Google Play copy is authored."
+    "finalMarketingCopyFrozen": true,
+    "purpose": "Define allowed and prohibited store-listing claims and bind them to the final App Store and Google Play copy frozen by MOBILE-18."
   },
   "productPositioning": {
     "primaryPurpose": "consumer_cosmetic_skin_care_and_product_personalization",
@@ -35,13 +35,13 @@
     "appDescriptionDisclaimerSource": "apps/mobile/google-play-health-apps-declaration.json#storeListingBoundary.englishDisclaimer",
     "disclaimerPlacement": "google_play_app_description",
     "runtimeDisclaimerRequiredByThisSlice": false,
-    "finalPlayListingStatus": "external_copy_and_console_submission_pending"
+    "finalPlayListingStatus": "repository_copy_frozen_assets_and_console_submission_pending"
   },
   "apple": {
     "medicalFunctionClaimed": false,
     "healthMeasurementAccuracyClaimed": false,
     "diagnosisOrTreatmentClaimed": false,
-    "finalAppStoreListingStatus": "external_copy_and_app_store_connect_submission_pending"
+    "finalAppStoreListingStatus": "repository_copy_frozen_assets_support_and_app_store_connect_submission_pending"
   },
   "dynamicResultBoundary": {
     "serverAuthority": true,
@@ -52,7 +52,8 @@
   "finalCopyGate": {
     "requiredBeforeSubmission": true,
     "check": "Review final title, subtitle/short description, full description, screenshots, promotional text and feature graphics against this claim boundary before store submission.",
-    "status": "pending"
+    "status": "copy_frozen_assets_pending",
+    "finalCopyPath": "docs/store/mobile-store-listing-final.json"
   },
   "policySources": [
     {
