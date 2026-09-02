@@ -12,10 +12,10 @@ const visionBoundary = readFileSync(join(repoRoot, "lib", "vision-observation-co
 
 assert.equal(claims.schemaVersion, "mobile-store-listing-claims-readiness-v1");
 assert.equal(claims.slice, "MOBILE-16F");
-assert.equal(claims.status, "repository_claim_boundary_ready_final_listing_copy_pending");
+assert.equal(claims.status, "repository_claim_boundary_ready_final_listing_copy_frozen_assets_pending");
 assert.equal(claims.scope.runtimeBehaviorChanged, false);
 assert.equal(claims.scope.runtimeMedicalDisclaimerAdded, false);
-assert.equal(claims.scope.finalMarketingCopyFrozen, false);
+assert.equal(claims.scope.finalMarketingCopyFrozen, true);
 
 assert.equal(claims.productPositioning.primaryPurpose, "consumer_cosmetic_skin_care_and_product_personalization");
 assert.ok(claims.productPositioning.allowed.length >= 4);
@@ -47,7 +47,8 @@ assert.equal(claims.dynamicResultBoundary.serverAuthority, true);
 assert.equal(claims.dynamicResultBoundary.mobileClientRewritesResults, false);
 assert.equal(claims.dynamicResultBoundary.existingNonDiagnosticPromptBoundaryRequired, true);
 assert.equal(claims.finalCopyGate.requiredBeforeSubmission, true);
-assert.equal(claims.finalCopyGate.status, "pending");
+assert.equal(claims.finalCopyGate.status, "copy_frozen_assets_pending");
+assert.equal(claims.finalCopyGate.finalCopyPath, "docs/store/mobile-store-listing-final.json");
 
 assert.equal(health.declaration.medicalDeviceAppsSelected, false);
 assert.equal(health.productBoundary.primaryPurpose, "cosmetic_skin_care_and_product_personalization");
@@ -76,4 +77,4 @@ assert.equal(inventory.status, "repository_claim_boundary_ready_final_listing_co
 
 console.log("MOBILE_16F_STORE_LISTING_CLAIM_BOUNDARY=PASS");
 console.log("MOBILE_16F_RUNTIME_MEDICAL_DISCLAIMER_ADDED=NO");
-console.log("MOBILE_16F_FINAL_LISTING_COPY=EXTERNAL_PENDING");
+console.log("MOBILE_16F_FINAL_LISTING_COPY=FROZEN_ASSETS_PENDING");
