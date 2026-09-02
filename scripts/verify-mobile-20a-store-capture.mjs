@@ -52,6 +52,14 @@ for (const marker of [
   "Quickstep isn't responding",
   "MOBILE_STORE_QUICKSTEP_ANR_RECOVERY=PASS",
   "MOBILE_STORE_DIRECT_ACTIVITY_RESTART=PASS",
+  "tap_text_until_gone()",
+  'tap_text_until_gone "Use photo" 8',
+  'tap_text_until_gone "이 사진 사용" 8',
+  "scroll_text_into_store_frame()",
+  'scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8',
+  'scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8',
+  "MOBILE_STORE_TRANSITION=PASS",
+  "MOBILE_STORE_VIEWPORT_TEXT=PASS",
   "MOBILE_20A_HOME_CAPTURE=PASS",
   "MOBILE_20A_ANALYZE_CAPTURE=PASS",
   "MOBILE_20A_STORE_CAPTURE=PASS"
@@ -61,6 +69,7 @@ for (const marker of [
 
 assert(capture.split("if recover_quickstep_if_needed; then").length - 1 === 2, "bounded-recovery-in-both-waits");
 assert(capture.includes("if (( QUICKSTEP_RECOVERY_COUNT >= QUICKSTEP_RECOVERY_LIMIT )); then"), "bounded-recovery-limit-enforced");
+assert(!capture.includes("wait_for_text_with_scroll"), "no-hierarchy-only-survey-visibility");
 
 for (const forbidden of [
   "saved-report-signed-out-en.png",
@@ -79,6 +88,8 @@ assert(workflow.includes("ReactiveCircus/android-emulator-runner@a421e43855164a8
 console.log("MOBILE_20A_RESULT_SURFACE=PASS");
 console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
 console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
+console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
+console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
 console.log("MOBILE_20A_STORE_CAPTURE=PASS");
