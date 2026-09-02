@@ -1,0 +1,74 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(root, relativePath), "utf8");
+}
+
+function fail(label) {
+  console.error(`MOBILE_20A_STORE_CAPTURE=FAIL ${label}`);
+  process.exit(1);
+}
+
+function assert(condition, label) {
+  if (!condition) fail(label);
+}
+
+const listing = JSON.parse(read("docs/store/mobile-store-listing-final.json"));
+const result = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
+const capture = read("scripts/capture-mobile-store-assets.sh");
+const workflow = read(".github/workflows/mobile-20a-store-capture.yml");
+
+assert(listing.screenshotPlan?.sourceOfTruth === "production mobile runtime after MOBILE-17A", "production-runtime-source");
+assert(listing.googlePlay?.phoneScreenshots?.targetPortraitSize === "1080x1920", "google-play-target-size");
+assert(listing.googlePlay?.phoneScreenshots?.targetCount === 4, "google-play-target-count");
+assert(Array.isArray(listing.screenshotPlan?.targetFrames) && listing.screenshotPlan.targetFrames.length === 4, "four-frame-plan");
+
+for (const id of ["home", "analyze", "results", "diary"]) {
+  assert(listing.screenshotPlan.targetFrames.some((frame) => frame.id === id), `frame:${id}`);
+}
+
+assert(!result.includes("MOBILE-7 · SERVER RESULT"), "no-internal-release-label");
+assert(!result.includes("Premium and Face Lab engines are not duplicated in the native app."), "no-internal-engine-boundary-en");
+assert(!result.includes("Premium 및 Face Lab 엔진은 네이티브 앱으로 복제하지 않습니다."), "no-internal-engine-boundary-ko");
+assert(result.includes("PERSONALIZED SKIN-CARE ROUTINE"), "consumer-result-kicker-en");
+assert(result.includes("맞춤 스킨케어 루틴"), "consumer-result-kicker-ko");
+assert(result.includes("everyday cosmetic skin-care guidance"), "cosmetic-boundary-en");
+assert(result.includes("일상적인 화장품·스킨케어 가이드"), "cosmetic-boundary-ko");
+
+for (const marker of [
+  "adb shell wm size 1080x1920",
+  'capture_png "01-home-en-1080x1920.png"',
+  'capture_png "02-analyze-en-1080x1920.png"',
+  'capture_png "01-home-ko-1080x1920.png"',
+  'capture_png "02-analyze-ko-1080x1920.png"',
+  "if (width, height) != (1080, 1920)",
+  "MOBILE_20A_HOME_CAPTURE=PASS",
+  "MOBILE_20A_ANALYZE_CAPTURE=PASS",
+  "MOBILE_20A_STORE_CAPTURE=PASS"
+]) {
+  assert(capture.includes(marker), `capture-marker:${marker}`);
+}
+
+for (const forbidden of [
+  "saved-report-signed-out-en.png",
+  "premium-signed-out-en.png",
+  "public-result-deep-link-invalid-en.png"
+]) {
+  assert(!capture.includes(forbidden), `no-placeholder-store-asset:${forbidden}`);
+}
+
+assert(workflow.includes("Checkout exact candidate SHA"), "exact-sha-checkout");
+assert(workflow.includes("Attest exact checked-out SHA"), "exact-sha-attestation");
+assert(workflow.includes("bash scripts/capture-mobile-store-assets.sh"), "capture-runtime-step");
+assert(workflow.includes("apps/mobile/.mobile-store-artifacts/**"), "artifact-upload-path");
+assert(workflow.includes("ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d"), "pinned-emulator-runner");
+
+console.log("MOBILE_20A_RESULT_SURFACE=PASS");
+console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
+console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
+console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
+console.log("MOBILE_20A_STORE_CAPTURE=PASS");
