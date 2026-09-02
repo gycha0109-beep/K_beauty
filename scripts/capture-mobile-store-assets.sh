@@ -81,6 +81,7 @@ import sys
 import xml.etree.ElementTree as ET
 path, target = sys.argv[1], sys.argv[2]
 root = ET.parse(path).getroot()
+matches = []
 for node in root.iter("node"):
     if node.attrib.get("text") != target and node.attrib.get("content-desc") != target:
         continue
@@ -88,13 +89,60 @@ for node in root.iter("node"):
     if not match:
         continue
     x1, y1, x2, y2 = map(int, match.groups())
-    print((x1 + x2) // 2, (y1 + y2) // 2)
-    raise SystemExit(0)
-raise SystemExit(f"tap target not found: {target}")
+    matches.append((node.attrib.get("clickable") == "true", (x1 + x2) // 2, (y1 + y2) // 2))
+if not matches:
+    raise SystemExit(f"tap target not found: {target}")
+matches.sort(reverse=True)
+_, x, y = matches[0]
+print(x, y)
 PY
 )"
   read -r x y <<< "$coords"
   adb shell input tap "$x" "$y"
+}
+
+tap_text_until_gone() {
+  local target="$1"
+  local attempts="${2:-8}"
+  for _ in $(seq 1 "$attempts"); do
+    dump_ui || true
+    if [[ -f "$UI_DUMP" ]] && ! ui_has_text "$target"; then
+      printf 'MOBILE_STORE_TRANSITION=PASS target=%s\n' "$target"
+      return 0
+    fi
+    tap_text "$target" || true
+    sleep 1
+  done
+  dump_ui || true
+  if [[ -f "$UI_DUMP" ]] && ! ui_has_text "$target"; then
+    printf 'MOBILE_STORE_TRANSITION=PASS target=%s\n' "$target"
+    return 0
+  fi
+  echo "UI transition did not dismiss target: $target" >&2
+  return 1
+}
+
+text_center_y() {
+  local target="$1"
+  python - "$UI_DUMP" "$target" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+path, target = sys.argv[1], sys.argv[2]
+try:
+    root = ET.parse(path).getroot()
+except (ET.ParseError, OSError):
+    raise SystemExit(1)
+for node in root.iter("node"):
+    if node.attrib.get("text") != target and node.attrib.get("content-desc") != target:
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if match:
+        _, y1, _, y2 = map(int, match.groups())
+        print((y1 + y2) // 2)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
 }
 
 recover_quickstep_if_needed() {
@@ -139,15 +187,13 @@ wait_for_text() {
   return 1
 }
 
-wait_for_text_with_scroll() {
+scroll_text_into_store_frame() {
   local expected="$1"
-  local max_scrolls="${2:-5}"
-  local scrolls=0
-  for _ in $(seq 1 45); do
+  local min_y="${2:-360}"
+  local max_y="${3:-1050}"
+  local max_scrolls="${4:-8}"
+  for _ in $(seq 1 "$max_scrolls"); do
     dump_ui || true
-    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
-      return 0
-    fi
     if recover_quickstep_if_needed; then
       continue
     else
@@ -156,14 +202,29 @@ wait_for_text_with_scroll() {
         return 1
       fi
     fi
-    if (( scrolls < max_scrolls )); then
-      adb shell input swipe 540 1680 540 700 350 >/dev/null 2>&1 || true
-      scrolls=$((scrolls + 1))
-      sleep 1
+    if [[ -f "$UI_DUMP" ]] && ui_has_text "$expected"; then
+      local y
+      y="$(text_center_y "$expected" 2>/dev/null || true)"
+      if [[ "$y" =~ ^[0-9]+$ ]] && (( y >= min_y && y <= max_y )); then
+        printf 'MOBILE_STORE_VIEWPORT_TEXT=PASS target=%s center_y=%s\n' "$expected" "$y"
+        return 0
+      fi
+      if [[ "$y" =~ ^[0-9]+$ ]] && (( y > 0 && y < min_y )); then
+        adb shell input swipe 540 760 540 1180 300 >/dev/null 2>&1 || true
+      else
+        adb shell input swipe 540 1580 540 680 350 >/dev/null 2>&1 || true
+      fi
+    else
+      adb shell input swipe 540 1580 540 680 350 >/dev/null 2>&1 || true
     fi
     sleep 1
   done
-  echo "UI text not found after scrolling: $expected" >&2
+  dump_ui || true
+  local final_y=""
+  if [[ -f "$UI_DUMP" ]]; then
+    final_y="$(text_center_y "$expected" 2>/dev/null || true)"
+  fi
+  echo "UI text was not positioned inside the store capture viewport: $expected center_y=${final_y:-missing}" >&2
   return 1
 }
 
@@ -249,8 +310,8 @@ wait_for_text "Camera ready"
 tap_text "Take photo"
 wait_for_text "CAPTURED PHOTO"
 wait_for_text "Use photo"
-tap_text "Use photo"
-wait_for_text_with_scroll "Skin survey before analysis" 5
+tap_text_until_gone "Use photo" 8
+scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8
 capture_png "02-analyze-en-1080x1920.png"
 
 tap_text "Home"
@@ -265,8 +326,8 @@ wait_for_text "카메라 준비 완료"
 tap_text "사진 촬영"
 wait_for_text "촬영한 사진"
 wait_for_text "이 사진 사용"
-tap_text "이 사진 사용"
-wait_for_text_with_scroll "분석 전 피부 설문" 5
+tap_text_until_gone "이 사진 사용" 8
+scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8
 capture_png "02-analyze-ko-1080x1920.png"
 
 printf 'MOBILE_20A_HOME_CAPTURE=PASS locales=en,ko\n'
