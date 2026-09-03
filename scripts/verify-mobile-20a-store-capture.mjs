@@ -72,6 +72,9 @@ for (const marker of [
   'scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8',
   "STORE_SCROLL_UP_START_Y=1420",
   "STORE_SCROLL_UP_END_Y=680",
+  "reset_store_capture_session()",
+  'adb shell am force-stop "$PACKAGE_ID"',
+  "MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko",
   "MOBILE_STORE_TRANSITION=PASS",
   "MOBILE_STORE_VIEWPORT_TEXT=PASS",
   "MOBILE_20A_HOME_CAPTURE=PASS",
@@ -91,6 +94,17 @@ assert(capture.split("tap_text_from_current_ui \"").length - 1 === 2, "two-curre
 assert(capture.split("MOBILE_STORE_CAMERA_ENTRY=PASS locale=").length - 1 === 2, "two-camera-entry-race-guards");
 assert(capture.split('adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "$STORE_SCROLL_UP_END_Y" 350').length - 1 === 2, "two-scroll-up-gestures-inside-content-viewport");
 assert(!capture.includes("adb shell input swipe 540 1580 540 680 350"), "no-scroll-gesture-from-below-content-viewport");
+assert(capture.split('adb shell pm clear "$PACKAGE_ID"').length - 1 === 2, "two-clean-localized-capture-sessions");
+assert(capture.split("MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko").length - 1 === 1, "one-locale-session-reset");
+
+const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.png"');
+const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAnalyzeCapture);
+const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
+const koHomeCapture = capture.indexOf('capture_png "01-home-ko-1080x1920.png"', koLocaleSwitch);
+assert(enAnalyzeCapture >= 0 && localeSessionReset > enAnalyzeCapture, "locale-session-reset-after-en-analyze");
+assert(koLocaleSwitch > localeSessionReset, "ko-locale-switch-after-session-reset");
+assert(koHomeCapture > koLocaleSwitch, "ko-home-after-clean-locale-switch");
+assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
 
 for (const forbidden of [
   "saved-report-signed-out-en.png",
@@ -120,6 +134,7 @@ console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_SCROLL_VIEWPORT_GUARD=PASS");
+console.log("MOBILE_20A_LOCALE_SESSION_ISOLATION=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_DUAL_CAMERA_CONTRACT=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
