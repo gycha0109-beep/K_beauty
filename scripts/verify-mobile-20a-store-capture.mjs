@@ -84,6 +84,11 @@ assert(workflow.includes("Attest exact checked-out SHA"), "exact-sha-attestation
 assert(workflow.includes("bash scripts/capture-mobile-store-assets.sh"), "capture-runtime-step");
 assert(workflow.includes("apps/mobile/.mobile-store-artifacts/**"), "artifact-upload-path");
 assert(workflow.includes("ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d"), "pinned-emulator-runner");
+assert(workflow.includes('key="hw.camera.$camera"'), "dual-camera-avd-loop");
+assert(workflow.includes('grep -q "^${key}=emulated$" "$config"'), "dual-camera-avd-attestation");
+assert(workflow.includes("MOBILE_20A_DUAL_CAMERA_AVD_CONFIG=PASS"), "dual-camera-avd-marker");
+assert(workflow.includes("-camera-front emulated -camera-back emulated"), "dual-camera-emulator-options");
+assert(!workflow.includes("-camera-back none"), "no-disabled-back-camera");
 
 console.log("MOBILE_20A_RESULT_SURFACE=PASS");
 console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
@@ -91,5 +96,6 @@ console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
+console.log("MOBILE_20A_DUAL_CAMERA_CONTRACT=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
 console.log("MOBILE_20A_STORE_CAPTURE=PASS");
