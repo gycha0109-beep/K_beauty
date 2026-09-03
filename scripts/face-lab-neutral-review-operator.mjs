@@ -30,6 +30,47 @@ const ORG_ID_PATTERN = /^team_[A-Za-z0-9]+$/;
 const DEPLOYMENT_ID_PATTERN = /^dpl_[A-Za-z0-9]+$/;
 const GIT_SHA_PATTERN = /^[0-9a-f]{40}$/i;
 const VERCEL_HOST_PATTERN = /^[a-z0-9.-]+\.vercel\.app$/i;
+const AUTHORIZED_REVIEW_MARKER = "얼굴 수 중립 평가";
+const INVALID_REVIEW_MARKER = "유효한 평가 링크가 아닙니다.";
+
+const FACE_LAB_REVIEW_SMOKE_SCRIPT = String.raw`
+import { readFileSync } from "node:fs";
+
+const input = JSON.parse(readFileSync(0, "utf8"));
+const request = async (token) => {
+  const url = new URL("/facelab/review", input.origin);
+  url.searchParams.set("t", token);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      accept: "text/html",
+      "user-agent": "FaceLabReviewOperatorSmoke/1"
+    },
+    cache: "no-store",
+    redirect: "follow"
+  });
+  return { status: response.status, body: await response.text() };
+};
+
+const positive = await request(input.token);
+const negative = await request(input.invalidToken);
+const positivePass =
+  positive.status === 200 &&
+  positive.body.includes(input.authorizedMarker) &&
+  !positive.body.includes(input.invalidMarker);
+const negativePass =
+  negative.status === 404 &&
+  negative.body.includes(input.invalidMarker) &&
+  !negative.body.includes(input.authorizedMarker);
+
+process.stdout.write(JSON.stringify({
+  positive: positivePass ? "PASS" : "FAIL",
+  negative: negativePass ? "PASS" : "FAIL",
+  positiveStatus: positive.status,
+  negativeStatus: negative.status
+}));
+process.exitCode = positivePass && negativePass ? 0 : 1;
+`;
 
 function parseArgs(argv = process.argv.slice(2)) {
   const result = { apply: false, confirmEmptyReviewCampaign: false };
@@ -77,6 +118,7 @@ function runVercelCommand({
   args,
   step,
   input,
+  cwd = process.cwd(),
   env = process.env,
   spawnFn = spawnSync,
   invocation = resolveVercelInvocation()
@@ -86,7 +128,7 @@ function runVercelCommand({
     invocation.command,
     [...invocation.prefixArgs, ...args],
     {
-      cwd: process.cwd(),
+      cwd,
       encoding: "utf8",
       input,
       env: {
@@ -97,10 +139,31 @@ function runVercelCommand({
         NO_UPDATE_NOTIFIER: "1"
       },
       windowsHide: true,
-      timeout: 120_000,
+      timeout: 180_000,
       maxBuffer: 1024 * 1024
     }
   );
+  if (result?.error || result?.status !== 0) {
+    throw new Error(`${step}_failed`);
+  }
+  return String(result.stdout || "");
+}
+
+function runGitCommand({
+  args,
+  step,
+  cwd = process.cwd(),
+  env = process.env,
+  spawnFn = spawnSync
+}) {
+  const result = spawnFn("git", args, {
+    cwd,
+    encoding: "utf8",
+    env,
+    windowsHide: true,
+    timeout: 30_000,
+    maxBuffer: 1024 * 1024
+  });
   if (result?.error || result?.status !== 0) {
     throw new Error(`${step}_failed`);
   }
@@ -111,6 +174,12 @@ export function generateFaceLabHostedReviewAccessToken(randomBytesFn = randomByt
   const token = randomBytesFn(32).toString("base64url");
   assert.match(token, TOKEN_PATTERN);
   return token;
+}
+
+function buildDefinitelyInvalidReviewToken(validToken) {
+  assert.match(String(validToken || ""), TOKEN_PATTERN);
+  const final = validToken.at(-1);
+  return `${validToken.slice(0, -1)}${final === "A" ? "B" : "A"}`;
 }
 
 export function buildFaceLabNeutralReviewUrl(token) {
@@ -173,6 +242,7 @@ function parseProductionDeploymentList(output) {
 }
 
 export function readCurrentFaceLabProductionDeployment({
+  cwd = process.cwd(),
   env = process.env,
   spawnFn = spawnSync,
   invocation = resolveVercelInvocation()
@@ -191,6 +261,7 @@ export function readCurrentFaceLabProductionDeployment({
       "json"
     ],
     step: "vercel_production_list",
+    cwd,
     env,
     spawnFn,
     invocation
@@ -200,6 +271,7 @@ export function readCurrentFaceLabProductionDeployment({
 
 export function runFaceLabReviewTokenUpdate({
   token,
+  cwd = process.cwd(),
   env = process.env,
   spawnFn = spawnSync,
   invocation = resolveVercelInvocation()
@@ -214,6 +286,7 @@ export function runFaceLabReviewTokenUpdate({
     ],
     step: "vercel_env_update",
     input: `${token}\n`,
+    cwd,
     env,
     spawnFn,
     invocation
@@ -221,8 +294,39 @@ export function runFaceLabReviewTokenUpdate({
   return { status: "UPDATED", environment: "production" };
 }
 
-export function redeployFaceLabProductionFromExactSource({
+export function assertExactFaceLabSourceCheckout({
   sourceDeployment,
+  cwd = process.cwd(),
+  env = process.env,
+  spawnFn = spawnSync
+}) {
+  assert.match(sourceDeployment?.gitSha || "", GIT_SHA_PATTERN);
+  const head = runGitCommand({
+    args: ["rev-parse", "HEAD"],
+    step: "git_head_read",
+    cwd,
+    env,
+    spawnFn
+  }).trim();
+  if (head !== sourceDeployment.gitSha) {
+    throw new Error("exact_source_checkout_sha_mismatch");
+  }
+  const status = runGitCommand({
+    args: ["status", "--porcelain=v1"],
+    step: "git_status_read",
+    cwd,
+    env,
+    spawnFn
+  });
+  if (status.trim()) {
+    throw new Error("exact_source_checkout_dirty");
+  }
+  return { status: "PASS", gitSha: head };
+}
+
+export function deployFaceLabProductionFreshFromExactSource({
+  sourceDeployment,
+  cwd = process.cwd(),
   env = process.env,
   spawnFn = spawnSync,
   invocation = resolveVercelInvocation()
@@ -230,13 +334,15 @@ export function redeployFaceLabProductionFromExactSource({
   assert.match(sourceDeployment?.id || "", DEPLOYMENT_ID_PATTERN);
   assert.match(sourceDeployment?.gitSha || "", GIT_SHA_PATTERN);
   runVercelCommand({
-    args: ["redeploy", sourceDeployment.id],
-    step: "vercel_production_redeploy",
+    args: ["deploy", "--prod", "--force", "--yes"],
+    step: "vercel_production_fresh_deploy",
+    cwd,
     env,
     spawnFn,
     invocation
   });
   const activated = readCurrentFaceLabProductionDeployment({
+    cwd,
     env,
     spawnFn,
     invocation
@@ -245,9 +351,56 @@ export function redeployFaceLabProductionFromExactSource({
     activated.id === sourceDeployment.id ||
     activated.gitSha !== sourceDeployment.gitSha
   ) {
-    throw new Error("vercel_production_redeploy_attestation_failed");
+    throw new Error("vercel_production_fresh_deploy_attestation_failed");
   }
   return activated;
+}
+
+export function runFaceLabReviewProductionSmoke({
+  token,
+  cwd = process.cwd(),
+  env = process.env,
+  spawnFn = spawnSync
+}) {
+  assert.match(String(token || ""), TOKEN_PATTERN);
+  const invalidToken = buildDefinitelyInvalidReviewToken(token);
+  const result = spawnFn(
+    process.execPath,
+    ["--input-type=module", "-e", FACE_LAB_REVIEW_SMOKE_SCRIPT],
+    {
+      cwd,
+      encoding: "utf8",
+      input: `${JSON.stringify({
+        origin: FACE_LAB_REVIEW_PRODUCTION_ORIGIN,
+        token,
+        invalidToken,
+        authorizedMarker: AUTHORIZED_REVIEW_MARKER,
+        invalidMarker: INVALID_REVIEW_MARKER
+      })}\n`,
+      env: { ...env, CI: "1" },
+      windowsHide: true,
+      timeout: 60_000,
+      maxBuffer: 1024 * 1024
+    }
+  );
+  if (result?.error || result?.status !== 0) {
+    throw new Error("facelab_review_production_smoke_failed");
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(String(result.stdout || "").trim());
+  } catch {
+    throw new Error("facelab_review_production_smoke_output_invalid");
+  }
+  if (parsed?.positive !== "PASS" || parsed?.negative !== "PASS") {
+    throw new Error("facelab_review_production_smoke_semantics_failed");
+  }
+  return {
+    positive: "PASS",
+    negative: "PASS",
+    positiveStatus: parsed.positiveStatus,
+    negativeStatus: parsed.negativeStatus
+  };
 }
 
 function handoffFileName(createdAt, kind = "handoff") {
@@ -301,10 +454,18 @@ export function rotateFaceLabNeutralReviewAccess({
   );
 
   const sourceDeployment = readCurrentFaceLabProductionDeployment({
+    cwd,
     env,
     spawnFn,
     invocation
   });
+  assertExactFaceLabSourceCheckout({
+    sourceDeployment,
+    cwd,
+    env,
+    spawnFn
+  });
+
   const createdAt = now().toISOString();
   const token = generateFaceLabHostedReviewAccessToken(randomBytesFn);
   const document = buildFaceLabReviewHandoffDocument({
@@ -329,19 +490,33 @@ export function rotateFaceLabNeutralReviewAccess({
   chmodSync(tempPath, 0o600);
 
   try {
-    runFaceLabReviewTokenUpdate({ token, env, spawnFn, invocation });
-  } catch {
-    rmSync(tempPath, { force: true });
-    throw new Error("vercel_env_update_failed");
-  }
-
-  let activatedDeployment;
-  try {
-    activatedDeployment = redeployFaceLabProductionFromExactSource({
-      sourceDeployment,
+    runFaceLabReviewTokenUpdate({
+      token,
+      cwd,
       env,
       spawnFn,
       invocation
+    });
+  } catch {
+    rmSync(tempPath, { force: true });
+    throw new Error("ROTATION_FAILED:vercel_env_update_failed");
+  }
+
+  let activatedDeployment;
+  let smoke;
+  try {
+    activatedDeployment = deployFaceLabProductionFreshFromExactSource({
+      sourceDeployment,
+      cwd,
+      env,
+      spawnFn,
+      invocation
+    });
+    smoke = runFaceLabReviewProductionSmoke({
+      token,
+      cwd,
+      env,
+      spawnFn
     });
   } catch {
     let recoveryHandoffPath;
@@ -353,10 +528,10 @@ export function rotateFaceLabNeutralReviewAccess({
         cwd
       });
     } catch {
-      throw new Error("post_update_recovery_handoff_persist_failed");
+      throw new Error("ROTATION_FAILED:post_update_recovery_handoff_persist_failed");
     }
     throw new Error(
-      `production_redeploy_failed_recovery_preserved:${recoveryHandoffPath}`
+      `ROTATION_FAILED:activation_or_smoke_failed_recovery_preserved:${recoveryHandoffPath}`
     );
   }
 
@@ -371,7 +546,10 @@ export function rotateFaceLabNeutralReviewAccess({
     sourceDeploymentId: sourceDeployment.id,
     activatedDeploymentId: activatedDeployment.id,
     productionSourceGitSha: activatedDeployment.gitSha,
-    productionRedeployed: true,
+    productionFreshDeployment: true,
+    productionAliasVerified: true,
+    positiveSmoke: smoke.positive,
+    negativeSmoke: smoke.negative,
     neutralReceiptSigningKeyRotated: true
   };
 }
