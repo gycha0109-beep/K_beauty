@@ -308,6 +308,15 @@ print(f"MOBILE_STORE_PNG=PASS path={path} size={width}x{height}")
 PY
 }
 
+reset_store_capture_session() {
+  adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
+  adb shell pm clear "$PACKAGE_ID" >/dev/null
+  adb shell pm grant "$PACKAGE_ID" android.permission.CAMERA >/dev/null
+  adb reverse tcp:8081 tcp:8081 >/dev/null
+  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  printf 'MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko\n'
+}
+
 adb shell cmd uimode night no >/dev/null
 adb shell wm size 1080x1920 >/dev/null
 adb shell wm density 420 >/dev/null 2>&1 || true
@@ -366,8 +375,9 @@ tap_text_until_gone "Use photo" 8
 scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8
 capture_png "02-analyze-en-1080x1920.png"
 
-tap_text "Home"
+reset_store_capture_session
 wait_for_text "BEJEWELY"
+wait_for_text "Find what fits your skin today"
 tap_text "locale-ko"
 wait_for_text "오늘 내 피부에 맞는 루틴 찾기"
 capture_png "01-home-ko-1080x1920.png"
