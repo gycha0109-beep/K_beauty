@@ -12,6 +12,7 @@ METRO_PID=""
 METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
+UI_DUMP_RETRY_LIMIT=4
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -50,8 +51,21 @@ if [[ ! -x "$EXPO_BIN" ]]; then
 fi
 
 dump_ui() {
-  adb shell uiautomator dump /sdcard/bejewely-store-window.xml >/dev/null
-  adb pull /sdcard/bejewely-store-window.xml "$UI_DUMP" >/dev/null
+  local attempt
+  for attempt in $(seq 1 "$UI_DUMP_RETRY_LIMIT"); do
+    rm -f "$UI_DUMP"
+    if adb shell uiautomator dump /sdcard/bejewely-store-window.xml >/dev/null 2>&1 && \
+       adb pull /sdcard/bejewely-store-window.xml "$UI_DUMP" >/dev/null 2>&1; then
+      if (( attempt > 1 )); then
+        printf 'MOBILE_STORE_UI_DUMP_RECOVERY=PASS attempt=%s\n' "$attempt"
+      fi
+      return 0
+    fi
+    printf 'UI dump attempt %s/%s failed\n' "$attempt" "$UI_DUMP_RETRY_LIMIT" >&2
+    sleep 1
+  done
+  printf 'UI dump failed after %s attempts\n' "$UI_DUMP_RETRY_LIMIT" >&2
+  return 1
 }
 
 ui_has_text() {
