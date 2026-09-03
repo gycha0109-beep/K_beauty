@@ -61,6 +61,9 @@ for (const marker of [
   'tap_text_from_current_ui "Take photo"',
   'tap_text_from_current_ui "사진 촬영"',
   "MOBILE_STORE_CURRENT_UI_TAP=PASS",
+  'tap_text "Open camera" || true',
+  'tap_text "카메라 열기" || true',
+  "MOBILE_STORE_CAMERA_ENTRY=PASS",
   "tap_text_until_gone()",
   'tap_text_until_gone "Use photo" 8',
   'tap_text_until_gone "이 사진 사용" 8',
@@ -83,6 +86,7 @@ assert(!capture.includes("dump_ui() {\n  adb shell uiautomator dump"), "no-one-s
 assert(!capture.includes('wait_for_text "Camera ready"\ntap_text "Take photo"'), "no-camera-preview-redump-en");
 assert(!capture.includes('wait_for_text "카메라 준비 완료"\ntap_text "사진 촬영"'), "no-camera-preview-redump-ko");
 assert(capture.split("tap_text_from_current_ui \"").length - 1 === 2, "two-current-ui-camera-taps");
+assert(capture.split("MOBILE_STORE_CAMERA_ENTRY=PASS locale=").length - 1 === 2, "two-camera-entry-race-guards");
 
 for (const forbidden of [
   "saved-report-signed-out-en.png",
@@ -108,6 +112,7 @@ console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
 console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_UI_DUMP_RETRY_GUARD=PASS");
 console.log("MOBILE_20A_CURRENT_UI_CAMERA_TAP=PASS");
+console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
