@@ -85,6 +85,40 @@ raise SystemExit(1)
 PY
 }
 
+tap_text_from_current_ui() {
+  local target="$1"
+  if [[ ! -s "$UI_DUMP" ]]; then
+    echo "Current UI hierarchy missing for tap target: $target" >&2
+    return 1
+  fi
+  local coords
+  coords="$(python - "$UI_DUMP" "$target" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+path, target = sys.argv[1], sys.argv[2]
+root = ET.parse(path).getroot()
+matches = []
+for node in root.iter("node"):
+    if node.attrib.get("text") != target and node.attrib.get("content-desc") != target:
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if not match:
+        continue
+    x1, y1, x2, y2 = map(int, match.groups())
+    matches.append((node.attrib.get("clickable") == "true", (x1 + x2) // 2, (y1 + y2) // 2))
+if not matches:
+    raise SystemExit(f"tap target not found in current UI: {target}")
+matches.sort(reverse=True)
+_, x, y = matches[0]
+print(x, y)
+PY
+)"
+  read -r x y <<< "$coords"
+  adb shell input tap "$x" "$y"
+  printf 'MOBILE_STORE_CURRENT_UI_TAP=PASS target=%s\n' "$target"
+}
+
 tap_text() {
   local target="$1"
   dump_ui
@@ -322,7 +356,7 @@ tap_text "Analyze"
 wait_for_text "SKIN ANALYSIS"
 tap_text "Open camera"
 wait_for_text "Camera ready"
-tap_text "Take photo"
+tap_text_from_current_ui "Take photo"
 wait_for_text "CAPTURED PHOTO"
 wait_for_text "Use photo"
 tap_text_until_gone "Use photo" 8
@@ -339,7 +373,7 @@ tap_text "분석"
 wait_for_text "피부 분석"
 tap_text "카메라 열기"
 wait_for_text "카메라 준비 완료"
-tap_text "사진 촬영"
+tap_text_from_current_ui "사진 촬영"
 wait_for_text "촬영한 사진"
 wait_for_text "이 사진 사용"
 tap_text_until_gone "이 사진 사용" 8
