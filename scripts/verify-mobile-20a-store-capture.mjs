@@ -46,6 +46,9 @@ for (const marker of [
   'capture_png "01-home-ko-1080x1920.png"',
   'capture_png "02-analyze-ko-1080x1920.png"',
   "if (width, height) != (1080, 1920)",
+  'if adb exec-out screencap -p > "$output"; then',
+  "local transport_status=0",
+  "MOBILE_STORE_SCREENSHOT_TRANSPORT_RECOVERY=PASS",
   "QUICKSTEP_RECOVERY_COUNT=0",
   "QUICKSTEP_RECOVERY_LIMIT=2",
   "recover_quickstep_if_needed()",
@@ -97,6 +100,14 @@ assert(!capture.includes("adb shell input swipe 540 1580 540 680 350"), "no-scro
 assert(capture.split('adb shell pm clear "$PACKAGE_ID"').length - 1 === 2, "two-clean-localized-capture-sessions");
 assert(capture.split("MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko").length - 1 === 1, "one-locale-session-reset");
 
+const screenshotTransportAttempt = capture.indexOf('if adb exec-out screencap -p > "$output"; then');
+const screenshotDimensionValidation = capture.indexOf("if (width, height) != (1080, 1920)", screenshotTransportAttempt);
+const screenshotTransportRecovery = capture.indexOf("MOBILE_STORE_SCREENSHOT_TRANSPORT_RECOVERY=PASS", screenshotDimensionValidation);
+assert(screenshotTransportAttempt >= 0, "screenshot-transport-attempt-is-guarded");
+assert(screenshotDimensionValidation > screenshotTransportAttempt, "screenshot-png-validation-after-transport-attempt");
+assert(screenshotTransportRecovery > screenshotDimensionValidation, "screenshot-transport-recovery-only-after-png-validation");
+assert(!capture.includes('adb exec-out screencap -p > "$output"\n  python - "$output"'), "no-unbounded-screenshot-transport-exit");
+
 const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.png"');
 const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAnalyzeCapture);
 const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
@@ -127,6 +138,7 @@ assert(!workflow.includes("-camera-back none"), "no-disabled-back-camera");
 
 console.log("MOBILE_20A_RESULT_SURFACE=PASS");
 console.log("MOBILE_20A_CAPTURE_DIMENSIONS=PASS");
+console.log("MOBILE_20A_SCREENSHOT_TRANSPORT_RECOVERY=PASS");
 console.log("MOBILE_20A_QUICKSTEP_RECOVERY=PASS");
 console.log("MOBILE_20A_UI_DUMP_RETRY_GUARD=PASS");
 console.log("MOBILE_20A_CURRENT_UI_CAMERA_TAP=PASS");
