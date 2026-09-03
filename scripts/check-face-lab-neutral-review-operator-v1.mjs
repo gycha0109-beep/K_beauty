@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  existsSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -41,6 +42,12 @@ const activatedDeployment = {
 };
 const listOutput = (deployment) => JSON.stringify({ deployments: [deployment] });
 const invocation = { command: "vercel-test", prefixArgs: ["vercel"] };
+const smokePassOutput = JSON.stringify({
+  positive: "PASS",
+  negative: "PASS",
+  positiveStatus: 200,
+  negativeStatus: 404
+});
 
 function createSpawnSequence(steps) {
   const calls = [];
@@ -49,6 +56,7 @@ function createSpawnSequence(steps) {
     const step = steps[index];
     assert.ok(step, `unexpected spawn call:${index}`);
     calls.push({ command, args, options });
+    if (step.assertCall) step.assertCall({ command, args, options });
     return {
       status: step.status ?? 0,
       stdout: step.stdout ?? "",
@@ -57,6 +65,40 @@ function createSpawnSequence(steps) {
     };
   };
   return { spawnFn, calls };
+}
+
+function commonPreActivationSteps() {
+  return [
+    { stdout: listOutput(baselineDeployment) },
+    {
+      stdout: `${sourceGitSha}\n`,
+      assertCall: ({ command, args }) => {
+        assert.equal(command, "git");
+        assert.deepEqual(args, ["rev-parse", "HEAD"]);
+      }
+    },
+    {
+      stdout: "",
+      assertCall: ({ command, args }) => {
+        assert.equal(command, "git");
+        assert.deepEqual(args, ["status", "--porcelain=v1"]);
+      }
+    },
+    {
+      stdout: "Updated",
+      assertCall: ({ args, options }) => {
+        assert.deepEqual(args, [
+          "vercel",
+          "env",
+          "update",
+          FACE_LAB_HOSTED_REVIEW_ENV_NAME,
+          "production"
+        ]);
+        assert.equal(args.includes(token), false);
+        assert.equal(options.input, `${token}\n`);
+      }
+    }
+  ];
 }
 
 let captured = null;
@@ -103,10 +145,30 @@ assert.equal(JSON.stringify(dryRun).includes(token), false);
 const root = mkdtempSync(path.join(tmpdir(), "facelab-neutral-operator-"));
 try {
   const success = createSpawnSequence([
-    { stdout: listOutput(baselineDeployment) },
-    { stdout: "Updated" },
-    { stdout: "https://k-beauty-activated-johnny-self.vercel.app" },
-    { stdout: listOutput(activatedDeployment) }
+    ...commonPreActivationSteps(),
+    {
+      stdout: "https://k-beauty-activated-johnny-self.vercel.app\n",
+      assertCall: ({ args }) => {
+        assert.deepEqual(args, [
+          "vercel",
+          "deploy",
+          "--prod",
+          "--force",
+          "--yes"
+        ]);
+      }
+    },
+    { stdout: listOutput(activatedDeployment) },
+    {
+      stdout: smokePassOutput,
+      assertCall: ({ args, options }) => {
+        assert.equal(args.includes(token), false);
+        const input = JSON.parse(options.input);
+        assert.equal(input.token, token);
+        assert.notEqual(input.invalidToken, token);
+        assert.equal(String(input.invalidToken).length, token.length);
+      }
+    }
   ]);
   const rotated = rotateFaceLabNeutralReviewAccess({
     apply: true,
@@ -118,7 +180,7 @@ try {
     spawnFn: success.spawnFn,
     invocation
   });
-  assert.equal(success.calls.length, 4);
+  assert.equal(success.calls.length, 7);
   assert.deepEqual(success.calls[0].args, [
     "vercel",
     "list",
@@ -132,28 +194,15 @@ try {
     "--format",
     "json"
   ]);
-  assert.deepEqual(success.calls[1].args, [
-    "vercel",
-    "env",
-    "update",
-    FACE_LAB_HOSTED_REVIEW_ENV_NAME,
-    "production"
-  ]);
-  assert.equal(success.calls[1].args.includes(token), false);
-  assert.equal(success.calls[1].options.input, `${token}\n`);
-  assert.deepEqual(success.calls[2].args, [
-    "vercel",
-    "redeploy",
-    baselineDeployment.id
-  ]);
-  assert.equal(success.calls[2].args.includes(token), false);
-  assert.deepEqual(success.calls[3].args, success.calls[0].args);
   assert.equal(rotated.status, "ROTATED");
   assert.equal(rotated.applied, true);
   assert.equal(rotated.sourceDeploymentId, baselineDeployment.id);
   assert.equal(rotated.activatedDeploymentId, activatedDeployment.id);
   assert.equal(rotated.productionSourceGitSha, sourceGitSha);
-  assert.equal(rotated.productionRedeployed, true);
+  assert.equal(rotated.productionFreshDeployment, true);
+  assert.equal(rotated.productionAliasVerified, true);
+  assert.equal(rotated.positiveSmoke, "PASS");
+  assert.equal(rotated.negativeSmoke, "PASS");
   assert.equal(rotated.neutralReceiptSigningKeyRotated, true);
   assert.equal(JSON.stringify(rotated).includes(token), false);
   assert.equal(JSON.stringify(rotated).includes("?t="), false);
@@ -176,12 +225,39 @@ try {
   rmSync(root, { recursive: true, force: true });
 }
 
+const dirtyRoot = mkdtempSync(path.join(tmpdir(), "facelab-neutral-dirty-"));
+try {
+  const dirty = createSpawnSequence([
+    { stdout: listOutput(baselineDeployment) },
+    { stdout: `${sourceGitSha}\n` },
+    { stdout: " M scripts/face-lab-neutral-review-operator.mjs\n" }
+  ]);
+  assert.throws(
+    () =>
+      rotateFaceLabNeutralReviewAccess({
+        apply: true,
+        confirmEmptyReviewCampaign: true,
+        cwd: dirtyRoot,
+        env,
+        randomBytesFn: deterministicBytes,
+        spawnFn: dirty.spawnFn,
+        invocation
+      }),
+    /exact_source_checkout_dirty/
+  );
+  assert.equal(existsSync(path.join(dirtyRoot, ".review", "local")), false);
+} finally {
+  rmSync(dirtyRoot, { recursive: true, force: true });
+}
+
 const envFailRoot = mkdtempSync(
   path.join(tmpdir(), "facelab-neutral-operator-env-fail-")
 );
 try {
   const envFail = createSpawnSequence([
     { stdout: listOutput(baselineDeployment) },
+    { stdout: `${sourceGitSha}\n` },
+    { stdout: "" },
     { status: 1, stdout: token, stderr: token }
   ]);
   assert.throws(
@@ -196,9 +272,9 @@ try {
         spawnFn: envFail.spawnFn,
         invocation
       }),
-    /vercel_env_update_failed/
+    /ROTATION_FAILED:vercel_env_update_failed/
   );
-  assert.equal(envFail.calls[1].args.includes(token), false);
+  assert.equal(envFail.calls[3].args.includes(token), false);
   assert.deepEqual(
     readdirSync(path.join(envFailRoot, ".review", "local")),
     []
@@ -207,13 +283,12 @@ try {
   rmSync(envFailRoot, { recursive: true, force: true });
 }
 
-const redeployFailRoot = mkdtempSync(
-  path.join(tmpdir(), "facelab-neutral-operator-redeploy-fail-")
+const deployFailRoot = mkdtempSync(
+  path.join(tmpdir(), "facelab-neutral-operator-deploy-fail-")
 );
 try {
-  const redeployFail = createSpawnSequence([
-    { stdout: listOutput(baselineDeployment) },
-    { stdout: "Updated" },
+  const deployFail = createSpawnSequence([
+    ...commonPreActivationSteps(),
     { status: 1, stdout: token, stderr: token }
   ]);
   let caught = null;
@@ -221,11 +296,11 @@ try {
     rotateFaceLabNeutralReviewAccess({
       apply: true,
       confirmEmptyReviewCampaign: true,
-      cwd: redeployFailRoot,
+      cwd: deployFailRoot,
       env,
       now: () => new Date("2026-09-01T09:32:45.000Z"),
       randomBytesFn: deterministicBytes,
-      spawnFn: redeployFail.spawnFn,
+      spawnFn: deployFail.spawnFn,
       invocation
     });
   } catch (error) {
@@ -234,15 +309,15 @@ try {
   assert.ok(caught instanceof Error);
   assert.match(
     caught.message,
-    /^production_redeploy_failed_recovery_preserved:\.review\/local\/facelab-neutral-review-recovery-/
+    /^ROTATION_FAILED:activation_or_smoke_failed_recovery_preserved:\.review\/local\/facelab-neutral-review-recovery-/
   );
   assert.equal(caught.message.includes(token), false);
   const recoveryName = readdirSync(
-    path.join(redeployFailRoot, ".review", "local")
+    path.join(deployFailRoot, ".review", "local")
   ).find((name) => name.includes("-recovery-"));
   assert.ok(recoveryName);
   const recoveryPath = path.join(
-    redeployFailRoot,
+    deployFailRoot,
     ".review",
     "local",
     recoveryName
@@ -253,7 +328,7 @@ try {
     assert.equal(statSync(recoveryPath).mode & 0o777, 0o600);
   }
 } finally {
-  rmSync(redeployFailRoot, { recursive: true, force: true });
+  rmSync(deployFailRoot, { recursive: true, force: true });
 }
 
 const attestationFailRoot = mkdtempSync(
@@ -265,9 +340,8 @@ try {
     meta: { githubCommitSha: "d639f15a59f29036dff17f44677cfe72cbea8cc2" }
   };
   const attestationFail = createSpawnSequence([
-    { stdout: listOutput(baselineDeployment) },
-    { stdout: "Updated" },
-    { stdout: "https://k-beauty-activated-johnny-self.vercel.app" },
+    ...commonPreActivationSteps(),
+    { stdout: "https://k-beauty-activated-johnny-self.vercel.app\n" },
     { stdout: listOutput(mismatched) }
   ]);
   assert.throws(
@@ -282,7 +356,7 @@ try {
         spawnFn: attestationFail.spawnFn,
         invocation
       }),
-    /production_redeploy_failed_recovery_preserved/
+    /ROTATION_FAILED:activation_or_smoke_failed_recovery_preserved/
   );
   assert.equal(
     readdirSync(path.join(attestationFailRoot, ".review", "local")).filter(
@@ -292,6 +366,51 @@ try {
   );
 } finally {
   rmSync(attestationFailRoot, { recursive: true, force: true });
+}
+
+const smokeFailRoot = mkdtempSync(
+  path.join(tmpdir(), "facelab-neutral-operator-smoke-fail-")
+);
+try {
+  const smokeFail = createSpawnSequence([
+    ...commonPreActivationSteps(),
+    { stdout: "https://k-beauty-activated-johnny-self.vercel.app\n" },
+    { stdout: listOutput(activatedDeployment) },
+    {
+      stdout: JSON.stringify({
+        positive: "FAIL",
+        negative: "PASS",
+        positiveStatus: 404,
+        negativeStatus: 404
+      })
+    }
+  ]);
+  let caught = null;
+  try {
+    rotateFaceLabNeutralReviewAccess({
+      apply: true,
+      confirmEmptyReviewCampaign: true,
+      cwd: smokeFailRoot,
+      env,
+      now: () => new Date("2026-09-01T09:34:45.000Z"),
+      randomBytesFn: deterministicBytes,
+      spawnFn: smokeFail.spawnFn,
+      invocation
+    });
+  } catch (error) {
+    caught = error;
+  }
+  assert.ok(caught instanceof Error);
+  assert.match(
+    caught.message,
+    /^ROTATION_FAILED:activation_or_smoke_failed_recovery_preserved:/
+  );
+  const localDir = path.join(smokeFailRoot, ".review", "local");
+  const names = readdirSync(localDir);
+  assert.equal(names.filter((name) => name.includes("-handoff-")).length, 0);
+  assert.equal(names.filter((name) => name.includes("-recovery-")).length, 1);
+} finally {
+  rmSync(smokeFailRoot, { recursive: true, force: true });
 }
 
 assert.throws(
@@ -321,8 +440,12 @@ console.log(
       tokenNotInArgv: "PASS",
       stdinSecretTransport: "PASS",
       exactProductionTargetGuard: "PASS",
-      exactSourceRedeploy: "PASS",
-      postRedeployGitShaAttestation: "PASS",
+      exactCleanSourceCheckout: "PASS",
+      freshProductionDeploy: "PASS",
+      postDeployGitShaAttestation: "PASS",
+      positiveProductionSmokeGate: "PASS",
+      negativeProductionSmokeGate: "PASS",
+      readyWithoutPositiveSmokeCannotRotate: "PASS",
       localHandoffMode0600: "PASS",
       envUpdateFailureCleansHandoff: "PASS",
       postUpdateFailurePreservesRecoveryHandoff: "PASS",
