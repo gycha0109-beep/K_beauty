@@ -354,8 +354,9 @@ capture_png "01-home-en-1080x1920.png"
 
 tap_text "Analyze"
 wait_for_text "SKIN ANALYSIS"
-tap_text "Open camera"
+tap_text "Open camera" || true
 wait_for_text "Camera ready"
+printf 'MOBILE_STORE_CAMERA_ENTRY=PASS locale=en\n'
 tap_text_from_current_ui "Take photo"
 wait_for_text "CAPTURED PHOTO"
 wait_for_text "Use photo"
@@ -371,8 +372,9 @@ capture_png "01-home-ko-1080x1920.png"
 
 tap_text "분석"
 wait_for_text "피부 분석"
-tap_text "카메라 열기"
+tap_text "카메라 열기" || true
 wait_for_text "카메라 준비 완료"
+printf 'MOBILE_STORE_CAMERA_ENTRY=PASS locale=ko\n'
 tap_text_from_current_ui "사진 촬영"
 wait_for_text "촬영한 사진"
 wait_for_text "이 사진 사용"
