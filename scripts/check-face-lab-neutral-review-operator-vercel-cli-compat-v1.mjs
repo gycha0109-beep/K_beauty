@@ -55,7 +55,7 @@ function createBaseSpawn(steps) {
     const step = steps[index];
     assert.ok(step, `unexpected_spawn_call:${index}`);
     calls.push({ command, args, options });
-    if (step.assertArgs) step.assertArgs(args);
+    if (step.assertCall) step.assertCall({ command, args, options });
     return {
       status: step.status ?? 0,
       stdout: step.stdout ?? "",
@@ -71,32 +71,69 @@ try {
   const base = createBaseSpawn([
     {
       stdout: listOutput(baselineHostname),
-      assertArgs: (args) => assert.deepEqual(args.slice(0, 2), ["vercel", "list"])
+      assertCall: ({ args }) =>
+        assert.deepEqual(args.slice(0, 2), ["vercel", "list"])
     },
     {
       stdout: apiOutput(baselineId, baselineHostname),
-      assertArgs: (args) => {
+      assertCall: ({ args }) => {
         assert.deepEqual(args.slice(0, 2), ["vercel", "api"]);
         assert.match(args[2], new RegExp(`/v13/deployments/${baselineHostname}`));
       }
     },
     {
-      stdout: "Updated",
-      assertArgs: (args) => assert.deepEqual(args.slice(0, 3), ["vercel", "env", "update"])
+      stdout: `${sourceGitSha}\n`,
+      assertCall: ({ command, args }) => {
+        assert.equal(command, "git");
+        assert.deepEqual(args, ["rev-parse", "HEAD"]);
+      }
     },
     {
-      stdout: `https://${activatedHostname}`,
-      assertArgs: (args) => assert.deepEqual(args, ["vercel", "redeploy", baselineId])
+      stdout: "",
+      assertCall: ({ command, args }) => {
+        assert.equal(command, "git");
+        assert.deepEqual(args, ["status", "--porcelain=v1"]);
+      }
+    },
+    {
+      stdout: "Updated",
+      assertCall: ({ args }) =>
+        assert.deepEqual(args.slice(0, 3), ["vercel", "env", "update"])
+    },
+    {
+      stdout: `https://${activatedHostname}\n`,
+      assertCall: ({ args }) =>
+        assert.deepEqual(args, [
+          "vercel",
+          "deploy",
+          "--prod",
+          "--force",
+          "--yes"
+        ])
     },
     {
       stdout: listOutput(activatedHostname),
-      assertArgs: (args) => assert.deepEqual(args.slice(0, 2), ["vercel", "list"])
+      assertCall: ({ args }) =>
+        assert.deepEqual(args.slice(0, 2), ["vercel", "list"])
     },
     {
       stdout: apiOutput(activatedId, activatedHostname),
-      assertArgs: (args) => {
+      assertCall: ({ args }) => {
         assert.deepEqual(args.slice(0, 2), ["vercel", "api"]);
         assert.match(args[2], new RegExp(`/v13/deployments/${activatedHostname}`));
+      }
+    },
+    {
+      stdout: JSON.stringify({
+        positive: "PASS",
+        negative: "PASS",
+        positiveStatus: 200,
+        negativeStatus: 404
+      }),
+      assertCall: ({ args, options }) => {
+        const payload = JSON.parse(options.input);
+        assert.equal(args.includes(payload.token), false);
+        assert.notEqual(payload.token, payload.invalidToken);
       }
     }
   ]);
@@ -112,12 +149,15 @@ try {
     invocation
   });
 
-  assert.equal(base.calls.length, 6);
+  assert.equal(base.calls.length, 9);
   assert.equal(result.status, "ROTATED");
   assert.equal(result.sourceDeploymentId, baselineId);
   assert.equal(result.activatedDeploymentId, activatedId);
   assert.equal(result.productionSourceGitSha, sourceGitSha);
-  assert.equal(result.productionRedeployed, true);
+  assert.equal(result.productionFreshDeployment, true);
+  assert.equal(result.productionAliasVerified, true);
+  assert.equal(result.positiveSmoke, "PASS");
+  assert.equal(result.negativeSmoke, "PASS");
   assert.equal(result.neutralReceiptSigningKeyRotated, true);
   assert.equal(JSON.stringify(result).includes("?t="), false);
 
@@ -160,8 +200,10 @@ console.log(
       status: "PASS",
       currentVercelListUrlOnlyShape: "PASS",
       deploymentIdApiEnrichment: "PASS",
-      exactSourceRedeployPreserved: "PASS",
-      postRedeployShaAttestationPreserved: "PASS",
+      exactSourceFreshDeployPreserved: "PASS",
+      postDeployShaAttestationPreserved: "PASS",
+      positiveSmokeGatePreserved: "PASS",
+      negativeSmokeGatePreserved: "PASS",
       legacyListShapeStillAccepted: "PASS",
       secretInResult: 0,
       realProductionMutation: 0
