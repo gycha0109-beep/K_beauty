@@ -70,6 +70,8 @@ for (const marker of [
   "scroll_text_into_store_frame()",
   'scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8',
   'scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8',
+  "STORE_SCROLL_UP_START_Y=1420",
+  "STORE_SCROLL_UP_END_Y=680",
   "MOBILE_STORE_TRANSITION=PASS",
   "MOBILE_STORE_VIEWPORT_TEXT=PASS",
   "MOBILE_20A_HOME_CAPTURE=PASS",
@@ -87,6 +89,8 @@ assert(!capture.includes('wait_for_text "Camera ready"\ntap_text "Take photo"'),
 assert(!capture.includes('wait_for_text "카메라 준비 완료"\ntap_text "사진 촬영"'), "no-camera-preview-redump-ko");
 assert(capture.split("tap_text_from_current_ui \"").length - 1 === 2, "two-current-ui-camera-taps");
 assert(capture.split("MOBILE_STORE_CAMERA_ENTRY=PASS locale=").length - 1 === 2, "two-camera-entry-race-guards");
+assert(capture.split('adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "$STORE_SCROLL_UP_END_Y" 350').length - 1 === 2, "two-scroll-up-gestures-inside-content-viewport");
+assert(!capture.includes("adb shell input swipe 540 1580 540 680 350"), "no-scroll-gesture-from-below-content-viewport");
 
 for (const forbidden of [
   "saved-report-signed-out-en.png",
@@ -115,6 +119,7 @@ console.log("MOBILE_20A_CURRENT_UI_CAMERA_TAP=PASS");
 console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
+console.log("MOBILE_20A_SCROLL_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_DUAL_CAMERA_CONTRACT=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
