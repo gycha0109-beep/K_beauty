@@ -1,8 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
-const RECOVERY_EXPIRES_AT = Date.parse("2026-09-03T18:30:00.000Z");
+const RECOVERY_EXPIRES_AT = Date.parse("2026-09-03T19:00:00.000Z");
 const STALE_HANDOFF_SHA256 =
-  "d4f1c8327b13bafa25b1155b49cf6ace5189de544a235bc69615348467740ee8";
+  "7817373003b61434a4bb5d6215dbfbde88d9b02471d5f60adb37a12d4a821cba";
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 function notFound() {
