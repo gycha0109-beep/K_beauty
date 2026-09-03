@@ -13,6 +13,8 @@ METRO_NODE_PATH="$MOBILE_ROOT/node_modules:$REPO_ROOT/node_modules"
 QUICKSTEP_RECOVERY_COUNT=0
 QUICKSTEP_RECOVERY_LIMIT=2
 UI_DUMP_RETRY_LIMIT=4
+STORE_SCROLL_UP_START_Y=1420
+STORE_SCROLL_UP_END_Y=680
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -260,10 +262,10 @@ scroll_text_into_store_frame() {
       if [[ "$y" =~ ^[0-9]+$ ]] && (( y > 0 && y < min_y )); then
         adb shell input swipe 540 760 540 1180 300 >/dev/null 2>&1 || true
       else
-        adb shell input swipe 540 1580 540 680 350 >/dev/null 2>&1 || true
+        adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "$STORE_SCROLL_UP_END_Y" 350 >/dev/null 2>&1 || true
       fi
     else
-      adb shell input swipe 540 1580 540 680 350 >/dev/null 2>&1 || true
+      adb shell input swipe 540 "$STORE_SCROLL_UP_START_Y" 540 "$STORE_SCROLL_UP_END_Y" 350 >/dev/null 2>&1 || true
     fi
     sleep 1
   done
