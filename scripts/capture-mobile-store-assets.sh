@@ -292,7 +292,12 @@ PY
 capture_png() {
   local filename="$1"
   local output="$ARTIFACT_DIR/$filename"
-  adb exec-out screencap -p > "$output"
+  local transport_status=0
+  if adb exec-out screencap -p > "$output"; then
+    transport_status=0
+  else
+    transport_status=$?
+  fi
   python - "$output" <<'PY'
 import struct
 import sys
@@ -306,6 +311,9 @@ if (width, height) != (1080, 1920):
     raise SystemExit(f"unexpected dimensions {width}x{height}: {path}")
 print(f"MOBILE_STORE_PNG=PASS path={path} size={width}x{height}")
 PY
+  if (( transport_status != 0 )); then
+    printf 'MOBILE_STORE_SCREENSHOT_TRANSPORT_RECOVERY=PASS status=%s path=%s\n' "$transport_status" "$output"
+  fi
 }
 
 reset_store_capture_session() {
