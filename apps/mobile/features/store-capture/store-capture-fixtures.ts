@@ -27,7 +27,7 @@ export const STORE_RESULTS_FIXTURE: NativeAnalyzeResult = Object.freeze({
   warnings: [],
   meta: {
     source: "deterministic-store-capture",
-    locale: "en",
+    locale: "en" as const,
     generatedAt: "2026-09-03T09:00:00+09:00",
     notice: "Built from your skin profile and preferences."
   }
