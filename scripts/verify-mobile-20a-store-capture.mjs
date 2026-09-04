@@ -75,6 +75,19 @@ for (const marker of [
   'scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8',
   "STORE_SCROLL_UP_START_Y=1420",
   "STORE_SCROLL_UP_END_Y=680",
+  "EN_FRAME_POSITION_LIMIT=6",
+  "EN_FRAME_ADJUST_START_Y=1100",
+  "EN_FRAME_ADJUST_UP_END_Y=1000",
+  "EN_FRAME_ADJUST_DOWN_END_Y=1200",
+  "position_en_analyze_store_frame()",
+  'for attempt in $(seq 1 "$EN_FRAME_POSITION_LIMIT"); do',
+  'open_camera_y="$(text_center_y "Open camera"',
+  'main_concern_y="$(text_center_y "Main concern"',
+  'adb shell input swipe 540 "$EN_FRAME_ADJUST_START_Y" 540 "$EN_FRAME_ADJUST_UP_END_Y" 220',
+  'adb shell input swipe 540 "$EN_FRAME_ADJUST_START_Y" 540 "$EN_FRAME_ADJUST_DOWN_END_Y" 220',
+  "MOBILE_STORE_EN_FRAME_CORRECTION=UP",
+  "MOBILE_STORE_EN_FRAME_CORRECTION=DOWN",
+  "MOBILE_STORE_EN_ANALYZE_FRAME=PASS",
   "KO_FRAME_POSITION_LIMIT=4",
   "KO_FRAME_ADJUST_START_Y=1100",
   "KO_FRAME_ADJUST_UP_END_Y=1000",
@@ -121,14 +134,22 @@ assert(screenshotDimensionValidation > screenshotTransportAttempt, "screenshot-p
 assert(screenshotTransportRecovery > screenshotDimensionValidation, "screenshot-transport-recovery-only-after-png-validation");
 assert(!capture.includes('adb exec-out screencap -p > "$output"\n  python - "$output"'), "no-unbounded-screenshot-transport-exit");
 
-const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.png"');
+const enSurveyPosition = capture.indexOf('scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8');
+const enFramePosition = capture.indexOf("\nposition_en_analyze_store_frame\n", enSurveyPosition);
+const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.png"', enFramePosition);
 const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAnalyzeCapture);
 const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
 const koHomeCapture = capture.indexOf('capture_png "01-home-ko-1080x1920.png"', koLocaleSwitch);
 const koSurveyPosition = capture.indexOf('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8', koHomeCapture);
 const koFramePosition = capture.indexOf("\nposition_ko_analyze_store_frame\n", koSurveyPosition);
 const koAnalyzeCapture = capture.indexOf('capture_png "02-analyze-ko-1080x1920.png"', koFramePosition);
-assert(enAnalyzeCapture >= 0 && localeSessionReset > enAnalyzeCapture, "locale-session-reset-after-en-analyze");
+assert(enSurveyPosition >= 0, "en-survey-position-present");
+assert(enFramePosition > enSurveyPosition, "bounded-en-frame-position-after-survey-position");
+assert(enAnalyzeCapture > enFramePosition, "en-analyze-capture-after-bounded-frame-position");
+assert(capture.includes("open_camera_y >= 350 && open_camera_y <= 650 && main_concern_y >= 1300 && main_concern_y <= 1600"), "en-frame-physical-viewport-ranges");
+assert(capture.includes('[[ ! "$main_concern_y" =~ ^[0-9]+$ ]] || (( open_camera_y > 650 ))'), "en-frame-corrects-content-up-when-main-concern-missing-or-low");
+assert(capture.includes("(( open_camera_y < 350 ))"), "en-frame-corrects-content-down-when-camera-rises-too-high");
+assert(localeSessionReset > enAnalyzeCapture, "locale-session-reset-after-en-analyze");
 assert(koLocaleSwitch > localeSessionReset, "ko-locale-switch-after-session-reset");
 assert(koHomeCapture > koLocaleSwitch, "ko-home-after-clean-locale-switch");
 assert(koSurveyPosition > koHomeCapture, "ko-survey-position-after-ko-home");
@@ -172,6 +193,8 @@ console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_SCROLL_VIEWPORT_GUARD=PASS");
+console.log("MOBILE_20A_EN_ANALYZE_FRAME_GUARD=PASS");
+console.log("MOBILE_20A_EN_ANALYZE_FRAME_CORRECTION=PASS");
 console.log("MOBILE_20A_KO_ANALYZE_FRAME_GUARD=PASS");
 console.log("MOBILE_20A_KO_ANALYZE_FRAME_CORRECTION=PASS");
 console.log("MOBILE_20A_LOCALE_SESSION_ISOLATION=PASS");
