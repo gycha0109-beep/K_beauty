@@ -1,0 +1,90 @@
+name: Face Lab Neutral Face Count Shared Stage v2
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/facelab/review/**'
+      - 'app/api/facelab/review/**'
+      - 'lib/face-lab-neutral-face-count-*'
+      - 'evidence/facelab/face-count-neutral-*'
+      - 'scripts/check-face-lab-neutral-face-count-stage-v2.mjs'
+      - 'docs/domain/facelab/face-count-neutral-shared-stage-v2.md'
+      - '.github/workflows/face-lab-neutral-face-count-shared-stage-v2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/facelab/review/**'
+      - 'app/api/facelab/review/**'
+      - 'lib/face-lab-neutral-face-count-*'
+      - 'evidence/facelab/face-count-neutral-*'
+      - 'scripts/check-face-lab-neutral-face-count-stage-v2.mjs'
+      - 'docs/domain/facelab/face-count-neutral-shared-stage-v2.md'
+      - '.github/workflows/face-lab-neutral-face-count-shared-stage-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='${{ github.event.pull_request.head.sha || github.sha }}'
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+          printf 'FACE_COUNT_NEUTRAL_V2_SHA=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify semantic diversity, governed sources, digest and leakage boundary
+        run: node scripts/check-face-lab-neutral-face-count-stage-v2.mjs
+
+      - name: Preserve historical v1 verification
+        run: node scripts/check-face-lab-neutral-face-count-stage-v1.mjs
+
+      - name: Syntax check runtime
+        run: |
+          node --check lib/face-lab-neutral-face-count-contract.mjs
+          node --check lib/face-lab-neutral-face-count-intake.js
+          node --check 'app/api/facelab/review/neutral/visual/[reviewItemId]/route.js'
+          node --check app/api/facelab/review/neutral/submit/route.js
+          node --check app/facelab/review/route.js
+
+      - name: Verify existing hosted evaluation remains intact
+        run: |
+          npm run verify:face-lab-independent-human-cue-hosted-set
+          npm run verify:face-lab-independent-human-cue-hosted-response
+          npm run verify:face-lab-independent-human-cue-hosted-ui
+
+      - name: Verify architecture boundary
+        run: npm run architecture:guard
+
+      - name: Diff hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ '${{ github.event_name }}' = 'pull_request' ]; then
+            base="$(git merge-base '${{ github.event.pull_request.base.sha }}' HEAD)"
+            git diff --check "$base..HEAD"
+          else
+            git diff --check 'HEAD^..HEAD'
+          fi
