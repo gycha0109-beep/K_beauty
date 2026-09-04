@@ -112,6 +112,7 @@ jobs:
           api-level: 35
           arch: x86_64
           profile: pixel_6
+          disk-size: 4096M
           avd-name: bejewely-mobile-20b-api35
           force-avd-creation: true
           disable-animations: true
