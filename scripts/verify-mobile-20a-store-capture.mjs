@@ -75,15 +75,20 @@ for (const marker of [
   'scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8',
   "STORE_SCROLL_UP_START_Y=1420",
   "STORE_SCROLL_UP_END_Y=680",
+  "KO_FRAME_POSITION_LIMIT=4",
+  "KO_FRAME_NUDGE_START_Y=760",
+  "KO_FRAME_NUDGE_END_Y=940",
+  "position_ko_analyze_store_frame()",
+  'for attempt in $(seq 1 "$KO_FRAME_POSITION_LIMIT"); do',
+  'title_y="$(text_center_y "피부 분석"',
+  'sensitivity_y="$(text_center_y "민감도"',
+  'adb shell input swipe 540 "$KO_FRAME_NUDGE_START_Y" 540 "$KO_FRAME_NUDGE_END_Y" 250',
   "reset_store_capture_session()",
   'adb shell am force-stop "$PACKAGE_ID"',
   "MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko",
   "MOBILE_STORE_TRANSITION=PASS",
   "MOBILE_STORE_VIEWPORT_TEXT=PASS",
   "MOBILE_STORE_KO_ANALYZE_FRAME=PASS",
-  'adb shell input swipe 540 760 540 940 250',
-  'ko_analysis_title_y="$(text_center_y "피부 분석"',
-  'ko_sensitivity_y="$(text_center_y "민감도"',
   "MOBILE_20A_HOME_CAPTURE=PASS",
   "MOBILE_20A_ANALYZE_CAPTURE=PASS",
   "MOBILE_20A_STORE_CAPTURE=PASS"
@@ -117,18 +122,17 @@ const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAn
 const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
 const koHomeCapture = capture.indexOf('capture_png "01-home-ko-1080x1920.png"', koLocaleSwitch);
 const koSurveyPosition = capture.indexOf('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8', koHomeCapture);
-const koFrameNudge = capture.indexOf('adb shell input swipe 540 760 540 940 250', koSurveyPosition);
-const koFrameGuard = capture.indexOf("MOBILE_STORE_KO_ANALYZE_FRAME=PASS", koFrameNudge);
-const koAnalyzeCapture = capture.indexOf('capture_png "02-analyze-ko-1080x1920.png"', koFrameGuard);
+const koFramePosition = capture.indexOf("\nposition_ko_analyze_store_frame\n", koSurveyPosition);
+const koAnalyzeCapture = capture.indexOf('capture_png "02-analyze-ko-1080x1920.png"', koFramePosition);
 assert(enAnalyzeCapture >= 0 && localeSessionReset > enAnalyzeCapture, "locale-session-reset-after-en-analyze");
 assert(koLocaleSwitch > localeSessionReset, "ko-locale-switch-after-session-reset");
 assert(koHomeCapture > koLocaleSwitch, "ko-home-after-clean-locale-switch");
 assert(koSurveyPosition > koHomeCapture, "ko-survey-position-after-ko-home");
-assert(koFrameNudge > koSurveyPosition, "ko-frame-nudge-after-survey-position");
-assert(koFrameGuard > koFrameNudge, "ko-frame-guard-after-nudge");
-assert(koAnalyzeCapture > koFrameGuard, "ko-analyze-capture-after-frame-guard");
-assert(capture.includes("ko_analysis_title_y < 300 || ko_analysis_title_y > 600"), "ko-analysis-title-physical-viewport-range");
-assert(capture.includes("ko_sensitivity_y < 900 || ko_sensitivity_y > 1450"), "ko-sensitivity-physical-viewport-range");
+assert(koFramePosition > koSurveyPosition, "bounded-ko-frame-position-after-survey-position");
+assert(koAnalyzeCapture > koFramePosition, "ko-analyze-capture-after-bounded-frame-position");
+assert(capture.includes("title_y >= 300 && title_y <= 600 && sensitivity_y >= 900 && sensitivity_y <= 1450"), "ko-frame-physical-viewport-ranges");
+assert(capture.includes("(( title_y < 300 ))") && capture.includes("(( sensitivity_y < 1450 ))"), "ko-frame-nudge-only-with-viewport-headroom");
+assert(!capture.includes('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8\nadb shell input swipe 540 760 540 940 250'), "no-one-shot-ko-frame-nudge");
 assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
 
 for (const forbidden of [
