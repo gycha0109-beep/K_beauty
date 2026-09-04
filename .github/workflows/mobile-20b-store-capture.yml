@@ -60,6 +60,16 @@ jobs:
           node-version: 22.23.1
           cache: npm
 
+      - name: Regenerate lockfile for Expo Router patch alignment
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Upload regenerated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-20b-regenerated-lock-${{ github.sha }}
+          retention-days: 1
+          path: package-lock.json
+
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
@@ -74,9 +84,6 @@ jobs:
         run: |
           set -euo pipefail
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
-
-      - name: Regenerate lockfile for Expo Router patch alignment
-        run: npm install --package-lock-only --ignore-scripts
 
       - name: Install monorepo dependencies
         run: npm ci
