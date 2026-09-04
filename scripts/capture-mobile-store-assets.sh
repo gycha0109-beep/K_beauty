@@ -400,6 +400,20 @@ wait_for_text "촬영한 사진"
 wait_for_text "이 사진 사용"
 tap_text_until_gone "이 사진 사용" 8
 scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8
+adb shell input swipe 540 760 540 940 250 >/dev/null 2>&1 || true
+sleep 1
+dump_ui
+ko_analysis_title_y="$(text_center_y "피부 분석" 2>/dev/null || true)"
+ko_sensitivity_y="$(text_center_y "민감도" 2>/dev/null || true)"
+if [[ ! "$ko_analysis_title_y" =~ ^[0-9]+$ ]] || (( ko_analysis_title_y < 300 || ko_analysis_title_y > 600 )); then
+  echo "Korean analysis title is outside the store capture viewport: center_y=${ko_analysis_title_y:-missing}" >&2
+  exit 1
+fi
+if [[ ! "$ko_sensitivity_y" =~ ^[0-9]+$ ]] || (( ko_sensitivity_y < 900 || ko_sensitivity_y > 1450 )); then
+  echo "Korean sensitivity field is outside the store capture viewport: center_y=${ko_sensitivity_y:-missing}" >&2
+  exit 1
+fi
+printf 'MOBILE_STORE_KO_ANALYZE_FRAME=PASS title_y=%s sensitivity_y=%s\n' "$ko_analysis_title_y" "$ko_sensitivity_y"
 capture_png "02-analyze-ko-1080x1920.png"
 
 printf 'MOBILE_20A_HOME_CAPTURE=PASS locales=en,ko\n'
