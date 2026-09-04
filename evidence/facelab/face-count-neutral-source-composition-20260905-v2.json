@@ -1,0 +1,173 @@
+{
+  "schemaVersion": "face-count-neutral-source-composition-v2",
+  "assembledAt": "2026-09-05T00:00:00.000+09:00",
+  "sourceAuthorityRefs": [
+    "evidence/facelab/face-count-neutral-source-acquisition-20260831-v1.json",
+    "evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json"
+  ],
+  "assetMutability": "referenced_governed_source_bytes_immutable",
+  "items": [
+    {
+      "reviewItemId": "fcneutralv2_01",
+      "presentation": {
+        "mode": "single",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_01.jpg",
+            "assetSha256": "a48278513a38768ff92247972e60bc873eb361a8527cb8686a3e19c3ae1bdf9d",
+            "mediaType": "image/jpeg",
+            "byteLength": 45846,
+            "width": 512,
+            "height": 507,
+            "sourceEvidenceRef": "face-count-neutral-source-acquisition-20260831-v1 candidate_a"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_02",
+      "presentation": {
+        "mode": "obscured_single",
+        "blurPx": 28,
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_04.png",
+            "assetSha256": "99de925b345cd2ad7a4adf3344776b3108e86a770c52231d518e3ebf0070668e",
+            "mediaType": "image/png",
+            "byteLength": 2514701,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 12"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_03",
+      "presentation": {
+        "mode": "single",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_02.jpg",
+            "assetSha256": "1131e5923243d08050e206663d06739bb61e19dd0c4844478446d24e49a1b0f4",
+            "mediaType": "image/jpeg",
+            "byteLength": 365066,
+            "width": 782,
+            "height": 942,
+            "sourceEvidenceRef": "face-count-neutral-source-acquisition-20260831-v1 candidate_b"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_04",
+      "presentation": {
+        "mode": "single",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_05.png",
+            "assetSha256": "7ea664f91d22d8c068e7ac2929e824579c377259e05762a37934c3933d0c5d0f",
+            "mediaType": "image/png",
+            "byteLength": 2541570,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 10"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_05",
+      "presentation": {
+        "mode": "single",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_06.png",
+            "assetSha256": "6dfafc303d8ad3495dd9dbae1f92fc824a7326df461fd15352de56d93578df7b",
+            "mediaType": "image/png",
+            "byteLength": 2493174,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 13"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_06",
+      "presentation": {
+        "mode": "single",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_03.jpg",
+            "assetSha256": "5427892220dadebde0c91bdec47468be61b945b966a917eb6c82e366867b6065",
+            "mediaType": "image/jpeg",
+            "byteLength": 1177142,
+            "width": 3264,
+            "height": 2448,
+            "sourceEvidenceRef": "face-count-neutral-source-acquisition-20260831-v1 candidate_c"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_07",
+      "presentation": {
+        "mode": "composite",
+        "sources": [
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_07.png",
+            "assetSha256": "252a84d8517d65441ccb0dff608763fc105207627b0f194e9a2c8cb01ce33271",
+            "mediaType": "image/png",
+            "byteLength": 2392724,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 8"
+          },
+          {
+            "assetPath": "/facelab/neutral-review/v1/assets/fcneutral_08.png",
+            "assetSha256": "e258b7345d395830dee7264aaab0bd48f5cd6a706d75d01a7302c2d00b51dc4f",
+            "mediaType": "image/png",
+            "byteLength": 2452476,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 3"
+          }
+        ]
+      }
+    },
+    {
+      "reviewItemId": "fcneutralv2_08",
+      "presentation": {
+        "mode": "composite",
+        "sources": [
+          {
+            "assetPath": "/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png",
+            "assetSha256": "0b081b7ba155245a6f7391058392e1824dcc94c8a6b9e9ffd157f8ac72605be5",
+            "mediaType": "image/png",
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 1"
+          },
+          {
+            "assetPath": "/facelab/hosted-review/v1/assets/asset_5abdcbd7d7fe34f61fc12a26.png",
+            "assetSha256": "35dbc2bfacbc52630d0284954c61561e7aa2a58ddc3002b336c18e60b7e0db0f",
+            "mediaType": "image/png",
+            "byteLength": 2793896,
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 2"
+          },
+          {
+            "assetPath": "/facelab/hosted-review/v1/assets/asset_aad18c11fe83029dfe03e58c.png",
+            "assetSha256": "b7d268bb049c739070f225619b209af38b9432f7005de9ea9ddfdf5e61e659bc",
+            "mediaType": "image/png",
+            "width": 1254,
+            "height": 1254,
+            "sourceEvidenceRef": "hosted-set ordinal 4"
+          }
+        ]
+      }
+    }
+  ]
+}
