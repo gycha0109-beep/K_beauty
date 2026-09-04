@@ -16,8 +16,9 @@ UI_DUMP_RETRY_LIMIT=4
 STORE_SCROLL_UP_START_Y=1420
 STORE_SCROLL_UP_END_Y=680
 KO_FRAME_POSITION_LIMIT=4
-KO_FRAME_NUDGE_START_Y=760
-KO_FRAME_NUDGE_END_Y=940
+KO_FRAME_ADJUST_START_Y=1100
+KO_FRAME_ADJUST_UP_END_Y=1000
+KO_FRAME_ADJUST_DOWN_END_Y=1200
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -294,9 +295,17 @@ position_ko_analyze_store_frame() {
       printf 'MOBILE_STORE_KO_ANALYZE_FRAME=PASS attempt=%s title_y=%s sensitivity_y=%s\n' "$attempt" "$title_y" "$sensitivity_y"
       return 0
     fi
-    if [[ "$title_y" =~ ^[0-9]+$ ]] && (( title_y < 300 )) && \
-       [[ "$sensitivity_y" =~ ^[0-9]+$ ]] && (( sensitivity_y < 1450 )); then
-      adb shell input swipe 540 "$KO_FRAME_NUDGE_START_Y" 540 "$KO_FRAME_NUDGE_END_Y" 250 >/dev/null 2>&1 || true
+    if [[ "$title_y" =~ ^[0-9]+$ ]] && [[ "$sensitivity_y" =~ ^[0-9]+$ ]] && \
+       (( title_y > 600 || sensitivity_y > 1450 )); then
+      adb shell input swipe 540 "$KO_FRAME_ADJUST_START_Y" 540 "$KO_FRAME_ADJUST_UP_END_Y" 220 >/dev/null 2>&1 || true
+      printf 'MOBILE_STORE_KO_FRAME_CORRECTION=UP attempt=%s title_y=%s sensitivity_y=%s\n' "$attempt" "$title_y" "$sensitivity_y"
+      sleep 1
+      continue
+    fi
+    if [[ "$title_y" =~ ^[0-9]+$ ]] && [[ "$sensitivity_y" =~ ^[0-9]+$ ]] && \
+       (( title_y < 300 || sensitivity_y < 900 )); then
+      adb shell input swipe 540 "$KO_FRAME_ADJUST_START_Y" 540 "$KO_FRAME_ADJUST_DOWN_END_Y" 220 >/dev/null 2>&1 || true
+      printf 'MOBILE_STORE_KO_FRAME_CORRECTION=DOWN attempt=%s title_y=%s sensitivity_y=%s\n' "$attempt" "$title_y" "$sensitivity_y"
       sleep 1
       continue
     fi
