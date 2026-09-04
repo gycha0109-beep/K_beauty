@@ -28,28 +28,40 @@ EXPO_BIN="$REPO_ROOT/node_modules/.bin/expo"
 
 adb wait-for-device
 adb install -r "$APK_PATH" >/dev/null
+adb shell cmd uimode night no >/dev/null 2>&1 || true
 adb shell wm size 1080x1920 >/dev/null
+adb shell wm density 420 >/dev/null 2>&1 || true
 adb shell settings put global window_animation_scale 0 >/dev/null
 adb shell settings put global transition_animation_scale 0 >/dev/null
 adb shell settings put global animator_duration_scale 0 >/dev/null
 adb logcat -c || true
+adb reverse tcp:8081 tcp:8081 >/dev/null
 
 (
   cd "$MOBILE_ROOT"
-  EXPO_PUBLIC_STORE_CAPTURE_MODE=1 "$EXPO_BIN" start --dev-client --localhost --port 8081 --non-interactive >"$METRO_LOG" 2>&1
-) &
+  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 EXPO_UNSTABLE_HEADLESS=1 EXPO_PUBLIC_STORE_CAPTURE_MODE=1 "$EXPO_BIN" start --localhost --port 8081
+) >"$METRO_LOG" 2>&1 &
 METRO_PID=$!
 
-for _ in $(seq 1 60); do
-  if grep -Eq "Metro waiting|Waiting on|Dev server ready|Starting Metro" "$METRO_LOG" 2>/dev/null; then break; fi
-  kill -0 "$METRO_PID" 2>/dev/null || { cat "$METRO_LOG" >&2; exit 1; }
-  sleep 1
-done
+python - <<'PY'
+import socket, time
+for _ in range(90):
+    try:
+        with socket.create_connection(("localhost", 8081), timeout=1):
+            print("MOBILE_20B_METRO_READY=PASS")
+            raise SystemExit(0)
+    except OSError:
+        time.sleep(1)
+raise SystemExit("Metro did not open port 8081")
+PY
 
 capture() {
   local scenario="$1" expected="$2" png="$3" xml="$4"
-  adb shell am force-stop "$PACKAGE_ID"
+  adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
   adb shell pm clear "$PACKAGE_ID" >/dev/null
+  adb reverse tcp:8081 tcp:8081 >/dev/null
+  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
+  sleep 3
   adb shell am start -W -a android.intent.action.VIEW -d "bejewely://store-capture?scenario=$scenario" "$PACKAGE_ID" >/dev/null
   local found=0
   for _ in $(seq 1 45); do
@@ -60,6 +72,12 @@ capture() {
   done
   [[ "$found" -eq 1 ]] || { echo "Required marker not visible for $scenario: $expected" >&2; cat "$ARTIFACT_DIR/$xml" >&2 || true; exit 1; }
   adb exec-out screencap -p > "$ARTIFACT_DIR/$png"
+  python - "$ARTIFACT_DIR/$png" <<'PY'
+import struct, sys
+with open(sys.argv[1], "rb") as f: h=f.read(24)
+assert h[:8] == b"\x89PNG\r\n\x1a\n"
+assert struct.unpack(">II", h[16:24]) == (1080, 1920)
+PY
 }
 
 capture "results-en" "Skin analysis result" "03-results-en-1080x1920.png" "03-results-en-window.xml"
