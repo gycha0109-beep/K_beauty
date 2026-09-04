@@ -76,13 +76,17 @@ for (const marker of [
   "STORE_SCROLL_UP_START_Y=1420",
   "STORE_SCROLL_UP_END_Y=680",
   "KO_FRAME_POSITION_LIMIT=4",
-  "KO_FRAME_NUDGE_START_Y=760",
-  "KO_FRAME_NUDGE_END_Y=940",
+  "KO_FRAME_ADJUST_START_Y=1100",
+  "KO_FRAME_ADJUST_UP_END_Y=1000",
+  "KO_FRAME_ADJUST_DOWN_END_Y=1200",
   "position_ko_analyze_store_frame()",
   'for attempt in $(seq 1 "$KO_FRAME_POSITION_LIMIT"); do',
   'title_y="$(text_center_y "피부 분석"',
   'sensitivity_y="$(text_center_y "민감도"',
-  'adb shell input swipe 540 "$KO_FRAME_NUDGE_START_Y" 540 "$KO_FRAME_NUDGE_END_Y" 250',
+  'adb shell input swipe 540 "$KO_FRAME_ADJUST_START_Y" 540 "$KO_FRAME_ADJUST_UP_END_Y" 220',
+  'adb shell input swipe 540 "$KO_FRAME_ADJUST_START_Y" 540 "$KO_FRAME_ADJUST_DOWN_END_Y" 220',
+  "MOBILE_STORE_KO_FRAME_CORRECTION=UP",
+  "MOBILE_STORE_KO_FRAME_CORRECTION=DOWN",
   "reset_store_capture_session()",
   'adb shell am force-stop "$PACKAGE_ID"',
   "MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko",
@@ -131,7 +135,9 @@ assert(koSurveyPosition > koHomeCapture, "ko-survey-position-after-ko-home");
 assert(koFramePosition > koSurveyPosition, "bounded-ko-frame-position-after-survey-position");
 assert(koAnalyzeCapture > koFramePosition, "ko-analyze-capture-after-bounded-frame-position");
 assert(capture.includes("title_y >= 300 && title_y <= 600 && sensitivity_y >= 900 && sensitivity_y <= 1450"), "ko-frame-physical-viewport-ranges");
-assert(capture.includes("(( title_y < 300 ))") && capture.includes("(( sensitivity_y < 1450 ))"), "ko-frame-nudge-only-with-viewport-headroom");
+assert(capture.includes("(( title_y > 600 || sensitivity_y > 1450 ))"), "ko-frame-corrects-content-up-when-bottom-overflows");
+assert(capture.includes("(( title_y < 300 || sensitivity_y < 900 ))"), "ko-frame-corrects-content-down-when-top-overflows");
+assert(!capture.includes("KO_FRAME_NUDGE_START_Y") && !capture.includes("KO_FRAME_NUDGE_END_Y"), "no-asymmetric-ko-frame-nudge");
 assert(!capture.includes('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8\nadb shell input swipe 540 760 540 940 250'), "no-one-shot-ko-frame-nudge");
 assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
 
@@ -167,6 +173,7 @@ console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_SCROLL_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_KO_ANALYZE_FRAME_GUARD=PASS");
+console.log("MOBILE_20A_KO_ANALYZE_FRAME_CORRECTION=PASS");
 console.log("MOBILE_20A_LOCALE_SESSION_ISOLATION=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_DUAL_CAMERA_CONTRACT=PASS");
