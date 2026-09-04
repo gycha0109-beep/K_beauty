@@ -15,6 +15,10 @@ QUICKSTEP_RECOVERY_LIMIT=2
 UI_DUMP_RETRY_LIMIT=4
 STORE_SCROLL_UP_START_Y=1420
 STORE_SCROLL_UP_END_Y=680
+EN_FRAME_POSITION_LIMIT=6
+EN_FRAME_ADJUST_START_Y=1100
+EN_FRAME_ADJUST_UP_END_Y=1000
+EN_FRAME_ADJUST_DOWN_END_Y=1200
 KO_FRAME_POSITION_LIMIT=4
 KO_FRAME_ADJUST_START_Y=1100
 KO_FRAME_ADJUST_UP_END_Y=1000
@@ -282,6 +286,45 @@ scroll_text_into_store_frame() {
   return 1
 }
 
+position_en_analyze_store_frame() {
+  local attempt
+  local open_camera_y=""
+  local main_concern_y=""
+  for attempt in $(seq 1 "$EN_FRAME_POSITION_LIMIT"); do
+    dump_ui
+    open_camera_y="$(text_center_y "Open camera" 2>/dev/null || true)"
+    main_concern_y="$(text_center_y "Main concern" 2>/dev/null || true)"
+    if [[ "$open_camera_y" =~ ^[0-9]+$ ]] && [[ "$main_concern_y" =~ ^[0-9]+$ ]] && \
+       (( open_camera_y >= 350 && open_camera_y <= 650 && main_concern_y >= 1300 && main_concern_y <= 1600 )); then
+      printf 'MOBILE_STORE_EN_ANALYZE_FRAME=PASS attempt=%s open_camera_y=%s main_concern_y=%s\n' "$attempt" "$open_camera_y" "$main_concern_y"
+      return 0
+    fi
+    if [[ ! "$open_camera_y" =~ ^[0-9]+$ ]]; then
+      adb shell input swipe 540 "$EN_FRAME_ADJUST_START_Y" 540 "$EN_FRAME_ADJUST_DOWN_END_Y" 220 >/dev/null 2>&1 || true
+      printf 'MOBILE_STORE_EN_FRAME_CORRECTION=DOWN attempt=%s open_camera_y=%s main_concern_y=%s\n' "$attempt" "${open_camera_y:-missing}" "${main_concern_y:-missing}"
+      sleep 1
+      continue
+    fi
+    if [[ ! "$main_concern_y" =~ ^[0-9]+$ ]] || (( open_camera_y > 650 )) || \
+       ([[ "$main_concern_y" =~ ^[0-9]+$ ]] && (( main_concern_y > 1600 ))); then
+      adb shell input swipe 540 "$EN_FRAME_ADJUST_START_Y" 540 "$EN_FRAME_ADJUST_UP_END_Y" 220 >/dev/null 2>&1 || true
+      printf 'MOBILE_STORE_EN_FRAME_CORRECTION=UP attempt=%s open_camera_y=%s main_concern_y=%s\n' "$attempt" "$open_camera_y" "${main_concern_y:-missing}"
+      sleep 1
+      continue
+    fi
+    if (( open_camera_y < 350 )) || \
+       ([[ "$main_concern_y" =~ ^[0-9]+$ ]] && (( main_concern_y < 1300 ))); then
+      adb shell input swipe 540 "$EN_FRAME_ADJUST_START_Y" 540 "$EN_FRAME_ADJUST_DOWN_END_Y" 220 >/dev/null 2>&1 || true
+      printf 'MOBILE_STORE_EN_FRAME_CORRECTION=DOWN attempt=%s open_camera_y=%s main_concern_y=%s\n' "$attempt" "$open_camera_y" "$main_concern_y"
+      sleep 1
+      continue
+    fi
+    break
+  done
+  echo "English analysis frame could not be positioned: open_camera_y=${open_camera_y:-missing} main_concern_y=${main_concern_y:-missing}" >&2
+  return 1
+}
+
 position_ko_analyze_store_frame() {
   local attempt
   local title_y=""
@@ -418,6 +461,7 @@ wait_for_text "CAPTURED PHOTO"
 wait_for_text "Use photo"
 tap_text_until_gone "Use photo" 8
 scroll_text_into_store_frame "Skin survey before analysis" 360 1050 8
+position_en_analyze_store_frame
 capture_png "02-analyze-en-1080x1920.png"
 
 reset_store_capture_session
