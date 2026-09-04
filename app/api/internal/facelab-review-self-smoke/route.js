@@ -1,4 +1,4 @@
-const PROBE_EXPIRES_AT = Date.parse("2026-09-04T18:30:00.000Z");
+const PROBE_EXPIRES_AT = Date.parse("2026-09-05T18:00:00.000Z");
 const PRODUCTION_ORIGIN = "https://k-beauty-two.vercel.app";
 const AUTHORIZED_MARKER = "얼굴 수 중립 평가";
 const INVALID_MARKER = "유효한 평가 링크가 아닙니다.";
@@ -29,10 +29,7 @@ async function fetchReview(token) {
     cache: "no-store",
     redirect: "follow"
   });
-  return {
-    status: response.status,
-    body: await response.text()
-  };
+  return { status: response.status, body: await response.text() };
 }
 
 function sourceSha() {
@@ -43,23 +40,15 @@ function sourceSha() {
 export async function GET(request) {
   const requestUrl = new URL(request.url);
   const probe = requestUrl.searchParams.get("probe");
-  if (
-    Date.now() >= PROBE_EXPIRES_AT ||
-    !["1", "browser"].includes(probe)
-  ) {
+  if (Date.now() >= PROBE_EXPIRES_AT || !["1", "browser"].includes(probe)) {
     return notFound();
   }
 
-  const token = String(
-    process.env.FACE_LAB_HOSTED_REVIEW_ACCESS_TOKEN || ""
-  );
+  const token = String(process.env.FACE_LAB_HOSTED_REVIEW_ACCESS_TOKEN || "");
   if (!TOKEN_PATTERN.test(token)) {
     return Response.json(
       { ok: false, error: "review_access_unavailable" },
-      {
-        status: 503,
-        headers: { "Cache-Control": "private, no-store, max-age=0" }
-      }
+      { status: 503, headers: { "Cache-Control": "private, no-store, max-age=0" } }
     );
   }
 
@@ -67,15 +56,8 @@ export async function GET(request) {
     fetchReview(token),
     fetchReview(invalidTokenFor(token))
   ]);
-
-  const positivePass =
-    positive.status === 200 &&
-    positive.body.includes(AUTHORIZED_MARKER) &&
-    !positive.body.includes(INVALID_MARKER);
-  const negativePass =
-    negative.status === 404 &&
-    negative.body.includes(INVALID_MARKER) &&
-    !negative.body.includes(AUTHORIZED_MARKER);
+  const positivePass = positive.status === 200 && positive.body.includes(AUTHORIZED_MARKER) && !positive.body.includes(INVALID_MARKER);
+  const negativePass = negative.status === 404 && negative.body.includes(INVALID_MARKER) && !negative.body.includes(AUTHORIZED_MARKER);
 
   if (probe === "browser") {
     if (!positivePass || !negativePass) {
