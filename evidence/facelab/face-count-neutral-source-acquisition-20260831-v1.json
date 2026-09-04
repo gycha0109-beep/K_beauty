@@ -1,7 +1,7 @@
 {
   "schemaVersion": "face-count-neutral-source-acquisition-v1",
-  "acquisitionMethod": "governed_exact_byte_reuse_and_verified_public_source_acquisition",
-  "assembledAt": "2026-08-31T16:41:15.000Z",
+  "acquisitionMethod": "governed_exact_byte_reuse_verified_public_source_and_existing_face_lab_asset_reuse",
+  "assembledAt": "2026-09-04T04:00:00.000Z",
   "assets": [
     {
       "slot": "candidate_a",
@@ -47,6 +47,81 @@
       "licenseFamily": "cc0",
       "rightsBasisRef": "Wikimedia Commons revision 1212884184; History Trust of South Australia GN11452 recorded under CC0 1.0, not legal adjudication.",
       "sourceEvidenceRef": "MyeongHa FR-DATA-224 capture-frdata224-batch-a-003"
+    },
+    {
+      "slot": "candidate_d",
+      "sourcePage": "repo://evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+      "sourcePageRevisionRef": "source-main-sha:3a39c32b0aaf39ca69d1e2000f044d81cf767ead",
+      "originalUrl": "/facelab/hosted-review/v1/assets/asset_004581bda0eb4388da2c113d.png",
+      "mediaType": "image/png",
+      "byteLength": 2514701,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "99de925b345cd2ad7a4adf3344776b3108e86a770c52231d518e3ebf0070668e",
+      "fileName": "fcneutral_04.png",
+      "licenseFamily": "governed_repo_reuse",
+      "rightsBasisRef": "Existing governed FaceLab hosted-review asset reused byte-for-byte; no new external rights claim is introduced.",
+      "sourceEvidenceRef": "FaceLab independent-human-cue hosted-set authority ordinal 12"
+    },
+    {
+      "slot": "candidate_e",
+      "sourcePage": "repo://evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+      "sourcePageRevisionRef": "source-main-sha:3a39c32b0aaf39ca69d1e2000f044d81cf767ead",
+      "originalUrl": "/facelab/hosted-review/v1/assets/asset_445922c7edbc73b22ec9cf95.png",
+      "mediaType": "image/png",
+      "byteLength": 2541570,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "7ea664f91d22d8c068e7ac2929e824579c377259e05762a37934c3933d0c5d0f",
+      "fileName": "fcneutral_05.png",
+      "licenseFamily": "governed_repo_reuse",
+      "rightsBasisRef": "Existing governed FaceLab hosted-review asset reused byte-for-byte; no new external rights claim is introduced.",
+      "sourceEvidenceRef": "FaceLab independent-human-cue hosted-set authority ordinal 10"
+    },
+    {
+      "slot": "candidate_f",
+      "sourcePage": "repo://evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+      "sourcePageRevisionRef": "source-main-sha:3a39c32b0aaf39ca69d1e2000f044d81cf767ead",
+      "originalUrl": "/facelab/hosted-review/v1/assets/asset_4a63193a97ccf17cd68dd109.png",
+      "mediaType": "image/png",
+      "byteLength": 2493174,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "6dfafc303d8ad3495dd9dbae1f92fc824a7326df461fd15352de56d93578df7b",
+      "fileName": "fcneutral_06.png",
+      "licenseFamily": "governed_repo_reuse",
+      "rightsBasisRef": "Existing governed FaceLab hosted-review asset reused byte-for-byte; no new external rights claim is introduced.",
+      "sourceEvidenceRef": "FaceLab independent-human-cue hosted-set authority ordinal 13"
+    },
+    {
+      "slot": "candidate_g",
+      "sourcePage": "repo://evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+      "sourcePageRevisionRef": "source-main-sha:3a39c32b0aaf39ca69d1e2000f044d81cf767ead",
+      "originalUrl": "/facelab/hosted-review/v1/assets/asset_4c9d3261fe13d6eb6dbe0b84.png",
+      "mediaType": "image/png",
+      "byteLength": 2392724,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "252a84d8517d65441ccb0dff608763fc105207627b0f194e9a2c8cb01ce33271",
+      "fileName": "fcneutral_07.png",
+      "licenseFamily": "governed_repo_reuse",
+      "rightsBasisRef": "Existing governed FaceLab hosted-review asset reused byte-for-byte; no new external rights claim is introduced.",
+      "sourceEvidenceRef": "FaceLab independent-human-cue hosted-set authority ordinal 8"
+    },
+    {
+      "slot": "candidate_h",
+      "sourcePage": "repo://evidence/facelab/face-lab-independent-human-cue-single-hosted-set-20260815-v1.json",
+      "sourcePageRevisionRef": "source-main-sha:3a39c32b0aaf39ca69d1e2000f044d81cf767ead",
+      "originalUrl": "/facelab/hosted-review/v1/assets/asset_5655478e648120d16225090c.png",
+      "mediaType": "image/png",
+      "byteLength": 2452476,
+      "width": 1254,
+      "height": 1254,
+      "sha256": "e258b7345d395830dee7264aaab0bd48f5cd6a706d75d01a7302c2d00b51dc4f",
+      "fileName": "fcneutral_08.png",
+      "licenseFamily": "governed_repo_reuse",
+      "rightsBasisRef": "Existing governed FaceLab hosted-review asset reused byte-for-byte; no new external rights claim is introduced.",
+      "sourceEvidenceRef": "FaceLab independent-human-cue hosted-set authority ordinal 3"
     }
   ]
 }
