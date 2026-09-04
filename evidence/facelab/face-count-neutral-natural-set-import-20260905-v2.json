@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "face-count-neutral-natural-set-import-v2",
+  "importedBy": "github-actions",
+  "assetCount": 8,
+  "assets": [
+    {
+      "fileName": "fcneutralv2_01.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_01.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 45846,
+      "width": 512,
+      "height": 507,
+      "sha256": "a48278513a38768ff92247972e60bc873eb361a8527cb8686a3e19c3ae1bdf9d",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Earth_apollo17.jpg",
+      "sourceRevisionRef": "existing-governed-v1-candidate_a",
+      "sourceVariant": "byte_for_byte_repo_reuse",
+      "licenseFamily": "public_domain"
+    },
+    {
+      "fileName": "fcneutralv2_02.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_02.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 223862,
+      "width": 960,
+      "height": 960,
+      "sha256": "7d197ba1951fcaa457ce7f20ffa2969094402223f15d39edfe288c8d8280c94a",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Full_moon.jpeg",
+      "sourceRevisionRef": "commons-oldid:910706339",
+      "sourceVariant": "Wikimedia 960px thumbnail",
+      "licenseFamily": "public_domain_nasa"
+    },
+    {
+      "fileName": "fcneutralv2_03.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_03.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 365066,
+      "width": 782,
+      "height": 942,
+      "sha256": "1131e5923243d08050e206663d06739bb61e19dd0c4844478446d24e49a1b0f4",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dwight_D_Eisenhower_(cropped).jpg",
+      "sourceRevisionRef": "existing-governed-v1-candidate_b",
+      "sourceVariant": "byte_for_byte_repo_reuse",
+      "licenseFamily": "public_domain"
+    },
+    {
+      "fileName": "fcneutralv2_04.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_04.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 66554,
+      "width": 441,
+      "height": 517,
+      "sha256": "56ed20367c64374c516ad10b419d151ae597f47246652daf7888fedfbcc150b5",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Neil_Armstrong_official.jpg",
+      "sourceRevisionRef": "commons-oldid:1010455510",
+      "sourceVariant": "Wikimedia original 441x517",
+      "licenseFamily": "public_domain_nasa"
+    },
+    {
+      "fileName": "fcneutralv2_05.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_05.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 245164,
+      "width": 960,
+      "height": 1200,
+      "sha256": "a5fff1fac585c50232dbe652b8b2a2aa150e8fbb0679fdfd64264115415db7ca",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Buzz_Aldrin.jpg",
+      "sourceRevisionRef": "commons-oldid:970362217",
+      "sourceVariant": "Wikimedia 960px thumbnail",
+      "licenseFamily": "public_domain_nasa"
+    },
+    {
+      "fileName": "fcneutralv2_06.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_06.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 1177142,
+      "width": 3264,
+      "height": 2448,
+      "sha256": "5427892220dadebde0c91bdec47468be61b945b966a917eb6c82e366867b6065",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Group_Portrait(GN11452).jpg",
+      "sourceRevisionRef": "existing-governed-v1-candidate_c",
+      "sourceVariant": "byte_for_byte_repo_reuse",
+      "licenseFamily": "cc0"
+    },
+    {
+      "fileName": "fcneutralv2_07.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_07.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 292425,
+      "width": 1280,
+      "height": 1006,
+      "sha256": "d990cf865566b071130681c6bda84e39b4edf305edae7c35f3aac9348f6f6a1a",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Apollo_11_Crew.jpg",
+      "sourceRevisionRef": "commons-oldid:1210646629",
+      "sourceVariant": "Wikimedia 1280px thumbnail",
+      "licenseFamily": "public_domain_nasa"
+    },
+    {
+      "fileName": "fcneutralv2_08.jpg",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_08.jpg",
+      "mediaType": "image/jpeg",
+      "byteLength": 317312,
+      "width": 1280,
+      "height": 947,
+      "sha256": "bcaf2da6eb13931226a1a0d7100e0cad2196eaf7cd59b7bfc88ace4b416fd1d6",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Mercury_Seven.jpg",
+      "sourceRevisionRef": "commons-oldid:903489534",
+      "sourceVariant": "Wikimedia 1280px thumbnail",
+      "licenseFamily": "public_domain_nasa"
+    }
+  ]
+}
