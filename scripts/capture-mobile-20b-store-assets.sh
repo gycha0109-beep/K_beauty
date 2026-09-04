@@ -8,6 +8,7 @@ APK_PATH="$MOBILE_ROOT/android/app/build/outputs/apk/debug/app-debug.apk"
 ARTIFACT_DIR="$MOBILE_ROOT/.mobile-20b-store-artifacts"
 METRO_LOG="$ARTIFACT_DIR/metro.log"
 METRO_PID=""
+MOBILE_NODE_PATH="$MOBILE_ROOT/node_modules${NODE_PATH:+:$NODE_PATH}"
 
 mkdir -p "$ARTIFACT_DIR"
 rm -f "$ARTIFACT_DIR"/*.png "$ARTIFACT_DIR"/*.xml "$ARTIFACT_DIR"/capture-manifest.json
@@ -26,6 +27,8 @@ EXPO_BIN="$REPO_ROOT/node_modules/.bin/expo"
 [[ -x "$EXPO_BIN" ]] || EXPO_BIN="$MOBILE_ROOT/node_modules/.bin/expo"
 [[ -x "$EXPO_BIN" ]] || { echo "Expo CLI not found" >&2; exit 1; }
 
+NODE_PATH="$MOBILE_NODE_PATH" node -e 'console.log(`MOBILE_20B_EXPO_ROUTER_CTX=${require.resolve("expo-router/_ctx-shared")}`)'
+
 adb wait-for-device
 adb install -r "$APK_PATH" >/dev/null
 adb shell cmd uimode night no >/dev/null 2>&1 || true
@@ -39,7 +42,7 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 
 (
   cd "$MOBILE_ROOT"
-  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 EXPO_UNSTABLE_HEADLESS=1 EXPO_PUBLIC_STORE_CAPTURE_MODE=1 "$EXPO_BIN" start --localhost --port 8081
+  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 EXPO_UNSTABLE_HEADLESS=1 EXPO_PUBLIC_STORE_CAPTURE_MODE=1 NODE_PATH="$MOBILE_NODE_PATH" "$EXPO_BIN" start --localhost --port 8081
 ) >"$METRO_LOG" 2>&1 &
 METRO_PID=$!
 
