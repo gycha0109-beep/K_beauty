@@ -1,8 +1,9 @@
-const PROBE_EXPIRES_AT = Date.parse("2026-09-03T18:15:00.000Z");
+const PROBE_EXPIRES_AT = Date.parse("2026-09-04T18:30:00.000Z");
 const PRODUCTION_ORIGIN = "https://k-beauty-two.vercel.app";
 const AUTHORIZED_MARKER = "얼굴 수 중립 평가";
 const INVALID_MARKER = "유효한 평가 링크가 아닙니다.";
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{32,256}$/;
+const REDACTED_BROWSER_TOKEN = "FACE_LAB_BROWSER_SMOKE_REDACTED";
 
 function notFound() {
   return new Response(null, {
@@ -34,11 +35,17 @@ async function fetchReview(token) {
   };
 }
 
+function sourceSha() {
+  const value = String(process.env.VERCEL_GIT_COMMIT_SHA || "").trim();
+  return /^[0-9a-f]{40}$/i.test(value) ? value : "unknown";
+}
+
 export async function GET(request) {
   const requestUrl = new URL(request.url);
+  const probe = requestUrl.searchParams.get("probe");
   if (
     Date.now() >= PROBE_EXPIRES_AT ||
-    requestUrl.searchParams.get("probe") !== "1"
+    !["1", "browser"].includes(probe)
   ) {
     return notFound();
   }
@@ -70,13 +77,39 @@ export async function GET(request) {
     negative.body.includes(INVALID_MARKER) &&
     !negative.body.includes(AUTHORIZED_MARKER);
 
+  if (probe === "browser") {
+    if (!positivePass || !negativePass) {
+      return new Response("production_review_smoke_failed", {
+        status: 503,
+        headers: { "Cache-Control": "private, no-store, max-age=0" }
+      });
+    }
+    const sanitized = positive.body.split(token).join(REDACTED_BROWSER_TOKEN);
+    if (sanitized.includes(token) || !sanitized.includes(REDACTED_BROWSER_TOKEN)) {
+      return new Response("production_review_token_redaction_failed", {
+        status: 503,
+        headers: { "Cache-Control": "private, no-store, max-age=0" }
+      });
+    }
+    return new Response(sanitized, {
+      status: 200,
+      headers: {
+        "Cache-Control": "private, no-store, max-age=0",
+        "Content-Type": "text/html; charset=utf-8",
+        "X-FaceLab-Smoke-Source-Sha": sourceSha(),
+        "X-Robots-Tag": "noindex, nofollow, noarchive"
+      }
+    });
+  }
+
   return Response.json(
     {
       ok: positivePass && negativePass,
       positiveSmoke: positivePass ? "PASS" : "FAIL",
       negativeSmoke: negativePass ? "PASS" : "FAIL",
       positiveStatus: positive.status,
-      negativeStatus: negative.status
+      negativeStatus: negative.status,
+      sourceGitSha: sourceSha()
     },
     {
       status: positivePass && negativePass ? 200 : 503,
