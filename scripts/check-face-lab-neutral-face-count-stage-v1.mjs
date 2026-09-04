@@ -16,7 +16,7 @@ const ITEM_COUNT = 8;
 const QUESTION =
   "눈, 코, 입 등 얼굴의 정확한 특징을 판별할 수 있을 정도로 보이는 사람은 몇 명인가요?";
 
-function imageDimensions(bytes) {
+function imageMetadata(bytes) {
   if (
     bytes.length >= 24 &&
     bytes[0] === 0x89 &&
@@ -28,7 +28,11 @@ function imageDimensions(bytes) {
     bytes[6] === 0x1a &&
     bytes[7] === 0x0a
   ) {
-    return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+    return {
+      mediaType: "image/png",
+      width: bytes.readUInt32BE(16),
+      height: bytes.readUInt32BE(20)
+    };
   }
   if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
     throw new Error("unsupported image format");
@@ -52,6 +56,7 @@ function imageDimensions(bytes) {
     ].includes(marker);
     if (sof) {
       return {
+        mediaType: "image/jpeg",
         height: bytes.readUInt16BE(offset + 3),
         width: bytes.readUInt16BE(offset + 5)
       };
@@ -109,9 +114,20 @@ for (const item of authority.orderedItems) {
   must(sha256(bytes) === item.assetSha256, `${fileName}: authority digest mismatch`);
   must(sha256(bytes) === acquired.sha256, `${fileName}: acquisition digest mismatch`);
   must(bytes.length === acquired.byteLength, `${fileName}: byte length mismatch`);
-  const metadata = imageDimensions(bytes);
+  const metadata = imageMetadata(bytes);
+  must(metadata.mediaType === acquired.mediaType, `${fileName}: media type mismatch`);
   must(metadata.width === acquired.width, `${fileName}: width mismatch`);
   must(metadata.height === acquired.height, `${fileName}: height mismatch`);
+  if (
+    typeof acquired.originalUrl === "string" &&
+    acquired.originalUrl.startsWith("/facelab/hosted-review/v1/assets/")
+  ) {
+    const governedSourceBytes = await read(`public${acquired.originalUrl}`);
+    must(
+      bytes.equals(governedSourceBytes),
+      `${fileName}: governed source byte reuse mismatch`
+    );
+  }
 }
 
 const publicModel = getNeutralFaceCountPublicModel(authority, {
@@ -301,7 +317,11 @@ mustContain(
   "먼저 8장의 이미지",
   "neutral review html"
 );
-mustContain(neutralReviewHtmlSource, QUESTION, "neutral review html");
+mustContain(
+  neutralReviewHtmlSource,
+  'byId("instruction").textContent=DATA.instruction',
+  "neutral review html authority instruction binding"
+);
 mustContain(
   neutralReviewHtmlSource,
   "independenceAttestation:DATA.attestationValue",
@@ -370,10 +390,20 @@ console.log(
     authorityDigest: authority.authorityDigest,
     acquisitionManifestSha256: authority.sourceAcquisitionManifestSha256,
     itemCount: authority.orderedItems.length,
-    assets: authority.orderedItems.map((item) => ({
-      reviewItemId: item.reviewItemId,
-      sha256: item.assetSha256
-    })),
+    assets: authority.orderedItems.map((item) => {
+      const acquired = acquisitionByFile.get(path.basename(item.assetPath));
+      return {
+        reviewItemId: item.reviewItemId,
+        sha256: item.assetSha256,
+        byteLength: acquired.byteLength,
+        width: acquired.width,
+        height: acquired.height,
+        mediaType: acquired.mediaType,
+        governedRepoReuse:
+          typeof acquired.originalUrl === "string" &&
+          acquired.originalUrl.startsWith("/facelab/hosted-review/v1/assets/")
+      };
+    }),
     reviewerAssetDigestsExposed: false,
     independenceAttestationRequired: true,
     productionSemanticAuthority: false,
