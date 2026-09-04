@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "face-count-neutral-review-authority-v2",
+  "authorityRef": "authority.facelab.neutral_face_count.shared_review.v2",
+  "authorityVersion": "2.0.0",
+  "campaignKey": "face_count_neutral_shared_review_v2",
+  "intakeVersion": "face-count-neutral-intake-v2",
+  "storageSchemaVersion": "face-count-neutral-storage-v1",
+  "sourceAcquisitionManifestSha256": "f44c88d6d070ac515c37b1b820e7ae57a98ef23199c5e3ef132afadde3396198",
+  "responseTokens": [
+    "none",
+    "one",
+    "two_or_more",
+    "not_assessable"
+  ],
+  "orderedItems": [
+    {"reviewItemId":"fcneutralv2_01","presentation":{"mode":"single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_01.jpg"]}},
+    {"reviewItemId":"fcneutralv2_02","presentation":{"mode":"obscured_single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_04.png"],"blurPx":28}},
+    {"reviewItemId":"fcneutralv2_03","presentation":{"mode":"single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_02.jpg"]}},
+    {"reviewItemId":"fcneutralv2_04","presentation":{"mode":"single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_05.png"]}},
+    {"reviewItemId":"fcneutralv2_05","presentation":{"mode":"single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_06.png"]}},
+    {"reviewItemId":"fcneutralv2_06","presentation":{"mode":"single","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_03.jpg"]}},
+    {"reviewItemId":"fcneutralv2_07","presentation":{"mode":"composite","assetPaths":["/facelab/neutral-review/v1/assets/fcneutral_07.png","/facelab/neutral-review/v1/assets/fcneutral_08.png"]}},
+    {"reviewItemId":"fcneutralv2_08","presentation":{"mode":"composite","assetPaths":["/facelab/hosted-review/v1/assets/asset_b5a84777474ae7f94b117d40.png","/facelab/hosted-review/v1/assets/asset_5abdcbd7d7fe34f61fc12a26.png","/facelab/hosted-review/v1/assets/asset_aad18c11fe83029dfe03e58c.png"]}}
+  ],
+  "reviewerUi": {
+    "title": "얼굴 수 확인",
+    "instruction": "눈, 코, 입 등 얼굴의 정확한 특징을 판별할 수 있을 정도로 보이는 사람은 몇 명인가요?",
+    "responseLabels": {"none":"없음","one":"1개","two_or_more":"2개 이상","not_assessable":"판단 불가"},
+    "attestationCopy": {
+      "sourceOrAnswerInformationNotViewed": "이미지의 출처나 정답 정보를 제공받거나 확인하지 않았습니다.",
+      "automatedAnalysisResultsNotViewed": "AI 또는 자동 분석 결과를 확인하지 않았습니다.",
+      "otherParticipantResponsesNotViewed": "다른 참여자의 응답을 보거나 상의하지 않았습니다.",
+      "visibleHumanFaceCountOnly": "눈, 코, 입 등 얼굴의 정확한 특징을 판별할 수 있을 정도로 보이는 사람 수만 독립적으로 판단하겠습니다.",
+      "sensitiveIdentityInferenceNotPerformed": "신원, 나이, 성별, 인종, 성격 등 사람의 민감하거나 불필요한 특성을 추론하지 않겠습니다."
+    },
+    "requiredIndependenceAttestation": {
+      "sourceOrAnswerInformationNotViewed": true,
+      "automatedAnalysisResultsNotViewed": true,
+      "otherParticipantResponsesNotViewed": true,
+      "visibleHumanFaceCountOnly": true,
+      "sensitiveIdentityInferenceNotPerformed": true
+    }
+  },
+  "authorityBoundary": {
+    "expectedFaceCountLabelsIncluded": false,
+    "sourceNamesIncludedInReviewerModel": false,
+    "assetDigestsIncludedInReviewerModel": false,
+    "traditionalSemanticAuthority": false,
+    "providerInferenceAuthority": false,
+    "empiricalValidationEstablished": false
+  },
+  "authorityDigest": "5cc6c4de47b60d91239e692e9b306259ed5d46a05a3c8d75dc1b73583fbfce6f"
+}
