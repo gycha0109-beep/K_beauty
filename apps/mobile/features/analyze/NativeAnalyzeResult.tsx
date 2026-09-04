@@ -39,7 +39,7 @@ function ResultProduct({
   if (!productName && !product.reason) return null;
 
   return (
-    <View style={[styles.productCard, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}> 
+    <View style={[styles.productCard, { backgroundColor: palette.surfaceMuted, borderColor: palette.border }]}>
       <Text style={[styles.kicker, { color: palette.accent }]}>{title}</Text>
       {productName ? <Text style={[styles.productName, { color: palette.text }]}>{productName}</Text> : null}
       {product.reason ? <Text style={[styles.body, { color: palette.textMuted }]}>{product.reason}</Text> : null}
@@ -66,7 +66,7 @@ function RoutineList({
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: palette.text }]}>{title}</Text>
       {rows.map((row, index) => (
-        <Text key={`${title}-${index}-${row}`} style={[styles.body, { color: palette.textMuted }]}> 
+        <Text key={`${title}-${index}-${row}`} style={[styles.body, { color: palette.textMuted }]}>
           {index + 1}. {row}
         </Text>
       ))}
@@ -95,11 +95,13 @@ export function NativeAnalyzeResultView({
       testID="native-analyze-result"
       style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.border }]}
     >
-      <Text style={[styles.kicker, { color: palette.accent }]}>MOBILE-7 · SERVER RESULT</Text>
-      <Text style={[styles.title, { color: palette.text }]}> 
+      <Text style={[styles.kicker, { color: palette.accent }]}>
+        {locale === "ko" ? "맞춤 스킨케어 루틴" : "PERSONALIZED SKIN-CARE ROUTINE"}
+      </Text>
+      <Text style={[styles.title, { color: palette.text }]}>
         {locale === "ko" ? "피부 분석 결과" : "Skin analysis result"}
       </Text>
-      <Text testID="native-analyze-result-summary" style={[styles.summary, { color: palette.text }]}> 
+      <Text testID="native-analyze-result-summary" style={[styles.summary, { color: palette.text }]}>
         {result.summary}
       </Text>
 
@@ -141,10 +143,10 @@ export function NativeAnalyzeResultView({
         palette={palette}
       />
 
-      <Text style={[styles.boundary, { color: palette.textMuted }]}> 
+      <Text style={[styles.boundary, { color: palette.textMuted }]}>
         {locale === "ko"
-          ? "이 화면은 서버가 반환한 무료 결과만 표시합니다. Premium 및 Face Lab 엔진은 네이티브 앱으로 복제하지 않습니다."
-          : "This screen renders only the free result returned by the server. Premium and Face Lab engines are not duplicated in the native app."}
+          ? "추천은 현재 피부 상태와 선호를 바탕으로 한 일상적인 화장품·스킨케어 가이드입니다."
+          : "Recommendations are everyday cosmetic skin-care guidance based on your current skin profile and preferences."}
       </Text>
 
       <Pressable
@@ -169,7 +171,7 @@ export function NativeAnalyzeResultView({
           { borderColor: palette.border, opacity: pressed ? 0.72 : 1 }
         ]}
       >
-        <Text style={[styles.secondaryButtonText, { color: palette.text }]}> 
+        <Text style={[styles.secondaryButtonText, { color: palette.text }]}>
           {locale === "ko" ? "새 분석 시작" : "Start a new analysis"}
         </Text>
       </Pressable>
