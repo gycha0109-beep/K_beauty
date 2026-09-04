@@ -1,0 +1,64 @@
+name: FaceLab Neutral Stage A Production Browser Smoke
+
+on:
+  pull_request:
+    paths:
+      - "app/api/internal/facelab-review-self-smoke/route.js"
+      - "scripts/run-face-lab-neutral-production-browser-smoke.mjs"
+      - ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/internal/facelab-review-self-smoke/route.js"
+      - "scripts/run-face-lab-neutral-production-browser-smoke.mjs"
+      - ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check app/api/internal/facelab-review-self-smoke/route.js
+      - run: node --check scripts/run-face-lab-neutral-production-browser-smoke.mjs
+
+  production-browser:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Attest exact merged-main checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          echo "FACE_LAB_PRODUCTION_BROWSER_SHA=${GITHUB_SHA}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Exercise production Stage A without final submit
+        env:
+          EXPECTED_GIT_SHA: ${{ github.sha }}
+        run: node scripts/run-face-lab-neutral-production-browser-smoke.mjs
+      - name: Upload production browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: facelab-neutral-stage-a-production-browser-${{ github.sha }}
+          path: artifacts/facelab-neutral-stage-a-production-browser.png
+          if-no-files-found: ignore
+          retention-days: 7
