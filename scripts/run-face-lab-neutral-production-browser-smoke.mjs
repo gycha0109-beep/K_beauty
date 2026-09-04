@@ -55,6 +55,7 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ locale: "ko-KR" });
 const page = await context.newPage();
 const submitRequests = [];
+const visualSources = [];
 page.on("request", (request) => {
   if (
     request.method() === "POST" &&
@@ -92,6 +93,18 @@ try {
       throw new Error(`progress_mismatch:${progress}:expected:${index} / 8`);
     }
 
+    const image = page.locator("#image");
+    await image.waitFor({ state: "visible" });
+    await page.waitForFunction(() => {
+      const node = document.getElementById("image");
+      return Boolean(node?.complete && node.naturalWidth > 0 && node.naturalHeight > 0);
+    });
+    const imageSrc = String(await image.getAttribute("src"));
+    if (!imageSrc.includes(`/api/facelab/review/neutral/visual/fcneutralv2_0${index}`)) {
+      throw new Error(`v2_visual_source_mismatch:${index}:${imageSrc}`);
+    }
+    visualSources.push(imageSrc);
+
     const optionButtons = page.locator("#options button");
     const optionCount = await optionButtons.count();
     if (optionCount !== 4) {
@@ -113,6 +126,9 @@ try {
   await page.waitForTimeout(500);
   if (submitRequests.length !== 0) {
     throw new Error(`unexpected_submit_request_count:${submitRequests.length}`);
+  }
+  if (new Set(visualSources).size !== 8) {
+    throw new Error(`visual_source_uniqueness:${new Set(visualSources).size}`);
   }
 
   const state = await page.evaluate(() => {
@@ -141,6 +157,8 @@ try {
       sourceGitSha: sourceSha,
       exactQuestion: true,
       itemCount: 8,
+      loadedV2Visuals: visualSources.length,
+      uniqueV2Visuals: new Set(visualSources).size,
       finalProgress: "8 / 8",
       finalButton: "1단계 제출",
       localResponseCount,
