@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "face-count-neutral-curation-validation-v2",
+  "authorityRef": "authority.facelab.neutral_face_count.shared_review.v2",
+  "purpose": "Internal semantic-set validation only. Must not be exposed in reviewer model or HTML.",
+  "requiredDistribution": {"none":2,"one":3,"two_or_more":3},
+  "maxSingleBucket": 3,
+  "items": [
+    {"reviewItemId":"fcneutralv2_01","expectedClass":"none","rationale":"No human face is present."},
+    {"reviewItemId":"fcneutralv2_02","expectedClass":"none","rationale":"A human image is intentionally obscured so exact eyes/nose/mouth features are not discernible."},
+    {"reviewItemId":"fcneutralv2_03","expectedClass":"one","rationale":"One face is clearly discernible."},
+    {"reviewItemId":"fcneutralv2_04","expectedClass":"one","rationale":"One face is clearly discernible."},
+    {"reviewItemId":"fcneutralv2_05","expectedClass":"one","rationale":"One face is clearly discernible."},
+    {"reviewItemId":"fcneutralv2_06","expectedClass":"two_or_more","rationale":"Multiple discernible faces are present in the governed group source."},
+    {"reviewItemId":"fcneutralv2_07","expectedClass":"two_or_more","rationale":"Two governed single-face sources are presented together in one review item."},
+    {"reviewItemId":"fcneutralv2_08","expectedClass":"two_or_more","rationale":"Three governed single-face sources are presented together in one review item."}
+  ]
+}
