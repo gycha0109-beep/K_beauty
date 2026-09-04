@@ -1,0 +1,185 @@
+name: FaceLab Stage A Natural Set Import
+
+on:
+  push:
+    branches:
+      - fix/facelab-neutral-stage-a-natural-set-v2
+    paths:
+      - '.github/workflows/facelab-neutral-stage-a-natural-set-import.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/facelab-neutral-stage-a-natural-set-v2
+          fetch-depth: 0
+
+      - name: Import independent natural-image set
+        shell: bash
+        run: |
+          set -euo pipefail
+          out='public/facelab/neutral-review/v2/assets'
+          mkdir -p "$out"
+
+          cp public/facelab/neutral-review/v1/assets/fcneutral_01.jpg "$out/fcneutralv2_01.jpg"
+          curl --fail --location --retry 4 --retry-all-errors \
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Full_moon.jpeg/960px-Full_moon.jpeg' \
+            --output "$out/fcneutralv2_02.jpg"
+          cp public/facelab/neutral-review/v1/assets/fcneutral_02.jpg "$out/fcneutralv2_03.jpg"
+          curl --fail --location --retry 4 --retry-all-errors \
+            'https://upload.wikimedia.org/wikipedia/commons/8/8e/Neil_Armstrong_official.jpg' \
+            --output "$out/fcneutralv2_04.jpg"
+          curl --fail --location --retry 4 --retry-all-errors \
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Buzz_Aldrin.jpg/960px-Buzz_Aldrin.jpg' \
+            --output "$out/fcneutralv2_05.jpg"
+          cp public/facelab/neutral-review/v1/assets/fcneutral_03.jpg "$out/fcneutralv2_06.jpg"
+          curl --fail --location --retry 4 --retry-all-errors \
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Apollo_11_Crew.jpg/1280px-Apollo_11_Crew.jpg' \
+            --output "$out/fcneutralv2_07.jpg"
+          curl --fail --location --retry 4 --retry-all-errors \
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Mercury_Seven.jpg/1280px-Mercury_Seven.jpg' \
+            --output "$out/fcneutralv2_08.jpg"
+
+      - name: Record exact imported bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+
+          root = Path('public/facelab/neutral-review/v2/assets')
+          evidence = Path('evidence/facelab/face-count-neutral-natural-set-import-20260905-v2.json')
+
+          def jpeg_size(data: bytes):
+              if data[:2] != b'\xff\xd8':
+                  raise ValueError('jpeg_soi_missing')
+              i = 2
+              sof = {0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF}
+              while i < len(data):
+                  if data[i] != 0xFF:
+                      i += 1
+                      continue
+                  while i < len(data) and data[i] == 0xFF:
+                      i += 1
+                  if i >= len(data):
+                      break
+                  marker = data[i]
+                  i += 1
+                  if marker in {0xD8,0xD9} or 0xD0 <= marker <= 0xD7:
+                      continue
+                  if i + 2 > len(data):
+                      break
+                  seglen = int.from_bytes(data[i:i+2], 'big')
+                  if seglen < 2 or i + seglen > len(data):
+                      raise ValueError('jpeg_segment_invalid')
+                  if marker in sof:
+                      if seglen < 7:
+                          raise ValueError('jpeg_sof_invalid')
+                      height = int.from_bytes(data[i+3:i+5], 'big')
+                      width = int.from_bytes(data[i+5:i+7], 'big')
+                      return width, height
+                  i += seglen
+              raise ValueError('jpeg_dimensions_missing')
+
+          sources = {
+              'fcneutralv2_01.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Earth_apollo17.jpg',
+                  'sourceRevisionRef': 'existing-governed-v1-candidate_a',
+                  'sourceVariant': 'byte_for_byte_repo_reuse',
+                  'licenseFamily': 'public_domain'
+              },
+              'fcneutralv2_02.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Full_moon.jpeg',
+                  'sourceRevisionRef': 'commons-oldid:910706339',
+                  'sourceVariant': 'Wikimedia 960px thumbnail',
+                  'licenseFamily': 'public_domain_nasa'
+              },
+              'fcneutralv2_03.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Dwight_D_Eisenhower_(cropped).jpg',
+                  'sourceRevisionRef': 'existing-governed-v1-candidate_b',
+                  'sourceVariant': 'byte_for_byte_repo_reuse',
+                  'licenseFamily': 'public_domain'
+              },
+              'fcneutralv2_04.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Neil_Armstrong_official.jpg',
+                  'sourceRevisionRef': 'commons-oldid:1010455510',
+                  'sourceVariant': 'Wikimedia original 441x517',
+                  'licenseFamily': 'public_domain_nasa'
+              },
+              'fcneutralv2_05.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Buzz_Aldrin.jpg',
+                  'sourceRevisionRef': 'commons-oldid:970362217',
+                  'sourceVariant': 'Wikimedia 960px thumbnail',
+                  'licenseFamily': 'public_domain_nasa'
+              },
+              'fcneutralv2_06.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Group_Portrait(GN11452).jpg',
+                  'sourceRevisionRef': 'existing-governed-v1-candidate_c',
+                  'sourceVariant': 'byte_for_byte_repo_reuse',
+                  'licenseFamily': 'cc0'
+              },
+              'fcneutralv2_07.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Apollo_11_Crew.jpg',
+                  'sourceRevisionRef': 'commons-oldid:1210646629',
+                  'sourceVariant': 'Wikimedia 1280px thumbnail',
+                  'licenseFamily': 'public_domain_nasa'
+              },
+              'fcneutralv2_08.jpg': {
+                  'sourcePage': 'https://commons.wikimedia.org/wiki/File:Mercury_Seven.jpg',
+                  'sourceRevisionRef': 'commons-oldid:903489534',
+                  'sourceVariant': 'Wikimedia 1280px thumbnail',
+                  'licenseFamily': 'public_domain_nasa'
+              }
+          }
+
+          items = []
+          for name in sorted(sources):
+              path = root / name
+              data = path.read_bytes()
+              width, height = jpeg_size(data)
+              item = {
+                  'fileName': name,
+                  'assetPath': '/' + path.as_posix().removeprefix('public/'),
+                  'mediaType': 'image/jpeg',
+                  'byteLength': len(data),
+                  'width': width,
+                  'height': height,
+                  'sha256': hashlib.sha256(data).hexdigest(),
+                  **sources[name]
+              }
+              items.append(item)
+
+          payload = {
+              'schemaVersion': 'face-count-neutral-natural-set-import-v2',
+              'importedBy': 'github-actions',
+              'assetCount': len(items),
+              'assets': items
+          }
+          evidence.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          print(json.dumps(payload, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Commit imported assets and byte evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add public/facelab/neutral-review/v2/assets evidence/facelab/face-count-neutral-natural-set-import-20260905-v2.json
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No import changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix(facelab): import independent natural Stage A assets'
+          git push origin HEAD:fix/facelab-neutral-stage-a-natural-set-v2
