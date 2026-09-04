@@ -80,6 +80,10 @@ for (const marker of [
   "MOBILE_STORE_LOCALE_SESSION_RESET=PASS locale=ko",
   "MOBILE_STORE_TRANSITION=PASS",
   "MOBILE_STORE_VIEWPORT_TEXT=PASS",
+  "MOBILE_STORE_KO_ANALYZE_FRAME=PASS",
+  'adb shell input swipe 540 760 540 940 250',
+  'ko_analysis_title_y="$(text_center_y "피부 분석"',
+  'ko_sensitivity_y="$(text_center_y "민감도"',
   "MOBILE_20A_HOME_CAPTURE=PASS",
   "MOBILE_20A_ANALYZE_CAPTURE=PASS",
   "MOBILE_20A_STORE_CAPTURE=PASS"
@@ -112,9 +116,19 @@ const enAnalyzeCapture = capture.indexOf('capture_png "02-analyze-en-1080x1920.p
 const localeSessionReset = capture.indexOf("reset_store_capture_session\n", enAnalyzeCapture);
 const koLocaleSwitch = capture.indexOf('tap_text "locale-ko"', localeSessionReset);
 const koHomeCapture = capture.indexOf('capture_png "01-home-ko-1080x1920.png"', koLocaleSwitch);
+const koSurveyPosition = capture.indexOf('scroll_text_into_store_frame "분석 전 피부 설문" 360 1050 8', koHomeCapture);
+const koFrameNudge = capture.indexOf('adb shell input swipe 540 760 540 940 250', koSurveyPosition);
+const koFrameGuard = capture.indexOf("MOBILE_STORE_KO_ANALYZE_FRAME=PASS", koFrameNudge);
+const koAnalyzeCapture = capture.indexOf('capture_png "02-analyze-ko-1080x1920.png"', koFrameGuard);
 assert(enAnalyzeCapture >= 0 && localeSessionReset > enAnalyzeCapture, "locale-session-reset-after-en-analyze");
 assert(koLocaleSwitch > localeSessionReset, "ko-locale-switch-after-session-reset");
 assert(koHomeCapture > koLocaleSwitch, "ko-home-after-clean-locale-switch");
+assert(koSurveyPosition > koHomeCapture, "ko-survey-position-after-ko-home");
+assert(koFrameNudge > koSurveyPosition, "ko-frame-nudge-after-survey-position");
+assert(koFrameGuard > koFrameNudge, "ko-frame-guard-after-nudge");
+assert(koAnalyzeCapture > koFrameGuard, "ko-analyze-capture-after-frame-guard");
+assert(capture.includes("ko_analysis_title_y < 300 || ko_analysis_title_y > 600"), "ko-analysis-title-physical-viewport-range");
+assert(capture.includes("ko_sensitivity_y < 900 || ko_sensitivity_y > 1450"), "ko-sensitivity-physical-viewport-range");
 assert(!capture.includes('capture_png "02-analyze-en-1080x1920.png"\n\ntap_text "Home"'), "no-stateful-en-to-ko-tab-transition");
 
 for (const forbidden of [
@@ -130,6 +144,8 @@ assert(workflow.includes("Attest exact checked-out SHA"), "exact-sha-attestation
 assert(workflow.includes("bash scripts/capture-mobile-store-assets.sh"), "capture-runtime-step");
 assert(workflow.includes("apps/mobile/.mobile-store-artifacts/**"), "artifact-upload-path");
 assert(workflow.includes("ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d"), "pinned-emulator-runner");
+assert(workflow.includes("pre-emulator-launch-script: >-"), "single-shell-pre-emulator-launch-script");
+assert(!workflow.includes("pre-emulator-launch-script: |"), "no-multiline-pre-emulator-script-parser-hazard");
 assert(workflow.includes('key="hw.camera.$camera"'), "dual-camera-avd-loop");
 assert(workflow.includes('grep -q "^${key}=emulated$" "$config"'), "dual-camera-avd-attestation");
 assert(workflow.includes("MOBILE_20A_DUAL_CAMERA_AVD_CONFIG=PASS"), "dual-camera-avd-marker");
@@ -146,8 +162,10 @@ console.log("MOBILE_20A_CAMERA_ENTRY_RACE_GUARD=PASS");
 console.log("MOBILE_20A_TRANSITION_GUARD=PASS");
 console.log("MOBILE_20A_VIEWPORT_GUARD=PASS");
 console.log("MOBILE_20A_SCROLL_VIEWPORT_GUARD=PASS");
+console.log("MOBILE_20A_KO_ANALYZE_FRAME_GUARD=PASS");
 console.log("MOBILE_20A_LOCALE_SESSION_ISOLATION=PASS");
 console.log("MOBILE_20A_PLACEHOLDER_EXCLUSION=PASS");
 console.log("MOBILE_20A_DUAL_CAMERA_CONTRACT=PASS");
+console.log("MOBILE_20A_PRE_EMULATOR_SINGLE_SHELL=PASS");
 console.log("MOBILE_20A_EXACT_HEAD_WORKFLOW=PASS");
 console.log("MOBILE_20A_STORE_CAPTURE=PASS");
