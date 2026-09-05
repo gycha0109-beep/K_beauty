@@ -88,20 +88,38 @@ for (const pattern of forbiddenClaimPatterns) {
 
 assert.equal(listing.googlePlay.featureGraphic.status, "asset_pending");
 assert.equal(listing.googlePlay.featureGraphic.requiredSize, "1024x500");
-assert.equal(listing.googlePlay.phoneScreenshots.status, "asset_pending");
+assert.equal(listing.googlePlay.phoneScreenshots.status, "repository_capture_visual_approved");
 assert.ok(listing.googlePlay.phoneScreenshots.submissionMinimum >= 2);
 assert.ok(listing.googlePlay.phoneScreenshots.targetCount >= 4);
-assert.equal(listing.screenshotPlan.status, "capture_assets_pending");
+assert.equal(listing.googlePlay.phoneScreenshots.targetPortraitSize, "1080x1920");
+assert.deepEqual(listing.googlePlay.phoneScreenshots.captureOwners, ["MOBILE-20A", "MOBILE-20B"]);
+assert.deepEqual(listing.googlePlay.phoneScreenshots.captureFrames, ["home", "analyze", "results", "diary"]);
+assert.equal(listing.googlePlay.phoneScreenshots.consoleSubmissionStatus, "external_pending");
+
+assert.equal(listing.appStore.screenshots.status, "repository_capture_visual_approved_submission_packaging_pending");
+assert.equal(listing.appStore.screenshots.captureSize, "1080x1920");
+assert.deepEqual(listing.appStore.screenshots.captureOwners, ["MOBILE-20A", "MOBILE-20B"]);
+assert.equal(listing.appStore.screenshots.submissionPackagingStatus, "pending");
+
+assert.equal(listing.screenshotPlan.status, "repository_capture_visual_approved");
+assert.deepEqual(listing.screenshotPlan.captureOwners, ["MOBILE-20A", "MOBILE-20B"]);
+assert.deepEqual(listing.screenshotPlan.captureLanguages, ["en", "ko"]);
+assert.match(listing.screenshotPlan.validationPolicy, /new candidate head invalidates prior exact-head screenshot approval/i);
+assert.match(listing.screenshotPlan.validationPolicy, /merged-main must be re-captured and visually reviewed again/i);
+
 assert.equal(listing.appStore.supportUrl.status, "repository_route_implemented_external_contact_pending");
 assert.equal(listing.appStore.supportUrl.value, "https://k-beauty-two.vercel.app/support");
 assert.equal(listing.appStore.supportUrl.englishValue, "https://k-beauty-two.vercel.app/en/support");
 assert.equal(listing.appStore.supportUrl.contactEnvironmentKey, "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL");
 assert.equal(listing.appStore.supportUrl.contactStatus, "external_pending");
 assert.equal(listing.repositoryPending.includes("app_store_support_route_and_url"), false);
-assert.ok(listing.repositoryPending.includes("app_store_screenshots"));
-assert.ok(listing.repositoryPending.includes("google_play_phone_screenshots"));
+assert.equal(listing.repositoryPending.includes("app_store_screenshots"), false);
+assert.equal(listing.repositoryPending.includes("google_play_phone_screenshots"), false);
+assert.ok(listing.repositoryPending.includes("app_store_screenshot_submission_packaging"));
 assert.ok(listing.repositoryPending.includes("google_play_feature_graphic"));
 assert.ok(listing.externalPending.includes("public_support_contact_configuration"));
+assert.ok(listing.externalPending.includes("app_store_connect_metadata_submission"));
+assert.ok(listing.externalPending.includes("google_play_console_metadata_submission"));
 
 assert.equal(claims.scope.finalMarketingCopyFrozen, true);
 assert.equal(claims.finalCopyGate.status, "copy_frozen_assets_pending");
@@ -111,4 +129,5 @@ console.log("MOBILE_18_APP_STORE_METADATA_LIMITS=PASS");
 console.log("MOBILE_18_GOOGLE_PLAY_METADATA_LIMITS=PASS");
 console.log("MOBILE_18_HEALTH_LISTING_BOUNDARY=PASS");
 console.log("MOBILE_18_COSMETIC_CLAIM_BOUNDARY=PASS");
-console.log("MOBILE_18_SUPPORT_URL_FROZEN_ASSETS_PENDING=PASS");
+console.log("MOBILE_18_SCREENSHOT_CAPTURE_VISUAL_APPROVAL=PASS");
+console.log("MOBILE_18_SUPPORT_URL_FROZEN_REMAINING_ASSETS_PENDING=PASS");
