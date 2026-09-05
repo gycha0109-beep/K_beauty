@@ -255,6 +255,34 @@
     "customAndroidAdaptiveIconStatus": "non_blocking_separate_layer_asset_not_configured",
     "sourceContractStatus": "repository_implemented"
   },
+  "mobile20StoreCaptureContract": {
+    "targetPortraitSize": "1080x1920",
+    "languages": ["en", "ko"],
+    "frames": ["home", "analyze", "results", "diary"],
+    "homeAnalyze": {
+      "owner": "MOBILE-20A",
+      "workflow": ".github/workflows/mobile-20a-store-capture.yml",
+      "repositoryStatus": "merged_capture_contract"
+    },
+    "resultsDiary": {
+      "owner": "MOBILE-20B",
+      "workflow": ".github/workflows/mobile-20b-store-capture.yml",
+      "fixtureVersion": "mobile-20b-v1",
+      "repositoryStatus": "capture_contract_implemented"
+    },
+    "screenshotCaptureStatus": "repository_capture_visual_approved",
+    "validationPolicy": "Any new candidate head invalidates prior exact-head screenshot approval. Final release authority requires fresh exact-head artifact visual review and a separate merged-main artifact visual review.",
+    "storeAssetsFrozen": false,
+    "remainingRepositoryAssetBlockers": [
+      "google_play_feature_graphic",
+      "app_store_screenshot_submission_packaging"
+    ],
+    "remainingExternalBlockers": [
+      "public_support_contact_configuration",
+      "app_store_connect_metadata_submission",
+      "google_play_console_metadata_submission"
+    ]
+  },
   "permissionContract": {
     "required": ["camera"],
     "forbiddenUnlessFutureSliceApproves": [
@@ -312,7 +340,7 @@
       "id": "store_listing_assets",
       "status": "pending",
       "owner": "MOBILE-16",
-      "reason": "The Google Play 512x512 listing icon is repository-frozen by MOBILE-16H; App Store/Play screenshots, feature/promotional graphics and remaining final listing assets are still pending."
+      "reason": "The Google Play 512x512 listing icon and deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set are implemented and visually qualified by MOBILE-16H/MOBILE-20A/MOBILE-20B. Google Play feature graphic and App Store screenshot submission packaging remain repository-pending; support-contact and store-console submission authority remain external."
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
@@ -348,7 +376,7 @@
       "id": "ai_skin_analysis_claim_review",
       "status": "repository_claim_boundary_ready_final_listing_copy_pending",
       "owner": "MOBILE-16F",
-      "reason": "The repository now freezes allowed cosmetic skin-care positioning and prohibits diagnostic, treatment, clinical-accuracy, medical-device and guaranteed-efficacy claims in final store metadata. The existing MOBILE-16D Play-description disclaimer remains store-only; final title/description/screenshots/promotional copy still require review before submission."
+      "reason": "The repository now freezes allowed cosmetic skin-care positioning and prohibits diagnostic, treatment, clinical-accuracy, medical-device and guaranteed-efficacy claims in final store metadata. The existing MOBILE-16D Play-description disclaimer remains store-only; final title/description/promotional copy and remaining non-screenshot store assets still require review before submission."
     }
   ],
   "externalBlockers": [
@@ -391,7 +419,8 @@
       "iOS distribution certificate, App Store provisioning profile, Apple token-revocation credentials and export-options authority are injected only at workflow/runtime authority boundaries.",
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
       "Known store compliance and external-authority blockers remain explicit and fail-visible.",
-      "MOBILE-16H source-freezes BEJEWELY production launcher icons (root/Android and iOS light/dark) plus the 512x512 Google Play listing icon from audited opaque brand artwork; a custom Android adaptive-layer asset remains a non-blocking optimization."
+      "MOBILE-16H source-freezes BEJEWELY production launcher icons (root/Android and iOS light/dark) plus the 512x512 Google Play listing icon from audited opaque brand artwork; a custom Android adaptive-layer asset remains a non-blocking optimization.",
+      "MOBILE-20A and MOBILE-20B provide deterministic bilingual 1080x1920 repository capture contracts for Home, Analyze, Results and signed-in Diary; every candidate head and merged-main release authority still requires its own fresh artifact and direct visual review."
     ],
     "passDoesNotMean": [
       "App Store or Google Play submission readiness.",
@@ -407,7 +436,7 @@
       "Any medical-device regulatory determination has been made for BEJEWELY; the repository only freezes product non-claims and intended Play declaration metadata.",
       "Apple has calculated or accepted the final BEJEWELY age rating.",
       "IARC or Google Play has calculated or accepted the final BEJEWELY content rating or Target Audience & Content answers.",
-      "Final App Store or Google Play listing copy, screenshots, promotional text or graphics have been authored, approved or submitted.",
+      "The repository-approved screenshot capture set has been uploaded to App Store Connect or Google Play Console, or App Store device-size screenshot submission packaging has completed.",
       "Supabase/OpenAI processor-contract status or OpenAI Zero Data Retention has been externally verified.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Physical-device validation."
