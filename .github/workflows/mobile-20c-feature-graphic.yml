@@ -1,0 +1,78 @@
+name: BEJEWELY Mobile 20C Feature Graphic
+
+on:
+  push:
+    paths:
+      - '.github/workflows/mobile-20c-feature-graphic.yml'
+      - 'scripts/mobile-20c-feature-graphic.mjs'
+      - 'apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
+      - 'apps/mobile/store-readiness.json'
+      - 'docs/store/mobile-store-listing-final.json'
+      - 'docs/store/mobile-20c-feature-graphic-verification.md'
+  pull_request:
+    paths:
+      - '.github/workflows/mobile-20c-feature-graphic.yml'
+      - 'scripts/mobile-20c-feature-graphic.mjs'
+      - 'apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
+      - 'apps/mobile/store-readiness.json'
+      - 'docs/store/mobile-store-listing-final.json'
+      - 'docs/store/mobile-20c-feature-graphic-verification.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  feature-graphic:
+    name: Google Play Feature Graphic
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install monorepo dependencies
+        run: npm ci
+
+      - name: Materialize MOBILE-20C candidate when branch asset is missing
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mobile-20c-google-play-feature-graphic'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSET='apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
+          if [[ ! -f "$ASSET" ]]; then
+            node scripts/mobile-20c-feature-graphic.mjs --materialize
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add "$ASSET" apps/mobile/store-readiness.json docs/store/mobile-store-listing-final.json
+            git commit -m 'assets(mobile): materialize MOBILE-20C feature graphic'
+            git push origin HEAD:mobile-20c-google-play-feature-graphic
+          fi
+
+      - name: Bind verifier to checked-out HEAD
+        shell: bash
+        run: echo "MOBILE_20C_EXPECTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Verify MOBILE-20C feature graphic
+        run: node scripts/mobile-20c-feature-graphic.mjs --verify
+
+      - name: Require clean generated authority
+        shell: bash
+        run: git diff --exit-code
+
+      - name: Upload MOBILE-20C feature graphic
+        uses: actions/upload-artifact@v4
+        with:
+          name: bejewely-mobile-20c-feature-graphic-${{ env.MOBILE_20C_EXPECTED_SHA }}
+          path: .mobile-20c-feature-graphic-artifacts/
+          if-no-files-found: error
+          retention-days: 14
