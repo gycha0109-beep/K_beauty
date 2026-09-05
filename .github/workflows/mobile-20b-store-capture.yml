@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "apps/mobile/app/_layout.tsx"
       - "apps/mobile/app/store-capture.tsx"
       - "apps/mobile/app/my.tsx"
       - "apps/mobile/features/my/NativeMyDiaryView.tsx"
@@ -15,6 +16,7 @@ on:
       - ".github/workflows/mobile-20b-store-capture.yml"
   push:
     paths:
+      - "apps/mobile/app/_layout.tsx"
       - "apps/mobile/app/store-capture.tsx"
       - "apps/mobile/app/my.tsx"
       - "apps/mobile/features/my/NativeMyDiaryView.tsx"
