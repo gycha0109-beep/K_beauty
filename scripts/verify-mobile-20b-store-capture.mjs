@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -30,6 +31,8 @@ function verifySource() {
   const resultView = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
   const diaryView = read("apps/mobile/features/my/NativeMyDiaryView.tsx");
   const captureScript = read("scripts/capture-mobile-20b-store-assets.sh");
+  const workflow = read(".github/workflows/mobile-20b-store-capture.yml");
+  const verifier = read("scripts/verify-mobile-20b-store-capture.mjs");
   const appJson = read("apps/mobile/app.json");
   requireText(route, "__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === \"1\"", "route guard");
   requireText(route, "NativeAnalyzeResultView", "production results reuse");
@@ -55,6 +58,10 @@ function verifySource() {
   requireText(captureScript, 'tap_text_from_dump "$xml_path" "Close app"', "Quickstep scoped close action");
   requireText(captureScript, "MOBILE_20B_QUICKSTEP_ANR_RECOVERY=PASS", "Quickstep recovery evidence");
   requireText(captureScript, 'launch_scenario "$scenario"', "scenario-preserving recovery restart");
+  requireText(workflow, 'ref: ${{ github.event.pull_request.head.sha || github.sha }}', "exact-head checkout");
+  requireText(workflow, 'MOBILE_20B_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}', "exact-head verifier binding");
+  requireText(verifier, 'execFileSync("git", ["rev-parse", "HEAD"]', "manifest checkout SHA authority");
+  requireText(verifier, "process.env.MOBILE_20B_EXPECTED_SHA", "manifest expected SHA assertion");
   forbidText(appJson, "EXPO_PUBLIC_STORE_CAPTURE_MODE", "app.json permanent fixture enablement");
   for (const token of ["access_token", "@gmail", "@naver", "@kakao", "supabase.co", "service_role", "openai_api_key"]) forbidText(fixture.toLowerCase(), token, "fixture secret/PII boundary");
   for (const token of ["fetch(", "getnativesession", "signinnative", "savenativecheckin", "supabase", "openai"]) forbidText(route.toLowerCase(), token, "store route live dependency");
@@ -84,9 +91,22 @@ function findBounds(xml, marker) {
   return null;
 }
 
+function resolveCheckedOutSha() {
+  let checkedOutSha = "";
+  try {
+    checkedOutSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  } catch (error) {
+    fail(`unable to resolve checked-out SHA: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (!/^[0-9a-f]{40}$/.test(checkedOutSha)) fail(`invalid checked-out SHA: ${checkedOutSha}`);
+  const expectedSha = process.env.MOBILE_20B_EXPECTED_SHA;
+  if (expectedSha && checkedOutSha !== expectedSha) fail(`checked-out SHA mismatch: expected ${expectedSha}, got ${checkedOutSha}`);
+  return checkedOutSha;
+}
+
 function verifyArtifact(dirArg) {
   const dir = path.resolve(root, dirArg || "apps/mobile/.mobile-20b-store-artifacts");
-  const manifest = { exactSha: process.env.GITHUB_SHA || "local", fixtureVersion: "mobile-20b-v1", screens: [] };
+  const manifest = { exactSha: resolveCheckedOutSha(), fixtureVersion: "mobile-20b-v1", screens: [] };
   const forbidden = ["Quickstep", "isn't responding", "ANR", "Auth unavailable", "Sign in with Google", "Sign in with Apple", "로그인 필요", "No profile", "프로필 없음", "network error", "analysis failed", "store-capture"];
   for (const [id, file, xmlFile, markers] of screens) {
     const buffer = fs.readFileSync(path.join(dir, file));
@@ -105,6 +125,7 @@ function verifyArtifact(dirArg) {
     manifest.screens.push({ id, file, width, height, sha256: crypto.createHash("sha256").update(buffer).digest("hex"), requiredMarkers: markers, markerBounds, technicalPass: true });
   }
   fs.writeFileSync(path.join(dir, "capture-manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`MOBILE_20B_ARTIFACT_SHA=${manifest.exactSha}`);
   console.log("MOBILE_20B_ARTIFACT_CONTRACT=PASS");
 }
 
