@@ -63,8 +63,6 @@ capture() {
   adb shell am force-stop "$PACKAGE_ID" >/dev/null 2>&1 || true
   adb shell pm clear "$PACKAGE_ID" >/dev/null
   adb reverse tcp:8081 tcp:8081 >/dev/null
-  adb shell am start -W -n "$PACKAGE_ID/.MainActivity" >/dev/null
-  sleep 3
   adb shell am start -W -a android.intent.action.VIEW -d "bejewely://store-capture?scenario=$scenario" "$PACKAGE_ID" >/dev/null
   local found=0
   for _ in $(seq 1 45); do
