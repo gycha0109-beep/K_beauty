@@ -338,7 +338,8 @@
       "EXPO_PUBLIC_API_BASE_URL",
       "EXPO_PUBLIC_SUPABASE_URL",
       "EXPO_PUBLIC_SUPABASE_ANON_KEY",
-      "NODE_ENV"
+      "NODE_ENV",
+      "EXPO_PUBLIC_STORE_CAPTURE_MODE"
     ],
     "serverSecretsAllowed": false,
     "productionTransport": "https_only_for_api_and_supabase_fail_closed"
@@ -378,7 +379,7 @@
       "id": "store_listing_assets",
       "status": "pending",
       "owner": "MOBILE-16",
-      "reason": "The Google Play 512x512 listing icon and deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set are implemented and visually qualified by MOBILE-16H/MOBILE-20A/MOBILE-20B. Google Play feature graphic and App Store screenshot submission packaging remain repository-pending; support-contact and store-console submission authority remain external."
+      "reason": "The 512x512 listing icon is repository-frozen, the deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set is visually qualified by MOBILE-20A/MOBILE-20B, and the Google Play 1024x500 feature graphic is repository-qualified by MOBILE-20C. App Store screenshot submission packaging remains repository-pending; support-contact configuration, App Store Connect metadata, and Google Play Console metadata remain external."
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
