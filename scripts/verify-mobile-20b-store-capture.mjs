@@ -29,6 +29,7 @@ function verifySource() {
   const fixture = read("apps/mobile/features/store-capture/store-capture-fixtures.ts");
   const resultView = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
   const diaryView = read("apps/mobile/features/my/NativeMyDiaryView.tsx");
+  const captureScript = read("scripts/capture-mobile-20b-store-assets.sh");
   const appJson = read("apps/mobile/app.json");
   requireText(route, "__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === \"1\"", "route guard");
   requireText(route, "NativeAnalyzeResultView", "production results reuse");
@@ -49,6 +50,11 @@ function verifySource() {
   requireText(fixture, "2026-09-03", "fixed capture date");
   requireText(fixture, "6d560546-80f1-4ccf-9d2c-34023722d2a7", "catalog product authority");
   requireText(fixture, "d7bb44e4-d585-41ca-8a74-04781470d1de", "catalog alternative authority");
+  requireText(captureScript, "QUICKSTEP_RECOVERY_LIMIT=2", "bounded Quickstep recovery");
+  requireText(captureScript, "Quickstep isn't responding", "Quickstep ANR detection");
+  requireText(captureScript, 'tap_text_from_dump "$xml_path" "Close app"', "Quickstep scoped close action");
+  requireText(captureScript, "MOBILE_20B_QUICKSTEP_ANR_RECOVERY=PASS", "Quickstep recovery evidence");
+  requireText(captureScript, 'launch_scenario "$scenario"', "scenario-preserving recovery restart");
   forbidText(appJson, "EXPO_PUBLIC_STORE_CAPTURE_MODE", "app.json permanent fixture enablement");
   for (const token of ["access_token", "@gmail", "@naver", "@kakao", "supabase.co", "service_role", "openai_api_key"]) forbidText(fixture.toLowerCase(), token, "fixture secret/PII boundary");
   for (const token of ["fetch(", "getnativesession", "signinnative", "savenativecheckin", "supabase", "openai"]) forbidText(route.toLowerCase(), token, "store route live dependency");
