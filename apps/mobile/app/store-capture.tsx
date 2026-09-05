@@ -87,17 +87,7 @@ function localizedDiary(locale: "en" | "ko"): NativeMyDashboard {
     latestSavedReport: STORE_DIARY_DASHBOARD_FIXTURE.latestSavedReport ? {
       ...STORE_DIARY_DASHBOARD_FIXTURE.latestSavedReport,
       title: "스킨 매치 · 9월 3일"
-    } : null,
-    recentTrendCheckins: recent.map((checkin, index) => ({
-      ...checkin,
-      memo: index === 0
-        ? "오늘은 편안하고 균형 잡힌 피부 상태입니다."
-        : "세안 후 약간 건조했지만 보습 후 편안해졌습니다."
-    })),
-    monthlyDiaryCheckins: diary.map((checkin) => ({
-      ...checkin,
-      memo: "오늘은 편안하고 균형 잡힌 피부 상태입니다."
-    }))
+    } : null
   };
 }
 
