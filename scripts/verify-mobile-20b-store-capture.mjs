@@ -18,6 +18,7 @@ const screens = [
 
 function verifySource() {
   const route = read("apps/mobile/app/store-capture.tsx");
+  const layout = read("apps/mobile/app/_layout.tsx");
   const my = read("apps/mobile/app/my.tsx");
   const fixture = read("apps/mobile/features/store-capture/store-capture-fixtures.ts");
   const resultView = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
@@ -26,6 +27,7 @@ function verifySource() {
   requireText(route, "__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === \"1\"", "route guard");
   requireText(route, "NativeAnalyzeResultView", "production results reuse");
   requireText(route, "NativeMyDiaryView", "production diary reuse");
+  requireText(layout, '<Tabs.Screen name="store-capture" options={{ href: null, headerShown: false }} />', "hidden store capture chrome");
   requireText(my, "NativeMyDiaryView", "My production presentation reuse");
   requireText(resultView, "Top pick", "results production presentation");
   requireText(diaryView, "Latest saved report", "diary saved report presentation");
@@ -66,7 +68,7 @@ function findBounds(xml, marker) {
 function verifyArtifact(dirArg) {
   const dir = path.resolve(root, dirArg || "apps/mobile/.mobile-20b-store-artifacts");
   const manifest = { exactSha: process.env.GITHUB_SHA || "local", fixtureVersion: "mobile-20b-v1", screens: [] };
-  const forbidden = ["Quickstep", "isn't responding", "ANR", "Auth unavailable", "Sign in with Google", "Sign in with Apple", "로그인 필요", "No profile", "프로필 없음", "network error", "analysis failed"];
+  const forbidden = ["Quickstep", "isn't responding", "ANR", "Auth unavailable", "Sign in with Google", "Sign in with Apple", "로그인 필요", "No profile", "프로필 없음", "network error", "analysis failed", "store-capture"];
   for (const [id, file, xmlFile, markers] of screens) {
     const buffer = fs.readFileSync(path.join(dir, file));
     if (buffer.length < 15000) fail(`${file}: suspiciously small image`);
