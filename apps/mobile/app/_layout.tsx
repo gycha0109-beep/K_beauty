@@ -182,6 +182,7 @@ function NativeTabs() {
         <Tabs.Screen name="r/[shareId]" options={{ href: null, title: publicResultTitle }} />
         <Tabs.Screen name="premium" options={{ href: null, title: premiumTitle }} />
         <Tabs.Screen name="auth/callback" options={{ href: null, title: "Auth" }} />
+        <Tabs.Screen name="store-capture" options={{ href: null, headerShown: false }} />
       </Tabs>
     </>
   );

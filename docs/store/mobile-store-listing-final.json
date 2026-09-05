@@ -8,7 +8,7 @@
     "finalMarketingCopyFrozen": true,
     "storeAssetsFrozen": false,
     "appStoreSupportUrlFrozen": true,
-    "purpose": "Freeze submission-ready App Store and Google Play listing copy plus the public App Store Support URL while keeping screenshots, feature graphics, support-contact configuration and console submission explicit."
+    "purpose": "Freeze submission-ready App Store and Google Play listing copy plus the public App Store Support URL, and record repository-qualified bilingual screenshot captures while keeping feature graphics, App Store screenshot submission packaging, support-contact configuration and console submission explicit."
   },
   "metadataConstraints": {
     "appStore": {
@@ -57,6 +57,15 @@
       "contactStatus": "external_pending",
       "reason": "The public Korean and English support routes are implemented. A valid public support email is displayed only when the existing public contact environment value is configured."
     },
+    "screenshots": {
+      "status": "repository_capture_visual_approved_submission_packaging_pending",
+      "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
+      "captureLanguages": ["en", "ko"],
+      "captureFrames": ["home", "analyze", "results", "diary"],
+      "captureSize": "1080x1920",
+      "submissionPackagingStatus": "pending",
+      "reason": "The deterministic repository capture set is visually qualified in English and Korean. App Store device-size packaging and App Store Connect upload remain separate authority and are not claimed complete."
+    },
     "localizations": {
       "en-US": {
         "subtitle": "Personalized K-beauty routine",
@@ -80,10 +89,14 @@
       "requiredSize": "1024x500"
     },
     "phoneScreenshots": {
-      "status": "asset_pending",
+      "status": "repository_capture_visual_approved",
       "submissionMinimum": 2,
       "targetCount": 4,
-      "targetPortraitSize": "1080x1920"
+      "targetPortraitSize": "1080x1920",
+      "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
+      "captureLanguages": ["en", "ko"],
+      "captureFrames": ["home", "analyze", "results", "diary"],
+      "consoleSubmissionStatus": "external_pending"
     },
     "localizations": {
       "en-US": {
@@ -97,8 +110,11 @@
     }
   },
   "screenshotPlan": {
-    "status": "capture_assets_pending",
+    "status": "repository_capture_visual_approved",
     "sourceOfTruth": "production mobile runtime after MOBILE-17A",
+    "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
+    "captureLanguages": ["en", "ko"],
+    "validationPolicy": "Any new candidate head invalidates prior exact-head screenshot approval. Final release authority requires fresh exact-head CI/artifact plus direct visual review, and merged-main must be re-captured and visually reviewed again.",
     "doNotUseAsFinalAssets": [
       "CI simulator screens that display unavailable camera or sign-in states",
       "development/debug labels",
@@ -112,8 +128,7 @@
     ]
   },
   "repositoryPending": [
-    "app_store_screenshots",
-    "google_play_phone_screenshots",
+    "app_store_screenshot_submission_packaging",
     "google_play_feature_graphic"
   ],
   "externalPending": [
