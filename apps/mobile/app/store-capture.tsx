@@ -1,4 +1,5 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -9,6 +10,7 @@ import {
   STORE_DIARY_DASHBOARD_FIXTURE,
   STORE_RESULTS_FIXTURE
 } from "../features/store-capture/store-capture-fixtures";
+import type { NativeMyDashboard } from "../lib/my";
 import { useMobileShell } from "../lib/mobile-shell";
 
 type StoreScenario = "results-en" | "diary-en" | "results-ko" | "diary-ko";
@@ -43,17 +45,82 @@ function localizedResult(locale: "en" | "ko"): NativeAnalyzeResult {
   };
 }
 
+function localizedDiary(locale: "en" | "ko"): NativeMyDashboard {
+  const recent = STORE_DIARY_DASHBOARD_FIXTURE.recentTrendCheckins.slice(0, 2);
+  const diary = STORE_DIARY_DASHBOARD_FIXTURE.monthlyDiaryCheckins.slice(0, 1);
+
+  if (locale === "en") {
+    return {
+      ...STORE_DIARY_DASHBOARD_FIXTURE,
+      recentTrendCheckins: recent,
+      monthlyDiaryCheckins: diary
+    };
+  }
+
+  return {
+    ...STORE_DIARY_DASHBOARD_FIXTURE,
+    latestSkinProfile: STORE_DIARY_DASHBOARD_FIXTURE.latestSkinProfile ? {
+      ...STORE_DIARY_DASHBOARD_FIXTURE.latestSkinProfile,
+      skin_type: "복합성",
+      concerns: ["수분 부족", "붉음"],
+      sensitivity_level: "보통"
+    } : null,
+    todayCheckin: STORE_DIARY_DASHBOARD_FIXTURE.todayCheckin ? {
+      ...STORE_DIARY_DASHBOARD_FIXTURE.todayCheckin,
+      memo: "간단한 아침 루틴 후 피부가 편안했습니다."
+    } : null,
+    recentTrendCheckins: recent.map((checkin, index) => ({
+      ...checkin,
+      memo: index === 0
+        ? "오늘은 편안하고 균형 잡힌 피부 상태입니다."
+        : "세안 후 약간 건조했지만 보습 후 편안해졌습니다."
+    })),
+    monthlyDiaryCheckins: diary.map((checkin) => ({
+      ...checkin,
+      memo: "오늘은 편안하고 균형 잡힌 피부 상태입니다."
+    })),
+    todayRoutine: STORE_DIARY_DASHBOARD_FIXTURE.todayRoutine ? {
+      ...STORE_DIARY_DASHBOARD_FIXTURE.todayRoutine,
+      am_routine: ["순한 세안", "보습", "자외선 차단"],
+      pm_routine: ["순한 세안", "보습"]
+    } : null,
+    latestSavedReport: STORE_DIARY_DASHBOARD_FIXTURE.latestSavedReport ? {
+      ...STORE_DIARY_DASHBOARD_FIXTURE.latestSavedReport,
+      title: "스킨 매치 · 9월 3일"
+    } : null,
+    recentTrendCheckins: recent.map((checkin, index) => ({
+      ...checkin,
+      memo: index === 0
+        ? "오늘은 편안하고 균형 잡힌 피부 상태입니다."
+        : "세안 후 약간 건조했지만 보습 후 편안해졌습니다."
+    })),
+    monthlyDiaryCheckins: diary.map((checkin) => ({
+      ...checkin,
+      memo: "오늘은 편안하고 균형 잡힌 피부 상태입니다."
+    }))
+  };
+}
+
 export default function StoreCaptureScreen() {
   const params = useLocalSearchParams<{ scenario?: string }>();
-  const { palette } = useMobileShell();
+  const { locale: shellLocale, palette, setLocale } = useMobileShell();
   const scenario = params.scenario;
   const enabled = __DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === "1";
+  const validScenario = enabled && isScenario(scenario);
+  const locale: "en" | "ko" = validScenario && scenario.endsWith("-ko") ? "ko" : "en";
 
-  if (!enabled || !isScenario(scenario)) {
+  useEffect(() => {
+    if (validScenario && shellLocale !== locale) setLocale(locale);
+  }, [locale, setLocale, shellLocale, validScenario]);
+
+  if (!validScenario) {
     return <Redirect href="/" />;
   }
 
-  const locale = scenario.endsWith("-ko") ? "ko" : "en";
+  if (shellLocale !== locale) {
+    return <View style={[styles.localeGate, { backgroundColor: palette.background }]} />;
+  }
+
   const isResults = scenario.startsWith("results-");
 
   return (
@@ -71,7 +138,7 @@ export default function StoreCaptureScreen() {
           ) : (
             <NativeMyDiaryView
               locale={locale}
-              dashboard={STORE_DIARY_DASHBOARD_FIXTURE}
+              dashboard={localizedDiary(locale)}
               palette={palette}
               showSignedInState
             />
@@ -84,6 +151,7 @@ export default function StoreCaptureScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
+  localeGate: { flex: 1 },
   content: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 28, paddingBottom: 36 },
   column: { width: "100%", maxWidth: 720, alignSelf: "center" }
 });
