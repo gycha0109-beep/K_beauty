@@ -19,6 +19,7 @@ type MobilePalette = {
 
 type MobileShellValue = {
   locale: SupportedLocale;
+  setLocale: (locale: SupportedLocale) => void;
   toggleLocale: () => void;
   themeMode: ThemeMode;
   palette: MobilePalette;
@@ -65,6 +66,7 @@ export function MobileShellProvider({ children }: { children: ReactNode }) {
   const value = useMemo<MobileShellValue>(
     () => ({
       locale,
+      setLocale,
       toggleLocale: () => setLocale((current) => (current === "ko" ? "en" : "ko")),
       themeMode,
       palette
