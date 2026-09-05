@@ -48,6 +48,8 @@ jobs:
     name: Android Store Capture
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      MOBILE_20B_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v6
