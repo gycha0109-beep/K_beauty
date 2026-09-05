@@ -10,15 +10,21 @@ const requireText = (text, marker, label) => { if (!text.includes(marker)) fail(
 const forbidText = (text, marker, label) => { if (text.includes(marker)) fail(`${label}: forbidden ${marker}`); };
 
 const screens = [
-  ["results-en", "03-results-en-1080x1920.png", "03-results-en-window.xml", ["Skin analysis result", "PERSONALIZED SKIN-CARE ROUTINE", "Top pick", "Alternative", "닥터지", "라운드랩"]],
-  ["diary-en", "04-diary-en-1080x1920.png", "04-diary-en-window.xml", ["Signed in", "Active skin profile", "Skin type", "Sensitivity", "Recent 7 days", "Skin diary", "Latest saved report"]],
-  ["results-ko", "03-results-ko-1080x1920.png", "03-results-ko-window.xml", ["피부 분석 결과", "맞춤 스킨케어 루틴", "요약", "우선 추천", "대안", "닥터지", "라운드랩"]],
-  ["diary-ko", "04-diary-ko-1080x1920.png", "04-diary-ko-window.xml", ["로그인 상태", "현재 피부 프로필", "피부 타입", "민감도", "최근 7일", "스킨 다이어리", "최근 저장 리포트"]]
+  ["results-en", "03-results-en-1080x1920.png", "03-results-en-window.xml", ["Skin analysis result", "PERSONALIZED SKIN-CARE ROUTINE", "Top pick", "Alternative", "닥터지", "라운드랩", "Home", "Analyze", "My"]],
+  ["diary-en", "04-diary-en-1080x1920.png", "04-diary-en-window.xml", ["Signed in", "Active skin profile", "Skin type", "Sensitivity", "Recent 7 days", "Skin diary", "Latest saved report", "Skin Match · Sep 3", "Home", "Analyze", "My"]],
+  ["results-ko", "03-results-ko-1080x1920.png", "03-results-ko-window.xml", ["피부 분석 결과", "맞춤 스킨케어 루틴", "요약", "우선 추천", "대안", "닥터지", "라운드랩", "홈", "분석", "마이"]],
+  ["diary-ko", "04-diary-ko-1080x1920.png", "04-diary-ko-window.xml", ["로그인 상태", "현재 피부 프로필", "피부 타입", "복합성", "수분 부족, 붉음", "민감도", "보통", "최근 7일", "스킨 다이어리", "오늘은 편안하고 균형 잡힌 피부 상태입니다.", "최근 저장 리포트", "스킨 매치 · 9월 3일", "홈", "분석", "마이"]]
 ];
+
+const screenForbidden = {
+  "results-ko": ['text="Home"', 'text="Analyze"', 'text="My"'],
+  "diary-ko": ['text="Home"', 'text="Analyze"', 'text="My"', "combination", "dehydration", "moderate", "Comfortable and balanced", "Slight dryness after cleansing", "Skin Match · Sep 3"]
+};
 
 function verifySource() {
   const route = read("apps/mobile/app/store-capture.tsx");
   const layout = read("apps/mobile/app/_layout.tsx");
+  const shell = read("apps/mobile/lib/mobile-shell.tsx");
   const my = read("apps/mobile/app/my.tsx");
   const fixture = read("apps/mobile/features/store-capture/store-capture-fixtures.ts");
   const resultView = read("apps/mobile/features/analyze/NativeAnalyzeResult.tsx");
@@ -27,6 +33,13 @@ function verifySource() {
   requireText(route, "__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === \"1\"", "route guard");
   requireText(route, "NativeAnalyzeResultView", "production results reuse");
   requireText(route, "NativeMyDiaryView", "production diary reuse");
+  requireText(route, "setLocale(locale)", "deterministic capture shell locale");
+  requireText(route, "shellLocale !== locale", "capture locale render gate");
+  requireText(route, "recentTrendCheckins.slice(0, 2)", "compact diary recent narrative");
+  requireText(route, "monthlyDiaryCheckins.slice(0, 1)", "compact diary visible saved report");
+  requireText(route, 'skin_type: "복합성"', "localized Korean diary profile");
+  requireText(route, 'title: "스킨 매치 · 9월 3일"', "localized Korean saved report");
+  requireText(shell, "setLocale: (locale: SupportedLocale) => void", "mobile shell explicit locale setter");
   requireText(layout, '<Tabs.Screen name="store-capture" options={{ href: null, headerShown: false }} />', "hidden store capture chrome");
   requireText(my, "NativeMyDiaryView", "My production presentation reuse");
   requireText(resultView, "Top pick", "results production presentation");
@@ -76,6 +89,7 @@ function verifyArtifact(dirArg) {
     if (width !== 1080 || height !== 1920) fail(`${file}: expected 1080x1920, got ${width}x${height}`);
     const xml = fs.readFileSync(path.join(dir, xmlFile), "utf8");
     for (const bad of forbidden) if (xml.toLowerCase().includes(bad.toLowerCase())) fail(`${xmlFile}: forbidden UI marker ${bad}`);
+    for (const bad of screenForbidden[id] || []) forbidText(xml, bad, `${xmlFile} locale purity`);
     const markerBounds = {};
     for (const marker of markers) {
       const box = findBounds(xml, marker);
