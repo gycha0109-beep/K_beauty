@@ -75,4 +75,5 @@ jobs:
           name: bejewely-mobile-20c-feature-graphic-${{ env.MOBILE_20C_EXPECTED_SHA }}
           path: .mobile-20c-feature-graphic-artifacts/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
