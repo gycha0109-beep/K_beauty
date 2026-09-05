@@ -21,6 +21,15 @@ The repository asset must be reproducible from `scripts/mobile-20c-feature-graph
 - `apps/mobile/store-readiness.json` records the MOBILE-20C contract and no longer lists `google_play_feature_graphic` as a repository blocker
 - `app_store_screenshot_submission_packaging` remains explicitly pending
 
+## Integration remediation
+
+MOBILE-20C also keeps existing store-release verifiers aligned with the current canonical repository structure without reverting production code to historical layouts:
+
+- MOBILE-18 validates the approved Google Play feature graphic and no longer expects `google_play_feature_graphic` in `repositoryPending`.
+- MOBILE-13 recognizes `EXPO_PUBLIC_STORE_CAPTURE_MODE` as a debug/store-capture public environment key while preserving the `serverSecretsAllowed = false` boundary.
+- My Skin Diary verification follows the `my.tsx` → `NativeMyDiaryView.tsx` presentation split introduced by MOBILE-20B while keeping `dashboard.todayRoutine` on the owning My screen.
+- Production icon assets remain unchanged; `store_listing_assets` stays pending because App Store screenshot submission packaging is still repository-pending and store-console/support-contact work remains external.
+
 ## Visual acceptance
 
 Direct human review of the exact-head workflow artifact must confirm:
