@@ -17,7 +17,10 @@
       "promotionalTextMaxCharacters": 170,
       "descriptionMaxCharacters": 4000,
       "keywordsMaxBytes": 100,
-      "screenshotCount": {"min": 1, "max": 10}
+      "screenshotCount": {
+        "min": 1,
+        "max": 10
+      }
     },
     "googlePlay": {
       "appNameMaxCharacters": 30,
@@ -59,9 +62,20 @@
     },
     "screenshots": {
       "status": "repository_capture_visual_approved_submission_packaging_pending",
-      "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
-      "captureLanguages": ["en", "ko"],
-      "captureFrames": ["home", "analyze", "results", "diary"],
+      "captureOwners": [
+        "MOBILE-20A",
+        "MOBILE-20B"
+      ],
+      "captureLanguages": [
+        "en",
+        "ko"
+      ],
+      "captureFrames": [
+        "home",
+        "analyze",
+        "results",
+        "diary"
+      ],
       "captureSize": "1080x1920",
       "submissionPackagingStatus": "pending",
       "reason": "The deterministic repository capture set is visually qualified in English and Korean. App Store device-size packaging and App Store Connect upload remain separate authority and are not claimed complete."
@@ -85,17 +99,34 @@
     "appName": "BEJEWELY",
     "listingIcon": "apps/mobile/assets/store/bejewely-play-icon-512.png",
     "featureGraphic": {
-      "status": "asset_pending",
-      "requiredSize": "1024x500"
+      "status": "repository_asset_visual_approved",
+      "owner": "MOBILE-20C",
+      "path": "apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png",
+      "requiredSize": "1024x500",
+      "format": "24-bit PNG",
+      "alpha": false,
+      "languageStrategy": "language_neutral_visual_with_bejewely_wordmark",
+      "reason": "Repository-qualified feature graphic extends the BEJEWELY visual language with skin-profile, product-pick, AM/PM routine and diary-continuity motifs without medical or guaranteed-outcome claims."
     },
     "phoneScreenshots": {
       "status": "repository_capture_visual_approved",
       "submissionMinimum": 2,
       "targetCount": 4,
       "targetPortraitSize": "1080x1920",
-      "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
-      "captureLanguages": ["en", "ko"],
-      "captureFrames": ["home", "analyze", "results", "diary"],
+      "captureOwners": [
+        "MOBILE-20A",
+        "MOBILE-20B"
+      ],
+      "captureLanguages": [
+        "en",
+        "ko"
+      ],
+      "captureFrames": [
+        "home",
+        "analyze",
+        "results",
+        "diary"
+      ],
       "consoleSubmissionStatus": "external_pending"
     },
     "localizations": {
@@ -112,8 +143,14 @@
   "screenshotPlan": {
     "status": "repository_capture_visual_approved",
     "sourceOfTruth": "production mobile runtime after MOBILE-17A",
-    "captureOwners": ["MOBILE-20A", "MOBILE-20B"],
-    "captureLanguages": ["en", "ko"],
+    "captureOwners": [
+      "MOBILE-20A",
+      "MOBILE-20B"
+    ],
+    "captureLanguages": [
+      "en",
+      "ko"
+    ],
     "validationPolicy": "Any new candidate head invalidates prior exact-head screenshot approval. Final release authority requires fresh exact-head CI/artifact plus direct visual review, and merged-main must be re-captured and visually reviewed again.",
     "doNotUseAsFinalAssets": [
       "CI simulator screens that display unavailable camera or sign-in states",
@@ -121,15 +158,30 @@
       "signed-out placeholder states when the screenshot is intended to advertise a signed-in feature"
     ],
     "targetFrames": [
-      {"order": 1, "id": "home", "message": "personalized K-beauty entry and primary analysis CTA"},
-      {"order": 2, "id": "analyze", "message": "photo plus short skin survey"},
-      {"order": 3, "id": "results", "message": "skin profile and personalized product picks"},
-      {"order": 4, "id": "diary", "message": "skin diary and saved report continuity"}
+      {
+        "order": 1,
+        "id": "home",
+        "message": "personalized K-beauty entry and primary analysis CTA"
+      },
+      {
+        "order": 2,
+        "id": "analyze",
+        "message": "photo plus short skin survey"
+      },
+      {
+        "order": 3,
+        "id": "results",
+        "message": "skin profile and personalized product picks"
+      },
+      {
+        "order": 4,
+        "id": "diary",
+        "message": "skin diary and saved report continuity"
+      }
     ]
   },
   "repositoryPending": [
-    "app_store_screenshot_submission_packaging",
-    "google_play_feature_graphic"
+    "app_store_screenshot_submission_packaging"
   ],
   "externalPending": [
     "public_support_contact_configuration",
@@ -137,10 +189,25 @@
     "google_play_console_metadata_submission"
   ],
   "policySources": [
-    {"title": "Apple App information", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-information"},
-    {"title": "Apple Platform version information", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information"},
-    {"title": "Apple Screenshot specifications", "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications"},
-    {"title": "Google Play Create and set up your app", "url": "https://support.google.com/googleplay/android-developer/answer/9859152"},
-    {"title": "Google Play Add preview assets", "url": "https://support.google.com/googleplay/android-developer/answer/9866151"}
+    {
+      "title": "Apple App information",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/app-information"
+    },
+    {
+      "title": "Apple Platform version information",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information"
+    },
+    {
+      "title": "Apple Screenshot specifications",
+      "url": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications"
+    },
+    {
+      "title": "Google Play Create and set up your app",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9859152"
+    },
+    {
+      "title": "Google Play Add preview assets",
+      "url": "https://support.google.com/googleplay/android-developer/answer/9866151"
+    }
   ]
 }

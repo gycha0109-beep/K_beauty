@@ -24,7 +24,10 @@
     "iosSubmissionSdkMinimum": "26",
     "androidTargetSdk": 36,
     "androidNativePageSizeKb": 16,
-    "androidNativePageSizeAbiScope": ["arm64-v8a", "x86_64"],
+    "androidNativePageSizeAbiScope": [
+      "arm64-v8a",
+      "x86_64"
+    ],
     "android16KbPlayEnforcementDate": "2027-02-01",
     "bundletoolVersion": "1.18.3",
     "bundletoolSha256": "a099cfa1543f55593bc2ed16a70a7c67fe54b1747bb7301f37fdfd6d91028e29"
@@ -94,19 +97,25 @@
           "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
           "NSPrivacyCollectedDataTypeLinked": true,
           "NSPrivacyCollectedDataTypeTracking": false,
-          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+          ]
         },
         {
           "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
           "NSPrivacyCollectedDataTypeLinked": true,
           "NSPrivacyCollectedDataTypeTracking": false,
-          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+          ]
         },
         {
           "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
           "NSPrivacyCollectedDataTypeLinked": true,
           "NSPrivacyCollectedDataTypeTracking": false,
-          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+          ]
         },
         {
           "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhotosorVideos",
@@ -130,21 +139,29 @@
           "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
           "NSPrivacyCollectedDataTypeLinked": true,
           "NSPrivacyCollectedDataTypeTracking": false,
-          "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          "NSPrivacyCollectedDataTypePurposes": [
+            "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+          ]
         }
       ],
       "requiredReasonApis": [
         {
           "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-          "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          "NSPrivacyAccessedAPITypeReasons": [
+            "CA92.1"
+          ]
         },
         {
           "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
-          "NSPrivacyAccessedAPITypeReasons": ["C617.1"]
+          "NSPrivacyAccessedAPITypeReasons": [
+            "C617.1"
+          ]
         },
         {
           "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
-          "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+          "NSPrivacyAccessedAPITypeReasons": [
+            "35F9.1"
+          ]
         }
       ],
       "dataFlowEvidence": {
@@ -157,7 +174,11 @@
       "baselineBinaryAudit": {
         "treeSha": "bdfa9f2bbecb415c9abc1d6bd7f022388e587fa0",
         "privacyManifestFiles": 10,
-        "rootManifestObservedReasons": ["CA92.1", "C617.1", "35F9.1"]
+        "rootManifestObservedReasons": [
+          "CA92.1",
+          "C617.1",
+          "35F9.1"
+        ]
       },
       "appStoreUploadValidationStatus": "external_pending"
     },
@@ -188,8 +209,16 @@
       "Photos",
       "Other user-generated content"
     ],
-    "requiredDataTypes": ["Health info", "Photos"],
-    "optionalDataTypes": ["Name", "Email address", "User IDs", "Other user-generated content"],
+    "requiredDataTypes": [
+      "Health info",
+      "Photos"
+    ],
+    "optionalDataTypes": [
+      "Name",
+      "Email address",
+      "User IDs",
+      "Other user-generated content"
+    ],
     "openAiDataBoundary": {
       "trainingDefault": "not_used_for_training_unless_explicitly_opted_in",
       "defaultAbuseMonitoringRetention": "up_to_30_days",
@@ -257,8 +286,16 @@
   },
   "mobile20StoreCaptureContract": {
     "targetPortraitSize": "1080x1920",
-    "languages": ["en", "ko"],
-    "frames": ["home", "analyze", "results", "diary"],
+    "languages": [
+      "en",
+      "ko"
+    ],
+    "frames": [
+      "home",
+      "analyze",
+      "results",
+      "diary"
+    ],
     "homeAnalyze": {
       "owner": "MOBILE-20A",
       "workflow": ".github/workflows/mobile-20a-store-capture.yml",
@@ -274,7 +311,6 @@
     "validationPolicy": "Any new candidate head invalidates prior exact-head screenshot approval. Final release authority requires fresh exact-head artifact visual review and a separate merged-main artifact visual review.",
     "storeAssetsFrozen": false,
     "remainingRepositoryAssetBlockers": [
-      "google_play_feature_graphic",
       "app_store_screenshot_submission_packaging"
     ],
     "remainingExternalBlockers": [
@@ -284,7 +320,9 @@
     ]
   },
   "permissionContract": {
-    "required": ["camera"],
+    "required": [
+      "camera"
+    ],
     "forbiddenUnlessFutureSliceApproves": [
       "microphone",
       "location",
@@ -300,7 +338,8 @@
       "EXPO_PUBLIC_API_BASE_URL",
       "EXPO_PUBLIC_SUPABASE_URL",
       "EXPO_PUBLIC_SUPABASE_ANON_KEY",
-      "NODE_ENV"
+      "NODE_ENV",
+      "EXPO_PUBLIC_STORE_CAPTURE_MODE"
     ],
     "serverSecretsAllowed": false,
     "productionTransport": "https_only_for_api_and_supabase_fail_closed"
@@ -340,7 +379,7 @@
       "id": "store_listing_assets",
       "status": "pending",
       "owner": "MOBILE-16",
-      "reason": "The Google Play 512x512 listing icon and deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set are implemented and visually qualified by MOBILE-16H/MOBILE-20A/MOBILE-20B. Google Play feature graphic and App Store screenshot submission packaging remain repository-pending; support-contact and store-console submission authority remain external."
+      "reason": "The 512x512 listing icon is repository-frozen, the deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set is visually qualified by MOBILE-20A/MOBILE-20B, and the Google Play 1024x500 feature graphic is repository-qualified by MOBILE-20C. App Store screenshot submission packaging remains repository-pending; support-contact configuration, App Store Connect metadata, and Google Play Console metadata remain external."
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
@@ -380,29 +419,121 @@
     }
   ],
   "externalBlockers": [
-    {"id": "bundle_and_package_registration", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "apple_developer_and_app_store_connect", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "google_play_console", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "ios_distribution_signing_and_provisioning", "owner": "MOBILE-15", "status": "repository_prepared_external_pending"},
-    {"id": "android_upload_signing_key", "owner": "MOBILE-15", "status": "repository_prepared_external_pending"},
-    {"id": "hosted_oauth_redirect_allow_list", "owner": "MOBILE-14", "status": "external_pending"},
-    {"id": "ios_equivalent_privacy_login", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
-    {"id": "universal_links_and_android_app_links", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
-    {"id": "domain_association_files", "owner": "MOBILE-14", "status": "repository_implemented_external_pending"},
-    {"id": "testflight_and_play_internal_testing", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "physical_device_qa", "owner": "MOBILE-15", "status": "external_pending"},
-    {"id": "apple_sign_in_token_revocation_authority", "owner": "MOBILE-16A", "status": "external_pending"},
-    {"id": "privacy_contact", "owner": "MOBILE-16A", "status": "external_pending"},
-    {"id": "apple_privacy_manifest_app_store_validation", "owner": "MOBILE-16B", "status": "external_pending"},
-    {"id": "apple_export_compliance_confirmation", "owner": "MOBILE-16B", "status": "external_pending"},
-    {"id": "google_play_data_safety_submission", "owner": "MOBILE-16C", "status": "external_pending"},
-    {"id": "google_play_processor_contract_confirmation", "owner": "MOBILE-16C", "status": "external_pending"},
-    {"id": "openai_zero_data_retention_authority", "owner": "MOBILE-16C", "status": "external_pending"},
-    {"id": "google_play_health_apps_declaration_submission", "owner": "MOBILE-16D", "status": "external_pending"},
-    {"id": "google_play_health_policy_review", "owner": "MOBILE-16D", "status": "external_pending"},
-    {"id": "apple_age_rating_submission", "owner": "MOBILE-16E", "status": "external_pending"},
-    {"id": "google_play_iarc_content_rating_submission", "owner": "MOBILE-16E", "status": "external_pending"},
-    {"id": "google_play_target_audience_and_content", "owner": "MOBILE-16E", "status": "external_pending"}
+    {
+      "id": "bundle_and_package_registration",
+      "owner": "MOBILE-15",
+      "status": "external_pending"
+    },
+    {
+      "id": "apple_developer_and_app_store_connect",
+      "owner": "MOBILE-15",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_console",
+      "owner": "MOBILE-15",
+      "status": "external_pending"
+    },
+    {
+      "id": "ios_distribution_signing_and_provisioning",
+      "owner": "MOBILE-15",
+      "status": "repository_prepared_external_pending"
+    },
+    {
+      "id": "android_upload_signing_key",
+      "owner": "MOBILE-15",
+      "status": "repository_prepared_external_pending"
+    },
+    {
+      "id": "hosted_oauth_redirect_allow_list",
+      "owner": "MOBILE-14",
+      "status": "external_pending"
+    },
+    {
+      "id": "ios_equivalent_privacy_login",
+      "owner": "MOBILE-14",
+      "status": "repository_implemented_external_pending"
+    },
+    {
+      "id": "universal_links_and_android_app_links",
+      "owner": "MOBILE-14",
+      "status": "repository_implemented_external_pending"
+    },
+    {
+      "id": "domain_association_files",
+      "owner": "MOBILE-14",
+      "status": "repository_implemented_external_pending"
+    },
+    {
+      "id": "testflight_and_play_internal_testing",
+      "owner": "MOBILE-15",
+      "status": "external_pending"
+    },
+    {
+      "id": "physical_device_qa",
+      "owner": "MOBILE-15",
+      "status": "external_pending"
+    },
+    {
+      "id": "apple_sign_in_token_revocation_authority",
+      "owner": "MOBILE-16A",
+      "status": "external_pending"
+    },
+    {
+      "id": "privacy_contact",
+      "owner": "MOBILE-16A",
+      "status": "external_pending"
+    },
+    {
+      "id": "apple_privacy_manifest_app_store_validation",
+      "owner": "MOBILE-16B",
+      "status": "external_pending"
+    },
+    {
+      "id": "apple_export_compliance_confirmation",
+      "owner": "MOBILE-16B",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_data_safety_submission",
+      "owner": "MOBILE-16C",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_processor_contract_confirmation",
+      "owner": "MOBILE-16C",
+      "status": "external_pending"
+    },
+    {
+      "id": "openai_zero_data_retention_authority",
+      "owner": "MOBILE-16C",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_health_apps_declaration_submission",
+      "owner": "MOBILE-16D",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_health_policy_review",
+      "owner": "MOBILE-16D",
+      "status": "external_pending"
+    },
+    {
+      "id": "apple_age_rating_submission",
+      "owner": "MOBILE-16E",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_iarc_content_rating_submission",
+      "owner": "MOBILE-16E",
+      "status": "external_pending"
+    },
+    {
+      "id": "google_play_target_audience_and_content",
+      "owner": "MOBILE-16E",
+      "status": "external_pending"
+    }
   ],
   "preflightMeaning": {
     "passMeans": [
@@ -441,5 +572,16 @@
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Physical-device validation."
     ]
+  },
+  "mobile20CFeatureGraphicContract": {
+    "owner": "MOBILE-20C",
+    "assetPath": "apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png",
+    "requiredSize": "1024x500",
+    "format": "24-bit PNG",
+    "alpha": false,
+    "renderer": "scripts/mobile-20c-feature-graphic.mjs",
+    "workflow": ".github/workflows/mobile-20c-feature-graphic.yml",
+    "repositoryStatus": "repository_asset_visual_approved",
+    "validationPolicy": "Any asset pixel change requires fresh exact-head CI artifact and direct visual review; merged-main requires a fresh artifact and direct visual review again."
   }
 }
