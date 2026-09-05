@@ -5,6 +5,10 @@ on:
     paths:
       - '.github/workflows/mobile-20c-feature-graphic.yml'
       - 'scripts/mobile-20c-feature-graphic.mjs'
+      - 'scripts/mobile-20c-authority-sync.mjs'
+      - 'scripts/verify-mobile-13-store-release-preflight.mjs'
+      - 'scripts/verify-mobile-18-store-listing.mjs'
+      - 'scripts/verify-mobile-my-skin-diary.mjs'
       - 'apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
       - 'apps/mobile/store-readiness.json'
       - 'docs/store/mobile-store-listing-final.json'
@@ -13,6 +17,10 @@ on:
     paths:
       - '.github/workflows/mobile-20c-feature-graphic.yml'
       - 'scripts/mobile-20c-feature-graphic.mjs'
+      - 'scripts/mobile-20c-authority-sync.mjs'
+      - 'scripts/verify-mobile-13-store-release-preflight.mjs'
+      - 'scripts/verify-mobile-18-store-listing.mjs'
+      - 'scripts/verify-mobile-my-skin-diary.mjs'
       - 'apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
       - 'apps/mobile/store-readiness.json'
       - 'docs/store/mobile-store-listing-final.json'
@@ -43,7 +51,8 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
-      - name: Materialize MOBILE-20C candidate when branch asset is missing
+      - name: Sync MOBILE-20C generated authority on candidate branch
+        id: authority
         if: github.event_name == 'push' && github.ref == 'refs/heads/mobile-20c-google-play-feature-graphic'
         shell: bash
         run: |
@@ -51,25 +60,35 @@ jobs:
           ASSET='apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png'
           if [[ ! -f "$ASSET" ]]; then
             node scripts/mobile-20c-feature-graphic.mjs --materialize
+          fi
+          node scripts/mobile-20c-authority-sync.mjs
+          if ! git diff --quiet -- "$ASSET" apps/mobile/store-readiness.json docs/store/mobile-store-listing-final.json; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
             git add "$ASSET" apps/mobile/store-readiness.json docs/store/mobile-store-listing-final.json
-            git commit -m 'assets(mobile): materialize MOBILE-20C feature graphic'
+            git commit -m 'chore(mobile): sync MOBILE-20C store authority'
             git push origin HEAD:mobile-20c-google-play-feature-graphic
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
           fi
 
       - name: Bind verifier to checked-out HEAD
+        if: steps.authority.outputs.changed != 'true'
         shell: bash
         run: echo "MOBILE_20C_EXPECTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
       - name: Verify MOBILE-20C feature graphic
+        if: steps.authority.outputs.changed != 'true'
         run: node scripts/mobile-20c-feature-graphic.mjs --verify
 
       - name: Require clean generated authority
+        if: steps.authority.outputs.changed != 'true'
         shell: bash
         run: git diff --exit-code
 
       - name: Upload MOBILE-20C feature graphic
+        if: steps.authority.outputs.changed != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: bejewely-mobile-20c-feature-graphic-${{ env.MOBILE_20C_EXPECTED_SHA }}

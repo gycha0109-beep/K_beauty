@@ -146,7 +146,7 @@ for (const permission of forbiddenAndroidPermissions) {
 const allowedEnvKeys = new Set(readiness.clientEnvironmentContract.allowedProcessEnvKeys);
 assert.deepEqual(
   [...allowedEnvKeys].sort(),
-  ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "EXPO_PUBLIC_SUPABASE_URL", "NODE_ENV"].sort()
+  ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_STORE_CAPTURE_MODE", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "EXPO_PUBLIC_SUPABASE_URL", "NODE_ENV"].sort()
 );
 assert.equal(readiness.clientEnvironmentContract.serverSecretsAllowed, false);
 
@@ -179,7 +179,7 @@ for (const sourcePath of mobileSourceFiles) {
 for (const envKey of observedProcessEnvKeys) {
   assert.ok(allowedEnvKeys.has(envKey), `Unexpected mobile process.env key: ${envKey}`);
 }
-for (const envKey of ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_SUPABASE_URL", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "NODE_ENV"]) {
+for (const envKey of ["EXPO_PUBLIC_API_BASE_URL", "EXPO_PUBLIC_STORE_CAPTURE_MODE", "EXPO_PUBLIC_SUPABASE_URL", "EXPO_PUBLIC_SUPABASE_ANON_KEY", "NODE_ENV"]) {
   assert.ok(observedProcessEnvKeys.has(envKey), `Expected mobile public environment contract is not exercised: ${envKey}`);
 }
 for (const token of forbiddenSecretTokens) {

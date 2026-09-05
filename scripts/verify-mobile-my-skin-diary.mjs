@@ -30,6 +30,7 @@ const diaryDayDomain = "lib/my/diary-day.js";
 const routineGenerator = "lib/my/routine-generator.js";
 const mobileMyClient = "apps/mobile/lib/my.ts";
 const mobileMyScreen = "apps/mobile/app/my.tsx";
+const mobileMyDiaryView = "apps/mobile/features/my/NativeMyDiaryView.tsx";
 
 for (const route of [dashboardRoute, checkInRoute, diaryDayRoute]) {
   requireText(route, "resolveRouteSupabaseAuth(request)", `${route} dual-auth resolver`);
@@ -58,18 +59,22 @@ requireText(mobileMyClient, "checkinEvents", "native check-in event contract");
 requireText(mobileMyClient, "monthlyDiaryCheckins", "native monthly diary contract");
 requireText(mobileMyClient, "recentTrendCheckins", "native trend contract");
 
+requireText(mobileMyScreen, "NativeMyDiaryView", "native My shared diary presentation");
 requireText(mobileMyScreen, "fetchNativeMyDashboard", "native My dashboard screen");
 requireText(mobileMyScreen, "saveNativeCheckin", "native My write screen");
 requireText(mobileMyScreen, "fetchNativeDiaryDay", "native historical diary screen");
 requireText(mobileMyScreen, 'accessibilityLabel="mobile-checkin-save"', "native check-in accessibility target");
 requireText(mobileMyScreen, "dashboard.todayRoutine", "server routine rendering");
-requireText(mobileMyScreen, "dashboard.recentTrendCheckins", "recent trend rendering");
-requireText(mobileMyScreen, "dashboard.monthlyDiaryCheckins", "monthly diary rendering");
+
+requireText(mobileMyDiaryView, "dashboard.recentTrendCheckins", "recent trend rendering");
+requireText(mobileMyDiaryView, "dashboard.monthlyDiaryCheckins", "monthly diary rendering");
+requireText(mobileMyDiaryView, "dashboard.latestSavedReport", "latest saved report rendering");
+requireText(mobileMyDiaryView, "dashboard.latestSkinProfile", "latest skin profile rendering");
 
 requireText(checkInRoute, "generateDailyRoutine", "server routine authority");
 requireText(routineGenerator, "export function generateDailyRoutine", "canonical routine generator");
 
-for (const relativePath of [mobileMyClient, mobileMyScreen]) {
+for (const relativePath of [mobileMyClient, mobileMyScreen, mobileMyDiaryView]) {
   forbidText(relativePath, "generateDailyRoutine", "routine authority must remain server-side");
   forbidText(relativePath, "service_role", "native secret boundary");
   forbidText(relativePath, "SUPABASE_SERVICE_ROLE", "native secret boundary");
