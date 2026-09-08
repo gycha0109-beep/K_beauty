@@ -35,7 +35,7 @@ assert.match(mobileIgnore, /^ios\/$/m, "Generated iOS project must stay untracke
 assert.equal(typeof mobilePackage.scripts?.["prebuild:android"], "string");
 assert.equal(typeof mobilePackage.scripts?.["build:android:debug"], "string");
 assert.equal(typeof mobilePackage.scripts?.["verify:native"], "string");
-assert.equal(mobilePackage.dependencies?.["expo-system-ui"], "~57.0.2");
+assert.equal(mobilePackage.dependencies?.["expo-system-ui"], "~57.0.3");
 assert.equal(mobilePackage.dependencies?.["expo-localization"], "~57.0.1");
 assert.equal(
   mobilePackage.dependencies?.["react-native-reanimated"],
