@@ -53,10 +53,10 @@ concurrency:
 jobs:
   ios-native-shell:
     name: iOS Native Shell
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.2.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v6
@@ -73,15 +73,15 @@ jobs:
           test "$actual" = "$expected"
           printf 'MOBILE_IOS_SHA=%s\n' "$actual"
 
-      - name: Verify Xcode 26.2 toolchain
+      - name: Verify Xcode 26.6 toolchain
         shell: bash
         run: |
           set -euo pipefail
-          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.2"
+          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.6"
           xcodebuild -version
           swift --version
           xcrun --sdk iphonesimulator --show-sdk-version
-          printf 'MOBILE_IOS_XCODE_26_2=PASS\n'
+          printf 'MOBILE_IOS_XCODE_26_6=PASS\n'
 
       - name: Setup Node 22
         uses: actions/setup-node@v6
@@ -92,7 +92,7 @@ jobs:
       - name: Install monorepo dependencies
         run: npm ci
 
-      - name: Apply bounded Expo Modules JSI Xcode 26.2 compatibility shim
+      - name: Apply bounded Expo Modules JSI Xcode 26 compatibility shim
         run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
 
       - name: Verify platform boundary and types

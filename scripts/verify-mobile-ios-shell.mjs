@@ -65,12 +65,17 @@ assert.deepEqual(
 );
 assert.match(
   iosWorkflow,
-  /DEVELOPER_DIR:\s*\/Applications\/Xcode_26\.2\.app\/Contents\/Developer/,
-  "MOBILE-12 CI must pin an Xcode toolchain with Swift tools 6.2 support"
+  /runs-on:\s*macos-26/,
+  "MOBILE-12 CI must use the macOS 26 runner required by the current Xcode 26.6 toolchain"
 );
 assert.match(
   iosWorkflow,
-  /test \"\$\(xcodebuild -version \| sed -n '1p'\)\" = \"Xcode 26\.2\"/,
+  /DEVELOPER_DIR:\s*\/Applications\/Xcode_26\.6\.app\/Contents\/Developer/,
+  "MOBILE-12 CI must pin Xcode 26.6 for the current Expo JSI Swift 6 compatibility boundary"
+);
+assert.match(
+  iosWorkflow,
+  /test \"\$\(xcodebuild -version \| sed -n '1p'\)\" = \"Xcode 26\.6\"/,
   "MOBILE-12 CI must attest the pinned Xcode version before native generation/build"
 );
 assert.match(
@@ -123,7 +128,7 @@ assert.equal(
 assert.equal(
   sha1(runtimeScheduler),
   "104a90a05f703288e5697c5548bb3af14ef951b1",
-  "expo-modules-jsi RuntimeScheduler.h is not the exact bounded Xcode 26.2 compatibility result"
+  "expo-modules-jsi RuntimeScheduler.h is not the exact bounded Xcode 26 compatibility result"
 );
 assert.ok(
   !runtimeScheduler.includes("SWIFT_RETURNS_RETAINED RuntimeScheduler"),
