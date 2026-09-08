@@ -1,4 +1,4 @@
-name: BEJEWELY Expo SDK Dependency Diagnostic
+name: BEJEWELY Expo SDK Dependency Remediation
 
 on:
   pull_request:
@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: mobile-expo-dependency-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  group: mobile-expo-dependency-remediation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  expo-dependency-diagnostic:
-    name: Expo SDK Dependency Diagnostic
+  expo-dependency-remediation:
+    name: Expo SDK Dependency Remediation
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -33,7 +33,7 @@ jobs:
           expected="${{ github.event.pull_request.head.sha || github.sha }}"
           actual="$(git rev-parse HEAD)"
           test "$actual" = "$expected"
-          printf 'MOBILE_EXPO_DEPENDENCY_DIAGNOSTIC_SHA=%s\n' "$actual"
+          printf 'MOBILE_EXPO_REMEDIATION_SHA=%s\n' "$actual"
 
       - name: Setup Node 22
         uses: actions/setup-node@v6
@@ -41,33 +41,43 @@ jobs:
           node-version: 22.23.1
           cache: npm
 
-      - name: Install exact lockfile
-        run: npm ci
-
-      - name: Capture resolved Expo dependency graph
+      - name: Install official Expo SDK 57 aligned versions
         shell: bash
         run: |
-          set +e
-          npm ls expo expo-router @expo/ui expo-modules-core react-native react-native-reanimated --all > "$RUNNER_TEMP/expo-dependency-tree.log" 2>&1
-          exit 0
+          set -euo pipefail
+          npm install \
+            --workspace @bejewely/mobile \
+            'expo@~57.0.20' \
+            'expo-secure-store@~57.0.3' \
+            'expo-system-ui@~57.0.3' \
+            'react-native@0.86.3'
 
-      - name: Ask Expo CLI for SDK alignment
+      - name: Verify Expo dependency alignment
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           cd apps/mobile
-          npx expo install --check > "$RUNNER_TEMP/expo-install-check.log" 2>&1
-          status=$?
-          printf '\nEXPO_INSTALL_CHECK_EXIT=%s\n' "$status" >> "$RUNNER_TEMP/expo-install-check.log"
-          cat "$RUNNER_TEMP/expo-install-check.log"
-          exit 0
+          npx expo install --check
 
-      - name: Upload Expo dependency diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: expo-dependency-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
-          if-no-files-found: error
-          retention-days: 3
-          path: |
-            ${{ runner.temp }}/expo-dependency-tree.log
-            ${{ runner.temp }}/expo-install-check.log
+      - name: Verify bounded dependency diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test -n "$changed"
+          unexpected="$(printf '%s\n' "$changed" | grep -Ev '^(apps/mobile/package\.json|package-lock\.json)$' || true)"
+          test -z "$unexpected"
+
+      - name: Commit aligned dependency lock
+        shell: bash
+        env:
+          PR_BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          test -n "$PR_BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/mobile/package.json package-lock.json
+          git commit -m "fix(mobile): align Expo SDK 57 dependencies"
+          git push origin "HEAD:${PR_BRANCH}"
