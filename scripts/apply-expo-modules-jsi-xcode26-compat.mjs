@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const packageRoot = join(repoRoot, "node_modules", "expo-modules-jsi");
+const packageRoot = join(repoRoot, "apps", "mobile", "node_modules", "expo-modules-jsi");
 const packageJsonPath = join(packageRoot, "package.json");
 const runtimeSchedulerPath = join(
   packageRoot,
@@ -16,7 +16,7 @@ const runtimeSchedulerPath = join(
   "RuntimeScheduler.h"
 );
 
-const expectedVersion = "57.0.5";
+const expectedVersion = "57.0.8";
 const expectedSourceSha1 = "708aeaf33190ec55694e2677da0e7c565f61adfe";
 const expectedPatchedSha1 = "104a90a05f703288e5697c5548bb3af14ef951b1";
 const retainedAnnotation = "SWIFT_RETURNS_RETAINED";
