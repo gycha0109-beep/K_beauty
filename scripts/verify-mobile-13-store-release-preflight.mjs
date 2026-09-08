@@ -103,7 +103,7 @@ assert.equal(
 );
 
 assert.match(mobilePackage.dependencies?.expo || "", /^~57\./, "MOBILE-13 expects Expo SDK 57");
-assert.match(mobilePackage.dependencies?.["react-native"] || "", /^0\.86\./, "MOBILE-13 expects React Native 0.86");
+assert.match(mobilePackage.dependencies?.["react-native"] || "", /^\^?0\.86\./, "MOBILE-13 expects React Native 0.86");
 assert.equal(
   mobilePackage.scripts?.["build:android:release"],
   "cd android && ./gradlew :app:bundleRelease --no-daemon",
