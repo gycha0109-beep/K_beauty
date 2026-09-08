@@ -1,4 +1,4 @@
-name: BEJEWELY iOS Archive Diagnostic
+name: BEJEWELY Expo SDK Dependency Diagnostic
 
 on:
   pull_request:
@@ -11,16 +11,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: mobile-ios-archive-diagnostic-${{ github.event.pull_request.number || github.ref }}
+  group: mobile-expo-dependency-diagnostic-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ios-archive-diagnostic:
-    name: iOS Archive Compiler Diagnostic
-    runs-on: macos-26
-    timeout-minutes: 90
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  expo-dependency-diagnostic:
+    name: Expo SDK Dependency Diagnostic
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout exact candidate SHA
         uses: actions/checkout@v6
@@ -35,20 +33,7 @@ jobs:
           expected="${{ github.event.pull_request.head.sha || github.sha }}"
           actual="$(git rev-parse HEAD)"
           test "$actual" = "$expected"
-          printf 'MOBILE_IOS_ARCHIVE_DIAGNOSTIC_SHA=%s\n' "$actual"
-
-      - name: Verify Xcode 26.6 distribution toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(xcodebuild -version | sed -n '1p')" = "Xcode 26.6"
-          sdk="$(xcrun --sdk iphoneos --show-sdk-version)"
-          case "$sdk" in
-            26.*) ;;
-            *) printf 'Unexpected iPhoneOS SDK: %s\n' "$sdk" >&2; exit 1 ;;
-          esac
-          xcodebuild -version
-          printf 'MOBILE_IOS_ARCHIVE_DIAGNOSTIC_SDK=%s\n' "$sdk"
+          printf 'MOBILE_EXPO_DEPENDENCY_DIAGNOSTIC_SHA=%s\n' "$actual"
 
       - name: Setup Node 22
         uses: actions/setup-node@v6
@@ -56,42 +41,33 @@ jobs:
           node-version: 22.23.1
           cache: npm
 
-      - name: Install monorepo dependencies
+      - name: Install exact lockfile
         run: npm ci
 
-      - name: Apply bounded Expo Modules JSI compatibility shim
-        run: node scripts/apply-expo-modules-jsi-xcode26-compat.mjs
-
-      - name: Generate iOS native project
-        run: npm run prebuild:ios --workspace @bejewely/mobile
-
-      - name: Install CocoaPods dependencies
+      - name: Capture resolved Expo dependency graph
         shell: bash
         run: |
-          set -euo pipefail
-          cd apps/mobile/ios
-          pod install
+          set +e
+          npm ls expo expo-router @expo/ui expo-modules-core react-native react-native-reanimated --all > "$RUNNER_TEMP/expo-dependency-tree.log" 2>&1
+          exit 0
 
-      - name: Build unsigned Release archive and capture compiler log
+      - name: Ask Expo CLI for SDK alignment
         shell: bash
         run: |
-          set -o pipefail
-          mkdir -p apps/mobile/.mobile-store-preflight
-          xcodebuild \
-            -workspace apps/mobile/ios/BEJEWELY.xcworkspace \
-            -scheme BEJEWELY \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            -archivePath "$GITHUB_WORKSPACE/apps/mobile/.mobile-store-preflight/BEJEWELY.xcarchive" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            archive 2>&1 | tee "$RUNNER_TEMP/ios-unsigned-archive-xcodebuild.log"
+          set +e
+          cd apps/mobile
+          npx expo install --check > "$RUNNER_TEMP/expo-install-check.log" 2>&1
+          status=$?
+          printf '\nEXPO_INSTALL_CHECK_EXIT=%s\n' "$status" >> "$RUNNER_TEMP/expo-install-check.log"
+          cat "$RUNNER_TEMP/expo-install-check.log"
+          exit 0
 
-      - name: Upload archive compiler diagnostic
-        if: always()
+      - name: Upload Expo dependency diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: ios-archive-compiler-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
+          name: expo-dependency-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
           if-no-files-found: error
           retention-days: 3
-          path: ${{ runner.temp }}/ios-unsigned-archive-xcodebuild.log
+          path: |
+            ${{ runner.temp }}/expo-dependency-tree.log
+            ${{ runner.temp }}/expo-install-check.log
