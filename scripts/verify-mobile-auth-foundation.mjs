@@ -40,7 +40,7 @@ requireText(checkInRoute, "resolveRouteSupabaseAuth(request)", "check-in dual au
 requireText(webServerClient, 'import { cookies } from "next/headers"', "web cookie authority");
 requireText(webServerClient, "cookieStore.getAll()", "web cookie read path");
 
-requireText(mobilePackage, '"expo-secure-store": "~57.0.2"', "SDK57 secure store dependency");
+requireText(mobilePackage, '"expo-secure-store": "~57.0.3"', "SDK57 secure store dependency");
 requireText(mobileSupabase, 'import { GoTrueClient } from "@supabase/auth-js"', "standalone native auth client");
 requireText(mobileSupabase, 'import * as SecureStore from "expo-secure-store"', "encrypted native storage");
 requireText(mobileSupabase, "SECURE_STORE_CHUNK_SIZE = 400", "bounded secure-store chunks");
