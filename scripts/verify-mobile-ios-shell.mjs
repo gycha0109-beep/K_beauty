@@ -80,8 +80,13 @@ assert.match(
 );
 assert.match(
   compatScript,
-  /expectedVersion = "57\.0\.5"/,
-  "MOBILE-12 compatibility shim must remain bounded to expo-modules-jsi@57.0.5"
+  /label: "root-peer"[\s\S]*?expectedVersion: "57\.0\.5"/,
+  "MOBILE-12 compatibility shim must preserve the bounded root-peer expo-modules-jsi@57.0.5 target"
+);
+assert.match(
+  compatScript,
+  /label: "mobile-resolved"[\s\S]*?expectedVersion: "57\.0\.8"/,
+  "MOBILE-12 compatibility shim must preserve the bounded mobile-resolved expo-modules-jsi@57.0.8 target"
 );
 assert.match(
   compatScript,
