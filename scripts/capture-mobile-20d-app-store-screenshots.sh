@@ -103,15 +103,19 @@ EXPO_BIN="$REPO_ROOT/node_modules/.bin/expo"
 METRO_PID=$!
 
 python3 - <<'PY'
-import socket,time
+import time
+import urllib.request
 for _ in range(90):
     try:
-        with socket.create_connection(("localhost",8081),timeout=1):
+        with urllib.request.urlopen("http://127.0.0.1:8081/status", timeout=1) as response:
+            body = response.read().decode("utf-8", "replace").strip()
+        if body == "packager-status:running":
             print("MOBILE_20D_METRO_READY=PASS")
             raise SystemExit(0)
-    except OSError:
-        time.sleep(1)
-raise SystemExit("Metro did not open port 8081")
+    except Exception:
+        pass
+    time.sleep(1)
+raise SystemExit("Metro did not report packager-status:running on port 8081")
 PY
 
 set -o pipefail
@@ -129,6 +133,30 @@ EXPO_PUBLIC_STORE_CAPTURE_MODE=1 xcodebuild \
 test -d "$APP_PATH"
 xcrun simctl install "$UDID" "$APP_PATH"
 preapprove_scheme
+
+warm_runtime_bundle() {
+  local log_start attempt
+  log_start="$(wc -l < "$METRO_LOG" | tr -d ' ')"
+  xcrun simctl launch --terminate-running-process "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  sleep 2
+  xcrun simctl openurl "$UDID" "$URL_SCHEME://analyze" >/dev/null 2>&1 || true
+
+  for attempt in $(seq 1 90); do
+    if tail -n "+$((log_start + 1))" "$METRO_LOG" | grep -Eqi '(^|[[:space:]])(iOS|ios)[[:space:]]+Bundled|Bundled.*(expo-router|virtual-metro-entry)'; then
+      sleep 5
+      xcrun simctl terminate "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+      printf 'MOBILE_20D_RUNTIME_WARMUP=PASS attempt=%s\n' "$attempt"
+      return 0
+    fi
+    sleep 1
+  done
+
+  echo "Metro did not finish the first iOS bundle before screenshot capture" >&2
+  tail -n 250 "$METRO_LOG" >&2 2>/dev/null || true
+  return 1
+}
+
+warm_runtime_bundle
 
 set_locale() {
   local locale="$1"
