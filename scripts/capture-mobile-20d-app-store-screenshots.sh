@@ -72,9 +72,11 @@ print(max(c)[1])
   printf '%s\n%s\n' "$runtime_id" "$device_type"
 }
 
-mapfile -t selection < <(select_runtime_and_device_type)
-RUNTIME_ID="${selection[0]}"
-DEVICE_TYPE="${selection[1]}"
+SELECTION="$(select_runtime_and_device_type)"
+RUNTIME_ID="$(printf '%s\n' "$SELECTION" | sed -n '1p')"
+DEVICE_TYPE="$(printf '%s\n' "$SELECTION" | sed -n '2p')"
+test -n "$RUNTIME_ID"
+test -n "$DEVICE_TYPE"
 UDID="$(xcrun simctl create "BEJEWELY MOBILE-20D" "$DEVICE_TYPE" "$RUNTIME_ID")"
 test -n "$UDID"
 
@@ -166,6 +168,7 @@ capture_jpeg() {
   local locale="$1" order="$2" frame="$3" url="$4"
   local dir="$FINAL_DIR/$locale"
   local out="$dir/${order}-${frame}.jpg"
+  local raw="$WORK_ROOT/${locale}-${order}-${frame}.png"
   if [[ -z "$url" ]]; then
     xcrun simctl launch --terminate-running-process "$UDID" "$BUNDLE_ID" >/dev/null
   else
@@ -174,7 +177,9 @@ capture_jpeg() {
     xcrun simctl openurl "$UDID" "$url"
   fi
   sleep 7
-  xcrun simctl io "$UDID" screenshot --type=jpeg "$out" >/dev/null
+  xcrun simctl io "$UDID" screenshot "$raw" >/dev/null
+  sips -s format jpeg "$raw" --out "$out" >/dev/null
+  rm -f "$raw"
   assert_submission_size "$out"
 }
 
