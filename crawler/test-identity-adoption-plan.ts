@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 
-import { normalizeDatabaseIdentityKey } from "./lib/database-identity-key.js";
+import {
+  normalizeDatabaseBrandKey,
+  normalizeDatabaseProductKey,
+} from "./lib/database-identity-key.js";
 import { buildIdentityAdoptionPlan } from "./lib/identity-adoption-plan.js";
 import { resolveProductIdentity } from "./lib/identity-resolution.js";
 
@@ -21,7 +24,7 @@ const product = {
   brand_en: "ROUNDLAB",
   name_en: "Birch Moisture Sun Cream",
   normalized_brand: "라운드랩",
-  normalized_name: "자작나무수분선크림",
+  normalized_name: "자작나무 수분 선크림",
   category: "sunscreen",
   product_form: null,
   external_source: null,
@@ -29,7 +32,11 @@ const product = {
   external_id: null,
 };
 
-assert.equal(normalizeDatabaseIdentityKey("  Green   Mild Up Sun+  "), "greenmildupsun+");
+assert.equal(normalizeDatabaseBrandKey("Dr.G"), "dr g");
+assert.equal(
+  normalizeDatabaseProductKey("  Green   Mild Up Sun+ 50ml "),
+  "green mild up sun",
+);
 
 {
   const resolution = resolveProductIdentity(candidate, [product]);
@@ -42,6 +49,7 @@ assert.equal(normalizeDatabaseIdentityKey("  Green   Mild Up Sun+  "), "greenmil
   assert.equal(plan.targetCanonicalBrand, "라운드랩");
   assert.equal(plan.targetCanonicalName, "자작나무 수분 선크림");
   assert.equal(plan.structuralIdentityState, "waiting_for_promotion_queue");
+  assert.equal(plan.targetIdentityKeys?.consistent, true);
   assert.equal(plan.evidence?.source_identity.brand, "ROUNDLAB");
   assert.equal(plan.evidence?.target_canonical_identity.brand, "라운드랩");
 }
@@ -57,8 +65,7 @@ assert.equal(normalizeDatabaseIdentityKey("  Green   Mild Up Sun+  "), "greenmil
 {
   const driftedProduct = {
     ...product,
-    normalized_brand: "roundlab",
-    normalized_name: "birchmoisturesuncream",
+    normalized_name: "자작나무수분선크림",
   };
   const resolution = resolveProductIdentity(candidate, [driftedProduct]);
   const plan = buildIdentityAdoptionPlan(candidate, [driftedProduct], resolution, "queued");
