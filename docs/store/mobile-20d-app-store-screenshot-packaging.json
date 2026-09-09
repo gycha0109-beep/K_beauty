@@ -45,7 +45,8 @@
     "manifest": "app-store-screenshot-manifest.json",
     "exactShaBound": true,
     "technicalVerification": "required",
-    "directVisualReview": "required_on_exact_head_and_merged_main"
+    "directVisualReview": "required_on_exact_head_and_merged_main",
+    "repositoryStatus": "repository_qualified"
   },
   "applePolicy": {
     "screenshotMinimum": 1,
@@ -62,6 +63,6 @@
   },
   "sourceContractStatus": "repository_implemented",
   "visualReviewRequired": true,
-  "repositoryBlockerClearanceStatus": "pending_exact_head_and_merged_main_visual_review",
+  "repositoryBlockerClearanceStatus": "repository_qualified_exact_head_visual_approved_merged_main_revalidation_required",
   "appStoreConnectUploadStatus": "external_pending"
 }
