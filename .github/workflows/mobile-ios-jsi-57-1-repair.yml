@@ -31,58 +31,45 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
+          import re
           from pathlib import Path
 
           shim_path = Path('scripts/apply-expo-modules-jsi-xcode26-compat.mjs')
           shim = shim_path.read_text()
+          if shim.count('expectedVersion: "57.0.5",') != 1:
+              raise SystemExit('unexpected root-peer version authority count')
           shim = shim.replace('expectedVersion: "57.0.5",', 'expectedVersion: "57.1.0",', 1)
-          mobile_target = '''  {
-            label: "mobile-resolved",
-            packageRoot: join(repoRoot, "apps", "mobile", "node_modules", "expo-modules-jsi"),
-            expectedVersion: "57.0.8",
-          },
-          '''
-          if mobile_target not in shim:
-              raise SystemExit('expected legacy mobile-resolved target block missing')
-          shim = shim.replace(mobile_target, '', 1)
-          if 'expectedVersion: "57.0.5"' in shim or 'mobile-resolved' in shim:
+          shim, removed = re.subn(
+              r'\s*\{\s*label: "mobile-resolved",\s*packageRoot: join\(repoRoot, "apps", "mobile", "node_modules", "expo-modules-jsi"\),\s*expectedVersion: "57\.0\.8",\s*\},',
+              '',
+              shim,
+              count=1,
+          )
+          if removed != 1:
+              raise SystemExit(f'expected exactly one legacy mobile-resolved target, removed={removed}')
+          if '57.0.5' in shim or '57.0.8' in shim or 'mobile-resolved' in shim:
               raise SystemExit('legacy Expo Modules JSI target remained in shim')
-          if 'expectedVersion: "57.1.0"' not in shim:
-              raise SystemExit('current Expo Modules JSI target missing in shim')
+          if shim.count('expectedVersion: "57.1.0",') != 1:
+              raise SystemExit('current Expo Modules JSI target authority is not singular')
           shim_path.write_text(shim)
 
           verifier_path = Path('scripts/verify-mobile-ios-shell.mjs')
           verifier = verifier_path.read_text()
-          old_root = '''assert.match(
-            compatScript,
-            /label: "root-peer"[\\s\\S]*?expectedVersion: "57\\.0\\.5"/,
-            "MOBILE-12 compatibility shim must preserve the bounded root-peer expo-modules-jsi@57.0.5 target"
-          );
-          '''
-          new_root = '''assert.match(
-            compatScript,
-            /label: "root-peer"[\\s\\S]*?expectedVersion: "57\\.1\\.0"/,
-            "MOBILE-12 compatibility shim must preserve the bounded root-peer expo-modules-jsi@57.1.0 target"
-          );
-          '''
-          old_mobile = '''assert.match(
-            compatScript,
-            /label: "mobile-resolved"[\\s\\S]*?expectedVersion: "57\\.0\\.8"/,
-            "MOBILE-12 compatibility shim must preserve the bounded mobile-resolved expo-modules-jsi@57.0.8 target"
-          );
-          '''
-          if old_root not in verifier or old_mobile not in verifier:
-              raise SystemExit('legacy verifier target blocks missing')
-          verifier = verifier.replace(old_root, new_root, 1).replace(old_mobile, '', 1)
-          verifier = verifier.replace(
-              '  "57.0.5",\n  "MOBILE-12 compatibility boundary must fail closed when expo-modules-jsi changes version"',
-              '  "57.1.0",\n  "MOBILE-12 compatibility boundary must fail closed when expo-modules-jsi changes version"',
-              1,
+          verifier, removed = re.subn(
+              r'assert\.match\(\s*compatScript,\s*/label: "mobile-resolved".*?\);\n',
+              '',
+              verifier,
+              count=1,
+              flags=re.S,
           )
-          if '57.0.5' in verifier or 'mobile-resolved' in verifier:
+          if removed != 1:
+              raise SystemExit(f'expected exactly one mobile-resolved verifier assertion, removed={removed}')
+          verifier = verifier.replace('57\\.0\\.5', '57\\.1\\.0')
+          verifier = verifier.replace('57.0.5', '57.1.0')
+          if '57.0.5' in verifier or '57.0.8' in verifier or 'mobile-resolved' in verifier:
               raise SystemExit('legacy Expo Modules JSI verifier authority remained')
-          if '57.1.0' not in verifier:
-              raise SystemExit('current Expo Modules JSI verifier authority missing')
+          if verifier.count('57.1.0') < 2:
+              raise SystemExit('current Expo Modules JSI verifier authority was not fully rebound')
           verifier_path.write_text(verifier)
           PY
 
@@ -92,7 +79,10 @@ jobs:
           set -euo pipefail
           grep -F 'expectedSourceSha1 = "708aeaf33190ec55694e2677da0e7c565f61adfe"' scripts/apply-expo-modules-jsi-xcode26-compat.mjs
           grep -F 'expectedPatchedSha1 = "104a90a05f703288e5697c5548bb3af14ef951b1"' scripts/apply-expo-modules-jsi-xcode26-compat.mjs
-          grep -F 'expectedVersion: "57.1.0"' scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+          test "$(grep -cF 'expectedVersion: "57.1.0"' scripts/apply-expo-modules-jsi-xcode26-compat.mjs)" -eq 1
+          ! grep -F 'mobile-resolved' scripts/apply-expo-modules-jsi-xcode26-compat.mjs
+          ! grep -F '57.0.5' scripts/verify-mobile-ios-shell.mjs
+          ! grep -F '57.0.8' scripts/verify-mobile-ios-shell.mjs
 
       - name: Remove one-shot workflow and commit repair
         shell: bash
