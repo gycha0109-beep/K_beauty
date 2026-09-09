@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { resolveProductIdentity } from "./lib/identity-resolution.js";
+import { normalizeCanonicalProductName } from "./lib/normalize.js";
 
 const baseCandidate = {
   id: "candidate-1",
@@ -24,8 +25,40 @@ const baseProduct = {
   external_id: null,
 };
 
+assert.equal(
+  normalizeCanonicalProductName("Birch Moisture Sun Cream [SPF50+/PA++++]"),
+  "birch moisture sun cream",
+);
+assert.equal(
+  normalizeCanonicalProductName("Daily Sun Cream SPF50+ / PA++++"),
+  "daily sun cream",
+);
+
 {
   const result = resolveProductIdentity(baseCandidate, [baseProduct]);
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.productId, "product-1");
+  assert.equal(result.method, "english_exact");
+}
+
+{
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "ROUNDLAB",
+      product_name_raw: "Birch Moisture Sun Cream [SPF50+/PA++++]",
+    },
+    [
+      {
+        ...baseProduct,
+        brand: "라운드랩",
+        name: "자작나무 수분 선크림",
+        brand_en: "ROUNDLAB",
+        name_en: "Birch Moisture Sun Cream",
+      },
+    ],
+  );
 
   assert.equal(result.state, "resolved");
   assert.equal(result.productId, "product-1");
