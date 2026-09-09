@@ -34,8 +34,9 @@ assert(capture.includes('local uri="bejewely://store-capture?scenario=$scenario"
 assert(capture.includes('-n "$PACKAGE_ID/.MainActivity"'), "explicit-runtime-activity");
 assert(capture.includes("adb shell wm size 1080x1920"), "target-viewport");
 assert(capture.includes("if (width, height) != (1080, 1920)"), "png-dimension-guard");
-assert(!capture.includes("/api/analyze"), "no-live-analysis-call");
-assert(!capture.includes("curl "), "no-network-fixture-mutation");
+assert(!capture.includes("EXPO_PUBLIC_API_BASE_URL"), "no-api-base-injection");
+assert(!capture.includes("curl "), "no-curl-network-call");
+assert(!capture.includes("wget "), "no-wget-network-call");
 
 for (const marker of [
   'open_store_scenario "results-en" "Your skin routine, made clear" "03-results-en-1080x1920.png"',
