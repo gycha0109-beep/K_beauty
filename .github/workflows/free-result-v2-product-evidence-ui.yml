@@ -1,0 +1,51 @@
+name: Free Result V2 Product Evidence UI
+
+on:
+  pull_request:
+    paths:
+      - "lib/free-result-v2-product-evidence.js"
+      - "lib/product-evidence-presentation-contract.js"
+      - "components/result/free-v2/FreeResultV2ProductEvidence.jsx"
+      - "components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx"
+      - "scripts/verify-free-result-v2-product-evidence-ui.mjs"
+      - ".github/workflows/free-result-v2-product-evidence-ui.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/free-result-v2-product-evidence.js"
+      - "lib/product-evidence-presentation-contract.js"
+      - "components/result/free-v2/FreeResultV2ProductEvidence.jsx"
+      - "components/result/free-v2/FreeResultV2RecommendationGuideStep.jsx"
+      - "scripts/verify-free-result-v2-product-evidence-ui.mjs"
+      - ".github/workflows/free-result-v2-product-evidence-ui.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-free-result-v2-product-evidence-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Attest exact checked-out SHA
+        run: |
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          echo "CHECKED_OUT_SHA=$(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify fail-closed Product Evidence UI boundary
+        run: node scripts/verify-free-result-v2-product-evidence-ui.mjs
