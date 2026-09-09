@@ -25,6 +25,7 @@ function verifySource() {
 
   assert.equal(appJson.expo.ios.supportsTablet, false, "MOBILE-20D only packages the iPhone submission set");
   requireText(route, '__DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === "1"', "store fixture fail-closed guard");
+  requireText(route, 'edges={["top", "left", "right", "bottom"]}', "iOS store-capture safe-area guard");
   assert.equal(Object.prototype.hasOwnProperty.call(appJson.expo, "EXPO_PUBLIC_STORE_CAPTURE_MODE"), false);
 
   for (const size of acceptedPortraitSizes) requireText(capture, size, "accepted 6.9-inch size contract");
