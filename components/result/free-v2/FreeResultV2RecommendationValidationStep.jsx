@@ -63,8 +63,8 @@ export default function FreeResultV2RecommendationValidationStep({ locale = "ko"
 
   return (
     <FreeResultV2StepFrame
-      title={isEnglish ? "Check If the Recommendation Fits" : "추천이 맞는지 확인하기"}
-      body={isEnglish ? "These signs show whether the current recommendation fits your skin." : "이 신호를 보면 지금 추천이 내 피부에 맞고 있는지 알 수 있어요."}
+      title={isEnglish ? "Signals to Watch After Trying It" : "써보면서 확인할 신호"}
+      body={isEnglish ? "Use these after trying the recommendation to see how your skin responds." : "추천 제품을 써본 뒤 피부가 어떻게 반응하는지 볼 때 참고하세요."}
     >
       <FreeResultV2Card className="space-y-4">
         <div className="grid grid-cols-2 gap-2 rounded-[1.15rem] border border-[#ead9d6] bg-white/28 p-1 dark:border-[#5a3a48] dark:bg-[#2a1b24]/66">
