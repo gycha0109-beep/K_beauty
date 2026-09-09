@@ -29,7 +29,7 @@ for (const [locale, copy] of Object.entries(listing.appStore.localizations)) {
   assert.ok(charCount(copy.subtitle) <= appStoreLimits.subtitleMaxCharacters, `${locale} App Store subtitle exceeds limit`);
   assert.ok(charCount(copy.promotionalText) <= appStoreLimits.promotionalTextMaxCharacters, `${locale} App Store promotional text exceeds limit`);
   assert.ok(charCount(copy.description) <= appStoreLimits.descriptionMaxCharacters, `${locale} App Store description exceeds limit`);
-  assert.ok(byteCount(copy.keywords) <= appStoreLimits.keywordsMaxBytes, `${locale} App Store keywords exceed byte limit`);
+  assert.ok(byteCount(copy.keywords) <= appStoreLimits.keywordsMaxBytes, `${locale} App Store keywords exceeds byte limit`);
 }
 
 const playLimits = listing.metadataConstraints.googlePlay;
@@ -86,8 +86,12 @@ for (const pattern of forbiddenClaimPatterns) {
   assert.doesNotMatch(marketingCopy, pattern, `store marketing copy crosses claim boundary: ${pattern}`);
 }
 
-assert.equal(listing.googlePlay.featureGraphic.status, "asset_pending");
+assert.equal(listing.googlePlay.featureGraphic.status, "repository_asset_visual_approved");
+assert.equal(listing.googlePlay.featureGraphic.owner, "MOBILE-20C");
+assert.equal(listing.googlePlay.featureGraphic.path, "apps/mobile/assets/store/bejewely-google-play-feature-graphic-1024x500.png");
 assert.equal(listing.googlePlay.featureGraphic.requiredSize, "1024x500");
+assert.equal(listing.googlePlay.featureGraphic.format, "24-bit PNG");
+assert.equal(listing.googlePlay.featureGraphic.alpha, false);
 assert.equal(listing.googlePlay.phoneScreenshots.status, "repository_capture_visual_approved");
 assert.ok(listing.googlePlay.phoneScreenshots.submissionMinimum >= 2);
 assert.ok(listing.googlePlay.phoneScreenshots.targetCount >= 4);
@@ -115,8 +119,8 @@ assert.equal(listing.appStore.supportUrl.contactStatus, "external_pending");
 assert.equal(listing.repositoryPending.includes("app_store_support_route_and_url"), false);
 assert.equal(listing.repositoryPending.includes("app_store_screenshots"), false);
 assert.equal(listing.repositoryPending.includes("google_play_phone_screenshots"), false);
+assert.equal(listing.repositoryPending.includes("google_play_feature_graphic"), false);
 assert.ok(listing.repositoryPending.includes("app_store_screenshot_submission_packaging"));
-assert.ok(listing.repositoryPending.includes("google_play_feature_graphic"));
 assert.ok(listing.externalPending.includes("public_support_contact_configuration"));
 assert.ok(listing.externalPending.includes("app_store_connect_metadata_submission"));
 assert.ok(listing.externalPending.includes("google_play_console_metadata_submission"));
@@ -130,4 +134,5 @@ console.log("MOBILE_18_GOOGLE_PLAY_METADATA_LIMITS=PASS");
 console.log("MOBILE_18_HEALTH_LISTING_BOUNDARY=PASS");
 console.log("MOBILE_18_COSMETIC_CLAIM_BOUNDARY=PASS");
 console.log("MOBILE_18_SCREENSHOT_CAPTURE_VISUAL_APPROVAL=PASS");
+console.log("MOBILE_18_GOOGLE_PLAY_FEATURE_GRAPHIC_APPROVAL=PASS");
 console.log("MOBILE_18_SUPPORT_URL_FROZEN_REMAINING_ASSETS_PENDING=PASS");

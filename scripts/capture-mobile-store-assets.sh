@@ -19,7 +19,7 @@ EN_FRAME_POSITION_LIMIT=6
 EN_FRAME_ADJUST_START_Y=1100
 EN_FRAME_ADJUST_UP_END_Y=1000
 EN_FRAME_ADJUST_DOWN_END_Y=1200
-KO_FRAME_POSITION_LIMIT=4
+KO_FRAME_POSITION_LIMIT=5
 KO_FRAME_ADJUST_START_Y=1100
 KO_FRAME_ADJUST_UP_END_Y=1000
 KO_FRAME_ADJUST_DOWN_END_Y=1200
@@ -354,6 +354,16 @@ position_ko_analyze_store_frame() {
     fi
     break
   done
+
+  dump_ui
+  title_y="$(text_center_y "피부 분석" 2>/dev/null || true)"
+  sensitivity_y="$(text_center_y "민감도" 2>/dev/null || true)"
+  if [[ "$title_y" =~ ^[0-9]+$ ]] && [[ "$sensitivity_y" =~ ^[0-9]+$ ]] && \
+     (( title_y >= 300 && title_y <= 600 && sensitivity_y >= 900 && sensitivity_y <= 1450 )); then
+    printf 'MOBILE_STORE_KO_ANALYZE_FRAME=PASS attempt=post-correction title_y=%s sensitivity_y=%s\n' "$title_y" "$sensitivity_y"
+    return 0
+  fi
+
   echo "Korean analysis frame could not be positioned: title_y=${title_y:-missing} sensitivity_y=${sensitivity_y:-missing}" >&2
   return 1
 }
