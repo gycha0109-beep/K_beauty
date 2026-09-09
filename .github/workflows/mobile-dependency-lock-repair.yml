@@ -1,0 +1,107 @@
+name: BEJEWELY Mobile Dependency Lock Repair
+
+on:
+  push:
+    branches: [mobile-20c-google-play-feature-graphic]
+    paths:
+      - ".github/workflows/mobile-dependency-lock-repair.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-dependency-lock-repair
+  cancel-in-progress: false
+
+jobs:
+  repair-lock:
+    name: Repair unified React Native dependency lock
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v6
+        with:
+          ref: mobile-20c-google-play-feature-graphic
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.23.1
+          cache: npm
+
+      - name: Apply bounded dependency and store-capture corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_path = Path('apps/mobile/package.json')
+          package = json.loads(package_path.read_text())
+          current = package['dependencies'].get('react-native')
+          if current not in {'^0.86.3', '0.86.3'}:
+              raise SystemExit(f'unexpected react-native spec before repair: {current!r}')
+          package['dependencies']['react-native'] = '0.86.3'
+          package_path.write_text(json.dumps(package, indent=2, ensure_ascii=False) + '\n')
+
+          capture_path = Path('scripts/capture-mobile-store-assets.sh')
+          capture = capture_path.read_text()
+          old = 'KO_FRAME_POSITION_LIMIT=4'
+          new = 'KO_FRAME_POSITION_LIMIT=5'
+          if old in capture:
+              capture = capture.replace(old, new, 1)
+          elif new not in capture:
+              raise SystemExit('unexpected KO frame position limit before repair')
+          capture_path.write_text(capture)
+          PY
+
+      - name: Regenerate lock from clean root resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts
+
+      - name: Verify single React Native native-core version
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const mobile = JSON.parse(fs.readFileSync('apps/mobile/package.json', 'utf8'));
+          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          if (mobile.dependencies['react-native'] !== '0.86.3') {
+            throw new Error(`mobile react-native must be exact 0.86.3, got ${mobile.dependencies['react-native']}`);
+          }
+          const entries = Object.entries(lock.packages ?? {})
+            .filter(([path, meta]) =>
+              meta && typeof meta.version === 'string' &&
+              (path === 'node_modules/react-native' || path.endsWith('/node_modules/react-native'))
+            )
+            .map(([path, meta]) => ({ path, version: meta.version }));
+          const versions = [...new Set(entries.map((entry) => entry.version))];
+          console.log('MOBILE_REACT_NATIVE_LOCK_ENTRIES=' + JSON.stringify(entries));
+          if (entries.length < 1 || versions.length !== 1 || versions[0] !== '0.86.3') {
+            throw new Error(`expected one resolved React Native version 0.86.3, got ${JSON.stringify(versions)}`);
+          }
+          console.log('MOBILE_REACT_NATIVE_SINGLE_VERSION=PASS version=0.86.3');
+          NODE
+          npm ci --ignore-scripts
+          npm ls react-native --all
+
+      - name: Remove one-shot repair workflow and commit repaired authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/mobile-dependency-lock-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/mobile/package.json package-lock.json scripts/capture-mobile-store-assets.sh .github/workflows/mobile-dependency-lock-repair.yml
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'repair produced no diff'; exit 1; }
+          git commit -m 'fix(mobile): unify SDK 57 native dependency graph'
+          git push origin HEAD:mobile-20c-google-play-feature-graphic
