@@ -85,13 +85,8 @@ assert.match(
 );
 assert.match(
   compatScript,
-  /label: "root-peer"[\s\S]*?expectedVersion: "57\.0\.5"/,
-  "MOBILE-12 compatibility shim must preserve the bounded root-peer expo-modules-jsi@57.0.5 target"
-);
-assert.match(
-  compatScript,
-  /label: "mobile-resolved"[\s\S]*?expectedVersion: "57\.0\.8"/,
-  "MOBILE-12 compatibility shim must preserve the bounded mobile-resolved expo-modules-jsi@57.0.8 target"
+  /label: "root-peer"[\s\S]*?expectedVersion: "57\.1\.0"/,
+  "MOBILE-12 compatibility shim must preserve the bounded root-peer expo-modules-jsi@57.1.0 target"
 );
 assert.match(
   compatScript,
@@ -122,7 +117,7 @@ const expoModulesJsiPackage = JSON.parse(readFileSync(expoModulesJsiPackagePath,
 const runtimeScheduler = readFileSync(runtimeSchedulerPath, "utf8");
 assert.equal(
   expoModulesJsiPackage.version,
-  "57.0.5",
+  "57.1.0",
   "MOBILE-12 compatibility boundary must fail closed when expo-modules-jsi changes version"
 );
 assert.equal(

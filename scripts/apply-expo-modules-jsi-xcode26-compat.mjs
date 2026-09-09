@@ -22,12 +22,7 @@ const packageTargets = [
   {
     label: "root-peer",
     packageRoot: join(repoRoot, "node_modules", "expo-modules-jsi"),
-    expectedVersion: "57.0.5",
-  },
-  {
-    label: "mobile-resolved",
-    packageRoot: join(repoRoot, "apps", "mobile", "node_modules", "expo-modules-jsi"),
-    expectedVersion: "57.0.8",
+    expectedVersion: "57.1.0",
   },
 ];
 
