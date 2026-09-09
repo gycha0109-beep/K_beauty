@@ -31,7 +31,8 @@ function verifySource() {
   for (const frame of frames) requireText(capture, `"${frame}"`, `capture frame ${frame}`);
   requireText(capture, 'capture_locale "en-US"', "English localization capture");
   requireText(capture, 'capture_locale "ko"', "Korean localization capture");
-  requireText(capture, 'screenshot --type=jpeg', "opaque JPEG capture");
+  requireText(capture, 'xcrun simctl io "$UDID" screenshot "$raw"', "simulator screenshot capture");
+  requireText(capture, 'sips -s format jpeg "$raw" --out "$out"', "opaque JPEG packaging");
   requireText(capture, 'EXPO_PUBLIC_STORE_CAPTURE_MODE=1', "bounded fixture environment");
 
   requireText(workflow, 'runs-on: macos-26', "iOS runner");
