@@ -29,7 +29,7 @@ type ResultVisual = Readonly<{
 const COPY = {
   en: {
     eyebrow: "PERSONALIZED RESULT",
-    title: "Your K-Beauty Match",
+    title: "Your skin routine, made clear",
     direction: "TODAY'S DIRECTION",
     am: "AM",
     pm: "PM",
@@ -53,7 +53,7 @@ const COPY = {
   },
   ko: {
     eyebrow: "PERSONALIZED RESULT",
-    title: "당신의 K-뷰티 매치",
+    title: "내 피부에 맞는 루틴을 한눈에",
     direction: "오늘의 관리 방향",
     am: "AM",
     pm: "PM",
