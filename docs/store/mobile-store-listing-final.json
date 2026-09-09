@@ -1,14 +1,14 @@
 {
   "schemaVersion": "mobile-store-listing-final-v1",
   "slice": "MOBILE-18",
-  "status": "repository_listing_copy_and_support_url_frozen_assets_pending",
+  "status": "repository_listing_copy_support_url_and_assets_frozen_external_pending",
   "policySnapshotDate": "2026-09-02",
   "scope": {
     "runtimeBehaviorChanged": false,
     "finalMarketingCopyFrozen": true,
-    "storeAssetsFrozen": false,
+    "storeAssetsFrozen": true,
     "appStoreSupportUrlFrozen": true,
-    "purpose": "Freeze submission-ready App Store and Google Play listing copy plus the public App Store Support URL, and record repository-qualified bilingual screenshot captures while keeping feature graphics, App Store screenshot submission packaging, support-contact configuration and console submission explicit."
+    "purpose": "Freeze submission-ready App Store and Google Play listing copy, public App Store Support URL, and all repository-owned listing assets while keeping support-contact configuration and console submission external and explicit."
   },
   "metadataConstraints": {
     "appStore": {
@@ -61,7 +61,7 @@
       "reason": "The public Korean and English support routes are implemented. A valid public support email is displayed only when the existing public contact environment value is configured."
     },
     "screenshots": {
-      "status": "repository_capture_visual_approved_submission_packaging_pending",
+      "status": "repository_submission_package_visual_approved",
       "captureOwners": [
         "MOBILE-20A",
         "MOBILE-20B"
@@ -77,8 +77,22 @@
         "diary"
       ],
       "captureSize": "1080x1920",
-      "submissionPackagingStatus": "pending",
-      "reason": "The deterministic repository capture set is visually qualified in English and Korean. App Store device-size packaging and App Store Connect upload remain separate authority and are not claimed complete."
+      "submissionPackagingOwner": "MOBILE-20D",
+      "submissionPackagingContract": "docs/store/mobile-20d-app-store-screenshot-packaging.json",
+      "submissionPackagingStatus": "repository_qualified",
+      "submissionDisplayClass": "6.9-inch",
+      "submissionAcceptedPortraitSizes": [
+        "1260x2736",
+        "1290x2796",
+        "1320x2868"
+      ],
+      "submissionLocales": [
+        "en-US",
+        "ko"
+      ],
+      "submissionScreenshotCount": 8,
+      "appStoreConnectUploadStatus": "external_pending",
+      "reason": "The deterministic bilingual source capture set is visually qualified, and MOBILE-20D packages four Home/Analyze/Results/Diary screenshots per locale into an exact-SHA-bound iPhone 6.9-inch App Store submission set. App Store Connect upload remains external and is not claimed complete."
     },
     "localizations": {
       "en-US": {
@@ -141,12 +155,13 @@
     }
   },
   "screenshotPlan": {
-    "status": "repository_capture_visual_approved",
+    "status": "repository_capture_and_app_store_submission_package_visual_approved",
     "sourceOfTruth": "production mobile runtime after MOBILE-17A",
     "captureOwners": [
       "MOBILE-20A",
       "MOBILE-20B"
     ],
+    "submissionPackagingOwner": "MOBILE-20D",
     "captureLanguages": [
       "en",
       "ko"
@@ -180,9 +195,7 @@
       }
     ]
   },
-  "repositoryPending": [
-    "app_store_screenshot_submission_packaging"
-  ],
+  "repositoryPending": [],
   "externalPending": [
     "public_support_contact_configuration",
     "app_store_connect_metadata_submission",
