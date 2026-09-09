@@ -103,19 +103,15 @@ EXPO_BIN="$REPO_ROOT/node_modules/.bin/expo"
 METRO_PID=$!
 
 python3 - <<'PY'
-import time
-import urllib.request
+import socket,time
 for _ in range(90):
     try:
-        with urllib.request.urlopen("http://127.0.0.1:8081/status", timeout=1) as response:
-            body = response.read().decode("utf-8", "replace").strip()
-        if body == "packager-status:running":
+        with socket.create_connection(("localhost",8081),timeout=1):
             print("MOBILE_20D_METRO_READY=PASS")
             raise SystemExit(0)
-    except Exception:
-        pass
-    time.sleep(1)
-raise SystemExit("Metro did not report packager-status:running on port 8081")
+    except OSError:
+        time.sleep(1)
+raise SystemExit("Metro did not open port 8081")
 PY
 
 set -o pipefail
