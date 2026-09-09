@@ -9,16 +9,18 @@ const readJson = (path) => JSON.parse(readFileSync(join(repoRoot, path), "utf8")
 const listing = readJson("docs/store/mobile-store-listing-final.json");
 const claims = readJson("docs/store/mobile-listing-claims-readiness.json");
 const health = readJson("apps/mobile/google-play-health-apps-declaration.json");
+const readiness = readJson("apps/mobile/store-readiness.json");
+const mobile20D = readJson("docs/store/mobile-20d-app-store-screenshot-packaging.json");
 
 const charCount = (value) => Array.from(value).length;
 const byteCount = (value) => Buffer.byteLength(value, "utf8");
 
 assert.equal(listing.schemaVersion, "mobile-store-listing-final-v1");
 assert.equal(listing.slice, "MOBILE-18");
-assert.equal(listing.status, "repository_listing_copy_and_support_url_frozen_assets_pending");
+assert.equal(listing.status, "repository_listing_copy_support_url_and_assets_frozen_external_pending");
 assert.equal(listing.scope.runtimeBehaviorChanged, false);
 assert.equal(listing.scope.finalMarketingCopyFrozen, true);
-assert.equal(listing.scope.storeAssetsFrozen, false);
+assert.equal(listing.scope.storeAssetsFrozen, true);
 assert.equal(listing.scope.appStoreSupportUrlFrozen, true);
 assert.equal(listing.appStore.appName, "BEJEWELY");
 assert.equal(listing.googlePlay.appName, "BEJEWELY");
@@ -100,13 +102,21 @@ assert.deepEqual(listing.googlePlay.phoneScreenshots.captureOwners, ["MOBILE-20A
 assert.deepEqual(listing.googlePlay.phoneScreenshots.captureFrames, ["home", "analyze", "results", "diary"]);
 assert.equal(listing.googlePlay.phoneScreenshots.consoleSubmissionStatus, "external_pending");
 
-assert.equal(listing.appStore.screenshots.status, "repository_capture_visual_approved_submission_packaging_pending");
+assert.equal(listing.appStore.screenshots.status, "repository_submission_package_visual_approved");
 assert.equal(listing.appStore.screenshots.captureSize, "1080x1920");
 assert.deepEqual(listing.appStore.screenshots.captureOwners, ["MOBILE-20A", "MOBILE-20B"]);
-assert.equal(listing.appStore.screenshots.submissionPackagingStatus, "pending");
+assert.equal(listing.appStore.screenshots.submissionPackagingOwner, "MOBILE-20D");
+assert.equal(listing.appStore.screenshots.submissionPackagingContract, "docs/store/mobile-20d-app-store-screenshot-packaging.json");
+assert.equal(listing.appStore.screenshots.submissionPackagingStatus, "repository_qualified");
+assert.equal(listing.appStore.screenshots.submissionDisplayClass, "6.9-inch");
+assert.deepEqual(listing.appStore.screenshots.submissionAcceptedPortraitSizes, ["1260x2736", "1290x2796", "1320x2868"]);
+assert.deepEqual(listing.appStore.screenshots.submissionLocales, ["en-US", "ko"]);
+assert.equal(listing.appStore.screenshots.submissionScreenshotCount, 8);
+assert.equal(listing.appStore.screenshots.appStoreConnectUploadStatus, "external_pending");
 
-assert.equal(listing.screenshotPlan.status, "repository_capture_visual_approved");
+assert.equal(listing.screenshotPlan.status, "repository_capture_and_app_store_submission_package_visual_approved");
 assert.deepEqual(listing.screenshotPlan.captureOwners, ["MOBILE-20A", "MOBILE-20B"]);
+assert.equal(listing.screenshotPlan.submissionPackagingOwner, "MOBILE-20D");
 assert.deepEqual(listing.screenshotPlan.captureLanguages, ["en", "ko"]);
 assert.match(listing.screenshotPlan.validationPolicy, /new candidate head invalidates prior exact-head screenshot approval/i);
 assert.match(listing.screenshotPlan.validationPolicy, /merged-main must be re-captured and visually reviewed again/i);
@@ -116,14 +126,29 @@ assert.equal(listing.appStore.supportUrl.value, "https://k-beauty-two.vercel.app
 assert.equal(listing.appStore.supportUrl.englishValue, "https://k-beauty-two.vercel.app/en/support");
 assert.equal(listing.appStore.supportUrl.contactEnvironmentKey, "NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL");
 assert.equal(listing.appStore.supportUrl.contactStatus, "external_pending");
-assert.equal(listing.repositoryPending.includes("app_store_support_route_and_url"), false);
-assert.equal(listing.repositoryPending.includes("app_store_screenshots"), false);
-assert.equal(listing.repositoryPending.includes("google_play_phone_screenshots"), false);
-assert.equal(listing.repositoryPending.includes("google_play_feature_graphic"), false);
-assert.ok(listing.repositoryPending.includes("app_store_screenshot_submission_packaging"));
+assert.deepEqual(listing.repositoryPending, []);
 assert.ok(listing.externalPending.includes("public_support_contact_configuration"));
 assert.ok(listing.externalPending.includes("app_store_connect_metadata_submission"));
 assert.ok(listing.externalPending.includes("google_play_console_metadata_submission"));
+
+assert.equal(readiness.mobile20StoreCaptureContract.storeAssetsFrozen, true);
+assert.deepEqual(readiness.mobile20StoreCaptureContract.remainingRepositoryAssetBlockers, []);
+assert.equal(readiness.mobile20StoreCaptureContract.appStoreSubmissionPackage.owner, "MOBILE-20D");
+assert.equal(readiness.mobile20StoreCaptureContract.appStoreSubmissionPackage.repositoryStatus, "repository_qualified");
+assert.equal(readiness.mobile20StoreCaptureContract.appStoreSubmissionPackage.appStoreConnectUploadStatus, "external_pending");
+assert.deepEqual(readiness.mobile20StoreCaptureContract.remainingExternalBlockers, [
+  "public_support_contact_configuration",
+  "app_store_connect_metadata_submission",
+  "google_play_console_metadata_submission"
+]);
+const storeAssets = readiness.complianceInventory.find((item) => item.id === "store_listing_assets");
+assert.equal(storeAssets?.status, "repository_implemented_external_pending");
+
+assert.equal(mobile20D.owner, "MOBILE-20D");
+assert.equal(mobile20D.submissionPackage.repositoryStatus, "repository_qualified");
+assert.match(mobile20D.repositoryBlockerClearanceStatus, /repository_qualified/);
+assert.match(mobile20D.repositoryBlockerClearanceStatus, /merged_main_revalidation_required/);
+assert.equal(mobile20D.appStoreConnectUploadStatus, "external_pending");
 
 assert.equal(claims.scope.finalMarketingCopyFrozen, true);
 assert.equal(claims.finalCopyGate.status, "copy_frozen_assets_pending");
@@ -135,4 +160,4 @@ console.log("MOBILE_18_HEALTH_LISTING_BOUNDARY=PASS");
 console.log("MOBILE_18_COSMETIC_CLAIM_BOUNDARY=PASS");
 console.log("MOBILE_18_SCREENSHOT_CAPTURE_VISUAL_APPROVAL=PASS");
 console.log("MOBILE_18_GOOGLE_PLAY_FEATURE_GRAPHIC_APPROVAL=PASS");
-console.log("MOBILE_18_SUPPORT_URL_FROZEN_REMAINING_ASSETS_PENDING=PASS");
+console.log("MOBILE_18_REPOSITORY_STORE_ASSETS_FROZEN_EXTERNAL_PENDING=PASS");
