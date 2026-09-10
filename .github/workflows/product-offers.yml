@@ -10,6 +10,7 @@ on:
       - "crawler/legacy-offer-migration-apply.ts"
       - "crawler/lib/offers/legacy-offer-import.ts"
       - "crawler/test-legacy-offer-import.ts"
+      - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
@@ -22,6 +23,7 @@ on:
       - "crawler/legacy-offer-migration-apply.ts"
       - "crawler/lib/offers/legacy-offer-import.ts"
       - "crawler/test-legacy-offer-import.ts"
+      - "crawler/tests/verify-legacy-offer-import-local-runtime.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
@@ -97,7 +99,7 @@ jobs:
           rm -f "${start_log}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${PRODUCT_OFFERS_RUNTIME_DIR}"
 
-      - name: Verify product offers runtime
+      - name: Verify guarded importer and product offers runtime
         shell: bash
         run: |
           set -euo pipefail
@@ -113,6 +115,13 @@ jobs:
           export NEXT_PUBLIC_SUPABASE_URL="${API_URL}"
           export SUPABASE_SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY}"
           rm -f "${env_file}"
+
+          cd crawler
+          npm run verify:legacy-offer-import:local-runtime
+          cd ..
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${PRODUCT_OFFERS_RUNTIME_DIR}"
+
           cd crawler
           npm run verify:product-offers:local-runtime
 
