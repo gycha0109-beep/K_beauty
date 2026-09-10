@@ -28,18 +28,29 @@ type ProductRow = {
   source_url: string | null;
 };
 
+type ApplyResult = {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+};
+
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`legacy_offer_import_runtime_missing_${name.toLowerCase()}`);
   return value;
 }
 
-function runApply(args: string[]): ReturnType<typeof spawnSync> {
-  return spawnSync("npm", ["run", "offers:legacy-apply", "--", ...args], {
+function runApply(args: string[]): ApplyResult {
+  const result = spawnSync("npm", ["run", "offers:legacy-apply", "--", ...args], {
     cwd: path.resolve(import.meta.dirname, ".."),
     env: process.env,
     encoding: "utf8",
   });
+  return {
+    status: result.status,
+    stdout: typeof result.stdout === "string" ? result.stdout : String(result.stdout ?? ""),
+    stderr: typeof result.stderr === "string" ? result.stderr : String(result.stderr ?? ""),
+  };
 }
 
 async function main(): Promise<void> {
