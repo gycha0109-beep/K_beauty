@@ -46,7 +46,7 @@ adb reverse tcp:8081 tcp:8081 >/dev/null
 
 (
   cd "$MOBILE_ROOT"
-  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 EXPO_UNSTABLE_HEADLESS=1 EXPO_PUBLIC_STORE_CAPTURE_MODE=1 NODE_PATH="$MOBILE_NODE_PATH" "$EXPO_BIN" start --localhost --port 8081
+  CI=1 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 EXPO_UNSTABLE_HEADLESS=1 EXPO_PUBLIC_STORE_CAPTURE_MODE=1 NODE_PATH="$MOBILE_NODE_PATH" "$EXPO_BIN" start --clear --localhost --port 8081
 ) >"$METRO_LOG" 2>&1 &
 METRO_PID=$!
 
@@ -137,9 +137,9 @@ assert struct.unpack(">II", h[16:24]) == (1080, 1920)
 PY
 }
 
-capture "results-en" "Skin analysis result" "03-results-en-1080x1920.png" "03-results-en-window.xml"
+capture "results-en" "Your skin routine, made clear" "03-results-en-1080x1920.png" "03-results-en-window.xml"
 capture "diary-en" "Latest saved report" "04-diary-en-1080x1920.png" "04-diary-en-window.xml"
-capture "results-ko" "피부 분석 결과" "03-results-ko-1080x1920.png" "03-results-ko-window.xml"
+capture "results-ko" "내 피부에 맞는 루틴을 한눈에" "03-results-ko-1080x1920.png" "03-results-ko-window.xml"
 capture "diary-ko" "최근 저장 리포트" "04-diary-ko-1080x1920.png" "04-diary-ko-window.xml"
 
 node scripts/verify-mobile-20b-store-capture.mjs artifact "$ARTIFACT_DIR"

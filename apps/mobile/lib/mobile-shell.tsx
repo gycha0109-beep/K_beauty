@@ -25,26 +25,28 @@ type MobileShellValue = {
   palette: MobilePalette;
 };
 
+// Keep the native shell on the same visual language as the current web app.
+// These values mirror app/globals.css rather than introducing a mobile-only palette.
 const LIGHT_PALETTE: MobilePalette = {
-  background: "#FCFAFF",
+  background: "#FFF8FA",
   surface: "#FFFFFF",
-  surfaceMuted: "#F3F0FF",
-  text: "#201A2E",
-  textMuted: "#5A5363",
-  accent: "#7258A8",
-  border: "#E3DDEF",
+  surfaceMuted: "#FFF3EE",
+  text: "#111111",
+  textMuted: "#666666",
+  accent: "#FF4F8A",
+  border: "#F0E6EA",
   tabBar: "#FFFFFF"
 };
 
 const DARK_PALETTE: MobilePalette = {
-  background: "#15121B",
-  surface: "#211C29",
-  surfaceMuted: "#2B2437",
-  text: "#F7F2FF",
-  textMuted: "#C8BED3",
-  accent: "#C1A7FF",
-  border: "#3B3347",
-  tabBar: "#1C1823"
+  background: "#0B0A0E",
+  surface: "#17141C",
+  surfaceMuted: "#2B1C26",
+  text: "#FFFFFF",
+  textMuted: "#A1A1AA",
+  accent: "#FF4F8A",
+  border: "#2D2932",
+  tabBar: "#17141C"
 };
 
 const MobileShellContext = createContext<MobileShellValue | null>(null);
