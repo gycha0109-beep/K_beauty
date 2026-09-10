@@ -1,0 +1,45 @@
+name: TRUST-P10 LRP Recovered SPF Hosted Adoption Execution
+
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-adoption-v1/trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.json"
+      - "docs/evidence/trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.md"
+      - "scripts/product-evidence/verify-trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.mjs"
+      - ".github/workflows/trust-p10-lrp-recovered-spf-hosted-adoption-execution.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "evidence/product-fact-adoption-v1/trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.json"
+      - "docs/evidence/trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.md"
+      - "scripts/product-evidence/verify-trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.mjs"
+      - ".github/workflows/trust-p10-lrp-recovered-spf-hosted-adoption-execution.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-trust-p10-lrp-recovered-spf-hosted-adoption-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify TRUST-P10 execution evidence
+        run: node scripts/product-evidence/verify-trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.mjs
