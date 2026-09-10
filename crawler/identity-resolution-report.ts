@@ -10,6 +10,7 @@ import {
   type IdentityCandidateRecord,
   type IdentityProductRecord,
   type IdentityResolutionResult,
+  type IdentitySourceBindingRecord,
 } from "./lib/identity-resolution.js";
 import { createServiceRoleClient } from "./lib/supabase.js";
 
@@ -101,6 +102,21 @@ async function loadProducts(): Promise<IdentityProductRecord[]> {
   return (data ?? []) as IdentityProductRecord[];
 }
 
+async function loadSourceBindings(): Promise<IdentitySourceBindingRecord[]> {
+  const client = createServiceRoleClient();
+  const { data, error } = await client
+    .from("product_source_bindings")
+    .select("product_id, source_name, external_type, external_id, binding_state")
+    .eq("binding_state", "resolved")
+    .limit(10000);
+
+  if (error) {
+    throw new Error(`identity_resolution_source_binding_load_failed:${error.message}`);
+  }
+
+  return (data ?? []) as IdentitySourceBindingRecord[];
+}
+
 function countBy<T extends string>(values: T[]): Map<T, number> {
   const counts = new Map<T, number>();
 
@@ -127,6 +143,7 @@ function formatSuggestion(result: IdentityResolutionResult): string {
 function printSummary(
   candidates: CandidateRow[],
   products: IdentityProductRecord[],
+  sourceBindings: IdentitySourceBindingRecord[],
   results: IdentityResolutionResult[],
 ): void {
   const stateCounts = countBy(results.map((result) => result.state));
@@ -139,6 +156,7 @@ function printSummary(
   console.log("Product identity resolution report");
   console.log(`- candidates: ${candidates.length}`);
   console.log(`- products: ${products.length}`);
+  console.log(`- source_bindings: ${sourceBindings.length}`);
   console.log(`- resolved: ${stateCounts.get("resolved") ?? 0}`);
   console.log(`- identity_ambiguous: ${stateCounts.get("identity_ambiguous") ?? 0}`);
   console.log(`- unresolved: ${stateCounts.get("unresolved") ?? 0}`);
@@ -183,17 +201,18 @@ function printDetails(candidates: CandidateRow[], results: IdentityResolutionRes
 async function main(): Promise<void> {
   loadEnvironment();
   const options = parseArgs(process.argv.slice(2));
-  const [candidates, products] = await Promise.all([
+  const [candidates, products, sourceBindings] = await Promise.all([
     loadCandidates(options),
     loadProducts(),
+    loadSourceBindings(),
   ]);
 
   if (candidates.length === 0) {
     throw new Error("identity_resolution_no_candidates");
   }
 
-  const results = resolveProductIdentities(candidates, products);
-  printSummary(candidates, products, results);
+  const results = resolveProductIdentities(candidates, products, sourceBindings);
+  printSummary(candidates, products, sourceBindings, results);
 
   if (options.details || options.candidateId) {
     printDetails(candidates, results);
