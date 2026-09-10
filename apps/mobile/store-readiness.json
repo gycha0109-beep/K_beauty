@@ -307,12 +307,24 @@
       "fixtureVersion": "mobile-20b-v1",
       "repositoryStatus": "capture_contract_implemented"
     },
+    "appStoreSubmissionPackage": {
+      "owner": "MOBILE-20D",
+      "contract": "docs/store/mobile-20d-app-store-screenshot-packaging.json",
+      "workflow": ".github/workflows/mobile-20d-app-store-screenshots.yml",
+      "deviceFamily": "iphone",
+      "displayClass": "6.9-inch",
+      "locales": [
+        "en-US",
+        "ko"
+      ],
+      "frameCountPerLocale": 4,
+      "repositoryStatus": "repository_qualified",
+      "appStoreConnectUploadStatus": "external_pending"
+    },
     "screenshotCaptureStatus": "repository_capture_visual_approved",
     "validationPolicy": "Any new candidate head invalidates prior exact-head screenshot approval. Final release authority requires fresh exact-head artifact visual review and a separate merged-main artifact visual review.",
-    "storeAssetsFrozen": false,
-    "remainingRepositoryAssetBlockers": [
-      "app_store_screenshot_submission_packaging"
-    ],
+    "storeAssetsFrozen": true,
+    "remainingRepositoryAssetBlockers": [],
     "remainingExternalBlockers": [
       "public_support_contact_configuration",
       "app_store_connect_metadata_submission",
@@ -377,9 +389,9 @@
     },
     {
       "id": "store_listing_assets",
-      "status": "pending",
+      "status": "repository_implemented_external_pending",
       "owner": "MOBILE-16",
-      "reason": "The 512x512 listing icon is repository-frozen, the deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set is visually qualified by MOBILE-20A/MOBILE-20B, and the Google Play 1024x500 feature graphic is repository-qualified by MOBILE-20C. App Store screenshot submission packaging remains repository-pending; support-contact configuration, App Store Connect metadata, and Google Play Console metadata remain external."
+      "reason": "Repository store assets are frozen: the 512x512 listing icon, bilingual Home/Analyze/Results/Diary capture set, Google Play 1024x500 feature graphic, and MOBILE-20D App Store iPhone 6.9-inch submission package are repository-qualified. Public support-contact configuration, App Store Connect metadata submission, and Google Play Console metadata submission remain external."
     },
     {
       "id": "apple_privacy_manifest_required_reason_audit",
@@ -551,7 +563,7 @@
       "Missing distribution or Apple revocation credentials fail closed rather than silently claiming store readiness.",
       "Known store compliance and external-authority blockers remain explicit and fail-visible.",
       "MOBILE-16H source-freezes BEJEWELY production launcher icons (root/Android and iOS light/dark) plus the 512x512 Google Play listing icon from audited opaque brand artwork; a custom Android adaptive-layer asset remains a non-blocking optimization.",
-      "MOBILE-20A and MOBILE-20B provide deterministic bilingual 1080x1920 repository capture contracts for Home, Analyze, Results and signed-in Diary; every candidate head and merged-main release authority still requires its own fresh artifact and direct visual review."
+      "MOBILE-20A/MOBILE-20B provide deterministic bilingual repository captures, MOBILE-20C qualifies the Google Play feature graphic, and MOBILE-20D qualifies the App Store iPhone 6.9-inch submission package; any new candidate head and merged-main release authority still requires its own fresh MOBILE-20D artifact and direct visual review."
     ],
     "passDoesNotMean": [
       "App Store or Google Play submission readiness.",
@@ -567,7 +579,7 @@
       "Any medical-device regulatory determination has been made for BEJEWELY; the repository only freezes product non-claims and intended Play declaration metadata.",
       "Apple has calculated or accepted the final BEJEWELY age rating.",
       "IARC or Google Play has calculated or accepted the final BEJEWELY content rating or Target Audience & Content answers.",
-      "The repository-approved screenshot capture set has been uploaded to App Store Connect or Google Play Console, or App Store device-size screenshot submission packaging has completed.",
+      "The repository-qualified screenshots or other listing assets have been uploaded to App Store Connect or Google Play Console.",
       "Supabase/OpenAI processor-contract status or OpenAI Zero Data Retention has been externally verified.",
       "TestFlight or Google Play Internal Testing distribution has completed.",
       "Physical-device validation."

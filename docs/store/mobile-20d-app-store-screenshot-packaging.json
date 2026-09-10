@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "mobile-20d-app-store-screenshot-packaging-v1",
+  "owner": "MOBILE-20D",
+  "policySnapshotDate": "2026-09-09",
+  "platform": "ios",
+  "deviceFamily": "iphone",
+  "ipadRequired": false,
+  "basis": "apps/mobile/app.json sets expo.ios.supportsTablet=false, so the repository submission package targets iPhone only.",
+  "locales": [
+    "en-US",
+    "ko"
+  ],
+  "frames": [
+    "home",
+    "analyze",
+    "results",
+    "diary"
+  ],
+  "screenshotCountPerLocale": 4,
+  "acceptedPortraitSizes": [
+    "1260x2736",
+    "1290x2796",
+    "1320x2868"
+  ],
+  "displayClass": "6.9-inch",
+  "imageFormat": "jpeg",
+  "alphaAllowed": false,
+  "captureAuthority": {
+    "runtime": "iOS Simulator on macOS 26 / Xcode 26.6",
+    "productionPresentationReuse": true,
+    "fixtureBoundary": "Results and Diary reuse production presentation components with the existing dev-only EXPO_PUBLIC_STORE_CAPTURE_MODE fixture route; Home and Analyze use normal production routes.",
+    "workflow": ".github/workflows/mobile-20d-app-store-screenshots.yml",
+    "captureScript": "scripts/capture-mobile-20d-app-store-screenshots.sh",
+    "verifier": "scripts/verify-mobile-20d-app-store-screenshots.mjs"
+  },
+  "submissionPackage": {
+    "root": "apps/mobile/.mobile-20d-app-store-package",
+    "directoryPattern": "<locale>/<order>-<frame>.jpg",
+    "order": [
+      "01-home",
+      "02-analyze",
+      "03-results",
+      "04-diary"
+    ],
+    "manifest": "app-store-screenshot-manifest.json",
+    "exactShaBound": true,
+    "technicalVerification": "required",
+    "directVisualReview": "required_on_exact_head_and_merged_main",
+    "repositoryStatus": "repository_qualified"
+  },
+  "applePolicy": {
+    "screenshotMinimum": 1,
+    "screenshotMaximum": 10,
+    "allowedFormats": [
+      "jpeg",
+      "jpg",
+      "png"
+    ],
+    "alphaOrTransparencyAllowed": false,
+    "reviewGuideline": "Screenshots should show the app in use; text and image overlays are allowed when they accurately represent the app.",
+    "screenshotSpecificationsUrl": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications",
+    "reviewGuidelinesUrl": "https://developer.apple.com/app-store/review/guidelines/"
+  },
+  "sourceContractStatus": "repository_implemented",
+  "visualReviewRequired": true,
+  "repositoryBlockerClearanceStatus": "repository_qualified_exact_head_visual_approved_merged_main_revalidation_required",
+  "appStoreConnectUploadStatus": "external_pending"
+}

@@ -161,13 +161,11 @@ async function verify() {
     throw new Error('listing feature graphic authority is not MOBILE-20C approved');
   }
   if (listing.repositoryPending?.includes('google_play_feature_graphic')) throw new Error('listing still reports google_play_feature_graphic pending');
-  if (!listing.repositoryPending?.includes('app_store_screenshot_submission_packaging')) throw new Error('App Store screenshot packaging blocker must remain explicit');
 
   const readiness = readJson(readinessPath);
   const c = readiness.mobile20CFeatureGraphicContract;
   if (c?.repositoryStatus !== 'repository_asset_visual_approved' || c?.assetPath !== assetRel || c?.alpha !== false) throw new Error('store readiness MOBILE-20C authority mismatch');
   if (readiness.mobile20StoreCaptureContract?.remainingRepositoryAssetBlockers?.includes('google_play_feature_graphic')) throw new Error('store readiness still reports feature graphic pending');
-  if (!readiness.mobile20StoreCaptureContract?.remainingRepositoryAssetBlockers?.includes('app_store_screenshot_submission_packaging')) throw new Error('App Store packaging blocker must remain explicit');
 
   fs.mkdirSync(artifactDir, { recursive: true });
   const png = fs.readFileSync(assetPath);

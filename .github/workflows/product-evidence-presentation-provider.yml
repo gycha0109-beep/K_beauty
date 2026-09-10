@@ -1,0 +1,43 @@
+name: Product Evidence Presentation Provider
+
+on:
+  pull_request:
+    paths:
+      - "lib/product-evidence-presentation-provider.js"
+      - "lib/product-evidence-presentation-contract.js"
+      - "scripts/verify-product-evidence-presentation-provider.mjs"
+      - "supabase/migrations/20260910103500_product_evidence_presentation_authority_read_v1.sql"
+      - ".github/workflows/product-evidence-presentation-provider.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/product-evidence-presentation-provider.js"
+      - "lib/product-evidence-presentation-contract.js"
+      - "scripts/verify-product-evidence-presentation-provider.mjs"
+      - "supabase/migrations/20260910103500_product_evidence_presentation_authority_read_v1.sql"
+      - ".github/workflows/product-evidence-presentation-provider.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-product-evidence-presentation-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify canonical explanation-only provider
+        run: node scripts/verify-product-evidence-presentation-provider.mjs
