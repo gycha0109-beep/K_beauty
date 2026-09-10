@@ -6,9 +6,14 @@ export type MigrationDecision =
   | "REVIEW_REQUIRED"
   | "DO_NOT_MIGRATE";
 
+export type ListingIdSource =
+  | { kind: "query"; key: string }
+  | { kind: "path"; pattern: string; group?: number };
+
 export type ProductRouteRule = {
   path_pattern: string;
   required_query_all?: string[];
+  listing_id_source?: ListingIdSource;
 };
 
 export type HostRule = {
@@ -41,6 +46,8 @@ export type LegacyOfferClassification = {
   name: string | null;
   host: string | null;
   normalizedUrl: string | null;
+  canonicalListingUrl: string | null;
+  listingId: string | null;
   linkRole: LinkRole;
   linkState: EvidenceState;
   sellerKey: string | null;
@@ -95,12 +102,43 @@ function routeMatches(url: URL, route: ProductRouteRule): boolean {
   return (route.required_query_all ?? []).every((key) => url.searchParams.has(key));
 }
 
+function extractListingId(url: URL, source: ListingIdSource | undefined): string | null {
+  if (!source) return null;
+  if (source.kind === "query") {
+    const value = url.searchParams.get(source.key)?.trim() ?? "";
+    return value || null;
+  }
+  try {
+    const match = url.pathname.match(new RegExp(source.pattern));
+    const value = match?.[source.group ?? 1]?.trim() ?? "";
+    return value || null;
+  } catch {
+    return null;
+  }
+}
+
+function canonicalListingUrl(
+  url: URL,
+  host: string,
+  source: ListingIdSource | undefined,
+  listingId: string | null,
+): string | null {
+  if (!source || !listingId) return null;
+  const canonical = new URL(`https://${host}${url.pathname}`);
+  if (source.kind === "query") {
+    canonical.searchParams.set(source.key, listingId);
+  }
+  return canonical.toString();
+}
+
 function classifyLink(
   rawUrl: string | null,
   rules: OfferSourceRules,
 ): {
   host: string | null;
   normalizedUrl: string | null;
+  canonicalListingUrl: string | null;
+  listingId: string | null;
   role: LinkRole;
   state: EvidenceState;
   sellerKey: string | null;
@@ -110,6 +148,8 @@ function classifyLink(
     return {
       host: null,
       normalizedUrl: null,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "unknown",
       state: "unknown",
       sellerKey: null,
@@ -124,6 +164,8 @@ function classifyLink(
     return {
       host: null,
       normalizedUrl: null,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "unknown",
       state: "unknown",
       sellerKey: null,
@@ -135,6 +177,8 @@ function classifyLink(
     return {
       host: normalizeHost(url.hostname),
       normalizedUrl: null,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "unknown",
       state: "unknown",
       sellerKey: null,
@@ -149,6 +193,8 @@ function classifyLink(
     return {
       host,
       normalizedUrl,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "unknown",
       state: "unknown",
       sellerKey: null,
@@ -160,6 +206,8 @@ function classifyLink(
     return {
       host,
       normalizedUrl,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "reference_page",
       state: "verified",
       sellerKey: null,
@@ -172,6 +220,8 @@ function classifyLink(
     return {
       host,
       normalizedUrl,
+      canonicalListingUrl: null,
+      listingId: null,
       role: "listing_page",
       state: "verified",
       sellerKey: rule.seller_key,
@@ -179,21 +229,30 @@ function classifyLink(
     };
   }
 
-  const productMatch = (rule.product_routes ?? []).some((route) => routeMatches(url, route));
-  if (productMatch) {
+  const productRoute = (rule.product_routes ?? []).find((route) => routeMatches(url, route));
+  if (productRoute) {
+    const listingId = extractListingId(url, productRoute.listing_id_source);
+    const canonicalUrl = canonicalListingUrl(url, host, productRoute.listing_id_source, listingId);
+    const identityReady = Boolean(listingId && canonicalUrl);
     return {
       host,
       normalizedUrl,
+      canonicalListingUrl: canonicalUrl,
+      listingId,
       role: "seller_page",
-      state: "verified",
+      state: identityReady ? "verified" : "unknown",
       sellerKey: rule.seller_key,
-      reasons: ["known_seller_product_route"],
+      reasons: identityReady
+        ? ["known_seller_product_route", "stable_listing_identity_extracted"]
+        : ["known_seller_product_route", "stable_listing_identity_missing"],
     };
   }
 
   return {
     host,
     normalizedUrl,
+    canonicalListingUrl: null,
+    listingId: null,
     role: "unknown",
     state: "unknown",
     sellerKey: rule.seller_key,
@@ -266,6 +325,8 @@ export function classifyLegacyOffer(
     name: input.name,
     host: link.host,
     normalizedUrl: link.normalizedUrl,
+    canonicalListingUrl: link.canonicalListingUrl,
+    listingId: link.listingId,
     linkRole: link.role,
     linkState: link.state,
     sellerKey: link.sellerKey,
