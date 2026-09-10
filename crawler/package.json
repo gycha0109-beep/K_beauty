@@ -28,6 +28,7 @@
     "verify:identity-key-repair-plan": "tsx test-identity-key-repair-plan.ts",
     "verify:identity-key-repair-confirm:local-runtime": "tsx tests/verify-identity-key-repair-confirm-local-runtime.ts",
     "verify:identity-resolution": "tsx test-identity-resolution.ts",
+    "verify:product-offers:local-runtime": "tsx tests/verify-product-offers-local-runtime.ts",
     "verify:product-source-bindings:local-runtime": "tsx tests/verify-product-source-bindings-local-runtime.ts",
     "verify:security-policy-runtime-import": "node --loader ./image-source-policy-loader.mjs --import tsx test-security-policy-runtime-import.ts",
     "reviews:export": "tsx export-product-reviews.ts",
