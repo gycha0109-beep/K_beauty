@@ -57,6 +57,8 @@ run("Seller listing evidence-first capture wiring", node, ["scripts/verify-selle
 run("Seller listing parser fixture admission", node, ["scripts/verify-seller-listing-parser-fixture-v1.mjs"]);
 run("Olive Young bounded public capture policy", node, ["scripts/verify-oliveyoung-public-listing-capture-v1.mjs"]);
 run("Olive Young capture attempt artifact verifier syntax", node, ["--check", "scripts/verify-oliveyoung-public-capture-attempt-artifact-v1.mjs"]);
+run("Torriden bounded public capture policy", node, ["scripts/verify-torriden-public-listing-capture-v1.mjs"]);
+run("Torriden capture attempt artifact verifier syntax", node, ["--check", "scripts/verify-torriden-public-capture-attempt-artifact-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
