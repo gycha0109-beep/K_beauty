@@ -1,0 +1,207 @@
+{
+  "version": "trust-p7-sunscreen-stage-b-identity-source-research-v1",
+  "stage": "TRUST-P7",
+  "scope": "targeted-sunscreen-stage-b-identity-source-research-freeze",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "30a11e00273462391374dcc7efb16325cf018fcb",
+    "upstream_p6_merge_sha": "e655c1102998dfa769a1a8fb200d7fe5e0c60d66",
+    "upstream_p6_artifact": "evidence/product-fact-subject-coverage-v1/trust-p6-sunscreen-product-fact-subject-coverage-v1.json",
+    "researched_at": "2026-09-10T21:12:00+09:00",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer": "product-fact-subject-identity-v1",
+    "proposition_serializer": "product-fact-proposition-pilot-v1",
+    "identity_resolution_version": "trust-p7-sunscreen-stage-b-identity-v1",
+    "research_method": "first_party_direct_body_review",
+    "research_role": "adjudication_freeze_not_product_fact_evidence_ingest"
+  },
+  "allowed_fact_keys": ["spf_value", "uva_label"],
+  "counts": {
+    "p6_research_ready_products": 4,
+    "researched_products": 4,
+    "identity_resolved_products": 4,
+    "adoption_preflight_eligible": 3,
+    "fact_source_recovery_required": 1,
+    "mechanical_subject_creation_eligible": 0,
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_writes": 0
+  },
+  "invariants": {
+    "subject_creation_authorized_by_this_artifact": false,
+    "fact_ingest_authorized_by_this_artifact": false,
+    "confirmation_authorized_by_this_artifact": false,
+    "recommendation_or_ranking_changes": 0,
+    "non_first_party_sources_used_for_positive_fact_support": 0,
+    "new_parallel_subject_materialization_path_required": false
+  },
+  "products": [
+    {
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "catalog": {"brand": "라로슈포제", "name": "안뗄리오스 선 플루이드", "size_ml": 50},
+      "identity": {
+        "status": "resolved",
+        "relation": "equivalent",
+        "variant_key_proposal": "ANTHELIOS_SUN_FLUID_KR_50ML",
+        "formulation_revision_key_proposal": "trust-p7-lrp-4833-current",
+        "market_applicability_proposal": "KR",
+        "region_applicability_proposal": null,
+        "basis": "La Roche-Posay Korea first-party product page matches brand, Korean product name, 50 ml size and current ingredient disclosure."
+      },
+      "sources": [
+        {
+          "url": "https://www.larocheposay.co.kr/product/view/4833.do",
+          "publisher": "La Roche-Posay Korea",
+          "source_kind": "official_product_page",
+          "market": "KR",
+          "identity_support": true,
+          "machine_verifiable_fact_support": false,
+          "scope_relation_to_subject_proposal": "equivalent",
+          "observed_claims": []
+        }
+      ],
+      "accepted_fact_support": [],
+      "disposition": "FACT_SOURCE_RECOVERY_REQUIRED",
+      "gate_note": "Exact KR identity is resolved, but the first-party machine-readable body does not expose an admissible SPF numeric value or PA label. Do not infer those values from product imagery, reviews, Hwahae, or a non-adjudicated overseas variant."
+    },
+    {
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "catalog": {"brand": "뷰티오브조선", "name": "맑은쌀 선크림 아쿠아프레쉬", "size_ml": 50},
+      "identity": {
+        "status": "resolved",
+        "relation": "equivalent",
+        "variant_key_proposal": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML",
+        "formulation_revision_key_proposal": "trust-p7-boj-relief-sun-aqua-fresh-current",
+        "market_applicability_proposal": null,
+        "region_applicability_proposal": null,
+        "basis": "Beauty of Joseon first-party product page matches the Aqua-Fresh product identity, 50 ml size, current ingredient list, SPF50+ and PA++++. Existing BOJ Product Fact precedent permits a globally scoped current subject when the official source is not market-restricted."
+      },
+      "sources": [
+        {
+          "url": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+          "publisher": "Beauty of Joseon",
+          "source_kind": "official_product_page",
+          "market": null,
+          "identity_support": true,
+          "machine_verifiable_fact_support": true,
+          "scope_relation_to_subject_proposal": "equivalent",
+          "observed_claims": ["50 mL", "SPF50+", "PA++++"]
+        }
+      ],
+      "accepted_fact_support": [
+        {"fact_key": "spf_value", "raw_claim": "SPF50+", "normalized_value": 50, "evidence_source_url": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh"},
+        {"fact_key": "uva_label", "raw_claim": "PA++++", "normalized_value": "PA++++", "evidence_source_url": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh"}
+      ],
+      "disposition": "ADOPTION_PREFLIGHT_ELIGIBLE",
+      "gate_note": "Eligible only for the existing governed hosted adoption preflight; this artifact itself does not register a Subject or ingest Evidence."
+    },
+    {
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "catalog": {"brand": "에스트라", "name": "더마 UV365 레드 카밍 톤업 선스크린", "size_ml": 40},
+      "identity": {
+        "status": "resolved",
+        "relation": "equivalent",
+        "variant_key_proposal": "DERMA_UV365_RED_CALMING_TONE_UP_40ML_KR",
+        "formulation_revision_key_proposal": "trust-p7-aestura-red-calming-current",
+        "market_applicability_proposal": "KR",
+        "region_applicability_proposal": null,
+        "basis": "AESTURA Korea and AESTURA international first-party pages agree on the 40 ml DERMA UV365 Red Calming/레드진정 Tone-up product and ingredient ordering; the international page exposes SPF50+ and PA++++."
+      },
+      "localized_name_adjudication": {
+        "catalog_label": "레드 카밍",
+        "official_kr_label": "레드진정",
+        "official_international_label": "Red Calming",
+        "disposition": "equivalent_localized_alias"
+      },
+      "sources": [
+        {
+          "url": "https://www.aestura.com/web/product/view.do?prdSeq=1108",
+          "publisher": "AESTURA Korea",
+          "source_kind": "official_product_page",
+          "market": "KR",
+          "identity_support": true,
+          "machine_verifiable_fact_support": false,
+          "scope_relation_to_subject_proposal": "equivalent",
+          "observed_claims": ["40ml", "더마UV365 레드진정 톤업 선크림"]
+        },
+        {
+          "url": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+          "publisher": "AESTURA",
+          "source_kind": "official_product_page",
+          "market": null,
+          "identity_support": true,
+          "machine_verifiable_fact_support": true,
+          "scope_relation_to_subject_proposal": "broader",
+          "observed_claims": ["40ml", "SPF 50+", "PA++++", "DERMA UV365 Red Calming Tone-up Sunscreen"]
+        }
+      ],
+      "accepted_fact_support": [
+        {"fact_key": "spf_value", "raw_claim": "SPF 50+", "normalized_value": 50, "evidence_source_url": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen"},
+        {"fact_key": "uva_label", "raw_claim": "PA++++", "normalized_value": "PA++++", "evidence_source_url": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen"}
+      ],
+      "disposition": "ADOPTION_PREFLIGHT_ELIGIBLE",
+      "gate_note": "The broader international fact source is narrowed to the KR subject only because a separate first-party KR page establishes the same current product/formulation identity. Hosted preflight must still reject any live mismatch."
+    },
+    {
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "catalog": {"brand": "에스트라", "name": "더마UV365 장벽수분 무기자차 선크림", "size_ml": 40},
+      "identity": {
+        "status": "resolved",
+        "relation": "equivalent",
+        "variant_key_proposal": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR",
+        "formulation_revision_key_proposal": "trust-p7-aestura-barrier-hydro-mineral-current",
+        "market_applicability_proposal": "KR",
+        "region_applicability_proposal": null,
+        "basis": "AESTURA Korea and AESTURA international first-party pages agree on the 40 ml DERMA UV365 Barrier Hydro Mineral product and ingredient ordering; the international page exposes SPF50+ and PA++++."
+      },
+      "sources": [
+        {
+          "url": "https://www.aestura.com/web/product/view.do?prdSeq=1107",
+          "publisher": "AESTURA Korea",
+          "source_kind": "official_product_page",
+          "market": "KR",
+          "identity_support": true,
+          "machine_verifiable_fact_support": false,
+          "scope_relation_to_subject_proposal": "equivalent",
+          "observed_claims": ["40ml", "더마UV365 장벽수분 무기자차 선크림"]
+        },
+        {
+          "url": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+          "publisher": "AESTURA",
+          "source_kind": "official_product_page",
+          "market": null,
+          "identity_support": true,
+          "machine_verifiable_fact_support": true,
+          "scope_relation_to_subject_proposal": "broader",
+          "observed_claims": ["40ml", "SPF 50+", "PA++++", "DERMA UV365 Barrier Hydro Mineral Sunscreen"]
+        }
+      ],
+      "accepted_fact_support": [
+        {"fact_key": "spf_value", "raw_claim": "SPF 50+", "normalized_value": 50, "evidence_source_url": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen"},
+        {"fact_key": "uva_label", "raw_claim": "PA++++", "normalized_value": "PA++++", "evidence_source_url": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen"}
+      ],
+      "disposition": "ADOPTION_PREFLIGHT_ELIGIBLE",
+      "gate_note": "The broader international fact source is narrowed to the KR subject only because a separate first-party KR page establishes the same current product/formulation identity. Hosted preflight must still reject any live mismatch."
+    }
+  ],
+  "reuse": {
+    "research_path": "scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1.mjs",
+    "adoption_path": "scripts/product-evidence/product-fact-catalog-hosted-adoption-wave-1-v1.mjs",
+    "controlled_rpcs": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ]
+  },
+  "next_gate": {
+    "eligible_product_ids": [
+      "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "2d3591f2-2216-4043-8493-a9492806ef8b"
+    ],
+    "blocked_product_ids": ["9983f167-24e7-4223-bd86-446ce6ced31b"],
+    "eligible_action": "existing_hosted_adoption_preflight_only",
+    "blocked_action": "first_party_fact_source_recovery_without_subject_or_fact_write"
+  }
+}
