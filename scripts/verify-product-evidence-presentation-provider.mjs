@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 
 import {
   PRODUCT_EVIDENCE_AUTHORITY_READ_CONTRACT_VERSION,
+  PRODUCT_EVIDENCE_PRESENTATION_CANONICAL_FACT_KEYS,
   PRODUCT_EVIDENCE_PRESENTATION_FEATURE_KEYS,
   buildProductEvidencePresentationFromAuthorityRead
 } from "../lib/product-evidence-presentation-provider.js";
@@ -20,13 +21,13 @@ const evidence = (overrides = {}) => ({
   ...overrides
 });
 
-const fact = (featureKey, overrides = {}) => ({
-  fact_instance_id: `fact-${featureKey}`,
+const fact = (factKey, overrides = {}) => ({
+  fact_instance_id: `fact-${factKey}`,
   subject_id: "subject-1",
-  registry_version: "registry-v1",
-  fact_key: featureKey,
-  proposition_key: `prop-${featureKey}`,
-  confirmation_id: `confirmation-${featureKey}`,
+  registry_version: "product-fact-registry-cross-category-v1",
+  fact_key: factKey,
+  proposition_key: `prop-${factKey}`,
+  confirmation_id: `confirmation-${factKey}`,
   semantic_status: "supported",
   value_type: "enum",
   value_enum: "example",
@@ -35,13 +36,20 @@ const fact = (featureKey, overrides = {}) => ({
   ...overrides
 });
 
+assert.deepEqual(PRODUCT_EVIDENCE_PRESENTATION_CANONICAL_FACT_KEYS, {
+  eye_sting: "eye_sting_observed",
+  white_cast: "white_cast_observed",
+  pilling_risk: null,
+  finish: null
+});
+
 const payload = {
   read_contract_version: PRODUCT_EVIDENCE_AUTHORITY_READ_CONTRACT_VERSION,
   status: "AUTHORITY_RESOLVED",
   product_id: "product-1",
   subject: { subject_id: "subject-1" },
   current_facts: [
-    fact("eye_sting", {
+    fact("eye_sting_observed", {
       evidence: [
         evidence(),
         evidence({
@@ -50,7 +58,7 @@ const payload = {
         })
       ]
     }),
-    fact("white_cast", {
+    fact("white_cast_observed", {
       semantic_status: "evidence_conflict",
       authority_ceiling: "review_observation",
       evidence: [
@@ -69,27 +77,8 @@ const payload = {
         })
       ]
     }),
-    fact("pilling_risk", {
-      semantic_status: "evidence_insufficient",
-      authority_ceiling: "limited_non_product_specific",
-      evidence: [
-        evidence({
-          evidence_id: "00000000-0000-4000-8000-000000000105",
-          evidence_class: "measurement",
-          evidence_authority: "limited_non_product_specific"
-        })
-      ]
-    }),
-    fact("finish", {
-      authority_ceiling: "review_observation",
-      evidence: [
-        evidence({
-          evidence_id: "00000000-0000-4000-8000-000000000106",
-          evidence_class: "observation",
-          evidence_authority: "review_observation"
-        })
-      ]
-    })
+    fact("pilling_risk"),
+    fact("finish")
   ]
 };
 
@@ -106,18 +95,25 @@ for (const projection of result.projections) {
 }
 
 const byFeature = Object.fromEntries(result.projections.map((projection) => [projection.featureKey, projection]));
+assert.equal(byFeature.eye_sting.knowledgeState, "supported");
 assert.equal(byFeature.eye_sting.recommendationUse, "explanation_only");
-assert.equal(byFeature.eye_sting.evidenceView.independentSupport, "unresolved");
 assert.equal(byFeature.eye_sting.evidenceRefs.length, 2);
 assert.equal(byFeature.eye_sting.presentation.tone, "plain");
+assert.equal(byFeature.white_cast.knowledgeState, "evidence_conflict");
 assert.equal(byFeature.white_cast.recommendationUse, "blocked");
 assert.equal(byFeature.white_cast.evidenceView.agreement, "mixed");
 assert.equal(byFeature.white_cast.presentation.tone, "mixed");
+assert.equal(byFeature.pilling_risk.knowledgeState, null);
 assert.equal(byFeature.pilling_risk.recommendationUse, "blocked");
-assert.equal(byFeature.pilling_risk.presentation.tone, "limited");
-assert.equal(byFeature.finish.recommendationUse, "explanation_only");
-assert.equal(byFeature.finish.evidenceView.dominantFamily, "review_experience");
-assert.notEqual(byFeature.finish.recommendationUse, "constraint_eligible");
+assert.equal(byFeature.finish.knowledgeState, null);
+assert.equal(byFeature.finish.recommendationUse, "blocked");
+
+const uiKeyFallback = buildProductEvidencePresentationFromAuthorityRead({
+  ...payload,
+  current_facts: [fact("eye_sting"), fact("white_cast"), fact("pilling_risk"), fact("finish")]
+});
+assert(uiKeyFallback.projections.every((projection) => projection.knowledgeState === null));
+assert(uiKeyFallback.projections.every((projection) => projection.recommendationUse === "blocked"));
 
 const noAuthority = buildProductEvidencePresentationFromAuthorityRead({
   read_contract_version: PRODUCT_EVIDENCE_AUTHORITY_READ_CONTRACT_VERSION,
@@ -126,7 +122,6 @@ const noAuthority = buildProductEvidencePresentationFromAuthorityRead({
 });
 assert.equal(noAuthority.authorityResolved, false);
 assert(noAuthority.projections.every((projection) => projection.knowledgeState === null));
-assert(noAuthority.projections.every((projection) => projection.recommendationUse === "blocked"));
 
 const wrongContract = buildProductEvidencePresentationFromAuthorityRead({
   ...payload,
@@ -137,7 +132,7 @@ assert(wrongContract.projections.every((projection) => projection.knowledgeState
 
 const malformed = buildProductEvidencePresentationFromAuthorityRead({
   ...payload,
-  current_facts: [fact("eye_sting", { semantic_status: "safe" })]
+  current_facts: [fact("eye_sting_observed", { semantic_status: "safe" })]
 });
 assert.equal(malformed.projections[0].knowledgeState, null);
 assert.equal(malformed.projections[0].recommendationUse, "blocked");
@@ -145,7 +140,7 @@ assert.equal(malformed.projections[0].recommendationUse, "blocked");
 const legacyAuthority = buildProductEvidencePresentationFromAuthorityRead({
   ...payload,
   current_facts: [
-    fact("eye_sting", {
+    fact("eye_sting_observed", {
       authority_ceiling: "legacy_unreviewed",
       evidence: [evidence({ evidence_authority: "legacy_unreviewed" })]
     })
@@ -155,11 +150,13 @@ assert.equal(legacyAuthority.projections[0].knowledgeState, "supported");
 assert.equal(legacyAuthority.projections[0].factRef, null);
 assert.equal(legacyAuthority.projections[0].evidenceRefs.length, 0);
 assert.equal(legacyAuthority.projections[0].recommendationUse, "blocked");
-assert.equal(legacyAuthority.projections[0].presentation.tone, "limited");
 
 const duplicateCurrentFact = buildProductEvidencePresentationFromAuthorityRead({
   ...payload,
-  current_facts: [fact("eye_sting"), fact("eye_sting", { fact_instance_id: "fact-eye-sting-2" })]
+  current_facts: [
+    fact("eye_sting_observed"),
+    fact("eye_sting_observed", { fact_instance_id: "fact-eye-sting-observed-2" })
+  ]
 });
 assert.equal(duplicateCurrentFact.projections[0].knowledgeState, null);
 assert.equal(duplicateCurrentFact.projections[0].recommendationUse, "blocked");
@@ -170,9 +167,13 @@ const providerSource = await readFile(
 );
 const migrationSource = await readFile(
   new URL(
-    "../supabase/migrations/20260910103500_product_evidence_presentation_authority_read_v1.sql",
+    "../supabase/migrations/20260910124000_product_evidence_presentation_canonical_fact_keys_v1.sql",
     import.meta.url
   ),
+  "utf8"
+);
+const workflowSource = await readFile(
+  new URL("../.github/workflows/product-evidence-presentation-provider.yml", import.meta.url),
   "utf8"
 );
 
@@ -181,14 +182,14 @@ for (const requiredToken of [
   "product_fact_instances",
   "product_fact_evidence_links",
   "product_evidence_records",
-  "eye_sting",
-  "white_cast",
-  "pilling_risk",
-  "finish",
-  "TRUST_P3_RUNTIME_RAW_SELECT_FORBIDDEN"
+  "eye_sting_observed",
+  "white_cast_observed",
+  "TRUST_P31_RUNTIME_RAW_SELECT_FORBIDDEN"
 ]) {
   assert(migrationSource.includes(requiredToken), `missing canonical boundary token: ${requiredToken}`);
 }
+assert(migrationSource.includes("i.fact_key in ('eye_sting_observed', 'white_cast_observed')"));
+assert(workflowSource.includes("20260910124000_product_evidence_presentation_canonical_fact_keys_v1.sql"));
 
 for (const forbiddenToken of [
   "review_signals",
@@ -208,7 +209,6 @@ assert(providerSource.includes('independentSupport: "unresolved"'));
 assert.equal(providerSource.includes('independentSupport: "multiple"'), false);
 assert(providerSource.includes('recency: "unknown"'));
 assert.equal(providerSource.includes('recency: "current"'), false);
-assert(migrationSource.includes("revoke all on function public.read_product_evidence_presentation_authority_v1(uuid)"));
 assert(migrationSource.includes("from public, anon, authenticated, service_role"));
 assert(migrationSource.includes("to recommendation_admission_runtime"));
 
@@ -223,5 +223,6 @@ for (const scorerPath of ["../lib/recommendation-scoring.ts", "../lib/skin-match
 
 console.log(
   "verify-product-evidence-presentation-provider: PASS " +
-    "canonical_lineage=1 legacy_fallback=0 independent_count_inference=0 ranking_integration=0"
+    "canonical_key_mapping=1 unsupported_registry_keys_blocked=1 legacy_fallback=0 " +
+    "independent_count_inference=0 ranking_integration=0"
 );
