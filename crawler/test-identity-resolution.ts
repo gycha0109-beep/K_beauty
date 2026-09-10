@@ -80,6 +80,84 @@ assert.equal(
 }
 
 {
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "Different Brand",
+      product_name_raw: "Different Listing Title",
+    },
+    [baseProduct],
+    [
+      {
+        product_id: "product-1",
+        source_name: "hwahae",
+        external_type: "products",
+        external_id: "101",
+        binding_state: "resolved",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.productId, "product-1");
+  assert.equal(result.method, "external_id_exact");
+}
+
+{
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "Different Brand",
+      product_name_raw: "Different Listing Title",
+    },
+    [
+      {
+        ...baseProduct,
+        external_source: "hwahae",
+        external_type: "products",
+        external_id: "101",
+      },
+    ],
+    [
+      {
+        product_id: "product-1",
+        source_name: "hwahae",
+        external_type: "products",
+        external_id: "101",
+        binding_state: "resolved",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "resolved");
+  assert.equal(result.productId, "product-1");
+  assert.equal(result.method, "external_id_exact");
+}
+
+{
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "Different Brand",
+      product_name_raw: "Different Listing Title",
+    },
+    [baseProduct],
+    [
+      {
+        product_id: "product-1",
+        source_name: "hwahae",
+        external_type: "products",
+        external_id: "101",
+        binding_state: "retired",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.productId, null);
+}
+
+{
   const result = resolveProductIdentity(baseCandidate, [
     baseProduct,
     {
@@ -109,6 +187,107 @@ assert.equal(
 
   assert.equal(result.state, "identity_ambiguous");
   assert.equal(result.productId, null);
+}
+
+{
+  const result = resolveProductIdentity(
+    baseCandidate,
+    [
+      baseProduct,
+      {
+        ...baseProduct,
+        id: "product-2",
+        brand: "다른 브랜드",
+        name: "다른 제품",
+        brand_en: "Other Brand",
+        name_en: "Other Product",
+      },
+    ],
+    [
+      {
+        product_id: "product-2",
+        source_name: "hwahae",
+        external_type: "products",
+        external_id: "101",
+        binding_state: "resolved",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "identity_ambiguous");
+  assert.equal(result.productId, null);
+  assert.equal(result.blockers.includes("strong_signal_conflict"), true);
+}
+
+{
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "Different Brand",
+      product_name_raw: "Different Listing Title",
+    },
+    [{ ...baseProduct, category: "cleanser" }],
+    [
+      {
+        product_id: "product-1",
+        source_name: "hwahae",
+        external_type: "products",
+        external_id: "101",
+        binding_state: "resolved",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.productId, null);
+  assert.equal(result.blockers.includes("category_conflict"), true);
+}
+
+{
+  const result = resolveProductIdentity(
+    {
+      ...baseCandidate,
+      brand_name_raw: "Different Brand",
+      product_name_raw: "Different Listing Title",
+    },
+    [baseProduct],
+    [
+      {
+        product_id: "product-1",
+        source_name: "oliveyoung",
+        external_type: "goods",
+        external_id: "oy-101",
+        binding_state: "resolved",
+      },
+    ],
+  );
+
+  assert.equal(result.state, "unresolved");
+  assert.equal(result.productId, null);
+}
+
+{
+  assert.throws(
+    () =>
+      resolveProductIdentity(
+        {
+          ...baseCandidate,
+          brand_name_raw: "Different Brand",
+          product_name_raw: "Different Listing Title",
+        },
+        [baseProduct],
+        [
+          {
+            product_id: "missing-product",
+            source_name: "hwahae",
+            external_type: "products",
+            external_id: "101",
+            binding_state: "resolved",
+          },
+        ],
+      ),
+    /identity_resolution_internal_product_missing/,
+  );
 }
 
 {
