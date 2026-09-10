@@ -31,7 +31,7 @@ function classify(overrides: Partial<Parameters<typeof classifyLegacyOffer>[0]> 
   );
 }
 
-assert.equal(rules.version, "1.0");
+assert.equal(rules.version, "1.1");
 
 const hwahae = classify({
   buyLink: "https://www.hwahae.co.kr/goods/62599",
@@ -40,6 +40,8 @@ const hwahae = classify({
 assert.equal(hwahae.linkRole, "reference_page");
 assert.equal(hwahae.linkState, "verified");
 assert.equal(hwahae.sellerKey, null);
+assert.equal(hwahae.listingId, null);
+assert.equal(hwahae.canonicalListingUrl, null);
 assert.equal(hwahae.priceState, "unknown");
 assert.equal(hwahae.migrationDecision, "DO_NOT_MIGRATE");
 
@@ -48,8 +50,20 @@ assert.equal(oliveYoung.host, "oliveyoung.co.kr");
 assert.equal(oliveYoung.linkRole, "seller_page");
 assert.equal(oliveYoung.linkState, "verified");
 assert.equal(oliveYoung.sellerKey, "oliveyoung");
+assert.equal(oliveYoung.listingId, "A000000000001");
+assert.equal(
+  oliveYoung.canonicalListingUrl,
+  "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001",
+);
 assert.equal(oliveYoung.priceState, "unknown");
 assert.equal(oliveYoung.migrationDecision, "LINK_ONLY_READY");
+
+const oliveYoungTrackingHeavy = classify({
+  buyLink:
+    "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001&dispCatNo=1000001&utm_source=google&gclid=test&t_page=search&trackingCd=Result_1",
+});
+assert.equal(oliveYoungTrackingHeavy.listingId, oliveYoung.listingId);
+assert.equal(oliveYoungTrackingHeavy.canonicalListingUrl, oliveYoung.canonicalListingUrl);
 
 const oliveYoungMissingIdentity = classify({
   buyLink: "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do",
@@ -63,6 +77,7 @@ const oliveYoungShortRoute = classify({
 assert.equal(oliveYoungShortRoute.linkRole, "unknown");
 assert.equal(oliveYoungShortRoute.linkState, "unknown");
 assert.equal(oliveYoungShortRoute.sellerKey, "oliveyoung");
+assert.equal(oliveYoungShortRoute.listingId, null);
 assert.equal(oliveYoungShortRoute.migrationDecision, "REVIEW_REQUIRED");
 
 const naverProduct = classify({
@@ -70,6 +85,11 @@ const naverProduct = classify({
 });
 assert.equal(naverProduct.linkRole, "seller_page");
 assert.equal(naverProduct.sellerKey, "naver_brand_store");
+assert.equal(naverProduct.listingId, "4493781055");
+assert.equal(
+  naverProduct.canonicalListingUrl,
+  "https://brand.naver.com/rejuran/products/4493781055",
+);
 assert.equal(naverProduct.migrationDecision, "LINK_ONLY_READY");
 
 const naverCategory = classify({
@@ -77,6 +97,13 @@ const naverCategory = classify({
 });
 assert.equal(naverCategory.linkRole, "listing_page");
 assert.equal(naverCategory.migrationDecision, "DO_NOT_MIGRATE");
+
+const cafe24Path = classify({
+  buyLink: "https://roundlab.co.kr/product/자작나무-수분-수딩젤-150ml/200/?srsltid=tracking",
+});
+assert.equal(cafe24Path.listingId, "200");
+assert.equal(cafe24Path.canonicalListingUrl?.endsWith("/200/"), true);
+assert.equal(cafe24Path.migrationDecision, "LINK_ONLY_READY");
 
 const sourceUrlIsNotPriceProof = classify({
   sourceUrl: "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001",
@@ -111,12 +138,31 @@ const malformed = classify({ buyLink: "not a url" });
 assert.equal(malformed.linkRole, "unknown");
 assert.equal(malformed.migrationDecision, "REVIEW_REQUIRED");
 
-const roundLab = classify({
-  buyLink: "https://roundlab.co.kr/product/자작나무-수분-수딩젤-150ml/200/",
-});
-assert.equal(roundLab.linkRole, "seller_page");
-assert.equal(roundLab.sellerKey, "roundlab_official");
-assert.equal(roundLab.migrationDecision, "LINK_ONLY_READY");
+const rulesWithoutListingIdentity: OfferSourceRules = {
+  version: "test",
+  hosts: {
+    "seller.example": {
+      kind: "seller",
+      seller_key: "seller",
+      product_routes: [{ path_pattern: "^/product/\\d+$" }],
+    },
+  },
+};
+const missingStableIdentity = classifyLegacyOffer(
+  {
+    productId: "00000000-0000-0000-0000-000000000002",
+    brand: "테스트",
+    name: "테스트",
+    buyLink: "https://seller.example/product/123",
+    priceMin: 1000,
+    priceMax: 1000,
+  },
+  rulesWithoutListingIdentity,
+);
+assert.equal(missingStableIdentity.linkRole, "seller_page");
+assert.equal(missingStableIdentity.linkState, "unknown");
+assert.equal(missingStableIdentity.listingId, null);
+assert.equal(missingStableIdentity.migrationDecision, "REVIEW_REQUIRED");
 
 const productionHosts = [
   "abib.com",
@@ -150,12 +196,21 @@ for (const host of productionHosts) {
   assert.ok(rules.hosts[host], `missing production host rule: ${host}`);
 }
 
+for (const [host, rule] of Object.entries(rules.hosts)) {
+  if (rule.kind !== "seller") continue;
+  for (const route of rule.product_routes ?? []) {
+    assert.ok(route.listing_id_source, `missing stable listing identity rule: ${host}`);
+  }
+}
+
 console.log("Legacy offer classifier verification PASS");
 console.log(`- rules_version: ${rules.version}`);
 console.log(`- production_hosts_covered: ${productionHosts.length}`);
 console.log("- hwahae_reference_not_offer: PASS");
+console.log("- stable_listing_identity_required: PASS");
+console.log("- seller_origin_preserved: PASS");
+console.log("- tracking_heavy_url_canonicalized: PASS");
 console.log("- oliveyoung_short_route_review_required: PASS");
-console.log("- seller_route_requires_product_identity: PASS");
 console.log("- source_url_not_price_proof: PASS");
 console.log("- explicit_price_provenance_required_for_auto_ready: PASS");
 console.log("- product_writes: 0");

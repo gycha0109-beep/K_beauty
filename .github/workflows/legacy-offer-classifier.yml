@@ -6,9 +6,13 @@ on:
       - main
     paths:
       - "crawler/lib/offers/legacy-offer-classifier.ts"
+      - "crawler/lib/offers/legacy-offer-migration.ts"
       - "crawler/config/offer-source-rules.json"
       - "crawler/legacy-offer-migration-report.ts"
+      - "crawler/legacy-offer-migration-manifest.ts"
+      - "crawler/legacy-offer-migration-dry-run.ts"
       - "crawler/test-legacy-offer-classifier.ts"
+      - "crawler/test-legacy-offer-migration.ts"
       - "crawler/package.json"
       - ".github/workflows/legacy-offer-classifier.yml"
   push:
@@ -16,9 +20,13 @@ on:
       - main
     paths:
       - "crawler/lib/offers/legacy-offer-classifier.ts"
+      - "crawler/lib/offers/legacy-offer-migration.ts"
       - "crawler/config/offer-source-rules.json"
       - "crawler/legacy-offer-migration-report.ts"
+      - "crawler/legacy-offer-migration-manifest.ts"
+      - "crawler/legacy-offer-migration-dry-run.ts"
       - "crawler/test-legacy-offer-classifier.ts"
+      - "crawler/test-legacy-offer-migration.ts"
       - "crawler/package.json"
       - ".github/workflows/legacy-offer-classifier.yml"
 
@@ -58,6 +66,10 @@ jobs:
       - name: Verify legacy offer classifier
         working-directory: crawler
         run: npm run verify:legacy-offer-classifier
+
+      - name: Verify legacy offer migration manifest and dry-run
+        working-directory: crawler
+        run: npm run verify:legacy-offer-migration
 
       - name: Typecheck crawler
         working-directory: crawler
