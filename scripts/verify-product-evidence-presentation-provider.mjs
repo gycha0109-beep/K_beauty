@@ -184,12 +184,24 @@ for (const requiredToken of [
   "product_evidence_records",
   "eye_sting_observed",
   "white_cast_observed",
-  "TRUST_P31_RUNTIME_RAW_SELECT_FORBIDDEN"
+  "TRUST_P31_RUNTIME_RAW_SELECT_FORBIDDEN",
+  "TRUST_P31_OWNER_SCHEMA_CREATE_FORBIDDEN"
 ]) {
   assert(migrationSource.includes(requiredToken), `missing canonical boundary token: ${requiredToken}`);
 }
 assert(migrationSource.includes("i.fact_key in ('eye_sting_observed', 'white_cast_observed')"));
 assert(workflowSource.includes("20260910124000_product_evidence_presentation_canonical_fact_keys_v1.sql"));
+
+for (const ownerHandoffToken of [
+  "grant create on schema public to product_evidence_presentation_reader_owner",
+  "grant product_evidence_presentation_reader_owner to postgres",
+  "set role product_evidence_presentation_reader_owner",
+  "reset role",
+  "revoke product_evidence_presentation_reader_owner from postgres",
+  "revoke create on schema public from product_evidence_presentation_reader_owner"
+]) {
+  assert(migrationSource.includes(ownerHandoffToken), `missing owner handoff token: ${ownerHandoffToken}`);
+}
 
 for (const forbiddenToken of [
   "review_signals",
@@ -223,6 +235,6 @@ for (const scorerPath of ["../lib/recommendation-scoring.ts", "../lib/skin-match
 
 console.log(
   "verify-product-evidence-presentation-provider: PASS " +
-    "canonical_key_mapping=1 unsupported_registry_keys_blocked=1 legacy_fallback=0 " +
+    "owner_handoff=1 canonical_key_mapping=1 unsupported_registry_keys_blocked=1 legacy_fallback=0 " +
     "independent_count_inference=0 ranking_integration=0"
 );
