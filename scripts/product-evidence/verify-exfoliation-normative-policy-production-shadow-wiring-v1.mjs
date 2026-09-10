@@ -250,7 +250,10 @@ const restored = resolveExfoliationNormativePolicyActivationControl(env());
 eq(restored.effectiveMode, "SHADOW", "restored valid config returns SHADOW");
 ok(restored.enforcementAllowed === false, "restored SHADOW still cannot enforce");
 
-const engineSource = fs.readFileSync("lib/skin-match-decision-engine.js", "utf8");
+const engineImplementationPath = fs.existsSync("lib/skin-match-decision-engine-core.js")
+  ? "lib/skin-match-decision-engine-core.js"
+  : "lib/skin-match-decision-engine.js";
+const engineSource = fs.readFileSync(engineImplementationPath, "utf8");
 const exposureBoundary = engineSource.indexOf("let exposureProducts = scoredProducts;");
 const observerHook = engineSource.indexOf("observeExfoliationNormativePolicyProductionShadow");
 const topPickBoundary = engineSource.indexOf("const topPick =", observerHook);
