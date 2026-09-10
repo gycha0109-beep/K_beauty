@@ -1,0 +1,246 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "trust-p14-drg-same-formulation-fact-source-recovery-v1",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "source_recovery_version": "trust-p14-drg-same-formulation-fact-source-recovery-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "upstream_p14_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p14-drg-same-formulation-fact-source-recovery-v1.json",
+    "upstream_p14_blob_sha": "67e934678f9d901b9be765c3aa74f423cf1365e8",
+    "upstream_p14_merge_sha": "d1a6c7fa8107e17a38edf6c1f8413124666948c0",
+    "upstream_p14_version": "trust-p14-drg-same-formulation-fact-source-recovery-v1"
+  },
+  "exact_scope": {
+    "bindings": 1,
+    "eligible_product_ids": [
+      "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3"
+    ],
+    "fact_keys": [
+      "spf_value",
+      "uva_label"
+    ],
+    "products": 1,
+    "propositions": 2,
+    "sources": 1,
+    "subjects": 1
+  },
+  "hosted_prestate": {
+    "bindings": 21,
+    "checked_at": "2026-09-11T08:46:37.102735+09:00",
+    "confirmations": 49,
+    "current": 49,
+    "evidence": 49,
+    "evidence_links": 49,
+    "fact_instances": 49,
+    "open_assignment_rows": 0,
+    "review_assignments": 49,
+    "source_identity_rows": 0,
+    "sources": 21,
+    "spf_evidence_digest_rows": 0,
+    "spf_proposition_current": 0,
+    "subject_semantic_key_rows": 0,
+    "subjects": 20,
+    "target_subjects": 0,
+    "uva_evidence_digest_rows": 0,
+    "uva_proposition_current": 0
+  },
+  "invariants": {
+    "direct_product_fact_dml": false,
+    "formula_digest": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+    "new_fact_kind": false,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "same_formula_different_fill_size_only": true,
+    "same_formulation_bridge_required": true,
+    "schema_or_rpc_mutation": false,
+    "third_party_positive_fact_support": false
+  },
+  "next_gate": {
+    "eligible_fact_keys": [
+      "spf_value",
+      "uva_label"
+    ],
+    "requires_all_planned_confirmation_preflights_ready": true,
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "requires_merged_main_ci": true,
+    "status": "PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "binding_state": "equivalent_presentation_match",
+    "direct_table_dml": false,
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only",
+    "scope_relation": "equivalent",
+    "subject_registration_required": true
+  },
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "bindings": 1,
+    "confirmations": 2,
+    "current": 2,
+    "evidence": 2,
+    "evidence_links": 2,
+    "fact_instances": 2,
+    "review_assignments": 2,
+    "sources": 1,
+    "subjects": 1
+  },
+  "plan_content_sha256": "d515a8172644aa727ef836ed5ec68e69e5d73e73dbe369141d45154a9473e0a4",
+  "propositions": [
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "6d52a9f1b7b4f1db7fb9ffb1f8fe884fadb87d5c678e569d79b83c839431286a",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "spf_value",
+      "fused_confidence": "high",
+      "negative_admissibility": "not_applicable",
+      "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "proposition_key": "81fe34c1a59057a8fcba46a733500208600f04370e3faa106c0fc6f520db1da6",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "raw_claim": "SPF50+",
+      "scope": {
+        "market": "KR",
+        "variant": "GREEN_MILD_UP_SUN_PLUS_KR_50ML"
+      },
+      "source_ref": "trust-p15-source:dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "subject_semantic_key": "5cf97a1d61279faaa9b5ae9368a287dd700a68ea9724aaa07b9c012bcc8489df",
+      "support_direction": "supports",
+      "value": 50,
+      "value_type": "number"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "5e467c95dce1dbfdeac648ed44370b0a49ba3c16dd987700efe420926ea413a6",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "uva_label",
+      "fused_confidence": "high",
+      "negative_admissibility": "not_applicable",
+      "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "proposition_key": "1035e763996ca2532e2c4e2a511bc01df623f945f440c5af91df5830330ad6b6",
+      "qualifier": {},
+      "raw_claim": "PA++++",
+      "scope": {
+        "market": "KR",
+        "variant": "GREEN_MILD_UP_SUN_PLUS_KR_50ML"
+      },
+      "source_ref": "trust-p15-source:dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "subject_semantic_key": "5cf97a1d61279faaa9b5ae9368a287dd700a68ea9724aaa07b9c012bcc8489df",
+      "support_direction": "supports",
+      "value": "PA++++",
+      "value_type": "enum"
+    }
+  ],
+  "request_ids": {
+    "spf_confirmation": "trust-p15-drg-spf-confirm-20260911-v1",
+    "spf_ingest": "trust-p15-drg-spf-evidence-20260911-v1",
+    "spf_review_ready": "trust-p15-drg-spf-review-ready-20260911-v1",
+    "spf_review_under": "trust-p15-drg-spf-review-under-20260911-v1",
+    "subject": "trust-p15-drg-subject-20260911-v1",
+    "uva_confirmation": "trust-p15-drg-uva-confirm-20260911-v1",
+    "uva_ingest": "trust-p15-drg-uva-evidence-20260911-v1",
+    "uva_review_ready": "trust-p15-drg-uva-review-ready-20260911-v1",
+    "uva_review_under": "trust-p15-drg-uva-review-under-20260911-v1"
+  },
+  "source_main_sha": "d1a6c7fa8107e17a38edf6c1f8413124666948c0",
+  "source_observation": {
+    "direct_fact_source": {
+      "canonical_locator": "https://www.dr-g.co.kr/item/4415",
+      "country": "한국",
+      "direct_claim": "SPF50+ PA++++",
+      "fill_size_ml": 35,
+      "ingredient_count": 36,
+      "ingredient_order_sha256": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+      "manufacturer": "한국콜마㈜",
+      "market": "KR",
+      "presentation_name": "[민감피부 1등 선] 그린 마일드 업 선 플러스 35ml",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "source_kind": "official_product_page",
+      "uv_functional_cosmetic": true
+    },
+    "same_formulation_bridge": {
+      "binding_state": "equivalent_presentation_match",
+      "formula_digest": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+      "scope_relation": "equivalent",
+      "source_fill_size_ml": 35,
+      "status": "ESTABLISHED",
+      "target_fill_size_ml": 50
+    },
+    "target_formula_source": {
+      "canonical_locator": "https://www.dr-g.co.kr/item/5174",
+      "ingredient_count": 36,
+      "ingredient_order_sha256": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+      "manufacturer": "한국콜마㈜",
+      "package": "50mL*2ea",
+      "presentation_name": "[1+1] 그린 마일드 업 선 플러스 50mL"
+    },
+    "target_identity_source": {
+      "canonical_locator": "https://www.dr-g.co.kr/item/9637",
+      "fill_size_ml": 50,
+      "presentation_name": "그린 마일드 업 선 플러스 50mL"
+    },
+    "upstream_p14_artifact": "trust-p14-drg-same-formulation-fact-source-recovery-v1",
+    "version": "trust-p14-drg-recovered-source-observation-v1"
+  },
+  "sources": [
+    {
+      "accessed_at": "2026-09-11T08:35:20.508595+09:00",
+      "binding_scope_relation": "equivalent",
+      "binding_state": "equivalent_presentation_match",
+      "canonical_locator": "https://www.dr-g.co.kr/item/4415",
+      "companion_identity_source_urls": [
+        "https://www.dr-g.co.kr/item/9637",
+        "https://www.dr-g.co.kr/item/5174"
+      ],
+      "content_digest": "4f3a80e7068b714d486173bd92438b79279a473e4bffe7dfefe7bebd6b76a81c",
+      "digest_basis": "trust-p14-drg-recovered-source-observation-v1-not-live-page-bytes",
+      "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "source_kind": "official_product_page",
+      "source_market": "KR",
+      "source_ref": "trust-p15-source:dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3"
+    }
+  ],
+  "stage": "TRUST-P15",
+  "subjects": [
+    {
+      "current_state": "current",
+      "formulation_label": "닥터지 그린 마일드 업 선 플러스 50ml",
+      "formulation_revision_key": "trust-p14-drg-9637-5174-current",
+      "identity_status": "resolved",
+      "market_applicability": "KR",
+      "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+      "region_applicability": null,
+      "subject_semantic_key": "5cf97a1d61279faaa9b5ae9368a287dd700a68ea9724aaa07b9c012bcc8489df",
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": "GREEN_MILD_UP_SUN_PLUS_KR_50ML"
+    }
+  ],
+  "version": "trust-p15-drg-sunscreen-hosted-adoption-plan-v1"
+}
