@@ -57,6 +57,14 @@ const oliveYoungMissingIdentity = classify({
 assert.equal(oliveYoungMissingIdentity.linkRole, "unknown");
 assert.equal(oliveYoungMissingIdentity.migrationDecision, "REVIEW_REQUIRED");
 
+const oliveYoungShortRoute = classify({
+  buyLink: "https://www.oliveyoung.co.kr/store/G.do?goodsNo=A000000237493",
+});
+assert.equal(oliveYoungShortRoute.linkRole, "unknown");
+assert.equal(oliveYoungShortRoute.linkState, "unknown");
+assert.equal(oliveYoungShortRoute.sellerKey, "oliveyoung");
+assert.equal(oliveYoungShortRoute.migrationDecision, "REVIEW_REQUIRED");
+
 const naverProduct = classify({
   buyLink: "https://brand.naver.com/rejuran/products/4493781055?NaPm=tracking",
 });
@@ -146,6 +154,7 @@ console.log("Legacy offer classifier verification PASS");
 console.log(`- rules_version: ${rules.version}`);
 console.log(`- production_hosts_covered: ${productionHosts.length}`);
 console.log("- hwahae_reference_not_offer: PASS");
+console.log("- oliveyoung_short_route_review_required: PASS");
 console.log("- seller_route_requires_product_identity: PASS");
 console.log("- source_url_not_price_proof: PASS");
 console.log("- explicit_price_provenance_required_for_auto_ready: PASS");
