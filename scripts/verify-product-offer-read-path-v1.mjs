@@ -60,6 +60,15 @@ function offer(overrides = {}) {
   };
 }
 
+function assertNaverFallback(projected) {
+  const sanitized = projectProductPurchaseLink(projected);
+  const url = new URL(sanitized.buy_link);
+
+  assert.equal(url.origin, "https://search.shopping.naver.com");
+  assert.equal(url.pathname, "/search/all");
+  assert.equal(url.searchParams.get("query"), `${projected.brand} ${projected.name}`);
+}
+
 assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
 
 {
@@ -89,7 +98,25 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
   assert.equal(projected.buy_link, "");
   assert.equal(projected.price_min, source.price_min);
   assert.equal(projected.price_max, source.price_max);
-  assert.equal(projectProductPurchaseLink(projected).purchase_link_kind, "fallback");
+  assertNaverFallback(projected);
+}
+
+{
+  const projected = projectProductWithOfferAuthority(product(), [
+    offer({ availability_state: "out_of_stock" })
+  ]);
+
+  assert.equal(projected.buy_link, "");
+  assertNaverFallback(projected);
+}
+
+{
+  const projected = projectProductWithOfferAuthority(product(), [
+    offer({ market_code: "US" })
+  ]);
+
+  assert.equal(projected.buy_link, "");
+  assertNaverFallback(projected);
 }
 
 {
@@ -98,7 +125,7 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
   ]);
 
   assert.equal(projected.buy_link, "");
-  assert.equal(projectProductPurchaseLink(projected).purchase_link_kind, "fallback");
+  assertNaverFallback(projected);
 }
 
 {
