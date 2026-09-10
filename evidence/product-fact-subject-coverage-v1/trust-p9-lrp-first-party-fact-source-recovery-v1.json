@@ -1,0 +1,222 @@
+{
+  "version": "trust-p9-lrp-first-party-fact-source-recovery-v1",
+  "stage": "TRUST-P9",
+  "scope": "la-roche-posay-anthelios-first-party-fact-source-recovery-freeze",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "cef8a05a333b56f4244fc2d1295200230c97a52c",
+    "upstream_p8_merge_sha": "cef8a05a333b56f4244fc2d1295200230c97a52c",
+    "upstream_p7_artifact": "evidence/product-fact-subject-coverage-v1/trust-p7-sunscreen-stage-b-identity-source-research-v1.json",
+    "upstream_p8_execution_artifact": "evidence/product-fact-adoption-v1/trust-p8-sunscreen-hosted-adoption-execution-v1.json",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "researched_at": "2026-09-11T04:35:10.914222+09:00",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer": "product-fact-subject-identity-v1",
+    "proposition_serializer": "product-fact-proposition-pilot-v1",
+    "research_method": "first_party_direct_body_and_ordered_ingredient_identity_review",
+    "research_role": "adjudication_freeze_not_product_fact_evidence_ingest"
+  },
+  "allowed_fact_keys": ["spf_value", "uva_label"],
+  "production_prestate": {
+    "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "subject_count": 0,
+    "current_count": 0,
+    "global_counts": {
+      "subjects": 19,
+      "sources": 19,
+      "bindings": 19,
+      "evidence": 47,
+      "fact_instances": 47,
+      "review_assignments": 47,
+      "confirmations": 47,
+      "current": 47
+    }
+  },
+  "product": {
+    "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "catalog": {
+      "brand": "라로슈포제",
+      "name": "안뗄리오스 선 플루이드",
+      "size_ml": 50,
+      "market": "KR"
+    },
+    "identity": {
+      "status": "resolved",
+      "relation": "equivalent",
+      "variant_key_proposal": "ANTHELIOS_SUN_FLUID_KR_50ML",
+      "market_applicability_proposal": "KR",
+      "region_applicability_proposal": null,
+      "basis": "La Roche-Posay Korea first-party page resolves the current KR 50 ml product. A La Roche-Posay Slovenia first-party page exposes a 50 ml ANTHELIOS INVISIBLE FLUID SPF50+ / UVA-PF 46 NON-PERFUMED formulation whose 22 machine-readable INCI ingredients match the KR page ingredient disclosure in the same order after Korean-to-INCI name normalization."
+    },
+    "formulation_bridge": {
+      "status": "resolved_for_spf_source_scope",
+      "kr_formula_code_machine_readable": false,
+      "foreign_formula_code": "C227022/1",
+      "foreign_formula_code_source": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+      "kr_normalized_inci_order": [
+        "AQUA / WATER",
+        "ALCOHOL DENAT.",
+        "DIISOPROPYL SEBACATE",
+        "SILICA",
+        "ISOPROPYL MYRISTATE",
+        "ETHYLHEXYL SALICYLATE",
+        "ETHYLHEXYL TRIAZONE",
+        "BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE",
+        "BUTYL METHOXYDIBENZOYLMETHANE",
+        "GLYCERIN",
+        "C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER",
+        "PROPANEDIOL",
+        "DROMETRIZOLE TRISILOXANE",
+        "PERLITE",
+        "TOCOPHEROL",
+        "CAPRYLIC/CAPRIC TRIGLYCERIDE",
+        "ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER",
+        "CAPRYLYL GLYCOL",
+        "HYDROXYETHYLCELLULOSE",
+        "TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID",
+        "TRIETHANOLAMINE",
+        "TRISODIUM ETHYLENEDIAMINE DISUCCINATE"
+      ],
+      "foreign_inci_order": [
+        "AQUA / WATER",
+        "ALCOHOL DENAT.",
+        "DIISOPROPYL SEBACATE",
+        "SILICA",
+        "ISOPROPYL MYRISTATE",
+        "ETHYLHEXYL SALICYLATE",
+        "ETHYLHEXYL TRIAZONE",
+        "BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE",
+        "BUTYL METHOXYDIBENZOYLMETHANE",
+        "GLYCERIN",
+        "C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER",
+        "PROPANEDIOL",
+        "DROMETRIZOLE TRISILOXANE",
+        "PERLITE",
+        "TOCOPHEROL",
+        "CAPRYLIC/CAPRIC TRIGLYCERIDE",
+        "ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER",
+        "CAPRYLYL GLYCOL",
+        "HYDROXYETHYLCELLULOSE",
+        "TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID",
+        "TRIETHANOLAMINE",
+        "TRISODIUM ETHYLENEDIAMINE DISUCCINATE"
+      ],
+      "ordered_ingredient_match": {
+        "kr_ingredient_count": 22,
+        "foreign_ingredient_count": 22,
+        "matched_in_order": 22,
+        "missing_from_foreign": 0,
+        "extra_in_foreign": 0,
+        "result": "EXACT_ORDERED_INCI_EQUIVALENCE_AFTER_NAME_NORMALIZATION"
+      },
+      "scope_relation_to_kr_subject_proposal": "broader",
+      "note": "The KR page does not expose C227022/1 itself. The bridge is based on same brand/line, 50 ml, non-perfumed status, and exact ordered 22-ingredient equivalence; the foreign formula code is not asserted as a directly published KR code."
+    },
+    "sources": [
+      {
+        "url": "https://www.larocheposay.co.kr/product/view/4833.do",
+        "publisher": "La Roche-Posay Korea",
+        "source_kind": "official_product_page",
+        "market": "KR",
+        "identity_support": true,
+        "machine_verifiable_fact_support": false,
+        "scope_relation_to_subject_proposal": "equivalent",
+        "observed_claims": [
+          "안뗄리오스 선 플루이드",
+          "50ml",
+          "프랑스 제조",
+          "자외선 차단 기능성",
+          "22-item current ingredient disclosure"
+        ]
+      },
+      {
+        "url": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+        "publisher": "La Roche-Posay Slovenia",
+        "source_kind": "official_product_page",
+        "market": "SI",
+        "identity_support": true,
+        "machine_verifiable_fact_support": true,
+        "scope_relation_to_subject_proposal": "broader",
+        "observed_claims": [
+          "ANTHELIOS INVISIBLE FLUID SPF50+ / UVA-PF 46 NON-PERFUMED",
+          "50 ml",
+          "C227022/1",
+          "22-item INCI disclosure exactly matching KR ingredient order after name normalization"
+        ]
+      }
+    ],
+    "accepted_fact_support": [
+      {
+        "fact_key": "spf_value",
+        "raw_claim": "SPF50+",
+        "normalized_value": 50,
+        "qualifier": {"plus_modifier": "plus"},
+        "fact_market": "KR",
+        "evidence_source_url": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+        "adjudication": "RECOVERED_SUPPORTED",
+        "basis": "Same-formulation first-party source directly exposes SPF50+; scope may be narrowed to KR only because the KR first-party page establishes the current product identity and exact ordered ingredient equivalence."
+      }
+    ],
+    "blocked_fact_support": [
+      {
+        "fact_key": "uva_label",
+        "required_value_kind": "direct_pa_label",
+        "observed_same_formula_claim": "UVA-PF 46",
+        "disposition": "FACT_SOURCE_RECOVERY_REQUIRED",
+        "reason": "No same-formulation first-party machine-readable source reviewed in TRUST-P9 directly exposes PA++++. UVA-PF 46 must not be converted or inferred into a PA enum for this registry fact."
+      }
+    ],
+    "rejected_positive_candidates": [
+      {
+        "url": "https://www.laroche-posay.hk/anthelios/anthelios-uvmune-400-invisible-fluid-spf50-without-perfume",
+        "publisher": "La Roche-Posay Hong Kong",
+        "observed_claims": ["SPF50+", "PA++++", "50 ml", "MEXORYL 400"],
+        "rejection": "FORMULATION_MISMATCH",
+        "reason": "Current UVMUNE 400 formula contains ingredients absent from the KR formula, including METHOXYPROPYLAMINO CYCLOHEXENYLIDENE ETHOXYETHYLCYANOACETATE, and is not admitted as the same formulation."
+      },
+      {
+        "url": "https://www.larocheposay-th.com/anthelios/anthelios-uvmune-400-invisible-fluid-spf50",
+        "publisher": "La Roche-Posay Thailand",
+        "observed_claims": ["SPF50+", "PA++++", "50 ml", "Mexoryl 400"],
+        "rejection": "FORMULATION_GENERATION_MISMATCH",
+        "reason": "The Thai page is explicitly the UVMUNE 400 generation and cannot supply PA++++ to the older KR ingredient formulation without a first-party formulation-equivalence bridge."
+      },
+      {
+        "url": "https://www.laroche-posay.jp/on/demandware.static/-/Sites-lrp-jp-ng-Library/ja_JP/dw5ece99cc/LRP2024AWCatalog.pdf",
+        "publisher": "La Roche-Posay Japan",
+        "observed_claims": ["アンテリオス XL フリュイド", "SPF50+", "PA++++", "50mL"],
+        "rejection": "FORMULATION_MISMATCH",
+        "reason": "The first-party Japanese ANTHELIOS XL Fluid ingredient disclosure is materially different from the current KR formula; its PA++++ label is not portable to the KR subject."
+      }
+    ],
+    "disposition": "PARTIAL_FACT_SOURCE_RECOVERY",
+    "gate_note": "Recover only spf_value. Keep uva_label blocked. This research artifact authorizes no Subject creation, Evidence ingest, review assignment, confirmation, Current update, schema/RPC/Registry change, or recommendation/ranking change."
+  },
+  "counts": {
+    "target_products": 1,
+    "allowed_fact_keys": 2,
+    "recovered_supported_facts": 1,
+    "remaining_fact_source_gaps": 1,
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_writes": 0
+  },
+  "invariants": {
+    "subject_creation_authorized_by_this_artifact": false,
+    "fact_ingest_authorized_by_this_artifact": false,
+    "confirmation_authorized_by_this_artifact": false,
+    "current_update_authorized_by_this_artifact": false,
+    "uva_pf_to_pa_conversion_allowed": false,
+    "non_first_party_sources_used_for_positive_fact_support": 0,
+    "schema_change": false,
+    "rpc_change": false,
+    "registry_change": false,
+    "recommendation_or_ranking_changes": 0
+  },
+  "next_gate": {
+    "recovered_product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "eligible_fact_keys": ["spf_value"],
+    "blocked_fact_keys": ["uva_label"],
+    "eligible_action": "deterministic_hosted_adoption_plan_freeze_for_recovered_spf_only",
+    "blocked_action": "continue_first_party_same_formulation_direct_pa_label_recovery_without_inference"
+  }
+}
