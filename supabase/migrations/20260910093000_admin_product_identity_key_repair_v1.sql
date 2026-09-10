@@ -65,8 +65,8 @@ begin
     v_disposition := 'current';
   elsif v_product.normalized_brand is distinct from v_proposed_brand then
     v_disposition := 'manual_review_required';
-  elsif regexp_replace(coalesce(v_product.normalized_name, ''), '\s+', '', 'g')
-    is distinct from regexp_replace(v_proposed_name, '\s+', '', 'g')
+  elsif lower(regexp_replace(coalesce(v_product.normalized_name, ''), '\s+', '', 'g'))
+    is distinct from lower(regexp_replace(v_proposed_name, '\s+', '', 'g'))
   then
     v_disposition := 'manual_review_required';
   else
@@ -195,8 +195,8 @@ begin
     raise exception 'product_identity_key_repair_not_required' using errcode = '23514';
   end if;
 
-  if regexp_replace(v_product.normalized_name, '\s+', '', 'g')
-    is distinct from regexp_replace(v_proposed_name, '\s+', '', 'g')
+  if lower(regexp_replace(v_product.normalized_name, '\s+', '', 'g'))
+    is distinct from lower(regexp_replace(v_proposed_name, '\s+', '', 'g'))
   then
     raise exception 'product_identity_key_repair_name_drift_requires_manual_review' using errcode = '23514';
   end if;
@@ -247,7 +247,7 @@ begin
     v_request_id,
     jsonb_build_object(
       'contract_version', 'product-identity-key-repair-v1',
-      'repair_scope', 'normalized_name_whitespace_only'
+      'repair_scope', 'normalized_name_case_whitespace_only'
     )
   );
 
@@ -299,10 +299,10 @@ grant execute on function public.admin_confirm_product_identity_key_repair_v1(uu
   to service_role;
 
 comment on table public.product_identity_key_repair_requests is
-  'Idempotency ledger for admin-controlled product normalized-name whitespace repairs.';
+  'Idempotency ledger for admin-controlled product normalized-name case/whitespace repairs.';
 comment on function public.admin_preflight_product_identity_key_repair_v1(uuid, uuid) is
-  'Read-only preflight. Only marks whitespace-only normalized-name drift as mechanically repairable.';
+  'Read-only preflight. Only marks case/whitespace-only normalized-name drift as mechanically repairable.';
 comment on function public.admin_confirm_product_identity_key_repair_v1(uuid, text, uuid, text, text, timestamptz, text) is
-  'Service-role-only controlled repair for whitespace-only product normalized-name drift with exact prestate, collision, admin capability, idempotency, and audit checks.';
+  'Service-role-only controlled repair for case/whitespace-only product normalized-name drift with exact prestate, collision, admin capability, idempotency, and audit checks.';
 
 commit;
