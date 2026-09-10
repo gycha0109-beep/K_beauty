@@ -63,8 +63,7 @@ export type DryRunRowStatus =
   | "would_insert"
   | "already_present"
   | "stale_product"
-  | "identity_conflict"
-  | "manifest_conflict";
+  | "identity_conflict";
 
 export type DryRunRow = {
   productId: string;
@@ -76,8 +75,15 @@ export type DryRunRow = {
 };
 
 function canonicalJson(value: unknown): string {
+  if (value === undefined) {
+    throw new Error("canonical_json_undefined_not_allowed");
+  }
   if (value === null || typeof value !== "object") {
-    return JSON.stringify(value);
+    const encoded = JSON.stringify(value);
+    if (encoded === undefined) {
+      throw new Error("canonical_json_unserializable_value");
+    }
+    return encoded;
   }
   if (Array.isArray(value)) {
     return `[${value.map(canonicalJson).join(",")}]`;
@@ -160,6 +166,38 @@ export function buildManifestRow(
   };
 }
 
+function validateRows(rows: LegacyOfferManifestRow[]): void {
+  const identities = new Map<string, string>();
+  for (const row of rows) {
+    const withoutDigest = { ...row } as Record<string, unknown>;
+    delete withoutDigest.rowDigest;
+    if (row.rowDigest !== sha256Canonical(withoutDigest)) {
+      throw new Error(`legacy_offer_manifest_row_digest_mismatch:${row.productId}`);
+    }
+    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
+    const previous = identities.get(identity);
+    if (previous && previous !== row.productId) {
+      throw new Error(`legacy_offer_manifest_duplicate_listing:${identity}`);
+    }
+    identities.set(identity, row.productId);
+  }
+}
+
+function manifestDigestPayload(input: {
+  classifierRulesVersion: string;
+  sourceProductCount: number;
+  decisionCounts: LegacyOfferMigrationManifest["decisionCounts"];
+  rows: LegacyOfferManifestRow[];
+}) {
+  return {
+    schemaVersion: LEGACY_OFFER_MANIFEST_SCHEMA,
+    classifierRulesVersion: input.classifierRulesVersion,
+    sourceProductCount: input.sourceProductCount,
+    decisionCounts: input.decisionCounts,
+    rows: input.rows,
+  };
+}
+
 export function buildLegacyOfferManifest(input: {
   classifierRulesVersion: string;
   generatedAt: string;
@@ -168,31 +206,7 @@ export function buildLegacyOfferManifest(input: {
   rows: LegacyOfferManifestRow[];
 }): LegacyOfferMigrationManifest {
   const rows = [...input.rows].sort((a, b) => a.productId.localeCompare(b.productId));
-  const identities = new Map<string, string>();
-  for (const row of rows) {
-    const expectedDigest = sha256Canonical({ ...row, rowDigest: undefined });
-    const withoutDigest = { ...row } as Record<string, unknown>;
-    delete withoutDigest.rowDigest;
-    if (row.rowDigest !== sha256Canonical(withoutDigest)) {
-      throw new Error(`legacy_offer_manifest_row_digest_mismatch:${row.productId}`);
-    }
-    void expectedDigest;
-    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
-    const previous = identities.get(identity);
-    if (previous && previous !== row.productId) {
-      throw new Error(`legacy_offer_manifest_duplicate_listing:${identity}`);
-    }
-    identities.set(identity, row.productId);
-  }
-
-  const digestPayload = {
-    schemaVersion: LEGACY_OFFER_MANIFEST_SCHEMA,
-    classifierRulesVersion: input.classifierRulesVersion,
-    sourceProductCount: input.sourceProductCount,
-    decisionCounts: input.decisionCounts,
-    rows,
-  };
-
+  validateRows(rows);
   return {
     schemaVersion: LEGACY_OFFER_MANIFEST_SCHEMA,
     classifierRulesVersion: input.classifierRulesVersion,
@@ -200,7 +214,14 @@ export function buildLegacyOfferManifest(input: {
     sourceProductCount: input.sourceProductCount,
     decisionCounts: input.decisionCounts,
     rows,
-    manifestDigest: sha256Canonical(digestPayload),
+    manifestDigest: sha256Canonical(
+      manifestDigestPayload({
+        classifierRulesVersion: input.classifierRulesVersion,
+        sourceProductCount: input.sourceProductCount,
+        decisionCounts: input.decisionCounts,
+        rows,
+      }),
+    ),
   };
 }
 
@@ -214,15 +235,16 @@ export function validateLegacyOfferManifest(manifest: LegacyOfferMigrationManife
   if (manifest.rows.length !== manifest.decisionCounts.LINK_ONLY_READY) {
     throw new Error("legacy_offer_manifest_link_only_count_mismatch");
   }
-
-  const rebuilt = buildLegacyOfferManifest({
-    classifierRulesVersion: manifest.classifierRulesVersion,
-    generatedAt: manifest.generatedAt,
-    sourceProductCount: manifest.sourceProductCount,
-    decisionCounts: manifest.decisionCounts,
-    rows: manifest.rows,
-  });
-  if (rebuilt.manifestDigest !== manifest.manifestDigest) {
+  validateRows(manifest.rows);
+  const expected = sha256Canonical(
+    manifestDigestPayload({
+      classifierRulesVersion: manifest.classifierRulesVersion,
+      sourceProductCount: manifest.sourceProductCount,
+      decisionCounts: manifest.decisionCounts,
+      rows: manifest.rows,
+    }),
+  );
+  if (expected !== manifest.manifestDigest) {
     throw new Error("legacy_offer_manifest_digest_mismatch");
   }
 }
@@ -239,26 +261,7 @@ export function buildLegacyOfferDryRun(input: {
     existingByIdentity.set(`${offer.sellerKey}\u0000${offer.listingUrl}`, offer);
   }
 
-  const manifestIdentityOwners = new Map<string, string[]>();
-  for (const row of input.manifest.rows) {
-    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
-    manifestIdentityOwners.set(identity, [...(manifestIdentityOwners.get(identity) ?? []), row.productId]);
-  }
-
   return input.manifest.rows.map((row) => {
-    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
-    const owners = manifestIdentityOwners.get(identity) ?? [];
-    if (new Set(owners).size > 1) {
-      return {
-        productId: row.productId,
-        sellerKey: row.proposedOffer.sellerKey,
-        listingUrl: row.proposedOffer.listingUrl,
-        status: "manifest_conflict" as const,
-        reason: "same_listing_claimed_by_multiple_manifest_products",
-        existingOfferId: null,
-      };
-    }
-
     const current = input.currentClassifications.get(row.productId);
     if (
       !current ||
@@ -277,6 +280,7 @@ export function buildLegacyOfferDryRun(input: {
       };
     }
 
+    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
     const existing = existingByIdentity.get(identity);
     if (!existing) {
       return {
