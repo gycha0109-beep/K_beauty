@@ -37,6 +37,7 @@
     "verify:legacy-offer-import": "tsx test-legacy-offer-import.ts",
     "verify:legacy-offer-import:local-runtime": "tsx tests/verify-legacy-offer-import-local-runtime.ts",
     "verify:product-offers:local-runtime": "tsx tests/verify-product-offers-local-runtime.ts",
+    "verify:seller-listing-observation-persistence:local-runtime": "tsx tests/verify-seller-listing-observation-persistence-local-runtime.ts",
     "verify:product-source-bindings:local-runtime": "tsx tests/verify-product-source-bindings-local-runtime.ts",
     "verify:security-policy-runtime-import": "node --loader ./image-source-policy-loader.mjs --import tsx test-security-policy-runtime-import.ts",
     "reviews:export": "tsx export-product-reviews.ts",
