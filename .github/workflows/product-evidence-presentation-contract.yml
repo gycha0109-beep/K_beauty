@@ -1,0 +1,39 @@
+name: Product Evidence Presentation Contract
+
+on:
+  pull_request:
+    paths:
+      - "lib/product-evidence-presentation-contract.js"
+      - "scripts/verify-product-evidence-presentation-contract.mjs"
+      - ".github/workflows/product-evidence-presentation-contract.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/product-evidence-presentation-contract.js"
+      - "scripts/verify-product-evidence-presentation-contract.mjs"
+      - ".github/workflows/product-evidence-presentation-contract.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-product-evidence-presentation-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify fail-closed presentation/admission contract
+        run: node scripts/verify-product-evidence-presentation-contract.mjs
