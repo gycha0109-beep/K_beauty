@@ -1,0 +1,324 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "trust-p7-sunscreen-stage-b-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "upstream_p7_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p7-sunscreen-stage-b-identity-source-research-v1.json",
+    "upstream_p7_blob_sha": "7da1aef5d3b3bab446398aaa9656942180a17118",
+    "upstream_p7_capture_main_sha": "30a11e00273462391374dcc7efb16325cf018fcb",
+    "upstream_p7_merge_sha": "62ca540d22fa457bb064eca6e19fb12f1338495c"
+  },
+  "exact_scope": {
+    "bindings": 3,
+    "eligible_product_ids": [
+      "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "dd326b18-ea56-45fb-8571-42186b6c9159"
+    ],
+    "excluded_product_ids": [
+      "9983f167-24e7-4223-bd86-446ce6ced31b"
+    ],
+    "fact_keys": [
+      "spf_value",
+      "uva_label"
+    ],
+    "products": 3,
+    "propositions": 6,
+    "sources": 3,
+    "subjects": 3
+  },
+  "hosted_prestate": {
+    "bindings": 16,
+    "confirmations": 41,
+    "current": 41,
+    "evidence": 41,
+    "fact_instances": 41,
+    "review_assignments": 41,
+    "sources": 16,
+    "subjects": 16,
+    "target_current": 0,
+    "target_source_locators": 0,
+    "target_subjects": 0
+  },
+  "invariants": {
+    "la_roche_fact_inference": false,
+    "new_fact_kind": false,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false
+  },
+  "next_gate": {
+    "requires_all_six_confirmation_preflights_ready": true,
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "status": "PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "all_six_preflight_before_any_confirm": true,
+    "direct_table_dml": false,
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only"
+  },
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "bindings": 3,
+    "confirmations": 6,
+    "current": 6,
+    "evidence": 6,
+    "evidence_links": 6,
+    "fact_instances": 6,
+    "review_assignments": 6,
+    "sources": 3,
+    "subjects": 3
+  },
+  "plan_content_sha256": "305a49987c32382a36e0585ee2e41ce652395e182079db6544f4c73cfe963c8d",
+  "propositions": [
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "b79ac2553ccb380f18f3fbee9947a2a1040b5ca57695017975448457e0b95fe0",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "spf_value",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "proposition_key": "188c512cacd544b51132132c192aef3973cc5cde0f70b76738b8537baefe094d",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "raw_claim": "SPF 50+",
+      "scope": {
+        "market": "KR",
+        "variant": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR"
+      },
+      "source_ref": "trust-p8-source:2d3591f2-2216-4043-8493-a9492806ef8b",
+      "subject_semantic_key": "d166f4c1336cf52b3025111be6cbcc836756f5017772400f3a5054745b742160",
+      "support_direction": "supports",
+      "value": 50,
+      "value_type": "number"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "74f5754ca36aff0eb3d6fd745375c311b47b2d73b1b6295ef70008831e9725fe",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "uva_label",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "proposition_key": "156dda6f7b2e063f4c8f967742ac0b9619124fbbc6519fd9304e52038cd4ffa7",
+      "qualifier": {},
+      "raw_claim": "PA++++",
+      "scope": {
+        "market": "KR",
+        "variant": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR"
+      },
+      "source_ref": "trust-p8-source:2d3591f2-2216-4043-8493-a9492806ef8b",
+      "subject_semantic_key": "d166f4c1336cf52b3025111be6cbcc836756f5017772400f3a5054745b742160",
+      "support_direction": "supports",
+      "value": "PA++++",
+      "value_type": "enum"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "602a92ed333094e6142403c9677f44b6f3bedb62393bb7a8b6f637e29bceceb6",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "spf_value",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "proposition_key": "ae7a2ac159fd418db07223d67c614f12d4a391b709fa7a4a9017833630733d3b",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "raw_claim": "SPF50+",
+      "scope": {
+        "market": "GLOBAL",
+        "variant": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML"
+      },
+      "source_ref": "trust-p8-source:765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "subject_semantic_key": "b235b29a1a9c58f306a517df0b09d8ff6a4312b3e35d0a3149fc3d2c15ccb74e",
+      "support_direction": "supports",
+      "value": 50,
+      "value_type": "number"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "aff546feeba0c2dab47f9f7323a2b6633531863617113daea9b79e519a671643",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "uva_label",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "proposition_key": "436309cce10a4670058d887220619859706dcd876d1792ba516423e178ce28b4",
+      "qualifier": {},
+      "raw_claim": "PA++++",
+      "scope": {
+        "market": "GLOBAL",
+        "variant": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML"
+      },
+      "source_ref": "trust-p8-source:765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "subject_semantic_key": "b235b29a1a9c58f306a517df0b09d8ff6a4312b3e35d0a3149fc3d2c15ccb74e",
+      "support_direction": "supports",
+      "value": "PA++++",
+      "value_type": "enum"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "a8e4ea60a43bfebbaf289d0d57b7d0cbd4147e3086a463d5ed7344446f87f039",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "spf_value",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "proposition_key": "01f8f81e1c251366dcc370afb329206f7e77b812f2097788e43818f148325b01",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "raw_claim": "SPF 50+",
+      "scope": {
+        "market": "KR",
+        "variant": "DERMA_UV365_RED_CALMING_TONE_UP_40ML_KR"
+      },
+      "source_ref": "trust-p8-source:dd326b18-ea56-45fb-8571-42186b6c9159",
+      "subject_semantic_key": "9be5d11e58e01a42d5bc45a5aea67dd0f538afe25de78b32ed439ea5fbffdf7d",
+      "support_direction": "supports",
+      "value": 50,
+      "value_type": "number"
+    },
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "ba13ddcded51c3b54d0346319735ae27e3f361f03c45b080116e3257000ee4c2",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "uva_label",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "proposition_key": "7b22066e5d9f0c97957afa414ed0cf873646278fd778d955ac78b94e299c1c0d",
+      "qualifier": {},
+      "raw_claim": "PA++++",
+      "scope": {
+        "market": "KR",
+        "variant": "DERMA_UV365_RED_CALMING_TONE_UP_40ML_KR"
+      },
+      "source_ref": "trust-p8-source:dd326b18-ea56-45fb-8571-42186b6c9159",
+      "subject_semantic_key": "9be5d11e58e01a42d5bc45a5aea67dd0f538afe25de78b32ed439ea5fbffdf7d",
+      "support_direction": "supports",
+      "value": "PA++++",
+      "value_type": "enum"
+    }
+  ],
+  "source_main_sha": "e108ec4f0c4ac063d93f106592117456e415295c",
+  "sources": [
+    {
+      "accessed_at": "2026-09-10T21:12:00+09:00",
+      "binding_scope_relation": "narrower",
+      "canonical_locator": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+      "companion_identity_source_urls": [
+        "https://www.aestura.com/web/product/view.do?prdSeq=1107"
+      ],
+      "content_digest": "6bda698640f4c0cae2f7dbdf6a9da72980cab1f39ae972e8e7488351775bb3ab",
+      "digest_basis": "trust-p7-frozen-source-observation-v1-not-live-page-bytes",
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "publisher": "AESTURA",
+      "source_kind": "official_product_page",
+      "source_market": null,
+      "source_ref": "trust-p8-source:2d3591f2-2216-4043-8493-a9492806ef8b"
+    },
+    {
+      "accessed_at": "2026-09-10T21:12:00+09:00",
+      "binding_scope_relation": "equivalent",
+      "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-aqua-fresh",
+      "companion_identity_source_urls": [],
+      "content_digest": "198240c2726338fb366e4d176becdecbf3cb1da5db75b4e6b0b486bbc5feb69a",
+      "digest_basis": "trust-p7-frozen-source-observation-v1-not-live-page-bytes",
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "publisher": "Beauty of Joseon",
+      "source_kind": "official_product_page",
+      "source_market": null,
+      "source_ref": "trust-p8-source:765b3ca1-6927-49b0-bee6-4138d03dd915"
+    },
+    {
+      "accessed_at": "2026-09-10T21:12:00+09:00",
+      "binding_scope_relation": "narrower",
+      "canonical_locator": "https://int.aestura.com/products/derma-uv365-red-calming-tone-up-sunscreen",
+      "companion_identity_source_urls": [
+        "https://www.aestura.com/web/product/view.do?prdSeq=1108"
+      ],
+      "content_digest": "627f9592d094b44af4a65326221e03af8d5c9180e894f2e889e3bff840780928",
+      "digest_basis": "trust-p7-frozen-source-observation-v1-not-live-page-bytes",
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "publisher": "AESTURA",
+      "source_kind": "official_product_page",
+      "source_market": null,
+      "source_ref": "trust-p8-source:dd326b18-ea56-45fb-8571-42186b6c9159"
+    }
+  ],
+  "stage": "TRUST-P8",
+  "subjects": [
+    {
+      "current_state": "current",
+      "formulation_label": "에스트라 더마UV365 장벽수분 무기자차 선크림 40ml",
+      "formulation_revision_key": "trust-p7-aestura-barrier-hydro-mineral-current",
+      "identity_status": "resolved",
+      "market_applicability": "KR",
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "region_applicability": null,
+      "subject_semantic_key": "d166f4c1336cf52b3025111be6cbcc836756f5017772400f3a5054745b742160",
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR"
+    },
+    {
+      "current_state": "current",
+      "formulation_label": "뷰티오브조선 맑은쌀 선크림 아쿠아프레쉬 50ml",
+      "formulation_revision_key": "trust-p7-boj-relief-sun-aqua-fresh-current",
+      "identity_status": "resolved",
+      "market_applicability": null,
+      "product_id": "765b3ca1-6927-49b0-bee6-4138d03dd915",
+      "region_applicability": null,
+      "subject_semantic_key": "b235b29a1a9c58f306a517df0b09d8ff6a4312b3e35d0a3149fc3d2c15ccb74e",
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": "Relief_Sun_Aqua_Fresh_Rice_B5_50ML"
+    },
+    {
+      "current_state": "current",
+      "formulation_label": "에스트라 더마 UV365 레드 카밍 톤업 선스크린 40ml",
+      "formulation_revision_key": "trust-p7-aestura-red-calming-current",
+      "identity_status": "resolved",
+      "market_applicability": "KR",
+      "product_id": "dd326b18-ea56-45fb-8571-42186b6c9159",
+      "region_applicability": null,
+      "subject_semantic_key": "9be5d11e58e01a42d5bc45a5aea67dd0f538afe25de78b32ed439ea5fbffdf7d",
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": "DERMA_UV365_RED_CALMING_TONE_UP_40ML_KR"
+    }
+  ],
+  "version": "trust-p8-sunscreen-hosted-adoption-plan-v1"
+}
