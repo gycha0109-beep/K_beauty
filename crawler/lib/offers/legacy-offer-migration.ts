@@ -10,7 +10,7 @@ export type ProposedLinkOnlyOffer = {
   sellerKey: string;
   sellerName: string;
   sourceName: typeof LEGACY_OFFER_SOURCE_NAME;
-  listingId: null;
+  listingId: string;
   listingUrl: string;
   priceAmount: null;
   currencyCode: "KRW";
@@ -56,6 +56,7 @@ export type ExistingOfferIdentity = {
   offerId: string;
   productId: string;
   sellerKey: string;
+  listingId: string | null;
   listingUrl: string;
 };
 
@@ -68,6 +69,7 @@ export type DryRunRowStatus =
 export type DryRunRow = {
   productId: string;
   sellerKey: string;
+  listingId: string;
   listingUrl: string;
   status: DryRunRowStatus;
   reason: string;
@@ -107,14 +109,15 @@ function assertManifestable(classification: LegacyOfferClassification): asserts 
   LegacyOfferClassification & {
     migrationDecision: "LINK_ONLY_READY";
     sellerKey: string;
-    normalizedUrl: string;
+    listingId: string;
+    canonicalListingUrl: string;
     priceState: "unknown";
   } {
   if (classification.migrationDecision !== "LINK_ONLY_READY") {
     throw new Error("legacy_offer_manifest_non_link_only_row");
   }
-  if (!classification.sellerKey || !classification.normalizedUrl) {
-    throw new Error("legacy_offer_manifest_missing_listing_identity");
+  if (!classification.sellerKey || !classification.listingId || !classification.canonicalListingUrl) {
+    throw new Error("legacy_offer_manifest_missing_stable_listing_identity");
   }
   if (classification.priceState !== "unknown") {
     throw new Error("legacy_offer_manifest_price_must_remain_unknown");
@@ -146,8 +149,8 @@ export function buildManifestRow(
       sellerKey: classification.sellerKey,
       sellerName: sellerNameFromClassification(classification),
       sourceName: LEGACY_OFFER_SOURCE_NAME,
-      listingId: null,
-      listingUrl: classification.normalizedUrl,
+      listingId: classification.listingId,
+      listingUrl: classification.canonicalListingUrl,
       priceAmount: null,
       currencyCode: "KRW" as const,
       availabilityState: "unknown" as const,
@@ -176,9 +179,9 @@ function assertRowContract(row: LegacyOfferManifestRow): void {
     offer.productId !== row.productId ||
     !offer.sellerKey?.trim() ||
     !offer.sellerName?.trim() ||
+    !offer.listingId?.trim() ||
     !offer.listingUrl?.trim() ||
     offer.sourceName !== LEGACY_OFFER_SOURCE_NAME ||
-    offer.listingId !== null ||
     offer.priceAmount !== null ||
     offer.currencyCode !== "KRW" ||
     offer.availabilityState !== "unknown" ||
@@ -194,7 +197,8 @@ function assertRowContract(row: LegacyOfferManifestRow): void {
 }
 
 function validateRows(rows: LegacyOfferManifestRow[]): void {
-  const identities = new Map<string, string>();
+  const listingIds = new Map<string, string>();
+  const listingUrls = new Map<string, string>();
   const productIds = new Set<string>();
   for (const row of rows) {
     assertRowContract(row);
@@ -208,12 +212,20 @@ function validateRows(rows: LegacyOfferManifestRow[]): void {
     if (row.rowDigest !== sha256Canonical(withoutDigest)) {
       throw new Error(`legacy_offer_manifest_row_digest_mismatch:${row.productId}`);
     }
-    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
-    const previous = identities.get(identity);
-    if (previous && previous !== row.productId) {
-      throw new Error(`legacy_offer_manifest_duplicate_listing:${identity}`);
+
+    const idIdentity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingId}`;
+    const idOwner = listingIds.get(idIdentity);
+    if (idOwner && idOwner !== row.productId) {
+      throw new Error(`legacy_offer_manifest_duplicate_listing_id:${idIdentity}`);
     }
-    identities.set(identity, row.productId);
+    listingIds.set(idIdentity, row.productId);
+
+    const urlIdentity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
+    const urlOwner = listingUrls.get(urlIdentity);
+    if (urlOwner && urlOwner !== row.productId) {
+      throw new Error(`legacy_offer_manifest_duplicate_listing_url:${urlIdentity}`);
+    }
+    listingUrls.set(urlIdentity, row.productId);
   }
 }
 
@@ -309,9 +321,13 @@ export function buildLegacyOfferDryRun(input: {
 }): DryRunRow[] {
   validateLegacyOfferManifest(input.manifest);
 
-  const existingByIdentity = new Map<string, ExistingOfferIdentity>();
+  const existingByListingId = new Map<string, ExistingOfferIdentity>();
+  const existingByListingUrl = new Map<string, ExistingOfferIdentity>();
   for (const offer of input.existingOffers) {
-    existingByIdentity.set(`${offer.sellerKey}\u0000${offer.listingUrl}`, offer);
+    if (offer.listingId) {
+      existingByListingId.set(`${offer.sellerKey}\u0000${offer.listingId}`, offer);
+    }
+    existingByListingUrl.set(`${offer.sellerKey}\u0000${offer.listingUrl}`, offer);
   }
 
   return input.manifest.rows.map((row) => {
@@ -321,11 +337,13 @@ export function buildLegacyOfferDryRun(input: {
       current.migrationDecision !== "LINK_ONLY_READY" ||
       current.priceState !== "unknown" ||
       current.sellerKey !== row.proposedOffer.sellerKey ||
-      current.normalizedUrl !== row.proposedOffer.listingUrl
+      current.listingId !== row.proposedOffer.listingId ||
+      current.canonicalListingUrl !== row.proposedOffer.listingUrl
     ) {
       return {
         productId: row.productId,
         sellerKey: row.proposedOffer.sellerKey,
+        listingId: row.proposedOffer.listingId,
         listingUrl: row.proposedOffer.listingUrl,
         status: "stale_product" as const,
         reason: "current_product_no_longer_matches_reviewed_manifest",
@@ -333,35 +351,50 @@ export function buildLegacyOfferDryRun(input: {
       };
     }
 
-    const identity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
-    const existing = existingByIdentity.get(identity);
-    if (!existing) {
-      return {
-        productId: row.productId,
-        sellerKey: row.proposedOffer.sellerKey,
-        listingUrl: row.proposedOffer.listingUrl,
-        status: "would_insert" as const,
-        reason: "reviewed_link_only_offer_not_present",
-        existingOfferId: null,
-      };
+    const idIdentity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingId}`;
+    const urlIdentity = `${row.proposedOffer.sellerKey}\u0000${row.proposedOffer.listingUrl}`;
+    const existingById = existingByListingId.get(idIdentity);
+    const existingByUrl = existingByListingUrl.get(urlIdentity);
+
+    for (const existing of [existingById, existingByUrl]) {
+      if (existing && existing.productId !== row.productId) {
+        return {
+          productId: row.productId,
+          sellerKey: row.proposedOffer.sellerKey,
+          listingId: row.proposedOffer.listingId,
+          listingUrl: row.proposedOffer.listingUrl,
+          status: "identity_conflict" as const,
+          reason: existing === existingById
+            ? "listing_id_already_bound_to_different_product"
+            : "listing_url_already_bound_to_different_product",
+          existingOfferId: existing.offerId,
+        };
+      }
     }
-    if (existing.productId === row.productId) {
+
+    const existing = existingById ?? existingByUrl;
+    if (existing) {
       return {
         productId: row.productId,
         sellerKey: row.proposedOffer.sellerKey,
+        listingId: row.proposedOffer.listingId,
         listingUrl: row.proposedOffer.listingUrl,
         status: "already_present" as const,
-        reason: "same_product_listing_already_present",
+        reason: existingById
+          ? "same_product_listing_id_already_present"
+          : "same_product_listing_url_already_present",
         existingOfferId: existing.offerId,
       };
     }
+
     return {
       productId: row.productId,
       sellerKey: row.proposedOffer.sellerKey,
+      listingId: row.proposedOffer.listingId,
       listingUrl: row.proposedOffer.listingUrl,
-      status: "identity_conflict" as const,
-      reason: "listing_already_bound_to_different_product",
-      existingOfferId: existing.offerId,
+      status: "would_insert" as const,
+      reason: "reviewed_link_only_offer_not_present",
+      existingOfferId: null,
     };
   });
 }
