@@ -51,6 +51,7 @@ run("G3 production candidate admission contract", node, ["scripts/verify-v21-adm
 run("Crawler TypeScript boundary", npm, ["--prefix", "crawler", "run", "typecheck"]);
 run("Crawler canonical adoption authority / no-auto-adoption", node, ["scripts/verify-crawler-canonical-adoption-authority-remediation-v1.mjs"]);
 run("Seller listing observation persistence contract", node, ["scripts/verify-seller-listing-observation-persistence-v1.mjs"]);
+run("Seller listing capture adapter authority", node, ["scripts/verify-seller-listing-capture-adapter-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
