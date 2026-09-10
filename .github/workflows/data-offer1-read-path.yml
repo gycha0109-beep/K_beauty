@@ -28,7 +28,7 @@ jobs:
   verify-data-offer1-read-path:
     name: DATA-OFFER1 Offer Read Path
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -50,6 +50,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
 
       - name: Verify deterministic Offer presentation read path
         run: node scripts/verify-product-offer-read-path-v1.mjs
