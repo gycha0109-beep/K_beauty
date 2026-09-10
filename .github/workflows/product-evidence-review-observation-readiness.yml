@@ -1,0 +1,47 @@
+name: Product Evidence Review Observation Readiness
+
+on:
+  pull_request:
+    paths:
+      - "lib/product-evidence-review-observation-readiness.js"
+      - "scripts/audit-product-evidence-review-observation-readiness.mjs"
+      - "scripts/verify-product-evidence-review-observation-readiness.mjs"
+      - "data/hwahae-review-signals/categories/sunscreen/**"
+      - ".github/workflows/product-evidence-review-observation-readiness.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/product-evidence-review-observation-readiness.js"
+      - "scripts/audit-product-evidence-review-observation-readiness.mjs"
+      - "scripts/verify-product-evidence-review-observation-readiness.mjs"
+      - "data/hwahae-review-signals/categories/sunscreen/**"
+      - ".github/workflows/product-evidence-review-observation-readiness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-product-evidence-review-observation-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Attest exact head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify fail-closed review observation readiness
+        run: node scripts/verify-product-evidence-review-observation-readiness.mjs
