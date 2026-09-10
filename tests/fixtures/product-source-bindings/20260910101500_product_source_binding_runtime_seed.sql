@@ -8,6 +8,8 @@ create table public.products (
   source_url text
 );
 
+grant select on public.products to service_role;
+
 insert into public.products(id, brand, name, external_source, external_type, external_id, source_url)
 values
   (
