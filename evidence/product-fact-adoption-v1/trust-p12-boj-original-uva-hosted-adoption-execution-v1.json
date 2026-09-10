@@ -1,0 +1,162 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "execution_capture_main_sha": "4bc0b36fd831d91508a097b9b196ffd2ce1050cb",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "p12_plan_blob_sha": "83e1eaa52c11b8dbe7e66b2b8a43038a2e855546",
+    "p12_plan_merge_sha": "90e6f6c35efe553e91a4cee068e4138ce652f10c",
+    "p12_plan_path": "evidence/product-fact-adoption-v1/trust-p12-boj-original-uva-hosted-adoption-plan-v1.json",
+    "p12_plan_sha256": "c282dabe9f5c7b6572bf5f771841dd96386c0d8e8a6b01cb7fa6543b5abe9921",
+    "p12a_correction_blob_sha": "aa4257e05793a4cf2276b49c3a60ba83863e00ad",
+    "p12a_correction_merge_sha": "4bc0b36fd831d91508a097b9b196ffd2ce1050cb",
+    "p12a_correction_path": "evidence/product-fact-adoption-v1/trust-p12a-boj-original-uva-plan-correction-v1.json",
+    "p12a_correction_sha256": "959ec06947a417864d8a1c5ee86f417a0a0688ab2698a221f3f3c0035245d385",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "repository": "gycha0109-beep/K_beauty"
+  },
+  "closure": {
+    "boj_original_relief_sun_product_fact_coverage": "SPF_AND_UVA_CURRENT",
+    "next_action": "freeze_execution_evidence_then_select_next_unresolved_sunscreen_gap",
+    "p12_phase_b": "CONFIRMED"
+  },
+  "execution_content_sha256": "fdf9ae0669d8d8b0aabcb4e0a4ed20e34cf0c8840464f60207c5ed59ef4a758c",
+  "execution_policy": {
+    "controlled_rpc_only": true,
+    "direct_product_fact_table_dml": false,
+    "fresh_preflight_ready_before_confirm": true,
+    "p12_authority_correction_applied_before_first_write": true,
+    "recommendation_or_ranking_change": false,
+    "registry_change": false,
+    "rpc_change": false,
+    "schema_change": false,
+    "subject_registration_performed": false
+  },
+  "expected_delta": {
+    "bindings": 1,
+    "confirmations": 1,
+    "current": 1,
+    "evidence": 1,
+    "evidence_links": 1,
+    "fact_instances": 1,
+    "review_assignments": 1,
+    "sources": 1,
+    "subjects": 0
+  },
+  "fact": {
+    "assignment_id": "43fcd6f1-7aa2-4832-8259-5bff7415dde1",
+    "authority_ceiling": "product_specific_primary",
+    "binding_id": "79ae3693-8f5b-4dbc-9377-a0ded8313881",
+    "binding_state": "exact_subject_match",
+    "canonical_evidence_digest": "95920464b02a26fa8e31ab057fbbc2157cbb761f0a7eed91d8db7df8121cdb69",
+    "confirmation_id": "1068c679-0487-44e7-8429-9bd82a90c75b",
+    "confirmed_at": "2026-09-11T06:36:40.387028+09:00",
+    "evidence_id": "34397e1d-1ac3-4a80-90cf-969cfca1a28d",
+    "fact_instance_id": "61e30420-5064-4622-bb82-a2a6aeefdcbe",
+    "fact_key": "uva_label",
+    "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+    "fused_confidence": "high",
+    "fusion_input_digest": "fc4ee6bacd655607e4bc775ca0dea8ff7e9508e0dbbdd8c78ee8e2acb6bcfe98",
+    "locale": null,
+    "market": "GLOBAL",
+    "preflight": {
+      "payload_digest": "9519f05a0e8374dfe113b6e9560bb44e5356e8437628daa39ecb1f27a63ea76f",
+      "prestate_digest": "14661fa82be98d4128b8061cad08c9eb5e100e031e0edd12c302f234223d790a",
+      "previous_current": null,
+      "status": "ready"
+    },
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "proposition_key": "ea34c1e334b846df861b198bd658c3ce1a98d422433e66d0b3e3d7c584915f01",
+    "qualifier": {},
+    "region": null,
+    "request_ids": {
+      "confirmation": "trust-p12-boj-uva-confirm-20260911-v1",
+      "ingest": "trust-p12-boj-uva-ingest-v1",
+      "review_ready": "trust-p12-boj-uva-review-ready-v1",
+      "review_under": "trust-p12-boj-uva-review-under-v1"
+    },
+    "result_digest": "b787fb3ec5010fa3664acc5d01d67c50ec3b4581a45baae5680f79bb182e13b0",
+    "review_policy_version": "trust-p12a-boj-original-uva-plan-correction-v1",
+    "scope_relation": "equivalent",
+    "semantic_status": "supported",
+    "source_content_digest": "e09425390b1fbf0e9c4eb4c4a3d1b2854f25d6a7de82a99f57a56a575184e7c9",
+    "source_id": "60a55f19-a71d-4063-9ea5-13775193c940",
+    "source_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "subject_market_applicability": null,
+    "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+    "value_enum": "PA++++",
+    "value_type": "enum",
+    "variant_key": "Relief_Sun_Rice_Probiotics"
+  },
+  "poststate": {
+    "assignment_state": "confirmed",
+    "bindings": 21,
+    "checked_at": "2026-09-11T06:37:01.760085+09:00",
+    "confirmations": 49,
+    "current": 49,
+    "evidence": 49,
+    "evidence_links": 49,
+    "fact_instances": 49,
+    "provenance_exact": true,
+    "review_assignments": 49,
+    "review_events": 216,
+    "sources": 21,
+    "subjects": 20,
+    "target_spf_current": 1,
+    "target_subjects": 1,
+    "target_uva_current": 1,
+    "value_contract_exact": true
+  },
+  "prestate": {
+    "bindings": 20,
+    "checked_at": "2026-09-11T06:35:01.676224+09:00",
+    "confirmations": 48,
+    "current": 48,
+    "evidence": 48,
+    "evidence_links": 48,
+    "fact_instances": 48,
+    "review_assignments": 48,
+    "sources": 20,
+    "subject_market_applicability": null,
+    "subjects": 20,
+    "target_confirmation_request_conflicts": 0,
+    "target_evidence_digest_rows": 0,
+    "target_open_assignments": 0,
+    "target_proposition_current": 0,
+    "target_source_digest_rows": 0,
+    "target_spf_current": 1,
+    "target_subjects": 1,
+    "target_uva_current": 0
+  },
+  "review_events": [
+    {
+      "created_at": "2026-09-11T06:35:23.564298+09:00",
+      "event_kind": "evidence_ingested",
+      "reason_code": "controlled_ingest"
+    },
+    {
+      "created_at": "2026-09-11T06:35:48.965881+09:00",
+      "event_kind": "review_assignment_prepared",
+      "reason_code": "trust_p12a_boj_uva_under_review"
+    },
+    {
+      "created_at": "2026-09-11T06:35:58.928696+09:00",
+      "event_kind": "review_assignment_transitioned",
+      "reason_code": "trust_p12a_boj_uva_ready_for_confirm"
+    },
+    {
+      "created_at": "2026-09-11T06:36:40.387028+09:00",
+      "event_kind": "fact_confirmed",
+      "reason_code": "controlled_confirmation"
+    }
+  ],
+  "stage": "TRUST-P12_PHASE_B_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "version": "trust-p12-boj-original-uva-hosted-adoption-execution-v1"
+}
