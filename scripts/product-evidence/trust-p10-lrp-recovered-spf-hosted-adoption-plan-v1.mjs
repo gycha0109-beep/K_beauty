@@ -84,7 +84,7 @@ function sourceObservation(p9Row,source){
   };
 }
 
-function buildSource(p9Row){
+function buildSource(p9Row,researchedAt){
   const support=p9Row.accepted_fact_support.find(x=>x.fact_key==="spf_value");
   need(support,"P9 SPF support");
   const source=p9Row.sources.find(x=>x.url===support.evidence_source_url);
@@ -102,7 +102,7 @@ function buildSource(p9Row){
     content_digest:digest(observation),
     digest_basis:"trust-p9-recovered-source-observation-v1-not-live-page-bytes",
     companion_identity_source_urls:p9Row.sources.filter(x=>x.url!==source.url).map(x=>x.url),
-    accessed_at:p9Row.authority?.researched_at??null
+    accessed_at:researchedAt
   };
 }
 
@@ -177,7 +177,7 @@ export function buildPlan(p9,p7){
   need(p7Row.identity.formulation_revision_key_proposal,"P7 formulation revision");
 
   const subject=buildSubject(p7Row,p9.product);
-  const source=buildSource(p9.product);
+  const source=buildSource(p9.product,p9.authority.researched_at);
   const proposition=buildProposition(p9.product,subject,source);
   const plan={
     version:C.version,
