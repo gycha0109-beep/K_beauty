@@ -114,7 +114,7 @@ export default function StoreCaptureScreen() {
   const isResults = scenario.startsWith("results-");
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]} edges={["left", "right", "bottom"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]} edges={["top", "left", "right", "bottom"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.column}>
           {isResults ? (
