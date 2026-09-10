@@ -16,6 +16,10 @@ begin
 end
 $$;
 
+grant create on schema public to product_evidence_presentation_reader_owner;
+grant product_evidence_presentation_reader_owner to postgres;
+set role product_evidence_presentation_reader_owner;
+
 create or replace function public.read_product_evidence_presentation_authority_v1(
   p_product_id uuid
 )
@@ -190,15 +194,21 @@ $$;
 comment on function public.read_product_evidence_presentation_authority_v1(uuid) is
   'TRUST-P3.1 product-scoped canonical current observed eye-sting/white-cast Facts and linked EvidenceRecords for explanation-only presentation. Registry-unsupported pilling_risk/finish remain unavailable.';
 
-alter function public.read_product_evidence_presentation_authority_v1(uuid)
-  owner to product_evidence_presentation_reader_owner;
 revoke all on function public.read_product_evidence_presentation_authority_v1(uuid)
   from public, anon, authenticated, service_role;
 grant execute on function public.read_product_evidence_presentation_authority_v1(uuid)
   to recommendation_admission_runtime;
 
+reset role;
+revoke product_evidence_presentation_reader_owner from postgres;
+revoke create on schema public from product_evidence_presentation_reader_owner;
+
 do $$
 begin
+  if has_schema_privilege('product_evidence_presentation_reader_owner', 'public', 'CREATE') then
+    raise exception 'TRUST_P31_OWNER_SCHEMA_CREATE_FORBIDDEN';
+  end if;
+
   if has_table_privilege('recommendation_admission_runtime', 'public.product_fact_current', 'SELECT')
      or has_table_privilege('recommendation_admission_runtime', 'public.product_fact_instances', 'SELECT')
      or has_table_privilege('recommendation_admission_runtime', 'public.product_fact_evidence_links', 'SELECT')
