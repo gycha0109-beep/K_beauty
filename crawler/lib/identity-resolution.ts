@@ -36,6 +36,14 @@ export interface IdentityProductRecord {
   external_id?: string | null;
 }
 
+export interface IdentitySourceBindingRecord {
+  product_id: string;
+  source_name: string | null;
+  external_type?: string | null;
+  external_id?: string | null;
+  binding_state?: string | null;
+}
+
 export interface IdentitySuggestion {
   productId: string;
   productBrand: string;
@@ -242,9 +250,51 @@ function buildSuggestions(
     .slice(0, limit);
 }
 
+function resolveExternalProductIds(
+  candidate: IdentityCandidateRecord,
+  products: IdentityProductRecord[],
+  sourceBindings: IdentitySourceBindingRecord[],
+): Set<string> {
+  if (!candidate.source_name || !candidate.external_type || !candidate.external_id) {
+    return new Set<string>();
+  }
+
+  const productIds = new Set<string>();
+
+  for (const binding of sourceBindings) {
+    if (
+      binding.binding_state === "resolved" &&
+      binding.source_name === candidate.source_name &&
+      binding.external_type === candidate.external_type &&
+      binding.external_id === candidate.external_id
+    ) {
+      productIds.add(binding.product_id);
+    }
+  }
+
+  for (const product of products) {
+    if (
+      product.external_source === candidate.source_name &&
+      product.external_type === candidate.external_type &&
+      product.external_id === candidate.external_id
+    ) {
+      productIds.add(product.id);
+    }
+  }
+
+  for (const productId of productIds) {
+    if (!products.some((product) => product.id === productId)) {
+      throw new Error("identity_resolution_internal_product_missing");
+    }
+  }
+
+  return productIds;
+}
+
 export function resolveProductIdentity(
   candidate: IdentityCandidateRecord,
   products: IdentityProductRecord[],
+  sourceBindings: IdentitySourceBindingRecord[] = [],
 ): IdentityResolutionResult {
   const identity = candidateIdentity(candidate);
   const blockers: string[] = [];
@@ -257,15 +307,7 @@ export function resolveProductIdentity(
     blockers.push("missing_name");
   }
 
-  const externalMatches =
-    candidate.source_name && candidate.external_type && candidate.external_id
-      ? products.filter(
-          (product) =>
-            product.external_source === candidate.source_name &&
-            product.external_type === candidate.external_type &&
-            product.external_id === candidate.external_id,
-        )
-      : [];
+  const externalProductIds = resolveExternalProductIds(candidate, products, sourceBindings);
 
   const nameMatches: Array<{
     product: IdentityProductRecord;
@@ -286,7 +328,7 @@ export function resolveProductIdentity(
   }
 
   const strongProductIds = new Set<string>([
-    ...externalMatches.map((product) => product.id),
+    ...externalProductIds,
     ...nameMatches.map((match) => match.product.id),
   ]);
 
@@ -327,7 +369,7 @@ export function resolveProductIdentity(
       };
     }
 
-    const externalExact = externalMatches.some((entry) => entry.id === strongProductId);
+    const externalExact = externalProductIds.has(strongProductId);
     const nameMatch = nameMatches.find((entry) => entry.product.id === strongProductId) ?? null;
 
     return {
@@ -359,6 +401,7 @@ export function resolveProductIdentity(
 export function resolveProductIdentities(
   candidates: IdentityCandidateRecord[],
   products: IdentityProductRecord[],
+  sourceBindings: IdentitySourceBindingRecord[] = [],
 ): IdentityResolutionResult[] {
-  return candidates.map((candidate) => resolveProductIdentity(candidate, products));
+  return candidates.map((candidate) => resolveProductIdentity(candidate, products, sourceBindings));
 }
