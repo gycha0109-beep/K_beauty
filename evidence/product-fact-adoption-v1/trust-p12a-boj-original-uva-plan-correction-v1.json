@@ -1,0 +1,121 @@
+{
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "fact_scope": {
+    "fact_key": "uva_label",
+    "market": "GLOBAL",
+    "scope_compatibility": "allowed_subject_unscoped_fact_global",
+    "subject_market_applicability": null,
+    "value": "PA++++",
+    "variant": "Relief_Sun_Rice_Probiotics"
+  },
+  "invariants": {
+    "direct_product_fact_dml": false,
+    "existing_subject_reused": true,
+    "fact_market_scope_is_global": true,
+    "new_subject_for_rename": false,
+    "old_p12_plan_must_not_be_used_unmodified_for_execution": true,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "subject_market_applicability_is_null": true
+  },
+  "next_gate": {
+    "eligible_fact_keys": [
+      "uva_label"
+    ],
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "requires_merged_main_ci": true,
+    "status": "CORRECTED_PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_AUTHORITY_CORRECTION_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "direct_table_dml": false,
+    "fresh_preflight_required": true,
+    "rpc_sequence": [
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1:under_review",
+      "admin_prepare_product_fact_review_v1:ready_for_confirm",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only",
+    "subject_registration_required": false
+  },
+  "phase_b_execution_authorized": false,
+  "plan_content_sha256": "959ec06947a417864d8a1c5ee86f417a0a0688ab2698a221f3f3c0035245d385",
+  "production_readback": {
+    "actor": {
+      "is_active": true,
+      "role": "admin_owner",
+      "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+    },
+    "checked_at": "2026-09-11T06:27:20.37918+09:00",
+    "counts": {
+      "bindings": 20,
+      "confirmations": 48,
+      "current": 48,
+      "evidence": 48,
+      "evidence_links": 48,
+      "fact_instances": 48,
+      "review_assignments": 48,
+      "sources": 20,
+      "subjects": 20
+    },
+    "latest_registry": "product-fact-registry-cross-category-v1",
+    "target": {
+      "confirmation_request_conflicts": 0,
+      "evidence_digest_rows": 0,
+      "open_assignments": 0,
+      "proposition_current": 0,
+      "source_digest_rows": 0,
+      "spf_current": 1,
+      "subject_count": 1,
+      "uva_current": 0
+    }
+  },
+  "retained_deterministic_identity": {
+    "canonical_evidence_digest": "95920464b02a26fa8e31ab057fbbc2157cbb761f0a7eed91d8db7df8121cdb69",
+    "evidence_identity_changed": false,
+    "proposition_changed": false,
+    "proposition_key": "ea34c1e334b846df861b198bd658c3ce1a98d422433e66d0b3e3d7c584915f01",
+    "source_content_digest": "e09425390b1fbf0e9c4eb4c4a3d1b2854f25d6a7de82a99f57a56a575184e7c9",
+    "source_observation_changed": false
+  },
+  "source_main_sha": "90e6f6c35efe553e91a4cee068e4138ce652f10c",
+  "stage": "TRUST-P12A",
+  "subject": {
+    "current_state": "current",
+    "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+    "identity_status": "resolved",
+    "market_applicability": null,
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "region_applicability": null,
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+    "subject_write_required": false,
+    "valid_from": null,
+    "valid_to": null,
+    "variant_key": "Relief_Sun_Rice_Probiotics"
+  },
+  "supersedes": {
+    "artifact_blob_sha": "83e1eaa52c11b8dbe7e66b2b8a43038a2e855546",
+    "artifact_path": "evidence/product-fact-adoption-v1/trust-p12-boj-original-uva-hosted-adoption-plan-v1.json",
+    "correct_value": null,
+    "incorrect_field": "subject.market_applicability",
+    "incorrect_value": "GLOBAL",
+    "merge_sha": "90e6f6c35efe553e91a4cee068e4138ce652f10c",
+    "reason": "Fresh Production readback shows the existing resolved/current Subject market_applicability is null. Fact/evidence scope remains GLOBAL and is independently permitted.",
+    "stage": "TRUST-P12"
+  },
+  "version": "trust-p12a-boj-original-uva-plan-correction-v1"
+}
