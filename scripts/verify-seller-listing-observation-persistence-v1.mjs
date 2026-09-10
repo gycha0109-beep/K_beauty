@@ -99,7 +99,7 @@ expectContractFailure(
   "seller_listing_observation_invalid_price_amount"
 );
 expectContractFailure(
-  { price: { amount: 18900, currency: "WON" } },
+  { price: { amount: 18900, currency: "KR" } },
   "seller_listing_observation_invalid_price_currency"
 );
 
