@@ -18,6 +18,13 @@ const rows = buildIdentityKeyRepairPlan([
     normalized_name: "판테놀베리어토너",
   },
   {
+    id: "case-only",
+    brand: "닥터지",
+    name: "레드 블레미쉬 클리어 수딩 크림 EX",
+    normalized_brand: "닥터지",
+    normalized_name: "레드 블레미쉬 클리어 수딩 크림 EX",
+  },
+  {
     id: "material",
     brand: "라운드랩",
     name: "1025 독도 로션",
@@ -41,6 +48,10 @@ assert.equal(
 assert.deepEqual(
   rows.find((row) => row.productId === "compact")?.reasons,
   ["legacy_compact_name_key"],
+);
+assert.equal(
+  rows.find((row) => row.productId === "case-only")?.disposition,
+  "safe_mechanical_candidate",
 );
 assert.equal(
   rows.find((row) => row.productId === "material")?.disposition,
