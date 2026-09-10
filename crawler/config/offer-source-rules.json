@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "hosts": {
     "hwahae.co.kr": {
       "kind": "reference",
@@ -11,7 +11,8 @@
       "product_routes": [
         {
           "path_pattern": "^/store/goods/getGoodsDetail\\.do$",
-          "required_query_all": ["goodsNo"]
+          "required_query_all": ["goodsNo"],
+          "listing_id_source": { "kind": "query", "key": "goodsNo" }
         }
       ]
     },
@@ -19,7 +20,10 @@
       "kind": "seller",
       "seller_key": "naver_brand_store",
       "product_routes": [
-        { "path_pattern": "^/[^/]+/products/\\d+/?$" }
+        {
+          "path_pattern": "^/[^/]+/products/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/[^/]+/products/(\\d+)/?$", "group": 1 }
+        }
       ],
       "listing_routes": [
         { "path_pattern": "^/[^/]+/category/" }
@@ -29,7 +33,10 @@
       "kind": "seller",
       "seller_key": "11st",
       "product_routes": [
-        { "path_pattern": "^/products/\\d+/?$" }
+        {
+          "path_pattern": "^/products/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/products/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "ssg.com": {
@@ -38,7 +45,8 @@
       "product_routes": [
         {
           "path_pattern": "^/item/itemView\\.ssg$",
-          "required_query_all": ["itemId"]
+          "required_query_all": ["itemId"],
+          "listing_id_source": { "kind": "query", "key": "itemId" }
         }
       ]
     },
@@ -48,7 +56,8 @@
       "product_routes": [
         {
           "path_pattern": "^/product/detail\\.html$",
-          "required_query_all": ["product_no"]
+          "required_query_all": ["product_no"],
+          "listing_id_source": { "kind": "query", "key": "product_no" }
         }
       ]
     },
@@ -56,7 +65,10 @@
       "kind": "seller",
       "seller_key": "aromatica_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "asceplushomecare.co.kr": {
@@ -65,30 +77,43 @@
       "product_routes": [
         {
           "path_pattern": "^/product/detail\\.html$",
-          "required_query_all": ["product_no"]
+          "required_query_all": ["product_no"],
+          "listing_id_source": { "kind": "query", "key": "product_no" }
         },
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "dewytree.com": {
       "kind": "seller",
       "seller_key": "dewytree_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "isntree.com": {
       "kind": "seller",
       "seller_key": "isntree_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "m.innisfree.com": {
       "kind": "seller",
       "seller_key": "innisfree_official",
       "product_routes": [
-        { "path_pattern": "^/kr/ko/dp/product/\\d+/?$" }
+        {
+          "path_pattern": "^/kr/ko/dp/product/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/kr/ko/dp/product/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "m.manyo.co.kr": {
@@ -97,7 +122,8 @@
       "product_routes": [
         {
           "path_pattern": "^/goods/goods_view\\.php$",
-          "required_query_all": ["goodsNo"]
+          "required_query_all": ["goodsNo"],
+          "listing_id_source": { "kind": "query", "key": "goodsNo" }
         }
       ]
     },
@@ -107,16 +133,23 @@
       "product_routes": [
         {
           "path_pattern": "^/product/detail\\.html$",
-          "required_query_all": ["product_no"]
+          "required_query_all": ["product_no"],
+          "listing_id_source": { "kind": "query", "key": "product_no" }
         },
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "ongredients.cafe24.com": {
       "kind": "seller",
       "seller_key": "ongredients_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "puresomme.com": {
@@ -125,7 +158,8 @@
       "product_routes": [
         {
           "path_pattern": "^/product/detail\\.html$",
-          "required_query_all": ["product_no"]
+          "required_query_all": ["product_no"],
+          "listing_id_source": { "kind": "query", "key": "product_no" }
         }
       ]
     },
@@ -133,35 +167,50 @@
       "kind": "seller",
       "seller_key": "roundlab_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "ruuve.kr": {
       "kind": "seller",
       "seller_key": "ruuve_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "scinic.com": {
       "kind": "seller",
       "seller_key": "scinic_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "skinwavey.co.kr": {
       "kind": "seller",
       "seller_key": "skinwavey_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "snature.kr": {
       "kind": "seller",
       "seller_key": "snature_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     },
     "tonymoly.com": {
@@ -170,7 +219,8 @@
       "product_routes": [
         {
           "path_pattern": "^/products/.+\\.do$",
-          "required_query_all": ["i_sProductcd"]
+          "required_query_all": ["i_sProductcd"],
+          "listing_id_source": { "kind": "query", "key": "i_sProductcd" }
         }
       ]
     },
@@ -180,7 +230,8 @@
       "product_routes": [
         {
           "path_pattern": "^/kr/ko/product/detail$",
-          "required_query_all": ["onlineProdSn"]
+          "required_query_all": ["onlineProdSn"],
+          "listing_id_source": { "kind": "query", "key": "onlineProdSn" }
         }
       ]
     },
@@ -188,7 +239,10 @@
       "kind": "seller",
       "seller_key": "larocheposay_official",
       "product_routes": [
-        { "path_pattern": "^/product/view/\\d+\\.do$" }
+        {
+          "path_pattern": "^/product/view/\\d+\\.do$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/view/(\\d+)\\.do$", "group": 1 }
+        }
       ]
     },
     "torriden.com": {
@@ -197,7 +251,8 @@
       "product_routes": [
         {
           "path_pattern": "^/goods/goods_view\\.php$",
-          "required_query_all": ["goodsNo"]
+          "required_query_all": ["goodsNo"],
+          "listing_id_source": { "kind": "query", "key": "goodsNo" }
         }
       ]
     },
@@ -207,7 +262,8 @@
       "product_routes": [
         {
           "path_pattern": "^/web/product/product_detail\\.asp$",
-          "required_query_all": ["idx"]
+          "required_query_all": ["idx"],
+          "listing_id_source": { "kind": "query", "key": "idx" }
         }
       ]
     },
@@ -215,7 +271,10 @@
       "kind": "seller",
       "seller_key": "ybk_official",
       "product_routes": [
-        { "path_pattern": "^/product/.+/\\d+/?$" }
+        {
+          "path_pattern": "^/product/.+/\\d+/?$",
+          "listing_id_source": { "kind": "path", "pattern": "^/product/.+/(\\d+)/?$", "group": 1 }
+        }
       ]
     }
   }
