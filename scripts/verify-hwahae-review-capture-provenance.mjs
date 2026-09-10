@@ -179,8 +179,12 @@ for (const forbidden of ["products.hwahae_url", "review_count /", "confidenceSco
   assert.equal(helperSource.includes(forbidden), false, `forbidden capture shortcut: ${forbidden}`);
   assert.equal(readinessSource.includes(forbidden), false, `forbidden readiness shortcut: ${forbidden}`);
 }
-for (const forbiddenWrite of [".insert(", ".upsert(", ".update(", ".delete("]) {
-  assert.equal(helperSource.includes(forbiddenWrite), false, `capture helper must be write-free: ${forbiddenWrite}`);
+for (const forbiddenDbAccess of ["@supabase", "createClient(", ".from(", ".insert(", ".upsert(", ".delete("]) {
+  assert.equal(
+    helperSource.includes(forbiddenDbAccess),
+    false,
+    `capture helper must not access database authority: ${forbiddenDbAccess}`
+  );
 }
 assert(readinessSource.includes('prevalenceAuthorized: false'));
 assert(readinessSource.includes('independentSupport: "unresolved"'));
