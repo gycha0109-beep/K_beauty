@@ -5,19 +5,29 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/app/store-capture.tsx"
+      - "apps/mobile/features/store-capture/store-capture-fixtures.ts"
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/capture-mobile-store-assets.sh"
+      - "scripts/capture-mobile-store-scenarios.sh"
       - "scripts/verify-mobile-20a-store-capture.mjs"
+      - "scripts/verify-mobile-20b-store-scenarios.mjs"
       - ".github/workflows/mobile-20a-store-capture.yml"
   push:
     branches: [main]
     paths:
       - "apps/mobile/features/analyze/NativeAnalyzeResult.tsx"
+      - "apps/mobile/features/my/NativeMyDiaryView.tsx"
+      - "apps/mobile/app/store-capture.tsx"
+      - "apps/mobile/features/store-capture/store-capture-fixtures.ts"
       - "apps/mobile/.gitignore"
       - "docs/store/mobile-store-listing-final.json"
       - "scripts/capture-mobile-store-assets.sh"
+      - "scripts/capture-mobile-store-scenarios.sh"
       - "scripts/verify-mobile-20a-store-capture.mjs"
+      - "scripts/verify-mobile-20b-store-scenarios.mjs"
       - ".github/workflows/mobile-20a-store-capture.yml"
   workflow_dispatch:
 
@@ -78,7 +88,9 @@ jobs:
         run: |
           set -euo pipefail
           bash -n scripts/capture-mobile-store-assets.sh
+          bash -n scripts/capture-mobile-store-scenarios.sh
           node scripts/verify-mobile-20a-store-capture.mjs
+          node scripts/verify-mobile-20b-store-scenarios.mjs
           node scripts/verify-mobile-18-store-listing.mjs
           node scripts/verify-mobile-analyze-integration.mjs
 
@@ -117,7 +129,7 @@ jobs:
           pre-emulator-launch-script: >-
             config="$HOME/.android/avd/bejewely-mobile-20a-api35.avd/config.ini"; test -f "$config"; for camera in front back; do key="hw.camera.$camera"; if grep -q "^${key}=" "$config"; then sed -i "s/^${key}=.*/${key}=emulated/" "$config"; else printf '\n%s=emulated\n' "$key" >> "$config"; fi; grep -q "^${key}=emulated$" "$config"; done; printf 'MOBILE_20A_DUAL_CAMERA_AVD_CONFIG=PASS\n'
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-front emulated -camera-back emulated
-          script: bash scripts/capture-mobile-store-assets.sh
+          script: bash scripts/capture-mobile-store-assets.sh && bash scripts/capture-mobile-store-scenarios.sh
 
       - name: Upload store capture candidates
         if: always()

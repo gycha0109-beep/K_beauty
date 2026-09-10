@@ -34,9 +34,9 @@ for (const id of ["home", "analyze", "results", "diary"]) {
 assert(!result.includes("MOBILE-7 · SERVER RESULT"), "no-internal-release-label");
 assert(!result.includes("Premium and Face Lab engines are not duplicated in the native app."), "no-internal-engine-boundary-en");
 assert(!result.includes("Premium 및 Face Lab 엔진은 네이티브 앱으로 복제하지 않습니다."), "no-internal-engine-boundary-ko");
-assert(result.includes("PERSONALIZED SKIN-CARE ROUTINE"), "consumer-result-kicker-en");
-assert(result.includes("맞춤 스킨케어 루틴"), "consumer-result-kicker-ko");
-assert(result.includes("everyday cosmetic skin-care guidance"), "cosmetic-boundary-en");
+assert(result.includes('title: "Your skin routine, made clear"'), "consumer-result-title-en");
+assert(result.includes('title: "내 피부에 맞는 루틴을 한눈에"'), "consumer-result-title-ko");
+assert(result.includes("Everyday cosmetic skin-care guidance"), "cosmetic-boundary-en");
 assert(result.includes("일상적인 화장품·스킨케어 가이드"), "cosmetic-boundary-ko");
 
 for (const marker of [
