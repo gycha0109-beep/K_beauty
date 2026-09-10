@@ -7,6 +7,9 @@ on:
     paths:
       - "supabase/migrations/*_product_offers_*.sql"
       - "tests/fixtures/product-offers/**"
+      - "crawler/legacy-offer-migration-apply.ts"
+      - "crawler/lib/offers/legacy-offer-import.ts"
+      - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
@@ -16,6 +19,9 @@ on:
     paths:
       - "supabase/migrations/*_product_offers_*.sql"
       - "tests/fixtures/product-offers/**"
+      - "crawler/legacy-offer-migration-apply.ts"
+      - "crawler/lib/offers/legacy-offer-import.ts"
+      - "crawler/test-legacy-offer-import.ts"
       - "crawler/tests/verify-product-offers-local-runtime.ts"
       - "crawler/package.json"
       - ".github/workflows/product-offers.yml"
@@ -59,6 +65,10 @@ jobs:
       - name: Typecheck crawler
         working-directory: crawler
         run: npm run typecheck
+
+      - name: Verify guarded legacy offer import contract
+        working-directory: crawler
+        run: npm run verify:legacy-offer-import
 
       - name: Prepare isolated Supabase
         shell: bash
