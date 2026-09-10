@@ -6,9 +6,10 @@ TRUST-P7 executes the P6 next gate for only the four `SOURCE_IDENTITY_RESEARCH_R
 
 It does not register Product Fact Subjects, ingest Product Fact Evidence, confirm Facts, change Current pointers, or change recommendation/ranking behavior.
 
-Fresh repository authority: `30a11e00273462391374dcc7efb16325cf018fcb`.
+Fresh repository authority at research capture: `30a11e00273462391374dcc7efb16325cf018fcb`.
 Upstream P6 merge: `e655c1102998dfa769a1a8fb200d7fe5e0c60d66`.
 Research timestamp: `2026-09-10T21:12:00+09:00`.
+Latest-main integration base before final PR verification: `eac724ebc1476b81669adbcbd6270d51321b3081`.
 
 ## Result
 
