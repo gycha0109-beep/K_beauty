@@ -1,0 +1,135 @@
+{
+  "version": "trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1",
+  "stage": "TRUST-P10_PHASE_B_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "authority": {
+    "phase_a_merge_sha": "d38d169059f32c97a1814b2dd4454ca50bf66c6b",
+    "phase_a_plan_path": "evidence/product-fact-adoption-v1/trust-p10-lrp-recovered-spf-hosted-adoption-plan-v1.json",
+    "phase_a_plan_blob_sha": "f9b5e5d5d5db5dc152aa19611b3f2b1fb5df38e5",
+    "phase_a_plan_sha256": "ea9e640baf878c0f2fa8298c01a251dd0d240105f6958e567a389ffeba48d8d5",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "identity_resolution_version": "trust-p7-sunscreen-stage-b-identity-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1"
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "execution_policy": {
+    "controlled_rpc_only": true,
+    "direct_product_fact_table_dml": false,
+    "schema_change": false,
+    "rpc_change": false,
+    "registry_change": false,
+    "recommendation_or_ranking_change": false,
+    "uva_label_write": false,
+    "uva_pf_to_pa_conversion": false
+  },
+  "production_prestate": {
+    "checked_at": "2026-09-11T04:50:23.424428+09:00",
+    "subjects": 19,
+    "sources": 19,
+    "bindings": 19,
+    "evidence": 47,
+    "fact_instances": 47,
+    "review_assignments": 47,
+    "confirmations": 47,
+    "current": 47,
+    "target_subjects": 0,
+    "target_current": 0,
+    "semantic_key_conflicts": 0,
+    "source_locator_conflicts": 0,
+    "evidence_digest_conflicts": 0,
+    "open_assignment_conflicts": 0,
+    "confirmation_request_conflicts": 0
+  },
+  "product": {
+    "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "brand": "라로슈포제",
+    "name": "안뗄리오스 선 플루이드",
+    "market": "KR",
+    "subject_semantic_key": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+    "variant_key": "ANTHELIOS_SUN_FLUID_KR_50ML",
+    "formulation_revision_key": "trust-p7-lrp-4833-current",
+    "subject_id": "614db853-7865-408b-8f40-a4dcfe6a2ea5"
+  },
+  "source": {
+    "source_id": "5cd09ce3-bd09-474a-bd8e-f2253a455116",
+    "canonical_locator": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+    "publisher": "La Roche-Posay Slovenia",
+    "source_kind": "official_product_page",
+    "source_market": "SI",
+    "content_digest": "e935ea69040aab9ffd1bb62472555c5188a9b5e1810e2dd358d750d9325abeb3",
+    "companion_identity_source": "https://www.larocheposay.co.kr/product/view/4833.do"
+  },
+  "binding": {
+    "binding_id": "c2dbf1ad-cc8e-46b6-bebd-94860613705c",
+    "binding_state": "exact_subject_match",
+    "scope_relation": "narrower",
+    "subject_market": "KR",
+    "source_market": "SI"
+  },
+  "fact": {
+    "fact_key": "spf_value",
+    "proposition_key": "9be0d8a4cc57d8738b45955565fc7023761087ee7f50b55e7ea0d2223cdbf515",
+    "semantic_status": "supported",
+    "value_type": "number",
+    "value_number": 50,
+    "value_enum": null,
+    "market": "KR",
+    "qualifier": {"plus_modifier": "plus"},
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high",
+    "fusion_input_digest": "e04ee4affcee6f9014f89957af3c1cb45bfc1c0a2e96a30d56ab53098b30baa1",
+    "evidence_id": "cef172e8-6ca1-479f-a4fa-29834288809c",
+    "canonical_evidence_digest": "96786c34454fef1ddfc70e741c964a9934d722ea35ecace55a808cf6b38baebf",
+    "assignment_id": "ad0e839e-7d14-4893-9caa-99c809db5286",
+    "confirmation_id": "31a872bb-983c-4d68-9c6e-8883f4f4729b",
+    "fact_instance_id": "35822d3f-4036-41c2-80fe-8fe6d0148004",
+    "evidence_link_role": "supporting"
+  },
+  "requests": {
+    "subject_register": "trust-p10-b-lrp-subject-20260911-v1",
+    "evidence_ingest": "trust-p10-b-lrp-spf-evidence-20260911-v1",
+    "review_under_review": "trust-p10-b-lrp-spf-review-under-20260911-v1",
+    "review_ready_for_confirm": "trust-p10-b-lrp-spf-review-ready-20260911-v1",
+    "confirmation": "trust-p10-b-lrp-spf-confirm-20260911-v1"
+  },
+  "confirmation": {
+    "preflight_status": "ready",
+    "payload_digest": "f114f829d90933dac972bf203df7e157ec94b0cecfe1aa95d53c9d171db2b258",
+    "prestate_digest": "e6b617e7c11b0ed42fa2862c9e85b1da9ca668e579c43c31f293dda96c296e8f",
+    "result_digest": "8e6c57c0273e76e42c1c7eca8bedc2af73b6c16c8473b0bffbd368d001577458",
+    "previous_current": null,
+    "status": "confirmed",
+    "idempotent": false
+  },
+  "production_poststate": {
+    "readback_at": "2026-09-11T04:52:06.884026+09:00",
+    "subjects": 20,
+    "sources": 20,
+    "bindings": 20,
+    "evidence": 48,
+    "fact_instances": 48,
+    "evidence_links": 48,
+    "review_assignments": 48,
+    "confirmations": 48,
+    "current": 48,
+    "target_subjects": 1,
+    "target_current": 1,
+    "target_spf_current": 1,
+    "target_uva_current": 0
+  },
+  "invariants": {
+    "planned_delta_exact": true,
+    "runtime_ids_server_returned": true,
+    "current_lineage_exact": true,
+    "spf_value_exact": true,
+    "uva_label_remains_blocked": true,
+    "direct_product_fact_table_dml": false
+  }
+}
