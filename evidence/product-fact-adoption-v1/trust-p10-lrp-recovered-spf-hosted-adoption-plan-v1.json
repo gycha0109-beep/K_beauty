@@ -1,0 +1,173 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "trust-p7-sunscreen-stage-b-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "source_recovery_version": "trust-p9-lrp-first-party-fact-source-recovery-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "upstream_p7_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p7-sunscreen-stage-b-identity-source-research-v1.json",
+    "upstream_p7_blob_sha": "7da1aef5d3b3bab446398aaa9656942180a17118",
+    "upstream_p9_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p9-lrp-first-party-fact-source-recovery-v1.json",
+    "upstream_p9_blob_sha": "1b245e26ac1e598a13474723a56909021b5425b9",
+    "upstream_p9_merge_sha": "7bc1f1afaff626087498d843d4676c202ffdae10"
+  },
+  "blocked_facts": [
+    {
+      "disposition": "FACT_SOURCE_RECOVERY_REQUIRED",
+      "fact_key": "uva_label",
+      "inference_prohibited": "UVA-PF 46 -> PA++++",
+      "observed_same_formula_claim": "UVA-PF 46",
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "required_value_kind": "direct_pa_label"
+    }
+  ],
+  "exact_scope": {
+    "bindings": 1,
+    "blocked_fact_keys": [
+      "uva_label"
+    ],
+    "eligible_product_ids": [
+      "9983f167-24e7-4223-bd86-446ce6ced31b"
+    ],
+    "fact_keys": [
+      "spf_value"
+    ],
+    "products": 1,
+    "propositions": 1,
+    "sources": 1,
+    "subjects": 1
+  },
+  "hosted_prestate": {
+    "bindings": 19,
+    "confirmations": 47,
+    "current": 47,
+    "evidence": 47,
+    "fact_instances": 47,
+    "review_assignments": 47,
+    "sources": 19,
+    "subjects": 19,
+    "target_current": 0,
+    "target_source_locators": 0,
+    "target_subjects": 0
+  },
+  "invariants": {
+    "cross_market_source_narrowed_to_kr": true,
+    "new_fact_kind": false,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "uva_label_inference": false,
+    "uva_pf_to_pa_conversion": false
+  },
+  "next_gate": {
+    "blocked_fact_keys": [
+      "uva_label"
+    ],
+    "eligible_fact_keys": [
+      "spf_value"
+    ],
+    "requires_all_planned_confirmation_preflights_ready": true,
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "status": "PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "direct_table_dml": false,
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only"
+  },
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "bindings": 1,
+    "confirmations": 1,
+    "current": 1,
+    "evidence": 1,
+    "evidence_links": 1,
+    "fact_instances": 1,
+    "review_assignments": 1,
+    "sources": 1,
+    "subjects": 1
+  },
+  "plan_content_sha256": "ea9e640baf878c0f2fa8298c01a251dd0d240105f6958e567a389ffeba48d8d5",
+  "propositions": [
+    {
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "96786c34454fef1ddfc70e741c964a9934d722ea35ecace55a808cf6b38baebf",
+      "evidence_authority": "product_specific_primary",
+      "evidence_class": "product_claim",
+      "fact_key": "spf_value",
+      "fused_confidence": 1,
+      "negative_admissibility": "not_applicable",
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "proposition_key": "9be0d8a4cc57d8738b45955565fc7023761087ee7f50b55e7ea0d2223cdbf515",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "raw_claim": "SPF50+",
+      "scope": {
+        "market": "KR",
+        "variant": "ANTHELIOS_SUN_FLUID_KR_50ML"
+      },
+      "source_ref": "trust-p10-source:9983f167-24e7-4223-bd86-446ce6ced31b",
+      "subject_semantic_key": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+      "support_direction": "supports",
+      "value": 50,
+      "value_type": "number"
+    }
+  ],
+  "source_main_sha": "7bc1f1afaff626087498d843d4676c202ffdae10",
+  "sources": [
+    {
+      "accessed_at": "2026-09-11T04:35:10.914222+09:00",
+      "binding_scope_relation": "narrower",
+      "canonical_locator": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+      "companion_identity_source_urls": [
+        "https://www.larocheposay.co.kr/product/view/4833.do"
+      ],
+      "content_digest": "e935ea69040aab9ffd1bb62472555c5188a9b5e1810e2dd358d750d9325abeb3",
+      "digest_basis": "trust-p9-recovered-source-observation-v1-not-live-page-bytes",
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "publisher": "La Roche-Posay Slovenia",
+      "source_kind": "official_product_page",
+      "source_market": "SI",
+      "source_ref": "trust-p10-source:9983f167-24e7-4223-bd86-446ce6ced31b"
+    }
+  ],
+  "stage": "TRUST-P10",
+  "subjects": [
+    {
+      "current_state": "current",
+      "formulation_label": "라로슈포제 안뗄리오스 선 플루이드 50ml",
+      "formulation_revision_key": "trust-p7-lrp-4833-current",
+      "identity_status": "resolved",
+      "market_applicability": "KR",
+      "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+      "region_applicability": null,
+      "subject_semantic_key": "75f3d410ae03c5ffef800fedb28f706741fe59f3490e6155e396d6151b5ce527",
+      "valid_from": null,
+      "valid_to": null,
+      "variant_key": "ANTHELIOS_SUN_FLUID_KR_50ML"
+    }
+  ],
+  "version": "trust-p10-lrp-recovered-spf-hosted-adoption-plan-v1"
+}
