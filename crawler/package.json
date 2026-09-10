@@ -35,6 +35,7 @@
     "verify:legacy-offer-classifier": "tsx test-legacy-offer-classifier.ts",
     "verify:legacy-offer-migration": "tsx test-legacy-offer-migration.ts",
     "verify:legacy-offer-import": "tsx test-legacy-offer-import.ts",
+    "verify:legacy-offer-import:local-runtime": "tsx tests/verify-legacy-offer-import-local-runtime.ts",
     "verify:product-offers:local-runtime": "tsx tests/verify-product-offers-local-runtime.ts",
     "verify:product-source-bindings:local-runtime": "tsx tests/verify-product-source-bindings-local-runtime.ts",
     "verify:security-policy-runtime-import": "node --loader ./image-source-policy-loader.mjs --import tsx test-security-policy-runtime-import.ts",
