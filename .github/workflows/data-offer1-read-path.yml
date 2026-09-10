@@ -1,0 +1,58 @@
+name: DATA-OFFER1 Offer Read Path
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/product-offer-read-path.js"
+      - "lib/server/product-offer-read-service.js"
+      - "lib/skin-match-decision-engine.js"
+      - "lib/skin-match-decision-engine-core.js"
+      - "scripts/verify-product-offer-read-path-v1.mjs"
+      - ".github/workflows/data-offer1-read-path.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/product-offer-read-path.js"
+      - "lib/server/product-offer-read-service.js"
+      - "lib/skin-match-decision-engine.js"
+      - "lib/skin-match-decision-engine-core.js"
+      - "scripts/verify-product-offer-read-path-v1.mjs"
+      - ".github/workflows/data-offer1-read-path.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-data-offer1-read-path:
+    name: DATA-OFFER1 Offer Read Path
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          printf 'DATA_OFFER1_EXACT_HEAD=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify deterministic Offer presentation read path
+        run: node scripts/verify-product-offer-read-path-v1.mjs
+
+      - name: Verify wrapper syntax
+        run: node --check lib/skin-match-decision-engine.js
