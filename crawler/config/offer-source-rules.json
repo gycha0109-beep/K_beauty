@@ -1,0 +1,222 @@
+{
+  "version": "1.0",
+  "hosts": {
+    "hwahae.co.kr": {
+      "kind": "reference",
+      "seller_key": null
+    },
+    "oliveyoung.co.kr": {
+      "kind": "seller",
+      "seller_key": "oliveyoung",
+      "product_routes": [
+        {
+          "path_pattern": "^/store/goods/getGoodsDetail\\.do$",
+          "required_query_all": ["goodsNo"]
+        }
+      ]
+    },
+    "brand.naver.com": {
+      "kind": "seller",
+      "seller_key": "naver_brand_store",
+      "product_routes": [
+        { "path_pattern": "^/[^/]+/products/\\d+/?$" }
+      ],
+      "listing_routes": [
+        { "path_pattern": "^/[^/]+/category/" }
+      ]
+    },
+    "11st.co.kr": {
+      "kind": "seller",
+      "seller_key": "11st",
+      "product_routes": [
+        { "path_pattern": "^/products/\\d+/?$" }
+      ]
+    },
+    "ssg.com": {
+      "kind": "seller",
+      "seller_key": "ssg",
+      "product_routes": [
+        {
+          "path_pattern": "^/item/itemView\\.ssg$",
+          "required_query_all": ["itemId"]
+        }
+      ]
+    },
+    "abib.com": {
+      "kind": "seller",
+      "seller_key": "abib_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/product/detail\\.html$",
+          "required_query_all": ["product_no"]
+        }
+      ]
+    },
+    "aromatica.co": {
+      "kind": "seller",
+      "seller_key": "aromatica_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "asceplushomecare.co.kr": {
+      "kind": "seller",
+      "seller_key": "asceplus_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/product/detail\\.html$",
+          "required_query_all": ["product_no"]
+        },
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "dewytree.com": {
+      "kind": "seller",
+      "seller_key": "dewytree_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "isntree.com": {
+      "kind": "seller",
+      "seller_key": "isntree_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "m.innisfree.com": {
+      "kind": "seller",
+      "seller_key": "innisfree_official",
+      "product_routes": [
+        { "path_pattern": "^/kr/ko/dp/product/\\d+/?$" }
+      ]
+    },
+    "m.manyo.co.kr": {
+      "kind": "seller",
+      "seller_key": "manyo_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/goods/goods_view\\.php$",
+          "required_query_all": ["goodsNo"]
+        }
+      ]
+    },
+    "neopharmshop.co.kr": {
+      "kind": "seller",
+      "seller_key": "neopharm_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/product/detail\\.html$",
+          "required_query_all": ["product_no"]
+        },
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "ongredients.cafe24.com": {
+      "kind": "seller",
+      "seller_key": "ongredients_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "puresomme.com": {
+      "kind": "seller",
+      "seller_key": "puresomme_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/product/detail\\.html$",
+          "required_query_all": ["product_no"]
+        }
+      ]
+    },
+    "roundlab.co.kr": {
+      "kind": "seller",
+      "seller_key": "roundlab_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "ruuve.kr": {
+      "kind": "seller",
+      "seller_key": "ruuve_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "scinic.com": {
+      "kind": "seller",
+      "seller_key": "scinic_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "skinwavey.co.kr": {
+      "kind": "seller",
+      "seller_key": "skinwavey_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "snature.kr": {
+      "kind": "seller",
+      "seller_key": "snature_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    },
+    "tonymoly.com": {
+      "kind": "seller",
+      "seller_key": "tonymoly_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/products/.+\\.do$",
+          "required_query_all": ["i_sProductcd"]
+        }
+      ]
+    },
+    "amoremall.com": {
+      "kind": "seller",
+      "seller_key": "amoremall",
+      "product_routes": [
+        {
+          "path_pattern": "^/kr/ko/product/detail$",
+          "required_query_all": ["onlineProdSn"]
+        }
+      ]
+    },
+    "larocheposay.co.kr": {
+      "kind": "seller",
+      "seller_key": "larocheposay_official",
+      "product_routes": [
+        { "path_pattern": "^/product/view/\\d+\\.do$" }
+      ]
+    },
+    "torriden.com": {
+      "kind": "seller",
+      "seller_key": "torriden_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/goods/goods_view\\.php$",
+          "required_query_all": ["goodsNo"]
+        }
+      ]
+    },
+    "zeroid.co.kr": {
+      "kind": "seller",
+      "seller_key": "zeroid_official",
+      "product_routes": [
+        {
+          "path_pattern": "^/web/product/product_detail\\.asp$",
+          "required_query_all": ["idx"]
+        }
+      ]
+    },
+    "ybk-cosmetics.com": {
+      "kind": "seller",
+      "seller_key": "ybk_official",
+      "product_routes": [
+        { "path_pattern": "^/product/.+/\\d+/?$" }
+      ]
+    }
+  }
+}
