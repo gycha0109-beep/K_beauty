@@ -119,12 +119,12 @@ function extractListingId(url: URL, source: ListingIdSource | undefined): string
 
 function canonicalListingUrl(
   url: URL,
-  host: string,
   source: ListingIdSource | undefined,
   listingId: string | null,
 ): string | null {
   if (!source || !listingId) return null;
-  const canonical = new URL(`https://${host}${url.pathname}`);
+  const canonical = new URL(url.origin);
+  canonical.pathname = url.pathname;
   if (source.kind === "query") {
     canonical.searchParams.set(source.key, listingId);
   }
@@ -232,7 +232,7 @@ function classifyLink(
   const productRoute = (rule.product_routes ?? []).find((route) => routeMatches(url, route));
   if (productRoute) {
     const listingId = extractListingId(url, productRoute.listing_id_source);
-    const canonicalUrl = canonicalListingUrl(url, host, productRoute.listing_id_source, listingId);
+    const canonicalUrl = canonicalListingUrl(url, productRoute.listing_id_source, listingId);
     const identityReady = Boolean(listingId && canonicalUrl);
     return {
       host,
