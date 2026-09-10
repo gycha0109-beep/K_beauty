@@ -33,6 +33,7 @@ type OfferRow = {
   offer_id: string;
   product_id: string;
   seller_key: string;
+  listing_id: string | null;
   listing_url: string;
 };
 
@@ -122,7 +123,7 @@ async function main(): Promise<void> {
 
   const offerResult = await client
     .from("product_offers")
-    .select("offer_id, product_id, seller_key, listing_url")
+    .select("offer_id, product_id, seller_key, listing_id, listing_url")
     .limit(10000);
   if (offerResult.error) {
     throw new Error(`legacy_offer_dry_run_offers_failed:${offerResult.error.message}`);
@@ -133,6 +134,7 @@ async function main(): Promise<void> {
       offerId: offer.offer_id,
       productId: offer.product_id,
       sellerKey: offer.seller_key,
+      listingId: offer.listing_id,
       listingUrl: offer.listing_url,
     }),
   );
@@ -165,7 +167,7 @@ async function main(): Promise<void> {
 
   for (const row of rows.filter((item) => item.status !== "would_insert")) {
     console.log(
-      `- row ${row.productId} ${row.status} seller=${row.sellerKey} url=${row.listingUrl} reason=${row.reason}`,
+      `- row ${row.productId} ${row.status} seller=${row.sellerKey} listing_id=${row.listingId} url=${row.listingUrl} reason=${row.reason}`,
     );
   }
 
