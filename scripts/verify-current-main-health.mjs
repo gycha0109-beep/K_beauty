@@ -54,6 +54,7 @@ run("Seller listing observation persistence contract", node, ["scripts/verify-se
 run("Seller listing capture adapter authority", node, ["scripts/verify-seller-listing-capture-adapter-v1.mjs"]);
 run("Seller listing capture evidence authority", node, ["scripts/verify-seller-listing-capture-evidence-v1.mjs"]);
 run("Seller listing evidence-first capture wiring", node, ["scripts/verify-seller-listing-capture-with-evidence-v1.mjs"]);
+run("Seller listing parser fixture admission", node, ["scripts/verify-seller-listing-parser-fixture-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
