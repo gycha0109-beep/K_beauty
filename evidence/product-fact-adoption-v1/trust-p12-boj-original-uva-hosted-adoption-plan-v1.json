@@ -1,0 +1,149 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "cross-category-real-evidence-pilot-v1",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "research_method": "current_first_party_direct_claim_plus_official_identity_continuity",
+    "subject_serializer_version": "product-fact-subject-identity-v1"
+  },
+  "hosted_prestate": {
+    "bindings": 20,
+    "checked_at": "2026-09-11T06:14:04.998027+09:00",
+    "confirmations": 48,
+    "current": 48,
+    "evidence": 48,
+    "evidence_digest_rows": 0,
+    "evidence_links": 48,
+    "existing_locator_rows": 1,
+    "fact_instances": 48,
+    "new_source_identity_rows": 0,
+    "open_assignment_rows": 0,
+    "proposition_current_rows": 0,
+    "review_assignments": 48,
+    "sources": 20,
+    "subjects": 20,
+    "target_spf_current": 1,
+    "target_subjects": 1,
+    "target_uva_current": 0
+  },
+  "invariants": {
+    "direct_product_fact_dml": false,
+    "existing_subject_reused": true,
+    "new_subject_for_rename": false,
+    "official_identity_continuity_required": true,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "spf_current_must_remain": true,
+    "uva_current_prestate_zero": true
+  },
+  "next_gate": {
+    "eligible_fact_keys": ["uva_label"],
+    "requires_all_planned_confirmation_preflights_ready": true,
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "status": "PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "direct_table_dml": false,
+    "review_states": ["under_review", "ready_for_confirm"],
+    "rpc_sequence": [
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only",
+    "subject_registration_required": false
+  },
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "bindings": 1,
+    "confirmations": 1,
+    "current": 1,
+    "evidence": 1,
+    "evidence_links": 1,
+    "fact_instances": 1,
+    "review_assignments": 1,
+    "sources": 1,
+    "subjects": 0
+  },
+  "plan_content_sha256": "c282dabe9f5c7b6572bf5f771841dd96386c0d8e8a6b01cb7fa6543b5abe9921",
+  "proposition": {
+    "authority_ceiling": "product_specific_primary",
+    "canonical_evidence_digest": "95920464b02a26fa8e31ab057fbbc2157cbb761f0a7eed91d8db7df8121cdb69",
+    "evidence_authority": "product_specific_primary",
+    "evidence_class": "product_claim",
+    "fact_key": "uva_label",
+    "fused_confidence": "high",
+    "negative_admissibility": "not_applicable",
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "proposition_key": "ea34c1e334b846df861b198bd658c3ce1a98d422433e66d0b3e3d7c584915f01",
+    "qualifier": {},
+    "raw_claim": "PA++++",
+    "scope": {"market": "GLOBAL", "variant": "Relief_Sun_Rice_Probiotics"},
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+    "support_direction": "supports",
+    "value": "PA++++",
+    "value_type": "enum"
+  },
+  "request_ids": {
+    "confirmation": "trust-p12-boj-uva-confirm-20260911-v1",
+    "ingest": "trust-p12-boj-uva-ingest-v1",
+    "review_ready": "trust-p12-boj-uva-review-ready-v1",
+    "review_under": "trust-p12-boj-uva-review-under-v1"
+  },
+  "source": {
+    "accessed_at": "2026-09-11T06:14:04.998027+09:00",
+    "canonical_locator": "https://beautyofjoseon.com/products/relief-sun-rice-probiotics",
+    "content_digest": "e09425390b1fbf0e9c4eb4c4a3d1b2854f25d6a7de82a99f57a56a575184e7c9",
+    "digest_basis": "trust-p12-current-official-observation-v1-not-live-page-bytes",
+    "identity_continuity": {
+      "current_name": "Relief Sun : Rice + Niacinamide",
+      "formula_unchanged": true,
+      "ingredients_unchanged": true,
+      "official_faq_name_change_only": true,
+      "prior_name": "Relief Sun : Rice + Probiotics",
+      "size_unchanged": true
+    },
+    "locale": "en",
+    "market": "GLOBAL",
+    "observed_claims": [
+      "Relief Sun : Rice + Niacinamide (SPF50+ PA++++)",
+      "50ml",
+      "SPF50+",
+      "PA++++"
+    ],
+    "publisher": "Beauty of Joseon",
+    "region": null,
+    "source_kind": "official_product_page",
+    "source_ref": "trust-p12-source:25b2763f-529f-4b2e-a436-2e0776279c55"
+  },
+  "source_main_sha": "5fd5cbbe0274bc9b0092263afc5f51d3f42fd3f9",
+  "stage": "TRUST-P12",
+  "subject": {
+    "current_state": "current",
+    "formulation_revision_key": "pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a",
+    "identity_status": "resolved",
+    "market_applicability": "GLOBAL",
+    "product_id": "25b2763f-529f-4b2e-a436-2e0776279c55",
+    "region_applicability": null,
+    "subject_id": "0865df81-9cd9-438c-8167-380b932c1dc0",
+    "subject_semantic_key": "2f5345df7de1decc70af71677652186cb9c2d61e215240a03b29f5e23d1ece44",
+    "subject_write_required": false,
+    "variant_key": "Relief_Sun_Rice_Probiotics"
+  },
+  "version": "trust-p12-boj-original-uva-hosted-adoption-plan-v1"
+}
