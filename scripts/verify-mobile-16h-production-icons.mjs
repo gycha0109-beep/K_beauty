@@ -100,8 +100,9 @@ assert.equal(contract.sourceContractStatus, "repository_implemented");
 const compliance = new Map(readiness.complianceInventory.map((item) => [item.id, item]));
 assert.equal(compliance.get("production_app_icon")?.status, "repository_implemented");
 assert.equal(compliance.get("production_app_icon")?.owner, "MOBILE-16H");
-assert.equal(compliance.get("store_listing_assets")?.status, "pending");
-assert.match(compliance.get("store_listing_assets")?.reason || "", /512x512 listing icon is repository-frozen/i);
+assert.equal(compliance.get("store_listing_assets")?.status, "repository_implemented_external_pending");
+assert.match(compliance.get("store_listing_assets")?.reason || "", /512x512 listing icon/i);
+assert.match(compliance.get("store_listing_assets")?.reason || "", /MOBILE-20D App Store iPhone 6\.9-inch submission package/i);
 
 console.log(`MOBILE_16H_DARK_ICON_BYTES=${dark.bytes}`);
 console.log(`MOBILE_16H_LIGHT_ICON_BYTES=${light.bytes}`);

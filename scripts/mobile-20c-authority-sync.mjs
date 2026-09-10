@@ -26,9 +26,6 @@ listing.googlePlay.featureGraphic = {
   reason: "Repository-qualified feature graphic extends the BEJEWELY visual language with skin-profile, product-pick, AM/PM routine and diary-continuity motifs without medical or guaranteed-outcome claims."
 };
 listing.repositoryPending = listing.repositoryPending.filter((id) => id !== "google_play_feature_graphic");
-if (!listing.repositoryPending.includes("app_store_screenshot_submission_packaging")) {
-  listing.repositoryPending.push("app_store_screenshot_submission_packaging");
-}
 writeJson(listingPath, listing);
 
 const readiness = readJson(readinessPath);
@@ -47,9 +44,6 @@ readiness.mobile20CFeatureGraphicContract = {
 const blockers = readiness.mobile20StoreCaptureContract?.remainingRepositoryAssetBlockers;
 if (Array.isArray(blockers)) {
   readiness.mobile20StoreCaptureContract.remainingRepositoryAssetBlockers = blockers.filter((id) => id !== "google_play_feature_graphic");
-  if (!readiness.mobile20StoreCaptureContract.remainingRepositoryAssetBlockers.includes("app_store_screenshot_submission_packaging")) {
-    readiness.mobile20StoreCaptureContract.remainingRepositoryAssetBlockers.push("app_store_screenshot_submission_packaging");
-  }
 }
 
 const envKeys = readiness.clientEnvironmentContract?.allowedProcessEnvKeys;
@@ -59,8 +53,14 @@ if (Array.isArray(envKeys) && !envKeys.includes("EXPO_PUBLIC_STORE_CAPTURE_MODE"
 
 const storeAssets = readiness.complianceInventory?.find((item) => item.id === "store_listing_assets");
 if (!storeAssets) throw new Error("missing store_listing_assets compliance inventory item");
-storeAssets.status = "pending";
-storeAssets.reason = "The 512x512 listing icon is repository-frozen, the deterministic bilingual 1080x1920 Home/Analyze/Results/Diary repository capture set is visually qualified by MOBILE-20A/MOBILE-20B, and the Google Play 1024x500 feature graphic is repository-qualified by MOBILE-20C. App Store screenshot submission packaging remains repository-pending; support-contact configuration, App Store Connect metadata, and Google Play Console metadata remain external.";
+const repositoryBlockers = readiness.mobile20StoreCaptureContract?.remainingRepositoryAssetBlockers || [];
+if (readiness.mobile20StoreCaptureContract?.storeAssetsFrozen === true && repositoryBlockers.length === 0) {
+  storeAssets.status = "repository_implemented_external_pending";
+  storeAssets.reason = "Repository store assets are frozen: the 512x512 listing icon, bilingual Home/Analyze/Results/Diary capture set, Google Play 1024x500 feature graphic, and MOBILE-20D App Store iPhone 6.9-inch submission package are repository-qualified. Public support-contact configuration, App Store Connect metadata submission, and Google Play Console metadata submission remain external.";
+} else {
+  storeAssets.status = "pending";
+  storeAssets.reason = "The Google Play 1024x500 feature graphic is repository-qualified by MOBILE-20C. Any other repository-owned store-asset blocker remains under its owning slice and is not created or cleared by MOBILE-20C; support-contact configuration and console submissions remain external.";
+}
 
 writeJson(readinessPath, readiness);
 console.log("MOBILE_20C_AUTHORITY_SYNC=PASS");
