@@ -1,0 +1,81 @@
+{
+  "version": "trust-p6-sunscreen-product-fact-subject-coverage-v1",
+  "stage": "TRUST-P6",
+  "scope": "production-read-only-sunscreen-product-fact-subject-coverage",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "8448f65f5126e3ac56a354ef134e1ea3d8a3822f",
+    "supabase_project_id": "bygrczggxfuisupcevaz",
+    "captured_at": "2026-09-10T18:34:39.154035+09:00",
+    "category": "sunscreen",
+    "database_snapshot_sha256": "7d801e49d502beba698b492230102c736c263a5a19fd8c4be7a6088c6a480aaa",
+    "artifact_snapshot_sha256": "5fdc3e909cf371faef64315872af6f1e6dc8b5895a082d7b214dca815dec0a3c",
+    "source_role": "discovery_only_not_fact_evidence"
+  },
+  "counts": {
+    "catalog_products": 11,
+    "resolved_current_subject_products": 3,
+    "subject_gap_products": 8,
+    "mechanical_subject_creation_eligible": 0,
+    "normalized_identity_collisions": 0,
+    "blank_identity_rows": 0,
+    "product_fact_subject_rows_at_capture": 16,
+    "product_fact_current_rows_at_capture": 41
+  },
+  "classification_counts": {
+    "SOURCE_IDENTITY_RESEARCH_READY": 4,
+    "MARKET_FORMULATION_SCOPE_REVIEW_REQUIRED": 1,
+    "MARKET_SCOPE_REVIEW_REQUIRED": 1,
+    "IDENTITY_FORMULATION_REVISION_REVIEW_REQUIRED": 1,
+    "SOURCE_FORMULATION_DISCOVERY_REQUIRED": 1
+  },
+  "invariants": {
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_writes": 0,
+    "recommendation_or_ranking_changes": 0,
+    "subject_creation_authorized_by_this_artifact": false,
+    "fact_ingest_authorized_by_this_artifact": false,
+    "historical_handoff_catalog_snapshot_reused_as_authority": false
+  },
+  "snapshot_rows": [
+    {"product_id":"dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3","brand":"닥터지","name":"그린 마일드 업 선 플러스","normalized_brand":"닥터지","normalized_name":"그린 마일드 업 선 플러스","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"9983f167-24e7-4223-bd86-446ce6ced31b","brand":"라로슈포제","name":"안뗄리오스 선 플루이드","normalized_brand":"라로슈포제","normalized_name":"안뗄리오스 선 플루이드","size_ml":"50","source_url":"https://www.larocheposay.co.kr/product/view/4833.do","hwahae_url":"https://www.hwahae.com/en/products/LAROCHE-POSAY-ANTHELIOS-SUN-FLUID-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/2199136","subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"0bb742d2-df6b-49a7-8e29-8f76ae62ac0d","brand":"라운드랩","name":"자작나무 수분 선크림","normalized_brand":"라운드랩","normalized_name":"자작나무 수분 선크림","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":"761e6fd6-3487-4505-a1a7-13c37d5cece4","variant_key":"renewed_KR","formulation_revision_key":"pilot-freeze-9aba73ebdc1f56e6041286efa04eb74f","identity_status":"resolved","current_state":"current","current_fact_count":2},
+    {"product_id":"25b2763f-529f-4b2e-a436-2e0776279c55","brand":"뷰티오브조선","name":"맑은쌀 선크림","normalized_brand":"뷰티오브조선","normalized_name":"릴리프 선 : 라이스 + 프로바이오틱스","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":"0865df81-9cd9-438c-8167-380b932c1dc0","variant_key":"Relief_Sun_Rice_Probiotics","formulation_revision_key":"pilot-freeze-1b04778e8aba22d6d6e45233a8f75e9a","identity_status":"resolved","current_state":"current","current_fact_count":1},
+    {"product_id":"765b3ca1-6927-49b0-bee6-4138d03dd915","brand":"뷰티오브조선","name":"맑은쌀 선크림 아쿠아프레쉬","normalized_brand":"뷰티오브조선","normalized_name":"맑은쌀 선크림 아쿠아프레쉬","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"fdf06871-db8e-4e73-a48c-c057c5ce925d","brand":"스킨1004","name":"히알루-시카 워터핏 선세럼 UV","normalized_brand":"스킨1004","normalized_name":"히알루-시카 워터핏 선세럼 UV","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"cbcd06a2-de29-47ca-afd1-ab1d5de93903","brand":"아넷사","name":"퍼펙트 UV 선스크린 스킨케어 밀크 NA","normalized_brand":"아넷사","normalized_name":"퍼펙트 uv 선스크린 스킨케어 밀크 na","size_ml":"60","source_url":"https://www.shinsegaev.com/goods/initDetailGoods.siv?goods_no=2403357889","hwahae_url":null,"subject_id":"d1d748c3-8706-4b6c-8719-676f6f317532","variant_key":"NA","formulation_revision_key":"pilot-freeze-81e7ff0bf60b506d8c326970f8d930ea","identity_status":"resolved","current_state":"current","current_fact_count":2},
+    {"product_id":"dd326b18-ea56-45fb-8571-42186b6c9159","brand":"에스트라","name":"더마 UV365 레드 카밍 톤업 선스크린","normalized_brand":"에스트라","normalized_name":"더마 uv365 레드 카밍 톤업 선스크린","size_ml":"40","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"2d3591f2-2216-4043-8493-a9492806ef8b","brand":"에스트라","name":"더마UV365 장벽수분 무기자차 선크림","normalized_brand":"에스트라","normalized_name":"더마uv365 장벽수분 무기자차 선크림","size_ml":"40","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"336bb533-0fe4-4380-8b9f-ab16fb24b807","brand":"이즈앤트리","name":"히아루론산 워터리 선젤","normalized_brand":"이즈앤트리","normalized_name":"히아루론산 워터리 선젤","size_ml":"50","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0},
+    {"product_id":"57e4a5ec-115d-4322-85a1-7976db669700","brand":"토리든","name":"다이브인 워터리 모이스처 선크림","normalized_brand":"토리든","normalized_name":"다이브인 워터리 모이스처 선크림","size_ml":"60","source_url":null,"hwahae_url":null,"subject_id":null,"variant_key":null,"formulation_revision_key":null,"identity_status":null,"current_state":null,"current_fact_count":0}
+  ],
+  "covered_products": [
+    {"product_id":"0bb742d2-df6b-49a7-8e29-8f76ae62ac0d","brand":"라운드랩","name":"자작나무 수분 선크림","subject_id":"761e6fd6-3487-4505-a1a7-13c37d5cece4","identity_status":"resolved","current_state":"current","current_fact_count":2},
+    {"product_id":"25b2763f-529f-4b2e-a436-2e0776279c55","brand":"뷰티오브조선","name":"맑은쌀 선크림","subject_id":"0865df81-9cd9-438c-8167-380b932c1dc0","identity_status":"resolved","current_state":"current","current_fact_count":1},
+    {"product_id":"cbcd06a2-de29-47ca-afd1-ab1d5de93903","brand":"아넷사","name":"퍼펙트 UV 선스크린 스킨케어 밀크 NA","subject_id":"d1d748c3-8706-4b6c-8719-676f6f317532","identity_status":"resolved","current_state":"current","current_fact_count":2}
+  ],
+  "uncovered_products": [
+    {"product_id":"9983f167-24e7-4223-bd86-446ce6ced31b","brand":"라로슈포제","name":"안뗄리오스 선 플루이드","status":"SOURCE_IDENTITY_RESEARCH_READY","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://www.larocheposay.co.kr/product/view/4833.do","publisher":"La Roche-Posay Korea","match_note":"current KR exact product page, 50ml","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Stage B must freeze exact KR product/formulation identity and source-subject binding before registration."},
+    {"product_id":"765b3ca1-6927-49b0-bee6-4138d03dd915","brand":"뷰티오브조선","name":"맑은쌀 선크림 아쿠아프레쉬","status":"SOURCE_IDENTITY_RESEARCH_READY","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://beautyofjoseon.com/products/relief-sun-aqua-fresh","publisher":"Beauty of Joseon","match_note":"official exact product page, 50ml","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Stage B must freeze KR applicability/formulation identity before registration."},
+    {"product_id":"dd326b18-ea56-45fb-8571-42186b6c9159","brand":"에스트라","name":"더마 UV365 레드 카밍 톤업 선스크린","status":"SOURCE_IDENTITY_RESEARCH_READY","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://www.aestura.com/web/product/view.do?prdSeq=1108","publisher":"AESTURA","match_note":"official 40ml product page; official KR label uses 레드진정 while catalog uses 레드 카밍","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Stage B must adjudicate localized-name equivalence and freeze exact KR subject identity."},
+    {"product_id":"2d3591f2-2216-4043-8493-a9492806ef8b","brand":"에스트라","name":"더마UV365 장벽수분 무기자차 선크림","status":"SOURCE_IDENTITY_RESEARCH_READY","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://www.aestura.com/web/product/view.do?prdSeq=1107","publisher":"AESTURA","match_note":"official KR exact product page, 40ml","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Stage B must freeze exact KR formulation identity and binding before registration."},
+    {"product_id":"fdf06871-db8e-4e73-a48c-c057c5ce925d","brand":"스킨1004","name":"히알루-시카 워터핏 선세럼 UV","status":"MARKET_FORMULATION_SCOPE_REVIEW_REQUIRED","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv","publisher":"SKIN1004","match_note":"official 50ml UV page exposes US-style active-ingredient formulation and states reformulation/ingredient-list updates","source_role":"discovery_only_not_fact_evidence"},{"url":"https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-spf50-pa","publisher":"SKIN1004","match_note":"official non-UV SPF50+ PA++++ presentation indicates a separate market/formulation route","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Do not bind a KR catalog subject until market/formulation applicability is resolved."},
+    {"product_id":"336bb533-0fe4-4380-8b9f-ab16fb24b807","brand":"이즈앤트리","name":"히아루론산 워터리 선젤","status":"MARKET_SCOPE_REVIEW_REQUIRED","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://isntree-global.com/products/isntree-hyaluronic-acid-watery-sun-gel-50ml","publisher":"Isntree Global","match_note":"official global exact 50ml page; market availability differs by region","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Stage B must freeze KR market applicability and formulation scope."},
+    {"product_id":"57e4a5ec-115d-4322-85a1-7976db669700","brand":"토리든","name":"다이브인 워터리 모이스처 선크림","status":"IDENTITY_FORMULATION_REVISION_REVIEW_REQUIRED","mechanical_subject_creation_eligible":false,"official_source_candidates":[{"url":"https://www.torriden.com/goods/goods_view.php?goodsNo=252","publisher":"Torriden","match_note":"current official 60ml page uses 다이브인 모이스처 선크림","source_role":"discovery_only_not_fact_evidence"},{"url":"https://www.torriden.com/goods/goods_view.php?goodsNo=183","publisher":"Torriden","match_note":"official route still exposes legacy 워터리 모이스처 naming in page metadata/image context","source_role":"discovery_only_not_fact_evidence"}],"gate_note":"Current versus legacy naming must be reconciled as same formulation, revision, or supersession before subject registration."},
+    {"product_id":"dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3","brand":"닥터지","name":"그린 마일드 업 선 플러스","status":"SOURCE_FORMULATION_DISCOVERY_REQUIRED","mechanical_subject_creation_eligible":false,"official_source_candidates":[],"gate_note":"No current exact official Dr.G 50ml product page was established in this P6 discovery pass; older corporate references are insufficient for current formulation identity."}
+  ],
+  "reuse": {
+    "selection_path": "scripts/product-evidence/product-fact-catalog-selection-v1.mjs",
+    "research_path": "scripts/product-evidence/product-fact-catalog-evidence-research-wave-1-v1.mjs",
+    "adoption_path": "scripts/product-evidence/product-fact-catalog-hosted-adoption-wave-1-v1.mjs",
+    "controlled_rpcs": ["admin_register_product_fact_subject_v1","admin_ingest_product_fact_evidence_v1","admin_prepare_product_fact_review_v1","admin_preflight_product_fact_confirmation_v1","admin_confirm_product_fact_v1"],
+    "new_parallel_subject_materialization_path_required": false
+  },
+  "next_gate": {
+    "name": "TRUST-P7-targeted-sunscreen-subject-identity-freeze",
+    "first_batch_status": "SOURCE_IDENTITY_RESEARCH_READY",
+    "first_batch_product_count": 4,
+    "rule": "Run existing Stage B identity/source research on the four research-ready rows. Any mismatch downgrades to a review/block state; no coverage-pressure promotion."
+  }
+}
