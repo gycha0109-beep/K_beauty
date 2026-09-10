@@ -15,7 +15,7 @@ import type { LegacyOfferClassification } from "./lib/offers/legacy-offer-classi
 const RAW_URL =
   "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001&t_page=search&trackingCd=Result_1";
 const CANONICAL_URL =
-  "https://oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001";
+  "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001";
 
 function classification(overrides: Partial<LegacyOfferClassification> = {}): LegacyOfferClassification {
   return {
@@ -102,7 +102,7 @@ const identityConflictById = buildLegacyOfferDryRun({
       productId: "00000000-0000-0000-0000-000000000999",
       sellerKey: row.proposedOffer.sellerKey,
       listingId: row.proposedOffer.listingId,
-      listingUrl: "https://oliveyoung.co.kr/legacy-url",
+      listingUrl: "https://www.oliveyoung.co.kr/legacy-url",
     },
   ],
 });
@@ -148,7 +148,7 @@ const duplicateProductRow = buildManifestRow(
   classification({
     listingId: "A000000000002",
     canonicalListingUrl:
-      "https://oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000002",
+      "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000002",
   }),
   "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000002",
   "1.1",
