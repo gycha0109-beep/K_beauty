@@ -166,9 +166,43 @@ export function buildManifestRow(
   };
 }
 
+function assertRowContract(row: LegacyOfferManifestRow): void {
+  if (row.migrationDecision !== "LINK_ONLY_READY" || row.legacyPriceState !== "unknown") {
+    throw new Error(`legacy_offer_manifest_row_contract_mismatch:${row.productId}`);
+  }
+  const offer = row.proposedOffer;
+  if (
+    !offer ||
+    offer.productId !== row.productId ||
+    !offer.sellerKey?.trim() ||
+    !offer.sellerName?.trim() ||
+    !offer.listingUrl?.trim() ||
+    offer.sourceName !== LEGACY_OFFER_SOURCE_NAME ||
+    offer.listingId !== null ||
+    offer.priceAmount !== null ||
+    offer.currencyCode !== "KRW" ||
+    offer.availabilityState !== "unknown" ||
+    offer.marketCode !== "KR" ||
+    offer.locale !== null ||
+    offer.offerState !== "current" ||
+    offer.productScopeState !== "product_subject_unresolved" ||
+    offer.firstObservedAt !== null ||
+    offer.lastObservedAt !== null
+  ) {
+    throw new Error(`legacy_offer_manifest_offer_contract_mismatch:${row.productId}`);
+  }
+}
+
 function validateRows(rows: LegacyOfferManifestRow[]): void {
   const identities = new Map<string, string>();
+  const productIds = new Set<string>();
   for (const row of rows) {
+    assertRowContract(row);
+    if (productIds.has(row.productId)) {
+      throw new Error(`legacy_offer_manifest_duplicate_product:${row.productId}`);
+    }
+    productIds.add(row.productId);
+
     const withoutDigest = { ...row } as Record<string, unknown>;
     delete withoutDigest.rowDigest;
     if (row.rowDigest !== sha256Canonical(withoutDigest)) {
@@ -180,6 +214,18 @@ function validateRows(rows: LegacyOfferManifestRow[]): void {
       throw new Error(`legacy_offer_manifest_duplicate_listing:${identity}`);
     }
     identities.set(identity, row.productId);
+  }
+}
+
+function validateDecisionCounts(manifest: LegacyOfferMigrationManifest): void {
+  const counts = Object.values(manifest.decisionCounts);
+  if (
+    !Number.isInteger(manifest.sourceProductCount) ||
+    manifest.sourceProductCount < 0 ||
+    counts.some((count) => !Number.isInteger(count) || count < 0) ||
+    counts.reduce((sum, count) => sum + count, 0) !== manifest.sourceProductCount
+  ) {
+    throw new Error("legacy_offer_manifest_decision_counts_invalid");
   }
 }
 
@@ -206,23 +252,29 @@ export function buildLegacyOfferManifest(input: {
   rows: LegacyOfferManifestRow[];
 }): LegacyOfferMigrationManifest {
   const rows = [...input.rows].sort((a, b) => a.productId.localeCompare(b.productId));
-  validateRows(rows);
-  return {
+  const manifest: LegacyOfferMigrationManifest = {
     schemaVersion: LEGACY_OFFER_MANIFEST_SCHEMA,
     classifierRulesVersion: input.classifierRulesVersion,
     generatedAt: input.generatedAt,
     sourceProductCount: input.sourceProductCount,
     decisionCounts: input.decisionCounts,
     rows,
-    manifestDigest: sha256Canonical(
-      manifestDigestPayload({
-        classifierRulesVersion: input.classifierRulesVersion,
-        sourceProductCount: input.sourceProductCount,
-        decisionCounts: input.decisionCounts,
-        rows,
-      }),
-    ),
+    manifestDigest: "",
   };
+  validateDecisionCounts(manifest);
+  if (rows.length !== input.decisionCounts.LINK_ONLY_READY) {
+    throw new Error("legacy_offer_manifest_link_only_count_mismatch");
+  }
+  validateRows(rows);
+  manifest.manifestDigest = sha256Canonical(
+    manifestDigestPayload({
+      classifierRulesVersion: input.classifierRulesVersion,
+      sourceProductCount: input.sourceProductCount,
+      decisionCounts: input.decisionCounts,
+      rows,
+    }),
+  );
+  return manifest;
 }
 
 export function validateLegacyOfferManifest(manifest: LegacyOfferMigrationManifest): void {
@@ -232,6 +284,7 @@ export function validateLegacyOfferManifest(manifest: LegacyOfferMigrationManife
   if (!manifest.classifierRulesVersion) {
     throw new Error("legacy_offer_manifest_rules_version_missing");
   }
+  validateDecisionCounts(manifest);
   if (manifest.rows.length !== manifest.decisionCounts.LINK_ONLY_READY) {
     throw new Error("legacy_offer_manifest_link_only_count_mismatch");
   }
