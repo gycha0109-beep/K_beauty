@@ -8,10 +8,13 @@ on:
       - "crawler/lib/identity-resolution.ts"
       - "crawler/lib/database-identity-key.ts"
       - "crawler/lib/identity-adoption-plan.ts"
+      - "crawler/lib/identity-key-repair-plan.ts"
       - "crawler/identity-resolution-report.ts"
       - "crawler/identity-adoption-plan-report.ts"
+      - "crawler/identity-key-repair-plan-report.ts"
       - "crawler/test-identity-resolution.ts"
       - "crawler/test-identity-adoption-plan.ts"
+      - "crawler/test-identity-key-repair-plan.ts"
       - "crawler/package.json"
       - ".github/workflows/product-identity-resolution.yml"
   push:
@@ -21,10 +24,13 @@ on:
       - "crawler/lib/identity-resolution.ts"
       - "crawler/lib/database-identity-key.ts"
       - "crawler/lib/identity-adoption-plan.ts"
+      - "crawler/lib/identity-key-repair-plan.ts"
       - "crawler/identity-resolution-report.ts"
       - "crawler/identity-adoption-plan-report.ts"
+      - "crawler/identity-key-repair-plan-report.ts"
       - "crawler/test-identity-resolution.ts"
       - "crawler/test-identity-adoption-plan.ts"
+      - "crawler/test-identity-key-repair-plan.ts"
       - "crawler/package.json"
       - ".github/workflows/product-identity-resolution.yml"
 
@@ -68,6 +74,10 @@ jobs:
       - name: Verify identity adoption plan
         working-directory: crawler
         run: npm run verify:identity-adoption-plan
+
+      - name: Verify identity key repair plan
+        working-directory: crawler
+        run: npm run verify:identity-key-repair-plan
 
       - name: Typecheck crawler
         working-directory: crawler
