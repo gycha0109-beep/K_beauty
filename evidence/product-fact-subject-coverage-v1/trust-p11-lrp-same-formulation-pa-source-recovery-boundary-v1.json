@@ -1,0 +1,213 @@
+{
+  "version": "trust-p11-lrp-same-formulation-pa-source-recovery-boundary-v1",
+  "stage": "TRUST-P11",
+  "scope": "la-roche-posay-anthelios-same-formulation-direct-pa-source-recovery-boundary",
+  "status": "NO_ADMISSIBLE_SAME_FORMULATION_DIRECT_PA_LABEL_FOUND",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "ad7a8ce3ae46abed433e2ff2544e9bfd2f087007",
+    "upstream_p9_artifact": "evidence/product-fact-subject-coverage-v1/trust-p9-lrp-first-party-fact-source-recovery-v1.json",
+    "upstream_p10_execution_artifact": "evidence/product-fact-adoption-v1/trust-p10-lrp-recovered-spf-hosted-adoption-execution-v1.json",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "researched_at": "2026-09-11T05:56:47.061232+09:00",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "research_method": "first_party_direct_body_same_formulation_pa_label_recovery",
+    "research_role": "negative_admission_boundary_freeze_not_product_fact_evidence_ingest",
+    "source_observation_digest": "a15f1b73a2fa6a202d20e7e2a45697209df517219dc9ec023b61ad0ace4d7bf8"
+  },
+  "admission_rule": {
+    "fact_key": "uva_label",
+    "required_market": "KR",
+    "required_value": "PA++++",
+    "required_source_authority": "first_party",
+    "required_identity_relation": "same_formulation",
+    "required_claim_kind": "direct_pa_label",
+    "all_conditions_required": true,
+    "uva_pf_to_pa_conversion_allowed": false,
+    "uva_pf_declared_substitution_allowed": false,
+    "reason": "TRUST-P9 explicitly left uva_label blocked pending a same-formulation first-party direct PA label. TRUST-P11 does not widen that adjudication scope."
+  },
+  "registry_snapshot": {
+    "fact_key": "uva_label",
+    "value_type": "enum",
+    "deprecated": false,
+    "allowed_values": ["PA+", "PA++", "PA+++", "PA++++", "UVA-PF-declared"],
+    "permitted_evidence_classes": ["product_claim"],
+    "positive_evidence_requirement": "product-specific evidence",
+    "note": "The existence of UVA-PF-declared as a registry enum does not authorize substituting it for the requested direct PA++++ recovery in this track."
+  },
+  "production_state": {
+    "checked_at": "2026-09-11T05:55:35.813271+09:00",
+    "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "subject_id": "614db853-7865-408b-8f40-a4dcfe6a2ea5",
+    "global_counts": {
+      "subjects": 20,
+      "sources": 20,
+      "bindings": 20,
+      "evidence": 48,
+      "fact_instances": 48,
+      "evidence_links": 48,
+      "review_assignments": 48,
+      "confirmations": 48,
+      "current": 48
+    },
+    "target_counts": {
+      "subjects": 1,
+      "spf_current": 1,
+      "uva_current": 0
+    }
+  },
+  "product_identity": {
+    "product_id": "9983f167-24e7-4223-bd86-446ce6ced31b",
+    "brand": "라로슈포제",
+    "name": "안뗄리오스 선 플루이드",
+    "size_ml": 50,
+    "market": "KR",
+    "variant_key": "ANTHELIOS_SUN_FLUID_KR_50ML",
+    "formulation_revision_key": "trust-p7-lrp-4833-current",
+    "same_formula_code_bridge": "C227022/1",
+    "same_formula_identity_basis": "P9 exact ordered 22-ingredient equivalence after Korean-to-INCI normalization"
+  },
+  "same_formulation_first_party_observations": [
+    {
+      "url": "https://www.larocheposay.co.kr/product/view/4833.do",
+      "publisher": "La Roche-Posay Korea",
+      "market": "KR",
+      "same_formulation_support": true,
+      "direct_pa_label_present": false,
+      "observed_claims": [
+        "안뗄리오스 선 플루이드 [50ml]",
+        "자외선 차단 기능성",
+        "22-item Korean ingredient disclosure matching the P9 C227022/1 bridge"
+      ],
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    },
+    {
+      "url": "https://www.laroche-posay.com.au/sun-protection/face-sunscreens/anthelios-invisible-fluid-facial-sunscreen-spf-50/3337875733748.html",
+      "publisher": "La Roche-Posay Australia",
+      "market": "AU",
+      "same_formulation_support": true,
+      "formula_code": "C227022/1",
+      "direct_pa_label_present": false,
+      "observed_claims": [
+        "Anthelios Invisible Fluid Facial Sunscreen SPF 50+",
+        "50ml",
+        "C227022/1",
+        "Very High UVA/UVB Protection",
+        "22-item INCI formula"
+      ],
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    },
+    {
+      "url": "https://www.laroche-posay.cl/anthelios/anthelios-invisible-fluid-non-perfumed-spf50-plus",
+      "publisher": "La Roche-Posay Chile",
+      "market": "CL",
+      "same_formulation_support": true,
+      "formula_code": "C227022/1",
+      "direct_pa_label_present": false,
+      "observed_claims": [
+        "ANTHELIOS FLUIDO INVISIBLE FPS 50+ / UVA-FP 46 SIN PERFUME",
+        "50 ml",
+        "C227022/1",
+        "22-item INCI formula"
+      ],
+      "admission": "BLOCKED_UVA_PF_ONLY"
+    },
+    {
+      "url": "https://www.laroche-posay.si/anthelios/anthelios-nevidni-fluid-spf50-brez-vonja",
+      "publisher": "La Roche-Posay Slovenia",
+      "market": "SI",
+      "same_formulation_support": true,
+      "formula_code": "C227022/1",
+      "direct_pa_label_present": false,
+      "observed_claims": [
+        "ANTHELIOS INVISIBLE FLUID SPF50+ / UVA-PF 46 NON-PERFUMED",
+        "50 ml",
+        "C227022/1",
+        "22-item INCI formula"
+      ],
+      "admission": "BLOCKED_UVA_PF_ONLY"
+    }
+  ],
+  "direct_pa_first_party_rejected_candidates": [
+    {
+      "url": "https://www.laroche-posay.jp/product/uv/toneup/uvidea-xl-protection-tone-up-kit-20220726/LRPJP-UVI-013.html",
+      "publisher": "La Roche-Posay Japan",
+      "market": "JP",
+      "observed_claims": ["アンテリオス XL フリュイド", "50mL", "SPF50+・PA++++"],
+      "rejection": "FORMULATION_MISMATCH",
+      "identity_evidence": {
+        "jp_only_ingredients_examples": ["DIMETHICONE", "ISOHEXADECANE", "OCTOCRYLENE"],
+        "kr_only_ingredients_examples": ["ISOPROPYL MYRISTATE", "ETHYLHEXYL SALICYLATE"],
+        "result": "MATERIALLY_DIFFERENT_FROM_CURRENT_KR_22_ITEM_FORMULA"
+      }
+    },
+    {
+      "url": "https://www.laroche-posay.hk/anthelios/anthelios-uvmune-400-invisible-fluid-spf50-without-perfume",
+      "publisher": "La Roche-Posay Hong Kong",
+      "market": "HK",
+      "observed_claims": ["ANTHELIOS UVMUNE 400 INVISIBLE FLUID", "SPF50+ PA++++", "50 ml", "Mexoryl 400"],
+      "rejection": "FORMULATION_GENERATION_MISMATCH",
+      "reason": "UVMUNE 400 / Mexoryl 400 generation is not the P9 C227022/1 formulation."
+    },
+    {
+      "url": "https://www.lrp.com.tw/Product/Content?strProductID=MB459200",
+      "publisher": "La Roche-Posay Taiwan",
+      "market": "TW",
+      "observed_claims": ["ANTHELIOS UVMUNE 400 Invisible Fluid SPF50+", "PA++++", "PPD46.6", "Mexoryl 400"],
+      "rejection": "FORMULATION_GENERATION_MISMATCH",
+      "reason": "UVMUNE 400 / Mexoryl 400 generation is not the P9 C227022/1 formulation."
+    },
+    {
+      "url": "https://www.larocheposay-th.com/anthelios/anthelios-uvmune-400-invisible-fluid-spf50",
+      "publisher": "La Roche-Posay Thailand",
+      "market": "TH",
+      "observed_claims": ["ANTHELIOS UVMUNE400 INVISIBLE FLUID SPF50+", "PA++++", "50 ml", "Mexoryl 400"],
+      "rejection": "FORMULATION_GENERATION_MISMATCH",
+      "reason": "UVMUNE 400 / Mexoryl 400 generation is not the P9 C227022/1 formulation."
+    }
+  ],
+  "non_first_party_corroboration": [
+    {
+      "url": "https://www.hwahae.com/en/products/LAROCHE-POSAY-Anthelios-Invisible-Fluid-SPF50PLUS-PAPLUS-PLUS-PLUS-PLUS/1887104",
+      "publisher": "Hwahae",
+      "observed_claims": ["LAROCHE-POSAY Anthelios Invisible Fluid [SPF50+/PA++++]", "All Ingredients 22"],
+      "admission": "EXCLUDED_NON_FIRST_PARTY_FOR_P11_POSITIVE_SUPPORT",
+      "note": "Corroborative catalog observation only; it does not satisfy the strict first-party recovery rule."
+    }
+  ],
+  "adjudication": {
+    "same_formula_first_party_sources_reviewed": 4,
+    "same_formula_first_party_direct_pa_hits": 0,
+    "direct_pa_first_party_candidates_rejected_for_formula_mismatch": 4,
+    "accepted_positive_uva_support": 0,
+    "disposition": "FACT_SOURCE_RECOVERY_REQUIRED",
+    "reason": "No reviewed first-party source simultaneously establishes the P9 same formulation and directly declares PA++++. Same-formulation first-party sources expose SPF50+ and/or UVA-PF 46 only; PA++++ first-party sources reviewed belong to materially different formulations or the UVMUNE 400 generation."
+  },
+  "counts": {
+    "target_products": 1,
+    "same_formula_first_party_sources": 4,
+    "same_formula_direct_pa_hits": 0,
+    "rejected_first_party_pa_candidates": 4,
+    "non_first_party_corroboration_sources": 1,
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_writes": 0
+  },
+  "invariants": {
+    "uva_label_write_authorized_by_this_artifact": false,
+    "uva_pf_to_pa_conversion_allowed": false,
+    "uva_pf_declared_substitution_allowed": false,
+    "non_first_party_sources_used_for_positive_fact_support": 0,
+    "schema_change": false,
+    "rpc_change": false,
+    "registry_change": false,
+    "recommendation_or_ranking_changes": 0
+  },
+  "next_gate": {
+    "blocked_fact_key": "uva_label",
+    "required_recovery": "same-formulation first-party direct PA label for current KR subject",
+    "eligible_production_write": false,
+    "eligible_action": "continue_source_recovery_only",
+    "production_state_expected_to_remain": "SPF_CURRENT_1_UVA_CURRENT_0"
+  }
+}
