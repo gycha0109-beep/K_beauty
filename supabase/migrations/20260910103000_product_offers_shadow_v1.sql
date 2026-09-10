@@ -50,13 +50,12 @@ create table if not exists public.product_offers (
     )
 );
 
-create unique index if not exists product_offers_current_seller_listing_id_key
+create unique index if not exists product_offers_seller_listing_id_key
   on public.product_offers(seller_key, listing_id)
-  where offer_state = 'current' and listing_id is not null;
+  where listing_id is not null;
 
-create unique index if not exists product_offers_current_seller_listing_url_key
-  on public.product_offers(seller_key, listing_url)
-  where offer_state = 'current';
+create unique index if not exists product_offers_seller_listing_url_key
+  on public.product_offers(seller_key, listing_url);
 
 create index if not exists product_offers_product_id_idx
   on public.product_offers(product_id);
@@ -70,7 +69,7 @@ revoke all on table public.product_offers from public, anon, authenticated, serv
 grant select, insert, update on table public.product_offers to service_role;
 
 comment on table public.product_offers is
-  'Internal seller/listing state for a Bejewely product. Product identity and official product facts remain separate, and legacy products.price_min/price_max/buy_link are not backfilled by this migration.';
+  'Internal current seller/listing state for a Bejewely product. Product identity and official product facts remain separate, and legacy products.price_min/price_max/buy_link are not backfilled by this migration.';
 comment on column public.product_offers.source_name is
   'Where Bejewely observed the offer. This is deliberately separate from seller_key because the observation source and seller can differ.';
 comment on column public.product_offers.availability_state is
@@ -78,6 +77,6 @@ comment on column public.product_offers.availability_state is
 comment on column public.product_offers.product_scope_state is
   'product means product-level scope is verified; product_subject_unresolved means formulation/variant scope is not yet bound to a Product Fact subject.';
 comment on column public.product_offers.offer_state is
-  'current rows participate in active offer reads. Retired rows remain as history and should be updated rather than deleted.';
+  'current rows participate in active offer reads. Retired rows are preserved rather than deleted; this table is not a full price-history ledger.';
 
 commit;
