@@ -1,7 +1,8 @@
 # 2026-09-11 / DATA-OFFER4 seller observation persistence
 
 - Task type: execution / raw seller observation persistence authority. Production deployment, retailer capture, Product binding, Product Fact Subject binding, Offer materialization, recommendation ranking, and read-path activation are excluded.
-- Baseline: fresh main `e108ec4f0c4ac063d93f106592117456e415295c`, after DATA-OFFER3 merge closure.
+- Initial baseline: main `e108ec4f0c4ac063d93f106592117456e415295c`, immediately after DATA-OFFER3 merge closure.
+- Fresh-main refresh: before PR verification, main advanced by one unrelated TRUST-P8 commit to `ed2b5204f4bd48207e7881974d8041610fabd547`. The advance added five TRUST-P8 files with no overlap with DATA-OFFER4. The branch was fast-forwarded to GitHub's verified merge commit containing both that fresh main and the DATA-OFFER4 head; all prior head CI is discarded and only the resulting refreshed exact head is admissible.
 - Source contract: persisted rows originate from the strict Product-agnostic `seller_listing_observation_v1` contract. The mapper accepts no weaker or alternate shape.
 - Persistence table: `public.seller_listing_observations` stores one immutable observation event per insert with generated `observation_id` and ingestion `created_at`; source observation time remains `observed_at`.
 - Identity separation: the table and mapper contain no `product_id`, `product_subject_id`, or `offer_id`. Raw seller observations cannot self-bind to Product, Product Fact Subject, or current Offer identity.
