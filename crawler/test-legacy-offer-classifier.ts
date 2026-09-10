@@ -53,7 +53,7 @@ assert.equal(oliveYoung.sellerKey, "oliveyoung");
 assert.equal(oliveYoung.listingId, "A000000000001");
 assert.equal(
   oliveYoung.canonicalListingUrl,
-  "https://oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001",
+  "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000000001",
 );
 assert.equal(oliveYoung.priceState, "unknown");
 assert.equal(oliveYoung.migrationDecision, "LINK_ONLY_READY");
@@ -208,6 +208,7 @@ console.log(`- rules_version: ${rules.version}`);
 console.log(`- production_hosts_covered: ${productionHosts.length}`);
 console.log("- hwahae_reference_not_offer: PASS");
 console.log("- stable_listing_identity_required: PASS");
+console.log("- seller_origin_preserved: PASS");
 console.log("- tracking_heavy_url_canonicalized: PASS");
 console.log("- oliveyoung_short_route_review_required: PASS");
 console.log("- source_url_not_price_proof: PASS");
