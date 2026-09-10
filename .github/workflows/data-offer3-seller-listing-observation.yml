@@ -1,0 +1,56 @@
+name: DATA-OFFER3 Seller Listing Observation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/seller-listing-observation-v1.js"
+      - "scripts/verify-seller-listing-observation-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer3-seller-listing-observation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/seller-listing-observation-v1.js"
+      - "scripts/verify-seller-listing-observation-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer3-seller-listing-observation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-data-offer3-seller-listing-observation:
+    name: DATA-OFFER3 Seller Listing Observation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          printf 'DATA_OFFER3_EXACT_HEAD=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify seller listing observation contract
+        run: node scripts/verify-seller-listing-observation-v1.mjs
+
+      - name: Verify contract syntax
+        run: |
+          node --check lib/seller-listing-observation-v1.js
+          node --check scripts/verify-seller-listing-observation-v1.mjs
