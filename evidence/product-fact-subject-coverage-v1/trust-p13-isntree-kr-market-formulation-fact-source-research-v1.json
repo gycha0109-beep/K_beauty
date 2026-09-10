@@ -1,0 +1,142 @@
+{
+  "adjudication": {
+    "cross_market_formulation_bridge": {
+      "basis": "The international first-party page exposes a full ingredient list, but the current KR machine-readable body reviewed here does not expose a comparable full formulation or an explicit same-formulation bridge.",
+      "status": "not_established"
+    },
+    "disposition": "KR_MARKET_IDENTITY_RESOLVED_FORMULATION_AND_FACT_SOURCE_RECOVERY_REQUIRED",
+    "kr_market_identity": {
+      "basis": "Current Isntree Korea first-party sunscreen catalog lists the exact Korean product name and 50ml size.",
+      "status": "resolved"
+    },
+    "spf_value": {
+      "basis": "No direct SPF numeric claim for this exact product is exposed in the reviewed current first-party machine-readable bodies.",
+      "status": "fact_source_recovery_required"
+    },
+    "subject_registration": {
+      "basis": "KR market identity is resolved, but exact formulation revision/binding authority is not frozen.",
+      "status": "blocked"
+    },
+    "uva_label": {
+      "basis": "No direct PA label for this exact product is exposed in the reviewed current first-party machine-readable bodies.",
+      "status": "fact_source_recovery_required"
+    }
+  },
+  "allowed_fact_keys": [
+    "spf_value",
+    "uva_label"
+  ],
+  "authority": {
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "research_method": "first_party_machine_readable_body_review",
+    "research_role": "adjudication_freeze_not_product_fact_evidence_ingest",
+    "researched_at": "2026-09-11T06:46:43.341204+09:00",
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "223ee33b5f68992c4f858b7ddcd8ac2aa07decf7",
+    "upstream_p6_path": "evidence/product-fact-subject-coverage-v1/trust-p6-sunscreen-product-fact-subject-coverage-v1.json"
+  },
+  "invariants": {
+    "confirmation_authorized": false,
+    "cross_market_formulation_equivalence_inferred": false,
+    "direct_product_fact_writes": 0,
+    "fact_ingest_authorized": false,
+    "hosted_product_fact_writes": 0,
+    "pa_inference_from_product_category_or_reviews": false,
+    "recommendation_or_ranking_changes": 0,
+    "spf_inference_from_product_category_or_reviews": false,
+    "subject_creation_authorized": false,
+    "third_party_positive_fact_support_used": 0
+  },
+  "next_gate": {
+    "acceptable_paths": [
+      "KR first-party machine-readable product/formulation body with direct SPF/PA claims",
+      "first-party explicit same-formulation bridge from KR product to a first-party source that directly exposes SPF/PA"
+    ],
+    "required": "first_party_formulation_bridge_and_direct_spf_pa_source_recovery",
+    "writes_before_gate": 0
+  },
+  "product": {
+    "catalog": {
+      "brand": "이즈앤트리",
+      "category": "sunscreen",
+      "name": "히아루론산 워터리 선젤",
+      "size_ml": 50
+    },
+    "p6_gate_note": "Stage B must freeze KR market applicability and formulation scope.",
+    "p6_prior_disposition": "MARKET_SCOPE_REVIEW_REQUIRED",
+    "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+    "production_prestate": {
+      "current_count": 0,
+      "subject_count": 0
+    }
+  },
+  "production_prestate": {
+    "bindings": 21,
+    "checked_at": "2026-09-11T06:46:17.69428+09:00",
+    "confirmations": 49,
+    "current": 49,
+    "evidence": 49,
+    "evidence_links": 49,
+    "fact_instances": 49,
+    "review_assignments": 49,
+    "sources": 21,
+    "subjects": 20,
+    "target_current": 0,
+    "target_subjects": 0
+  },
+  "research_content_sha256": "b769de2dd9858191fe14723aed4e284406f8f2e000c95b14d8bd60d1a0183a52",
+  "scope": "targeted-sunscreen-isntree-first-party-market-formulation-fact-source-research",
+  "sources": [
+    {
+      "access_state": "current_machine_readable_body",
+      "direct_pa_claims": [],
+      "direct_spf_claims": [],
+      "formulation_support": false,
+      "identity_support": true,
+      "machine_verifiable_fact_support": false,
+      "market": "KR",
+      "observed_claims": [
+        "히아루론산 워터리 선 젤 50ml",
+        "#유기자차 #보습케어"
+      ],
+      "publisher": "Isntree Korea",
+      "source_kind": "official_category_page",
+      "url": "https://m.isntree.com/product/list.html?cate_no=69"
+    },
+    {
+      "access_state": "current_official_category_link_discovered_direct_fetch_cache_miss",
+      "direct_pa_claims": [],
+      "direct_spf_claims": [],
+      "formulation_support": false,
+      "identity_support": true,
+      "machine_verifiable_fact_support": false,
+      "market": "KR",
+      "observed_claims": [
+        "히아루론산 워터리 선 젤 50ml"
+      ],
+      "publisher": "Isntree Korea",
+      "source_kind": "official_product_page",
+      "url": "https://m.isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/category/69/display/1/"
+    },
+    {
+      "access_state": "current_machine_readable_body",
+      "direct_pa_claims": [],
+      "direct_spf_claims": [],
+      "formulation_support": true,
+      "identity_support": true,
+      "machine_verifiable_fact_support": false,
+      "market": "international_store",
+      "observed_claims": [
+        "Hyaluronic Acid Watery Sun Gel 50ml",
+        "SIZE 50ml",
+        "not available in the U.S. due to OTC regulations",
+        "full ingredient list exposed"
+      ],
+      "publisher": "Isntree Global",
+      "source_kind": "official_product_page",
+      "url": "https://isntree-global.com/products/isntree-hyaluronic-acid-watery-sun-gel-50ml"
+    }
+  ],
+  "stage": "TRUST-P13",
+  "version": "trust-p13-isntree-kr-market-formulation-fact-source-research-v1"
+}
