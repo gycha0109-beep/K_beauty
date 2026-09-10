@@ -5,7 +5,8 @@ const STRAY_TRADEMARK_TOKEN_REGEX = /\b(?:tm|sm|rm)\b/gi;
 const RED_WORD_MARK_REGEX = /\br(?:\s*[.]\s*|\s+)e(?:\s*[.]\s*|\s+)d\b/gi;
 const PRODUCT_VOLUME_REGEX =
   /\b\d+(?:\.\d+)?\s?(?:ml|g|kg|oz|ea|pcs?|ct|pack|sheet|sheets)\b/gi;
-const SUNSCREEN_RATING_REGEX = /\bspf\s*\d+\+?(?:\s*\/\s*pa\+{1,4})?\b|\bpa\+{1,4}\b/gi;
+const SUNSCREEN_RATING_REGEX =
+  /\bspf\s*\d+\+?(?:\s*\/\s*pa\+{1,4})?(?!\w)|\bpa\+{1,4}(?!\w)/gi;
 const PRODUCT_OPTION_REGEX =
   /\b(?:refill|limited(?:\s+edition)?|special(?:\s+edition)?|set|gift|option|bundle|edition|renewal|renew|mini|travel(?:\s+size)?|1\+1|2\+1|리필|한정|기획|옵션|세트|증정)\b/gi;
 const PUNCTUATION_NOISE_REGEX = /[.,:;!?"'`~|\\/_+\-&]+/g;

@@ -1,0 +1,104 @@
+name: Product Identity Resolution
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "crawler/lib/identity-resolution.ts"
+      - "crawler/lib/database-identity-key.ts"
+      - "crawler/lib/identity-adoption-plan.ts"
+      - "crawler/lib/identity-key-repair-plan.ts"
+      - "crawler/identity-resolution-report.ts"
+      - "crawler/identity-adoption-plan-report.ts"
+      - "crawler/identity-key-repair-plan-report.ts"
+      - "crawler/test-identity-resolution.ts"
+      - "crawler/test-identity-adoption-plan.ts"
+      - "crawler/test-identity-key-repair-plan.ts"
+      - "crawler/package.json"
+      - ".github/workflows/product-identity-resolution.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "crawler/lib/identity-resolution.ts"
+      - "crawler/lib/database-identity-key.ts"
+      - "crawler/lib/identity-adoption-plan.ts"
+      - "crawler/lib/identity-key-repair-plan.ts"
+      - "crawler/identity-resolution-report.ts"
+      - "crawler/identity-adoption-plan-report.ts"
+      - "crawler/identity-key-repair-plan-report.ts"
+      - "crawler/test-identity-resolution.ts"
+      - "crawler/test-identity-adoption-plan.ts"
+      - "crawler/test-identity-key-repair-plan.ts"
+      - "crawler/package.json"
+      - ".github/workflows/product-identity-resolution.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD_SHA}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: crawler/package-lock.json
+
+      - name: Install crawler dependencies
+        working-directory: crawler
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify identity resolver
+        working-directory: crawler
+        run: npm run verify:identity-resolution
+
+      - name: Verify identity adoption plan
+        working-directory: crawler
+        run: npm run verify:identity-adoption-plan
+
+      - name: Verify identity key repair plan
+        working-directory: crawler
+        run: npm run verify:identity-key-repair-plan
+
+      - name: Typecheck crawler
+        working-directory: crawler
+        run: npm run typecheck
+
+      - name: Check diff hygiene
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            base="${PR_BASE_SHA}"
+          else
+            base="${PUSH_BEFORE_SHA}"
+          fi
+          if [[ ! "${base}" =~ ^[0-9a-f]{40}$ ]] || [[ "${base}" == "0000000000000000000000000000000000000000" ]]; then
+            base="$(git rev-parse "${HEAD_SHA}^")"
+          fi
+          test "$(git rev-parse HEAD)" = "${HEAD_SHA}"
+          git diff --check "${base}...${HEAD_SHA}"

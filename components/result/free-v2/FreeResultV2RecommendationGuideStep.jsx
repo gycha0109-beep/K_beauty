@@ -2,10 +2,10 @@
 
 import { Fragment, useState } from "react";
 import SafeProductImage from "@/components/common/SafeProductImage";
+import FreeResultV2ProductEvidence from "@/components/result/free-v2/FreeResultV2ProductEvidence";
 import {
   FreeResultV2Card,
   FreeResultV2LockIcon,
-  FreeResultV2RoleIcon,
   FreeResultV2RoutineModeIcon,
   FreeResultV2StepFrame
 } from "@/components/result/free-v2/FreeResultV2Primitives";
@@ -15,7 +15,7 @@ function getImageFallbackLabel(product) {
 }
 
 function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated = false }) {
-  const imagePreparing = locale === "en" ? "Image coming soon" : "\uC774\uBBF8\uC9C0 \uC900\uBE44 \uC911";
+  const imagePreparing = locale === "en" ? "Image coming soon" : "이미지 준비 중";
   const surfaceClass = elevated
     ? "border border-[#edc9c3] bg-[#fff7f4] shadow-[inset_0_0_28px_rgba(255,128,104,0.12),0_14px_36px_rgba(80,28,46,0.10)] dark:border-[#5a3947] dark:bg-[#2c1c25] dark:shadow-[inset_0_0_28px_rgba(255,128,104,0.08),0_14px_36px_rgba(0,0,0,0.20)]"
     : "ui-image-surface";
@@ -47,31 +47,6 @@ function SmallProductThumb({ product, height = "h-28", locale = "ko", elevated =
         )}
       />
     </div>
-  );
-}
-
-function getFreeResultV2ProductRoles(locale = "ko") {
-  return locale === "en"
-    ? [
-        { key: "moisture", title: "Moisture boost", body: "Core role", primary: true },
-        { key: "light", title: "Light feel", body: "Keeps oil burden low" },
-        { key: "daily", title: "Daily care", body: "Easy to keep using" }
-      ]
-    : [
-        { key: "moisture", title: "수분 보강", body: "핵심 역할", primary: true },
-        { key: "light", title: "가벼운 사용감", body: "유분 부담 최소화" },
-        { key: "daily", title: "데일리 케어", body: "매일 편하게" }
-      ];
-}
-
-function FreeResultV2RolePill({ role }) {
-  return (
-    <span className="inline-flex min-w-0 items-center gap-2 rounded-full border border-[#ead9d6] bg-white/34 px-3 py-2 text-xs font-semibold text-[#26101a] dark:border-[#5a3a48] dark:bg-[#2a1b24]/74 dark:text-[#fff8f3]">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#ff9aa8]/26 bg-[#ff9aa8]/10 text-[#ff9aa8]">
-        <FreeResultV2RoleIcon type={role.key} />
-      </span>
-      <span className="min-w-0 break-keep">{role.title}</span>
-    </span>
   );
 }
 
@@ -152,8 +127,8 @@ function FreeResultV2TabbedRoutinePreview({ routinePreview, locale = "ko" }) {
 function FreeResultV2Step3PremiumPreview({ locale = "ko" }) {
   const isEnglish = locale === "en";
   const items = isEnglish
-    ? ["Why this product ranked #1", "Alternatives if it does not fit", "Detailed morning/night order"]
-    : ["왜 이 제품이 1순위인지", "안 맞을 때 대체 제품", "아침/저녁 상세 사용 순서"];
+    ? ["Why this pick ranks above alternatives", "Alternatives if it does not fit", "Detailed morning/night order"]
+    : ["대안보다 이 제품이 앞선 이유", "안 맞을 때 대체 제품", "아침/저녁 상세 사용 순서"];
 
   return (
     <FreeResultV2Card className="space-y-3">
@@ -186,7 +161,6 @@ function FreeResultV2Step3PremiumPreview({ locale = "ko" }) {
 
 export default function FreeResultV2RecommendationGuideStep({ preview, routinePreview, copy, locale = "ko" }) {
   const isEnglish = locale === "en";
-  const productRoles = getFreeResultV2ProductRoles(locale);
 
   return (
     <FreeResultV2StepFrame
@@ -212,19 +186,12 @@ export default function FreeResultV2RecommendationGuideStep({ preview, routinePr
               <p className="mt-4 text-sm leading-7 text-[#3a1824] dark:text-[#f3e4df]">“{preview.reason}”</p>
             </div>
           </div>
-          <div className="mt-4 border-t border-[#ead9d6] pt-4 dark:border-[#5a3a48]">
-            <p className="text-xs font-semibold text-[#b3949f] dark:text-[#c8aeb8]">{isEnglish ? "Core roles" : "핵심 역할"}</p>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {productRoles.map((role) => (
-                <FreeResultV2RolePill key={role.key} role={role} />
-              ))}
-            </div>
-          </div>
         </FreeResultV2Card>
       ) : (
         <TopPickFallbackCard copy={copy} locale={locale} />
       )}
 
+      <FreeResultV2ProductEvidence entries={preview?.product?.productEvidencePresentation} locale={locale} />
       <FreeResultV2TabbedRoutinePreview routinePreview={routinePreview} locale={locale} />
       <FreeResultV2Step3PremiumPreview locale={locale} />
 
