@@ -1,0 +1,53 @@
+name: Hwahae Review Capture Provenance
+
+on:
+  pull_request:
+    paths:
+      - "lib/hwahae-review-capture-provenance.js"
+      - "lib/product-evidence-review-observation-readiness.js"
+      - "scripts/build-hwahae-review-capture-envelope.mjs"
+      - "scripts/verify-hwahae-review-capture-provenance.mjs"
+      - "data/hwahae-review-signals/categories/sunscreen/hwahae-sunscreen-review-signals.batch.json"
+      - ".github/workflows/hwahae-review-capture-provenance.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  push:
+    branches:
+      - main
+    paths:
+      - "lib/hwahae-review-capture-provenance.js"
+      - "lib/product-evidence-review-observation-readiness.js"
+      - "scripts/build-hwahae-review-capture-envelope.mjs"
+      - "scripts/verify-hwahae-review-capture-provenance.mjs"
+      - "data/hwahae-review-signals/categories/sunscreen/hwahae-sunscreen-review-signals.batch.json"
+      - ".github/workflows/hwahae-review-capture-provenance.yml"
+      - "lib/recommendation-scoring.ts"
+      - "lib/skin-match-decision-engine.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-hwahae-review-capture-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify fresh-capture provenance contract
+        run: node scripts/verify-hwahae-review-capture-provenance.mjs
