@@ -1,0 +1,116 @@
+{
+  "version": "trust-p14-drg-same-formulation-fact-source-recovery-v1",
+  "stage": "TRUST-P14",
+  "phase": "RESEARCH_ONLY_FACT_SOURCE_RECOVERY",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "4ab3db71f71c2353bd0a4177543eca6c975b31da",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "researched_at": "2026-09-11T08:35:20.508595+09:00",
+    "research_method": "current_first_party_exact_identity_plus_same_formula_cross_fill_size_bridge"
+  },
+  "target": {
+    "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+    "brand": "닥터지",
+    "catalog_name": "그린 마일드 업 선 플러스",
+    "size_ml": 50,
+    "market": "KR",
+    "prior_disposition": "SOURCE_FORMULATION_DISCOVERY_REQUIRED"
+  },
+  "production_prestate": {
+    "subject_count": 0,
+    "current_count": 0,
+    "source_locator_rows": {
+      "https://www.dr-g.co.kr/item/9637": 0,
+      "https://www.dr-g.co.kr/item/5174": 0,
+      "https://www.dr-g.co.kr/item/4415": 0
+    },
+    "global_counts": {
+      "subjects": 20,
+      "sources": 21,
+      "bindings": 21,
+      "evidence": 49,
+      "fact_instances": 49,
+      "evidence_links": 49,
+      "review_assignments": 49,
+      "confirmations": 49,
+      "current": 49
+    }
+  },
+  "first_party_sources": [
+    {
+      "url": "https://www.dr-g.co.kr/item/9637",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "role": "target_identity",
+      "current_observation": {
+        "name": "그린 마일드 업 선 플러스 50mL",
+        "size_ml": 50,
+        "description": "민감하고 여린 피부를 위한 징크 옥사이드 함유 무기 자외선 차단제",
+        "machine_readable_direct_spf_pa": false,
+        "uv_functional_cosmetic": true
+      }
+    },
+    {
+      "url": "https://www.dr-g.co.kr/item/5174",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "role": "target_formula_bridge",
+      "current_observation": {
+        "name": "[1+1] 그린 마일드 업 선 플러스 50mL",
+        "package": "50mL*2ea",
+        "manufacturer": "한국콜마㈜",
+        "country": "한국",
+        "uv_functional_cosmetic": true,
+        "ingredient_count": 36,
+        "ingredient_order_sha256": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+        "ingredients": ["정제수","징크옥사이드","프로판다이올","부틸옥틸살리실레이트","프로필헵틸카프릴레이트","코코-카프릴레이트/카프레이트","사이클로헥사실록세인","카프릴릴메티콘","아이소도데케인","폴리글리세릴-3폴리다이메틸실록시에틸다이메티콘","메틸트라이메티콘","메틸메타크릴레이트크로스폴리머","다이스테아다이모늄헥토라이트","마그네슘설페이트","트라이에톡시카프릴릴실레인","1,2-헥산다이올","폴리글리세릴-2다이폴리하이드록시스테아레이트","라우릴폴리글리세릴-3폴리다이메틸실록시에틸다이메티콘","폴리메틸실세스퀴옥세인","글리세릴카프릴레이트","카프릴릴글라이콜","에틸헥실글리세린","소듐하이알루로네이트","부틸렌글라이콜","토코페롤","병풀추출물","타라열매추출물","프랑스해안송껍질추출물","코토니추출물","7-데하이드로콜레스테롤","약모밀추출물","엑토인","밀몽화꽃추출물","락토바실러스발효물","하이드록시신나믹애씨드","루틴"]
+      }
+    },
+    {
+      "url": "https://www.dr-g.co.kr/item/4415",
+      "publisher": "Dr.G / 고운세상코스메틱",
+      "role": "direct_fact_source_and_formula_bridge",
+      "current_observation": {
+        "name": "[민감피부 1등 선] 그린 마일드 업 선 플러스 35ml",
+        "size_ml": 35,
+        "direct_claim": "SPF50+ PA++++",
+        "manufacturer": "한국콜마㈜",
+        "country": "한국",
+        "uv_functional_cosmetic": true,
+        "ingredient_count": 36,
+        "ingredient_order_sha256": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+        "ingredients": ["정제수","징크옥사이드","프로판다이올","부틸옥틸살리실레이트","프로필헵틸카프릴레이트","코코-카프릴레이트/카프레이트","사이클로헥사실록세인","카프릴릴메티콘","아이소도데케인","폴리글리세릴-3폴리다이메틸실록시에틸다이메티콘","메틸트라이메티콘","메틸메타크릴레이트크로스폴리머","다이스테아다이모늄헥토라이트","마그네슘설페이트","트라이에톡시카프릴릴실레인","1,2-헥산다이올","폴리글리세릴-2다이폴리하이드록시스테아레이트","라우릴폴리글리세릴-3폴리다이메틸실록시에틸다이메티콘","폴리메틸실세스퀴옥세인","글리세릴카프릴레이트","카프릴릴글라이콜","에틸헥실글리세린","소듐하이알루로네이트","부틸렌글라이콜","토코페롤","병풀추출물","타라열매추출물","프랑스해안송껍질추출물","코토니추출물","7-데하이드로콜레스테롤","약모밀추출물","엑토인","밀몽화꽃추출물","락토바실러스발효물","하이드록시신나믹애씨드","루틴"]
+      }
+    }
+  ],
+  "same_formulation_bridge": {
+    "status": "ESTABLISHED",
+    "basis": ["same official product base name","same manufacturer 한국콜마㈜","same 36 ingredients in identical order on current first-party 35mL and 50mL*2 disclosures","only reviewed distinction is fill size/package quantity"],
+    "formula_digest": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+    "fact_source_fill_size_ml": 35,
+    "target_fill_size_ml": 50
+  },
+  "fact_recovery": {
+    "spf_value": {"status":"RECOVERED_SUPPORTED","raw_claim":"SPF50+","value_number":50,"qualifier":{"plus_modifier":"plus"},"source_url":"https://www.dr-g.co.kr/item/4415","authority":"product_specific_primary","confidence":"high"},
+    "uva_label": {"status":"RECOVERED_SUPPORTED","raw_claim":"PA++++","value_enum":"PA++++","qualifier":{},"source_url":"https://www.dr-g.co.kr/item/4415","authority":"product_specific_primary","confidence":"high"}
+  },
+  "adjudication": {
+    "result": "SAME_FORMULATION_FIRST_PARTY_FACT_SOURCE_RECOVERED",
+    "subject_identity_research": "RESOLVED_FOR_PLAN",
+    "spf_value": "RECOVERED_SUPPORTED",
+    "uva_label": "RECOVERED_SUPPORTED",
+    "production_write_authorized": false,
+    "next_gate": "SEPARATE_DETERMINISTIC_HOSTED_ADOPTION_PLAN"
+  },
+  "invariants": {
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_dml": false,
+    "subject_registration_performed": false,
+    "schema_or_rpc_mutation": false,
+    "registry_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "third_party_positive_fact_support": false,
+    "no_cross_formula_inference": true
+  },
+  "research_content_sha256": "45fef40117bdf347bff542dbc4d19f9058be7bf82a1ed3dd341bc96a6f922f8c"
+}
