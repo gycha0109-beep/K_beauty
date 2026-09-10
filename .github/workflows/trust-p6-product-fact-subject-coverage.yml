@@ -1,0 +1,45 @@
+name: TRUST-P6 Product Fact Subject Coverage
+
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p6-sunscreen-product-fact-subject-coverage-v1.json"
+      - "scripts/product-evidence/verify-trust-p6-sunscreen-product-fact-subject-coverage-v1.mjs"
+      - "docs/evidence/trust-p6-sunscreen-product-fact-subject-coverage-v1.md"
+      - ".github/workflows/trust-p6-product-fact-subject-coverage.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p6-sunscreen-product-fact-subject-coverage-v1.json"
+      - "scripts/product-evidence/verify-trust-p6-sunscreen-product-fact-subject-coverage-v1.mjs"
+      - "docs/evidence/trust-p6-sunscreen-product-fact-subject-coverage-v1.md"
+      - ".github/workflows/trust-p6-product-fact-subject-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-trust-p6-product-fact-subject-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify frozen TRUST-P6 authority audit
+        run: node scripts/product-evidence/verify-trust-p6-sunscreen-product-fact-subject-coverage-v1.mjs
