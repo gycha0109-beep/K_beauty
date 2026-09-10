@@ -177,7 +177,7 @@ begin
     or v_product.normalized_name is distinct from p_expected_normalized_name
     or v_product.updated_at is distinct from p_expected_updated_at
   then
-    raise exception 'product_identity_key_repair_prestate_stale' using errcode = '40001';
+    raise exception 'product_identity_key_repair_prestate_stale' using errcode = '23514';
   end if;
 
   v_proposed_brand := public.normalize_brand_key(v_product.brand);
