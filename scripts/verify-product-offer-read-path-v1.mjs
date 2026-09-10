@@ -69,21 +69,37 @@ function assertNaverFallback(projected) {
   assert.equal(url.searchParams.get("query"), `${projected.brand} ${projected.name}`);
 }
 
-assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
+assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v2");
 
 {
-  const currentOffer = offer({
+  const source = product();
+  const currentLegacyOffer = offer({
+    availability_state: "in_stock",
+    price_amount: 18900,
+    last_observed_at: "2026-09-10T09:00:00.000Z"
+  });
+  const projected = projectProductWithOfferAuthority(source, [currentLegacyOffer]);
+
+  assert.equal(projected.buy_link, OFFER_LINK_A);
+  assert.equal(projected.price_min, source.price_min);
+  assert.equal(projected.price_max, source.price_max);
+  assert.equal(projected.price_range, source.price_range);
+}
+
+{
+  const source = product();
+  const circularlyPromotedLegacyOffer = offer({
     availability_state: "in_stock",
     product_scope_state: "product",
     price_amount: 18900,
     last_observed_at: "2026-09-10T09:00:00.000Z"
   });
-  const projected = projectProductWithOfferAuthority(product(), [currentOffer]);
+  const projected = projectProductWithOfferAuthority(source, [circularlyPromotedLegacyOffer]);
 
-  assert.equal(projected.buy_link, OFFER_LINK_A);
-  assert.equal(projected.price_min, 18900);
-  assert.equal(projected.price_max, 18900);
-  assert.equal(projected.price_range, "$");
+  assert.equal(projected.buy_link, "");
+  assert.equal(projected.price_min, source.price_min);
+  assert.equal(projected.price_max, source.price_max);
+  assertNaverFallback(projected);
 }
 
 {
@@ -129,27 +145,27 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
 }
 
 {
-  const unknownNewer = offer({
-    offer_id: "offer-unknown-newer",
+  const productScopedNewer = offer({
+    offer_id: "offer-product-scope-newer",
     listing_url: OFFER_LINK_A,
-    availability_state: "unknown",
+    availability_state: "in_stock",
     product_scope_state: "product",
     last_observed_at: "2026-09-10T10:00:00.000Z"
   });
-  const inStockOlder = offer({
-    offer_id: "offer-in-stock-older",
+  const unresolvedOlder = offer({
+    offer_id: "offer-unresolved-older",
     listing_id: "A000000200002",
     listing_url: OFFER_LINK_B,
-    availability_state: "in_stock",
+    availability_state: "unknown",
     product_scope_state: "product_subject_unresolved",
     last_observed_at: "2026-09-09T10:00:00.000Z"
   });
 
-  const selectedA = selectCurrentProductOffer(product(), [unknownNewer, inStockOlder]);
-  const selectedB = selectCurrentProductOffer(product(), [inStockOlder, unknownNewer]);
+  const selectedA = selectCurrentProductOffer(product(), [productScopedNewer, unresolvedOlder]);
+  const selectedB = selectCurrentProductOffer(product(), [unresolvedOlder, productScopedNewer]);
 
-  assert.equal(selectedA.offer.offer_id, "offer-in-stock-older");
-  assert.equal(selectedB.offer.offer_id, "offer-in-stock-older");
+  assert.equal(selectedA.offer.offer_id, "offer-unresolved-older");
+  assert.equal(selectedB.offer.offer_id, "offer-unresolved-older");
 }
 
 {
@@ -179,6 +195,22 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
 }
 
 {
+  const source = product();
+  const projected = projectProductWithOfferAuthority(source, [
+    offer({
+      source_name: "unregistered_offer_observation_v1",
+      availability_state: "in_stock",
+      price_amount: 9900,
+      last_observed_at: "2026-09-10T09:00:00.000Z"
+    })
+  ]);
+
+  assert.equal(projected.buy_link, "");
+  assert.equal(projected.price_min, source.price_min);
+  assertNaverFallback(projected);
+}
+
+{
   const productA = product();
   const productB = product({
     id: "product-b",
@@ -202,6 +234,7 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
   const offers = [
     offer({
       availability_state: "in_stock",
+      price_amount: 18900,
       last_observed_at: "2026-09-10T09:00:00.000Z"
     }),
     offer({
@@ -210,6 +243,7 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
       listing_id: "A000000200002",
       listing_url: OFFER_LINK_B,
       availability_state: "in_stock",
+      price_amount: 44000,
       last_observed_at: "2026-09-10T09:00:00.000Z"
     })
   ];
@@ -221,6 +255,10 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
   assert.deepEqual(
     projected.products.map((item) => item.engine_score),
     decision.products.map((item) => item.engine_score)
+  );
+  assert.deepEqual(
+    projected.products.map((item) => item.price_min),
+    decision.products.map((item) => item.price_min)
   );
   assert.equal(projected.diagnostics, decision.diagnostics);
 }
@@ -237,4 +275,4 @@ assert.equal(PRODUCT_OFFER_READ_PATH_VERSION, "product-offer-read-v1");
   assert.equal(projected, decision);
 }
 
-console.log("DATA-OFFER1 product offer read-path verifier: PASS");
+console.log("DATA-OFFER2 legacy offer provenance guard verifier: PASS");
