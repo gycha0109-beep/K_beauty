@@ -66,7 +66,20 @@ create index if not exists product_offers_current_product_seller_idx
 
 alter table public.product_offers enable row level security;
 revoke all on table public.product_offers from public, anon, authenticated, service_role;
-grant select, insert, update on table public.product_offers to service_role;
+grant select, insert on table public.product_offers to service_role;
+grant update (
+  seller_name,
+  source_name,
+  price_amount,
+  currency_code,
+  availability_state,
+  market_code,
+  locale,
+  offer_state,
+  product_scope_state,
+  first_observed_at,
+  last_observed_at
+) on table public.product_offers to service_role;
 
 comment on table public.product_offers is
   'Internal current seller/listing state for a Bejewely product. Product identity and official product facts remain separate, and legacy products.price_min/price_max/buy_link are not backfilled by this migration.';
