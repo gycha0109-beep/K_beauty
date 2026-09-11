@@ -1,0 +1,174 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "execution_capture_main_sha": "30500ec5ad4c0e1ccd939e1c78a918a0b7eb27fa",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "p15_plan_blob_sha": "d2fa47268ca8ed796a4015d2034a8676952c2634",
+    "p15_plan_merge_sha": "26407faea37effd2ecb730c35d23ad9808eb6fc8",
+    "p15_plan_path": "evidence/product-fact-adoption-v1/trust-p15-drg-sunscreen-hosted-adoption-plan-v1.json",
+    "p15_plan_sha256": "d515a8172644aa727ef836ed5ec68e69e5d73e73dbe369141d45154a9473e0a4",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "repository": "gycha0109-beep/K_beauty"
+  },
+  "closure": {
+    "drg_green_mild_up_sun_plus_coverage": "SPF_AND_UVA_CURRENT",
+    "next_action": "freeze_execution_evidence_then_select_next_unresolved_sunscreen_gap",
+    "p15_phase_b": "CONFIRMED"
+  },
+  "execution_content_sha256": "bc83563b096695e8b9b4a12c96d608f5763c41062d139e471d58ae69a7c60824",
+  "execution_policy": {
+    "all_planned_preflights_ready_before_any_confirm": true,
+    "both_confirms_same_sql_transaction": true,
+    "controlled_rpc_only": true,
+    "direct_product_fact_table_dml": false,
+    "recommendation_or_ranking_change": false,
+    "registry_change": false,
+    "rpc_change": false,
+    "runtime_ids_server_returned_only": true,
+    "schema_change": false
+  },
+  "expected_delta": {
+    "bindings": 1,
+    "confirmations": 2,
+    "current": 2,
+    "evidence": 2,
+    "evidence_links": 2,
+    "fact_instances": 2,
+    "review_assignments": 2,
+    "sources": 1,
+    "subjects": 1
+  },
+  "facts": [
+    {
+      "assignment_id": "457ac021-ab22-4e6a-96f8-5a5e145eecde",
+      "assignment_state": "confirmed",
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "6d52a9f1b7b4f1db7fb9ffb1f8fe884fadb87d5c678e569d79b83c839431286a",
+      "confirmation_id": "1e7e7ba0-cd3d-4509-a6d0-31a3ea47e2f5",
+      "evidence_id": "58b7bfca-acf1-4011-a411-5e010bf9d9ea",
+      "fact_instance_id": "78682e94-9f06-4ac6-8b19-edd4f33cc983",
+      "fact_key": "spf_value",
+      "fused_confidence": "high",
+      "fusion_input_digest": "ff7d5905cc774ef49ee552a94fe2103843e08b1090aa79b2c142a89723c45192",
+      "market": "KR",
+      "preflight": {
+        "payload_digest": "2eaa18cde458425e3ef34485088e359b5aa451ea95d1b86c9e20500d3251a410",
+        "prestate_digest": "f6ef9da86ade2e05df66cf55f05d2c516c2f27534650acb0cc17f5871c06b961",
+        "previous_current": null,
+        "status": "ready"
+      },
+      "proposition_key": "81fe34c1a59057a8fcba46a733500208600f04370e3faa106c0fc6f520db1da6",
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "result_digest": "5de54c315ecb3aaf22dd55d416e77ce4aaeabc602ab0cd9c865df2b3bebfa7cb",
+      "semantic_status": "supported",
+      "value_enum": null,
+      "value_number": 50,
+      "value_type": "number"
+    },
+    {
+      "assignment_id": "39d274a5-cf3b-43b9-a6ea-dd7a7a625ee6",
+      "assignment_state": "confirmed",
+      "authority_ceiling": "product_specific_primary",
+      "canonical_evidence_digest": "5e467c95dce1dbfdeac648ed44370b0a49ba3c16dd987700efe420926ea413a6",
+      "confirmation_id": "66791e70-ebdf-4ad4-ab9f-b71504e805a1",
+      "evidence_id": "3138749e-897d-46f7-8792-21e41049ba6e",
+      "fact_instance_id": "63b9fc15-b8dd-4287-bf3b-68e5945082db",
+      "fact_key": "uva_label",
+      "fused_confidence": "high",
+      "fusion_input_digest": "f2138d826c4530c48d464e144f52349f1160f88f0791e1ab649f75624519f4e6",
+      "market": "KR",
+      "preflight": {
+        "payload_digest": "19915f3a8ef85ea5a4aa49f11faf5e6f246b7f1a417b1a70285bd9c0b9d6e114",
+        "prestate_digest": "a193ea4adbdca6a57cae0204f7ef3f3939c784ce874a94baaecc914faceec91a",
+        "previous_current": null,
+        "status": "ready"
+      },
+      "proposition_key": "1035e763996ca2532e2c4e2a511bc01df623f945f440c5af91df5830330ad6b6",
+      "qualifier": {},
+      "result_digest": "a46f7be210d5ad440c7afdb9fbfa49af1464af5edb24c782022f5f9b05eb6a7f",
+      "semantic_status": "supported",
+      "value_enum": "PA++++",
+      "value_number": null,
+      "value_type": "enum"
+    }
+  ],
+  "poststate": {
+    "bindings": 22,
+    "checked_at": "2026-09-11T09:31:40.216357+09:00",
+    "confirmations": 51,
+    "current": 51,
+    "evidence": 51,
+    "evidence_links": 51,
+    "fact_instances": 51,
+    "provenance_exact": true,
+    "review_assignments": 51,
+    "sources": 22,
+    "subjects": 21,
+    "target_spf_current": 1,
+    "target_subjects": 1,
+    "target_uva_current": 1,
+    "value_contract_exact": true
+  },
+  "prestate": {
+    "bindings": 21,
+    "checked_at": "2026-09-11T08:55:56.262384+09:00",
+    "confirmations": 49,
+    "current": 49,
+    "evidence": 49,
+    "evidence_links": 49,
+    "fact_instances": 49,
+    "review_assignments": 49,
+    "sources": 21,
+    "subjects": 20,
+    "target_confirmation_request_collisions": 0,
+    "target_open_assignments": 0,
+    "target_source_identity_rows": 0,
+    "target_spf_current": 0,
+    "target_spf_evidence_digest_rows": 0,
+    "target_subject_semantic_key_rows": 0,
+    "target_subjects": 0,
+    "target_uva_current": 0,
+    "target_uva_evidence_digest_rows": 0
+  },
+  "request_ids": {
+    "spf_confirmation": "trust-p15-b-drg-spf-confirm-20260911-v1",
+    "spf_ingest": "trust-p15-drg-spf-evidence-20260911-v1",
+    "spf_review_ready": "trust-p15-b-drg-spf-review-ready-20260911-v1",
+    "spf_review_under": "trust-p15-b-drg-spf-review-under-20260911-v1",
+    "subject": "trust-p15-drg-subject-20260911-v1",
+    "uva_confirmation": "trust-p15-b-drg-uva-confirm-20260911-v1",
+    "uva_ingest": "trust-p15-drg-uva-evidence-20260911-v1",
+    "uva_review_ready": "trust-p15-b-drg-uva-review-ready-20260911-v1",
+    "uva_review_under": "trust-p15-b-drg-uva-review-under-20260911-v1"
+  },
+  "source_binding": {
+    "binding_id": "8ea05ae9-cb60-4743-88c1-b8990e8d997a",
+    "binding_state": "equivalent_presentation_match",
+    "formula_digest": "307d5eb4714f4b015f7a8aeb135a6622a0cbd61ed417076ce059b7e2d7e8e6b8",
+    "scope_relation": "equivalent",
+    "source_content_digest": "4f3a80e7068b714d486173bd92438b79279a473e4bffe7dfefe7bebd6b76a81c",
+    "source_id": "ceb9056a-b36b-48f9-9558-e5c5ed325e88",
+    "source_locator": "https://www.dr-g.co.kr/item/4415"
+  },
+  "stage": "TRUST-P15_PHASE_B_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "subject": {
+    "current_state": "current",
+    "formulation_revision_key": "trust-p14-drg-9637-5174-current",
+    "identity_status": "resolved",
+    "market_applicability": "KR",
+    "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+    "subject_id": "15e25e11-935d-4b04-aa59-68de0531ef39",
+    "subject_semantic_key": "5cf97a1d61279faaa9b5ae9368a287dd700a68ea9724aaa07b9c012bcc8489df",
+    "variant_key": "GREEN_MILD_UP_SUN_PLUS_KR_50ML"
+  },
+  "version": "trust-p15-drg-sunscreen-hosted-adoption-execution-v1"
+}
