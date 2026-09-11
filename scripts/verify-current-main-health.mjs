@@ -59,6 +59,8 @@ run("Olive Young bounded public capture policy", node, ["scripts/verify-oliveyou
 run("Olive Young capture attempt artifact verifier syntax", node, ["--check", "scripts/verify-oliveyoung-public-capture-attempt-artifact-v1.mjs"]);
 run("Torriden bounded public capture policy", node, ["scripts/verify-torriden-public-listing-capture-v1.mjs"]);
 run("Torriden capture attempt artifact verifier syntax", node, ["--check", "scripts/verify-torriden-public-capture-attempt-artifact-v1.mjs"]);
+run("Torriden captured-source parser", node, ["scripts/verify-torriden-public-listing-parser-v1.mjs"]);
+run("Torriden live parser verifier syntax", node, ["--check", "scripts/verify-torriden-public-listing-parser-live-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);
