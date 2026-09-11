@@ -1,0 +1,42 @@
+name: TRUST-P17 SKIN1004 UV US Market Applicability Recovery
+
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p17-skin1004-uv-us-market-applicability-recovery-v1.json"
+      - "docs/evidence/trust-p17-skin1004-uv-us-market-applicability-recovery-v1.md"
+      - "scripts/product-evidence/verify-trust-p17-skin1004-uv-us-market-applicability-recovery-v1.mjs"
+      - ".github/workflows/trust-p17-skin1004-uv-us-market-applicability-recovery.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p17-skin1004-uv-us-market-applicability-recovery-v1.json"
+      - "docs/evidence/trust-p17-skin1004-uv-us-market-applicability-recovery-v1.md"
+      - "scripts/product-evidence/verify-trust-p17-skin1004-uv-us-market-applicability-recovery-v1.mjs"
+      - ".github/workflows/trust-p17-skin1004-uv-us-market-applicability-recovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-trust-p17-skin1004-uv-us-market-applicability-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Attest exact head
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify TRUST-P17 US market recovery
+        run: node scripts/product-evidence/verify-trust-p17-skin1004-uv-us-market-applicability-recovery-v1.mjs
