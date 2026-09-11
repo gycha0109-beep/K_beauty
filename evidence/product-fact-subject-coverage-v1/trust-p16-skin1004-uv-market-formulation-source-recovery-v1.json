@@ -1,0 +1,130 @@
+{
+  "adjudication": {
+    "next_gate": "RESOLVE_UV_MARKET_APPLICABILITY_OR_ADD_MARKET_SPECIFIC_FIRST_PARTY_SOURCE",
+    "production_write_authorized": false,
+    "result": "PARTIAL_FACT_SOURCE_RECOVERY_MARKET_SCOPE_BLOCKED",
+    "spf_value": "RECOVERED_VALUE_MARKET_SCOPE_BLOCKED",
+    "subject_identity_research": "EXACT_UV_ROUTE_RESOLVED_MARKET_SCOPE_UNRESOLVED",
+    "uva_label": "REGISTRY_AND_FORMULATION_BLOCKED"
+  },
+  "authority": {
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "repository": "gycha0109-beep/K_beauty",
+    "research_method": "first_party_exact_uv_route_review_plus_distinct_formulation_exclusion",
+    "researched_at": "2026-09-11T09:42:18.107981+09:00",
+    "source_main_sha": "77b6f17adc0ba7f5d30ef91a41ebc8053ab378da",
+    "upstream_p6_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p6-sunscreen-product-fact-subject-coverage-v1.json",
+    "upstream_p6_blob_sha": "1917e4140a2ddc8a8a26a2c3c8b139c137a176f2"
+  },
+  "fact_recovery": {
+    "spf_value": {
+      "authority": "product_specific_primary",
+      "confidence": "high",
+      "qualifier": {"plus_modifier": "none"},
+      "raw_claim": "SPF50",
+      "source_url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "status": "RECOVERED_VALUE_MARKET_SCOPE_BLOCKED",
+      "value_number": 50,
+      "write_blocker": "registry requires market scope; reviewed first-party UV body does not explicitly freeze market applicability"
+    },
+    "uva_label": {
+      "non_uv_pa_claim": "PA++++",
+      "non_uv_pa_transfer_allowed": false,
+      "observed_uv_route_claim": "broad-spectrum",
+      "registry_admissible": false,
+      "status": "REGISTRY_AND_FORMULATION_BLOCKED",
+      "write_blocker": "Broad Spectrum is not an allowed uva_label enum and PA++++ belongs to a distinct non-UV formulation"
+    }
+  },
+  "first_party_sources": [
+    {
+      "current_observation": {
+        "active_ingredient_order_sha256": "c739c0ae4b3250451185c0f867adb4b23e73c368648f26546c1b1f7440bbd04f",
+        "active_ingredients": ["Avobenzone 2.7%", "Homosalate 13.6%", "Octisalate 4.5%", "Octocrylene 9%"],
+        "direct_spf_claim": "SPF50 broad-spectrum coverage",
+        "direct_uva_claim": "broad-spectrum",
+        "headline": "Hydrating Daily SPF50 Sun Serum",
+        "inactive_ingredient_count": 31,
+        "inactive_ingredient_order_sha256": "45f7c124d46bb7f12abdb0a4d7fea09640d18e7e1b6dda27726878c32970acd6",
+        "name": "Hyalu-Cica Water-Fit Sun Serum UV",
+        "reformulation_statement": "Reformulated with Panthenol and extracts of rice, oat, and soybean",
+        "size_ml": 50
+      },
+      "identity_support": true,
+      "machine_verifiable_registry_uva_support": false,
+      "machine_verifiable_spf_support": true,
+      "market_scope_explicit_in_reviewed_body": false,
+      "publisher": "SKIN1004",
+      "role": "exact_uv_identity_and_partial_fact_source",
+      "source_kind": "official_product_page",
+      "url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv"
+    },
+    {
+      "current_observation": {
+        "direct_claims": ["SPF50+", "PA++++"],
+        "ingredient_count": 42,
+        "ingredient_order_sha256": "f027d9359decd4f3fc42d5f0b2f14322050751260db8da0b1fccc19355c6b53e",
+        "name": "Hyalu-Cica Water-Fit Sun Serum",
+        "size_ml": 50,
+        "uv_filter_system": ["Diethylamino Hydroxybenzoyl Hexyl Benzoate", "Ethylhexyl Triazone", "Methylene Bis-Benzotriazolyl Tetramethylbutylphenol", "Diethylhexyl Butamido Triazone"]
+      },
+      "exclusion_reason": "separate non-UV formulation with materially different UV-filter system",
+      "identity_support_for_uv_target": false,
+      "observed_resolved_url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-spf50-pa?country=BE&variant=45493174337782",
+      "positive_fact_support_for_uv_target": false,
+      "publisher": "SKIN1004",
+      "role": "distinct_non_uv_formulation_exclusion",
+      "source_kind": "official_product_page",
+      "url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-spf50-pa"
+    }
+  ],
+  "formulation_adjudication": {
+    "basis": [
+      "UV route exact product name includes UV and is 50ml",
+      "UV route declares Avobenzone/Homosalate/Octisalate/Octocrylene active system",
+      "non-UV route omits UV suffix and declares a distinct DHHB/Ethylhexyl Triazone/MBBT/Diethylhexyl Butamido Triazone system",
+      "both pages are current first-party presentations, so claims must remain formulation-scoped"
+    ],
+    "cross_formula_pa_transfer_prohibited": true,
+    "non_uv_pa_route_may_not_support_uv_target": true,
+    "result": "DISTINCT_FORMULATIONS",
+    "uv_target_route_exact_name_match": true
+  },
+  "invariants": {
+    "broad_spectrum_to_pa_conversion": false,
+    "catalog_fact_fields_used_as_product_fact_authority": false,
+    "cross_formula_pa_transfer": false,
+    "direct_product_fact_dml": false,
+    "hosted_product_fact_writes": 0,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "subject_registration_performed": false,
+    "third_party_positive_fact_support": false
+  },
+  "phase": "RESEARCH_ONLY_MARKET_FORMULATION_AND_FACT_SOURCE_RECOVERY",
+  "production_prestate": {
+    "current_count": 0,
+    "global_counts": {"bindings": 22, "confirmations": 51, "current": 51, "evidence": 51, "evidence_links": 51, "fact_instances": 51, "review_assignments": 51, "sources": 22, "subjects": 21},
+    "official_source_locator_rows": 0,
+    "subject_count": 0
+  },
+  "registry_constraints": {
+    "spf_value": {"market_required": true, "qualifier_plus_modifier": ["none", "plus"], "value_type": "number"},
+    "uva_label": {"allowed_values": ["PA+", "PA++", "PA+++", "PA++++", "UVA-PF-declared"], "broad_spectrum_allowed": false, "market_required": true, "value_type": "enum"}
+  },
+  "research_content_sha256": "8fc6ad03600e500e0966da67951507ca475b690444db2a10dd79d5ef03752243",
+  "stage": "TRUST-P16",
+  "target": {
+    "brand": "스킨1004",
+    "brand_en": "SKIN1004",
+    "catalog_buy_link": "https://www.oliveyoung.co.kr/store/goods/getGoodsDetail.do?goodsNo=A000000169499",
+    "catalog_name": "히알루-시카 워터핏 선세럼 UV",
+    "catalog_name_en": "Hyalu-Cica Water-Fit Sun Serum UV",
+    "prior_disposition": "MARKET_FORMULATION_SCOPE_REVIEW_REQUIRED",
+    "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+    "size_ml": 50
+  },
+  "version": "trust-p16-skin1004-uv-market-formulation-source-recovery-v1"
+}
