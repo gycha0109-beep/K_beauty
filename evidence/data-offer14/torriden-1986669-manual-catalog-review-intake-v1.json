@@ -1,0 +1,129 @@
+{
+  "schema_version": "manual_catalog_review_intake_decision_v2",
+  "snapshot_date": "2026-09-13",
+  "production_observed_at": "2026-09-13T03:13:23.592502+09:00",
+  "candidate": {
+    "candidate_id": "ccf23119-b067-4076-bb9e-01a83cf88fa0",
+    "source_name": "hwahae",
+    "external_type": "products",
+    "external_id": "1986669",
+    "source_url": "https://www.hwahae.com/en/products/1986669",
+    "category_path": "sunscreen",
+    "product_name_raw": "DIVE IN Mild Sun Cream [SPF50+/PA++++]",
+    "brand_name_raw": "Torriden",
+    "review_status": "new",
+    "identity_resolution_state": "unresolved",
+    "identity_resolution_version": "crawler-identity-resolution-v1",
+    "canonical_name": null,
+    "canonical_brand": null,
+    "service_category": null,
+    "product_form": null,
+    "matched_product_id": null,
+    "duplicate_of_product_id": null,
+    "seen_count": 6
+  },
+  "independent_identity_evidence": {
+    "contract_version": "manual-catalog-identity-evidence-v1",
+    "providers": [
+      {
+        "provider": "torriden_official",
+        "external_type": "goods",
+        "external_id": "136",
+        "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+        "brand": "토리든",
+        "title": "다이브인 무기자차 마일드 선크림 60ml",
+        "size_ml": 60
+      },
+      {
+        "provider": "hwahae",
+        "external_type": "products",
+        "external_id": "1986669",
+        "global_url": "https://www.hwahae.com/en/products/1986669",
+        "korean_url": "https://www.hwahae.co.kr/goods/56376",
+        "brand_ko": "토리든",
+        "brand_en": "Torriden",
+        "title_ko": "다이브인 무기자차 마일드 선크림 60ml",
+        "title_en": "DIVE IN Mild Sun Cream [SPF50+/PA++++]",
+        "size_ml": 60
+      }
+    ],
+    "convergence_dimensions": [
+      "brand",
+      "exact_korean_product_title",
+      "mild_sun_cream_identity",
+      "size_60ml"
+    ],
+    "authority_boundary": {
+      "product_write_allowed": false,
+      "candidate_identity_resolution_write_allowed": false,
+      "product_source_binding_write_allowed": false,
+      "offer_materialization_allowed": false,
+      "recommendation_authority": false
+    }
+  },
+  "production_queue_readback": {
+    "candidate_review_row_count": 0,
+    "equivalent_manual_ingress_function_count": 0,
+    "ranking_rule_version": "ranking-review-v2",
+    "popularity_observation_count": 6,
+    "popularity_best_rank": 2,
+    "popularity_latest_rank": 8,
+    "popularity_distinct_observed_dates": 3,
+    "candidate_concern_observation_count": 0,
+    "candidate_concern_best_rank": null,
+    "ranking_queue_eligible": false,
+    "priority_score": 0,
+    "product_match_exists": false
+  },
+  "existing_downstream_authority": {
+    "function": "admin_confirm_product_candidate_structural_adoption_v1",
+    "contract_version": "crawler-canonical-product-structural-adoption-v1",
+    "actionable_review_statuses": [
+      "queued",
+      "reviewing",
+      "deferred"
+    ],
+    "requires_resolved_identity_at_confirmation": true,
+    "manual_review_queue_row_required": true,
+    "reused_not_reimplemented": true
+  },
+  "manual_ingress_contract": {
+    "function": "admin_enqueue_product_candidate_structural_review_v1",
+    "inputs": [
+      "actor_user_id",
+      "candidate_id",
+      "request_id",
+      "reason",
+      "identity_evidence"
+    ],
+    "required_capability": "admin.products.review",
+    "rule_version": "manual-catalog-identity-review-v1",
+    "queue_policy": "manual_catalog_admission",
+    "new_candidate_status": "queued",
+    "priority_score": 0,
+    "idempotent_exact_request_replay": true,
+    "request_id_payload_conflict_fails_closed": true,
+    "existing_state_policy": {
+      "queued": "protected_no_mutation",
+      "reviewing": "protected_no_mutation",
+      "deferred": "new_request_may_requeue",
+      "approved": "terminal_protected",
+      "rejected": "terminal_protected"
+    },
+    "audit_required_on_write": true,
+    "audit_repeated_on_exact_replay": false,
+    "ranking_refresh_may_mutate_manual_rows": false
+  },
+  "decision": {
+    "state": "governed_manual_catalog_admission_ingress_required",
+    "manual_queue_ingress_allowed": true,
+    "candidate_identity_resolution_write_allowed": false,
+    "product_write_allowed": false,
+    "product_source_binding_write_allowed": false,
+    "offer_materialization_allowed": false,
+    "product_fact_write_allowed": false,
+    "recommendation_semantic_write_allowed": false,
+    "production_write_performed_by_this_phase": false
+  },
+  "next_authority_gate": "explicit_production_migration_authorization_before_any_manual_queue_execution"
+}
