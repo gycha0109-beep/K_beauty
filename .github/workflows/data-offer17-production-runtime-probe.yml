@@ -1,0 +1,68 @@
+name: DATA-OFFER17 Production Runtime Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-offer17-production-runtime-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: DATA-OFFER17 Production Runtime Probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+      PRODUCTION_URL: https://k-beauty-461vt7gu5-johnny-self.vercel.app
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Execute exactly one controlled Production analyze request
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=' | base64 -d > /tmp/data-offer17-probe.png
+          status="$(curl --silent --show-error --max-time 150 \
+            -o /tmp/data-offer17-response.json \
+            -w '%{http_code}' \
+            -X POST "${PRODUCTION_URL}/api/analyze" \
+            -H 'User-Agent: BEJEWELY-DATA-OFFER17-PRODUCTION-PROBE/1' \
+            -F 'image=@/tmp/data-offer17-probe.png;type=image/png' \
+            -F 'skinType=combination' \
+            -F 'sensitivity=medium' \
+            -F 'mainConcern=dehydration' \
+            -F 'mainConcerns=["dehydration","barrier"]' \
+            -F 'cleansingFrequency=2' \
+            -F 'preferredTexture=cream' \
+            -F 'postCleanseFeel=tight' \
+            -F 'afternoonState=more_dry' \
+            -F 'dislikedFeel=drying' \
+            -F 'genderPreference=unspecified' \
+            -F 'whiteCastHate=false' \
+            -F 'toneUpWanted=false' \
+            -F 'makeupUse=false' \
+            -F 'eyeSensitive=false' \
+            -F 'outdoorExposure=false' \
+            -F 'verySensitivePeriod=false' \
+            -F 'locale=ko')"
+          echo "DATA_OFFER17_PRODUCTION_HTTP_STATUS=${status}"
+          test "$status" = "200"
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/data-offer17-response.json', 'utf8'));
+          console.log(JSON.stringify({
+            priority: payload.priority?.axis || null,
+            topPickIdPresent: Boolean(payload.topPick?.id),
+            alternativeIdPresent: Boolean(payload.alternative?.id),
+            error: payload.error || null,
+          }));
+          NODE
+          rm -f /tmp/data-offer17-probe.png /tmp/data-offer17-response.json
