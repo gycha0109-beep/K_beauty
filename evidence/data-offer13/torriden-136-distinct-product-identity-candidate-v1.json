@@ -1,0 +1,86 @@
+{
+  "schema_version": "torriden_distinct_product_identity_candidate_v1",
+  "snapshot_date": "2026-09-11",
+  "seller_listing": {
+    "seller": "torriden_official",
+    "listing_id": "136",
+    "listing_url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+    "reviewed_title_ko": "다이브인 무기자차 마일드 선크림 60ml",
+    "size_ml": 60,
+    "data_offer11_payload_sha256": "f56a3a4592c766f972da2cfcc1e529aca2eb68e657a22c82b244c2f8b727beb7"
+  },
+  "independent_identity_evidence": {
+    "provider_count": 2,
+    "providers": [
+      {
+        "provider": "torriden_official",
+        "url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+        "external_type": "goods",
+        "external_id": "136",
+        "brand": "토리든",
+        "title": "다이브인 무기자차 마일드 선크림 60ml",
+        "size_ml": 60
+      },
+      {
+        "provider": "hwahae",
+        "korean_url": "https://www.hwahae.co.kr/goods/56376",
+        "global_url": "https://www.hwahae.com/en/products/1986669",
+        "external_type": "products",
+        "external_id": "1986669",
+        "brand_ko": "토리든",
+        "brand_en": "Torriden",
+        "title_ko": "다이브인 무기자차 마일드 선크림 60ml",
+        "title_en": "DIVE IN Mild Sun Cream [SPF50+/PA++++]",
+        "size_ml": 60
+      }
+    ],
+    "convergence_dimensions": [
+      "brand",
+      "exact_korean_product_title",
+      "mild_sun_cream_identity",
+      "size_60ml"
+    ],
+    "identity_convergence_state": "established_for_manual_candidate_review"
+  },
+  "production_candidate_readback": {
+    "read_only": true,
+    "candidate_id": "ccf23119-b067-4076-bb9e-01a83cf88fa0",
+    "source_name": "hwahae",
+    "external_type": "products",
+    "external_id": "1986669",
+    "source_url": "https://www.hwahae.com/en/products/1986669",
+    "product_name_raw": "DIVE IN Mild Sun Cream [SPF50+/PA++++]",
+    "brand_name_raw": "Torriden",
+    "review_status": "new",
+    "matched_product_id": null,
+    "identity_resolution_state": "unresolved",
+    "identity_resolution_version": "crawler-identity-resolution-v1",
+    "seen_count": 6
+  },
+  "existing_catalog_boundary": {
+    "torriden_sunscreen_product_count": 1,
+    "existing_product_id": "57e4a5ec-115d-4322-85a1-7976db669700",
+    "existing_product_name": "다이브인 워터리 모이스처 선크림",
+    "existing_product_name_en": "DIVE IN WATERY MOISTURE SUN CREAM",
+    "exact_title_match": false,
+    "safe_existing_product_match": false,
+    "do_not_bind_to_existing_product": true
+  },
+  "decision": {
+    "identity_convergence_state": "established_for_manual_candidate_review",
+    "catalog_admission_state": "distinct_product_candidate_ready_for_manual_review",
+    "proposed_category": "sunscreen",
+    "proposed_brand_ko": "토리든",
+    "proposed_brand_en": "Torriden",
+    "proposed_name_ko": "다이브인 무기자차 마일드 선크림",
+    "proposed_name_en": "DIVE IN Mild Sun Cream",
+    "proposed_size_ml": 60,
+    "product_id": null,
+    "product_write_allowed": false,
+    "product_source_binding_write_allowed": false,
+    "offer_materialization_allowed": false,
+    "recommendation_authority": false,
+    "manual_review_required": true
+  },
+  "next_authority_gate": "governed_manual_catalog_admission_then_separate_product_source_binding_review"
+}
