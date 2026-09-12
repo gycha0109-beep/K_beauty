@@ -83,7 +83,7 @@ jobs:
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
           migration_dir="${runtime_dir}/supabase/migrations"
           mkdir -p "${migration_dir}"
-          cp supabase/migrations/20260911173000_seller_listing_observations_append_only_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260913035725_seller_listing_observations_append_only_v1.sql "${migration_dir}/"
 
       - name: Start and reset isolated Supabase
         shell: bash
