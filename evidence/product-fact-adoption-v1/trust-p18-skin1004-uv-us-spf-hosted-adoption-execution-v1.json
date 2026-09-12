@@ -1,0 +1,156 @@
+{
+  "version": "trust-p18-skin1004-uv-us-spf-hosted-adoption-execution-v1",
+  "stage": "TRUST-P18_PHASE_B_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "execution_capture_main_sha": "cb4afbc04156c458fa3a4a7e5f747f7187304d70",
+    "p18_plan_path": "evidence/product-fact-adoption-v1/trust-p18-skin1004-uv-us-spf-hosted-adoption-plan-v1.json",
+    "p18_plan_blob_sha": "93bcaf7d99f09f3257d36b64962e127b03406f16",
+    "p18_plan_merge_sha": "cb4afbc04156c458fa3a4a7e5f747f7187304d70",
+    "p18_plan_sha256": "e0a6d654b85179b1031a6c95b13d28d731747b831bfeeb57a66b4a5527f95b96",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1"
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "execution_policy": {
+    "controlled_rpc_only": true,
+    "direct_product_fact_table_dml": false,
+    "runtime_ids_server_returned_only": true,
+    "fresh_official_source_revalidated_before_write": true,
+    "fresh_preflight_ready_before_confirm": true,
+    "schema_change": false,
+    "rpc_change": false,
+    "registry_change": false,
+    "recommendation_or_ranking_change": false,
+    "uva_write_performed": false,
+    "broad_spectrum_to_pa_conversion": false,
+    "cross_formula_pa_transfer": false,
+    "kr_scope_inference": false,
+    "global_scope_inference": false
+  },
+  "subject": {
+    "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+    "subject_id": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+    "subject_semantic_key": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+    "variant_key": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+    "formulation_revision_key": "trust-p17-skin1004-uv-us-current",
+    "market_applicability": "US",
+    "identity_status": "resolved",
+    "current_state": "current"
+  },
+  "source_binding": {
+    "source_id": "f72a2781-2d6a-45f1-82a6-c33674088523",
+    "binding_id": "903517b0-c91b-4802-9f51-88b0d305a164",
+    "source_locator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+    "companion_market_source_locator": "https://skin1004-us.myshopify.com/pages/stores",
+    "source_content_digest": "e30e828daffd28c7656b63e8bf0bfa2555c9590ab9647c29eba6c2695a6c0603",
+    "binding_state": "exact_subject_match",
+    "scope_relation": "equivalent",
+    "market": "US",
+    "accessed_at": "2026-09-13T02:28:03.791639+09:00"
+  },
+  "fact": {
+    "fact_key": "spf_value",
+    "proposition_key": "6b04db0623d15da37c2cfb58168a41cc00dd735c775d28f7f7a2aa715122075a",
+    "canonical_evidence_digest": "d4d15e6142f9c6a64b4cf7531169ef0aeeb49d2b6edc21650d5e361c8415eb6c",
+    "evidence_id": "3385ad77-ff6e-4a4f-bb37-d25d611df7f2",
+    "assignment_id": "3641cdbc-86ba-4b9f-b7fc-8bb2d7b221f5",
+    "assignment_state": "confirmed",
+    "fact_instance_id": "304b8be8-e80a-49a5-9ceb-dfafef6b0828",
+    "confirmation_id": "eea66ab9-abee-46c5-bb57-e3f9f119e5b3",
+    "semantic_status": "supported",
+    "value_type": "number",
+    "value_number": 50,
+    "value_enum": null,
+    "market": "US",
+    "qualifier": {
+      "plus_modifier": "none"
+    },
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high",
+    "fusion_input_digest": "7fa996cd048c10ed34d206ef730ba10560eb73f24f89bec88f7543c16b118185",
+    "preflight": {
+      "status": "ready",
+      "payload_digest": "71a7f7e1013594497801a19ce9ea618fdefdc42c9d40b4e27d922dc762d313a9",
+      "prestate_digest": "5a5275875c65b8535980a7f58a80326919cff3ba8de4a47932848e13e1126fec",
+      "previous_current": null
+    },
+    "result_digest": "be7d40c09ead322b03a3d49c2ba7e0c6177d33d4fb94890f91a5ede0bb98dceb",
+    "evidence_link_count": 1
+  },
+  "request_ids": {
+    "subject": "trust-p18-skin1004-us-subject-20260913-v1",
+    "spf_ingest": "trust-p18-skin1004-us-spf-evidence-20260913-v1",
+    "spf_review_under": "trust-p18-skin1004-us-spf-review-under-20260913-v1",
+    "spf_review_ready": "trust-p18-skin1004-us-spf-review-ready-20260913-v1",
+    "spf_confirmation": "trust-p18-skin1004-us-spf-confirm-20260913-v1"
+  },
+  "timeline": {
+    "subject_registered_at": "2026-09-13T02:27:46.063165+09:00",
+    "evidence_ingested_at": "2026-09-13T02:28:03.791639+09:00",
+    "review_under_at": "2026-09-13T02:28:48.003952+09:00",
+    "review_ready_at": "2026-09-13T02:28:59.312152+09:00",
+    "confirmed_at": "2026-09-13T02:29:42.558667+09:00"
+  },
+  "prestate": {
+    "checked_at": "2026-09-13T02:27:09.924059+09:00",
+    "subjects": 21,
+    "sources": 22,
+    "bindings": 22,
+    "evidence": 51,
+    "fact_instances": 51,
+    "evidence_links": 51,
+    "review_assignments": 51,
+    "confirmations": 51,
+    "current": 51,
+    "target_subjects": 0,
+    "target_subject_semantic_key_rows": 0,
+    "target_source_identity_rows": 0,
+    "target_spf_evidence_digest_rows": 0,
+    "target_spf_current": 0,
+    "target_open_assignments": 0,
+    "target_uva_current": 0
+  },
+  "expected_delta": {
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "evidence": 1,
+    "fact_instances": 1,
+    "evidence_links": 1,
+    "review_assignments": 1,
+    "confirmations": 1,
+    "current": 1
+  },
+  "poststate": {
+    "checked_at": "2026-09-13T02:30:06.193502+09:00",
+    "subjects": 22,
+    "sources": 23,
+    "bindings": 23,
+    "evidence": 52,
+    "fact_instances": 52,
+    "evidence_links": 52,
+    "review_assignments": 52,
+    "confirmations": 52,
+    "current": 52,
+    "target_subjects": 1,
+    "target_spf_current": 1,
+    "target_uva_current": 0,
+    "assignment_state": "confirmed",
+    "provenance_exact": true,
+    "value_contract_exact": true
+  },
+  "closure": {
+    "skin1004_uv_us_coverage": "SPF_CURRENT_UVA_BLOCKED",
+    "p18_phase_b": "CONFIRMED",
+    "next_action": "freeze_execution_evidence_then_reassess_remaining_sunscreen_gaps"
+  },
+  "execution_content_sha256": "63aa3d21eb2fd0412ec49268825ccc7a709b2c7412c4dd0e4225fb3498b50808"
+}
