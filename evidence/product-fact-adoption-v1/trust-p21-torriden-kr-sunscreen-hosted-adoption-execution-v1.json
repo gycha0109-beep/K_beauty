@@ -1,0 +1,155 @@
+{
+  "version": "trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1",
+  "stage": "TRUST-P21",
+  "phase": "B_CONTROLLED_PRODUCTION_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "plan_version": "trust-p21-torriden-kr-sunscreen-hosted-adoption-plan-v1",
+    "plan_path": "evidence/product-fact-adoption-v1/trust-p21-torriden-kr-sunscreen-hosted-adoption-plan-v1.json",
+    "plan_merge_sha": "96dd876465cb3bdbc477794c7235042865884a70",
+    "plan_blob_sha": "71714d374ccc8160985733cb3ff8315f632ec9b6",
+    "plan_content_sha256": "4919e32931538bc284d33b9db63fe85ad8f9a241a9b3e405f48ecae0944a9428",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1"
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "target": {
+    "product_id": "57e4a5ec-115d-4322-85a1-7976db669700",
+    "subject_semantic_key": "3f1b752bc8e1c7829f04bbc11fec3dd9b0c6646e481a3088d4214ec3b7dac03f",
+    "variant_key": "DIVE_IN_MOISTURE_SUN_CREAM_KR_60ML",
+    "formulation_revision_key": "trust-p20-torriden-252-current-upgraded",
+    "market": "KR"
+  },
+  "execution_policy": {
+    "controlled_rpc_only": true,
+    "direct_table_dml": false,
+    "runtime_ids": "server_returned_only",
+    "all_planned_confirmation_preflights_ready_before_any_confirm": true,
+    "confirmations_executed_in_one_sql_statement": true,
+    "confirmation_atomicity": "same_statement_transaction",
+    "schema_or_rpc_mutation": false,
+    "registry_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "cross_product_inference": false,
+    "historical_pre_upgrade_formula_equivalence_asserted": false,
+    "mild_mineral_product_claim_transfer": false
+  },
+  "prestate": {
+    "subjects": 22,
+    "sources": 23,
+    "bindings": 23,
+    "evidence": 52,
+    "fact_instances": 52,
+    "evidence_links": 52,
+    "review_assignments": 52,
+    "confirmations": 52,
+    "current": 52,
+    "target_subjects": 0,
+    "target_current": 0,
+    "target_collision_rows": 0
+  },
+  "planned_delta": {
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "evidence": 2,
+    "fact_instances": 2,
+    "evidence_links": 2,
+    "review_assignments": 2,
+    "confirmations": 2,
+    "current": 2
+  },
+  "runtime": {
+    "subject": {
+      "subject_id": "750c298a-e085-4a29-aa24-2656fa7a5d6f",
+      "subject_semantic_key": "3f1b752bc8e1c7829f04bbc11fec3dd9b0c6646e481a3088d4214ec3b7dac03f"
+    },
+    "source": {
+      "source_id": "0faa9a86-8d74-495f-8fcb-ac47cb0529d6",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=252",
+      "content_digest": "4ae0a6ccaa7cb8870a05326e68cc1a327bff562d3fee2e6a02c256eba397dcbd",
+      "market": "KR",
+      "locale": "ko"
+    },
+    "binding": {
+      "binding_id": "f6f3617d-076a-415f-9bda-d4edf3febd9d",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "equivalent"
+    },
+    "spf_value": {
+      "request_id": "trust-p21-torriden-spf-confirm-20260913-v1",
+      "assignment_id": "f7265423-30c3-4efa-a540-49572ef23485",
+      "evidence_id": "20aff3db-fd46-48d5-b9c8-4eb7f97bdb31",
+      "canonical_evidence_digest": "a9b7ecc5f5e9523ad44db9b13ecd2f015423e60ccac3488cd215d7ec76a5f7ea",
+      "proposition_key": "6e87dc1448e6518a599a3e17e62e98e1c13e4a73ab01ab5596f8c8df34521385",
+      "fact_instance_id": "393aefcc-6967-4fd2-895e-ff13915dbb2f",
+      "confirmation_id": "74d45976-b84f-4af8-84b1-0f7b25693bc6",
+      "fusion_input_digest": "7b1d43df3a078c25f12160462e484c4817eb7e138e7edef0698e9fe42ca0cad9",
+      "payload_digest": "40c6d868fbe88a9499e40740ad84a0258a23b51cfdcecf093d086e7d25e4de3f",
+      "prestate_digest": "86e6c813cf3bc0081a52e7f02f355bddc50383ff36258e3dd5ab78a3c55ffdfd",
+      "result_digest": "18cd5223aca48d908b0e3896cbab47b621556133e5062162c8bd4fd9588a299f",
+      "semantic_status": "supported",
+      "value_type": "number",
+      "value": 50,
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "previous_fact_instance_id": null
+    },
+    "uva_label": {
+      "request_id": "trust-p21-torriden-uva-confirm-20260913-v1",
+      "assignment_id": "6cd9e4bb-9dbb-4d40-bd48-a84a462ad5f7",
+      "evidence_id": "f06b5991-9d6b-42f8-a838-a1e68c364fe3",
+      "canonical_evidence_digest": "6012054072e89a502d617bc3009552c6497a3b5e5a01cf97b05413daa7529933",
+      "proposition_key": "06a9b17ca27c9cb350f75f8f20db7507c1be52f0063896d64f1a3ab22425d1bd",
+      "fact_instance_id": "07ea5c2d-70a7-4d24-84a4-2b3fd334a4ca",
+      "confirmation_id": "72c15698-b06d-4883-a9b2-3c3f1c4c7d9d",
+      "fusion_input_digest": "02bd8a013e2354e8b2987724a672b21000c7e4e95b7725d8c4866d37e3a2bce5",
+      "payload_digest": "ca515e3c35e79e1057e4b36c70b47b1f1d5f5bf9b48e17c988f184ef58217540",
+      "prestate_digest": "9ab3f9ec7f015a2d8dcceda164e2de595270318ac25ce3aa58555351d941dc34",
+      "result_digest": "63adb5a03c568890c17df8ce71d97d0686f8e1c2d768157fa1b3125b2452a9e6",
+      "semantic_status": "supported",
+      "value_type": "enum",
+      "value": "PA++++",
+      "qualifier": {},
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high",
+      "previous_fact_instance_id": null
+    }
+  },
+  "poststate": {
+    "checked_at": "2026-09-13T03:58:30.377592+09:00",
+    "subjects": 23,
+    "sources": 24,
+    "bindings": 24,
+    "evidence": 54,
+    "fact_instances": 54,
+    "evidence_links": 54,
+    "review_assignments": 54,
+    "confirmations": 54,
+    "current": 54,
+    "target_subjects": 1,
+    "target_current": 2,
+    "target_confirmed_assignments": 2
+  },
+  "closure": {
+    "planned_delta_matched": true,
+    "spf_current": true,
+    "uva_current": true,
+    "legacy_goods173_identity_context_only": true,
+    "distinct_mild_sun_disjoint": true,
+    "additional_production_writes_after_execution": 0,
+    "result": "TRUST_P21_PRODUCTION_ADOPTION_CONFIRMED"
+  },
+  "execution_content_sha256": "228c0ec458c8c618426a0ed54eb8e3f55744639f8a252f024541ab9547bc8e22"
+}

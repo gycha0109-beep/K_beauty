@@ -1,0 +1,36 @@
+name: TRUST-P21 Torriden KR Sunscreen Hosted Adoption Execution
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-adoption-v1/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.json"
+      - "docs/evidence/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.md"
+      - "scripts/product-evidence/verify-trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.mjs"
+      - ".github/workflows/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution.yml"
+  push:
+    branches: [main]
+    paths:
+      - "evidence/product-fact-adoption-v1/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.json"
+      - "docs/evidence/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.md"
+      - "scripts/product-evidence/verify-trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.mjs"
+      - ".github/workflows/trust-p21-torriden-kr-sunscreen-hosted-adoption-execution.yml"
+permissions:
+  contents: read
+jobs:
+  verify-trust-p21-torriden-kr-sunscreen-hosted-adoption-execution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact head
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -z "$(git status --porcelain)"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify TRUST-P21 Production execution closeout
+        run: node scripts/product-evidence/verify-trust-p21-torriden-kr-sunscreen-hosted-adoption-execution-v1.mjs
