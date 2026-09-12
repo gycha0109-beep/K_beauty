@@ -1,0 +1,140 @@
+{
+  "version": "trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-execution-v1",
+  "stage": "TRUST-P22",
+  "phase": "B_CONTROLLED_PRODUCTION_EXECUTION_CLOSEOUT",
+  "status": "PRODUCTION_CONFIRMED",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "execution_source_main_sha": "b79dd28590162890b6c38c8f42ae6e895fc84ff6",
+    "plan_version": "trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-plan-v1",
+    "plan_merge_sha": "40bbacc4e7fc3b35cf523925a6e10ccf8643cfe0",
+    "plan_blob_sha": "2c7a205bd640ee2d49778d4a40311691d9cd5b65",
+    "plan_content_sha256": "4cd5ceeec8fba71974725da9510e5ed01c358f176b8f2e617ac16b6972f13e5f"
+  },
+  "target": {
+    "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+    "subject_semantic_key": "e9b46ca78c3cc630403d66bb01b1d25d665f21941e2d430629d1c67a54578161",
+    "variant_key": "DIVE_IN_MILD_SUN_CREAM_KR_60ML",
+    "market": "KR"
+  },
+  "execution_policy": {
+    "controlled_rpc_only": true,
+    "direct_table_dml": false,
+    "runtime_ids": "server_returned_only",
+    "partial_execution_detected_and_reconciled_before_resume": true,
+    "prior_controlled_steps_verified_via_admin_audit_logs": true,
+    "all_planned_confirmation_preflights_ready_before_any_confirm": true,
+    "confirmations_executed_in_one_sql_statement": true,
+    "confirmation_atomicity": "same_statement_transaction",
+    "schema_or_rpc_mutation": false,
+    "registry_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "third_party_positive_fact_support": false,
+    "cross_product_inference": false
+  },
+  "counts": {
+    "plan_prestate": {
+      "subjects": 23,
+      "sources": 24,
+      "bindings": 24,
+      "evidence": 54,
+      "fact_instances": 54,
+      "evidence_links": 54,
+      "review_assignments": 54,
+      "confirmations": 54,
+      "current": 54
+    },
+    "resume_prestate": {
+      "subjects": 24,
+      "sources": 25,
+      "bindings": 25,
+      "evidence": 56,
+      "fact_instances": 54,
+      "evidence_links": 54,
+      "review_assignments": 56,
+      "confirmations": 54,
+      "current": 54,
+      "target_subjects": 1,
+      "target_current": 0,
+      "ready_assignments": 2,
+      "confirmation_request_collisions": 0
+    },
+    "poststate": {
+      "subjects": 24,
+      "sources": 25,
+      "bindings": 25,
+      "evidence": 56,
+      "fact_instances": 56,
+      "evidence_links": 56,
+      "review_assignments": 56,
+      "confirmations": 56,
+      "current": 56,
+      "target_subjects": 1,
+      "target_current": 2,
+      "target_spf_current": 1,
+      "target_uva_current": 1,
+      "target_confirmed_assignments": 2
+    },
+    "planned_delta": {
+      "subjects": 1,
+      "sources": 1,
+      "bindings": 1,
+      "evidence": 2,
+      "fact_instances": 2,
+      "evidence_links": 2,
+      "review_assignments": 2,
+      "confirmations": 2,
+      "current": 2
+    }
+  },
+  "runtime": {
+    "subject_id": "5be00a86-82b4-4f42-af65-4c0d3b8324d4",
+    "source_id": "f493aa44-75dc-40b8-a179-b7d748bc7989",
+    "binding_id": "c70aadca-aecb-409a-9995-71016a2ef9d7",
+    "source_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+    "source_content_digest": "79ab3a099251d7c83269f78ee6e5334f2f795c577381e53550f406e705512264",
+    "binding_state": "exact_subject_match",
+    "scope_relation": "equivalent",
+    "spf_value": {
+      "assignment_id": "5fcb46a6-c8de-4c28-9e5d-ae66e6b61a41",
+      "evidence_id": "598e08aa-707e-4eca-b871-7f81463eb31b",
+      "proposition_key": "059777b9cc342c1abd9da8b3f71604b5da717acbfba10a3a7ad65c02e9aa0a49",
+      "fact_instance_id": "71d576fe-22a8-43f6-9719-2caf2e2d099e",
+      "confirmation_id": "1a23f157-42b5-4a70-a27a-85380b3ce0c2",
+      "fusion_input_digest": "f97dd68eb2837a24a5f47936b62ab383293f6b81cf1278302b53a8e989204382",
+      "payload_digest": "3240ce1e29ef43dc89824ec412f80ba9bee356358f27174e4dbd8753675831a1",
+      "prestate_digest": "e941ed510d1223940bd2d91cbe2f83f5d0e12dd5a00d6240aeddf74755a872e5",
+      "result_digest": "84a3861f05939d6cf103162fa88eacbcf187420940b6a6ce918c7befa21fd4bd",
+      "value": 50,
+      "qualifier": {
+        "plus_modifier": "plus"
+      }
+    },
+    "uva_label": {
+      "assignment_id": "e59a53ad-41c2-49d4-a7e5-b114b0698b4e",
+      "evidence_id": "46f66326-ea73-4c2b-825c-ab078def87c6",
+      "proposition_key": "c5f231cf12bb6ca29a54bf097e1a01fb84f6bb1c1434a50ea919ef9b7909d6fb",
+      "fact_instance_id": "d8effc20-117a-4690-a414-dd67a2523325",
+      "confirmation_id": "3707e210-8f3b-4b52-b102-401735340da1",
+      "fusion_input_digest": "50f918d3be2bb89bb670ad289feae9345261c706f3aab9b52af798aee2900a65",
+      "payload_digest": "1dae6ced2383c6c600628be5cfd46cc773617e32cfd07fff5436be8cad710dbd",
+      "prestate_digest": "685052c45b22c26be1e230767acd77f7e3920a8556f722fec6428a2736c32d5b",
+      "result_digest": "28750974e6ade063e23a106218fc3488379483d9c7a88947c16e37b2fd8d6d9e",
+      "value": "PA++++",
+      "qualifier": {}
+    }
+  },
+  "source_authority": {
+    "official_product_page": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+    "official_direct_claim_asset": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MildSunCream/01.jpg",
+    "observed_package_claim": "DIVE IN Mild Sun Cream / SPF50+ PA++++"
+  },
+  "closure": {
+    "planned_delta_matched": true,
+    "spf_current": true,
+    "uva_current": true,
+    "result": "TRUST_P22_PRODUCTION_ADOPTION_CONFIRMED"
+  },
+  "execution_content_sha256": "16c8119454f137abd74e0912bef88aa86ad65ec01455d70c3ceeb0eb0d8762cd"
+}
