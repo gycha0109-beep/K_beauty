@@ -88,6 +88,7 @@
     "mobile:prebuild:android": "npm run prebuild:android --workspace @bejewely/mobile",
     "mobile:build:android:debug": "npm run build:android:debug --workspace @bejewely/mobile",
     "verify:mobile-foundation": "node scripts/verify-mobile-architecture-foundation.mjs",
+    "verify:mobile-entry-routing": "node scripts/verify-mobile-initial-entry-routing.mjs",
     "verify:mobile-native": "npm run verify:native --workspace @bejewely/mobile"
   },
   "dependencies": {
