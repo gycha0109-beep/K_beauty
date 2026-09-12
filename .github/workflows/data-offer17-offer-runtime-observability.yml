@@ -1,0 +1,77 @@
+name: DATA-OFFER17 Offer Runtime Observability
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "lib/product-offer-runtime-observability.js"
+      - "lib/server/product-offer-read-service.js"
+      - "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer17-offer-runtime-observability.yml"
+  push:
+    branches: [main]
+    paths:
+      - "lib/product-offer-runtime-observability.js"
+      - "lib/server/product-offer-read-service.js"
+      - "scripts/verify-data-offer17-offer-runtime-observability-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer17-offer-runtime-observability.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: DATA-OFFER17 Offer Runtime Observability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          printf 'DATA_OFFER17_EXACT_HEAD=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify runtime observability contract
+        run: |
+          node scripts/verify-data-offer17-offer-runtime-observability-v1.mjs
+          node --check scripts/verify-data-offer17-offer-runtime-observability-v1.mjs
+          node --check lib/product-offer-runtime-observability.js
+          node --check lib/server/product-offer-read-service.js
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+          else
+            base="$PUSH_BEFORE_SHA"
+          fi
+          if [[ ! "$base" =~ ^[0-9a-f]{40}$ ]] || [[ "$base" == "0000000000000000000000000000000000000000" ]]; then
+            base="$(git rev-parse "${HEAD_SHA}^")"
+          fi
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git diff --check "${base}...${HEAD_SHA}"
