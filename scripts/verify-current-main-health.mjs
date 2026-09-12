@@ -64,6 +64,7 @@ run("Torriden live parser verifier syntax", node, ["--check", "scripts/verify-to
 run("Torriden Product binding unresolved authority", node, ["scripts/verify-data-offer12-torriden-binding-decision-v1.mjs"]);
 run("Torriden distinct Product identity convergence candidate", node, ["scripts/verify-data-offer13-torriden-identity-convergence-v1.mjs"]);
 run("Manual catalog identity-review queue ingress", node, ["scripts/verify-data-offer14-manual-catalog-review-intake-v1.mjs"]);
+run("DATA-OFFER15 catalog source/offer closure", node, ["scripts/verify-data-offer15-catalog-source-offer-closure-v1.mjs"]);
 
 run("Face Lab archetype scoring contract", npm, ["run", "verify:face-lab-archetype-scoring"]);
 run("Face Lab target-axis contract", npm, ["run", "verify:face-lab-target-axis-definitions"]);

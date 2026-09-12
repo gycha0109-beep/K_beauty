@@ -1,0 +1,176 @@
+{
+  "schema_version": "data_offer15_catalog_source_offer_closure_v1",
+  "snapshot_date": "2026-09-13",
+  "source_main_sha": "96dd876465cb3bdbc477794c7235042865884a70",
+  "production": {
+    "project_id": "bygrczggxfuisupcevaz",
+    "snapshot_observed_at": "2026-09-13T04:01:12.547264+09:00",
+    "seller_observation_migration": {
+      "name": "seller_listing_observations_append_only_v1",
+      "production_version": "20260913035725",
+      "repository_path": "supabase/migrations/20260913035725_seller_listing_observations_append_only_v1.sql",
+      "sql_semantics_changed_by_alignment": false
+    },
+    "candidate": {
+      "candidate_id": "ccf23119-b067-4076-bb9e-01a83cf88fa0",
+      "review_status": "promoted",
+      "identity_resolution_state": "resolved",
+      "identity_resolution_version": "crawler-identity-resolution-v1",
+      "canonical_name": "다이브인 무기자차 마일드 선크림",
+      "canonical_brand": "토리든",
+      "service_category": "sunscreen",
+      "product_form": null,
+      "matched_product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "duplicate_of_product_id": null,
+      "promotion_version": "crawler-canonical-product-structural-adoption-v1"
+    },
+    "review": {
+      "review_id": "8bbe543d-2aae-4e30-8227-997e6e835eb7",
+      "status": "approved",
+      "rule_version": "manual-catalog-identity-review-v1",
+      "approved_product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "first_queued_at": "2026-09-13T03:51:28.256743+09:00",
+      "reviewed_at": "2026-09-13T03:53:45.699595+09:00"
+    },
+    "product": {
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "name": "다이브인 무기자차 마일드 선크림",
+      "brand": "토리든",
+      "category": "sunscreen",
+      "product_form": null,
+      "normalized_name": "다이브인 무기자차 마일드 선크림",
+      "normalized_brand": "토리든",
+      "external_source": "hwahae",
+      "external_type": "products",
+      "external_id": "1986669",
+      "source_url": "https://www.hwahae.com/en/products/1986669",
+      "created_at": "2026-09-13T03:53:45.699595+09:00"
+    },
+    "admission_requests": {
+      "manual_queue_request_id": "data-offer14-prod-queue-0eb6eeac-20260913",
+      "manual_queue_audit_id": "a12f7e17-3fcb-4b7c-ae6c-6f639f7c28bd",
+      "structural_adoption_request_id": "data-offer15-prod-adopt-96dd8764-20260913",
+      "structural_adoption_audit_id": "f2c01328-3f48-47ce-922d-0f54e7b888c7",
+      "promotion_action": "inserted"
+    },
+    "raw_seller_observation": {
+      "observation_id": "29bdfddf-f9cf-4223-a2e4-733aa6588471",
+      "seller": "torriden_official",
+      "listing_id": "136",
+      "listing_url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "price_amount": 17500,
+      "price_currency": "KRW",
+      "availability": "in_stock",
+      "observed_at": "2026-09-11T09:30:12.118+09:00",
+      "source_version": "torriden-public-product-html-v1",
+      "created_at": "2026-09-13T03:58:06.109614+09:00",
+      "capture_provenance": {
+        "workflow_run_id": 34546730051,
+        "artifact_id": 10179284044,
+        "merged_main_sha": "30500ec5ad4c0e1ccd939e1c78a918a0b7eb27fa",
+        "payload_sha256": "f56a3a4592c766f972da2cfcc1e529aca2eb68e657a22c82b244c2f8b727beb7",
+        "payload_bytes": 175733
+      }
+    },
+    "source_bindings": [
+      {
+        "binding_id": "aee6024e-b92c-4722-b4ae-7f128bdb298b",
+        "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+        "source_name": "hwahae",
+        "external_type": "products",
+        "external_id": "1986669",
+        "source_url": "https://www.hwahae.com/en/products/1986669",
+        "market_code": null,
+        "locale": null,
+        "binding_state": "resolved",
+        "binding_method": "manual_catalog_identity_convergence_v1",
+        "product_scope_state": "product",
+        "first_observed_at": "2026-06-22T01:05:36.822+09:00",
+        "last_observed_at": "2026-08-24T11:50:17.770+09:00",
+        "created_at": "2026-09-13T03:58:24.294991+09:00"
+      },
+      {
+        "binding_id": "4f514c27-9bf3-4829-9e6a-5c11be990d36",
+        "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+        "source_name": "torriden_official",
+        "external_type": "goods",
+        "external_id": "136",
+        "source_url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+        "market_code": "KR",
+        "locale": "ko-KR",
+        "binding_state": "resolved",
+        "binding_method": "manual_catalog_identity_convergence_v1",
+        "product_scope_state": "product",
+        "first_observed_at": "2026-09-11T09:30:12.118+09:00",
+        "last_observed_at": "2026-09-11T09:30:12.118+09:00",
+        "created_at": "2026-09-13T03:58:24.294991+09:00"
+      }
+    ],
+    "offer": {
+      "offer_id": "4e99c4ea-008a-4aa0-b8bc-12c71a90db1f",
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "seller_key": "torriden_official",
+      "seller_name": "torriden.com",
+      "source_name": "torriden_official",
+      "listing_id": "136",
+      "listing_url": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "price_amount": 17500,
+      "currency_code": "KRW",
+      "availability_state": "in_stock",
+      "market_code": "KR",
+      "locale": "ko-KR",
+      "offer_state": "current",
+      "product_scope_state": "product",
+      "first_observed_at": "2026-09-11T09:30:12.118+09:00",
+      "last_observed_at": "2026-09-11T09:30:12.118+09:00",
+      "created_at": "2026-09-13T03:58:24.294991+09:00"
+    },
+    "counts": {
+      "products": 165,
+      "product_source_bindings": 113,
+      "product_offers": 6,
+      "seller_listing_observations": 1,
+      "product_fact_current_global": 54,
+      "recommendation_logs": 1296
+    },
+    "product_fact_scope": {
+      "target_product_subject_count": 0,
+      "target_product_current_fact_count": 0,
+      "concurrent_trust_p21_product_id": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "concurrent_trust_p21_current_fact_count": 2,
+      "cross_product_fact_transfer": false,
+      "product_fact_write_performed_by_data_offer15": false
+    },
+    "offer_read_path": {
+      "database_views_referencing_product_offers": 0,
+      "database_functions_referencing_product_offers": 0,
+      "materialization_state": "complete",
+      "database_canonical_read_surface_state": "absent",
+      "next_authority_frontier": "governed_offer_read_path_required"
+    }
+  },
+  "authority_boundary": {
+    "catalog_admission_complete": true,
+    "product_creation_complete": true,
+    "source_binding_complete": true,
+    "official_offer_materialization_complete": true,
+    "raw_observation_provenance_persisted": true,
+    "product_fact_authority_granted": false,
+    "recommendation_semantic_authority_granted": false,
+    "offer_read_path_authority_complete": false
+  },
+  "authorized_deltas": {
+    "products": 1,
+    "product_source_bindings": 2,
+    "product_offers": 1,
+    "seller_listing_observations": 1,
+    "target_product_fact_current": 0,
+    "recommendation_logs": 0
+  },
+  "decision": {
+    "state": "catalog_admission_source_binding_offer_materialization_closed",
+    "offer_write_state": "closed",
+    "offer_read_path_state": "next_frontier",
+    "next_authority_gate": "governed_offer_read_path"
+  }
+}
