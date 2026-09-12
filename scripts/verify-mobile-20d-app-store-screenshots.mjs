@@ -12,7 +12,8 @@ const requireText = (text, marker, label) => {
   if (!text.includes(marker)) fail(`${label}: missing ${marker}`);
 };
 
-const acceptedPortraitSizes = new Set(["1260x2736", "1290x2796", "1320x2868"]);
+const requiredPortraitSize = "1290x2796";
+const nativeCaptureSizes = new Set(["1260x2736", "1290x2796", "1320x2868"]);
 const frames = ["home", "analyze", "results", "diary"];
 const locales = ["en-US", "ko"];
 
@@ -28,12 +29,16 @@ function verifySource() {
   requireText(route, 'edges={["top", "left", "right", "bottom"]}', "iOS store-capture safe-area guard");
   assert.equal(Object.prototype.hasOwnProperty.call(appJson.expo, "EXPO_PUBLIC_STORE_CAPTURE_MODE"), false);
 
-  for (const size of acceptedPortraitSizes) requireText(capture, size, "accepted 6.9-inch size contract");
+  for (const size of nativeCaptureSizes) requireText(capture, size, "supported native simulator capture size");
+  requireText(capture, "FINAL_WIDTH=1290", "exact submission width");
+  requireText(capture, "FINAL_HEIGHT=2796", "exact submission height");
+  requireText(capture, 'sips -z "$FINAL_HEIGHT" "$FINAL_WIDTH"', "exact screenshot normalization");
+  requireText(capture, 'test "$dims" = "${FINAL_WIDTH}x${FINAL_HEIGHT}"', "exact output size assertion");
   for (const frame of frames) requireText(capture, `"${frame}"`, `capture frame ${frame}`);
   requireText(capture, 'capture_locale "en-US"', "English localization capture");
   requireText(capture, 'capture_locale "ko"', "Korean localization capture");
   requireText(capture, 'xcrun simctl io "$UDID" screenshot "$raw"', "simulator screenshot capture");
-  requireText(capture, 'sips -s format jpeg "$raw" --out "$out"', "opaque JPEG packaging");
+  requireText(capture, 'sips -s format jpeg "$normalized" --out "$out"', "opaque JPEG packaging");
   requireText(capture, 'EXPO_PUBLIC_STORE_CAPTURE_MODE=1', "bounded fixture environment");
 
   requireText(workflow, 'runs-on: macos-26', "iOS runner");
@@ -49,7 +54,7 @@ function verifySource() {
   assert.equal(contract.ipadRequired, false);
   assert.deepEqual(contract.locales, locales);
   assert.deepEqual(contract.frames, frames);
-  assert.deepEqual(new Set(contract.acceptedPortraitSizes), acceptedPortraitSizes);
+  assert.deepEqual(contract.acceptedPortraitSizes, [requiredPortraitSize]);
   assert.equal(contract.imageFormat, "jpeg");
   assert.equal(contract.alphaAllowed, false);
   assert.equal(contract.sourceContractStatus, "repository_implemented");
@@ -106,7 +111,7 @@ function verifyArtifact(dirArg) {
       const buffer = fs.readFileSync(absolute);
       assert.ok(buffer.length > 20_000, `${relative}: suspiciously small JPEG`);
       const { width, height } = jpegDimensions(buffer);
-      assert.ok(acceptedPortraitSizes.has(`${width}x${height}`), `${relative}: unsupported size ${width}x${height}`);
+      assert.equal(`${width}x${height}`, requiredPortraitSize, `${relative}: expected ${requiredPortraitSize}, got ${width}x${height}`);
       screens.push({
         locale,
         order: index + 1,
@@ -131,7 +136,7 @@ function verifyArtifact(dirArg) {
     deviceFamily: "iphone",
     locales,
     frames,
-    acceptedPortraitSizes: [...acceptedPortraitSizes],
+    acceptedPortraitSizes: [requiredPortraitSize],
     imageFormat: "jpeg",
     alphaAllowed: false,
     screenshotCount: screens.length,

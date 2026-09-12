@@ -14,6 +14,8 @@ WORK_ROOT="$TEMP_BASE/bejewely-mobile-20d-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_A
 DERIVED_DATA="$WORK_ROOT/derived-data"
 METRO_LOG="$WORK_ROOT/metro.log"
 APP_PATH="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/BEJEWELY.app"
+FINAL_WIDTH=1290
+FINAL_HEIGHT=2796
 METRO_PID=""
 UDID=""
 
@@ -174,16 +176,33 @@ set_locale() {
   preapprove_scheme
 }
 
-assert_submission_size() {
+image_dimensions() {
   local file="$1"
-  local width height dims
+  local width height
   width="$(sips -g pixelWidth "$file" | awk '/pixelWidth/{print $2}')"
   height="$(sips -g pixelHeight "$file" | awk '/pixelHeight/{print $2}')"
-  dims="${width}x${height}"
+  printf '%sx%s\n' "$width" "$height"
+}
+
+assert_native_capture_size() {
+  local file="$1"
+  local dims
+  dims="$(image_dimensions "$file")"
   case "$dims" in
     1260x2736|1290x2796|1320x2868) ;;
-    *) echo "Unsupported App Store 6.9-inch screenshot size: $dims ($file)" >&2; exit 1 ;;
+    *) echo "Unsupported native App Store capture size: $dims ($file)" >&2; exit 1 ;;
   esac
+  printf 'MOBILE_20D_NATIVE_SCREEN_SIZE=PASS file=%s size=%s\n' "$(basename "$file")" "$dims"
+}
+
+assert_submission_size() {
+  local file="$1"
+  local dims
+  dims="$(image_dimensions "$file")"
+  test "$dims" = "${FINAL_WIDTH}x${FINAL_HEIGHT}" || {
+    echo "App Store screenshot must be exactly ${FINAL_WIDTH}x${FINAL_HEIGHT}: $dims ($file)" >&2
+    exit 1
+  }
   test "$(stat -f%z "$file")" -gt 20000
   printf 'MOBILE_20D_SCREEN_SIZE=PASS file=%s size=%s\n' "$(basename "$file")" "$dims"
 }
@@ -193,6 +212,7 @@ capture_jpeg() {
   local dir="$FINAL_DIR/$locale"
   local out="$dir/${order}-${frame}.jpg"
   local raw="$WORK_ROOT/${locale}-${order}-${frame}.png"
+  local normalized="$WORK_ROOT/${locale}-${order}-${frame}-1290x2796.png"
   if [[ -z "$url" ]]; then
     xcrun simctl launch --terminate-running-process "$UDID" "$BUNDLE_ID" >/dev/null
   else
@@ -202,8 +222,10 @@ capture_jpeg() {
   fi
   sleep 7
   xcrun simctl io "$UDID" screenshot "$raw" >/dev/null
-  sips -s format jpeg "$raw" --out "$out" >/dev/null
-  rm -f "$raw"
+  assert_native_capture_size "$raw"
+  sips -z "$FINAL_HEIGHT" "$FINAL_WIDTH" "$raw" --out "$normalized" >/dev/null
+  sips -s format jpeg "$normalized" --out "$out" >/dev/null
+  rm -f "$raw" "$normalized"
   assert_submission_size "$out"
 }
 
