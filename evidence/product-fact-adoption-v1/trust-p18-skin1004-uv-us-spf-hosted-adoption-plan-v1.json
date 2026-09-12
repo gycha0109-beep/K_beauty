@@ -1,0 +1,221 @@
+{
+  "admin_actor": {
+    "is_active": true,
+    "role": "admin_owner",
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99"
+  },
+  "authority": {
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "source_recovery_version": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "upstream_p17_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p17-skin1004-uv-us-market-applicability-recovery-v1.json",
+    "upstream_p17_blob_sha": "b204ed68eadacecf384b82e256f6b6a4d67eb8b7",
+    "upstream_p17_merge_sha": "33d03ea91b59b314f0d9725905e812767ebc1b5c",
+    "upstream_p17_version": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1"
+  },
+  "exact_scope": {
+    "bindings": 1,
+    "eligible_product_ids": [
+      "fdf06871-db8e-4e73-a48c-c057c5ce925d"
+    ],
+    "fact_keys": [
+      "spf_value"
+    ],
+    "products": 1,
+    "propositions": 1,
+    "sources": 1,
+    "subjects": 1
+  },
+  "hosted_prestate": {
+    "bindings": 22,
+    "checked_at": "2026-09-13T02:17:24.159555+09:00",
+    "confirmations": 51,
+    "current": 51,
+    "evidence": 51,
+    "evidence_links": 51,
+    "fact_instances": 51,
+    "open_assignment_rows": 0,
+    "review_assignments": 51,
+    "source_identity_rows": 0,
+    "source_locator_rows": 0,
+    "sources": 22,
+    "spf_evidence_digest_rows": 0,
+    "spf_proposition_current": 0,
+    "subject_semantic_key_rows": 0,
+    "subjects": 21,
+    "target_subjects": 0
+  },
+  "invariants": {
+    "broad_spectrum_to_pa_conversion": false,
+    "cross_formula_pa_transfer": false,
+    "direct_product_fact_dml": false,
+    "global_scope_inference": false,
+    "kr_scope_inference": false,
+    "new_fact_kind": false,
+    "recommendation_or_ranking_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "third_party_positive_fact_support": false,
+    "uva_label_adoption_planned": false
+  },
+  "next_gate": {
+    "eligible_fact_keys": [
+      "spf_value"
+    ],
+    "requires_all_planned_confirmation_preflights_ready": true,
+    "requires_exact_head_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_merge": true,
+    "requires_merged_main_ci": true,
+    "status": "PHASE_A_FREEZE_ONLY"
+  },
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "phase_a_expected_writes": 0,
+  "phase_b_contract": {
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "binding_state": "exact_subject_match",
+    "direct_table_dml": false,
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ],
+    "runtime_ids": "server_returned_only",
+    "scope_relation": "equivalent",
+    "subject_registration_required": true
+  },
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "bindings": 1,
+    "confirmations": 1,
+    "current": 1,
+    "evidence": 1,
+    "evidence_links": 1,
+    "fact_instances": 1,
+    "review_assignments": 1,
+    "sources": 1,
+    "subjects": 1
+  },
+  "propositions": [
+    {
+      "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subject_semantic_key": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+      "source_ref": "trust-p18-source:fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "fact_key": "spf_value",
+      "raw_claim": "SPF50",
+      "value": 50,
+      "scope": {
+        "market": "US",
+        "variant": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML"
+      },
+      "qualifier": {
+        "plus_modifier": "none"
+      },
+      "proposition_key": "6b04db0623d15da37c2cfb58168a41cc00dd735c775d28f7f7a2aa715122075a",
+      "canonical_evidence_digest": "d4d15e6142f9c6a64b4cf7531169ef0aeeb49d2b6edc21650d5e361c8415eb6c",
+      "value_type": "number",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    }
+  ],
+  "request_ids": {
+    "spf_confirmation": "trust-p18-skin1004-us-spf-confirm-20260913-v1",
+    "spf_ingest": "trust-p18-skin1004-us-spf-evidence-20260913-v1",
+    "spf_review_ready": "trust-p18-skin1004-us-spf-review-ready-20260913-v1",
+    "spf_review_under": "trust-p18-skin1004-us-spf-review-under-20260913-v1",
+    "subject": "trust-p18-skin1004-us-subject-20260913-v1"
+  },
+  "source_main_sha": "5190f2a0f34a79937806a840de72918bbb3b98e4",
+  "source_observation": {
+    "version": "trust-p18-skin1004-us-spf-source-observation-v1",
+    "upstream_p17_artifact": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+    "direct_fact_source": {
+      "canonical_locator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "publisher": "SKIN1004",
+      "source_kind": "official_product_page",
+      "market": "US",
+      "presentation_name": "Hyalu-Cica Water-Fit Sun Serum UV",
+      "fill_size_ml": 50,
+      "headline": "Hydrating Daily SPF50 Sun Serum",
+      "direct_spf_claim": "SPF50 broad-spectrum coverage",
+      "normalized_spf_claim": "SPF50",
+      "active_ingredients": [
+        "Avobenzone 2.7%",
+        "Homosalate 13.6%",
+        "Octisalate 4.5%",
+        "Octocrylene 9%"
+      ],
+      "active_ingredient_order_sha256": "c739c0ae4b3250451185c0f867adb4b23e73c368648f26546c1b1f7440bbd04f"
+    },
+    "market_context_source": {
+      "canonical_locator": "https://skin1004-us.myshopify.com/pages/stores",
+      "publisher": "SKIN1004",
+      "source_kind": "official_country_region_retailer_directory",
+      "market": "US",
+      "directory_heading": "AMERICA",
+      "country_region": "US",
+      "relationship": "Official Mall / Authorized Seller"
+    },
+    "scope_adjudication": {
+      "market_applicability": "US",
+      "kr_scope_inference": false,
+      "global_scope_inference": false
+    },
+    "uva_boundary": {
+      "observed_claim": "Broad Spectrum",
+      "registry_admissible": false,
+      "broad_spectrum_to_pa_conversion": false,
+      "cross_formula_pa_transfer": false
+    }
+  },
+  "sources": [
+    {
+      "source_ref": "trust-p18-source:fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "canonical_locator": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "publisher": "SKIN1004",
+      "source_kind": "official_product_page",
+      "source_market": "US",
+      "binding_state": "exact_subject_match",
+      "binding_scope_relation": "equivalent",
+      "content_digest": "e30e828daffd28c7656b63e8bf0bfa2555c9590ab9647c29eba6c2695a6c0603",
+      "digest_basis": "trust-p18-skin1004-us-spf-source-observation-v1-not-live-page-bytes",
+      "companion_market_source_urls": [
+        "https://skin1004-us.myshopify.com/pages/stores"
+      ],
+      "accessed_at": "2026-09-13T02:17:24.159555+09:00"
+    }
+  ],
+  "stage": "TRUST-P18",
+  "subjects": [
+    {
+      "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+      "subject_semantic_key": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+      "variant_key": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+      "formulation_revision_key": "trust-p17-skin1004-uv-us-current",
+      "formulation_label": "SKIN1004 Hyalu-Cica Water-Fit Sun Serum UV 50ml",
+      "market_applicability": "US",
+      "region_applicability": null,
+      "identity_status": "resolved",
+      "current_state": "current",
+      "valid_from": null,
+      "valid_to": null
+    }
+  ],
+  "version": "trust-p18-skin1004-uv-us-spf-hosted-adoption-plan-v1",
+  "plan_content_sha256": "e0a6d654b85179b1031a6c95b13d28d731747b831bfeeb57a66b4a5527f95b96"
+}
