@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+import crypto from "node:crypto";
+import assert from "node:assert/strict";
+
+const PATH="evidence/product-fact-adoption-v1/trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-execution-v1.json";
+const x=JSON.parse(fs.readFileSync(PATH,"utf8"));
+const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==="object"?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
+const digest=v=>crypto.createHash("sha256").update(JSON.stringify(stable(v))).digest("hex");
+
+assert.equal(x.version,"trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-execution-v1");
+assert.equal(x.stage,"TRUST-P22");
+assert.equal(x.phase,"B_CONTROLLED_PRODUCTION_EXECUTION_CLOSEOUT");
+assert.equal(x.status,"PRODUCTION_CONFIRMED");
+assert.equal(x.authority.plan_merge_sha,"40bbacc4e7fc3b35cf523925a6e10ccf8643cfe0");
+assert.equal(x.authority.plan_blob_sha,"2c7a205bd640ee2d49778d4a40311691d9cd5b65");
+assert.equal(x.authority.plan_content_sha256,"4cd5ceeec8fba71974725da9510e5ed01c358f176b8f2e617ac16b6972f13e5f");
+assert.equal(x.target.product_id,"08b85f37-b1fa-42d7-893a-0d4facb17878");
+assert.equal(x.target.subject_semantic_key,"e9b46ca78c3cc630403d66bb01b1d25d665f21941e2d430629d1c67a54578161");
+assert.equal(x.execution_policy.controlled_rpc_only,true);
+assert.equal(x.execution_policy.direct_table_dml,false);
+assert.equal(x.execution_policy.partial_execution_detected_and_reconciled_before_resume,true);
+assert.equal(x.execution_policy.prior_controlled_steps_verified_via_admin_audit_logs,true);
+assert.equal(x.execution_policy.all_planned_confirmation_preflights_ready_before_any_confirm,true);
+assert.equal(x.execution_policy.confirmations_executed_in_one_sql_statement,true);
+assert.equal(x.execution_policy.third_party_positive_fact_support,false);
+assert.equal(x.execution_policy.cross_product_inference,false);
+assert.deepEqual(x.counts.planned_delta,{subjects:1,sources:1,bindings:1,evidence:2,fact_instances:2,evidence_links:2,review_assignments:2,confirmations:2,current:2});
+assert.deepEqual(x.counts.poststate,{subjects:24,sources:25,bindings:25,evidence:56,fact_instances:56,evidence_links:56,review_assignments:56,confirmations:56,current:56,target_subjects:1,target_current:2,target_spf_current:1,target_uva_current:1,target_confirmed_assignments:2});
+assert.equal(x.runtime.subject_id,"5be00a86-82b4-4f42-af65-4c0d3b8324d4");
+assert.equal(x.runtime.source_id,"f493aa44-75dc-40b8-a179-b7d748bc7989");
+assert.equal(x.runtime.binding_id,"c70aadca-aecb-409a-9995-71016a2ef9d7");
+assert.equal(x.runtime.spf_value.evidence_id,"598e08aa-707e-4eca-b871-7f81463eb31b");
+assert.equal(x.runtime.spf_value.fact_instance_id,"71d576fe-22a8-43f6-9719-2caf2e2d099e");
+assert.equal(x.runtime.spf_value.confirmation_id,"1a23f157-42b5-4a70-a27a-85380b3ce0c2");
+assert.equal(x.runtime.spf_value.payload_digest,"3240ce1e29ef43dc89824ec412f80ba9bee356358f27174e4dbd8753675831a1");
+assert.equal(x.runtime.spf_value.prestate_digest,"e941ed510d1223940bd2d91cbe2f83f5d0e12dd5a00d6240aeddf74755a872e5");
+assert.equal(x.runtime.spf_value.result_digest,"84a3861f05939d6cf103162fa88eacbcf187420940b6a6ce918c7befa21fd4bd");
+assert.equal(x.runtime.uva_label.evidence_id,"46f66326-ea73-4c2b-825c-ab078def87c6");
+assert.equal(x.runtime.uva_label.fact_instance_id,"d8effc20-117a-4690-a414-dd67a2523325");
+assert.equal(x.runtime.uva_label.confirmation_id,"3707e210-8f3b-4b52-b102-401735340da1");
+assert.equal(x.runtime.uva_label.payload_digest,"1dae6ced2383c6c600628be5cfd46cc773617e32cfd07fff5436be8cad710dbd");
+assert.equal(x.runtime.uva_label.prestate_digest,"685052c45b22c26be1e230767acd77f7e3920a8556f722fec6428a2736c32d5b");
+assert.equal(x.runtime.uva_label.result_digest,"28750974e6ade063e23a106218fc3488379483d9c7a88947c16e37b2fd8d6d9e");
+assert.equal(x.closure.planned_delta_matched,true);
+assert.equal(x.closure.spf_current,true);
+assert.equal(x.closure.uva_current,true);
+assert.equal(x.closure.result,"TRUST_P22_PRODUCTION_ADOPTION_CONFIRMED");
+const {execution_content_sha256,...body}=x;
+assert.equal(digest(body),execution_content_sha256);
+assert.equal(execution_content_sha256,"16c8119454f137abd74e0912bef88aa86ad65ec01455d70c3ceeb0eb0d8762cd");
+
+console.log(JSON.stringify({ok:true,stage:x.stage,result:x.closure.result,poststate:x.counts.poststate,execution_content_sha256},null,2));
