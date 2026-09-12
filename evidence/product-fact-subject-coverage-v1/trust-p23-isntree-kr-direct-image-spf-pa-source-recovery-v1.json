@@ -1,0 +1,146 @@
+{
+  "version": "trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1",
+  "stage": "TRUST-P23",
+  "phase": "RESEARCH_ONLY_KR_DIRECT_FIRST_PARTY_IMAGE_FACT_SOURCE_RECOVERY",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "626fa98f29d7f6bd128abce67f9c342d17bad605",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "researched_at": "2026-09-13T05:20:18.333944+09:00",
+    "upstream_p19_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.json",
+    "upstream_p19_version": "trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1",
+    "research_method": "fresh first-party Isntree KR exact product page plus page-linked official detail image review"
+  },
+  "target": {
+    "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+    "brand": "이즈앤트리",
+    "brand_en": "Isntree",
+    "catalog_name": "히아루론산 워터리 선젤",
+    "official_kr_name": "히아루론산 워터리 선 젤 50ml",
+    "size_ml": 50,
+    "market": "KR",
+    "prior_disposition": "FIRST_PARTY_KR_FORMULATION_OR_DIRECT_SPF_PA_SOURCE_RECOVERY_REQUIRED"
+  },
+  "production_prestate": {
+    "checked_at": "2026-09-13T05:20:18.333944+09:00",
+    "global_counts": {
+      "subjects": 24,
+      "sources": 25,
+      "bindings": 25,
+      "evidence": 56,
+      "fact_instances": 56,
+      "evidence_links": 56,
+      "review_assignments": 56,
+      "confirmations": 56,
+      "current": 56
+    },
+    "subject_count": 0,
+    "current_count": 0,
+    "kr_page_locator_rows": 0,
+    "detail_asset_locator_rows": 0
+  },
+  "first_party_sources": [
+    {
+      "url": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "publisher": "(주)이즈앤트리",
+      "source_kind": "official_kr_store_product_page",
+      "market": "KR",
+      "role": "exact_kr_product_and_detail_asset_parent",
+      "current_observation": {
+        "name": "히아루론산 워터리 선 젤 50ml",
+        "size_ml": 50,
+        "domestic_delivery_visible": true,
+        "hashtags": [
+          "#유기자차",
+          "#보습케어"
+        ],
+        "detail_asset_directly_linked": true,
+        "direct_detail_asset_url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg"
+      }
+    },
+    {
+      "url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg",
+      "publisher": "(주)이즈앤트리",
+      "source_kind": "official_kr_product_detail_image_asset",
+      "market": "KR",
+      "role": "direct_spf_pa_fact_source",
+      "current_observation": {
+        "product_name_on_package": "HYALURONIC ACID WATERY SUN GEL",
+        "fill_size_ml": 50,
+        "direct_claim": "SPF50+ PA++++",
+        "additional_package_marking": "UVA/UVB",
+        "claim_rendered_on_product_package": true,
+        "claim_repeated_in_detail_graphic": true
+      }
+    }
+  ],
+  "identity_adjudication": {
+    "status": "RESOLVED_FOR_PLAN",
+    "kr_exact_product_presence": "RECOVERED",
+    "source_asset_relation": "DIRECTLY_LINKED_FROM_EXACT_KR_PRODUCT_PAGE",
+    "catalog_to_official_relation": "DISPLAY_SPACING_VARIANT_SAME_50ML_PRODUCT",
+    "basis": [
+      "the official KR product page names 히아루론산 워터리 선 젤 50ml",
+      "the same official KR product page directly links the hyaluronic_acid_sun_gel_4.jpg detail asset",
+      "the linked detail asset depicts the HYALURONIC ACID WATERY SUN GEL 50ml package"
+    ]
+  },
+  "formulation_adjudication": {
+    "status": "DIRECT_KR_PRESENTATION_FACT_SOURCE_RECOVERED",
+    "subject_scope": "CURRENT_KR_HYALURONIC_ACID_WATERY_SUN_GEL_50ML_PRESENTATION",
+    "same_formulation_bridge_required": false,
+    "cross_market_formula_transfer": false,
+    "global_formula_dependency": false,
+    "basis": [
+      "SPF and PA are read directly from a first-party detail asset linked by the exact KR product page",
+      "no Global-to-KR ingredient or formulation bridge is needed for these direct package claims",
+      "no claim is transferred from a different product or market"
+    ]
+  },
+  "fact_recovery": {
+    "spf_value": {
+      "status": "RECOVERED_SUPPORTED",
+      "raw_claim": "SPF50+",
+      "value_number": 50,
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "source_url": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "evidence_asset_url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg",
+      "authority": "product_specific_primary",
+      "confidence": "high"
+    },
+    "uva_label": {
+      "status": "RECOVERED_SUPPORTED",
+      "raw_claim": "PA++++",
+      "value_enum": "PA++++",
+      "qualifier": {},
+      "source_url": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "evidence_asset_url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg",
+      "authority": "product_specific_primary",
+      "confidence": "high"
+    }
+  },
+  "adjudication": {
+    "result": "KR_EXACT_PRODUCT_AND_DIRECT_SPF_PA_IMAGE_SOURCE_RECOVERED",
+    "subject_identity_research": "RESOLVED_FOR_PLAN",
+    "spf_value": "RECOVERED_SUPPORTED",
+    "uva_label": "RECOVERED_SUPPORTED",
+    "production_write_authorized": false,
+    "next_gate": "SEPARATE_DETERMINISTIC_HOSTED_ADOPTION_PLAN"
+  },
+  "invariants": {
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_dml": false,
+    "subject_registration_performed": false,
+    "schema_or_rpc_mutation": false,
+    "registry_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "third_party_positive_fact_support": false,
+    "cross_market_formula_transfer": false,
+    "spf_inference": false,
+    "pa_inference": false
+  },
+  "research_content_sha256": "dd8427421e06ff22a72aec067e066347fde2df9e084ed271c6b19addbaf52508"
+}
