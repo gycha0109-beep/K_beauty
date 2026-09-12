@@ -18,9 +18,7 @@
   ],
   "screenshotCountPerLocale": 4,
   "acceptedPortraitSizes": [
-    "1260x2736",
-    "1290x2796",
-    "1320x2868"
+    "1290x2796"
   ],
   "displayClass": "6.9-inch",
   "imageFormat": "jpeg",
@@ -31,7 +29,8 @@
     "fixtureBoundary": "Results and Diary reuse production presentation components with the existing dev-only EXPO_PUBLIC_STORE_CAPTURE_MODE fixture route; Home and Analyze use normal production routes.",
     "workflow": ".github/workflows/mobile-20d-app-store-screenshots.yml",
     "captureScript": "scripts/capture-mobile-20d-app-store-screenshots.sh",
-    "verifier": "scripts/verify-mobile-20d-app-store-screenshots.mjs"
+    "verifier": "scripts/verify-mobile-20d-app-store-screenshots.mjs",
+    "finalPixelNormalization": "Native simulator captures are normalized to exactly 1290x2796 before JPEG packaging and verification."
   },
   "submissionPackage": {
     "root": "apps/mobile/.mobile-20d-app-store-package",
