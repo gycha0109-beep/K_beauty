@@ -1,0 +1,36 @@
+name: TRUST-P20 Torriden KR Identity SPF-PA Source Recovery
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.json"
+      - "docs/evidence/trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.md"
+      - "scripts/product-evidence/verify-trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.mjs"
+      - ".github/workflows/trust-p20-torriden-kr-identity-spf-pa-source-recovery.yml"
+  push:
+    branches: [main]
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.json"
+      - "docs/evidence/trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.md"
+      - "scripts/product-evidence/verify-trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.mjs"
+      - ".github/workflows/trust-p20-torriden-kr-identity-spf-pa-source-recovery.yml"
+permissions:
+  contents: read
+jobs:
+  verify-trust-p20-torriden-kr-identity-spf-pa-source-recovery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact head
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -z "$(git status --porcelain)"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify TRUST-P20 Torriden recovery
+        run: node scripts/product-evidence/verify-trust-p20-torriden-kr-identity-spf-pa-source-recovery-v1.mjs
