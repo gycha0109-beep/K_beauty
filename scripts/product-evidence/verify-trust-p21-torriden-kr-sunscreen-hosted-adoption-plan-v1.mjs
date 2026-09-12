@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+import assert from "node:assert/strict";
+import {C,buildCore,digest} from "./trust-p21-torriden-kr-sunscreen-hosted-adoption-plan-v1.mjs";
+
+const PLAN="evidence/product-fact-adoption-v1/trust-p21-torriden-kr-sunscreen-hosted-adoption-plan-v1.json";
+const frozen=JSON.parse(fs.readFileSync(PLAN,"utf8"));
+const p20=JSON.parse(fs.readFileSync(C.p20Path,"utf8"));
+const core=buildCore(p20);
+
+assert.equal(frozen.version,C.version);
+assert.equal(frozen.stage,"TRUST-P21");
+assert.equal(frozen.phase,"A_DETERMINISTIC_PLAN_FREEZE");
+assert.equal(frozen.source_main_sha,C.sourceMain);
+assert.equal(frozen.authority.upstream_p20_merge_sha,C.p20Merge);
+assert.equal(frozen.authority.upstream_p20_blob_sha,C.p20Blob);
+assert.equal(frozen.authority.upstream_p20_version,C.p20Version);
+assert.equal(frozen.authority.registry_version,C.registry);
+assert.equal(frozen.authority.subject_serializer_version,C.subjectSerializer);
+assert.equal(frozen.authority.proposition_serializer_version,C.propositionSerializer);
+assert.equal(frozen.authority.fusion_policy_version,C.fusion);
+assert.deepEqual(frozen.subjects,[core.subject]);
+assert.deepEqual(frozen.source_observation,core.sourceObservation);
+assert.deepEqual(frozen.sources,[core.source]);
+assert.deepEqual(frozen.propositions,core.propositions);
+assert.equal(core.subject.subject_semantic_key,"3f1b752bc8e1c7829f04bbc11fec3dd9b0c6646e481a3088d4214ec3b7dac03f");
+assert.equal(core.source.content_digest,"4ae0a6ccaa7cb8870a05326e68cc1a327bff562d3fee2e6a02c256eba397dcbd");
+assert.equal(core.source.binding_state,"exact_subject_match");
+assert.equal(core.source.binding_scope_relation,"equivalent");
+assert.equal(core.propositions[0].proposition_key,"6e87dc1448e6518a599a3e17e62e98e1c13e4a73ab01ab5596f8c8df34521385");
+assert.equal(core.propositions[0].canonical_evidence_digest,"a9b7ecc5f5e9523ad44db9b13ecd2f015423e60ccac3488cd215d7ec76a5f7ea");
+assert.equal(core.propositions[1].proposition_key,"06a9b17ca27c9cb350f75f8f20db7507c1be52f0063896d64f1a3ab22425d1bd");
+assert.equal(core.propositions[1].canonical_evidence_digest,"6012054072e89a502d617bc3009552c6497a3b5e5a01cf97b05413daa7529933");
+assert.equal(frozen.phase_a_expected_writes,0);
+assert.equal(frozen.phase_b_execution_authorized,false);
+assert.deepEqual(frozen.phase_b_planned_delta,{subjects:1,sources:1,bindings:1,evidence:2,fact_instances:2,evidence_links:2,review_assignments:2,confirmations:2,current:2});
+assert.equal(frozen.phase_b_contract.binding_state,"exact_subject_match");
+assert.equal(frozen.phase_b_contract.scope_relation,"equivalent");
+assert.equal(frozen.phase_b_contract.all_planned_confirmation_preflights_before_any_confirm,true);
+assert.equal(frozen.phase_b_contract.runtime_ids,"server_returned_only");
+assert.equal(frozen.phase_b_contract.direct_table_dml,false);
+assert.deepEqual(frozen.phase_b_contract.rpc_sequence,["admin_register_product_fact_subject_v1","admin_ingest_product_fact_evidence_v1","admin_prepare_product_fact_review_v1","admin_preflight_product_fact_confirmation_v1","admin_confirm_product_fact_v1"]);
+for(const k of ["target_subjects","subject_semantic_key_rows","source_locator_rows","source_identity_rows","spf_evidence_digest_rows","uva_evidence_digest_rows","spf_proposition_current","uva_proposition_current","open_assignment_rows","confirmation_request_collisions"]) assert.equal(frozen.hosted_prestate[k],0,`prestate ${k}`);
+assert.equal(frozen.invariants.cross_product_inference,false);
+assert.equal(frozen.invariants.historical_pre_upgrade_formula_equivalence_asserted,false);
+assert.equal(frozen.invariants.mild_mineral_product_claim_transfer,false);
+assert.equal(frozen.invariants.current_goods252_direct_claim_only,true);
+assert.equal(frozen.next_gate.status,"PHASE_A_FREEZE_ONLY");
+assert.deepEqual(frozen.next_gate.eligible_fact_keys,["spf_value","uva_label"]);
+const {plan_content_sha256,...body}=frozen;
+assert.equal(digest(body),plan_content_sha256);
+assert.equal(plan_content_sha256,"4919e32931538bc284d33b9db63fe85ad8f9a241a9b3e405f48ecae0944a9428");
+
+console.log(JSON.stringify({ok:true,stage:frozen.stage,subject_key:core.subject.subject_semantic_key,source_digest:core.source.content_digest,spf_proposition:core.propositions[0].proposition_key,uva_proposition:core.propositions[1].proposition_key,phase_a_writes:frozen.phase_a_expected_writes,plan_content_sha256:frozen.plan_content_sha256},null,2));
