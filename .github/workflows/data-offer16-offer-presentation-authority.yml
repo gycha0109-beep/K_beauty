@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql"
+      - "supabase/migrations/20260913052338_data_offer16_offer_presentation_authority_read_v1.sql"
       - "tests/fixtures/data-offer16/**"
       - "lib/product-offer-read-path.js"
       - "lib/server/product-offer-read-service.js"
@@ -16,7 +16,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql"
+      - "supabase/migrations/20260913052338_data_offer16_offer_presentation_authority_read_v1.sql"
       - "tests/fixtures/data-offer16/**"
       - "lib/product-offer-read-path.js"
       - "lib/server/product-offer-read-service.js"
@@ -84,7 +84,7 @@ jobs:
           mkdir -p "${migration_dir}"
           cp tests/fixtures/data-offer16/20260910100000_data_offer16_offer_presentation_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260910103000_product_offers_shadow_v1.sql "${migration_dir}/"
-          cp supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260913052338_data_offer16_offer_presentation_authority_read_v1.sql "${migration_dir}/"
 
       - name: Start and reset isolated Supabase
         shell: bash
