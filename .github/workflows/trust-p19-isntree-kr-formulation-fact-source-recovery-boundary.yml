@@ -1,0 +1,36 @@
+name: TRUST-P19 Isntree KR Formulation Fact Source Recovery Boundary
+on:
+  pull_request:
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.json"
+      - "docs/evidence/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.md"
+      - "scripts/product-evidence/verify-trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.mjs"
+      - ".github/workflows/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary.yml"
+  push:
+    branches: [main]
+    paths:
+      - "evidence/product-fact-subject-coverage-v1/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.json"
+      - "docs/evidence/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.md"
+      - "scripts/product-evidence/verify-trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.mjs"
+      - ".github/workflows/trust-p19-isntree-kr-formulation-fact-source-recovery-boundary.yml"
+permissions:
+  contents: read
+jobs:
+  verify-trust-p19-isntree-kr-formulation-fact-source-recovery-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Attest exact head
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          test -z "$(git status --porcelain)"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify TRUST-P19 recovery boundary
+        run: node scripts/product-evidence/verify-trust-p19-isntree-kr-formulation-fact-source-recovery-boundary-v1.mjs
