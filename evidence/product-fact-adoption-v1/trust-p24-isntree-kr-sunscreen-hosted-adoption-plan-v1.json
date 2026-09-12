@@ -1,0 +1,233 @@
+{
+  "version": "trust-p24-isntree-kr-sunscreen-hosted-adoption-plan-v1",
+  "stage": "TRUST-P24",
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "source_main_sha": "b6a90a2cfb89d9e54b0fddd046a1c06c221475ff",
+  "authority": {
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1",
+    "source_recovery_version": "trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1",
+    "upstream_p23_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1.json",
+    "upstream_p23_version": "trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1",
+    "upstream_p23_merge_sha": "b6a90a2cfb89d9e54b0fddd046a1c06c221475ff",
+    "upstream_p23_blob_sha": "3aeeba898a3586917ab511b3dd2db02c52ff4b78"
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "exact_scope": {
+    "products": 1,
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "propositions": 2,
+    "eligible_product_ids": [
+      "336bb533-0fe4-4380-8b9f-ab16fb24b807"
+    ],
+    "fact_keys": [
+      "spf_value",
+      "uva_label"
+    ]
+  },
+  "hosted_prestate": {
+    "checked_at": "2026-09-13T05:27:21.112198+09:00",
+    "subjects": 24,
+    "sources": 25,
+    "bindings": 25,
+    "evidence": 56,
+    "fact_instances": 56,
+    "evidence_links": 56,
+    "review_assignments": 56,
+    "confirmations": 56,
+    "current": 56,
+    "target_subjects": 0,
+    "subject_semantic_key_rows": 0,
+    "source_locator_rows": 0,
+    "source_identity_rows": 0,
+    "spf_evidence_digest_rows": 0,
+    "uva_evidence_digest_rows": 0,
+    "spf_proposition_current": 0,
+    "uva_proposition_current": 0,
+    "open_assignment_rows": 0,
+    "confirmation_request_collisions": 0
+  },
+  "phase_a_expected_writes": 0,
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "evidence": 2,
+    "fact_instances": 2,
+    "evidence_links": 2,
+    "review_assignments": 2,
+    "confirmations": 2,
+    "current": 2
+  },
+  "phase_b_contract": {
+    "subject_registration_required": true,
+    "binding_state": "exact_subject_match",
+    "scope_relation": "equivalent",
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "runtime_ids": "server_returned_only",
+    "direct_table_dml": false,
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ]
+  },
+  "subjects": [
+    {
+      "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "subject_semantic_key": "31b72283f5cd817d0dd41f62ef8ae4eb149ad8393cdd40810f2e0ad4eb797cd0",
+      "variant_key": "HYALURONIC_ACID_WATERY_SUN_GEL_KR_50ML",
+      "formulation_revision_key": "trust-p23-isntree-145-current",
+      "formulation_label": "이즈앤트리 히아루론산 워터리 선 젤 50ml",
+      "market_applicability": "KR",
+      "region_applicability": null,
+      "identity_status": "resolved",
+      "current_state": "current",
+      "valid_from": null,
+      "valid_to": null
+    }
+  ],
+  "source_observation": {
+    "version": "trust-p24-isntree-kr-spf-pa-source-observation-v1",
+    "upstream_p23_artifact": "trust-p23-isntree-kr-direct-image-spf-pa-source-recovery-v1",
+    "direct_fact_source": {
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "publisher": "(주)이즈앤트리",
+      "source_kind": "official_product_page",
+      "market": "KR",
+      "presentation_name": "히아루론산 워터리 선 젤 50ml",
+      "fill_size_ml": 50,
+      "package_english_name": "HYALURONIC ACID WATERY SUN GEL",
+      "direct_claim": "SPF50+ PA++++",
+      "detail_asset_url": "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg",
+      "detail_asset_relation": "DIRECTLY_LINKED_FROM_EXACT_KR_PRODUCT_PAGE",
+      "additional_package_marking": "UVA/UVB"
+    },
+    "identity_context": {
+      "catalog_name": "히아루론산 워터리 선젤",
+      "official_kr_name": "히아루론산 워터리 선 젤 50ml",
+      "relation": "DISPLAY_SPACING_VARIANT_SAME_50ML_PRODUCT",
+      "cross_market_formula_transfer": false,
+      "global_formula_dependency": false
+    }
+  },
+  "sources": [
+    {
+      "source_ref": "trust-p24-source:336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "canonical_locator": "https://isntree.com/product/%ED%9E%88%EC%95%84%EB%A3%A8%EB%A1%A0%EC%82%B0-%EC%9B%8C%ED%84%B0%EB%A6%AC-%EC%84%A0-%EC%A0%A4-50ml/145/",
+      "publisher": "(주)이즈앤트리",
+      "source_kind": "official_product_page",
+      "source_market": "KR",
+      "binding_state": "exact_subject_match",
+      "binding_scope_relation": "equivalent",
+      "content_digest": "70125af670b8426d40122c5b41dccff5d0b422c361209b98615ec68ff50a2726",
+      "digest_basis": "trust-p24-isntree-kr-spf-pa-source-observation-v1-not-live-page-bytes",
+      "companion_evidence_asset_urls": [
+        "https://isntree01.openhost.cafe24.com/product/hyaluronic_acid_sun_gel/hyaluronic_acid_sun_gel_4.jpg"
+      ],
+      "accessed_at": "2026-09-13T05:20:18.333944+09:00"
+    }
+  ],
+  "propositions": [
+    {
+      "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "subject_semantic_key": "31b72283f5cd817d0dd41f62ef8ae4eb149ad8393cdd40810f2e0ad4eb797cd0",
+      "source_ref": "trust-p24-source:336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "fact_key": "spf_value",
+      "raw_claim": "SPF50+",
+      "value": 50,
+      "scope": {
+        "market": "KR",
+        "variant": "HYALURONIC_ACID_WATERY_SUN_GEL_KR_50ML"
+      },
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "proposition_key": "172b2bdaf808a04e3f58c350afe79f0e9a6c9bedc175ae0b83992a50b1cbf78f",
+      "canonical_evidence_digest": "ab6b2539ae091ec14426057cdb49b1ee4a304ea0441506a901b2ba8d9a133069",
+      "value_type": "number",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    },
+    {
+      "product_id": "336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "subject_semantic_key": "31b72283f5cd817d0dd41f62ef8ae4eb149ad8393cdd40810f2e0ad4eb797cd0",
+      "source_ref": "trust-p24-source:336bb533-0fe4-4380-8b9f-ab16fb24b807",
+      "fact_key": "uva_label",
+      "raw_claim": "PA++++",
+      "value": "PA++++",
+      "scope": {
+        "market": "KR",
+        "variant": "HYALURONIC_ACID_WATERY_SUN_GEL_KR_50ML"
+      },
+      "qualifier": {},
+      "proposition_key": "b8372757ab58e27e658508700357ce6d4b37cb0614df4b86cce1bf7cd63e8e89",
+      "canonical_evidence_digest": "71a61ede73d25e81fd498a3e65704f7fe66225207b9963ad4f5a5f44aeb51759",
+      "value_type": "enum",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    }
+  ],
+  "request_ids": {
+    "subject": "trust-p24-isntree-subject-20260913-v1",
+    "spf_ingest": "trust-p24-isntree-spf-evidence-20260913-v1",
+    "spf_review_under": "trust-p24-isntree-spf-review-under-20260913-v1",
+    "spf_review_ready": "trust-p24-isntree-spf-review-ready-20260913-v1",
+    "spf_confirmation": "trust-p24-isntree-spf-confirm-20260913-v1",
+    "uva_ingest": "trust-p24-isntree-uva-evidence-20260913-v1",
+    "uva_review_under": "trust-p24-isntree-uva-review-under-20260913-v1",
+    "uva_review_ready": "trust-p24-isntree-uva-review-ready-20260913-v1",
+    "uva_confirmation": "trust-p24-isntree-uva-confirm-20260913-v1"
+  },
+  "invariants": {
+    "direct_product_fact_dml": false,
+    "new_fact_kind": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "third_party_positive_fact_support": false,
+    "cross_product_inference": false,
+    "cross_market_formula_transfer": false,
+    "global_formula_dependency": false,
+    "kr_page_linked_direct_claim_only": true
+  },
+  "next_gate": {
+    "status": "PHASE_A_FREEZE_ONLY",
+    "eligible_fact_keys": [
+      "spf_value",
+      "uva_label"
+    ],
+    "requires_exact_head_ci": true,
+    "requires_merge": true,
+    "requires_merged_main_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_all_planned_confirmation_preflights_ready": true
+  },
+  "plan_content_sha256": "68a7e27d6e0ee5e000fae54287a30bd33d1014b5343194eee1d51291286e2941"
+}
