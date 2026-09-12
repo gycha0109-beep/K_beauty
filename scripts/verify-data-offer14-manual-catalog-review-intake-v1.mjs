@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260913021000_data_offer14_manual_catalog_review_intake_v1.sql";
+const migrationPath = "supabase/migrations/20260913033707_data_offer14_manual_catalog_review_intake_v1.sql";
 const evidencePath = "evidence/data-offer14/torriden-1986669-manual-catalog-review-intake-v1.json";
 const sql = fs.readFileSync(migrationPath, "utf8");
 const compact = sql.replace(/\s+/g, " ").replace(/\s*([=<>(),])\s*/g, "$1");
