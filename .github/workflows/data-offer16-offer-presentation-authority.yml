@@ -1,0 +1,147 @@
+name: DATA-OFFER16 Offer Presentation Authority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql"
+      - "tests/fixtures/data-offer16/**"
+      - "lib/product-offer-read-path.js"
+      - "lib/server/product-offer-read-service.js"
+      - "lib/product-purchase-link.js"
+      - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
+      - "scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer16-offer-presentation-authority.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql"
+      - "tests/fixtures/data-offer16/**"
+      - "lib/product-offer-read-path.js"
+      - "lib/server/product-offer-read-service.js"
+      - "lib/product-purchase-link.js"
+      - "scripts/verify-data-offer16-offer-presentation-authority-v1.mjs"
+      - "scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs"
+      - "scripts/verify-current-main-health.mjs"
+      - ".github/workflows/data-offer16-offer-presentation-authority.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_CLI_VERSION: 2.109.1
+
+jobs:
+  verify:
+    name: DATA-OFFER16 Offer Presentation Authority
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Attest exact head
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_SHA"
+          printf 'DATA_OFFER16_EXACT_HEAD=%s\n' "$actual"
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Verify deterministic Offer authority contract
+        run: |
+          node scripts/verify-data-offer16-offer-presentation-authority-v1.mjs
+          node --check scripts/verify-data-offer16-offer-presentation-authority-v1.mjs
+          node --check scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs
+          node --check lib/server/product-offer-read-service.js
+          node --check lib/product-offer-read-path.js
+          node --check lib/product-purchase-link.js
+
+      - name: Prepare isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_dir="${RUNNER_TEMP}/data-offer16-runtime"
+          echo "DATA_OFFER16_RUNTIME_DIR=${runtime_dir}" >>"${GITHUB_ENV}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" init --workdir "${runtime_dir}" --force
+          migration_dir="${runtime_dir}/supabase/migrations"
+          mkdir -p "${migration_dir}"
+          cp tests/fixtures/data-offer16/20260910100000_data_offer16_offer_presentation_fixture.sql "${migration_dir}/"
+          cp supabase/migrations/20260910103000_product_offers_shadow_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql "${migration_dir}/"
+
+      - name: Start and reset isolated Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="${RUNNER_TEMP}/data-offer16-start.log"
+          if ! npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${DATA_OFFER16_RUNTIME_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            >"${start_log}" 2>&1; then
+            sed -E 's#(sb_(publishable|secret)_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9._-]+|postgresql://[^[:space:]]+)#[REDACTED]#g' "${start_log}" >&2
+            exit 1
+          fi
+          rm -f "${start_log}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db reset --workdir "${DATA_OFFER16_RUNTIME_DIR}"
+
+      - name: Verify isolated Offer authority runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          env_file="${RUNNER_TEMP}/data-offer16.env"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" status --workdir "${DATA_OFFER16_RUNTIME_DIR}" -o env >"${env_file}"
+          set -a
+          source "${env_file}"
+          set +a
+          test -n "${DB_URL:-}"
+          echo "::add-mask::${DB_URL}"
+          export DATA_OFFER16_DATABASE_URL="${DB_URL}"
+          rm -f "${env_file}"
+          node scripts/verify-data-offer16-offer-presentation-authority-runtime-v1.mjs
+
+      - name: Stop isolated Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -d "${DATA_OFFER16_RUNTIME_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${DATA_OFFER16_RUNTIME_DIR}" --no-backup
+          fi
+          rm -rf -- "${DATA_OFFER16_RUNTIME_DIR}"
+
+      - name: Check exact-head and diff hygiene
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+          else
+            base="$PUSH_BEFORE_SHA"
+          fi
+          if [[ ! "$base" =~ ^[0-9a-f]{40}$ ]] || [[ "$base" == "0000000000000000000000000000000000000000" ]]; then
+            base="$(git rev-parse "${HEAD_SHA}^")"
+          fi
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git diff --check "${base}...${HEAD_SHA}"
