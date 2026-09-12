@@ -1,0 +1,122 @@
+name: DATA-OFFER16 Production E2E Probe
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-offer16-production-e2e-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: DATA-OFFER16 Production E2E Probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Execute one controlled Production analyze request
+        shell: bash
+        env:
+          PRODUCTION_URL: "https://k-beauty-a9dso689m-johnny-self.vercel.app"
+        run: |
+          set -euo pipefail
+          printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=' | base64 -d > /tmp/data-offer16-probe.png
+
+          status="$(curl --silent --show-error --max-time 150 \
+            -o /tmp/data-offer16-response.json \
+            -w '%{http_code}' \
+            -X POST "${PRODUCTION_URL}/api/analyze" \
+            -H 'User-Agent: BEJEWELY-DATA-OFFER16-E2E-PROBE/1' \
+            -F 'image=@/tmp/data-offer16-probe.png;type=image/png' \
+            -F 'skinType=combination' \
+            -F 'sensitivity=medium' \
+            -F 'mainConcern=dehydration' \
+            -F 'mainConcerns=["dehydration","barrier"]' \
+            -F 'cleansingFrequency=2' \
+            -F 'preferredTexture=cream' \
+            -F 'postCleanseFeel=tight' \
+            -F 'afternoonState=more_dry' \
+            -F 'dislikedFeel=drying' \
+            -F 'genderPreference=unspecified' \
+            -F 'whiteCastHate=false' \
+            -F 'toneUpWanted=false' \
+            -F 'makeupUse=false' \
+            -F 'eyeSensitive=false' \
+            -F 'outdoorExposure=false' \
+            -F 'verySensitivePeriod=false' \
+            -F 'locale=ko')"
+
+          echo "DATA_OFFER16_PRODUCTION_HTTP_STATUS=${status}"
+          test "${status}" = "200"
+
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/data-offer16-response.json', 'utf8'));
+          const seen = new WeakSet();
+          const products = [];
+          function visit(value, path = '$', depth = 0) {
+            if (!value || typeof value !== 'object' || depth > 12 || seen.has(value)) return;
+            seen.add(value);
+            if (!Array.isArray(value) && value.id && value.name && value.brand && Object.prototype.hasOwnProperty.call(value, 'buy_link')) {
+              products.push({
+                path,
+                id: String(value.id),
+                brand: String(value.brand),
+                name: String(value.name),
+                buy_link: value.buy_link == null ? null : String(value.buy_link),
+                price_min: value.price_min == null ? null : Number(value.price_min),
+                price_max: value.price_max == null ? null : Number(value.price_max),
+              });
+            }
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => visit(item, `${path}[${index}]`, depth + 1));
+            } else {
+              Object.entries(value).forEach(([key, item]) => visit(item, `${path}.${key}`, depth + 1));
+            }
+          }
+          visit(payload);
+
+          const unique = Array.from(new Map(products.map((item) => [`${item.path}:${item.id}`, item])).values());
+          const legacyProofIds = new Set([
+            '02142b67-a50e-41b9-862c-b5a68203daf7',
+            '0781dcb5-d377-44b5-aa14-01ab2c04f0b2',
+            '03f5a72b-6c9a-4487-a3a9-39d1e6afa7bb',
+          ]);
+          const targetId = '08b85f37-b1fa-42d7-893a-0d4facb17878';
+          const legacy = unique.filter((item) => legacyProofIds.has(item.id));
+          const target = unique.filter((item) => item.id === targetId);
+
+          console.log(JSON.stringify({
+            schemaVersion: payload.schemaVersion || null,
+            source: payload.source || null,
+            priority: payload.priority || null,
+            topPick: payload.topPick ? {
+              id: payload.topPick.id || null,
+              brand: payload.topPick.brand || null,
+              name: payload.topPick.name || null,
+              buy_link: payload.topPick.buy_link ?? null,
+              price_min: payload.topPick.price_min ?? null,
+              price_max: payload.topPick.price_max ?? null,
+            } : null,
+            alternative: payload.alternative ? {
+              id: payload.alternative.id || null,
+              brand: payload.alternative.brand || null,
+              name: payload.alternative.name || null,
+              buy_link: payload.alternative.buy_link ?? null,
+              price_min: payload.alternative.price_min ?? null,
+              price_max: payload.alternative.price_max ?? null,
+            } : null,
+            legacyOfferBackedNodes: legacy,
+            torridenTargetNodes: target,
+            productNodeCount: unique.length,
+          }, null, 2));
+          NODE
+
+          rm -f /tmp/data-offer16-probe.png /tmp/data-offer16-response.json
