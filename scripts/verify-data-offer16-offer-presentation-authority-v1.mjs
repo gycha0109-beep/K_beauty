@@ -10,7 +10,7 @@ register("./node-next-alias-loader.mjs", import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const migrationPath = path.join(
   root,
-  "supabase/migrations/20260913041800_data_offer16_offer_presentation_authority_read_v1.sql",
+  "supabase/migrations/20260913052338_data_offer16_offer_presentation_authority_read_v1.sql",
 );
 const servicePath = path.join(root, "lib/server/product-offer-read-service.js");
 const offerPath = path.join(root, "lib/product-offer-read-path.js");
