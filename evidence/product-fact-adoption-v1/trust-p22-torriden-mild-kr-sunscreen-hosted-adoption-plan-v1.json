@@ -1,0 +1,258 @@
+{
+  "version": "trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-plan-v1",
+  "stage": "TRUST-P22",
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "source_main_sha": "b5e34f2b0be6e70bd5046c8cec532c0d0dbb186c",
+  "authority": {
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "identity_resolution_version": "manual_catalog_identity_convergence_v1",
+    "source_recovery_version": "trust-p22-torriden-mild-kr-spf-pa-source-observation-v1",
+    "upstream_data_offer15_artifact_path": "evidence/data-offer15/torriden-136-catalog-source-offer-closure-v1.json",
+    "upstream_data_offer15_schema_version": "data_offer15_catalog_source_offer_closure_v1",
+    "upstream_data_offer15_merge_sha": "c8a871fbec97eaaf19baa956f0b08db6bf1d7ba5",
+    "upstream_data_offer15_blob_sha": "8b18deb66ae6e0383d79e8dc276b36c0ce330910",
+    "upstream_data_offer11_capture": {
+      "merged_main_sha": "30500ec5ad4c0e1ccd939e1c78a918a0b7eb27fa",
+      "workflow_run_id": 34546730051,
+      "artifact_id": 10179284044,
+      "payload_sha256": "f56a3a4592c766f972da2cfcc1e529aca2eb68e657a22c82b244c2f8b727beb7",
+      "payload_bytes": 175733
+    },
+    "official_product_page": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+    "official_direct_claim_asset": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MildSunCream/01.jpg",
+    "direct_claim_review": {
+      "reviewed_date": "2026-09-13",
+      "method": "direct_visual_inspection_of_first_party_asset_referenced_by_captured_official_html",
+      "observed_text": "DIVE IN Mild Sun Cream / SPF50+ PA++++"
+    }
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "exact_scope": {
+    "products": 1,
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "propositions": 2,
+    "eligible_product_ids": [
+      "08b85f37-b1fa-42d7-893a-0d4facb17878"
+    ],
+    "fact_keys": [
+      "spf_value",
+      "uva_label"
+    ]
+  },
+  "hosted_prestate": {
+    "checked_at": "2026-09-13T04:24:08.362883+09:00",
+    "subjects": 23,
+    "sources": 24,
+    "bindings": 24,
+    "evidence": 54,
+    "fact_instances": 54,
+    "evidence_links": 54,
+    "review_assignments": 54,
+    "confirmations": 54,
+    "current": 54,
+    "target_subjects": 0,
+    "target_current": 0,
+    "subject_semantic_key_rows": 0,
+    "source_locator_rows": 0,
+    "source_identity_rows": 0,
+    "spf_evidence_digest_rows": 0,
+    "uva_evidence_digest_rows": 0,
+    "spf_proposition_current": 0,
+    "uva_proposition_current": 0,
+    "open_assignment_rows": 0,
+    "confirmation_request_collisions": 0
+  },
+  "phase_a_expected_writes": 0,
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "subjects": 1,
+    "sources": 1,
+    "bindings": 1,
+    "evidence": 2,
+    "fact_instances": 2,
+    "evidence_links": 2,
+    "review_assignments": 2,
+    "confirmations": 2,
+    "current": 2
+  },
+  "phase_b_contract": {
+    "subject_registration_required": true,
+    "binding_state": "exact_subject_match",
+    "scope_relation": "equivalent",
+    "review_states": [
+      "under_review",
+      "ready_for_confirm"
+    ],
+    "all_planned_confirmation_preflights_before_any_confirm": true,
+    "runtime_ids": "server_returned_only",
+    "direct_table_dml": false,
+    "rpc_sequence": [
+      "admin_register_product_fact_subject_v1",
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ]
+  },
+  "subjects": [
+    {
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "subject_semantic_key": "e9b46ca78c3cc630403d66bb01b1d25d665f21941e2d430629d1c67a54578161",
+      "variant_key": "DIVE_IN_MILD_SUN_CREAM_KR_60ML",
+      "formulation_revision_key": "trust-p22-torriden-136-current",
+      "formulation_label": "토리든 다이브인 무기자차 마일드 선크림 60ml",
+      "market_applicability": "KR",
+      "region_applicability": null,
+      "identity_status": "resolved",
+      "current_state": "current",
+      "valid_from": null,
+      "valid_to": null
+    }
+  ],
+  "source_observation": {
+    "version": "trust-p22-torriden-mild-kr-spf-pa-source-observation-v1",
+    "upstream_identity_artifact": "data_offer15_catalog_source_offer_closure_v1",
+    "upstream_capture": {
+      "workflow_run_id": 34546730051,
+      "artifact_id": 10179284044,
+      "merged_main_sha": "30500ec5ad4c0e1ccd939e1c78a918a0b7eb27fa",
+      "payload_sha256": "f56a3a4592c766f972da2cfcc1e529aca2eb68e657a22c82b244c2f8b727beb7",
+      "payload_bytes": 175733
+    },
+    "direct_fact_source": {
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "publisher": "Torriden / (주)토리든",
+      "source_kind": "official_product_page",
+      "market": "KR",
+      "presentation_name": "다이브인 무기자차 마일드 선크림 60ml",
+      "fill_size_ml": 60,
+      "package_english_name": "DIVE IN Mild Sun Cream",
+      "direct_claim": "SPF50+ PA++++",
+      "direct_claim_asset_url": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MildSunCream/01.jpg",
+      "asset_reference_present_in_captured_html": true
+    },
+    "identity_binding": {
+      "product_source_binding_id": "4f514c27-9bf3-4829-9e6a-5c11be990d36",
+      "listing_id": "136",
+      "binding_state": "resolved",
+      "binding_method": "manual_catalog_identity_convergence_v1",
+      "product_scope_state": "product",
+      "market_code": "KR",
+      "locale": "ko-KR"
+    },
+    "disambiguation": {
+      "distinct_from_product_id": "57e4a5ec-115d-4322-85a1-7976db669700",
+      "cross_product_transfer_allowed": false
+    }
+  },
+  "sources": [
+    {
+      "source_ref": "trust-p22-source:08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "canonical_locator": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+      "publisher": "Torriden / (주)토리든",
+      "source_kind": "official_product_page",
+      "source_market": "KR",
+      "binding_state": "exact_subject_match",
+      "binding_scope_relation": "equivalent",
+      "content_digest": "79ab3a099251d7c83269f78ee6e5334f2f795c577381e53550f406e705512264",
+      "digest_basis": "trust-p22-torriden-mild-kr-spf-pa-source-observation-v1-not-live-page-bytes",
+      "direct_claim_asset_url": "https://ai.esmplus.com/torriden/product/dive-in/SUN/MildSunCream/01.jpg",
+      "accessed_at": "2026-09-11T09:30:12.118+09:00"
+    }
+  ],
+  "propositions": [
+    {
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "subject_semantic_key": "e9b46ca78c3cc630403d66bb01b1d25d665f21941e2d430629d1c67a54578161",
+      "source_ref": "trust-p22-source:08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "fact_key": "spf_value",
+      "raw_claim": "SPF50+",
+      "value": 50,
+      "scope": {
+        "market": "KR",
+        "variant": "DIVE_IN_MILD_SUN_CREAM_KR_60ML"
+      },
+      "qualifier": {
+        "plus_modifier": "plus"
+      },
+      "proposition_key": "059777b9cc342c1abd9da8b3f71604b5da717acbfba10a3a7ad65c02e9aa0a49",
+      "canonical_evidence_digest": "00c9d5c6b75444548a2b20aecf744cec9ff6762e47bae28adcd813facab6c521",
+      "value_type": "number",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    },
+    {
+      "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "subject_semantic_key": "e9b46ca78c3cc630403d66bb01b1d25d665f21941e2d430629d1c67a54578161",
+      "source_ref": "trust-p22-source:08b85f37-b1fa-42d7-893a-0d4facb17878",
+      "fact_key": "uva_label",
+      "raw_claim": "PA++++",
+      "value": "PA++++",
+      "scope": {
+        "market": "KR",
+        "variant": "DIVE_IN_MILD_SUN_CREAM_KR_60ML"
+      },
+      "qualifier": {},
+      "proposition_key": "c5f231cf12bb6ca29a54bf097e1a01fb84f6bb1c1434a50ea919ef9b7909d6fb",
+      "canonical_evidence_digest": "adc2d3eeae09cd4f4c8ae00cacfc00eca468b555faf9dc91e937c73c36842f07",
+      "value_type": "enum",
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    }
+  ],
+  "request_ids": {
+    "subject": "trust-p22-torriden-mild-subject-20260913-v1",
+    "spf_ingest": "trust-p22-torriden-mild-spf-evidence-20260913-v1",
+    "spf_review_under": "trust-p22-torriden-mild-spf-review-under-20260913-v1",
+    "spf_review_ready": "trust-p22-torriden-mild-spf-review-ready-20260913-v1",
+    "spf_confirmation": "trust-p22-torriden-mild-spf-confirm-20260913-v1",
+    "uva_ingest": "trust-p22-torriden-mild-uva-evidence-20260913-v1",
+    "uva_review_under": "trust-p22-torriden-mild-uva-review-under-20260913-v1",
+    "uva_review_ready": "trust-p22-torriden-mild-uva-review-ready-20260913-v1",
+    "uva_confirmation": "trust-p22-torriden-mild-uva-confirm-20260913-v1"
+  },
+  "invariants": {
+    "direct_product_fact_dml": false,
+    "new_fact_kind": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "third_party_positive_fact_support": false,
+    "cross_product_inference": false,
+    "historical_pre_upgrade_formula_equivalence_asserted": false,
+    "watery_moisture_product_claim_transfer": false,
+    "official_goods136_direct_claim_only": true
+  },
+  "next_gate": {
+    "status": "PHASE_A_FREEZE_ONLY",
+    "eligible_fact_keys": [
+      "spf_value",
+      "uva_label"
+    ],
+    "requires_exact_head_ci": true,
+    "requires_merge": true,
+    "requires_merged_main_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_all_planned_confirmation_preflights_ready": true
+  },
+  "plan_content_sha256": "4cd5ceeec8fba71974725da9510e5ed01c358f176b8f2e617ac16b6972f13e5f"
+}
