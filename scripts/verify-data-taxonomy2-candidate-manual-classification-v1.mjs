@@ -11,6 +11,20 @@ for (const path of [migrationPath, evidencePath]) {
 const migration = fs.readFileSync(migrationPath, "utf8");
 const evidence = fs.readFileSync(evidencePath, "utf8");
 
+const constraintNames = [...migration.matchAll(/\bconstraint\s+([A-Za-z_][A-Za-z0-9_$]*)/gi)].map((match) => match[1]);
+const pgIdentifierPrefixes = new Map();
+for (const name of constraintNames) {
+  const postgresIdentifier = name.slice(0, 63);
+  const existing = pgIdentifierPrefixes.get(postgresIdentifier);
+  assert.ok(
+    !existing || existing === name,
+    `PostgreSQL 63-byte identifier collision: ${existing} vs ${name} -> ${postgresIdentifier}`,
+  );
+  pgIdentifierPrefixes.set(postgresIdentifier, name);
+}
+assert.ok(migration.includes("constraint pctc_entity_kind_fk"));
+assert.ok(migration.includes("constraint pctc_entity_kind_axis_check"));
+
 for (const table of [
   "catalog_taxonomy_candidate_source_rules",
   "product_candidate_catalog_taxonomy_classifications",
