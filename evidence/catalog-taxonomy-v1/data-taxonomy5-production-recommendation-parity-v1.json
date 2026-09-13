@@ -1,0 +1,63 @@
+{
+  "schema_version": "data-taxonomy5-production-recommendation-parity-v1",
+  "issue": 479,
+  "foundation_pr": 480,
+  "baseline_main_sha": "fab47e6729472877ee4ee669c33cd9c134b30f90",
+  "production_observed_at": "2026-09-14 00:40:52.174395+09",
+  "taxonomy_version": "catalog-taxonomy-v1",
+  "taxonomy_lifecycle_state": "shadow",
+  "taxonomy_authority_mode": "shadow_only",
+  "recommendation_runtime_authority": "legacy_product_category_product_form",
+  "recommendation_runtime_cutover": false,
+  "production_product_count": 165,
+  "production_exact_equivalent_count": 165,
+  "production_non_exact_count": 0,
+  "production_category_mismatch_count": 0,
+  "production_form_mismatch_count": 0,
+  "foundation": {
+    "controlled_schema": "recommendation_shadow",
+    "controlled_rpc": "recommendation_shadow.read_catalog_taxonomy_recommendation_overlay_v1",
+    "runtime_role": "recommendation_admission_runtime",
+    "reuses_existing_database_credential": true,
+    "raw_product_select_granted": false,
+    "raw_taxonomy_select_granted": false,
+    "public_execute_granted": false,
+    "anon_execute_granted": false,
+    "authenticated_execute_granted": false,
+    "service_role_execute_granted": false,
+    "runtime_probe_enabled_before_migration": false
+  },
+  "replay_contract": {
+    "uses_actual_get_recommendation_products": true,
+    "uses_actual_recommendation_scoring": true,
+    "uses_actual_rank_comparator": true,
+    "scenario_count": 8,
+    "requires_unique_overlay_per_product": true,
+    "requires_exact_equivalent_overlay": true,
+    "requires_legacy_identity_match": true,
+    "required_score_delta": 0,
+    "required_slot_delta": 0,
+    "required_full_order_delta": 0,
+    "required_top1_delta": 0,
+    "required_top3_delta": 0
+  },
+  "closure_sequence": [
+    "foundation_exact_head_ci",
+    "foundation_expected_head_merge",
+    "apply_exact_merged_migration_to_production",
+    "production_acl_and_165_row_readback",
+    "closure_pr_enable_deployed_runtime_probe",
+    "closure_exact_head_ci",
+    "closure_expected_head_merge",
+    "exact_merged_sha_deployed_runtime_replay",
+    "issue_closure"
+  ],
+  "mutation_scope": {
+    "product": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false,
+    "production_business_data": false,
+    "schema_only_after_foundation_merge": true
+  }
+}
