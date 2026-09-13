@@ -182,7 +182,7 @@ jobs:
           set -euo pipefail
           image_file="$(mktemp --suffix=.png)"
           response_file="$(mktemp)"
-          printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z0T8AAAAASUVORK5CYII=' | base64 --decode > "$image_file"
+          printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP8//8/AwMDEwMDAwMDAwAkBgMB/DXemwAAAABJRU5ErkJggg==' | base64 --decode > "$image_file"
           status="$(curl --silent --show-error --retry 3 --retry-delay 2 --retry-all-errors \
             -o "$response_file" \
             -w '%{http_code}' \
