@@ -1,3 +1,4 @@
+import "@/lib/server/recommendation-candidate-admission-runtime";
 import { NextResponse } from "next/server";
 import { runCatalogTaxonomyRecommendationShadowReplay } from "@/lib/catalog-taxonomy-recommendation-shadow-replay";
 import {
