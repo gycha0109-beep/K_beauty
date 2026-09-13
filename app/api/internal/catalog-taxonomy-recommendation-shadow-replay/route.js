@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { runCatalogTaxonomyRecommendationShadowReplay } from "@/lib/catalog-taxonomy-recommendation-shadow-replay";
 import {
-  getG3ABearerTokenFromRequest,
-  verifyG3AGitHubActionsOidcToken,
-} from "@/lib/recommendation-admission-authority-controlled-probe-oidc";
+  getDataTaxonomy5BearerTokenFromRequest,
+  verifyDataTaxonomy5GitHubActionsOidcToken,
+} from "@/lib/catalog-taxonomy-recommendation-shadow-probe-oidc";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,8 +25,8 @@ export async function POST(request) {
     return noStoreJson({ error: "data_taxonomy5_deployment_identity_rejected" }, 409);
   }
 
-  const authorization = await verifyG3AGitHubActionsOidcToken(
-    getG3ABearerTokenFromRequest(request),
+  const authorization = await verifyDataTaxonomy5GitHubActionsOidcToken(
+    getDataTaxonomy5BearerTokenFromRequest(request),
     { expectedDeploymentSha: deploymentSha, expectedGitRef: deploymentRef },
   );
   if (!authorization.ok) {
