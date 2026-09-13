@@ -1,0 +1,68 @@
+name: DATA-TAXONOMY5 Production Recommendation Parity
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
+      - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
+      - "scripts/verify-current-main-health.mjs"
+      - "lib/product-source.js"
+      - "lib/recommendation-scoring.ts"
+  push:
+    branches:
+      - main
+    paths:
+      - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
+      - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
+      - "scripts/verify-current-main-health.mjs"
+      - "lib/product-source.js"
+      - "lib/recommendation-scoring.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-foundation:
+    name: DATA-TAXONOMY5 foundation contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      DATA_TAXONOMY5_EXACT_HEAD: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DATA_TAXONOMY5_EXACT_HEAD }}
+          fetch-depth: 1
+
+      - name: Attest exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY5_EXACT_HEAD"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify DATA-TAXONOMY5 foundation
+        run: node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs
+
+      - name: Verify runtime module syntax
+        shell: bash
+        run: |
+          node --check lib/catalog-taxonomy-recommendation-shadow-reader.js
+          node --check lib/catalog-taxonomy-recommendation-shadow-replay.js
+          node --check app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js
