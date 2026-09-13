@@ -30,15 +30,29 @@ assert.equal(evidence.production_exact_equivalent_count, 165);
 assert.equal(evidence.production_non_exact_count, 0);
 assert.equal(evidence.production_category_mismatch_count, 0);
 assert.equal(evidence.production_form_mismatch_count, 0);
+assert.equal(evidence.production_recommendation_product_count, 164);
+assert.equal(evidence.production_overlay_only_count, 1);
+assert.equal(evidence.production_overlay_only_nonlegacy_count, 1);
+assert.equal(evidence.production_missing_legacy_live_count, 0);
+assert.equal(evidence.production_unexpected_live_count, 0);
+assert.equal(evidence.overlay_only_product.product_id, "08b85f37-b1fa-42d7-893a-0d4facb17878");
+assert.equal(evidence.overlay_only_product.legacy_recommendation_corpus_member, false);
+assert.equal(evidence.overlay_only_product.current_subject_resolved, true);
+assert.deepEqual(evidence.overlay_only_product.current_fact_keys, ["spf_value", "uva_label"]);
+assert.equal(evidence.overlay_only_product.current_nonlegacy_admission_disposition, "REJECTED");
+assert.equal(evidence.overlay_only_product.current_nonlegacy_admission_reason, "REQUIRED_CURRENT_FACT_MISSING:contains_active");
 assert.equal(evidence.foundation.runtime_probe_enabled_before_migration, false);
 assert.equal(evidence.replay_contract.uses_actual_get_recommendation_products, true);
 assert.equal(evidence.replay_contract.uses_actual_recommendation_scoring, true);
 assert.equal(evidence.replay_contract.uses_actual_rank_comparator, true);
 assert.equal(evidence.replay_contract.scenario_count, 8);
-assert.equal(evidence.replay_contract.expected_product_count, evidence.production_product_count);
-assert.equal(evidence.replay_contract.requires_exact_recommendation_corpus_count, true);
+assert.equal(evidence.replay_contract.expected_catalog_product_count, evidence.production_product_count);
+assert.equal(evidence.replay_contract.expected_recommendation_product_count, evidence.production_recommendation_product_count);
+assert.equal(evidence.replay_contract.expected_overlay_count, evidence.production_product_count);
+assert.equal(evidence.replay_contract.expected_overlay_only_count, evidence.production_overlay_only_count);
+assert.equal(evidence.replay_contract.requires_exact_recommendation_legacy_id_set, true);
 assert.equal(evidence.replay_contract.requires_exact_overlay_count, true);
-assert.equal(evidence.replay_contract.requires_zero_overlay_only_rows, true);
+assert.equal(evidence.replay_contract.requires_overlay_only_rows_to_be_nonlegacy, true);
 for (const [key, value] of Object.entries(evidence.replay_contract)) {
   if (key.startsWith("required_") && key.endsWith("_delta")) assert.equal(value, 0, `${key} must remain zero`);
 }
@@ -64,9 +78,15 @@ for (const marker of [
 
 for (const marker of [
   "DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT = 165",
-  "products.length === DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT",
+  "DATA_TAXONOMY5_EXPECTED_RECOMMENDATION_PRODUCT_COUNT = LEGACY_RECOMMENDATION_CORPUS_COUNT",
+  "DATA_TAXONOMY5_EXPECTED_OVERLAY_ONLY_COUNT",
+  "LEGACY_RECOMMENDATION_CORPUS_IDS",
+  "products.length === DATA_TAXONOMY5_EXPECTED_RECOMMENDATION_PRODUCT_COUNT",
   "probe.rows.length === DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT",
-  "overlayOnlyCount === 0",
+  "overlayOnlyCount === DATA_TAXONOMY5_EXPECTED_OVERLAY_ONLY_COUNT",
+  "overlayOnlyNonLegacyCount === DATA_TAXONOMY5_EXPECTED_OVERLAY_ONLY_COUNT",
+  "missingLegacyLiveCount === 0",
+  "unexpectedLiveCount === 0",
   "scenarioResults.length === SCENARIOS.length",
   "getRecommendationProducts()",
   "runCatalogTaxonomyRecommendationShadowSecurityProbe()",
@@ -77,6 +97,7 @@ for (const marker of [
 ]) assert.ok(replay.includes(marker), `replay contract drifted: ${marker}`);
 
 for (const marker of [
+  "@/lib/server/recommendation-candidate-admission-runtime",
   "verifyG3AGitHubActionsOidcToken",
   "runCatalogTaxonomyRecommendationShadowReplay",
   "deploymentRef !== \"main\"",
@@ -94,9 +115,10 @@ assert.deepEqual(evidence.mutation_scope, {
 
 console.log(JSON.stringify({
   status: "PASS",
-  product_count: evidence.production_product_count,
+  catalog_product_count: evidence.production_product_count,
+  recommendation_product_count: evidence.production_recommendation_product_count,
   exact_equivalent_count: evidence.production_exact_equivalent_count,
-  expected_product_count: evidence.replay_contract.expected_product_count,
+  overlay_only_count: evidence.production_overlay_only_count,
   scenario_count: evidence.replay_contract.scenario_count,
   runtime_probe_enabled_before_migration: evidence.foundation.runtime_probe_enabled_before_migration,
   recommendation_runtime_cutover: evidence.recommendation_runtime_cutover,
