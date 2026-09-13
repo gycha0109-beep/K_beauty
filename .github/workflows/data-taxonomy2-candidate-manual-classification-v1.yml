@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "supabase/migrations/20260913202500_data_taxonomy2_candidate_manual_classification_v1.sql"
+      - "supabase/migrations/20260913210000_data_taxonomy2_production_adoption_reconcile_v1.sql"
       - "docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md"
       - "scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"
       - ".github/workflows/data-taxonomy2-candidate-manual-classification-v1.yml"
@@ -12,6 +13,7 @@ on:
       - main
     paths:
       - "supabase/migrations/20260913202500_data_taxonomy2_candidate_manual_classification_v1.sql"
+      - "supabase/migrations/20260913210000_data_taxonomy2_production_adoption_reconcile_v1.sql"
       - "docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md"
       - "scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs"
       - ".github/workflows/data-taxonomy2-candidate-manual-classification-v1.yml"
@@ -43,6 +45,7 @@ jobs:
           while IFS= read -r path; do
             case "$path" in
               supabase/migrations/20260913202500_data_taxonomy2_candidate_manual_classification_v1.sql|\
+              supabase/migrations/20260913210000_data_taxonomy2_production_adoption_reconcile_v1.sql|\
               docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md|\
               scripts/verify-data-taxonomy2-candidate-manual-classification-v1.mjs|\
               .github/workflows/data-taxonomy2-candidate-manual-classification-v1.yml)
