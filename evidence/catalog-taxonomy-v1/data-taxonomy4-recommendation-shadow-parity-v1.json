@@ -1,0 +1,124 @@
+{
+  "schema_version": "data-taxonomy4-recommendation-shadow-parity-v1",
+  "issue": 477,
+  "baseline_main_sha": "d3c472e1a0e103795595fa34de0d28061e333851",
+  "production_source": "public.catalog_taxonomy_product_exact_equivalence_v1",
+  "production_observed_at": "2026-09-14 00:01:21.253781+09",
+  "taxonomy_version": "catalog-taxonomy-v1",
+  "taxonomy_lifecycle_state": "shadow",
+  "taxonomy_authority_mode": "shadow_only",
+  "recommendation_runtime_authority": "legacy_product_category_product_form",
+  "recommendation_runtime_cutover": false,
+  "product_count": 165,
+  "equivalence_class_count": 11,
+  "non_exact_count": 0,
+  "classes": [
+    {
+      "legacy_category": "cleanser",
+      "legacy_product_form": null,
+      "projected_legacy_category": "cleanser",
+      "projected_legacy_product_form": null,
+      "product_count": 26,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "moisturizer_balm",
+      "legacy_product_form": null,
+      "projected_legacy_category": "moisturizer_balm",
+      "projected_legacy_product_form": null,
+      "product_count": 20,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "moisturizer_cream",
+      "legacy_product_form": null,
+      "projected_legacy_category": "moisturizer_cream",
+      "projected_legacy_product_form": null,
+      "product_count": 10,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "moisturizer_gel",
+      "legacy_product_form": null,
+      "projected_legacy_category": "moisturizer_gel",
+      "projected_legacy_product_form": null,
+      "product_count": 10,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "moisturizer_lotion_emulsion",
+      "legacy_product_form": null,
+      "projected_legacy_category": "moisturizer_lotion_emulsion",
+      "projected_legacy_product_form": null,
+      "product_count": 21,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "sunscreen",
+      "legacy_product_form": null,
+      "projected_legacy_category": "sunscreen",
+      "projected_legacy_product_form": null,
+      "product_count": 12,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "toner_essence",
+      "legacy_product_form": null,
+      "projected_legacy_category": "toner_essence",
+      "projected_legacy_product_form": null,
+      "product_count": 24,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "toner_pad",
+      "legacy_product_form": null,
+      "projected_legacy_category": "toner_pad",
+      "projected_legacy_product_form": null,
+      "product_count": 24,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "treatment",
+      "legacy_product_form": "ampoule",
+      "projected_legacy_category": "treatment",
+      "projected_legacy_product_form": "ampoule",
+      "product_count": 5,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "treatment",
+      "legacy_product_form": "essence",
+      "projected_legacy_category": "treatment",
+      "projected_legacy_product_form": "essence",
+      "product_count": 3,
+      "all_exact_equivalent": true
+    },
+    {
+      "legacy_category": "treatment",
+      "legacy_product_form": "serum",
+      "projected_legacy_category": "treatment",
+      "projected_legacy_product_form": "serum",
+      "product_count": 10,
+      "all_exact_equivalent": true
+    }
+  ],
+  "replay_contract": {
+    "uses_actual_category_resolver": true,
+    "uses_actual_recommendation_scoring": true,
+    "uses_actual_rank_comparator": true,
+    "required_semantics_delta": 0,
+    "required_slot_delta": 0,
+    "required_score_delta": 0,
+    "required_category_priority_delta": 0,
+    "required_full_order_delta": 0,
+    "required_top1_delta": 0,
+    "required_top3_delta": 0
+  },
+  "mutation_scope": {
+    "product": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_runtime": false,
+    "production_business_data": false
+  }
+}
