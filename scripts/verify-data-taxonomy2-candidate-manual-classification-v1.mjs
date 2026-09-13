@@ -149,16 +149,32 @@ assert.match(evidence, /Hwahae `toner_essence`: `26`/);
 assert.match(evidence, /Hwahae `treatment`: `102`/);
 assert.match(evidence, /Production Product count: `165`/);
 assert.match(evidence, /Production Product shadow assignments: `165`/);
-assert.match(evidence, /c7ec481493af9075f891d4a089b53302/);
+assert.match(evidence, /pre-application Product digest\s+= c7ec481493af9075f891d4a089b53302/i);
+assert.match(evidence, /post-application Product digest\s+= c7ec481493af9075f891d4a089b53302/i);
+assert.match(evidence, /Product count\s+= 165 → 165/i);
 assert.match(evidence, /364282a34496ed047c74bf7d354d443f/);
 assert.match(evidence, /88096291b54e626615dc81ce679baa79/);
 assert.match(evidence, /6363c54ab4cfc2a4662ec489218fd843/);
 assert.match(evidence, /f228d90b5dcd85e3a7dbf7163d60fa46/);
-assert.match(evidence, /Production migration applied: `false`/);
+assert.match(evidence, /20260913210822\s+data_taxonomy2_production_adoption_reconcile_v1/);
+assert.match(evidence, /Production migration applied: `true`/);
+assert.doesNotMatch(evidence, /Production migration applied: `false`/);
+assert.match(evidence, /candidate taxonomy classifications = 190/);
+assert.match(evidence, /active_shadow \/ source_rule_v1 = 189/);
+assert.match(evidence, /active_shadow \/ manual_legacy_projection_v1 = 1/);
+assert.match(evidence, /product_candidates_catalog_taxonomy_shadow_sync_v1/);
+assert.match(evidence, /unknown source\/category → classification_state = unresolved/);
+assert.match(evidence, /reserved registry term set → reserved_shadow/);
 assert.match(evidence, /Recommendation runtime cutover: `false`/);
-assert.match(evidence, /legacy promotion authority remains unchanged/i);
+assert.match(evidence, /legacy promotion authority (?:remains )?unchanged/i);
+assert.match(evidence, /Product Fact authority unchanged = PASS/i);
+assert.match(evidence, /Offer authority unchanged = PASS/i);
+assert.match(evidence, /Recommendation runtime unchanged = PASS/i);
 assert.match(evidence, /reserved_shadow/i);
 assert.match(evidence, /unknown\/unmapped raw category/i);
+assert.match(evidence, /78ad75a259196f75da29071b5c4f0a3ab71ede21/);
+assert.match(evidence, /dpl_9kBGM7V3ewYWEwUQJXyXtusHC6rp/);
+assert.match(evidence, /separate exact-equivalence decision/i);
 
 console.log(JSON.stringify({
   result: "PASS",
@@ -170,9 +186,10 @@ console.log(JSON.stringify({
   unknownCategoryBehavior: "unresolved_fail_closed",
   reservedVocabularyBehavior: "reserved_shadow_non_admissible",
   productionAdoptionReconciliation: true,
+  productionClosureEvidence: true,
   productWriteAllowed: false,
   productPromotionAuthorityChanged: false,
   recommendationAdmissionAllowed: false,
   recommendationRuntimeCutover: false,
-  productionMigrationApplied: false,
+  productionMigrationApplied: true,
 }, null, 2));
