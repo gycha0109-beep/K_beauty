@@ -147,7 +147,7 @@ create table public.product_candidate_catalog_taxonomy_classifications (
   constraint product_candidate_catalog_taxonomy_classifications_projection_fk
     foreign key (legacy_projection_key, taxonomy_version)
     references public.catalog_taxonomy_legacy_projections(projection_key, taxonomy_version),
-  constraint product_candidate_catalog_taxonomy_classifications_entity_kind_fk
+  constraint pctc_entity_kind_fk
     foreign key (entity_kind_term_id, taxonomy_version)
     references public.catalog_taxonomy_terms(term_id, taxonomy_version),
   constraint product_candidate_catalog_taxonomy_classifications_domain_fk
@@ -203,12 +203,12 @@ create table public.product_candidate_catalog_taxonomy_classifications (
       or (classification_method = 'manual_legacy_projection_v1' and legacy_projection_key is not null and source_rule_key is null)
       or (classification_method = 'unresolved' and source_rule_key is null and legacy_projection_key is null)
     ),
-  constraint product_candidate_catalog_taxonomy_classifications_entity_kind_axis_check
+  constraint pctc_entity_kind_axis_check
     check (entity_kind_term_id is null or entity_kind_term_id like taxonomy_version || ':entity_kind:%'),
   constraint product_candidate_catalog_taxonomy_classifications_domain_axis_check
     check (domain_term_id is null or domain_term_id like taxonomy_version || ':domain:%'),
   constraint product_candidate_catalog_taxonomy_classifications_family_axis_check
-    check (recommendation_family_term_id is null or recommendation_family_term_id like taxonomy_version || ':recommendation_family:%'),
+    check (recommendation_family_term_id is null or recommendation_family_term_id like taxonomy_version || ':family:%'),
   constraint product_candidate_catalog_taxonomy_classifications_category_axis_check
     check (category_term_id is null or category_term_id like taxonomy_version || ':category:%'),
   constraint product_candidate_catalog_taxonomy_classifications_form_axis_check
