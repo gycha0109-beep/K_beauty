@@ -10,7 +10,16 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CONTROLLED_PRODUCT_ID = "08b85f37-b1fa-42d7-893a-0d4facb17878";
+const CONTROLLED_PRODUCT_IDS = Object.freeze([
+  "009e0339-fa00-429e-a1c2-2a23eb4707f8",
+  "02142b67-a50e-41b9-862c-b5a68203daf7",
+  "03f5a72b-6c9a-4487-a3a9-39d1e6afa7bb",
+  "06d1ad4b-2291-4b73-8bf4-f1f3c0226fea",
+  "07257728-9e64-48aa-9dbd-f1239bd98d87",
+  "0781dcb5-d377-44b5-aa14-01ab2c04f0b2",
+  "08b85f37-b1fa-42d7-893a-0d4facb17878",
+  "0b59cb66-ab03-4a0d-815e-7a94a5c7ae65",
+]);
 const ALLOWED_DEPLOYMENT_REFS = new Set(["main"]);
 
 function noStoreJson(body, status = 200) {
@@ -48,7 +57,7 @@ export async function POST(request) {
   }
 
   const probe = await runProductOfferPresentationRuntimeSecurityProbe(
-    CONTROLLED_PRODUCT_ID,
+    CONTROLLED_PRODUCT_IDS,
   );
   const securityBoundaryPass =
     probe.credentialAvailable &&
@@ -64,6 +73,7 @@ export async function POST(request) {
     credentialAvailable: probe.credentialAvailable,
     runtimeRoleMatch: probe.runtimeRoleMatch,
     rawOfferSelectDenied: probe.rawOfferSelectDenied,
+    requestedProductCount: probe.requestedProductCount,
     rpcStatus: probe.rpcStatus,
     rpcResultClass: probe.rpcResultClass,
     rowCardinality: probe.rowCardinality,
