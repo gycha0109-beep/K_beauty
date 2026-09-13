@@ -35,6 +35,10 @@ assert.equal(evidence.replay_contract.uses_actual_get_recommendation_products, t
 assert.equal(evidence.replay_contract.uses_actual_recommendation_scoring, true);
 assert.equal(evidence.replay_contract.uses_actual_rank_comparator, true);
 assert.equal(evidence.replay_contract.scenario_count, 8);
+assert.equal(evidence.replay_contract.expected_product_count, evidence.production_product_count);
+assert.equal(evidence.replay_contract.requires_exact_recommendation_corpus_count, true);
+assert.equal(evidence.replay_contract.requires_exact_overlay_count, true);
+assert.equal(evidence.replay_contract.requires_zero_overlay_only_rows, true);
 for (const [key, value] of Object.entries(evidence.replay_contract)) {
   if (key.startsWith("required_") && key.endsWith("_delta")) assert.equal(value, 0, `${key} must remain zero`);
 }
@@ -59,12 +63,16 @@ for (const marker of [
 ]) assert.ok(reader.includes(marker), `reader contract drifted: ${marker}`);
 
 for (const marker of [
+  "DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT = 165",
+  "products.length === DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT",
+  "probe.rows.length === DATA_TAXONOMY5_EXPECTED_PRODUCT_COUNT",
+  "overlayOnlyCount === 0",
+  "scenarioResults.length === SCENARIOS.length",
   "getRecommendationProducts()",
   "runCatalogTaxonomyRecommendationShadowSecurityProbe()",
   "scoreCanonicalProduct(product, scenario)",
   "sort(compareRankedProducts)",
   "getProductCategorySlot(projected)",
-  "overlayOnlyCount",
   "recommendationRuntimeCutover: false",
 ]) assert.ok(replay.includes(marker), `replay contract drifted: ${marker}`);
 
@@ -88,6 +96,7 @@ console.log(JSON.stringify({
   status: "PASS",
   product_count: evidence.production_product_count,
   exact_equivalent_count: evidence.production_exact_equivalent_count,
+  expected_product_count: evidence.replay_contract.expected_product_count,
   scenario_count: evidence.replay_contract.scenario_count,
   runtime_probe_enabled_before_migration: evidence.foundation.runtime_probe_enabled_before_migration,
   recommendation_runtime_cutover: evidence.recommendation_runtime_cutover,
