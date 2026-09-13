@@ -178,6 +178,8 @@ jobs:
             deploymentSha: payload.deploymentSha || null,
             deploymentRef: payload.deploymentRef || null,
             expectedProductCount: payload.expectedProductCount ?? null,
+            expectedRecommendationProductCount: payload.expectedRecommendationProductCount ?? null,
+            expectedOverlayOnlyCount: payload.expectedOverlayOnlyCount ?? null,
             credentialAvailable: payload.credentialAvailable ?? null,
             runtimeRoleMatch: payload.runtimeRoleMatch ?? null,
             rawProductSelectDenied: payload.rawProductSelectDenied ?? null,
@@ -185,6 +187,9 @@ jobs:
             overlayCount: payload.overlayCount ?? null,
             recommendationProductCount: payload.recommendationProductCount ?? null,
             overlayOnlyCount: payload.overlayOnlyCount ?? null,
+            overlayOnlyNonLegacyCount: payload.overlayOnlyNonLegacyCount ?? null,
+            missingLegacyLiveCount: payload.missingLegacyLiveCount ?? null,
+            unexpectedLiveCount: payload.unexpectedLiveCount ?? null,
             duplicateOverlayCount: payload.duplicateOverlayCount ?? null,
             nonExactOverlayCount: payload.nonExactOverlayCount ?? null,
             invalidTaxonomyStateCount: payload.invalidTaxonomyStateCount ?? null,
@@ -206,16 +211,20 @@ jobs:
           if (payload.credentialAvailable !== true || payload.runtimeRoleMatch !== true) process.exit(4);
           if (payload.rawProductSelectDenied !== true || payload.rawTaxonomySelectDenied !== true) process.exit(5);
           if (payload.expectedProductCount !== 165) process.exit(6);
-          if (payload.overlayCount !== 165) process.exit(7);
-          if (payload.recommendationProductCount !== 165) process.exit(8);
-          if (payload.overlayOnlyCount !== 0) process.exit(9);
-          if (payload.duplicateOverlayCount !== 0 || payload.nonExactOverlayCount !== 0 || payload.invalidTaxonomyStateCount !== 0) process.exit(10);
-          if (payload.unmatchedProductCount !== 0 || payload.legacyIdentityMismatchCount !== 0) process.exit(11);
-          if (payload.scenarioCount !== 8) process.exit(12);
-          if (payload.scoreDeltaCount !== 0 || payload.slotDeltaCount !== 0) process.exit(13);
-          if (payload.fullOrderDeltaCount !== 0 || payload.top1DeltaCount !== 0 || payload.top3DeltaCount !== 0) process.exit(14);
-          if (payload.recommendationRuntimeCutover !== false || payload.secretValueExposed !== false) process.exit(15);
-          if (!Array.isArray(payload.scenarios) || payload.scenarios.length !== 8) process.exit(16);
-          if (payload.scenarios.some((item) => item?.fullOrderEqual !== true || item?.top1Equal !== true || item?.top3Equal !== true)) process.exit(17);
+          if (payload.expectedRecommendationProductCount !== 164) process.exit(7);
+          if (payload.expectedOverlayOnlyCount !== 1) process.exit(8);
+          if (payload.overlayCount !== 165) process.exit(9);
+          if (payload.recommendationProductCount !== 164) process.exit(10);
+          if (payload.overlayOnlyCount !== 1) process.exit(11);
+          if (payload.overlayOnlyNonLegacyCount !== 1) process.exit(12);
+          if (payload.missingLegacyLiveCount !== 0 || payload.unexpectedLiveCount !== 0) process.exit(13);
+          if (payload.duplicateOverlayCount !== 0 || payload.nonExactOverlayCount !== 0 || payload.invalidTaxonomyStateCount !== 0) process.exit(14);
+          if (payload.unmatchedProductCount !== 0 || payload.legacyIdentityMismatchCount !== 0) process.exit(15);
+          if (payload.scenarioCount !== 8) process.exit(16);
+          if (payload.scoreDeltaCount !== 0 || payload.slotDeltaCount !== 0) process.exit(17);
+          if (payload.fullOrderDeltaCount !== 0 || payload.top1DeltaCount !== 0 || payload.top3DeltaCount !== 0) process.exit(18);
+          if (payload.recommendationRuntimeCutover !== false || payload.secretValueExposed !== false) process.exit(19);
+          if (!Array.isArray(payload.scenarios) || payload.scenarios.length !== 8) process.exit(20);
+          if (payload.scenarios.some((item) => item?.fullOrderEqual !== true || item?.top1Equal !== true || item?.top3Equal !== true)) process.exit(21);
           NODE
           rm -f "$response_file"
