@@ -27,9 +27,9 @@
       "CATALOG_ONLY",
       "INVALID"
     ],
-    "legacy_projected_semantics": "Canonical assignment and referenced legacy projection exactly match Product UUID, taxonomy version, legacy category and legacy product form.",
+    "legacy_projected_semantics": "Canonical assignment and active referenced legacy projection exactly match Product UUID, taxonomy version, canonical term targets, legacy category and legacy product form.",
     "catalog_only_semantics": "Canonical assignment is valid, legacy_projection_key is absent, and Product legacy category/form are both absent.",
-    "invalid_semantics": "Any missing identity, version mismatch, malformed canonical assignment, coercion, dangling projection, projection mismatch, or legacy field mismatch fails closed.",
+    "invalid_semantics": "Any missing identity, version mismatch, malformed canonical assignment, coercion, dangling/deprecated projection, projection canonical-target mismatch, projection mismatch, or legacy field mismatch fails closed.",
     "legacy_projection_grants_recommendation_admission": false,
     "recommendation_admission_authority": "independent"
   },
@@ -40,6 +40,8 @@
     "catalog_only_with_coerced_legacy_category",
     "missing_referenced_projection",
     "projection_key_mismatch",
+    "projection_canonical_terms_mismatch",
+    "deprecated_projection",
     "product_assignment_id_mismatch",
     "legacy_fields_mismatch",
     "malformed_canonical_terms"
@@ -56,6 +58,8 @@
     "canonical_assignment_required": true,
     "catalog_only_never_coerces_to_legacy": true,
     "catalog_only_has_no_legacy_category_or_form": true,
+    "legacy_projection_must_be_active": true,
+    "legacy_projection_canonical_targets_must_match_assignment": true,
     "legacy_projection_must_be_exact": true,
     "resolver_never_grants_recommendation_admission": true,
     "legacy_enum_expansion": false,

@@ -58,6 +58,12 @@ const projectedProduct = {
 const projectedProjection = {
   projectionKey: "legacy:sunscreen:none",
   taxonomyVersion: "catalog-taxonomy-v1",
+  lifecycleState: "active",
+  entityKindTermId: projectedAssignment.entityKindTermId,
+  domainTermId: projectedAssignment.domainTermId,
+  recommendationFamilyTermId: projectedAssignment.recommendationFamilyTermId,
+  categoryTermId: projectedAssignment.categoryTermId,
+  formTermId: null,
   legacyCategory: "sunscreen",
   legacyProductForm: null,
 };
@@ -86,6 +92,12 @@ const treatment = resolveCatalogProductLegacyProjectionCompatibility({
   projection: {
     projectionKey: "legacy:treatment:serum",
     taxonomyVersion: "catalog-taxonomy-v1",
+    lifecycleState: "active",
+    entityKindTermId: treatmentAssignment.entityKindTermId,
+    domainTermId: treatmentAssignment.domainTermId,
+    recommendationFamilyTermId: treatmentAssignment.recommendationFamilyTermId,
+    categoryTermId: treatmentAssignment.categoryTermId,
+    formTermId: treatmentAssignment.formTermId,
     legacyCategory: "treatment",
     legacyProductForm: "serum",
   },
@@ -135,6 +147,25 @@ const keyMismatch = resolveCatalogProductLegacyProjectionCompatibility({
 assert.equal(keyMismatch.status, "INVALID");
 assert.equal(keyMismatch.reason, "LEGACY_PROJECTION_KEY_MISMATCH");
 
+const canonicalMismatch = resolveCatalogProductLegacyProjectionCompatibility({
+  product: projectedProduct,
+  assignment: projectedAssignment,
+  projection: {
+    ...projectedProjection,
+    categoryTermId: "catalog-taxonomy-v1:category:moisturizer",
+  },
+});
+assert.equal(canonicalMismatch.status, "INVALID");
+assert.equal(canonicalMismatch.reason, "LEGACY_PROJECTION_CANONICAL_TERMS_MISMATCH");
+
+const deprecatedProjection = resolveCatalogProductLegacyProjectionCompatibility({
+  product: projectedProduct,
+  assignment: projectedAssignment,
+  projection: { ...projectedProjection, lifecycleState: "deprecated" },
+});
+assert.equal(deprecatedProjection.status, "INVALID");
+assert.equal(deprecatedProjection.reason, "LEGACY_PROJECTION_LIFECYCLE_INVALID");
+
 const idMismatch = resolveCatalogProductLegacyProjectionCompatibility({
   product: { ...projectedProduct, id: "44444444-4444-4444-8444-444444444444" },
   assignment: projectedAssignment,
@@ -159,8 +190,10 @@ const malformedTerms = resolveCatalogProductLegacyProjectionCompatibility({
 assert.equal(malformedTerms.status, "INVALID");
 assert.equal(malformedTerms.reason, "CANONICAL_ASSIGNMENT_TERMS_INVALID");
 
-assert.equal(evidence.required_scenarios.length, 9);
+assert.equal(evidence.required_scenarios.length, 11);
 assert.equal(evidence.invariants.catalog_only_never_coerces_to_legacy, true);
+assert.equal(evidence.invariants.legacy_projection_must_be_active, true);
+assert.equal(evidence.invariants.legacy_projection_canonical_targets_must_match_assignment, true);
 assert.equal(evidence.invariants.legacy_projection_must_be_exact, true);
 assert.equal(evidence.invariants.resolver_never_grants_recommendation_admission, true);
 assert.equal(evidence.invariants.legacy_enum_expansion, false);
