@@ -11,7 +11,9 @@ on:
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
+      - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
       - "scripts/verify-current-main-health.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-scoring.ts"
@@ -25,7 +27,9 @@ on:
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
+      - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
       - "scripts/verify-current-main-health.mjs"
       - "lib/product-source.js"
       - "lib/recommendation-scoring.ts"
@@ -36,7 +40,7 @@ permissions:
 
 jobs:
   verify-foundation:
-    name: DATA-TAXONOMY5 foundation contract
+    name: DATA-TAXONOMY5 foundation and runtime wiring contract
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
@@ -59,6 +63,9 @@ jobs:
 
       - name: Verify DATA-TAXONOMY5 foundation
         run: node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs
+
+      - name: Verify DATA-TAXONOMY5 deployed replay wiring
+        run: node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs
 
       - name: Verify runtime module syntax
         shell: bash
