@@ -2,13 +2,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const migrationPath = "supabase/migrations/20260913202500_data_taxonomy2_candidate_manual_classification_v1.sql";
+const adoptionMigrationPath = "supabase/migrations/20260913210000_data_taxonomy2_production_adoption_reconcile_v1.sql";
 const evidencePath = "docs/evidence/data-taxonomy2-candidate-manual-classification-v1.md";
 
-for (const path of [migrationPath, evidencePath]) {
+for (const path of [migrationPath, adoptionMigrationPath, evidencePath]) {
   assert.ok(fs.existsSync(path), `missing required DATA-TAXONOMY2 artifact: ${path}`);
 }
 
 const migration = fs.readFileSync(migrationPath, "utf8");
+const adoptionMigration = fs.readFileSync(adoptionMigrationPath, "utf8");
 const evidence = fs.readFileSync(evidencePath, "utf8");
 
 const constraintNames = [...migration.matchAll(/\bconstraint\s+([A-Za-z_][A-Za-z0-9_$]*)/gi)].map((match) => match[1]);
@@ -36,6 +38,18 @@ for (const table of [
     new RegExp(`revoke all on table public\\.${table} from public, anon, authenticated, service_role`, "i"),
   );
   assert.match(migration, new RegExp(`grant select on table public\\.${table} to service_role`, "i"));
+
+  assert.doesNotMatch(
+    adoptionMigration,
+    new RegExp(`create table public\\.${table}\\s*\\(`, "i"),
+    `Production adoption must consume, not recreate, split-migrated table ${table}`,
+  );
+  assert.match(adoptionMigration, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
+  assert.match(
+    adoptionMigration,
+    new RegExp(`revoke all on table public\\.${table} from public, anon, authenticated, service_role`, "i"),
+  );
+  assert.match(adoptionMigration, new RegExp(`grant select on table public\\.${table} to service_role`, "i"));
 }
 
 for (const projectionKey of [
@@ -44,7 +58,13 @@ for (const projectionKey of [
   "catalog-taxonomy-v1:legacy:treatment:peeling_solution",
 ]) {
   assert.ok(migration.includes(`'${projectionKey}'`), `missing candidate-promotion projection ${projectionKey}`);
+  assert.ok(adoptionMigration.includes(`'${projectionKey}'`), `adoption must verify projection ${projectionKey}`);
 }
+assert.doesNotMatch(
+  adoptionMigration,
+  /insert\s+into\s+public\.catalog_taxonomy_legacy_projections\b/i,
+  "Production adoption must not duplicate the already-applied projection bridge",
+);
 
 const currentSourceRules = new Map([
   ["catalog-taxonomy-v1:source:hwahae:cleanser", "catalog-taxonomy-v1:category:cleanser"],
@@ -56,6 +76,8 @@ const currentSourceRules = new Map([
 for (const [ruleKey, categoryTerm] of currentSourceRules) {
   assert.ok(migration.includes(`'${ruleKey}'`), `missing source classification rule ${ruleKey}`);
   assert.ok(migration.includes(`'${categoryTerm}'`), `missing target category term ${categoryTerm}`);
+  assert.ok(adoptionMigration.includes(`'${ruleKey}'`), `adoption missing source classification rule ${ruleKey}`);
+  assert.ok(adoptionMigration.includes(`'${categoryTerm}'`), `adoption missing target category term ${categoryTerm}`);
 }
 
 assert.match(migration, /candidate-catalog-taxonomy-classification-v1/i);
@@ -77,12 +99,34 @@ assert.match(migration, /DATA_TAXONOMY2_AUTHORITY_LEAK/i);
 assert.match(migration, /DATA_TAXONOMY2_FORM_INFERENCE_FORBIDDEN/i);
 assert.match(migration, /DATA_TAXONOMY2_ACTIVE_CLASSIFICATION_NONACTIVE_TERM/i);
 
+for (const token of [
+  "DATA_TAXONOMY2_ADOPTION_SOURCE_RULE_TABLE_MISSING",
+  "DATA_TAXONOMY2_ADOPTION_CLASSIFICATION_TABLE_MISSING",
+  "DATA_TAXONOMY2_ADOPTION_PROJECTION_BRIDGE_MISMATCH",
+  "DATA_TAXONOMY2_ADOPTION_SOURCE_RULE_SET_INCOMPLETE",
+  "DATA_TAXONOMY2_CANDIDATE_BACKFILL_INCOMPLETE",
+  "DATA_TAXONOMY2_AUTHORITY_LEAK",
+  "DATA_TAXONOMY2_FORM_INFERENCE_FORBIDDEN",
+  "DATA_TAXONOMY2_ACTIVE_CLASSIFICATION_NONACTIVE_TERM",
+  "DATA_TAXONOMY2_UNKNOWN_SOURCE_NOT_FAIL_CLOSED",
+]) {
+  assert.ok(adoptionMigration.includes(token), `adoption migration missing guardrail ${token}`);
+}
+assert.match(adoptionMigration, /on conflict \(rule_key\) do update/i);
+assert.match(adoptionMigration, /create or replace function public\.resolve_catalog_taxonomy_source_category_v1/i);
+assert.match(adoptionMigration, /create or replace function public\.refresh_product_candidate_catalog_taxonomy_classification_v1/i);
+assert.match(adoptionMigration, /create or replace function public\.sync_product_candidate_catalog_taxonomy_classification_v1/i);
+assert.match(adoptionMigration, /product_candidates_catalog_taxonomy_shadow_sync_v1/i);
+assert.match(adoptionMigration, /recommendation_runtime_cutover',false/i);
+assert.match(adoptionMigration, /exact_source_category_rule_missing/i);
+assert.match(adoptionMigration, /data-taxonomy2-adoption-probe/i);
+
 const tonerRule = migration.match(/'catalog-taxonomy-v1:source:hwahae:toner_essence'[\s\S]*?'active',[\s\S]*?'\{\"observed_in_production\":true,\"authority\":\"shadow_only\",\"form_semantics\":\"unresolved_do_not_infer_essence\"\}'::jsonb/);
 assert.ok(tonerRule, "toner_essence rule must preserve unresolved form semantics");
 const treatmentRule = migration.match(/'catalog-taxonomy-v1:source:hwahae:treatment'[\s\S]*?'active',[\s\S]*?'\{\"observed_in_production\":true,\"authority\":\"shadow_only\",\"form_semantics\":\"requires_separate_governed_evidence\"\}'::jsonb/);
 assert.ok(treatmentRule, "treatment rule must require separate governed form evidence");
 
-for (const pattern of [
+const protectedAuthorityPatterns = [
   /(?:insert\s+into|update|delete\s+from|alter\s+table)\s+public\.products\b/i,
   /create\s+or\s+replace\s+function\s+public\.promote_product_candidate\b/i,
   /create\s+or\s+replace\s+function\s+public\.map_product_category\b/i,
@@ -90,8 +134,12 @@ for (const pattern of [
   /create\s+or\s+replace\s+function\s+public\.admin_confirm_product_review_import_batch\b/i,
   /(?:insert\s+into|update|delete\s+from|alter\s+table)\s+public\.product_fact_/i,
   /(?:insert\s+into|update|delete\s+from|alter\s+table)\s+public\.product_offers\b/i,
-]) {
-  assert.doesNotMatch(migration, pattern, `DATA-TAXONOMY2 must preserve existing runtime authority: ${pattern}`);
+];
+
+for (const [label, sql] of [["base", migration], ["adoption", adoptionMigration]]) {
+  for (const pattern of protectedAuthorityPatterns) {
+    assert.doesNotMatch(sql, pattern, `DATA-TAXONOMY2 ${label} migration must preserve existing runtime authority: ${pattern}`);
+  }
 }
 
 assert.match(evidence, /Production candidate count: `190`/);
@@ -121,6 +169,7 @@ console.log(JSON.stringify({
   candidatePromotionProjectionGapClosed: 3,
   unknownCategoryBehavior: "unresolved_fail_closed",
   reservedVocabularyBehavior: "reserved_shadow_non_admissible",
+  productionAdoptionReconciliation: true,
   productWriteAllowed: false,
   productPromotionAuthorityChanged: false,
   recommendationAdmissionAllowed: false,
