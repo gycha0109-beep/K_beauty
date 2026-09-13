@@ -1,0 +1,249 @@
+{
+  "version": "trust-p26-aestura-barrier-kr-uv-filter-type-adoption-plan-v1",
+  "stage": "TRUST-P26",
+  "phase": "A_DETERMINISTIC_PLAN_FREEZE",
+  "source_main_sha": "affea214007964d52ea8bde7aaa2f368829b8756",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "fact_definition_checksum": "c6107f2924d443c80f1c61e7977f54f69a97ac5b5da21f8eb2be13891f1ec52c",
+    "subject_serializer_version": "product-fact-subject-identity-v1",
+    "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+    "fusion_policy_version": "v2.1-4-product-fact-evidence-fusion-v1",
+    "upstream_p7_artifact_path": "evidence/product-fact-subject-coverage-v1/trust-p7-sunscreen-stage-b-identity-source-research-v1.json",
+    "upstream_p7_blob_sha": "7da1aef5d3b3bab446398aaa9656942180a17118",
+    "upstream_p8_plan_path": "evidence/product-fact-adoption-v1/trust-p8-sunscreen-hosted-adoption-plan-v1.json",
+    "upstream_p22_precedent_path": "evidence/product-fact-adoption-v1/trust-p22-torriden-mild-kr-sunscreen-hosted-adoption-plan-v1.json",
+    "recommendation_consumer": {
+      "path": "lib/recommendation-scoring.ts",
+      "exact_filter_match_weight": 12,
+      "alternative_selection_uses_filter_type_diversity": true,
+      "runtime_product_fact_cutover": false
+    },
+    "admission_boundary": {
+      "policy_path": "scripts/product-evidence/initial-admission-grant-policy-v1.mjs",
+      "policy_blob_sha": "55d17d27de57228dee4567ed99b87c581585058d",
+      "category": "sunscreen",
+      "classification": "INITIAL_ADMISSION_AUTHORITY_INSUFFICIENT",
+      "fact_grants_initial_admission": false
+    }
+  },
+  "admin_actor": {
+    "user_id": "e1a59349-fe13-43ff-86ce-078c2dce0d99",
+    "role": "admin_owner",
+    "is_active": true
+  },
+  "target": {
+    "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+    "catalog_brand": "에스트라",
+    "catalog_name": "더마UV365 장벽수분 무기자차 선크림",
+    "legacy_uv_filter_type": "mineral",
+    "subject_id": "a340d9dc-a742-4ca3-9951-3bc7e6ec7655",
+    "subject_semantic_key": "d166f4c1336cf52b3025111be6cbcc836756f5017772400f3a5054745b742160",
+    "variant_key": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR",
+    "formulation_revision_key": "trust-p7-aestura-barrier-hydro-mineral-current",
+    "market": "KR"
+  },
+  "registry_contract": {
+    "fact_key": "uv_filter_type",
+    "value_type": "enum",
+    "allowed_values": [
+      "mineral",
+      "organic",
+      "hybrid"
+    ],
+    "semantic_definition": "Declared or composition-established UV filter system class.",
+    "permitted_evidence_classes": [
+      "product_claim",
+      "composition_identity"
+    ],
+    "positive_evidence_requirement": "product-specific evidence"
+  },
+  "first_party_authority": {
+    "frozen_source_observation": {
+      "artifact": "trust-p7-sunscreen-stage-b-identity-source-research-v1",
+      "international_url": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+      "international_observed_claim": "DERMA UV365 Barrier Hydro Mineral Sunscreen",
+      "kr_identity_url": "https://www.aestura.com/web/product/view.do?prdSeq=1107",
+      "kr_observed_claim": "더마UV365 장벽수분 무기자차 선크림"
+    },
+    "live_recheck": {
+      "checked_date": "2026-09-14",
+      "international_page_still_declares_mineral": true,
+      "kr_page_still_declares_무기자차": true,
+      "authority_use": "corroboration_only_frozen_p7_observation_is_deterministic_input"
+    },
+    "normalization": {
+      "raw_claim": "DERMA UV365 Barrier Hydro Mineral Sunscreen",
+      "normalized_value": "mineral",
+      "cross_product_inference": false,
+      "ingredient_class_inference_required": false
+    }
+  },
+  "existing_lineage": {
+    "source_id": "cdfc7792-cf0b-402e-a407-50a0bd9ba71b",
+    "binding_id": "ab398c78-5932-4952-b2b3-d57074da56a5",
+    "source_content_digest": "6bda698640f4c0cae2f7dbdf6a9da72980cab1f39ae972e8e7488351775bb3ab",
+    "binding_state": "exact_subject_match",
+    "scope_relation": "narrower",
+    "source_reuse_required": true,
+    "new_subject_required": false,
+    "new_source_required": false,
+    "new_binding_required": false
+  },
+  "proposition": {
+    "fact_key": "uv_filter_type",
+    "value": "mineral",
+    "value_type": "enum",
+    "scope": {
+      "market": "KR",
+      "variant": "DERMA_UV365_BARRIER_HYDRO_MINERAL_40ML_KR"
+    },
+    "qualifier": {},
+    "raw_claim": "DERMA UV365 Barrier Hydro Mineral Sunscreen",
+    "proposition_key": "996c2b99f4519323d3f6a144395ae09da861419ec38559bf6f9c67a9ad88f004",
+    "canonical_evidence_digest": "0fe3f0338e4b2c8177be762122e06e7925f8e8c9d8f58e99eb54bf56a326b74b",
+    "evidence_class": "product_claim",
+    "evidence_authority": "product_specific_primary",
+    "support_direction": "supports",
+    "negative_admissibility": "not_applicable",
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high"
+  },
+  "controlled_ingest_payload": {
+    "source": {
+      "canonical_locator": "https://int.aestura.com/products/derma-uv365-barrier-hydro-mineral-sunscreen",
+      "publisher": "AESTURA",
+      "source_kind": "official_product_page",
+      "source_metadata": {
+        "authority": "product_specific_primary",
+        "source_ref": "trust-p8-source:2d3591f2-2216-4043-8493-a9492806ef8b",
+        "digest_basis": "trust-p7-frozen-source-observation-v1-not-live-page-bytes",
+        "provenance_container": "trust-p8-sunscreen-hosted-adoption-plan-v1",
+        "companion_identity_source_urls": [
+          "https://www.aestura.com/web/product/view.do?prdSeq=1107"
+        ]
+      },
+      "content_digest": "6bda698640f4c0cae2f7dbdf6a9da72980cab1f39ae972e8e7488351775bb3ab",
+      "external_snapshot_reference": null,
+      "market": null,
+      "region": null,
+      "locale": null,
+      "published_at": null,
+      "accessed_at": "2026-09-10T21:12:00+09:00",
+      "observed_at": null
+    },
+    "binding": {
+      "product_id": "2d3591f2-2216-4043-8493-a9492806ef8b",
+      "subject_id": "a340d9dc-a742-4ca3-9951-3bc7e6ec7655",
+      "binding_state": "exact_subject_match",
+      "scope_relation": "narrower",
+      "presentation_metadata": {
+        "source_ref": "trust-p8-source:2d3591f2-2216-4043-8493-a9492806ef8b",
+        "source_market": null,
+        "subject_market_applicability": "KR",
+        "companion_identity_source_url": "https://www.aestura.com/web/product/view.do?prdSeq=1107",
+        "subject_identity_change_required": false
+      },
+      "identity_resolution_version": "trust-p7-sunscreen-stage-b-identity-v1",
+      "reviewed_at": "2026-09-10T00:00:00+09:00"
+    },
+    "evidence": {
+      "registry_version": "product-fact-registry-cross-category-v1",
+      "fact_key": "uv_filter_type",
+      "proposition_key": "996c2b99f4519323d3f6a144395ae09da861419ec38559bf6f9c67a9ad88f004",
+      "proposition_serializer_version": "product-fact-proposition-pilot-v1",
+      "proposition_value_identity": "mineral",
+      "parent_proposition_key": null,
+      "evidence_class": "product_claim",
+      "evidence_authority": "product_specific_primary",
+      "confidence": "high",
+      "support_direction": "supports",
+      "negative_admissibility": "not_applicable",
+      "market": "KR",
+      "region": null,
+      "locale": null,
+      "valid_from": null,
+      "valid_to": null,
+      "qualifier": {},
+      "canonical_evidence_digest": "0fe3f0338e4b2c8177be762122e06e7925f8e8c9d8f58e99eb54bf56a326b74b",
+      "supersedes_evidence_id": null
+    }
+  },
+  "hosted_prestate": {
+    "checked_at": "2026-09-14T02:59:57.517121+09:00",
+    "subjects": 25,
+    "sources": 26,
+    "bindings": 26,
+    "evidence": 58,
+    "fact_instances": 58,
+    "evidence_links": 58,
+    "review_assignments": 58,
+    "confirmations": 58,
+    "current": 58,
+    "target_current": 2,
+    "target_uv_filter_current": 0,
+    "target_uv_filter_evidence": 0,
+    "evidence_digest_collision": 0,
+    "open_assignment_rows": 0,
+    "request_id_collisions": 0
+  },
+  "request_ids": {
+    "evidence": "trust-p26-aestura-barrier-uv-filter-evidence-20260914-v1",
+    "review_under": "trust-p26-aestura-barrier-uv-filter-review-under-20260914-v1",
+    "review_ready": "trust-p26-aestura-barrier-uv-filter-review-ready-20260914-v1",
+    "confirmation": "trust-p26-aestura-barrier-uv-filter-confirm-20260914-v1"
+  },
+  "phase_a_expected_writes": 0,
+  "phase_b_execution_authorized": false,
+  "phase_b_planned_delta": {
+    "subjects": 0,
+    "sources": 0,
+    "bindings": 0,
+    "evidence": 1,
+    "fact_instances": 1,
+    "evidence_links": 1,
+    "review_assignments": 1,
+    "confirmations": 1,
+    "current": 1
+  },
+  "phase_b_contract": {
+    "controlled_rpc_only": true,
+    "source_and_binding_reuse": true,
+    "all_confirmation_preflights_before_confirm": true,
+    "runtime_ids": "server_returned_only",
+    "direct_table_dml": false,
+    "rpc_sequence": [
+      "admin_ingest_product_fact_evidence_v1",
+      "admin_prepare_product_fact_review_v1",
+      "admin_preflight_product_fact_confirmation_v1",
+      "admin_confirm_product_fact_v1"
+    ]
+  },
+  "invariants": {
+    "production_product_fact_writes_phase_a": 0,
+    "legacy_products_mutation": false,
+    "recommendation_or_ranking_change": false,
+    "recommendation_runtime_product_fact_cutover": false,
+    "initial_admission_grant_change": false,
+    "legacy_corpus_change": false,
+    "registry_mutation": false,
+    "schema_or_rpc_mutation": false,
+    "new_fact_kind": false,
+    "cross_product_inference": false,
+    "third_party_positive_fact_support": false,
+    "white_cast_or_eye_sting_authority_claimed": false,
+    "hybrid_or_organic_authority_claimed": false
+  },
+  "next_gate": {
+    "status": "PHASE_A_FREEZE_ONLY",
+    "requires_exact_head_ci": true,
+    "requires_fresh_main_preflight": true,
+    "requires_expected_head_merge": true,
+    "requires_merged_main_ci": true,
+    "requires_fresh_production_prestate": true,
+    "requires_confirmation_preflight_ready": true
+  },
+  "plan_content_sha256": "a6307b1f84b9391970f99902933af84a7275a42645f7d91ac9737e6943069c06"
+}
