@@ -116,8 +116,13 @@ const catalogOnlyAssignment = {
   form_term_id: null,
   legacy_projection_key: null,
 };
+const catalogOnlyProduct = {
+  id: catalogOnlyAssignment.product_id,
+  category: null,
+  product_form: null,
+};
 const catalogOnly = resolveCatalogProductLegacyProjectionCompatibility({
-  product: { id: catalogOnlyAssignment.product_id, category: null, product_form: null },
+  product: catalogOnlyProduct,
   assignment: catalogOnlyAssignment,
 });
 assert.equal(catalogOnly.status, "CATALOG_ONLY");
@@ -125,12 +130,34 @@ assert.equal(catalogOnly.reason, "NO_LEGACY_PROJECTION");
 assert.equal(catalogOnly.hasLegacyRecommendationProjection, false);
 assert.equal(catalogOnly.grantsRecommendationAdmission, false);
 
+const missingAssignment = resolveCatalogProductLegacyProjectionCompatibility({
+  product: projectedProduct,
+});
+assert.equal(missingAssignment.status, "INVALID");
+assert.equal(missingAssignment.reason, "MISSING_CANONICAL_ASSIGNMENT");
+
+const taxonomyVersionMismatch = resolveCatalogProductLegacyProjectionCompatibility({
+  product: projectedProduct,
+  assignment: { ...projectedAssignment, taxonomyVersion: "catalog-taxonomy-v2" },
+  projection: projectedProjection,
+});
+assert.equal(taxonomyVersionMismatch.status, "INVALID");
+assert.equal(taxonomyVersionMismatch.reason, "TAXONOMY_VERSION_MISMATCH");
+
 const coerced = resolveCatalogProductLegacyProjectionCompatibility({
-  product: { id: catalogOnlyAssignment.product_id, category: "moisturizer", product_form: null },
+  product: { ...catalogOnlyProduct, category: "moisturizer" },
   assignment: catalogOnlyAssignment,
 });
 assert.equal(coerced.status, "INVALID");
 assert.equal(coerced.reason, "LEGACY_FIELDS_WITHOUT_PROJECTION");
+
+const unreferencedProjection = resolveCatalogProductLegacyProjectionCompatibility({
+  product: catalogOnlyProduct,
+  assignment: catalogOnlyAssignment,
+  projection: projectedProjection,
+});
+assert.equal(unreferencedProjection.status, "INVALID");
+assert.equal(unreferencedProjection.reason, "UNREFERENCED_LEGACY_PROJECTION_SUPPLIED");
 
 const missingProjection = resolveCatalogProductLegacyProjectionCompatibility({
   product: projectedProduct,
@@ -146,6 +173,14 @@ const keyMismatch = resolveCatalogProductLegacyProjectionCompatibility({
 });
 assert.equal(keyMismatch.status, "INVALID");
 assert.equal(keyMismatch.reason, "LEGACY_PROJECTION_KEY_MISMATCH");
+
+const projectionVersionMismatch = resolveCatalogProductLegacyProjectionCompatibility({
+  product: projectedProduct,
+  assignment: projectedAssignment,
+  projection: { ...projectedProjection, taxonomyVersion: "catalog-taxonomy-v2" },
+});
+assert.equal(projectionVersionMismatch.status, "INVALID");
+assert.equal(projectionVersionMismatch.reason, "LEGACY_PROJECTION_VERSION_MISMATCH");
 
 const canonicalMismatch = resolveCatalogProductLegacyProjectionCompatibility({
   product: projectedProduct,
@@ -190,8 +225,11 @@ const malformedTerms = resolveCatalogProductLegacyProjectionCompatibility({
 assert.equal(malformedTerms.status, "INVALID");
 assert.equal(malformedTerms.reason, "CANONICAL_ASSIGNMENT_TERMS_INVALID");
 
-assert.equal(evidence.required_scenarios.length, 11);
+assert.equal(evidence.required_scenarios.length, 15);
+assert.equal(evidence.invariants.canonical_assignment_required, true);
+assert.equal(evidence.invariants.taxonomy_version_exact, true);
 assert.equal(evidence.invariants.catalog_only_never_coerces_to_legacy, true);
+assert.equal(evidence.invariants.catalog_only_rejects_unreferenced_projection, true);
 assert.equal(evidence.invariants.legacy_projection_must_be_active, true);
 assert.equal(evidence.invariants.legacy_projection_canonical_targets_must_match_assignment, true);
 assert.equal(evidence.invariants.legacy_projection_must_be_exact, true);
