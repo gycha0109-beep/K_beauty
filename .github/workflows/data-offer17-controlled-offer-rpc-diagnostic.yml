@@ -35,10 +35,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout exact head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.DATA_OFFER17_EXACT_HEAD }}
           fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install verifier dependencies
+        run: npm ci --ignore-scripts
 
       - name: Verify exact head
         shell: bash
