@@ -1,0 +1,73 @@
+{
+  "schema_version": "data-taxonomy7-legacy-projection-compatibility-v1",
+  "issue": 488,
+  "baseline_main_sha": "53eac9a76094a4c927ced4217532194369bb53e7",
+  "depends_on": {
+    "data_taxonomy6_issue": 486,
+    "data_taxonomy6_merge_sha": "53eac9a76094a4c927ced4217532194369bb53e7"
+  },
+  "production_baseline": {
+    "product_count": 165,
+    "taxonomy_assignment_count": 165,
+    "taxonomy_exact_equivalent_count": 165,
+    "recommendation_admitted_baseline": 164,
+    "products_category_nullable": false,
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "recommendation_runtime_cutover": false
+  },
+  "contract": {
+    "version": "catalog-product-legacy-projection-compatibility-v1",
+    "pure_side_effect_free": true,
+    "database_access": false,
+    "network_access": false,
+    "environment_access": false,
+    "statuses": [
+      "LEGACY_PROJECTED",
+      "CATALOG_ONLY",
+      "INVALID"
+    ],
+    "legacy_projected_semantics": "Canonical assignment and referenced legacy projection exactly match Product UUID, taxonomy version, legacy category and legacy product form.",
+    "catalog_only_semantics": "Canonical assignment is valid, legacy_projection_key is absent, and Product legacy category/form are both absent.",
+    "invalid_semantics": "Any missing identity, version mismatch, malformed canonical assignment, coercion, dangling projection, projection mismatch, or legacy field mismatch fails closed.",
+    "legacy_projection_grants_recommendation_admission": false,
+    "recommendation_admission_authority": "independent"
+  },
+  "required_scenarios": [
+    "valid_legacy_projection",
+    "valid_treatment_form_projection",
+    "valid_catalog_only",
+    "catalog_only_with_coerced_legacy_category",
+    "missing_referenced_projection",
+    "projection_key_mismatch",
+    "product_assignment_id_mismatch",
+    "legacy_fields_mismatch",
+    "malformed_canonical_terms"
+  ],
+  "runtime_wiring": {
+    "recommendation_consumer_changed": false,
+    "analyze_path_changed": false,
+    "candidate_promotion_changed": false,
+    "database_schema_changed": false,
+    "production_ddl_applied": false
+  },
+  "invariants": {
+    "product_uuid_stable": true,
+    "canonical_assignment_required": true,
+    "catalog_only_never_coerces_to_legacy": true,
+    "catalog_only_has_no_legacy_category_or_form": true,
+    "legacy_projection_must_be_exact": true,
+    "resolver_never_grants_recommendation_admission": true,
+    "legacy_enum_expansion": false,
+    "recommendation_runtime_authority_unchanged": true
+  },
+  "mutation_scope": {
+    "production_schema": false,
+    "product": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false,
+    "production_business_data": false
+  },
+  "next_gate": "nullable legacy projection schema foundation; Production application remains separately approval-gated"
+}
