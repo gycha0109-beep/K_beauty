@@ -138,6 +138,7 @@ jobs:
             credentialAvailable: payload.credentialAvailable ?? null,
             runtimeRoleMatch: payload.runtimeRoleMatch ?? null,
             rawOfferSelectDenied: payload.rawOfferSelectDenied ?? null,
+            requestedProductCount: payload.requestedProductCount ?? null,
             rpcStatus: payload.rpcStatus || null,
             rpcResultClass: payload.rpcResultClass || null,
             rowCardinality: payload.rowCardinality ?? null,
@@ -166,13 +167,61 @@ jobs:
           if (payload.credentialAvailable !== true) process.exit(4);
           if (payload.runtimeRoleMatch !== true) process.exit(5);
           if (payload.rawOfferSelectDenied !== true) process.exit(6);
-          if (!allowedRpcClasses.has(payload.rpcResultClass)) process.exit(7);
-          if (
-            payload.result === 'DIAGNOSTIC_COMPLETE' &&
-            payload.transportDifferential === 'CONTROL_SUCCEEDED_PRIMARY_FAILED'
-          ) {
-            console.log('DATA_OFFER17_ROOT_CAUSE_SIGNAL=POSTGRES_JS_ARRAY_TRANSPORT_DIFFERENTIAL');
-          }
-          if (payload.result === 'PASS' && payload.rpcResultClass !== 'SUCCESS') process.exit(8);
+          if (payload.requestedProductCount !== 8) process.exit(7);
+          if (!allowedRpcClasses.has(payload.rpcResultClass)) process.exit(8);
+          if (payload.result === 'PASS' && payload.rpcResultClass !== 'SUCCESS') process.exit(9);
           NODE
           rm -f "$response_file"
+
+      - name: Run controlled Production analyze request
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          image_file="$(mktemp --suffix=.png)"
+          response_file="$(mktemp)"
+          printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z0T8AAAAASUVORK5CYII=' | base64 --decode > "$image_file"
+          status="$(curl --silent --show-error --retry 3 --retry-delay 2 --retry-all-errors \
+            -o "$response_file" \
+            -w '%{http_code}' \
+            -X POST \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            -F "image=@${image_file};type=image/png" \
+            -F 'skinType=combination' \
+            -F 'sensitivity=medium' \
+            -F 'mainConcern=dehydration' \
+            -F 'cleansingFrequency=twice' \
+            -F 'preferredTexture=lotion' \
+            -F 'postWashFeeling=comfortable' \
+            -F 'afternoonSkinChange=mostly_same' \
+            -F 'mostDislikedFeel=sticky' \
+            -F 'whiteCastHate=false' \
+            -F 'toneUpWanted=false' \
+            -F 'makeupUse=false' \
+            -F 'eyeSensitive=false' \
+            -F 'locale=ko' \
+            "$DEPLOYMENT_URL/api/analyze")"
+          node - "$response_file" "$status" <<'NODE'
+          const fs = require('fs');
+          const [file, status] = process.argv.slice(2);
+          let payload = null;
+          try {
+            payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+          } catch {}
+          const evidence = {
+            httpStatus: Number(status),
+            responseJson: Boolean(payload && typeof payload === 'object'),
+            summaryPresent: typeof payload?.summary === 'string',
+            topPickFieldPresent: Boolean(payload && Object.prototype.hasOwnProperty.call(payload, 'topPick')),
+            morningArray: Array.isArray(payload?.morning),
+            nightArray: Array.isArray(payload?.night),
+            schemaVersion: payload?.meta?.schemaVersion ?? null,
+          };
+          console.log(`DATA_OFFER17_ANALYZE_EVIDENCE=${JSON.stringify(evidence)}`);
+          if (status !== '200') process.exit(1);
+          if (!evidence.responseJson || !evidence.summaryPresent || !evidence.topPickFieldPresent) process.exit(2);
+          if (!evidence.morningArray || !evidence.nightArray) process.exit(3);
+          NODE
+          rm -f "$image_file" "$response_file"
