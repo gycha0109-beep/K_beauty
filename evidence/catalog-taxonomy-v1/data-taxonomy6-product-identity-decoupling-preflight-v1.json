@@ -1,0 +1,167 @@
+{
+  "schema_version": "data-taxonomy6-product-identity-decoupling-preflight-v1",
+  "issue": 486,
+  "baseline_main_sha": "2921c701cf4454c1a262196e6fb74535a2370cc9",
+  "production_observed_at": "2026-09-14 02:43:43.113833+09",
+  "goal": "Decouple canonical Product identity/classification from the legacy Recommendation category projection before any schema or runtime authority cutover.",
+  "current_production": {
+    "product_count": 165,
+    "products_category_type": "public.product_category",
+    "products_category_nullable": false,
+    "null_category_count": 0,
+    "products_product_form_nullable": true,
+    "null_product_form_count": 147,
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "taxonomy_assignment_count": 165,
+    "taxonomy_exact_equivalent_count": 165,
+    "taxonomy_non_exact_count": 0,
+    "assignment_without_legacy_projection_count": 0,
+    "recommendation_admitted_baseline": 164,
+    "recommendation_runtime_cutover": false,
+    "legacy_enum_contains_future_mask_makeup_tool_device_terms": false
+  },
+  "existing_canonical_representation": {
+    "assignment_table": "public.product_catalog_taxonomy_assignments",
+    "identity_key": "product_id",
+    "legacy_projection_column": "legacy_projection_key",
+    "legacy_projection_nullable": true,
+    "new_sidecar_required": false,
+    "reserved_future_vocabulary_present": [
+      "category:mask",
+      "domain:makeup",
+      "entity_kind:tool",
+      "entity_kind:device",
+      "category:skincare_tool",
+      "category:skincare_device"
+    ]
+  },
+  "structural_coupling_inventory": {
+    "direct_product_insert_authority": [
+      "public.promote_product_candidate_structural_v1"
+    ],
+    "upstream_admin_candidate_gates": [
+      "public.admin_confirm_product_candidate_structural_adoption_v1",
+      "public.admin_preflight_product_candidate_review",
+      "public.admin_preflight_product_candidate_review_unsafe_v1"
+    ],
+    "manual_import_review_paths": [
+      "public.admin_validate_product_review_import_v2_rows",
+      "public.admin_confirm_product_review_import_batch"
+    ],
+    "db_read_consumers": [
+      "public.read_recommendation_admission_authority_v1",
+      "public.product_metadata_review_completeness_v1",
+      "public.catalog_taxonomy_shadow_read_v1",
+      "public.catalog_taxonomy_product_exact_equivalence_v1"
+    ],
+    "repo_runtime_consumers": [
+      "lib/product-category-normalizer.js",
+      "lib/product-source.js",
+      "lib/recommendation-scoring.ts"
+    ],
+    "current_write_coupling": "product_candidates.service_category -> public.products.category",
+    "current_blocker": "public.products.category is NOT NULL public.product_category, so a canonical Product cannot exist unless it is coerced into a legacy Recommendation category."
+  },
+  "identity_and_lineage": {
+    "canonical_product_identity": "public.products.id",
+    "product_id_rewrite_required": false,
+    "foreign_key_dependents": [
+      "candidate_promotion_reviews.approved_product_id",
+      "product_attributes.product_id",
+      "product_candidates.duplicate_of_product_id",
+      "product_candidates.matched_product_id",
+      "product_catalog_taxonomy_assignments.product_id",
+      "product_evidence_source_subject_bindings.product_id",
+      "product_fact_review_assignments.product_id",
+      "product_fact_subjects.product_id",
+      "product_identity_key_repair_requests.product_id",
+      "product_metadata_field_reviews.product_id",
+      "product_offers.product_id",
+      "product_source_bindings.product_id",
+      "recommendations.product_id"
+    ],
+    "preserve_product_fact_lineage": true,
+    "preserve_offer_lineage": true
+  },
+  "selected_target_model": {
+    "canonical_identity": "public.products.id",
+    "canonical_classification": "public.product_catalog_taxonomy_assignments",
+    "legacy_recommendation_category_projection": "public.products.category",
+    "legacy_recommendation_form_projection": "public.products.product_form",
+    "target_category_nullable": true,
+    "target_product_form_nullable": true,
+    "no_legacy_projection_representation": "NULL products.category plus NULL legacy_projection_key; canonical taxonomy assignment remains required",
+    "recommendation_behavior_without_legacy_projection": "fail_closed_not_admitted",
+    "expand_legacy_product_category_enum_for_future_taxonomy": false,
+    "coerce_future_catalog_terms_to_nearest_legacy_category": false
+  },
+  "parity_semantics_after_decoupling": {
+    "catalog_coverage": "every Product must have exactly one canonical assignment for the active catalog taxonomy version",
+    "legacy_projection_exactness": "every Product that declares a legacy projection must exactly match its legacy category/form projection",
+    "recommendation_admission": "only Products independently authorized by the Recommendation admission path may enter scoring/ranking",
+    "catalog_only_product_is_not_a_taxonomy_mismatch": true
+  },
+  "staged_migration": [
+    {
+      "stage": 0,
+      "name": "preflight_freeze",
+      "production_write": false,
+      "description": "Freeze consumer inventory, target representation, invariants, and rollback boundary."
+    },
+    {
+      "stage": 1,
+      "name": "compatibility_contract",
+      "production_write": false,
+      "description": "Add repository migration/read contracts that explicitly distinguish canonical taxonomy from nullable legacy Recommendation projection; keep runtime authority legacy."
+    },
+    {
+      "stage": 2,
+      "name": "nullable_legacy_projection_schema",
+      "production_write": true,
+      "requires_explicit_production_approval": true,
+      "description": "Drop NOT NULL from products.category only after exact-head CI and zero-null preflight; no business-row mutation."
+    },
+    {
+      "stage": 3,
+      "name": "canonical_taxonomy_aware_promotion",
+      "production_write": true,
+      "requires_explicit_production_approval": true,
+      "description": "Permit structurally valid catalog-only Product promotion with canonical taxonomy assignment and NULL legacy category; never coerce an unprojectable term."
+    },
+    {
+      "stage": 4,
+      "name": "dual_read_no_leak_parity",
+      "production_write": false,
+      "description": "Prove catalog-only Products do not leak into Recommendation and current admitted legacy corpus remains no-delta."
+    },
+    {
+      "stage": 5,
+      "name": "future_recommendation_authority_cutover",
+      "production_write": false,
+      "description": "Separate later gate only; not authorized by DATA-TAXONOMY6."
+    }
+  ],
+  "rollback": {
+    "before_any_null_category_product_exists": "Verify category IS NULL count is zero, then restore products.category NOT NULL and revert compatibility code.",
+    "after_catalog_only_product_exists": "Do not coerce or delete canonical Products. Roll back Recommendation consumer changes while preserving Product IDs, taxonomy assignments, Product Facts, Offers, and NULL legacy projections.",
+    "recommendation_runtime_authority_during_rollback": "legacy category/product_form"
+  },
+  "non_goals": [
+    "Recommendation taxonomy authority cutover",
+    "legacy enum expansion for mask/makeup/tools/devices",
+    "weakening Recommendation candidate admission",
+    "creating mask/makeup/tool/device Product rows",
+    "Product Fact authority redesign",
+    "Offer authority redesign"
+  ],
+  "mutation_scope": {
+    "production_schema": false,
+    "product": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false,
+    "production_business_data": false
+  }
+}
