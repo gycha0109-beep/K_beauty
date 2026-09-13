@@ -12,6 +12,10 @@ on:
       - "lib/recommendation-admission-authority-controlled-probe-oidc.js"
       - "lib/recommendation-admission-authority-reader.js"
       - "app/api/internal/recommendation-admission-authority-controlled-probe/route.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
+      - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
 
 permissions:
   contents: read
@@ -49,6 +53,9 @@ jobs:
           grep -F 'export async function POST(request)' app/api/internal/recommendation-admission-authority-controlled-probe/route.js >/dev/null
           grep -F 'runRecommendationAdmissionRuntimeSecurityProbe' app/api/internal/recommendation-admission-authority-controlled-probe/route.js >/dev/null
           grep -F 'RECOMMENDATION_ADMISSION_DATABASE_URL' lib/recommendation-admission-authority-reader.js >/dev/null
+
+      - name: Verify DATA-TAXONOMY5 deployed replay wiring
+        run: node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs
 
   runtime-probe:
     name: G3A deployed runtime authority probe
@@ -140,5 +147,75 @@ jobs:
           if (payload.runtimeRoleMatch !== true) process.exit(4);
           if (payload.rawPfSelectDenied !== true) process.exit(5);
           if (payload.authorityStatus !== 'AUTHORITY_RESOLVED') process.exit(6);
+          NODE
+          rm -f "$response_file"
+
+      - name: Probe deployed DATA-TAXONOMY5 Recommendation parity
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.url }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.custom }}
+          VERCEL_TRUSTED_OIDC_TOKEN: ${{ steps.oidc.outputs.trusted }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --retry 18 --retry-delay 5 --retry-all-errors \
+            -o "$response_file" \
+            -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $OIDC_TOKEN" \
+            -H "x-vercel-trusted-oidc-idp-token: $VERCEL_TRUSTED_OIDC_TOKEN" \
+            "$DEPLOYMENT_URL/api/internal/catalog-taxonomy-recommendation-shadow-replay")"
+          cat "$response_file"
+          echo
+          echo "DATA_TAXONOMY5_RUNTIME_PROBE_HTTP_STATUS=$status"
+          node - "$response_file" "$GITHUB_SHA" "$status" <<'NODE'
+          const fs = require('fs');
+          const [file, expectedSha, httpStatus] = process.argv.slice(2);
+          const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const safe = {
+            result: payload.result || null,
+            deploymentSha: payload.deploymentSha || null,
+            deploymentRef: payload.deploymentRef || null,
+            expectedProductCount: payload.expectedProductCount ?? null,
+            credentialAvailable: payload.credentialAvailable ?? null,
+            runtimeRoleMatch: payload.runtimeRoleMatch ?? null,
+            rawProductSelectDenied: payload.rawProductSelectDenied ?? null,
+            rawTaxonomySelectDenied: payload.rawTaxonomySelectDenied ?? null,
+            overlayCount: payload.overlayCount ?? null,
+            recommendationProductCount: payload.recommendationProductCount ?? null,
+            overlayOnlyCount: payload.overlayOnlyCount ?? null,
+            duplicateOverlayCount: payload.duplicateOverlayCount ?? null,
+            nonExactOverlayCount: payload.nonExactOverlayCount ?? null,
+            invalidTaxonomyStateCount: payload.invalidTaxonomyStateCount ?? null,
+            unmatchedProductCount: payload.unmatchedProductCount ?? null,
+            legacyIdentityMismatchCount: payload.legacyIdentityMismatchCount ?? null,
+            scenarioCount: payload.scenarioCount ?? null,
+            scoreDeltaCount: payload.scoreDeltaCount ?? null,
+            slotDeltaCount: payload.slotDeltaCount ?? null,
+            fullOrderDeltaCount: payload.fullOrderDeltaCount ?? null,
+            top1DeltaCount: payload.top1DeltaCount ?? null,
+            top3DeltaCount: payload.top3DeltaCount ?? null,
+            recommendationRuntimeCutover: payload.recommendationRuntimeCutover ?? null,
+            secretValueExposed: payload.secretValueExposed ?? null,
+          };
+          console.log(`DATA_TAXONOMY5_RUNTIME_EVIDENCE=${JSON.stringify(safe)}`);
+          if (httpStatus !== '200') process.exit(1);
+          if (payload.deploymentSha !== expectedSha || payload.deploymentRef !== 'main') process.exit(2);
+          if (payload.result !== 'PASS') process.exit(3);
+          if (payload.credentialAvailable !== true || payload.runtimeRoleMatch !== true) process.exit(4);
+          if (payload.rawProductSelectDenied !== true || payload.rawTaxonomySelectDenied !== true) process.exit(5);
+          if (payload.expectedProductCount !== 165) process.exit(6);
+          if (payload.overlayCount !== 165) process.exit(7);
+          if (payload.recommendationProductCount !== 165) process.exit(8);
+          if (payload.overlayOnlyCount !== 0) process.exit(9);
+          if (payload.duplicateOverlayCount !== 0 || payload.nonExactOverlayCount !== 0 || payload.invalidTaxonomyStateCount !== 0) process.exit(10);
+          if (payload.unmatchedProductCount !== 0 || payload.legacyIdentityMismatchCount !== 0) process.exit(11);
+          if (payload.scenarioCount !== 8) process.exit(12);
+          if (payload.scoreDeltaCount !== 0 || payload.slotDeltaCount !== 0) process.exit(13);
+          if (payload.fullOrderDeltaCount !== 0 || payload.top1DeltaCount !== 0 || payload.top3DeltaCount !== 0) process.exit(14);
+          if (payload.recommendationRuntimeCutover !== false || payload.secretValueExposed !== false) process.exit(15);
+          if (!Array.isArray(payload.scenarios) || payload.scenarios.length !== 8) process.exit(16);
+          if (payload.scenarios.some((item) => item?.fullOrderEqual !== true || item?.top1Equal !== true || item?.top3Equal !== true)) process.exit(17);
           NODE
           rm -f "$response_file"
