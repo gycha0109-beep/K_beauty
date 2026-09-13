@@ -40,6 +40,7 @@ for (const marker of [
 ]) assert.ok(workflow.includes(marker), `runtime workflow contract drifted: ${marker}`);
 
 for (const marker of [
+  "@/lib/server/recommendation-candidate-admission-runtime",
   "verifyG3AGitHubActionsOidcToken",
   "deploymentRef !== \"main\"",
   "runCatalogTaxonomyRecommendationShadowReplay",
