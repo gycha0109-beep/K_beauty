@@ -17,7 +17,7 @@ The legacy path above remains the Product-promotion and Recommendation authority
 
 ## Fresh baseline
 
-Repository baseline:
+Repository baseline before DATA-TAXONOMY2 implementation:
 
 ```text
 main = d0fcf6e36984053a621df74aa1a63e46e0581dea
@@ -27,7 +27,7 @@ catalog taxonomy lifecycle = shadow
 catalog taxonomy authority_mode = shadow_only
 ```
 
-Fresh read-only Production observations before applying this migration:
+Fresh read-only Production observations before DATA-TAXONOMY2 Production application:
 
 ```text
 Production Product count: `165`
@@ -52,9 +52,13 @@ Protected function definition MD5 baselines:
 - admin_confirm_product_review_import_batch(...): `f228d90b5dcd85e3a7dbf7163d60fa46`
 ```
 
-Production migration applied: `false`
+The Product digest is calculated as:
 
-No Production DDL/DML is claimed by this evidence file.
+```sql
+md5(string_agg(to_jsonb(p)::text, E'\n' order by p.id::text))
+```
+
+This serialization definition matters because `row_to_json(p)::text` produces a different digest for the same rows.
 
 ## Current promotion gap discovered
 
@@ -170,7 +174,13 @@ service_category
 product_form
 ```
 
-The trigger writes only `product_candidate_catalog_taxonomy_classifications`.
+The Production trigger is:
+
+```text
+product_candidates_catalog_taxonomy_shadow_sync_v1
+```
+
+It executes `sync_product_candidate_catalog_taxonomy_classification_v1()` and writes only `product_candidate_catalog_taxonomy_classifications` through the bounded refresh path.
 
 Existing candidates are backfilled once. Unknown categories remain as explicit `unresolved` rows rather than blocking ingestion or being coerced.
 
@@ -193,35 +203,185 @@ authenticated = none
 service_role  = SELECT only on tables
 ```
 
-Classification mutation is available only through a SECURITY DEFINER refresh function granted to `service_role`. The internal trigger helper is not executable by application roles.
+Function EXECUTE boundary after Production readback:
+
+```text
+resolve_catalog_taxonomy_source_category_v1(...)      service_role = yes; anon/authenticated = no
+refresh_product_candidate_catalog_taxonomy_classification_v1(...) service_role = yes; anon/authenticated = no
+sync_product_candidate_catalog_taxonomy_classification_v1()       service_role = no; anon/authenticated = no
+catalog_taxonomy_shadow_term_set_state_v1(...)                     service_role = no
+```
 
 No browser/client role gains direct taxonomy read or write authority.
 
-## Production boundary
+## Production application and reconciliation
 
-This repository change includes a migration because candidate taxonomy persistence is a DB concern. Repository rules classify DB schema/RLS and Production as protected surfaces.
+Production application was explicitly authorized by the user on 2026-09-13.
 
-Therefore this artifact intentionally records:
+During controlled application, two concurrency defects were isolated without forcing ad-hoc Product writes:
+
+1. the repository migration initially hit a PostgreSQL 63-byte identifier truncation collision;
+2. while that repair was being merged, another DATA-TAXONOMY2 worker split and applied the projection/table shell and later the source-rule/backfill portions.
+
+The repository-owned closure path was therefore:
 
 ```text
-Production migration applied: `false`
+PR #470 → implementation
+merge `804f2657468fac19dc14f9818f936bf1fd0cbef0`
+
+PR #471 → PostgreSQL constraint-identifier collision repair
+merge `6783f2ae3f0ec2cdafe41cfc790f040821ada3e5`
+
+PR #472 → split-Production adoption reconciliation
+merge `78ad75a259196f75da29071b5c4f0a3ab71ede21`
 ```
 
-The migration must not be applied to Production without explicit Production DB authorization after exact-head CI and fresh-main review.
+The final repository-owned reconciliation migration is present in the Production migration ledger as:
+
+```text
+20260913210822  data_taxonomy2_production_adoption_reconcile_v1
+```
+
+Production migration applied: `true`.
+
+## Production readback
+
+Exact post-application readback:
+
+```text
+Product count = 165
+candidate count = 190
+candidate taxonomy classifications = 190
+source rules = 4
+active legacy projections = 14
+sync trigger = present
+catalog taxonomy lifecycle = shadow
+catalog taxonomy authority_mode = shadow_only
+```
+
+Classification distribution:
+
+```text
+active_shadow / source_rule_v1 = 189
+active_shadow / manual_legacy_projection_v1 = 1
+other states = 0
+```
+
+Authority-firewall violations:
+
+```text
+product_write_allowed = true rows: 0
+product_promotion_allowed = true rows: 0
+recommendation_admission_allowed = true rows: 0
+```
+
+Forbidden raw-form inference:
+
+```text
+toner_essence inferred form rows = 0
+treatment inferred form rows = 0
+```
+
+Runtime fail-closed probes:
+
+```text
+unknown source/category → classification_state = unresolved
+unknown source/category → failure_reason = exact_source_category_rule_missing
+unknown source/category → all authority booleans = false
+reserved registry term set → reserved_shadow
+```
+
+Product identity/ranking authority proof using the baseline serialization:
+
+```text
+pre-application Product digest  = c7ec481493af9075f891d4a089b53302
+post-application Product digest = c7ec481493af9075f891d4a089b53302
+Product count                    = 165 → 165
+```
+
+Protected function definitions remain byte-equivalent by MD5:
+
+```text
+map_product_category(text) = 364282a34496ed047c74bf7d354d443f
+promote_product_candidate(uuid,text) = 88096291b54e626615dc81ce679baa79
+admin_enqueue_product_candidate_structural_review_v1(...) = 6363c54ab4cfc2a4662ec489218fd843
+admin_confirm_product_review_import_batch(...) = f228d90b5dcd85e3a7dbf7163d60fa46
+```
+
+Therefore observed Product identity drift = `0` and protected legacy promotion-function drift = `0`.
+
+## Advisor review
+
+Supabase Security Advisor was run after the Production DDL.
+
+DATA-TAXONOMY2-specific result:
+
+```text
+no DATA-TAXONOMY2 WARN-level security finding
+new shadow tables: RLS enabled/no policy = INFO
+```
+
+The no-policy finding is intentional for these two service-only tables: direct `anon` / `authenticated` table privileges are absent, `service_role` receives SELECT only, and mutation is bounded through the refresh function.
+
+Other Security Advisor WARN findings concern pre-existing admin/auth surfaces and are outside DATA-TAXONOMY2 scope.
+
+Supabase Performance Advisor was also run. The new shadow tables have INFO-level unindexed-FK findings. With four rule rows and 190 candidate-classification rows at closure, these are recorded as non-blocking performance follow-up rather than an authority or correctness failure. No advisor result justifies changing Recommendation/Product/Offer authority in this closure.
+
+## Exact merged-main / Production runtime evidence
+
+Exact merged-main SHA:
+
+```text
+78ad75a259196f75da29071b5c4f0a3ab71ede21
+```
+
+Merged-main verification on that SHA passed:
+
+```text
+DATA-TAXONOMY2 Candidate Manual Taxonomy Classification = SUCCESS
+BEJEWELY Current Main Health = SUCCESS
+G3A controlled probe contract = SUCCESS
+G3A deployed runtime authority probe = SUCCESS
+DATA-OFFER17 controlled Offer probe contract = SUCCESS
+DATA-OFFER17 deployed controlled Offer RPC diagnostic = SUCCESS
+```
+
+Exact Vercel Production deployment:
+
+```text
+deployment = dpl_9kBGM7V3ewYWEwUQJXyXtusHC6rp
+url = k-beauty-1wh9it3j6-johnny-self.vercel.app
+state = READY
+target = production
+GitHub SHA = 78ad75a259196f75da29071b5c4f0a3ab71ede21
+branch = main
+```
+
+The deployed recommendation-admission authority probe and controlled Offer diagnostic both remained green on the exact merged SHA after the taxonomy reconciliation code merge.
 
 ## Acceptance disposition
 
 ```text
-candidate raw category → shadow registry classification = IMPLEMENTED IN MIGRATION
-current four Production raw categories → exact active rules = IMPLEMENTED IN MIGRATION
-manual reviewed legacy category/form → exact legacy projection = IMPLEMENTED IN MIGRATION
-unknown/unmapped raw category → unresolved fail-closed = IMPLEMENTED IN MIGRATION
-reserved registry term → reserved_shadow, non-admissible = IMPLEMENTED IN MIGRATION
+candidate raw category → shadow registry classification = PASS
+current four Production raw categories → exact active rules = PASS
+manual reviewed legacy category/form → exact legacy projection = PASS
+unknown/unmapped raw category → unresolved fail-closed = PASS
+reserved registry term → reserved_shadow, non-admissible = PASS
 Product writes from taxonomy classification = 0
 Recommendation semantic writes = 0
-legacy promotion authority remains unchanged
-Recommendation runtime cutover = false
-Production migration applied = false
+legacy promotion authority unchanged = PASS
+Recommendation runtime unchanged = PASS
+Product Fact authority unchanged = PASS
+Offer authority unchanged = PASS
+RLS / table privilege boundary = PASS
+bounded function EXECUTE boundary = PASS
+Production migration applied = true
+Production readback = PASS
+security advisor review = PASS WITH NON-BLOCKING PRE-EXISTING/INFO FINDINGS
+performance advisor review = PASS WITH NON-BLOCKING INFO FINDINGS
+exact merged-main runtime probes = PASS
 ```
 
-The next authority gate after Production application/readback is a separate exact-equivalence decision before any Recommendation runtime consumer may read this shadow taxonomy.
+DATA-TAXONOMY2 is ready for issue closure.
+
+The next authority gate remains a **separate exact-equivalence decision** before any Recommendation runtime consumer may read the shadow taxonomy. This closure does not authorize or perform that cutover.
