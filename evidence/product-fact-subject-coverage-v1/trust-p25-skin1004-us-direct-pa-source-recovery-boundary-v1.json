@@ -1,0 +1,212 @@
+{
+  "version": "trust-p25-skin1004-us-direct-pa-source-recovery-boundary-v1",
+  "stage": "TRUST-P25",
+  "scope": "skin1004-hyalu-cica-water-fit-sun-serum-uv-us-direct-pa-source-recovery-boundary",
+  "status": "NO_ADMISSIBLE_SAME_FORMULATION_DIRECT_PA_LABEL_FOUND",
+  "authority": {
+    "repository": "gycha0109-beep/K_beauty",
+    "source_main_sha": "41f1476af33a2ddcd6c04761ec1aa4452d3a0814",
+    "upstream_p16_artifact": "evidence/product-fact-subject-coverage-v1/trust-p16-skin1004-uv-market-formulation-source-recovery-v1.json",
+    "upstream_p16_blob_sha": "5381536524a4aea0faac3451b895a2d2fc5531f6",
+    "upstream_p18_execution_artifact": "evidence/product-fact-adoption-v1/trust-p18-skin1004-uv-us-spf-hosted-adoption-execution-v1.json",
+    "upstream_p18_execution_blob_sha": "f70b3575da98fdbcb85e4410b4a60e9ba476d3e6",
+    "production_project_id": "bygrczggxfuisupcevaz",
+    "researched_at": "2026-09-13T19:24:40.248740+09:00",
+    "registry_version": "product-fact-registry-cross-category-v1",
+    "research_method": "first_party_exact_us_uv_same_formulation_direct_pa_label_recovery",
+    "research_role": "negative_admission_boundary_freeze_not_product_fact_evidence_ingest",
+    "source_observation_digest": "c9192ac664e6b54b8894190b42c4f45e79e7611b264f3de6302615ca2eefbca9"
+  },
+  "admission_rule": {
+    "fact_key": "uva_label",
+    "required_market": "US",
+    "required_source_authority": "first_party",
+    "required_identity_relation": "exact_us_uv_same_formulation",
+    "required_claim_kind": "direct_pa_label",
+    "all_conditions_required": true,
+    "broad_spectrum_to_pa_conversion_allowed": false,
+    "non_uv_pa_transfer_allowed": false,
+    "reason": "The current US Product Fact Subject is the distinct UV formulation. A direct PA label must come from first-party evidence applicable to that exact US UV formulation; Broad Spectrum and the separate non-UV PA++++ product cannot satisfy this gate."
+  },
+  "registry_snapshot": {
+    "fact_key": "uva_label",
+    "value_type": "enum",
+    "allowed_values": [
+      "PA+",
+      "PA++",
+      "PA+++",
+      "PA++++",
+      "UVA-PF-declared"
+    ],
+    "broad_spectrum_allowed": false,
+    "market_required": true,
+    "source": "TRUST-P16 frozen registry constraints; no Registry mutation in TRUST-P25"
+  },
+  "production_state": {
+    "checked_at": "2026-09-13T19:24:40.248740+09:00",
+    "global_counts": {
+      "subjects": 25,
+      "sources": 26,
+      "bindings": 26,
+      "evidence": 58,
+      "fact_instances": 58,
+      "evidence_links": 58,
+      "review_assignments": 58,
+      "confirmations": 58,
+      "current": 58
+    },
+    "target_counts": {
+      "subjects": 1,
+      "spf_current": 1,
+      "uva_current": 0
+    },
+    "current_spf": {
+      "proposition_key": "6b04db0623d15da37c2cfb58168a41cc00dd735c775d28f7f7a2aa715122075a",
+      "fact_instance_id": "304b8be8-e80a-49a5-9ceb-dfafef6b0828",
+      "confirmation_id": "eea66ab9-abee-46c5-bb57-e3f9f119e5b3",
+      "value_number": 50,
+      "qualifier": {
+        "plus_modifier": "none"
+      },
+      "market": "US",
+      "authority_ceiling": "product_specific_primary",
+      "fused_confidence": "high"
+    }
+  },
+  "product_identity": {
+    "product_id": "fdf06871-db8e-4e73-a48c-c057c5ce925d",
+    "brand": "스킨1004",
+    "brand_en": "SKIN1004",
+    "name": "히알루-시카 워터핏 선세럼 UV",
+    "name_en": "Hyalu-Cica Water-Fit Sun Serum UV",
+    "size_ml": 50,
+    "subject_id": "9dcd611d-e353-47f5-b349-e1f22d73551e",
+    "subject_semantic_key": "6ea35ff44d90264c4cb8f845b1f04f28adc794872220f41e4cc9e03d13561320",
+    "variant_key": "HYALU_CICA_WATER_FIT_SUN_SERUM_UV_US_50ML",
+    "formulation_revision_key": "trust-p17-skin1004-uv-us-current",
+    "identity_resolution_version": "trust-p17-skin1004-uv-us-market-applicability-recovery-v1",
+    "market": "US",
+    "source_id": "f72a2781-2d6a-45f1-82a6-c33674088523",
+    "binding_id": "903517b0-c91b-4802-9f51-88b0d305a164",
+    "source_content_digest": "e30e828daffd28c7656b63e8bf0bfa2555c9590ab9647c29eba6c2695a6c0603"
+  },
+  "same_formulation_first_party_observations": [
+    {
+      "url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "publisher": "SKIN1004",
+      "market": "US",
+      "identity_relation": "exact_us_uv_formulation",
+      "observed_claims": [
+        "Hyalu-Cica Water-Fit Sun Serum UV",
+        "50ml",
+        "Hydrating Daily SPF50 Sun Serum",
+        "SPF50 broad-spectrum coverage",
+        "Shields skin from harmful UVA/UVB rays",
+        "Active ingredients: Avobenzone 2.7%, Homosalate 13.6%, Octisalate 4.5%, Octocrylene 9%"
+      ],
+      "direct_pa_label_present": false,
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    },
+    {
+      "url": "https://skin1004-us.myshopify.com/products/hyalu-cica-water-fit-sun-serum-uv",
+      "publisher": "SKIN1004 US Shopify origin",
+      "market": "US",
+      "identity_relation": "exact_us_uv_formulation",
+      "observed_claims": [
+        "Hyalu-Cica Water-Fit Sun Serum UV",
+        "50ml",
+        "Hydrating Daily SPF50 Sun Serum",
+        "SPF50 broad-spectrum coverage"
+      ],
+      "direct_pa_label_present": false,
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    },
+    {
+      "url": "https://www.skin1004.com/products/daily-moisture-routine-duo",
+      "publisher": "SKIN1004",
+      "market": "US",
+      "identity_relation": "exact_us_uv_formulation_in_official_bundle",
+      "observed_claims": [
+        "Hyalu-Cica Water-Fit Sun Serum UV 50ml",
+        "broad-spectrum SPF 50 protection",
+        "Active ingredients: Avobenzone 2.7%, Homosalate 13.6%, Octisalate 4.5%, Octocrylene 9%"
+      ],
+      "direct_pa_label_present": false,
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    },
+    {
+      "url": "https://www.skin1004.com/pages/sun-serum-uv",
+      "publisher": "SKIN1004",
+      "market": "US",
+      "identity_relation": "exact_us_uv_product_landing",
+      "observed_claims": [
+        "Hyalu-Cica Water-Fit Sun Serum UV",
+        "Hydrating Daily SPF50 Sun Serum"
+      ],
+      "direct_pa_label_present": false,
+      "admission": "BLOCKED_NO_DIRECT_PA_LABEL"
+    }
+  ],
+  "direct_pa_first_party_rejected_candidates": [
+    {
+      "url": "https://www.skin1004.com/products/hyalu-cica-water-fit-sun-serum-spf50-pa",
+      "publisher": "SKIN1004",
+      "market": "GLOBAL_NON_US_PRESENTATION",
+      "observed_claims": [
+        "Hyalu-Cica Water-Fit Sun Serum",
+        "SPF50+",
+        "PA++++"
+      ],
+      "rejection": "FORMULATION_MISMATCH",
+      "identity_evidence": {
+        "uv_target_filter_system": [
+          "Avobenzone 2.7%",
+          "Homosalate 13.6%",
+          "Octisalate 4.5%",
+          "Octocrylene 9%"
+        ],
+        "non_uv_filter_system": [
+          "Diethylamino Hydroxybenzoyl Hexyl Benzoate",
+          "Ethylhexyl Triazone",
+          "Methylene Bis-Benzotriazolyl Tetramethylbutylphenol",
+          "Diethylhexyl Butamido Triazone"
+        ],
+        "result": "DISTINCT_FROM_CURRENT_US_UV_FORMULATION"
+      }
+    }
+  ],
+  "adjudication": {
+    "same_formula_first_party_sources_reviewed": 4,
+    "same_formula_first_party_direct_pa_hits": 0,
+    "direct_pa_first_party_candidates_rejected_for_formula_mismatch": 1,
+    "accepted_positive_uva_support": 0,
+    "disposition": "FACT_SOURCE_RECOVERY_REQUIRED",
+    "reason": "Reviewed first-party sources for the exact US UV formulation expose SPF50 and Broad Spectrum/UVA+UVB language but no direct PA label. The reviewed first-party PA++++ route is the materially different non-UV formulation."
+  },
+  "counts": {
+    "target_products": 1,
+    "same_formula_first_party_sources": 4,
+    "same_formula_direct_pa_hits": 0,
+    "rejected_first_party_pa_candidates": 1,
+    "hosted_product_fact_writes": 0,
+    "direct_product_fact_writes": 0
+  },
+  "invariants": {
+    "uva_label_write_authorized_by_this_artifact": false,
+    "broad_spectrum_to_pa_conversion_allowed": false,
+    "cross_formula_pa_transfer_allowed": false,
+    "absence_treated_as_negative_product_fact": false,
+    "third_party_sources_used_for_positive_fact_support": 0,
+    "schema_change": false,
+    "rpc_change": false,
+    "registry_change": false,
+    "recommendation_or_ranking_changes": 0
+  },
+  "next_gate": {
+    "blocked_fact_key": "uva_label",
+    "required_recovery": "first-party direct PA label applicable to the exact current US UV formulation",
+    "eligible_production_write": false,
+    "eligible_action": "continue_source_recovery_only_if_new_same_formulation_first_party_evidence_appears",
+    "production_state_expected_to_remain": "SPF_CURRENT_1_UVA_CURRENT_0"
+  }
+}
