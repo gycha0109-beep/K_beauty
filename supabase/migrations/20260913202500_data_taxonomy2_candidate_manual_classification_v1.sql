@@ -208,7 +208,7 @@ create table public.product_candidate_catalog_taxonomy_classifications (
   constraint product_candidate_catalog_taxonomy_classifications_domain_axis_check
     check (domain_term_id is null or domain_term_id like taxonomy_version || ':domain:%'),
   constraint product_candidate_catalog_taxonomy_classifications_family_axis_check
-    check (recommendation_family_term_id is null or recommendation_family_term_id like taxonomy_version || ':family:%'),
+    check (recommendation_family_term_id is null or recommendation_family_term_id like taxonomy_version || ':recommendation_family:%'),
   constraint product_candidate_catalog_taxonomy_classifications_category_axis_check
     check (category_term_id is null or category_term_id like taxonomy_version || ':category:%'),
   constraint product_candidate_catalog_taxonomy_classifications_form_axis_check
