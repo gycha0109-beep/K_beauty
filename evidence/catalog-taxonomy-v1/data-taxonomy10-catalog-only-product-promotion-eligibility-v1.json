@@ -1,0 +1,78 @@
+{
+  "schema_version": "data-taxonomy10-catalog-only-product-promotion-eligibility-v1",
+  "issue": 497,
+  "baseline_main_sha": "d5413c606e2f245fa357c3bbd802bc42f85922ae",
+  "depends_on": {
+    "data_taxonomy9_issue": 495,
+    "data_taxonomy8_merge_sha": "d98f18f7cf180dd5cb7d1d6a313f6adf7f052890",
+    "production_category_nullable": true,
+    "legacy_projection_compatibility_contract": "catalog-product-legacy-projection-compatibility-v1"
+  },
+  "production_baseline": {
+    "product_count": 165,
+    "category_null_count": 0,
+    "taxonomy_assignment_count": 165,
+    "taxonomy_exact_equivalent_count": 165,
+    "recommendation_product_count": 164,
+    "recommendation_runtime_cutover": false
+  },
+  "promotion_baseline": {
+    "structural_promotion_blocks_null_service_category": true,
+    "candidate_taxonomy_classifier_is_shadow_only": true,
+    "candidate_classifier_product_write_allowed": false,
+    "candidate_classifier_product_promotion_allowed": false,
+    "candidate_classifier_recommendation_admission_allowed": false,
+    "product_taxonomy_assignment_auto_trigger": false
+  },
+  "contract": {
+    "version": "catalog-only-product-promotion-eligibility-v1",
+    "pure": true,
+    "database_access": false,
+    "network_access": false,
+    "execution_enabled": false,
+    "expected_taxonomy_version": "catalog-taxonomy-v1",
+    "expected_identity_resolution_version": "crawler-identity-resolution-v1",
+    "requires_approved_candidate": true,
+    "requires_resolved_identity": true,
+    "requires_active_shadow_classification": true,
+    "requires_source_rule_classification": true,
+    "requires_fresh_source_and_category_snapshots": true,
+    "requires_no_legacy_category": true,
+    "requires_no_legacy_product_form": true,
+    "requires_no_legacy_projection_key": true,
+    "requires_complete_canonical_term_set": true,
+    "recommendation_admission_allowed": false,
+    "requires_atomic_taxonomy_assignment": true
+  },
+  "atomic_adoption_boundary": {
+    "future_product_insert_and_taxonomy_assignment_same_transaction": true,
+    "catalog_only_product_without_assignment_allowed": false,
+    "assignment_legacy_projection_key": null,
+    "assignment_state": "shadow",
+    "assignment_method": "candidate_source_rule_catalog_only_adoption_v1"
+  },
+  "scenarios": [
+    {"id":"positive_catalog_only","eligible":true,"reason":"CATALOG_ONLY_PROMOTION_ELIGIBLE"},
+    {"id":"candidate_not_approved","eligible":false,"reason":"CANDIDATE_NOT_APPROVED"},
+    {"id":"identity_invalid","eligible":false,"reason":"IDENTITY_CONTRACT_INVALID"},
+    {"id":"wrong_taxonomy_version","eligible":false,"reason":"TAXONOMY_VERSION_MISMATCH"},
+    {"id":"reserved_taxonomy","eligible":false,"reason":"CLASSIFICATION_STATE_NOT_ACTIVE"},
+    {"id":"unresolved_taxonomy","eligible":false,"reason":"CLASSIFICATION_STATE_NOT_ACTIVE"},
+    {"id":"non_source_rule","eligible":false,"reason":"CLASSIFICATION_METHOD_INVALID"},
+    {"id":"stale_snapshot","eligible":false,"reason":"STALE_CLASSIFICATION_SNAPSHOT"},
+    {"id":"legacy_fields_present","eligible":false,"reason":"LEGACY_FIELDS_PRESENT"},
+    {"id":"legacy_projection_present","eligible":false,"reason":"LEGACY_PROJECTION_STATE_PRESENT"},
+    {"id":"missing_term","eligible":false,"reason":"CANONICAL_TERM_SET_INVALID"},
+    {"id":"candidate_id_mismatch","eligible":false,"reason":"CANDIDATE_CLASSIFICATION_ID_MISMATCH"},
+    {"id":"classifier_boundary_drift","eligible":false,"reason":"CLASSIFIER_BOUNDARY_DRIFT"}
+  ],
+  "mutation_scope_now": {
+    "production_schema": false,
+    "product": false,
+    "candidate": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false
+  },
+  "next_gate": "implement transactional catalog-only Product plus taxonomy-assignment adoption behind this eligibility contract; Production application requires a separate gate"
+}
