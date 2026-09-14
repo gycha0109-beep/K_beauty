@@ -1,0 +1,78 @@
+{
+  "schema_version": "data-taxonomy8-nullable-legacy-category-projection-v1",
+  "issue": 490,
+  "baseline_main_sha": "d5ae6952196ddb4424b460067cc2943d9b6804c1",
+  "production_observed_at": "2026-09-14 15:09:30.057339+09",
+  "depends_on": {
+    "data_taxonomy6_issue": 486,
+    "data_taxonomy7_issue": 488,
+    "data_taxonomy7_merge_sha": "affea214007964d52ea8bde7aaa2f368829b8756",
+    "compatibility_contract": "catalog-product-legacy-projection-compatibility-v1"
+  },
+  "production_baseline": {
+    "product_count": 165,
+    "category_null_count": 0,
+    "category_type": "public.product_category",
+    "category_nullable": false,
+    "taxonomy_assignment_count": 165,
+    "taxonomy_exact_equivalent_count": 165,
+    "taxonomy_non_exact_count": 0,
+    "recommendation_admitted_baseline": 164,
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "recommendation_runtime_cutover": false
+  },
+  "migration": {
+    "path": "supabase/migrations/20260914030000_data_taxonomy8_nullable_legacy_category_projection_v1.sql",
+    "repository_foundation_only": true,
+    "production_application": false,
+    "production_application_requires_explicit_approval": true,
+    "expected_column_type": "public.product_category",
+    "requires_pre_migration_not_null": true,
+    "requires_exact_equivalence_for_every_existing_product": true,
+    "requires_exactly_one_equivalence_row_per_product": true,
+    "drops_category_not_null": true,
+    "changes_product_form_nullability": false,
+    "changes_product_category_enum": false,
+    "business_row_mutation": false,
+    "product_id_mutation": false,
+    "candidate_promotion_change": false,
+    "recommendation_runtime_change": false,
+    "product_fact_authority_change": false,
+    "offer_authority_change": false
+  },
+  "post_application_semantics": {
+    "canonical_product_identity": "public.products.id",
+    "canonical_classification": "public.product_catalog_taxonomy_assignments",
+    "legacy_category_projection": "public.products.category",
+    "legacy_form_projection": "public.products.product_form",
+    "null_category_meaning": "no legacy Recommendation category projection",
+    "null_category_grants_recommendation_admission": false,
+    "catalog_only_products_allowed_by_schema": true,
+    "catalog_only_products_allowed_by_promotion_in_this_gate": false,
+    "recommendation_runtime_authority_unchanged": true
+  },
+  "rollback": {
+    "set_not_null_only_when_category_null_count_zero": true,
+    "required_pre_rollback_query": "select count(*) from public.products where category is null",
+    "if_catalog_only_product_exists": "Do not coerce or delete the Product to restore NOT NULL; preserve Product identity, taxonomy assignment, Product Facts and Offers and use a later explicit migration decision.",
+    "legacy_runtime_can_remain_unchanged": true
+  },
+  "non_goals": [
+    "Production migration application",
+    "candidate promotion cutover",
+    "Recommendation taxonomy authority cutover",
+    "legacy product_category enum expansion",
+    "Product Fact authority redesign",
+    "Offer authority redesign"
+  ],
+  "mutation_scope_now": {
+    "production_schema": false,
+    "product": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false,
+    "production_business_data": false
+  },
+  "next_gate": "explicit Production schema application/readback of the nullable category foundation, only after user approval"
+}

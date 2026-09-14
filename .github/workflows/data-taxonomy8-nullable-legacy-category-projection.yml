@@ -1,0 +1,46 @@
+name: DATA-TAXONOMY8 Nullable Legacy Category Projection
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/data-taxonomy8-nullable-legacy-category-projection.yml"
+      - "supabase/migrations/20260914030000_data_taxonomy8_nullable_legacy_category_projection_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy8-nullable-legacy-category-projection-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"
+      - "lib/catalog-product-legacy-projection-compatibility.mjs"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/data-taxonomy8-nullable-legacy-category-projection.yml"
+      - "supabase/migrations/20260914030000_data_taxonomy8_nullable_legacy_category_projection_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy8-nullable-legacy-category-projection-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs"
+      - "lib/catalog-product-legacy-projection-compatibility.mjs"
+
+permissions:
+  contents: read
+
+env:
+  DATA_TAXONOMY8_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  foundation:
+    name: Nullable legacy category schema foundation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DATA_TAXONOMY8_CHECKOUT_SHA }}
+          fetch-depth: 1
+
+      - name: Verify exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY8_CHECKOUT_SHA"
+
+      - name: Verify DATA-TAXONOMY8 foundation
+        run: node scripts/product-evidence/verify-data-taxonomy8-nullable-legacy-category-projection-v1.mjs
