@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "face-count-neutral-review-authority-v2",
+  "authorityRef": "authority.facelab.neutral_face_count.shared_review.v2",
+  "authorityVersion": "2.0.0",
+  "campaignKey": "face_count_neutral_shared_review_v2",
+  "intakeVersion": "face-count-neutral-intake-v2",
+  "storageSchemaVersion": "face-count-neutral-storage-v1",
+  "sourceAcquisitionManifestSha256": "4cf82048b50629ac47ff248cfc4921d17014549a8828e911f690eb508e278286",
+  "responseTokens": [
+    "none",
+    "one",
+    "two_or_more",
+    "not_assessable"
+  ],
+  "orderedItems": [
+    {
+      "reviewItemId": "fcneutralv2_04",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_04.jpg",
+      "assetSha256": "56ed20367c64374c516ad10b419d151ae597f47246652daf7888fedfbcc150b5"
+    },
+    {
+      "reviewItemId": "fcneutralv2_01",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_01.jpg",
+      "assetSha256": "a48278513a38768ff92247972e60bc873eb361a8527cb8686a3e19c3ae1bdf9d"
+    },
+    {
+      "reviewItemId": "fcneutralv2_07",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_07.jpg",
+      "assetSha256": "d990cf865566b071130681c6bda84e39b4edf305edae7c35f3aac9348f6f6a1a"
+    },
+    {
+      "reviewItemId": "fcneutralv2_03",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_03.jpg",
+      "assetSha256": "1131e5923243d08050e206663d06739bb61e19dd0c4844478446d24e49a1b0f4"
+    },
+    {
+      "reviewItemId": "fcneutralv2_08",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_08.jpg",
+      "assetSha256": "bcaf2da6eb13931226a1a0d7100e0cad2196eaf7cd59b7bfc88ace4b416fd1d6"
+    },
+    {
+      "reviewItemId": "fcneutralv2_02",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_02.jpg",
+      "assetSha256": "7d197ba1951fcaa457ce7f20ffa2969094402223f15d39edfe288c8d8280c94a"
+    },
+    {
+      "reviewItemId": "fcneutralv2_05",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_05.jpg",
+      "assetSha256": "a5fff1fac585c50232dbe652b8b2a2aa150e8fbb0679fdfd64264115415db7ca"
+    },
+    {
+      "reviewItemId": "fcneutralv2_06",
+      "assetPath": "/facelab/neutral-review/v2/assets/fcneutralv2_06.jpg",
+      "assetSha256": "5427892220dadebde0c91bdec47468be61b945b966a917eb6c82e366867b6065"
+    }
+  ],
+  "reviewerUi": {
+    "title": "얼굴 수 확인",
+    "instruction": "눈, 코, 입 등 얼굴의 정확한 특징을 판별할 수 있을 정도로 보이는 사람은 몇 명인가요?",
+    "responseLabels": {
+      "none": "없음",
+      "one": "1개",
+      "two_or_more": "2개 이상",
+      "not_assessable": "판단 불가"
+    },
+    "attestationCopy": {
+      "sourceOrAnswerInformationNotViewed": "이미지의 출처나 정답 정보를 제공받거나 확인하지 않았습니다.",
+      "automatedAnalysisResultsNotViewed": "AI 또는 자동 분석 결과를 확인하지 않았습니다.",
+      "otherParticipantResponsesNotViewed": "다른 참여자의 응답을 보거나 상의하지 않았습니다.",
+      "visibleHumanFaceCountOnly": "눈, 코, 입 등 얼굴의 정확한 특징을 판별할 수 있을 정도로 보이는 사람 수만 독립적으로 판단하겠습니다.",
+      "sensitiveIdentityInferenceNotPerformed": "신원, 나이, 성별, 인종, 성격 등 사람의 민감하거나 불필요한 특성을 추론하지 않겠습니다."
+    },
+    "requiredIndependenceAttestation": {
+      "sourceOrAnswerInformationNotViewed": true,
+      "automatedAnalysisResultsNotViewed": true,
+      "otherParticipantResponsesNotViewed": true,
+      "visibleHumanFaceCountOnly": true,
+      "sensitiveIdentityInferenceNotPerformed": true
+    }
+  },
+  "authorityBoundary": {
+    "expectedFaceCountLabelsIncluded": false,
+    "sourceNamesIncludedInReviewerModel": false,
+    "assetDigestsIncludedInReviewerModel": false,
+    "traditionalSemanticAuthority": false,
+    "providerInferenceAuthority": false,
+    "empiricalValidationEstablished": false
+  },
+  "authorityDigest": "59f74517cf485b66506d1a6a49155f59f8660b21151736f9051b5f706def50b9"
+}

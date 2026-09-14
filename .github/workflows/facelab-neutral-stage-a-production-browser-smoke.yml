@@ -3,14 +3,30 @@ name: FaceLab Neutral Stage A Production Browser Smoke
 on:
   pull_request:
     paths:
+      - "app/facelab/review/**"
+      - "app/api/facelab/review/**"
       - "app/api/internal/facelab-review-self-smoke/route.js"
+      - "lib/face-lab-neutral-face-count-*"
+      - "evidence/facelab/face-count-neutral-*"
+      - "public/facelab/neutral-review/v2/assets/**"
+      - "scripts/check-face-lab-neutral-face-count-stage-v1.mjs"
       - "scripts/run-face-lab-neutral-production-browser-smoke.mjs"
+      - "docs/domain/facelab/face-count-neutral-shared-stage-v1.md"
+      - ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml"
       - ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml"
   push:
     branches: [main]
     paths:
+      - "app/facelab/review/**"
+      - "app/api/facelab/review/**"
       - "app/api/internal/facelab-review-self-smoke/route.js"
+      - "lib/face-lab-neutral-face-count-*"
+      - "evidence/facelab/face-count-neutral-*"
+      - "public/facelab/neutral-review/v2/assets/**"
+      - "scripts/check-face-lab-neutral-face-count-stage-v1.mjs"
       - "scripts/run-face-lab-neutral-production-browser-smoke.mjs"
+      - "docs/domain/facelab/face-count-neutral-shared-stage-v1.md"
+      - ".github/workflows/face-lab-neutral-face-count-shared-stage-v1.yml"
       - ".github/workflows/facelab-neutral-stage-a-production-browser-smoke.yml"
 
 permissions:

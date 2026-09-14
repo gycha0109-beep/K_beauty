@@ -1,4 +1,4 @@
-const PROBE_EXPIRES_AT = Date.parse("2026-09-04T18:30:00.000Z");
+const PROBE_EXPIRES_AT = Date.parse("2026-09-15T03:00:00.000Z");
 const PRODUCTION_ORIGIN = "https://k-beauty-two.vercel.app";
 const AUTHORIZED_MARKER = "얼굴 수 중립 평가";
 const INVALID_MARKER = "유효한 평가 링크가 아닙니다.";
