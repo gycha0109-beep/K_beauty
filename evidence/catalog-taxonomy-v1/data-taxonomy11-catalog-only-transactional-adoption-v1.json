@@ -1,0 +1,85 @@
+{
+  "schema_version": "data-taxonomy11-catalog-only-transactional-adoption-v1",
+  "issue": 500,
+  "baseline_main_sha": "8bc5959b526890002f7920795b6c4af045d1e9f5",
+  "depends_on": {
+    "data_taxonomy10_issue": 497,
+    "data_taxonomy10_merge_sha": "d690b938cb71f04d3570048c9648c99d54df4d29",
+    "eligibility_contract": "catalog-only-product-promotion-eligibility-v1"
+  },
+  "production_baseline": {
+    "product_count": 165,
+    "category_null_count": 0,
+    "candidate_taxonomy_classification_count": 190,
+    "current_catalog_only_eligible_shape_count": 0,
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "recommendation_product_count": 164,
+    "recommendation_runtime_cutover": false
+  },
+  "migration": {
+    "path": "supabase/migrations/20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql",
+    "repository_foundation_only": true,
+    "production_application": false,
+    "function_name": "public.promote_product_candidate_catalog_only_v1(uuid,text)",
+    "security_definer": true,
+    "fixed_search_path": true,
+    "public_execute_revoked": true,
+    "anon_execute_revoked": true,
+    "authenticated_execute_revoked": true,
+    "service_role_execute_revoked": true,
+    "execute_grant_added": false,
+    "legacy_promotion_function_changed": false
+  },
+  "transactional_contract": {
+    "new_product_only": true,
+    "existing_product_merge_allowed": false,
+    "requires_candidate_row_lock": true,
+    "requires_classification_row_lock": true,
+    "requires_taxonomy_shadow_only": true,
+    "requires_active_source_rule": true,
+    "requires_active_term_set": true,
+    "requires_runtime_source_rule_reresolution": true,
+    "requires_no_legacy_fields": true,
+    "requires_no_legacy_projection": true,
+    "requires_no_existing_product_reference": true,
+    "requires_no_normalized_identity_collision": true,
+    "requires_no_external_identity_collision": true,
+    "product_category_written_as_null": true,
+    "product_form_written_as_null": true,
+    "taxonomy_assignment_written_in_same_function": true,
+    "assignment_state": "shadow",
+    "assignment_method": "source_classification",
+    "assignment_legacy_projection_key": null,
+    "candidate_promoted_only_after_product_and_assignment_insert": true,
+    "recommendation_admission_allowed": false
+  },
+  "atomicity": {
+    "product_without_assignment_on_failure": false,
+    "assignment_without_product_on_failure": false,
+    "candidate_promoted_without_both_inserts": false,
+    "relies_on_single_plpgsql_call_transaction_scope": true
+  },
+  "non_goals": [
+    "Production migration application",
+    "execute grant",
+    "legacy promotion modification",
+    "existing Product merge",
+    "Recommendation admission",
+    "Recommendation runtime cutover",
+    "taxonomy term activation",
+    "legacy enum expansion",
+    "Product Fact authority change",
+    "Offer authority change"
+  ],
+  "mutation_scope_now": {
+    "production_schema": false,
+    "production_product": false,
+    "production_candidate": false,
+    "product_fact": false,
+    "offer": false,
+    "recommendation_decision_path": false
+  },
+  "next_gate": "explicitly govern Production installation of the disabled function foundation; any execute grant or first catalog-only Product adoption remains a later separate approval gate"
+}

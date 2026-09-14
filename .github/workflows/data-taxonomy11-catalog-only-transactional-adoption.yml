@@ -1,0 +1,40 @@
+name: DATA-TAXONOMY11 Catalog-only Transactional Adoption
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-taxonomy11-catalog-only-transactional-adoption.yml"
+      - "supabase/migrations/20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy11-catalog-only-transactional-adoption-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-taxonomy11-catalog-only-transactional-adoption.yml"
+      - "supabase/migrations/20260914072000_data_taxonomy11_catalog_only_transactional_adoption_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy11-catalog-only-transactional-adoption-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs"
+
+permissions:
+  contents: read
+
+env:
+  DATA_TAXONOMY11_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  foundation:
+    name: Disabled catalog-only transactional adoption foundation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DATA_TAXONOMY11_CHECKOUT_SHA }}
+          fetch-depth: 1
+      - name: Verify exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY11_CHECKOUT_SHA"
+      - name: Verify DATA-TAXONOMY11 foundation
+        run: node scripts/product-evidence/verify-data-taxonomy11-catalog-only-transactional-adoption-v1.mjs
