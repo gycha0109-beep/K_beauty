@@ -1,0 +1,84 @@
+{
+  "version": "trust-p28-drg-green-mild-up-kr-uv-filter-type-hosted-adoption-execution-v1",
+  "stage": "TRUST-P28",
+  "status": "PRODUCTION_ADOPTION_CONFIRMED",
+  "tracking_issue": 503,
+  "phase_a_pr": 504,
+  "phase_a_merge_sha": "4649f002d9cc0fd4607abd253a4a49717f8bb512",
+  "target": {
+    "product_id": "dc1ef3f3-db1b-4c3f-954a-b18343e3d9f3",
+    "subject_id": "15e25e11-935d-4b04-aa59-68de0531ef39",
+    "variant_key": "GREEN_MILD_UP_SUN_PLUS_KR_50ML",
+    "formulation_revision_key": "trust-p14-drg-9637-5174-current",
+    "market": "KR",
+    "fact_key": "uv_filter_type",
+    "value": "mineral",
+    "semantic_status": "supported",
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high"
+  },
+  "production_lineage": {
+    "source_id": "a2803387-44e3-40fa-87c9-a7aec7d745f3",
+    "binding_id": "827aa75b-84dd-46db-8a19-2f6a9a39ea1f",
+    "evidence_id": "c1147aac-75b4-466f-8af8-af2fb2e10263",
+    "assignment_id": "8c479d63-5a9a-4ea2-bb1a-0de8c791bbeb",
+    "fact_instance_id": "afd5c9f5-203f-4731-af26-ef4b5c4fe430",
+    "confirmation_id": "c781d568-47b9-4f16-bcc4-b0692918fbfe",
+    "assignment_state": "confirmed"
+  },
+  "digests": {
+    "proposition_key": "1cd1c6e3ada3cceb8a3105140e1229d6dcf66b9d5c958979ad2b6213a846c113",
+    "source_content_digest": "800457b5ba574cfabadbd675e24a8f6f978c2ec79cdb73ff7060c343e3657611",
+    "canonical_evidence_digest": "5a846dda70341512049e2bbb51f3ea7333469994504342f951b1aca14e366547",
+    "fusion_input_digest": "7c0e61ee7140eeae3639b0945601a8dd7f92cf2faf7ae977a1f84f067ba38a58",
+    "payload_digest": "de7cd6eca98ee9d55a8cdac3e22fe0fedf8f1ae4363a1c5d4769cff40981d1b3",
+    "prestate_digest": "a5b7d35e9841323851afe498eda697e33e4baec190fd5f39e32027c0144f93a8"
+  },
+  "audit_ids": {
+    "evidence_ingest": "a0a6e4fc-01fa-4ab9-b9c0-1ae090f51f54",
+    "review_under": "94438a52-17d5-44c7-a9dd-4ed9cae51e59",
+    "review_ready": "02e1db38-8307-4e5e-a057-b47be5a7f4af",
+    "confirmation": "88ee125e-1cb2-4e9f-8702-9102feef1e7b"
+  },
+  "counts": {
+    "before": [25,27,27,60,60,60,60,60,60],
+    "after": [25,28,28,61,61,61,61,61,61],
+    "products_before": 165,
+    "products_after": 165,
+    "delta": {"subjects":0,"sources":1,"bindings":1,"evidence":1,"facts":1,"links":1,"assignments":1,"confirmations":1,"current":1}
+  },
+  "uniqueness_readback": {
+    "confirmation_rows_for_request": 1,
+    "current_rows_for_proposition": 1,
+    "confirmation_audit_rows_for_request": 1
+  },
+  "post_write_runtime": {
+    "workflow_run_id": 34823572205,
+    "job_id": 103912516572,
+    "deployment_sha": "4649f002d9cc0fd4607abd253a4a49717f8bb512",
+    "deployment_ref": "main",
+    "result": "PASS",
+    "raw_pf_select_denied": true,
+    "raw_product_select_denied": true,
+    "raw_taxonomy_select_denied": true,
+    "overlay_count": 165,
+    "recommendation_product_count": 164,
+    "overlay_only_count": 1,
+    "scenario_count": 8,
+    "score_delta_count": 0,
+    "slot_delta_count": 0,
+    "full_order_delta_count": 0,
+    "top1_delta_count": 0,
+    "top3_delta_count": 0,
+    "recommendation_runtime_cutover": false
+  },
+  "invariants": {
+    "direct_product_fact_table_dml": false,
+    "legacy_product_mutation": false,
+    "recommendation_authority_cutover": false,
+    "legacy_corpus_change": false,
+    "initial_admission_grant_change": false,
+    "registry_schema_rpc_mutation": false
+  },
+  "phase_a_connector_note": "Dedicated P28 verifier/workflow file creation was blocked by connector safety; the authoritative Phase A JSON was merged after repository-wide exact-head Main Health and PIE gates passed."
+}
