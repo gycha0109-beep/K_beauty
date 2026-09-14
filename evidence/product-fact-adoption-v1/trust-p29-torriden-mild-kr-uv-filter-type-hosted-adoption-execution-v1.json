@@ -1,0 +1,92 @@
+{
+  "version": "trust-p29-torriden-mild-kr-uv-filter-type-hosted-adoption-execution-v1",
+  "stage": "TRUST-P29",
+  "status": "PRODUCTION_ADOPTION_CONFIRMED",
+  "tracking_issue": 507,
+  "phase_a_pr": 509,
+  "phase_a_merge_sha": "a406e97160bece66c913e680a2a307cf4c8340b4",
+  "target": {
+    "product_id": "08b85f37-b1fa-42d7-893a-0d4facb17878",
+    "subject_id": "5be00a86-82b4-4f42-af65-4c0d3b8324d4",
+    "variant_key": "DIVE_IN_MILD_SUN_CREAM_KR_60ML",
+    "formulation_revision_key": "trust-p22-torriden-136-current",
+    "market": "KR",
+    "fact_key": "uv_filter_type",
+    "value": "mineral",
+    "semantic_status": "supported",
+    "authority_ceiling": "product_specific_primary",
+    "fused_confidence": "high"
+  },
+  "production_lineage": {
+    "source_id": "2d154999-5dff-4496-9b1e-d8cf9c6f31f6",
+    "binding_id": "38989c40-da78-4937-99e1-b9daa949a1f9",
+    "evidence_id": "521017e7-ead8-44a2-88d4-aea79388ad0e",
+    "assignment_id": "818b6753-d4c3-43c9-84da-32179154971f",
+    "fact_instance_id": "1b6e5f55-4e09-44e7-9230-30c6cb6462cf",
+    "confirmation_id": "0fc145f0-85ae-4787-931f-c5d1bae75e13",
+    "assignment_state": "confirmed"
+  },
+  "digests": {
+    "source_content_digest": "f5a4f2cf5e46535b4f6566c953654a467337aec02017a26df47b0901209ee280",
+    "proposition_key": "0a3aa12f10b137eae0563811ccb15ee3b4654acb5ee15d674d53fdd05aad3016",
+    "canonical_evidence_digest": "485c3ff09b8497ccc2de3a25a2d0aa85a00c93d1533c488f8e0ce12e17e1328d",
+    "fusion_input_digest": "7aa8fc08ef748102913624d9e4588f7dfe8d177c70d4b4e9e34d7857d2cf7e72",
+    "payload_digest": "aed602c450a4081d74f1b84811f4b5727accc46d9060b4bae2855091f25c0ef5",
+    "prestate_digest": "d56e5440103e00882d8489f479c34d13351e64eb7a0f9e1cb2261f4725f6ac0d"
+  },
+  "audit_ids": {
+    "evidence_ingest": "161dca44-39e9-46f3-ae62-84cb59a0d83e",
+    "review_under": "6d619438-aa82-47a7-9ddc-587d63f0684c",
+    "review_ready": "161ac693-e212-4d6c-8392-04184f1c329c",
+    "confirmation": "62d0c06d-0946-4385-84a8-1eac8367f645"
+  },
+  "counts": {
+    "before": [25,28,28,61,61,61,61,61,61],
+    "after": [25,29,29,62,62,62,62,62,62],
+    "products_before": 165,
+    "products_after": 165,
+    "delta": {"subjects":0,"sources":1,"bindings":1,"evidence":1,"facts":1,"links":1,"assignments":1,"confirmations":1,"current":1}
+  },
+  "uniqueness_readback": {
+    "confirmation_rows_for_request": 1,
+    "current_rows_for_proposition": 1,
+    "confirmation_audit_rows_for_request": 1
+  },
+  "post_write_runtime": {
+    "workflow_run_id": 34909906788,
+    "job_id": 104195598418,
+    "deployment_sha": "a406e97160bece66c913e680a2a307cf4c8340b4",
+    "deployment_ref": "main",
+    "result": "PASS",
+    "raw_pf_select_denied": true,
+    "raw_product_select_denied": true,
+    "raw_taxonomy_select_denied": true,
+    "overlay_count": 165,
+    "recommendation_product_count": 164,
+    "overlay_only_count": 1,
+    "scenario_count": 8,
+    "score_delta_count": 0,
+    "slot_delta_count": 0,
+    "full_order_delta_count": 0,
+    "top1_delta_count": 0,
+    "top3_delta_count": 0,
+    "recommendation_runtime_cutover": false
+  },
+  "authority_boundary": {
+    "first_party_exact_product_page": "https://www.torriden.com/goods/goods_view.php?goodsNo=136",
+    "observed_claim": "다이브인 무기자차 마일드 선크림 60ml",
+    "controlled_vocabulary_normalization": "무기자차 -> mineral",
+    "p22_source_widened": false,
+    "new_source_binding_used": true
+  },
+  "invariants": {
+    "direct_product_fact_table_dml": false,
+    "legacy_product_mutation": false,
+    "recommendation_authority_cutover": false,
+    "legacy_corpus_change": false,
+    "initial_admission_grant_change": false,
+    "registry_schema_rpc_mutation": false,
+    "cross_product_inference": false,
+    "third_party_positive_support": false
+  }
+}
