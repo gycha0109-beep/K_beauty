@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "face-count-neutral-curation-validation-v2",
+  "authorityRef": "authority.facelab.neutral_face_count.shared_review.v2",
+  "purpose": "Internal semantic-set validation only. This file must not be projected into reviewer HTML or submission payloads.",
+  "reviewCriterion": "Count only people whose eyes, nose, mouth, and other facial features are sufficiently visible to assess exact facial features.",
+  "requiredDistribution": {
+    "none": 2,
+    "one": 3,
+    "two_or_more": 3
+  },
+  "maxSingleBucket": 3,
+  "notAssessableGroundTruthUsed": false,
+  "currentFaceLabHostedReviewAssetReuse": false,
+  "syntheticCompositeAssets": false,
+  "syntheticBlurAssets": false,
+  "items": [
+    {
+      "reviewItemId": "fcneutralv2_01",
+      "expectedClass": "none",
+      "naturalSceneClass": "non_human_scene",
+      "rationale": "Earth image contains no person whose facial features can be assessed."
+    },
+    {
+      "reviewItemId": "fcneutralv2_02",
+      "expectedClass": "none",
+      "naturalSceneClass": "non_human_scene",
+      "rationale": "Full Moon image contains no person whose facial features can be assessed."
+    },
+    {
+      "reviewItemId": "fcneutralv2_03",
+      "expectedClass": "one",
+      "naturalSceneClass": "single_person_portrait",
+      "rationale": "One person's facial features are clearly visible."
+    },
+    {
+      "reviewItemId": "fcneutralv2_04",
+      "expectedClass": "one",
+      "naturalSceneClass": "single_person_portrait",
+      "rationale": "One person's facial features are clearly visible."
+    },
+    {
+      "reviewItemId": "fcneutralv2_05",
+      "expectedClass": "one",
+      "naturalSceneClass": "single_person_portrait",
+      "rationale": "One person's facial features are clearly visible."
+    },
+    {
+      "reviewItemId": "fcneutralv2_06",
+      "expectedClass": "two_or_more",
+      "naturalSceneClass": "multi_person_group_photo",
+      "rationale": "Multiple people's facial features are visible in a natural group photograph."
+    },
+    {
+      "reviewItemId": "fcneutralv2_07",
+      "expectedClass": "two_or_more",
+      "naturalSceneClass": "three_person_crew_portrait",
+      "rationale": "Three crew members' facial features are visible in the natural crew portrait."
+    },
+    {
+      "reviewItemId": "fcneutralv2_08",
+      "expectedClass": "two_or_more",
+      "naturalSceneClass": "seven_person_group_portrait",
+      "rationale": "Seven group members' facial features are visible in the natural group portrait."
+    }
+  ]
+}

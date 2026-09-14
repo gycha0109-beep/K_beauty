@@ -1,4 +1,4 @@
-name: Face Lab Neutral Face Count Shared Stage v1
+name: Face Lab Neutral Face Count Shared Stage v2
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ on:
       - 'lib/face-lab-neutral-face-count-*'
       - 'evidence/facelab/face-count-neutral-*'
       - 'public/facelab/neutral-review/v1/assets/**'
+      - 'public/facelab/neutral-review/v2/assets/**'
       - 'scripts/check-face-lab-neutral-face-count-stage-v1.mjs'
       - 'supabase/migrations/20260901012653_face_lab_neutral_face_count_intake_v1.sql'
       - 'docs/domain/facelab/face-count-neutral-shared-stage-v1.md'
@@ -21,6 +22,7 @@ on:
       - 'lib/face-lab-neutral-face-count-*'
       - 'evidence/facelab/face-count-neutral-*'
       - 'public/facelab/neutral-review/v1/assets/**'
+      - 'public/facelab/neutral-review/v2/assets/**'
       - 'scripts/check-face-lab-neutral-face-count-stage-v1.mjs'
       - 'supabase/migrations/20260901012653_face_lab_neutral_face_count_intake_v1.sql'
       - 'docs/domain/facelab/face-count-neutral-shared-stage-v1.md'
@@ -59,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify neutral authority, exact bytes, intake and receipt gate
+      - name: Verify neutral authority, semantic diversity, exact bytes, intake and receipt gate
         run: node scripts/check-face-lab-neutral-face-count-stage-v1.mjs
 
       - name: Syntax check touched runtime files
