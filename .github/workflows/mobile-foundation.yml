@@ -12,6 +12,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-foundation.yml"
   push:
     branches: [main]
@@ -24,6 +26,8 @@ on:
       - "package.json"
       - "package-lock.json"
       - "scripts/verify-mobile-architecture-foundation.mjs"
+      - "scripts/verify-mobile-initial-entry-routing.mjs"
+      - "scripts/verify-mobile-android-smoke.sh"
       - ".github/workflows/mobile-foundation.yml"
   workflow_dispatch:
 
@@ -66,6 +70,9 @@ jobs:
 
       - name: Verify mobile architecture boundary
         run: npm run verify:mobile-foundation
+
+      - name: Verify report-aware initial entry routing
+        run: npm run verify:mobile-entry-routing
 
       - name: Run mobile static lint
         run: npm run mobile:lint
