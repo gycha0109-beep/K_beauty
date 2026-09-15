@@ -1,0 +1,164 @@
+{
+  "schema_version": "data-taxonomy13-catalog-only-candidate-approval-v1",
+  "issue": 513,
+  "baseline_main_sha": "f1e5f814877e6db21dad486aa11d6c6484c1273c",
+  "depends_on": {
+    "data_taxonomy10_issue": 497,
+    "data_taxonomy11_issue": 500,
+    "data_taxonomy12_issue": 502,
+    "catalog_only_adoption_function": "public.promote_product_candidate_catalog_only_v1(uuid,text)"
+  },
+  "production_baseline": {
+    "observed_main_sha": "7ca6c200611ab3c941b684e3a83d7f1dc2eeb0fe",
+    "observation_source": "DATA-TAXONOMY13 issue #513 Production readback",
+    "product_count": 165,
+    "category_null_count": 0,
+    "taxonomy_assignment_count": 165,
+    "exact_equivalence_count": 165,
+    "candidate_count": 190,
+    "candidate_review_status": {
+      "new": 189,
+      "approved": 0,
+      "promoted": 1
+    },
+    "review_queue_status": {
+      "queued": 38,
+      "deferred": 20,
+      "approved": 1
+    },
+    "source_rule_classification_count": 189,
+    "legacy_projection_classification_count": 1,
+    "no_legacy_projection_fields_count": 189,
+    "resolved_identity_count": 1,
+    "pre_review_catalog_only_shape_count": 0,
+    "taxonomy_version": "catalog-taxonomy-v1",
+    "taxonomy_lifecycle_state": "shadow",
+    "taxonomy_authority_mode": "shadow_only",
+    "catalog_only_promotion_function_service_role_execute": false,
+    "recommendation_runtime_cutover": false
+  },
+  "authority_gap": {
+    "legacy_admin_preflight_requires_service_category": true,
+    "legacy_treatment_preflight_requires_product_form": true,
+    "legacy_admin_confirm_promotes_product": true,
+    "structural_adoption_confirm_promotes_product": true,
+    "catalog_only_approval_without_product_write_exists_before_this_change": false
+  },
+  "first_candidate": {
+    "candidate_id": "6a9627b6-a5da-458f-84f7-3a40f91453be",
+    "source_name": "hwahae",
+    "external_type": "products",
+    "external_id": "1996087",
+    "source_url": "https://www.hwahae.co.kr/goods/60898",
+    "raw_brand": "파티온",
+    "raw_name": "노스카나인 트러블 세럼",
+    "proposed_canonical_brand": "파티온",
+    "proposed_canonical_name": "노스카나인 트러블 세럼",
+    "queue_status": "queued",
+    "queue_rule_version": "ranking-review-v2",
+    "priority_score": 160,
+    "selection_reason": "top_15_immediate: latest concern rank <= 15",
+    "acne_latest_rank": 1,
+    "popularity_latest_rank": 19,
+    "identity_resolution_state": "unresolved",
+    "identity_resolution_version": "crawler-identity-resolution-v1",
+    "service_category": null,
+    "product_form": null,
+    "matched_product_id": null,
+    "duplicate_of_product_id": null,
+    "taxonomy": {
+      "taxonomy_version": "catalog-taxonomy-v1",
+      "classification_state": "active_shadow",
+      "classification_method": "source_rule_v1",
+      "source_rule_key": "catalog-taxonomy-v1:source:hwahae:treatment",
+      "legacy_projection_key": null,
+      "active_referenced_term_count": 4,
+      "referenced_term_count": 4,
+      "product_write_allowed": false,
+      "product_promotion_allowed": false,
+      "recommendation_admission_allowed": false,
+      "runtime_resolution_exact": true
+    },
+    "collision_readback": {
+      "raw_normalized_product_identity": 0,
+      "exact_external_product_identity": 0,
+      "exact_candidate_raw_identity_peer": 0
+    },
+    "identity_cross_check": {
+      "source_provider": {
+        "provider": "hwahae",
+        "product_id": "1996087",
+        "brand": "파티온",
+        "product_name": "노스카나인 트러블 세럼",
+        "package_info": "30 ml / 1.01 fl. oz."
+      },
+      "independent_provider": {
+        "provider": "fation_official",
+        "url": "https://www.fation.co.kr/product/%EB%85%B8%EC%8A%A4%EC%B9%B4%EB%82%98%EC%9D%B8-%ED%8A%B8%EB%9F%AC%EB%B8%94-%EC%84%B8%EB%9F%BC/329/category/1/display/17/",
+        "product_name_kr": "파티온 노스카나인 트러블 세럼",
+        "product_name_en": "FATION NOSCA9 TROUBLE SERUM",
+        "capacity": "30 ml / 1.01 fl. oz.",
+        "verified_on": "2026-09-15"
+      },
+      "convergence_dimensions": [
+        "brand",
+        "product_name",
+        "presentation"
+      ],
+      "candidate_target_status": "identity_evidence_ready_not_production_approved"
+    }
+  },
+  "repository_foundation": {
+    "migration_path": "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+    "previous_draft_migration_path": "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+    "migration_rebased_after_current_main": true,
+    "preflight_function": "public.admin_preflight_product_candidate_catalog_only_approval_v1(uuid,uuid,jsonb)",
+    "confirm_function": "public.admin_confirm_product_candidate_catalog_only_approval_v1(uuid,uuid,jsonb,text,text,text,text,text,text)",
+    "confirmation_ledger": "public.admin_catalog_only_candidate_approval_confirmations",
+    "actor_capability": "admin.products.review",
+    "identity_evidence_provider_minimum": 2,
+    "independent_provider_required": true,
+    "source_provider_required": true,
+    "candidate_identity_peer_collision_fails_closed": true,
+    "normalized_product_identity_collision_fails_closed": true,
+    "exact_external_product_identity_collision_fails_closed": true,
+    "exact_source_rule_revalidation": true,
+    "active_term_set_revalidation": true,
+    "runtime_resolver_replay": true,
+    "stale_preflight_rejection": true,
+    "request_id_idempotency": true,
+    "product_write_count": 0,
+    "taxonomy_assignment_write_count": 0,
+    "recommendation_semantic_write_count": 0,
+    "product_fact_write_count": 0,
+    "offer_write_count": 0,
+    "production_application": false
+  },
+  "approval_semantics": {
+    "candidate_review_status_after_confirm": "approved",
+    "identity_resolution_state_after_confirm": "resolved",
+    "identity_resolution_version_after_confirm": "crawler-identity-resolution-v1",
+    "review_queue_status_after_confirm": "approved",
+    "review_queue_approved_product_id_after_confirm": null,
+    "service_category_after_confirm": null,
+    "product_form_after_confirm": null,
+    "matched_product_id_after_confirm": null,
+    "duplicate_of_product_id_after_confirm": null,
+    "promotion_action": "none"
+  },
+  "explicit_non_goals": [
+    "Production migration application",
+    "Production candidate mutation",
+    "grant execute on promote_product_candidate_catalog_only_v1",
+    "catalog-only Product adoption",
+    "Product insert or merge",
+    "taxonomy assignment insert",
+    "candidate promoted transition",
+    "legacy promotion modification",
+    "Recommendation admission or runtime cutover",
+    "taxonomy lifecycle activation",
+    "Product Fact authority change",
+    "Offer authority change"
+  ],
+  "next_gate": "after merge, separately authorize Production installation and controlled candidate approval; actual Product adoption and Product-adoption EXECUTE grant remain later gates"
+}
