@@ -4,14 +4,14 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "supabase/migrations/20260915154500_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
+      - "supabase/migrations/20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
       - "tests/fixtures/data-taxonomy15-catalog-only-trust-intake/**"
       - "scripts/product-evidence/verify-data-taxonomy15-catalog-only-trust-intake-v1.mjs"
       - ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml"
   push:
     branches: [main, "fix/data-taxonomy15-catalog-only-trust-intake"]
     paths:
-      - "supabase/migrations/20260915154500_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
+      - "supabase/migrations/20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
       - "tests/fixtures/data-taxonomy15-catalog-only-trust-intake/**"
       - "scripts/product-evidence/verify-data-taxonomy15-catalog-only-trust-intake-v1.mjs"
       - ".github/workflows/data-taxonomy15-catalog-only-trust-intake.yml"
@@ -52,10 +52,10 @@ jobs:
           mkdir -p "${migration_dir}"
           cp tests/fixtures/data-taxonomy15-catalog-only-trust-intake/20260915154000_data_taxonomy15_catalog_only_trust_intake_fixture.sql \
             "${migration_dir}/20260915154000_data_taxonomy15_catalog_only_trust_intake_fixture.sql"
-          cp supabase/migrations/20260915154500_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql \
-            "${migration_dir}/20260915154500_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
+          cp supabase/migrations/20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql \
+            "${migration_dir}/20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql"
           cp tests/fixtures/data-taxonomy15-catalog-only-trust-intake/verify_data_taxonomy15_catalog_only_trust_intake_runtime.sql \
-            "${migration_dir}/20260915154600_verify_data_taxonomy15_catalog_only_trust_intake_runtime.sql"
+            "${migration_dir}/20260915155619_verify_data_taxonomy15_catalog_only_trust_intake_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash

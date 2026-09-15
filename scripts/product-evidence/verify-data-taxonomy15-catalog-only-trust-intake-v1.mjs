@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-const migrationPath = 'supabase/migrations/20260915154500_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql';
+const migrationPath = 'supabase/migrations/20260915155618_data_taxonomy15_catalog_only_trust_intake_bridge_v1.sql';
 const fixturePath = 'tests/fixtures/data-taxonomy15-catalog-only-trust-intake/20260915154000_data_taxonomy15_catalog_only_trust_intake_fixture.sql';
 const runtimePath = 'tests/fixtures/data-taxonomy15-catalog-only-trust-intake/verify_data_taxonomy15_catalog_only_trust_intake_runtime.sql';
 
