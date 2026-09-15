@@ -27,6 +27,40 @@ select public.promote_product_candidate(
   'fixture'
 );
 
+-- Promotion transaction must durably enqueue intake but must not materialize
+-- Product Fact research tasks inside the catalog transaction.
+do $$
+declare
+  v_intakes integer;
+  v_tasks integer;
+  v_state text;
+begin
+  select count(*) into v_intakes
+  from public.catalog_trust_intake
+  where product_id = '10000000-0000-4000-8000-000000000001'::uuid;
+  select count(*) into v_tasks
+  from public.product_fact_research_tasks
+  where product_id = '10000000-0000-4000-8000-000000000001'::uuid;
+  select trust_state into v_state
+  from public.catalog_trust_intake
+  where product_id = '10000000-0000-4000-8000-000000000001'::uuid;
+
+  if v_intakes <> 1 then
+    raise exception 'promotion_did_not_create_exactly_one_intake:%', v_intakes;
+  end if;
+  if v_tasks <> 0 then
+    raise exception 'promotion_transaction_materialized_tasks:%', v_tasks;
+  end if;
+  if v_state <> 'PENDING' then
+    raise exception 'promotion_intake_not_pending_before_processor:%', v_state;
+  end if;
+end;
+$$;
+
+select public.process_catalog_trust_product_v1(
+  '10000000-0000-4000-8000-000000000001'::uuid
+);
+
 do $$
 declare
   v_count integer;
@@ -81,10 +115,13 @@ begin
 end;
 $$;
 
--- Identical promotion retry must not duplicate either intake or tasks.
+-- Identical promotion retry and processor retry must not duplicate either intake or tasks.
 select public.promote_product_candidate(
   '20000000-0000-4000-8000-000000000001'::uuid,
   'fixture-retry'
+);
+select public.process_catalog_trust_product_v1(
+  '10000000-0000-4000-8000-000000000001'::uuid
 );
 
 do $$
@@ -114,6 +151,9 @@ insert into public.product_candidates (
 select public.promote_product_candidate(
   '20000000-0000-4000-8000-000000000002'::uuid,
   'fixture-second-revision'
+);
+select public.process_catalog_trust_product_v1(
+  '10000000-0000-4000-8000-000000000001'::uuid
 );
 
 do $$
@@ -156,6 +196,9 @@ insert into public.product_candidates (
 select public.promote_product_candidate(
   '20000000-0000-4000-8000-000000000003'::uuid,
   'fixture-global-boundary'
+);
+select public.process_catalog_trust_product_v1(
+  '10000000-0000-4000-8000-000000000002'::uuid
 );
 
 do $$
