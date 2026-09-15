@@ -6,7 +6,7 @@ import {
   evaluateCatalogTaxonomyOverlayCardinality,
 } from "../../lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs";
 
-const migrationPath = "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql";
+const migrationPath = "supabase/migrations/20260915155629_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql";
 const readerPath = "lib/catalog-taxonomy-recommendation-shadow-reader.js";
 const replayPath = "lib/catalog-taxonomy-recommendation-shadow-replay.js";
 const workflowPath = ".github/workflows/v21-admission-g3a-pf-authority-read.yml";

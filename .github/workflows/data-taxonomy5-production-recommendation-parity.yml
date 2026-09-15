@@ -7,7 +7,7 @@ on:
     paths:
       - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
       - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
-      - "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
+      - "supabase/migrations/20260915155629_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
       - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
       - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
@@ -26,7 +26,7 @@ on:
     paths:
       - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
       - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
-      - "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
+      - "supabase/migrations/20260915155629_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
       - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
       - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"

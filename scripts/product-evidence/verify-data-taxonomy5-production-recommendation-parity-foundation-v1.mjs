@@ -4,7 +4,7 @@ import fs from "node:fs";
 const files = {
   evidence: "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json",
   migrationV1: "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql",
-  migrationV2: "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql",
+  migrationV2: "supabase/migrations/20260915155629_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql",
   reader: "lib/catalog-taxonomy-recommendation-shadow-reader.js",
   replay: "lib/catalog-taxonomy-recommendation-shadow-replay.js",
   cardinality: "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs",
