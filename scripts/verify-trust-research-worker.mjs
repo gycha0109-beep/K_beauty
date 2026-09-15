@@ -12,7 +12,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const includes = (text, value, label) => assert(text.includes(value), `${label} missing: ${value}`);
 const excludes = (text, value, label) => assert(!text.includes(value), `${label} unexpectedly contains: ${value}`);
 
-const migration = read("supabase/migrations/20260915123000_trust_phase3_research_worker_v1.sql");
+const migration = read("supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql");
 const worker = read("scripts/trust-research-worker.mjs");
 const fixture = read("tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql");
 const runtime = read("tests/fixtures/trust-research-worker/verify_trust_research_worker_runtime.sql");
