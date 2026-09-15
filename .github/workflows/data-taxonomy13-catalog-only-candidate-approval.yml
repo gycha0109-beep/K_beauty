@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.DATA_TAXONOMY13_CHECKOUT_SHA }}
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Verify exact head
         shell: bash
