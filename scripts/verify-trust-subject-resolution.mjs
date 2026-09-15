@@ -64,7 +64,6 @@ assert(
   "identity_resolution_state",
   "variant_key",
   "formulation_revision_key",
-  "variant_scope_conflict",
   "candidate-formulation-v1",
   "same-formulation",
   "formulation-a",
