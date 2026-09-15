@@ -1,0 +1,40 @@
+name: DATA-TAXONOMY13 Catalog-only Candidate Approval
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
+      - "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
+      - "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
+      - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
+
+permissions:
+  contents: read
+
+env:
+  DATA_TAXONOMY13_CHECKOUT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  approval-authority:
+    name: Product-write-free catalog-only candidate approval authority
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DATA_TAXONOMY13_CHECKOUT_SHA }}
+          fetch-depth: 1
+      - name: Verify exact head
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$DATA_TAXONOMY13_CHECKOUT_SHA"
+      - name: Verify DATA-TAXONOMY13 approval authority
+        run: node scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs
