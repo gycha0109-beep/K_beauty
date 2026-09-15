@@ -35,11 +35,12 @@ const runtime = read("tests/fixtures/trust-subject-resolution/verify_trust_subje
 ].forEach((value) => includes(migration, value, "Phase 2 migration"));
 
 [
-  "identity_ambiguous",
+  "v_source_identity_state <> 'resolved'",
+  "catalog_identity_not_resolved",
   "variant_scope_conflict",
   "formulation_conflict",
   "market_conflict"
-].forEach((value) => includes(migration, value, "catalog identity reuse"));
+].forEach((value) => includes(migration, value, "catalog identity fail-closed reuse"));
 
 excludes(migration, "admin_register_product_fact_subject_v1(", "Subject creation authority");
 assert(
