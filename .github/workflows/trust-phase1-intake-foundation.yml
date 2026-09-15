@@ -4,14 +4,14 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - "supabase/migrations/*trust_phase1_intake*.sql"
+      - "supabase/migrations/*trust_phase1_*.sql"
       - "tests/fixtures/trust-intake-foundation/**"
       - "scripts/verify-trust-intake-foundation.mjs"
       - ".github/workflows/trust-phase1-intake-foundation.yml"
   push:
     branches: [main, "feat/trust-phase1-intake-foundation"]
     paths:
-      - "supabase/migrations/*trust_phase1_intake*.sql"
+      - "supabase/migrations/*trust_phase1_*.sql"
       - "tests/fixtures/trust-intake-foundation/**"
       - "scripts/verify-trust-intake-foundation.mjs"
       - ".github/workflows/trust-phase1-intake-foundation.yml"
@@ -80,6 +80,7 @@ jobs:
           cp tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql "${migration_dir}/"
           cp supabase/migrations/20260915093000_trust_phase1_intake_foundation_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915094000_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915094500_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-intake-foundation/verify_trust_intake_foundation_runtime.sql \
             "${migration_dir}/20260915095000_verify_trust_intake_foundation_runtime.sql"
 
