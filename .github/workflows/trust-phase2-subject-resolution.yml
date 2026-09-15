@@ -7,13 +7,15 @@ on:
       - "supabase/migrations/*trust_phase2_*.sql"
       - "tests/fixtures/trust-subject-resolution/**"
       - "scripts/verify-trust-subject-resolution.mjs"
+      - "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
       - ".github/workflows/trust-phase2-subject-resolution.yml"
   push:
-    branches: [main, "feat/trust-phase2-subject-resolution"]
+    branches: [main, "feat/trust-phase2-subject-resolution", "feat/trust-phase2-subject-resolution-v2"]
     paths:
       - "supabase/migrations/*trust_phase2_*.sql"
       - "tests/fixtures/trust-subject-resolution/**"
       - "scripts/verify-trust-subject-resolution.mjs"
+      - "scripts/verify-trust-subject-resolution-presentation-hardening.mjs"
       - ".github/workflows/trust-phase2-subject-resolution.yml"
   workflow_dispatch:
 
@@ -60,7 +62,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Verify TRUST Phase 2 contract
-        run: node scripts/verify-trust-subject-resolution.mjs
+        run: |
+          node scripts/verify-trust-subject-resolution.mjs
+          node scripts/verify-trust-subject-resolution-presentation-hardening.mjs
 
       - name: Verify architecture boundaries
         run: npm run architecture:guard
@@ -78,13 +82,16 @@ jobs:
           migration_dir="${runtime_dir}/supabase/migrations"
           mkdir -p "${migration_dir}"
           cp tests/fixtures/trust-intake-foundation/20260915090000_trust_intake_foundation_fixture.sql "${migration_dir}/"
-          cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
           cp supabase/migrations/20260915095306_trust_phase1_intake_foundation_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/20260915100000_trust_subject_resolution_fixture_extension.sql "${migration_dir}/"
           cp supabase/migrations/20260915102500_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_runtime.sql \
-            "${migration_dir}/20260915103000_verify_trust_subject_resolution_runtime.sql"
+            "${migration_dir}/20260915102550_verify_trust_subject_resolution_runtime.sql"
+          cp supabase/migrations/20260915102600_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
+          cp tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_presentation_hardening_runtime.sql \
+            "${migration_dir}/20260915103000_verify_trust_subject_resolution_presentation_hardening_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash
