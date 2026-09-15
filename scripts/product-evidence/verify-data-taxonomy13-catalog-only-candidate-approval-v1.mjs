@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const migrationPath = "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql";
+const migrationPath = "supabase/migrations/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql";
 const evidencePath = "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json";
 const fixturePath = "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture.sql";
 const runtimePath = "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql";
@@ -46,6 +46,10 @@ assert.equal(evidence.first_candidate.collision_readback.exact_external_product_
 assert.equal(evidence.first_candidate.identity_cross_check.convergence_dimensions.length, 3);
 
 assert.equal(evidence.repository_foundation.migration_path, migrationPath);
+assert.deepEqual(evidence.repository_foundation.superseded_premerge_migration_paths, [
+  "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+  "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+]);
 assert.equal(evidence.repository_foundation.migration_rebased_after_current_main, true);
 assert.equal(evidence.repository_foundation.production_application, false);
 assert.equal(evidence.repository_foundation.product_write_count, 0);
@@ -150,8 +154,10 @@ assert.match(runtime, /catalog_only_candidate_approval_stale_preflight/i);
 assert.match(runtime, /catalog_only_candidate_approval_request_id_conflict/i);
 assert.match(runtime, /exact retry was not idempotent/i);
 assert.match(workflow, /SUPABASE_CLI_VERSION:\s*2\.109\.1/);
+assert.match(workflow, /supabase\/migrations\/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1\.sql/);
 assert.match(workflow, /data-taxonomy13-catalog-only-candidate-approval\/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture\.sql/);
-assert.match(workflow, /20260915111100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime\.sql/);
+assert.match(workflow, /20260915120100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime\.sql/);
+assert.match(workflow, /fetch-depth:\s*2/);
 assert.match(workflow, /supabase@\$\{SUPABASE_CLI_VERSION\}[^\n]*start/);
 assert.match(workflow, /supabase@\$\{SUPABASE_CLI_VERSION\}[^\n]*db reset/);
 

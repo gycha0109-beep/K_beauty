@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
-      - "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "supabase/migrations/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
       - "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/**"
       - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
       - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
@@ -13,7 +13,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/data-taxonomy13-catalog-only-candidate-approval.yml"
-      - "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+      - "supabase/migrations/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
       - "tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/**"
       - "evidence/catalog-taxonomy-v1/data-taxonomy13-catalog-only-candidate-approval-v1.json"
       - "scripts/product-evidence/verify-data-taxonomy13-catalog-only-candidate-approval-v1.mjs"
@@ -55,10 +55,10 @@ jobs:
           mkdir -p "${migration_dir}"
           cp tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/20260915110500_data_taxonomy13_catalog_only_candidate_approval_fixture.sql \
             "${migration_dir}/"
-          cp supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql \
+          cp supabase/migrations/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql \
             "${migration_dir}/"
           cp tests/fixtures/data-taxonomy13-catalog-only-candidate-approval/verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql \
-            "${migration_dir}/20260915111100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql"
+            "${migration_dir}/20260915120100_verify_data_taxonomy13_catalog_only_candidate_approval_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash

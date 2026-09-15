@@ -109,8 +109,11 @@
     }
   },
   "repository_foundation": {
-    "migration_path": "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
-    "previous_draft_migration_path": "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+    "migration_path": "supabase/migrations/20260915120000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+    "superseded_premerge_migration_paths": [
+      "supabase/migrations/20260915005000_data_taxonomy13_catalog_only_candidate_approval_v1.sql",
+      "supabase/migrations/20260915111000_data_taxonomy13_catalog_only_candidate_approval_v1.sql"
+    ],
     "migration_rebased_after_current_main": true,
     "preflight_function": "public.admin_preflight_product_candidate_catalog_only_approval_v1(uuid,uuid,jsonb)",
     "confirm_function": "public.admin_confirm_product_candidate_catalog_only_approval_v1(uuid,uuid,jsonb,text,text,text,text,text,text)",
