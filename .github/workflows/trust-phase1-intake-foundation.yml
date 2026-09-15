@@ -82,7 +82,7 @@ jobs:
           cp supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-intake-foundation/verify_trust_intake_foundation_runtime.sql \
-            "${migration_dir}/20260915095000_verify_trust_intake_foundation_runtime.sql"
+            "${migration_dir}/20260915100000_verify_trust_intake_foundation_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash
