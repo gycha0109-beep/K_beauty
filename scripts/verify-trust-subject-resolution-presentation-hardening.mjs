@@ -11,7 +11,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const includes = (text, value, label) => assert(text.includes(value), `${label} missing: ${value}`);
 const excludes = (text, value, label) => assert(!text.includes(value), `${label} unexpectedly contains: ${value}`);
 
-const migration = read("supabase/migrations/20260915102600_trust_phase2_presentation_scope_hardening_v1.sql");
+const migration = read("supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql");
 const runtime = read("tests/fixtures/trust-subject-resolution/verify_trust_subject_resolution_presentation_hardening_runtime.sql");
 
 [
