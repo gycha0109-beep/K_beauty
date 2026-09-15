@@ -1,0 +1,174 @@
+name: PF5B1R2 Runtime Replay
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-full:
+    if: github.head_ref == 'test/product-fact-controlled-write-runtime-v2'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      IMPLEMENTATION_SHA: bddea888f39e4da5028e418501b922a431ad329b
+      FAILURE_EVIDENCE_SHA: 62f042cfee0e00de9f29deeb303da220eb9ab713
+      CONTROLLED_BLOB: 03523a01322170e6b0fca2ff4cc77b8be581f19e
+      SUBJECT_BLOB: a08651d4ea5825e33f2dc94fe98c5b7643d32532
+      SUPABASE_CLI_VERSION: 2.109.1
+      REPLAY_DIR: tmp/pf5b1r2-runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Freeze authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin feat/product-fact-controlled-write-v1 test/product-fact-controlled-write-runtime-v1 main
+          test "$(git rev-parse origin/feat/product-fact-controlled-write-v1)" = "${IMPLEMENTATION_SHA}"
+          test "$(git rev-parse origin/test/product-fact-controlled-write-runtime-v1)" = "${FAILURE_EVIDENCE_SHA}"
+          test "$(git rev-parse "${IMPLEMENTATION_SHA}:supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql")" = "${CONTROLLED_BLOB}"
+          test "$(git rev-parse "${IMPLEMENTATION_SHA}:supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql")" = "${SUBJECT_BLOB}"
+          echo "AUTHORITATIVE_MAIN=$(git rev-parse origin/main)"
+          echo "VERIFICATION_HEAD=$(git rev-parse HEAD)"
+
+      - name: Verification-only diff guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check "${IMPLEMENTATION_SHA}"..HEAD
+          mapfile -t changed < <(git diff --name-only "${IMPLEMENTATION_SHA}"..HEAD | sort)
+          printf 'PF5B1R2_CHANGED_FILES\n%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 3
+          test "${changed[0]}" = ".github/workflows/pf5b1r2-runtime-replay.yml"
+          test "${changed[1]}" = "tests/fixtures/product-fact-controlled-write-runtime-v2/pf5b1r2-core.sql"
+          test "${changed[2]}" = "tests/fixtures/product-fact-controlled-write-runtime-v2/pf5b1r2-stale-rollback-security.sql"
+          git diff --quiet "${IMPLEMENTATION_SHA}"..HEAD -- supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql
+          git diff --quiet "${IMPLEMENTATION_SHA}"..HEAD -- supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql
+          if git diff --name-only "${IMPLEMENTATION_SHA}"..HEAD | grep -Ei '(recommend|candidate.?policy|decision.?axis|package-lock|package\.json)' ; then
+            echo 'forbidden runtime/business/dependency delta detected' >&2
+            exit 1
+          fi
+
+      - name: Static verifier separation gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-product-fact-controlled-write-v1.mjs | tee /tmp/pf5b1r2-static.json
+          grep -q '"status": "PASS"' /tmp/pf5b1r2-static.json
+          grep -q '"assertions": 117' /tmp/pf5b1r2-static.json
+          grep -q '"negative_mutation_cases": 12' /tmp/pf5b1r2-static.json
+          grep -q '"postgres_compile_verification": "NOT_PERFORMED_BY_STATIC_VERIFIER"' /tmp/pf5b1r2-static.json
+
+      - name: Materialize governed PostgreSQL 17 replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/materialize-product-fact-replay-baseline-v1.mjs --output="${REPLAY_DIR}"
+          sed -i 's/major_version = 15/major_version = 17/' "${REPLAY_DIR}/supabase/config.toml"
+          migration_dir="${REPLAY_DIR}/supabase/migrations"
+          cp supabase/migrations/20260809115932_product_fact_storage_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260810174400_product_fact_controlled_write_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260810174410_product_fact_subject_registration_v1.sql "${migration_dir}/"
+
+      - name: Start isolated Supabase and apply migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" start \
+            --workdir "${REPLAY_DIR}" \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          server_version="$(psql "$DB" -Atqc 'show server_version')"
+          server_version_num="$(psql "$DB" -Atqc 'show server_version_num')"
+          echo "POSTGRES_VERSION=${server_version}"
+          test "${server_version_num}" -ge 170000
+          test "$(psql "$DB" -Atqc "select count(*) from supabase_migrations.schema_migrations where version in ('20260809115932','20260810174400','20260810174410')")" = "3"
+          test "$(psql "$DB" -Atqc "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relname in ('product_fact_registry_versions','product_fact_definition_snapshots','product_fact_subjects','product_evidence_sources','product_evidence_source_subject_bindings','product_evidence_records','product_fact_instances','product_fact_evidence_links','product_fact_confirmations','product_fact_current','product_fact_review_assignments','product_fact_review_events')")" = "12"
+          test "$(psql "$DB" -Atqc "select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in ('admin_publish_product_fact_registry_v1','admin_register_product_fact_subject_v1','admin_ingest_product_fact_evidence_v1','admin_prepare_product_fact_review_v1','admin_preflight_product_fact_confirmation_v1','admin_confirm_product_fact_v1')")" = "6"
+
+      - name: Run full controlled operation runtime matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tmp/pf5b1r2-evidence
+          DB='postgresql://postgres:postgres@127.0.0.1:57422/postgres'
+          psql "$DB" -qAt -v ON_ERROR_STOP=1 \
+            -f tests/fixtures/product-fact-controlled-write-runtime-v2/pf5b1r2-core.sql \
+            -f tests/fixtures/product-fact-controlled-write-runtime-v2/pf5b1r2-stale-rollback-security.sql \
+            | tee tmp/pf5b1r2-evidence/runtime-output.txt
+          grep -q '^PF5B1R2_FINAL_JSON=' tmp/pf5b1r2-evidence/runtime-output.txt
+          grep '^PF5B1R2_FINAL_JSON=' tmp/pf5b1r2-evidence/runtime-output.txt \
+            | tail -n 1 \
+            | sed 's/^PF5B1R2_FINAL_JSON=//' \
+            > tmp/pf5b1r2-evidence/product-fact-controlled-write-runtime-v2.json
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = 'tmp/pf5b1r2-evidence/product-fact-controlled-write-runtime-v2.json';
+          const evidence = JSON.parse(fs.readFileSync(path, 'utf8'));
+          if (evidence.status !== 'PASS' || evidence.phase !== 'PF5B1R2_FULL_RUNTIME') {
+            throw new Error('pf5b1r2_final_evidence_not_pass');
+          }
+          const required = [
+            'confirm_exact_retry_idempotency',
+            'dry_run_zero_write',
+            'evidence_conflict_current',
+            'legacy_recommendation_invariance_final',
+            'normal_confirm',
+            'request_conflict_matrix',
+            'runtime_security',
+            'stale_A_current',
+            'stale_B_evidence',
+            'stale_C_binding',
+            'stale_D_subject',
+            'stale_E_assignment',
+            'stale_F_registry',
+            'rollback_A_post_fact_downstream',
+            'rollback_B_evidence_link',
+            'rollback_C_current_boundary',
+            'rollback_D_assignment_transition',
+            'rollback_E_review_event',
+            'supported_false_A_success',
+            'supported_false_B_E_negative_matrix'
+          ];
+          const tests = new Map(evidence.tests.map((entry) => [entry.name, entry.status]));
+          for (const name of required) {
+            if (tests.get(name) !== 'PASS') throw new Error(`pf5b1r2_required_test_missing:${name}`);
+          }
+          console.log(`PF5B1R2_REQUIRED_TESTS_PASS=${required.length}`);
+          NODE
+          sha256sum tmp/pf5b1r2-evidence/product-fact-controlled-write-runtime-v2.json \
+            | tee tmp/pf5b1r2-evidence/product-fact-controlled-write-runtime-v2.sha256
+          sha256sum tmp/pf5b1r2-evidence/runtime-output.txt \
+            > tmp/pf5b1r2-evidence/runtime-output.sha256
+          cp /tmp/pf5b1r2-static.json tmp/pf5b1r2-evidence/static-verifier.json
+          sha256sum tmp/pf5b1r2-evidence/static-verifier.json \
+            > tmp/pf5b1r2-evidence/static-verifier.sha256
+
+      - name: Stop disposable Supabase
+        if: always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [[ -d "${REPLAY_DIR}/supabase" ]]; then
+            npx --yes "supabase@${SUPABASE_CLI_VERSION}" stop --workdir "${REPLAY_DIR}" --no-backup
+          fi
+          rm -rf -- "${REPLAY_DIR}"
+
+      - name: Upload PF5B1R2 runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pf5b1r2-runtime-evidence
+          path: tmp/pf5b1r2-evidence
+          if-no-files-found: warn
+          retention-days: 14
