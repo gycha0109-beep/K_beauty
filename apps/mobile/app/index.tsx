@@ -1,13 +1,83 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { ScreenShell } from "../components/ScreenShell";
+import { getNativeSession } from "../lib/auth";
 import { MOBILE_COPY } from "../lib/copy";
 import { useMobileShell } from "../lib/mobile-shell";
+import { fetchNativeMyDashboard } from "../lib/my";
+
+let initialEntryResolvedForRuntime = false;
+const storeCaptureInitialHomeBypass =
+  __DEV__ === true && process.env.EXPO_PUBLIC_STORE_CAPTURE_MODE === "1";
+
+async function shouldOpenHomeOnInitialEntry() {
+  try {
+    const session = await getNativeSession();
+
+    if (!session) {
+      return false;
+    }
+
+    const dashboard = await fetchNativeMyDashboard(session);
+    return Boolean(dashboard.latestSavedReport?.id);
+  } catch {
+    // A saved report must be positively confirmed by the server before Home
+    // becomes the cold-start destination. Analyze remains the safe fallback.
+    return false;
+  }
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const { locale, palette } = useMobileShell();
   const copy = MOBILE_COPY[locale];
+  const [entryResolved, setEntryResolved] = useState(
+    initialEntryResolvedForRuntime || storeCaptureInitialHomeBypass
+  );
+
+  useEffect(() => {
+    if (storeCaptureInitialHomeBypass) {
+      initialEntryResolvedForRuntime = true;
+      return;
+    }
+
+    if (initialEntryResolvedForRuntime) {
+      return;
+    }
+
+    let active = true;
+
+    void shouldOpenHomeOnInitialEntry().then((shouldOpenHome) => {
+      if (!active) {
+        return;
+      }
+
+      initialEntryResolvedForRuntime = true;
+
+      if (!shouldOpenHome) {
+        router.replace("/analyze");
+        return;
+      }
+
+      setEntryResolved(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  if (!entryResolved) {
+    return (
+      <View
+        testID="mobile-initial-entry-gate"
+        style={[styles.entryGate, { backgroundColor: palette.background }]}
+      >
+        <ActivityIndicator color={palette.accent} />
+      </View>
+    );
+  }
 
   return (
     <ScreenShell eyebrow={copy.home.eyebrow} title={copy.home.title} description={copy.home.description}>
@@ -47,6 +117,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  entryGate: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
   heroCard: {
     width: "100%",
     gap: 14,
