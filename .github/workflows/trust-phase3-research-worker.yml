@@ -87,9 +87,9 @@ jobs:
           cp supabase/migrations/20260915112124_trust_phase2_subject_resolution_v1.sql "${migration_dir}/"
           cp supabase/migrations/20260915112151_trust_phase2_presentation_scope_hardening_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-research-worker/20260915122500_trust_research_worker_fixture.sql "${migration_dir}/"
-          cp supabase/migrations/20260915123000_trust_phase3_research_worker_v1.sql "${migration_dir}/"
+          cp supabase/migrations/20260915131141_trust_phase3_research_worker_v1.sql "${migration_dir}/"
           cp tests/fixtures/trust-research-worker/verify_trust_research_worker_runtime.sql \
-            "${migration_dir}/20260915123500_verify_trust_research_worker_runtime.sql"
+            "${migration_dir}/20260915132000_verify_trust_research_worker_runtime.sql"
 
       - name: Start and verify isolated Supabase
         shell: bash
