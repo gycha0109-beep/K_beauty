@@ -7,11 +7,14 @@ on:
     paths:
       - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
       - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
+      - "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
       - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
       - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
       - "scripts/verify-current-main-health.mjs"
@@ -23,11 +26,14 @@ on:
     paths:
       - "evidence/catalog-taxonomy-v1/data-taxonomy5-production-recommendation-parity-v1.json"
       - "supabase/migrations/20260913152500_data_taxonomy5_recommendation_shadow_replay_v1.sql"
+      - "supabase/migrations/20260915161000_data_taxonomy15_recommendation_shadow_catalog_only_v2.sql"
       - "lib/catalog-taxonomy-recommendation-shadow-reader.js"
       - "lib/catalog-taxonomy-recommendation-shadow-replay.js"
+      - "lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs"
       - "app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-foundation-v1.mjs"
       - "scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs"
+      - "scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs"
       - ".github/workflows/data-taxonomy5-production-recommendation-parity.yml"
       - ".github/workflows/v21-admission-g3a-pf-authority-read.yml"
       - "scripts/verify-current-main-health.mjs"
@@ -67,9 +73,13 @@ jobs:
       - name: Verify DATA-TAXONOMY5 deployed replay wiring
         run: node scripts/product-evidence/verify-data-taxonomy5-production-recommendation-parity-runtime-v1.mjs
 
+      - name: Verify DATA-TAXONOMY15 catalog-only parity extension
+        run: node scripts/product-evidence/verify-data-taxonomy15-recommendation-parity-catalog-only-v2.mjs
+
       - name: Verify runtime module syntax
         shell: bash
         run: |
           node --check lib/catalog-taxonomy-recommendation-shadow-reader.js
           node --check lib/catalog-taxonomy-recommendation-shadow-replay.js
+          node --check lib/catalog-taxonomy-recommendation-shadow-cardinality-v2.mjs
           node --check app/api/internal/catalog-taxonomy-recommendation-shadow-replay/route.js
