@@ -22,13 +22,13 @@ function excludes(text, value, label) {
 }
 
 const foundation = read(
-  "supabase/migrations/20260915093000_trust_phase1_intake_foundation_v1.sql"
+  "supabase/migrations/20260915095306_trust_phase1_intake_foundation_v1.sql"
 );
 const hardening = read(
-  "supabase/migrations/20260915094000_trust_phase1_intake_delivery_hardening_v1.sql"
+  "supabase/migrations/20260915095333_trust_phase1_intake_delivery_hardening_v1.sql"
 );
 const decoupling = read(
-  "supabase/migrations/20260915094500_trust_phase1_promotion_decoupling_v1.sql"
+  "supabase/migrations/20260915095347_trust_phase1_promotion_decoupling_v1.sql"
 );
 const runtime = read(
   "tests/fixtures/trust-intake-foundation/verify_trust_intake_foundation_runtime.sql"
